@@ -1,6 +1,7 @@
+import classNames from 'classnames';
 import React, { useContext } from 'react';
 import Dimensions from '../constants/dimensions';
-import { PageContext } from '../contexts/pageContext';
+import { AppContext } from '../contexts/appContext';
 import isOnline from '../helpers/isOnline';
 import User from '../models/db/user';
 
@@ -11,11 +12,10 @@ interface AvatarProps {
 }
 
 export default function Avatar({ hideStatusCircle, size, user }: AvatarProps) {
-  const { user: loggedInUser } = useContext(PageContext);
-  // ensure logged in user's status always updates instantly
-  // (last_visited_at may not be immediately up to date)
-  const online = loggedInUser?._id === user._id ? !user.hideStatus : isOnline(user);
+  const { multiplayerSocket } = useContext(AppContext);
+  const connectedUser = multiplayerSocket.connectedPlayers.find(u => u._id === user._id);
   const _size = size ?? Dimensions.AvatarSize;
+  const borderWidth = Math.round(_size / 40) || 1;
 
   return (
     <div className='flex items-end'>
@@ -31,19 +31,44 @@ export default function Avatar({ hideStatusCircle, size, user }: AvatarProps) {
           width: _size,
         }}
       />
-      {!hideStatusCircle &&
-        <span
+      {!hideStatusCircle && (<>
+        <div
+          className={classNames(
+            !connectedUser ? 'bg-neutral-500' :
+              isOnline(connectedUser) ? 'bg-green-500' : 'bg-yellow-500')}
           style={{
-            backgroundColor: online ? 'var(--color-complete)' : 'var(--bg-color-4)',
             borderColor: 'var(--bg-color)',
             borderRadius: _size / 6,
-            borderWidth: Math.round(_size / 40) || 1,
+            borderWidth: borderWidth,
             height: _size / 3,
             marginLeft: -(_size / 3),
             width: _size / 3,
           }}
-        />
-      }
+        >
+          {connectedUser && !isOnline(connectedUser) &&
+            <div
+              className='overflow-hidden'
+              style={{
+                height: _size / 3,
+                borderRadius: _size / 6,
+                marginLeft: -borderWidth,
+                marginTop: -borderWidth,
+                width: _size / 3,
+              }}
+            >
+              <span
+                className='block'
+                style={{
+                  backgroundColor: 'var(--bg-color)',
+                  borderRadius: _size / 9,
+                  height: _size / 4.5,
+                  width: _size / 4.5,
+                }}
+              />
+            </div>
+          }
+        </div>
+      </>)}
     </div>
   );
 }

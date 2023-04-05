@@ -24,16 +24,17 @@ export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiR
 
 export async function getLatestLevels(reqUser: User | null = null) {
   await dbConnect();
-
   const query = await doQuery({
+    disable_count: 'true',
     min_rating: '0.5',
     max_rating: '1.0',
     num_results: '15',
     sort_by: 'ts',
     sort_dir: 'desc',
     show_filter: FilterSelectOption.HideWon,
-    time_range: TimeRange[TimeRange.Month]
-  }, reqUser?._id, {
+    time_range: TimeRange[TimeRange.All],
+
+  }, reqUser, {
     ...LEVEL_SEARCH_DEFAULT_PROJECTION,
     width: 1,
     height: 1,

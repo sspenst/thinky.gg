@@ -1,4 +1,6 @@
 import { Menu, Transition } from '@headlessui/react';
+import isPro from '@root/helpers/isPro';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { Fragment, useContext, useEffect, useState } from 'react';
@@ -9,7 +11,7 @@ import { PageContext } from '../../contexts/pageContext';
 import getProfileSlug from '../../helpers/getProfileSlug';
 import Avatar from '../avatar';
 import AboutModal from '../modal/aboutModal';
-import AddLevelModal from '../modal/addLevelModal';
+import EditLevelModal from '../modal/editLevelModal';
 import LevelInfoModal from '../modal/levelInfoModal';
 import ReviewsModal from '../modal/reviewsModal';
 import ThemeModal from '../modal/themeModal';
@@ -23,10 +25,11 @@ const enum Modal {
 }
 
 export default function Dropdown() {
+  const { forceUpdate, mutateUser, user, userLoading } = useContext(AppContext);
   const levelContext = useContext(LevelContext);
-  const { mutateUser, setPreventKeyDownEvent, user, userLoading } = useContext(PageContext);
   const [openModal, setOpenModal] = useState<Modal | undefined>();
   const router = useRouter();
+  const { setPreventKeyDownEvent } = useContext(PageContext);
   const { setShouldAttemptAuth } = useContext(AppContext);
 
   useEffect(() => {
@@ -41,17 +44,17 @@ export default function Dropdown() {
     fetch('/api/logout', {
       method: 'POST',
     }).then(() => {
-      // clear sessionStorage and localStorage
       localStorage.clear();
       sessionStorage.clear();
-      mutateUser();
+      mutateUser(undefined);
       setShouldAttemptAuth(false);
       router.push('/');
+      forceUpdate();
     });
   }
 
   return (<>
-    {levelContext?.level && <>
+    {levelContext && <>
       <div className='hidden sm:flex xl:hidden'>
         <button onClick={() => setOpenModal(Modal.LevelInfo)}>
           <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={2} stroke='currentColor' className='h-5 w-5'>
@@ -88,14 +91,14 @@ export default function Dropdown() {
         leaveFrom='transform opacity-100 scale-100'
         leaveTo='transform opacity-0 scale-95'
       >
-        <Menu.Items className='absolute right-0 m-1 w-36 origin-top-right rounded-md shadow-lg border' style={{
+        <Menu.Items className='absolute right-0 m-1 w-fit origin-top-right rounded-md shadow-lg border' style={{
           backgroundColor: 'var(--bg-color-2)',
           borderColor: 'var(--bg-color-4)',
           color: 'var(--color)',
           top: Dimensions.MenuHeight,
         }}>
           <div className='px-1 py-1'>
-            {levelContext?.level &&
+            {levelContext &&
               <div className='block sm:hidden'>
                 <Menu.Item>
                   {({ active }) => (
@@ -133,7 +136,7 @@ export default function Dropdown() {
                 }
               </div>
             }
-            {!userLoading && user && levelContext?.level &&
+            {user && levelContext &&
               <Menu.Item>
                 {({ active }) => (
                   <div
@@ -146,7 +149,7 @@ export default function Dropdown() {
                     <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' height='16' width='16'>
                       <path strokeLinecap='round' strokeLinejoin='round' d='M12 4.5v15m7.5-7.5h-15' />
                     </svg>
-                    {levelContext.level?.userId._id === user?._id || levelContext.level?.userId === user?._id ? 'Edit Level' : 'Add to...'}
+                    {levelContext.level.userId._id === user._id || levelContext.level.userId === user._id ? 'Edit Level' : 'Add to...'}
                   </div>
                 )}
               </Menu.Item>
@@ -184,6 +187,23 @@ export default function Dropdown() {
               )}
             </Menu.Item>
             {!userLoading && user && <>
+              {!isPro(user) &&
+                <Menu.Item>
+                  {({ active }) => (
+                    <Link href='/settings/proaccount' passHref>
+                      <div
+                        className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3'
+                        style={{
+                          backgroundColor: active ? 'var(--bg-color-3)' : undefined,
+                        }}
+                      >
+                        <Image alt='pro' src='/pro.svg' width='16' height='16' />
+                        Pathology Pro
+                      </div>
+                    </Link>
+                  )}
+                </Menu.Item>
+              }
               <Menu.Item>
                 {({ active }) => (
                   <Link href={getProfileSlug(user)} passHref>
@@ -241,7 +261,7 @@ export default function Dropdown() {
         </Menu.Items>
       </Transition>
     </Menu>
-    {levelContext?.level &&
+    {levelContext &&
       <>
         <LevelInfoModal
           closeModal={() => closeModal()}
@@ -252,10 +272,10 @@ export default function Dropdown() {
           closeModal={() => closeModal()}
           isOpen={openModal === Modal.Reviews}
         />
-        <AddLevelModal
+        <EditLevelModal
           closeModal={() => closeModal()}
           isOpen={openModal === Modal.AddLevelToCollection}
-          level={levelContext?.level}
+          level={levelContext.level}
         />
       </>
     }

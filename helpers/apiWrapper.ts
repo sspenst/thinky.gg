@@ -1,6 +1,7 @@
 import { Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { NextApiRequestWithAuth } from '../lib/withAuth';
+import { isValidGameState } from './isValidGameState';
 import { logger } from './logger';
 
 export interface ReqValidator {
@@ -32,8 +33,7 @@ export function ValidType(type: string, mustExist = true, parsedString = false) 
 
       try {
         parsedType = typeof JSON.parse(value as string);
-      }
-      catch (e) {
+      } catch (e) {
         // do nothing
       }
 
@@ -66,25 +66,33 @@ export function ValidArray(mustExist = true) {
   };
 }
 
+export function ValidGameState() {
+  return (value?: unknown) => {
+    return isValidGameState(value);
+  };
+}
+
 export function ValidNumber(mustExist = true, min?: number, max?: number, incrementAllowed?: number) {
   return (value?: unknown) => {
     if (!mustExist && !value) {
       return true;
     }
 
-    if (typeof value !== 'number') {
+    const v = Number(value);
+
+    if (isNaN(v)) {
       return false;
     }
 
-    if (min !== undefined && value < min) {
+    if (min !== undefined && v < min) {
       return false;
     }
 
-    if (max !== undefined && value > max) {
+    if (max !== undefined && v > max) {
       return false;
     }
 
-    if (incrementAllowed !== undefined && value % incrementAllowed !== 0) {
+    if (incrementAllowed !== undefined && v % incrementAllowed !== 0) {
       return false;
     }
 

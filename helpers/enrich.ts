@@ -71,6 +71,7 @@ export async function enrichNotifications(notifications: Notification[], reqUser
     ['Achievement']: ['_id', 'type', 'userId'],
     ['Level']: ['_id', 'leastMoves', 'name', 'slug', 'ts', 'userAttempts', 'userMoves', 'userMovesTs'],
     ['User']: ['_id', 'avatarUpdatedAt', 'hideStatus', 'name', 'last_visited_at'],
+    ['Collection']: ['_id', 'name', 'slug'],
   };
 
   const eNotifs: Notification[] = notifications.map((notification) => {
@@ -213,6 +214,14 @@ export function getEnrichNotificationPipelineStages(reqUser?: User) {
       },
     },
     {
+      $lookup: {
+        from: 'collections',
+        localField: 'target',
+        foreignField: '_id',
+        as: 'targetCollection',
+      },
+    },
+    {
       $unwind: {
         path: '$sourceAchievement',
         preserveNullAndEmptyArrays: true,
@@ -239,6 +248,12 @@ export function getEnrichNotificationPipelineStages(reqUser?: User) {
     {
       $unwind: {
         path: '$targetUser',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $unwind: {
+        path: '$targetCollection',
         preserveNullAndEmptyArrays: true,
       },
     },
@@ -284,6 +299,11 @@ export function getEnrichNotificationPipelineStages(reqUser?: User) {
           last_visited_at: 1,
           name: 1,
         },
+        targetCollection: {
+          _id: 1,
+          slug: 1,
+          name: 1,
+        },
       }
     },
     ...statEnrich,
@@ -294,6 +314,7 @@ export function getEnrichNotificationPipelineStages(reqUser?: User) {
           $mergeObjects: [
             '$targetLevel',
             '$targetUser',
+            '$targetCollection',
           ]
         },
         source: {
@@ -312,6 +333,7 @@ export function getEnrichNotificationPipelineStages(reqUser?: User) {
         'sourceUser',
         'targetLevel',
         'targetUser',
+        'targetCollection',
         'targetLevelStats',
         'target.calc_playattempts_unique_users'
       ],

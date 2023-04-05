@@ -1,35 +1,19 @@
+import { Types } from 'mongoose';
 import { NextApiRequest } from 'next';
-import nodemailer from 'nodemailer';
+import { EmailType } from '../constants/emailDigest';
 import User from '../models/db/user';
+import { sendMail } from '../pages/api/internal-jobs/email-digest';
 import getResetPasswordToken from './getResetPasswordToken';
 
 export default async function sendPasswordResetEmail(req: NextApiRequest, user: User) {
-  if (!process.env.EMAIL_PASSWORD) {
-    throw new Error('EMAIL_PASSWORD not defined');
-  }
-
-  const pathologyEmail = 'pathology.do.not.reply@gmail.com';
   const token = getResetPasswordToken(user);
   const url = `${req.headers.origin}/reset-password/${user._id}/${token}`;
 
-  // NB: less secure apps will no longer be available on may 30, 2022:
-  // https://support.google.com/accounts/answer/6010255
-  const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
-    auth: {
-      user: pathologyEmail,
-      pass: process.env.EMAIL_PASSWORD,
-    },
-  });
-
-  const mailOptions = {
-    from: `Pathology <${pathologyEmail}>`,
-    to: user.name + ' <' + user.email + '>',
-    subject: `Password Reset - ${user.name}`,
-    text: `Click here to reset your password: ${url}`,
-  };
-
-  return await transporter.sendMail(mailOptions);
+  return await sendMail(
+    new Types.ObjectId(),
+    EmailType.EMAIL_PASSWORD_RESET,
+    user,
+    `Password Reset - ${user.name}`,
+    `Click here to reset your password: ${url}`,
+  );
 }

@@ -1,80 +1,76 @@
-import { GetServerSidePropsContext } from 'next';
-import { useRouter } from 'next/router';
-import React, { useCallback, useEffect, useState } from 'react';
+import { Types } from 'mongoose';
+import { GetServerSidePropsContext, NextApiRequest } from 'next';
+import nProgress from 'nprogress';
+import React from 'react';
 import toast from 'react-hot-toast';
-import formattedAuthorNote from '../../../components/formattedAuthorNote';
 import LinkInfo from '../../../components/linkInfo';
 import Page from '../../../components/page';
 import Select from '../../../components/select';
-import SkeletonPage from '../../../components/skeletonPage';
 import Dimensions from '../../../constants/dimensions';
-import redirectToLogin from '../../../helpers/redirectToLogin';
-import useUser from '../../../hooks/useUser';
+import { getUserFromToken } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
 import { EnrichedLevel } from '../../../models/db/level';
+import User from '../../../models/db/user';
 import SelectOption from '../../../models/selectOption';
 import SelectOptionStats from '../../../models/selectOptionStats';
+import { getCollection } from '../../api/collection/[id]';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
-  return await redirectToLogin(context);
+  const token = context.req?.cookies?.token;
+  const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
+  const { id } = context.query;
+
+  if (!reqUser || typeof id !== 'string') {
+    return {
+      redirect: {
+        destination: '/login' + (context.resolvedUrl ? '?redirect=' + encodeURIComponent(context.resolvedUrl) : ''),
+        permanent: false,
+      },
+    };
+  }
+
+  const collection = await getCollection({ $match: {
+    _id: new Types.ObjectId(id as string),
+    userId: reqUser._id,
+  } }, reqUser, false);
+
+  if (!collection) {
+    return {
+      notFound: true,
+    };
+  }
+
+  return {
+    props: {
+      collection: JSON.parse(JSON.stringify(collection)),
+      reqUser: JSON.parse(JSON.stringify(reqUser)),
+    } as CollectionEditProps,
+  };
+}
+
+interface CollectionEditProps {
+  collection: Collection;
+  reqUser: User;
 }
 
 /* istanbul ignore next */
-export default function CollectionEditPage() {
-  const [collection, setCollection] = useState<Collection>();
-  const router = useRouter();
-  const { user } = useUser();
-  const { id } = router.query;
-
-  const getCollection = useCallback(() => {
-    if (!id) {
-      return;
-    }
-
-    fetch(`/api/collection/${id}`, {
-      method: 'GET',
-    }).then(async res => {
-      if (res.status === 200) {
-        setCollection(await res.json());
-      } else {
-        throw res.text();
-      }
-    }).catch(err => {
-      console.trace(err);
-      toast.dismiss();
-      toast.error('Error fetching collection');
-    });
-  }, [id]);
-
-  useEffect(() => {
-    getCollection();
-  }, [getCollection]);
-
-  const getOptions = useCallback(() => {
-    if (!collection || !collection.levels) {
-      return [];
-    }
-
-    const levels = collection.levels as EnrichedLevel[];
-    const showAuthor = levels.some(level => level.userId._id !== collection.userId._id);
-
-    return levels.map(level => {
-      return {
-        author: showAuthor ? level.userId.name : undefined,
-        height: showAuthor ? Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
-        href: level.isDraft ? `/edit/${level._id.toString()}` : `/level/${level._id.toString()}`,
-        id: level._id.toString(),
-        level: level,
-        stats: new SelectOptionStats(level.leastMoves, level.userMoves),
-        text: level.name,
-      } as SelectOption;
-    });
-  }, [collection]);
+export default function CollectionEdit({ collection, reqUser }: CollectionEditProps) {
+  const levels = collection.levels as EnrichedLevel[];
+  const showAuthor = levels.some(level => level.userId._id !== collection.userId._id);
+  const options = levels.map(level => {
+    return {
+      author: showAuthor ? level.userId.name : undefined,
+      height: showAuthor ? Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
+      href: level.isDraft ? `/edit/${level._id.toString()}` : `/level/${level._id.toString()}`,
+      id: level._id.toString(),
+      level: level,
+      stats: new SelectOptionStats(level.leastMoves, level.userMoves),
+      text: level.name,
+    } as SelectOption;
+  });
 
   const onChange = function(updatedItems: SelectOption[]) {
-    if (!collection) {
-      return;
-    }
+    nProgress.start();
 
     fetch(`/api/collection/${collection._id}`, {
       method: 'PUT',
@@ -86,40 +82,31 @@ export default function CollectionEditPage() {
         levels: updatedItems.map(option => option.id),
       }),
     }).then(async res => {
-      if (res.status === 200) {
-        setCollection(await res.json());
-      } else {
+      if (res.status !== 200) {
         throw res.text();
       }
     }).catch(err => {
       console.trace(err);
       toast.dismiss();
       toast.error('Error updating collection');
+    }).finally(() => {
+      nProgress.done();
     });
   };
-
-  if (!collection || !user) {
-    return <SkeletonPage />;
-  }
 
   return (
     <Page
       folders={[
-        new LinkInfo(user.name, `/profile/${user.name}/collections`),
+        new LinkInfo(reqUser.name, `/profile/${reqUser.name}/collections`),
         new LinkInfo(collection.name, `/collection/${collection.slug}`),
       ]}
       title={'Reorder'}
     >
       <>
-        <div className="flex items-center justify-center pt-3">
+        <div className='flex items-center justify-center pt-3'>
           <h1>Drag to reorder <span className='font-bold'>{collection?.name}</span></h1>
         </div>
-        {!collection || !collection.authorNote ? null :
-          <div className='m-5 text-center'>
-            {formattedAuthorNote(collection.authorNote)}
-          </div>
-        }
-        <Select onChange={onChange} options={getOptions()} prefetch={false} />
+        <Select onChange={onChange} options={options} prefetch={false} />
       </>
     </Page>
   );

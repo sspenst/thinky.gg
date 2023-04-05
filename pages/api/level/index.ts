@@ -12,15 +12,17 @@ export default withAuth({ POST: {
   body: {
     authorNote: ValidType('string', false),
     collectionIds: ValidObjectIdArray(),
+    data: ValidType('string'),
     name: ValidType('string'),
   }
 } }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   try {
-    const { authorNote, collectionIds, name } = req.body;
+    const { authorNote, collectionIds, data, name } = req.body;
 
     await dbConnect();
 
     const levelId = new Types.ObjectId();
+    const rows = data.split('\n');
     const trimmedName = name.trim();
     // TODO: in extremely rare cases there could be a race condition, might need a transaction here
     const slug = await generateLevelSlug(req.user.name, trimmedName);
@@ -29,15 +31,15 @@ export default withAuth({ POST: {
       LevelModel.create({
         _id: levelId,
         authorNote: authorNote?.trim(),
-        data: '4000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000003',
-        height: 10,
+        data: data,
+        height: rows.length,
         isDraft: true,
         leastMoves: 0,
         name: trimmedName,
         slug: slug,
         ts: TimerUtil.getTs(),
         userId: req.userId,
-        width: 10,
+        width: rows[0].length,
       }),
       CollectionModel.updateMany({
         _id: { $in: collectionIds },

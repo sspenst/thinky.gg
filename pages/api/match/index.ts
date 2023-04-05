@@ -5,7 +5,7 @@ import { ValidEnum, ValidType } from '../../../helpers/apiWrapper';
 import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
 import { logger } from '../../../helpers/logger';
 import { isProvisional } from '../../../helpers/multiplayerHelperFunctions';
-import { requestBroadcastMatches } from '../../../lib/appSocketToClient';
+import { requestBroadcastMatches, requestClearBroadcastMatchSchedule } from '../../../lib/appSocketToClient';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
 import User from '../../../models/db/user';
@@ -94,6 +94,7 @@ export function calculateEloChange(
 }
 
 export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: string) {
+  await requestClearBroadcastMatchSchedule(finishedMatch.matchId);
   const scoreTable = computeMatchScoreTable(finishedMatch);
   const sorted = Object.keys(scoreTable).sort((a, b) => {
     return scoreTable[b] - scoreTable[a];
@@ -115,7 +116,7 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
 
   try {
     await session.withTransaction(async () => {
-      const userWinner = await MultiplayerProfileModel.findOneAndUpdate(
+      const [userWinner, userLoser] = await Promise.all([MultiplayerProfileModel.findOneAndUpdate(
         {
           userId: winnerId,
         },
@@ -127,8 +128,8 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
           new: true,
           session: session,
         }
-      );
-      const userLoser = await MultiplayerProfileModel.findOneAndUpdate(
+      ),
+      await MultiplayerProfileModel.findOneAndUpdate(
         {
           userId: loserId,
         },
@@ -140,7 +141,7 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
           new: true,
           session: session,
         }
-      );
+      )]);
 
       // update elo...
 
@@ -153,7 +154,6 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
         const ratingField = 'rating' + finishedMatch.type;
         const countMatchField = 'calc' + finishedMatch.type + 'Count';
 
-        //console.log(ratingField, countMatchField, eloChangeWinner, eloChangeLoser, userWinner, userLoser);
         await Promise.all([MultiplayerProfileModel.findOneAndUpdate(
           {
             userId: new Types.ObjectId(winnerId),

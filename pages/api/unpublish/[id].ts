@@ -3,10 +3,9 @@ import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
 import { ValidObjectId } from '../../../helpers/apiWrapper';
 import queueDiscordWebhook from '../../../helpers/discordWebhook';
+import isCurator from '../../../helpers/isCurator';
 import { logger } from '../../../helpers/logger';
 import { clearNotifications } from '../../../helpers/notificationHelper';
-import revalidateLevel from '../../../helpers/revalidateLevel';
-import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import { requestBroadcastMatch } from '../../../lib/appSocketToClient';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
@@ -32,46 +31,51 @@ export default withAuth({ POST: {
     });
   }
 
-  if (level.userId.toString() !== req.userId) {
+  if (!isCurator(req.user) && level.userId.toString() !== req.userId) {
     return res.status(401).json({
       error: 'Not authorized to delete this Level',
     });
   }
 
-  const record = await RecordModel.findOne<Record>({ levelId: id }).sort({ moves: 1, ts: -1 });
-
-  // update calc_records if the record was set by a different user
-  let newId;
-  const allMatchesToRebroadcast = await MultiplayerMatchModel.find({
-    state: MultiplayerMatchState.ACTIVE,
-    levels: id,
-  }, {
-    _id: 1,
-    matchId: 1
-  },
-  {
-    lean: true
-  });
-
   const session = await mongoose.startSession();
+  let newLevelId;
 
   try {
     await session.withTransaction(async () => {
-      // level is less than 24hrs old, unpublish and clean up stats
+      const record = await RecordModel.findOne<Record>(
+        { levelId: id },
+        { userId: 1 },
+        { lean: true, session: session },
+      ).sort({ moves: 1, ts: -1 });
+
+      // update calc_records if the record was set by a different user
       if (record && record.userId.toString() !== req.userId) {
         // NB: await to avoid multiple user updates in parallel
         await UserModel.updateOne({ _id: record.userId }, { $inc: { calc_records: -1 } }, { session: session });
       }
 
-      const stats = await StatModel.find<Stat>({ levelId: id }, {}, { session: session });
+      const [levelClone, matchesToRebroadcast, stats] = await Promise.all([
+        LevelModel.findOne<Level>({ _id: id, isDeleted: { $ne: true }, isDraft: false }, {}, { session: session, lean: true }),
+        MultiplayerMatchModel.find<MultiplayerMatch>({
+          state: MultiplayerMatchState.ACTIVE,
+          levels: id,
+        }, {
+          _id: 1,
+          matchId: 1
+        }, {
+          lean: true,
+          session: session,
+        }),
+        StatModel.find<Stat>({ levelId: id }, {}, { session: session }),
+      ]);
+
       const userIds = stats.filter(stat => stat.complete).map(stat => stat.userId);
-      const levelClone = await LevelModel.findOne<Level>({ _id: id, isDeleted: { $ne: true }, isDraft: false }, {}, { session: session, lean: true }) as Level;
 
       if (!levelClone) {
         throw new Error('Level not found');
       }
 
-      levelClone._id = new mongoose.Types.ObjectId();
+      newLevelId = levelClone._id = new mongoose.Types.ObjectId();
       levelClone.isDraft = true;
 
       await CollectionModel.updateMany({ levels: id, userId: { '$eq': req.userId } }, { $addToSet: { levels: levelClone._id } }, { session: session });
@@ -82,7 +86,6 @@ export default withAuth({ POST: {
         LevelModel.updateOne({ _id: id }, { $set: { isDeleted: true, slug: id } }, { session: session }),
         PlayAttemptModel.updateMany({ levelId: id }, { $set: { isDeleted: true } }, { session: session }),
         RecordModel.updateMany({ levelId: id }, { $set: { isDeleted: true } }, { session: session }),
-        ReviewModel.updateMany({ levelId: id }, { $set: { isDeleted: true } }, { session: session }),
         ReviewModel.updateMany({ levelId: id }, { $set: { isDeleted: true } }, { session: session }),
         StatModel.updateMany({ levelId: id }, { $set: { isDeleted: true } }, { session: session }),
         UserModel.updateMany({ _id: { $in: userIds } }, { $inc: { score: -1 } }, { session: session }),
@@ -115,13 +118,8 @@ export default withAuth({ POST: {
         queueCalcPlayAttempts(levelClone._id, { session: session }),
         queueCalcCreatorCounts(req.user._id, { session: session }),
         queueDiscordWebhook(Discord.LevelsId, `**${req.user.name}** unpublished a level: ${level.name}`, { session: session }),
+        ...matchesToRebroadcast.map(match => requestBroadcastMatch(match.matchId)),
       ]);
-
-      newId = levelClone._id;
-
-      for (const match of allMatchesToRebroadcast as MultiplayerMatch[]) {
-        await requestBroadcastMatch(match.matchId);
-      }
     });
 
     session.endSession();
@@ -132,10 +130,5 @@ export default withAuth({ POST: {
     return res.status(500).json({ error: 'Internal server error' });
   }
 
-  await Promise.all([
-    revalidateUrl(res, RevalidatePaths.CATALOG),
-    revalidateLevel(res, level.slug),
-  ]);
-
-  return res.status(200).json({ updated: true, levelId: newId });
+  return res.status(200).json({ updated: true, levelId: newLevelId });
 });

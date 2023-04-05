@@ -1,8 +1,9 @@
+import FormattedUser from '@root/components/formattedUser';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useContext, useState } from 'react';
 import formattedAuthorNote from '../../../components/formattedAuthorNote';
 import LinkInfo from '../../../components/linkInfo';
 import AddCollectionModal from '../../../components/modal/addCollectionModal';
@@ -11,10 +12,9 @@ import Page from '../../../components/page';
 import Select from '../../../components/select';
 import SelectFilter from '../../../components/selectFilter';
 import Dimensions from '../../../constants/dimensions';
-import { enrichLevels } from '../../../helpers/enrich';
+import { AppContext } from '../../../contexts/appContext';
 import filterSelectOptions, { FilterSelectOption } from '../../../helpers/filterSelectOptions';
 import { logger } from '../../../helpers/logger';
-import useUser from '../../../hooks/useUser';
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
 import { EnrichedCollection } from '../../../models/db/collection';
@@ -53,7 +53,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
-  const collection = await getCollection({ $match: { slug: username + '/' + slugName } });
+  const collection = await getCollection({ $match: { slug: username + '/' + slugName } }, reqUser);
 
   if (!collection) {
     logger.error('CollectionModel.find returned null in pages/collection');
@@ -63,14 +63,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  const enrichedCollectionLevels = await enrichLevels(collection.levels, reqUser);
-  const newCollection = JSON.parse(JSON.stringify(collection));
-
-  newCollection.levels = enrichedCollectionLevels;
-
   return {
     props: {
-      collection: JSON.parse(JSON.stringify(newCollection)),
+      collection: JSON.parse(JSON.stringify(collection)),
     } as CollectionProps
   };
 }
@@ -85,7 +80,7 @@ export default function CollectionPage({ collection }: CollectionProps) {
   const [isAddCollectionOpen, setIsAddCollectionOpen] = useState(false);
   const [isDeleteCollectionOpen, setIsDeleteCollectionOpen] = useState(false);
   const [showFilter, setShowFilter] = useState(FilterSelectOption.All);
-  const { user } = useUser();
+  const { user } = useContext(AppContext);
 
   const getOptions = useCallback(() => {
     if (!collection.levels) {
@@ -135,9 +130,14 @@ export default function CollectionPage({ collection }: CollectionProps) {
       title={collection.name ?? 'Loading...'}
     >
       <div className='flex flex-col gap-2 justify-center'>
-        <h1 className='text-2xl text-center pb-1 pt-3 font-bold'>
-          {collection.name}
-        </h1>
+        <div className='flex flex-row gap-2 text-center justify-center items-center pt-3'>
+          <h1 className='text-2xl  font-bold'>
+            {collection.name}
+          </h1>
+          <div className='flex flex-row gap-2 justify-center items-center'>
+            <span>by</span> <FormattedUser user={collection.userId} />
+          </div>
+        </div>
         {!collection.authorNote ? null :
           <div className='p-2'
             style={{

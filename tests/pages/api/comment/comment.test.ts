@@ -51,7 +51,7 @@ describe('Testing commenting', () => {
       },
     });
   });
-  test('Create a comment', async () => {
+  test('Create a comment on userB', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -90,7 +90,47 @@ describe('Testing commenting', () => {
       },
     });
   });
+  test('Create a second comment on userB', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: TestId.USER_B,
+          },
+          body: {
+            targetModel: 'User',
+            text: 'My comment 2',
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+        expect(response.metadata).toBeDefined();
+        expect(response.metadata.totalRows).toBe(2);
+        expect(response.data).toHaveLength(2);
+        const com = response.data[0];
+
+        expect(com.text).toBe('My comment 2');
+        expect(com.author._id).toBe(TestId.USER);
+      },
+    });
+  });
   let commentId: string;
+  let commentId2: string;
 
   test('Get comments for a user', async () => {
     await testApiHandler({
@@ -116,12 +156,16 @@ describe('Testing commenting', () => {
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        expect(response.totalRows).toBe(1);
+        expect(response.totalRows).toBe(2);
 
         const comment = response.comments[0];
 
         commentId = comment._id;
-        expect(comment.text).toBe('My comment');
+
+        const comment2 = response.comments[1];
+
+        commentId2 = comment2._id;
+        expect(comment.text).toBe('My comment 2');
         expect(comment.author._id).toBe(TestId.USER);
         expect(comment.author.password).toBeUndefined();
       },
@@ -191,11 +235,11 @@ describe('Testing commenting', () => {
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        expect(response.totalRows).toBe(1);
+        expect(response.totalRows).toBe(2);
 
         const comment = response.comments[0];
 
-        expect(comment.text).toBe('My comment');
+        expect(comment.text).toBe('My comment 2');
         expect(comment.author._id).toBe(TestId.USER);
         expect(comment.author.password).toBeUndefined();
         expect(comment._id).toBe(commentId);
@@ -207,7 +251,36 @@ describe('Testing commenting', () => {
       },
     });
   });
-  test('Delete a comment', async () => {
+  test('Delete a comment i did not created (user c tries to delete user A comment)', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'DELETE',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_C),
+          },
+          query: {
+            id: commentId,
+          },
+
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+
+        const response = await res.json();
+
+        expect(response.error).toBe('There was a problem deleting this comment.');
+        expect(res.status).toBe(400);
+      },
+    });
+  });
+  test('Delete a comment i created', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -217,6 +290,37 @@ describe('Testing commenting', () => {
           },
           query: {
             id: commentId,
+          },
+
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+
+        expect(response.data).toHaveLength(1);
+      },
+    });
+  });
+  test('Delete a comment i did not create but is on my profile', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'DELETE',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_B),
+          },
+          query: {
+            id: commentId2,
           },
 
           headers: {

@@ -11,11 +11,15 @@ import { EmailLogModel, UserModel } from '../../../../models/mongoose';
 import { EmailState } from '../../../../models/schemas/emailLogSchema';
 import handler from '../../../../pages/api/internal-jobs/email-digest';
 
-const throwMock = () => {throw new Error('Throwing error as no email should be sent');};
+const throwMock = () => {
+  throw new Error('Throwing error as no email should be sent');
+};
 const acceptMock = () => {
-  return { rejected: [] };};
+  return { rejected: [] };
+};
 const rejectMock = () => {
-  return { rejected: ['Test rejection'], rejectedErrors: ['Test rejection error'] };};
+  return { rejected: ['Test rejection'], rejectedErrors: ['Test rejection error'] };
+};
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const sendMailRefMock: any = { ref: acceptMock };
@@ -76,7 +80,7 @@ describe('Email reactivation', () => {
 
         expect(emailLogs).toHaveLength(3);
         expect(emailLogs[2].state).toBe(EmailState.FAILED);
-        expect(emailLogs[2].error).toBe('rejected Test rejection error');
+        expect(emailLogs[2].error).toBe('rejected Test rejection');
         expect(emailLogs[2].type).toBe(EmailType.EMAIL_7D_REACTIVATE);
         expect(response.emailReactivationFailed).toHaveLength(1);
         expect(response.emailReactivationFailed[0]).toBe('test@gmail.com');

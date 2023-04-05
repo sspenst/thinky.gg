@@ -113,8 +113,7 @@ describe.skip('Testing db transactions behaviors', () => {
   test('Test db transactions promise.all no session', async () => {
     try {
       await Promise.all([doA(), doB(), doFail()]);
-    }
-    catch (err){
+    } catch (err) {
       console.log('error', err);
     }
 

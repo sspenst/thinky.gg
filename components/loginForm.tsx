@@ -9,10 +9,10 @@ import FormTemplate from './formTemplate';
 export default function LoginForm() {
   const { cache } = useSWRConfig();
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const { mutateUser, setShouldAttemptAuth } = useContext(AppContext);
   const [name, setName] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const router = useRouter();
-  const { setShouldAttemptAuth } = useContext(AppContext);
 
   function onSubmit(event: React.FormEvent) {
     toast.dismiss();
@@ -38,10 +38,17 @@ export default function LoginForm() {
           cache.delete(key);
         }
 
+        mutateUser();
         setShouldAttemptAuth(true);
-        // clear session storage
         sessionStorage.clear();
-        router.push('/home');
+        // check if we have a redirect url as query param
+        const redirectUrl = decodeURIComponent(router.query.redirect as string);
+
+        if (redirectUrl && redirectUrl !== 'undefined') {
+          router.push(redirectUrl);
+        } else {
+          router.push('/home');
+        }
       } else {
         throw res.text();
       }

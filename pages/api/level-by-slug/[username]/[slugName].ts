@@ -6,7 +6,7 @@ import { logger } from '../../../../helpers/logger';
 import cleanUser from '../../../../lib/cleanUser';
 import dbConnect from '../../../../lib/dbConnect';
 import { getUserFromToken } from '../../../../lib/withAuth';
-import Level from '../../../../models/db/level';
+import Level, { EnrichedLevel } from '../../../../models/db/level';
 import User from '../../../../models/db/user';
 import { LevelModel } from '../../../../models/mongoose';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../../models/schemas/levelSchema';
@@ -89,6 +89,7 @@ export async function getLevelByUrlPath(username: string, slugName: string, reqU
             archivedTs: 1,
             authorNote: 1,
             calc_difficulty_estimate: 1,
+            calc_playattempts_just_beaten_count: 1,
             ts: 1,
           }
         },
@@ -99,7 +100,7 @@ export async function getLevelByUrlPath(username: string, slugName: string, reqU
       return null;
     }
 
-    const level = levelAgg[0];
+    const level = levelAgg[0] as EnrichedLevel;
 
     cleanUser(level.userId);
     cleanUser(level.archivedBy);

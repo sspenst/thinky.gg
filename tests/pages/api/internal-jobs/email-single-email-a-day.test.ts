@@ -14,7 +14,8 @@ import { EmailState } from '../../../../models/schemas/emailLogSchema';
 import handler from '../../../../pages/api/internal-jobs/email-digest';
 
 const acceptMock = () => {
-  return { rejected: [] };};
+  return { rejected: [] };
+};
 
 const sendMailRefMock = { ref: acceptMock };
 
@@ -75,8 +76,7 @@ describe('Email per day', () => {
             expect(response.emailUnsubscribeSent).toHaveLength(0);
             expect(response.emailDigestSent).toHaveLength(1);
             expect(response.emailReactivationSent).toHaveLength(0);
-          }
-          else if (day === 7) {
+          } else if (day === 7) {
             expect(totalEmailsSent.length).toBe(1); // +1 the reactivation?
             expect(response.emailUnsubscribeSent).toHaveLength(0);
             expect(response.emailReactivationSent).toHaveLength(1);
@@ -86,28 +86,24 @@ describe('Email per day', () => {
               // create a notification on same day as their reactivation email... it should get skipped
               await createNewRecordOnALevelYouBeatNotifications([TestId.USER], TestId.USER_B, TestId.LEVEL, TestId.LEVEL);
             }
-          }
-          else if (day === 8) {
+          } else if (day === 8) {
             expect(totalEmailsSent.length).toBe(2); // +1 the notification daily digest?
             expect(response.emailUnsubscribeSent).toHaveLength(0);
             expect(response.emailDigestSent).toHaveLength(2);
             expect(response.emailReactivationSent).toHaveLength(0);
             // Now let's make the user come back to the site!
             await UserModel.findByIdAndUpdate(TestId.USER, { last_visited_at: TimerUtil.getTs() });
-          }
-          else if (day > 8 && day < 18) {
+          } else if (day > 8 && day < 18) {
             expect(totalEmailsSent.length).toBe(2);
             expect(response.emailUnsubscribeSent).toHaveLength(0);
             expect(response.emailDigestSent).toHaveLength(1);
             expect(response.emailReactivationSent).toHaveLength(0);
-          }
-          else if (day === 18) {
+          } else if (day === 18) {
             expect(totalEmailsSent.length).toBe(3); // +1 the goodbye email too
             expect(response.emailUnsubscribeSent).toHaveLength(1);
             expect(response.emailDigestSent).toHaveLength(1);
             expect(response.emailReactivationSent).toHaveLength(0);
-          }
-          else if (day > 19) {
+          } else if (day > 19) {
             expect(totalEmailsSent.length).toBe(3);
             expect(response.emailUnsubscribeSent).toHaveLength(0);
             expect(response.emailDigestSent).toHaveLength(1);

@@ -34,6 +34,7 @@ export enum BlockFilterMask {
 export interface SearchQuery extends ParsedUrlQuery {
   block_filter?: string;
   difficulty_filter?: string;
+  disable_count?: string;
   max_steps?: string;
   min_steps?: string;
   num_results?: string;
@@ -47,6 +48,7 @@ export interface SearchQuery extends ParsedUrlQuery {
   sort_by: string;
   sort_dir?: string;
   time_range: string;
+
 }
 
 const DefaultQuery = {
@@ -77,7 +79,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }
   }
 
-  const query = await doQuery(searchQuery, reqUser?._id);
+  const query = await doQuery(searchQuery, reqUser);
 
   if (!query) {
     throw new Error('Error querying Levels');
@@ -204,7 +206,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
     {
       id: 'calc_difficulty_estimate',
       name: 'Difficulty',
-      selector: (row: EnrichedLevel) => getFormattedDifficulty(row.calc_difficulty_estimate, row.calc_playattempts_unique_users_count),
+      selector: (row: EnrichedLevel) => getFormattedDifficulty(row.calc_difficulty_estimate, row._id.toString(), row.calc_playattempts_unique_users_count),
       ignoreRowClick: true,
       sortable: true,
       allowOverflow: true,
@@ -318,10 +320,35 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
       </div>
       {reqUser && (
         <div className='flex items-center justify-center mb-1' role='group'>
-          <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onPersonalFilterClick} selected={query.show_filter === FilterSelectOption.HideWon} value={FilterSelectOption.HideWon} />
-          <FilterButton element={<>{'Show Won'}</>} onClick={onPersonalFilterClick} selected={query.show_filter === FilterSelectOption.ShowWon} value={FilterSelectOption.ShowWon} />
-          <FilterButton element={<>{'Show In Progress'}</>} onClick={onPersonalFilterClick} selected={query.show_filter === FilterSelectOption.ShowInProgress} value={FilterSelectOption.ShowInProgress} />
-          <FilterButton element={<>{'Show Unattempted'}</>} last={true} onClick={onPersonalFilterClick} selected={query.show_filter === FilterSelectOption.ShowUnattempted} value={FilterSelectOption.ShowUnattempted} />
+          <FilterButton
+            element={<>{'Hide Won'}</>}
+            first={true}
+            onClick={onPersonalFilterClick}
+            selected={query.show_filter === FilterSelectOption.HideWon}
+            value={FilterSelectOption.HideWon}
+          />
+          <FilterButton
+            element={<>{'Show Won'}</>}
+            onClick={onPersonalFilterClick}
+            proRequired={true}
+            selected={query.show_filter === FilterSelectOption.ShowWon}
+            value={FilterSelectOption.ShowWon}
+          />
+          <FilterButton
+            element={<>{'Show In Progress'}</>}
+            onClick={onPersonalFilterClick}
+            proRequired={true}
+            selected={query.show_filter === FilterSelectOption.ShowInProgress}
+            value={FilterSelectOption.ShowInProgress}
+          />
+          <FilterButton
+            element={<>{'Show Unattempted'}</>}
+            last={true}
+            onClick={onPersonalFilterClick}
+            proRequired={true}
+            selected={query.show_filter === FilterSelectOption.ShowUnattempted}
+            value={FilterSelectOption.ShowUnattempted}
+          />
         </div>
       )}
       <div className='flex items-center justify-center' role='group'>
@@ -339,6 +366,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
           }
           first={true}
           onClick={onBlockFilterClick}
+          proRequired={true}
           selected={(Number(query.block_filter) & BlockFilterMask.BLOCK) !== BlockFilterMask.NONE}
           transparent={true}
           value={BlockFilterMask.BLOCK.toString()}
@@ -356,6 +384,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
             }} />
           }
           onClick={onBlockFilterClick}
+          proRequired={true}
           selected={(Number(query.block_filter) & BlockFilterMask.RESTRICTED) !== BlockFilterMask.NONE}
           transparent={true}
           value={BlockFilterMask.RESTRICTED.toString()}
@@ -374,6 +403,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
           }
           last={true}
           onClick={onBlockFilterClick}
+          proRequired={true}
           selected={(Number(query.block_filter) & BlockFilterMask.HOLE) !== BlockFilterMask.NONE}
           transparent={true}
           value={BlockFilterMask.HOLE.toString()}
@@ -518,14 +548,13 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
         defaultSortFieldId={query.sort_by}
         dense
         noDataComponent={
-          <div className='p-3'>No records to display...
-            {query.time_range === TimeRange[TimeRange.All] ? (
+          <div className='flex flex-col items-center p-3 gap-3'>
+            <span>No records to display...</span>
+            {query.time_range !== TimeRange[TimeRange.All] &&
               <span>
-              </span>) : (
-              <span>
-                {' '}Try <button className='underline' onClick={() => {onTimeRangeClick(TimeRange[TimeRange.All]);}}>expanding</button> time range
+                Try <button className='underline' onClick={() => {onTimeRangeClick(TimeRange[TimeRange.All]);}}>expanding</button> time range
               </span>
-            )}
+            }
           </div>
         }
         onChangePage={(pg: number) => {

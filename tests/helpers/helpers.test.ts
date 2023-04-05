@@ -100,13 +100,13 @@ describe('helpers/*.ts', () => {
       {
         $set:
         {
-          last_visited_at: TimerUtil.getTs() - 15 * 60 * 2
+          last_visited_at: TimerUtil.getTs() - 5 * 60 * 2
         },
       }
     ) as User;
 
     expect(isOnline(user)).toBe(true);
-    user.last_visited_at = TimerUtil.getTs() - 15 * 60 * 2;
+    user.last_visited_at = TimerUtil.getTs() - 5 * 60 * 2;
 
     expect(isOnline(user)).toBe(false);
     user.last_visited_at = undefined;

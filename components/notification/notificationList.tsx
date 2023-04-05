@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import React, { useCallback, useContext } from 'react';
 import toast from 'react-hot-toast';
-import { PageContext } from '../../contexts/pageContext';
+import { AppContext } from '../../contexts/appContext';
 import Notification from '../../models/db/notification';
 import FormattedNotification from './formattedNotification';
 import styles from './NotificationList.module.css';
@@ -12,7 +12,7 @@ interface NotificationListProps {
 }
 
 export default function NotificationList({ notifications, setNotifications }: NotificationListProps) {
-  const { mutateUser } = useContext(PageContext);
+  const { mutateUser } = useContext(AppContext);
 
   const putNotification = useCallback((notifications: Notification[], read: boolean) => {
     fetch('/api/notification', {
@@ -80,7 +80,7 @@ export default function NotificationList({ notifications, setNotifications }: No
   return (
     <div className='px-3 py-2'>
       <div className='flex flex-cols-2 justify-between gap-2'>
-        <h2 className="focus:outline-none text-xl font-semibold">Notifications</h2>
+        <h2 className='focus:outline-none text-xl font-semibold'>Notifications</h2>
         <button
           disabled={!anyUnread}
           className={classNames(

@@ -15,7 +15,7 @@ interface StarProps {
 export function Star({ empty, half }: StarProps) {
   return (
     <svg
-      className={'w-5 h-5 star-svg text-yellow-400'}
+      className={'w-5 h-5 inline text-yellow-400'}
       fill='currentColor'
       style={{
         paddingLeft: 2,
@@ -79,7 +79,7 @@ export default function FormattedReview({ hideBorder, level, onDeleteClick, onEd
         }}
       >
         <div className='flex gap-x-2 items-center flex-wrap'>
-          {user && <FormattedUser user={user} />}
+          <FormattedUser user={user} />
           <span className='text-sm' suppressHydrationWarning style={{
             color: 'var(--color-gray)',
           }}>{getFormattedDate(review.ts)}</span>

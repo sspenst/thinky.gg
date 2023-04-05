@@ -14,6 +14,7 @@ import { enrichMultiplayerMatch, generateMatchLog, SKIP_MATCH_LEVEL_ID } from '.
 import { finishMatch, getAllMatches } from '.';
 
 export async function abortMatch(matchId: string, userId: Types.ObjectId) {
+  await requestClearBroadcastMatchSchedule(matchId);
   const log = generateMatchLog(MatchAction.ABORTED, {
     userId: userId,
   });
@@ -202,12 +203,16 @@ export async function generateLevels(
     minSteps?: number;
     maxSteps?: number;
     minLaplace?: number;
+    maxWidth?: number;
+    maxHeight?: number;
   },
   levelCount: number,
 ) {
   // generate a new level based on criteria...
   const MIN_STEPS = options.minSteps || 8;
   const MAX_STEPS = options.maxSteps || 100;
+  const MAX_WIDTH = options.maxWidth || 25;
+  const MAX_HEIGHT = options.maxHeight || 25;
   const MIN_REVIEWS = 3;
   const MIN_LAPLACE = options.minLaplace || 0.3;
   const [difficultyRangeMin] =
@@ -237,6 +242,12 @@ export async function generateLevels(
         calc_reviews_score_laplace: {
           $gte: MIN_LAPLACE,
         },
+        width: {
+          $lte: MAX_WIDTH,
+        },
+        height: {
+          $lte: MAX_HEIGHT,
+        }
       },
     },
     {
@@ -320,8 +331,7 @@ export default withAuth(
         await requestBroadcastMatch(matchId as string);
 
         return res.status(200).json({ success: true });
-      }
-      else if (action === MatchAction.JOIN) {
+      } else if (action === MatchAction.JOIN) {
         // joining this match... Should also start the match!
         const involvedMatch = await MultiplayerMatchModel.findOne<MultiplayerMatch>(
           {

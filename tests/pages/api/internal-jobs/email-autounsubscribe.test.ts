@@ -11,9 +11,12 @@ import { EmailLogModel, UserConfigModel } from '../../../../models/mongoose';
 import { EmailState } from '../../../../models/schemas/emailLogSchema';
 import handler from '../../../../pages/api/internal-jobs/email-digest';
 
-const throwMock = () => {throw new Error('Throwing error as no email should be sent');};
+const throwMock = () => {
+  throw new Error('Throwing error as no email should be sent');
+};
 const acceptMock = () => {
-  return { rejected: [] };};
+  return { rejected: [] };
+};
 
 const sendMailRefMock = { ref: acceptMock };
 
@@ -75,14 +78,12 @@ describe('Email auto unsubscribe', () => {
             expect(response.emailDigestSent).toHaveLength(2);
             expect(response.emailDigestSent[0]).toBe('test@gmail.com');
             expect(response.emailReactivationSent).toHaveLength(0);
-          }
-          else if (day === 7) {
+          } else if (day === 7) {
             expect(totalEmailsSent.length).toBe(day + 1);
             expect(response.emailUnsubscribeSent).toHaveLength(0);
             expect(response.emailReactivationSent).toHaveLength(1);
             expect(response.emailReactivationSent[0]).toBe('test@gmail.com');
-          }
-          else if (day > 7 && day < 10) {
+          } else if (day > 7 && day < 10) {
             expect(totalEmailsSent.length).toBe(day + 1);
             expect(response.emailUnsubscribeSent).toHaveLength(0);
             expect(response.emailDigestSent).toHaveLength(2);
@@ -93,8 +94,7 @@ describe('Email auto unsubscribe', () => {
               // mock an error in email sending...
               sendMailRefMock.ref = throwMock;
             }
-          }
-          else if (day === 10) {
+          } else if (day === 10) {
             const [totalEmailsPending, totalEmailsFailed] = await Promise.all([EmailLogModel.find({ userId: TestId.USER, state: EmailState.PENDING })
               , EmailLogModel.find({ userId: TestId.USER, state: EmailState.FAILED })]);
 
@@ -110,8 +110,7 @@ describe('Email auto unsubscribe', () => {
             expect(response.emailDigestFailed).toHaveLength(2); // because the unsubscribe failed - it'll try to send the digest again.. and the mock is still pointing to the failure
             expect(response.emailReactivationSent).toHaveLength(0);
             sendMailRefMock.ref = acceptMock;
-          }
-          else if (day === 11) {
+          } else if (day === 11) {
             expect(totalEmailsSent.length).toBe(day); // -1 because we are not sending the email on day 10 due to mocked error
             expect(response.error).toBeUndefined();
             expect(res.status).toBe(200);
@@ -121,8 +120,7 @@ describe('Email auto unsubscribe', () => {
             expect(response.emailDigestSent).toHaveLength(1);
             expect(response.emailReactivationSent).toHaveLength(0);
             // hopefully we tried again to send email
-          }
-          else if (day > 11) {
+          } else if (day > 11) {
             expect(totalEmailsSent.length).toBe(11);
             expect(response.emailUnsubscribeSent).toHaveLength(0);
             expect(response.emailDigestSent).toHaveLength(0);

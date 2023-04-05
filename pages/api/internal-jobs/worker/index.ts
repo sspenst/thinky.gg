@@ -187,20 +187,17 @@ async function processQueueMessage(queueMessage: QueueMessage) {
       log = `${e.message}`;
       error = true;
     }
-  }
-  else if (queueMessage.type === QueueMessageType.REFRESH_INDEX_CALCULATIONS) {
+  } else if (queueMessage.type === QueueMessageType.REFRESH_INDEX_CALCULATIONS) {
     const { levelId } = JSON.parse(queueMessage.message) as { levelId: string };
 
     log = `refreshIndexCalcs for ${levelId}`;
     await refreshIndexCalcs(new Types.ObjectId(levelId));
-  }
-  else if (queueMessage.type === QueueMessageType.CALC_PLAY_ATTEMPTS) {
+  } else if (queueMessage.type === QueueMessageType.CALC_PLAY_ATTEMPTS) {
     const { levelId } = JSON.parse(queueMessage.message) as { levelId: string };
 
     log = `calcPlayAttempts for ${levelId}`;
     await calcPlayAttempts(new Types.ObjectId(levelId));
-  }
-  else if (queueMessage.type === QueueMessageType.CALC_CREATOR_COUNTS) {
+  } else if (queueMessage.type === QueueMessageType.CALC_CREATOR_COUNTS) {
     const { userId } = JSON.parse(queueMessage.message) as { userId: string };
 
     log = `calcCreatorCounts for ${userId}`;

@@ -11,9 +11,12 @@ import { EmailLogModel, NotificationModel, UserConfigModel, UserModel } from '..
 import { EmailState } from '../../../../models/schemas/emailLogSchema';
 import handler from '../../../../pages/api/internal-jobs/email-digest';
 
-const throwMock = () => {throw new Error('Mock email error');};
+const throwMock = () => {
+  throw new Error('Mock email error');
+};
 const acceptMock = () => {
-  return { rejected: [] };};
+  return { rejected: [] };
+};
 
 const sendMailRefMock = { ref: acceptMock };
 
@@ -62,6 +65,50 @@ describe('Email digest', () => {
       },
     });
   });
+  test('Run it with limit 1 and when nodemailer throws error should fail gracefully', async () => {
+    // setup
+    await dbConnect();
+    sendMailRefMock.ref = throwMock;
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
+    jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
+
+    await createNewRecordOnALevelYouBeatNotifications([TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah');
+
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequest = {
+          method: 'GET',
+          query: {
+            secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST,
+            limit: '1'
+          },
+          body: {
+
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequest;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.emailDigestFailed).toHaveLength(1);
+        expect(response.emailDigestFailed[0]).toBe('test@gmail.com');
+        expect(res.status).toBe(200);
+
+        const emailLogs = await EmailLogModel.find({}, {}, { sort: { createdAt: -1 } });
+
+        expect(emailLogs).toHaveLength(1);
+        expect(emailLogs[0].state).toBe(EmailState.FAILED);
+        expect(emailLogs[0].error).toBe('Error: Mock email error');
+      },
+    });
+  }, 10000);
   test('Run it when nodemailer throws error should fail gracefully', async () => {
     // setup
     await dbConnect();
@@ -77,7 +124,7 @@ describe('Email digest', () => {
         const req: NextApiRequest = {
           method: 'GET',
           query: {
-            secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
+            secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST,
           },
           body: {
 
@@ -99,7 +146,7 @@ describe('Email digest', () => {
 
         const emailLogs = await EmailLogModel.find({}, {}, { sort: { createdAt: -1 } });
 
-        expect(emailLogs).toHaveLength(2);
+        expect(emailLogs).toHaveLength(3);
         expect(emailLogs[0].state).toBe(EmailState.FAILED);
         expect(emailLogs[0].error).toBe('Error: Mock email error');
       },

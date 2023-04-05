@@ -1,50 +1,49 @@
-import { GetServerSidePropsContext } from 'next';
-import React, { useCallback, useEffect, useState } from 'react';
-import toast from 'react-hot-toast';
-import LevelTable from '../../components/levelTable';
+import { GetServerSidePropsContext, NextApiRequest } from 'next';
+import React from 'react';
+import CreateHome from '../../components/createHome';
 import Page from '../../components/page';
-import redirectToLogin from '../../helpers/redirectToLogin';
+import { getUserFromToken } from '../../lib/withAuth';
 import Level from '../../models/db/level';
+import User from '../../models/db/user';
+import { LevelModel } from '../../models/mongoose';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
-  return await redirectToLogin(context);
+  const token = context.req?.cookies?.token;
+  const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
+
+  if (!reqUser) {
+    return {
+      redirect: {
+        destination: '/login' + (context.resolvedUrl ? '?redirect=' + encodeURIComponent(context.resolvedUrl) : ''),
+        permanent: false,
+      },
+    };
+  }
+
+  const levels = await LevelModel.find<Level>({
+    isDeleted: { $ne: true },
+    isDraft: true,
+    userId: reqUser._id,
+  }).sort({ name: 1 });
+
+  return {
+    props: {
+      levels: JSON.parse(JSON.stringify(levels)),
+      user: JSON.parse(JSON.stringify(reqUser)),
+    },
+  };
+}
+
+export interface CreatePageProps {
+  levels: Level[];
+  user: User;
 }
 
 /* istanbul ignore next */
-export default function Create() {
-  const [levels, setLevels] = useState<Level[]>();
-
-  const getLevels = useCallback(() => {
-    fetch('/api/levels', {
-      method: 'GET',
-    }).then(async res => {
-      if (res.status === 200) {
-        setLevels(await res.json());
-      } else {
-        throw res.text();
-      }
-    }).catch(err => {
-      console.trace(err);
-      toast.dismiss();
-      toast.error('Error fetching levels');
-    });
-  }, []);
-
-  useEffect(() => {
-    getLevels();
-  }, [getLevels]);
-
+export default function Create({ levels, user }: CreatePageProps) {
   return (
     <Page title={'Create'}>
-      <div className='flex flex-col gap-5 m-5'>
-        <div className='text-center'>
-          Welcome to the Create page! Here you can create levels. After creating a level, click on its name to start editing. Once you have finished designing your level, click the &apos;Test&apos; button to set the level&apos;s least moves, then click publish to make your level available for everyone to play. You can unpublish or delete a level at any time.
-        </div>
-        {!levels ?
-          <div className='flex justify-center'>Loading levels...</div> :
-          <LevelTable getLevels={getLevels} levels={levels} />
-        }
-      </div>
+      <CreateHome levels={levels} user={user} />
     </Page>
   );
 }

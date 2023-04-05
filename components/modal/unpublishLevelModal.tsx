@@ -1,6 +1,7 @@
+import { useRouter } from 'next/router';
 import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
-import { PageContext } from '../../contexts/pageContext';
+import { AppContext } from '../../contexts/appContext';
 import Level from '../../models/db/level';
 import Modal from '.';
 
@@ -8,13 +9,12 @@ interface UnpublishLevelModalProps {
   closeModal: () => void;
   isOpen: boolean;
   level: Level;
-  onUnpublish: () => void;
-
 }
 
-export default function UnpublishLevelModal({ closeModal, isOpen, level, onUnpublish }: UnpublishLevelModalProps) {
+export default function UnpublishLevelModal({ closeModal, isOpen, level }: UnpublishLevelModalProps) {
   const [isUnpublishing, setIsUnpublishing] = useState(false);
-  const { mutateUser } = useContext(PageContext);
+  const { mutateUser } = useContext(AppContext);
+  const router = useRouter();
 
   function onConfirm() {
     setIsUnpublishing(true);
@@ -24,14 +24,17 @@ export default function UnpublishLevelModal({ closeModal, isOpen, level, onUnpub
     fetch(`/api/unpublish/${level._id}`, {
       method: 'POST',
       credentials: 'include',
-    }).then(res => {
+    }).then(async res => {
       if (res.status === 200) {
         closeModal();
-        onUnpublish();
         mutateUser();
+
+        const { levelId } = await res.json();
 
         toast.dismiss();
         toast.success('Unpublished');
+
+        router.replace(`/edit/${levelId}`);
       } else {
         throw res.text();
       }
