@@ -101,13 +101,13 @@ export default function CheckpointsModal({ closeModal, isOpen }: CheckpointsModa
       title={'Checkpoints'}
     >
       {isPro(user) ?
-        <div className='flex flex-col gap-4 w-80 max-w-full'>
+        <div className='flex flex-col gap-1 w-80 md:w-auto max-w-full'>
           <span className=''>
-            Keyboard shortcuts for slot N:<br />
-            Save: Shift + N<br />
-            Load: N
+            Keyboard shortcuts for slots 0-9:<br />
+            Save: Shift + 0-9<br />
+            Load: 0-9
           </span>
-          <div className='flex flex-col gap-1 w-full justify-center'>
+          <div className='flex flex-col md:flex-row gap-1 justify-center'>
             {checkpoints?.map((checkpoint, i) => (
               <CheckpointImage
                 checkpoint={checkpoint}
