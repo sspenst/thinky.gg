@@ -1,4 +1,5 @@
 import { createNewLevelAddedToCollectionNotification } from '@root/helpers/notificationHelper';
+import Collection from '@root/models/db/collection';
 import { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidObjectId } from '../../../../helpers/apiWrapper';
@@ -97,9 +98,9 @@ export default withAuth({
       lean: true,
     });
 
-    const alreadyInIds = alreadyIn.map((c) => c._id.toString());
+    const alreadyInIds = alreadyIn.map((c: Collection) => c._id.toString());
 
-    const notIn = collectionIds.filter((c) => !alreadyInIds.includes(c));
+    const notIn = collectionIds.filter((c: string) => !alreadyInIds.includes(c));
 
     const promises = [
       CollectionModel.updateMany({

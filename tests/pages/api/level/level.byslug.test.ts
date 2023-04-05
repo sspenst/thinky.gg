@@ -1,3 +1,4 @@
+import NotificationType from '@root/constants/notificationType';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -7,7 +8,7 @@ import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { initLevel } from '../../../../lib/initializeLocalDb';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Level from '../../../../models/db/level';
-import { LevelModel } from '../../../../models/mongoose';
+import { LevelModel, NotificationModel } from '../../../../models/mongoose';
 import modifyLevelHandler from '../../../../pages/api/level/[id]';
 import createLevelHandler from '../../../../pages/api/level/index';
 import getLevelBySlugHandler from '../../../../pages/api/level-by-slug/[username]/[slugName]';
@@ -96,7 +97,7 @@ describe('Testing slugs for levels', () => {
           },
           body: {
             name: 'I\'m happy and I know it! Pt. </1]>',
-            collectionIds: [TestId.COLLECTION],
+            collectionIds: [TestId.COLLECTION, TestId.COLLECTION_2],
             authorNote: 'I\'m a nice little note OK.',
           },
           query: {
@@ -115,6 +116,14 @@ describe('Testing slugs for levels', () => {
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
+
+        // check to see if we have a notification
+        const notifs = await NotificationModel.find({ type: NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION });
+
+        expect(notifs.length).toBe(1);
+        expect(notifs[0].userId.toString()).toBe(TestId.USER);
+        expect(notifs[0].source?._id.toString()).toBe(level_id_1);
+        expect(notifs[0].target?._id.toString()).toBe(TestId.COLLECTION_2);
       },
     });
     await testApiHandler({
