@@ -1,5 +1,5 @@
+import { ProStatsCommunityStepData } from '@root/contexts/levelContext';
 import { ValidObjectId } from '@root/helpers/apiWrapper';
-import User from '@root/models/db/user';
 import mongoose from 'mongoose';
 import { NextApiResponse } from 'next';
 import ProStatsLevelType from '../../../../../constants/proStatsLevelType';
@@ -39,25 +39,25 @@ async function getCommunityStepData(levelId: string, onlyLeastMoves: boolean) {
               ...USER_DEFAULT_PROJECTION
             }
           },
-          // add toe user the ts from statmodel
         ]
       },
     },
-    // let's merge the user into the statmodel
     {
-      // bring the ts from the statmodel into the user
+      $unwind: {
+        path: '$user',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
       $addFields: {
-        user: {
-          statTs: '$ts',
-        }
+        statTs: '$ts',
       }
     },
     {
       $group: {
         _id: '$moves',
         count: { $sum: 1 },
-        userIds: { $push: '$user' },
-
+        users: { $push: '$$ROOT' },
       },
     },
     {
@@ -70,19 +70,13 @@ async function getCommunityStepData(levelId: string, onlyLeastMoves: boolean) {
         _id: 0,
         moves: '$_id',
         count: 1,
-        users: { $slice: ['$userIds', 5] },
+        users: { $slice: ['$users', 5] },
       },
     },
-  ]);
+  ]) as ProStatsCommunityStepData[];
 
   // for each user run cleanUser
-  agg.forEach((item) => {
-    item.users = item.users?.map((user: User[]) => {
-      cleanUser(user[0]);
-
-      return user[0];
-    });
-  });
+  agg.forEach(item => item.users.forEach(userAndStatTs => cleanUser(userAndStatTs.user)));
 
   if (onlyLeastMoves) {
     while (agg.length > 1) {

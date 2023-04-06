@@ -100,12 +100,12 @@ export default function LevelInfoSolves() {
     }
 
     for (let j = 0; j < solve.users.length; j++) {
-      const user = solve.users[j];
+      const userAndStatTs = solve.users[j];
 
       solveDivs.push(
         <div
           className='flex gap-2 items-center'
-          key={`solve-${solve.moves}-${user._id.toString()}`}
+          key={`solve-${solve.moves}-${j}`}
         >
           <span
             className='font-bold w-11 text-right'
@@ -119,11 +119,11 @@ export default function LevelInfoSolves() {
           </span>
           <StyledTooltip id='steps' />
           <div className='truncate'>
-            <FormattedUser size={Dimensions.AvatarSizeSmall} user={user} />
+            <FormattedUser size={Dimensions.AvatarSizeSmall} user={userAndStatTs.user} />
           </div>
           <span className='text-sm whitespace-nowrap' style={{
             color: 'var(--color-gray)',
-          }}>{getFormattedDate(user.statTs)}</span>
+          }}>{getFormattedDate(userAndStatTs.statTs)}</span>
         </div>
       );
     }

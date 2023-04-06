@@ -26,7 +26,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     props: {
       // pass user here instead of using page context so that the page doesn't flash before retrieving user
       user: JSON.parse(JSON.stringify(reqUser)),
-    } as { user: User },
+    } as HomeProps,
   };
 }
 
