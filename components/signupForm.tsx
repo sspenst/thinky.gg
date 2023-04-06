@@ -6,7 +6,7 @@ import { useSWRConfig } from 'swr';
 import { AppContext } from '../contexts/appContext';
 import FormTemplate from './formTemplate';
 
-export default function SignupForm() {
+export default function SignupForm({ recaptchaPublicKey }: {recaptchaPublicKey?: string}) {
   const { cache } = useSWRConfig();
   const [email, setEmail] = useState<string>('');
   const { mutateUser, setShouldAttemptAuth } = useContext(AppContext);
@@ -131,12 +131,12 @@ export default function SignupForm() {
           </label>
           <input onChange={e => setPassword2(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline' id='password2' type='password' placeholder='******************' />
         </div>
-
+        { recaptchaPublicKey &&
         <ReCAPTCHA
-          sitekey='6LeC8M4kAAAAAPQpnrJNT8ebwCDLr1UO1YW_CiJ6'
+          sitekey={recaptchaPublicKey || ''}
           onChange={onRecaptchaChange}
         />
-
+        }
         <div className='flex items-center justify-between gap-1 pb-3'>
           <input type='checkbox' id='terms_agree_checkbox' required />
           <label htmlFor='terms_agree_checkbox' className='text-xs p-1'>
