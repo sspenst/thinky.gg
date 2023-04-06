@@ -25,15 +25,19 @@ export default apiWrapper({ POST: {
   const { email, name, password, tutorialCompletedAt, recaptchaToken } = req.body;
 
   await dbConnect();
-  const recaptchaResponse = await fetch('https://www.google.com/recaptcha/api/siteverify', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: `secret=${process.env.RECAPTCHA_SECRET}&response=${recaptchaToken}`,
-  });
-  const recaptchaData = await recaptchaResponse.json();
+  const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET;
 
-  if (!recaptchaResponse.ok || !recaptchaData?.success) {
-    return res.status(400).json({ error: 'Error validating recaptcha' });
+  if (RECAPTCHA_SECRET) {
+    const recaptchaResponse = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `secret=${RECAPTCHA_SECRET}&response=${recaptchaToken}`,
+    });
+    const recaptchaData = await recaptchaResponse.json();
+
+    if (!recaptchaResponse.ok || !recaptchaData?.success) {
+      return res.status(400).json({ error: 'Error validating recaptcha' });
+    }
   }
 
   const trimmedEmail = email.trim();
