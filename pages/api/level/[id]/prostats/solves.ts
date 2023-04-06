@@ -1,3 +1,4 @@
+import { UserAndStatTs } from '@root/contexts/levelContext';
 import { ValidNumber, ValidObjectId } from '@root/helpers/apiWrapper';
 import mongoose from 'mongoose';
 import { NextApiResponse } from 'next';
@@ -42,27 +43,25 @@ async function getSolvesBySteps(levelId: string, skip: number, steps: number) {
       },
     },
     {
+      $unwind: {
+        path: '$user',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
       $addFields: {
-        user: {
-          statTs: '$ts',
-        }
+        statTs: '$ts',
       }
     },
     {
-      $unwind: {
-        path: '$user',
-        // NB: deleted users are hidden
-        // preserveNullAndEmptyArrays: true,
-      },
-    },
-    {
-      $replaceRoot: {
-        newRoot: '$user',
-      },
-    },
-  ]);
+      $project: {
+        statTs: 1,
+        user: 1,
+      }
+    }
+  ]) as UserAndStatTs[];
 
-  agg.forEach(user => cleanUser(user));
+  agg.forEach(userAndStatTs => cleanUser(userAndStatTs.user));
 
   return agg;
 }

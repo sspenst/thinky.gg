@@ -9,7 +9,7 @@ interface FormattedUserProps {
   noLinks?: boolean;
   onClick?: () => void;
   size?: number;
-  user?: User;
+  user?: User | null;
 }
 
 export default function FormattedUser({ noLinks, onClick, size, user }: FormattedUserProps) {
