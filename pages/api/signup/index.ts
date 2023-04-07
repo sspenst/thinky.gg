@@ -40,7 +40,7 @@ export default apiWrapper({ POST: {
     const recaptchaData = await recaptchaResponse.json();
 
     if (!recaptchaResponse.ok || !recaptchaData?.success) {
-      return res.status(400).json({ error: 'Error validating recaptcha' });
+      return res.status(400).json({ error: 'Error validating recaptcha [Status: ' + recaptchaResponse.status + ']' });
     }
   }
 

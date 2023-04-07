@@ -11,8 +11,10 @@ import loginUserHandler from '../../../../pages/api/login/index';
 import signupUserHandler from '../../../../pages/api/signup/index';
 
 beforeAll(async () => {
-  process.env.RECAPTCHA_SECRET = '';
   await dbConnect();
+});
+beforeEach(async () => {
+  process.env.RECAPTCHA_SECRET = '';
 });
 afterAll(async() => {
   await dbDisconnect();
@@ -30,15 +32,20 @@ jest.mock('nodemailer', () => ({
 describe('pages/api/collection/index.ts', () => {
   const cookie = getTokenCookieValue(TestId.USER);
 
-  test('Signup on non POST endpoint', async () => {
+  test('Creating a user but not passing recaptcha should fail with 400', async () => {
+    process.env.RECAPTCHA_SECRET = 'defined';
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
-          method: 'GET',
+          method: 'POST',
           cookies: {
             token: cookie,
+          },
+          body: {
+            name: 'test_new',
+            email: 'test@gmail.com',
+            password: 'password',
           },
           headers: {
             'content-type': 'application/json',
@@ -51,8 +58,44 @@ describe('pages/api/collection/index.ts', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Method not allowed');
-        expect(res.status).toBe(405);
+        expect(response.error).toBe('Missing recaptcha token');
+        expect(res.status).toBe(400);
+      },
+    });
+  });
+  test('Creating a user, pass recaptcha where fetch fails', async () => {
+    process.env.RECAPTCHA_SECRET = 'defined';
+
+    // mock fetch failing with 400
+    fetchMock.mockResponseOnce(JSON.stringify({}), { status: 408 });
+
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: cookie,
+          },
+          body: {
+            name: 'test_new',
+            email: 'test@gmail.com',
+            password: 'password',
+            recaptchaToken: 'token',
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await signupUserHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Error validating recaptcha [Status: 408]');
+        expect(res.status).toBe(400);
       },
     });
   });
@@ -134,8 +177,8 @@ describe('pages/api/collection/index.ts', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(res.status).toBe(401);
         expect(response.error).toBe('Email already exists');
+        expect(res.status).toBe(401);
       },
     });
   });
