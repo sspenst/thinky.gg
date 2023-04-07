@@ -1,6 +1,5 @@
 import Level from '@root/models/db/level';
 import User from '@root/models/db/user';
-import collection from '@root/pages/api/collection';
 import { QueryOptions, SaveOptions, Types } from 'mongoose';
 import AchievementType from '../constants/achievementType';
 import GraphType from '../constants/graphType';

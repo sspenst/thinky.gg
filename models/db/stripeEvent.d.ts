@@ -4,6 +4,7 @@ export interface StripeEvent {
   created: number;
   customerId: string;
   data: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     object: Record<string, any>;
   };
   error: string;
