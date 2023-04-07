@@ -2,7 +2,7 @@ import { PageContext } from '@root/contexts/pageContext';
 import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import Control from '../../models/control';
-import Level from '../../models/db/level';
+import Level, { EnrichedLevel } from '../../models/db/level';
 import FormattedUser from '../formattedUser';
 import CheckpointsModal from '../modal/checkpointsModal';
 import Block from './block';
@@ -16,7 +16,7 @@ interface GameLayoutProps {
   controls: Control[];
   gameState: GameState;
   hideSidebar?: boolean;
-  level: Level;
+  level: EnrichedLevel;
   matchId?: string;
   onCellClick: (x: number, y: number) => void;
 }
@@ -44,7 +44,11 @@ export default function GameLayout({ controls, gameState, hideSidebar, level, ma
                 <path strokeLinecap='round' strokeLinejoin='round' d='M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5' />
               </svg>
             </button>
-            <h1>{level.name}</h1>
+            <h1
+              style={{
+                color: level.userMoves ? (level.userMoves === level.leastMoves ? 'var(--color-complete)' : 'var(--color-incomplete)') : 'var(--color)',
+              }}
+            >{level.name}</h1>
             by
             <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.userId} />
           </div>

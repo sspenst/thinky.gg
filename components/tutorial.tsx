@@ -195,7 +195,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
       <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='currentColor' className='bi bi-arrow-left-short' viewBox='0 0 16 16'>
         <path fillRule='evenodd' d='M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5z' />
       </svg>
-      <span className='pr-2'>
+      <span className='pr-2 self-center'>
         Prev
       </span>
     </div>,
@@ -207,11 +207,32 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
     'control-next',
     () => setTutorialStepIndex(i => i + 1),
     <div className='flex justify-center'>
-      <span className='pl-2'>
+      <span className='pl-2 self-center'>
         Next
       </span>
       <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='currentColor' className='bi bi-arrow-right-short' viewBox='0 0 16 16'>
         <path fillRule='evenodd' d='M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z' />
+      </svg>
+    </div>,
+    disabled,
+    !disabled,
+  ), []);
+
+  const skipControl = useCallback((disabled = false) => new Control(
+    'control-skip',
+    () => {
+      if (confirm('Are you sure you want to skip the tutorial?')) {
+        setTutorialStepIndex((i) => {
+          return getTutorialSteps().length - 1;
+        });
+      }
+    },
+    <div className='flex justify-center'>
+      <span className='pl-2 align-middle text-center justify-center self-center'>
+        Skip
+      </span>
+      <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='currentColor' className='bi bi-skip-forward pl-2' viewBox='0 0 16 16'>
+        <path d='M15.5 3.5a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-1 0V8.752l-6.267 3.636c-.52.302-1.233-.043-1.233-.696v-2.94l-6.267 3.636C.713 12.69 0 12.345 0 11.692V4.308c0-.653.713-.998 1.233-.696L7.5 7.248v-2.94c0-.653.713-.998 1.233-.696L15 7.248V4a.5.5 0 0 1 .5-.5zM1 4.633v6.734L6.804 8 1 4.633zm7.5 0v6.734L14.304 8 8.5 4.633z' />
       </svg>
     </div>,
     disabled,
@@ -608,6 +629,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
   }
 
   if (tutorialStepIndex !== getTutorialSteps().length - 1) {
+    controls.push(skipControl(isNextButtonDisabled));
     controls.push(nextControl(isNextButtonDisabled || (!tutorialStep.isNextButtonDisabled && tutorialStep.gameGrid && tutorialStepIndex === tutorialStepIndexMax)));
   } else {
     controls.push(new Control(

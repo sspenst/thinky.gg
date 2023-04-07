@@ -58,7 +58,7 @@ describe('pages/api/collection/index.ts', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Missing recaptcha token');
+        expect(response.error).toBe('Please fill out recaptcha');
         expect(res.status).toBe(400);
       },
     });

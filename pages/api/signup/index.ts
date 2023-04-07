@@ -29,7 +29,7 @@ export default apiWrapper({ POST: {
 
   if (RECAPTCHA_SECRET && RECAPTCHA_SECRET.length > 0) {
     if (!recaptchaToken) {
-      return res.status(400).json({ error: 'Missing recaptcha token' });
+      return res.status(400).json({ error: 'Please fill out recaptcha' });
     }
 
     const recaptchaResponse = await fetch('https://www.google.com/recaptcha/api/siteverify', {
