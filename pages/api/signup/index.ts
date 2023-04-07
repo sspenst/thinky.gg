@@ -19,15 +19,19 @@ export default apiWrapper({ POST: {
     name: ValidType('string'),
     password: ValidType('string'),
     tutorialCompletedAt: ValidNumber(false),
-    recaptchaToken: ValidType('string'),
+    recaptchaToken: ValidType('string', false),
   },
 } }, async (req: NextApiRequest, res: NextApiResponse) => {
   const { email, name, password, tutorialCompletedAt, recaptchaToken } = req.body;
 
   await dbConnect();
-  const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET;
+  const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET || '';
 
-  if (RECAPTCHA_SECRET) {
+  if (RECAPTCHA_SECRET && RECAPTCHA_SECRET.length > 0) {
+    if (!recaptchaToken) {
+      return res.status(400).json({ error: 'Missing recaptcha token' });
+    }
+
     const recaptchaResponse = await fetch('https://www.google.com/recaptcha/api/siteverify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

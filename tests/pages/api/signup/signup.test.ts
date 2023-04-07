@@ -11,6 +11,7 @@ import loginUserHandler from '../../../../pages/api/login/index';
 import signupUserHandler from '../../../../pages/api/signup/index';
 
 beforeAll(async () => {
+  process.env.RECAPTCHA_SECRET = '';
   await dbConnect();
 });
 afterAll(async() => {
