@@ -119,11 +119,18 @@ export default function CheckpointsModal({ closeModal, isOpen }: CheckpointsModa
           </div>
         </div>
         :
-        <div>
-          Get <Link href='/settings/proaccount' className='text-blue-300 outline-none'>
-            Pathology Pro
-          </Link> to unlock checkpoints.
+        <div className='p-6 rounded-md shadow-md'>
+          <div className='mb-3'>With Checkpoints, you can <span className='font-bold italic'>save the state</span> of the board to Pathology servers at any moment using hotkeys 0-9, making it easy to jump back and retry from a specific point.</div>
+          <div className='mb-3'>By upgrading to <Link href='/settings/proaccount' className='text-blue-500 hover:text-blue-600 outline-none'>Pathology Pro</Link>, you will gain access to this game-changing feature, along with additional benefits designed to enhance your gameplay:</div>
+          <div className='text-blue-500 hover:text-blue-600 cursor-pointer transition-colors duration-150 text-center'>
+            <div>
+              <Link href='/settings/proaccount' className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer'>
+                <span className=''>Upgrade to Pro</span>
+              </Link>
+            </div>
+          </div>
         </div>
+
       }
     </Modal>
   );
