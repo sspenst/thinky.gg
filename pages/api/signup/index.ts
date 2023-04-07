@@ -37,9 +37,8 @@ export default apiWrapper({ POST: {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: `secret=${RECAPTCHA_SECRET}&response=${recaptchaToken}`,
     });
-    const recaptchaData = await recaptchaResponse.json();
 
-    if (!recaptchaResponse.ok || !recaptchaData?.success) {
+    if (!recaptchaResponse.ok) {
       return res.status(400).json({ error: 'Error validating recaptcha [Status: ' + recaptchaResponse.status + ']' });
     }
   }
