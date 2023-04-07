@@ -6,7 +6,7 @@ const Theme: {[theme: string]: string} = {
   'Accessible': 'theme-accessible',
   'Boss Mode': 'theme-boss',
   'Winter': 'theme-winter',
-  'Halloween' : 'theme-halloween'
+  'Halloween': 'theme-halloween',
 };
 
 export default Theme;

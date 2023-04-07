@@ -26,6 +26,7 @@ async function query({ params, expectedError, expectedStatus, additionalAssertio
     params: Partial<NextApiRequestWithAuth>,
     expectedError?: string,
     expectedStatus: number,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     additionalAssertions?: (response: any) => Promise<void>,
     }) {
   await testApiHandler({

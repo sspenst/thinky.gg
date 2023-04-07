@@ -1,4 +1,3 @@
-import { createNewLevelAddedToCollectionNotification, createNewLevelNotifications } from '@root/helpers/notificationHelper';
 import { PipelineStage, Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidObjectId, ValidObjectIdArray, ValidType } from '../../../helpers/apiWrapper';
@@ -9,7 +8,7 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
 import { EnrichedLevel } from '../../../models/db/level';
 import User from '../../../models/db/user';
-import { CollectionModel, LevelModel } from '../../../models/mongoose';
+import { CollectionModel } from '../../../models/mongoose';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 

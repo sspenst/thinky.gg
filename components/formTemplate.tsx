@@ -7,7 +7,7 @@ interface FormTemplateProps {
 
 export default function FormTemplate({ children, style }: FormTemplateProps) {
   return (
-    <div className='w-full max-w-sm mx-auto px-4 my-6'>
+    <div className='w-full max-w-md mx-auto px-4 my-6'>
       <div
         className='shadow-md border rounded px-8 py-6'
         style={{

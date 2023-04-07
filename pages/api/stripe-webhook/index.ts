@@ -46,6 +46,7 @@ async function subscriptionDeleted(userToDowngrade: User) {
       ]);
       session.endSession();
     });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     logger.error(err);
 
@@ -101,6 +102,7 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
         ]);
       });
       session.endSession();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       logger.error(err);
       session.endSession();
@@ -136,6 +138,7 @@ export default apiWrapper({
 
   try {
     event = await StripeWebhookHelper.createStripeSigned(req);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     logger.error(`Error: ${err.message}`);
 
@@ -147,6 +150,7 @@ export default apiWrapper({
   // Handle the event
   let error, actorUser;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const properties = event.data.object as any;
 
   const customerId = properties?.customer;
