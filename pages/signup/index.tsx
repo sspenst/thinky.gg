@@ -6,15 +6,25 @@ import SignupForm from '../../components/signupForm';
 import redirectToHome from '../../helpers/redirectToHome';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
-  return await redirectToHome(context);
+  const redirect = await redirectToHome(context);
+
+  if (redirect.redirect) {
+    return redirect;
+  }
+
+  return {
+    props: {
+      recaptchaPublicKey: process.env.RECAPTCHA_PUBLIC_KEY || '',
+    },
+  };
 }
 /* istanbul ignore next */
 
-export default function SignUp() {
+export default function SignUp({ recaptchaPublicKey }: {recaptchaPublicKey?: string}) {
   return (
     <Page title={'Sign Up'}>
       <>
-        <SignupForm />
+        <SignupForm recaptchaPublicKey={recaptchaPublicKey} />
         <div
           style={{
             margin: '0 auto',
