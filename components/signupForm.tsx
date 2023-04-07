@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useRef, useState } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
 import toast from 'react-hot-toast';
 import { useSWRConfig } from 'swr';
@@ -15,6 +15,7 @@ export default function SignupForm({ recaptchaPublicKey }: {recaptchaPublicKey?:
   const router = useRouter();
   const [username, setUsername] = useState<string>('');
   const [recaptchaToken, setRecaptchaToken] = useState<string>('');
+  const recaptchaRef = useRef(null);
 
   function onRecaptchaChange(value: string | null) {
     console.log('Captcha value:', value);
@@ -67,6 +68,8 @@ export default function SignupForm({ recaptchaPublicKey }: {recaptchaPublicKey?:
         'Content-Type': 'application/json'
       }
     }).then(async res => {
+      if (recaptchaRef.current) {(recaptchaRef.current as any).reset();}
+
       if (res.status === 200) {
         const resObj = await res.json();
 
@@ -133,6 +136,7 @@ export default function SignupForm({ recaptchaPublicKey }: {recaptchaPublicKey?:
         </div>
         { recaptchaPublicKey &&
         <ReCAPTCHA
+          ref={recaptchaRef}
           sitekey={recaptchaPublicKey || ''}
           onChange={onRecaptchaChange}
         />
