@@ -76,6 +76,61 @@ body {
   --level-wall: rgb(0, 0, 0);
 }
 
+.theme-monkey {
+  --bg-color: rgb(40, 13, 6);
+  --bg-color-2: rgb(86, 34, 11);
+  --bg-color-3: rgb(90, 67, 55);
+  --bg-color-4: rgb(96, 48, 16);
+  --color: rgb(255, 255, 255);
+  --color-complete: rgb(141, 239, 141);
+  --color-error: rgb(178, 34, 34);
+  --color-gray: rgb(128, 128, 128);
+  --color-incomplete: rgb(218, 165, 32);
+  --level-block: rgb(47, 79, 79);
+  --level-block-border: rgb(145, 165, 116);
+  --level-end: rgb(255, 248, 144);
+  --level-grid: rgb(46, 139, 87);
+  --level-grid-text: rgb(0, 0, 0);
+  --level-grid-text-extra: rgb(255, 99, 71);
+  --level-grid-used: rgb(0, 128, 0);
+  --level-hole: rgb(51, 51, 51);
+  --level-hole-border: rgb(100, 100, 100);
+  --level-player: rgb(233, 161, 136);
+  --level-player-extra: rgb(160, 45, 45);
+  --level-player-text: rgb(0, 0, 0);
+  --level-wall: rgb(112, 67, 54);
+}
+.theme-monkey-player {
+  position: absolute;
+  z-index: 0;
+  bottom: 0;
+  animation: rotateMonkey 2s infinite linear;
+}
+.theme-monkey-grass-blade {
+  animation: sway 2s ease-in-out infinite;
+  transform-origin: bottom;
+}
+
+@keyframes sway {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(2deg);
+  }
+}
+@keyframes rotateMonkey {
+  0% {
+    transform: rotate(-10deg);
+  }
+  50% {
+    transform: rotate(10deg);
+  }
+  100% {
+    transform: rotate(-10deg);
+  }
+}
+
 .theme-dark {
   --bg-color: rgb(0, 0, 0);
   --bg-color-2: rgb(0, 0, 0);
