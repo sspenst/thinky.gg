@@ -1,5 +1,6 @@
+import { AppContext } from '@root/contexts/appContext';
 import classNames from 'classnames';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import LevelDataType from '../../constants/levelDataType';
 import Theme, { ICON_MAP } from '../../constants/theme';
 import isTheme from '../../helpers/isTheme';
@@ -17,14 +18,15 @@ interface PlayerProps {
 export default function Player({ borderWidth, gameState, leastMoves, size }: PlayerProps) {
   // initialize the block at the starting position to avoid an animation from the top left
   const [initPos] = useState(new Position(gameState.pos.x, gameState.pos.y));
-
-  const atEnd = gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === LevelDataType.End;
+  const levelDataType = gameState.board[gameState.pos.y][gameState.pos.x].levelDataType;
+  const atEnd = levelDataType === LevelDataType.End;
   const classic = isTheme(Theme.Classic);
   const innerSize = size - 2 * borderWidth;
   const text = String(gameState.moveCount);
   const fontSizeRatio = text.length <= 3 ? 2 : (1 + (text.length - 1) / 2);
   const fontSize = innerSize / fontSizeRatio;
-
+  const { user } = useContext(AppContext);
+  const theme = user?.config.theme;
   const parentStyle = {
     backgroundColor: 'var(--bg-color)',
     height: size,
@@ -34,7 +36,7 @@ export default function Player({ borderWidth, gameState, leastMoves, size }: Pla
     transition: 'transform 0.1s',
     width: size,
   };
-  const icon = ICON_MAP[Theme.Monkey]?.[LevelDataType.Start];
+  const icon = theme && ICON_MAP[theme]?.[LevelDataType.Start];
 
   if (icon) {
     const overstepped = leastMoves !== 0 && gameState.moveCount > leastMoves;

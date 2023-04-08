@@ -1,5 +1,6 @@
+import { AppContext } from '@root/contexts/appContext';
 import classNames from 'classnames';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import LevelDataType from '../../constants/levelDataType';
 import Theme, { ICON_MAP } from '../../constants/theme';
 import isTheme from '../../helpers/isTheme';
@@ -17,7 +18,8 @@ interface BlockProps {
 export default function Block({ block, borderWidth, onClick, size }: BlockProps) {
   // initialize the block at the starting position to avoid an animation from the top left
   const [initPos] = useState(new Position(block.pos.x, block.pos.y));
-
+  const { user } = useContext(AppContext);
+  const theme = user?.config.theme;
   const classic = isTheme(Theme.Classic);
   const fillCenter = classic && block.type === LevelDataType.Block;
   const innerBorderWidth = Math.round(size / 5);
@@ -38,7 +40,7 @@ export default function Block({ block, borderWidth, onClick, size }: BlockProps)
     top: size * initPos.y + (classic ? 0 : borderWidth),
     width: innerSize,
   } as any;
-  const icon = ICON_MAP[Theme.Monkey]?.[LevelDataType.Block];
+  const icon = theme && ICON_MAP[theme]?.[LevelDataType.Block];
 
   return (
     <div

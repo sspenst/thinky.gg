@@ -1,5 +1,6 @@
+import { AppContext } from '@root/contexts/appContext';
 import classNames from 'classnames';
-import React, { useCallback } from 'react';
+import React, { useCallback, useContext } from 'react';
 import LevelDataType from '../../constants/levelDataType';
 import Theme, { ICON_MAP } from '../../constants/theme';
 import isTheme from '../../helpers/isTheme';
@@ -32,6 +33,8 @@ export default function Square({
     event.preventDefault();
   }, [handleClick]);
 
+  const { user } = useContext(AppContext);
+  const theme = user?.config.theme;
   const classic = isTheme(Theme.Classic);
   const innerSize = size - 2 * borderWidth;
   const innerBorderWidth = Math.round(innerSize / 4.5);
@@ -83,7 +86,7 @@ export default function Square({
     width: innerSize,
   } as any;
 
-  const icon = ICON_MAP[Theme.Monkey]?.[levelDataType as any];
+  const icon = theme && ICON_MAP[theme]?.[levelDataType as any];
 
   if (icon) {
     style = {
