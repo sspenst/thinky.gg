@@ -1,7 +1,7 @@
 // run with ts-node --files server/scripts/gen-campaign.ts
 
 import dotenv from 'dotenv';
-import LevelDataType from '../../constants/levelDataType';
+import LevelUtil from '../../constants/levelDataType';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 import { LevelModel } from '../../models/mongoose';
 
@@ -56,14 +56,14 @@ async function genCampaign() {
   const timeTaken = endTime - startTime;
 
   //console.log(`Generated ${levels.length} levels in ${timeTaken}ms`);
-  function countUnique(str: string){
+  function countUnique(str: string) {
     let count = 0;
     const unique: any = {};
 
     for (let j = 0; j < str.length; j++) {
       const s = str.charAt(j);
 
-      if (s === LevelDataType.Wall || s === LevelDataType.Default || s === LevelDataType.Start || s === LevelDataType.End) {
+      if (s === LevelUtil.Wall || s === LevelUtil.Default || s === LevelUtil.Start || s === LevelUtil.End) {
         continue;
       }
 
@@ -101,7 +101,7 @@ async function genCampaign() {
     // convert object to csv
     const uniq_block_types = countUnique(curLevel.data);
 
-    const total_exits = curLevel.data.split('').filter((x: any) => x === LevelDataType.End).length;
+    const total_exits = curLevel.data.split('').filter((x: any) => x === LevelUtil.End).length;
     const csv = `https://pathology.gg/level/${curLevel.slug}\t${curLevel.leastMoves}\t${curLevel.totaltime_div_ppl_beat}\t${curLevel.calc_stats_players_beaten}\t${curLevel.width * curLevel.height}\t${uniq_block_types}\t${total_exits}\t${curLevel.calc_reviews_score_laplace}\t${curLevel.totaltime_div_ppl_beat}`;
 
     console.log(csv);

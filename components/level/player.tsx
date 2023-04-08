@@ -1,8 +1,8 @@
 import { AppContext } from '@root/contexts/appContext';
 import classNames from 'classnames';
 import React, { useContext, useState } from 'react';
-import LevelDataType from '../../constants/levelDataType';
-import Theme, { ICON_MAP } from '../../constants/theme';
+import LevelUtil, { TileType } from '../../constants/levelDataType';
+import Theme, { getIconFromTheme, ICON_MAP } from '../../constants/theme';
 import isTheme from '../../helpers/isTheme';
 import Position from '../../models/position';
 import { GameState } from './game';
@@ -19,7 +19,7 @@ export default function Player({ borderWidth, gameState, leastMoves, size }: Pla
   // initialize the block at the starting position to avoid an animation from the top left
   const [initPos] = useState(new Position(gameState.pos.x, gameState.pos.y));
   const levelDataType = gameState.board[gameState.pos.y][gameState.pos.x].levelDataType;
-  const atEnd = levelDataType === LevelDataType.End;
+  const atEnd = levelDataType === LevelUtil.End;
   const classic = isTheme(Theme.Classic);
   const innerSize = size - 2 * borderWidth;
   const text = String(gameState.moveCount);
@@ -36,7 +36,7 @@ export default function Player({ borderWidth, gameState, leastMoves, size }: Pla
     transition: 'transform 0.1s',
     width: size,
   };
-  const icon = theme && ICON_MAP[theme]?.[LevelDataType.Start];
+  const icon = getIconFromTheme(theme, TileType.Start);
 
   if (icon) {
     const overstepped = leastMoves !== 0 && gameState.moveCount > leastMoves;
@@ -75,7 +75,17 @@ export default function Player({ borderWidth, gameState, leastMoves, size }: Pla
         }}
       >
 
-        <span className='theme-monkey-player' style={{ position: 'absolute', zIndex: 0, bottom: 0 }}>{icon(innerSize, text, leastMoves, overstepped )}</span>
+        <span className='theme-monkey-player' style={{ position: 'absolute', zIndex: 0, bottom: 0 }}>
+          {icon({
+            innerSize: innerSize,
+            fontSize: fontSize,
+            levelDataType: levelDataType,
+            size: size,
+            text: <>{text}</>,
+            leastMoves: leastMoves,
+            overstepped: overstepped
+          })}
+        </span>
 
       </div>
 

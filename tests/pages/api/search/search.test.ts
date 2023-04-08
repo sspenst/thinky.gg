@@ -4,7 +4,7 @@ import { enableFetchMocks } from 'jest-fetch-mock';
 import mongoose, { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
-import LevelDataType from '../../../../constants/levelDataType';
+import LevelUtil from '../../../../constants/levelDataType';
 import TestId from '../../../../constants/testId';
 import TimeRange from '../../../../constants/timeRange';
 import { FilterSelectOption } from '../../../../helpers/filterSelectOptions';
@@ -287,7 +287,7 @@ testRuns = testRuns.concat([
       expect(response.levels.length).toBe(1);
       const levelWeFound = await LevelModel.findById(response.levels[0]._id);
 
-      expect(levelWeFound.data).not.toContain(LevelDataType.Hole);
+      expect(levelWeFound.data).not.toContain(LevelUtil.Hole);
     }
   },
   {
@@ -297,7 +297,7 @@ testRuns = testRuns.concat([
       expect(response.levels.length).toBe(1);
       const levelWeFound = await LevelModel.findById(response.levels[0]._id);
 
-      expect(levelWeFound.data).not.toContain(LevelDataType.Block);
+      expect(levelWeFound.data).not.toContain(LevelUtil.Block);
     }
   },
   {
@@ -307,7 +307,7 @@ testRuns = testRuns.concat([
       expect(response.levels.length).toBe(1);
       const levelWeFound = await LevelModel.findById(response.levels[0]._id);
 
-      expect(levelWeFound.data).not.toContain(LevelDataType.LeftRight);
+      expect(levelWeFound.data).not.toContain(LevelUtil.LeftRight);
     }
   },
 ]);

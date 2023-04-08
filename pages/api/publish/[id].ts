@@ -1,7 +1,7 @@
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
-import LevelDataType from '../../../constants/levelDataType';
+import LevelUtil from '../../../constants/levelDataType';
 import { ValidObjectId } from '../../../helpers/apiWrapper';
 import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
@@ -35,13 +35,13 @@ export default withAuth({ POST: {
     });
   }
 
-  if ((level.data.match(new RegExp(LevelDataType.Start, 'g')) || []).length !== 1) {
+  if ((level.data.match(new RegExp(LevelUtil.Start, 'g')) || []).length !== 1) {
     return res.status(400).json({
       error: 'There must be exactly one start block',
     });
   }
 
-  if ((level.data.match(new RegExp(LevelDataType.End, 'g')) || []).length === 0) {
+  if ((level.data.match(new RegExp(LevelUtil.End, 'g')) || []).length === 0) {
     return res.status(400).json({
       error: 'There must be at least one end block',
     });

@@ -1,7 +1,19 @@
-import LevelDataType from '@root/constants/levelDataType';
+import LevelUtil, { TileType } from '@root/constants/levelDataType';
+import Image from 'next/image';
 import React, { useEffect, useRef, useState } from 'react';
 
-function Monkey(size: number, text: JSX.Element, leastMoves: number, overstepped: boolean) {
+export interface ThemeIconProps {
+    levelDataType: TileType;
+    innerSize: number;
+    size: number;
+    fontSize: number;
+    text: JSX.Element;
+    leastMoves: number;
+    overstepped: boolean;
+}
+
+// TOOD figure out how to memoize these functions so they don't get recreated on every render
+function Monkey({ size, overstepped }: ThemeIconProps) {
   return (
     <svg
       xmlns='http://www.w3.org/2000/svg'
@@ -272,7 +284,7 @@ function Monkey(size: number, text: JSX.Element, leastMoves: number, overstepped
   );
 }
 
-function Banana(size: number, text: JSX.Element) {
+function Banana({ size, text }: ThemeIconProps) {
   return (
     <svg
       xmlns='http://www.w3.org/2000/svg'
@@ -344,82 +356,37 @@ function Rock() {
   </svg>;
 }
 
-class SeededRandom {
-  private _seed;
+function Grass({ innerSize, fontSize, text, size }: ThemeIconProps) {
+  // croppyed image https://images.pexels.com/photos/1089450/pexels-photo-1089450.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2
+  return <div
+    className=''
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      position: 'relative',
+      width: size,
+      height: size,
+    }}
+  >
+    <span key={'text-' + text + Math.random()} style={{
+      position: 'absolute',
+      zIndex: 2,
+      color: 'lightyellow',
+      //top: -innerSize + fontSize * 1.45,
+    }}>{text}</span>
+    <Image alt='grass' src='/themes/monkey-theme/grass2.png' width={size} height={size} style={{
+      //position: 'absolute',
+      zIndex: 1,
+      opacity: 0.85,
+    }} />
 
-  constructor(seed: number) {
-    this._seed = seed;
-  }
-
-  // Xorshift algorithm
-  next() {
-    this._seed = (this._seed * 1664525 + 1013904223) % 4294967296;
-
-    return this._seed;
-  }
-
-  random(min: number, max: number) {
-    const randomNumber = this.next();
-    const normalized = randomNumber / 4294967296;
-
-    return Math.floor(normalized * (max - min + 1)) + min;
-  }
-}
-const seed = 123;
-const seededRandom = new SeededRandom(seed);
-
-function random(min: number, max: number): number {
-  return seededRandom.random(min, max);
-}
-
-function createGrassElement(i: number) {
-  const height = random(10, 30);
-  const width = 2;
-  const color = `rgb(${random(50, 150)}, ${random(150, 250)}, ${random(50, 150)})`;
-  const position = random(0, 100);
-  const curve = random(-5, 5);
-
-  const d = `
-      M ${position} 100
-      Q ${position + curve} ${100 - height / 2}
-      ${position} ${100 - height}
-    `;
-
-  return (
-    <path
-      key={'grass-' + i}
-      d={d}
-      strokeWidth={width}
-      stroke={color}
-      fill='none'
-      className='theme-monkey-grass-blade'
-
-    />
-  );
+  </div>;
 }
 
-function createGrassElements() {
-  const grassElements = [];
-  const numGrassElements = 10;
-
-  for (let i = 0; i < numGrassElements; i++) {
-    grassElements.push(createGrassElement(i));
-  }
-
-  return grassElements;
-}
-
-function Grass() {
-  return (
-    <svg width='100%' height='100%' viewBox='0 0 100 100' preserveAspectRatio='none'>
-      {createGrassElements()}
-    </svg>
-  );
-}
-
-export const MONKEY_THEME_ICONS = {
-  [LevelDataType.Start]: Monkey,
-  [LevelDataType.End]: Banana,
+export const MONKEY_THEME_ICONS: Partial<Record<TileType, (props: ThemeIconProps) => JSX.Element>> = {
+  [TileType.Start]: Monkey,
+  [TileType.End]: Banana,
   //[LevelDataType.Block]: Rock,
-  //[LevelDataType.Default]: Grass()
+  [TileType.Default]: Grass,
 };

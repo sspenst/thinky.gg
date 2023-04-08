@@ -2,7 +2,7 @@ import isPro from '@root/helpers/isPro';
 import { PipelineStage, Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getDifficultyRangeFromName } from '../../../components/difficultyDisplay';
-import LevelDataType from '../../../constants/levelDataType';
+import LevelUtil from '../../../constants/levelDataType';
 import TimeRange from '../../../constants/timeRange';
 import apiWrapper from '../../../helpers/apiWrapper';
 import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
@@ -284,11 +284,11 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
     let mustNotContain = '';
 
     if (blockFilterMask & BlockFilterMask.BLOCK) {
-      mustNotContain = mustNotContain + LevelDataType.Block;
+      mustNotContain = mustNotContain + LevelUtil.Block;
     }
 
     if (blockFilterMask & BlockFilterMask.HOLE) {
-      mustNotContain = mustNotContain + LevelDataType.Hole;
+      mustNotContain = mustNotContain + LevelUtil.Hole;
     }
 
     if (blockFilterMask & BlockFilterMask.RESTRICTED) {

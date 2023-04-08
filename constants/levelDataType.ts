@@ -1,105 +1,129 @@
-export default class LevelDataType {
-  // PP1
-  static readonly Default = '0';
-  static readonly DefaultVisited = 'X';
-  static readonly Wall = '1';
-  static readonly Block = '2';
-  static readonly End = '3';
-  static readonly Start = '4';
-  // PP2
-  static readonly Hole = '5';
-  static readonly Left = '6';
-  static readonly Up = '7';
-  static readonly Right = '8';
-  static readonly Down = '9';
-  static readonly UpLeft = 'A';
-  static readonly UpRight = 'B';
-  static readonly DownRight = 'C';
-  static readonly DownLeft = 'D';
-  // Pathology
-  static readonly NotLeft = 'E';
-  static readonly NotUp = 'F';
-  static readonly NotRight = 'G';
-  static readonly NotDown = 'H';
-  static readonly LeftRight = 'I';
-  static readonly UpDown = 'J';
+export enum TileType {
+  Default = '0',
+  DefaultVisited = 'X',
+  Wall = '1',
+  Block = '2',
+  End = '3',
+  Start = '4',
+  Hole = '5',
+  Left = '6',
+  Up = '7',
+  Right = '8',
+  Down = '9',
+  UpLeft = 'A',
+  UpRight = 'B',
+  DownRight = 'C',
+  DownLeft = 'D',
+  NotLeft = 'E',
+  NotUp = 'F',
+  NotRight = 'G',
+  NotDown = 'H',
+  LeftRight = 'I',
+  UpDown = 'J',
+}
 
-  static canMove(levelDataType: LevelDataType) {
-    return levelDataType === LevelDataType.Block ||
+export default class LevelUtil {
+  // PP1
+  static readonly Default = TileType.Default;
+  static readonly DefaultVisited = TileType.DefaultVisited;
+  static readonly Wall = TileType.Wall;
+  static readonly Block = TileType.Block;
+  static readonly End = TileType.End;
+  static readonly Start = TileType.Start;
+  // PP2
+  static readonly Hole = TileType.Hole;
+  static readonly Left = TileType.Left;
+  static readonly Up = TileType.Up;
+  static readonly Right = TileType.Right;
+  static readonly Down = TileType.Down;
+  static readonly UpLeft = TileType.UpLeft;
+  static readonly UpRight = TileType.UpRight;
+  static readonly DownRight = TileType.DownRight;
+  static readonly DownLeft = TileType.DownLeft;
+  // Pathology
+  static readonly NotLeft = TileType.NotLeft;
+  static readonly NotUp = TileType.NotUp;
+  static readonly NotRight = TileType.NotRight;
+  static readonly NotDown = TileType.NotDown;
+  static readonly LeftRight = TileType.LeftRight;
+  static readonly UpDown = TileType.UpDown;
+
+  static canMove(levelDataType: LevelUtil) {
+    return levelDataType === LevelUtil.Block ||
       this.canMoveRestricted(levelDataType);
   }
 
-  static canMoveRestricted(levelDataType: LevelDataType) {
-    return levelDataType === LevelDataType.Left ||
-      levelDataType === LevelDataType.Up ||
-      levelDataType === LevelDataType.Right ||
-      levelDataType === LevelDataType.Down ||
-      levelDataType === LevelDataType.UpLeft ||
-      levelDataType === LevelDataType.UpRight ||
-      levelDataType === LevelDataType.DownRight ||
-      levelDataType === LevelDataType.DownLeft ||
-      levelDataType === LevelDataType.NotLeft ||
-      levelDataType === LevelDataType.NotUp ||
-      levelDataType === LevelDataType.NotRight ||
-      levelDataType === LevelDataType.NotDown ||
-      levelDataType === LevelDataType.LeftRight ||
-      levelDataType === LevelDataType.UpDown;
+  static canMoveRestricted(levelDataType: LevelUtil) {
+    return levelDataType === LevelUtil.Left ||
+      levelDataType === LevelUtil.Up ||
+      levelDataType === LevelUtil.Right ||
+      levelDataType === LevelUtil.Down ||
+      levelDataType === LevelUtil.UpLeft ||
+      levelDataType === LevelUtil.UpRight ||
+      levelDataType === LevelUtil.DownRight ||
+      levelDataType === LevelUtil.DownLeft ||
+      levelDataType === LevelUtil.NotLeft ||
+      levelDataType === LevelUtil.NotUp ||
+      levelDataType === LevelUtil.NotRight ||
+      levelDataType === LevelUtil.NotDown ||
+      levelDataType === LevelUtil.LeftRight ||
+      levelDataType === LevelUtil.UpDown;
   }
 
-  static canMoveLeft(levelDataType: LevelDataType) {
-    return levelDataType === LevelDataType.Block ||
-      levelDataType === LevelDataType.Left ||
-      levelDataType === LevelDataType.UpLeft ||
-      levelDataType === LevelDataType.DownLeft ||
-      levelDataType === LevelDataType.NotUp ||
-      levelDataType === LevelDataType.NotRight ||
-      levelDataType === LevelDataType.NotDown ||
-      levelDataType === LevelDataType.LeftRight;
+  static canMoveLeft(levelDataType: LevelUtil) {
+    return levelDataType === LevelUtil.Block ||
+      levelDataType === LevelUtil.Left ||
+      levelDataType === LevelUtil.UpLeft ||
+      levelDataType === LevelUtil.DownLeft ||
+      levelDataType === LevelUtil.NotUp ||
+      levelDataType === LevelUtil.NotRight ||
+      levelDataType === LevelUtil.NotDown ||
+      levelDataType === LevelUtil.LeftRight;
   }
 
-  static canMoveUp(levelDataType: LevelDataType) {
-    return levelDataType === LevelDataType.Block ||
-      levelDataType === LevelDataType.Up ||
-      levelDataType === LevelDataType.UpLeft ||
-      levelDataType === LevelDataType.UpRight ||
-      levelDataType === LevelDataType.NotLeft ||
-      levelDataType === LevelDataType.NotRight ||
-      levelDataType === LevelDataType.NotDown ||
-      levelDataType === LevelDataType.UpDown;
+  static canMoveUp(levelDataType: LevelUtil) {
+    return levelDataType === LevelUtil.Block ||
+      levelDataType === LevelUtil.Up ||
+      levelDataType === LevelUtil.UpLeft ||
+      levelDataType === LevelUtil.UpRight ||
+      levelDataType === LevelUtil.NotLeft ||
+      levelDataType === LevelUtil.NotRight ||
+      levelDataType === LevelUtil.NotDown ||
+      levelDataType === LevelUtil.UpDown;
   }
 
-  static canMoveRight(levelDataType: LevelDataType) {
-    return levelDataType === LevelDataType.Block ||
-      levelDataType === LevelDataType.Right ||
-      levelDataType === LevelDataType.UpRight ||
-      levelDataType === LevelDataType.DownRight ||
-      levelDataType === LevelDataType.NotLeft ||
-      levelDataType === LevelDataType.NotUp ||
-      levelDataType === LevelDataType.NotDown ||
-      levelDataType === LevelDataType.LeftRight;
+  static canMoveRight(levelDataType: LevelUtil) {
+    return levelDataType === LevelUtil.Block ||
+      levelDataType === LevelUtil.Right ||
+      levelDataType === LevelUtil.UpRight ||
+      levelDataType === LevelUtil.DownRight ||
+      levelDataType === LevelUtil.NotLeft ||
+      levelDataType === LevelUtil.NotUp ||
+      levelDataType === LevelUtil.NotDown ||
+      levelDataType === LevelUtil.LeftRight;
   }
 
-  static canMoveDown(levelDataType: LevelDataType) {
-    return levelDataType === LevelDataType.Block ||
-      levelDataType === LevelDataType.Down ||
-      levelDataType === LevelDataType.DownLeft ||
-      levelDataType === LevelDataType.DownRight ||
-      levelDataType === LevelDataType.NotLeft ||
-      levelDataType === LevelDataType.NotUp ||
-      levelDataType === LevelDataType.NotRight ||
-      levelDataType === LevelDataType.UpDown;
+  static canMoveDown(levelDataType: LevelUtil) {
+    return levelDataType === LevelUtil.Block ||
+      levelDataType === LevelUtil.Down ||
+      levelDataType === LevelUtil.DownLeft ||
+      levelDataType === LevelUtil.DownRight ||
+      levelDataType === LevelUtil.NotLeft ||
+      levelDataType === LevelUtil.NotUp ||
+      levelDataType === LevelUtil.NotRight ||
+      levelDataType === LevelUtil.UpDown;
   }
 
   // used for the classic theme to know if a block type should have height
-  static isRaised(levelDataType: LevelDataType) {
-    return levelDataType === LevelDataType.Wall ||
-      levelDataType === LevelDataType.Start ||
-      LevelDataType.canMove(levelDataType);
+  static isRaised(levelDataType: LevelUtil) {
+    return levelDataType === LevelUtil.Wall ||
+      levelDataType === LevelUtil.Start ||
+      LevelUtil.canMove(levelDataType);
   }
 
   // returns undefined if the string is valid, otherwise returns the invalid character
   static getInvalidLevelDataType(data: string) {
-    const levelDataTypeToString = LevelDataType.toString();
+    const levelDataTypeToString = LevelUtil.toString();
 
     for (let i = 0; i < data.length; i++) {
       if (!(data[i] in levelDataTypeToString)) {
@@ -110,26 +134,26 @@ export default class LevelDataType {
 
   static toString(): {[levelDataType: string]: string} {
     return {
-      [LevelDataType.Default]: 'Default',
-      [LevelDataType.Wall]: 'Wall',
-      [LevelDataType.Block]: 'Block',
-      [LevelDataType.End]: 'End',
-      [LevelDataType.Start]: 'Start',
-      [LevelDataType.Hole]: 'Hole',
-      [LevelDataType.Left]: 'Left',
-      [LevelDataType.Up]: 'Up',
-      [LevelDataType.Right]: 'Right',
-      [LevelDataType.Down]: 'Down',
-      [LevelDataType.UpLeft]: 'UpLeft',
-      [LevelDataType.UpRight]: 'UpRight',
-      [LevelDataType.DownRight]: 'DownRight',
-      [LevelDataType.DownLeft]: 'DownLeft',
-      [LevelDataType.NotLeft]: 'NotLeft',
-      [LevelDataType.NotUp]: 'NotUp',
-      [LevelDataType.NotRight]: 'NotRight',
-      [LevelDataType.NotDown]: 'NotDown',
-      [LevelDataType.LeftRight]: 'LeftRight',
-      [LevelDataType.UpDown]: 'UpDown',
+      [LevelUtil.Default]: 'Default',
+      [LevelUtil.Wall]: 'Wall',
+      [LevelUtil.Block]: 'Block',
+      [LevelUtil.End]: 'End',
+      [LevelUtil.Start]: 'Start',
+      [LevelUtil.Hole]: 'Hole',
+      [LevelUtil.Left]: 'Left',
+      [LevelUtil.Up]: 'Up',
+      [LevelUtil.Right]: 'Right',
+      [LevelUtil.Down]: 'Down',
+      [LevelUtil.UpLeft]: 'UpLeft',
+      [LevelUtil.UpRight]: 'UpRight',
+      [LevelUtil.DownRight]: 'DownRight',
+      [LevelUtil.DownLeft]: 'DownLeft',
+      [LevelUtil.NotLeft]: 'NotLeft',
+      [LevelUtil.NotUp]: 'NotUp',
+      [LevelUtil.NotRight]: 'NotRight',
+      [LevelUtil.NotDown]: 'NotDown',
+      [LevelUtil.LeftRight]: 'LeftRight',
+      [LevelUtil.UpDown]: 'UpDown',
     };
   }
 }

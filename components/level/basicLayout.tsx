@@ -1,5 +1,5 @@
 import React from 'react';
-import LevelDataType from '../../constants/levelDataType';
+import LevelUtil from '../../constants/levelDataType';
 import Control from '../../models/control';
 import Level from '../../models/db/level';
 import SquareState from '../../models/squareState';
@@ -24,7 +24,7 @@ export default function BasicLayout({ controls, level, onClick }: BasicLayoutPro
     for (let x = 0; x < width; x++) {
       board[y][x].levelDataType = data[y][x];
 
-      if (data[y][x] === LevelDataType.Start) {
+      if (data[y][x] === LevelUtil.Start) {
         board[y][x].text.push(0);
       }
     }

@@ -1,22 +1,22 @@
-import LevelDataType from '../../constants/levelDataType';
+import LevelUtil from '../../constants/levelDataType';
 
 describe('constants/*.ts', () => {
   test('LevelDataType.toString()', async () => {
-    const levelDataType = LevelDataType.toString();
+    const levelDataType = LevelUtil.toString();
 
     expect(levelDataType).toBeDefined();
     expect(Object.keys(levelDataType).length).toBe(20);
   });
   test('LevelDataType.isRaised()', async () => {
-    expect(LevelDataType.isRaised(LevelDataType.Block)).toBeTruthy();
+    expect(LevelUtil.isRaised(LevelUtil.Block)).toBeTruthy();
   });
   test('getInvalidLevelDataType with valid input', async () => {
-    const res = LevelDataType.getInvalidLevelDataType('4');
+    const res = LevelUtil.getInvalidLevelDataType('4');
 
     expect(res).toBeUndefined();
   });
   test('getInvalidLevelDataType with valid input', async () => {
-    const res = LevelDataType.getInvalidLevelDataType('Z');
+    const res = LevelUtil.getInvalidLevelDataType('Z');
 
     expect(res).toBe('Z');
   });
