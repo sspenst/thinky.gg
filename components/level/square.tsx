@@ -1,15 +1,15 @@
 import { AppContext } from '@root/contexts/appContext';
 import classNames from 'classnames';
 import React, { useCallback, useContext } from 'react';
-import LevelDataType from '../../constants/levelDataType';
-import Theme, { ICON_MAP } from '../../constants/theme';
+import LevelUtil, { TileType } from '../../constants/levelDataType';
+import Theme, { getIconFromTheme, ICON_MAP } from '../../constants/theme';
 import isTheme from '../../helpers/isTheme';
 
 interface SquareProps {
   borderWidth: number;
   handleClick?: (rightClick: boolean) => void;
   leastMoves: number;
-  levelDataType: LevelDataType;
+  levelDataType: TileType;
   noBoxShadow?: boolean;
   size: number;
   text?: number;
@@ -47,17 +47,17 @@ export default function Square({
 
   function getBackgroundColor() {
     switch (levelDataType) {
-    case LevelDataType.Default:
+    case LevelUtil.Default:
       return text !== undefined ? 'var(--level-grid-used)' : 'var(--level-grid)';
-    case LevelDataType.Wall:
+    case LevelUtil.Wall:
       return 'var(--level-wall)';
-    case LevelDataType.End:
+    case LevelUtil.End:
       return 'var(--level-end)';
-    case LevelDataType.Start:
+    case LevelUtil.Start:
       return 'var(--level-player)';
-    case LevelDataType.Hole:
+    case LevelUtil.Hole:
       return 'var(--level-hole)';
-    case LevelDataType.Block:
+    case LevelUtil.Block:
       return classic ? 'var(--level-block-border)' : 'var(--level-block)';
     default:
       return 'var(--level-block)';
@@ -69,15 +69,15 @@ export default function Square({
   // NB: for some reason needed to put this first to get the color to work on refresh
     color: textColor,
     backgroundColor: getBackgroundColor(),
-    borderBottomWidth: levelDataType === LevelDataType.Hole || LevelDataType.canMoveUp(levelDataType) ? innerBorderWidth : 0,
-    borderColor: levelDataType === LevelDataType.Hole ? 'var(--level-hole-border)' : 'var(--level-block-border)',
-    borderLeftWidth: levelDataType === LevelDataType.Hole || LevelDataType.canMoveRight(levelDataType) ? innerBorderWidth : 0,
-    borderRightWidth: levelDataType === LevelDataType.Hole || LevelDataType.canMoveLeft(levelDataType) ? innerBorderWidth : 0,
-    borderTopWidth: levelDataType === LevelDataType.Hole || LevelDataType.canMoveDown(levelDataType) ? innerBorderWidth : 0,
+    borderBottomWidth: levelDataType === LevelUtil.Hole || LevelUtil.canMoveUp(levelDataType) ? innerBorderWidth : 0,
+    borderColor: levelDataType === LevelUtil.Hole ? 'var(--level-hole-border)' : 'var(--level-block-border)',
+    borderLeftWidth: levelDataType === LevelUtil.Hole || LevelUtil.canMoveRight(levelDataType) ? innerBorderWidth : 0,
+    borderRightWidth: levelDataType === LevelUtil.Hole || LevelUtil.canMoveLeft(levelDataType) ? innerBorderWidth : 0,
+    borderTopWidth: levelDataType === LevelUtil.Hole || LevelUtil.canMoveDown(levelDataType) ? innerBorderWidth : 0,
     boxShadow: noBoxShadow ? undefined : !classic ? `0 0 0 ${borderWidth}px 'var(--bg-color)` :
-      levelDataType === LevelDataType.Wall ||
-    levelDataType === LevelDataType.Start ||
-    LevelDataType.canMove(levelDataType) ?
+      levelDataType === LevelUtil.Wall ||
+    levelDataType === LevelUtil.Start ||
+    LevelUtil.canMove(levelDataType) ?
         `-${2 * borderWidth}px ${2 * borderWidth}px 0 0 var(--bg-color)` :
         `${2 * borderWidth}px -${2 * borderWidth}px 0 0 var(--bg-color)`,
     fontSize: fontSize,
@@ -86,7 +86,7 @@ export default function Square({
     width: innerSize,
   } as any;
 
-  const icon = theme && ICON_MAP[theme]?.[levelDataType as any];
+  const icon = getIconFromTheme(theme, levelDataType);
 
   if (icon) {
     style = {
@@ -98,24 +98,25 @@ export default function Square({
     };
     child = [];
 
-    if (text !== undefined) {
-      child.push(<span key={'text-' + text + Math.random()} style={{
-        position: 'absolute', top: -innerSize + fontSize * 1.45, zIndex: 1,
+    child.push(<span key={'icon-' + levelDataType + Math.random()} className={'theme-' + theme + '-' + levelDataType} style={{ position: 'absolute', zIndex: 0,
 
-      }}>{text}</span>);
-    }
-
-    child.push(<span key={'icon-' + levelDataType + Math.random()} className={'theme-monkey-' + levelDataType} style={{ position: 'absolute', zIndex: 0,
-      bottom: child.length == 1 ? 0 : undefined
-    }}>{icon(innerSize / 1.5, text, leastMoves, overStepped)}</span>);
+    }}>{icon({
+        innerSize: innerSize / 1.5,
+        fontSize: fontSize,
+        levelDataType: levelDataType,
+        size: size,
+        text: <>{text}</>,
+        leastMoves: leastMoves,
+        overstepped: overStepped
+      })}</span>);
   }
 
   return (
     <div
       className={classNames(
         `select-none block_type_${levelDataType} text-center align-middle`,
-        { 'square-movable': LevelDataType.canMove(levelDataType) },
-        { 'square-hole': levelDataType === LevelDataType.Hole },
+        { 'square-movable': LevelUtil.canMove(levelDataType) },
+        { 'square-hole': levelDataType === LevelUtil.Hole },
       )}
       onClick={onClick}
       onContextMenu={onClick}

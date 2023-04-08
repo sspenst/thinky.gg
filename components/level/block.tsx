@@ -1,8 +1,8 @@
 import { AppContext } from '@root/contexts/appContext';
 import classNames from 'classnames';
 import React, { useContext, useState } from 'react';
-import LevelDataType from '../../constants/levelDataType';
-import Theme, { ICON_MAP } from '../../constants/theme';
+import LevelUtil, { TileType } from '../../constants/levelDataType';
+import Theme, { getIconFromTheme, ICON_MAP } from '../../constants/theme';
 import isTheme from '../../helpers/isTheme';
 import BlockState from '../../models/blockState';
 import Position from '../../models/position';
@@ -21,17 +21,17 @@ export default function Block({ block, borderWidth, onClick, size }: BlockProps)
   const { user } = useContext(AppContext);
   const theme = user?.config.theme;
   const classic = isTheme(Theme.Classic);
-  const fillCenter = classic && block.type === LevelDataType.Block;
+  const fillCenter = classic && block.type === LevelUtil.Block;
   const innerBorderWidth = Math.round(size / 5);
   const innerSize = size - 2 * borderWidth;
 
   const style = {
     backgroundColor: fillCenter ? 'var(--level-block-border)' : 'var(--level-block)',
-    borderBottomWidth: LevelDataType.canMoveUp(block.type) ? innerBorderWidth : 0,
+    borderBottomWidth: LevelUtil.canMoveUp(block.type) ? innerBorderWidth : 0,
     borderColor: 'var(--level-block-border)',
-    borderLeftWidth: LevelDataType.canMoveRight(block.type) ? innerBorderWidth : 0,
-    borderRightWidth: LevelDataType.canMoveLeft(block.type) ? innerBorderWidth : 0,
-    borderTopWidth: LevelDataType.canMoveDown(block.type) ? innerBorderWidth : 0,
+    borderLeftWidth: LevelUtil.canMoveRight(block.type) ? innerBorderWidth : 0,
+    borderRightWidth: LevelUtil.canMoveLeft(block.type) ? innerBorderWidth : 0,
+    borderTopWidth: LevelUtil.canMoveDown(block.type) ? innerBorderWidth : 0,
     boxShadow: classic ?
       `-${2 * borderWidth}px ${2 * borderWidth}px 0 0 var(--bg-color)` :
       `0 0 0 ${borderWidth}px var(--bg-color)`,
@@ -40,7 +40,7 @@ export default function Block({ block, borderWidth, onClick, size }: BlockProps)
     top: size * initPos.y + (classic ? 0 : borderWidth),
     width: innerSize,
   } as any;
-  const icon = theme && ICON_MAP[theme]?.[LevelDataType.Block];
+  const icon = getIconFromTheme(theme, block.type as TileType);
 
   return (
     <div

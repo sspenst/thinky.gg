@@ -1,6 +1,6 @@
-import LevelDataType from '@root/constants/levelDataType';
+import LevelUtil, { TileType } from '@root/constants/levelDataType';
 import React, { useContext, useEffect, useState } from 'react';
-import Theme, { ICON_MAP } from '../../constants/theme';
+import Theme, { getIconFromTheme, ICON_MAP } from '../../constants/theme';
 import { AppContext } from '../../contexts/appContext';
 import RadioButton from '../radioButton';
 import Modal from '.';
@@ -63,8 +63,9 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
       title={'Theme'}
     >
       <>
-        {Object.keys(Theme).map(themeText => {
-          const icon = ICON_MAP[Theme[themeText]] && ICON_MAP[Theme[themeText]][LevelDataType.Start]();
+        {Object.keys(Theme).map(themeTextStr => {
+          const themeText = themeTextStr as keyof typeof Theme;
+          const icon = getIconFromTheme(Theme[themeText], TileType.Start);
 
           return (
             <div key={`theme-${Theme[themeText]}-parent-div`} className='flex flex-row'>
@@ -78,7 +79,9 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
               />
               </div>
               <span className='ml-2 w-6 h-6'>
-                {icon}
+                {icon && icon({
+                  size: 24
+                } as any)}
               </span>
             </div>
           );

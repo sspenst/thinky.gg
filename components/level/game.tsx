@@ -8,7 +8,7 @@ import NProgress from 'nprogress';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { throttle } from 'throttle-debounce';
-import LevelDataType from '../../constants/levelDataType';
+import LevelUtil from '../../constants/levelDataType';
 import { AppContext } from '../../contexts/appContext';
 import { LevelContext } from '../../contexts/levelContext';
 import { PageContext } from '../../contexts/pageContext';
@@ -83,13 +83,13 @@ function initGameState(levelData: string, actionCount = 0) {
     for (let x = 0; x < width; x++) {
       const levelDataType = data[y][x];
 
-      if (levelDataType === LevelDataType.Wall ||
-        levelDataType === LevelDataType.End ||
-        levelDataType === LevelDataType.Hole) {
+      if (levelDataType === LevelUtil.Wall ||
+        levelDataType === LevelUtil.End ||
+        levelDataType === LevelUtil.Hole) {
         board[y][x].levelDataType = levelDataType;
-      } else if (levelDataType === LevelDataType.Start) {
+      } else if (levelDataType === LevelUtil.Start) {
         pos = new Position(x, y);
-      } else if (LevelDataType.canMove(levelDataType)) {
+      } else if (LevelUtil.canMove(levelDataType)) {
         blocks.push(new BlockState(blockId++, levelDataType, x, y));
       }
     }
@@ -426,8 +426,8 @@ export default function Game({
       pos: Position,
       width: number,
     ) {
-      return isPositionValid(height, pos, width) && board[pos.y][pos.x].levelDataType !== LevelDataType.Wall &&
-        board[pos.y][pos.x].levelDataType !== LevelDataType.Hole;
+      return isPositionValid(height, pos, width) && board[pos.y][pos.x].levelDataType !== LevelUtil.Wall &&
+        board[pos.y][pos.x].levelDataType !== LevelUtil.Hole;
     }
 
     // can a block move to this position
@@ -438,7 +438,7 @@ export default function Game({
       pos: Position,
       width: number,
     ) {
-      return isPositionValid(height, pos, width) && board[pos.y][pos.x].levelDataType !== LevelDataType.Wall &&
+      return isPositionValid(height, pos, width) && board[pos.y][pos.x].levelDataType !== LevelUtil.Wall &&
         !isBlockAtPosition(blocks, pos);
     }
 
@@ -523,7 +523,7 @@ export default function Game({
                 block.inHole = false;
 
                 if (prevMove.holePos !== undefined) {
-                  board[prevMove.holePos.y][prevMove.holePos.x].levelDataType = LevelDataType.Hole;
+                  board[prevMove.holePos.y][prevMove.holePos.x].levelDataType = LevelUtil.Hole;
                 }
               }
             }
@@ -565,9 +565,9 @@ export default function Game({
             block.pos = blockPos;
 
             // remove block if it is pushed onto a hole
-            if (board[blockPos.y][blockPos.x].levelDataType === LevelDataType.Hole) {
+            if (board[blockPos.y][blockPos.x].levelDataType === LevelUtil.Hole) {
               block.inHole = true;
-              board[blockPos.y][blockPos.x].levelDataType = LevelDataType.Default;
+              board[blockPos.y][blockPos.x].levelDataType = LevelUtil.Default;
               move.holePos = blockPos.clone();
             }
           }
@@ -584,7 +584,7 @@ export default function Game({
 
           const moveCount = prevGameState.moveCount + 1;
 
-          if (board[pos.y][pos.x].levelDataType === LevelDataType.End) {
+          if (board[pos.y][pos.x].levelDataType === LevelUtil.End) {
             trackStats(moves.map(move => move.code), level._id.toString(), 3);
           }
 
@@ -633,7 +633,7 @@ export default function Game({
         }
 
         // lock movement once you reach the finish
-        if (prevGameState.board[prevGameState.pos.y][prevGameState.pos.x].levelDataType === LevelDataType.End) {
+        if (prevGameState.board[prevGameState.pos.y][prevGameState.pos.x].levelDataType === LevelUtil.End) {
           return prevGameState;
         }
 
@@ -643,7 +643,7 @@ export default function Game({
 
       const newGameState = getNewGameState();
 
-      if (newGameState.board[newGameState.pos.y][newGameState.pos.x].levelDataType === LevelDataType.End &&
+      if (newGameState.board[newGameState.pos.y][newGameState.pos.x].levelDataType === LevelUtil.End &&
         newGameState.moves.length <= level.leastMoves && onComplete) {
         onComplete();
       }
