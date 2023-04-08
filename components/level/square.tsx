@@ -64,7 +64,7 @@ export default function Square({
     }
   }
 
-  let child = [<div key={ text + '-' + Math.random() }>{text}</div>];
+  let child = <div>{text}</div>;
   let style = {
   // NB: for some reason needed to put this first to get the color to work on refresh
     color: textColor,
@@ -89,6 +89,7 @@ export default function Square({
   const icon = getIconFromTheme(theme, levelDataType);
 
   if (icon) {
+    console.log(icon);
     style = {
       ...style,
       display: 'flex',
@@ -96,9 +97,8 @@ export default function Square({
       justifyContent: 'center',
       position: 'relative',
     };
-    child = [];
 
-    child.push(<span key={'icon-' + levelDataType + Math.random()} className={'theme-' + theme + '-' + levelDataType} style={{ position: 'absolute', zIndex: 0,
+    child = <span className={'theme-' + theme + '-' + levelDataType} style={{ position: 'absolute', zIndex: 0,
 
     }}>{icon({
         innerSize: innerSize / 1.5,
@@ -108,7 +108,7 @@ export default function Square({
         text: <>{text}</>,
         leastMoves: leastMoves,
         overstepped: overStepped
-      })}</span>);
+      })}</span>;
   }
 
   return (

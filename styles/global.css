@@ -106,19 +106,7 @@ body {
   bottom: 0;
   animation: rotateMonkey 2s infinite linear;
 }
-.theme-monkey-grass-blade {
-  animation: sway 2s ease-in-out infinite;
-  transform-origin: bottom;
-}
 
-@keyframes sway {
-  0%, 100% {
-    transform: rotate(0deg);
-  }
-  50% {
-    transform: rotate(2deg);
-  }
-}
 @keyframes rotateMonkey {
   0% {
     transform: rotate(-10deg);
