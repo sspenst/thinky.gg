@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import React, { useCallback } from 'react';
 import LevelDataType from '../../constants/levelDataType';
-import Theme from '../../constants/theme';
+import Theme, { ICON_MAP } from '../../constants/theme';
 import isTheme from '../../helpers/isTheme';
 
 interface SquareProps {
@@ -38,7 +38,8 @@ export default function Square({
   const fontSizeRatio = text === undefined || String(text).length <= 3 ?
     2 : (1 + (String(text).length - 1) / 2);
   const fontSize = innerSize / fontSizeRatio * (classic ? 1.5 : 1);
-  const textColor = text !== undefined && leastMoves !== 0 && text > leastMoves ?
+  const overStepped = text !== undefined && leastMoves !== 0 && text > leastMoves;
+  const textColor = overStepped ?
     'var(--level-grid-text-extra)' : 'var(--level-grid-text)';
 
   function getBackgroundColor() {
@@ -60,6 +61,52 @@ export default function Square({
     }
   }
 
+  let child = [<div key={ text + '-' + Math.random() }>{text}</div>];
+  let style = {
+  // NB: for some reason needed to put this first to get the color to work on refresh
+    color: textColor,
+    backgroundColor: getBackgroundColor(),
+    borderBottomWidth: levelDataType === LevelDataType.Hole || LevelDataType.canMoveUp(levelDataType) ? innerBorderWidth : 0,
+    borderColor: levelDataType === LevelDataType.Hole ? 'var(--level-hole-border)' : 'var(--level-block-border)',
+    borderLeftWidth: levelDataType === LevelDataType.Hole || LevelDataType.canMoveRight(levelDataType) ? innerBorderWidth : 0,
+    borderRightWidth: levelDataType === LevelDataType.Hole || LevelDataType.canMoveLeft(levelDataType) ? innerBorderWidth : 0,
+    borderTopWidth: levelDataType === LevelDataType.Hole || LevelDataType.canMoveDown(levelDataType) ? innerBorderWidth : 0,
+    boxShadow: noBoxShadow ? undefined : !classic ? `0 0 0 ${borderWidth}px 'var(--bg-color)` :
+      levelDataType === LevelDataType.Wall ||
+    levelDataType === LevelDataType.Start ||
+    LevelDataType.canMove(levelDataType) ?
+        `-${2 * borderWidth}px ${2 * borderWidth}px 0 0 var(--bg-color)` :
+        `${2 * borderWidth}px -${2 * borderWidth}px 0 0 var(--bg-color)`,
+    fontSize: fontSize,
+    height: innerSize,
+    lineHeight: innerSize * (classic ? 1.1 : 1) + 'px',
+    width: innerSize,
+  } as any;
+
+  const icon = ICON_MAP[Theme.Monkey]?.[levelDataType as any];
+
+  if (icon) {
+    style = {
+      ...style,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      position: 'relative',
+    };
+    child = [];
+
+    if (text !== undefined) {
+      child.push(<span key={'text-' + text + Math.random()} style={{
+        position: 'absolute', top: -innerSize + fontSize * 1.45, zIndex: 1,
+
+      }}>{text}</span>);
+    }
+
+    child.push(<span key={'icon-' + levelDataType + Math.random()} className={'theme-monkey-' + levelDataType} style={{ position: 'absolute', zIndex: 0,
+      bottom: child.length == 1 ? 0 : undefined
+    }}>{icon(innerSize / 1.5, text, leastMoves, overStepped)}</span>);
+  }
+
   return (
     <div
       className={classNames(
@@ -70,28 +117,9 @@ export default function Square({
       onClick={onClick}
       onContextMenu={onClick}
       onTouchEnd={(e) => onClick(e)}
-      style={{
-        // NB: for some reason needed to put this first to get the color to work on refresh
-        color: textColor,
-        backgroundColor: getBackgroundColor(),
-        borderBottomWidth: levelDataType === LevelDataType.Hole || LevelDataType.canMoveUp(levelDataType) ? innerBorderWidth : 0,
-        borderColor: levelDataType === LevelDataType.Hole ? 'var(--level-hole-border)' : 'var(--level-block-border)',
-        borderLeftWidth: levelDataType === LevelDataType.Hole || LevelDataType.canMoveRight(levelDataType) ? innerBorderWidth : 0,
-        borderRightWidth: levelDataType === LevelDataType.Hole || LevelDataType.canMoveLeft(levelDataType) ? innerBorderWidth : 0,
-        borderTopWidth: levelDataType === LevelDataType.Hole || LevelDataType.canMoveDown(levelDataType) ? innerBorderWidth : 0,
-        boxShadow: noBoxShadow ? undefined : !classic ? `0 0 0 ${borderWidth}px 'var(--bg-color)` :
-          levelDataType === LevelDataType.Wall ||
-          levelDataType === LevelDataType.Start ||
-          LevelDataType.canMove(levelDataType) ?
-            `-${2 * borderWidth}px ${2 * borderWidth}px 0 0 var(--bg-color)` :
-            `${2 * borderWidth}px -${2 * borderWidth}px 0 0 var(--bg-color)`,
-        fontSize: fontSize,
-        height: innerSize,
-        lineHeight: innerSize * (classic ? 1.1 : 1) + 'px',
-        width: innerSize,
-      }}
+      style={style}
     >
-      {text}
+      {child}
     </div>
   );
 }

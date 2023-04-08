@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import React, { useState } from 'react';
 import LevelDataType from '../../constants/levelDataType';
-import Theme from '../../constants/theme';
+import Theme, { ICON_MAP } from '../../constants/theme';
 import isTheme from '../../helpers/isTheme';
 import BlockState from '../../models/blockState';
 import Position from '../../models/position';
@@ -23,6 +23,23 @@ export default function Block({ block, borderWidth, onClick, size }: BlockProps)
   const innerBorderWidth = Math.round(size / 5);
   const innerSize = size - 2 * borderWidth;
 
+  const style = {
+    backgroundColor: fillCenter ? 'var(--level-block-border)' : 'var(--level-block)',
+    borderBottomWidth: LevelDataType.canMoveUp(block.type) ? innerBorderWidth : 0,
+    borderColor: 'var(--level-block-border)',
+    borderLeftWidth: LevelDataType.canMoveRight(block.type) ? innerBorderWidth : 0,
+    borderRightWidth: LevelDataType.canMoveLeft(block.type) ? innerBorderWidth : 0,
+    borderTopWidth: LevelDataType.canMoveDown(block.type) ? innerBorderWidth : 0,
+    boxShadow: classic ?
+      `-${2 * borderWidth}px ${2 * borderWidth}px 0 0 var(--bg-color)` :
+      `0 0 0 ${borderWidth}px var(--bg-color)`,
+    height: innerSize,
+    left: size * initPos.x + (classic ? 2 * borderWidth : borderWidth),
+    top: size * initPos.y + (classic ? 0 : borderWidth),
+    width: innerSize,
+  } as any;
+  const icon = ICON_MAP[Theme.Monkey]?.[LevelDataType.Block];
+
   return (
     <div
       className={classNames(`block_type_${block.type} block_movable`)}
@@ -36,22 +53,9 @@ export default function Block({ block, borderWidth, onClick, size }: BlockProps)
           block.inHole ? styles['in-hole'] : undefined)}
         onClick={onClick}
         onTouchEnd={onClick}
-        style={{
-          backgroundColor: fillCenter ? 'var(--level-block-border)' : 'var(--level-block)',
-          borderBottomWidth: LevelDataType.canMoveUp(block.type) ? innerBorderWidth : 0,
-          borderColor: 'var(--level-block-border)',
-          borderLeftWidth: LevelDataType.canMoveRight(block.type) ? innerBorderWidth : 0,
-          borderRightWidth: LevelDataType.canMoveLeft(block.type) ? innerBorderWidth : 0,
-          borderTopWidth: LevelDataType.canMoveDown(block.type) ? innerBorderWidth : 0,
-          boxShadow: classic ?
-            `-${2 * borderWidth}px ${2 * borderWidth}px 0 0 var(--bg-color)` :
-            `0 0 0 ${borderWidth}px var(--bg-color)`,
-          height: innerSize,
-          left: size * initPos.x + (classic ? 2 * borderWidth : borderWidth),
-          top: size * initPos.y + (classic ? 0 : borderWidth),
-          width: innerSize,
-        }}
+        style={style}
       />
+
     </div>
   );
 }
