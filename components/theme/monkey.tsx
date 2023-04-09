@@ -300,7 +300,7 @@ function Banana({ fontSize, size, text }: ThemeIconProps) {
         position: 'absolute',
         zIndex: 2,
         color: 'darkbrown',
-        top: -size + fontSize * 2,
+        top: -size + fontSize * 1.95,
         fontSize: fontSize * .7,
         // rotate 10 degrees
         transform: 'rotate(20deg)',
@@ -381,6 +381,8 @@ function Grass({ innerSize, fontSize, text, size }: ThemeIconProps) {
   return <div
     className=''
     style={{
+      backgroundImage: 'url(/themes/monkey-theme/grass2.png)',
+      backgroundSize: 'cover',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -395,11 +397,6 @@ function Grass({ innerSize, fontSize, text, size }: ThemeIconProps) {
       color: 'lightyellow',
       //top: -innerSize + fontSize * 1.45,
     }}>{text}</span>
-    <Image alt='grass' src='/themes/monkey-theme/grass2.png' width={size} height={size} style={{
-      //position: 'absolute',
-      zIndex: 1,
-
-    }} />
 
   </div>;
 }
@@ -408,5 +405,5 @@ export const MONKEY_THEME_ICONS: Partial<Record<TileType, (props: ThemeIconProps
   [TileType.Start]: Monkey,
   [TileType.End]: Banana,
   //[LevelDataType.Block]: Rock,
-  //[TileType.Default]: Grass,
+  [TileType.Default]: Grass,
 };
