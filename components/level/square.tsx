@@ -89,7 +89,6 @@ export default function Square({
   const icon = getIconFromTheme(theme, levelDataType);
 
   if (icon) {
-    console.log(icon);
     style = {
       ...style,
       display: 'flex',
