@@ -8,7 +8,7 @@ import NProgress from 'nprogress';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { throttle } from 'throttle-debounce';
-import LevelUtil from '../../constants/levelDataType';
+import LevelUtil, { TileType } from '../../constants/levelDataType';
 import { AppContext } from '../../contexts/appContext';
 import { LevelContext } from '../../contexts/levelContext';
 import { PageContext } from '../../contexts/pageContext';
@@ -90,7 +90,7 @@ function initGameState(levelData: string, actionCount = 0) {
       } else if (levelDataType === LevelUtil.Start) {
         pos = new Position(x, y);
       } else if (LevelUtil.canMove(levelDataType)) {
-        blocks.push(new BlockState(blockId++, levelDataType, x, y));
+        blocks.push(new BlockState(blockId++, levelDataType as TileType, x, y));
       }
     }
   }

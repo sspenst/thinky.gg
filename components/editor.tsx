@@ -4,7 +4,7 @@ import React, { useCallback, useContext, useEffect, useRef, useState } from 'rea
 import toast from 'react-hot-toast';
 import ModifyModal from '../components/modal/modifyModal';
 import SizeModal from '../components/modal/sizeModal';
-import LevelUtil from '../constants/levelDataType';
+import LevelUtil, { TileType } from '../constants/levelDataType';
 import Theme from '../constants/theme';
 import { PageContext } from '../contexts/pageContext';
 import isTheme from '../helpers/isTheme';
@@ -32,7 +32,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   const [isModifyOpen, setIsModifyOpen] = useState(false);
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
   const [isSizeOpen, setIsSizeOpen] = useState(false);
-  const [levelDataType, setLevelDataType] = useState(LevelUtil.Default);
+  const [levelDataType, setLevelDataType] = useState<TileType>(TileType.Default);
   const { preventKeyDownEvent } = useContext(PageContext);
   const router = useRouter();
   const { id } = router.query;
@@ -60,43 +60,43 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   const handleKeyDown = useCallback((code: string) => {
     switch (code) {
     case 'Digit0':
-      setLevelDataType(LevelUtil.Default);
+      setLevelDataType(TileType.Default);
       break;
     case 'Digit1':
-      setLevelDataType(LevelUtil.Wall);
+      setLevelDataType(TileType.Wall);
       break;
     case 'Digit2':
-      setLevelDataType(LevelUtil.Block);
+      setLevelDataType(TileType.Block);
       break;
     case 'Digit3':
-      setLevelDataType(LevelUtil.End);
+      setLevelDataType(TileType.End);
       break;
     case 'Digit4':
-      setLevelDataType(LevelUtil.Start);
+      setLevelDataType(TileType.Start);
       break;
     case 'Digit5':
-      setLevelDataType(LevelUtil.Hole);
+      setLevelDataType(TileType.Hole);
       break;
     case 'Digit6':
-      setLevelDataType(LevelUtil.Left);
+      setLevelDataType(TileType.Left);
       break;
     case 'Digit7':
-      setLevelDataType(LevelUtil.Up);
+      setLevelDataType(TileType.Up);
       break;
     case 'Digit8':
-      setLevelDataType(LevelUtil.Right);
+      setLevelDataType(TileType.Right);
       break;
     case 'Digit9':
-      setLevelDataType(LevelUtil.Down);
+      setLevelDataType(TileType.Down);
       break;
     case 'KeyA':
-      setLevelDataType(LevelUtil.UpLeft);
+      setLevelDataType(TileType.UpLeft);
       break;
     case 'KeyB':
-      setLevelDataType(LevelUtil.UpRight);
+      setLevelDataType(TileType.UpRight);
       break;
     case 'KeyC':
-      setLevelDataType(LevelUtil.DownRight);
+      setLevelDataType(TileType.DownRight);
       break;
     case 'KeyD':
       setLevelDataType(LevelUtil.DownLeft);
@@ -243,12 +243,13 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   const listBlockChoices = [];
   const size = 40;
 
-  for (const levelDataTypeKey in LevelUtil.toString()) {
+  // loop through the enum TileType
+  for (const levelDataTypeKey in TileType) {
     let txt = undefined;
 
-    if (levelDataTypeKey === LevelUtil.End) {
+    if (levelDataTypeKey === TileType.End) {
       txt = level.leastMoves;
-    } else if (levelDataTypeKey === LevelUtil.Start) {
+    } else if (levelDataTypeKey === TileType.Start) {
       txt = 0;
     }
 
@@ -264,9 +265,9 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       >
         <Square
           borderWidth={1}
-          handleClick={() => setLevelDataType(levelDataTypeKey)}
+          handleClick={() => setLevelDataType(levelDataTypeKey as TileType)}
           leastMoves={0}
-          levelDataType={levelDataTypeKey}
+          levelDataType={levelDataTypeKey as TileType}
           noBoxShadow={true}
           size={size - (levelDataType === levelDataTypeKey ? 4 : 0)}
           text={txt}
