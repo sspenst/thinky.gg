@@ -2,6 +2,7 @@ import Page from '@root/components/page';
 import { AppContext } from '@root/contexts/appContext';
 import redirectToHome from '@root/helpers/redirectToHome';
 import { GetServerSidePropsContext } from 'next';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useContext, useRef, useState } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
@@ -36,11 +37,18 @@ export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?
     }
   }
 
-  const text = <div className='text-lg'>
-    <span className='text-center'>
-        Create guest account...</span>
+  const text = registrationState === 'registered' ? <div >Redirecting...</div> : <div className='text-lg'>
+    <div className='text-center'>
+      <span className='block text-lg font-medium mb-4'>Create guest account</span>
+      <ul className='text-left list-disc pl-6'>
+        <li className='mb-2'>Your progress is saved and you can convert to a regular account via account settings</li>
+        <li className='mb-2'>You aren&apos;t able to comment or review levels as a guest</li>
+        <li className='mb-2'>While your progress is saved, advanced data around your play is not saved.</li>
+        <li className='mb-2'>Your guest account may be deleted after 7 days of no activity</li>
+      </ul>
+    </div>
 
-    <div className='w-full pt-2'>
+    <div className='w-full pt-2 justify-center flex'>
       <ReCAPTCHA
         onChange={onRecaptchaChange}
 
@@ -48,16 +56,19 @@ export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?
         sitekey={recaptchaPublicKey ?? ''}
       />
     </div>
-    <div className='p-3 text-center'>
+    <div className='p-3 text-center flex flex-col gap-3'>
       <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer' onClick={fetchSignup}>
         Create
       </button>
+      <Link className='text-sm underline' href='/signup'>Create (free) regular account</Link>
     </div>
   </div>;
 
   async function fetchSignup() {
     const tutorialCompletedAt = window.localStorage.getItem('tutorialCompletedAt') || '0';
 
+    toast.dismiss();
+    toast.loading('Creating guest account...');
     const res = await fetch('/api/signup', {
       method: 'POST',
       headers: {
@@ -92,7 +103,7 @@ export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?
 
       toast.dismiss();
       toast.success('Guest account created');
-
+      setRegistrationState('registered');
       // clear localstorage value
       window.localStorage.removeItem('tutorialCompletedAt');
       mutateUser();
