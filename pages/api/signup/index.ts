@@ -1,4 +1,6 @@
-import mongoose, { Types } from 'mongoose';
+import { EmailDigestSettingTypes } from '@root/constants/emailDigest';
+import Role from '@root/constants/role';
+import mongoose, { QueryOptions, Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
 import Theme from '../../../constants/theme';
@@ -13,8 +15,41 @@ import sendPasswordResetEmail from '../../../lib/sendPasswordResetEmail';
 import User from '../../../models/db/user';
 import { UserConfigModel, UserModel } from '../../../models/mongoose';
 
+async function createUser({ email, name, password, tutorialCompletedAt, roles }: {email: string, name: string, password: string, tutorialCompletedAt: number, roles: Role[]}, queryOptions: QueryOptions): Promise<User> {
+  const id = new Types.ObjectId();
+  let emailDigest = EmailDigestSettingTypes.DAILY;
+
+  if (roles.includes(Role.GUEST)) {
+    emailDigest = EmailDigestSettingTypes.NONE;
+  }
+
+  const [userCreated] = await Promise.all([
+    UserModel.create([{
+      _id: id,
+      email: email,
+      name: name,
+      password: password,
+      score: 0,
+      ts: TimerUtil.getTs(),
+      roles: roles,
+    }], queryOptions),
+    UserConfigModel.create([{
+      _id: new Types.ObjectId(),
+      theme: Theme.Modern,
+      userId: id,
+      tutorialCompletedAt: tutorialCompletedAt,
+      emailDigest: emailDigest,
+    }], queryOptions),
+  ]);
+
+  const user = userCreated[0] as User;
+
+  return user;
+}
+
 export default apiWrapper({ POST: {
   body: {
+    guest: ValidType('boolean', false),
     email: ValidType('string'),
     name: ValidType('string'),
     password: ValidType('string'),
@@ -22,7 +57,7 @@ export default apiWrapper({ POST: {
     recaptchaToken: ValidType('string', false),
   },
 } }, async (req: NextApiRequest, res: NextApiResponse) => {
-  const { email, name, password, tutorialCompletedAt, recaptchaToken } = req.body;
+  const { email, name, password, tutorialCompletedAt, recaptchaToken, guest } = req.body;
 
   await dbConnect();
   const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET || '';
@@ -46,9 +81,18 @@ export default apiWrapper({ POST: {
     }
   }
 
-  const trimmedEmail = email.trim();
+  let trimmedEmail: string, trimmedName: string, passwordValue: string;
 
-  const trimmedName = name.trim();
+  if (guest) {
+    trimmedName = 'Guest-' + Math.floor(Math.random() * 1000000);
+    trimmedEmail = trimmedName + '@guest.com';
+    passwordValue = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  } else {
+    trimmedEmail = email.trim();
+    trimmedName = name.trim();
+    passwordValue = password;
+  }
+
   const [userWithEmail, userWithUsername] = await Promise.all([UserModel.findOne<User>({ email: trimmedEmail }, '+email +password'), UserModel.findOne<User>({ name: trimmedName })]);
 
   if (userWithEmail) {
@@ -71,33 +115,25 @@ export default apiWrapper({ POST: {
   }
 
   const session = await mongoose.startSession();
+  let id = new Types.ObjectId();
 
   try {
-    const id = new Types.ObjectId();
-
     await session.withTransaction(async () => {
-      const [userCreated] = await Promise.all([
-        UserModel.create([{
-          _id: id,
-          email: trimmedEmail,
-          name: trimmedName,
-          password: password,
-          score: 0,
-          ts: TimerUtil.getTs(),
-        }], {
-          session: session,
-        }),
-        UserConfigModel.create([{
-          _id: new Types.ObjectId(),
-          theme: Theme.Modern,
-          userId: id,
-          tutorialCompletedAt: tutorialCompletedAt,
-        }], {
-          session: session,
-        }),
-      ]);
+      const userCreated = await createUser({
+        email: trimmedEmail,
+        name: trimmedName,
+        password: passwordValue,
+        tutorialCompletedAt: tutorialCompletedAt,
+        roles: guest ? [Role.GUEST] : [],
+      }, { session: session });
 
-      const user = userCreated[0] as User;
+      if (!userCreated) {
+        throw new Error('Error creating user');
+      }
+
+      const user = userCreated as User;
+
+      id = user._id;
 
       await queueDiscordWebhook(Discord.NotifsId, `**${trimmedName}** just registered! Welcome them on their [profile](${req.headers.origin}${getProfileSlug(user)})!`, { session: session });
     });

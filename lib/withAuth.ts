@@ -28,6 +28,7 @@ export async function getUserFromToken(
   }
 
   const decoded = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload;
+
   const userId = decoded.userId;
 
   // check if user exists
