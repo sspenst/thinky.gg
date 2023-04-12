@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useContext, useRef, useState } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
@@ -22,8 +23,6 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
   const recaptchaRef = useRef<ReCAPTCHA>(null);
 
   function onRecaptchaChange(value: string | null) {
-    console.log('Captcha value:', value);
-
     if (value) {
       setRecaptchaToken(value);
     }
@@ -155,6 +154,7 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
         </div>
         <div className='flex items-center justify-between gap-1'>
           <input className={'bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer'} type='submit' value='Sign Up' />
+          <Link href={'/play-as-guest'} className={'text-sm hover:underline'} >Sign Up as Guest</Link>
         </div>
       </form>
     </FormTemplate>

@@ -218,27 +218,6 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
     !disabled,
   ), []);
 
-  const skipControl = useCallback((disabled = false) => new Control(
-    'control-skip',
-    () => {
-      if (confirm('Are you sure you want to skip the tutorial?')) {
-        setTutorialStepIndex((i) => {
-          return getTutorialSteps().length - 1;
-        });
-      }
-    },
-    <div className='flex justify-center'>
-      <span className='pl-2 align-middle text-center justify-center self-center'>
-        Skip
-      </span>
-      <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='currentColor' className='bi bi-skip-forward pl-2' viewBox='0 0 16 16'>
-        <path d='M15.5 3.5a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-1 0V8.752l-6.267 3.636c-.52.302-1.233-.043-1.233-.696v-2.94l-6.267 3.636C.713 12.69 0 12.345 0 11.692V4.308c0-.653.713-.998 1.233-.696L7.5 7.248v-2.94c0-.653.713-.998 1.233-.696L15 7.248V4a.5.5 0 0 1 .5-.5zM1 4.633v6.734L6.804 8 1 4.633zm7.5 0v6.734L14.304 8 8.5 4.633z' />
-      </svg>
-    </div>,
-    disabled,
-    !disabled,
-  ), []);
-
   const getTutorialSteps = useCallback(() => {
     return [
       {
@@ -529,17 +508,46 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
               Continue your Pathology journey with the <span className='font-bold'>Campaign</span>!
             </div>
             :
-            <div className='text-xl fadeIn' style={{
-              pointerEvents: 'all',
-              animationDelay: '2s'
-            }}>
-              Now <span className='font-bold'>sign up</span> to explore the world of Pathology!
+            <div className='flex flex-col gap-3'>
+              <div className='text-xl fadeIn' style={{
+                pointerEvents: 'all',
+                animationDelay: '2s'
+              }}>
+              Now <Link href='/signup' className='font-bold text-blue-400 hover:text-blue-300'>sign up</Link> to explore the world of Pathology!
+              </div>
+              <div className='text-md fadeIn' style={{
+                pointerEvents: 'all',
+                animationDelay: '2s'
+              }}>
+              or <Link href='/play-as-guest' className='font-bold text-blue-400 hover:text-blue-300'>play as a guest</Link>
+              </div>
             </div>
           }
         </div>,
       },
     ] as TutorialStep[];
   }, [niceJob, user]);
+
+  const skipControl = useCallback((disabled = false) => new Control(
+    'control-skip',
+    () => {
+      if (confirm('Are you sure you want to skip the tutorial?')) {
+        setTutorialStepIndex(() => {
+          return getTutorialSteps().length - 1;
+        });
+      }
+    },
+    <div className='flex justify-center'>
+      <span className='pl-2 align-middle text-center justify-center self-center'>
+        Skip
+      </span>
+      <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='currentColor' className='bi bi-skip-forward pl-2' viewBox='0 0 16 16'>
+        <path d='M15.5 3.5a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-1 0V8.752l-6.267 3.636c-.52.302-1.233-.043-1.233-.696v-2.94l-6.267 3.636C.713 12.69 0 12.345 0 11.692V4.308c0-.653.713-.998 1.233-.696L7.5 7.248v-2.94c0-.653.713-.998 1.233-.696L15 7.248V4a.5.5 0 0 1 .5-.5zM1 4.633v6.734L6.804 8 1 4.633zm7.5 0v6.734L14.304 8 8.5 4.633z' />
+      </svg>
+    </div>,
+    disabled,
+    !disabled,
+  ), [getTutorialSteps]);
 
   useEffect(() => {
     if (popperUpdateInterval.current) {
@@ -590,13 +598,13 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
     // mark tutorial as completed on the last step
     if (tutorialSteps.length - 1 === tutorialStepIndex) {
       if (user) {
-        putTutorialCompletedAt(TimerUtil.getTs());
+        putTutorialCompletedAt(TimerUtil.getTs()); // TODO figure out why this repeatedly calls
         window.localStorage.removeItem('tutorialCompletedAt');
       } else {
         localStorage.setItem('tutorialCompletedAt', '' + TimerUtil.getTs());
       }
     }
-  }, [getTutorialSteps, initializeTooltip, putTutorialCompletedAt, setIsFullScreen, tutorialStepIndex, user]);
+  }, [getTutorialSteps, initializeTooltip, setIsFullScreen, tutorialStepIndex, user]);
 
   const tutorialStep = getTutorialSteps()[tutorialStepIndex];
 

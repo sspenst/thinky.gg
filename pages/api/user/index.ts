@@ -1,3 +1,4 @@
+import Role from '@root/constants/role';
 import bcrypt from 'bcryptjs';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
@@ -30,9 +31,9 @@ export default withAuth({
   },
   DELETE: {},
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-  if (req.method === 'GET') {
-    await dbConnect();
+  await dbConnect();
 
+  if (req.method === 'GET') {
     const [enrichedUser, multiplayerProfile, userConfig] = await Promise.all([
       enrichReqUser(req.user),
       MultiplayerProfileModel.findOne({ 'userId': req.user._id }),
@@ -46,8 +47,6 @@ export default withAuth({
       multiplayerProfile: multiplayerProfile,
     } });
   } else if (req.method === 'PUT') {
-    await dbConnect();
-
     const {
       bio,
       currentPassword,
@@ -56,76 +55,78 @@ export default withAuth({
       name,
       password,
     } = req.body;
+    const isGuest = req.user.roles.includes(Role.GUEST);
 
     if (password) {
       const user = await UserModel.findById(req.userId, '+password', { lean: false });
 
-      if (!(await bcrypt.compare(currentPassword, user.password))) {
-        return res.status(401).json({
-          error: 'Incorrect email or password',
-        });
+      if (!isGuest) {
+        if (!(await bcrypt.compare(currentPassword, user.password))) {
+          return res.status(401).json({
+            error: 'Incorrect email or password',
+          });
+        }
+      } else {
+        // remove GUEST role
+        user.roles = user.roles.filter((role: Role) => role !== Role.GUEST);
       }
 
       user.password = password;
       await user.save();
-
-      return res.status(200).json({ updated: true });
-    } else {
-      const setObj: {[k: string]: string} = {};
-
-      if (hideStatus !== undefined) {
-        setObj['hideStatus'] = hideStatus;
-      }
-
-      if (email) {
-        setObj['email'] = email.trim();
-      }
-
-      if (bio !== undefined) {
-        setObj['bio'] = bio.trim();
-      }
-
-      const trimmedName = name?.trim();
-
-      if (trimmedName) {
-        setObj['name'] = trimmedName;
-      }
-
-      try {
-        await UserModel.updateOne({ _id: req.userId }, { $set: setObj }, { runValidators: true });
-      } catch (err) {
-        return res.status(500).json({ error: 'Internal error', updated: false });
-      }
-
-      if (trimmedName) {
-        // TODO: in extremely rare cases there could be a race condition, might need a transaction here
-        const levels = await LevelModel.find<Level>({
-          userId: req.userId,
-        }, '_id name', { lean: true });
-
-        for (const level of levels) {
-          const slug = await generateLevelSlug(trimmedName, level.name, level._id.toString());
-
-          await LevelModel.updateOne({ _id: level._id }, { $set: { slug: slug } });
-        }
-
-        // Do the same for collections
-        const collections = await CollectionModel.find({
-          userId: req.userId,
-        }, '_id name', { lean: true });
-
-        for (const collection of collections) {
-          const slug = await generateCollectionSlug(trimmedName, collection.name, collection._id.toString());
-
-          await CollectionModel.updateOne({ _id: collection._id }, { $set: { slug: slug } });
-        }
-      }
-
-      return res.status(200).json({ updated: true });
     }
-  } else if (req.method === 'DELETE') {
-    await dbConnect();
 
+    const setObj: {[k: string]: string} = {};
+
+    if (hideStatus !== undefined) {
+      setObj['hideStatus'] = hideStatus;
+    }
+
+    if (email) {
+      setObj['email'] = email.trim();
+    }
+
+    if (bio !== undefined) {
+      setObj['bio'] = bio.trim();
+    }
+
+    const trimmedName = name?.trim();
+
+    if (trimmedName) {
+      setObj['name'] = trimmedName;
+    }
+
+    try {
+      await UserModel.updateOne({ _id: req.userId }, { $set: setObj }, { runValidators: true });
+    } catch (err) {
+      return res.status(500).json({ error: 'Internal error', updated: false });
+    }
+
+    if (trimmedName) {
+      // TODO: in extremely rare cases there could be a race condition, might need a transaction here
+      const levels = await LevelModel.find<Level>({
+        userId: req.userId,
+      }, '_id name', { lean: true });
+
+      for (const level of levels) {
+        const slug = await generateLevelSlug(trimmedName, level.name, level._id.toString());
+
+        await LevelModel.updateOne({ _id: level._id }, { $set: { slug: slug } });
+      }
+
+      // Do the same for collections
+      const collections = await CollectionModel.find({
+        userId: req.userId,
+      }, '_id name', { lean: true });
+
+      for (const collection of collections) {
+        const slug = await generateCollectionSlug(trimmedName, collection.name, collection._id.toString());
+
+        await CollectionModel.updateOne({ _id: collection._id }, { $set: { slug: slug } });
+      }
+    }
+
+    return res.status(200).json({ updated: true });
+  } else if (req.method === 'DELETE') {
     // check if there is an active subscription
     const [code, data] = await getSubscription(req);
 

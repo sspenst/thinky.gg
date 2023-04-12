@@ -1,3 +1,5 @@
+import SettingsAccountGuest from '@root/components/settings/settingsAccountGuest';
+import Role from '@root/constants/role';
 import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
 import classNames from 'classnames';
@@ -125,11 +127,12 @@ export default function Settings({
   useEffect(() => {
     setTab(getQueryTab(router.query.tab));
   }, [router.query.tab]);
+  const isGuest = user.roles.includes(Role.GUEST);
 
   function getTabContent() {
     switch (tab) {
     case SettingsTab.Account:
-      return <SettingsAccount user={user} userConfig={userConfig} />;
+      return !isGuest ? <SettingsAccount user={user} userConfig={userConfig} /> : <SettingsAccountGuest />;
     case SettingsTab.Pro:
       return <SettingsPro stripeCustomerPortalLink={stripeCustomerPortalLink} stripePaymentLink={stripePaymentLink} stripePaymentYearlyLink={stripePaymentYearlyLink} />;
     case SettingsTab.Danger:
