@@ -604,7 +604,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
         localStorage.setItem('tutorialCompletedAt', '' + TimerUtil.getTs());
       }
     }
-  }, [getTutorialSteps, initializeTooltip, setIsFullScreen, tutorialStepIndex, user]);
+  }, [getTutorialSteps, initializeTooltip, setIsFullScreen, tutorialStepIndex, user]); // TODO figure out why this repeatedly calls if I add putTutorialCompletedAt
 
   const tutorialStep = getTutorialSteps()[tutorialStepIndex];
 
