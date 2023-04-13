@@ -36,6 +36,7 @@
     "react-dom": "^18.2.0",
     "react-google-recaptcha": "^2.1.0",
     "react-hot-toast": "^2.4.0",
+    "react-joyride": "^2.5.3",
     "react-select": "^5.7.2",
     "react-simple-star-rating": "^5.1.7",
     "react-tooltip": "^5.10.5",
