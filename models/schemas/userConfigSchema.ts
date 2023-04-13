@@ -8,13 +8,13 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
-    emailConfirmed: {
-      type: Boolean,
-      default: false,
-    },
     emailConfirmationToken: {
       type: String,
       select: false,
+    },
+    emailConfirmed: {
+      type: Boolean,
+      default: false,
     },
     emailDigest: {
       type: String,

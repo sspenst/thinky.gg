@@ -71,6 +71,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
   const [tooltip, setTooltip] = useState<Tooltip>();
   const [tutorialStepIndex, setTutorialStepIndex] = useState(0);
   const [tutorialStepIndexMax, setTutorialStepIndexMax] = useState(0);
+  const isLoggedIn = !!user;
 
   const BLANK_GRID = '0000000\n0000000\n0000000\n0000000\n0000000';
   const GRID_WITH_PLAYER = '0000000\n0000000\n0004000\n0000000\n0000000';
@@ -501,7 +502,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
           <div className='text-xl mb-6 fadeIn' style={{
             animationDelay: '1s',
           }}>There is a lot more to Pathology than just this:<br />An active community, level editor, and thousands of levels to explore.</div>
-          {user ?
+          {isLoggedIn ?
             <div className='text-xl fadeIn' style={{
               pointerEvents: 'all',
               animationDelay: '2s' }}>
@@ -526,7 +527,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
         </div>,
       },
     ] as TutorialStep[];
-  }, [niceJob, user]);
+  }, [isLoggedIn, niceJob]);
 
   const skipControl = useCallback((disabled = false) => new Control(
     'control-skip',
@@ -597,14 +598,14 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
 
     // mark tutorial as completed on the last step
     if (tutorialSteps.length - 1 === tutorialStepIndex) {
-      if (user) {
-        putTutorialCompletedAt(TimerUtil.getTs()); // TODO figure out why this repeatedly calls
+      if (isLoggedIn) {
+        putTutorialCompletedAt(TimerUtil.getTs());
         window.localStorage.removeItem('tutorialCompletedAt');
       } else {
         localStorage.setItem('tutorialCompletedAt', '' + TimerUtil.getTs());
       }
     }
-  }, [getTutorialSteps, initializeTooltip, putTutorialCompletedAt, setIsFullScreen, tutorialStepIndex, user]); // TODO figure out why this repeatedly calls if I add putTutorialCompletedAt
+  }, [getTutorialSteps, initializeTooltip, isLoggedIn, putTutorialCompletedAt, setIsFullScreen, tutorialStepIndex]);
 
   const tutorialStep = getTutorialSteps()[tutorialStepIndex];
 
@@ -648,7 +649,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
       true,
     ));
 
-    controls.push(user ?
+    controls.push(isLoggedIn ?
       new Control(
         'control-campaign',
         () => {return;},

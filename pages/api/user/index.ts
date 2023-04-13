@@ -114,16 +114,16 @@ export default withAuth({
 
         try {
           await sendEmailConfirmationEmail(req, newUser, userConfig as UserConfig);
-        } catch (err: any) {
+        } catch (err) {
           logger.error(err);
 
-          return res.status(400).json({ error: (err as Error).message || 'Error sending email', updated: false });
+          return res.status(400).json({ error: (err as Error).message || 'Error sending email' });
         }
       }
     } catch (err) {
       logger.error(err);
 
-      return res.status(500).json({ error: 'Internal error', updated: false });
+      return res.status(500).json({ error: 'Internal error' });
     }
 
     if (trimmedName) {

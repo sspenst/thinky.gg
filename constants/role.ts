@@ -1,8 +1,8 @@
 enum Role {
   ADMIN = 'Admin',
   CURATOR = 'Curator',
-  PRO = 'Pro',
   GUEST = 'Guest',
+  PRO = 'Pro',
 }
 
 export default Role;
