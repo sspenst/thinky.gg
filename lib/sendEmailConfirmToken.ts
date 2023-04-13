@@ -9,13 +9,12 @@ import { sendMail } from '../pages/api/internal-jobs/email-digest';
 
 export default async function sendEmailConfirmationEmail(req: NextApiRequest, user: User, userConfig: UserConfig) {
   const token = userConfig.emailConfirmationToken;
-
   const url = `${req.headers.origin}/confirm-email/${user._id}/${token}`;
 
-  const lastSent = await EmailLogModel.findOne({
+  const lastSent = await EmailLogModel.findOne<EmailLog>({
     userId: user._id,
     type: EmailType.EMAIL_CONFIRM_EMAIL,
-  }).sort({ createdAt: -1 }) as EmailLog;
+  }).sort({ createdAt: -1 });
 
   if (lastSent) {
     const lastSentTime = new Date(lastSent.createdAt).getTime();

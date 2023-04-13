@@ -4,8 +4,8 @@ import User from './user';
 
 interface UserConfig {
   _id: Types.ObjectId;
-  emailConfirmed: boolean;
   emailConfirmationToken: string;
+  emailConfirmed: boolean;
   emailDigest: EmailDigestSettingTypes;
   mobileDeviceTokens: string[];
   showPlayStats: boolean;
