@@ -1,5 +1,6 @@
 import { EmailDigestSettingTypes } from '@root/constants/emailDigest';
 import Role from '@root/constants/role';
+import { generatePassword } from '@root/helpers/generatePassword';
 import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmToken';
 import UserConfig from '@root/models/db/userConfig';
 import mongoose, { QueryOptions, Types } from 'mongoose';
@@ -93,7 +94,7 @@ export default apiWrapper({ POST: {
   if (guest) {
     trimmedName = 'Guest-' + Math.floor(Math.random() * 1000000);
     trimmedEmail = trimmedName + '@guest.com';
-    passwordValue = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    passwordValue = generatePassword();
   } else {
     trimmedEmail = email.trim();
     trimmedName = name.trim();
@@ -148,7 +149,10 @@ export default apiWrapper({ POST: {
     session.endSession();
 
     return res.setHeader('Set-Cookie', getTokenCookie(id.toString(), req.headers?.host))
-      .status(200).json({ success: true });
+      .status(200).json({
+        success: true,
+        ...(guest ? { name: trimmedName, temporaryPassword: passwordValue } : {}),
+      });
   } catch (err) {
     logger.error(err);
     session.endSession();

@@ -12,6 +12,7 @@ import { LevelContext } from '../../contexts/levelContext';
 import { PageContext } from '../../contexts/pageContext';
 import getProfileSlug from '../../helpers/getProfileSlug';
 import Avatar from '../avatar';
+import FormattedUser from '../formattedUser';
 import AboutModal from '../modal/aboutModal';
 import EditLevelModal from '../modal/editLevelModal';
 import LevelInfoModal from '../modal/levelInfoModal';
@@ -62,7 +63,7 @@ export default function Dropdown() {
     }
 
     toast.dismiss();
-    toast.loading('Logging out...');
+    toast.loading('Logging out...', { duration: 1000 });
     fetch('/api/logout', {
       method: 'POST',
     }).then(() => {
@@ -157,6 +158,13 @@ export default function Dropdown() {
                   </Menu.Item>
                 }
               </div>
+            }
+            { user &&
+            <Menu.Item>
+              {() => (
+                <FormattedUser user={user} size={Dimensions.AvatarSizeSmall} />
+              )}
+            </Menu.Item>
             }
             {user && levelContext &&
               <Menu.Item>
