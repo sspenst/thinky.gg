@@ -127,7 +127,7 @@ export default apiWrapper({ POST: {
 
   try {
     await session.withTransaction(async () => {
-      const [user, configCreated] = await createUser({
+      const [user, userConfig] = await createUser({
         email: trimmedEmail,
         name: trimmedName,
         password: passwordValue,
@@ -142,7 +142,7 @@ export default apiWrapper({ POST: {
       id = user._id;
 
       Promise.all([
-        !guest && sendEmailConfirmationEmail(req, user, configCreated as UserConfig),
+        !guest && sendEmailConfirmationEmail(req, user, userConfig as UserConfig),
         queueDiscordWebhook(Discord.NotifsId, `**${trimmedName}** just registered! Welcome them on their [profile](${req.headers.origin}${getProfileSlug(user)})!`, { session: session })
       ]);
     });
