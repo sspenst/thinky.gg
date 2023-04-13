@@ -11,6 +11,7 @@ import { TimerUtil } from '../helpers/getTs';
 import Control from '../models/control';
 import Level from '../models/db/level';
 import Position, { getDirectionFromCode } from '../models/position';
+import DismissToast from './dismissToast';
 import BasicLayout from './level/basicLayout';
 import Controls from './level/controls';
 import styles from './level/Controls.module.css';
@@ -505,7 +506,8 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
           {isLoggedIn ?
             <div className='text-xl fadeIn' style={{
               pointerEvents: 'all',
-              animationDelay: '2s' }}>
+              animationDelay: '2s',
+            }}>
               Continue your Pathology journey with the <span className='font-bold'>Campaign</span>!
             </div>
             :
@@ -514,13 +516,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
                 pointerEvents: 'all',
                 animationDelay: '2s'
               }}>
-              Now <Link href='/signup' className='font-bold text-blue-400 hover:text-blue-300'>sign up</Link> to explore the world of Pathology!
-              </div>
-              <div className='text-md fadeIn' style={{
-                pointerEvents: 'all',
-                animationDelay: '2s'
-              }}>
-              or <Link href='/play-as-guest' className='font-bold text-blue-400 hover:text-blue-300'>play as a guest</Link>
+                Now <Link href='/signup' className='font-bold text-blue-500 hover:text-blue-400'>sign up</Link> to explore the world of Pathology!
               </div>
             </div>
           }
@@ -529,7 +525,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
     ] as TutorialStep[];
   }, [isLoggedIn, niceJob]);
 
-  const skipControl = useCallback((disabled = false) => new Control(
+  const skipControl = useCallback(() => new Control(
     'control-skip',
     () => {
       if (confirm('Are you sure you want to skip the tutorial?')) {
@@ -546,8 +542,6 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
         <path d='M15.5 3.5a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-1 0V8.752l-6.267 3.636c-.52.302-1.233-.043-1.233-.696v-2.94l-6.267 3.636C.713 12.69 0 12.345 0 11.692V4.308c0-.653.713-.998 1.233-.696L7.5 7.248v-2.94c0-.653.713-.998 1.233-.696L15 7.248V4a.5.5 0 0 1 .5-.5zM1 4.633v6.734L6.804 8 1 4.633zm7.5 0v6.734L14.304 8 8.5 4.633z' />
       </svg>
     </div>,
-    disabled,
-    !disabled,
   ), [getTutorialSteps]);
 
   useEffect(() => {
@@ -638,8 +632,8 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
   }
 
   if (tutorialStepIndex !== getTutorialSteps().length - 1) {
-    controls.push(skipControl(isNextButtonDisabled));
     controls.push(nextControl(isNextButtonDisabled || (!tutorialStep.isNextButtonDisabled && tutorialStep.gameGrid && tutorialStepIndex === tutorialStepIndexMax)));
+    controls.push(skipControl());
   } else {
     controls.push(new Control(
       'restart',
@@ -744,16 +738,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
           }}
         >
           {tooltip.title}
-          {tooltip.canClose &&
-            <svg className='h-3 w-3 my-1.5 ml-2 cursor-pointer' fill={'var(--bg-color-4)'} version='1.1' id='Capa_1' xmlns='http://www.w3.org/2000/svg' xmlnsXlink='http://www.w3.org/1999/xlink' x='0px' y='0px' viewBox='0 0 460.775 460.775' xmlSpace='preserve' onClick={() => setTooltip(undefined)}>
-              <path d='M285.08,230.397L456.218,59.27c6.076-6.077,6.076-15.911,0-21.986L423.511,4.565c-2.913-2.911-6.866-4.55-10.992-4.55
-              c-4.127,0-8.08,1.639-10.993,4.55l-171.138,171.14L59.25,4.565c-2.913-2.911-6.866-4.55-10.993-4.55
-              c-4.126,0-8.08,1.639-10.992,4.55L4.558,37.284c-6.077,6.075-6.077,15.909,0,21.986l171.138,171.128L4.575,401.505
-              c-6.074,6.077-6.074,15.911,0,21.986l32.709,32.719c2.911,2.911,6.865,4.55,10.992,4.55c4.127,0,8.08-1.639,10.994-4.55
-              l171.117-171.12l171.118,171.12c2.913,2.911,6.866,4.55,10.993,4.55c4.128,0,8.081-1.639,10.992-4.55l32.709-32.719
-              c6.074-6.075,6.074-15.909,0-21.986L285.08,230.397z' />
-            </svg>
-          }
+          {tooltip.canClose && <DismissToast onClick={() => setTooltip(undefined)} />}
           <div id='arrow' data-popper-arrow />
         </div>
         :
