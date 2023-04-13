@@ -78,6 +78,8 @@ const UserSchema = new mongoose.Schema<User>({
     type: String,
     select: false,
     required: true,
+    minlength: 8,
+    maxlength: 50,
   },
   roles: {
     type: [String],
