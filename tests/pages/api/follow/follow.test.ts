@@ -1,4 +1,6 @@
+import Theme from '@root/constants/theme';
 import { enableFetchMocks } from 'jest-fetch-mock';
+import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import GraphType from '../../../../constants/graphType';
 import NotificationType from '../../../../constants/notificationType';
@@ -7,7 +9,7 @@ import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { initLevel } from '../../../../lib/initializeLocalDb';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { GraphModel, LevelModel, NotificationModel } from '../../../../models/mongoose';
+import { GraphModel, LevelModel, NotificationModel, UserConfigModel } from '../../../../models/mongoose';
 import handler from '../../../../pages/api/follow/index';
 import publishLevelHandler from '../../../../pages/api/publish/[id]';
 import userHandle from '../../../../pages/api/user/index';
@@ -233,13 +235,23 @@ describe('api/follow', () => {
     await dbConnect();
 
     // USER is still following USER_C, so we're getting USER_C to publish a level
-    const level = await initLevel(TestId.USER_C, 'notif', {
-      data: '43',
-      height: 1,
-      isDraft: true,
-      leastMoves: 1,
-      width: 2,
-    });
+    const [level, ] = await Promise.all([
+      initLevel(TestId.USER_C, 'notif', {
+        data: '43',
+        height: 1,
+        isDraft: true,
+        leastMoves: 1,
+        width: 2,
+      }),
+      // set emailConfirmed for UserC. User C has no user config
+      await UserConfigModel.create({
+        _id: new Types.ObjectId(),
+        theme: Theme.Modern,
+        userId: new Types.ObjectId(TestId.USER_C),
+        emailConfirmed: true
+      })
+
+    ]);
 
     await testApiHandler({
       handler: async (_, res) => {

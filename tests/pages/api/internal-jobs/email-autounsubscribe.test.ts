@@ -76,7 +76,10 @@ describe('Email auto unsubscribe', () => {
             expect(totalEmailsSent.length).toBe(day + 1);
             expect(response.emailUnsubscribeSent).toHaveLength(0);
             expect(response.emailDigestSent).toHaveLength(2);
-            expect(response.emailDigestSent[0]).toBe('test@gmail.com');
+            // sort response.emailDigestSent array alphabetically
+
+            expect(response.emailDigestSent[0]).toBe('bbb@gmail.com');
+            expect(response.emailDigestSent[1]).toBe('test@gmail.com');
             expect(response.emailReactivationSent).toHaveLength(0);
           } else if (day === 7) {
             expect(totalEmailsSent.length).toBe(day + 1);
@@ -87,7 +90,8 @@ describe('Email auto unsubscribe', () => {
             expect(totalEmailsSent.length).toBe(day + 1);
             expect(response.emailUnsubscribeSent).toHaveLength(0);
             expect(response.emailDigestSent).toHaveLength(2);
-            expect(response.emailDigestSent[0]).toBe('test@gmail.com');
+            expect(response.emailDigestSent[0]).toBe('bbb@gmail.com');
+            expect(response.emailDigestSent[1]).toBe('test@gmail.com');
             expect(response.emailReactivationSent).toHaveLength(0);
 
             if (day === 9) {

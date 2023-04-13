@@ -141,7 +141,7 @@ describe('Email digest', () => {
         const response = await res.json();
 
         expect(response.emailDigestFailed).toHaveLength(2);
-        expect(response.emailDigestFailed[0]).toBe('test@gmail.com');
+        expect(response.emailDigestFailed[0]).toBe('bbb@gmail.com');
         expect(res.status).toBe(200);
 
         const emailLogs = await EmailLogModel.find({}, {}, { sort: { createdAt: -1 } });
@@ -273,7 +273,8 @@ describe('Email digest', () => {
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
         expect(response.emailDigestSent).toHaveLength(2); // TEST USER C has no UserConfig so we skip this user, and TEST USER B has no notifications in the last 24 hrs
-        expect(response.emailDigestSent[0]).toBe('test@gmail.com');
+        expect(response.emailDigestSent[0]).toBe('bbb@gmail.com');
+        expect(response.emailDigestSent[1]).toBe('test@gmail.com');
         expect(response.emailReactivationSent).toHaveLength(0);
       },
     });

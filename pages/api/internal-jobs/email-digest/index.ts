@@ -483,12 +483,12 @@ export default apiWrapper({ GET: {
 
     totalEmailedSoFar.push(...emailDigestResult.sentList);
 
-    emailUnsubscribeSent = emailUnsubscribeResult.sentList;
-    emailUnsubscribeFailed = emailUnsubscribeResult.failedList;
-    emailDigestSent = emailDigestResult.sentList;
-    emailDigestFailed = emailDigestResult.failedList;
-    emailReactivationSent = emailReactivationResult.sentList;
-    emailReactivationFailed = emailReactivationResult.failedList;
+    emailUnsubscribeSent = emailUnsubscribeResult.sentList.sort();
+    emailUnsubscribeFailed = emailUnsubscribeResult.failedList.sort();
+    emailDigestSent = emailDigestResult.sentList.sort();
+    emailDigestFailed = emailDigestResult.failedList.sort();
+    emailReactivationSent = emailReactivationResult.sentList.sort();
+    emailReactivationFailed = emailReactivationResult.failedList.sort();
   } catch (err) {
     logger.error(err);
 
