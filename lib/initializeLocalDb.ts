@@ -18,7 +18,7 @@ export default async function initializeLocalDb() {
     email: 'test@gmail.com',
     last_visited_at: ts,
     name: 'test',
-    password: 'test',
+    password: 'test1234',
     score: 2,
     ts: ts,
   });
@@ -26,6 +26,7 @@ export default async function initializeLocalDb() {
     _id: new Types.ObjectId(),
     theme: Theme.Modern,
     userId: new Types.ObjectId(TestId.USER),
+    emailConfirmed: true,
   });
 
   // USER_B
@@ -34,7 +35,7 @@ export default async function initializeLocalDb() {
     calc_records: 0,
     email: 'bbb@gmail.com',
     name: 'BBB',
-    password: 'BBB',
+    password: 'BBB12345',
     score: 0,
     ts: ts,
   });
@@ -51,7 +52,7 @@ export default async function initializeLocalDb() {
     calc_records: 1,
     email: 'the_curator@gmail.com',
     name: 'Curator',
-    password: 'Curator',
+    password: 'Curator1',
     roles: [Role.CURATOR],
     score: 1,
     ts: ts,
@@ -62,7 +63,7 @@ export default async function initializeLocalDb() {
     calc_records: 1,
     email: 'someolduser@someolduser.com',
     name: 'AncientUser',
-    password: 'ancient',
+    password: 'ancient1',
     roles: [],
     score: 1,
     // no ts
