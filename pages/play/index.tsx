@@ -1,5 +1,7 @@
+import { AppContext } from '@root/contexts/appContext';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
-import React from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
+import Joyride from 'react-joyride';
 import ChapterSelectCard from '../../components/chapterSelectCard';
 import Page from '../../components/page';
 import { getUserFromToken } from '../../lib/withAuth';
@@ -31,21 +33,59 @@ interface PlayPageProps {
 
 /* istanbul ignore next */
 export default function PlayPage({ reqUser }: PlayPageProps) {
+  const { user } = useContext(AppContext);
+  const joyrideRef = useRef<any>();
+  const stepsData = {
+    steps: [
+      {
+        disableBeacon: true,
+        target: '#chapter1',
+        content: 'Welcome to Pathology main campaign! This is the first chapter, and it is unlocked by default.',
+      },
+      {
+        target: '#chapter2',
+        content: 'Complete the first chapter to unlock Chapter 2!',
+      },
+
+    ]
+  };
+  const [steps, setSteps] = useState(stepsData.steps);
+  const [run, setRun] = useState(true);
   const chapterUnlocked = reqUser.chapterUnlocked ?? 1;
+  const [tour, setTour] = useState<JSX.Element>();
+
+  useEffect(() => {
+    if (user && user.score === 0) {
+      setTour(<Joyride
+
+        ref={joyrideRef}
+        run={run}
+        steps={steps}
+        continuous
+        hideCloseButton
+
+        scrollToFirstStep
+        showProgress
+        showSkipButton
+
+      />);
+    }
+  }, [run, steps, user]);
 
   return (
     <Page title={'Chapter Select'}>
       <div className='flex flex-col items-center gap-8 p-4'>
-        <div className='font-bold text-3xl text-center'>
+        {tour}
+        <div id='title' className='font-bold text-3xl text-center'>
           Pathology Official Campaign
         </div>
-        <ChapterSelectCard
+        <ChapterSelectCard id='chapter1'
           href={'/chapter1'}
           levelData={'00000000\n00000000\n00000000\n00000000'}
           subtitle={'Grassroots'}
           title={'Chapter 1'}
         />
-        <ChapterSelectCard
+        <ChapterSelectCard id='chapter2'
           disabled={chapterUnlocked < 2}
           disabledStr={'Complete Chapter 1 to unlock Chapter 2!'}
           href={'/chapter2'}
@@ -53,7 +93,7 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
           subtitle={'Into the Depths'}
           title={'Chapter 2'}
         />
-        <ChapterSelectCard
+        <ChapterSelectCard id='chapter3'
           disabled={chapterUnlocked < 3}
           disabledStr={'Complete Chapter 2 to unlock Chapter 3!'}
           href={'/chapter3'}
@@ -61,6 +101,7 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
           subtitle={'Brain Busters'}
           title={'Chapter 3'}
         />
+
       </div>
     </Page>
   );
