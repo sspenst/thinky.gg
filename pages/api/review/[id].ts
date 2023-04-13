@@ -1,3 +1,4 @@
+import isFullAccount from '@root/helpers/isFullAccount';
 import { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
@@ -72,6 +73,12 @@ export default withAuth({
   },
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'POST') {
+    if (!(await isFullAccount(req.user))) {
+      return res.status(401).json({
+        error: 'Reviewing requires a full account with a verified email'
+      });
+    }
+
     try {
       const { id } = req.query;
       const { score, text }: { score: number, text?: string } = req.body;

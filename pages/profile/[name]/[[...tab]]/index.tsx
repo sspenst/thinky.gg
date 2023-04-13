@@ -504,7 +504,7 @@ export default function ProfilePage({
           isOpen={isAddCollectionOpen}
         />
         {getFilteredCollectionOptions().length === 0 ?
-          <div className='p-3'>
+          <div className='p-3 justify-center flex'>
             No collections!
           </div>
           :

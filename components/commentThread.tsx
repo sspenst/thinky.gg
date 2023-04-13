@@ -11,6 +11,7 @@ import { COMMENT_QUERY_LIMIT } from '../models/CommentEnums';
 import { EnrichedComment } from '../models/db/comment';
 import { CommentQuery } from '../pages/api/comment/[id]';
 import FormattedUser from './formattedUser';
+import isNotFullAccountToast from './isNotFullAccountToast';
 
 interface CommentProps {
   className?: string;
@@ -106,7 +107,9 @@ export default function CommentThread({ className, comment, mutateComments, onSe
         targetModel: 'Comment',
       })
     }).then(async(res) => {
-      if (res.status !== 200) {
+      if (res.status === 401) {
+        isNotFullAccountToast('Commenting');
+      } else if (res.status !== 200) {
         const resp = await res.json();
 
         toast.dismiss();
