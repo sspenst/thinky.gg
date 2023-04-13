@@ -61,7 +61,7 @@ export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?
 
   const text = registrationState === 'registered' ?
     <div className='flex flex-col items-center gap-4'>
-      <div>✅ Guest account created!</div>
+      <div>Guest account created!</div>
       <div className='flex flex-row align-center self-center gap-3'>
         <label htmlFor='username' className='block text-lg font-bold self-center align-center'>
           Username:

@@ -98,6 +98,12 @@ export default withAuth({
       setObj['name'] = trimmedName;
     }
 
+    if (!password && Object.entries(setObj).length === 0) {
+      return res.status(400).json({
+        error: 'Bad request: No data provided',
+      });
+    }
+
     try {
       const newUser = await UserModel.findOneAndUpdate({ _id: req.userId }, { $set: setObj }, { runValidators: true, new: true, projection: { _id: true, email: true, name: true } });
 
