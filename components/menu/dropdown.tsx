@@ -12,7 +12,7 @@ import { LevelContext } from '../../contexts/levelContext';
 import { PageContext } from '../../contexts/pageContext';
 import getProfileSlug from '../../helpers/getProfileSlug';
 import Avatar from '../avatar';
-import FormattedUser from '../formattedUser';
+import DismissToast from '../dismissToast';
 import AboutModal from '../modal/aboutModal';
 import EditLevelModal from '../modal/editLevelModal';
 import LevelInfoModal from '../modal/levelInfoModal';
@@ -35,7 +35,6 @@ export default function Dropdown() {
   const { setPreventKeyDownEvent } = useContext(PageContext);
   const { setShouldAttemptAuth } = useContext(AppContext);
   const isGuest = user?.roles.includes(Role.GUEST);
-  const buttonClass = 'bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 w-fit rounded-lg text-xs focus:bg-blue-800 disabled:opacity-25 text-gray-300 py-2.5 px-3.5 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm whitespace-nowrap';
 
   useEffect(() => {
     setPreventKeyDownEvent(openModal !== undefined);
@@ -45,23 +44,26 @@ export default function Dropdown() {
     setOpenModal(undefined);
   }
 
-  function logOut(confirmLogout = false) {
-    if (isGuest && confirmLogout === false) {
-      toast.dismiss();
-      toast.error(<div className='flex flex-col gap-3 justify-center items-center'>
-        <span className='text-lg font-bold text-center'>Are you sure you want to logout?</span>
-        <span className='text-xs text-center'>Unless you saved the generated password when creating the guest account, logging out as a Guest <span className='font-bold'>will lose your progress!</span></span>
-        <Link className={buttonClass + ' bg-green-600 hover:bg-green-700'} href='/settings/account' onClick={() => toast.dismiss()}>Convert to a (free) regular account</Link>
-        <button className={buttonClass + ' bg-red-600 hover:bg-red-700'} onClick={() => {toast.dismiss(); logOut(true);}}>Proceed with logging out</button>
-      </div>, {
+  function logOutToast() {
+    toast.dismiss();
+    toast.error(
+      <div className='flex'>
+        <div className='flex flex-col gap-3 justify-center items-center'>
+          <span className='text-lg font-bold text-center'>Are you sure you want to log out?</span>
+          <span className='text-sm text-center'>Unless you saved the generated password for your Guest account, <span className='font-bold'>you will lose your progress!</span></span>
+          <Link className='text-white font-medium rounded-lg text-sm py-2.5 px-3.5 text-center transition bg-green-600 hover:bg-green-700' href='/settings/account' onClick={() => toast.dismiss()}>Convert to a (free) regular account</Link>
+          <button className='text-white font-medium rounded-lg text-sm py-2.5 px-3.5 text-center transition bg-red-600 hover:bg-red-700' onClick={logOut}>Proceed with logging out</button>
+        </div>
+        <DismissToast />
+      </div>,
+      {
         duration: 30000,
-        icon: '👋',
+        icon: '⚠️',
+      },
+    );
+  }
 
-      });
-
-      return;
-    }
-
+  function logOut() {
     toast.dismiss();
     toast.loading('Logging out...', { duration: 1000 });
     fetch('/api/logout', {
@@ -266,7 +268,7 @@ export default function Dropdown() {
                 {({ active }) => (
                   <div
                     className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3'
-                    onClick={() => {logOut(false);}}
+                    onClick={isGuest ? logOutToast : logOut}
                     style={{
                       backgroundColor: active ? 'var(--bg-color-3)' : undefined,
                     }}
