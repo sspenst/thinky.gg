@@ -53,8 +53,6 @@ export default withAuth({
     const setObj: {[k: string]: string} = {};
     const isGuest = req.user.roles.includes(Role.GUEST);
 
-    console.log('isGuest', req.user);
-
     if (emailDigest !== undefined) {
       setObj['emailDigest'] = emailDigest;
 

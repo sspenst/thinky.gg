@@ -1,4 +1,6 @@
 import Role from '@root/constants/role';
+import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmToken';
+import UserConfig from '@root/models/db/userConfig';
 import bcrypt from 'bcryptjs';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
@@ -55,7 +57,7 @@ export default withAuth({
       name,
       password,
     } = req.body;
-    const isGuest = req.user.roles.includes(Role.GUEST);
+    let isGuest = req.user.roles.includes(Role.GUEST);
 
     if (password) {
       const user = await UserModel.findById(req.userId, '+password', { lean: false });
@@ -69,6 +71,7 @@ export default withAuth({
       } else {
         // remove GUEST role
         user.roles = user.roles.filter((role: Role) => role !== Role.GUEST);
+        isGuest = false;
       }
 
       user.password = password;
@@ -96,8 +99,30 @@ export default withAuth({
     }
 
     try {
-      await UserModel.updateOne({ _id: req.userId }, { $set: setObj }, { runValidators: true });
+      const newUser = await UserModel.findOneAndUpdate({ _id: req.userId }, { $set: setObj }, { runValidators: true, new: true, projection: { _id: true, email: true, name: true } });
+
+      if (setObj['email'] && !isGuest) {
+        const userConfig = await UserConfigModel.findOneAndUpdate({ userId: req.userId }, {
+          $set: {
+            emailConfirmed: false,
+            emailConfirmationToken: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+          }
+        }, {
+          new: true,
+          projection: { emailConfirmationToken: 1, },
+        });
+
+        try {
+          await sendEmailConfirmationEmail(req, newUser, userConfig as UserConfig);
+        } catch (err: any) {
+          logger.error(err);
+
+          return res.status(400).json({ error: (err as Error).message || 'Error sending email', updated: false });
+        }
+      }
     } catch (err) {
+      logger.error(err);
+
       return res.status(500).json({ error: 'Internal error', updated: false });
     }
 

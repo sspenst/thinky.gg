@@ -36,11 +36,11 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
         'Content-Type': 'application/json'
       },
     }).then(async res => {
-      const { updated } = await res.json();
+      const { updated, error } = await res.json();
 
       if (!updated) {
         toast.dismiss();
-        toast.error(`Error updating ${property}`);
+        toast.error(error || `Error updating ${property}`);
       } else {
         toast.dismiss();
         toast.success(`Updated ${property}`);
@@ -49,6 +49,37 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
       console.error(err);
       toast.dismiss();
       toast.error(`Error updating ${property}`);
+    });
+  }
+
+  function resendEmailConfirmation(
+    body: string,
+    property: string,
+  ) {
+    toast.dismiss();
+    toast.loading('Resending activation email...');
+
+    fetch('/api/user', {
+      method: 'PUT',
+      body: body,
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    }).then(async res => {
+      const { updated, error } = await res.json();
+
+      if (!updated) {
+        toast.dismiss();
+        toast.error(error || 'Error sending confirmation email');
+      } else {
+        toast.dismiss();
+        toast.success('Sent email activation');
+      }
+    }).catch(err => {
+      console.error(err);
+      toast.dismiss();
+      toast.error(err || 'Error sending confirmation email');
     });
   }
 
@@ -100,6 +131,13 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
   function updateUsername(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
+    if (username.length < 3 || username.length > 50) {
+      toast.dismiss();
+      toast.error('Username must be between 3 and 50 characters');
+
+      return;
+    }
+
     updateUser(
       JSON.stringify({
         name: username,
@@ -108,7 +146,25 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
     );
   }
 
+  function resendEmail(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    resendEmailConfirmation(
+      JSON.stringify({
+        email: email,
+      }),
+      'email',
+    );
+  }
+
   function updateEmail(e: React.FormEvent<HTMLFormElement>) {
+    if (email.length < 3 || email.length > 50) {
+      toast.dismiss();
+      toast.error('Email must be between 3 and 50 characters');
+
+      return;
+    }
+
     e.preventDefault();
 
     updateUser(
@@ -121,6 +177,13 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
 
   function updatePassword(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+
+    if (password.length < 8 || password.length > 50) {
+      toast.dismiss();
+      toast.error('Password must be at least 8 characters');
+
+      return;
+    }
 
     if (password !== password2) {
       toast.error('Password does not match');
@@ -237,7 +300,9 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
           />
           <button className='italic underline' type='submit'>Update</button>
         </form>
-        <form onSubmit={updateEmail}>
+        <form onSubmit={
+          (email !== user.email ? updateEmail : resendEmail)
+        }>
           <label className='block font-bold mb-2' htmlFor='email'>
             Email
           </label>
@@ -251,7 +316,9 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
             type='email'
             value={email}
           />
-          <button className='italic underline' type='submit'>Update</button>
+          <button className='italic underline' type='submit'>
+            {email !== user.email ? 'Update' : 'Resend confirmation'}
+          </button>
         </form>
         <form onSubmit={updatePassword}>
           <div>

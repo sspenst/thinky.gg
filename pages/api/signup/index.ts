@@ -1,5 +1,7 @@
 import { EmailDigestSettingTypes } from '@root/constants/emailDigest';
 import Role from '@root/constants/role';
+import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmToken';
+import UserConfig from '@root/models/db/userConfig';
 import mongoose, { QueryOptions, Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
@@ -15,7 +17,7 @@ import sendPasswordResetEmail from '../../../lib/sendPasswordResetEmail';
 import User from '../../../models/db/user';
 import { UserConfigModel, UserModel } from '../../../models/mongoose';
 
-async function createUser({ email, name, password, tutorialCompletedAt, roles }: {email: string, name: string, password: string, tutorialCompletedAt: number, roles: Role[]}, queryOptions: QueryOptions): Promise<User> {
+async function createUser({ email, name, password, tutorialCompletedAt, roles }: {email: string, name: string, password: string, tutorialCompletedAt: number, roles: Role[]}, queryOptions: QueryOptions): Promise<[User, UserConfig]> {
   const id = new Types.ObjectId();
   let emailDigest = EmailDigestSettingTypes.DAILY;
 
@@ -23,7 +25,9 @@ async function createUser({ email, name, password, tutorialCompletedAt, roles }:
     emailDigest = EmailDigestSettingTypes.NONE;
   }
 
-  const [userCreated] = await Promise.all([
+  // generate a random token for email confirmation
+  const emailConfirmationToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  const [userCreated, configCreated] = await Promise.all([
     UserModel.create([{
       _id: id,
       email: email,
@@ -38,13 +42,16 @@ async function createUser({ email, name, password, tutorialCompletedAt, roles }:
       theme: Theme.Modern,
       userId: id,
       tutorialCompletedAt: tutorialCompletedAt,
+      emailConfirmed: false,
+      emailConfirmationToken: emailConfirmationToken,
       emailDigest: emailDigest,
     }], queryOptions),
   ]);
 
   const user = userCreated[0] as User;
+  const userConfig = configCreated[0] as UserConfig;
 
-  return user;
+  return [user, userConfig];
 }
 
 export default apiWrapper({ POST: {
@@ -119,7 +126,7 @@ export default apiWrapper({ POST: {
 
   try {
     await session.withTransaction(async () => {
-      const userCreated = await createUser({
+      const [userCreated, configCreated] = await createUser({
         email: trimmedEmail,
         name: trimmedName,
         password: passwordValue,
@@ -134,8 +141,10 @@ export default apiWrapper({ POST: {
       const user = userCreated as User;
 
       id = user._id;
-
-      await queueDiscordWebhook(Discord.NotifsId, `**${trimmedName}** just registered! Welcome them on their [profile](${req.headers.origin}${getProfileSlug(user)})!`, { session: session });
+      Promise.all([
+        !guest && sendEmailConfirmationEmail(req, user, configCreated as UserConfig),
+        queueDiscordWebhook(Discord.NotifsId, `**${trimmedName}** just registered! Welcome them on their [profile](${req.headers.origin}${getProfileSlug(user)})!`, { session: session })
+      ]);
     });
     session.endSession();
 
