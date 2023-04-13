@@ -159,13 +159,6 @@ export default function Dropdown() {
                 }
               </div>
             }
-            { user &&
-            <Menu.Item>
-              {() => (
-                <FormattedUser user={user} size={Dimensions.AvatarSizeSmall} />
-              )}
-            </Menu.Item>
-            }
             {user && levelContext &&
               <Menu.Item>
                 {({ active }) => (
