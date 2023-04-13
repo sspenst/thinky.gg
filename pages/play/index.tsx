@@ -1,5 +1,6 @@
 import { AppContext } from '@root/contexts/appContext';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
+import { useRouter } from 'next/router';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import Joyride from 'react-joyride';
 import ChapterSelectCard from '../../components/chapterSelectCard';
@@ -33,34 +34,34 @@ interface PlayPageProps {
 
 /* istanbul ignore next */
 export default function PlayPage({ reqUser }: PlayPageProps) {
+  const chapterUnlocked = reqUser.chapterUnlocked ?? 1;
   const { user } = useContext(AppContext);
-  const joyrideRef = useRef<any>();
+  const router = useRouter();
   const stepsData = {
     steps: [
       {
         disableBeacon: true,
         target: '#chapter1',
         content: 'Welcome to Pathology main campaign! This is the first chapter, and it is unlocked by default.',
-      },
-      {
-        target: '#chapter2',
-        content: 'Complete the first chapter to unlock Chapter 2!',
+        // navigate to first chapter
       },
 
     ]
   };
-  const [steps, setSteps] = useState(stepsData.steps);
-  const [run, setRun] = useState(true);
-  const chapterUnlocked = reqUser.chapterUnlocked ?? 1;
   const [tour, setTour] = useState<JSX.Element>();
+  const steps = useRef(stepsData.steps);
 
   useEffect(() => {
     if (user && user.score === 0) {
       setTour(<Joyride
+        callback={(data) => {
+          if (data.action === 'next' && data.index === 0) {
+            router.push('/chapter1');
+          }
+        }}
 
-        ref={joyrideRef}
-        run={run}
-        steps={steps}
+        run={true}
+        steps={steps.current}
         continuous
         hideCloseButton
 
@@ -70,7 +71,7 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
 
       />);
     }
-  }, [run, steps, user]);
+  }, [router, user]);
 
   return (
     <Page title={'Chapter Select'}>
