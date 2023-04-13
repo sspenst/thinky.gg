@@ -11,28 +11,18 @@ import { toast } from 'react-hot-toast';
 import { useSWRConfig } from 'swr';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const redirect = await redirectToHome(context);
-
-  if (redirect.redirect) {
-    return redirect;
-  }
-
-  return {
-    props: {
-      recaptchaPublicKey: process.env.RECAPTCHA_PUBLIC_KEY || '',
-    },
-  };
+  return await redirectToHome(context, { recaptchaPublicKey: process.env.RECAPTCHA_PUBLIC_KEY || '' });
 }
 
 export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?: string}) {
-  const [registrationState, setRegistrationState] = useState('registering');
-  const [recaptchaToken, setRecaptchaToken] = useState<string>('');
-  const router = useRouter();
-  const [name, setName] = useState<string>('');
-  const [temporaryPassword, setTemporaryPassword] = useState<string>('');
-  const recaptchaRef = useRef<ReCAPTCHA>(null);
   const { cache } = useSWRConfig();
   const { mutateUser, setShouldAttemptAuth } = useContext(AppContext);
+  const [name, setName] = useState<string>('');
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
+  const [recaptchaToken, setRecaptchaToken] = useState<string>('');
+  const [registrationState, setRegistrationState] = useState('registering');
+  const router = useRouter();
+  const [temporaryPassword, setTemporaryPassword] = useState<string>('');
 
   function onRecaptchaChange(value: string | null) {
     if (value) {
@@ -68,32 +58,31 @@ export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?
       </button>
     );
   };
+
   const text = registrationState === 'registered' ?
-    <div className='text-center flex flex-col gap-2'>
-      <div>Guest account created!</div>
-      <div className='flex justify-center'>
-        <div className='flex flex-row align-center self-center gap-3'>
-          <label htmlFor='username' className='block text-lg font-bold self-center align-center'>
-        Username:
-          </label>
-          <div className='relative'>
-            <input
-              id='username'
-              type='text'
-              readOnly
-              value={name}
-              onClick={(e) => (e.target as HTMLInputElement).select()}
-              className='shadow appearance-none border rounded-lg w-full py-2 px-1 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-white'
-            />
-            <div className='absolute inset-y-0 right-0 flex items-center px-1'>
-              <CopyToClipboardButton text={name} />
-            </div>
+    <div className='flex flex-col items-center gap-4'>
+      <div>✅ Guest account created!</div>
+      <div className='flex flex-row align-center self-center gap-3'>
+        <label htmlFor='username' className='block text-lg font-bold self-center align-center'>
+          Username:
+        </label>
+        <div className='relative'>
+          <input
+            id='username'
+            type='text'
+            readOnly
+            value={name}
+            onClick={(e) => (e.target as HTMLInputElement).select()}
+            className='shadow appearance-none border rounded-lg py-2 px-1 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-white'
+          />
+          <div className='absolute inset-y-0 right-0 flex items-center px-1'>
+            <CopyToClipboardButton text={name} />
           </div>
         </div>
       </div>
       <div className='flex flex-row align-center self-center gap-3'>
         <label htmlFor='password' className='block text-lg font-bold  self-center align-center'>
-        Password:
+          Password:
         </label>
         <div className='relative'>
           <input
@@ -101,7 +90,6 @@ export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?
             type='text'
             readOnly
             value={temporaryPassword}
-
             onClick={(e) => (e.target as HTMLInputElement).select()}
             className='shadow appearance-none border rounded-lg w-full py-2 px-1 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-white'
           />
@@ -110,8 +98,8 @@ export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?
           </div>
         </div>
       </div>
-      <div className='text-md mb-2'>
-    Please save your password as you <span className='font-bold underline'>will not be able to recover it</span> unless you convert to a regular (free) account.
+      <div>
+        Please save your password as you <span className='font-bold underline'>will not be able to recover it</span> unless you convert to a regular (free) account.
       </div>
       <button
         className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer'
@@ -125,36 +113,28 @@ export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?
           }
         }}
       >
-    Continue
+        Continue
       </button>
     </div>
-
     :
-    <div className='text-lg'>
-      <div className='text-center'>
-        <span className='block text-lg font-medium mb-4'>Create a guest account</span>
-        <ul className='text-left list-disc pl-6 text-sm'>
-          <li className='mb-2'>Your progress is saved and you can convert to a regular account via account settings</li>
-          <li className='mb-2'>You aren&apos;t able to comment on profiles or review levels as a guest</li>
-          <li className='mb-2'>Your guest account may be deleted after 7 days of no activity</li>
-          <li className='mb-2'>By creating a guest account you agree to our <a className='underline' href='https://docs.google.com/document/d/e/2PACX-1vR4E-RcuIpXSrRtR3T3y9begevVF_yq7idcWWx1A-I9w_VRcHhPTkW1A7DeUx2pGOcyuKifEad3Qokn/pub' rel='noreferrer' target='_blank'>terms of service</a> and reviewed the <a className='underline' href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub' rel='noreferrer' target='_blank'>privacy policy</a></li>
-        </ul>
-      </div>
-
-      <div className='w-full pt-2 justify-center flex'>
-        <ReCAPTCHA
-          onChange={onRecaptchaChange}
-
-          ref={recaptchaRef}
-          sitekey={recaptchaPublicKey ?? ''}
-        />
-      </div>
-      <div className='p-3 text-center flex flex-col gap-3'>
-        <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer' onClick={fetchSignup}>
-        Create
-        </button>
-        <Link className='text-sm hover:underline' href='/signup'>Create (free) regular account instead</Link>
-      </div>
+    <div className='flex flex-col gap-4 items-center'>
+      <ul className='text-left list-disc px-6 text-sm gap-1 flex flex-col'>
+        <li>Your progress is saved and you can convert to a regular account via account settings</li>
+        <li>You cannot review or create levels with a guest account</li>
+        <li>Your guest account may be deleted after 7 days of no activity</li>
+        <li>By creating a guest account you agree to our <a className='underline' href='https://docs.google.com/document/d/e/2PACX-1vR4E-RcuIpXSrRtR3T3y9begevVF_yq7idcWWx1A-I9w_VRcHhPTkW1A7DeUx2pGOcyuKifEad3Qokn/pub' rel='noreferrer' target='_blank'>terms of service</a> and reviewed the <a className='underline' href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub' rel='noreferrer' target='_blank'>privacy policy</a></li>
+      </ul>
+      <ReCAPTCHA
+        onChange={onRecaptchaChange}
+        ref={recaptchaRef}
+        sitekey={recaptchaPublicKey ?? ''}
+      />
+      <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer' onClick={fetchSignup}>
+        Play
+      </button>
+      <Link className='font-bold text-sm text-blue-500 hover:text-blue-400' href='/signup'>
+        Sign up with a regular account instead
+      </Link>
     </div>;
 
   async function fetchSignup() {
@@ -210,18 +190,13 @@ export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?
   }
 
   return (
-    <Page
-      title='Play as Guest'
-    >
-      <div className='flex flex-col items-center justify-center p-3'>
-        <h1 className='text-2xl font-bold mb-6'>
-            Play as Guest
+    <Page title='Play as Guest'>
+      <div className='flex flex-col items-center justify-center p-3 gap-4'>
+        <h1 className='text-2xl font-bold'>
+          Play as Guest
         </h1>
-        <div>
-          {text}
-        </div>
+        {text}
       </div>
-
     </Page>
   );
 }

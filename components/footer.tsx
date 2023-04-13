@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function Footer() {
   return (
-    <div className='flex flex-col p-6 gap-6' style={{
+    <div className='flex flex-col p-6 gap-6 mt-4' style={{
       borderTop: '1px solid',
       borderColor: 'var(--bg-color-3)',
     }}>

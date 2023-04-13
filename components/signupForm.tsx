@@ -152,9 +152,14 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
             I agree to the <a className='underline' href='https://docs.google.com/document/d/e/2PACX-1vR4E-RcuIpXSrRtR3T3y9begevVF_yq7idcWWx1A-I9w_VRcHhPTkW1A7DeUx2pGOcyuKifEad3Qokn/pub' rel='noreferrer' target='_blank'>terms of service</a> and reviewed the <a className='underline' href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub' rel='noreferrer' target='_blank'>privacy policy</a>.
           </label>
         </div>
-        <div className='flex flex-wrap items-center justify-between gap-4'>
-          <input className={'bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer'} type='submit' value='Sign Up' />
-          <Link href={'/play-as-guest'} className={'text-sm hover:underline'} >Sign Up as Guest</Link>
+        <div className='flex flex-wrap gap-y-4 items-center justify-between'>
+          <input className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer' type='submit' value='Sign Up' />
+          <Link
+            className='inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-400'
+            href='/play-as-guest'
+          >
+            Sign Up as Guest
+          </Link>
         </div>
       </form>
     </FormTemplate>
