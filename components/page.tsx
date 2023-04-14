@@ -16,6 +16,13 @@ interface PageProps {
   titleHref?: string;
 }
 
+export enum PAGE_PATH {
+  HOME = '/home',
+  CHAPTER = '/chapter',
+  PLAY = '/play',
+  LEVEL = '/level',
+}
+
 export default function Page({
   children,
   folders,

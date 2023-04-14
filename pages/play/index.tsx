@@ -1,12 +1,12 @@
+import { useTour } from '@root/components/tour/tourData';
 import { AppContext } from '@root/contexts/appContext';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
-import React, { useContext, useEffect, useRef, useState } from 'react';
-import Joyride from 'react-joyride';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import ChapterSelectCard from '../../components/chapterSelectCard';
-import Page from '../../components/page';
+import Page, { PAGE_PATH } from '../../components/page';
 import { getUserFromToken } from '../../lib/withAuth';
-import User from '../../models/db/user';
+import User, { ReqUser } from '../../models/db/user';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
@@ -37,41 +37,15 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
   const chapterUnlocked = reqUser.chapterUnlocked ?? 1;
   const { user } = useContext(AppContext);
   const router = useRouter();
-  const stepsData = {
-    steps: [
-      {
-        disableBeacon: true,
-        target: '#chapter1',
-        content: 'Welcome to Pathology main campaign! This is the first chapter, and it is unlocked by default.',
-        // navigate to first chapter
-      },
+  const memoizedCallback = useCallback((data: any) => {
+    console.log(data);
 
-    ]
-  };
-  const [tour, setTour] = useState<JSX.Element>();
-  const steps = useRef(stepsData.steps);
-
-  useEffect(() => {
-    if (user && user.score === 0) {
-      setTour(<Joyride
-        callback={(data) => {
-          if (data.action === 'next' && data.index === 0) {
-            router.push('/chapter1');
-          }
-        }}
-
-        run={true}
-        steps={steps.current}
-        continuous
-        hideCloseButton
-
-        scrollToFirstStep
-        showProgress
-        showSkipButton
-
-      />);
+    if (data.action === 'next' && data.index === 0) {
+      router.push('/chapter1');
     }
-  }, [router, user]);
+  }, [router]); // Add any dependencies required by the callback function inside the dependency array
+
+  const { tour } = useTour(PAGE_PATH.PLAY, user as ReqUser, memoizedCallback);
 
   return (
     <Page title={'Chapter Select'}>
