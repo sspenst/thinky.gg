@@ -21,7 +21,7 @@ import { getUserFromToken } from '../../../lib/withAuth';
 import { EnrichedLevel } from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Review from '../../../models/db/review';
-import User from '../../../models/db/user';
+import User, { ReqUser } from '../../../models/db/user';
 import { getLevelByUrlPath } from '../../api/level-by-slug/[username]/[slugName]';
 
 export interface LevelUrlQueryParams extends ParsedUrlQuery {

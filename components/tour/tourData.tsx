@@ -1,6 +1,7 @@
 import User, { ReqUser } from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
-import React, { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/router';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import ReactJoyride, { Step } from 'react-joyride';
 import { PAGE_PATH } from '../page';
@@ -31,10 +32,19 @@ export const TOUR_DATA: { [key in TourTypes]: Step[] } = {
 };
 
 export function useTour(page: PAGE_PATH, user: ReqUser, cb?: (data: any) => void) {
+  const [run, setRun] = useState(false);
+  const router = useRouter();
+
+  setTimeout(() => {
+    setRun(true);
+  }, 1000);
+
   const [tour, setTour] = useState<JSX.Element>();
+
+  const [currentUrl, setCurrentUrl] = useState(router.asPath);
   const stepsRef = useRef<any[]>([]);
 
-  const putFinishedTour = async (tourRef: TourTypes) => {
+  const putFinishedTour = useCallback(async (tourRef: TourTypes) => {
     if (!user) {
       return;
     }
@@ -53,11 +63,17 @@ export function useTour(page: PAGE_PATH, user: ReqUser, cb?: (data: any) => void
       toast.dismiss();
       toast.error('Error occured');
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     if (!user) {
       return;
+    }
+
+    if (currentUrl !== router.asPath) {
+      setCurrentUrl(router.asPath);
+      setRun(false);
+      console.log('setting run to false');
     }
 
     let tourRef: TourTypes = undefined as unknown as TourTypes;
@@ -102,16 +118,17 @@ export function useTour(page: PAGE_PATH, user: ReqUser, cb?: (data: any) => void
             cb(data);
           }
         }}
-        run={true}
+        run={run}
         steps={stepsRef.current}
         continuous
         hideCloseButton
         scrollToFirstStep
         showProgress
         showSkipButton
+
       />
     );
-  }, [page, cb, user]);
+  }, [page, cb, user, run, router.asPath, currentUrl, router.pathname, putFinishedTour]);
 
   return {
     tour: tour,
