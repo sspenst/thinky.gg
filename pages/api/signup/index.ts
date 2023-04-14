@@ -1,6 +1,7 @@
 import { EmailDigestSettingTypes } from '@root/constants/emailDigest';
 import Role from '@root/constants/role';
 import { generatePassword } from '@root/helpers/generatePassword';
+import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
 import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmToken';
 import UserConfig from '@root/models/db/userConfig';
 import mongoose, { QueryOptions, Types } from 'mongoose';
@@ -26,8 +27,7 @@ async function createUser({ email, name, password, tutorialCompletedAt, roles }:
     emailDigest = EmailDigestSettingTypes.NONE;
   }
 
-  // generate a random token for email confirmation
-  const emailConfirmationToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  const emailConfirmationToken = getEmailConfirmationToken();
   const [userCreated, configCreated] = await Promise.all([
     UserModel.create([{
       _id: id,
