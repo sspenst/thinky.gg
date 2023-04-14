@@ -35,20 +35,46 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
       headers: {
         'Content-Type': 'application/json'
       },
-    }).then(async res => {
-      const { updated } = await res.json();
-
-      if (!updated) {
-        toast.dismiss();
-        toast.error(`Error updating ${property}`);
+    }).then(res => {
+      if (res.status !== 200) {
+        throw res.text();
       } else {
         toast.dismiss();
         toast.success(`Updated ${property}`);
       }
-    }).catch(err => {
+    }).catch(async err => {
       console.error(err);
       toast.dismiss();
-      toast.error(`Error updating ${property}`);
+      toast.error(JSON.parse(await err)?.error || `Error updating ${property}`);
+    });
+  }
+
+  function resendEmailConfirmation(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    toast.dismiss();
+    toast.loading('Resending activation email...');
+
+    fetch('/api/user', {
+      method: 'PUT',
+      body: JSON.stringify({
+        email: email,
+      }),
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    }).then(res => {
+      if (res.status !== 200) {
+        throw res.text();
+      } else {
+        toast.dismiss();
+        toast.success('Sent email activation');
+      }
+    }).catch(async err => {
+      console.error(err);
+      toast.dismiss();
+      toast.error(JSON.parse(await err)?.error || 'Error sending confirmation email');
     });
   }
 
@@ -100,6 +126,13 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
   function updateUsername(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
+    if (username.length < 3 || username.length > 50) {
+      toast.dismiss();
+      toast.error('Username must be between 3 and 50 characters');
+
+      return;
+    }
+
     updateUser(
       JSON.stringify({
         name: username,
@@ -109,6 +142,13 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
   }
 
   function updateEmail(e: React.FormEvent<HTMLFormElement>) {
+    if (email.length < 3 || email.length > 50) {
+      toast.dismiss();
+      toast.error('Email must be between 3 and 50 characters');
+
+      return;
+    }
+
     e.preventDefault();
 
     updateUser(
@@ -121,6 +161,13 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
 
   function updatePassword(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+
+    if (password.length < 8 || password.length > 50) {
+      toast.dismiss();
+      toast.error('Password must be at least 8 characters');
+
+      return;
+    }
 
     if (password !== password2) {
       toast.error('Password does not match');
@@ -148,8 +195,8 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
   }, []);
 
   return (
-    <div className='flex justify-center items-center'>
-      <div className='flex flex-col gap-6'>
+    <div className='flex justify-center'>
+      <div className='flex flex-col gap-6 w-full max-w-xs'>
         <div className='flex flex-col gap-2'>
           <div className='block font-bold'>
             Options
@@ -221,7 +268,7 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
             />
           </div>
         </div>
-        <form onSubmit={updateUsername}>
+        <form className='flex flex-col items-start' onSubmit={updateUsername}>
           <label className='block font-bold mb-2' htmlFor='username'>
             Username
           </label>
@@ -237,9 +284,16 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
           />
           <button className='italic underline' type='submit'>Update</button>
         </form>
-        <form onSubmit={updateEmail}>
+        <form className='flex flex-col items-start' onSubmit={
+          (!userConfig?.emailConfirmed && email === user.email ? resendEmailConfirmation : updateEmail)
+        }>
           <label className='block font-bold mb-2' htmlFor='email'>
-            Email
+            {'Email - '}
+            {userConfig?.emailConfirmed && email === user.email ?
+              <span className='text-green-500'>Confirmed</span>
+              :
+              <span className='text-red-500'>Unconfirmed</span>
+            }
           </label>
           <input
             className={inputClass}
@@ -251,22 +305,18 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
             type='email'
             value={email}
           />
-          <button className='italic underline' type='submit'>Update</button>
+          <button className='italic underline' type='submit'>
+            {!userConfig?.emailConfirmed && email === user.email ? 'Resend confirmation' : 'Update'}
+          </button>
         </form>
-        <form onSubmit={updatePassword}>
-          <div>
-            <label className='block font-bold mb-2' htmlFor='password'>
-              Password
-            </label>
-            <input onChange={e => setCurrentPassword(e.target.value)} className={inputClass} id='password' value={currentPassword} type='password' placeholder='Enter current password' required />
-          </div>
-          <div>
-            <input onChange={e => setPassword(e.target.value)} className={inputClass} type='password' placeholder='Enter new password' required />
-          </div>
-          <div>
-            <input onChange={e => setPassword2(e.target.value)} className={inputClass} type='password' placeholder='Re-enter new password' required />
-            <button className='italic underline' type='submit'>Update</button>
-          </div>
+        <form className='flex flex-col items-start' onSubmit={updatePassword}>
+          <label className='block font-bold mb-2' htmlFor='password'>
+            Password
+          </label>
+          <input onChange={e => setCurrentPassword(e.target.value)} className={inputClass} id='password' value={currentPassword} type='password' placeholder='Enter current password' required />
+          <input onChange={e => setPassword(e.target.value)} className={inputClass} type='password' placeholder='Enter new password' required />
+          <input onChange={e => setPassword2(e.target.value)} className={inputClass} type='password' placeholder='Re-enter new password' required />
+          <button className='italic underline' type='submit'>Update</button>
         </form>
       </div>
     </div>

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useContext, useRef, useState } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
@@ -22,8 +23,6 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
   const recaptchaRef = useRef<ReCAPTCHA>(null);
 
   function onRecaptchaChange(value: string | null) {
-    console.log('Captcha value:', value);
-
     if (value) {
       setRecaptchaToken(value);
     }
@@ -117,16 +116,16 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
     <FormTemplate>
       <form className='flex flex-col gap-4' onSubmit={onSubmit}>
         <div>
-          <label className='block text-sm font-bold mb-2' htmlFor='email'>
-            Email
-          </label>
-          <input required onChange={e => setEmail(e.target.value)} value={email} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='email' type='email' placeholder='Email' />
-        </div>
-        <div>
           <label className='block text-sm font-bold mb-2 ' htmlFor='username'>
             Username
           </label>
           <input required onChange={e => setUsername(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='username' type='text' placeholder='Username' />
+        </div>
+        <div>
+          <label className='block text-sm font-bold mb-2' htmlFor='email'>
+            Email
+          </label>
+          <input required onChange={e => setEmail(e.target.value)} value={email} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='email' type='email' placeholder='Email' />
         </div>
         <div>
           <label className='block text-sm font-bold mb-2' htmlFor='password'>
@@ -153,8 +152,14 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
             I agree to the <a className='underline' href='https://docs.google.com/document/d/e/2PACX-1vR4E-RcuIpXSrRtR3T3y9begevVF_yq7idcWWx1A-I9w_VRcHhPTkW1A7DeUx2pGOcyuKifEad3Qokn/pub' rel='noreferrer' target='_blank'>terms of service</a> and reviewed the <a className='underline' href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub' rel='noreferrer' target='_blank'>privacy policy</a>.
           </label>
         </div>
-        <div className='flex items-center justify-between gap-1'>
-          <input className={'bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer'} type='submit' value='Sign Up' />
+        <div className='flex flex-wrap gap-y-4 items-center justify-between'>
+          <input className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer' type='submit' value='Sign Up' />
+          <Link
+            className='inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-400'
+            href='/play-as-guest'
+          >
+            Sign Up as Guest
+          </Link>
         </div>
       </form>
     </FormTemplate>

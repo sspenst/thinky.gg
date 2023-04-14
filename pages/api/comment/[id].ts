@@ -1,3 +1,4 @@
+import isFullAccount from '@root/helpers/isFullAccount';
 import { PipelineStage, Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import NotificationType from '../../../constants/notificationType';
@@ -138,6 +139,12 @@ export default withAuth({
   }
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'POST') {
+    if (!(await isFullAccount(req.user))) {
+      return res.status(401).json({
+        error: 'Commenting requires a full account with a confirmed email'
+      });
+    }
+
     const { id } = req.query;
     const { text, targetModel } = req.body;
     const textTrimmed = text.trim();

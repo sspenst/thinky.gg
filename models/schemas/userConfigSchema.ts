@@ -8,6 +8,14 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
+    emailConfirmationToken: {
+      type: String,
+      select: false,
+    },
+    emailConfirmed: {
+      type: Boolean,
+      default: false,
+    },
     emailDigest: {
       type: String,
       required: true,
@@ -17,6 +25,7 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
     mobileDeviceTokens: {
       type: [String],
       required: false,
+      select: false,
       default: [],
       maxlength: 100, // max 100 devices @TODO: should probably 'rotate' this list and remove oldest device tokens on push of new one
     },

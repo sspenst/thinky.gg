@@ -1,3 +1,4 @@
+import Role from '@root/constants/role';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidType } from '../../../helpers/apiWrapper';
 import cleanUser from '../../../lib/cleanUser';
@@ -19,6 +20,9 @@ export default apiWrapper({ GET: {
     name: {
       $regex: '^' + cleanedSearch,
       $options: 'i'
+    },
+    roles: {
+      $ne: Role.GUEST
     }
   }, 'id name hideStatus last_visited_at avatarUpdatedAt', { lean: true, limit: 5, sort: { name: 1 } });
 
