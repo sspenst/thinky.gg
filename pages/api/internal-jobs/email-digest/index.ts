@@ -29,8 +29,8 @@ const transporter = isLocal() ? nodemailer.createTransport({
   host: 'smtp.mailtrap.io',
   port: 2525,
   auth: {
-    user: process.env.MAILTRAP_USER,
-    pass: process.env.MAILTRAP_PASSWORD
+    user: process.env.NODE_ENV !== 'test' ? process.env.MAILTRAP_USER : '',
+    pass: process.env.NODE_ENV !== 'test' ? process.env.MAILTRAP_PASSWORD : '',
   },
   pool: true,
   maxConnections: 1,
@@ -42,10 +42,6 @@ const transporter = isLocal() ? nodemailer.createTransport({
 });
 
 export async function sendMail(batchId: Types.ObjectId, type: EmailType, user: User, subject: string, body: string) {
-  if (process.env.NODE_ENV === 'test') {
-    return;
-  }
-
   /* istanbul ignore next */
   const textVersion = convert(body, {
     wordwrap: 130,

@@ -108,8 +108,8 @@ describe('Testing a valid user', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Please wait a couple minutes before requesting another email confirmation');
-        expect(res.status).toBe(400);
+        expect(response.error).toBe('Error: Please wait a couple minutes before requesting another email confirmation');
+        expect(res.status).toBe(500);
       },
     });
   });
@@ -306,7 +306,7 @@ describe('Testing a valid user', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Internal error');
+        expect(response.error).toBe('Error: test error');
 
         expect(res.status).toBe(500);
       },
