@@ -1,5 +1,6 @@
 import * as aws from '@aws-sdk/client-ses';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
+import Role from '@root/constants/role';
 import { convert } from 'html-to-text';
 import { Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
@@ -28,8 +29,8 @@ const transporter = isLocal() ? nodemailer.createTransport({
   host: 'smtp.mailtrap.io',
   port: 2525,
   auth: {
-    user: process.env.MAILTRAP_USER,
-    pass: process.env.MAILTRAP_PASSWORD
+    user: process.env.NODE_ENV !== 'test' ? process.env.MAILTRAP_USER : '',
+    pass: process.env.NODE_ENV !== 'test' ? process.env.MAILTRAP_PASSWORD : '',
   },
   pool: true,
   maxConnections: 1,
@@ -291,7 +292,7 @@ export async function sendAutoUnsubscribeUsers(batchId: Types.ObjectId, limit: n
         _id: { $in: usersThatHaveBeenSentReactivationEmailIn3dAgoOrMore },
         // checking if they have been not been active in past 10 days
         last_visited_at: { $lte: (Date.now() / 1000) - (10 * 24 * 60 * 60 ) }, // TODO need to refactor last_visited_at to be a DATE object instead of seconds
-
+        roles: { $ne: Role.GUEST },
         email: { $ne: null },
       },
     },
@@ -378,7 +379,7 @@ export async function sendEmailReactivation(batchId: Types.ObjectId, limit: numb
         _id: { $nin: usersThatHaveBeenSentReactivationInPast90d },
         // checking if they have been not been active in past 7 days
         last_visited_at: { $lte: (Date.now() / 1000) - (7 * 24 * 60 * 60 ) }, // TODO need to refactor last_visited_at to be a DATE object instead of seconds
-
+        roles: { $ne: Role.GUEST },
         email: { $ne: null },
       },
     },
@@ -482,12 +483,12 @@ export default apiWrapper({ GET: {
 
     totalEmailedSoFar.push(...emailDigestResult.sentList);
 
-    emailUnsubscribeSent = emailUnsubscribeResult.sentList;
-    emailUnsubscribeFailed = emailUnsubscribeResult.failedList;
-    emailDigestSent = emailDigestResult.sentList;
-    emailDigestFailed = emailDigestResult.failedList;
-    emailReactivationSent = emailReactivationResult.sentList;
-    emailReactivationFailed = emailReactivationResult.failedList;
+    emailUnsubscribeSent = emailUnsubscribeResult.sentList.sort();
+    emailUnsubscribeFailed = emailUnsubscribeResult.failedList.sort();
+    emailDigestSent = emailDigestResult.sentList.sort();
+    emailDigestFailed = emailDigestResult.failedList.sort();
+    emailReactivationSent = emailReactivationResult.sentList.sort();
+    emailReactivationFailed = emailReactivationResult.failedList.sort();
   } catch (err) {
     logger.error(err);
 

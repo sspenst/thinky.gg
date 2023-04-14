@@ -1,15 +1,18 @@
 import { Menu, Transition } from '@headlessui/react';
+import Role from '@root/constants/role';
 import isPro from '@root/helpers/isPro';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { Fragment, useContext, useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
 import Dimensions from '../../constants/dimensions';
 import { AppContext } from '../../contexts/appContext';
 import { LevelContext } from '../../contexts/levelContext';
 import { PageContext } from '../../contexts/pageContext';
 import getProfileSlug from '../../helpers/getProfileSlug';
 import Avatar from '../avatar';
+import DismissToast from '../dismissToast';
 import AboutModal from '../modal/aboutModal';
 import EditLevelModal from '../modal/editLevelModal';
 import LevelInfoModal from '../modal/levelInfoModal';
@@ -31,6 +34,7 @@ export default function Dropdown() {
   const router = useRouter();
   const { setPreventKeyDownEvent } = useContext(PageContext);
   const { setShouldAttemptAuth } = useContext(AppContext);
+  const isGuest = user?.roles.includes(Role.GUEST);
 
   useEffect(() => {
     setPreventKeyDownEvent(openModal !== undefined);
@@ -40,7 +44,28 @@ export default function Dropdown() {
     setOpenModal(undefined);
   }
 
+  function logOutToast() {
+    toast.dismiss();
+    toast.error(
+      <div className='flex'>
+        <div className='flex flex-col gap-3 justify-center items-center'>
+          <span className='text-lg font-bold text-center'>Are you sure you want to log out?</span>
+          <span className='text-sm text-center'>Unless you saved the generated password for your Guest account, <span className='font-bold'>you will lose your progress!</span></span>
+          <Link className='text-white font-medium rounded-lg text-sm py-2.5 px-3.5 text-center transition bg-green-600 hover:bg-green-700' href='/settings/account' onClick={() => toast.dismiss()}>Convert to a (free) regular account</Link>
+          <button className='text-white font-medium rounded-lg text-sm py-2.5 px-3.5 text-center transition bg-red-600 hover:bg-red-700' onClick={logOut}>Proceed with logging out</button>
+        </div>
+        <DismissToast />
+      </div>,
+      {
+        duration: 30000,
+        icon: '⚠️',
+      },
+    );
+  }
+
   function logOut() {
+    toast.dismiss();
+    toast.loading('Logging out...', { duration: 1000 });
     fetch('/api/logout', {
       method: 'POST',
     }).then(() => {
@@ -243,7 +268,7 @@ export default function Dropdown() {
                 {({ active }) => (
                   <div
                     className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3'
-                    onClick={logOut}
+                    onClick={isGuest ? logOutToast : logOut}
                     style={{
                       backgroundColor: active ? 'var(--bg-color-3)' : undefined,
                     }}

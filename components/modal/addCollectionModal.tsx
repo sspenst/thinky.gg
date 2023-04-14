@@ -2,6 +2,7 @@ import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Collection from '../../models/db/collection';
+import isNotFullAccountToast from '../isNotFullAccountToast';
 import Modal from '.';
 
 interface AddCollectionModalProps {
@@ -53,7 +54,9 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
         'Content-Type': 'application/json'
       }
     }).then(async res => {
-      if (res.status === 200) {
+      if (res.status === 401) {
+        isNotFullAccountToast('Creating a collection');
+      } else if (res.status === 200) {
         toast.dismiss();
         toast.success(collection ? 'Updated' : 'Added');
         closeModal();

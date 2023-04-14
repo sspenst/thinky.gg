@@ -206,7 +206,7 @@ describe('Reset a password API should function right', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           body: {
-            password: 'NEWPASS',
+            password: 'NEWPASS123',
             userId: TestId.USER_B,
             token: getResetPasswordToken(userB)
           },
@@ -234,7 +234,7 @@ describe('Reset a password API should function right', () => {
       calc_records: 0,
       email: 'bab@gmail.com',
       name: 'BLAH',
-      password: 'BAAAB',
+      password: 'BAAAB123',
       score: 0,
       ts: null,
     });

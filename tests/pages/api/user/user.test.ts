@@ -1,4 +1,6 @@
+import { UserModel } from '@root/models/mongoose';
 import { enableFetchMocks } from 'jest-fetch-mock';
+import MockDate from 'mockdate';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
@@ -7,7 +9,6 @@ import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import withAuth, { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { UserModel } from '../../../../models/mongoose';
 import modifyUserHandler from '../../../../pages/api/user/index';
 
 beforeAll(async () => {
@@ -64,7 +65,6 @@ describe('Testing a valid user', () => {
           body: {
             name: 'newuser',
             email: 'test123@test.com',
-            currentPassword: 'test',
           },
           headers: {
             'content-type': 'application/json',
@@ -83,7 +83,8 @@ describe('Testing a valid user', () => {
       },
     });
   });
-  test('Changing username and email to have trailing spaces shouldn\'t error (but should trim on backend)', async () => {
+  test('Changing email too quickly should error', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -95,7 +96,40 @@ describe('Testing a valid user', () => {
           body: {
             name: ' newuser3 ',
             email: '   test1234@test.com    ',
-            currentPassword: 'test',
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await modifyUserHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Error: Please wait a couple minutes before requesting another email confirmation');
+        expect(res.status).toBe(500);
+      },
+    });
+  });
+  test('Changing username and email to have trailing spaces shouldn\'t error (but should trim on backend)', async () => {
+    // mock date
+    const fiveMinFromNow = new Date().getTime() + 5 * 60 * 1000;
+
+    MockDate.set(fiveMinFromNow);
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          userId: TestId.USER,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            name: ' newuser3 ',
+            email: '   test1234@test.com    ',
+            currentPassword: 'test1234',
           },
           headers: {
             'content-type': 'application/json',
@@ -125,8 +159,7 @@ describe('Testing a valid user', () => {
           },
           body: {
             name: ' newuser3 ',
-            email: '   test1234@test.com    ',
-            currentPassword: 'test',
+            currentPassword: 'test1234',
             password: 'newpassword'
           },
           headers: {
@@ -157,7 +190,6 @@ describe('Testing a valid user', () => {
           },
           body: {
             name: ' newuser3 ',
-            email: '   test1234@test.com    ',
             currentPassword: 'testincorrect',
             password: 'newpassword'
           },
@@ -241,9 +273,16 @@ describe('Testing a valid user', () => {
     });
   });
   test('Changing stuff but updateOne errors', async () => {
-    jest.spyOn(UserModel, 'updateOne').mockImplementationOnce(() => {
-      throw new Error('test error');
-    });
+    const originalImplementation = UserModel.findOneAndUpdate;
+
+    jest.spyOn(UserModel, 'findOneAndUpdate')
+      .mockImplementationOnce(function (this: any, ...args) {
+      // Call the original implementation for the first call
+        return originalImplementation.apply(this, args);
+      })
+      .mockImplementationOnce(() => {
+        throw new Error('test error');
+      });
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -267,8 +306,8 @@ describe('Testing a valid user', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Internal error');
-        expect(response.updated).toBe(false);
+        expect(response.error).toBe('Error: test error');
+
         expect(res.status).toBe(500);
       },
     });

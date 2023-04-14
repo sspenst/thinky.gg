@@ -19,6 +19,38 @@ afterEach(() => {
 enableFetchMocks();
 
 describe('Testing commenting', () => {
+  test('Create a comment with an unconfirmed email', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_D),
+          },
+          query: {
+            id: TestId.USER_B,
+          },
+          body: {
+            targetModel: 'User',
+            text: 'My comment'.repeat(1000),
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+
+        const response = await res.json();
+
+        expect(response.error).toBe('Commenting requires a full account with a confirmed email');
+        expect(res.status).toBe(401);
+      },
+    });
+  });
   test('Create a comment too long', async () => {
     await testApiHandler({
       handler: async (_, res) => {
