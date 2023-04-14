@@ -1,5 +1,8 @@
+import Discord from '@root/constants/discord';
 import Role from '@root/constants/role';
+import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
+import getProfileSlug from '@root/helpers/getProfileSlug';
 import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmationEmail';
 import UserConfig from '@root/models/db/userConfig';
 import type { NextApiResponse } from 'next';
@@ -32,9 +35,10 @@ export default withAuth({
   } = req.body;
 
   const user = await UserModel.findById(req.userId, '+password', { lean: false });
+  const trimmedName = name.trim();
 
   user.email = email.trim();
-  user.name = name.trim();
+  user.name = trimmedName;
   user.password = password;
   user.roles = user.roles.filter((role: Role) => role !== Role.GUEST);
 
@@ -50,7 +54,10 @@ export default withAuth({
     projection: { emailConfirmationToken: 1, },
   });
 
-  await sendEmailConfirmationEmail(req, user, userConfig as UserConfig);
+  await Promise.all([
+    sendEmailConfirmationEmail(req, user, userConfig as UserConfig),
+    queueDiscordWebhook(Discord.NotifsId, `**${trimmedName}** just converted from a guest account! Welcome them on their [profile](${req.headers.origin}${getProfileSlug(user)})!`),
+  ]);
 
   return res.status(200).json({ updated: true });
 });

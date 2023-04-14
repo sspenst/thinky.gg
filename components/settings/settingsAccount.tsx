@@ -49,7 +49,9 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
     });
   }
 
-  function resendEmailConfirmation() {
+  function resendEmailConfirmation(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
     toast.dismiss();
     toast.loading('Resending activation email...');
 
