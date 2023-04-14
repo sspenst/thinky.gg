@@ -57,7 +57,9 @@ export default withAuth({
       setObj['emailDigest'] = emailDigest;
 
       if (isGuest) {
-        return res.status(400).json({ error: 'Guests cannot change email digest settings. Confirm your email to convert your account.' });
+        return res.status(400).json({
+          error: 'Guests cannot change email digest settings. Confirm your email to convert your account.',
+        });
       }
     }
 

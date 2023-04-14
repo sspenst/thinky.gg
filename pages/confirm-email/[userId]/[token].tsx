@@ -1,41 +1,48 @@
 import Page from '@root/components/page';
+import { getUserFromToken } from '@root/lib/withAuth';
+import UserConfig from '@root/models/db/userConfig';
 import { UserConfigModel } from '@root/models/mongoose';
-import { GetServerSidePropsContext } from 'next';
+import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import React, { useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const cookieToken = context.req?.cookies?.token;
+  const reqUser = cookieToken ? await getUserFromToken(cookieToken, context.req as NextApiRequest) : null;
   const { userId, token } = context.query;
+  let emailConfirmed = false;
 
-  const resp = await UserConfigModel.findOneAndUpdate(
-    {
-      userId: userId,
-      emailConfirmationToken: token,
-    },
-    {
-      emailConfirmationToken: null,
-      emailConfirmed: true,
-    }, {
-      new: true,
-    });
-
-  if (resp?.emailConfirmed) {
-    return {
-      props: {
+  if (reqUser?._id.toString() === userId?.toString()) {
+    const userConfig = await UserConfigModel.findOneAndUpdate<UserConfig>(
+      {
+        emailConfirmationToken: token,
+        userId: userId,
+      },
+      {
+        emailConfirmationToken: null,
         emailConfirmed: true,
       },
-    };
-  } else {
-    return {
-      props: {
-        emailConfirmed: false,
+      {
+        new: true,
       },
-    };
+    );
+
+    emailConfirmed = !!userConfig?.emailConfirmed;
   }
+
+  return {
+    props: {
+      emailConfirmed: emailConfirmed,
+    },
+  };
 }
 
-export default function ConfirmEmail({ emailConfirmed }: { emailConfirmed: boolean }) {
+interface ConfirmEmailProps {
+  emailConfirmed: boolean;
+}
+
+export default function ConfirmEmail({ emailConfirmed }: ConfirmEmailProps) {
   const router = useRouter();
 
   useEffect(() => {
@@ -43,7 +50,7 @@ export default function ConfirmEmail({ emailConfirmed }: { emailConfirmed: boole
 
     if (!emailConfirmed) {
       router.push('/settings/account');
-      toast.error('Email confirmation failed!');
+      toast.error('Email confirmation failed');
     } else {
       router.push('/home');
       toast.success('Email confirmed!');

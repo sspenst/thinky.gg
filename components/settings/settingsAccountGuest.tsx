@@ -18,7 +18,7 @@ export default function SettingsAccountGuest() {
     toast.dismiss();
     toast.loading('Creating account...');
 
-    fetch('/api/user', {
+    fetch('/api/guest-convert', {
       method: 'PUT',
       body: JSON.stringify({
         name: username,
@@ -53,7 +53,7 @@ export default function SettingsAccountGuest() {
         }
       }
 
-      toast.error(errorStr);
+      toast.error(errorStr, { duration: 3000 });
     });
   }
 

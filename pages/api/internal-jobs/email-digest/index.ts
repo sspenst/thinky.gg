@@ -42,6 +42,10 @@ const transporter = isLocal() ? nodemailer.createTransport({
 });
 
 export async function sendMail(batchId: Types.ObjectId, type: EmailType, user: User, subject: string, body: string) {
+  if (process.env.NODE_ENV === 'test') {
+    return;
+  }
+
   /* istanbul ignore next */
   const textVersion = convert(body, {
     wordwrap: 130,
