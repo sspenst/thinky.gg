@@ -141,9 +141,9 @@ export default apiWrapper({ POST: {
 
       id = user._id;
 
-      Promise.all([
+      await Promise.all([
         !guest && sendEmailConfirmationEmail(req, user, userConfig as UserConfig),
-        queueDiscordWebhook(Discord.NotifsId, `**${trimmedName}** just registered! Welcome them on their [profile](${req.headers.origin}${getProfileSlug(user)})!`, { session: session })
+        queueDiscordWebhook(Discord.NotifsId, `**${trimmedName}** just registered! Welcome them on their [profile](${req.headers.origin}${getProfileSlug(user)})!`, { session: session }),
       ]);
     });
     session.endSession();

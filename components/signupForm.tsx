@@ -116,16 +116,16 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
     <FormTemplate>
       <form className='flex flex-col gap-4' onSubmit={onSubmit}>
         <div>
-          <label className='block text-sm font-bold mb-2' htmlFor='email'>
-            Email
-          </label>
-          <input required onChange={e => setEmail(e.target.value)} value={email} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='email' type='email' placeholder='Email' />
-        </div>
-        <div>
           <label className='block text-sm font-bold mb-2 ' htmlFor='username'>
             Username
           </label>
           <input required onChange={e => setUsername(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='username' type='text' placeholder='Username' />
+        </div>
+        <div>
+          <label className='block text-sm font-bold mb-2' htmlFor='email'>
+            Email
+          </label>
+          <input required onChange={e => setEmail(e.target.value)} value={email} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='email' type='email' placeholder='Email' />
         </div>
         <div>
           <label className='block text-sm font-bold mb-2' htmlFor='password'>
