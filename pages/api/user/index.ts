@@ -1,6 +1,6 @@
 import Role from '@root/constants/role';
 import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
-import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmToken';
+import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmationEmail';
 import UserConfig from '@root/models/db/userConfig';
 import bcrypt from 'bcryptjs';
 import mongoose, { Types } from 'mongoose';
@@ -116,10 +116,11 @@ export default withAuth({
 
         await sendEmailConfirmationEmail(req, newUser, userConfig as UserConfig);
       }
-    } catch (err) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
       logger.error(err);
 
-      return res.status(500).json({ error: 'Internal error' });
+      return res.status(500).json({ error: err.toString() || 'Internal error' });
     }
 
     if (trimmedName) {

@@ -1,4 +1,3 @@
-import User from '@root/models/db/user';
 import { UserModel } from '@root/models/mongoose';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';
