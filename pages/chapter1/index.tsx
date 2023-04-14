@@ -28,23 +28,24 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
 /* istanbul ignore next */
 export default function Chapter1Page({ completedLevels, enrichedCollections, reqUser, totalLevels }: CampaignProps) {
-  const stepsData = {
-    steps: [
-      {
-        disableBeacon: true,
-        target: '#level-selectcard-0',
-        content: 'This is the first level',
-        // navigate to first chapter
-      },
-
-    ]
-  };
   const [tour, setTour] = useState<JSX.Element>();
-  const steps = useRef(stepsData.steps);
+
   const { user } = useContext(AppContext);
   const router = useRouter();
 
   useEffect(() => {
+    const stepsData = {
+      steps: [
+        {
+          disableBeacon: true,
+          target: '#level-selectcard-0',
+          content: 'This is the first level',
+          // navigate to first chapter
+        },
+
+      ]
+    };
+
     if (user && user.score === 0) {
       setTour(<Joyride
         callback={(data) => {
@@ -59,7 +60,7 @@ export default function Chapter1Page({ completedLevels, enrichedCollections, req
         }}
 
         run={true}
-        steps={steps.current}
+        steps={stepsData.steps}
         continuous
         hideCloseButton
 

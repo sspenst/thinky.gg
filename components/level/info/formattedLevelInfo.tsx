@@ -99,18 +99,18 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
       <div className='flex flex-col gap-2'>
         <Tab.Group>
           <Tab.List className='flex flex-wrap gap-x-1 items-start rounded text-sm'>
-            <Tab className='ui-selected:border-b-2 border-blue-500 focus:outline-none'>
+            <Tab id='leastStepsTab' className='ui-selected:border-b-2 border-blue-500 focus:outline-none'>
               <div className='mb-1 py-1 px-2 tab rounded'>
                 Least Steps
               </div>
             </Tab>
-            <Tab className='ui-selected:border-b-2 border-blue-500 focus:outline-none'>
+            <Tab id='solvesTab' className='ui-selected:border-b-2 border-blue-500 focus:outline-none'>
               <div className='mb-1 py-1 px-2 tab rounded flex flex-row items-center gap-2'>
                 <Image alt='pro' src='/pro.svg' width='16' height='16' />
                 <span>Solves</span>
               </div>
             </Tab>
-            <Tab className='ui-selected:border-b-2 border-blue-500 focus:outline-none'>
+            <Tab id='timePlayedTab' className='ui-selected:border-b-2 border-blue-500 focus:outline-none'>
               <div className='mb-1 py-1 px-2 tab rounded flex flex-row items-center gap-2'>
                 <Image alt='pro' src='/pro.svg' width='16' height='16' />
                 <span>Time Played</span>

@@ -98,7 +98,7 @@ export default function Dropdown() {
       }
     </>}
     <Menu>
-      <Menu.Button>
+      <Menu.Button id='dropdownMenuBtn'>
         {user ?
           <Avatar user={user} />
           :

@@ -1,11 +1,13 @@
 /* istanbul ignore file */
 
+import { AppContext } from '@root/contexts/appContext';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
+import Joyride, { Step } from 'react-joyride';
 import GameWrapper from '../../../components/level/gameWrapper';
 import LinkInfo from '../../../components/linkInfo';
 import Page from '../../../components/page';
@@ -189,8 +191,98 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
   const ogFullUrl = `https://pathology.gg${ogUrl}`;
   const authorNote = level.authorNote ? level.authorNote : `${level.name} by ${level.userId.name}`;
 
+  const [tour, setTour] = useState<JSX.Element>();
+
+  const { user } = useContext(AppContext);
+  const tourRef = useRef<Joyride>(null);
+
+  useEffect(() => {
+    const tourMap = [ [
+      {
+        disableBeacon: true,
+        target: '#fullscreenBtn',
+        content: 'Allows you to go full screen',
+      },
+      {
+        disableBeacon: true,
+        target: '#checkpointBtn',
+        content: 'Allows you to save checkpoints (note this is a Pro feature)',
+      },
+
+    ],
+    [
+      {
+        disableBeacon: true,
+        target: '#dropdownMenuBtn',
+        content: 'Access your profile, settings, and change the theme.'
+      },
+      {
+        disableBeacon: true,
+        target: '#searchBtn',
+        content: 'Search through the thousands of user created levels',
+      },
+      {
+        disableBeacon: true,
+        target: '#notificationsBtn',
+        content: 'Access notifications and messages',
+      },
+      {
+        disableBeacon: true,
+        target: '#multiplayerBtn',
+        content: 'Play against other plays with the real time multiplayer mode!',
+      },
+      {
+        disableBeacon: true,
+        target: '#levelsCompletedBtn',
+        content: 'Shows how many levels you have completed',
+      },
+    ], [
+      {
+        disableBeacon: true,
+        target: '#leastStepsTab',
+        content: 'On the side bar you can see the user that first achieved the current minimum step count.'
+      },
+      {
+        disableBeacon: true,
+        target: '#solvesTab',
+        content: 'This tab (a Pro feature) will show other users that have reached different step counts.'
+      },
+      {
+        disableBeacon: true,
+        target: '#timePlayedTab',
+        content: 'This tab (also a Pro feature) will show details on how long you have taken to solve this level.'
+      },
+      {
+        disableBeacon: true,
+        target: '.reviewsSection',
+        content: 'Did you enjoy this level? After beating it, leave a review here. Reviewing a level gives feedback to the author and helps other Pathology recommend levels for players.'
+      },
+    ] ];
+
+    const tourSteps = user ? tourMap[user.score] : [];
+
+    if (user && tourSteps?.length > 0) {
+      setTour(<Joyride
+        callback={() => {
+          //
+        }}
+        ref={tourRef}
+        run={true}
+        steps={tourSteps}
+
+        continuous
+        hideCloseButton
+        scrollToFirstStep
+        showProgress
+        showSkipButton
+
+      />);
+    }
+  }, [router, user]);
+
   return (
     <>
+      {tour}
       <NextSeo
         title={`${level.name} - Pathology`}
         description={authorNote}
