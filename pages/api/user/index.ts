@@ -1,4 +1,5 @@
 import Role from '@root/constants/role';
+import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
 import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmToken';
 import UserConfig from '@root/models/db/userConfig';
 import bcrypt from 'bcryptjs';
@@ -49,6 +50,12 @@ export default withAuth({
       multiplayerProfile: multiplayerProfile,
     } });
   } else if (req.method === 'PUT') {
+    if (req.user.roles.includes(Role.GUEST)) {
+      return res.status(401).json({
+        error: 'Unauthorized: Guest account',
+      });
+    }
+
     const {
       bio,
       currentPassword,
@@ -57,25 +64,20 @@ export default withAuth({
       name,
       password,
     } = req.body;
-    let isGuest = req.user.roles.includes(Role.GUEST);
 
     if (password) {
       const user = await UserModel.findById(req.userId, '+password', { lean: false });
 
-      if (!isGuest) {
-        if (!(await bcrypt.compare(currentPassword, user.password))) {
-          return res.status(401).json({
-            error: 'Incorrect email or password',
-          });
-        }
-      } else {
-        // remove GUEST role
-        user.roles = user.roles.filter((role: Role) => role !== Role.GUEST);
-        isGuest = false;
+      if (!(await bcrypt.compare(currentPassword, user.password))) {
+        return res.status(401).json({
+          error: 'Incorrect email or password',
+        });
       }
 
       user.password = password;
       await user.save();
+
+      return res.status(200).json({ updated: true });
     }
 
     const setObj: {[k: string]: string} = {};
@@ -84,7 +86,7 @@ export default withAuth({
       setObj['hideStatus'] = hideStatus;
     }
 
-    if (email) {
+    if (email !== undefined) {
       setObj['email'] = email.trim();
     }
 
@@ -98,33 +100,21 @@ export default withAuth({
       setObj['name'] = trimmedName;
     }
 
-    if (!password && Object.entries(setObj).length === 0) {
-      return res.status(400).json({
-        error: 'Bad request: No data provided',
-      });
-    }
-
     try {
-      const newUser = await UserModel.findOneAndUpdate({ _id: req.userId }, { $set: setObj }, { runValidators: true, new: true, projection: { _id: true, email: true, name: true } });
+      const newUser = await UserModel.findOneAndUpdate({ _id: req.userId }, { $set: setObj }, { runValidators: true, new: true, projection: { _id: 1, email: 1, name: 1 } });
 
-      if (setObj['email'] && !isGuest) {
+      if (setObj['email']) {
         const userConfig = await UserConfigModel.findOneAndUpdate({ userId: req.userId }, {
           $set: {
+            emailConfirmationToken: getEmailConfirmationToken(),
             emailConfirmed: false,
-            emailConfirmationToken: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
           }
         }, {
           new: true,
           projection: { emailConfirmationToken: 1, },
         });
 
-        try {
-          await sendEmailConfirmationEmail(req, newUser, userConfig as UserConfig);
-        } catch (err) {
-          logger.error(err);
-
-          return res.status(400).json({ error: (err as Error).message || 'Error sending email' });
-        }
+        await sendEmailConfirmationEmail(req, newUser, userConfig as UserConfig);
       }
     } catch (err) {
       logger.error(err);
