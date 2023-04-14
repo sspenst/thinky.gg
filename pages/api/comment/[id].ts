@@ -141,7 +141,7 @@ export default withAuth({
   if (req.method === 'POST') {
     if (!(await isFullAccount(req.user))) {
       return res.status(401).json({
-        error: 'Commenting requires a full account with a verified email'
+        error: 'Commenting requires a full account with a confirmed email'
       });
     }
 

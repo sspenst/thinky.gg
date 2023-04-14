@@ -2,7 +2,7 @@ import { EmailDigestSettingTypes } from '@root/constants/emailDigest';
 import Role from '@root/constants/role';
 import { generatePassword } from '@root/helpers/generatePassword';
 import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
-import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmToken';
+import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmationEmail';
 import UserConfig from '@root/models/db/userConfig';
 import mongoose, { QueryOptions, Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';

@@ -54,6 +54,9 @@ export default function HomeLoggedIn({
   );
 
   return (<>
+    <div className='bg-yellow-200 w-full text-black text-center p-2 shadow-lg'>
+      Confirm your email in your <Link className='font-semibold text-blue-600 hover:underline' href='/settings/account'>Account Settings</Link> to unlock all basic features!
+    </div>
     <div className='flex flex-col gap-4 m-4 items-center'>
       <div className='flex flex-row flex-wrap gap-3 justify-center'>
         <div className='flex gap-2 items-center'>
