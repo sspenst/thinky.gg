@@ -1,12 +1,14 @@
+import { useTour } from '@root/components/tour/tourData';
 import { AppContext } from '@root/contexts/appContext';
+import { ReqUser } from '@root/models/db/user';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import Joyride from 'react-joyride';
 import FormattedCampaign from '../../components/formattedCampaign';
 import LinkInfo from '../../components/linkInfo';
-import Page from '../../components/page';
+import Page, { PAGE_PATH } from '../../components/page';
 import getCampaignProps, { CampaignProps } from '../../helpers/getCampaignProps';
 import { getUserFromToken } from '../../lib/withAuth';
 
@@ -28,49 +30,18 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
 /* istanbul ignore next */
 export default function Chapter1Page({ completedLevels, enrichedCollections, reqUser, totalLevels }: CampaignProps) {
-  const [tour, setTour] = useState<JSX.Element>();
-
   const { user } = useContext(AppContext);
-  const router = useRouter();
+  const memoizedCallback = useCallback((data: any) => {
+    if (data.action === 'next' && data.index === 0) {
+      // get the first level a tag
+      const firstLevel = document.querySelector('#level-selectcard-0 a');
 
-  useEffect(() => {
-    const stepsData = {
-      steps: [
-        {
-          disableBeacon: true,
-          target: '#level-selectcard-0',
-          content: 'This is the first level',
-          // navigate to first chapter
-        },
-
-      ]
-    };
-
-    if (user && user.score === 0) {
-      setTour(<Joyride
-        callback={(data) => {
-          if (data.action === 'next' && data.index === 0) {
-            // get the first level a tag
-            const firstLevel = document.querySelector('#level-selectcard-0 a');
-
-            if (firstLevel) {
-              (firstLevel as HTMLAnchorElement).click();
-            }
-          }
-        }}
-
-        run={true}
-        steps={stepsData.steps}
-        continuous
-        hideCloseButton
-
-        scrollToFirstStep
-        showProgress
-        showSkipButton
-
-      />);
+      if (firstLevel) {
+        (firstLevel as HTMLAnchorElement).click();
+      }
     }
-  }, [router, user]);
+  }, []);
+  const { tour } = useTour(PAGE_PATH.CHAPTER, user as ReqUser, memoizedCallback);
 
   return (
     <Page folders={[new LinkInfo('Chapter Select', '/play')]} title={'Chapter 1'}>

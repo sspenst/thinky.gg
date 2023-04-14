@@ -3,7 +3,7 @@ import UserConfig from '@root/models/db/userConfig';
 import { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import Theme from '../../../constants/theme';
-import { ValidNumber, ValidType } from '../../../helpers/apiWrapper';
+import { ValidArray, ValidNumber, ValidType } from '../../../helpers/apiWrapper';
 import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
@@ -32,6 +32,7 @@ export default withAuth({
       emailDigest: ValidType('string', false),
       theme: ValidType('string', false),
       tutorialCompletedAt: ValidNumber(false),
+      toursCompleted: ValidArray(false),
     }
   },
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
@@ -47,6 +48,7 @@ export default withAuth({
       emailDigest,
       showPlayStats,
       theme,
+      toursCompleted,
       tutorialCompletedAt,
     } = req.body;
 
@@ -73,6 +75,10 @@ export default withAuth({
 
     if (tutorialCompletedAt) {
       setObj['tutorialCompletedAt'] = tutorialCompletedAt;
+    }
+
+    if (toursCompleted) {
+      setObj['toursCompleted'] = toursCompleted;
     }
 
     // check if setObj is blank
