@@ -1,7 +1,8 @@
 import classNames from 'classnames';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
+import Joyride from 'react-joyride';
 import Dimensions from '../constants/dimensions';
 import Theme from '../constants/theme';
 import TimeRange from '../constants/timeRange';
@@ -52,8 +53,80 @@ export default function HomeLoggedIn({
       'bg-green-100 hover:bg-gray-50 border-gray-300 text-gray-700' :
       'bg-gray-800 hover:bg-slate-600 border-gray-700 text-gray-300'
   );
+  const [tour, setTour] = useState<JSX.Element>();
+
+  useEffect(() => {
+    const stepsData = {
+      steps: [
+        {
+          disableBeacon: true,
+          target: '#level-of-day',
+          content: 'Every day we select a level that we think is fun and interesting. You can play it here!',
+          // navigate to first chapter
+        },
+        {
+          disableBeacon: true,
+          target: '#recommended-easy-level',
+          content: 'We think this level is easy enough for you to complete. Give it a try!',
+          // navigate to first chapter
+        },
+        {
+          disableBeacon: true,
+          target: '#communityCampaignsBtn',
+          content: 'Here is some classic campaigns if you want a different challenge than the main campaign.',
+          // navigate to first chapter
+        },
+        {
+          disableBeacon: true,
+          target: '#usersBtn',
+          content: 'Browse through all the users on the site and check out how you stack up!',
+          // navigate to first chapter
+        },
+        {
+          disableBeacon: true,
+          target: '#latestLevelsSection',
+          placement: 'auto',
+          content: 'Here are the latest levels that have been created by the community. Check them out if you are looking for some fresh levels.',
+          // navigate to first chapter
+        },
+        {
+          disableBeacon: true,
+          target: '#discordSection',
+          content: 'If you want to chat with other players, join our discord server!',
+          placement: 'auto',
+          // navigate to first chapter
+        },
+        {
+          disableBeacon: true,
+          target: '#playBtn',
+          content: 'Play here to get back into the main campaign!',
+          placement: 'auto',
+          // navigate to first chapter
+        },
+      ]
+    };
+
+    if (user) {
+      setTour(<Joyride
+        callback={() => {
+          //
+        }}
+
+        run={true}
+        steps={stepsData.steps}
+        continuous
+        hideCloseButton
+
+        scrollToFirstStep
+        showProgress
+        showSkipButton
+
+      />);
+    }
+  }, [router, user]);
 
   return (<>
+    {tour}
     <div className='flex flex-col gap-4 m-4 items-center'>
       <div className='flex flex-row flex-wrap gap-3 justify-center'>
         <div className='flex gap-2 items-center'>
@@ -70,7 +143,7 @@ export default function HomeLoggedIn({
           <span className='flex justify-center font-bold'>{user.score}</span>
         </div>
         <div className='flex flex-col gap-2'>
-          <Link
+          <Link id='playBtn'
             className='inline-block px-3 py-1.5 border-4 border-neutral-400 bg-white text-black font-bold text-3xl leading-snug rounded-xl hover:ring-4 hover:bg-blue-500 hover:text-white ring-blue-500/50 focus:ring-0 text-center'
             style={{
               animationDelay: '0.5s',
@@ -118,12 +191,12 @@ export default function HomeLoggedIn({
             <path strokeLinecap='round' strokeLinejoin='round' d='M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222' />
           </svg>Tutorial
         </Link>
-        <Link passHref href='/campaigns' className={buttonClassNames}>
+        <Link id='communityCampaignsBtn' passHref href='/campaigns' className={buttonClassNames}>
           <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-book' viewBox='0 0 16 16'>
             <path d='M1 2.828c.885-.37 2.154-.769 3.388-.893 1.33-.134 2.458.063 3.112.752v9.746c-.935-.53-2.12-.603-3.213-.493-1.18.12-2.37.461-3.287.811V2.828zm7.5-.141c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492V2.687zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783z' />
           </svg>Community Campaigns
         </Link>
-        <Link passHref href='/users' className={buttonClassNames}>
+        <Link id='usersBtn' passHref href='/users' className={buttonClassNames}>
           <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-list-ol' viewBox='0 0 16 16'>
             <path fillRule='evenodd' d='M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5z' />
             <path d='M1.713 11.865v-.474H2c.217 0 .363-.137.363-.317 0-.185-.158-.31-.361-.31-.223 0-.367.152-.373.31h-.59c.016-.467.373-.787.986-.787.588-.002.954.291.957.703a.595.595 0 0 1-.492.594v.033a.615.615 0 0 1 .569.631c.003.533-.502.8-1.051.8-.656 0-1-.37-1.008-.794h.582c.008.178.186.306.422.309.254 0 .424-.145.422-.35-.002-.195-.155-.348-.414-.348h-.3zm-.004-4.699h-.604v-.035c0-.408.295-.844.958-.844.583 0 .96.326.96.756 0 .389-.257.617-.476.848l-.537.572v.03h1.054V9H1.143v-.395l.957-.99c.138-.142.293-.304.293-.508 0-.18-.147-.32-.342-.32a.33.33 0 0 0-.342.338v.041zM2.564 5h-.635V2.924h-.031l-.598.42v-.567l.629-.443h.635V5z' />
@@ -207,7 +280,7 @@ export default function HomeLoggedIn({
           </div>
         }
       </div>
-      <div className='w-full md:w-1/2 p-4'>
+      <div className='w-full md:w-1/2 p-4' id='latestLevelsSection'>
         <div id='latest-levels' className='flex justify-center'>
           <Link
             className='font-bold text-xl text-center hover:underline'
@@ -266,7 +339,7 @@ export default function HomeLoggedIn({
           }) : <div className='flex justify-center p-4'><LoadingSpinner /></div>}
         </div>
       </div>
-      <iframe className='p-4' src='https://discord.com/widget?id=971585343956590623&theme=dark' width='640' height='640' sandbox='allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts' />
+      <iframe id='discordSection' className='p-4' src='https://discord.com/widget?id=971585343956590623&theme=dark' width='640' height='640' sandbox='allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts' />
     </div>
   </>);
 }
