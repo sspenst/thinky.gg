@@ -1,3 +1,4 @@
+import Role from '@root/constants/role';
 import classNames from 'classnames';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -127,6 +128,15 @@ export default function HomeLoggedIn({
 
   return (<>
     {tour}
+    {userConfig && !userConfig.emailConfirmed &&
+      <div className='bg-yellow-200 w-full text-black text-center text-sm p-2 shadow-lg'>
+        {`${user.roles.includes(Role.GUEST) ? 'Convert to a regular account' : 'Confirm your email'} in your `}
+        <Link className='font-semibold text-blue-600 hover:underline' href='/settings/account'>
+          Account Settings
+        </Link>
+        {' to unlock all basic features!'}
+      </div>
+    }
     <div className='flex flex-col gap-4 m-4 items-center'>
       <div className='flex flex-row flex-wrap gap-3 justify-center'>
         <div className='flex gap-2 items-center'>

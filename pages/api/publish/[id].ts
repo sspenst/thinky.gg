@@ -23,7 +23,7 @@ export default withAuth({ POST: {
 } }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (!(await isFullAccount(req.user))) {
     return res.status(401).json({
-      error: 'Publishing a level requires a full account with a verified email'
+      error: 'Publishing a level requires a full account with a confirmed email'
     });
   }
 

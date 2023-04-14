@@ -8,8 +8,8 @@ export default function isNotFullAccountToast(verb: string) {
   toast.error(
     <div className='flex'>
       <div className='flex flex-col gap-2'>
-        <span>Error: {verb} requires a full account with a verified email</span>
-        <Link className='text-blue-500 w-fit' href='/settings/account'>Update here</Link>
+        <span>Error: {verb} requires a full account with a confirmed email</span>
+        <Link className='text-blue-500 w-fit' href='/settings/account'>Confirm here</Link>
       </div>
       <DismissToast />
     </div>,

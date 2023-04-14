@@ -22,7 +22,7 @@ export default async function sendPasswordResetEmail(req: NextApiRequest, user: 
 
     // if it's been less than 2 minutes since the last email was sent, don't send another one
     if (timeSinceLastSent < 1000 * 60 * 2) {
-      throw new Error('Please wait a couple minutes before requesting another email confirmation');
+      throw new Error('Please wait a couple minutes before requesting another password reset');
     }
   }
 

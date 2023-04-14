@@ -19,7 +19,7 @@ afterEach(() => {
 enableFetchMocks();
 
 describe('Testing commenting', () => {
-  test('Create a comment with an unverified email', async () => {
+  test('Create a comment with an unconfirmed email', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -46,7 +46,7 @@ describe('Testing commenting', () => {
 
         const response = await res.json();
 
-        expect(response.error).toBe('Commenting requires a full account with a verified email');
+        expect(response.error).toBe('Commenting requires a full account with a confirmed email');
         expect(res.status).toBe(401);
       },
     });

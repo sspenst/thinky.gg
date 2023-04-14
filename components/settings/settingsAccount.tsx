@@ -49,15 +49,17 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
     });
   }
 
-  function resendEmailConfirmation(
-    body: string,
-  ) {
+  function resendEmailConfirmation(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
     toast.dismiss();
     toast.loading('Resending activation email...');
 
     fetch('/api/user', {
       method: 'PUT',
-      body: body,
+      body: JSON.stringify({
+        email: email,
+      }),
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json'
@@ -136,16 +138,6 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
         name: username,
       }),
       'username',
-    );
-  }
-
-  function resendEmail(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-
-    resendEmailConfirmation(
-      JSON.stringify({
-        email: email,
-      }),
     );
   }
 
@@ -293,10 +285,15 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
           <button className='italic underline' type='submit'>Update</button>
         </form>
         <form className='flex flex-col items-start' onSubmit={
-          (email !== user.email ? updateEmail : resendEmail)
+          (!userConfig?.emailConfirmed && email === user.email ? resendEmailConfirmation : updateEmail)
         }>
           <label className='block font-bold mb-2' htmlFor='email'>
-            Email
+            {'Email - '}
+            {userConfig?.emailConfirmed && email === user.email ?
+              <span className='text-green-500'>Confirmed</span>
+              :
+              <span className='text-red-500'>Unconfirmed</span>
+            }
           </label>
           <input
             className={inputClass}
@@ -309,7 +306,7 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
             value={email}
           />
           <button className='italic underline' type='submit'>
-            {email !== user.email ? 'Update' : 'Resend confirmation'}
+            {!userConfig?.emailConfirmed && email === user.email ? 'Resend confirmation' : 'Update'}
           </button>
         </form>
         <form className='flex flex-col items-start' onSubmit={updatePassword}>
