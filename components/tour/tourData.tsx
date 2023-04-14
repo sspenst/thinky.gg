@@ -4,6 +4,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import ReactJoyride, { Step } from 'react-joyride';
 import { PAGE_PATH } from '../page';
+import { TOUR_STEPS_CHAPTER_1 } from './steps/CHAPTER_1';
+import { TOUR_STEPS_FIRST_LEVEL } from './steps/FIRST_LEVEL';
+import { TOUR_STEPS_HOME_PAGE } from './steps/HOME_PAGE';
+import { TOUR_STEPS_PLAY_PAGE } from './steps/PLAY_PAGE';
+import { TOUR_STEPS_SECOND_LEVEL } from './steps/SECOND_LEVEL';
+import { TOUR_STEPS_THIRD_LEVEL } from './steps/THIRD_LEVEL';
 
 export enum TourTypes {
     HOME_PAGE = 'TOUR',
@@ -15,138 +21,12 @@ export enum TourTypes {
 }
 
 export const TOUR_DATA: { [key in TourTypes]: Step[] } = {
-  [TourTypes.PLAY_PAGE]: [
-    {
-      disableBeacon: true,
-      target: '#chapter1',
-      content: 'Welcome to Pathology main campaign! This is the first chapter, and it is unlocked by default.',
-      // navigate to first chapter
-    },
-
-  ],
-  [TourTypes.CHAPTER_1]: [
-    {
-      disableBeacon: true,
-      target: '#level-selectcard-0',
-      content: 'This is the first level',
-      // navigate to first chapter
-    },
-  ],
-  [TourTypes.FIRST_LEVEL]: [
-    {
-      disableBeacon: true,
-      target: '#fullscreenBtn',
-      content: 'Allows you to go full screen',
-    },
-    {
-      disableBeacon: true,
-      target: '#checkpointBtn',
-      content: 'Allows you to save checkpoints (note this is a Pro feature)',
-    },
-
-  ],
-  [TourTypes.SECOND_LEVEL]: [
-
-    {
-      disableBeacon: true,
-      target: '#dropdownMenuBtn',
-      content: 'Access your profile, settings, and change the theme.'
-    },
-    {
-      disableBeacon: true,
-      target: '#searchBtn',
-      content: 'Search through the thousands of user created levels',
-    },
-    {
-      disableBeacon: true,
-      target: '#notificationsBtn',
-      content: 'Access notifications and messages',
-    },
-    {
-      disableBeacon: true,
-      target: '#multiplayerBtn',
-      content: 'Play against other plays with the real time multiplayer mode!',
-    },
-    {
-      disableBeacon: true,
-      target: '#levelsCompletedBtn',
-      content: 'Shows how many levels you have completed',
-    },
-  ],
-  [TourTypes.THIRD_LEVEL]: [
-    {
-      disableBeacon: true,
-      target: '.difficultyText',
-      content: 'This shows the current difficulty of this level. Levels can range from 10 different difficulty levels ranging from Kindergarten to Super Grandmaster!'
-    },
-    {
-      disableBeacon: true,
-      target: '#leastStepsTab',
-      content: 'On the side bar you can see the user that first achieved the current minimum step count.'
-    },
-    {
-      disableBeacon: true,
-      target: '#solvesTab',
-      content: 'This tab (a Pro feature) will show other users that have reached different step counts.'
-    },
-    {
-      disableBeacon: true,
-      target: '#timePlayedTab',
-      content: 'This tab (also a Pro feature) will show details on how long you have taken to solve this level.'
-    },
-    {
-      disableBeacon: true,
-      target: '.reviewsSection',
-      content: 'Did you enjoy this level? After beating it, leave a review here. Reviewing a level gives feedback to the author and helps other Pathology recommend levels for players.'
-    },
-  ],
-  [TourTypes.HOME_PAGE]: [
-    {
-      disableBeacon: true,
-      target: '#level-of-day',
-      content: 'Every day we select a level that we think is fun and interesting. You can play it here!',
-      // navigate to first chapter
-    },
-    {
-      disableBeacon: true,
-      target: '#recommended-easy-level',
-      content: 'We think this level is easy enough for you to complete. Give it a try!',
-      // navigate to first chapter
-    },
-    {
-      disableBeacon: true,
-      target: '#communityCampaignsBtn',
-      content: 'Here is some classic campaigns if you want a different challenge than the main campaign.',
-      // navigate to first chapter
-    },
-    {
-      disableBeacon: true,
-      target: '#usersBtn',
-      content: 'Browse through all the users on the site and check out how you stack up!',
-      // navigate to first chapter
-    },
-    {
-      disableBeacon: true,
-      target: '#latestLevelsSection',
-      placement: 'auto',
-      content: 'Here are the latest levels that have been created by the community. Check them out if you are looking for some fresh levels.',
-      // navigate to first chapter
-    },
-    {
-      disableBeacon: true,
-      target: '#discordSection',
-      content: 'If you want to chat with other players, join our discord server!',
-      placement: 'auto',
-      // navigate to first chapter
-    },
-    {
-      disableBeacon: true,
-      target: '#playBtn',
-      content: 'Play here to get back into the main campaign!',
-      placement: 'auto',
-      // navigate to first chapter
-    },
-  ]
+  [TourTypes.PLAY_PAGE]: TOUR_STEPS_PLAY_PAGE,
+  [TourTypes.CHAPTER_1]: TOUR_STEPS_CHAPTER_1,
+  [TourTypes.FIRST_LEVEL]: TOUR_STEPS_FIRST_LEVEL,
+  [TourTypes.SECOND_LEVEL]: TOUR_STEPS_SECOND_LEVEL,
+  [TourTypes.THIRD_LEVEL]: TOUR_STEPS_THIRD_LEVEL,
+  [TourTypes.HOME_PAGE]: TOUR_STEPS_HOME_PAGE
 
 };
 
