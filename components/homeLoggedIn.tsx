@@ -11,6 +11,7 @@ import { AppContext } from '../contexts/appContext';
 import { FilterSelectOption } from '../helpers/filterSelectOptions';
 import getProfileSlug from '../helpers/getProfileSlug';
 import isTheme from '../helpers/isTheme';
+import { useTour } from '../hooks/useTour';
 import { EnrichedLevel } from '../models/db/level';
 import Review from '../models/db/review';
 import User, { ReqUser } from '../models/db/user';
@@ -24,7 +25,6 @@ import OnlineUsers from './onlineUsers';
 import { PAGE_PATH } from './page';
 import RecommendedLevel from './recommendedLevel';
 import RoleIcons from './roleIcons';
-import { useTour } from './tour/tourData';
 
 interface HomeLoggedInProps {
   lastLevelPlayed?: EnrichedLevel;
