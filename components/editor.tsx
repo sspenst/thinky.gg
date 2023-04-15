@@ -244,7 +244,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   const size = 40;
 
   // loop through the enum TileType
-  for (const levelDataTypeKey in TileType) {
+  for (const levelDataTypeKey of Object.values(TileType)) {
     let txt = undefined;
 
     if (levelDataTypeKey === TileType.End) {
