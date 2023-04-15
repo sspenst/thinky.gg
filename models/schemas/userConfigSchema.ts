@@ -1,4 +1,4 @@
-import { TourTypes } from '@root/components/tour/tourData';
+import { TourTypes } from '@root/hooks/useTour';
 import mongoose from 'mongoose';
 import { EmailDigestSettingTypes } from '../../constants/emailDigest';
 import UserConfig from '../db/userConfig';

@@ -1,10 +1,9 @@
-import User, { ReqUser } from '@root/models/db/user';
-import UserConfig from '@root/models/db/userConfig';
+import { ReqUser } from '@root/models/db/user';
 import { useRouter } from 'next/router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import ReactJoyride, { Step } from 'react-joyride';
-import { PAGE_PATH } from '../page';
+import { PAGE_PATH } from '../components/page';
 import { TOUR_STEPS_CHAPTER_1 } from './steps/CHAPTER_1';
 import { TOUR_STEPS_FIRST_LEVEL } from './steps/FIRST_LEVEL';
 import { TOUR_STEPS_HOME_PAGE } from './steps/HOME_PAGE';

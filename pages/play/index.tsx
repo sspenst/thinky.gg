@@ -1,5 +1,5 @@
-import { useTour } from '@root/components/tour/tourData';
 import { AppContext } from '@root/contexts/appContext';
+import { useTour } from '@root/hooks/useTour';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
