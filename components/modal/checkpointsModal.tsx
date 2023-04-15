@@ -1,4 +1,4 @@
-import LevelUtil from '@root/constants/LevelUtil';
+import levelUtil from '@root/constants/LevelUtil';
 import { AppContext } from '@root/contexts/appContext';
 import { GameContext } from '@root/contexts/gameContext';
 import getPngDataClient from '@root/helpers/getPngDataClient';
@@ -25,16 +25,16 @@ function CheckpointImage({ checkpoint, closeModal, slot }: CheckpointImageProps)
 
     const data = checkpoint.board.map(row => row.map(s => {
       // show darker green for visited squares
-      if (s.levelDataType === LevelUtil.Default && s.text.length > 0) {
-        return LevelUtil.DefaultVisited;
+      if (s.levelDataType === levelUtil.Default && s.text.length > 0) {
+        return levelUtil.DefaultVisited;
       } else {
         return s.levelDataType;
       }
     }));
 
     // hide player if the level is finished
-    if (data[checkpoint.pos.y][checkpoint.pos.x] !== LevelUtil.End) {
-      data[checkpoint.pos.y][checkpoint.pos.x] = LevelUtil.Start;
+    if (data[checkpoint.pos.y][checkpoint.pos.x] !== levelUtil.End) {
+      data[checkpoint.pos.y][checkpoint.pos.x] = levelUtil.Start;
     }
 
     for (const block of checkpoint.blocks) {

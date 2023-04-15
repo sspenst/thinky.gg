@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import LevelUtil from '@root/constants/LevelUtil';
+import levelUtil from '@root/constants/LevelUtil';
 import Role from '@root/constants/role';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import mongoose, { Types } from 'mongoose';
@@ -287,7 +287,7 @@ testRuns = testRuns.concat([
       expect(response.levels.length).toBe(1);
       const levelWeFound = await LevelModel.findById(response.levels[0]._id);
 
-      expect(levelWeFound.data).not.toContain(LevelUtil.Hole);
+      expect(levelWeFound.data).not.toContain(levelUtil.Hole);
     }
   },
   {
@@ -297,7 +297,7 @@ testRuns = testRuns.concat([
       expect(response.levels.length).toBe(1);
       const levelWeFound = await LevelModel.findById(response.levels[0]._id);
 
-      expect(levelWeFound.data).not.toContain(LevelUtil.Block);
+      expect(levelWeFound.data).not.toContain(levelUtil.Block);
     }
   },
   {
@@ -307,7 +307,7 @@ testRuns = testRuns.concat([
       expect(response.levels.length).toBe(1);
       const levelWeFound = await LevelModel.findById(response.levels[0]._id);
 
-      expect(levelWeFound.data).not.toContain(LevelUtil.LeftRight);
+      expect(levelWeFound.data).not.toContain(levelUtil.LeftRight);
     }
   },
 ]);

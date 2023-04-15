@@ -1,4 +1,4 @@
-import LevelUtil from '@root/constants/LevelUtil';
+import levelUtil from '@root/constants/LevelUtil';
 import TestId from '../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 import BlockState from '../../models/blockState';
@@ -40,7 +40,7 @@ describe('models/*.ts', () => {
     expect(statsClone.getColor('color')).toBe('var(--color-complete)');
   });
   test('BlockState', () => {
-    const blockState = new BlockState(0, LevelUtil.NotLeft, 1, 1);
+    const blockState = new BlockState(0, levelUtil.NotLeft, 1, 1);
 
     expect(blockState.canMoveTo(new Position(1, 1))).toBe(true);
     expect(blockState.canMoveTo(new Position(0, 1))).toBe(false);
@@ -87,7 +87,7 @@ describe('models/*.ts', () => {
     const move4 = new Move(
       'code',
       new Position(1, 1),
-      new BlockState(0, LevelUtil.Block, 0, 0),
+      new BlockState(0, levelUtil.Block, 0, 0),
       new Position(0, 0),
     );
 
@@ -107,12 +107,12 @@ describe('models/*.ts', () => {
     const s2 = s.clone();
     const s3 = SquareState.clone(s);
 
-    expect(s2.levelDataType).toBe(LevelUtil.Default);
-    expect(s3.levelDataType).toBe(LevelUtil.Default);
-    s2.levelDataType = LevelUtil.Block;
-    expect(s.levelDataType).toBe(LevelUtil.Default);
-    s3.levelDataType = LevelUtil.Wall;
-    expect(s.levelDataType).toBe(LevelUtil.Default);
+    expect(s2.levelDataType).toBe(levelUtil.Default);
+    expect(s3.levelDataType).toBe(levelUtil.Default);
+    s2.levelDataType = levelUtil.Block;
+    expect(s.levelDataType).toBe(levelUtil.Default);
+    s3.levelDataType = levelUtil.Wall;
+    expect(s.levelDataType).toBe(levelUtil.Default);
   });
   test('Control', () => {
     const control = new Control('id', () => { return; }, {} as JSX.Element, true);

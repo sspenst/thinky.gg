@@ -1,4 +1,4 @@
-import LevelUtil from '@root/constants/LevelUtil';
+import levelUtil from '@root/constants/LevelUtil';
 import isPro from '@root/helpers/isPro';
 import { PipelineStage, Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
@@ -284,11 +284,11 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
     let mustNotContain = '';
 
     if (blockFilterMask & BlockFilterMask.BLOCK) {
-      mustNotContain = mustNotContain + LevelUtil.Block;
+      mustNotContain = mustNotContain + levelUtil.Block;
     }
 
     if (blockFilterMask & BlockFilterMask.HOLE) {
-      mustNotContain = mustNotContain + LevelUtil.Hole;
+      mustNotContain = mustNotContain + levelUtil.Hole;
     }
 
     if (blockFilterMask & BlockFilterMask.RESTRICTED) {

@@ -1,9 +1,7 @@
-import LevelUtil from '@root/constants/LevelUtil';
-import { AppContext } from '@root/contexts/appContext';
+import levelUtil from '@root/constants/LevelUtil';
 import classNames from 'classnames';
-import React, { useContext, useState } from 'react';
-import Theme, { getIconFromTheme } from '../../constants/theme';
-import { TileType } from '../../constants/tileType';
+import React, { useState } from 'react';
+import Theme from '../../constants/theme';
 import isTheme from '../../helpers/isTheme';
 import BlockState from '../../models/blockState';
 import Position from '../../models/position';
@@ -19,20 +17,20 @@ interface BlockProps {
 export default function Block({ block, borderWidth, onClick, size }: BlockProps) {
   // initialize the block at the starting position to avoid an animation from the top left
   const [initPos] = useState(new Position(block.pos.x, block.pos.y));
-  const { user } = useContext(AppContext);
-  const theme = user?.config.theme;
+  //const { user } = useContext(AppContext);
+  //const theme = user?.config.theme;
   const classic = isTheme(Theme.Classic);
-  const fillCenter = classic && block.type === LevelUtil.Block;
+  const fillCenter = classic && block.type === levelUtil.Block;
   const innerBorderWidth = Math.round(size / 5);
   const innerSize = size - 2 * borderWidth;
 
   const style = {
     backgroundColor: fillCenter ? 'var(--level-block-border)' : 'var(--level-block)',
-    borderBottomWidth: LevelUtil.canMoveUp(block.type) ? innerBorderWidth : 0,
+    borderBottomWidth: levelUtil.canMoveUp(block.type) ? innerBorderWidth : 0,
     borderColor: 'var(--level-block-border)',
-    borderLeftWidth: LevelUtil.canMoveRight(block.type) ? innerBorderWidth : 0,
-    borderRightWidth: LevelUtil.canMoveLeft(block.type) ? innerBorderWidth : 0,
-    borderTopWidth: LevelUtil.canMoveDown(block.type) ? innerBorderWidth : 0,
+    borderLeftWidth: levelUtil.canMoveRight(block.type) ? innerBorderWidth : 0,
+    borderRightWidth: levelUtil.canMoveLeft(block.type) ? innerBorderWidth : 0,
+    borderTopWidth: levelUtil.canMoveDown(block.type) ? innerBorderWidth : 0,
     boxShadow: classic ?
       `-${2 * borderWidth}px ${2 * borderWidth}px 0 0 var(--bg-color)` :
       `0 0 0 ${borderWidth}px var(--bg-color)`,
@@ -41,7 +39,7 @@ export default function Block({ block, borderWidth, onClick, size }: BlockProps)
     top: size * initPos.y + (classic ? 0 : borderWidth),
     width: innerSize,
   } as any;
-  const icon = getIconFromTheme(theme, block.type as TileType);
+  //const icon = getIconFromTheme(theme, block.type as TileType); // TODO: create a theme that would use this
 
   return (
     <div

@@ -1,4 +1,4 @@
-import LevelUtil from '@root/constants/LevelUtil';
+import levelUtil from '@root/constants/LevelUtil';
 import React, { useEffect, useState } from 'react';
 import Level from '../../models/db/level';
 import Modal from '.';
@@ -52,7 +52,7 @@ export default function DataModal({ closeModal, historyPush, isOpen, level, setI
       }
 
       for (let j = 0; j < width; j++) {
-        const invalidLevelDataType = LevelUtil.getInvalidLevelDataType(rows[i][j]);
+        const invalidLevelDataType = levelUtil.getInvalidLevelDataType(rows[i][j]);
 
         if (invalidLevelDataType) {
           setError(`Invalid level data type: ${invalidLevelDataType}`);
@@ -60,9 +60,9 @@ export default function DataModal({ closeModal, historyPush, isOpen, level, setI
           return;
         }
 
-        if (rows[i][j] === LevelUtil.Start) {
+        if (rows[i][j] === levelUtil.Start) {
           start += 1;
-        } else if (rows[i][j] === LevelUtil.End) {
+        } else if (rows[i][j] === levelUtil.End) {
           end += 1;
         }
       }

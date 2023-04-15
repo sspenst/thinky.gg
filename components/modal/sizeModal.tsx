@@ -1,4 +1,4 @@
-import LevelUtil from '@root/constants/LevelUtil';
+import levelUtil from '@root/constants/LevelUtil';
 import React, { useEffect, useState } from 'react';
 import Level from '../../models/db/level';
 import Modal from '.';
@@ -60,9 +60,9 @@ export default function SizeModal({ closeModal, historyPush, isOpen, level, setI
           const start = y * (level.width + 1);
 
           data = data + level.data.substring(start, start + minWidth);
-          data = data + Array(width - minWidth + 1).join(LevelUtil.Default);
+          data = data + Array(width - minWidth + 1).join(levelUtil.Default);
         } else {
-          data = data + Array(width + 1).join(LevelUtil.Default);
+          data = data + Array(width + 1).join(levelUtil.Default);
         }
 
         if (y !== height - 1) {
@@ -71,13 +71,13 @@ export default function SizeModal({ closeModal, historyPush, isOpen, level, setI
       }
 
       // there must always be a start
-      if (data.indexOf(LevelUtil.Start) === -1) {
-        data = LevelUtil.Start + data.substring(1, data.length);
+      if (data.indexOf(levelUtil.Start) === -1) {
+        data = levelUtil.Start + data.substring(1, data.length);
       }
 
       // there must always be an end
-      if (data.indexOf(LevelUtil.End) === -1) {
-        data = data.substring(0, data.length - 1) + LevelUtil.End;
+      if (data.indexOf(levelUtil.End) === -1) {
+        data = data.substring(0, data.length - 1) + levelUtil.End;
       }
 
       level.data = data;

@@ -1,4 +1,4 @@
-import LevelUtil from '@root/constants/LevelUtil';
+import levelUtil from '@root/constants/LevelUtil';
 import { TileType } from '../constants/tileType';
 import Position from './position';
 
@@ -21,13 +21,13 @@ export default class BlockState {
     }
 
     if (this.pos.x - 1 === pos.x && this.pos.y === pos.y) {
-      return LevelUtil.canMoveLeft(this.type);
+      return levelUtil.canMoveLeft(this.type);
     } else if (this.pos.x === pos.x && this.pos.y - 1 === pos.y) {
-      return LevelUtil.canMoveUp(this.type);
+      return levelUtil.canMoveUp(this.type);
     } else if (this.pos.x + 1 === pos.x && this.pos.y === pos.y) {
-      return LevelUtil.canMoveRight(this.type);
+      return levelUtil.canMoveRight(this.type);
     } else if (this.pos.x === pos.x && this.pos.y + 1 === pos.y) {
-      return LevelUtil.canMoveDown(this.type);
+      return levelUtil.canMoveDown(this.type);
     }
 
     // can't move more than one grid space at a time
