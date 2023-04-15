@@ -1,15 +1,16 @@
 import levelUtil from '@root/constants/LevelUtil';
+import { TileType } from '@root/constants/tileType';
 import Level from '../models/db/level';
 import Position, { getDirectionFromCode } from '../models/position';
 
 export default function validateSolution(codes: string[], level: Level) {
   const data = level.data.replace(/\n/g, '').split('');
   const endIndices = [];
-  const posIndex = data.indexOf(levelUtil.Start);
+  const posIndex = data.indexOf(TileType.Start);
   let pos = new Position(posIndex % level.width, Math.floor(posIndex / level.width));
   let endIndex = -1;
 
-  while ((endIndex = data.indexOf(levelUtil.End, endIndex + 1)) != -1) {
+  while ((endIndex = data.indexOf(TileType.End, endIndex + 1)) != -1) {
     endIndices.push(endIndex);
   }
 
@@ -31,8 +32,8 @@ export default function validateSolution(codes: string[], level: Level) {
     const levelDataTypeAtPos = data[posIndex];
 
     // check if new position is valid
-    if (levelDataTypeAtPos === levelUtil.Wall ||
-        levelDataTypeAtPos === levelUtil.Hole) {
+    if (levelDataTypeAtPos === TileType.Wall ||
+        levelDataTypeAtPos === TileType.Hole) {
       return false;
     }
 
@@ -55,17 +56,17 @@ export default function validateSolution(codes: string[], level: Level) {
 
       const blockPosIndex = blockPos.y * level.width + blockPos.x;
 
-      if (data[blockPosIndex] === levelUtil.Wall ||
+      if (data[blockPosIndex] === TileType.Wall ||
           levelUtil.canMove(data[blockPosIndex])) {
         return false;
-      } else if (data[blockPosIndex] === levelUtil.Hole) {
-        data[blockPosIndex] = levelUtil.Default;
+      } else if (data[blockPosIndex] === TileType.Hole) {
+        data[blockPosIndex] = TileType.Default;
       } else {
         data[blockPosIndex] = levelDataTypeAtPos;
       }
 
       // clear movable from the position
-      data[posIndex] = levelUtil.Default;
+      data[posIndex] = TileType.Default;
     }
   }
 

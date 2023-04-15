@@ -1,4 +1,3 @@
-import levelUtil from '@root/constants/LevelUtil';
 import { AppContext } from '@root/contexts/appContext';
 import classNames from 'classnames';
 import React, { useContext, useState } from 'react';
@@ -20,7 +19,7 @@ export default function Player({ borderWidth, gameState, leastMoves, size }: Pla
   // initialize the block at the starting position to avoid an animation from the top left
   const [initPos] = useState(new Position(gameState.pos.x, gameState.pos.y));
   const levelDataType = gameState.board[gameState.pos.y][gameState.pos.x].levelDataType;
-  const atEnd = levelDataType === levelUtil.End;
+  const atEnd = levelDataType === TileType.End;
   const classic = isTheme(Theme.Classic);
   const innerSize = size - 2 * borderWidth;
   const text = String(gameState.moveCount);

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import levelUtil from '@root/constants/LevelUtil';
 import Role from '@root/constants/role';
+import { TileType } from '@root/constants/tileType';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import mongoose, { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -287,7 +288,7 @@ testRuns = testRuns.concat([
       expect(response.levels.length).toBe(1);
       const levelWeFound = await LevelModel.findById(response.levels[0]._id);
 
-      expect(levelWeFound.data).not.toContain(levelUtil.Hole);
+      expect(levelWeFound.data).not.toContain(TileType.Hole);
     }
   },
   {
@@ -297,7 +298,7 @@ testRuns = testRuns.concat([
       expect(response.levels.length).toBe(1);
       const levelWeFound = await LevelModel.findById(response.levels[0]._id);
 
-      expect(levelWeFound.data).not.toContain(levelUtil.Block);
+      expect(levelWeFound.data).not.toContain(TileType.Block);
     }
   },
   {
@@ -307,7 +308,7 @@ testRuns = testRuns.concat([
       expect(response.levels.length).toBe(1);
       const levelWeFound = await LevelModel.findById(response.levels[0]._id);
 
-      expect(levelWeFound.data).not.toContain(levelUtil.LeftRight);
+      expect(levelWeFound.data).not.toContain(TileType.LeftRight);
     }
   },
 ]);

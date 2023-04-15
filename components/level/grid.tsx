@@ -1,4 +1,5 @@
 import levelUtil from '@root/constants/LevelUtil';
+import { TileType } from '@root/constants/tileType';
 import classNames from 'classnames';
 import React, { useEffect, useRef, useState } from 'react';
 import Theme from '../../constants/theme';
@@ -61,7 +62,7 @@ export default function Grid({ board, generateMovables, leastMoves, onCellClick 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       const levelDataType = board[y][x].levelDataType;
-      const text = levelDataType === levelUtil.End ? leastMoves :
+      const text = levelDataType === TileType.End ? leastMoves :
         board[y][x].text.length === 0 ? undefined :
           board[y][x].text[board[y][x].text.length - 1];
 

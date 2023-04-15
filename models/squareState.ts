@@ -1,4 +1,3 @@
-import levelUtil from '@root/constants/LevelUtil';
 import { TileType } from '../constants/tileType';
 
 export default class SquareState {

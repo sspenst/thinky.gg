@@ -84,11 +84,11 @@ function initGameState(levelData: string, actionCount = 0) {
     for (let x = 0; x < width; x++) {
       const levelDataType = data[y][x];
 
-      if (levelDataType === levelUtil.Wall ||
-        levelDataType === levelUtil.End ||
-        levelDataType === levelUtil.Hole) {
+      if (levelDataType === TileType.Wall ||
+        levelDataType === TileType.End ||
+        levelDataType === TileType.Hole) {
         board[y][x].levelDataType = levelDataType;
-      } else if (levelDataType === levelUtil.Start) {
+      } else if (levelDataType === TileType.Start) {
         pos = new Position(x, y);
       } else if (levelUtil.canMove(levelDataType)) {
         blocks.push(new BlockState(blockId++, levelDataType as TileType, x, y));
@@ -427,8 +427,8 @@ export default function Game({
       pos: Position,
       width: number,
     ) {
-      return isPositionValid(height, pos, width) && board[pos.y][pos.x].levelDataType !== levelUtil.Wall &&
-        board[pos.y][pos.x].levelDataType !== levelUtil.Hole;
+      return isPositionValid(height, pos, width) && board[pos.y][pos.x].levelDataType !== TileType.Wall &&
+        board[pos.y][pos.x].levelDataType !== TileType.Hole;
     }
 
     // can a block move to this position
@@ -439,7 +439,7 @@ export default function Game({
       pos: Position,
       width: number,
     ) {
-      return isPositionValid(height, pos, width) && board[pos.y][pos.x].levelDataType !== levelUtil.Wall &&
+      return isPositionValid(height, pos, width) && board[pos.y][pos.x].levelDataType !== TileType.Wall &&
         !isBlockAtPosition(blocks, pos);
     }
 
@@ -524,7 +524,7 @@ export default function Game({
                 block.inHole = false;
 
                 if (prevMove.holePos !== undefined) {
-                  board[prevMove.holePos.y][prevMove.holePos.x].levelDataType = levelUtil.Hole;
+                  board[prevMove.holePos.y][prevMove.holePos.x].levelDataType = TileType.Hole;
                 }
               }
             }
@@ -566,9 +566,9 @@ export default function Game({
             block.pos = blockPos;
 
             // remove block if it is pushed onto a hole
-            if (board[blockPos.y][blockPos.x].levelDataType === levelUtil.Hole) {
+            if (board[blockPos.y][blockPos.x].levelDataType === TileType.Hole) {
               block.inHole = true;
-              board[blockPos.y][blockPos.x].levelDataType = levelUtil.Default;
+              board[blockPos.y][blockPos.x].levelDataType = TileType.Default;
               move.holePos = blockPos.clone();
             }
           }
@@ -585,7 +585,7 @@ export default function Game({
 
           const moveCount = prevGameState.moveCount + 1;
 
-          if (board[pos.y][pos.x].levelDataType === levelUtil.End) {
+          if (board[pos.y][pos.x].levelDataType === TileType.End) {
             trackStats(moves.map(move => move.code), level._id.toString(), 3);
           }
 
@@ -634,7 +634,7 @@ export default function Game({
         }
 
         // lock movement once you reach the finish
-        if (prevGameState.board[prevGameState.pos.y][prevGameState.pos.x].levelDataType === levelUtil.End) {
+        if (prevGameState.board[prevGameState.pos.y][prevGameState.pos.x].levelDataType === TileType.End) {
           return prevGameState;
         }
 
@@ -644,7 +644,7 @@ export default function Game({
 
       const newGameState = getNewGameState();
 
-      if (newGameState.board[newGameState.pos.y][newGameState.pos.x].levelDataType === levelUtil.End &&
+      if (newGameState.board[newGameState.pos.y][newGameState.pos.x].levelDataType === TileType.End &&
         newGameState.moves.length <= level.leastMoves && onComplete) {
         onComplete();
       }

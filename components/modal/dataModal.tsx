@@ -1,4 +1,5 @@
 import levelUtil from '@root/constants/LevelUtil';
+import { TileType } from '@root/constants/tileType';
 import React, { useEffect, useState } from 'react';
 import Level from '../../models/db/level';
 import Modal from '.';
@@ -60,9 +61,9 @@ export default function DataModal({ closeModal, historyPush, isOpen, level, setI
           return;
         }
 
-        if (rows[i][j] === levelUtil.Start) {
+        if (rows[i][j] === TileType.Start) {
           start += 1;
-        } else if (rows[i][j] === levelUtil.End) {
+        } else if (rows[i][j] === TileType.End) {
           end += 1;
         }
       }

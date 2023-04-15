@@ -1,4 +1,5 @@
 import levelUtil from '@root/constants/LevelUtil';
+import { TileType } from '@root/constants/tileType';
 import classNames from 'classnames';
 import React, { useState } from 'react';
 import Theme from '../../constants/theme';
@@ -20,7 +21,7 @@ export default function Block({ block, borderWidth, onClick, size }: BlockProps)
   //const { user } = useContext(AppContext);
   //const theme = user?.config.theme;
   const classic = isTheme(Theme.Classic);
-  const fillCenter = classic && block.type === levelUtil.Block;
+  const fillCenter = classic && block.type === TileType.Block;
   const innerBorderWidth = Math.round(size / 5);
   const innerSize = size - 2 * borderWidth;
 

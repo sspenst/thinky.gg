@@ -1,4 +1,3 @@
-import levelUtil from '@root/constants/LevelUtil';
 import classNames from 'classnames';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
@@ -100,25 +99,25 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       setLevelDataType(TileType.DownRight);
       break;
     case 'KeyD':
-      setLevelDataType(levelUtil.DownLeft);
+      setLevelDataType(TileType.DownLeft);
       break;
     case 'KeyE':
-      setLevelDataType(levelUtil.NotLeft);
+      setLevelDataType(TileType.NotLeft);
       break;
     case 'KeyF':
-      setLevelDataType(levelUtil.NotUp);
+      setLevelDataType(TileType.NotUp);
       break;
     case 'KeyG':
-      setLevelDataType(levelUtil.NotRight);
+      setLevelDataType(TileType.NotRight);
       break;
     case 'KeyH':
-      setLevelDataType(levelUtil.NotDown);
+      setLevelDataType(TileType.NotDown);
       break;
     case 'KeyI':
-      setLevelDataType(levelUtil.LeftRight);
+      setLevelDataType(TileType.LeftRight);
       break;
     case 'KeyJ':
-      setLevelDataType(levelUtil.UpDown);
+      setLevelDataType(TileType.UpDown);
       break;
     case 'KeyZ':
       undo();
@@ -166,13 +165,13 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       }
 
       // there always has to be a start position
-      if (prevLevel.data.charAt(index) === levelUtil.Start) {
+      if (prevLevel.data.charAt(index) === TileType.Start) {
         return prevLevel;
       }
 
       // there always has to be an end position
-      if (prevLevel.data.charAt(index) === levelUtil.End &&
-        (prevLevel.data.match(new RegExp(levelUtil.End, 'g')) || []).length === 1) {
+      if (prevLevel.data.charAt(index) === TileType.End &&
+        (prevLevel.data.match(new RegExp(TileType.End, 'g')) || []).length === 1) {
         return prevLevel;
       }
 
@@ -183,13 +182,13 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
         clear = true;
       }
 
-      const newLevelDataType = clear ? levelUtil.Default : levelDataType;
+      const newLevelDataType = clear ? TileType.Default : levelDataType;
 
       // when changing start position the old position needs to be removed
-      if (newLevelDataType === levelUtil.Start) {
-        const startIndex = level.data.indexOf(levelUtil.Start);
+      if (newLevelDataType === TileType.Start) {
+        const startIndex = level.data.indexOf(TileType.Start);
 
-        level.data = level.data.substring(0, startIndex) + levelUtil.Default + level.data.substring(startIndex + 1);
+        level.data = level.data.substring(0, startIndex) + TileType.Default + level.data.substring(startIndex + 1);
       }
 
       level.data = level.data.substring(0, index) + newLevelDataType + level.data.substring(index + 1);

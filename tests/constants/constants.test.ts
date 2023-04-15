@@ -1,4 +1,5 @@
 import levelUtil from '@root/constants/LevelUtil';
+import { TileType } from '@root/constants/tileType';
 
 describe('constants/*.ts', () => {
   test('LevelDataType.toString()', async () => {
@@ -8,7 +9,7 @@ describe('constants/*.ts', () => {
     expect(Object.keys(levelDataType).length).toBe(20);
   });
   test('LevelDataType.isRaised()', async () => {
-    expect(levelUtil.isRaised(levelUtil.Block)).toBeTruthy();
+    expect(levelUtil.isRaised(TileType.Block)).toBeTruthy();
   });
   test('getInvalidLevelDataType with valid input', async () => {
     const res = levelUtil.getInvalidLevelDataType('4');
@@ -22,4 +23,4 @@ describe('constants/*.ts', () => {
   });
 });
 
-export {};
+export { };

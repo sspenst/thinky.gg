@@ -1,4 +1,3 @@
-import levelUtil from '@root/constants/LevelUtil';
 import React, { useMemo } from 'react';
 import { TileType } from '../../constants/tileType';
 import Control from '../../models/control';
@@ -32,7 +31,7 @@ export default function BasicLayout({ controls, level, onClick }: BasicLayoutPro
     for (let x = 0; x < width; x++) {
       board[y][x].levelDataType = data[y][x] as TileType;
 
-      if (data[y][x] === levelUtil.Start) {
+      if (data[y][x] === TileType.Start) {
         board[y][x].text.push(0);
       }
     }
