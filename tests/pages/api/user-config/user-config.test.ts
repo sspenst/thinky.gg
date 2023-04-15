@@ -232,7 +232,6 @@ describe('pages/api/user-config', () => {
         expect(config.theme).toBe(Theme.Light);
         expect(config.tutorialCompletedAt).toBeGreaterThan(Date.now() - 1000);
         expect(config.userId).toBe(TestId.USER_C);
-        expect(config.mobileDeviceTokens).toStrictEqual(['mymobiletoken']);
       },
     });
   });

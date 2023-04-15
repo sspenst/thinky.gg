@@ -1,3 +1,4 @@
+import isFullAccount from '@root/helpers/isFullAccount';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
@@ -20,6 +21,12 @@ export default withAuth({ POST: {
     id: ValidObjectId(),
   },
 } }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+  if (!(await isFullAccount(req.user))) {
+    return res.status(401).json({
+      error: 'Publishing a level requires a full account with a confirmed email'
+    });
+  }
+
   const { id } = req.query;
 
   await dbConnect();

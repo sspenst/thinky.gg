@@ -2,7 +2,7 @@ import { PageContext } from '@root/contexts/pageContext';
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import Control from '../../models/control';
-import Level, { EnrichedLevel } from '../../models/db/level';
+import { EnrichedLevel } from '../../models/db/level';
 import FormattedUser from '../formattedUser';
 import CheckpointsModal from '../modal/checkpointsModal';
 import Block from './block';

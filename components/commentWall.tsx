@@ -9,6 +9,7 @@ import useComments from '../hooks/useComments';
 import { COMMENT_QUERY_LIMIT } from '../models/CommentEnums';
 import { EnrichedComment } from '../models/db/comment';
 import CommentThread from './commentThread';
+import isNotFullAccountToast from './isNotFullAccountToast';
 
 interface CommentWallProps {
   userId: Types.ObjectId;
@@ -46,7 +47,9 @@ export default function CommentWall({ userId }: CommentWallProps) {
         targetModel: 'User',
       })
     }).then(async(res) => {
-      if (res.status !== 200) {
+      if (res.status === 401) {
+        isNotFullAccountToast('Commenting');
+      } else if (res.status !== 200) {
         throw res.text();
       } else {
         toast.dismiss();

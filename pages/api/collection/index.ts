@@ -1,3 +1,4 @@
+import isFullAccount from '@root/helpers/isFullAccount';
 import { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidType } from '../../../helpers/apiWrapper';
@@ -14,6 +15,12 @@ export default withAuth({
       authorNote: ValidType('string', false),
     }
   } }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+  if (!(await isFullAccount(req.user))) {
+    return res.status(401).json({
+      error: 'Creating a collection requires a full account with a confirmed email'
+    });
+  }
+
   try {
     const { authorNote, name } = req.body;
 

@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { AppContext } from '../../contexts/appContext';
 import Level from '../../models/db/level';
 import formattedAuthorNote from '../formattedAuthorNote';
+import isNotFullAccountToast from '../isNotFullAccountToast';
 import Modal from '.';
 
 interface PublishLevelModalProps {
@@ -29,7 +30,9 @@ export default function PublishLevelModal({ closeModal, isOpen, level }: Publish
         'Content-Type': 'application/json'
       },
     }).then(async res => {
-      if (res.status === 200) {
+      if (res.status === 401) {
+        isNotFullAccountToast('Publishing a level');
+      } else if (res.status === 200) {
         closeModal();
         mutateUser();
 

@@ -85,7 +85,7 @@ describe('pages/api/login/index.ts', () => {
     });
   });
   test('Sending correct creds should return 200', async () => {
-    const credsJSON = { name: 'test', password: 'test' };
+    const credsJSON = { name: 'test', password: 'test1234' };
 
     await testApiHandler({
       handler: handler,
@@ -99,13 +99,14 @@ describe('pages/api/login/index.ts', () => {
         });
         const response = await res.json();
 
+        expect(response.error).toBeUndefined();
         expect(response.success).toBe(true);
         expect(res.status).toBe(200);
       }
     });
   });
   test('Sending correct email creds should return 200', async () => {
-    const credsJSON = { name: 'test@gmail.com', password: 'test' };
+    const credsJSON = { name: 'test@gmail.com', password: 'test1234' };
 
     await testApiHandler({
       handler: handler,

@@ -9,6 +9,7 @@ import { PageContext } from '../contexts/pageContext';
 import isTheme from '../helpers/isTheme';
 import Review from '../models/db/review';
 import FormattedReview, { Star } from './formattedReview';
+import isNotFullAccountToast from './isNotFullAccountToast';
 import DeleteReviewModal from './modal/deleteReviewModal';
 
 interface ReviewFormProps {
@@ -49,10 +50,11 @@ export default function ReviewForm({ inModal, userReview }: ReviewFormProps) {
         score: rating,
         text: reviewBody,
       })
-    }).then(async(res) => {
-      if (res.status !== 200) {
-        toast.dismiss();
-        toast.error('Error saving review');
+    }).then(res => {
+      if (res.status === 401) {
+        isNotFullAccountToast('Reviewing');
+      } else if (res.status !== 200) {
+        throw res.text();
       } else {
         toast.dismiss();
         toast.success('Saved');
@@ -60,9 +62,10 @@ export default function ReviewForm({ inModal, userReview }: ReviewFormProps) {
         levelContext?.getReviews();
         setShowUserReview(true);
       }
-    }).catch(() => {
+    }).catch(async err => {
+      console.error(err);
       toast.dismiss();
-      toast.error('Error saving review');
+      toast.error(JSON.parse(await err)?.error || 'Error saving review');
     }).finally(() => {
       setIsUpdating(false);
     });
