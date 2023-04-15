@@ -57,7 +57,7 @@ export default function HomeLoggedIn({
       'bg-gray-800 hover:bg-slate-600 border-gray-700 text-gray-300'
   );
 
-  const { tour } = useTour(PAGE_PATH.HOME, reqUser as ReqUser);
+  const { tour } = useTour(PAGE_PATH.HOME);
 
   return (<>
     {tour}

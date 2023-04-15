@@ -1,12 +1,11 @@
-import { AppContext } from '@root/contexts/appContext';
 import { useTour } from '@root/hooks/useTour';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { useCallback } from 'react';
 import ChapterSelectCard from '../../components/chapterSelectCard';
 import Page, { PAGE_PATH } from '../../components/page';
 import { getUserFromToken } from '../../lib/withAuth';
-import User, { ReqUser } from '../../models/db/user';
+import User from '../../models/db/user';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
@@ -35,7 +34,6 @@ interface PlayPageProps {
 /* istanbul ignore next */
 export default function PlayPage({ reqUser }: PlayPageProps) {
   const chapterUnlocked = reqUser.chapterUnlocked ?? 1;
-  const { user } = useContext(AppContext);
   const router = useRouter();
   const memoizedCallback = useCallback((data: any) => {
     console.log(data);
@@ -45,7 +43,7 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
     }
   }, [router]); // Add any dependencies required by the callback function inside the dependency array
 
-  const { tour } = useTour(PAGE_PATH.PLAY, user as ReqUser, memoizedCallback);
+  const { tour } = useTour(PAGE_PATH.PLAY, memoizedCallback);
 
   return (
     <Page title={'Chapter Select'}>

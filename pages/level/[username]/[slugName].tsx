@@ -1,14 +1,12 @@
 /* istanbul ignore file */
 
-import { AppContext } from '@root/contexts/appContext';
 import { useTour } from '@root/hooks/useTour';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import Joyride, { Step } from 'react-joyride';
 import GameWrapper from '../../../components/level/gameWrapper';
 import LinkInfo from '../../../components/linkInfo';
 import Page, { PAGE_PATH } from '../../../components/page';
@@ -21,7 +19,7 @@ import { getUserFromToken } from '../../../lib/withAuth';
 import { EnrichedLevel } from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Review from '../../../models/db/review';
-import User, { ReqUser } from '../../../models/db/user';
+import User from '../../../models/db/user';
 import { getLevelByUrlPath } from '../../api/level-by-slug/[username]/[slugName]';
 
 export interface LevelUrlQueryParams extends ParsedUrlQuery {
@@ -192,9 +190,7 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
   const ogFullUrl = `https://pathology.gg${ogUrl}`;
   const authorNote = level.authorNote ? level.authorNote : `${level.name} by ${level.userId.name}`;
 
-  const { user } = useContext(AppContext);
-
-  const { tour } = useTour(PAGE_PATH.LEVEL, user as ReqUser);
+  const { tour } = useTour(PAGE_PATH.LEVEL);
 
   return (
     <>

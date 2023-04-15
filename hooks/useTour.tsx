@@ -1,6 +1,6 @@
-import { ReqUser } from '@root/models/db/user';
+import { AppContext } from '@root/contexts/appContext';
 import { useRouter } from 'next/router';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import ReactJoyride, { Step } from 'react-joyride';
 import { PAGE_PATH } from '../components/page';
@@ -30,8 +30,9 @@ export const TOUR_DATA: { [key in TourTypes]: Step[] } = {
 
 };
 
-export function useTour(page: PAGE_PATH, user: ReqUser, cb?: (data: any) => void) {
+export function useTour(page: PAGE_PATH, cb?: (data: any) => void) {
   const [run, setRun] = useState(false);
+  const { user, mutateUser } = useContext(AppContext);
   const router = useRouter();
 
   setTimeout(() => {
@@ -61,8 +62,10 @@ export function useTour(page: PAGE_PATH, user: ReqUser, cb?: (data: any) => void
     if (!res.ok) {
       toast.dismiss();
       toast.error('Error occured');
+    } else {
+      mutateUser();
     }
-  }, [user]);
+  }, [mutateUser, user]);
 
   useEffect(() => {
     if (!user) {
@@ -124,7 +127,41 @@ export function useTour(page: PAGE_PATH, user: ReqUser, cb?: (data: any) => void
         scrollToFirstStep
         showProgress
         showSkipButton
-
+        styles={{
+          options: {
+            zIndex: 10000,
+            primaryColor: '#5c6bc0',
+            textColor: 'var(--text-color)',
+          },
+          buttonClose: {
+            display: 'none',
+          },
+          buttonBack: {
+            backgroundColor: '#3B82F6',
+            color: '#ffffff',
+            borderRadius: '6px',
+          },
+          buttonNext: {
+            backgroundColor: '#3B82F6',
+            color: '#ffffff',
+            borderRadius: '6px',
+          },
+          buttonSkip: {
+            color: 'var(--text-color)',
+            textDecoration: 'underline',
+          },
+          tooltip: {
+            backgroundColor: 'var(--bg-color)',
+            borderRadius: '8px',
+            boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.1)',
+          },
+          tooltipContainer: {
+            textAlign: 'left',
+          },
+          tooltipContent: {
+            padding: '16px',
+          },
+        }}
       />
     );
   }, [page, cb, user, run, router.asPath, currentUrl, router.pathname, putFinishedTour]);
