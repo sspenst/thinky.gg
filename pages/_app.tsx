@@ -168,7 +168,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       return;
     }
 
-    if (Object.values(Theme).includes(user.config.theme) && !isTheme(user.config.theme)) {
+    if (Object.values(Theme).includes(user.config.theme as Theme) && !isTheme(user.config.theme)) {
       // need to remove the default theme so we can add the userConfig theme
       document.body.classList.remove(Theme.Modern);
       document.body.classList.add(user.config.theme);
