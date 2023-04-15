@@ -1,6 +1,7 @@
+import levelUtil from '@root/constants/LevelUtil';
+import { TileType } from '@root/constants/tileType';
 import classNames from 'classnames';
 import React, { useState } from 'react';
-import LevelDataType from '../../constants/levelDataType';
 import Theme from '../../constants/theme';
 import isTheme from '../../helpers/isTheme';
 import BlockState from '../../models/blockState';
@@ -17,11 +18,29 @@ interface BlockProps {
 export default function Block({ block, borderWidth, onClick, size }: BlockProps) {
   // initialize the block at the starting position to avoid an animation from the top left
   const [initPos] = useState(new Position(block.pos.x, block.pos.y));
-
+  //const { user } = useContext(AppContext);
+  //const theme = user?.config.theme;
   const classic = isTheme(Theme.Classic);
-  const fillCenter = classic && block.type === LevelDataType.Block;
+  const fillCenter = classic && block.type === TileType.Block;
   const innerBorderWidth = Math.round(size / 5);
   const innerSize = size - 2 * borderWidth;
+
+  const style = {
+    backgroundColor: fillCenter ? 'var(--level-block-border)' : 'var(--level-block)',
+    borderBottomWidth: levelUtil.canMoveUp(block.type) ? innerBorderWidth : 0,
+    borderColor: 'var(--level-block-border)',
+    borderLeftWidth: levelUtil.canMoveRight(block.type) ? innerBorderWidth : 0,
+    borderRightWidth: levelUtil.canMoveLeft(block.type) ? innerBorderWidth : 0,
+    borderTopWidth: levelUtil.canMoveDown(block.type) ? innerBorderWidth : 0,
+    boxShadow: classic ?
+      `-${2 * borderWidth}px ${2 * borderWidth}px 0 0 var(--bg-color)` :
+      `0 0 0 ${borderWidth}px var(--bg-color)`,
+    height: innerSize,
+    left: size * initPos.x + (classic ? 2 * borderWidth : borderWidth),
+    top: size * initPos.y + (classic ? 0 : borderWidth),
+    width: innerSize,
+  } as any;
+  //const icon = getIconFromTheme(theme, block.type as TileType); // TODO: create a theme that would use this
 
   return (
     <div
@@ -36,22 +55,9 @@ export default function Block({ block, borderWidth, onClick, size }: BlockProps)
           block.inHole ? styles['in-hole'] : undefined)}
         onClick={onClick}
         onTouchEnd={onClick}
-        style={{
-          backgroundColor: fillCenter ? 'var(--level-block-border)' : 'var(--level-block)',
-          borderBottomWidth: LevelDataType.canMoveUp(block.type) ? innerBorderWidth : 0,
-          borderColor: 'var(--level-block-border)',
-          borderLeftWidth: LevelDataType.canMoveRight(block.type) ? innerBorderWidth : 0,
-          borderRightWidth: LevelDataType.canMoveLeft(block.type) ? innerBorderWidth : 0,
-          borderTopWidth: LevelDataType.canMoveDown(block.type) ? innerBorderWidth : 0,
-          boxShadow: classic ?
-            `-${2 * borderWidth}px ${2 * borderWidth}px 0 0 var(--bg-color)` :
-            `0 0 0 ${borderWidth}px var(--bg-color)`,
-          height: innerSize,
-          left: size * initPos.x + (classic ? 2 * borderWidth : borderWidth),
-          top: size * initPos.y + (classic ? 0 : borderWidth),
-          width: innerSize,
-        }}
+        style={style}
       />
+
     </div>
   );
 }

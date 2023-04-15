@@ -1,10 +1,10 @@
-import LevelDataType from '../constants/levelDataType';
+import { TileType } from '../constants/tileType';
 
 export default class SquareState {
-  levelDataType: LevelDataType;
+  levelDataType: TileType;
   text: number[];
 
-  constructor(levelDataType: LevelDataType = LevelDataType.Default, text: number[] = []) {
+  constructor(levelDataType: TileType = TileType.Default, text: number[] = []) {
     this.levelDataType = levelDataType;
     this.text = text.slice();
   }
