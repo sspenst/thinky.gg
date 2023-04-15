@@ -1,5 +1,6 @@
 import { MONKEY_THEME_ICONS, ThemeIconProps } from '@root/components/theme/monkey';
-import LevelUtil, { TileType } from './levelDataType';
+import LevelUtil from './LevelUtil';
+import { TileType } from './tileType';
 
 enum Theme {
   Modern = 'theme-modern',

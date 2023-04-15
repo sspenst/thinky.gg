@@ -1,11 +1,12 @@
+import LevelUtil from '@root/constants/LevelUtil';
 import classNames from 'classnames';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import ModifyModal from '../components/modal/modifyModal';
 import SizeModal from '../components/modal/sizeModal';
-import LevelUtil, { TileType } from '../constants/levelDataType';
 import Theme from '../constants/theme';
+import { TileType } from '../constants/tileType';
 import { PageContext } from '../contexts/pageContext';
 import isTheme from '../helpers/isTheme';
 import Control from '../models/control';

@@ -1,4 +1,4 @@
-import LevelUtil from '../constants/levelDataType';
+import LevelUtil from '@root/constants/LevelUtil';
 import Level from '../models/db/level';
 import Position, { getDirectionFromCode } from '../models/position';
 

@@ -1,6 +1,6 @@
-import LevelUtil, { TileType } from '@root/constants/levelDataType';
+import { TileType } from '@root/constants/tileType';
 import React, { useContext, useEffect, useState } from 'react';
-import Theme, { getIconFromTheme, ICON_MAP } from '../../constants/theme';
+import Theme, { getIconFromTheme } from '../../constants/theme';
 import { AppContext } from '../../contexts/appContext';
 import RadioButton from '../radioButton';
 import Modal from '.';

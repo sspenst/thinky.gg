@@ -1,5 +1,5 @@
+import LevelUtil from '@root/constants/LevelUtil';
 import { Bitmap } from 'pureimage/types/bitmap';
-import LevelUtil from '../constants/levelDataType';
 
 /* istanbul ignore next */
 export default function generateLevelCanvas(canvas: Bitmap | HTMLCanvasElement, levelData: string) {

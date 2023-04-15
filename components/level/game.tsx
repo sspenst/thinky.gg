@@ -1,3 +1,4 @@
+import LevelUtil from '@root/constants/LevelUtil';
 import { GameContext } from '@root/contexts/gameContext';
 import isPro from '@root/helpers/isPro';
 import { isValidGameState } from '@root/helpers/isValidGameState';
@@ -8,7 +9,7 @@ import NProgress from 'nprogress';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { throttle } from 'throttle-debounce';
-import LevelUtil, { TileType } from '../../constants/levelDataType';
+import { TileType } from '../../constants/tileType';
 import { AppContext } from '../../contexts/appContext';
 import { LevelContext } from '../../contexts/levelContext';
 import { PageContext } from '../../contexts/pageContext';

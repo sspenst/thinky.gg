@@ -1,8 +1,9 @@
+import LevelUtil from '@root/constants/LevelUtil';
 import { AppContext } from '@root/contexts/appContext';
 import classNames from 'classnames';
 import React, { useContext, useState } from 'react';
-import LevelUtil, { TileType } from '../../constants/levelDataType';
-import Theme, { getIconFromTheme, ICON_MAP } from '../../constants/theme';
+import Theme, { getIconFromTheme } from '../../constants/theme';
+import { TileType } from '../../constants/tileType';
 import isTheme from '../../helpers/isTheme';
 import BlockState from '../../models/blockState';
 import Position from '../../models/position';

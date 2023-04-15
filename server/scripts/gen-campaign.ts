@@ -1,7 +1,7 @@
 // run with ts-node --files server/scripts/gen-campaign.ts
 
+import LevelUtil from '@root/constants/LevelUtil';
 import dotenv from 'dotenv';
-import LevelUtil from '../../constants/levelDataType';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 import { LevelModel } from '../../models/mongoose';
 

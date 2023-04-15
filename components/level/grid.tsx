@@ -1,6 +1,6 @@
+import LevelUtil from '@root/constants/LevelUtil';
 import classNames from 'classnames';
 import React, { useEffect, useRef, useState } from 'react';
-import LevelUtil from '../../constants/levelDataType';
 import Theme from '../../constants/theme';
 import isTheme from '../../helpers/isTheme';
 import SquareState from '../../models/squareState';

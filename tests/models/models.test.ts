@@ -1,4 +1,4 @@
-import LevelUtil from '../../constants/levelDataType';
+import LevelUtil from '@root/constants/LevelUtil';
 import TestId from '../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 import BlockState from '../../models/blockState';

@@ -1,6 +1,5 @@
-import LevelUtil, { TileType } from '@root/constants/levelDataType';
-import Image from 'next/image';
-import React, { useEffect, useRef, useState } from 'react';
+import { TileType } from '@root/constants/tileType';
+import React from 'react';
 
 export interface ThemeIconProps {
     levelDataType: TileType;

@@ -1,5 +1,5 @@
+import LevelUtil from '@root/constants/LevelUtil';
 import React, { useEffect, useState } from 'react';
-import LevelUtil from '../../constants/levelDataType';
 import Level from '../../models/db/level';
 import Modal from '.';
 

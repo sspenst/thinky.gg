@@ -1,4 +1,5 @@
-import LevelUtil, { TileType } from '../constants/levelDataType';
+import LevelUtil from '@root/constants/LevelUtil';
+import { TileType } from '../constants/tileType';
 import Position from './position';
 
 export default class BlockState {

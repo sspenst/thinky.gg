@@ -1,26 +1,4 @@
-export enum TileType {
-  Default = '0',
-  DefaultVisited = 'X',
-  Wall = '1',
-  Block = '2',
-  End = '3',
-  Start = '4',
-  Hole = '5',
-  Left = '6',
-  Up = '7',
-  Right = '8',
-  Down = '9',
-  UpLeft = 'A',
-  UpRight = 'B',
-  DownRight = 'C',
-  DownLeft = 'D',
-  NotLeft = 'E',
-  NotUp = 'F',
-  NotRight = 'G',
-  NotDown = 'H',
-  LeftRight = 'I',
-  UpDown = 'J',
-}
+import { TileType } from './tileType';
 
 export default class LevelUtil {
   // PP1
@@ -132,7 +110,7 @@ export default class LevelUtil {
     }
   }
 
-  static toString(): {[levelDataType: string]: string} {
+  static toString(): { [levelDataType: string]: string; } {
     return {
       [LevelUtil.Default]: 'Default',
       [LevelUtil.Wall]: 'Wall',

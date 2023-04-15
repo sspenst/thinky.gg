@@ -1,11 +1,11 @@
 /* istanbul ignore file */
 
 import { createPopper, Instance, Placement } from '@popperjs/core';
+import LevelUtil from '@root/constants/LevelUtil';
 import classNames from 'classnames';
 import { Types } from 'mongoose';
 import Link from 'next/link';
 import React, { Dispatch, SetStateAction, useCallback, useContext, useEffect, useRef, useState } from 'react';
-import LevelUtil from '../constants/levelDataType';
 import { AppContext } from '../contexts/appContext';
 import { TimerUtil } from '../helpers/getTs';
 import Control from '../models/control';

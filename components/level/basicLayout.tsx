@@ -1,5 +1,6 @@
+import LevelUtil from '@root/constants/LevelUtil';
 import React, { useMemo } from 'react';
-import LevelUtil, { TileType } from '../../constants/levelDataType';
+import { TileType } from '../../constants/tileType';
 import Control from '../../models/control';
 import Level from '../../models/db/level';
 import SquareState from '../../models/squareState';

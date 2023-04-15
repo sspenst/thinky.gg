@@ -1,4 +1,4 @@
-import LevelUtil from '@root/constants/levelDataType';
+import LevelUtil from '@root/constants/LevelUtil';
 import { AppContext } from '@root/contexts/appContext';
 import { GameContext } from '@root/contexts/gameContext';
 import getPngDataClient from '@root/helpers/getPngDataClient';

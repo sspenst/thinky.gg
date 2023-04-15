@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import LevelUtil from '@root/constants/LevelUtil';
 import Role from '@root/constants/role';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import mongoose, { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
-import LevelUtil from '../../../../constants/levelDataType';
 import TestId from '../../../../constants/testId';
 import TimeRange from '../../../../constants/timeRange';
 import { FilterSelectOption } from '../../../../helpers/filterSelectOptions';

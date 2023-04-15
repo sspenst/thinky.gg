@@ -1,8 +1,8 @@
+import LevelUtil from '@root/constants/LevelUtil';
 import isPro from '@root/helpers/isPro';
 import { PipelineStage, Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getDifficultyRangeFromName } from '../../../components/difficultyDisplay';
-import LevelUtil from '../../../constants/levelDataType';
 import TimeRange from '../../../constants/timeRange';
 import apiWrapper from '../../../helpers/apiWrapper';
 import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';

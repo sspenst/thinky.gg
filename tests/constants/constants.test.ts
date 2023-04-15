@@ -1,4 +1,4 @@
-import LevelUtil from '../../constants/levelDataType';
+import LevelUtil from '@root/constants/LevelUtil';
 
 describe('constants/*.ts', () => {
   test('LevelDataType.toString()', async () => {
