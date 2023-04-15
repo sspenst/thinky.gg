@@ -46,7 +46,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
             color: 'var(--color-gray)',
           }}>{getFormattedDate(level.ts)}</span>
         </div>
-        <div className='text-sm flex gap-2 items-center difficultyText'>
+        <div className='text-sm flex gap-2 items-center'>
           {getFormattedDifficulty(level.calc_difficulty_estimate, level._id.toString(), level.calc_playattempts_unique_users_count)}
           {!levelContext?.inCampaign &&
             <button

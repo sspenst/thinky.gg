@@ -190,7 +190,7 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
   const ogFullUrl = `https://pathology.gg${ogUrl}`;
   const authorNote = level.authorNote ? level.authorNote : `${level.name} by ${level.userId.name}`;
 
-  const { tour } = useTour(PAGE_PATH.LEVEL);
+  const { tour } = useTour(PAGE_PATH.LEVEL, undefined, true);
 
   return (
     <>
