@@ -4,7 +4,7 @@ export const TOUR_STEPS_SECOND_LEVEL: Step[] = [
   {
     disableBeacon: true,
     target: '#dropdownMenuBtn',
-    content: 'Access your profile, settings, and change the theme.'
+    content: 'Access your profile, settings, and change the theme.',
   },
   {
     disableBeacon: true,

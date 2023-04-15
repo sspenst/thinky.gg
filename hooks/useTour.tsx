@@ -30,7 +30,7 @@ export const TOUR_DATA: { [key in TourTypes]: Step[] } = {
 
 };
 
-export function useTour(page: PAGE_PATH, cb?: (data: any) => void) {
+export function useTour(page: PAGE_PATH, cb?: (data: any) => void, disableScrolling = false) {
   const [run, setRun] = useState(false);
   const { user, mutateUser } = useContext(AppContext);
   const router = useRouter();
@@ -124,7 +124,7 @@ export function useTour(page: PAGE_PATH, cb?: (data: any) => void) {
         steps={stepsRef.current}
         continuous
         hideCloseButton
-        scrollToFirstStep
+        disableScrolling={disableScrolling}
         showProgress
         showSkipButton
         styles={{
@@ -161,6 +161,14 @@ export function useTour(page: PAGE_PATH, cb?: (data: any) => void) {
           tooltipContent: {
             padding: '16px',
           },
+          tooltipTitle: {
+            color: 'var(--text-color)',
+            fontSize: '24px',
+
+            marginLeft: '16px',
+
+            fontWeight: 'bold',
+          }
         }}
       />
     );

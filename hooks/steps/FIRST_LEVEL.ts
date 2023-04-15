@@ -4,6 +4,7 @@ export const TOUR_STEPS_FIRST_LEVEL: Step[] = [
   {
     disableBeacon: true,
     target: '.difficultyText',
+    placement: 'left',
     content: 'This shows the current difficulty of this level. Levels can range from 10 different difficulty levels ranging from Kindergarten to Super Grandmaster!'
   },
   {
