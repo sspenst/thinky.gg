@@ -1,4 +1,4 @@
-import Role from '@root/constants/role';
+import isGuest from '@root/helpers/isGuest';
 import classNames from 'classnames';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -57,7 +57,7 @@ export default function HomeLoggedIn({
   return (<>
     {userConfig && !userConfig.emailConfirmed &&
       <div className='bg-yellow-200 w-full text-black text-center text-sm p-2 shadow-lg'>
-        {`${user.roles.includes(Role.GUEST) ? 'Convert to a regular account' : 'Confirm your email'} in your `}
+        {`${isGuest(user) ? 'Convert to a regular account' : 'Confirm your email'} in your `}
         <Link className='font-semibold text-blue-600 hover:underline' href='/settings/account'>
           Account Settings
         </Link>
