@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import levelUtil from '@root/constants/LevelUtil';
 import Role from '@root/constants/role';
-import { TileType } from '@root/constants/tileType';
+import TileType from '@root/constants/tileType';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import mongoose, { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';

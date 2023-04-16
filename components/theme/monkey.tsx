@@ -1,8 +1,8 @@
-import { TileType } from '@root/constants/tileType';
+import TileType from '@root/constants/tileType';
 import React from 'react';
 
 export interface ThemeIconProps {
-    levelDataType: TileType;
+    tileType: TileType;
     innerSize: number;
     size: number;
     fontSize: number;
@@ -375,8 +375,8 @@ function Rock() {
   </svg>;
 }
 
-function Grass({ innerSize, fontSize, text, size }: ThemeIconProps) {
-  // croppyed image https://images.pexels.com/photos/1089450/pexels-photo-1089450.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2
+function Grass({ text, size }: ThemeIconProps) {
+  // cropped image https://images.pexels.com/photos/1089450/pexels-photo-1089450.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2
   return <div
     className=''
     style={{
@@ -394,7 +394,6 @@ function Grass({ innerSize, fontSize, text, size }: ThemeIconProps) {
       position: 'absolute',
       zIndex: 2,
       color: 'lightyellow',
-      //top: -innerSize + fontSize * 1.45,
     }}>{text}</span>
 
   </div>;
@@ -403,6 +402,6 @@ function Grass({ innerSize, fontSize, text, size }: ThemeIconProps) {
 export const MONKEY_THEME_ICONS: Partial<Record<TileType, (props: ThemeIconProps) => JSX.Element>> = {
   [TileType.Start]: Monkey,
   [TileType.End]: Banana,
-  //[LevelDataType.Block]: Rock,
+  //[TileType.Block]: Rock,
   [TileType.Default]: Grass,
 };

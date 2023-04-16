@@ -1,4 +1,4 @@
-import { TileType } from '../constants/tileType';
+import TileType from '../constants/tileType';
 
 export default class SquareState {
   levelDataType: TileType;

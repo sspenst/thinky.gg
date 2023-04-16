@@ -1,4 +1,4 @@
-import { TileType } from '@root/constants/tileType';
+import TileType from '@root/constants/tileType';
 import React, { useEffect, useState } from 'react';
 import Level from '../../models/db/level';
 import Modal from '.';

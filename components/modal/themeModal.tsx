@@ -1,8 +1,9 @@
-import { TileType } from '@root/constants/tileType';
+import TileType from '@root/constants/tileType';
 import React, { useContext, useEffect, useState } from 'react';
 import Theme, { getIconFromTheme } from '../../constants/theme';
 import { AppContext } from '../../contexts/appContext';
 import RadioButton from '../radioButton';
+import { ThemeIconProps } from '../theme/monkey';
 import Modal from '.';
 
 interface ThemeModalProps {
@@ -81,7 +82,7 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
               <span className='ml-2 w-6 h-6'>
                 {icon && icon({
                   size: 24
-                } as any)}
+                } as ThemeIconProps)}
               </span>
             </div>
           );

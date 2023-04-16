@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { TileType } from '../../constants/tileType';
+import TileType from '../../constants/tileType';
 import Control from '../../models/control';
 import Level from '../../models/db/level';
 import SquareState from '../../models/squareState';

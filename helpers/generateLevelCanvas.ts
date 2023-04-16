@@ -1,5 +1,5 @@
-import levelUtil from '@root/constants/LevelUtil';
-import { TileType } from '@root/constants/tileType';
+import TileType, { TileTypeDefaultVisited } from '@root/constants/tileType';
+import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import { Bitmap } from 'pureimage/types/bitmap';
 
 /* istanbul ignore next */
@@ -25,13 +25,14 @@ export default function generateLevelCanvas(canvas: Bitmap | HTMLCanvasElement, 
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
-      const levelDataType = levelRows[y][x] as levelUtil;
+      const tileType = levelRows[y][x] as TileType | typeof TileTypeDefaultVisited;
 
-      switch (levelDataType) {
+      switch (tileType) {
       case TileType.Default:
+        // TODO: if visited, different color
         context.fillStyle = 'rgb(14, 168, 117)';
         break;
-      case TileType.DefaultVisited:
+      case TileTypeDefaultVisited:
         context.fillStyle = 'rgb(4, 120, 87)';
         break;
       case TileType.Wall:
@@ -57,9 +58,13 @@ export default function generateLevelCanvas(canvas: Bitmap | HTMLCanvasElement, 
         cellSize - 2 * cellMargin,
       );
 
-      context.fillStyle = levelDataType === TileType.Hole ? 'rgb(106, 106, 106)' : 'rgb(183, 119, 57)';
+      if (tileType === TileTypeDefaultVisited) {
+        continue;
+      }
 
-      if (levelUtil.canMoveLeft(levelDataType) || levelDataType === TileType.Hole) {
+      context.fillStyle = tileType === TileType.Hole ? 'rgb(106, 106, 106)' : 'rgb(183, 119, 57)';
+
+      if (TileTypeHelper.canMoveLeft(tileType) || tileType === TileType.Hole) {
         context.fillRect(
           xOffset + (x + 1) * cellSize - cellMargin - borderWidth,
           yOffset + y * cellSize + cellMargin,
@@ -68,7 +73,7 @@ export default function generateLevelCanvas(canvas: Bitmap | HTMLCanvasElement, 
         );
       }
 
-      if (levelUtil.canMoveUp(levelDataType) || levelDataType === TileType.Hole) {
+      if (TileTypeHelper.canMoveUp(tileType) || tileType === TileType.Hole) {
         context.fillRect(
           xOffset + x * cellSize + cellMargin,
           yOffset + (y + 1) * cellSize - cellMargin - borderWidth,
@@ -77,7 +82,7 @@ export default function generateLevelCanvas(canvas: Bitmap | HTMLCanvasElement, 
         );
       }
 
-      if (levelUtil.canMoveRight(levelDataType) || levelDataType === TileType.Hole) {
+      if (TileTypeHelper.canMoveRight(tileType) || tileType === TileType.Hole) {
         context.fillRect(
           xOffset + x * cellSize + cellMargin,
           yOffset + y * cellSize + cellMargin,
@@ -86,7 +91,7 @@ export default function generateLevelCanvas(canvas: Bitmap | HTMLCanvasElement, 
         );
       }
 
-      if (levelUtil.canMoveDown(levelDataType) || levelDataType === TileType.Hole) {
+      if (TileTypeHelper.canMoveDown(tileType) || tileType === TileType.Hole) {
         context.fillRect(
           xOffset + x * cellSize + cellMargin,
           yOffset + y * cellSize + cellMargin,

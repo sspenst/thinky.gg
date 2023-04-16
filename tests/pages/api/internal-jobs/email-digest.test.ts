@@ -154,7 +154,7 @@ describe('Email digest', () => {
   }, 10000);
   test('User set email setting to never', async () => {
     // setup
-    await UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.NONE }, { });
+    await UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.NONE }, {});
     sendMailRefMock.ref = acceptMock;
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
@@ -197,7 +197,7 @@ describe('Email digest', () => {
   }, 10000);
   test('Run it once OK', async () => {
     // setup
-    await UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.DAILY }, { });
+    await UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.DAILY }, {});
     sendMailRefMock.ref = acceptMock;
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
@@ -239,7 +239,7 @@ describe('Email digest', () => {
   }, 10000);
   test('Run it again for another user who set settings to daily but has no notificaitons', async () => {
     // setup
-    await UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.DAILY }, { });
+    await UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.DAILY }, {});
     await EmailLogModel.deleteMany({}); // clear email logs
     await NotificationModel.deleteMany({}); // clear notifications
     sendMailRefMock.ref = acceptMock;

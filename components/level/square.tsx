@@ -1,29 +1,29 @@
-import levelUtil from '@root/constants/LevelUtil';
 import { AppContext } from '@root/contexts/appContext';
+import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import classNames from 'classnames';
 import React, { useCallback, useContext } from 'react';
 import Theme, { getIconFromTheme } from '../../constants/theme';
-import { TileType } from '../../constants/tileType';
+import TileType from '../../constants/tileType';
 import isTheme from '../../helpers/isTheme';
 
 interface SquareProps {
   borderWidth: number;
   handleClick?: (rightClick: boolean) => void;
   leastMoves: number;
-  levelDataType: TileType;
   noBoxShadow?: boolean;
   size: number;
   text?: number;
+  tileType: TileType;
 }
 
 export default function Square({
   borderWidth,
   handleClick,
   leastMoves,
-  levelDataType,
   noBoxShadow,
   size,
-  text
+  text,
+  tileType,
 }: SquareProps) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onClick = useCallback((event: any) => {
@@ -47,7 +47,7 @@ export default function Square({
     'var(--level-grid-text-extra)' : 'var(--level-grid-text)';
 
   function getBackgroundColor() {
-    switch (levelDataType) {
+    switch (tileType) {
     case TileType.Default:
       return text !== undefined ? 'var(--level-grid-used)' : 'var(--level-grid)';
     case TileType.Wall:
@@ -67,27 +67,27 @@ export default function Square({
 
   let child = <div>{text}</div>;
   let style = {
-  // NB: for some reason needed to put this first to get the color to work on refresh
+    // NB: for some reason needed to put this first to get the color to work on refresh
     color: textColor,
     backgroundColor: getBackgroundColor(),
-    borderBottomWidth: levelDataType === TileType.Hole || levelUtil.canMoveUp(levelDataType) ? innerBorderWidth : 0,
-    borderColor: levelDataType === TileType.Hole ? 'var(--level-hole-border)' : 'var(--level-block-border)',
-    borderLeftWidth: levelDataType === TileType.Hole || levelUtil.canMoveRight(levelDataType) ? innerBorderWidth : 0,
-    borderRightWidth: levelDataType === TileType.Hole || levelUtil.canMoveLeft(levelDataType) ? innerBorderWidth : 0,
-    borderTopWidth: levelDataType === TileType.Hole || levelUtil.canMoveDown(levelDataType) ? innerBorderWidth : 0,
+    borderBottomWidth: tileType === TileType.Hole || TileTypeHelper.canMoveUp(tileType) ? innerBorderWidth : 0,
+    borderColor: tileType === TileType.Hole ? 'var(--level-hole-border)' : 'var(--level-block-border)',
+    borderLeftWidth: tileType === TileType.Hole || TileTypeHelper.canMoveRight(tileType) ? innerBorderWidth : 0,
+    borderRightWidth: tileType === TileType.Hole || TileTypeHelper.canMoveLeft(tileType) ? innerBorderWidth : 0,
+    borderTopWidth: tileType === TileType.Hole || TileTypeHelper.canMoveDown(tileType) ? innerBorderWidth : 0,
     boxShadow: noBoxShadow ? undefined : !classic ? `0 0 0 ${borderWidth}px 'var(--bg-color)` :
-      levelDataType === TileType.Wall ||
-    levelDataType === TileType.Start ||
-    levelUtil.canMove(levelDataType) ?
+      tileType === TileType.Wall ||
+    tileType === TileType.Start ||
+    TileTypeHelper.canMove(tileType) ?
         `-${2 * borderWidth}px ${2 * borderWidth}px 0 0 var(--bg-color)` :
         `${2 * borderWidth}px -${2 * borderWidth}px 0 0 var(--bg-color)`,
     fontSize: fontSize,
     height: innerSize,
     lineHeight: innerSize * (classic ? 1.1 : 1) + 'px',
     width: innerSize,
-  } as any;
+  } as React.CSSProperties;
 
-  const icon = getIconFromTheme(theme, levelDataType);
+  const icon = getIconFromTheme(theme, tileType);
 
   if (icon) {
     style = {
@@ -98,25 +98,27 @@ export default function Square({
       position: 'relative',
     };
 
-    child = <span className={'theme-' + theme + '-' + levelDataType} style={{ position: 'absolute', zIndex: 0,
-
-    }}>{icon({
-        innerSize: innerSize / 1.5,
-        fontSize: fontSize,
-        levelDataType: levelDataType,
-        size: size,
-        text: <>{text}</>,
-        leastMoves: leastMoves,
-        overstepped: overStepped
-      })}</span>;
+    child = (
+      <span className={'theme-' + theme + '-' + tileType} style={{ position: 'absolute', zIndex: 0, }}>
+        {icon({
+          innerSize: innerSize / 1.5,
+          fontSize: fontSize,
+          tileType: tileType,
+          size: size,
+          text: <>{text}</>,
+          leastMoves: leastMoves,
+          overstepped: overStepped
+        })}
+      </span>
+    );
   }
 
   return (
     <div
       className={classNames(
-        `select-none block_type_${levelDataType} text-center align-middle`,
-        { 'square-movable': levelUtil.canMove(levelDataType) },
-        { 'square-hole': levelDataType === TileType.Hole },
+        `select-none block_type_${tileType} text-center align-middle`,
+        { 'square-movable': TileTypeHelper.canMove(tileType) },
+        { 'square-hole': tileType === TileType.Hole },
       )}
       onClick={onClick}
       onContextMenu={onClick}
