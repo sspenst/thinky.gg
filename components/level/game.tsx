@@ -1,7 +1,7 @@
-import levelUtil from '@root/constants/LevelUtil';
 import { GameContext } from '@root/contexts/gameContext';
 import isPro from '@root/helpers/isPro';
 import { isValidGameState } from '@root/helpers/isValidGameState';
+import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import useCheckpoints from '@root/hooks/useCheckpoints';
 import { Types } from 'mongoose';
 import Link from 'next/link';
@@ -9,7 +9,7 @@ import NProgress from 'nprogress';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { throttle } from 'throttle-debounce';
-import { TileType } from '../../constants/tileType';
+import TileType from '../../constants/tileType';
 import { AppContext } from '../../contexts/appContext';
 import { LevelContext } from '../../contexts/levelContext';
 import { PageContext } from '../../contexts/pageContext';
@@ -82,16 +82,16 @@ function initGameState(levelData: string, actionCount = 0) {
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
-      const levelDataType = data[y][x];
+      const tileType = data[y][x] as TileType;
 
-      if (levelDataType === TileType.Wall ||
-        levelDataType === TileType.End ||
-        levelDataType === TileType.Hole) {
-        board[y][x].levelDataType = levelDataType;
-      } else if (levelDataType === TileType.Start) {
+      if (tileType === TileType.Wall ||
+        tileType === TileType.End ||
+        tileType === TileType.Hole) {
+        board[y][x].levelDataType = tileType;
+      } else if (tileType === TileType.Start) {
         pos = new Position(x, y);
-      } else if (levelUtil.canMove(levelDataType)) {
-        blocks.push(new BlockState(blockId++, levelDataType as TileType, x, y));
+      } else if (TileTypeHelper.canMove(tileType)) {
+        blocks.push(new BlockState(blockId++, tileType as TileType, x, y));
       }
     }
   }

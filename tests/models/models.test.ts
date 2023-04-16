@@ -1,4 +1,4 @@
-import { TileType } from '@root/constants/tileType';
+import TileType from '@root/constants/tileType';
 import TestId from '../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 import BlockState from '../../models/blockState';
@@ -149,4 +149,4 @@ describe('models/*.ts', () => {
   });
 });
 
-export { };
+export {};

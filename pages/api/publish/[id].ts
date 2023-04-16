@@ -1,4 +1,4 @@
-import { TileType } from '@root/constants/tileType';
+import TileType from '@root/constants/tileType';
 import isFullAccount from '@root/helpers/isFullAccount';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';

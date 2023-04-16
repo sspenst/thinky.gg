@@ -1,6 +1,5 @@
-export enum TileType {
+enum TileType {
   Default = '0',
-  DefaultVisited = 'X',
   Wall = '1',
   Block = '2',
   End = '3',
@@ -21,3 +20,8 @@ export enum TileType {
   LeftRight = 'I',
   UpDown = 'J',
 }
+
+export default TileType;
+
+// special variable for marking visited tiles in checkpoint images
+export const TileTypeDefaultVisited = 'X';

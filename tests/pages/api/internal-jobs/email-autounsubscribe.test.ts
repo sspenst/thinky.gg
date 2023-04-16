@@ -56,7 +56,7 @@ describe('Email auto unsubscribe', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
-    await UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.DAILY }, { });
+    await UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.DAILY }, {});
 
     for (let day = 0; day < 12; day++) {
       await dbConnect();

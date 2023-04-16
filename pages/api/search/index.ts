@@ -1,4 +1,4 @@
-import { TileType } from '@root/constants/tileType';
+import TileType from '@root/constants/tileType';
 import isPro from '@root/helpers/isPro';
 import { PipelineStage, Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';

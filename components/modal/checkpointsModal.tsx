@@ -1,4 +1,4 @@
-import { TileType } from '@root/constants/tileType';
+import TileType, { TileTypeDefaultVisited } from '@root/constants/tileType';
 import { AppContext } from '@root/contexts/appContext';
 import { GameContext } from '@root/contexts/gameContext';
 import getPngDataClient from '@root/helpers/getPngDataClient';
@@ -26,7 +26,7 @@ function CheckpointImage({ checkpoint, closeModal, slot }: CheckpointImageProps)
     const data = checkpoint.board.map(row => row.map(s => {
       // show darker green for visited squares
       if (s.levelDataType === TileType.Default && s.text.length > 0) {
-        return TileType.DefaultVisited;
+        return TileTypeDefaultVisited;
       } else {
         return s.levelDataType;
       }

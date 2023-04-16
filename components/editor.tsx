@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import ModifyModal from '../components/modal/modifyModal';
 import SizeModal from '../components/modal/sizeModal';
 import Theme from '../constants/theme';
-import { TileType } from '../constants/tileType';
+import TileType from '../constants/tileType';
 import { PageContext } from '../contexts/pageContext';
 import isTheme from '../helpers/isTheme';
 import Control from '../models/control';
@@ -32,9 +32,9 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   const [isModifyOpen, setIsModifyOpen] = useState(false);
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
   const [isSizeOpen, setIsSizeOpen] = useState(false);
-  const [levelDataType, setLevelDataType] = useState<TileType>(TileType.Default);
   const { preventKeyDownEvent } = useContext(PageContext);
   const router = useRouter();
+  const [tileType, setTileType] = useState<TileType>(TileType.Default);
   const { id } = router.query;
 
   const undo = useCallback(() => {
@@ -60,64 +60,64 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   const handleKeyDown = useCallback((code: string) => {
     switch (code) {
     case 'Digit0':
-      setLevelDataType(TileType.Default);
+      setTileType(TileType.Default);
       break;
     case 'Digit1':
-      setLevelDataType(TileType.Wall);
+      setTileType(TileType.Wall);
       break;
     case 'Digit2':
-      setLevelDataType(TileType.Block);
+      setTileType(TileType.Block);
       break;
     case 'Digit3':
-      setLevelDataType(TileType.End);
+      setTileType(TileType.End);
       break;
     case 'Digit4':
-      setLevelDataType(TileType.Start);
+      setTileType(TileType.Start);
       break;
     case 'Digit5':
-      setLevelDataType(TileType.Hole);
+      setTileType(TileType.Hole);
       break;
     case 'Digit6':
-      setLevelDataType(TileType.Left);
+      setTileType(TileType.Left);
       break;
     case 'Digit7':
-      setLevelDataType(TileType.Up);
+      setTileType(TileType.Up);
       break;
     case 'Digit8':
-      setLevelDataType(TileType.Right);
+      setTileType(TileType.Right);
       break;
     case 'Digit9':
-      setLevelDataType(TileType.Down);
+      setTileType(TileType.Down);
       break;
     case 'KeyA':
-      setLevelDataType(TileType.UpLeft);
+      setTileType(TileType.UpLeft);
       break;
     case 'KeyB':
-      setLevelDataType(TileType.UpRight);
+      setTileType(TileType.UpRight);
       break;
     case 'KeyC':
-      setLevelDataType(TileType.DownRight);
+      setTileType(TileType.DownRight);
       break;
     case 'KeyD':
-      setLevelDataType(TileType.DownLeft);
+      setTileType(TileType.DownLeft);
       break;
     case 'KeyE':
-      setLevelDataType(TileType.NotLeft);
+      setTileType(TileType.NotLeft);
       break;
     case 'KeyF':
-      setLevelDataType(TileType.NotUp);
+      setTileType(TileType.NotUp);
       break;
     case 'KeyG':
-      setLevelDataType(TileType.NotRight);
+      setTileType(TileType.NotRight);
       break;
     case 'KeyH':
-      setLevelDataType(TileType.NotDown);
+      setTileType(TileType.NotDown);
       break;
     case 'KeyI':
-      setLevelDataType(TileType.LeftRight);
+      setTileType(TileType.LeftRight);
       break;
     case 'KeyJ':
-      setLevelDataType(TileType.UpDown);
+      setTileType(TileType.UpDown);
       break;
     case 'KeyZ':
       undo();
@@ -178,20 +178,20 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       const level = JSON.parse(JSON.stringify(prevLevel)) as Level;
       let clear = rightClick;
 
-      if (levelDataType === prevLevel.data.charAt(index)) {
+      if (tileType === prevLevel.data.charAt(index)) {
         clear = true;
       }
 
-      const newLevelDataType = clear ? TileType.Default : levelDataType;
+      const newTileType = clear ? TileType.Default : tileType;
 
       // when changing start position the old position needs to be removed
-      if (newLevelDataType === TileType.Start) {
+      if (newTileType === TileType.Start) {
         const startIndex = level.data.indexOf(TileType.Start);
 
         level.data = level.data.substring(0, startIndex) + TileType.Default + level.data.substring(startIndex + 1);
       }
 
-      level.data = level.data.substring(0, index) + newLevelDataType + level.data.substring(index + 1);
+      level.data = level.data.substring(0, index) + newTileType + level.data.substring(index + 1);
 
       historyPush(level);
 
@@ -244,33 +244,33 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   const size = 40;
 
   // loop through the enum TileType
-  for (const levelDataTypeKey of Object.values(TileType)) {
+  for (const tileTypeKey of Object.values(TileType)) {
     let txt = undefined;
 
-    if (levelDataTypeKey === TileType.End) {
+    if (tileTypeKey === TileType.End) {
       txt = level.leastMoves;
-    } else if (levelDataTypeKey === TileType.Start) {
+    } else if (tileTypeKey === TileType.Start) {
       txt = 0;
     }
 
     listBlockChoices.push(
       <div
-        key={`level-data-type-${levelDataTypeKey}`}
+        key={`level-data-type-${tileTypeKey}`}
         style={{
-          borderColor: levelDataType === levelDataTypeKey ? 'var(--level-grid-text-extra)' : 'var(--bg-color)',
-          borderWidth: levelDataType === levelDataTypeKey ? 3 : 1,
+          borderColor: tileType === tileTypeKey ? 'var(--level-grid-text-extra)' : 'var(--bg-color)',
+          borderWidth: tileType === tileTypeKey ? 3 : 1,
           height: size,
           width: size,
         }}
       >
         <Square
           borderWidth={1}
-          handleClick={() => setLevelDataType(levelDataTypeKey as TileType)}
+          handleClick={() => setTileType(tileTypeKey as TileType)}
           leastMoves={0}
-          levelDataType={levelDataTypeKey as TileType}
           noBoxShadow={true}
-          size={size - (levelDataType === levelDataTypeKey ? 4 : 0)}
+          size={size - (tileType === tileTypeKey ? 4 : 0)}
           text={txt}
+          tileType={tileTypeKey as TileType}
         />
       </div>
     );

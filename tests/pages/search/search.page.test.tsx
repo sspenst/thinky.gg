@@ -78,6 +78,6 @@ describe('pages/search page', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
     // expect this to error
-    await expect(getServerSideProps({ query: { } } as unknown as GetServerSidePropsContext)).rejects.toThrow('Error querying Levels');
+    await expect(getServerSideProps({ query: {} } as unknown as GetServerSidePropsContext)).rejects.toThrow('Error querying Levels');
   });
 });

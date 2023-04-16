@@ -1,6 +1,6 @@
 // run with ts-node --files server/scripts/gen-campaign.ts
 
-import { TileType } from '@root/constants/tileType';
+import TileType from '@root/constants/tileType';
 import dotenv from 'dotenv';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 import { LevelModel } from '../../models/mongoose';

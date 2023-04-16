@@ -1,7 +1,7 @@
 /* istanbul ignore file */
 
 import { createPopper, Instance, Placement } from '@popperjs/core';
-import { TileType } from '@root/constants/tileType';
+import TileType from '@root/constants/tileType';
 import classNames from 'classnames';
 import { Types } from 'mongoose';
 import Link from 'next/link';
