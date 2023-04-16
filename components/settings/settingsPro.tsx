@@ -193,7 +193,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                     }}>
                       <span>Monthly Plan</span>
                       <span className='font-bold text-lg' style={{ color: 'var(--color)' }}>$3.00 USD / month</span>
-                      <span className='text-xs'>$36 per year billed yearly</span>
+                      <span className='text-xs'>$36 per year billed monthly</span>
                     </div>
                   )}
                 </RadioGroup.Option>
