@@ -75,7 +75,6 @@ export function useTour(page: PAGE_PATH, cb?: (data: any) => void, disableScroll
     if (currentUrl !== router.asPath) {
       setCurrentUrl(router.asPath);
       setRun(false);
-      console.log('setting run to false');
     }
 
     let tourRef: TourTypes = undefined as unknown as TourTypes;
