@@ -366,7 +366,7 @@ describe('Testing search endpoint for various inputs', () => {
       });
     });
   });
-  it('should handle a non Pro user searching an invalid endpoint OK', async () => {
+  it('should handle a non Pro user filtering by a Pro query', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -375,7 +375,7 @@ describe('Testing search endpoint for various inputs', () => {
             token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
-            show_filter: FilterSelectOption.ShowInProgress
+            block_filter: String(BlockFilterMask.HOLE),
           },
           headers: {
             'content-type': 'application/json',
@@ -389,6 +389,33 @@ describe('Testing search endpoint for various inputs', () => {
         const response = await res.json();
 
         expect(response.totalRows).toBe(28);
+        expect(res.status).toBe(200);
+      },
+    });
+  });
+  it('should handle a Pro user filtering by a Pro query', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'GET',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            block_filter: String(BlockFilterMask.HOLE),
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.totalRows).toBe(1);
         expect(res.status).toBe(200);
       },
     });
