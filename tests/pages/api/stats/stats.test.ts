@@ -501,7 +501,7 @@ describe('Testing stats api', () => {
 
         const stat = await StatModel.findOne({ userId: TestId.USER_B, levelId: TestId.LEVEL });
 
-        expect(stat.attempts).toBe(2);
+        expect(stat.attempts).toBe(3);
 
         const b = await UserModel.findById(TestId.USER_B);
 
