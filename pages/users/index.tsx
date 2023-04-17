@@ -1,3 +1,4 @@
+import FormattedDate from '@root/components/formattedDate';
 import debounce from 'debounce';
 import { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
@@ -12,7 +13,6 @@ import Dimensions from '../../constants/dimensions';
 import GraphType from '../../constants/graphType';
 import { AppContext } from '../../contexts/appContext';
 import { DATA_TABLE_CUSTOM_STYLES } from '../../helpers/dataTableCustomStyles';
-import getFormattedDate from '../../helpers/getFormattedDate';
 import { TimerUtil } from '../../helpers/getTs';
 import { logger } from '../../helpers/logger';
 import dbConnect from '../../lib/dbConnect';
@@ -393,7 +393,7 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
       name: 'Last Seen',
       minWidth: '128px',
       selector: row => row.ts,
-      format: row => row.last_visited_at ? getFormattedDate(row.last_visited_at) : '-',
+      format: row => row.last_visited_at ? <FormattedDate style={{ color: 'var(--color)', fontSize: 13 }} ts={row.last_visited_at} /> : '-',
       sortable: true,
     },
     {
@@ -401,7 +401,7 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
       name: 'Registered',
       minWidth: '128px',
       selector: row => row.ts,
-      format: row => row.ts ? getFormattedDate(row.ts) : 'Not registered',
+      format: row => row.ts ? <FormattedDate style={{ color: 'var(--color)', fontSize: 13 }} ts={row.ts} /> : 'Not registered',
       sortable: true,
     },
     {

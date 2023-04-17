@@ -5,11 +5,11 @@ import toast from 'react-hot-toast';
 import { KeyedMutator } from 'swr';
 import Theme from '../constants/theme';
 import { AppContext } from '../contexts/appContext';
-import getFormattedDate from '../helpers/getFormattedDate';
 import isTheme from '../helpers/isTheme';
 import { COMMENT_QUERY_LIMIT } from '../models/CommentEnums';
 import { EnrichedComment } from '../models/db/comment';
 import { CommentQuery } from '../pages/api/comment/[id]';
+import FormattedDate from './formattedDate';
 import FormattedUser from './formattedUser';
 import isNotFullAccountToast from './isNotFullAccountToast';
 
@@ -181,12 +181,14 @@ export default function CommentThread({ className, comment, mutateComments, onSe
       <div className='flex justify-between'>
         <div className='flex gap-x-2 items-center flex-wrap '>
           <FormattedUser user={comment.author} />
-          <span className='text-sm' suppressHydrationWarning style={{
-            color: 'var(--color-gray)',
-          }}>
-            <span>{comment.createdAt !== comment.updatedAt ? '*Edited*' : ''} </span>
-            {getFormattedDate(new Date(comment.createdAt).getTime() / 1000)}
-          </span>
+          {comment.createdAt !== comment.updatedAt &&
+            <span className='text-sm' style={{
+              color: 'var(--color-gray)',
+            }}>
+              {'*Edited*'}
+            </span>
+          }
+          <FormattedDate date={comment.createdAt} />
         </div>
         {(comment.author._id.toString() === user?._id.toString() || (user?._id === comment.target)) && (
           <button
