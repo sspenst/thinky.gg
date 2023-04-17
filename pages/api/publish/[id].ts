@@ -25,31 +25,25 @@ export async function checkPublishRestrictions(userId: Types.ObjectId) {
     userId: userId,
   }).sort({ ts: -1 });
 
-  console.log(recentPublishedLevels);
-
   if (recentPublishedLevels.length > 0) {
     const lastPublishedTs = recentPublishedLevels[0].ts;
 
     const now = TimerUtil.getTs();
 
     if (now - lastPublishedTs < 60) {
-      return {
-        error: 'Please wait a little bit before publishing another level',
-      };
+      return 'Please wait a little bit before publishing another level';
     }
 
     if (recentPublishedLevels.length >= 5) {
       const totalScore = recentPublishedLevels.map(l => l.calc_reviews_score_laplace).reduce((p, c) => p + c, 0);
 
       if (totalScore / recentPublishedLevels.length < 0.5) {
-        return {
-          error: 'Your recent levels are getting poor reviews. Please wait before publishing a new level',
-        };
+        return 'Your recent levels are getting poor reviews. Please wait before publishing a new level';
       }
     }
   }
 
-  return { ok: true };
+  return undefined;
 }
 
 export default withAuth({ POST: {
@@ -123,7 +117,7 @@ export default withAuth({ POST: {
     });
   }
 
-  const { error } = await checkPublishRestrictions(req.user._id);
+  const error = await checkPublishRestrictions(req.user._id);
 
   if (error) {
     return res.status(400).json({
