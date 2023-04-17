@@ -14,7 +14,7 @@ interface RecommendedLevelProps {
 
 export default function RecommendedLevel({ id, level, title }: RecommendedLevelProps): JSX.Element {
   return (
-    <div className='flex flex-col justify-center rounded-lg border'
+    <div className='flex flex-col justify-center rounded-lg border recommended-level'
       id={id}
       style={{
         backgroundColor: 'var(--bg-color-2)',

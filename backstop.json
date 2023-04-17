@@ -15,10 +15,33 @@
   "onBeforeScript": "puppet/onBefore.js",
   "onReadyScript": "puppet/onReady.js",
   "scenarios": [
+
     {
-      "label": "Pathology Editor",
-      "cookiePath": "backstop_data/engine_scripts/cookies.json",
-      "url": "https://pathology.gg/login",
+      "label": "Pathology Homepage",
+      "cookiePath": "",
+      "url": "http://localhost",
+      "referenceUrl": "",
+      "readyEvent": "",
+      "readySelector": "",
+      "delay": 3000,
+      "hideSelectors": [
+        ".recommended-level",
+        "#discord-widget"
+      ],
+      "removeSelectors": [],
+      "hoverSelector": "",
+      "clickSelector": "",
+      "postInteractionWait": 0,
+      "selectors": [],
+      "selectorExpansion": true,
+      "expect": 0,
+      "misMatchThreshold" : 0.1,
+      "requireSameDimensions": true
+    },
+    {
+      "label": "Pathology Login",
+      "cookiePath": "",
+      "url": "http://localhost/login",
       "referenceUrl": "",
       "readyEvent": "",
       "readySelector": "",
@@ -33,7 +56,111 @@
       "expect": 0,
       "misMatchThreshold" : 0.1,
       "requireSameDimensions": true
+    },
+    {
+      "label": "Pathology Homepage Logged in",
+      "cookiePath": "backstop_data/engine_scripts/cookies.json",
+      "url": "http://localhost/login",
+      "referenceUrl": "",
+      "readyEvent": "",
+      "readySelector": "",
+      "delay": 3000,
+      "hideSelectors": [
+        ".recommended-level",
+        "#discord-widget",
+        ".select-card"
+      ],
+      "removeSelectors": [],
+      "hoverSelector": "",
+      "clickSelector": "",
+      "postInteractionWait": 0,
+      "selectors": [],
+      "selectorExpansion": true,
+      "expect": 0,
+      "misMatchThreshold" : 0.1,
+      "requireSameDimensions": true
+    },
+    {
+      "label": "Pathology Homepage Create Level",
+      "cookiePath": "backstop_data/engine_scripts/cookies.json",
+      "url": "http://localhost/new",
+      "referenceUrl": "",
+      "readyEvent": "",
+      "readySelector": "",
+      "delay": 3000,
+      "removeSelectors": [],
+      "hoverSelector": "",
+      "clickSelector": "",
+      "postInteractionWait": 0,
+      "selectors": [],
+      "selectorExpansion": true,
+      "expect": 0,
+      "misMatchThreshold" : 0.15,
+      "requireSameDimensions": true
+    },
+    {
+      "label": "Pathology Profile page",
+      "cookiePath": "backstop_data/engine_scripts/cookies.json",
+      "url": "http://localhost/profile/test",
+      "referenceUrl": "",
+      "readyEvent": "",
+      "readySelector": "",
+      "delay": 3000,
+      "hideSelectors": [
+        "[role=table]"
+      ],
+      "removeSelectors": [],
+      "hoverSelector": "",
+      "clickSelector": "",
+      "postInteractionWait": 0,
+      "selectors": [],
+      "selectorExpansion": true,
+      "expect": 0,
+      "misMatchThreshold" : 0.15,
+      "requireSameDimensions": true
+    },
+    {
+      "label": "Pathology Search page",
+      "cookiePath": "backstop_data/engine_scripts/cookies.json",
+      "url": "http://localhost/search",
+      "referenceUrl": "",
+      "readyEvent": "",
+      "readySelector": "",
+      "delay": 3000,
+      "hideSelectors": [
+        "[role=table]"
+      ],
+      "removeSelectors": [],
+      "hoverSelector": "",
+      "clickSelector": "",
+      "postInteractionWait": 0,
+      "selectors": [],
+      "selectorExpansion": true,
+      "expect": 0,
+      "misMatchThreshold" : 0.15,
+      "requireSameDimensions": true
+    },
+    {
+      "label": "Pathology Settings page",
+      "cookiePath": "backstop_data/engine_scripts/cookies.json",
+      "url": "http://localhost/settings",
+      "referenceUrl": "",
+      "readyEvent": "",
+      "readySelector": "",
+      "delay": 3000,
+      "hideSelectors": [
+      ],
+      "removeSelectors": [],
+      "hoverSelector": "",
+      "clickSelector": "",
+      "postInteractionWait": 0,
+      "selectors": [],
+      "selectorExpansion": true,
+      "expect": 0,
+      "misMatchThreshold" : 0.15,
+      "requireSameDimensions": true
     }
+    
   ],
   "paths": {
     "bitmaps_reference": "backstop_data/bitmaps_reference",

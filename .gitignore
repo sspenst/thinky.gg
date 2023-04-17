@@ -15,3 +15,4 @@ newrelic_agent.log
 
 backstop_data/html_report/
 bitmaps_test/
+backstop_data/engine_scripts/cookies.json

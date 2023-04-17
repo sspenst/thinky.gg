@@ -1,12 +1,12 @@
 [
   {
-    "domain": ".www.yourdomain.com",
+    "domain": "localhost",
     "path": "/",
-    "name": "yourCookieName",
-    "value": "yourCookieValue",
+    "name": "token",
+    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NDBmYzEyMmJkNzY3ZjNmZWU1ZGVjMzEiLCJpYXQiOjE2ODE3NjU2MTIsImV4cCI6MTY4MjM3MDQxMn0.sQxROdwx3nL8D1NPtzV6phrgz_qVvoY4tcWhUOmkG5E",
     "expirationDate": 1798790400,
     "hostOnly": false,
-    "httpOnly": false,
+    "httpOnly": true,
     "secure": false,
     "session": false,
     "sameSite": "Lax"

@@ -26,7 +26,7 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
 
   return (
     <div
-      className='p-3 overflow-hidden relative inline-block align-middle'
+      className='p-3 overflow-hidden relative inline-block align-middle select-card'
       key={`select-card-${option.id}`}
     >
       <div className='wrapper rounded-md overflow-hidden relative'
