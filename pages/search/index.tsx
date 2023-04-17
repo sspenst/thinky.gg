@@ -330,14 +330,12 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
           <FilterButton
             element={<>{'Show Won'}</>}
             onClick={onPersonalFilterClick}
-            proRequired={true}
             selected={query.show_filter === FilterSelectOption.ShowWon}
             value={FilterSelectOption.ShowWon}
           />
           <FilterButton
             element={<>{'Show In Progress'}</>}
             onClick={onPersonalFilterClick}
-            proRequired={true}
             selected={query.show_filter === FilterSelectOption.ShowInProgress}
             value={FilterSelectOption.ShowInProgress}
           />
@@ -345,7 +343,6 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
             element={<>{'Show Unattempted'}</>}
             last={true}
             onClick={onPersonalFilterClick}
-            proRequired={true}
             selected={query.show_filter === FilterSelectOption.ShowUnattempted}
             value={FilterSelectOption.ShowUnattempted}
           />
