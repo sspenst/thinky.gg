@@ -312,6 +312,7 @@ export async function sendAutoUnsubscribeUsers(batchId: Types.ObjectId, limit: n
     },
     {
       $match: {
+        'userConfig.emailConfirmed': { $ne: true }, // don't unsubscribe users with verified emails
         'userConfig.emailDigest': { $ne: EmailDigestSettingTypes.NONE },
       },
     },
