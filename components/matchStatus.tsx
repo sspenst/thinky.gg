@@ -83,7 +83,7 @@ export function getProfileRatingDisplay(type: MultiplayerMatchType, profile?: Mu
   if (profile && !isProvisional(type, profile) && getRatingFromProfile(profile, type)) {
     return (
       <div className='flex flex-col items-center' >
-        <span className='text-xs'>{getMatchTypeNameFromMatchType(type)}</span>
+        <span className='text-xs '>{getMatchTypeNameFromMatchType(type)}</span>
         <span data-tooltip-id='profile-rating' data-tooltip-content={`Played ${getMatchCountFromProfile(profile, type)} matches`} className='text-xs italic' style={{
           color: 'var(--color-gray)',
         }}>{Math.round(getRatingFromProfile(profile, type))}</span>
@@ -95,7 +95,7 @@ export function getProfileRatingDisplay(type: MultiplayerMatchType, profile?: Mu
 
     return (
       <div className='flex flex-col items-center' >
-        <span className='text-xs'>{getMatchTypeNameFromMatchType(type)}</span>
+        <span className={'text-xs match-type-text-' + type}>{getMatchTypeNameFromMatchType(type)}</span>
         <span data-tooltip-id='unrated' data-tooltip-content={`${matchesRemaining} match${matchesRemaining === 1 ? '' : 'es'} remaining`} className='text-xs italic' style={{
           color: 'var(--color-gray)',
         }}>Unrated</span>
