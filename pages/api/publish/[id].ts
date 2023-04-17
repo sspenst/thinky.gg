@@ -34,7 +34,7 @@ export async function checkPublishRestrictions(userId: Types.ObjectId) {
 
     if (now - lastPublishedTs < 60) {
       return {
-        error: 'You can only publish one level per minute',
+        error: 'Please wait a little bit before publishing another level',
       };
     }
 
