@@ -33,7 +33,7 @@ export default async function initializeLocalDb() {
   }));
 
   // USER_B
-  promises.push( UserModel.create({
+  promises.push(UserModel.create({
     _id: new Types.ObjectId(TestId.USER_B),
     calc_records: 0,
     email: 'bbb@gmail.com',
@@ -42,7 +42,7 @@ export default async function initializeLocalDb() {
     score: 0,
     ts: ts,
   }));
-  promises.push( UserConfigModel.create({
+  promises.push(UserConfigModel.create({
     _id: new Types.ObjectId(),
     theme: Theme.Modern,
     userId: new Types.ObjectId(TestId.USER_B),
@@ -50,7 +50,7 @@ export default async function initializeLocalDb() {
 
   // USER_C
   // no UserConfig - should only possible for legacy accounts
-  promises.push( UserModel.create({
+  promises.push(UserModel.create({
     _id: new Types.ObjectId(TestId.USER_C),
     calc_records: 1,
     email: 'the_curator@gmail.com',
@@ -61,7 +61,7 @@ export default async function initializeLocalDb() {
     ts: ts,
   }));
 
-  promises.push( UserModel.create({
+  promises.push(UserModel.create({
     _id: new Types.ObjectId(TestId.USER_D),
     calc_records: 1,
     email: 'someolduser@someolduser.com',
@@ -73,7 +73,7 @@ export default async function initializeLocalDb() {
   }));
 
   // LEVEL
-  promises.push( LevelModel.create({
+  promises.push(LevelModel.create({
     _id: new Types.ObjectId(TestId.LEVEL),
     authorNote: 'test level 1 author note',
     data: '4000B0\n120000\n050000\n678900\nABCD30',
@@ -86,14 +86,14 @@ export default async function initializeLocalDb() {
     userId: new Types.ObjectId(TestId.USER),
     width: 6,
   }));
-  promises.push( RecordModel.create({
+  promises.push(RecordModel.create({
     _id: new Types.ObjectId(TestId.RECORD),
     levelId: new Types.ObjectId(TestId.LEVEL),
     moves: 20,
     ts: ts,
     userId: new Types.ObjectId(TestId.USER),
   }));
-  promises.push( StatModel.create({
+  promises.push(StatModel.create({
     _id: new Types.ObjectId(),
     attempts: 1,
     complete: true,
@@ -102,9 +102,18 @@ export default async function initializeLocalDb() {
     ts: ts,
     userId: new Types.ObjectId(TestId.USER),
   }));
+  promises.push(StatModel.create({
+    _id: new Types.ObjectId(),
+    attempts: 1,
+    complete: false,
+    levelId: new Types.ObjectId(TestId.LEVEL),
+    moves: 22,
+    ts: ts,
+    userId: new Types.ObjectId(TestId.USER_B),
+  }));
 
   // LEVEL_2
-  promises.push( LevelModel.create({
+  promises.push(LevelModel.create({
     _id: new Types.ObjectId(TestId.LEVEL_2),
     data: '40000\n12000\n05000\n67890\nABC03',
     height: 5,
@@ -118,7 +127,7 @@ export default async function initializeLocalDb() {
   }));
 
   // LEVEL_3
-  promises.push( LevelModel.create({
+  promises.push(LevelModel.create({
     _id: new Types.ObjectId(TestId.LEVEL_3),
     data: '40\n03',
     height: 2,
@@ -130,14 +139,14 @@ export default async function initializeLocalDb() {
     userId: new Types.ObjectId(TestId.USER),
     width: 2,
   }));
-  promises.push( RecordModel.create({
+  promises.push(RecordModel.create({
     _id: new Types.ObjectId(),
     levelId: new Types.ObjectId(TestId.LEVEL_3),
     moves: 80,
     ts: ts,
     userId: new Types.ObjectId(TestId.USER),
   }));
-  promises.push( StatModel.create({
+  promises.push(StatModel.create({
     _id: new Types.ObjectId(),
     attempts: 1,
     complete: true,
@@ -148,7 +157,7 @@ export default async function initializeLocalDb() {
   }));
 
   // LEVEL_4
-  promises.push( LevelModel.create({
+  promises.push(LevelModel.create({
     _id: new Types.ObjectId(TestId.LEVEL_4),
     data: '40000\n02000\n05000\n67890\nABCD3',
     height: 5,
@@ -160,14 +169,14 @@ export default async function initializeLocalDb() {
     userId: new Types.ObjectId(TestId.USER_B),
     width: 5,
   }));
-  promises.push( RecordModel.create({
+  promises.push(RecordModel.create({
     _id: new Types.ObjectId(),
     levelId: new Types.ObjectId(TestId.LEVEL_4),
     moves: 20,
     ts: ts,
     userId: new Types.ObjectId(TestId.USER_B),
   }));
-  promises.push( StatModel.create({
+  promises.push(StatModel.create({
     _id: new Types.ObjectId(),
     attempts: 1,
     complete: true,
@@ -178,7 +187,7 @@ export default async function initializeLocalDb() {
   }));
 
   // DELETED DOCUMENTS
-  promises.push( LevelModel.create({
+  promises.push(LevelModel.create({
     _id: new Types.ObjectId(TestId.LEVEL_DELETED),
     authorNote: 'test level deleted author note',
     data: '4000B0\n120000\n050000\n678900\nABCD30',
@@ -192,7 +201,7 @@ export default async function initializeLocalDb() {
     userId: new Types.ObjectId(TestId.USER),
     width: 6,
   }));
-  promises.push( PlayAttemptModel.create({
+  promises.push(PlayAttemptModel.create({
     _id: new Types.ObjectId(),
     attemptContext: 0,
     endTime: 200,
@@ -202,7 +211,7 @@ export default async function initializeLocalDb() {
     updateCount: 1,
     userId: new Types.ObjectId(TestId.USER),
   }));
-  promises.push( RecordModel.create({
+  promises.push(RecordModel.create({
     _id: new Types.ObjectId(),
     isDeleted: true,
     levelId: new Types.ObjectId(TestId.LEVEL_DELETED),
@@ -210,7 +219,7 @@ export default async function initializeLocalDb() {
     ts: ts,
     userId: new Types.ObjectId(TestId.USER),
   }));
-  promises.push( ReviewModel.create({
+  promises.push(ReviewModel.create({
     _id: new Types.ObjectId(),
     isDeleted: true,
     levelId: new Types.ObjectId(TestId.LEVEL_DELETED),
@@ -219,7 +228,7 @@ export default async function initializeLocalDb() {
     ts: ts,
     userId: new Types.ObjectId(TestId.USER),
   }));
-  promises.push( StatModel.create({
+  promises.push(StatModel.create({
     _id: new Types.ObjectId(),
     attempts: 1,
     complete: true,
@@ -230,7 +239,7 @@ export default async function initializeLocalDb() {
     userId: new Types.ObjectId(TestId.USER),
   }));
 
-  promises.push( CollectionModel.create({
+  promises.push(CollectionModel.create({
     _id: new Types.ObjectId(TestId.COLLECTION),
     authorNote: 'test collection author note',
     name: 'test collection',
@@ -239,7 +248,7 @@ export default async function initializeLocalDb() {
     levels: [new Types.ObjectId(TestId.LEVEL), new Types.ObjectId(TestId.LEVEL_2)]
   }));
 
-  promises.push( CollectionModel.create({
+  promises.push(CollectionModel.create({
     _id: new Types.ObjectId(TestId.COLLECTION_2),
     levels: [new Types.ObjectId(TestId.LEVEL), new Types.ObjectId(TestId.LEVEL_2), new Types.ObjectId(TestId.LEVEL_3)],
     name: 'test collection 2',
@@ -247,7 +256,7 @@ export default async function initializeLocalDb() {
     userId: new Types.ObjectId(TestId.USER),
   }));
 
-  promises.push( CollectionModel.create({
+  promises.push(CollectionModel.create({
     _id: new Types.ObjectId(TestId.COLLECTION_B),
     levels: [new Types.ObjectId(TestId.LEVEL), new Types.ObjectId(TestId.LEVEL_2), new Types.ObjectId(TestId.LEVEL_3)],
     name: 'test collection 3',
@@ -255,7 +264,7 @@ export default async function initializeLocalDb() {
     userId: new Types.ObjectId(TestId.USER_B),
   }));
 
-  promises.push( CampaignModel.create({
+  promises.push(CampaignModel.create({
     _id: new Types.ObjectId(TestId.CAMPAIGN_OFFICIAL),
     authorNote: 'The official campaign!',
     collections: [new Types.ObjectId(TestId.COLLECTION)],
@@ -263,7 +272,7 @@ export default async function initializeLocalDb() {
     slug: 'official-campaign',
   }));
 
-  promises.push( ReviewModel.create({
+  promises.push(ReviewModel.create({
     _id: new Types.ObjectId(TestId.REVIEW),
     levelId: new Types.ObjectId(TestId.LEVEL),
     score: 5,
