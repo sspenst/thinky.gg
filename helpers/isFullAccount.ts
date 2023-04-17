@@ -1,10 +1,10 @@
 import { UserConfigModel } from '@root/models/mongoose';
-import Role from '../constants/role';
 import User from '../models/db/user';
 import UserConfig from '../models/db/userConfig';
+import isGuest from './isGuest';
 
 export default async function isFullAccount(user: User | null, userConfig?: UserConfig | null) {
-  if (!user || user.roles?.includes(Role.GUEST)) {
+  if (!user || isGuest(user)) {
     return false;
   }
 

@@ -1,8 +1,8 @@
+import TileType from '@root/constants/tileType';
 import isFullAccount from '@root/helpers/isFullAccount';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
-import LevelDataType from '../../../constants/levelDataType';
 import { ValidObjectId } from '../../../helpers/apiWrapper';
 import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
@@ -15,6 +15,36 @@ import User from '../../../models/db/user';
 import { LevelModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
 import { queueCalcCreatorCounts, queueCalcPlayAttempts, queueRefreshIndexCalcs } from '../internal-jobs/worker';
 import { issueAchievements } from '../stats';
+
+export async function checkPublishRestrictions(userId: Types.ObjectId) {
+  // check last 24h
+  const ts = TimerUtil.getTs() - 60 * 60 * 24;
+  const recentPublishedLevels = await LevelModel.find<Level>({
+    isDraft: false,
+    ts: { $gt: ts },
+    userId: userId,
+  }).sort({ ts: -1 });
+
+  if (recentPublishedLevels.length > 0) {
+    const lastPublishedTs = recentPublishedLevels[0].ts;
+
+    const now = TimerUtil.getTs();
+
+    if (now - lastPublishedTs < 60) {
+      return 'Please wait a little bit before publishing another level';
+    }
+
+    if (recentPublishedLevels.length >= 5) {
+      const totalScore = recentPublishedLevels.map(l => l.calc_reviews_score_laplace).reduce((p, c) => p + c, 0);
+
+      if (totalScore / recentPublishedLevels.length < 0.5) {
+        return 'Your recent levels are getting poor reviews. Please wait before publishing a new level';
+      }
+    }
+  }
+
+  return undefined;
+}
 
 export default withAuth({ POST: {
   query: {
@@ -42,13 +72,13 @@ export default withAuth({ POST: {
     });
   }
 
-  if ((level.data.match(new RegExp(LevelDataType.Start, 'g')) || []).length !== 1) {
+  if ((level.data.match(new RegExp(TileType.Start, 'g')) || []).length !== 1) {
     return res.status(400).json({
       error: 'There must be exactly one start block',
     });
   }
 
-  if ((level.data.match(new RegExp(LevelDataType.End, 'g')) || []).length === 0) {
+  if ((level.data.match(new RegExp(TileType.End, 'g')) || []).length === 0) {
     return res.status(400).json({
       error: 'There must be at least one end block',
     });
@@ -87,8 +117,16 @@ export default withAuth({ POST: {
     });
   }
 
-  const session = await mongoose.startSession();
+  const error = await checkPublishRestrictions(req.user._id);
+
+  if (error) {
+    return res.status(400).json({
+      error: error,
+    });
+  }
+
   const ts = TimerUtil.getTs();
+  const session = await mongoose.startSession();
 
   try {
     await session.withTransaction(async () => {

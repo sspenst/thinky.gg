@@ -9,7 +9,7 @@ import Level from '../models/db/level';
 import { CampaignModel, CollectionModel, LevelModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserConfigModel, UserModel } from '../models/mongoose';
 
 export default async function initializeLocalDb() {
-  const ts = TimerUtil.getTs();
+  const ts = TimerUtil.getTs() - 60;
 
   // USER
   const promises = [];

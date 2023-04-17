@@ -1,10 +1,10 @@
 import classNames from 'classnames';
 import React from 'react';
-import getFormattedDate from '../helpers/getFormattedDate';
 import { EnrichedLevel } from '../models/db/level';
 import Review from '../models/db/review';
 import User from '../models/db/user';
 import EnrichedLevelLink from './enrichedLevelLink';
+import FormattedDate from './formattedDate';
 import FormattedUser from './formattedUser';
 
 interface StarProps {
@@ -80,9 +80,7 @@ export default function FormattedReview({ hideBorder, level, onDeleteClick, onEd
       >
         <div className='flex gap-x-2 items-center flex-wrap'>
           <FormattedUser user={user} />
-          <span className='text-sm' suppressHydrationWarning style={{
-            color: 'var(--color-gray)',
-          }}>{getFormattedDate(review.ts)}</span>
+          <FormattedDate ts={review.ts} />
           {level && <EnrichedLevelLink level={level} />}
         </div>
         {review.score ? <Stars stars={review.score} /> : null}

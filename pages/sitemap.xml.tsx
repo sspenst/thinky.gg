@@ -78,7 +78,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   try {
     const allUsers = await UserModel.find({}, 'name', { lean: true });
     const allLevels = await LevelModel.find({ isDeleted: { $ne: true }, isDraft: false }, 'slug ts', { lean: true });
-    const allCollections = await CollectionModel.find({ }, 'slug updatedAt', { lean: true });
+    const allCollections = await CollectionModel.find({}, 'slug updatedAt', { lean: true });
 
     const res = context.res;
     // We generate the XML sitemap with the posts data

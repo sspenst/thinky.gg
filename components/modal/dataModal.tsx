@@ -1,5 +1,6 @@
+import TileType from '@root/constants/tileType';
+import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import React, { useEffect, useState } from 'react';
-import LevelDataType from '../../constants/levelDataType';
 import Level from '../../models/db/level';
 import Modal from '.';
 
@@ -52,17 +53,17 @@ export default function DataModal({ closeModal, historyPush, isOpen, level, setI
       }
 
       for (let j = 0; j < width; j++) {
-        const invalidLevelDataType = LevelDataType.getInvalidLevelDataType(rows[i][j]);
+        const invalidTileType = TileTypeHelper.getInvalidTileType(rows[i][j]);
 
-        if (invalidLevelDataType) {
-          setError(`Invalid level data type: ${invalidLevelDataType}`);
+        if (invalidTileType) {
+          setError(`Invalid level data type: ${invalidTileType}`);
 
           return;
         }
 
-        if (rows[i][j] === LevelDataType.Start) {
+        if (rows[i][j] === TileType.Start) {
           start += 1;
-        } else if (rows[i][j] === LevelDataType.End) {
+        } else if (rows[i][j] === TileType.End) {
           end += 1;
         }
       }

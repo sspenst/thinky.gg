@@ -1,5 +1,5 @@
 import { PageContext } from '@root/contexts/pageContext';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import Control from '../../models/control';
 import { EnrichedLevel } from '../../models/db/level';
@@ -33,6 +33,32 @@ export default function GameLayout({ controls, gameState, hideSidebar, level, ma
   useEffect(() => {
     setPreventKeyDownEvent(isCheckpointOpen);
   }, [isCheckpointOpen, setPreventKeyDownEvent]);
+  const grid = useMemo(() => {
+    return <Grid
+      board={gameState.board}
+      generateMovables={(borderWidth, squareSize) => <>
+        {gameState.blocks.map(block => <Block
+          block={block}
+          borderWidth={borderWidth}
+          key={`block-${block.id}`}
+          onClick={() => onCellClick(block.pos.x, block.pos.y)}
+          size={squareSize}
+        />)}
+        <Player
+          borderWidth={borderWidth}
+          gameState={gameState}
+          leastMoves={level.leastMoves}
+          size={squareSize}
+        />
+      </>}
+      leastMoves={level.leastMoves}
+      onCellClick={(x, y, rightClick) => {
+        if (!rightClick) {
+          onCellClick(x, y);
+        }
+      }}
+    />;
+  }, [gameState, level.leastMoves, onCellClick]);
 
   return (
     <div className='flex flex-row h-full w-full'>
@@ -53,30 +79,7 @@ export default function GameLayout({ controls, gameState, hideSidebar, level, ma
             <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.userId} />
           </div>
         }
-        <Grid
-          board={gameState.board}
-          generateMovables={(borderWidth, squareSize) => <>
-            {gameState.blocks.map(block => <Block
-              block={block}
-              borderWidth={borderWidth}
-              key={`block-${block.id}`}
-              onClick={() => onCellClick(block.pos.x, block.pos.y)}
-              size={squareSize}
-            />)}
-            <Player
-              borderWidth={borderWidth}
-              gameState={gameState}
-              leastMoves={level.leastMoves}
-              size={squareSize}
-            />
-          </>}
-          leastMoves={level.leastMoves}
-          onCellClick={(x, y, rightClick) => {
-            if (!rightClick) {
-              onCellClick(x, y);
-            }
-          }}
-        />
+        {grid}
         <Controls controls={controls} />
         {!hideSidebar &&
           <div className='gap-4 absolute bottom-0 right-0 m-3 z-10 transition-opacity hidden xl:flex'>

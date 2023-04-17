@@ -232,8 +232,7 @@ describe('Testing slugs for levels', () => {
           },
           body: {
             name: 'newUser',
-            email: 'test@test.com',
-            currentPassword: 'test',
+            currentPassword: 'test1234',
           },
           headers: {
             'content-type': 'application/json',

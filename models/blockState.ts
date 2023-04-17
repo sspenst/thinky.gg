@@ -1,13 +1,14 @@
-import LevelDataType from '../constants/levelDataType';
+import TileTypeHelper from '@root/helpers/tileTypeHelper';
+import TileType from '../constants/tileType';
 import Position from './position';
 
 export default class BlockState {
   id: number;
   inHole: boolean;
   pos: Position;
-  type: LevelDataType;
+  type: TileType;
 
-  constructor(id: number, type: LevelDataType, x: number, y: number, inHole = false) {
+  constructor(id: number, type: TileType, x: number, y: number, inHole = false) {
     this.id = id;
     this.pos = new Position(x, y);
     this.type = type;
@@ -20,13 +21,13 @@ export default class BlockState {
     }
 
     if (this.pos.x - 1 === pos.x && this.pos.y === pos.y) {
-      return LevelDataType.canMoveLeft(this.type);
+      return TileTypeHelper.canMoveLeft(this.type);
     } else if (this.pos.x === pos.x && this.pos.y - 1 === pos.y) {
-      return LevelDataType.canMoveUp(this.type);
+      return TileTypeHelper.canMoveUp(this.type);
     } else if (this.pos.x + 1 === pos.x && this.pos.y === pos.y) {
-      return LevelDataType.canMoveRight(this.type);
+      return TileTypeHelper.canMoveRight(this.type);
     } else if (this.pos.x === pos.x && this.pos.y + 1 === pos.y) {
-      return LevelDataType.canMoveDown(this.type);
+      return TileTypeHelper.canMoveDown(this.type);
     }
 
     // can't move more than one grid space at a time

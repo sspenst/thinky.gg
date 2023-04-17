@@ -1,11 +1,11 @@
 /* istanbul ignore file */
 
 import { createPopper, Instance, Placement } from '@popperjs/core';
+import TileType from '@root/constants/tileType';
 import classNames from 'classnames';
 import { Types } from 'mongoose';
 import Link from 'next/link';
 import React, { Dispatch, SetStateAction, useCallback, useContext, useEffect, useRef, useState } from 'react';
-import LevelDataType from '../constants/levelDataType';
 import { AppContext } from '../contexts/appContext';
 import { TimerUtil } from '../helpers/getTs';
 import Control from '../models/control';
@@ -699,7 +699,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
               const restartButton = document.getElementById('btn-restart') as HTMLButtonElement;
 
               // show restart notification if they have reached the exit in too many moves
-              if (gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === LevelDataType.End && gameState.moveCount > (tutorialStep.level?.leastMoves ?? 0)) {
+              if (gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === TileType.End && gameState.moveCount > (tutorialStep.level?.leastMoves ?? 0)) {
                 restartButton?.classList.add(styles['highlight-red']);
               } else {
                 restartButton?.classList.remove(styles['highlight-red']);
