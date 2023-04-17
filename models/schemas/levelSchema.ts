@@ -11,10 +11,7 @@ export const LEVEL_SEARCH_DEFAULT_PROJECTION = { _id: 1, ts: 1, name: 1, slug: 1
 
 const LevelSchema = new mongoose.Schema<Level>(
   {
-    _id: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
-    },
+
     archivedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
