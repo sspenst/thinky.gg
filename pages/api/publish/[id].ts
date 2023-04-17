@@ -90,7 +90,6 @@ export default withAuth({ POST: {
   const ts = TimerUtil.getTs();
 
   const recentPublishedLevels = await LevelModel.find<Level>({
-    isDeleted: { $ne: true },
     isDraft: false,
     ts: { $gt: ts },
     userId: req.userId,
