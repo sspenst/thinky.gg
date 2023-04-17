@@ -21,6 +21,7 @@ export enum PAGE_PATH {
   CHAPTER = '/chapter',
   PLAY = '/play',
   LEVEL = '/level',
+  MULTIPLAYER = '/multiplayer',
 }
 
 export default function Page({

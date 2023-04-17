@@ -7,6 +7,7 @@ import { PAGE_PATH } from '../components/page';
 import { TOUR_STEPS_CHAPTER_1 } from './steps/CHAPTER_1';
 import { TOUR_STEPS_FIRST_LEVEL } from './steps/FIRST_LEVEL';
 import { TOUR_STEPS_HOME_PAGE } from './steps/HOME_PAGE';
+import { TOUR_STEPS_MULTIPLAYER_PAGE } from './steps/MULTIPLAYER_PAGE';
 import { TOUR_STEPS_PLAY_PAGE } from './steps/PLAY_PAGE';
 import { TOUR_STEPS_SECOND_LEVEL } from './steps/SECOND_LEVEL';
 import { TOUR_STEPS_THIRD_LEVEL } from './steps/THIRD_LEVEL';
@@ -18,6 +19,7 @@ export enum TourTypes {
     SECOND_LEVEL = 'SECOND_LEVEL',
     THIRD_LEVEL = 'THIRD_LEVEL',
     PLAY_PAGE = 'PLAY_PAGE',
+    MULTIPLAYER_PAGE = 'MULTIPLAYER_PAGE',
 }
 
 export const TOUR_DATA: { [key in TourTypes]: Step[] } = {
@@ -26,7 +28,8 @@ export const TOUR_DATA: { [key in TourTypes]: Step[] } = {
   [TourTypes.FIRST_LEVEL]: TOUR_STEPS_FIRST_LEVEL,
   [TourTypes.SECOND_LEVEL]: TOUR_STEPS_SECOND_LEVEL,
   [TourTypes.THIRD_LEVEL]: TOUR_STEPS_THIRD_LEVEL,
-  [TourTypes.HOME_PAGE]: TOUR_STEPS_HOME_PAGE
+  [TourTypes.HOME_PAGE]: TOUR_STEPS_HOME_PAGE,
+  [TourTypes.MULTIPLAYER_PAGE]: TOUR_STEPS_MULTIPLAYER_PAGE,
 
 };
 
@@ -96,6 +99,8 @@ export function useTour(page: PAGE_PATH, cb?: (data: any) => void, disableScroll
       tourRef = TourTypes.CHAPTER_1;
     } else if (page === PAGE_PATH.PLAY) {
       tourRef = TourTypes.PLAY_PAGE;
+    } else if (page === PAGE_PATH.MULTIPLAYER) {
+      tourRef = TourTypes.MULTIPLAYER_PAGE;
     }
 
     if (!tourRef) {
