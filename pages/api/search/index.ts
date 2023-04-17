@@ -36,10 +36,6 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
     if (query['block_filter']) {
       delete query['block_filter'];
     }
-
-    if (query['show_filter'] && query['show_filter'] !== 'hide_won') {
-      delete query['show_filter'];
-    }
   }
 
   const { block_filter, difficulty_filter, disable_count, max_rating, max_steps, min_rating, min_steps, num_results, page, search, searchAuthor, searchAuthorId, show_filter, sort_by, sort_dir, time_range } = query;
