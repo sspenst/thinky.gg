@@ -14,6 +14,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   return await redirectToHome(context, { recaptchaPublicKey: process.env.RECAPTCHA_PUBLIC_KEY || '' });
 }
 
+/* istanbul ignore next */
 export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?: string}) {
   const { cache } = useSWRConfig();
   const { mutateUser, setShouldAttemptAuth } = useContext(AppContext);

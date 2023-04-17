@@ -1,15 +1,11 @@
 import TestId from '@root/constants/testId';
 import { TimerUtil } from '@root/helpers/getTs';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
-import { getTokenCookieValue } from '@root/lib/getTokenCookie';
-import { NextApiRequestWithAuth } from '@root/lib/withAuth';
-import Level from '@root/models/db/level';
 import { LevelModel } from '@root/models/mongoose';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';
 import { Types } from 'mongoose';
-import { testApiHandler } from 'next-test-api-route-handler';
-import publishLevelHandler, { checkPublishRestrictions } from '../../../../pages/api/publish/[id]';
+import { checkPublishRestrictions } from '../../../../pages/api/publish/[id]';
 
 afterEach(() => {
   jest.restoreAllMocks();
@@ -26,8 +22,7 @@ describe('publishLevelHandler', () => {
   test('should be OK on first publish', async () => {
     // set to one month in future
     MockDate.set(Date.now() + 1000 * 60 * 60 * 24 * 30);
-    console.log('Now is ' + Date.now() / 1000);
-    const { error } = await checkPublishRestrictions(new Types.ObjectId(TestId.USER));
+    const error = await checkPublishRestrictions(new Types.ObjectId(TestId.USER));
 
     expect(error).toBeUndefined();
   });
@@ -48,7 +43,7 @@ describe('publishLevelHandler', () => {
       width: 6,
     });
     MockDate.set(Date.now() + 5000);
-    const { error } = await checkPublishRestrictions(new Types.ObjectId(TestId.USER));
+    const error = await checkPublishRestrictions(new Types.ObjectId(TestId.USER));
 
     expect(error).toBe('Please wait a little bit before publishing another level');
   });
@@ -59,7 +54,7 @@ describe('publishLevelHandler', () => {
 
     MockDate.set(Date.now() + 56000);
 
-    const { error } = await checkPublishRestrictions(new Types.ObjectId(TestId.USER));
+    const error = await checkPublishRestrictions(new Types.ObjectId(TestId.USER));
 
     expect(error).toBeUndefined();
   });
@@ -126,18 +121,18 @@ describe('publishLevelHandler', () => {
 
     MockDate.set(Date.now() + 65000);
 
-    const { error } = await checkPublishRestrictions(new Types.ObjectId(TestId.USER));
+    const error = await checkPublishRestrictions(new Types.ObjectId(TestId.USER));
 
     expect(error).toBe('Your recent levels are getting poor reviews. Please wait before publishing a new level');
     // wait 25 h
     MockDate.set(Date.now() + 60000 * 60 * 12 ); // 12 hours later
 
-    const { error: error2 } = await checkPublishRestrictions(new Types.ObjectId(TestId.USER));
+    const error2 = await checkPublishRestrictions(new Types.ObjectId(TestId.USER));
 
     expect(error2).toBe('Your recent levels are getting poor reviews. Please wait before publishing a new level');
     MockDate.set(Date.now() + 60000 * 60 * 13); // 13 hours later
 
-    const { error: error3 } = await checkPublishRestrictions(new Types.ObjectId(TestId.USER));
+    const error3 = await checkPublishRestrictions(new Types.ObjectId(TestId.USER));
 
     expect(error3).toBeUndefined();
   });
@@ -204,7 +199,7 @@ describe('publishLevelHandler', () => {
 
     MockDate.set(Date.now() + 65000);
 
-    const { error } = await checkPublishRestrictions(new Types.ObjectId(TestId.USER));
+    const error = await checkPublishRestrictions(new Types.ObjectId(TestId.USER));
 
     expect(error).toBeUndefined();
   });
