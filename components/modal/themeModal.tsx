@@ -1,7 +1,9 @@
+import TileType from '@root/constants/tileType';
 import React, { useContext, useEffect, useState } from 'react';
-import Theme from '../../constants/theme';
+import Theme, { getIconFromTheme } from '../../constants/theme';
 import { AppContext } from '../../contexts/appContext';
 import RadioButton from '../radioButton';
+import { ThemeIconProps } from '../theme/monkey';
 import Modal from '.';
 
 interface ThemeModalProps {
@@ -62,16 +64,27 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
       title={'Theme'}
     >
       <>
-        {Object.keys(Theme).map(themeText => {
+        {Object.keys(Theme).map(themeTextStr => {
+          const themeText = themeTextStr as keyof typeof Theme;
+          const icon = getIconFromTheme(Theme[themeText], TileType.Start);
+
           return (
-            <RadioButton
-              currentValue={theme}
-              key={`theme-${Theme[themeText]}`}
-              name={'theme'}
-              onChange={onChange}
-              text={themeText}
-              value={Theme[themeText]}
-            />
+            <div key={`theme-${Theme[themeText]}-parent-div`} className='flex flex-row'>
+              <div><RadioButton
+                currentValue={theme}
+                key={`theme-${Theme[themeText]}`}
+                name={'theme'}
+                onChange={onChange}
+                text={themeText}
+                value={Theme[themeText]}
+              />
+              </div>
+              <span className='ml-2 w-6 h-6'>
+                {icon && icon({
+                  size: 24
+                } as ThemeIconProps)}
+              </span>
+            </div>
           );
         })}
       </>

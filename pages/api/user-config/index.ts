@@ -1,4 +1,4 @@
-import Role from '@root/constants/role';
+import isGuest from '@root/helpers/isGuest';
 import UserConfig from '@root/models/db/userConfig';
 import { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
@@ -53,12 +53,11 @@ export default withAuth({
     } = req.body;
 
     const setObj: {[k: string]: string} = {};
-    const isGuest = req.user.roles.includes(Role.GUEST);
 
     if (emailDigest !== undefined) {
       setObj['emailDigest'] = emailDigest;
 
-      if (isGuest) {
+      if (isGuest(req.user)) {
         return res.status(400).json({
           error: 'Guests cannot change email digest settings. Confirm your email to convert your account.',
         });

@@ -1,4 +1,5 @@
 import { Tab } from '@headlessui/react';
+import FormattedDate from '@root/components/formattedDate';
 import Image from 'next/image';
 import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -6,7 +7,6 @@ import Dimensions from '../../../constants/dimensions';
 import { AppContext } from '../../../contexts/appContext';
 import { LevelContext } from '../../../contexts/levelContext';
 import { PageContext } from '../../../contexts/pageContext';
-import getFormattedDate from '../../../helpers/getFormattedDate';
 import isCurator from '../../../helpers/isCurator';
 import { EnrichedLevel } from '../../../models/db/level';
 import SelectOptionStats from '../../../models/selectOptionStats';
@@ -42,9 +42,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
         <div className='font-bold text-2xl'>{level.name}</div>
         <div className='flex gap-2 items-center'>
           <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.userId} />
-          <span className='text-sm' style={{
-            color: 'var(--color-gray)',
-          }}>{getFormattedDate(level.ts)}</span>
+          <FormattedDate ts={level.ts} />
         </div>
         <div className='text-sm flex gap-2 items-center'>
           {getFormattedDifficulty(level.calc_difficulty_estimate, level._id.toString(), level.calc_playattempts_unique_users_count)}
@@ -64,17 +62,22 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
       {/* User's stats on this level */}
       {level.userMoves && level.userMovesTs && level.userAttempts && (
         <div className='flex flex-col'>
-          <div className='flex items-center gap-2'>
+          <div className='flex items-center gap-2 flex-wrap'>
             <span className='font-bold' style={{
               color: stat.getColor(),
               textShadow: '1px 1px black',
             }}>
               {stat.getText()}
             </span>
-            <span className='text-sm' style={{
-              color: 'var(--color-gray)',
-            }}>
-              {`${getFormattedDate(level.userMovesTs)}${userConfig?.showPlayStats ? `, ${level.userAttempts} attempt${level.userAttempts !== 1 ? 's' : ''}` : ''}`}
+            <span className='flex'>
+              <FormattedDate ts={level.userMovesTs} />
+              {userConfig?.showPlayStats &&
+                <span className='text-sm' style={{
+                  color: 'var(--color-gray)',
+                }}>
+                  {`, ${level.userAttempts} attempt${level.userAttempts !== 1 ? 's' : ''}`}
+                </span>
+              }
             </span>
           </div>
         </div>
@@ -140,9 +143,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
       <div className='flex flex-row gap-2 items-center'>
         <span className='font-bold'>Archived by:</span>
         <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.archivedBy} />
-        <span className='text-sm' style={{ color: 'var(--color-gray)' }}>
-          {getFormattedDate(level.archivedTs)}
-        </span>
+        <FormattedDate ts={level.archivedTs} />
       </div>
     </>}
     {/* Creator buttons */}

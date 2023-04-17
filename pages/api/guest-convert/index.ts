@@ -3,6 +3,7 @@ import Role from '@root/constants/role';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
 import getProfileSlug from '@root/helpers/getProfileSlug';
+import isGuest from '@root/helpers/isGuest';
 import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmationEmail';
 import UserConfig from '@root/models/db/userConfig';
 import type { NextApiResponse } from 'next';
@@ -22,7 +23,7 @@ export default withAuth({
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   await dbConnect();
 
-  if (!req.user.roles.includes(Role.GUEST)) {
+  if (!isGuest(req.user)) {
     return res.status(401).json({
       error: 'Unauthorized: Not a guest account',
     });

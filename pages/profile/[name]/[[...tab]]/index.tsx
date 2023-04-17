@@ -1,3 +1,4 @@
+import FormattedDate from '@root/components/formattedDate';
 import RoleIcons from '@root/components/roleIcons';
 import classNames from 'classnames';
 import { debounce } from 'debounce';
@@ -27,7 +28,6 @@ import GraphType from '../../../../constants/graphType';
 import TimeRange from '../../../../constants/timeRange';
 import { enrichCollection } from '../../../../helpers/enrich';
 import filterSelectOptions, { FilterSelectOption } from '../../../../helpers/filterSelectOptions';
-import getFormattedDate from '../../../../helpers/getFormattedDate';
 import getProfileSlug from '../../../../helpers/getProfileSlug';
 import { getReviewsByUserId, getReviewsByUserIdCount } from '../../../../helpers/getReviewsByUserId';
 import { getReviewsForUserId, getReviewsForUserIdCount } from '../../../../helpers/getReviewsForUserId';
@@ -441,9 +441,9 @@ export default function ProfilePage({
             <h2><span className='font-bold'>Levels Completed:</span> {user.score}</h2>
             <h2><span className='font-bold'>Levels Created:</span> {user.calc_levels_created_count}</h2>
             {!user.hideStatus && <>
-              <h2><span className='font-bold'>Last Seen:</span> {getFormattedDate(user.last_visited_at ? user.last_visited_at : user.ts)}</h2>
+              <h2><span className='font-bold'>Last Seen:</span> <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.last_visited_at ? user.last_visited_at : user.ts} /></h2>
             </>}
-            <h2><span className='font-bold'>Account Created:</span> {getFormattedDate(user.ts)}</h2>
+            <h2><span className='font-bold'>Account Created:</span> <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.ts} /></h2>
             <h2><span className='font-bold'>Followers:</span> {followerCount}</h2>
             {levelsCompletedByDifficulty &&
               <div className='mt-4'>

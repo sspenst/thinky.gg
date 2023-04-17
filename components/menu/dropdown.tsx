@@ -1,5 +1,5 @@
 import { Menu, Transition } from '@headlessui/react';
-import Role from '@root/constants/role';
+import isGuest from '@root/helpers/isGuest';
 import isPro from '@root/helpers/isPro';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -34,7 +34,6 @@ export default function Dropdown() {
   const router = useRouter();
   const { setPreventKeyDownEvent } = useContext(PageContext);
   const { setShouldAttemptAuth } = useContext(AppContext);
-  const isGuest = user?.roles.includes(Role.GUEST);
 
   useEffect(() => {
     setPreventKeyDownEvent(openModal !== undefined);
@@ -268,7 +267,7 @@ export default function Dropdown() {
                 {({ active }) => (
                   <div
                     className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3'
-                    onClick={isGuest ? logOutToast : logOut}
+                    onClick={isGuest(user) ? logOutToast : logOut}
                     style={{
                       backgroundColor: active ? 'var(--bg-color-3)' : undefined,
                     }}

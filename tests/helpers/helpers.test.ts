@@ -2,7 +2,6 @@ import { Types } from 'mongoose';
 import TestId from '../../constants/testId';
 import filterSelectOptions, { FilterSelectOption } from '../../helpers/filterSelectOptions';
 import getDifficultyEstimate from '../../helpers/getDifficultyEstimate';
-import getFormattedDate from '../../helpers/getFormattedDate';
 import getProfileSlug from '../../helpers/getProfileSlug';
 import getSWRKey from '../../helpers/getSWRKey';
 import { TimerUtil } from '../../helpers/getTs';
@@ -57,15 +56,6 @@ describe('helpers/*.ts', () => {
     expect(userStats[1].userTotal).toBe(0);
     expect(userStats[2].total).toBe(0);
     expect(userStats[2].userTotal).toBe(0);
-  });
-  test('getFormattedDate', async () => {
-    // create a date for two days in the past
-    const date = new Date();
-
-    date.setDate(date.getDate() - 2);
-    const formattedDate = getFormattedDate(date.getTime() / 1000);
-
-    expect(formattedDate).toBe('2 days ago');
   });
   test('naturalSort', async () => {
     const obj = [

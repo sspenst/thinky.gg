@@ -1,5 +1,5 @@
-import Role from '@root/constants/role';
 import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
+import isGuest from '@root/helpers/isGuest';
 import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmationEmail';
 import UserConfig from '@root/models/db/userConfig';
 import bcrypt from 'bcryptjs';
@@ -50,7 +50,7 @@ export default withAuth({
       multiplayerProfile: multiplayerProfile,
     } });
   } else if (req.method === 'PUT') {
-    if (req.user.roles.includes(Role.GUEST)) {
+    if (isGuest(req.user)) {
       return res.status(401).json({
         error: 'Unauthorized: Guest account',
       });

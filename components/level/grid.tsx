@@ -1,6 +1,7 @@
+import TileType from '@root/constants/tileType';
+import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import classNames from 'classnames';
 import React, { useEffect, useRef, useState } from 'react';
-import LevelDataType from '../../constants/levelDataType';
 import Theme from '../../constants/theme';
 import isTheme from '../../helpers/isTheme';
 import SquareState from '../../models/squareState';
@@ -60,8 +61,8 @@ export default function Grid({ board, generateMovables, leastMoves, onCellClick 
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
-      const levelDataType = board[y][x].levelDataType;
-      const text = levelDataType === LevelDataType.End ? leastMoves :
+      const tileType = board[y][x].levelDataType;
+      const text = tileType === TileType.End ? leastMoves :
         board[y][x].text.length === 0 ? undefined :
           board[y][x].text[board[y][x].text.length - 1];
 
@@ -70,17 +71,17 @@ export default function Grid({ board, generateMovables, leastMoves, onCellClick 
           className='absolute'
           key={`grid-${x}-${y}`}
           style={{
-            left: squareSize * x + (!classic ? borderWidth : LevelDataType.isRaised(levelDataType) ? 2 * borderWidth : 0),
-            top: squareSize * y + (!classic ? borderWidth : LevelDataType.isRaised(levelDataType) ? 0 : 2 * borderWidth),
+            left: squareSize * x + (!classic ? borderWidth : TileTypeHelper.isRaised(tileType) ? 2 * borderWidth : 0),
+            top: squareSize * y + (!classic ? borderWidth : TileTypeHelper.isRaised(tileType) ? 0 : 2 * borderWidth),
           }}
         >
           <Square
             borderWidth={borderWidth}
             handleClick={(rightClick: boolean) => onCellClick(x, y, rightClick)}
             leastMoves={leastMoves}
-            levelDataType={levelDataType}
             size={squareSize}
             text={text}
+            tileType={tileType}
           />
         </div>
       );

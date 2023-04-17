@@ -1,5 +1,5 @@
+import TileType from '@root/constants/tileType';
 import React, { useEffect, useState } from 'react';
-import LevelDataType from '../../constants/levelDataType';
 import Level from '../../models/db/level';
 import Modal from '.';
 
@@ -60,9 +60,9 @@ export default function SizeModal({ closeModal, historyPush, isOpen, level, setI
           const start = y * (level.width + 1);
 
           data = data + level.data.substring(start, start + minWidth);
-          data = data + Array(width - minWidth + 1).join(LevelDataType.Default);
+          data = data + Array(width - minWidth + 1).join(TileType.Default);
         } else {
-          data = data + Array(width + 1).join(LevelDataType.Default);
+          data = data + Array(width + 1).join(TileType.Default);
         }
 
         if (y !== height - 1) {
@@ -71,13 +71,13 @@ export default function SizeModal({ closeModal, historyPush, isOpen, level, setI
       }
 
       // there must always be a start
-      if (data.indexOf(LevelDataType.Start) === -1) {
-        data = LevelDataType.Start + data.substring(1, data.length);
+      if (data.indexOf(TileType.Start) === -1) {
+        data = TileType.Start + data.substring(1, data.length);
       }
 
       // there must always be an end
-      if (data.indexOf(LevelDataType.End) === -1) {
-        data = data.substring(0, data.length - 1) + LevelDataType.End;
+      if (data.indexOf(TileType.End) === -1) {
+        data = data.substring(0, data.length - 1) + TileType.End;
       }
 
       level.data = data;

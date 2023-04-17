@@ -1,15 +1,16 @@
-import LevelDataType from '../constants/levelDataType';
+import TileType from '@root/constants/tileType';
+import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import Level from '../models/db/level';
 import Position, { getDirectionFromCode } from '../models/position';
 
 export default function validateSolution(codes: string[], level: Level) {
-  const data = level.data.replace(/\n/g, '').split('');
+  const data = level.data.replace(/\n/g, '').split('') as TileType[];
   const endIndices = [];
-  const posIndex = data.indexOf(LevelDataType.Start);
+  const posIndex = data.indexOf(TileType.Start);
   let pos = new Position(posIndex % level.width, Math.floor(posIndex / level.width));
   let endIndex = -1;
 
-  while ((endIndex = data.indexOf(LevelDataType.End, endIndex + 1)) != -1) {
+  while ((endIndex = data.indexOf(TileType.End, endIndex + 1)) != -1) {
     endIndices.push(endIndex);
   }
 
@@ -28,21 +29,21 @@ export default function validateSolution(codes: string[], level: Level) {
     }
 
     const posIndex = pos.y * level.width + pos.x;
-    const levelDataTypeAtPos = data[posIndex];
+    const tileTypeAtPos = data[posIndex];
 
     // check if new position is valid
-    if (levelDataTypeAtPos === LevelDataType.Wall ||
-        levelDataTypeAtPos === LevelDataType.Hole) {
+    if (tileTypeAtPos === TileType.Wall ||
+        tileTypeAtPos === TileType.Hole) {
       return false;
     }
 
     // if a block is being moved
-    if (LevelDataType.canMove(levelDataTypeAtPos)) {
+    if (TileTypeHelper.canMove(tileTypeAtPos)) {
       // validate block is allowed to move in this direction
-      if ((direction.equals(new Position(-1, 0)) && !LevelDataType.canMoveLeft(levelDataTypeAtPos)) ||
-          (direction.equals(new Position(0, -1)) && !LevelDataType.canMoveUp(levelDataTypeAtPos)) ||
-          (direction.equals(new Position(1, 0)) && !LevelDataType.canMoveRight(levelDataTypeAtPos)) ||
-          (direction.equals(new Position(0, 1)) && !LevelDataType.canMoveDown(levelDataTypeAtPos))) {
+      if ((direction.equals(new Position(-1, 0)) && !TileTypeHelper.canMoveLeft(tileTypeAtPos)) ||
+          (direction.equals(new Position(0, -1)) && !TileTypeHelper.canMoveUp(tileTypeAtPos)) ||
+          (direction.equals(new Position(1, 0)) && !TileTypeHelper.canMoveRight(tileTypeAtPos)) ||
+          (direction.equals(new Position(0, 1)) && !TileTypeHelper.canMoveDown(tileTypeAtPos))) {
         return false;
       }
 
@@ -55,17 +56,17 @@ export default function validateSolution(codes: string[], level: Level) {
 
       const blockPosIndex = blockPos.y * level.width + blockPos.x;
 
-      if (data[blockPosIndex] === LevelDataType.Wall ||
-          LevelDataType.canMove(data[blockPosIndex])) {
+      if (data[blockPosIndex] === TileType.Wall ||
+          TileTypeHelper.canMove(data[blockPosIndex] as TileType)) {
         return false;
-      } else if (data[blockPosIndex] === LevelDataType.Hole) {
-        data[blockPosIndex] = LevelDataType.Default;
+      } else if (data[blockPosIndex] === TileType.Hole) {
+        data[blockPosIndex] = TileType.Default;
       } else {
-        data[blockPosIndex] = levelDataTypeAtPos;
+        data[blockPosIndex] = tileTypeAtPos;
       }
 
       // clear movable from the position
-      data[posIndex] = LevelDataType.Default;
+      data[posIndex] = TileType.Default;
     }
   }
 

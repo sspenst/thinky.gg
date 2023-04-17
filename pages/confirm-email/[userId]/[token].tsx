@@ -42,6 +42,7 @@ interface ConfirmEmailProps {
   emailConfirmed: boolean;
 }
 
+/* istanbul ignore next */
 export default function ConfirmEmail({ emailConfirmed }: ConfirmEmailProps) {
   const router = useRouter();
 

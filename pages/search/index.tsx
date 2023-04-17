@@ -1,4 +1,5 @@
 import { Menu, Transition } from '@headlessui/react';
+import FormattedDate from '@root/components/formattedDate';
 import classNames from 'classnames';
 import { debounce } from 'debounce';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
@@ -16,7 +17,6 @@ import Page from '../../components/page';
 import TimeRange from '../../constants/timeRange';
 import { DATA_TABLE_CUSTOM_STYLES } from '../../helpers/dataTableCustomStyles';
 import { FilterSelectOption } from '../../helpers/filterSelectOptions';
-import getFormattedDate from '../../helpers/getFormattedDate';
 import getProfileSlug from '../../helpers/getProfileSlug';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
@@ -216,7 +216,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
       id: 'ts',
       name: 'Created',
       selector: (row: EnrichedLevel) => row.ts,
-      format: (row: EnrichedLevel) => getFormattedDate(row.ts),
+      format: (row: EnrichedLevel) => <FormattedDate style={{ color: 'var(--color)', fontSize: 13 }} ts={row.ts} />,
       sortable: true,
     },
     {

@@ -1,11 +1,11 @@
 import { Tab } from '@headlessui/react';
+import FormattedDate from '@root/components/formattedDate';
 import FormattedUser from '@root/components/formattedUser';
 import { RoleIcon } from '@root/components/roleIcons';
 import StyledTooltip from '@root/components/styledTooltip';
 import Dimensions from '@root/constants/dimensions';
 import Role from '@root/constants/role';
 import { AppContext } from '@root/contexts/appContext';
-import getFormattedDate from '@root/helpers/getFormattedDate';
 import isPro from '@root/helpers/isPro';
 import classNames from 'classnames';
 import Link from 'next/link';
@@ -19,7 +19,6 @@ export default function LevelInfoSolves() {
   const [disabled, setDisabled] = useState(false);
   const levelContext = useContext(LevelContext);
   const [proStatsLevel, setProStatsLevel] = useState(levelContext?.proStatsLevel);
-  // const proStatsLevel = levelContext?.proStatsLevel;
   const { user } = useContext(AppContext);
 
   useEffect(() => {
@@ -121,9 +120,7 @@ export default function LevelInfoSolves() {
           <div className='truncate'>
             <FormattedUser size={Dimensions.AvatarSizeSmall} user={userAndStatTs.user} />
           </div>
-          <span className='text-sm whitespace-nowrap' style={{
-            color: 'var(--color-gray)',
-          }}>{getFormattedDate(userAndStatTs.statTs)}</span>
+          <FormattedDate ts={userAndStatTs.statTs} />
         </div>
       );
     }

@@ -33,6 +33,13 @@ process.on('unhandledRejection', (err) => {
   logger.error('unhandledRejection', err);
   process.exit(1);
 });
+// before exit
+process.on('beforeExit', (code) => {
+  logger.info('Process beforeExit event with code: ', code);
+});
+process.on('exit', (code) => {
+  console.log('Process exit event with code: ', code);
+});
 // ctrl c
 process.on('SIGINT', () => {
   logger.info('SIGINT signal received.');
@@ -123,7 +130,7 @@ export default async function startSocketIOServer() {
 
           return;
         }
-      } catch (e){
+      } catch (e) {
         logger.error('error getting user from token', e);
         socket.disconnect();
 

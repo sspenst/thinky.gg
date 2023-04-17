@@ -6,7 +6,6 @@ import React from 'react';
 import AchievementInfo from '../../constants/achievementInfo';
 import Dimensions from '../../constants/dimensions';
 import NotificationType from '../../constants/notificationType';
-import getFormattedDate from '../../helpers/getFormattedDate';
 import getProfileSlug from '../../helpers/getProfileSlug';
 import Achievement from '../../models/db/achievement';
 import Comment from '../../models/db/comment';
@@ -15,6 +14,7 @@ import Notification from '../../models/db/notification';
 import User from '../../models/db/user';
 import CollectionLink from '../collectionLink';
 import EnrichedLevelLink from '../enrichedLevelLink';
+import FormattedDate from '../formattedDate';
 import { Stars } from '../formattedReview';
 import FormattedUser from '../formattedUser';
 
@@ -125,14 +125,7 @@ export default function FormattedNotification({ notification, onMarkAsRead }: Fo
           </div>
           <div aria-label='close icon' role='button' className='focus:outline-none cursor-pointer' />
         </div>
-        <div
-          className='focus:outline-none text-xs leading-3 pt-1'
-          style={{
-            color: 'var(--bg-color-4)',
-          }}
-        >
-          {getFormattedDate(new Date(notification.createdAt).getTime() / 1000)}
-        </div>
+        <FormattedDate className='text-xs' date={notification.createdAt} />
       </div>
       <div className='flex'>
         <button onClick={() => onMarkAsRead(!notification.read)} className={classNames(

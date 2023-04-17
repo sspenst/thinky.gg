@@ -1,7 +1,7 @@
+import FormattedDate from '@root/components/formattedDate';
 import FormattedUser from '@root/components/formattedUser';
 import StyledTooltip from '@root/components/styledTooltip';
 import Dimensions from '@root/constants/dimensions';
-import getFormattedDate from '@root/helpers/getFormattedDate';
 import React, { useContext, useState } from 'react';
 import { LevelContext } from '../../../contexts/levelContext';
 
@@ -41,9 +41,7 @@ export default function LevelInfoRecords() {
         <div className='truncate'>
           <FormattedUser size={Dimensions.AvatarSizeSmall} user={record.userId} />
         </div>
-        <span className='text-sm whitespace-nowrap' style={{
-          color: 'var(--color-gray)',
-        }}>{getFormattedDate(record.ts)}</span>
+        <FormattedDate ts={record.ts} />
       </div>
     );
 
