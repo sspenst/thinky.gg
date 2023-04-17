@@ -12,3 +12,6 @@ newrelic_agent.log
 
 #vscode
 .vscode
+
+backstop_data/html_report/
+bitmaps_test/

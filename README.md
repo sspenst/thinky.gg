@@ -27,6 +27,8 @@ REVALIDATE_SECRET=whatever
 ## Tests
 - Run `npm test` to run jest tests
 
+- `npm install -g backstop` then `backstop test`. `backstop approve` will approve the images
+
 ## Contributing
 
 - Find an [issue](https://github.com/sspenst/pathology/issues) to work on
