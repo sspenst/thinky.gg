@@ -127,6 +127,13 @@ export function useTour(page: PAGE_PATH, cb?: (data: any) => void, disableScroll
         disableScrolling={disableScrolling}
         showProgress
         showSkipButton
+        locale={{
+          back: 'Back',
+          close: 'Close',
+          last: 'Done',
+          next: 'Next',
+          skip: 'Skip',
+        }}
         styles={{
           options: {
             zIndex: 10000,
@@ -172,7 +179,7 @@ export function useTour(page: PAGE_PATH, cb?: (data: any) => void, disableScroll
         }}
       />
     );
-  }, [page, cb, user, run, router.asPath, currentUrl, router.pathname, putFinishedTour]);
+  }, [page, cb, user, run, router.asPath, currentUrl, router.pathname, putFinishedTour, disableScrolling]);
 
   return {
     tour: tour,
