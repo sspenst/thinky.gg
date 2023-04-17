@@ -82,7 +82,7 @@ describe('api/user/[id]/prostats/[type]', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       additionalAssertions: async (response: any) => {
         expect(response[ProStatsLevelType.CommunityStepData]).toBeDefined();
-        expect(response[ProStatsLevelType.CommunityStepData].length).toBe(1);
+        expect(response[ProStatsLevelType.CommunityStepData].length).toBe(2);
         expect(response[ProStatsLevelType.PlayAttemptsOverTime]).toBeDefined();
         expect(response[ProStatsLevelType.PlayAttemptsOverTime].length).toBe(0);
       }
