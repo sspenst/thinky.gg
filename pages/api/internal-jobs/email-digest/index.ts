@@ -1,6 +1,8 @@
 import * as aws from '@aws-sdk/client-ses';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
+import Discord from '@root/constants/discord';
 import Role from '@root/constants/role';
+import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import { convert } from 'html-to-text';
 import { Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
@@ -497,6 +499,8 @@ export default apiWrapper({ GET: {
       error: 'Error sending email digest',
     });
   }
+
+  await queueDiscordWebhook(Discord.DevPriv, `Email Digest Sent:\n\t${emailDigestSent.length}\n\tFailed: ${emailDigestFailed.length}\nReactivation\n\tSent: ${emailReactivationSent.length}\n\tFailed: ${emailReactivationFailed.length}\nUnsubscribe\n\tSent: ${emailUnsubscribeSent.length}\n\tFailed: ${emailUnsubscribeFailed.length}`);
 
   return res.status(200).json({ success: true, emailDigestSent: emailDigestSent, emailDigestFailed: emailDigestFailed, emailReactivationSent: emailReactivationSent, emailReactivationFailed: emailReactivationFailed, emailUnsubscribeSent: emailUnsubscribeSent, emailUnsubscribeFailed: emailUnsubscribeFailed });
 });
