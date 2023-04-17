@@ -8,12 +8,14 @@ import withAuth, { NextApiRequestWithAuth } from '../../../../../lib/withAuth';
 import { StatModel } from '../../../../../models/mongoose';
 import { USER_DEFAULT_PROJECTION } from '../../../../../models/schemas/userSchema';
 
-async function getSolvesBySteps(levelId: string, skip: number, steps: number) {
+async function getSolvesBySteps(isPro: boolean, levelId: string, skip: number, steps: number) {
   const agg = await StatModel.aggregate([
     {
       $match: {
         levelId: new mongoose.Types.ObjectId(levelId as string),
         moves: steps,
+        // if not pro, can only search optimal solves
+        ...(isPro ? {} : { complete: true }),
       },
     },
     {
@@ -75,16 +77,8 @@ export default withAuth({
     },
   },
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-  const pro = isPro(req.user);
-
-  if (!pro) {
-    return res.status(401).json({
-      error: 'Error: Requires Pathology Pro',
-    });
-  }
-
   const { id, skip, steps } = req.query;
-  const solves = await getSolvesBySteps(id as string, Number(skip), Number(steps));
+  const solves = await getSolvesBySteps(isPro(req.user), id as string, Number(skip), Number(steps));
 
   return res.status(200).json(solves);
 });

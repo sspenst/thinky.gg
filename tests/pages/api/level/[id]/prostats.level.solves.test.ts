@@ -47,15 +47,15 @@ describe('api/user/[id]/prostats/[type]', () => {
       },
     });
   });
-  test('should get unauthorized if not promode', async () => {
+  test('valid non-pro query', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           query: {
             id: TestId.LEVEL,
-            skip: 5,
-            steps: 10,
+            skip: 0,
+            steps: 20,
           },
           cookies: {
             token: getTokenCookieValue(TestId.USER)
@@ -71,12 +71,43 @@ describe('api/user/[id]/prostats/[type]', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Error: Requires Pathology Pro');
-        expect(res.status).toBe(401);
+        expect(response).toBeDefined();
+        expect(response.length).toBe(1);
+        expect(res.status).toBe(200);
       },
     });
   });
-  test('valid query', async () => {
+  test('invalid non-pro query', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'GET',
+          query: {
+            id: TestId.LEVEL,
+            skip: 0,
+            steps: 22,
+          },
+          cookies: {
+            token: getTokenCookieValue(TestId.USER)
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response).toBeDefined();
+        expect(response.length).toBe(0);
+        expect(res.status).toBe(200);
+      },
+    });
+  });
+  test('valid pro query', async () => {
     await UserModel.findByIdAndUpdate(TestId.USER, {
       $addToSet: {
         roles: Role.PRO
@@ -90,7 +121,7 @@ describe('api/user/[id]/prostats/[type]', () => {
           query: {
             id: TestId.LEVEL,
             skip: 0,
-            steps: 20,
+            steps: 22,
           },
           cookies: {
             token: getTokenCookieValue(TestId.USER)
