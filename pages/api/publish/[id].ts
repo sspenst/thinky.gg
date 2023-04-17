@@ -87,8 +87,36 @@ export default withAuth({ POST: {
     });
   }
 
-  const session = await mongoose.startSession();
   const ts = TimerUtil.getTs();
+
+  const recentPublishedLevels = await LevelModel.find<Level>({
+    isDeleted: { $ne: true },
+    isDraft: false,
+    ts: { $gt: ts },
+    userId: req.userId,
+  }).sort({ ts: -1 });
+
+  if (recentPublishedLevels.length > 0) {
+    const lastPublishedTs = recentPublishedLevels[0].ts;
+
+    if (ts - lastPublishedTs < 60) {
+      return res.status(400).json({
+        error: 'You can only publish one level per minute',
+      });
+    }
+
+    if (recentPublishedLevels.length >= 5) {
+      const totalScore = recentPublishedLevels.map(l => l.calc_reviews_score_laplace).reduce((p, c) => p + c, 0);
+
+      if (totalScore / recentPublishedLevels.length < 0.5) {
+        return res.status(400).json({
+          error: 'Your recent levels are getting poor reviews. Please wait before publishing a new level',
+        });
+      }
+    }
+  }
+
+  const session = await mongoose.startSession();
 
   try {
     await session.withTransaction(async () => {
