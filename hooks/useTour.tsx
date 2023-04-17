@@ -112,7 +112,7 @@ export function useTour(page: PAGE_PATH, cb?: (data: any) => void, disableScroll
     setTour(
       <ReactJoyride
         callback={(data: any) => {
-          if (data.type === 'tour:end' || data.type === 'tour:skip') {
+          if ((data.type === 'tour:end' && data.action === 'next') || data.status === 'skipped') {
             putFinishedTour(tourRef);
           }
 
