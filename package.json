@@ -56,7 +56,7 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
-    "test": "jest",
+    "test": "node --expose-gc ./node_modules/.bin/jest  --logHeapUsage --no-compilation-cache",
     "init_test": "jest --init",
     "compile_jobs": "tsc --isolatedModules --esModuleInterop --jsx react --outDir ./server/jobs/output/ server/jobs/email-digest.tsx"
   },
