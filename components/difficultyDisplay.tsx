@@ -152,7 +152,7 @@ export function getFormattedDifficulty(difficultyEstimate: number, id: string, u
     difficulty.description;
 
   return (
-    <div className='flex justify-center'>
+    <div className='flex justify-center difficultyText'>
       <div data-tooltip-id={`difficulty-${id}`} data-tooltip-content={tooltip}>
         <span className='text-md pr-1'>{difficulty.emoji}</span>
         <span className='italic pr-1' style={{

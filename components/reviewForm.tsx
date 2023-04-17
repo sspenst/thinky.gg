@@ -98,7 +98,7 @@ export default function ReviewForm({ inModal, userReview }: ReviewFormProps) {
   }
 
   return (
-    <div className='block w-full' style={{
+    <div className='block w-full reviewsSection' style={{
       borderColor: 'var(--bg-color-4)',
     }}>
       <h2 className='font-bold'>{`${userReview ? 'Edit' : 'Add a'} review`}</h2>

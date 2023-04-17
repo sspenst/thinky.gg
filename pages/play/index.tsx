@@ -1,7 +1,9 @@
+import { useTour } from '@root/hooks/useTour';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
-import React from 'react';
+import { useRouter } from 'next/router';
+import React, { useCallback } from 'react';
 import ChapterSelectCard from '../../components/chapterSelectCard';
-import Page from '../../components/page';
+import Page, { PAGE_PATH } from '../../components/page';
 import { getUserFromToken } from '../../lib/withAuth';
 import User from '../../models/db/user';
 
@@ -32,20 +34,31 @@ interface PlayPageProps {
 /* istanbul ignore next */
 export default function PlayPage({ reqUser }: PlayPageProps) {
   const chapterUnlocked = reqUser.chapterUnlocked ?? 1;
+  const router = useRouter();
+  const memoizedCallback = useCallback((data: any) => {
+    console.log(data);
+
+    if (data.action === 'next' && data.index === 0) {
+      router.push('/chapter1');
+    }
+  }, [router]); // Add any dependencies required by the callback function inside the dependency array
+
+  const { tour } = useTour(PAGE_PATH.PLAY, memoizedCallback);
 
   return (
     <Page title={'Chapter Select'}>
       <div className='flex flex-col items-center gap-8 p-4'>
-        <div className='font-bold text-3xl text-center'>
+        {tour}
+        <div id='title' className='font-bold text-3xl text-center'>
           Pathology Official Campaign
         </div>
-        <ChapterSelectCard
+        <ChapterSelectCard id='chapter1'
           href={'/chapter1'}
           levelData={'00000000\n00000000\n00000000\n00000000'}
           subtitle={'Grassroots'}
           title={'Chapter 1'}
         />
-        <ChapterSelectCard
+        <ChapterSelectCard id='chapter2'
           disabled={chapterUnlocked < 2}
           disabledStr={'Complete Chapter 1 to unlock Chapter 2!'}
           href={'/chapter2'}
@@ -53,7 +66,7 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
           subtitle={'Into the Depths'}
           title={'Chapter 2'}
         />
-        <ChapterSelectCard
+        <ChapterSelectCard id='chapter3'
           disabled={chapterUnlocked < 3}
           disabledStr={'Complete Chapter 2 to unlock Chapter 3!'}
           href={'/chapter3'}
@@ -61,6 +74,7 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
           subtitle={'Brain Busters'}
           title={'Chapter 3'}
         />
+
       </div>
     </Page>
   );

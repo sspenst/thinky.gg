@@ -272,7 +272,9 @@ export default async function initializeLocalDb() {
     userId: new Types.ObjectId(TestId.USER),
   }));
 
-  await Promise.all(promises);
+  for (const promise of promises) {
+    await promise;
+  }
 }
 
 export async function initLevel(userId: string, name: string, obj: Partial<Level> = {}, createReviews = true) {

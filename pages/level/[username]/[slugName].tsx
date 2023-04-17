@@ -1,5 +1,6 @@
 /* istanbul ignore file */
 
+import { useTour } from '@root/hooks/useTour';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
@@ -8,7 +9,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import GameWrapper from '../../../components/level/gameWrapper';
 import LinkInfo from '../../../components/linkInfo';
-import Page from '../../../components/page';
+import Page, { PAGE_PATH } from '../../../components/page';
 import Dimensions from '../../../constants/dimensions';
 import { LevelContext } from '../../../contexts/levelContext';
 import getProfileSlug from '../../../helpers/getProfileSlug';
@@ -189,8 +190,11 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
   const ogFullUrl = `https://pathology.gg${ogUrl}`;
   const authorNote = level.authorNote ? level.authorNote : `${level.name} by ${level.userId.name}`;
 
+  const { tour } = useTour(PAGE_PATH.LEVEL, undefined, true);
+
   return (
     <>
+      {tour}
       <NextSeo
         title={`${level.name} - Pathology`}
         description={authorNote}
