@@ -36,8 +36,8 @@ export default function CreateHome({ levels, user }: CreatePageProps) {
             pathname: '/search',
             query: {
               searchAuthor: user.name,
-              sort_by: 'ts',
-              time_range: TimeRange[TimeRange.All],
+              sortBy: 'ts',
+              timeRange: TimeRange[TimeRange.All],
             },
           }}
         >
