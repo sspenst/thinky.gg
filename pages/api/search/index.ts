@@ -1,6 +1,6 @@
 import TileType from '@root/constants/tileType';
 import isPro from '@root/helpers/isPro';
-import { PipelineStage, Types } from 'mongoose';
+import { FilterQuery, PipelineStage, Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getDifficultyRangeFromName } from '../../../components/difficultyDisplay';
 import TimeRange from '../../../constants/timeRange';
@@ -18,6 +18,83 @@ import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '../../../models/schemas/levelSc
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 import { BlockFilterMask, SearchQuery } from '../../search';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getDimensionLimits(query: SearchQuery, searchObj: FilterQuery<any>) {
+  const maxDimensionOr = [];
+
+  if (query.maxDimension1 && query.maxDimension2) {
+    maxDimensionOr.push(
+      {
+        height: { $lte: parseInt(query.maxDimension1) },
+        width: { $lte: parseInt(query.maxDimension2) },
+      },
+      {
+        height: { $lte: parseInt(query.maxDimension2) },
+        width: { $lte: parseInt(query.maxDimension1) },
+      },
+    );
+  } else if (query.maxDimension1) {
+    maxDimensionOr.push(
+      {
+        height: { $lte: parseInt(query.maxDimension1) },
+      },
+      {
+        width: { $lte: parseInt(query.maxDimension1) },
+      },
+    );
+  } else if (query.maxDimension2) {
+    maxDimensionOr.push(
+      {
+        height: { $lte: parseInt(query.maxDimension2) },
+      },
+      {
+        width: { $lte: parseInt(query.maxDimension2) },
+      },
+    );
+  }
+
+  const minDimensionOr = [];
+
+  if (query.minDimension1 && query.minDimension2) {
+    minDimensionOr.push(
+      {
+        height: { $gte: parseInt(query.minDimension1) },
+        width: { $gte: parseInt(query.minDimension2) },
+      },
+      {
+        height: { $gte: parseInt(query.minDimension2) },
+        width: { $gte: parseInt(query.minDimension1) },
+      },
+    );
+  } else if (query.minDimension1) {
+    minDimensionOr.push(
+      {
+        height: { $gte: parseInt(query.minDimension1) },
+      },
+      {
+        width: { $gte: parseInt(query.minDimension1) },
+      },
+    );
+  } else if (query.minDimension2) {
+    minDimensionOr.push(
+      {
+        height: { $gte: parseInt(query.minDimension2) },
+      },
+      {
+        width: { $gte: parseInt(query.minDimension2) },
+      },
+    );
+  }
+
+  if (maxDimensionOr.length > 0 && minDimensionOr.length > 0) {
+    searchObj['$and'] = [{ $or: maxDimensionOr }, { $or: minDimensionOr }];
+  } else if (maxDimensionOr.length > 0) {
+    searchObj['$or'] = maxDimensionOr;
+  } else if (minDimensionOr.length > 0) {
+    searchObj['$or'] = minDimensionOr;
+  }
+}
+
 export function cleanInput(input: string) {
   return input.replace(/[^-a-zA-Z0-9_' ]/g, '.*');
 }
@@ -33,114 +110,96 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
 
   // filter out pro query options from non-pro users
   if (!isPro(reqUser)) {
-    if (query['blockFilter']) {
-      delete query['blockFilter'];
-    }
-
-    if (query['maxHeight']) {
-      delete query['maxHeight'];
-    }
-
-    if (query['maxWidth']) {
-      delete query['maxWidth'];
-    }
+    delete query.blockFilter;
+    delete query.maxDimension1;
+    delete query.maxDimension2;
+    delete query.minDimension1;
+    delete query.minDimension2;
   }
 
-  const { blockFilter, difficultyFilter, disableCount, maxHeight, maxRating, maxSteps, maxWidth, minRating, minSteps, numResults, page, search, searchAuthor, searchAuthorId, showFilter, sortBy, sortDir, timeRange } = query;
-
-  const disableCountBool = (disableCount === 'true');
-  // limit is between 1-30
-  const limit = Math.max(1, Math.min(parseInt(numResults as string) || 20, 20));
+  const searchObj = {
+    isDeleted: { $ne: true },
+    isDraft: false,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const searchObj = { isDeleted: { $ne: true }, isDraft: false } as { [key: string]: any };
+  } as FilterQuery<any>;
   const userId = reqUser?._id;
 
-  if (search && search.length > 0) {
+  if (query.search && query.search.length > 0) {
     searchObj['name'] = {
-      $regex: cleanInput(search),
+      $regex: cleanInput(query.search),
       $options: 'i',
     };
   }
 
-  if (searchAuthor && searchAuthor.length > 0) {
-    const searchAuthorStr = cleanInput(searchAuthor);
+  if (query.searchAuthor && query.searchAuthor.length > 0) {
+    const searchAuthorStr = cleanInput(query.searchAuthor);
     const user = await UserModel.findOne<User>({ 'name': searchAuthorStr }, {}, { lean: true });
 
     if (user) {
       searchObj['userId'] = user._id;
     }
-  } else if (searchAuthorId) {
-    if (Types.ObjectId.isValid(searchAuthorId)) {
-      searchObj['userId'] = new Types.ObjectId(searchAuthorId);
+  } else if (query.searchAuthorId) {
+    if (Types.ObjectId.isValid(query.searchAuthorId)) {
+      searchObj['userId'] = new Types.ObjectId(query.searchAuthorId);
     }
   }
 
-  if (minSteps && maxSteps) {
+  if (query.minSteps && query.maxSteps) {
     searchObj['leastMoves'] = {
-      $gte: parseInt(minSteps),
-      $lte: parseInt(maxSteps),
+      $gte: parseInt(query.minSteps),
+      $lte: parseInt(query.maxSteps),
     };
   }
 
-  if (maxHeight) {
-    searchObj['height'] = {
-      $lte: parseInt(maxHeight),
-    };
-  }
+  getDimensionLimits(query, searchObj);
 
-  if (maxWidth) {
-    searchObj['width'] = {
-      $lte: parseInt(maxWidth),
-    };
-  }
-
-  if (maxRating && minRating) {
+  if (query.maxRating && query.minRating) {
     searchObj['calc_reviews_score_laplace'] = {
-      $gte: parseFloat(minRating),
-      $lte: parseFloat(maxRating),
+      $gte: parseFloat(query.minRating),
+      $lte: parseFloat(query.maxRating),
     };
   }
 
-  if (timeRange) {
-    if (timeRange === TimeRange[TimeRange.Day]) {
+  if (query.timeRange) {
+    if (query.timeRange === TimeRange[TimeRange.Day]) {
       searchObj['ts'] = {};
       searchObj['ts']['$gte'] = new Date(Date.now() - 24 * 60 * 60 * 1000).getTime() / 1000;
-    } else if (timeRange === TimeRange[TimeRange.Week]) {
+    } else if (query.timeRange === TimeRange[TimeRange.Week]) {
       searchObj['ts'] = {};
       searchObj['ts']['$gte'] = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).getTime() / 1000;
-    } else if (timeRange === TimeRange[TimeRange.Month]) {
+    } else if (query.timeRange === TimeRange[TimeRange.Month]) {
       searchObj['ts'] = {};
       searchObj['ts']['$gte'] = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).getTime() / 1000;
-    } else if (timeRange === TimeRange[TimeRange.Year]) {
+    } else if (query.timeRange === TimeRange[TimeRange.Year]) {
       searchObj['ts'] = {};
       searchObj['ts']['$gte'] = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).getTime() / 1000;
     }
   }
 
-  const sortDirection = (sortDir === 'asc') ? 1 : -1;
+  const sortDirection = (query.sortDir === 'asc') ? 1 : -1;
   const sortObj = [] as [string, number][];
   let lookupUserBeforeSort = false;
 
-  if (sortBy) {
-    if (sortBy === 'userId') {
+  if (query.sortBy) {
+    if (query.sortBy === 'userId') {
       sortObj.push(['userId.name', sortDirection]);
       lookupUserBeforeSort = true;
-    } else if (sortBy === 'name') {
+    } else if (query.sortBy === 'name') {
       sortObj.push(['name', sortDirection]);
-    } else if (sortBy === 'leastMoves') {
+    } else if (query.sortBy === 'leastMoves') {
       sortObj.push(['leastMoves', sortDirection]);
-    } else if (sortBy === 'ts') {
+    } else if (query.sortBy === 'ts') {
       sortObj.push(['ts', sortDirection]);
-    } else if (sortBy === 'reviewScore') {
+    } else if (query.sortBy === 'reviewScore') {
       sortObj.push(['calc_reviews_score_laplace', sortDirection], ['calc_reviews_score_avg', sortDirection], ['calc_reviews_count', sortDirection]);
 
       searchObj['calc_reviews_score_avg'] = { $gte: 0 };
-    } else if (sortBy === 'total_reviews') {
+    } else if (query.sortBy === 'total_reviews') {
       sortObj.push(['calc_reviews_count', sortDirection]);
-    } else if (sortBy === 'playersBeaten') {
+    } else if (query.sortBy === 'playersBeaten') {
       sortObj.push(['calc_stats_players_beaten', sortDirection]);
-    } else if (sortBy === 'calcDifficultyEstimate') {
-      if (difficultyFilter === 'Pending') {
+    } else if (query.sortBy === 'calcDifficultyEstimate') {
+      if (query.difficultyFilter === 'Pending') {
         // sort by unique users
         sortObj.push(['calc_playattempts_unique_users_count', sortDirection * -1]);
       } else {
@@ -153,15 +212,9 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
 
   sortObj.push(['_id', sortDirection]);
 
-  let skip = 0;
-
-  if (page) {
-    skip = ((Math.abs(parseInt(page))) - 1) * limit;
-  }
-
   let levelFilterStatLookupStage: PipelineStage[] = [{ $unwind: '$_id' }] as PipelineStage[];
 
-  if (showFilter === FilterSelectOption.HideWon) {
+  if (query.showFilter === FilterSelectOption.HideWon) {
     levelFilterStatLookupStage = [{
       $lookup: {
         from: 'stats',
@@ -190,7 +243,7 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
       },
     },
     ] as PipelineStage[];
-  } else if (showFilter === FilterSelectOption.ShowWon) {
+  } else if (query.showFilter === FilterSelectOption.ShowWon) {
     levelFilterStatLookupStage = [{
       $lookup: {
         from: 'stats',
@@ -211,7 +264,7 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
     {
       $match: { 'stat.complete': true },
     }] as PipelineStage[];
-  } else if (showFilter === FilterSelectOption.ShowInProgress) {
+  } else if (query.showFilter === FilterSelectOption.ShowInProgress) {
     levelFilterStatLookupStage = [{
       $lookup: {
         from: 'stats',
@@ -232,7 +285,7 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
     {
       $match: { 'stat.complete': false },
     }] as PipelineStage[];
-  } else if (showFilter === FilterSelectOption.ShowUnattempted) {
+  } else if (query.showFilter === FilterSelectOption.ShowUnattempted) {
     projection['calc_playattempts_unique_users'] = 1;
     levelFilterStatLookupStage = [{
       $lookup: {
@@ -268,22 +321,17 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
     ] as PipelineStage[];
   }
 
-  // copy levelFilterStatLookupStage to facetTotalFilterStage
+  const facetTotalFilterStage = query.disableCount === 'true' ? [] : [...levelFilterStatLookupStage];
+  const limit = Math.max(1, Math.min(parseInt(query.numResults as string) || 20, 20));
+  const skip = query.page ? (parseInt(query.page) - 1) * limit : 0;
 
-  const facetTotalFilterStage = disableCountBool ? [] : [...levelFilterStatLookupStage];
+  levelFilterStatLookupStage.push({ $skip: skip }, { $limit: limit });
 
-  levelFilterStatLookupStage.push( {
-    $skip: skip,
-  },
-  {
-    $limit: limit,
-  });
-
-  if (difficultyFilter) {
-    if (difficultyFilter === 'Pending') {
+  if (query.difficultyFilter) {
+    if (query.difficultyFilter === 'Pending') {
       searchObj['calc_difficulty_estimate'] = { $eq: -1 };
     } else {
-      const difficulty = getDifficultyRangeFromName(difficultyFilter);
+      const difficulty = getDifficultyRangeFromName(query.difficultyFilter);
       const minValue = difficulty[0] as number;
       const maxValue = difficulty[1] as number;
 
@@ -295,8 +343,8 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
   }
 
   // NB: skip regex for NONE for more efficient query
-  if (blockFilter !== undefined && Number(blockFilter) !== BlockFilterMask.NONE) {
-    const blockFilterMask = Number(blockFilter);
+  if (query.blockFilter !== undefined && Number(query.blockFilter) !== BlockFilterMask.NONE) {
+    const blockFilterMask = Number(query.blockFilter);
     let mustNotContain = '';
 
     if (blockFilterMask & BlockFilterMask.BLOCK) {

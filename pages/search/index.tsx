@@ -1,5 +1,6 @@
 import { Menu, Transition } from '@headlessui/react';
 import FormattedDate from '@root/components/formattedDate';
+import isPro from '@root/helpers/isPro';
 import classNames from 'classnames';
 import { debounce } from 'debounce';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
@@ -36,10 +37,12 @@ export interface SearchQuery extends ParsedUrlQuery {
   blockFilter?: string;
   difficultyFilter?: string;
   disableCount?: string;
-  maxHeight?: string;
+  maxDimension1?: string;
+  maxDimension2?: string;
   maxRating?: string;
   maxSteps?: string;
-  maxWidth?: string;
+  minDimension1?: string;
+  minDimension2?: string;
   minRating?: string;
   minSteps?: string;
   numResults?: string;
@@ -56,9 +59,9 @@ export interface SearchQuery extends ParsedUrlQuery {
 const DefaultQuery = {
   blockFilter: String(BlockFilterMask.NONE),
   difficultyFilter: '',
-  maxHeight: '',
+  maxDimension1: '',
+  maxDimension2: '',
   maxSteps: '2500',
-  maxWidth: '',
   minSteps: '0',
   page: '1',
   search: '',
@@ -441,7 +444,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
             </Transition>
           </Menu>
         </div>
-        <label htmlFor='max-step' className='text-xs font-medium pr-1' style={{ color: 'var(--color)' }}>Max steps</label>
+        <label htmlFor='max-step' className='text-xs font-medium pr-1'>Max steps</label>
         <input
           className='form-range pl-2 w-16 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
           id='max-step'
@@ -464,37 +467,71 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
         </Link>
         <div className='flex flex-col items-center justify-center w-fit border p-2 rounded-md gap-2 border-cyan-200'>
           <div className='flex items-center justify-center'>
-            <label htmlFor='max-width' className='text-xs font-medium pr-1' style={{ color: 'var(--color)' }}>Max width</label>
+            <span className='text-xs font-medium pr-1'>Min dimensions:</span>
             <input
-              className='form-range pl-2 mr-2 w-16 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
-              id='max-width'
-              max='2500'
+              className='form-range pl-2 w-12 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
+              disabled={!isPro(reqUser)}
+              max='40'
               min='1'
               onChange={(e: React.FormEvent<HTMLInputElement>) => {
                 setQueryHelper({
-                  maxWidth: (e.target as HTMLInputElement).value,
+                  minDimension1: (e.target as HTMLInputElement).value,
                   page: '1',
                 });
               }}
               step='1'
               type='number'
-              value={query.maxWidth}
+              value={query.minDimension1}
             />
-            <label htmlFor='max-height' className='text-xs font-medium pr-1' style={{ color: 'var(--color)' }}>Max height</label>
+            <span className='text-xs font-medium px-1'>x</span>
             <input
-              className='form-range pl-2 w-16 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
-              id='max-height'
-              max='2500'
+              className='form-range pl-2 w-12 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
+              disabled={!isPro(reqUser)}
+              max='40'
               min='1'
               onChange={(e: React.FormEvent<HTMLInputElement>) => {
                 setQueryHelper({
-                  maxHeight: (e.target as HTMLInputElement).value,
+                  minDimension2: (e.target as HTMLInputElement).value,
                   page: '1',
                 });
               }}
               step='1'
               type='number'
-              value={query.maxHeight}
+              value={query.minDimension2}
+            />
+          </div>
+          <div className='flex items-center justify-center'>
+            <span className='text-xs font-medium pr-1'>Max dimensions:</span>
+            <input
+              className='form-range pl-2 w-12 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
+              disabled={!isPro(reqUser)}
+              max='40'
+              min='1'
+              onChange={(e: React.FormEvent<HTMLInputElement>) => {
+                setQueryHelper({
+                  maxDimension1: (e.target as HTMLInputElement).value,
+                  page: '1',
+                });
+              }}
+              step='1'
+              type='number'
+              value={query.maxDimension1}
+            />
+            <span className='text-xs font-medium px-1'>x</span>
+            <input
+              className='form-range pl-2 w-12 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
+              disabled={!isPro(reqUser)}
+              max='40'
+              min='1'
+              onChange={(e: React.FormEvent<HTMLInputElement>) => {
+                setQueryHelper({
+                  maxDimension2: (e.target as HTMLInputElement).value,
+                  page: '1',
+                });
+              }}
+              step='1'
+              type='number'
+              value={query.maxDimension2}
             />
           </div>
           <div className='flex items-center justify-center' role='group'>
@@ -622,7 +659,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
         }}
         pagination={true}
         paginationComponentOptions={{ noRowsPerPage: true }}
-        paginationDefaultPage={Number(query.page)}
+        paginationDefaultPage={parseInt(query.page ?? '1')}
         paginationPerPage={20}
         paginationServer
         paginationTotalRows={totalRows}
