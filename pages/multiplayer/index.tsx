@@ -1,9 +1,10 @@
+import PagePath from '@root/constants/pagePath';
 import { useTour } from '@root/hooks/useTour';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { NextSeo } from 'next-seo';
 import React from 'react';
 import Multiplayer from '../../components/multiplayer';
-import Page, { PAGE_PATH } from '../../components/page';
+import Page from '../../components/page';
 import { getUserFromToken } from '../../lib/withAuth';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -27,7 +28,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
 /* istanbul ignore next */
 export default function MultiplayerPage() {
-  const { tour } = useTour(PAGE_PATH.MULTIPLAYER);
+  const tour = useTour(PagePath.MULTIPLAYER);
 
   return (
     <Page title='Multiplayer'>

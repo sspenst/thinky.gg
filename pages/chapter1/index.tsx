@@ -2,7 +2,7 @@ import PagePath from '@root/constants/pagePath';
 import { useTour } from '@root/hooks/useTour';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
-import React, { useCallback, } from 'react';
+import React, { useCallback } from 'react';
 import { CallBackProps } from 'react-joyride';
 import FormattedCampaign from '../../components/formattedCampaign';
 import LinkInfo from '../../components/linkInfo';

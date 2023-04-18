@@ -75,16 +75,7 @@ export default function LevelInfoSolves() {
   }
 
   if (!proStatsLevel || !proStatsLevel[ProStatsLevelType.CommunityStepData] || proStatsLevel[ProStatsLevelType.CommunityStepData].length === 0) {
-    return (
-      <div className='flex gap-3 items-center'>
-        <RoleIcon role={Role.PRO} size={20} />
-        <div>
-          Get <Link href='/settings/proaccount' className='text-blue-300'>
-            Pathology Pro
-          </Link> to see all solves for this level.
-        </div>
-      </div>
-    );
+    return <div className='text-sm'>No solve data available.</div>;
   }
 
   const solveDivs = [];
