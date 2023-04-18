@@ -236,9 +236,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   if (profileTab === ProfileTab.Levels) {
     const searchQuery: SearchQuery = {
-      sort_by: 'name',
-      sort_dir: 'asc',
-      time_range: TimeRange[TimeRange.All]
+      sortBy: 'name',
+      sortDir: 'asc',
+      timeRange: TimeRange[TimeRange.All]
     };
 
     if (context.query && (Object.keys(context.query).length > 0)) {
@@ -340,7 +340,7 @@ export default function ProfilePage({
 
   useEffect(() => {
     setSearchLevelText(searchQuery?.search || '');
-    setShowLevelFilter(searchQuery?.show_filter || FilterSelectOption.All);
+    setShowLevelFilter(searchQuery?.showFilter || FilterSelectOption.All);
   }, [searchQuery]);
 
   const getCollectionOptions = useCallback(() => {
@@ -390,7 +390,7 @@ export default function ProfilePage({
         query: {
           page: 1,
           search: name,
-          show_filter: showLevelFilter,
+          showFilter: showLevelFilter,
         },
       });
     }, 500), [showLevelFilter, tab]);
@@ -410,7 +410,7 @@ export default function ProfilePage({
       query: {
         page: 1,
         search: searchLevelText,
-        show_filter: showLevelFilter === value ? FilterSelectOption.All : value,
+        showFilter: showLevelFilter === value ? FilterSelectOption.All : value,
       },
     });
   };
@@ -527,7 +527,7 @@ export default function ProfilePage({
         <div className='flex justify-center'>
           <Link
             className='underline'
-            href={'/search?time_range=All&searchAuthor=' + user.name}
+            href={'/search?timeRange=All&searchAuthor=' + user.name}
           >
             Advanced search
           </Link>
@@ -538,7 +538,7 @@ export default function ProfilePage({
             {page > 1 && (
               <Link
                 className='ml-2 underline'
-                href={`/profile/${user.name}/${ProfileTab.Levels}?page=${page - 1}&search=${searchLevelText}&show_filter=${showLevelFilter}`}
+                href={`/profile/${user.name}/${ProfileTab.Levels}?page=${page - 1}&search=${searchLevelText}&showFilter=${showLevelFilter}`}
               >
                 Previous
               </Link>
@@ -547,7 +547,7 @@ export default function ProfilePage({
             {totalRows > (page * 20) && (
               <Link
                 className='ml-2 underline'
-                href={`/profile/${user.name}/${ProfileTab.Levels}?page=${page + 1}&search=${searchLevelText}&show_filter=${showLevelFilter}`}
+                href={`/profile/${user.name}/${ProfileTab.Levels}?page=${page + 1}&search=${searchLevelText}&showFilter=${showLevelFilter}`}
               >
                 Next
               </Link>

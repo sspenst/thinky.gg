@@ -3,6 +3,7 @@ import FormattedDate from '@root/components/formattedDate';
 import classNames from 'classnames';
 import { debounce } from 'debounce';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
@@ -32,38 +33,41 @@ export enum BlockFilterMask {
 }
 
 export interface SearchQuery extends ParsedUrlQuery {
-  block_filter?: string;
-  difficulty_filter?: string;
-  disable_count?: string;
-  max_steps?: string;
-  min_steps?: string;
-  num_results?: string;
+  blockFilter?: string;
+  difficultyFilter?: string;
+  disableCount?: string;
+  maxHeight?: string;
+  maxRating?: string;
+  maxSteps?: string;
+  maxWidth?: string;
+  minRating?: string;
+  minSteps?: string;
+  numResults?: string;
   page?: string;
-  min_rating?: string;
-  max_rating?: string;
   search?: string;
   searchAuthor?: string;
   searchAuthorId?: string;
-  show_filter?: FilterSelectOption;
-  sort_by: string;
-  sort_dir?: string;
-  time_range: string;
-
+  showFilter?: FilterSelectOption;
+  sortBy: string;
+  sortDir?: string;
+  timeRange: string;
 }
 
 const DefaultQuery = {
-  block_filter: String(BlockFilterMask.NONE),
-  difficulty_filter: '',
-  max_steps: '2500',
-  min_steps: '0',
+  blockFilter: String(BlockFilterMask.NONE),
+  difficultyFilter: '',
+  maxHeight: '',
+  maxSteps: '2500',
+  maxWidth: '',
+  minSteps: '0',
   page: '1',
   search: '',
   searchAuthor: '',
   searchAuthorId: '',
-  show_filter: FilterSelectOption.All,
-  sort_by: 'reviews_score',
-  sort_dir: 'desc',
-  time_range: TimeRange[TimeRange.Week],
+  showFilter: FilterSelectOption.All,
+  sortBy: 'reviewScore',
+  sortDir: 'desc',
+  timeRange: TimeRange[TimeRange.All],
 } as SearchQuery;
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -204,7 +208,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
       sortable: true,
     },
     {
-      id: 'calc_difficulty_estimate',
+      id: 'calcDifficultyEstimate',
       name: 'Difficulty',
       selector: (row: EnrichedLevel) => getFormattedDifficulty(row.calc_difficulty_estimate, row._id.toString(), row.calc_playattempts_unique_users_count),
       ignoreRowClick: true,
@@ -221,22 +225,22 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
     },
     {
       grow: 0.45,
-      id: 'least_moves',
+      id: 'leastMoves',
       name: 'Steps',
       selector: (row: EnrichedLevel) => `${row.userMoves !== undefined && row.userMoves !== row.leastMoves ? `${row.userMoves}/` : ''}${row.leastMoves}`,
       sortable: true,
     },
     {
-      id: 'players_beaten',
+      id: 'playersBeaten',
       name: 'Users Won',
       selector: (row: EnrichedLevel) => row.calc_stats_players_beaten || 0,
       sortable: true,
     },
     {
-      id: 'reviews_score',
+      id: 'reviewScore',
       name: 'Review Score',
       selector: (row: EnrichedLevel) => {return row.calc_reviews_count === 0 ? '-' : row.calc_reviews_score_laplace?.toFixed(2);},
-      sortField: 'reviews_score',
+      sortField: 'reviewScore',
       sortable: true,
     },
   ] as TableColumn<EnrichedLevel>[];
@@ -245,7 +249,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
     fetchLevels({
       ...query,
       page: '1',
-      time_range: query.time_range === timeRangeKey ? TimeRange[TimeRange.All] : timeRangeKey,
+      timeRange: query.timeRange === timeRangeKey ? TimeRange[TimeRange.All] : timeRangeKey,
     });
   }, [fetchLevels, query]);
 
@@ -257,7 +261,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
         <button
           className={classNames(
             'px-3 py-2.5 text-white font-medium text-xs leading-tight hover:bg-blue-700 active:bg-blue-800 transition duration-150 ease-in-out',
-            query.time_range === timeRangeKey ? 'bg-blue-800' : 'bg-blue-600',
+            query.timeRange === timeRangeKey ? 'bg-blue-800' : 'bg-blue-600',
             timeRangeKey === TimeRange[TimeRange.Day] ? 'rounded-tl-lg rounded-bl-lg' : undefined,
             timeRangeKey === TimeRange[TimeRange.All] ? 'rounded-tr-lg rounded-br-lg' : undefined,
           )}
@@ -275,7 +279,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
     fetchLevels({
       ...query,
       page: '1',
-      block_filter: String(Number(query.block_filter) ^ Number(e.currentTarget.value)),
+      blockFilter: String(Number(query.blockFilter) ^ Number(e.currentTarget.value)),
     });
   };
 
@@ -285,13 +289,13 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
     fetchLevels({
       ...query,
       page: '1',
-      show_filter: query.show_filter === value ? FilterSelectOption.All : value,
+      showFilter: query.showFilter === value ? FilterSelectOption.All : value,
     });
   };
 
   const subHeaderComponent = (
-    <div className='flex flex-col' id='level_search_box'>
-      <div className='flex flex-row flex-wrap items-center justify-center z-10 gap-1 pb-1'>
+    <div className='flex flex-col gap-1' id='level_search_box'>
+      <div className='flex flex-row flex-wrap items-center justify-center z-10 gap-1'>
         <div>
           <input
             className='form-control relative min-w-0 block w-52 px-3 py-1.5 h-10 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded-md transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none'
@@ -315,102 +319,44 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
           }} />
         </div>
       </div>
-      <div className='flex items-center justify-center mb-1' role='group'>
+      <div className='flex items-center justify-center' role='group'>
         {timeRangeButtons}
       </div>
       {reqUser && (
-        <div className='flex items-center justify-center mb-1' role='group'>
+        <div className='flex items-center justify-center' role='group'>
           <FilterButton
             element={<>{'Hide Won'}</>}
             first={true}
             onClick={onPersonalFilterClick}
-            selected={query.show_filter === FilterSelectOption.HideWon}
+            selected={query.showFilter === FilterSelectOption.HideWon}
             value={FilterSelectOption.HideWon}
           />
           <FilterButton
             element={<>{'Show Won'}</>}
             onClick={onPersonalFilterClick}
-            selected={query.show_filter === FilterSelectOption.ShowWon}
+            selected={query.showFilter === FilterSelectOption.ShowWon}
             value={FilterSelectOption.ShowWon}
           />
           <FilterButton
             element={<>{'Show In Progress'}</>}
             onClick={onPersonalFilterClick}
-            selected={query.show_filter === FilterSelectOption.ShowInProgress}
+            selected={query.showFilter === FilterSelectOption.ShowInProgress}
             value={FilterSelectOption.ShowInProgress}
           />
           <FilterButton
             element={<>{'Show Unattempted'}</>}
             last={true}
             onClick={onPersonalFilterClick}
-            selected={query.show_filter === FilterSelectOption.ShowUnattempted}
+            selected={query.showFilter === FilterSelectOption.ShowUnattempted}
             value={FilterSelectOption.ShowUnattempted}
           />
         </div>
       )}
-      <div className='flex items-center justify-center' role='group'>
-        <FilterButton
-          element={
-            <span style={{
-              backgroundColor: 'var(--level-block)',
-              borderColor: 'var(--level-block-border)',
-              borderWidth: 5,
-              boxShadow: '0 0 0 1px var(--bg-color)',
-              display: 'block',
-              height: 24,
-              width: 24,
-            }} />
-          }
-          first={true}
-          onClick={onBlockFilterClick}
-          proRequired={true}
-          selected={(Number(query.block_filter) & BlockFilterMask.BLOCK) !== BlockFilterMask.NONE}
-          transparent={true}
-          value={BlockFilterMask.BLOCK.toString()}
-        />
-        <FilterButton
-          element={
-            <span style={{
-              backgroundColor: 'var(--level-block)',
-              borderColor: 'var(--level-block-border)',
-              borderWidth: '5px 0',
-              boxShadow: '0 0 0 1px var(--bg-color)',
-              display: 'block',
-              height: 24,
-              width: 24,
-            }} />
-          }
-          onClick={onBlockFilterClick}
-          proRequired={true}
-          selected={(Number(query.block_filter) & BlockFilterMask.RESTRICTED) !== BlockFilterMask.NONE}
-          transparent={true}
-          value={BlockFilterMask.RESTRICTED.toString()}
-        />
-        <FilterButton
-          element={
-            <span style={{
-              backgroundColor: 'var(--level-hole)',
-              borderColor: 'var(--level-hole-border)',
-              borderWidth: 5,
-              boxShadow: '0 0 0 1px var(--bg-color)',
-              display: 'block',
-              height: 24,
-              width: 24,
-            }} />
-          }
-          last={true}
-          onClick={onBlockFilterClick}
-          proRequired={true}
-          selected={(Number(query.block_filter) & BlockFilterMask.HOLE) !== BlockFilterMask.NONE}
-          transparent={true}
-          value={BlockFilterMask.HOLE.toString()}
-        />
-      </div>
-      <div className='flex p-2 items-center justify-center'>
+      <div className='flex items-center justify-center py-0.5'>
         <div className='relative inline-block text-left mr-2'>
           <Menu as='div' className='relative inline-block text-left'>
             <Menu.Button className='inline-flex w-full justify-center rounded-md border border-gray-300 bg-white p-1 text-sm font-medium text-black shadow-sm' id='menu-button' aria-expanded='true' aria-haspopup='true'>
-              {query.difficulty_filter !== '' ? query.difficulty_filter : 'Filter Difficulty' }
+              {query.difficultyFilter !== '' ? query.difficultyFilter : 'Filter Difficulty' }
               <svg className='-mr-1 ml-2 h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
                 <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
               </svg>
@@ -434,7 +380,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
                         className='text-black block p-1 text-sm w-40'
                         onClick={() => fetchLevels({
                           ...query,
-                          difficulty_filter: '',
+                          difficultyFilter: '',
                           page: '1',
                         })}
                         role='menuitem'
@@ -452,7 +398,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
                         className='text-black block p-1 text-sm w-40'
                         onClick={() => fetchLevels({
                           ...query,
-                          difficulty_filter: 'Pending',
+                          difficultyFilter: 'Pending',
                           page: '1',
                         })}
                         role='menuitem'
@@ -474,7 +420,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
                           className='text-black block p-1 text-sm w-40'
                           onClick={() => fetchLevels({
                             ...query,
-                            difficulty_filter: difficulty.name,
+                            difficultyFilter: difficulty.name,
                             page: '1',
                           })}
                           role='menuitem'
@@ -495,22 +441,122 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
             </Transition>
           </Menu>
         </div>
-        <label htmlFor='step-max' className=' text-xs font-medium pr-1' style={{ color: 'var(--color)' }}>Max steps</label>
+        <label htmlFor='max-step' className='text-xs font-medium pr-1' style={{ color: 'var(--color)' }}>Max steps</label>
         <input
           className='form-range pl-2 w-16 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
-          id='step-max'
+          id='max-step'
           max='2500'
           min='1'
           onChange={(e: React.FormEvent<HTMLInputElement>) => {
             setQueryHelper({
-              max_steps: (e.target as HTMLInputElement).value,
+              maxSteps: (e.target as HTMLInputElement).value,
               page: '1',
             });
           }}
           step='1'
           type='number'
-          value={query.max_steps}
+          value={query.maxSteps}
         />
+      </div>
+      <div className='flex justify-center items-center gap-2'>
+        <Link href='/settings/proaccount' passHref>
+          <Image alt='pro' src='/pro.svg' width='20' height='20' />
+        </Link>
+        <div className='flex flex-col items-center justify-center w-fit border p-2 rounded-md gap-2 border-cyan-200'>
+          <div className='flex items-center justify-center'>
+            <label htmlFor='max-width' className='text-xs font-medium pr-1' style={{ color: 'var(--color)' }}>Max width</label>
+            <input
+              className='form-range pl-2 mr-2 w-16 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
+              id='max-width'
+              max='2500'
+              min='1'
+              onChange={(e: React.FormEvent<HTMLInputElement>) => {
+                setQueryHelper({
+                  maxWidth: (e.target as HTMLInputElement).value,
+                  page: '1',
+                });
+              }}
+              step='1'
+              type='number'
+              value={query.maxWidth}
+            />
+            <label htmlFor='max-height' className='text-xs font-medium pr-1' style={{ color: 'var(--color)' }}>Max height</label>
+            <input
+              className='form-range pl-2 w-16 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
+              id='max-height'
+              max='2500'
+              min='1'
+              onChange={(e: React.FormEvent<HTMLInputElement>) => {
+                setQueryHelper({
+                  maxHeight: (e.target as HTMLInputElement).value,
+                  page: '1',
+                });
+              }}
+              step='1'
+              type='number'
+              value={query.maxHeight}
+            />
+          </div>
+          <div className='flex items-center justify-center' role='group'>
+            <FilterButton
+              element={
+                <span style={{
+                  backgroundColor: 'var(--level-block)',
+                  borderColor: 'var(--level-block-border)',
+                  borderWidth: 5,
+                  boxShadow: '0 0 0 1px var(--bg-color)',
+                  display: 'block',
+                  height: 24,
+                  width: 24,
+                }} />
+              }
+              first={true}
+              onClick={onBlockFilterClick}
+              proRequired={true}
+              selected={(Number(query.blockFilter) & BlockFilterMask.BLOCK) !== BlockFilterMask.NONE}
+              transparent={true}
+              value={BlockFilterMask.BLOCK.toString()}
+            />
+            <FilterButton
+              element={
+                <span style={{
+                  backgroundColor: 'var(--level-block)',
+                  borderColor: 'var(--level-block-border)',
+                  borderWidth: '5px 0',
+                  boxShadow: '0 0 0 1px var(--bg-color)',
+                  display: 'block',
+                  height: 24,
+                  width: 24,
+                }} />
+              }
+              onClick={onBlockFilterClick}
+              proRequired={true}
+              selected={(Number(query.blockFilter) & BlockFilterMask.RESTRICTED) !== BlockFilterMask.NONE}
+              transparent={true}
+              value={BlockFilterMask.RESTRICTED.toString()}
+            />
+            <FilterButton
+              element={
+                <span style={{
+                  backgroundColor: 'var(--level-hole)',
+                  borderColor: 'var(--level-hole-border)',
+                  borderWidth: 5,
+                  boxShadow: '0 0 0 1px var(--bg-color)',
+                  display: 'block',
+                  height: 24,
+                  width: 24,
+                }} />
+              }
+              last={true}
+              onClick={onBlockFilterClick}
+              proRequired={true}
+              selected={(Number(query.blockFilter) & BlockFilterMask.HOLE) !== BlockFilterMask.NONE}
+              transparent={true}
+              value={BlockFilterMask.HOLE.toString()}
+            />
+          </div>
+        </div>
+        <span className='w-5' />
       </div>
       <div className='flex justify-center'>
         <button
@@ -541,13 +587,13 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
         columns={columns}
         customStyles={DATA_TABLE_CUSTOM_STYLES}
         data={data as EnrichedLevel[]}
-        defaultSortAsc={query.sort_dir === 'asc'}
-        defaultSortFieldId={query.sort_by}
+        defaultSortAsc={query.sortDir === 'asc'}
+        defaultSortFieldId={query.sortBy}
         dense
         noDataComponent={
           <div className='flex flex-col items-center p-3 gap-3'>
             <span>No records to display...</span>
-            {query.time_range !== TimeRange[TimeRange.All] &&
+            {query.timeRange !== TimeRange[TimeRange.All] &&
               <span>
                 Try <button className='underline' onClick={() => {onTimeRangeClick(TimeRange[TimeRange.All]);}}>expanding</button> time range
               </span>
@@ -562,11 +608,11 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
         }}
         onSort={async (column: TableColumn<EnrichedLevel>, sortDirection: string) => {
           const update = {
-            sort_dir: sortDirection,
+            sortDir: sortDirection,
           } as Partial<SearchQuery>;
 
           if (typeof column.id === 'string') {
-            update.sort_by = column.id;
+            update.sortBy = column.id;
           }
 
           fetchLevels({

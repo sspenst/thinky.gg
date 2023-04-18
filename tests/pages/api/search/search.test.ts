@@ -106,20 +106,20 @@ let testRuns = [
   }
 ];
 
-const sortBy_Fields = [
-  [ 'least_moves', 'leastMoves' ],
-  [ 'ts', 'ts' ],
-  [ 'reviews_score', 'calc_reviews_score_laplace'],
+const sortByFields = [
+  ['leastMoves', 'leastMoves'],
+  ['ts', 'ts'],
+  ['reviewScore', 'calc_reviews_score_laplace'],
   ['total_reviews', 'calc_reviews_count'],
-  ['players_beaten', 'calc_stats_players_beaten'],
+  ['playersBeaten', 'calc_stats_players_beaten'],
 ];
 
-for (let i = 0; i < sortBy_Fields.length; i++) {
-  const field = sortBy_Fields[i];
+for (let i = 0; i < sortByFields.length; i++) {
+  const field = sortByFields[i];
 
   for (let page = 1; page < 4; page++) {
     testRuns.push({
-      query: '?sort_by=' + field[0] + '&page=' + page,
+      query: '?sortBy=' + field[0] + '&page=' + page,
       test: async (response: any) => {
         expect(response.totalRows).toBe(28);
         expect(response.levels.length).toBe([20, 8, 0][page - 1]);
@@ -130,7 +130,7 @@ for (let i = 0; i < sortBy_Fields.length; i++) {
       }
     });
     testRuns.push({
-      query: '?sort_by=' + field[0] + '&sort_dir=asc&page=' + page,
+      query: '?sortBy=' + field[0] + '&sortDir=asc&page=' + page,
       test: async (response: any) => {
         expect(response.totalRows).toBe(28);
         expect(response.levels.length).toBe([20, 8, 0][page - 1]);
@@ -145,14 +145,14 @@ for (let i = 0; i < sortBy_Fields.length; i++) {
 
 testRuns = testRuns.concat([
   {
-    query: `?show_filter=${FilterSelectOption.HideWon}`,
+    query: `?showFilter=${FilterSelectOption.HideWon}`,
     test: async (response: any) => {
       expect(response.totalRows).toBe(17);
       expect(response.levels.length).toBe(17);
     }
   },
   {
-    query: '?sort_by=calc_difficulty_estimate&sort_dir=asc',
+    query: '?sortBy=calcDifficultyEstimate&sortDir=asc',
     test: async (response: any) => {
       expect(response.totalRows).toBe(25);
       expect(response.levels.length).toBe(20);
@@ -163,7 +163,7 @@ testRuns = testRuns.concat([
     }
   },
   {
-    query: '?searchAuthorId=' + TestId.USER + '&sort_by=calc_difficulty_estimate&sort_dir=asc',
+    query: '?searchAuthorId=' + TestId.USER + '&sortBy=calcDifficultyEstimate&sortDir=asc',
     test: async (response: any) => {
       expect(response.totalRows).toBe(12);
       expect(response.levels.length).toBe(12);
@@ -175,7 +175,7 @@ testRuns = testRuns.concat([
     }
   },
   {
-    query: '?searchAuthorId=' + TestId.USER + '&sort_by=name&sort_dir=asc',
+    query: '?searchAuthorId=' + TestId.USER + '&sortBy=name&sortDir=asc',
     test: async (response: any) => {
       expect(response.totalRows).toBe(14);
       expect(response.levels.length).toBe(14);
@@ -186,35 +186,35 @@ testRuns = testRuns.concat([
     }
   },
   {
-    query: `?show_filter=${FilterSelectOption.ShowInProgress}`,
+    query: `?showFilter=${FilterSelectOption.ShowInProgress}`,
     test: async (response: any) => {
       expect(response.totalRows).toBe(3);
       expect(response.levels.length).toBe(3);
     }
   },
   {
-    query: `?time_range=${TimeRange[TimeRange.Day]}`,
+    query: `?timeRange=${TimeRange[TimeRange.Day]}`,
     test: async (response: any) => {
       expect(response.totalRows).toBe(9);
       expect(response.levels.length).toBe(9);
     }
   },
   {
-    query: `?time_range=${TimeRange[TimeRange.Week]}`,
+    query: `?timeRange=${TimeRange[TimeRange.Week]}`,
     test: async (response: any) => {
       expect(response.totalRows).toBe(13);
       expect(response.levels.length).toBe(13);
     }
   },
   {
-    query: `?time_range=${TimeRange[TimeRange.Month]}`,
+    query: `?timeRange=${TimeRange[TimeRange.Month]}`,
     test: async (response: any) => {
       expect(response.totalRows).toBe(18);
       expect(response.levels.length).toBe(18);
     }
   },
   {
-    query: `?time_range=${TimeRange[TimeRange.Year]}`,
+    query: `?timeRange=${TimeRange[TimeRange.Year]}`,
     test: async (response: any) => {
       expect(response.totalRows).toBe(23);
       expect(response.levels.length).toBe(20);
@@ -222,7 +222,7 @@ testRuns = testRuns.concat([
   },
   // min max steps
   {
-    query: '?min_steps=0&max_steps=110',
+    query: '?minSteps=0&maxSteps=110',
     test: async (response: any) => {
       expect(response.totalRows).toBe(14);
       expect(response.levels.length).toBe(14);
@@ -245,7 +245,7 @@ testRuns = testRuns.concat([
     }
   },
   {
-    query: '?difficulty_filter=Pending',
+    query: '?difficultyFilter=Pending',
     test: async (response: any) => {
       expect(response.totalRows).toBe(3);
       expect(response.levels.length).toBe(3);
@@ -256,7 +256,7 @@ testRuns = testRuns.concat([
     }
   },
   {
-    query: '?difficulty_filter=Kindergarten',
+    query: '?difficultyFilter=Kindergarten',
     test: async (response: any) => {
       expect(response.totalRows).toBe(2);
       expect(response.levels.length).toBe(2);
@@ -267,7 +267,7 @@ testRuns = testRuns.concat([
     }
   },
   {
-    query: '?difficulty_filter=Junior%20High',
+    query: '?difficultyFilter=Junior%20High',
     noauth: true,
     test: async (response: any) => {
       expect(response.totalRows).toBe(5);
@@ -281,7 +281,7 @@ testRuns = testRuns.concat([
   },
 
   {
-    query: '?block_filter=' + BlockFilterMask.HOLE,
+    query: '?blockFilter=' + BlockFilterMask.HOLE,
     test: async (response: any) => {
       expect(response.totalRows).toBe(1);
       expect(response.levels.length).toBe(1);
@@ -291,7 +291,7 @@ testRuns = testRuns.concat([
     }
   },
   {
-    query: '?block_filter=' + BlockFilterMask.BLOCK,
+    query: '?blockFilter=' + BlockFilterMask.BLOCK,
     test: async (response: any) => {
       expect(response.totalRows).toBe(1);
       expect(response.levels.length).toBe(1);
@@ -301,7 +301,7 @@ testRuns = testRuns.concat([
     }
   },
   {
-    query: '?block_filter=' + BlockFilterMask.RESTRICTED,
+    query: '?blockFilter=' + BlockFilterMask.RESTRICTED,
     test: async (response: any) => {
       expect(response.totalRows).toBe(1);
       expect(response.levels.length).toBe(1);
@@ -375,7 +375,7 @@ describe('Testing search endpoint for various inputs', () => {
             token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
-            block_filter: String(BlockFilterMask.HOLE),
+            blockFilter: String(BlockFilterMask.HOLE),
           },
           headers: {
             'content-type': 'application/json',
@@ -402,7 +402,7 @@ describe('Testing search endpoint for various inputs', () => {
             token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            block_filter: String(BlockFilterMask.HOLE),
+            blockFilter: String(BlockFilterMask.HOLE),
           },
           headers: {
             'content-type': 'application/json',

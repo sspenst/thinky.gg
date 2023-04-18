@@ -633,8 +633,8 @@ describe('Testing stats api', () => {
       },
     });
   });
-  test('calc_difficulty_estimate', async () => {
-    const level = await initLevel(TestId.USER, 'calc_difficulty_estimate', {}, false);
+  test('calcDifficultyEstimate', async () => {
+    const level = await initLevel(TestId.USER, 'calcDifficultyEstimate', {}, false);
 
     for (let i = 0; i < 9; i++) {
       await PlayAttemptModel.create({
