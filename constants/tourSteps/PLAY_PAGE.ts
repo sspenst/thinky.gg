@@ -8,5 +8,4 @@ export const TOUR_STEPS_PLAY_PAGE: Step[] = [
     content: 'This is the first chapter, and it is unlocked by default. Completing this chapter will unlock the next chapter, and so on.',
     // navigate to first chapter
   },
-
 ];

@@ -5,20 +5,20 @@ import getPngDataClient from '../helpers/getPngDataClient';
 import styles from './SelectCard.module.css';
 
 interface ChapterSelectCardProps {
-  id: string;
   disabled?: boolean;
   disabledStr?: string;
   href: string;
+  id: string;
   levelData: string;
   subtitle: string;
   title: string;
 }
 
 export default function ChapterSelectCard({
-  id,
   disabled,
   disabledStr,
   href,
+  id,
   levelData,
   subtitle,
   title,
@@ -40,12 +40,12 @@ export default function ChapterSelectCard({
           }}
         />
         <Link
-          id={id}
           className={classNames(
             'border-2 rounded-md items-center flex justify-center text-center h-full w-full',
             !disabled ? styles['card-border'] : undefined,
           )}
           href={disabled ? '' : href}
+          id={id}
           passHref
           style={{
             borderColor: 'var(--color)',

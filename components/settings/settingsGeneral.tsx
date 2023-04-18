@@ -1,6 +1,5 @@
-import { AppContext } from '@root/contexts/appContext';
 import User from '@root/models/db/user';
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import UploadImage from './uploadImage';
 
@@ -9,7 +8,6 @@ interface SettingsGeneralProps {
 }
 
 export default function SettingsGeneral({ user }: SettingsGeneralProps) {
-  const { user: reqUser } = useContext(AppContext);
   const [bio, setBio] = useState(user.bio ?? '');
 
   function updateUser(
@@ -54,26 +52,6 @@ export default function SettingsGeneral({ user }: SettingsGeneralProps) {
     );
   }
 
-  async function clearTours() {
-    const res = await fetch('/api/user-config', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        toursCompleted: [],
-      }),
-    });
-
-    if (!res.ok) {
-      toast.dismiss();
-      toast.error('Error occured');
-    } else {
-      toast.dismiss();
-      toast.success('Onboarding tooltips reset');
-    }
-  }
-
   return (
     <div className='flex flex-col justify-center items-center gap-6'>
       <UploadImage user={user} />
@@ -93,11 +71,6 @@ export default function SettingsGeneral({ user }: SettingsGeneralProps) {
         />
         <button className='italic underline' type='submit'>Update</button>
       </form>
-      { reqUser && reqUser.config.toursCompleted?.length > 0 && (<button className='italic underline' onClick={() => {
-        if (confirm('This will show the onboarding tooltips again. Are you sure?')) {
-          clearTours();
-        }
-      }}>Reset onboarding tooltips</button>)}
     </div>
   );
 }

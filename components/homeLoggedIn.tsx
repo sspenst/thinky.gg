@@ -1,3 +1,4 @@
+import PagePath from '@root/constants/pagePath';
 import isGuest from '@root/helpers/isGuest';
 import classNames from 'classnames';
 import Link from 'next/link';
@@ -21,7 +22,6 @@ import LoadingCard from './loadingCard';
 import LoadingSpinner from './loadingSpinner';
 import MultiSelectUser from './multiSelectUser';
 import OnlineUsers from './onlineUsers';
-import { PAGE_PATH } from './page';
 import RecommendedLevel from './recommendedLevel';
 import RoleIcons from './roleIcons';
 
@@ -46,7 +46,7 @@ export default function HomeLoggedIn({
   topLevelsThisMonth,
   user,
 }: HomeLoggedInProps) {
-  const { user: reqUser, multiplayerSocket, userConfig } = useContext(AppContext);
+  const { multiplayerSocket, userConfig } = useContext(AppContext);
   const router = useRouter();
   const [search, setSearch] = useState('');
   const { matches, socket } = multiplayerSocket;
@@ -56,7 +56,7 @@ export default function HomeLoggedIn({
       'bg-gray-800 hover:bg-slate-600 border-gray-700 text-gray-300'
   );
 
-  const { tour } = useTour(PAGE_PATH.HOME);
+  const tour = useTour(PagePath.HOME);
 
   return (<>
     {tour}

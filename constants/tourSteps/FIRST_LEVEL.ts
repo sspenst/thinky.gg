@@ -22,5 +22,4 @@ export const TOUR_STEPS_FIRST_LEVEL: Step[] = [
     target: '#timePlayedTab',
     content: 'This tab (also a Pro feature) will show details on how long you have taken to solve this level.'
   },
-
 ];

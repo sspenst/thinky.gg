@@ -8,5 +8,4 @@ export const TOUR_STEPS_MULTIPLAYER_PAGE: Step[] = [
     content: 'Play 5 games and see your Elo rating. While you wait for someone to join you can go back to playing your levels. When someone joins you will be redirected back.',
     placement: 'auto',
   },
-
 ];
