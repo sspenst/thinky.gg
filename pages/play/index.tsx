@@ -41,7 +41,7 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
     if (data.action === 'next' && data.index === 0) {
       router.push('/chapter1');
     }
-  }, [router]); // Add any dependencies required by the callback function inside the dependency array
+  }, [router]);
 
   const tour = useTour(PagePath.PLAY, memoizedCallback);
 

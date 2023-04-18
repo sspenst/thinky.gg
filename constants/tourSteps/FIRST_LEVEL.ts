@@ -15,11 +15,11 @@ export const TOUR_STEPS_FIRST_LEVEL: Step[] = [
   {
     disableBeacon: true,
     target: '#solvesTab',
-    content: 'This tab (a Pro feature) will show other users that have reached different step counts.'
+    content: 'This tab shows users that have solved this level.'
   },
   {
     disableBeacon: true,
     target: '#timePlayedTab',
-    content: 'This tab (also a Pro feature) will show details on how long you have taken to solve this level.'
+    content: 'This tab (a Pro feature) will show details on how long you have taken to solve this level.'
   },
 ];

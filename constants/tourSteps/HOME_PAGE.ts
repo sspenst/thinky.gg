@@ -14,7 +14,7 @@ export const TOUR_STEPS_HOME_PAGE: Step[] = [
   {
     disableBeacon: true,
     target: '#communityCampaignsBtn',
-    content: 'Here is some classic campaigns if you want a different challenge than the main campaign.',
+    content: 'If you want a different challenge than the main campaign, check out one of the campaigns created by the community.',
   },
   {
     disableBeacon: true,
