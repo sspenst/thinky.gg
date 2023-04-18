@@ -1,9 +1,10 @@
+import PagePath from '@root/constants/pagePath';
 import { useTour } from '@root/hooks/useTour';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import React, { useCallback } from 'react';
 import ChapterSelectCard from '../../components/chapterSelectCard';
-import Page, { PAGE_PATH } from '../../components/page';
+import Page from '../../components/page';
 import { getUserFromToken } from '../../lib/withAuth';
 import User from '../../models/db/user';
 
@@ -43,7 +44,7 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
     }
   }, [router]); // Add any dependencies required by the callback function inside the dependency array
 
-  const { tour } = useTour(PAGE_PATH.PLAY, memoizedCallback);
+  const tour = useTour(PagePath.PLAY, memoizedCallback);
 
   return (
     <Page title={'Chapter Select'}>

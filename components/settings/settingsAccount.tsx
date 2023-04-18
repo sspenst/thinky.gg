@@ -194,6 +194,26 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
     };
   }, []);
 
+  async function clearTours() {
+    const res = await fetch('/api/user-config', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        toursCompleted: [],
+      }),
+    });
+
+    if (!res.ok) {
+      toast.dismiss();
+      toast.error('Error occured');
+    } else {
+      toast.dismiss();
+      toast.success('Onboarding tooltips reset');
+    }
+  }
+
   return (
     <div className='flex justify-center'>
       <div className='flex flex-col gap-6 w-full max-w-xs'>
@@ -318,6 +338,15 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
           <input onChange={e => setPassword2(e.target.value)} className={inputClass} type='password' placeholder='Re-enter new password' required />
           <button className='italic underline' type='submit'>Update</button>
         </form>
+        {userConfig && userConfig.toursCompleted?.length > 0 &&
+          <button className='italic underline' onClick={() => {
+            if (confirm('This will show the onboarding tooltips again. Are you sure?')) {
+              clearTours();
+            }
+          }}>
+            Reset onboarding tooltips
+          </button>
+        }
       </div>
     </div>
   );

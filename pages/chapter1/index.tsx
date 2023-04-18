@@ -1,10 +1,11 @@
+import PagePath from '@root/constants/pagePath';
 import { useTour } from '@root/hooks/useTour';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import React, { useCallback, } from 'react';
 import FormattedCampaign from '../../components/formattedCampaign';
 import LinkInfo from '../../components/linkInfo';
-import Page, { PAGE_PATH } from '../../components/page';
+import Page from '../../components/page';
 import getCampaignProps, { CampaignProps } from '../../helpers/getCampaignProps';
 import { getUserFromToken } from '../../lib/withAuth';
 
@@ -36,7 +37,7 @@ export default function Chapter1Page({ completedLevels, enrichedCollections, req
       }
     }
   }, []);
-  const { tour } = useTour(PAGE_PATH.CHAPTER, memoizedCallback);
+  const tour = useTour(PagePath.CHAPTER, memoizedCallback);
 
   return (
     <Page folders={[new LinkInfo('Chapter Select', '/play')]} title={'Chapter 1'}>
