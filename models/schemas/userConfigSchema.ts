@@ -1,3 +1,4 @@
+import { TourType } from '@root/hooks/useTour';
 import mongoose from 'mongoose';
 import { EmailDigestSettingTypes } from '../../constants/emailDigest';
 import UserConfig from '../db/userConfig';
@@ -41,6 +42,11 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
     theme: {
       type: String,
       required: true,
+    },
+    toursCompleted: {
+      type: [{ type: String, enum: TourType }],
+      required: false,
+      default: [],
     },
     tutorialCompletedAt: {
       type: Number,

@@ -59,11 +59,12 @@ export default function FormattedCampaign({
   const getLevelOptions = useCallback((enrichedCollection: EnrichedCollection) => {
     const levelOptions: JSX.Element[] = [];
     let disabled = false;
+    let i = 0;
 
     for (const level of enrichedCollection.levels as EnrichedLevel[]) {
       levelOptions.push(
         <div className='flex flex-col w-60' key={`collection-${level._id.toString()}`}>
-          <div className='flex items-center justify-center'>
+          <div className='flex items-center justify-center' id={'level-selectcard-' + i++}>
             <SelectCard
               option={{
                 author: level.userId.name,
