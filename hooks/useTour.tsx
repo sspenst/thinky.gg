@@ -4,7 +4,7 @@ import { AppContext } from '@root/contexts/appContext';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import ReactJoyride, { Step } from 'react-joyride';
+import ReactJoyride, { CallBackProps, Step } from 'react-joyride';
 import { TOUR_STEPS_CHAPTER_1 } from '../constants/tourSteps/CHAPTER_1';
 import { TOUR_STEPS_FIRST_LEVEL } from '../constants/tourSteps/FIRST_LEVEL';
 import { TOUR_STEPS_HOME_PAGE } from '../constants/tourSteps/HOME_PAGE';
@@ -32,17 +32,24 @@ export const TOUR_DATA: { [key in TourType]: Step[] } = {
   [TourType.MULTIPLAYER_PAGE]: TOUR_STEPS_MULTIPLAYER_PAGE,
 };
 
-export function useTour(page: PagePath, cb?: (data: any) => void, disableScrolling = false) {
+export function useTour(page: PagePath, cb?: (data: CallBackProps) => void, disableScrolling = false) {
   const { mutateUser, userConfig } = useContext(AppContext);
   const router = useRouter();
   const [run, setRun] = useState(false);
-  const stepsRef = useRef<any[]>([]);
+  const stepsRef = useRef<Step[]>([]);
   const [tour, setTour] = useState<JSX.Element>();
   const [currentUrl, setCurrentUrl] = useState(router.asPath);
 
   setTimeout(() => {
     setRun(true);
   }, 1000);
+
+  useEffect(() => {
+    if (currentUrl !== router.asPath) {
+      setCurrentUrl(router.asPath);
+      setRun(false);
+    }
+  }, [currentUrl, router.asPath]);
 
   const putFinishedTour = useCallback(async (tourRef: TourType) => {
     if (!userConfig) {
@@ -72,11 +79,6 @@ export function useTour(page: PagePath, cb?: (data: any) => void, disableScrolli
       return;
     }
 
-    if (currentUrl !== router.asPath) {
-      setCurrentUrl(router.asPath);
-      setRun(false);
-    }
-
     let tourType: TourType | undefined = undefined;
 
     if (page === PagePath.HOME) {
@@ -91,7 +93,7 @@ export function useTour(page: PagePath, cb?: (data: any) => void, disableScrolli
       } else {
         tourType = TourType.FIRST_LEVEL;
       }
-    } else if (page === PagePath.CHAPTER) {
+    } else if (page === PagePath.CHAPTER_1) {
       tourType = TourType.CHAPTER_1;
     } else if (page === PagePath.PLAY) {
       tourType = TourType.PLAY_PAGE;
@@ -111,7 +113,7 @@ export function useTour(page: PagePath, cb?: (data: any) => void, disableScrolli
 
     setTour(
       <ReactJoyride
-        callback={(data: any) => {
+        callback={(data: CallBackProps) => {
           if (!tourType) {
             return;
           }
@@ -139,30 +141,34 @@ export function useTour(page: PagePath, cb?: (data: any) => void, disableScrolli
           skip: 'Skip',
         }}
         styles={{
-          options: {
-            zIndex: 10000,
-            primaryColor: '#5c6bc0',
-            textColor: 'var(--text-color)',
+          buttonBack: {
+            backgroundColor: '#3B82F6',
+            borderRadius: '6px',
+            color: 'var(--color)',
           },
           buttonClose: {
             display: 'none',
           },
-          buttonBack: {
-            backgroundColor: '#3B82F6',
-            color: '#ffffff',
-            borderRadius: '6px',
-          },
           buttonNext: {
             backgroundColor: '#3B82F6',
-            color: '#ffffff',
             borderRadius: '6px',
+            color: 'var(--color)',
           },
           buttonSkip: {
-            color: 'var(--text-color)',
+            color: 'var(--color)',
             textDecoration: 'underline',
           },
+          options: {
+            arrowColor: 'var(--bg-color-2)',
+            primaryColor: '#5c6bc0',
+            textColor: 'var(--color)',
+            zIndex: 10000,
+          },
+          spotlight: {
+            borderRadius: '8px',
+          },
           tooltip: {
-            backgroundColor: 'var(--bg-color)',
+            backgroundColor: 'var(--bg-color-2)',
             borderRadius: '8px',
             boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.1)',
           },
@@ -170,20 +176,18 @@ export function useTour(page: PagePath, cb?: (data: any) => void, disableScrolli
             textAlign: 'left',
           },
           tooltipContent: {
-            padding: '16px',
+            padding: '8px',
           },
           tooltipTitle: {
-            color: 'var(--text-color)',
+            color: 'var(--color)',
             fontSize: '24px',
-
-            marginLeft: '16px',
-
+            marginLeft: '8px',
             fontWeight: 'bold',
-          }
+          },
         }}
       />
     );
-  }, [page, cb, userConfig, run, router.asPath, currentUrl, router.pathname, putFinishedTour, disableScrolling]);
+  }, [cb, disableScrolling, page, putFinishedTour, run, userConfig]);
 
   return tour;
 }

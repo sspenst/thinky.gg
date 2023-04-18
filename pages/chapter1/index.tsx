@@ -3,6 +3,7 @@ import { useTour } from '@root/hooks/useTour';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import React, { useCallback, } from 'react';
+import { CallBackProps } from 'react-joyride';
 import FormattedCampaign from '../../components/formattedCampaign';
 import LinkInfo from '../../components/linkInfo';
 import Page from '../../components/page';
@@ -27,7 +28,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
 /* istanbul ignore next */
 export default function Chapter1Page({ completedLevels, enrichedCollections, reqUser, totalLevels }: CampaignProps) {
-  const memoizedCallback = useCallback((data: any) => {
+  const memoizedCallback = useCallback((data: CallBackProps) => {
     if (data.action === 'next' && data.index === 0) {
       // get the first level a tag
       const firstLevel = document.querySelector('#level-selectcard-0 a');
@@ -37,7 +38,7 @@ export default function Chapter1Page({ completedLevels, enrichedCollections, req
       }
     }
   }, []);
-  const tour = useTour(PagePath.CHAPTER, memoizedCallback);
+  const tour = useTour(PagePath.CHAPTER_1, memoizedCallback);
 
   return (
     <Page folders={[new LinkInfo('Chapter Select', '/play')]} title={'Chapter 1'}>
