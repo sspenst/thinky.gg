@@ -1,5 +1,6 @@
 /* istanbul ignore file */
 
+import PagePath from '@root/constants/pagePath';
 import { useTour } from '@root/hooks/useTour';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
@@ -190,7 +191,7 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
   const ogFullUrl = `https://pathology.gg${ogUrl}`;
   const authorNote = level.authorNote ? level.authorNote : `${level.name} by ${level.userId.name}`;
 
-  const { tour } = useTour(PAGE_PATH.LEVEL, undefined, true);
+  const tour = useTour(PagePath.LEVEL, undefined, true);
 
   return (
     <>

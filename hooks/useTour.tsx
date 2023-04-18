@@ -1,51 +1,58 @@
+import PagePath from '@root/constants/pagePath';
+import { TOUR_STEPS_MULTIPLAYER_PAGE } from '@root/constants/tourSteps/MULTIPLAYER_PAGE';
 import { AppContext } from '@root/contexts/appContext';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import ReactJoyride, { Step } from 'react-joyride';
-import { PAGE_PATH } from '../components/page';
-import { TOUR_STEPS_CHAPTER_1 } from './steps/CHAPTER_1';
-import { TOUR_STEPS_FIRST_LEVEL } from './steps/FIRST_LEVEL';
-import { TOUR_STEPS_HOME_PAGE } from './steps/HOME_PAGE';
-import { TOUR_STEPS_PLAY_PAGE } from './steps/PLAY_PAGE';
-import { TOUR_STEPS_SECOND_LEVEL } from './steps/SECOND_LEVEL';
-import { TOUR_STEPS_THIRD_LEVEL } from './steps/THIRD_LEVEL';
+import ReactJoyride, { CallBackProps, Step } from 'react-joyride';
+import { TOUR_STEPS_CHAPTER_1 } from '../constants/tourSteps/CHAPTER_1';
+import { TOUR_STEPS_FIRST_LEVEL } from '../constants/tourSteps/FIRST_LEVEL';
+import { TOUR_STEPS_HOME_PAGE } from '../constants/tourSteps/HOME_PAGE';
+import { TOUR_STEPS_PLAY_PAGE } from '../constants/tourSteps/PLAY_PAGE';
+import { TOUR_STEPS_SECOND_LEVEL } from '../constants/tourSteps/SECOND_LEVEL';
+import { TOUR_STEPS_THIRD_LEVEL } from '../constants/tourSteps/THIRD_LEVEL';
 
-export enum TourTypes {
-    HOME_PAGE = 'TOUR',
-    CHAPTER_1 = 'CHAPTER_1',
-    FIRST_LEVEL = 'FIRST_LEVEL',
-    SECOND_LEVEL = 'SECOND_LEVEL',
-    THIRD_LEVEL = 'THIRD_LEVEL',
-    PLAY_PAGE = 'PLAY_PAGE',
+export enum TourType {
+  HOME_PAGE = 'TOUR',
+  CHAPTER_1 = 'CHAPTER_1',
+  FIRST_LEVEL = 'FIRST_LEVEL',
+  SECOND_LEVEL = 'SECOND_LEVEL',
+  THIRD_LEVEL = 'THIRD_LEVEL',
+  PLAY_PAGE = 'PLAY_PAGE',
+  MULTIPLAYER_PAGE = 'MULTIPLAYER_PAGE',
 }
 
-export const TOUR_DATA: { [key in TourTypes]: Step[] } = {
-  [TourTypes.PLAY_PAGE]: TOUR_STEPS_PLAY_PAGE,
-  [TourTypes.CHAPTER_1]: TOUR_STEPS_CHAPTER_1,
-  [TourTypes.FIRST_LEVEL]: TOUR_STEPS_FIRST_LEVEL,
-  [TourTypes.SECOND_LEVEL]: TOUR_STEPS_SECOND_LEVEL,
-  [TourTypes.THIRD_LEVEL]: TOUR_STEPS_THIRD_LEVEL,
-  [TourTypes.HOME_PAGE]: TOUR_STEPS_HOME_PAGE
-
+export const TOUR_DATA: { [key in TourType]: Step[] } = {
+  [TourType.PLAY_PAGE]: TOUR_STEPS_PLAY_PAGE,
+  [TourType.CHAPTER_1]: TOUR_STEPS_CHAPTER_1,
+  [TourType.FIRST_LEVEL]: TOUR_STEPS_FIRST_LEVEL,
+  [TourType.SECOND_LEVEL]: TOUR_STEPS_SECOND_LEVEL,
+  [TourType.THIRD_LEVEL]: TOUR_STEPS_THIRD_LEVEL,
+  [TourType.HOME_PAGE]: TOUR_STEPS_HOME_PAGE,
+  [TourType.MULTIPLAYER_PAGE]: TOUR_STEPS_MULTIPLAYER_PAGE,
 };
 
-export function useTour(page: PAGE_PATH, cb?: (data: any) => void, disableScrolling = false) {
-  const [run, setRun] = useState(false);
-  const { user, mutateUser } = useContext(AppContext);
+export function useTour(page: PagePath, cb?: (data: CallBackProps) => void, disableScrolling = false) {
+  const { mutateUser, userConfig } = useContext(AppContext);
   const router = useRouter();
+  const [run, setRun] = useState(false);
+  const stepsRef = useRef<Step[]>([]);
+  const [tour, setTour] = useState<JSX.Element>();
+  const [currentUrl, setCurrentUrl] = useState(router.asPath);
 
   setTimeout(() => {
     setRun(true);
   }, 1000);
 
-  const [tour, setTour] = useState<JSX.Element>();
+  useEffect(() => {
+    if (currentUrl !== router.asPath) {
+      setCurrentUrl(router.asPath);
+      setRun(false);
+    }
+  }, [currentUrl, router.asPath]);
 
-  const [currentUrl, setCurrentUrl] = useState(router.asPath);
-  const stepsRef = useRef<any[]>([]);
-
-  const putFinishedTour = useCallback(async (tourRef: TourTypes) => {
-    if (!user) {
+  const putFinishedTour = useCallback(async (tourRef: TourType) => {
+    if (!userConfig) {
       return;
     }
 
@@ -55,7 +62,7 @@ export function useTour(page: PAGE_PATH, cb?: (data: any) => void, disableScroll
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        toursCompleted: [...(user.config.toursCompleted || []), tourRef],
+        toursCompleted: [...(userConfig.toursCompleted || []), tourRef],
       }),
     });
 
@@ -65,55 +72,54 @@ export function useTour(page: PAGE_PATH, cb?: (data: any) => void, disableScroll
     } else {
       mutateUser();
     }
-  }, [mutateUser, user]);
+  }, [mutateUser, userConfig]);
 
   useEffect(() => {
-    if (!user) {
+    if (!userConfig) {
       return;
     }
 
-    if (currentUrl !== router.asPath) {
-      setCurrentUrl(router.asPath);
-      setRun(false);
-      console.log('setting run to false');
-    }
+    let tourType: TourType | undefined = undefined;
 
-    let tourRef: TourTypes = undefined as unknown as TourTypes;
-    const userConfig = user.config;
-
-    if (page === PAGE_PATH.HOME) {
-      tourRef = TourTypes.HOME_PAGE;
-    } else if (page === PAGE_PATH.LEVEL) {
-      if (userConfig.toursCompleted?.includes(TourTypes.FIRST_LEVEL)) {
-        if (userConfig.toursCompleted?.includes(TourTypes.SECOND_LEVEL)) {
-          tourRef = TourTypes.THIRD_LEVEL;
+    if (page === PagePath.HOME) {
+      tourType = TourType.HOME_PAGE;
+    } else if (page === PagePath.LEVEL) {
+      if (userConfig.toursCompleted?.includes(TourType.FIRST_LEVEL)) {
+        if (userConfig.toursCompleted?.includes(TourType.SECOND_LEVEL)) {
+          tourType = TourType.THIRD_LEVEL;
         } else {
-          tourRef = TourTypes.SECOND_LEVEL;
+          tourType = TourType.SECOND_LEVEL;
         }
       } else {
-        tourRef = TourTypes.FIRST_LEVEL;
+        tourType = TourType.FIRST_LEVEL;
       }
-    } else if (page === PAGE_PATH.CHAPTER) {
-      tourRef = TourTypes.CHAPTER_1;
-    } else if (page === PAGE_PATH.PLAY) {
-      tourRef = TourTypes.PLAY_PAGE;
+    } else if (page === PagePath.CHAPTER_1) {
+      tourType = TourType.CHAPTER_1;
+    } else if (page === PagePath.PLAY) {
+      tourType = TourType.PLAY_PAGE;
+    } else if (page === PagePath.MULTIPLAYER) {
+      tourType = TourType.MULTIPLAYER_PAGE;
     }
 
-    if (!tourRef) {
+    if (!tourType) {
       return;
     }
 
-    if (userConfig.toursCompleted?.includes(tourRef)) {
+    if (userConfig.toursCompleted?.includes(tourType)) {
       stepsRef.current = [];
     } else {
-      stepsRef.current = TOUR_DATA[tourRef];
+      stepsRef.current = TOUR_DATA[tourType];
     }
 
     setTour(
       <ReactJoyride
-        callback={(data: any) => {
-          if (data.type === 'tour:end' || data.type === 'tour:skip') {
-            putFinishedTour(tourRef);
+        callback={(data: CallBackProps) => {
+          if (!tourType) {
+            return;
+          }
+
+          if ((data.type === 'tour:end' && data.action === 'next') || data.status === 'skipped') {
+            putFinishedTour(tourType);
           }
 
           if (cb) {
@@ -127,31 +133,42 @@ export function useTour(page: PAGE_PATH, cb?: (data: any) => void, disableScroll
         disableScrolling={disableScrolling}
         showProgress
         showSkipButton
+        locale={{
+          back: 'Back',
+          close: 'Close',
+          last: 'Done',
+          next: 'Next',
+          skip: 'Skip',
+        }}
         styles={{
-          options: {
-            zIndex: 10000,
-            primaryColor: '#5c6bc0',
-            textColor: 'var(--text-color)',
+          buttonBack: {
+            backgroundColor: '#3B82F6',
+            borderRadius: '6px',
+            color: 'var(--color)',
           },
           buttonClose: {
             display: 'none',
           },
-          buttonBack: {
-            backgroundColor: '#3B82F6',
-            color: '#ffffff',
-            borderRadius: '6px',
-          },
           buttonNext: {
             backgroundColor: '#3B82F6',
-            color: '#ffffff',
             borderRadius: '6px',
+            color: 'var(--color)',
           },
           buttonSkip: {
-            color: 'var(--text-color)',
+            color: 'var(--color)',
             textDecoration: 'underline',
           },
+          options: {
+            arrowColor: 'var(--bg-color-2)',
+            primaryColor: '#5c6bc0',
+            textColor: 'var(--color)',
+            zIndex: 10000,
+          },
+          spotlight: {
+            borderRadius: '8px',
+          },
           tooltip: {
-            backgroundColor: 'var(--bg-color)',
+            backgroundColor: 'var(--bg-color-2)',
             borderRadius: '8px',
             boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.1)',
           },
@@ -159,22 +176,18 @@ export function useTour(page: PAGE_PATH, cb?: (data: any) => void, disableScroll
             textAlign: 'left',
           },
           tooltipContent: {
-            padding: '16px',
+            padding: '8px',
           },
           tooltipTitle: {
-            color: 'var(--text-color)',
+            color: 'var(--color)',
             fontSize: '24px',
-
-            marginLeft: '16px',
-
+            marginLeft: '8px',
             fontWeight: 'bold',
-          }
+          },
         }}
       />
     );
-  }, [page, cb, user, run, router.asPath, currentUrl, router.pathname, putFinishedTour]);
+  }, [cb, disableScrolling, page, putFinishedTour, run, userConfig]);
 
-  return {
-    tour: tour,
-  };
+  return tour;
 }

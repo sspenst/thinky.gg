@@ -9,6 +9,7 @@ interface ChapterSelectCardProps {
   disabled?: boolean;
   disabledStr?: string;
   href: string;
+  id: string;
   levelData: string;
   subtitle: string;
   title: string;
@@ -19,6 +20,7 @@ export default function ChapterSelectCard({
   disabled,
   disabledStr,
   href,
+  id,
   levelData,
   subtitle,
   title,
@@ -46,6 +48,7 @@ export default function ChapterSelectCard({
             !disabled ? styles['card-border'] : undefined,
           )}
           href={disabled ? '' : href}
+          id={id}
           passHref
           style={{
             borderColor: 'var(--color)',

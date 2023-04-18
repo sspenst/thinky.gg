@@ -13,10 +13,10 @@ import { doQuery } from '../search';
 
 async function getTopLevelsThisMonth(reqUser: User) {
   const query = {
-    disable_count: 'true',
-    num_results: '5',
-    sort_by: 'reviews_score',
-    time_range: TimeRange[TimeRange.Month],
+    disableCount: 'true',
+    numResults: '5',
+    sortBy: 'reviewScore',
+    timeRange: TimeRange[TimeRange.Month],
   } as SearchQuery;
 
   const result = await doQuery(query, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, data: 1, height: 1, width: 1 });
@@ -26,16 +26,16 @@ async function getTopLevelsThisMonth(reqUser: User) {
 
 async function getRecommendedEasyLevel(reqUser: User) {
   const query = {
-    disable_count: 'true',
-    min_steps: '7',
-    max_steps: '2500',
-    min_rating: '0.55',
-    max_rating: '1',
-    num_results: '10', // randomly select one of these
-    show_filter: FilterSelectOption.HideWon,
-    sort_by: 'calc_difficulty_estimate',
-    sort_dir: 'asc',
-    time_range: TimeRange[TimeRange.All],
+    disableCount: 'true',
+    minSteps: '7',
+    maxSteps: '2500',
+    minRating: '0.55',
+    maxRating: '1',
+    numResults: '10', // randomly select one of these
+    showFilter: FilterSelectOption.HideWon,
+    sortBy: 'calcDifficultyEstimate',
+    sortDir: 'asc',
+    timeRange: TimeRange[TimeRange.All],
   } as SearchQuery;
 
   const result = await doQuery(query, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, data: 1, height: 1, width: 1 });
@@ -52,12 +52,12 @@ async function getRecommendedEasyLevel(reqUser: User) {
 
 async function getRecommendedPendingLevel(reqUser: User) {
   const query = {
-    disable_count: 'true',
-    difficulty_filter: 'Pending',
-    num_results: '10', // randomly select one of these
-    show_filter: FilterSelectOption.ShowUnattempted,
-    sort_by: 'players_beaten',
-    time_range: TimeRange[TimeRange.All],
+    disableCount: 'true',
+    difficultyFilter: 'Pending',
+    numResults: '10', // randomly select one of these
+    showFilter: FilterSelectOption.ShowUnattempted,
+    sortBy: 'playersBeaten',
+    timeRange: TimeRange[TimeRange.All],
   } as SearchQuery;
 
   const result = await doQuery(query, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, data: 1, height: 1, width: 1 });

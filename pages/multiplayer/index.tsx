@@ -1,3 +1,5 @@
+import PagePath from '@root/constants/pagePath';
+import { useTour } from '@root/hooks/useTour';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { NextSeo } from 'next-seo';
 import React from 'react';
@@ -26,6 +28,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
 /* istanbul ignore next */
 export default function MultiplayerPage() {
+  const tour = useTour(PagePath.MULTIPLAYER);
+
   return (
     <Page title='Multiplayer'>
       <>
@@ -34,6 +38,7 @@ export default function MultiplayerPage() {
           description={'Play Pathology in real time against other players'}
           canonical='https://pathology.gg/multiplayer'
         />
+        {tour}
         <Multiplayer />
       </>
     </Page>

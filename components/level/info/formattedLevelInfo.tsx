@@ -108,9 +108,8 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
               </div>
             </Tab>
             <Tab id='solvesTab' className='ui-selected:border-b-2 border-blue-500 focus:outline-none'>
-              <div className='mb-1 py-1 px-2 tab rounded flex flex-row items-center gap-2'>
-                <Image alt='pro' src='/pro.svg' width='16' height='16' />
-                <span>Solves</span>
+              <div className='mb-1 py-1 px-2 tab rounded'>
+                Solves
               </div>
             </Tab>
             <Tab id='timePlayedTab' className='ui-selected:border-b-2 border-blue-500 focus:outline-none'>

@@ -2,10 +2,10 @@ import SelectOption from '../models/selectOption';
 
 export enum FilterSelectOption {
   All = 'all',
-  HideWon = 'hide_won',
-  ShowWon = 'show_won',
-  ShowInProgress = 'only_attempted',
-  ShowUnattempted = 'show_unattempted',
+  HideWon = 'hideWon',
+  ShowWon = 'showWon',
+  ShowInProgress = 'onlyAttempted',
+  ShowUnattempted = 'showUnattempted',
 }
 
 export default function filterSelectOptions(
