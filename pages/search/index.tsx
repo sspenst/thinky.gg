@@ -62,6 +62,8 @@ const DefaultQuery = {
   maxDimension1: '',
   maxDimension2: '',
   maxSteps: '2500',
+  minDimension1: '',
+  minDimension2: '',
   minSteps: '0',
   page: '1',
   search: '',
