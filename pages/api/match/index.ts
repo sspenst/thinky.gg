@@ -305,7 +305,7 @@ export async function createMatch(reqUser: User, options: { type: MultiplayerMat
   // generate 11 character id
   const matchId = makeId(11);
 
-  const joinUrl = '/match/' + matchId;
+  const joinUrl = 'https://pathology.gg/match/' + matchId;
   const discordMessage = `New ${options.type} match created by **${reqUser.name}**! [Join!](${joinUrl})`;
 
   const [match] = await Promise.all([MultiplayerMatchModel.create({
