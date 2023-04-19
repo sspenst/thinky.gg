@@ -265,6 +265,19 @@ export async function checkForUnreadyAboutToStartMatch(matchId: string) {
   }
 }
 
+function multiplayerMatchTypeToText(option: MultiplayerMatchType) {
+  switch (option) {
+  case MultiplayerMatchType.RushBullet:
+    return 'Bullet (3m)';
+  case MultiplayerMatchType.RushBlitz:
+    return 'Blitz (5m)';
+  case MultiplayerMatchType.RushRapid:
+    return 'Rapid (10m)';
+  case MultiplayerMatchType.RushClassical:
+    return 'Classical (30m)';
+  }
+}
+
 export async function checkForFinishedMatch(matchId: string) {
   const finishedMatch = await MultiplayerMatchModel.findOne(
     {
@@ -306,7 +319,7 @@ export async function createMatch(reqUser: User, options: { type: MultiplayerMat
   const matchId = makeId(11);
 
   const joinUrl = 'https://pathology.gg/match/' + matchId;
-  const discordMessage = `New ${options.type} match created by **${reqUser.name}**! [Join!](${joinUrl})`;
+  const discordMessage = `New ${multiplayerMatchTypeToText(options.type)} match created by **${reqUser.name}**! [Join!](${joinUrl})`;
 
   const [match] = await Promise.all([MultiplayerMatchModel.create({
     createdBy: reqUser._id,
