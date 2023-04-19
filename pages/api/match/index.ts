@@ -1,3 +1,5 @@
+import Discord from '@root/constants/discord';
+import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import mongoose, { PipelineStage, Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { getRatingFromProfile } from '../../../components/matchStatus';
@@ -303,7 +305,10 @@ export async function createMatch(reqUser: User, options: { type: MultiplayerMat
   // generate 11 character id
   const matchId = makeId(11);
 
-  const match = await MultiplayerMatchModel.create({
+  const joinUrl = '/match/' + matchId;
+  const discordMessage = `New ${options.type} match created by ${reqUser.name}! [Join!](${joinUrl})`;
+
+  const [match] = await Promise.all([MultiplayerMatchModel.create({
     createdBy: reqUser._id,
     matchId: matchId,
     matchLog: [
@@ -316,7 +321,9 @@ export async function createMatch(reqUser: User, options: { type: MultiplayerMat
     rated: options.rated,
     state: MultiplayerMatchState.OPEN,
     type: options.type,
-  });
+  }),
+  queueDiscordWebhook(Discord.Multiplayer, discordMessage)
+  ]);
 
   enrichMultiplayerMatch(match, reqUser._id.toString());
 
