@@ -15,6 +15,7 @@ export default async function queueDiscordWebhook(id: string, content: string, o
     [Discord.NotifsId]: process.env.DISCORD_WEBHOOK_TOKEN_NOTIFS,
     [Discord.GeneralId]: process.env.DISCORD_WEBHOOK_TOKEN_PATHOLOGY,
     [Discord.DevPriv]: process.env.DISCORD_WEBHOOK_TOKEN_DEVPRIV,
+    [Discord.Multiplayer]: process.env.DISCORD_WEBHOOK_TOKEN_MULTIPLAYER,
   } as Record<string, string | undefined>;
 
   const token = tokenToIdMap[id];
