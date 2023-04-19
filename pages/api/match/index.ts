@@ -265,7 +265,7 @@ export async function checkForUnreadyAboutToStartMatch(matchId: string) {
   }
 }
 
-function multiplayerMatchTypeToText(option: MultiplayerMatchType) {
+export function multiplayerMatchTypeToText(option: MultiplayerMatchType) {
   switch (option) {
   case MultiplayerMatchType.RushBullet:
     return 'Bullet (3m)';

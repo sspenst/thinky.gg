@@ -11,7 +11,7 @@ import User from '../../models/db/user';
 import { MultiplayerMatchModel } from '../../models/mongoose';
 import { MultiplayerMatchState, MultiplayerMatchType } from '../../models/MultiplayerEnums';
 import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
-import { checkForFinishedMatch, checkForUnreadyAboutToStartMatch, getAllMatches } from '../../pages/api/match';
+import { checkForFinishedMatch, checkForUnreadyAboutToStartMatch, getAllMatches, multiplayerMatchTypeToText } from '../../pages/api/match';
 import { getMatch } from '../../pages/api/match/[matchId]';
 
 const GlobalMatchTimers = {} as { [matchId: string]: {
@@ -65,7 +65,7 @@ export async function scheduleBroadcastMatch(emitter: Emitter, matchId: string) 
   const matchUrl = 'https://pathology.gg/match/' + matchId;
 
   const timeoutStart = setTimeout(async () => {
-    const discordMessage = 'Match starting between ' + match.markedReady?.map((p) => (p as User).name).join(' and ') + '! [Spectate](' + matchUrl + ')';
+    const discordMessage = multiplayerMatchTypeToText(match.type) + ' match starting between ' + match.markedReady?.map((p) => (p as User).name).join(' and ') + '! [Spectate](' + matchUrl + ')';
 
     await checkForUnreadyAboutToStartMatch(matchId);
     await Promise.all([
