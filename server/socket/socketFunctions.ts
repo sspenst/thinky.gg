@@ -64,7 +64,7 @@ export async function scheduleBroadcastMatch(emitter: Emitter, matchId: string) 
   const matchUrl = '/match/' + matchId;
 
   const timeoutStart = setTimeout(async () => {
-    const discordMessage = 'Match starting between ' + match.markedReady.map((p: User) => p.name).join(' and ') + '! [Spectate](' + matchUrl + ')';
+    const discordMessage = 'Match starting between ' + match.markedReady?.map((p: User) => p.name).join(' and ') + '! [Spectate](' + matchUrl + ')';
 
     await checkForUnreadyAboutToStartMatch(matchId);
     await Promise.all([
