@@ -25,7 +25,7 @@ export default async function queueDiscordWebhook(id: string, content: string, o
 
   const dedupeHash = crypto.createHash('sha256').update(content).digest('hex');
 
-  return queueFetch(`https://discord.com/api/webhooks/${id}/${token}`, {
+  return queueFetch(`https://discord.com/api/webhooks/${id}/${token}?wait=true`, {
     method: 'POST',
     body: JSON.stringify({
       content: content,
