@@ -306,7 +306,7 @@ export async function createMatch(reqUser: User, options: { type: MultiplayerMat
   const matchId = makeId(11);
 
   const joinUrl = '/match/' + matchId;
-  const discordMessage = `New ${options.type} match created by ${reqUser.name}! [Join!](${joinUrl})`;
+  const discordMessage = `New ${options.type} match created by **${reqUser.name}**! [Join!](${joinUrl})`;
 
   const [match] = await Promise.all([MultiplayerMatchModel.create({
     createdBy: reqUser._id,
