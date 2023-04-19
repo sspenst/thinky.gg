@@ -1,4 +1,5 @@
 import moment from 'moment';
+import { ObjectId, Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
@@ -383,12 +384,12 @@ export default function Match() {
             { match.state === MultiplayerMatchState.ACTIVE && match.timeUntilStart > 0 && (
               <div className='flex flex-col items-center justify-center gap-2'>
                 {match.markedReady.length == 2 && <div>Both players ready!</div>}
-                {match.markedReady.length === 0 && user && !match.markedReady.includes(user._id) && ( <div>Not ready</div>)}
-                {match.markedReady.length === 1 && user && !match.markedReady.includes(user._id) && ( <div>Other player is ready!</div>)}
-                {match.markedReady.length !== 2 && user && match.markedReady.includes(user._id) && ( <div>Waiting on other player</div>)}
+                {match.markedReady.length === 0 && user && !(match.markedReady as Types.ObjectId[]).includes(user._id) && ( <div>Not ready</div>)}
+                {match.markedReady.length === 1 && user && !(match.markedReady as Types.ObjectId[]).includes(user._id) && ( <div>Other player is ready!</div>)}
+                {match.markedReady.length !== 2 && user && (match.markedReady as Types.ObjectId[]).includes(user._id) && ( <div>Waiting on other player</div>)}
               </div>
             )}
-            { match.state === MultiplayerMatchState.ACTIVE && match.timeUntilStart > 0 && user && !match.markedReady.includes(user._id) && (
+            { match.state === MultiplayerMatchState.ACTIVE && match.timeUntilStart > 0 && user && !(match.markedReady as Types.ObjectId[]).includes(user._id) && (
               <button className='px-4 py-2 text-lg font-bold text-white bg-blue-500 rounded-md hover:bg-blue-600' onClick={(e: React.MouseEvent) => {
               // gray out this button and prevent click
                 const targetButton = e.currentTarget as HTMLButtonElement;
