@@ -439,7 +439,6 @@ export default withAuth(
           const matchUrl = 'https://pathology.gg/match/' + matchId;
           const discordMessage = multiplayerMatchTypeToText(match.type) + ' match starting between ' + updatedMatch.players?.map((p: User) => (p as User).name).join(' and ') + '! Spectate here: <' + matchUrl + '>';
 
-          console.log(discordMessage);
           Promise.all([await MultiplayerMatchModel.updateOne(
             { matchId: matchId },
             {
