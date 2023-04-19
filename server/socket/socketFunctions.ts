@@ -65,7 +65,7 @@ export async function scheduleBroadcastMatch(emitter: Emitter, matchId: string) 
   const matchUrl = 'https://pathology.gg/match/' + matchId;
 
   const timeoutStart = setTimeout(async () => {
-    const discordMessage = multiplayerMatchTypeToText(match.type) + ' match starting between ' + match.markedReady?.map((p) => (p as User).name).join(' and ') + '! [Spectate](' + matchUrl + ')';
+    const discordMessage = multiplayerMatchTypeToText(match.type) + ' match starting between ' + match.markedReady?.map((p) => (p as User).name).join(' and ') + '! <Spectate>(' + matchUrl + ')';
 
     await checkForUnreadyAboutToStartMatch(matchId);
     await Promise.all([
