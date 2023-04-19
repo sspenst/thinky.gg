@@ -10,6 +10,264 @@ import { LevelModel, StatModel } from '../../../../../models/mongoose';
 import { AttemptContext } from '../../../../../models/schemas/playAttemptSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../../../models/schemas/userSchema';
 
+async function getDifficultyDataComparisons(userId: string) {
+  /** TODO: Store this in a K/V store with an expiration of like 1 day... */
+  const difficultyData = await StatModel.aggregate([
+    {
+      $match: {
+        userId: new mongoose.Types.ObjectId(userId),
+        complete: true,
+        isDeleted: { $ne: true },
+        ts: { $gt: Math.floor(Date.now() / 1000) - (60 * 60 * 24 * 30 * 6) },
+      },
+    },
+    {
+      $sort: {
+        ts: -1,
+      }
+    },
+    {
+      $project: {
+        _id: 0,
+        levelId: 1,
+        ts: 1,
+      },
+    },
+
+    {
+      $lookup: {
+        from: 'levels',
+        localField: 'levelId',
+        foreignField: '_id',
+        as: 'level',
+        // match where calc_playattempts_unique_users >= 10
+        pipeline: [
+          {
+            $match: {
+              calc_difficulty_estimate: { $gte: 0 },
+            }
+          },
+          {
+            $project: {
+              _id: 1,
+              name: 1,
+              calc_difficulty_estimate: 1,
+              calc_playattempts_just_beaten_count: 1,
+              slug: 1
+            }
+          }
+        ]
+      },
+    },
+    {
+      $unwind: '$level',
+    },
+    {
+      $limit: 500
+    },
+
+    /* look up all the unique users that have a playattempt attemptContext === AttemptContext.Beaten */
+    {
+      $lookup: {
+        from: 'playattempts',
+        let: { levelId: '$level._id' },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$levelId', '$$levelId'] },
+
+                ],
+              },
+            },
+          },
+          {
+            $match: {
+              attemptContext: { $in: [AttemptContext.BEATEN] },
+            },
+          },
+          {
+            $group: {
+              _id: '$userId',
+            },
+          },
+        ],
+        as: 'players_with_beaten_playattempt',
+      }
+    },
+    {
+      // convert players_with_beaten_playattempt to an array of ids
+      $addFields: {
+        players_with_beaten_playattempt: {
+          $map: {
+            input: '$players_with_beaten_playattempt',
+            as: 'player',
+            in: '$$player._id',
+          },
+        },
+      }
+    },
+    // remove my own playattempt id from players_with_beaten_playattempt
+    {
+      $addFields: {
+        players_with_beaten_playattempt: {
+          $filter: {
+            input: '$players_with_beaten_playattempt',
+            as: 'player',
+            cond: { $ne: ['$$player', new mongoose.Types.ObjectId(userId)] },
+          },
+        },
+      }
+    },
+    {
+      $project: {
+        _id: '$level._id',
+        name: '$level.name',
+        difficulty: '$level.calc_difficulty_estimate',
+        ts: 1,
+        slug: '$level.slug',
+        calc_playattempts_just_beaten_count: '$level.calc_playattempts_just_beaten_count',
+        calc_playattempts_duration_sum: '$level.calc_playattempts_duration_sum',
+        players_with_beaten_playattempt: 1,
+      },
+    },
+    {
+      $lookup: {
+        from: 'playattempts',
+        let: { levelId: '$_id', players_with_beaten_playattempt: '$players_with_beaten_playattempt' },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$levelId', '$$levelId'] },
+                  // check where user is in players_with_beaten_playattempt
+                  { $in: ['$userId', '$$players_with_beaten_playattempt'] },
+
+                ],
+              },
+            },
+          },
+          {
+            $match: {
+              attemptContext: { $in: [AttemptContext.JUST_BEATEN, AttemptContext.UNBEATEN] },
+            },
+          },
+          {
+            $group: {
+              _id: '$levelId',
+              sumDuration: { $sum: { $subtract: ['$endTime', '$startTime'] } },
+              count: { $sum: 1 },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              levelId: '$_id',
+              sumDuration: 1,
+              count: 1,
+            },
+          },
+        ],
+        as: 'otherplayattempts',
+      },
+    },
+    {
+      $addFields: {
+        otherplayattempts: {
+          $arrayElemAt: ['$otherplayattempts', 0],
+        },
+      },
+    },
+    {
+      $lookup: {
+        from: 'playattempts',
+        let: { levelId: '$_id' },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$levelId', '$$levelId'] },
+
+                  { $eq: ['$userId', new mongoose.Types.ObjectId(userId)] },
+                ],
+              },
+            },
+          },
+          {
+            $match: {
+              attemptContext: { $in: [AttemptContext.JUST_BEATEN, AttemptContext.UNBEATEN] },
+            },
+          },
+          {
+            $group: {
+              _id: '$levelId',
+              sumDuration: { $sum: { $subtract: ['$endTime', '$startTime'] } },
+              count: { $sum: 1 },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              levelId: '$_id',
+              sumDuration: 1,
+              count: 1,
+            },
+          },
+        ],
+        as: 'myplayattempts',
+      },
+    },
+    {
+      $unwind: {
+        path: '$myplayattempts',
+        preserveNullAndEmptyArrays: true,
+      }
+    },
+    {
+      $project: {
+        _id: 1,
+        other_calc_playattempts_just_beaten_count: { $size: '$players_with_beaten_playattempt' },
+        myPlayattemptsAverageDuration: { $divide: ['$myplayattempts.sumDuration', '$myplayattempts.count'] },
+        name: 1,
+        difficulty: 1,
+        slug: 1,
+        ts: 1,
+        calc_playattempts_just_beaten_count: 1,
+
+        otherPlayattemptsAverageDuration: { $divide: ['$otherplayattempts.sumDuration', { $size: '$players_with_beaten_playattempt' }] },
+        calc_playattempts_duration_sum: 1,
+      },
+    },
+  ]);
+
+  // loop through all the levels and manipulate difficulty
+  /*
+  const m = 20;
+  const t = 0.2;
+  const k = 1.5;
+  const beatenCountFactor = ((k - 1) / (1 + Math.exp(t * (beatenCount - m)))) + 1;
+  */
+  const m = DIFFICULTY_LOGISTIC_M;
+  const t = DIFFICULTY_LOGISTIC_T;
+  const k = DIFFICULTY_LOGISTIC_K;
+
+  for (let i = 0; i < difficultyData.length; i++) {
+    const level = difficultyData[i];
+    const beatenCount = !level.calc_playattempts_just_beaten_count ? 1 : level.calc_playattempts_just_beaten_count;
+
+    const beatenCountFactor = ((k - 1) / (1 + Math.exp(t * (beatenCount - m)))) + 1;
+
+    if (level.averageDuration) {
+      level.difficultyAdjusted = level.difficulty / beatenCountFactor;
+    }
+  }
+
+  return difficultyData;
+}
+
 async function getMostSolvesForUserLevels(userId: string) {
 /** get the users that have solved the most levels created by userId */
   const mostSolvesForUserLevels = await LevelModel.aggregate([
@@ -77,149 +335,6 @@ async function getMostSolvesForUserLevels(userId: string) {
   });
 
   return mostSolvesForUserLevels;
-}
-
-async function getDifficultyDataComparisons(userId: string) {
-  /** TODO: Store this in a K/V store with an expiration of like 1 day... */
-  const difficultyData = await StatModel.aggregate([
-    {
-      $match: {
-        userId: new mongoose.Types.ObjectId(userId),
-        complete: true,
-        isDeleted: { $ne: true },
-        ts: { $gt: Math.floor(Date.now() / 1000) - (60 * 60 * 24 * 30 * 6) },
-      },
-    },
-    {
-      $sort: {
-        ts: -1,
-      }
-    },
-    {
-      $project: {
-        _id: 0,
-        levelId: 1,
-        ts: 1
-      },
-    },
-
-    {
-      $lookup: {
-        from: 'levels',
-        localField: 'levelId',
-        foreignField: '_id',
-        as: 'level',
-        // match where calc_playattempts_unique_users >= 10
-        pipeline: [
-          {
-            $match: {
-              calc_difficulty_estimate: { $gte: 0 },
-            }
-          }
-        ]
-      },
-    },
-    {
-      $unwind: '$level',
-    },
-    {
-      $limit: 500
-    },
-    {
-      $project: {
-        _id: '$level._id',
-        name: '$level.name',
-        difficulty: '$level.calc_difficulty_estimate',
-        ts: 1,
-        slug: '$level.slug',
-        calc_playattempts_just_beaten_count: '$level.calc_playattempts_just_beaten_count',
-        calc_playattempts_duration_sum: '$level.calc_playattempts_duration_sum',
-      },
-    },
-    {
-      $lookup: {
-        from: 'playattempts',
-        let: { levelId: '$_id' },
-        pipeline: [
-          {
-            $match: {
-              $expr: {
-                $and: [
-                  { $eq: ['$levelId', '$$levelId'] },
-                  // user too
-                  { $eq: ['$userId', new mongoose.Types.ObjectId(userId)] },
-                ],
-              },
-            },
-          },
-          {
-            $match: {
-              attemptContext: { $in: [AttemptContext.JUST_BEATEN, AttemptContext.UNBEATEN] },
-            },
-          },
-          {
-            $group: {
-              _id: '$levelId',
-              sumDuration: { $sum: { $subtract: ['$endTime', '$startTime'] } },
-              count: { $sum: 1 },
-            },
-          },
-          {
-            $project: {
-              _id: 0,
-              levelId: '$_id',
-              sumDuration: 1,
-              count: 1,
-            },
-          },
-        ],
-        as: 'playattempts',
-      },
-    },
-    {
-      $addFields: {
-        playattempts: {
-          $arrayElemAt: ['$playattempts', 0],
-        },
-      },
-    },
-    {
-      $project: {
-        _id: 1,
-        name: 1,
-        difficulty: 1,
-        slug: 1,
-        ts: 1,
-        calc_playattempts_just_beaten_count: 1,
-        averageDuration: { $divide: ['$playattempts.sumDuration', '$playattempts.count'] },
-        calc_playattempts_duration_sum: 1,
-      },
-    },
-  ]);
-
-  // loop through all the levels and manipulate difficulty
-  /*
-  const m = 20;
-  const t = 0.2;
-  const k = 1.5;
-  const beatenCountFactor = ((k - 1) / (1 + Math.exp(t * (beatenCount - m)))) + 1;
-  */
-  const m = DIFFICULTY_LOGISTIC_M;
-  const t = DIFFICULTY_LOGISTIC_T;
-  const k = DIFFICULTY_LOGISTIC_K;
-
-  for (let i = 0; i < difficultyData.length; i++) {
-    const level = difficultyData[i];
-    const beatenCount = !level.calc_playattempts_just_beaten_count ? 1 : level.calc_playattempts_just_beaten_count;
-
-    const beatenCountFactor = ((k - 1) / (1 + Math.exp(t * (beatenCount - m)))) + 1;
-
-    if (level.averageDuration) {
-      level.difficultyAdjusted = level.difficulty / beatenCountFactor;
-    }
-  }
-
-  return difficultyData;
 }
 
 async function getScoreHistory(userId: string) {

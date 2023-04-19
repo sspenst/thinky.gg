@@ -8,7 +8,7 @@ import { getDifficultyColor, getDifficultyFromValue, getDifficultyList } from '.
 
 export interface DifficultyLevelComparison {
   _id: string;
-  averageDuration: number;
+  myPlayattemptsAverageDuration: number;
   diff?: number;
   difficulty: number;
   difficultyAdjusted: number;
