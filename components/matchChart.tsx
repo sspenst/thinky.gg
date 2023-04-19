@@ -108,7 +108,7 @@ export default function MatchChart({ match }: MatchChartProps) {
       <LineChart width={400} height={400} data={chartData} margin={{ top: 10, right: 20, bottom: 0, left: -20 }}>
         <Line
           connectNulls
-          dataKey={playerMap[match.players[0]._id.toString()].name}
+          dataKey={playerMap[match.players[0]?._id.toString()]?.name}
           dot={<CustomizedDot />}
           isAnimationActive={false}
           stroke='rgb(234 179 8)'
@@ -116,7 +116,7 @@ export default function MatchChart({ match }: MatchChartProps) {
         />
         <Line
           connectNulls
-          dataKey={playerMap[match.players[1]._id.toString()].name}
+          dataKey={playerMap[match.players[1]?._id.toString()]?.name}
           dot={<CustomizedDot />}
           isAnimationActive={false}
           stroke='rgb(168 85 247)'
