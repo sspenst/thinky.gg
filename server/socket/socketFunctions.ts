@@ -62,7 +62,7 @@ export async function broadcastMatches(emitter: Emitter) {
  */
 export async function scheduleBroadcastMatch(emitter: Emitter, matchId: string) {
   const match = await MultiplayerMatchModel.findOne({ matchId: matchId }).populate('markedReady') as MultiplayerMatch;
-  const matchUrl = '/match/' + matchId;
+  const matchUrl = 'https://pathology.gg/match/' + matchId;
 
   const timeoutStart = setTimeout(async () => {
     const discordMessage = 'Match starting between ' + match.markedReady?.map((p) => (p as User).name).join(' and ') + '! [Spectate](' + matchUrl + ')';
