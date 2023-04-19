@@ -1,5 +1,6 @@
 import Discord from '@root/constants/discord';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
+import MultiplayerMatch from '@root/models/db/multiplayerMatch';
 import { Emitter } from '@socket.io/mongo-emitter';
 import { Types } from 'mongoose';
 import { Server } from 'socket.io';
@@ -60,11 +61,11 @@ export async function broadcastMatches(emitter: Emitter) {
  * @param date
  */
 export async function scheduleBroadcastMatch(emitter: Emitter, matchId: string) {
-  const match = await MultiplayerMatchModel.findOne({ matchId: matchId }).populate('markedReady');
+  const match = await MultiplayerMatchModel.findOne({ matchId: matchId }).populate('markedReady') as MultiplayerMatch;
   const matchUrl = '/match/' + matchId;
 
   const timeoutStart = setTimeout(async () => {
-    const discordMessage = 'Match starting between ' + match.markedReady?.map((p: User) => p.name).join(' and ') + '! [Spectate](' + matchUrl + ')';
+    const discordMessage = 'Match starting between ' + match.markedReady?.map((p) => (p as User).name).join(' and ') + '! [Spectate](' + matchUrl + ')';
 
     await checkForUnreadyAboutToStartMatch(matchId);
     await Promise.all([

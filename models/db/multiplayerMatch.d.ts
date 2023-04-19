@@ -13,7 +13,7 @@ interface MultiplayerMatch {
   };
   levels: Level[] | Types.ObjectId[];
   levelsPopulated: Level[]; // virtual
-  markedReady: Types.ObjectId[];
+  markedReady: Types.ObjectId[] | User[];
   matchId: string;
   matchLog?: MatchLog[];
   players: UserWithMultiplayerProfile[];
