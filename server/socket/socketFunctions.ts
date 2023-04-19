@@ -61,16 +61,13 @@ export async function broadcastMatches(emitter: Emitter) {
  * @param date
  */
 export async function scheduleBroadcastMatch(emitter: Emitter, matchId: string) {
-  const match = await MultiplayerMatchModel.findOne({ matchId: matchId }).populate('markedReady') as MultiplayerMatch;
-  const matchUrl = 'https://pathology.gg/match/' + matchId;
+  const match = await MultiplayerMatchModel.findOne({ matchId: matchId });
 
   const timeoutStart = setTimeout(async () => {
-    const discordMessage = multiplayerMatchTypeToText(match.type) + ' match starting between ' + match.markedReady?.map((p) => (p as User).name).join(' and ') + '! <Spectate>(' + matchUrl + ')';
-
     await checkForUnreadyAboutToStartMatch(matchId);
     await Promise.all([
       broadcastMatch(emitter, matchId),
-      queueDiscordWebhook(Discord.Multiplayer, discordMessage),
+
     ]);
   }, 1 + new Date(match.startTime).getTime() - Date.now()); // @TODO: the +1 is kind of hacky, we need to make sure websocket server and mongodb are on same time
   const timeoutEnd = setTimeout(async () => {
