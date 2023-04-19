@@ -1,3 +1,5 @@
+import Discord from '@root/constants/discord';
+import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import { Emitter } from '@socket.io/mongo-emitter';
 import { Types } from 'mongoose';
 import { Server } from 'socket.io';
@@ -58,11 +60,17 @@ export async function broadcastMatches(emitter: Emitter) {
  * @param date
  */
 export async function scheduleBroadcastMatch(emitter: Emitter, matchId: string) {
-  const match = await MultiplayerMatchModel.findOne({ matchId: matchId });
+  const match = await MultiplayerMatchModel.findOne({ matchId: matchId }).populate('markedReady');
+  const matchUrl = '/match/' + matchId;
 
   const timeoutStart = setTimeout(async () => {
+    const discordMessage = 'Match starting between ' + match.markedReady.map((p: User) => p.name).join(' and ') + '! [Spectate](' + matchUrl + ')';
+
     await checkForUnreadyAboutToStartMatch(matchId);
-    await broadcastMatch(emitter, matchId);
+    await Promise.all([
+      broadcastMatch(emitter, matchId),
+      queueDiscordWebhook(Discord.Multiplayer, discordMessage),
+    ]);
   }, 1 + new Date(match.startTime).getTime() - Date.now()); // @TODO: the +1 is kind of hacky, we need to make sure websocket server and mongodb are on same time
   const timeoutEnd = setTimeout(async () => {
     await checkForFinishedMatch(matchId);
