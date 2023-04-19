@@ -1,3 +1,5 @@
+import Discord from '@root/constants/discord';
+import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { DIFFICULTY_NAMES, getDifficultyRangeFromDifficultyName } from '../../../components/difficultyDisplay';
@@ -11,7 +13,7 @@ import User from '../../../models/db/user';
 import { LevelModel, MultiplayerMatchModel } from '../../../models/mongoose';
 import { MatchAction, MultiplayerMatchState, MultiplayerMatchType, MultiplayerMatchTypeDurationMap } from '../../../models/MultiplayerEnums';
 import { enrichMultiplayerMatch, generateMatchLog, SKIP_MATCH_LEVEL_ID } from '../../../models/schemas/multiplayerMatchSchema';
-import { finishMatch, getAllMatches } from '.';
+import { finishMatch, getAllMatches, multiplayerMatchTypeToText } from '.';
 
 export async function abortMatch(matchId: string, userId: Types.ObjectId) {
   await requestClearBroadcastMatchSchedule(matchId);
@@ -434,7 +436,11 @@ export default withAuth(
           const dedupedLevels = new Set([...l0, ...l1, ...l2, ...l3]);
 
           // add levels to match
-          await MultiplayerMatchModel.updateOne(
+          const matchUrl = 'https://pathology.gg/match/' + matchId;
+          const discordMessage = multiplayerMatchTypeToText(match.type) + ' match starting between ' + updatedMatch.players?.map((p: User) => (p as User).name).join(' and ') + '! <Spectate>(' + matchUrl + ')';
+
+          console.log(discordMessage);
+          Promise.all([await MultiplayerMatchModel.updateOne(
             { matchId: matchId },
             {
               levels: [...dedupedLevels].map((level: Level) => level._id),
@@ -443,7 +449,9 @@ export default withAuth(
                 [updatedMatch.players[1]._id]: [],
               },
             }
-          );
+          ),
+          queueDiscordWebhook(Discord.Multiplayer, discordMessage)
+          ]);
         }
 
         enrichMultiplayerMatch(updatedMatch, req.userId);
