@@ -12,17 +12,17 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import ProStatsLevelType from '../../../constants/proStatsLevelType';
 import { LevelContext } from '../../../contexts/levelContext';
 
-function getTimePlayedStr(sum: number, short = false): string {
+function getTimePlayedStr(sum: number, short = false, unitLimit = 1): string {
   const duration = moment.duration(sum, 'seconds');
 
   if (short) {
-    return shortHumanize(duration);
+    return shortHumanize(duration, unitLimit);
   } else {
     return duration.humanize();
   }
 }
 
-function shortHumanize(momentDuration: moment.Duration): string {
+function shortHumanize(momentDuration: moment.Duration, unitLimit = 1): string {
   const units = [
     { key: 'y', value: 'years' },
     { key: 'M', value: 'months' },
@@ -35,10 +35,15 @@ function shortHumanize(momentDuration: moment.Duration): string {
   let result = '';
 
   for (const unit of units) {
-    const value = momentDuration.get(unit.value as any);
+    const value = momentDuration.get(unit.value as moment.unitOfTime.Base);
 
     if (value > 0) {
       result += `${value}${unit.key} `;
+      unitLimit -= 1;
+    }
+
+    if (unitLimit <= 0) {
+      break;
     }
   }
 
@@ -99,30 +104,28 @@ export default function LevelInfoPlayTime() {
         <Tab.Panels>
           <Tab.Panel tabIndex={-1}>
             <div className='flex flex-col gap-1'>
-              {
-                proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime].map((d, i) => {
-                  return (
-                    <div key={'prostat-playattemptgraph-' + i} className='flex flex-row gap-4 items-center'>
-                      <div className='w-20 text-right'>{moment(new Date(d.date)).format('M/D/YY')}</div>
-                      <div className='w-1/2 text-left text-sm' style={{
-                        color: 'var(--color-gray)',
-                      }}>{getTimePlayedStr(d.sum)}</div>
-                    </div>
-                  );
-                })
-              }
+              {proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime].map((d, i) => {
+                return (
+                  <div key={'prostat-playattemptgraph-' + i} className='flex flex-row gap-4 items-center'>
+                    <div className='w-20 text-right'>{moment(new Date(d.date)).format('M/D/YY')}</div>
+                    <div className='w-1/2 text-left text-sm' style={{
+                      color: 'var(--color-gray)',
+                    }}>{getTimePlayedStr(d.sum)}</div>
+                  </div>
+                );
+              })}
               <div className='flex flex-row gap-4 items-center font-bold'>
                 <div className='w-20 text-right'>Total</div>
                 <div className='w-1/2 text-left'>{moment.duration(1000 * proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime].reduce((a, b) => a + b.sum, 0)).humanize()}</div>
               </div>
-              { proStatsLevel[ProStatsLevelType.CommunityPlayAttemptData] && proStatsLevel[ProStatsLevelType.CommunityPlayAttemptData].count >= 1 && (
+              {proStatsLevel[ProStatsLevelType.CommunityPlayAttemptData] && proStatsLevel[ProStatsLevelType.CommunityPlayAttemptData].count >= 1 && (
                 <div className='flex flex-row gap-4 items-center font-bold'>
                   <div data-tooltip-id='others-tooltip' className='w-20 text-right underline decoration-dashed cursor-help' data-tooltip-content='Avg time for others who solved this level.'>Others</div>
                   <div className='w-1/2 text-left'>{moment.duration(1000 * (proStatsLevel[ProStatsLevelType.CommunityPlayAttemptData]?.sum / proStatsLevel[ProStatsLevelType.CommunityPlayAttemptData]?.count) || 0).humanize()}</div>
                 </div>
               )}
             </div>
-            <StyledTooltip id = 'others-tooltip' />
+            <StyledTooltip id='others-tooltip' />
           </Tab.Panel>
           <Tab.Panel tabIndex={-1}>
             <ResponsiveContainer width='100%' height={300}>
