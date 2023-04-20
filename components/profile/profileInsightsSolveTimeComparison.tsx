@@ -7,12 +7,27 @@ import User from '../../models/db/user';
 import { getDifficultyColor, getDifficultyFromValue, getDifficultyList } from '../difficultyDisplay';
 
 export interface DifficultyLevelComparison {
+  /*
+  "ts": 1681218728,
+"_id": "641a27f6d8a962fe6c705862",
+"name": "Bad Maze",
+"difficulty": 5.598526621827416,
+"slug": "unimportant05/bad-maze",
+"calc_playattempts_just_beaten_count": 32,
+"other_calc_playattempts_just_beaten_count": 31,
+"myPlayattemptsAverageDuration": 4,
+"otherPlayattemptsAverageDuration": 5.419354838709677
+*/
+  ts: number;
   _id: string;
-  myPlayattemptsAverageDuration: number;
-  diff?: number;
-  difficulty: number;
-  difficultyAdjusted: number;
   name: string;
+  difficulty: number;
+  diff?: number;
+  difficultyAdjusted: number;
+  slug: string;
+  calc_playattempts_just_beaten_count: number;
+  myPlayattemptsAverageDuration: number;
+  otherPlayattemptsAverageDuration: number;
 }
 
 function dotColor(percent: number) {
@@ -36,18 +51,18 @@ export default function ProfileInsightsSolveTimeComparison({ user }: { user: Use
   let diffPercentage;
 
   for (const d of data) {
-    const sign = d.difficultyAdjusted > d.averageDuration ? 1 : -1;
+    const sign = d.otherPlayattemptsAverageDuration > d.myPlayattemptsAverageDuration ? 1 : -1;
 
     if (sign > 0) {
-      diffPercentage = (d.difficultyAdjusted / d.averageDuration);
+      diffPercentage = (d.otherPlayattemptsAverageDuration / d.myPlayattemptsAverageDuration);
     } else {
-      diffPercentage = sign * (d.averageDuration / d.difficultyAdjusted);
+      diffPercentage = sign * (d.myPlayattemptsAverageDuration / d.otherPlayattemptsAverageDuration);
     }
 
     d.diff = diffPercentage;
   }
 
-  data = data.filter(d => d.difficultyAdjusted && d.averageDuration);
+  data = data.filter(d => d.otherPlayattemptsAverageDuration && d.myPlayattemptsAverageDuration);
 
   const difficulties = getDifficultyList();
   const maxDifficultySolved = Math.max(...data.map(d => d.difficulty).filter(x => x));
