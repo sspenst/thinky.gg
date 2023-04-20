@@ -17,7 +17,6 @@ interface MultiplayerMatch {
   matchId: string;
   matchLog?: MatchLog[];
   players: UserWithMultiplayerProfile[];
-
   private: boolean;
   rated: boolean;
   scoreTable: {

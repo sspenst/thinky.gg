@@ -1,6 +1,3 @@
-import Discord from '@root/constants/discord';
-import queueDiscordWebhook from '@root/helpers/discordWebhook';
-import MultiplayerMatch from '@root/models/db/multiplayerMatch';
 import { Emitter } from '@socket.io/mongo-emitter';
 import { Types } from 'mongoose';
 import { Server } from 'socket.io';
@@ -11,7 +8,7 @@ import User from '../../models/db/user';
 import { MultiplayerMatchModel } from '../../models/mongoose';
 import { MultiplayerMatchState, MultiplayerMatchType } from '../../models/MultiplayerEnums';
 import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
-import { checkForFinishedMatch, checkForUnreadyAboutToStartMatch, getAllMatches, multiplayerMatchTypeToText } from '../../pages/api/match';
+import { checkForFinishedMatch, checkForUnreadyAboutToStartMatch, getAllMatches } from '../../pages/api/match';
 import { getMatch } from '../../pages/api/match/[matchId]';
 
 const GlobalMatchTimers = {} as { [matchId: string]: {
@@ -65,10 +62,7 @@ export async function scheduleBroadcastMatch(emitter: Emitter, matchId: string) 
 
   const timeoutStart = setTimeout(async () => {
     await checkForUnreadyAboutToStartMatch(matchId);
-    await Promise.all([
-      broadcastMatch(emitter, matchId),
-
-    ]);
+    await broadcastMatch(emitter, matchId);
   }, 1 + new Date(match.startTime).getTime() - Date.now()); // @TODO: the +1 is kind of hacky, we need to make sure websocket server and mongodb are on same time
   const timeoutEnd = setTimeout(async () => {
     await checkForFinishedMatch(matchId);
