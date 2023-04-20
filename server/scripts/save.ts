@@ -1,5 +1,7 @@
-// run with ts-node --files server/scripts/save.ts
+// run with ts-node -r tsconfig-paths/register --files server/scripts/save.ts --levels
 // import dotenv
+// import tsconfig-paths
+
 import cliProgress from 'cli-progress';
 import dotenv from 'dotenv';
 import dbConnect from '../../lib/dbConnect';
@@ -40,7 +42,7 @@ async function integrityCheckLevels(chunks = 1, chunkIndex = 0) {
 
     try {
       await Promise.all([calcPlayAttempts(before._id), refreshIndexCalcs(before._id)]);
-    } catch (e){
+    } catch (e) {
       console.error(e, 'for ', before.name);
     }
 
@@ -65,8 +67,7 @@ async function integrityCheckLevels(chunks = 1, chunkIndex = 0) {
           changed.push({ key: key, before: beforeArr, after: afterArr });
           continue;
         }
-      }
-      else if (before[key]?.toString() !== after[key]?.toString()) {
+      } else if (before[key]?.toString() !== after[key]?.toString()) {
         changed.push({ key: key, before: before[key], after: after[key] });
       }
     }

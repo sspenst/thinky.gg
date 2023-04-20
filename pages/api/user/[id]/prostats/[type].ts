@@ -84,7 +84,7 @@ async function getDifficultyDataComparisons(userId: string) {
           },
           {
             $match: {
-              attemptContext: { $in: [AttemptContext.BEATEN] },
+              attemptContext: { $in: [AttemptContext.JUST_BEATEN] },
             },
           },
           {
