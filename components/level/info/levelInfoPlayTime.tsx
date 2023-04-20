@@ -1,5 +1,6 @@
 import { Tab } from '@headlessui/react';
 import { RoleIcon } from '@root/components/roleIcons';
+import StyledTooltip from '@root/components/styledTooltip';
 import Role from '@root/constants/role';
 import { AppContext } from '@root/contexts/appContext';
 import isPro from '@root/helpers/isPro';
@@ -11,38 +12,37 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import ProStatsLevelType from '../../../constants/proStatsLevelType';
 import { LevelContext } from '../../../contexts/levelContext';
 
-function getTimePlayedStr(sum: number, short = false) {
+function getTimePlayedStr(sum: number, short = false): string {
   const duration = moment.duration(sum, 'seconds');
 
-  if (duration.asSeconds() < 60) {
-    // return seconds
-    return `${duration.asSeconds().toFixed(0)}${short ? 's' : ` second${duration.asSeconds() === 1 ? '' : 's'}`}`;
+  if (short) {
+    return shortHumanize(duration);
+  } else {
+    return duration.humanize();
+  }
+}
+
+function shortHumanize(momentDuration: moment.Duration): string {
+  const units = [
+    { key: 'y', value: 'years' },
+    { key: 'M', value: 'months' },
+    { key: 'd', value: 'days' },
+    { key: 'h', value: 'hours' },
+    { key: 'm', value: 'minutes' },
+    { key: 's', value: 'seconds' },
+  ];
+
+  let result = '';
+
+  for (const unit of units) {
+    const value = momentDuration.get(unit.value as any);
+
+    if (value > 0) {
+      result += `${value}${unit.key} `;
+    }
   }
 
-  if (duration.asMinutes() < 60) {
-    // return minutes
-    return `${duration.asMinutes().toFixed(0)}${short ? 'm' : ` minute${duration.asMinutes() === 1 ? '' : 's'}`}`;
-  }
-
-  if (duration.asHours() < 24) {
-    // return hours and minutes
-    const hours = duration.hours();
-    const minutes = duration.minutes();
-    const hoursStr = `${hours}${short ? 'h' : ` hour${hours === 1 ? '' : 's'}`}`;
-    const minutesStr = `${minutes}${short ? 'm' : ` minute${minutes === 1 ? '' : 's'}`}`;
-
-    return `${hoursStr} ${minutesStr}`;
-  }
-
-  // return days, hours, and minutes
-  const days = duration.days();
-  const hours = duration.hours();
-  const minutes = duration.minutes();
-  const daysStr = `${days}${short ? 'd' : ` day${days === 1 ? '' : 's'}`}`;
-  const hoursStr = `${hours}${short ? 'h' : ` hour${hours === 1 ? '' : 's'}`}`;
-  const minutesStr = `${minutes}${short ? 'm' : ` minute${minutes === 1 ? '' : 's'}`}`;
-
-  return `${daysStr} ${hoursStr} ${minutesStr}`;
+  return result.trim();
 }
 
 export default function LevelInfoPlayTime() {
@@ -113,9 +113,16 @@ export default function LevelInfoPlayTime() {
               }
               <div className='flex flex-row gap-4 items-center font-bold'>
                 <div className='w-20 text-right'>Total</div>
-                <div className='w-1/2 text-left'>{getTimePlayedStr(proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime].reduce((a, b) => a + b.sum, 0))}</div>
+                <div className='w-1/2 text-left'>{moment.duration(1000 * proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime].reduce((a, b) => a + b.sum, 0)).humanize()}</div>
               </div>
+              { proStatsLevel[ProStatsLevelType.CommunityPlayAttemptData] && proStatsLevel[ProStatsLevelType.CommunityPlayAttemptData].count >= 1 && (
+                <div className='flex flex-row gap-4 items-center font-bold'>
+                  <div data-tooltip-id='others-tooltip' className='w-20 text-right underline decoration-dashed cursor-help' data-tooltip-content='Avg time for others who solved this level.'>Others</div>
+                  <div className='w-1/2 text-left'>{moment.duration(1000 * (proStatsLevel[ProStatsLevelType.CommunityPlayAttemptData]?.sum / proStatsLevel[ProStatsLevelType.CommunityPlayAttemptData]?.count) || 0).humanize()}</div>
+                </div>
+              )}
             </div>
+            <StyledTooltip id = 'others-tooltip' />
           </Tab.Panel>
           <Tab.Panel tabIndex={-1}>
             <ResponsiveContainer width='100%' height={300}>
