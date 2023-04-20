@@ -8,27 +8,16 @@ import { getDifficultyColor, getDifficultyFromValue, getDifficultyList } from '.
 import StyledTooltip from '../styledTooltip';
 
 export interface DifficultyLevelComparison {
-  /*
-  "ts": 1681218728,
-"_id": "641a27f6d8a962fe6c705862",
-"name": "Bad Maze",
-"difficulty": 5.598526621827416,
-"slug": "unimportant05/bad-maze",
-"calc_playattempts_just_beaten_count": 32,
-"other_calc_playattempts_just_beaten_count": 31,
-"myPlayattemptsAverageDuration": 4,
-"otherPlayattemptsAverageDuration": 5.419354838709677
-*/
-  ts: number;
   _id: string;
-  name: string;
-  difficulty: number;
-  diff?: number;
-  difficultyAdjusted: number;
-  slug: string;
   calc_playattempts_just_beaten_count: number;
+  diff?: number;
+  difficulty: number;
+  difficultyAdjusted: number;
   myPlayattemptsSumDuration: number;
+  name: string;
   otherPlayattemptsAverageDuration: number;
+  slug: string;
+  ts: number;
 }
 
 function dotColor(percent: number) {
@@ -51,24 +40,15 @@ export default function ProfileInsightsSolveTimeComparison({ user }: { user: Use
 
   // draw a scatter plot with a difficulty bucket on the x axis and the two dots on the y axis for the difficulty and average duration
   let data = difficultyComparisonData[ProStatsUserType.DifficultyLevelsComparisons];
-  let diffPercentage;
-
-  for (const d of data) {
-    const sign = d.otherPlayattemptsAverageDuration > d.myPlayattemptsSumDuration ? 1 : -1;
-
-    if (sign > 0) {
-      diffPercentage = (d.otherPlayattemptsAverageDuration / d.myPlayattemptsSumDuration);
-    } else {
-      diffPercentage = sign * (d.myPlayattemptsSumDuration / d.otherPlayattemptsAverageDuration);
-    }
-
-    d.diff = diffPercentage;
-  }
 
   data = data.filter(d => d.otherPlayattemptsAverageDuration && d.myPlayattemptsSumDuration);
 
+  for (const d of data) {
+    d.diff = d.otherPlayattemptsAverageDuration / d.myPlayattemptsSumDuration;
+  }
+
   if (hideAnomalies) {
-    const sorted = data.sort((a, b) => a?.diff - b?.diff);
+    const sorted = data.sort((a, b) => (a.diff ?? 1) - (b.diff ?? 1));
     const top1Percent = Math.floor(sorted.length * percentile);
     const bottom1Percent = Math.floor(sorted.length * (1 - percentile));
 
@@ -77,7 +57,9 @@ export default function ProfileInsightsSolveTimeComparison({ user }: { user: Use
 
   const difficulties = getDifficultyList();
   const maxDifficultySolved = Math.max(...data.map(d => d.difficulty).filter(x => x));
-  const maxValue = Math.max(...data.map(d => d.diff || 0).filter(x => x));
+  // 0.9 and 1.1 because we always want to show the line at 1 on the graph
+  const maxYValue = Math.max(...data.map(d => d.diff || 0).filter(x => x), 1.1);
+  const minYValue = Math.min(...data.map(d => d.diff || 0).filter(x => x), 0.9);
   // remove the difficulties that are not solved
   const difficultiesToDisplay = difficulties.findLastIndex(d => d.value <= maxDifficultySolved);
   let max: number;
@@ -98,16 +80,15 @@ export default function ProfileInsightsSolveTimeComparison({ user }: { user: Use
       </p>
     </div>
     <div className='w-full' key={'difficultycomparsion-chart'}>
-      {/* input checkbox to hide anomolies}*/ }
-
+      {/* input checkbox to hide anomolies */ }
       <div className='flex gap-4 justify-center'>
         <div className='flex gap-2'>
           <input id='solve-remove-anomalies' type='checkbox' checked={(hideAnomalies)} onChange={(e) => setHideAnomalies(e.target.checked)} />
-          <label htmlFor='score-remove-anomalies'>Filter <span className='underline decoration-dashed cursor-help' data-tooltip-content='Remove top percentile and bottom percentile from graph' data-tooltip-id='score-remove-anomalies'>anomalies</span></label>
+          <label htmlFor='solve-remove-anomalies'>Filter <span className='underline decoration-dashed cursor-help' data-tooltip-content='Remove top percentile and bottom percentile from graph' data-tooltip-id='solve-remove-anomalies'>anomalies</span></label>
         </div>
         <div className='flex gap-2'>
           <label htmlFor='score-percentile'>Percentile</label>
-          { /* dropdown for 0.1% , 1%, 5%, 10% */ }
+          {/* dropdown for 0.1% , 1%, 5%, 10% */}
           <select id='score-percentile' value={percentile} onChange={(e) => setPercentile(parseFloat(e.target.value))} className='border border-gray-300 rounded-md text-black'>
             <option value={0.001}>0.1%</option>
             <option value={0.01}>1%</option>
@@ -138,10 +119,10 @@ export default function ProfileInsightsSolveTimeComparison({ user }: { user: Use
             // hide the ticks
             tick={false}
             width={20}
-            scale={'sqrt'}
-            domain={[-maxValue, maxValue]}
+            scale={'log'}
+            domain={[minYValue, maxYValue]}
             // put two labels, Solver Faster on top and Solved Slower on bottom.
-            label={{ value: '<- ...Slower... ^ ...Faster... ->', offset: 0, angle: -90, }}
+            label={{ value: '<- Slower ... Faster ->', offset: 0, angle: -90, }}
 
           />
           {/* add ability to zoom */}
@@ -180,10 +161,20 @@ export default function ProfileInsightsSolveTimeComparison({ user }: { user: Use
                   const diff = difficultyLevelComparison.diff as number;
                   const timeTakenForOthersToSolve = moment.duration(difficultyLevelComparison.otherPlayattemptsAverageDuration * 1000).humanize();
                   const timeTakenToSolve = moment.duration(difficultyLevelComparison.myPlayattemptsSumDuration * 1000).humanize();
+                  const multiplier = diff >= 1 ? diff.toFixed(1) : (1 / diff).toFixed(1);
 
                   return (
                     <div className='p-2 bg-gray-800 text-sm'>
-                      <span className='font-bold'>{`${name} (${getDifficultyFromValue(difficulty).name})`}</span>.<div className='flex flex-col'><span>You: <span className='font-bold'>{timeTakenToSolve}</span></span><span>Others: <span className='font-bold'>{timeTakenForOthersToSolve}</span></span></div><span className='text-xs'>{`${Math.abs(diff).toFixed(1)}x ${(diff < 0 ? 'slower' : 'faster')} than average`}<br />You solved <span className='font-bold text-xs'>{moment(ts).fromNow()}</span></span>
+                      <span className='font-bold'>{`${name} (${getDifficultyFromValue(difficulty).name})`}</span>
+                      <div className='flex flex-col'>
+                        <span>You: <span className='font-bold'>{timeTakenToSolve}</span></span>
+                        <span>Others: <span className='font-bold'>{timeTakenForOthersToSolve}</span></span>
+                      </div>
+                      <span className='text-xs'>
+                        {`${multiplier}x ${(diff >= 1 ? 'faster' : 'slower')} than average`}
+                        <br />
+                        You solved <span className='font-bold text-xs'>{moment(ts).fromNow()}</span>
+                      </span>
                     </div>
                   );
                 }
@@ -199,9 +190,8 @@ export default function ProfileInsightsSolveTimeComparison({ user }: { user: Use
             }}
             // conditional color red if diff is negative, green if positive
             shape={({ cx, cy, diff, ...rest }) => {
-              const percent = Math.min(Math.max(diff / 10, -1), 1);
+              const percent = Math.min(Math.max(Math.log(diff) / 2, -1), 1);
               const fill = dotColor(percent);
-              //const fill = diff < 0 ? 'red' : 'green';
 
               return (
                 <Symbols
