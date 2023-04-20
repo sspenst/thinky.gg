@@ -68,7 +68,7 @@ export default function ProfileInsightsSolveTimeComparison({ user }: { user: Use
   data = data.filter(d => d.otherPlayattemptsAverageDuration && d.myPlayattemptsSumDuration);
 
   if (hideAnomalies) {
-    const sorted = data.sort((a, b) => a?.diff - b?.diff);
+    const sorted = data.sort((a, b) => (a.diff || 0) - (b.diff || 0));
     const top1Percent = Math.floor(sorted.length * percentile);
     const bottom1Percent = Math.floor(sorted.length * (1 - percentile));
 
