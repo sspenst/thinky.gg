@@ -147,10 +147,12 @@ export default function ProfileInsightsSolveTimeComparison({ user }: { user: Use
                   const difficulty = payload[0].payload.difficulty;
                   const ts = payload[0].payload.ts * 1000;
                   const diff = payload[0].payload.diff;
+                  const timeTakenForOthersToSolve = moment.duration(payload[0].payload.otherPlayattemptsAverageDuration * 1000).humanize();
+                  const timeTakenToSolve = moment.duration(payload[0].payload.myPlayattemptsAverageDuration * 1000).humanize();
 
                   return (
-                    <div className='p-2 bg-gray-800'>
-                      {`${name} (${getDifficultyFromValue(difficulty).name})`}<br />{`Solved ${moment(ts).fromNow()}`}<br />{`${Math.abs(diff).toFixed(1)}x ${(diff < 0 ? 'slower' : 'faster')} than average`}
+                    <div className='p-2 bg-gray-800 text-sm'>
+                      <span className='font-bold'>{`${name} (${getDifficultyFromValue(difficulty).name})`}</span>.<div className='flex flex-col'><span>You: <span className='font-bold'>{timeTakenToSolve}</span></span><span>Others: <span className='font-bold'>{timeTakenForOthersToSolve}</span></span></div><span className='text-xs'>{`${Math.abs(diff).toFixed(1)}x ${(diff < 0 ? 'slower' : 'faster')} than average`}<br />You solved <span className='font-bold text-xs'>{moment(ts).fromNow()}</span></span>
                     </div>
                   );
                 }
