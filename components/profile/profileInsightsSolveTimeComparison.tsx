@@ -26,7 +26,7 @@ export interface DifficultyLevelComparison {
   difficultyAdjusted: number;
   slug: string;
   calc_playattempts_just_beaten_count: number;
-  myPlayattemptsAverageDuration: number;
+  myPlayattemptsSumDuration: number;
   otherPlayattemptsAverageDuration: number;
 }
 
@@ -51,18 +51,18 @@ export default function ProfileInsightsSolveTimeComparison({ user }: { user: Use
   let diffPercentage;
 
   for (const d of data) {
-    const sign = d.otherPlayattemptsAverageDuration > d.myPlayattemptsAverageDuration ? 1 : -1;
+    const sign = d.otherPlayattemptsAverageDuration > d.myPlayattemptsSumDuration ? 1 : -1;
 
     if (sign > 0) {
-      diffPercentage = (d.otherPlayattemptsAverageDuration / d.myPlayattemptsAverageDuration);
+      diffPercentage = (d.otherPlayattemptsAverageDuration / d.myPlayattemptsSumDuration);
     } else {
-      diffPercentage = sign * (d.myPlayattemptsAverageDuration / d.otherPlayattemptsAverageDuration);
+      diffPercentage = sign * (d.myPlayattemptsSumDuration / d.otherPlayattemptsAverageDuration);
     }
 
     d.diff = diffPercentage;
   }
 
-  data = data.filter(d => d.otherPlayattemptsAverageDuration && d.myPlayattemptsAverageDuration);
+  data = data.filter(d => d.otherPlayattemptsAverageDuration && d.myPlayattemptsSumDuration);
 
   const difficulties = getDifficultyList();
   const maxDifficultySolved = Math.max(...data.map(d => d.difficulty).filter(x => x));
@@ -116,7 +116,7 @@ export default function ProfileInsightsSolveTimeComparison({ user }: { user: Use
           />
           {/* add ability to zoom */}
           <Brush dataKey='difficulty' height={30} stroke='#8884d8' />
-          <ReferenceLine y={0} stroke='white' />
+          <ReferenceLine y={1} stroke='white' />
           {
 
             difficulties.map((d, i) => {
@@ -143,12 +143,13 @@ export default function ProfileInsightsSolveTimeComparison({ user }: { user: Use
             content={
               ({ active, payload }) => {
                 if (active && payload && payload[0] && payload[0].payload) {
-                  const name = payload[0].payload.name;
-                  const difficulty = payload[0].payload.difficulty;
-                  const ts = payload[0].payload.ts * 1000;
-                  const diff = payload[0].payload.diff;
-                  const timeTakenForOthersToSolve = moment.duration(payload[0].payload.otherPlayattemptsAverageDuration * 1000).humanize();
-                  const timeTakenToSolve = moment.duration(payload[0].payload.myPlayattemptsAverageDuration * 1000).humanize();
+                  const difficultyLevelComparison = (payload[0].payload as DifficultyLevelComparison);
+                  const name = difficultyLevelComparison.name;
+                  const difficulty = difficultyLevelComparison.difficulty;
+                  const ts = difficultyLevelComparison.ts * 1000;
+                  const diff = difficultyLevelComparison.diff as number;
+                  const timeTakenForOthersToSolve = moment.duration(difficultyLevelComparison.otherPlayattemptsAverageDuration * 1000).humanize();
+                  const timeTakenToSolve = moment.duration(difficultyLevelComparison.myPlayattemptsSumDuration * 1000).humanize();
 
                   return (
                     <div className='p-2 bg-gray-800 text-sm'>

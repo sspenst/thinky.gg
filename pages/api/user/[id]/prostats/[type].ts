@@ -144,6 +144,7 @@ async function getDifficultyDataComparisons(userId: string) {
                   { $eq: ['$levelId', '$$levelId'] },
                   // check where user is in players_with_beaten_playattempt
                   { $in: ['$userId', '$$players_with_beaten_playattempt'] },
+                  { $ne: ['$startTime', '$endTime'] },
 
                 ],
               },
@@ -190,8 +191,9 @@ async function getDifficultyDataComparisons(userId: string) {
               $expr: {
                 $and: [
                   { $eq: ['$levelId', '$$levelId'] },
-
                   { $eq: ['$userId', new mongoose.Types.ObjectId(userId)] },
+                  // where startTime != endTime
+                  { $ne: ['$startTime', '$endTime'] },
                 ],
               },
             },
@@ -230,7 +232,7 @@ async function getDifficultyDataComparisons(userId: string) {
       $project: {
         _id: 1,
         other_calc_playattempts_just_beaten_count: { $size: '$players_with_beaten_playattempt' },
-        myPlayattemptsAverageDuration: { $divide: ['$myplayattempts.sumDuration', '$myplayattempts.count'] },
+        myPlayattemptsSumDuration: '$myplayattempts.sumDuration',
         name: 1,
         difficulty: 1,
         slug: 1,
