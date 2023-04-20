@@ -298,7 +298,12 @@ export async function checkForFinishedMatch(matchId: string) {
   return await finishMatch(finishedMatch);
 }
 
-export async function createMatch(reqUser: User, options: { type: MultiplayerMatchType, private: boolean, rated: boolean }) {
+async function createMatch(req: NextApiRequestWithAuth) {
+  const isPrivate: boolean = req.body.private;
+  const rated: boolean = req.body.rated;
+  const reqUser = req.user;
+  const type: MultiplayerMatchType = req.body.type;
+
   const involvedMatch = await MultiplayerMatchModel.findOne(
     {
       players: reqUser._id,
@@ -314,28 +319,26 @@ export async function createMatch(reqUser: User, options: { type: MultiplayerMat
     return null;
   }
 
-  // if not, create a new match
-  // generate 11 character id
   const matchId = makeId(11);
+  const matchUrl = `${req.headers.origin}/match/${matchId}`;
+  const discordMessage = `New *${multiplayerMatchTypeToText(type)}* match created by **${reqUser.name}**! [Join here](<${matchUrl}>)`;
 
-  const joinUrl = 'https://pathology.gg/match/' + matchId;
-  const discordMessage = `New ${multiplayerMatchTypeToText(options.type)} match created by **${reqUser.name}**! Join here: <${joinUrl}>`;
-
-  const [match] = await Promise.all([MultiplayerMatchModel.create({
-    createdBy: reqUser._id,
-    matchId: matchId,
-    matchLog: [
-      generateMatchLog(MatchAction.CREATE, {
-        userId: reqUser._id,
-      }),
-    ],
-    players: [reqUser._id],
-    private: options.private,
-    rated: options.rated,
-    state: MultiplayerMatchState.OPEN,
-    type: options.type,
-  }),
-  queueDiscordWebhook(Discord.Multiplayer, discordMessage)
+  const [match] = await Promise.all([
+    MultiplayerMatchModel.create({
+      createdBy: reqUser._id,
+      matchId: matchId,
+      matchLog: [
+        generateMatchLog(MatchAction.CREATE, {
+          userId: reqUser._id,
+        }),
+      ],
+      players: [reqUser._id],
+      private: isPrivate,
+      rated: rated,
+      state: MultiplayerMatchState.OPEN,
+      type: type,
+    }),
+    queueDiscordWebhook(Discord.Multiplayer, discordMessage),
   ]);
 
   enrichMultiplayerMatch(match, reqUser._id.toString());
@@ -498,7 +501,7 @@ export default withAuth(
       let match;
 
       try {
-        match = await createMatch(req.user, { type: req.body.type, private: req.body.private, rated: req.body.rated });
+        match = await createMatch(req);
       } catch (e) {
         logger.error(e);
 
