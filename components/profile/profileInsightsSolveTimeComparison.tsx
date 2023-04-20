@@ -1,10 +1,11 @@
 import useProStatsUser, { ProStatsUserType } from '@root/hooks/useProStatsUser';
 import moment from 'moment';
 import { useRouter } from 'next/router';
-import React from 'react';
+import React, { useState } from 'react';
 import { Brush, ReferenceArea, ReferenceLine, ResponsiveContainer, Scatter, ScatterChart, Symbols, Tooltip, XAxis, YAxis } from 'recharts';
 import User from '../../models/db/user';
 import { getDifficultyColor, getDifficultyFromValue, getDifficultyList } from '../difficultyDisplay';
+import StyledTooltip from '../styledTooltip';
 
 export interface DifficultyLevelComparison {
   /*
@@ -41,6 +42,8 @@ function dotColor(percent: number) {
 export default function ProfileInsightsSolveTimeComparison({ user }: { user: User }) {
   const { proStatsUser: difficultyComparisonData } = useProStatsUser(user, ProStatsUserType.DifficultyLevelsComparisons);
   const router = useRouter();
+  const [hideAnomalies, setHideAnomalies] = useState(false);
+  const [percentile, setPercentile] = useState(0.01);
 
   if (!difficultyComparisonData || !difficultyComparisonData[ProStatsUserType.DifficultyLevelsComparisons]) {
     return <span>Loading...</span>;
@@ -63,6 +66,14 @@ export default function ProfileInsightsSolveTimeComparison({ user }: { user: Use
   }
 
   data = data.filter(d => d.otherPlayattemptsAverageDuration && d.myPlayattemptsSumDuration);
+
+  if (hideAnomalies) {
+    const sorted = data.sort((a, b) => a?.diff - b?.diff);
+    const top1Percent = Math.floor(sorted.length * percentile);
+    const bottom1Percent = Math.floor(sorted.length * (1 - percentile));
+
+    data = sorted.slice(top1Percent, bottom1Percent);
+  }
 
   const difficulties = getDifficultyList();
   const maxDifficultySolved = Math.max(...data.map(d => d.difficulty).filter(x => x));
@@ -87,6 +98,25 @@ export default function ProfileInsightsSolveTimeComparison({ user }: { user: Use
       </p>
     </div>
     <div className='w-full' key={'difficultycomparsion-chart'}>
+      {/* input checkbox to hide anomolies}*/ }
+
+      <div className='flex gap-4 justify-center'>
+        <div className='flex gap-2'>
+          <input id='solve-remove-anomalies' type='checkbox' checked={(hideAnomalies)} onChange={(e) => setHideAnomalies(e.target.checked)} />
+          <label htmlFor='score-remove-anomalies'>Filter <span className='underline decoration-dashed cursor-help' data-tooltip-content='Remove top percentile and bottom percentile from graph' data-tooltip-id='score-remove-anomalies'>anomalies</span></label>
+        </div>
+        <div className='flex gap-2'>
+          <label htmlFor='score-percentile'>Percentile</label>
+          { /* dropdown for 0.1% , 1%, 5%, 10% */ }
+          <select id='score-percentile' value={percentile} onChange={(e) => setPercentile(parseFloat(e.target.value))} className='border border-gray-300 rounded-md text-black'>
+            <option value={0.001}>0.1%</option>
+            <option value={0.01}>1%</option>
+            <option value={0.05}>5%</option>
+            <option value={0.1}>10%</option>
+          </select>
+        </div>
+      </div>
+      <StyledTooltip id='score-remove-anomalies' />
       <ResponsiveContainer width='100%' height={400} >
         <ScatterChart margin={
           {
