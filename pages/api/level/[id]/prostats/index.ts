@@ -276,6 +276,5 @@ export default withAuth({
     [ProStatsLevelType.CommunityPlayAttemptsData]: communityPlayAttemptsData,
     [ProStatsLevelType.CommunityStepData]: communityStepData,
     [ProStatsLevelType.PlayAttemptsOverTime]: playAttemptsOverTime,
-    [ProStatsLevelType.CommunityPlayAttemptData]: communityPlayAttemptsData
   });
 });

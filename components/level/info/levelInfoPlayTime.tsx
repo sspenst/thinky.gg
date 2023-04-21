@@ -121,12 +121,11 @@ export default function LevelInfoPlayTime() {
               {proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData] && proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData].count >= 1 && (<>
                 <div className='flex flex-row gap-4 items-center font-medium'>
                   <div data-tooltip-id='others-tooltip' className='w-20 text-right underline decoration-dashed cursor-help' data-tooltip-content='Average time for others who solved this level'>Others</div>
-                  <div className='w-1/2 text-left'>{getTimePlayedStr((proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData]?.sum / proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData]?.count) || 0)}</div>
+                  <div className='w-1/2 text-left'>{moment.duration(1000 * (proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData]?.sum / proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData]?.count) || 0).humanize()}</div>
                 </div>
                 <StyledTooltip id='others-tooltip' />
               </>)}
             </div>
-            <StyledTooltip id='others-tooltip' />
           </Tab.Panel>
           <Tab.Panel tabIndex={-1}>
             <ResponsiveContainer width='100%' height={300}>
