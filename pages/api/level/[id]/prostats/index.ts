@@ -266,11 +266,14 @@ export default withAuth({
   const pro = isPro(req.user);
   const [communityStepData, playAttemptsOverTime, communityPlayAttemptsData] = await Promise.all([
     getCommunityStepData(levelId, !pro),
-    ...(pro ? [getPlayAttemptsOverTime(levelId, req.userId)] : []),
-    ...(pro ? [getCommunityPlayAttemptsData(levelId, req.userId)] : []),
+    ...(!pro ? [] : [
+      getPlayAttemptsOverTime(levelId, req.userId),
+      getCommunityPlayAttemptsData(levelId, req.userId),
+    ]),
   ]);
 
   return res.status(200).json({
+    [ProStatsLevelType.CommunityPlayAttemptsData]: communityPlayAttemptsData,
     [ProStatsLevelType.CommunityStepData]: communityStepData,
     [ProStatsLevelType.PlayAttemptsOverTime]: playAttemptsOverTime,
     [ProStatsLevelType.CommunityPlayAttemptData]: communityPlayAttemptsData
