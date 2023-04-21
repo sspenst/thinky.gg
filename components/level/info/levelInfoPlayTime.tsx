@@ -64,7 +64,7 @@ export default function LevelInfoPlayTime() {
     );
   }
 
-  if (!proStatsLevel || !proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime] || proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime].length === 0) {
+  if (!proStatsLevel || !proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime]) {
     return <div className='text-sm'>No play time data available.</div>;
   }
 
@@ -99,6 +99,7 @@ export default function LevelInfoPlayTime() {
         </Tab.List>
         <Tab.Panels>
           <Tab.Panel tabIndex={-1}>
+
             <div className='flex flex-col gap-1'>
               {
                 proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime].map((d, i) => {
@@ -112,10 +113,13 @@ export default function LevelInfoPlayTime() {
                   );
                 })
               }
-              <div className='flex flex-row gap-4 items-center font-bold'>
-                <div className='w-20 text-right'>Total</div>
-                <div className='w-1/2 text-left'>{getTimePlayedStr(proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime].reduce((a, b) => a + b.sum, 0))}</div>
-              </div>
+              {(proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime].length > 0) ? (
+
+                <div className='flex flex-row gap-4 items-center font-bold'>
+                  <div className='w-20 text-right'>Total</div>
+                  <div className='w-1/2 text-left'>{getTimePlayedStr(proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime].reduce((a, b) => a + b.sum, 0))}</div>
+                </div>
+              ) : <div className='text-sm text-center'>You have no play time recorded for this level.</div> }
               {proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData] && proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData].count >= 1 && (<>
                 <div className='flex flex-row gap-4 items-center font-medium'>
                   <div data-tooltip-id='others-tooltip' className='w-20 text-right underline decoration-dashed cursor-help' data-tooltip-content='Average time for others who solved this level'>Others</div>
