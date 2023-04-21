@@ -35,6 +35,7 @@ async function integrityCheckLevels(chunks = 1, chunkIndex = 0) {
   }
 
   console.log('Starting integrity checks Levels ... Going from ' + start + ' to ' + end + ' of ' + allLevels.length);
+  let changedCount = 0;
 
   for (let i = start; i < end; i++) {
     const beforeId = allLevels[i];
@@ -74,6 +75,7 @@ async function integrityCheckLevels(chunks = 1, chunkIndex = 0) {
 
     if (changed.length > 0) {
       console.warn(`\n${before.name} changed:`);
+      changedCount++;
 
       for (const change of changed) {
         if (change.key === 'calc_playattempts_unique_users') {
@@ -87,6 +89,8 @@ async function integrityCheckLevels(chunks = 1, chunkIndex = 0) {
           console.warn(`${change.key}: ${change.before} -> ${change.after}`);
         }
       }
+
+      console.log('Changed count is now ' + changedCount + '. Percent error rate is ' + (changedCount / (end - start) * 100).toFixed(2) + '%');
     }
 
     progressBar.increment();
