@@ -1,5 +1,6 @@
 import { Tab } from '@headlessui/react';
 import { RoleIcon } from '@root/components/roleIcons';
+import StyledTooltip from '@root/components/styledTooltip';
 import Role from '@root/constants/role';
 import { AppContext } from '@root/contexts/appContext';
 import isPro from '@root/helpers/isPro';
@@ -115,6 +116,13 @@ export default function LevelInfoPlayTime() {
                 <div className='w-20 text-right'>Total</div>
                 <div className='w-1/2 text-left'>{getTimePlayedStr(proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime].reduce((a, b) => a + b.sum, 0))}</div>
               </div>
+              {proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData] && proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData].count >= 1 && (<>
+                <div className='flex flex-row gap-4 items-center font-medium'>
+                  <div data-tooltip-id='others-tooltip' className='w-20 text-right underline decoration-dashed cursor-help' data-tooltip-content='Average time for others who solved this level'>Others</div>
+                  <div className='w-1/2 text-left'>{getTimePlayedStr((proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData]?.sum / proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData]?.count) || 0)}</div>
+                </div>
+                <StyledTooltip id='others-tooltip' />
+              </>)}
             </div>
           </Tab.Panel>
           <Tab.Panel tabIndex={-1}>
