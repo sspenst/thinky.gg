@@ -71,7 +71,7 @@ export default function LevelInfoPlayTime() {
   return (
     <div className='flex flex-col gap-2'>
       <Tab.Group>
-        <Tab.List className='flex flex-wrap gap-x-1 items-start rounded text-sm'>
+        <Tab.List className='flex flex-wrap gap-x-1 items-start rounded text-sm' >
           <Tab as={Fragment}>
             {({ selected }) => (
               <button className={classNames(
