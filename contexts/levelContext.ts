@@ -7,6 +7,7 @@ import Review from '../models/db/review';
 import User from '../models/db/user';
 
 export interface ProStatsLevel {
+  [ProStatsLevelType.CommunityPlayAttemptsData]?: CountAndSum;
   [ProStatsLevelType.CommunityStepData]?: ProStatsCommunityStepData[];
   [ProStatsLevelType.PlayAttemptsOverTime]?: DateAndSum[];
 }
@@ -19,6 +20,11 @@ export interface DateAndSum {
 export interface UserAndSum {
   sum: number;
   user: User;
+}
+
+export interface CountAndSum {
+  count: number;
+  sum: number;
 }
 
 export interface UserAndStatTs {
