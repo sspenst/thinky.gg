@@ -500,7 +500,7 @@ export default apiWrapper({ GET: {
     });
   }
 
-  await queueDiscordWebhook(Discord.DevPriv, `📧 **Email Digest**\n\tSent:\n\t${emailDigestSent.length}\n\tFailed: ${emailDigestFailed.length}\nReactivation\n\tSent: ${emailReactivationSent.length}\n\tFailed: ${emailReactivationFailed.length}\nUnsubscribe\n\tSent: ${emailUnsubscribeSent.length}\n\tFailed: ${emailUnsubscribeFailed.length}`);
+  await queueDiscordWebhook(Discord.DevPriv, `📧 **Email Digest**\n\tSent: ${emailDigestSent.length}\n\tFailed: ${emailDigestFailed.length}\n🔄 **Reactivation**\n\tSent: ${emailReactivationSent.length}\n\tFailed: ${emailReactivationFailed.length}\n❌ **Unsubscribe**\n\tSent: ${emailUnsubscribeSent.length}\n\tFailed: ${emailUnsubscribeFailed.length}`);
 
   return res.status(200).json({ success: true, emailDigestSent: emailDigestSent, emailDigestFailed: emailDigestFailed, emailReactivationSent: emailReactivationSent, emailReactivationFailed: emailReactivationFailed, emailUnsubscribeSent: emailUnsubscribeSent, emailUnsubscribeFailed: emailUnsubscribeFailed });
 });
