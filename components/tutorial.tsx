@@ -516,7 +516,13 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
                 pointerEvents: 'all',
                 animationDelay: '2s'
               }}>
-                Now <Link href='/signup' className='font-bold text-blue-500 hover:text-blue-400'>sign up</Link> to explore the world of Pathology!
+                Now <Link href='/signup' className='font-bold text-blue-500 hover:text-blue-400'>sign up</Link> for free to explore the world of Pathology!
+              </div>
+              <div className='text-md fadeIn' style={{
+                pointerEvents: 'all',
+                animationDelay: '2.5s'
+              }}>
+                (or <Link href='/play-as-guest' className='font-bold text-blue-500 hover:text-blue-400'>continue as a guest</Link>).
               </div>
             </div>
           }
