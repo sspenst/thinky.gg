@@ -522,7 +522,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
                 pointerEvents: 'all',
                 animationDelay: '2.5s'
               }}>
-                (or <Link href='/play-as-guest' className='font-bold text-blue-500 hover:text-blue-400'>continue as a guest</Link>).
+                (or <Link href='/play-as-guest' className='font-bold text-blue-500 hover:text-blue-400'>continue as a guest</Link>)
               </div>
             </div>
           }
