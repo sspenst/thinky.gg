@@ -8,7 +8,7 @@ export const TOUR_STEPS_HOME_PAGE: Step[] = [
   },
   {
     disableBeacon: true,
-    target: '#recommended-easy-level',
+    target: '#recommended-level',
     content: 'We think this level is easy enough for you to complete. Give it a try!',
   },
   {
