@@ -342,11 +342,16 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
     }
   }
 
-  if (query.minDifficulty && query.maxDifficulty) {
-    searchObj['calc_difficulty_estimate'] = {
-      $gte: parseInt(query.minDifficulty),
-      $lte: parseInt(query.maxDifficulty),
-    };
+  if (query.minDifficulty || query.maxDifficulty) {
+    searchObj['calc_difficulty_estimate'] = {};
+
+    if (query.minDifficulty) {
+      searchObj['calc_difficulty_estimate']['$gte'] = parseInt(query.minDifficulty);
+    }
+
+    if (query.maxDifficulty) {
+      searchObj['calc_difficulty_estimate']['$lte'] = parseInt(query.maxDifficulty);
+    }
   }
 
   // NB: skip regex for NONE for more efficient query
