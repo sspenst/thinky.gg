@@ -150,7 +150,7 @@ describe('pages/api/home.ts', () => {
         expect(response.latestLevels).toHaveLength(1);
         expect(response.latestReviews).toHaveLength(1);
         expect(response.levelOfDay).toBeNull(); // no level of the day even though we asked for it
-        expect(response.recommendedEasyLevel).toBeNull(); // no recommended easy level even though we asked for it
+        expect(response.recommendedEasyLevel).toHaveLength(0); // no recommended easy level even though we asked for it
         expect(response.recommendedPendingLevel).toBeDefined();
         expect(response.topLevelsThisMonth).toHaveLength(3);
 

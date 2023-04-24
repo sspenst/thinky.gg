@@ -1,3 +1,5 @@
+import Level from '@root/models/db/level';
+import { StatModel } from '@root/models/mongoose';
 import TimeRange from '../../../constants/timeRange';
 import { ValidType } from '../../../helpers/apiWrapper';
 import { FilterSelectOption } from '../../../helpers/filterSelectOptions';
@@ -24,11 +26,47 @@ async function getTopLevelsThisMonth(reqUser: User) {
   return result?.levels;
 }
 
+async function getRecentAverageDifficulty(reqUser: User, numResults = 1) {
+  const query = await StatModel.aggregate([
+    { $match: { userId: reqUser._id, complete: true } },
+    { $sort: { ts: -1 } },
+    { $limit: numResults },
+    {
+      $lookup: {
+        from: 'levels',
+        localField: 'levelId',
+        foreignField: '_id',
+        as: 'levelId',
+        pipeline: [
+          {
+            $project: {
+              calc_difficulty_estimate: 1,
+            }
+          }
+        ]
+      }
+    },
+    {
+      $unwind: {
+        path: '$levelId',
+        preserveNullAndEmptyArrays: true
+      }
+    },
+    { $replaceRoot: { newRoot: '$levelId' } },
+  ]) as Level[];
+
+  return query.length === 0 ? 0 : query.reduce((acc, level) => acc + level.calc_difficulty_estimate, 0) / query.length;
+}
+
 async function getRecommendedEasyLevel(reqUser: User) {
+  const avgDifficulty = await getRecentAverageDifficulty(reqUser, 10);
+
   const query = {
     disableCount: 'true',
     minSteps: '7',
     maxSteps: '2500',
+    minDifficulty: '' + (avgDifficulty * 0.9), // 10% below average of last 10
+    maxDifficulty: '99999999',
     minRating: '0.55',
     maxRating: '1',
     numResults: '10', // randomly select one of these
@@ -39,7 +77,27 @@ async function getRecommendedEasyLevel(reqUser: User) {
   } as SearchQuery;
 
   const result = await doQuery(query, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, data: 1, height: 1, width: 1 });
-  const levels = result?.levels;
+  let levels = result?.levels;
+
+  if (!levels || levels.length === 0) {
+    // try a broader query without min and max difficulty for those rare users that have beaten so many levels to not have any recommended one
+    const query = {
+      disableCount: 'true',
+      minSteps: '7',
+      maxSteps: '2500',
+      minRating: '0.55',
+      maxRating: '1',
+      numResults: '10', // randomly select one of these
+      showFilter: FilterSelectOption.HideWon,
+      sortBy: 'calcDifficultyEstimate',
+      sortDir: 'asc',
+      timeRange: TimeRange[TimeRange.All],
+    } as SearchQuery;
+
+    const result = await doQuery(query, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, data: 1, height: 1, width: 1 });
+
+    levels = result?.levels;
+  }
 
   if (!levels || levels.length === 0) {
     return null;
