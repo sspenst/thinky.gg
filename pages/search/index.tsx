@@ -24,7 +24,7 @@ import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
 import { EnrichedLevel } from '../../models/db/level';
 import User from '../../models/db/user';
-import { doQuery } from '../api/search';
+import search, { doQuery } from '../api/search';
 
 export enum BlockFilterMask {
   NONE = 0,
@@ -64,8 +64,6 @@ const DefaultQuery = {
   maxDimension1: '',
   maxDimension2: '',
   maxSteps: '2500',
-  minDifficulty: '0',
-  maxDifficulty: '100000000',
   minDimension1: '',
   minDimension2: '',
   minSteps: '0',
