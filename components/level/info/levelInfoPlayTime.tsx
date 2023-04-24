@@ -16,7 +16,9 @@ function getTimePlayedStr(sum: number, short = false) {
   const duration = moment.duration(sum, 'seconds');
 
   if (duration.asSeconds() < 60) {
-    return `${Math.floor(duration.asSeconds())}${short ? 's' : ` second${duration.asSeconds() === 1 ? '' : 's'}`}`;
+    const seconds = duration.seconds();
+
+    return `${seconds}${short ? 's' : ` second${seconds === 1 ? '' : 's'}`}`;
   }
 
   const hours = Math.floor(duration.asHours());
