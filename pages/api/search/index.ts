@@ -342,6 +342,13 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
     }
   }
 
+  if (query.minDifficulty && query.maxDifficulty) {
+    searchObj['calc_difficulty_estimate'] = {
+      $gte: parseInt(query.minDifficulty),
+      $lte: parseInt(query.maxDifficulty),
+    };
+  }
+
   // NB: skip regex for NONE for more efficient query
   if (query.blockFilter !== undefined && Number(query.blockFilter) !== BlockFilterMask.NONE) {
     const blockFilterMask = Number(query.blockFilter);
