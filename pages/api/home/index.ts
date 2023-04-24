@@ -58,15 +58,14 @@ async function getRecentAverageDifficulty(reqUser: User, numResults = 1) {
   return query.length === 0 ? 0 : query.reduce((acc, level) => acc + level.calc_difficulty_estimate, 0) / query.length;
 }
 
-async function getRecommendedEasyLevel(reqUser: User) {
+async function getRecommendedLevel(reqUser: User) {
   const avgDifficulty = await getRecentAverageDifficulty(reqUser, 10);
 
   const query = {
     disableCount: 'true',
     minSteps: '7',
     maxSteps: '2500',
-    minDifficulty: '' + (avgDifficulty * 0.9), // 10% below average of last 10
-    maxDifficulty: '99999999',
+    minDifficulty: String(avgDifficulty * 0.9), // 10% below average of last 10
     minRating: '0.55',
     maxRating: '1',
     numResults: '10', // randomly select one of these
@@ -137,20 +136,20 @@ export default withAuth({
       latestLevels: ValidType('number', false, true),
       latestReviews: ValidType('number', false, true),
       levelOfDay: ValidType('number', false, true),
-      recommendedEasyLevel: ValidType('number', false, true),
+      recommendedLevel: ValidType('number', false, true),
       recommendedPendingLevel: ValidType('number', false, true),
       topLevelsThisMonth: ValidType('number', false, true),
     }
   }
 }, async (req, res) => {
   const reqUser = req.user;
-  const { lastLevelPlayed, latestLevels, latestReviews, levelOfDay, recommendedEasyLevel, recommendedPendingLevel, topLevelsThisMonth } = req.query;
+  const { lastLevelPlayed, latestLevels, latestReviews, levelOfDay, recommendedLevel, recommendedPendingLevel, topLevelsThisMonth } = req.query;
   const [
     plastLevelPlayed,
     platestLevels,
     platestReviews,
     plevelOfDay,
-    precommendedEasyLevel,
+    precommendedLevel,
     precommendedPendingLevel,
     ptopLevelsThisMonth
   ] = await Promise.all([
@@ -158,7 +157,7 @@ export default withAuth({
     latestLevels ? getLatestLevels(reqUser) : undefined,
     latestReviews ? getLatestReviews(reqUser) : undefined,
     levelOfDay ? getLevelOfDay(reqUser) : undefined,
-    recommendedEasyLevel ? getRecommendedEasyLevel(reqUser) : undefined,
+    recommendedLevel ? getRecommendedLevel(reqUser) : undefined,
     recommendedPendingLevel ? getRecommendedPendingLevel(reqUser) : undefined,
     topLevelsThisMonth ? getTopLevelsThisMonth(reqUser) : undefined,
   ]);
@@ -168,7 +167,7 @@ export default withAuth({
     latestLevels: platestLevels,
     latestReviews: platestReviews,
     levelOfDay: plevelOfDay,
-    recommendedEasyLevel: precommendedEasyLevel,
+    recommendedLevel: precommendedLevel,
     recommendedPendingLevel: precommendedPendingLevel,
     topLevelsThisMonth: ptopLevelsThisMonth,
   });
