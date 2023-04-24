@@ -61,7 +61,7 @@ async function getRecommendedEasyLevel(reqUser: User) {
   // let's get the difficulty range of the last 10 levels beaten
   const lastLevels = await getLastLevelsCompleted(reqUser, 10);
   // get the average difficulty
-  const avgDifficulty = lastLevels.length >= 10 ? lastLevels.reduce((acc, level) => acc + level.levelId.calc_difficulty_estimate, 0) / lastLevels.length : 0;
+  const avgDifficulty = lastLevels?.length >= 10 ? lastLevels.reduce((acc, level) => acc + level.levelId.calc_difficulty_estimate, 0) / lastLevels.length : 0;
 
   const query = {
     disableCount: 'true',
@@ -82,7 +82,24 @@ async function getRecommendedEasyLevel(reqUser: User) {
   const levels = result?.levels;
 
   if (!levels || levels.length === 0) {
-    return null;
+    // try a broader query without min and max difficulty for those rare users that have beaten so many levels to not have any recommended one
+    const query = {
+      disableCount: 'true',
+      minSteps: '7',
+      maxSteps: '2500',
+      minRating: '0.55',
+      maxRating: '1',
+      numResults: '10', // randomly select one of these
+      showFilter: FilterSelectOption.HideWon,
+      sortBy: 'calcDifficultyEstimate',
+      sortDir: 'asc',
+      timeRange: TimeRange[TimeRange.All],
+    } as SearchQuery;
+
+    const result = await doQuery(query, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, data: 1, height: 1, width: 1 });
+    const levels = result?.levels;
+
+    return levels;
   }
 
   const randomIndex = Math.floor(Math.random() * levels.length);
