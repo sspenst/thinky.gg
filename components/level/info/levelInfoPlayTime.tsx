@@ -25,25 +25,12 @@ function getTimePlayedStr(sum: number, short = false) {
     return `${duration.asMinutes().toFixed(0)}${short ? 'm' : ` minute${duration.asMinutes() === 1 ? '' : 's'}`}`;
   }
 
-  if (duration.asHours() < 24) {
-    // return hours and minutes
-    const hours = duration.hours();
-    const minutes = duration.minutes();
-    const hoursStr = `${hours}${short ? 'h' : ` hour${hours === 1 ? '' : 's'}`}`;
-    const minutesStr = `${minutes}${short ? 'm' : ` minute${minutes === 1 ? '' : 's'}`}`;
-
-    return `${hoursStr} ${minutesStr}`;
-  }
-
-  // return days, hours, and minutes
-  const days = duration.days();
-  const hours = duration.hours();
+  const hours = Math.floor(duration.asHours());
   const minutes = duration.minutes();
-  const daysStr = `${days}${short ? 'd' : ` day${days === 1 ? '' : 's'}`}`;
   const hoursStr = `${hours}${short ? 'h' : ` hour${hours === 1 ? '' : 's'}`}`;
   const minutesStr = `${minutes}${short ? 'm' : ` minute${minutes === 1 ? '' : 's'}`}`;
 
-  return `${daysStr} ${hoursStr} ${minutesStr}`;
+  return `${hoursStr} ${minutesStr}`;
 }
 
 export default function LevelInfoPlayTime() {
@@ -99,7 +86,6 @@ export default function LevelInfoPlayTime() {
         </Tab.List>
         <Tab.Panels>
           <Tab.Panel tabIndex={-1}>
-
             <div className='flex flex-col gap-1'>
               {
                 proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime].map((d, i) => {
@@ -114,7 +100,6 @@ export default function LevelInfoPlayTime() {
                 })
               }
               {(proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime].length > 0) ? (
-
                 <div className='flex flex-row gap-4 items-center font-bold'>
                   <div className='w-20 text-right'>Total</div>
                   <div className='w-1/2 text-left'>{getTimePlayedStr(proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime].reduce((a, b) => a + b.sum, 0))}</div>
