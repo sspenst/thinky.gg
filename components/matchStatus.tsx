@@ -10,7 +10,7 @@ import { MatchAction, MatchLogDataGameRecap, MultiplayerMatchState, MultiplayerM
 import FormattedUser from './formattedUser';
 import StyledTooltip from './styledTooltip';
 
-interface MatchStatusProps {
+export interface MatchStatusProps {
   isMatchPage?: boolean;
   match: MultiplayerMatch;
   onJoinClick?: (matchId: string) => void;
@@ -240,7 +240,7 @@ export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveCl
           {recap?.loser?.userId.toString() === player._id.toString() && <span className='text-sm' style={{
             color: 'var(--color-gray)',
           }}>{`${Math.round(recap.eloLoser)} ${Math.round(recap.eloChangeLoser) >= 0 ? '+' : ''}${Math.round(recap.eloChangeLoser)}`}</span>}
-          {player._id.toString() in match.scoreTable && <span className='font-bold text-2xl ml-2'>{match.scoreTable[player._id.toString()]}</span>}
+          {match.scoreTable && player._id.toString() in match.scoreTable && <span className='font-bold text-2xl ml-2'>{match.scoreTable[player._id.toString()]}</span>}
         </div>
       ))}
 

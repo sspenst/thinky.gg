@@ -19,7 +19,7 @@ interface MultiplayerMatch {
   players: UserWithMultiplayerProfile[];
   private: boolean;
   rated: boolean;
-  scoreTable: {
+  scoreTable?: {
     [key: string]: number; // virtual
   };
   startTime: Date;
