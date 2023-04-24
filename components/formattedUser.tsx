@@ -15,8 +15,10 @@ interface FormattedUserProps {
 export default function FormattedUser({ noLinks, onClick, size, user }: FormattedUserProps) {
   if (!user) {
     return (
-      <div className={'flex items-center font-bold gap-2'}>
-        [deleted]
+      <div className='flex items-center font-bold gap-2'>
+        <span className='truncate'>
+          [deleted]
+        </span>
       </div>
     );
   }
