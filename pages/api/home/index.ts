@@ -1,3 +1,4 @@
+import Level from '@root/models/db/level';
 import { StatModel } from '@root/models/mongoose';
 import TimeRange from '../../../constants/timeRange';
 import { ValidType } from '../../../helpers/apiWrapper';
@@ -25,12 +26,11 @@ async function getTopLevelsThisMonth(reqUser: User) {
   return result?.levels;
 }
 
-async function getLastLevelsCompleted(reqUser: User, numResults = 1) {
+async function getRecentAverageDifficulty(reqUser: User, numResults = 1) {
   const query = await StatModel.aggregate([
     { $match: { userId: reqUser._id, complete: true } },
     { $sort: { ts: -1 } },
     { $limit: numResults },
-    // lookup the levels
     {
       $lookup: {
         from: 'levels',
@@ -40,7 +40,7 @@ async function getLastLevelsCompleted(reqUser: User, numResults = 1) {
         pipeline: [
           {
             $project: {
-              ...LEVEL_SEARCH_DEFAULT_PROJECTION
+              calc_difficulty_estimate: 1,
             }
           }
         ]
@@ -51,17 +51,15 @@ async function getLastLevelsCompleted(reqUser: User, numResults = 1) {
         path: '$levelId',
         preserveNullAndEmptyArrays: true
       }
-    }
-  ]);
+    },
+    { $replaceRoot: { newRoot: '$levelId' } },
+  ]) as Level[];
 
-  return query;
+  return query.length === 0 ? 0 : query.reduce((acc, level) => acc + level.calc_difficulty_estimate, 0) / query.length;
 }
 
 async function getRecommendedEasyLevel(reqUser: User) {
-  // let's get the difficulty range of the last 10 levels beaten
-  const lastLevels = await getLastLevelsCompleted(reqUser, 10);
-  // get the average difficulty
-  const avgDifficulty = lastLevels?.length >= 10 ? lastLevels.reduce((acc, level) => acc + level.levelId.calc_difficulty_estimate, 0) / lastLevels.length : 0;
+  const avgDifficulty = await getRecentAverageDifficulty(reqUser, 10);
 
   const query = {
     disableCount: 'true',
@@ -79,7 +77,7 @@ async function getRecommendedEasyLevel(reqUser: User) {
   } as SearchQuery;
 
   const result = await doQuery(query, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, data: 1, height: 1, width: 1 });
-  const levels = result?.levels;
+  let levels = result?.levels;
 
   if (!levels || levels.length === 0) {
     // try a broader query without min and max difficulty for those rare users that have beaten so many levels to not have any recommended one
@@ -97,9 +95,12 @@ async function getRecommendedEasyLevel(reqUser: User) {
     } as SearchQuery;
 
     const result = await doQuery(query, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, data: 1, height: 1, width: 1 });
-    const levels = result?.levels;
 
-    return levels;
+    levels = result?.levels;
+  }
+
+  if (!levels || levels.length === 0) {
+    return null;
   }
 
   const randomIndex = Math.floor(Math.random() * levels.length);

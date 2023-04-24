@@ -24,7 +24,7 @@ import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
 import { EnrichedLevel } from '../../models/db/level';
 import User from '../../models/db/user';
-import search, { doQuery } from '../api/search';
+import { doQuery } from '../api/search';
 
 export enum BlockFilterMask {
   NONE = 0,
@@ -37,12 +37,12 @@ export interface SearchQuery extends ParsedUrlQuery {
   blockFilter?: string;
   difficultyFilter?: string;
   disableCount?: string;
+  maxDifficulty?: string;
   maxDimension1?: string;
   maxDimension2?: string;
   maxRating?: string;
   maxSteps?: string;
   minDifficulty?: string;
-  maxDifficulty?: string;
   minDimension1?: string;
   minDimension2?: string;
   minRating?: string;
