@@ -16,13 +16,7 @@ function getTimePlayedStr(sum: number, short = false) {
   const duration = moment.duration(sum, 'seconds');
 
   if (duration.asSeconds() < 60) {
-    // return seconds
-    return `${duration.asSeconds().toFixed(0)}${short ? 's' : ` second${duration.asSeconds() === 1 ? '' : 's'}`}`;
-  }
-
-  if (duration.asMinutes() < 60) {
-    // return minutes
-    return `${duration.asMinutes().toFixed(0)}${short ? 'm' : ` minute${duration.asMinutes() === 1 ? '' : 's'}`}`;
+    return `${Math.floor(duration.asSeconds())}${short ? 's' : ` second${duration.asSeconds() === 1 ? '' : 's'}`}`;
   }
 
   const hours = Math.floor(duration.asHours());
@@ -30,7 +24,7 @@ function getTimePlayedStr(sum: number, short = false) {
   const hoursStr = `${hours}${short ? 'h' : ` hour${hours === 1 ? '' : 's'}`}`;
   const minutesStr = `${minutes}${short ? 'm' : ` minute${minutes === 1 ? '' : 's'}`}`;
 
-  return `${hoursStr} ${minutesStr}`;
+  return hours === 0 ? minutesStr : `${hoursStr} ${minutesStr}`;
 }
 
 export default function LevelInfoPlayTime() {
