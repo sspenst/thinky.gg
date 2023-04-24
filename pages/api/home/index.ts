@@ -1,3 +1,4 @@
+import { StatModel } from '@root/models/mongoose';
 import TimeRange from '../../../constants/timeRange';
 import { ValidType } from '../../../helpers/apiWrapper';
 import { FilterSelectOption } from '../../../helpers/filterSelectOptions';
@@ -24,11 +25,50 @@ async function getTopLevelsThisMonth(reqUser: User) {
   return result?.levels;
 }
 
+async function getLastLevelsCompleted(reqUser: User, numResults = 1) {
+  const query = await StatModel.aggregate([
+    { $match: { userId: reqUser._id, complete: true } },
+    { $sort: { ts: -1 } },
+    { $limit: numResults },
+    // lookup the levels
+    {
+      $lookup: {
+        from: 'levels',
+        localField: 'levelId',
+        foreignField: '_id',
+        as: 'levelId',
+        pipeline: [
+          {
+            $project: {
+              ...LEVEL_SEARCH_DEFAULT_PROJECTION
+            }
+          }
+        ]
+      }
+    },
+    {
+      $unwind: {
+        path: '$levelId',
+        preserveNullAndEmptyArrays: true
+      }
+    }
+  ]);
+
+  return query;
+}
+
 async function getRecommendedEasyLevel(reqUser: User) {
+  // let's get the difficulty range of the last 10 levels beaten
+  const lastLevels = await getLastLevelsCompleted(reqUser, 10);
+  // get the average difficulty
+  const avgDifficulty = lastLevels.length >= 10 ? lastLevels.reduce((acc, level) => acc + level.levelId.calc_difficulty_estimate, 0) / lastLevels.length : 0;
+
   const query = {
     disableCount: 'true',
     minSteps: '7',
     maxSteps: '2500',
+    minDifficulty: '' + (avgDifficulty * 0.9), // 10% below average of last 10
+    maxDifficulty: '99999999',
     minRating: '0.55',
     maxRating: '1',
     numResults: '10', // randomly select one of these

@@ -41,6 +41,8 @@ export interface SearchQuery extends ParsedUrlQuery {
   maxDimension2?: string;
   maxRating?: string;
   maxSteps?: string;
+  minDifficulty?: string;
+  maxDifficulty?: string;
   minDimension1?: string;
   minDimension2?: string;
   minRating?: string;
@@ -62,6 +64,8 @@ const DefaultQuery = {
   maxDimension1: '',
   maxDimension2: '',
   maxSteps: '2500',
+  minDifficulty: '0',
+  maxDifficulty: '100000000',
   minDimension1: '',
   minDimension2: '',
   minSteps: '0',
