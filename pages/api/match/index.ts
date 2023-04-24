@@ -323,23 +323,24 @@ async function createMatch(req: NextApiRequestWithAuth) {
   const matchUrl = `${req.headers.origin}/match/${matchId}`;
   const discordMessage = `New *${multiplayerMatchTypeToText(type)}* match created by **${reqUser.name}**! [Join here](<${matchUrl}>)`;
 
-  const [match] = await Promise.all([
-    MultiplayerMatchModel.create({
-      createdBy: reqUser._id,
-      matchId: matchId,
-      matchLog: [
-        generateMatchLog(MatchAction.CREATE, {
-          userId: reqUser._id,
-        }),
-      ],
-      players: [reqUser._id],
-      private: isPrivate,
-      rated: rated,
-      state: MultiplayerMatchState.OPEN,
-      type: type,
-    }),
-    queueDiscordWebhook(Discord.Multiplayer, discordMessage),
-  ]);
+  const match = await MultiplayerMatchModel.create({
+    createdBy: reqUser._id,
+    matchId: matchId,
+    matchLog: [
+      generateMatchLog(MatchAction.CREATE, {
+        userId: reqUser._id,
+      }),
+    ],
+    players: [reqUser._id],
+    private: isPrivate,
+    rated: rated,
+    state: MultiplayerMatchState.OPEN,
+    type: type,
+  });
+
+  if (!match.private) {
+    await queueDiscordWebhook(Discord.Multiplayer, discordMessage);
+  }
 
   enrichMultiplayerMatch(match, reqUser._id.toString());
 

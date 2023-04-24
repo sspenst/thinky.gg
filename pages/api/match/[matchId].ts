@@ -450,7 +450,7 @@ export default withAuth(
                 },
               }
             ),
-            queueDiscordWebhook(Discord.Multiplayer, discordMessage),
+            !match.private ?? queueDiscordWebhook(Discord.Multiplayer, discordMessage),
           ]);
         }
 
