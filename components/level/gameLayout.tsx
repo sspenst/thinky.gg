@@ -64,7 +64,7 @@ export default function GameLayout({ controls, gameState, hideSidebar, level, ma
     <div className='flex flex-row h-full w-full'>
       <div className='flex grow flex-col h-full relative'>
         {!matchId && level.userId &&
-          <div className='flex flex-row items-center justify-center p-2 gap-1 block xl:hidden'>
+          <div className='flex items-center justify-center py-1 px-2 gap-1 block xl:hidden'>
             <button className='mr-1' onClick={() => setIsCheckpointOpen(!isCheckpointOpen)}>
               <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
                 <path strokeLinecap='round' strokeLinejoin='round' d='M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5' />
@@ -76,7 +76,9 @@ export default function GameLayout({ controls, gameState, hideSidebar, level, ma
               }}
             >{level.name}</h1>
             by
-            <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.userId} />
+            <div className='truncate'>
+              <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.userId} />
+            </div>
           </div>
         }
         {grid}
