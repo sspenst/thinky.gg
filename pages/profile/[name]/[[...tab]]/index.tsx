@@ -449,10 +449,17 @@ export default function ProfilePage({
               <div className='mt-4'>
                 <h2><span className='font-bold'>Levels Completed by Difficulty:</span></h2>
                 {getDifficultyList().reverse().map(difficulty => {
+                  const levelsCompleted = difficulty.value in levelsCompletedByDifficulty && levelsCompletedByDifficulty[difficulty.value] || 0;
+
+                  // don't show pending unless we have to
+                  if (difficulty.name === 'Pending' && levelsCompleted === 0) {
+                    return null;
+                  }
+
                   return (
                     <div className='flex text-sm' key={`${difficulty.name}-levels-completed`}>
                       <div className='w-10 text-right mr-2'>
-                        {difficulty.value in levelsCompletedByDifficulty && levelsCompletedByDifficulty[difficulty.value] || 0}
+                        {levelsCompleted}
                       </div>
                       {getFormattedDifficulty(difficulty.value, difficulty.name)}
                     </div>
