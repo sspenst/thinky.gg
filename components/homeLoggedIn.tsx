@@ -31,7 +31,7 @@ interface HomeLoggedInProps {
   latestReviews?: Review[];
   levelOfDay?: EnrichedLevel;
   recommendedLevel?: EnrichedLevel | null;
-  recommendedPendingLevel?: EnrichedLevel | null;
+  recommendedUnattemptedLevel?: EnrichedLevel | null;
   topLevelsThisMonth?: EnrichedLevel[];
   user: User;
 }
@@ -42,7 +42,7 @@ export default function HomeLoggedIn({
   latestReviews,
   levelOfDay,
   recommendedLevel,
-  recommendedPendingLevel,
+  recommendedUnattemptedLevel,
   topLevelsThisMonth,
   user,
 }: HomeLoggedInProps) {
@@ -121,7 +121,7 @@ export default function HomeLoggedIn({
     <div className='flex flex-wrap justify-center m-4 gap-4'>
       <RecommendedLevel id='level-of-day' level={levelOfDay} title='Level of the Day' />
       <RecommendedLevel id='recommended-level' level={recommendedLevel} title='Try this Level' />
-      <RecommendedLevel id='recommended-pending-level' level={recommendedPendingLevel} title='Unexplored' />
+      <RecommendedLevel id='recommended-unattempted-level' level={recommendedUnattemptedLevel} title='Unexplored' />
       {lastLevelPlayed && <RecommendedLevel id='last-level-played' level={lastLevelPlayed} title='Continue Playing' />}
     </div>
     <div className='flex justify-center m-6'>

@@ -36,7 +36,7 @@ export interface HomepageDataProps {
   latestReviews?: Review[];
   levelOfDay?: EnrichedLevel;
   recommendedLevel?: EnrichedLevel;
-  recommendedPendingLevel?: EnrichedLevel;
+  recommendedUnattemptedLevel?: EnrichedLevel;
   topLevelsThisMonth?: EnrichedLevel[];
 }
 
@@ -64,7 +64,7 @@ export default function Home({ user }: HomeProps) {
   const [loadLatestReviews, setLoadLatestReviews] = useState(false);
   const [loadLevelOfDay, setLoadLevelOfDay] = useState(false);
   const [loadRecommendedLevel, setLoadRecommendedLevel] = useState(false);
-  const [loadRecommendedPendingLevel, setLoadRecommendedPendingLevel] = useState(false);
+  const [loadRecommendedUnattemptedLevel, setLoadRecommendedUnattemptedLevel] = useState(false);
   const [loadTopLevelsThisMonth, setLoadTopLevelsThisMonth] = useState(false);
 
   useEffect(() => {
@@ -89,8 +89,8 @@ export default function Home({ user }: HomeProps) {
         setLoadRecommendedLevel(true);
       }
 
-      if (isVisibleInDom('recommended-pending-level')) {
-        setLoadRecommendedPendingLevel(true);
+      if (isVisibleInDom('recommended-unattempted-level')) {
+        setLoadRecommendedUnattemptedLevel(true);
       }
 
       if (isVisibleInDom('top-levels-of-month')) {
@@ -115,7 +115,7 @@ export default function Home({ user }: HomeProps) {
     loadLatestReviews ? [HomepageDataType.LatestReviews] : [],
     loadLevelOfDay ? [HomepageDataType.LevelOfDay] : [],
     loadRecommendedLevel ? [HomepageDataType.RecommendedLevel] : [],
-    loadRecommendedPendingLevel ? [HomepageDataType.RecommendedPendingLevel] : [],
+    loadRecommendedUnattemptedLevel ? [HomepageDataType.RecommendedUnattemptedLevel] : [],
     loadTopLevelsThisMonth ? [HomepageDataType.TopLevelsThisMonth] : [],
   ].map((chunk) => chunk.filter((x) => x));
 
@@ -130,7 +130,7 @@ export default function Home({ user }: HomeProps) {
         key.includes(HomepageDataType.LatestReviews) ||
         key.includes(HomepageDataType.LevelOfDay) ||
         key.includes(HomepageDataType.RecommendedLevel) ||
-        key.includes(HomepageDataType.RecommendedPendingLevel) ||
+        key.includes(HomepageDataType.RecommendedUnattemptedLevel) ||
         key.includes(HomepageDataType.TopLevelsThisMonth)
       ) {
         cache.delete(key);
@@ -161,7 +161,7 @@ export default function Home({ user }: HomeProps) {
   let latestReviews = undefined;
   let levelOfDay = undefined;
   let recommendedLevel = undefined;
-  let recommendedPendingLevel = undefined;
+  let recommendedUnattemptedLevel = undefined;
   let topLevelsThisMonth = undefined;
 
   if (dataMerge as HomepageDataProps) {
@@ -170,7 +170,7 @@ export default function Home({ user }: HomeProps) {
     latestReviews = dataMerge[HomepageDataType.LatestReviews];
     levelOfDay = dataMerge[HomepageDataType.LevelOfDay];
     recommendedLevel = dataMerge[HomepageDataType.RecommendedLevel];
-    recommendedPendingLevel = dataMerge[HomepageDataType.RecommendedPendingLevel];
+    recommendedUnattemptedLevel = dataMerge[HomepageDataType.RecommendedUnattemptedLevel];
     topLevelsThisMonth = dataMerge[HomepageDataType.TopLevelsThisMonth];
   }
 
@@ -182,7 +182,7 @@ export default function Home({ user }: HomeProps) {
         latestReviews={latestReviews}
         levelOfDay={levelOfDay}
         recommendedLevel={recommendedLevel}
-        recommendedPendingLevel={recommendedPendingLevel}
+        recommendedUnattemptedLevel={recommendedUnattemptedLevel}
         topLevelsThisMonth={topLevelsThisMonth}
         user={user}
       />

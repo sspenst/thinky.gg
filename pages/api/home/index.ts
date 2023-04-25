@@ -107,10 +107,9 @@ async function getRecommendedLevel(reqUser: User) {
   return levels[randomIndex];
 }
 
-async function getRecommendedPendingLevel(reqUser: User) {
+async function getRecommendedUnattemptedLevel(reqUser: User) {
   const query = {
     disableCount: 'true',
-    difficultyFilter: 'Pending',
     numResults: '10', // randomly select one of these
     showFilter: FilterSelectOption.ShowUnattempted,
     sortBy: 'playersBeaten',
@@ -137,20 +136,20 @@ export default withAuth({
       latestReviews: ValidType('number', false, true),
       levelOfDay: ValidType('number', false, true),
       recommendedLevel: ValidType('number', false, true),
-      recommendedPendingLevel: ValidType('number', false, true),
+      recommendedUnattemptedLevel: ValidType('number', false, true),
       topLevelsThisMonth: ValidType('number', false, true),
     }
   }
 }, async (req, res) => {
   const reqUser = req.user;
-  const { lastLevelPlayed, latestLevels, latestReviews, levelOfDay, recommendedLevel, recommendedPendingLevel, topLevelsThisMonth } = req.query;
+  const { lastLevelPlayed, latestLevels, latestReviews, levelOfDay, recommendedLevel, recommendedUnattemptedLevel, topLevelsThisMonth } = req.query;
   const [
     plastLevelPlayed,
     platestLevels,
     platestReviews,
     plevelOfDay,
     precommendedLevel,
-    precommendedPendingLevel,
+    precommendedUnattemptedLevel,
     ptopLevelsThisMonth
   ] = await Promise.all([
     lastLevelPlayed ? getLastLevelPlayed(reqUser) : undefined,
@@ -158,7 +157,7 @@ export default withAuth({
     latestReviews ? getLatestReviews(reqUser) : undefined,
     levelOfDay ? getLevelOfDay(reqUser) : undefined,
     recommendedLevel ? getRecommendedLevel(reqUser) : undefined,
-    recommendedPendingLevel ? getRecommendedPendingLevel(reqUser) : undefined,
+    recommendedUnattemptedLevel ? getRecommendedUnattemptedLevel(reqUser) : undefined,
     topLevelsThisMonth ? getTopLevelsThisMonth(reqUser) : undefined,
   ]);
 
@@ -168,7 +167,7 @@ export default withAuth({
     latestReviews: platestReviews,
     levelOfDay: plevelOfDay,
     recommendedLevel: precommendedLevel,
-    recommendedPendingLevel: precommendedPendingLevel,
+    recommendedUnattemptedLevel: precommendedUnattemptedLevel,
     topLevelsThisMonth: ptopLevelsThisMonth,
   });
 });

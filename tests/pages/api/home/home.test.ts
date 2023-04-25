@@ -82,7 +82,7 @@ describe('pages/api/home.ts', () => {
         expect(response.latestReviews).toBeUndefined();
         expect(response.levelOfDay).toBeUndefined();
         expect(response.recommendedLevel).toBeUndefined();
-        expect(response.recommendedPendingLevel).toBeUndefined();
+        expect(response.recommendedUnattemptedLevel).toBeUndefined();
         expect(response.topLevelsThisMonth).toBeUndefined();
 
         expect(res.status).toBe(200);
@@ -113,7 +113,7 @@ describe('pages/api/home.ts', () => {
         expect(response.latestReviews).toBeUndefined();
         expect(response.levelOfDay).toBeUndefined();
         expect(response.recommendedLevel).toBeUndefined();
-        expect(response.recommendedPendingLevel).toBeUndefined();
+        expect(response.recommendedUnattemptedLevel).toBeUndefined();
         expect(response.topLevelsThisMonth).toBeUndefined();
 
         expect(res.status).toBe(200);
@@ -135,7 +135,7 @@ describe('pages/api/home.ts', () => {
             [HomepageDataType.LatestReviews]: '1',
             [HomepageDataType.LevelOfDay]: '1',
             [HomepageDataType.RecommendedLevel]: '1',
-            [HomepageDataType.RecommendedPendingLevel]: '1',
+            [HomepageDataType.RecommendedUnattemptedLevel]: '1',
             [HomepageDataType.TopLevelsThisMonth]: '1',
           },
         } as unknown as NextApiRequestWithAuth;
@@ -151,7 +151,7 @@ describe('pages/api/home.ts', () => {
         expect(response.latestReviews).toHaveLength(1);
         expect(response.levelOfDay).toBeNull(); // no level of the day even though we asked for it
         expect(response.recommendedLevel).toBeNull(); // no recommended easy level even though we asked for it
-        expect(response.recommendedPendingLevel).toBeDefined();
+        expect(response.recommendedUnattemptedLevel).toBeDefined();
         expect(response.topLevelsThisMonth).toHaveLength(3);
 
         expect(res.status).toBe(200);
