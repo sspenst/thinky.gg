@@ -1,5 +1,6 @@
 import Discord from '@root/constants/discord';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
+import { multiplayerMatchTypeToText } from '@root/helpers/multiplayerHelperFunctions';
 import { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { DIFFICULTY_NAMES, getDifficultyRangeFromDifficultyName } from '../../../components/difficultyDisplay';
@@ -13,7 +14,7 @@ import User from '../../../models/db/user';
 import { LevelModel, MultiplayerMatchModel } from '../../../models/mongoose';
 import { MatchAction, MultiplayerMatchState, MultiplayerMatchType, MultiplayerMatchTypeDurationMap } from '../../../models/MultiplayerEnums';
 import { enrichMultiplayerMatch, generateMatchLog, SKIP_MATCH_LEVEL_ID } from '../../../models/schemas/multiplayerMatchSchema';
-import { finishMatch, getAllMatches, multiplayerMatchTypeToText } from '.';
+import { finishMatch, getAllMatches } from '.';
 
 export async function abortMatch(matchId: string, userId: Types.ObjectId) {
   await requestClearBroadcastMatchSchedule(matchId);

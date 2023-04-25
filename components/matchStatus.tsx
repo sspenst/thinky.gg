@@ -10,14 +10,6 @@ import { MatchAction, MatchLogDataGameRecap, MultiplayerMatchState, MultiplayerM
 import FormattedUser from './formattedUser';
 import StyledTooltip from './styledTooltip';
 
-export interface MatchStatusProps {
-  isMatchPage?: boolean;
-  match: MultiplayerMatch;
-  onJoinClick?: (matchId: string) => void;
-  onLeaveClick?: (matchId: string) => void;
-  recap?: MatchLogDataGameRecap;
-}
-
 export function getMatchTypeNameFromMatchType(type: MultiplayerMatchType): string {
   switch (type) {
   case MultiplayerMatchType.RushBullet:
@@ -103,6 +95,14 @@ export function getProfileRatingDisplay(type: MultiplayerMatchType, profile?: Mu
       </div>
     );
   }
+}
+
+interface MatchStatusProps {
+  isMatchPage?: boolean;
+  match: MultiplayerMatch;
+  onJoinClick?: (matchId: string) => void;
+  onLeaveClick?: (matchId: string) => void;
+  recap?: MatchLogDataGameRecap;
 }
 
 export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveClick, recap }: MatchStatusProps) {
@@ -225,7 +225,6 @@ export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveCl
           {timeUntilEndCleanStr}
         </span>
       )}
-
       {match.players.map((player) => (
         <div
           className={'flex gap-2 items-center'}
@@ -233,17 +232,15 @@ export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveCl
         >
           <FormattedUser user={player} />
           {getProfileRatingDisplay(match.type, player.multiplayerProfile)}
-
           {recap?.winner?.userId.toString() === player._id.toString() && <span className='text-sm' style={{
             color: 'var(--color-gray)',
           }}>{`${Math.round(recap.eloWinner)} ${Math.round(recap.eloChangeWinner) >= 0 ? '+' : ''}${Math.round(recap.eloChangeWinner)}`}</span>}
           {recap?.loser?.userId.toString() === player._id.toString() && <span className='text-sm' style={{
             color: 'var(--color-gray)',
           }}>{`${Math.round(recap.eloLoser)} ${Math.round(recap.eloChangeLoser) >= 0 ? '+' : ''}${Math.round(recap.eloChangeLoser)}`}</span>}
-          {match.scoreTable && player._id.toString() in match.scoreTable && <span className='font-bold text-2xl ml-2'>{match.scoreTable[player._id.toString()]}</span>}
+          {player._id.toString() in match.scoreTable && <span className='font-bold text-2xl ml-2'>{match.scoreTable[player._id.toString()]}</span>}
         </div>
       ))}
-
       <span className='flex flex-col gap-1' style={{
         color: 'var(--color-gray)',
       }}>
@@ -258,14 +255,11 @@ export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveCl
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               } as any)[match.type]
             }
-
           </span>
           {match.private ? (
             <span className='italic text-xs'>Private</span>
           ) : <span className='italic text-xs'>Public</span>}
-
         </div>
-
         {!match.rated ? (<>
           <span className='italic text-xs' data-tooltip-id='unrated-match' data-tooltip-content='This match will not affect elo ratings'>Unrated</span>
           <StyledTooltip id='unrated-match' />
