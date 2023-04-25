@@ -121,7 +121,7 @@ export default function HomeLoggedIn({
     <div className='flex flex-wrap justify-center m-4 gap-4'>
       <RecommendedLevel id='level-of-day' level={levelOfDay} title='Level of the Day' />
       <RecommendedLevel id='recommended-level' level={recommendedLevel} title='Try this Level' />
-      <RecommendedLevel id='recommended-pending-level' level={recommendedPendingLevel} title='Unexplored' />
+      {recommendedPendingLevel && <RecommendedLevel id='recommended-pending-level' level={recommendedPendingLevel} title='Unexplored' />}
       {lastLevelPlayed && <RecommendedLevel id='last-level-played' level={lastLevelPlayed} title='Continue Playing' />}
     </div>
     <div className='flex justify-center m-6'>
