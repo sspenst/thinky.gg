@@ -8,13 +8,12 @@ import CreateMatchModal from '../components/modal/createMatchModal';
 import { AppContext } from '../contexts/appContext';
 import sortByRating from '../helpers/sortByRating';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
-import { MatchAction, MatchLogDataGameRecap, MultiplayerMatchState, MultiplayerMatchType } from '../models/MultiplayerEnums';
-import MatchStatusSmall from './matchStatusSmall';
+import { MultiplayerMatchState, MultiplayerMatchType } from '../models/MultiplayerEnums';
+import MatchResults from './matchResults';
 import OnlineUsers from './onlineUsers';
 
 export default function Multiplayer() {
   const [isCreateMatchModalOpen, setIsCreateMatchModalOpen] = useState(false);
-
   const { multiplayerSocket, user } = useContext(AppContext);
   const router = useRouter();
   const { connectedPlayers, matches, privateAndInvitedMatches } = multiplayerSocket;
@@ -51,10 +50,12 @@ export default function Multiplayer() {
       toast.error(JSON.parse(await err)?.error || 'Failed to create match');
     });
   }, [router]);
+
   const btnCreateMatchClick = useCallback(async () => {
     setIsCreateMatchModalOpen(true);
   }, []);
-  const { data: recentMatches, mutate: mutateRecentMatches } = useSWRHelper<MultiplayerMatch[]>('/api/match/search');
+
+  const { data: recentMatches } = useSWRHelper<MultiplayerMatch[]>('/api/match/search');
 
   const openMatches = [...privateAndInvitedMatches.filter(match => match.state === MultiplayerMatchState.OPEN)];
 
@@ -140,15 +141,12 @@ export default function Multiplayer() {
             <MatchStatus key={match._id.toString()} match={match} />
           ))}
         </div>
-
       </div>
-      <div className='flex flex-col gap-2'>
-        <h2 className='text-2xl font-bold mb-2 flex justify-center align-center'>
-          Recently finished matches</h2>
+      <div className='flex flex-col gap-4 items-center'>
+        <h2 className='text-2xl font-bold'>Recent Matches</h2>
         {!recentMatches || recentMatches.length === 0 && <span className='italic flex justify-center'>No active matches!</span>}
-
         {recentMatches && recentMatches.map((match: MultiplayerMatch) => (
-          <MatchStatusSmall key={match._id.toString()} match={match} recap={match.matchLog?.find(log => log.type === MatchAction.GAME_RECAP)?.data as MatchLogDataGameRecap} />
+          <MatchResults key={match._id.toString()} match={match} />
         ))}
       </div>
     </div>

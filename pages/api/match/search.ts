@@ -1,24 +1,23 @@
 import { ValidNumber, ValidObjectIdArray, ValidType } from '@root/helpers/apiWrapper';
-import cleanUser from '@root/lib/cleanUser';
 import withAuth, { NextApiRequestWithAuth } from '@root/lib/withAuth';
 import { MultiplayerMatchModel } from '@root/models/mongoose';
 import { MultiplayerMatchState } from '@root/models/MultiplayerEnums';
 import { enrichMultiplayerMatch } from '@root/models/schemas/multiplayerMatchSchema';
 import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
-import { FilterQuery } from 'mongoose';
 import { NextApiResponse } from 'next';
 
 interface MatchQuery {
-    players?: string[];
-    matchId?: string;
-    limit?: number;
-    offset?: number;
+  matchId?: string;
+  limit?: number;
+  offset?: number;
+  players?: string[];
 }
 
 async function doMatchQuery(query: MatchQuery) {
   const searchObj = {
     state: MultiplayerMatchState.FINISHED,
     // private: false // TODO: seems right to show private matches...
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as any;
 
   if (query.players) {

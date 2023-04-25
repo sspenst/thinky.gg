@@ -102,7 +102,6 @@ export default function CreateMatchModal({ closeModal, isOpen, onConfirm }: Crea
               // Bullet, Blitz, Rapid, Classical
               options={options as never}
             />
-
           </div>
         </div>
       </div>

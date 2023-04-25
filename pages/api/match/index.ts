@@ -6,7 +6,7 @@ import { getRatingFromProfile } from '../../../components/matchStatus';
 import { ValidEnum, ValidType } from '../../../helpers/apiWrapper';
 import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
 import { logger } from '../../../helpers/logger';
-import { isProvisional } from '../../../helpers/multiplayerHelperFunctions';
+import { isProvisional, multiplayerMatchTypeToText } from '../../../helpers/multiplayerHelperFunctions';
 import { requestBroadcastMatches, requestClearBroadcastMatchSchedule } from '../../../lib/appSocketToClient';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
@@ -262,19 +262,6 @@ export async function checkForUnreadyAboutToStartMatch(matchId: string) {
     return await abortMatch(matchId, finishedMatch.createdBy._id);
   } else {
     return null;
-  }
-}
-
-export function multiplayerMatchTypeToText(option: MultiplayerMatchType) {
-  switch (option) {
-  case MultiplayerMatchType.RushBullet:
-    return 'Bullet (3m)';
-  case MultiplayerMatchType.RushBlitz:
-    return 'Blitz (5m)';
-  case MultiplayerMatchType.RushRapid:
-    return 'Rapid (10m)';
-  case MultiplayerMatchType.RushClassical:
-    return 'Classical (30m)';
   }
 }
 
