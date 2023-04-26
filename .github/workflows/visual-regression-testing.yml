@@ -16,6 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: backstopjs/backstopjs
+      options: --user root
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
