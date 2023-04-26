@@ -1,3 +1,4 @@
+import { multiplayerMatchTypeToText } from '@root/helpers/multiplayerHelperFunctions';
 import React from 'react';
 import { toast } from 'react-hot-toast';
 import Select from 'react-select';
@@ -11,16 +12,18 @@ interface CreateMatchModalProps {
 }
 
 export default function CreateMatchModal({ closeModal, isOpen, onConfirm }: CreateMatchModalProps) {
-  const [matchType, setMatchType] = React.useState<MultiplayerMatchType>();
   const [isPrivate, setIsPrivate] = React.useState(false);
   const [isRated, setIsRated] = React.useState(true);
-  const options = [
-    { label: 'Bullet | (3m)', value: MultiplayerMatchType.RushBullet },
-    { label: 'Blitz | (5m)', value: MultiplayerMatchType.RushBlitz },
-    { label: 'Rapid | (10m)', value: MultiplayerMatchType.RushRapid },
-    { label: 'Classical | (30m)', value: MultiplayerMatchType.RushClassical },
-  ];
-  const defaultValue = options.find((option) => option.value === matchType);
+  const [matchType, setMatchType] = React.useState<MultiplayerMatchType>();
+
+  const options = Object.values(MultiplayerMatchType).map(type => {
+    return {
+      label: multiplayerMatchTypeToText(type),
+      value: type,
+    };
+  });
+
+  const defaultValue = options.find(option => option.value === matchType);
 
   return (
     <Modal
@@ -89,7 +92,7 @@ export default function CreateMatchModal({ closeModal, isOpen, onConfirm }: Crea
                 IndicatorSeparator: null,
               }}
               formatOptionLabel={({ label }: {label: string, value: MultiplayerMatchType}) => {
-                const [type, time] = label.split('|');
+                const [type, time] = label.split(' ');
 
                 return (
                   <div className='flex flex-row gap-2'>
@@ -99,8 +102,7 @@ export default function CreateMatchModal({ closeModal, isOpen, onConfirm }: Crea
                 );
               }
               }
-              // Bullet, Blitz, Rapid, Classical
-              options={options as never}
+              options={options}
             />
           </div>
         </div>

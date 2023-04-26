@@ -1,6 +1,8 @@
+import MatchResults from '@root/components/matchResults';
 import moment from 'moment';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
@@ -127,7 +129,7 @@ export default function Match() {
   const skipControl = useCallback((disabled = false) => new Control(
     'control-skip',
     () => btnSkip(),
-    <div className='flex justify-center'>
+    <div className='flex justify-center items-center'>
       <span className='pl-2'>
       Skip
       </span>
@@ -364,13 +366,13 @@ export default function Match() {
         </h1>
         {match.state === MultiplayerMatchState.FINISHED || match.state === MultiplayerMatchState.ABORTED || !match.players.some(player => player._id.toString() === user?._id.toString()) ? (
           <div className='flex flex-col items-center justify-center p-3 gap-6'>
-            <button
+            <Link
               className='px-4 py-2 text-lg font-bold text-white bg-blue-500 rounded-md hover:bg-blue-600'
-              onClick={() => router.push('/multiplayer')}
+              href='/multiplayer'
             >
-            Back
-            </button>
-            <MatchStatus isMatchPage={true} match={match} recap={match.matchLog?.find(log => log.type === MatchAction.GAME_RECAP)?.data as MatchLogDataGameRecap} />
+              Back
+            </Link>
+            <MatchResults match={match} recap={match.matchLog?.find(log => log.type === MatchAction.GAME_RECAP)?.data as MatchLogDataGameRecap} showViewLink={false} />
             <div className='w-full max-w-screen-lg h-96'>
               <MatchChart match={match} />
             </div>
@@ -379,7 +381,7 @@ export default function Match() {
             </div>
           </div>
         ) : (
-          <div className='flex flex-col items-center justify-center h-full gap-1'>
+          <div className='flex flex-col items-center justify-center h-full gap-0.5'>
             {countDown > 0 && <h1 className='text-xl italic'>Starting in {timeUntilEndCleanStr} seconds</h1>}
             {match.state === MultiplayerMatchState.ACTIVE && match.timeUntilStart > 0 && (
               <div className='flex flex-col items-center justify-center gap-2'>
@@ -402,7 +404,7 @@ export default function Match() {
                 fetchMarkReady();
               }}>Mark Ready</button>
             )}
-            <div className='pt-2'>
+            <div className='pt-1'>
               <MatchStatus
                 isMatchPage={true}
                 match={match}

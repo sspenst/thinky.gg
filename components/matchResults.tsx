@@ -1,5 +1,6 @@
 import { multiplayerMatchTypeToText } from '@root/helpers/multiplayerHelperFunctions';
 import MultiplayerMatch from '@root/models/db/multiplayerMatch';
+import { MatchLogDataGameRecap } from '@root/models/MultiplayerEnums';
 import Link from 'next/link';
 import React from 'react';
 import FormattedDate from './formattedDate';
@@ -9,9 +10,11 @@ import StyledTooltip from './styledTooltip';
 
 interface MatchResultsProps {
   match: MultiplayerMatch;
+  recap?: MatchLogDataGameRecap;
+  showViewLink: boolean;
 }
 
-export default function MatchResults({ match }: MatchResultsProps) {
+export default function MatchResults({ match, recap, showViewLink }: MatchResultsProps) {
   const sortedPlayers = match.players.sort((p1, p2) => {
     const p1Score = match.scoreTable[p1._id.toString()];
     const p2Score = match.scoreTable[p2._id.toString()];
@@ -32,12 +35,14 @@ export default function MatchResults({ match }: MatchResultsProps) {
       }}
     >
       <div className='flex gap-2 items-center'>
-        <Link
-          className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-center w-full mr-2'
-          href={`/match/${match.matchId}`}
-        >
-          View
-        </Link>
+        {showViewLink &&
+          <Link
+            className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2'
+            href={`/match/${match.matchId}`}
+          >
+            View
+          </Link>
+        }
         <div className='flex flex-col gap-1 items-center'>
           <span className='font-bold whitespace-nowrap'>
             {multiplayerMatchTypeToText(match.type)}
@@ -61,7 +66,21 @@ export default function MatchResults({ match }: MatchResultsProps) {
             >
               {player._id.toString() in match.scoreTable && <span className='font-bold text-2xl w-10 text-center'>{match.scoreTable[player._id.toString()]}</span>}
               <FormattedUser user={player} />
-              {getProfileRatingDisplay(match.type, player.multiplayerProfile)}
+              {getProfileRatingDisplay(match.type, player.multiplayerProfile, false)}
+              {recap?.winner?.userId.toString() === player._id.toString() &&
+                <span className='text-xs italic' style={{
+                  color: 'var(--color-gray)',
+                }}>
+                  {`(${Math.round(recap.eloChangeWinner) >= 0 ? '+' : ''}${Math.round(recap.eloChangeWinner)})`}
+                </span>
+              }
+              {recap?.loser?.userId.toString() === player._id.toString() &&
+                <span className='text-xs italic' style={{
+                  color: 'var(--color-gray)',
+                }}>
+                  {`(${Math.round(recap.eloChangeLoser) >= 0 ? '+' : ''}${Math.round(recap.eloChangeLoser)})`}
+                </span>
+              }
             </div>
           ))}
         </div>
