@@ -1,0 +1,30 @@
+name: Visual Regression Testing
+
+on:
+  workflow_dispatch:
+  push:
+    paths-ignore:
+    - 'tests/**'
+    branches: [main]
+  pull_request:
+    paths-ignore:
+    - 'tests/**'
+
+jobs:
+  visual-regression-testing:
+    name: Run Visual Regression Testing
+    runs-on: ubuntu-latest
+    container:
+      image: backstopjs/backstopjs
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Update Backstop Config For CI Testing
+        run: |
+          echo "`jq '.report=["CI"]' backstop.json`" > backstop.json
+          echo "`jq '.scenarios[].url |= sub(\"localhost\";\"stage.pathology.gg\")' backstop.json`" > backstop.json
+
+      - name: Run Visual Regression Test
+        run: |
+          backstop test
