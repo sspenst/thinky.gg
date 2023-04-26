@@ -5,7 +5,7 @@ on:
   push:
     paths-ignore:
     - 'tests/**'
-    branches: [main]
+    branches: [main, image_test_2]
   pull_request:
     paths-ignore:
     - 'tests/**'
