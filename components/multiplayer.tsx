@@ -79,28 +79,30 @@ export default function Multiplayer() {
   }
 
   return (<>
-    <div className='flex flex-col items-center justify-center p-4 gap-4'>
-      <h1 className='text-4xl font-bold'>Multiplayer</h1>
-      <OnlineUsers />
-      <div>Play against other Pathology players in a realtime multiplayer match:</div>
-      <ul>
-        <li>Complete as many levels as you can</li>
-        <li>Levels get progressively harder</li>
-        <li>You are allowed to skip one level per match</li>
-      </ul>
-      {user && <>
-        <div className='font-bold italic text-xl'>
-        Your rating:
-        </div>
-        <div className='py-0.5 px-2.5 -mt-2 border rounded flex items-center gap-2' style={{
-          borderColor: 'var(--bg-color-3)',
-        }}>
-          {getProfileRatingDisplay(MultiplayerMatchType.RushBullet, user.multiplayerProfile)}
-          {getProfileRatingDisplay(MultiplayerMatchType.RushBlitz, user.multiplayerProfile)}
-          {getProfileRatingDisplay(MultiplayerMatchType.RushRapid, user.multiplayerProfile)}
-          {getProfileRatingDisplay(MultiplayerMatchType.RushClassical, user.multiplayerProfile)}
-        </div>
-      </>}
+    <div className='flex flex-col justify-center gap-8 m-4 items-center'>
+      <div className='flex flex-col items-center justify-center gap-4'>
+        <h1 className='text-4xl font-bold'>Multiplayer</h1>
+        <OnlineUsers />
+        <div>Play against other Pathology players in a realtime multiplayer match:</div>
+        <ul>
+          <li>Complete as many levels as you can</li>
+          <li>Levels get progressively harder</li>
+          <li>You are allowed to skip one level per match</li>
+        </ul>
+        {user && <>
+          <div className='font-bold italic text-xl'>
+          Your rating:
+          </div>
+          <div className='py-0.5 px-2.5 -mt-2 border rounded flex items-center gap-2' style={{
+            borderColor: 'var(--bg-color-3)',
+          }}>
+            {getProfileRatingDisplay(MultiplayerMatchType.RushBullet, user.multiplayerProfile)}
+            {getProfileRatingDisplay(MultiplayerMatchType.RushBlitz, user.multiplayerProfile)}
+            {getProfileRatingDisplay(MultiplayerMatchType.RushRapid, user.multiplayerProfile)}
+            {getProfileRatingDisplay(MultiplayerMatchType.RushClassical, user.multiplayerProfile)}
+          </div>
+        </>}
+      </div>
       {!hasCreatedMatch &&
       <div id='create_button_section' className=''>
         <button
@@ -111,42 +113,42 @@ export default function Multiplayer() {
         </button>
       </div>
       }
-
-      <div className='flex flex-wrap justify-center gap-4 mx-4'>
-        <div className='flex flex-col gap-4'>
-          <h2 className='text-2xl font-bold flex justify-center'>Currently online</h2>
-          <div className='flex flex-col gap-2'>
-            {connectedPlayers.map(player => (
-              <div key={'multiplayer-' + player._id.toString()} className='flex items-center gap-2'>
-                <FormattedUser user={player} />
-                {getProfileRatingDisplay(MultiplayerMatchType.RushBullet, player.multiplayerProfile)}
-                {getProfileRatingDisplay(MultiplayerMatchType.RushBlitz, player.multiplayerProfile)}
-                {getProfileRatingDisplay(MultiplayerMatchType.RushRapid, player.multiplayerProfile)}
-                {getProfileRatingDisplay(MultiplayerMatchType.RushClassical, player.multiplayerProfile)}
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className='flex flex-col gap-2'>
-          <h2 className='text-2xl font-bold mb-2 flex justify-center'>Open matches</h2>
+      {openMatches.length > 0 &&
+        <div className='flex flex-col gap-2 items-center'>
+          <h2 className='text-2xl font-bold mb-2'>Open Matches</h2>
           {openMatches.length === 0 && <span className='italic flex justify-center'>No open matches!</span>}
           {openMatches.sort((a, b) => sortByRating(a.players[0], b.players[0], MultiplayerMatchType.RushBullet)).map((match: MultiplayerMatch) => (
             <MatchStatus key={match._id.toString()} match={match} />
           ))}
         </div>
-        <div className='flex flex-col gap-2'>
-          <h2 className='text-2xl font-bold mb-2 flex justify-center'>Active matches</h2>
-          {activeMatches.length === 0 && <span className='italic flex justify-center'>No active matches!</span>}
+      }
+      {activeMatches.length > 0 &&
+        <div className='flex flex-col gap-2 items-center'>
+          <h2 className='text-2xl font-bold mb-2'>Active Matches</h2>
           {activeMatches.map((match: MultiplayerMatch) => (
             <MatchStatus key={match._id.toString()} match={match} />
           ))}
         </div>
+      }
+      <div className='flex flex-col gap-4'>
+        <h2 className='text-2xl font-bold flex justify-center'>Currently Online</h2>
+        <div className='flex flex-col gap-2'>
+          {connectedPlayers.map(player => (
+            <div key={'multiplayer-' + player._id.toString()} className='flex items-center gap-2'>
+              <FormattedUser user={player} />
+              {getProfileRatingDisplay(MultiplayerMatchType.RushBullet, player.multiplayerProfile)}
+              {getProfileRatingDisplay(MultiplayerMatchType.RushBlitz, player.multiplayerProfile)}
+              {getProfileRatingDisplay(MultiplayerMatchType.RushRapid, player.multiplayerProfile)}
+              {getProfileRatingDisplay(MultiplayerMatchType.RushClassical, player.multiplayerProfile)}
+            </div>
+          ))}
+        </div>
       </div>
-      <div className='flex flex-col gap-4 items-center'>
-        <h2 className='text-2xl font-bold'>Recent Matches</h2>
+      <div className='flex flex-col gap-2 items-center'>
+        <h2 className='text-2xl font-bold mb-2'>Recent Matches</h2>
         {!recentMatches || recentMatches.length === 0 && <span className='italic flex justify-center'>No active matches!</span>}
         {recentMatches && recentMatches.map((match: MultiplayerMatch) => (
-          <MatchResults key={match._id.toString()} match={match} />
+          <MatchResults key={match._id.toString()} match={match} showViewLink={true} />
         ))}
       </div>
     </div>

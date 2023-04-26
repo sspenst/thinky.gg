@@ -99,7 +99,6 @@ export default withAuth(
         offset: ValidNumber(false, 0, 1000)
       },
     },
-
   },
   async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
     const { userIds, matchId, limit, offset } = req.query;
