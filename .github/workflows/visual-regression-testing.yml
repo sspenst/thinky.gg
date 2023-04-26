@@ -14,9 +14,6 @@ jobs:
   visual-regression-testing:
     name: Run Visual Regression Testing
     runs-on: ubuntu-latest
-    container:
-      image: backstopjs/backstopjs
-      options: --user root
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -27,5 +24,5 @@ jobs:
           echo "`jq '.scenarios[].url |= sub(\"localhost\";\"stage.pathology.gg\")' backstop.json`" > backstop.json
 
       - name: Run Visual Regression Test
-        run: |
-          backstop test
+        run: docker run --rm --mount type=bind,source="${pwd}",target=/src --privileged backstopjs/backstopjs
+ 
