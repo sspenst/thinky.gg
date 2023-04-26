@@ -8,9 +8,6 @@ export enum MultiplayerMatchType {
   RushBlitz = 'RushBlitz',
   RushRapid = 'RushRapid',
   RushClassical = 'RushClassical',
-
-  // BlitzRush = 'BlitzRush', // TODO
-  // BulletRush = 'BulletRush', // TODO
 }
 
 export enum MultiplayerMatchState {
@@ -30,6 +27,7 @@ export const MultiplayerMatchTypeDurationMap: Record<MultiplayerMatchType, numbe
 export interface MatchLogDataFromUser {
   userId: User | Types.ObjectId;
 }
+
 export interface MatchLogDataGameRecap {
   eloChangeWinner: number;
   eloChangeLoser: number;
@@ -40,16 +38,20 @@ export interface MatchLogDataGameRecap {
   winner: MultiplayerProfile;
   loser: MultiplayerProfile;
 }
+
 export interface MatchLogDataLevelComplete {
   userId: User | Types.ObjectId;
   levelId: Level | Types.ObjectId;
 }
+
 export interface MatchLogDataUserLeveId {
   userId: Types.ObjectId;
 }
+
 export interface MatchLogGeneric {
   log: string
 }
+
 export interface MatchLog {
   createdAt: Date;
   type: string;
