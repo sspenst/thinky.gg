@@ -15,6 +15,7 @@ import BasicLayout from './level/basicLayout';
 import Square from './level/square';
 import CreateLevelModal from './modal/createLevelModal';
 import DataModal from './modal/dataModal';
+import EditLevelModal from './modal/editLevelModal';
 import PublishLevelModal from './modal/publishLevelModal';
 
 interface EditorProps {
@@ -31,6 +32,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   const [isDataOpen, setIsDataOpen] = useState(false);
   const [isModifyOpen, setIsModifyOpen] = useState(false);
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
+  const [isEditLevelModalOpen, setIsEditLevelOpen] = useState(false);
   const [isSizeOpen, setIsSizeOpen] = useState(false);
   const { preventKeyDownEvent } = useContext(PageContext);
   const router = useRouter();
@@ -294,6 +296,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
         controls={[
           new Control('btn-undo', () => undo(), <>Undo</>, historyIndex.current === 0),
           new Control('btn-redo', () => redo(), <>Redo</>, historyIndex.current === history.current.length - 1),
+          new Control('btn-size', () => setIsEditLevelOpen(true), <>Edit</>),
           new Control('btn-size', () => setIsSizeOpen(true), <>Size</>),
           new Control('btn-data', () => setIsDataOpen(true), <>Data</>),
           new Control('btn-modify', () => setIsModifyOpen(true), <>Modify</>),
@@ -328,6 +331,11 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       level={level}
       setIsDirty={() => setIsDirty(true)}
       setLevel={setLevel}
+    />
+    <EditLevelModal
+      closeModal={() => setIsEditLevelOpen(false)}
+      isOpen={isEditLevelModalOpen}
+      level={level}
     />
     <ModifyModal
       closeModal={() => setIsModifyOpen(false)}
