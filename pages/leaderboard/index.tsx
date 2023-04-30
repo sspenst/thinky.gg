@@ -95,7 +95,7 @@ async function getGMLeaderboard() {
     {
       $match: {
         sum: {
-          $gte: 5
+          $gte: 7
         }
       }
     },
@@ -140,15 +140,23 @@ export default function Leaderboard( { gmLeaderboard }: {gmLeaderboard: UserAndS
       <Page title='Leaderboard'>
         <div className='p-3'>
           <h2 className='text-xl font-bold'>Grandmaster Leaderboard</h2>
-          <p>Below is a list of Pathology Grandmasters. To become a grandmaster, a player must have completed at minimum 5 grandmaster (or super grandmaster) levels</p>
+          <p>Below is a list of Pathology Grandmasters. To become a grandmaster, a player must have completed at minimum 7 grandmaster (or super grandmaster) levels</p>
           <DataTable
             columns={[
               {
-                name: 'User',
-                cell: (row: UserAndSum) => <FormattedUser size={Dimensions.AvatarSizeSmall} user={row.user} />,
+                name: '#',
+                cell: (row: UserAndSum, index: number) => index + 1,
+
+                width: '50px',
+
               },
               {
-                name: 'Levels Completed',
+                name: 'User',
+                cell: (row: UserAndSum) => <FormattedUser size={Dimensions.AvatarSizeSmall} user={row.user} />,
+                minWidth: '200px',
+              },
+              {
+                name: 'GMs Completed',
                 selector: (row) => row.sum,
               },
             ]}
