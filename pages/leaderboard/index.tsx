@@ -155,7 +155,7 @@ export default function Leaderboard( { gmLeaderboard, sgmLeaderboard }: { gmLead
                 {
                   color: colorGM
                 }
-              }>Pathology Grandmasters</span><span className='text-xs'>Grandmaster have completed at minimum 7 Grandmaster (or harder) levels</span>
+              }>Pathology Grandmasters</span><span className='text-xs'>Grandmasters have completed at minimum 7 Grandmaster (or harder) levels</span>
               <UserAndValueRankTable data={gmLeaderboard} reqUser={reqUser} valueHeader='GMs Completed' />
             </div>
             <div className='flex flex-col'>
@@ -163,7 +163,7 @@ export default function Leaderboard( { gmLeaderboard, sgmLeaderboard }: { gmLead
                 {
                   color: colorSGM
                 }
-              }>Pathology Super Grandmasters</span><span className='text-xs'>Super Grandmaster have completed at minimum 7 Super Grandmaster levels</span>
+              }>Pathology Super Grandmasters</span><span className='text-xs'>Super Grandmasters have completed at minimum 7 Super Grandmaster levels</span>
               <UserAndValueRankTable data={sgmLeaderboard} reqUser={reqUser} valueHeader='SGMs Completed' />
             </div>
           </div>
