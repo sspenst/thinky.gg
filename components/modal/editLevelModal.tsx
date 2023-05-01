@@ -146,7 +146,7 @@ export default function EditLevelModal({ closeModal, isOpen, level }: EditLevelM
     });
   }
 
-  const isUsersLevel = level.userId._id === user?._id || level.userId === user?._id || isCurator(user);
+  const isUsersLevel = level.userId?._id === user?._id || level.userId === user?._id || isCurator(user);
 
   return (
     <Modal
