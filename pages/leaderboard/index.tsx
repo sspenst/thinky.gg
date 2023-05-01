@@ -147,23 +147,23 @@ export default function Leaderboard( { gmLeaderboard, sgmLeaderboard }: { gmLead
     <>
       <Page title='Leaderboard'>
         <div className='p-3 flex flex-col'>
-          <h2 className='text-xl font-bold'>Grandmaster Leaderboards</h2>
-          <div className='flex flex-col md:flex-row gap-5'>
+          <h2 className='text-xl font-bold text-center p-3'>Grandmaster Leaderboards</h2>
+          <div className='flex flex-col md:flex-row gap-5 justify-center'>
 
-            <div>
-              <p>Below is a list of <span className='font-bold italic' style={
+            <div className='flex flex-col'>
+              <span className='font-bold italic' style={
                 {
                   color: colorGM
                 }
-              }>Pathology Grandmasters</span>. To become a Grandmaster, a player must have completed at minimum 7 Grandmaster (or harder) levels</p>
+              }>Pathology Grandmasters</span><span className='text-xs'>Grandmaster have completed at minimum 7 Grandmaster (or harder) levels</span>
               <UserAndValueRankTable data={gmLeaderboard} reqUser={reqUser} valueHeader='GMs Completed' />
             </div>
-            <div>
-              <p>Below is a list of <span className='font-bold italic' style={
+            <div className='flex flex-col'>
+              <span className='font-bold italic' style={
                 {
                   color: colorSGM
                 }
-              }>Pathology Super Grandmasters</span>. To become a Super Grandmaster, a player must have completed at minimum 7 super grandmaster levels</p>
+              }>Pathology Super Grandmasters</span><span className='text-xs'>Super Grandmaster have completed at minimum 7 Super Grandmaster levels</span>
               <UserAndValueRankTable data={sgmLeaderboard} reqUser={reqUser} valueHeader='SGMs Completed' />
             </div>
           </div>
