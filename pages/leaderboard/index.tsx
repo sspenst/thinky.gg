@@ -1,6 +1,7 @@
-import { DIFFICULTY_NAMES, getDifficultyRangeFromDifficultyName } from '@root/components/difficultyDisplay';
+import { DIFFICULTY_NAMES, getDifficultyColor, getDifficultyRangeFromDifficultyName, getFormattedDifficulty } from '@root/components/difficultyDisplay';
 import FormattedUser from '@root/components/formattedUser';
 import Page from '@root/components/page';
+import UserAndValueRankTable from '@root/components/tables/UserAndValueRankTable';
 import Dimensions from '@root/constants/dimensions';
 import { AppContext } from '@root/contexts/appContext';
 import { UserAndSum } from '@root/contexts/levelContext';
@@ -12,8 +13,8 @@ import { GetServerSidePropsContext } from 'next';
 import React, { useContext } from 'react';
 import DataTable from 'react-data-table-component';
 
-async function getGMLeaderboard() {
-  const GMThresh = getDifficultyRangeFromDifficultyName(DIFFICULTY_NAMES.GRANDMASTER);
+async function getGMLeaderboard(range: DIFFICULTY_NAMES) {
+  const GMThresh = getDifficultyRangeFromDifficultyName(range);
 
   const agg = await LevelModel.aggregate([
     {
@@ -119,63 +120,54 @@ async function getGMLeaderboard() {
 }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const gmLeaderboard = await getGMLeaderboard();
+  const [gmLeaderboard, sgmLeaderboard] = await Promise.all([getGMLeaderboard(DIFFICULTY_NAMES.GRANDMASTER), getGMLeaderboard(DIFFICULTY_NAMES.SUPER_GRANDMASTER)]);
 
   return {
     props: {
       gmLeaderboard: JSON.parse(JSON.stringify(gmLeaderboard)),
+      sgmLeaderboard: JSON.parse(JSON.stringify(sgmLeaderboard)),
     },
   };
 }
 
-export default function Leaderboard( { gmLeaderboard }: {gmLeaderboard: UserAndSum[]}) {
+export default function Leaderboard( { gmLeaderboard, sgmLeaderboard }: { gmLeaderboard: UserAndSum[], sgmLeaderboard: UserAndSum[] }) {
   const { user: reqUser } = useContext(AppContext);
 
   if (!gmLeaderboard) {
     return <span>Loading...</span>;
   }
 
+  const GMThresh = getDifficultyRangeFromDifficultyName(DIFFICULTY_NAMES.GRANDMASTER);
+  const SGMThresh = getDifficultyRangeFromDifficultyName(DIFFICULTY_NAMES.SUPER_GRANDMASTER);
+
+  const colorGM = getDifficultyColor(GMThresh[0]);
+  const colorSGM = getDifficultyColor(SGMThresh[0]);
+
   return (
     <>
       <Page title='Leaderboard'>
-        <div className='p-3'>
-          <h2 className='text-xl font-bold'>Grandmaster Leaderboard</h2>
-          <p>Below is a list of Pathology Grandmasters. To become a grandmaster, a player must have completed at minimum 7 grandmaster (or super grandmaster) levels</p>
-          <DataTable
-            columns={[
-              {
-                name: '#',
-                cell: (row: UserAndSum, index: number) => index + 1,
+        <div className='p-3 flex flex-col'>
+          <h2 className='text-xl font-bold'>Grandmaster Leaderboards</h2>
+          <div className='flex flex-col md:flex-row gap-5'>
 
-                width: '50px',
+            <div>
+              <p>Below is a list of <span className='font-bold italic' style={
+                {
+                  color: colorGM
+                }
+              }>Pathology Grandmasters</span>. To become a Grandmaster, a player must have completed at minimum 7 Grandmaster (or harder) levels</p>
+              <UserAndValueRankTable data={gmLeaderboard} reqUser={reqUser} valueHeader='GMs Completed' />
+            </div>
+            <div>
+              <p>Below is a list of <span className='font-bold italic' style={
+                {
+                  color: colorSGM
+                }
+              }>Pathology Super Grandmasters</span>. To become a Super Grandmaster, a player must have completed at minimum 7 super grandmaster levels</p>
+              <UserAndValueRankTable data={sgmLeaderboard} reqUser={reqUser} valueHeader='SGMs Completed' />
+            </div>
+          </div>
 
-              },
-              {
-                name: 'User',
-                cell: (row: UserAndSum) => <FormattedUser size={Dimensions.AvatarSizeSmall} user={row.user} />,
-                minWidth: '200px',
-              },
-              {
-                name: 'GMs Completed',
-                selector: (row) => row.sum,
-              },
-            ]}
-            conditionalRowStyles={[{
-              when: row => row?.user._id === reqUser?._id,
-              style: {
-                backgroundColor: 'var(--bg-color-4)',
-              },
-            }]}
-            customStyles={DATA_TABLE_CUSTOM_STYLES}
-            data={gmLeaderboard}
-            dense
-            noDataComponent={
-              <div className='p-3'>
-          Nothing to display...
-              </div>
-            }
-            striped
-          />
         </div>
       </Page>
     </>
