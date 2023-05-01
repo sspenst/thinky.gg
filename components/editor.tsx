@@ -296,7 +296,13 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
         controls={[
           new Control('btn-undo', () => undo(), <>Undo</>, historyIndex.current === 0),
           new Control('btn-redo', () => redo(), <>Redo</>, historyIndex.current === history.current.length - 1),
-          new Control('btn-edit', () => setIsEditLevelOpen(true), <>Edit</>),
+          new Control('btn-edit', () => {
+            if (id) {
+              setIsEditLevelOpen(true);
+            } else {
+              setIsCreateLevelOpen(true);
+            }
+          }, <>Edit</>),
           new Control('btn-size', () => setIsSizeOpen(true), <>Size</>),
           new Control('btn-data', () => setIsDataOpen(true), <>Data</>),
           new Control('btn-modify', () => setIsModifyOpen(true), <>Modify</>),
