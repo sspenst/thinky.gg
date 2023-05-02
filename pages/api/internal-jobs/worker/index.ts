@@ -1,18 +1,17 @@
-import admin from 'firebase-admin';
 import mongoose, { QueryOptions, Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
 import { getEnrichNotificationPipelineStages } from '../../../../helpers/enrich';
-import getMobileNotification from '../../../../helpers/getMobileNotification';
 import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
-import Device from '../../../../models/db/device';
 import Notification from '../../../../models/db/notification';
 import QueueMessage from '../../../../models/db/queueMessage';
-import { DeviceModel, NotificationModel, QueueMessageModel } from '../../../../models/mongoose';
+import { NotificationModel, QueueMessageModel } from '../../../../models/mongoose';
 import { calcPlayAttempts, refreshIndexCalcs } from '../../../../models/schemas/levelSchema';
 import { QueueMessageState, QueueMessageType } from '../../../../models/schemas/queueMessageSchema';
-import { calcCreatorCounts } from '../../../../models/schemas/userSchema';
+import { calcCreatorCounts, USER_DEFAULT_PROJECTION } from '../../../../models/schemas/userSchema';
+import { sendEmail } from './sendEmail';
+import { sendPush } from './sendPush';
 
 const MAX_PROCESSING_ATTEMPTS = 3;
 
@@ -23,23 +22,41 @@ export async function queue(dedupeKey: string, type: QueueMessageType, message: 
     state: QueueMessageState.PENDING,
     type: type,
   }, {
-    dedupeKey: dedupeKey,
-    message: message,
-    state: QueueMessageState.PENDING,
-    type: type,
+    $set: {
+      dedupeKey: dedupeKey,
+      message: message,
+      state: QueueMessageState.PENDING,
+      type: type,
+      // clear out
+    },
+
   }, {
     upsert: true,
     ...options,
   });
 }
 
+export interface EmailQueueMessage {
+  toUser: Types.ObjectId | string;
+  fromUser: Types.ObjectId | string;
+  subject: string;
+  text: string;
+
+}
+
 export async function queuePushNotification(notificationId: Types.ObjectId, options?: QueryOptions) {
-  await queue(
+  await Promise.all([queue(
     notificationId.toString(),
     QueueMessageType.PUSH_NOTIFICATION,
     JSON.stringify({ notificationId: notificationId.toString() }),
     options,
-  );
+  ),
+  queue(
+    notificationId.toString(),
+    QueueMessageType.EMAIL_NOTIFICATION,
+    JSON.stringify({ notificationId: notificationId.toString() }),
+    options,
+  )]);
 }
 
 export async function queueFetch(url: string, options: RequestInit, dedupeKey?: string, queryOptions?: QueryOptions) {
@@ -100,7 +117,7 @@ async function processQueueMessage(queueMessage: QueueMessage) {
       log = `${url}: ${e.message}`;
       error = true;
     }
-  } else if (queueMessage.type === QueueMessageType.PUSH_NOTIFICATION) {
+  } else if (queueMessage.type === QueueMessageType.PUSH_NOTIFICATION || queueMessage.type === QueueMessageType.EMAIL_NOTIFICATION) {
     try {
       const { notificationId } = JSON.parse(queueMessage.message) as { notificationId: string };
 
@@ -113,6 +130,14 @@ async function processQueueMessage(queueMessage: QueueMessage) {
             localField: 'userId',
             foreignField: '_id',
             as: 'userId',
+            pipeline: [
+              {
+                $project: {
+                  ...USER_DEFAULT_PROJECTION,
+                  email: 1,
+                }
+              }
+            ]
           },
         },
         {
@@ -127,60 +152,10 @@ async function processQueueMessage(queueMessage: QueueMessage) {
         log = `Notification ${notificationId} not sent: not found`;
       } else {
         const notification = notificationAgg[0];
-        const devices = await DeviceModel.find({ userId: notification.userId._id });
 
-        if (devices.length === 0) {
-          log = `Notification ${notificationId} not sent: no devices found`;
-        } else {
-          const mobileNotification = getMobileNotification(notification);
-          const tokens = devices.map((token: Device) => token.deviceToken);
+        const whereSend = queueMessage.type === QueueMessageType.PUSH_NOTIFICATION ? sendPush : sendEmail;
 
-          if (!global.firebaseApp) {
-            global.firebaseApp = admin.initializeApp({
-              credential: admin.credential.cert({
-                'client_email': process.env.FIREBASE_CLIENT_EMAIL,
-                'private_key': process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-                'project_id': process.env.FIREBASE_PROJECT_ID,
-              } as admin.ServiceAccount),
-            });
-          }
-
-          const res = await global.firebaseApp.messaging().sendMulticast({
-            tokens: tokens,
-            data: {
-              notificationId: notification._id.toString(),
-              url: mobileNotification.url,
-            },
-            notification: {
-              title: mobileNotification.title,
-              body: mobileNotification.body,
-              imageUrl: mobileNotification.imageUrl,
-            },
-            apns: {
-              payload: {
-                aps: {
-                  'mutable-content': 1,
-                  'content-available': 1,
-                },
-                notifee_options: {
-                  data: {
-                    notificationId: notification._id.toString(),
-                    url: mobileNotification.url,
-                  },
-                  image: mobileNotification.imageUrl,
-                },
-              },
-            },
-            android: {
-              notification: {
-                imageUrl: mobileNotification.imageUrl,
-              },
-            },
-          });
-          const responseJSON = JSON.stringify(res);
-
-          log = `${responseJSON}`;
-        }
+        log = await whereSend(notification);
       }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
@@ -217,12 +192,14 @@ async function processQueueMessage(queueMessage: QueueMessage) {
   }
 
   await QueueMessageModel.updateOne({ _id: queueMessage._id }, {
+
     isProcessing: false,
     state: state,
     processingCompletedAt: new Date(),
     $push: {
       log: log,
     }
+
   });
 
   return error;
@@ -237,7 +214,9 @@ export async function processQueueMessages() {
     isProcessing: true,
     processingStartedAt: { $lt: new Date(Date.now() - 1000 * 60 * 5) }, // 5 minutes
   }, {
+
     isProcessing: false,
+
   });
 
   const genJobRunId = new Types.ObjectId();
@@ -272,12 +251,14 @@ export async function processQueueMessages() {
       await QueueMessageModel.updateMany({
         _id: { $in: queueMessages.map(x => x._id) },
       }, {
+
         jobRunId: genJobRunId,
         isProcessing: true,
         processingStartedAt: processingStartedAt,
         $inc: {
           processingAttempts: 1,
         },
+
       }, { session: session, lean: true });
 
       // manually update queueMessages so we don't have to query again

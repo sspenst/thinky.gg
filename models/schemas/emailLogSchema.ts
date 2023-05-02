@@ -1,3 +1,4 @@
+import NotificationType from '@root/constants/notificationType';
 import mongoose from 'mongoose';
 import { EmailType } from '../../constants/emailDigest';
 import EmailLog from '../db/emailLog';
@@ -37,7 +38,7 @@ const EmailLogSchema = new mongoose.Schema<EmailLog>(
     type: {
       type: String,
       required: true,
-      enum: EmailType,
+      enum: Object.values({ ...EmailType, ...NotificationType }),
     },
   },
   {

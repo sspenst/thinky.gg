@@ -1,6 +1,7 @@
+import NotificationType from '@root/constants/notificationType';
 import { TourType } from '@root/hooks/useTour';
 import mongoose from 'mongoose';
-import { EmailDigestSettingTypes } from '../../constants/emailDigest';
+import { EmailDigestSettingTypes, EmailType } from '../../constants/emailDigest';
 import UserConfig from '../db/userConfig';
 
 const UserConfigSchema = new mongoose.Schema<UserConfig>(
@@ -22,6 +23,11 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       required: true,
       enum: EmailDigestSettingTypes,
       default: EmailDigestSettingTypes.DAILY,
+    },
+    emailNotificationsList: {
+      type: [{ type: String, enum: NotificationType }],
+      required: false,
+      default: [],
     },
     mobileDeviceTokens: {
       type: [String],

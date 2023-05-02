@@ -14,14 +14,14 @@ export default withAuth({
     }
   },
   PUT: {
-    body: {
+    query: {
       action: ValidEnum(Object.values(GraphType)),
       id: ValidObjectId(),
       targetModel: ValidEnum(['User', 'Collection']),
     }
   },
   DELETE: {
-    body: {
+    query: {
       action: ValidEnum(Object.values(GraphType)),
       id: ValidObjectId(),
       targetModel: ValidEnum(['User', 'Collection']),
@@ -35,7 +35,7 @@ export default withAuth({
     return res.json(followData);
   }
 
-  const { action, id, targetModel } = req.body;
+  const { action, id, targetModel } = req.query;
 
   // @TODO: Check if user has blocked (future feature) to disallow following
   const query = {
@@ -59,7 +59,7 @@ export default withAuth({
     });
 
     if (updateResult.upsertedCount === 1) {
-      await createNewFollowerNotification(req.userId, id);
+      await createNewFollowerNotification(req.userId, id as string);
     }
   } else if (req.method === 'DELETE') {
     const deleteResult = await GraphModel.deleteOne(query);
@@ -69,11 +69,11 @@ export default withAuth({
         error: 'Not following',
       });
     } else {
-      await clearNotifications(undefined, req.user._id, id, NotificationType.NEW_FOLLOWER);
+      await clearNotifications(undefined, req.user._id, id as string, NotificationType.NEW_FOLLOWER);
     }
   }
 
-  const followData = await getFollowData(id, req.user);
+  const followData = await getFollowData(id as string, req.user);
 
   return res.status(200).json(followData);
 });

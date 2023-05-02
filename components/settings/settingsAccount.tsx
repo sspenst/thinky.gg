@@ -1,3 +1,4 @@
+import NotificationType from '@root/constants/notificationType';
 import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
 import React, { useCallback, useState } from 'react';
@@ -18,6 +19,7 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
   const [password, setPassword] = useState<string>('');
   const [password2, setPassword2] = useState<string>('');
   const [showPlayStats, setShowPlayStats] = useState(userConfig?.showPlayStats ?? false);
+  const [emailOnPrivateMessage, setEmailOnPrivateMessage] = useState<NotificationType[]>(userConfig?.emailNotificationsList ?? []);
   const [showStatus, setShowStatus] = useState(!user.hideStatus);
   const [username, setUsername] = useState<string>(user.name);
 
@@ -252,6 +254,12 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
         <div>
           <div className='block font-bold mb-2'>
             Email Notifications
+          </div>
+          <div className='flex gap-2 p-1'>
+
+            <label className='text-sm' htmlFor='emailOnPrivateMessage'>
+              Email me when someone writes on my profile
+            </label>
           </div>
           <div>
             <Select
