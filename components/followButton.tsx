@@ -21,18 +21,18 @@ export default function FollowButton({ isFollowing, onResponse, user }: FollowBu
     targ.disabled = true;
     targ.style.opacity = '0.5';
 
-    const res = await fetch('/api/follow', {
+    const queryParams = new URLSearchParams({
+      action: GraphType.FOLLOW,
+      id: user._id.toString(),
+      targetModel: 'User',
+    });
+
+    const res = await fetch(`/api/follow?${queryParams}`, {
       method: !_isFollowing ? 'PUT' : 'DELETE',
       headers: {
         'Content-Type': 'application/json',
       },
       credentials: 'include',
-
-      body: JSON.stringify({
-        action: GraphType.FOLLOW,
-        id: user._id,
-        targetModel: 'User',
-      }),
     });
 
     targ.disabled = false;

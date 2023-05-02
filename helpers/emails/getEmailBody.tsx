@@ -13,6 +13,8 @@ export default function getEmailBody(
   title: string,
   user: User,
   message?: string,
+  ctaUrl?: string,
+  ctaText?: string,
 ) {
   return renderToStaticMarkup(
     <html>
@@ -26,12 +28,13 @@ export default function getEmailBody(
           <tr>
             <td align='center' style={{
               display: 'block',
-              padding: 20,
+              /*padding: 20,*/
               verticalAlign: 'top',
             }}>
               <table role='presentation' cellPadding='0' cellSpacing='0' style={{
                 color: '#000',
-                maxWidth: 580,
+                maxWidth: '75%',
+                width: '100%'
               }}>
                 <tr>
                   <td>
@@ -41,6 +44,7 @@ export default function getEmailBody(
                       borderStyle: 'solid',
                       borderWidth: 1,
                       padding: 20,
+                      textAlign: 'center',
                     }}>
                       <a href='https://pathology.gg'>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -56,6 +60,28 @@ export default function getEmailBody(
                       )}
                       {message && (
                         <p>{message}</p>
+                      )}
+                      {ctaUrl && ctaText && (
+                        // make a button styled like tailwind for email
+                        <div style={{
+                          // center
+                          margin: '0 auto',
+                          backgroundColor: 'rgb(96 165 250)',
+                          borderRadius: 4,
+                          color: '#FFF',
+                          display: 'inline-block',
+                          padding: '10px 20px',
+                          textDecoration: 'none',
+                        }}>
+                          <a href={ctaUrl}
+                            style={{
+                              color: '#FFF',
+                              textDecoration: 'none',
+                            }}
+                          >
+                            {ctaText}</a>
+
+                        </div>
                       )}
                       {levelOfDay &&
                       <div>
@@ -108,7 +134,7 @@ export default function getEmailBody(
                           color: '#4890ce',
                           textDecoration: 'none',
                         }}>Pathology Discord</a> to chat with other players and the developers!</p>
-                        <p><a href='https://pathology.gg/settings' style={{
+                        <p><a href='https://pathology.gg/settings/account' style={{
                           color: '#4890ce',
                           textDecoration: 'none',
                         }}>Manage your email notification settings</a></p>

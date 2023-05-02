@@ -462,7 +462,7 @@ describe('Reviewing levels should work correctly', () => {
         expect(review.score).toBe(3.5);
         expect(review.levelId._id.toString()).toBe(TestId.LEVEL_2);
 
-        expect(processQueueRes).toBe('Processed 2 messages with no errors');
+        expect(processQueueRes).toBe('Processed 3 messages with no errors');
 
         lvl = await LevelModel.findById(TestId.LEVEL_2);
         expect(lvl.calc_reviews_score_laplace.toFixed(2)).toBe('0.66');
@@ -586,7 +586,7 @@ describe('Reviewing levels should work correctly', () => {
         const response = await res.json();
         const processQueueRes = await processQueueMessages();
 
-        expect(processQueueRes).toBe('Processed 2 messages with no errors');
+        expect(processQueueRes).toBe('Processed 3 messages with no errors');
         expect(response.error).toBeUndefined();
         expect(response.levelId.toString()).toBe(TestId.LEVEL_2);
         expect(res.status).toBe(200);
@@ -664,7 +664,7 @@ describe('Reviewing levels should work correctly', () => {
         const response = await res.json();
         const processQueueRes = await processQueueMessages();
 
-        expect(processQueueRes).toBe('Processed 2 messages with no errors');
+        expect(processQueueRes).toBe('Processed 3 messages with no errors');
 
         expect(response.error).toBeUndefined();
         expect(response.levelId.toString()).toBe(TestId.LEVEL_2);

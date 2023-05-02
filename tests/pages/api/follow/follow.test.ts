@@ -40,7 +40,7 @@ describe('api/follow', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...defaultObj,
-          body: {
+          query: {
             action: GraphType.FOLLOW,
             id: TestId.USER,
             targetModel: 'User',
@@ -63,7 +63,7 @@ describe('api/follow', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...defaultObj,
-          body: {
+          query: {
             action: GraphType.FOLLOW,
             id: TestId.USER_B,
             targetModel: 'User',
@@ -93,7 +93,7 @@ describe('api/follow', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...defaultObj,
-          body: {
+          query: {
             action: GraphType.FOLLOW,
             id: TestId.USER_B,
             targetModel: 'User',
@@ -124,7 +124,7 @@ describe('api/follow', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...defaultObj,
-          body: {
+          query: {
             action: GraphType.FOLLOW,
             id: TestId.USER_C,
             targetModel: 'User',
@@ -181,7 +181,7 @@ describe('api/follow', () => {
         const req: NextApiRequestWithAuth = {
           ...defaultObj,
           method: 'DELETE',
-          body: {
+          query: {
             action: GraphType.FOLLOW,
             id: TestId.USER_B,
             targetModel: 'User',
@@ -213,7 +213,7 @@ describe('api/follow', () => {
         const req: NextApiRequestWithAuth = {
           ...defaultObj,
           method: 'DELETE',
-          body: {
+          query: {
             action: GraphType.FOLLOW,
             id: TestId.USER_B,
             targetModel: 'User',
@@ -292,7 +292,7 @@ describe('api/follow', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...defaultObj,
-          body: {
+          query: {
             action: GraphType.FOLLOW,
             id: TestId.USER_B,
             targetModel: 'User',
@@ -320,7 +320,7 @@ describe('api/follow', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...defaultObj,
-          body: {
+          query: {
             action: GraphType.FOLLOW,
             id: TestId.USER_B,
             targetModel: 'User',
@@ -351,7 +351,7 @@ describe('api/follow', () => {
           cookies: {
             token: getTokenCookieValue(TestId.USER_C),
           },
-          body: {
+          query: {
             action: GraphType.FOLLOW,
             id: TestId.USER_B,
             targetModel: 'User',
