@@ -1,3 +1,4 @@
+import UserConfig from '@root/models/db/userConfig';
 import mongoose, { QueryOptions, Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
@@ -6,7 +7,7 @@ import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
 import Notification from '../../../../models/db/notification';
 import QueueMessage from '../../../../models/db/queueMessage';
-import { NotificationModel, QueueMessageModel } from '../../../../models/mongoose';
+import { NotificationModel, QueueMessageModel, UserConfigModel } from '../../../../models/mongoose';
 import { calcPlayAttempts, refreshIndexCalcs } from '../../../../models/schemas/levelSchema';
 import { QueueMessageState, QueueMessageType } from '../../../../models/schemas/queueMessageSchema';
 import { calcCreatorCounts, USER_DEFAULT_PROJECTION } from '../../../../models/schemas/userSchema';
@@ -154,8 +155,18 @@ async function processQueueMessage(queueMessage: QueueMessage) {
         const notification = notificationAgg[0];
 
         const whereSend = queueMessage.type === QueueMessageType.PUSH_NOTIFICATION ? sendPush : sendEmail;
+        const userConfig = await UserConfigModel.findOne({ userId: notification.userId._id }) as UserConfig;
 
-        log = await whereSend(notification);
+        const allowedEmail = userConfig.emailNotificationsList.includes(notification.type);
+        const allowedPush = userConfig.pushNotificationsList.includes(notification.type);
+
+        if (whereSend === sendEmail && !allowedEmail) {
+          log = `Notification ${notificationId} not sent: ` + notification.type + ' not allowed by user (email)';
+        } else if (whereSend === sendPush && !allowedPush) {
+          log = `Notification ${notificationId} not sent: ` + notification.type + ' not allowed by user (push)';
+        } else {
+          log = await whereSend(notification);
+        }
       }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
