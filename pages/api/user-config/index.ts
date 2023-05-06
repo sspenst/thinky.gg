@@ -30,7 +30,8 @@ export default withAuth({
     body: {
       deviceToken: ValidType('string', false),
       emailDigest: ValidType('string', false),
-      emailOnPrivateMessage: ValidType('boolean', false),
+      emailNotificationsList: ValidArray(false),
+      pushNotificationsList: ValidArray(false),
       showPlayStats: ValidType('boolean', false),
       theme: ValidType('string', false),
       tutorialCompletedAt: ValidNumber(false),
@@ -48,7 +49,8 @@ export default withAuth({
     const {
       deviceToken,
       emailDigest,
-      emailOnPrivateMessage,
+      emailNotificationsList,
+      pushNotificationsList,
       showPlayStats,
       theme,
       toursCompleted,
@@ -83,8 +85,12 @@ export default withAuth({
       setObj['toursCompleted'] = toursCompleted;
     }
 
-    if (emailOnPrivateMessage !== undefined) {
-      setObj['privateMessageEmailNotification'] = emailOnPrivateMessage;
+    if (emailNotificationsList) {
+      setObj['emailNotificationsList'] = emailNotificationsList;
+    }
+
+    if (pushNotificationsList) {
+      setObj['pushNotificationsList'] = pushNotificationsList;
     }
 
     // check if setObj is blank

@@ -192,7 +192,7 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
     return {
       [EmailDigestSettingTypes.DAILY]: 'Daily digest',
       [EmailDigestSettingTypes.ONLY_NOTIFICATIONS]: 'Only for unread notifications',
-      [EmailDigestSettingTypes.NONE]: 'None',
+      [EmailDigestSettingTypes.NONE]: 'No daily digest',
     };
   }, []);
 
@@ -216,137 +216,220 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
     }
   }
 
+  // NotificationType is an enum
+  const allNotifs = Object.values(NotificationType);
+
+  const notifLabels = {
+    [NotificationType.NEW_ACHIEVEMENT]: 'New achievement',
+    [NotificationType.NEW_FOLLOWER]: 'New follower',
+    [NotificationType.NEW_LEVEL]: 'New level from someone you follow',
+    [NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION]: 'One of your created levels added to a collection',
+    [NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT]: 'New record on a level you previous beat',
+    [NotificationType.NEW_REVIEW_ON_YOUR_LEVEL]: 'New review on one of your levels',
+    [NotificationType.NEW_WALL_POST]: 'Someone posts to your profile',
+    [NotificationType.NEW_WALL_REPLY]: 'Someone replies to your post',
+  };
+
+  const emailNotifs = userConfig?.emailNotificationsList || [];
+  const pushNotifs = userConfig?.pushNotificationsList || [];
+  // Create a formatted list of all notification types with two checkboxes... one for email and one for mobile push notifications.
+
+  const updateNotifs = (notif: NotificationType, type: 'email' | 'push') => {
+    const notifList = type === 'email' ? emailNotifs : pushNotifs;
+    const notifIndex = notifList.indexOf(notif);
+
+    if (notifIndex === -1) {
+      notifList.push(notif);
+    } else {
+      notifList.splice(notifIndex, 1);
+    }
+
+    updateUserConfig(
+      JSON.stringify({
+        emailNotificationsList: emailNotifs,
+        pushNotificationsList: pushNotifs,
+      }),
+      'notification settings',
+    );
+  };
+
+  console.log(emailNotifs);
+  const notifList = (
+    <table className='table-fixed'>
+      <thead>
+        <tr className='border-b'>
+          <th className='w-1/2 px-4 py-2'>Notification</th>
+          <th className='w-1/4 px-4 py-2'>Email</th>
+          <th className='w-1/4 px-4 py-2'>Push</th>
+        </tr>
+      </thead>
+      <tbody>
+        {allNotifs.map((notif) => {
+          const label = notifLabels[notif];
+
+          return (
+            <tr key={notif} className='border-b'>
+              <td className='px-4 py-2'>
+                <label className='text-sm' htmlFor={notif}>
+                  {label}
+                </label>
+              </td>
+              <td className='px-4 py-2 text-center'>
+                <input
+                  checked={emailNotifs.includes(notif)}
+                  id={notif + '-email'}
+                  name={notif}
+                  onChange={() => updateNotifs(notif, 'email')}
+                  type='checkbox'
+                />
+              </td>
+              <td className='px-4 py-2 text-center'>
+                <input
+                  checked={pushNotifs.includes(notif)}
+                  id={notif + '-push'}
+                  name={notif}
+                  onChange={() => updateNotifs(notif, 'push')}
+                  type='checkbox'
+                />
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  );
+
   return (
     <div className='flex justify-center'>
-      <div className='flex flex-col gap-6 w-full max-w-xs'>
-        <div className='flex flex-col gap-2'>
-          <div className='block font-bold'>
-            Options
-          </div>
-          <div className='flex gap-2'>
-            <input
-              checked={showStatus}
-              id='showStatus'
-              name='showStatus'
-              onChange={() => updateStatus()}
-              type='checkbox'
-            />
-            <label className='text-sm' htmlFor='showStatus'>
-              Show online status
-            </label>
-          </div>
-          <div className='flex gap-2'>
-            <input
-              checked={showPlayStats}
-              id='showPlayStats'
-              name='showPlayStats'
-              onChange={() => {
-                updateUserConfig(JSON.stringify({ showPlayStats: !showPlayStats }), 'play stats in level info');
-                setShowPlayStats(prevShowPlayStats => !prevShowPlayStats);
-              }}
-              type='checkbox'
-            />
-            <label className='text-sm' htmlFor='showPlayStats'>
-              Show play stats in level info
-            </label>
-          </div>
-        </div>
+      <div className='flex flex-col gap-6 p-6'>
+
         <div>
-          <div className='block font-bold mb-2'>
-            Email Notifications
-          </div>
-          <div className='flex gap-2 p-1'>
-
-            <label className='text-sm' htmlFor='emailOnPrivateMessage'>
-              Email me when someone writes on my profile
-            </label>
-          </div>
-          <div>
-            <Select
-              className='text-black w-full text-sm'
-              components={{
-                IndicatorSeparator: null,
-              }}
-              isDisabled={isUserConfigLoading}
-              isLoading={isUserConfigLoading}
-              loadingMessage={() => 'Loading...'}
-              onChange={option => {
-                if (!option) {
-                  return;
-                }
-
-                updateUserConfig(
-                  JSON.stringify({
-                    emailDigest: option.value,
-                  }), 'email notifications',
-                );
-
-                setEmailDigest(option.value);
-              }}
-              options={Object.keys(EmailDigestSettingTypes).map(emailDigestKey => {
-                return {
-                  label: emailDigestLabels()[emailDigestKey as EmailDigestSettingTypes],
-                  value: emailDigestKey as EmailDigestSettingTypes,
-                };
-              })}
-              value={{
-                label: emailDigestLabels()[emailDigest],
-                value: emailDigest,
-              }}
-            />
-          </div>
-        </div>
-        <form className='flex flex-col items-start' onSubmit={updateUsername}>
-          <label className='block font-bold mb-2' htmlFor='username'>
+          <form className='flex flex-col items-start mt-4' onSubmit={updateUsername}>
+            <label className='block font-bold mb-2' htmlFor='username'>
             Username
-          </label>
-          <input
-            className={inputClass}
-            id='username'
-            name='username'
-            onChange={e => setUsername(e.target.value)}
-            placeholder='Username'
-            required
-            type='text'
-            value={username}
-          />
-          <button className='italic underline' type='submit'>Update</button>
-        </form>
-        <form className='flex flex-col items-start' onSubmit={
-          (!userConfig?.emailConfirmed && email === user.email ? resendEmailConfirmation : updateEmail)
-        }>
-          <label className='block font-bold mb-2' htmlFor='email'>
-            {'Email - '}
-            {userConfig?.emailConfirmed && email === user.email ?
-              <span className='text-green-500'>Confirmed</span>
-              :
-              <span className='text-red-500'>Unconfirmed</span>
-            }
-          </label>
-          <input
-            className={inputClass}
-            id='email'
-            name='email'
-            onChange={e => setEmail(e.target.value)}
-            placeholder='Email'
-            required
-            type='email'
-            value={email}
-          />
-          <button className='italic underline' type='submit'>
-            {!userConfig?.emailConfirmed && email === user.email ? 'Resend confirmation' : 'Update'}
-          </button>
-        </form>
-        <form className='flex flex-col items-start' onSubmit={updatePassword}>
-          <label className='block font-bold mb-2' htmlFor='password'>
+            </label>
+            <input
+              className={inputClass}
+              id='username'
+              name='username'
+              onChange={e => setUsername(e.target.value)}
+              placeholder='Username'
+              required
+              type='text'
+              value={username}
+            />
+            <button className='italic underline mb-4' type='submit'>Update</button>
+          </form>
+          <form className='flex flex-col items-start ' onSubmit={
+            (!userConfig?.emailConfirmed && email === user.email ? resendEmailConfirmation : updateEmail)
+          }>
+            <label className='block font-bold mb-2' htmlFor='email'>
+              {'Email - '}
+              {userConfig?.emailConfirmed && email === user.email ?
+                <span className='text-green-500'>Confirmed</span>
+                :
+                <span className='text-red-500'>Unconfirmed</span>
+              }
+            </label>
+            <input
+              className={inputClass}
+              id='email'
+              name='email'
+              onChange={e => setEmail(e.target.value)}
+              placeholder='Email'
+              required
+              type='email'
+              value={email}
+            />
+            <button className='italic underline mb-4' type='submit'>
+              {!userConfig?.emailConfirmed && email === user.email ? 'Resend confirmation' : 'Update'}
+            </button>
+          </form>
+          <form className='flex flex-col items-start' onSubmit={updatePassword}>
+            <label className='block font-bold mb-2' htmlFor='password'>
             Password
-          </label>
-          <input onChange={e => setCurrentPassword(e.target.value)} className={inputClass} id='password' value={currentPassword} type='password' placeholder='Enter current password' required />
-          <input onChange={e => setPassword(e.target.value)} className={inputClass} type='password' placeholder='Enter new password' required />
-          <input onChange={e => setPassword2(e.target.value)} className={inputClass} type='password' placeholder='Re-enter new password' required />
-          <button className='italic underline' type='submit'>Update</button>
-        </form>
-        {userConfig && userConfig.toursCompleted?.length > 0 &&
+            </label>
+            <input autoComplete='current-password'
+              onChange={e => setCurrentPassword(e.target.value)} className={inputClass} id='password' value={currentPassword} type='password' placeholder='Enter current password' required />
+            <input autoComplete='new-password'
+              onChange={e => setPassword(e.target.value)} className={inputClass} type='password' placeholder='Enter new password' required />
+            <input autoComplete='new-password'
+              onChange={e => setPassword2(e.target.value)} className={inputClass} type='password' placeholder='Re-enter new password' required />
+            <button className='italic underline mb-4' type='submit'>Update</button>
+          </form>
+          {notifList}
+
+        </div>
+        <div className='flex flex-col p-3'>
+
+          <div className='flex flex-col gap-2'>
+            <div className='block font-bold'>
+            Options
+            </div>
+            <div>
+              <Select
+                className='text-black w-full text-sm'
+                components={{
+                  IndicatorSeparator: null,
+                }}
+                isDisabled={isUserConfigLoading}
+                isLoading={isUserConfigLoading}
+                loadingMessage={() => 'Loading...'}
+                onChange={option => {
+                  if (!option) {
+                    return;
+                  }
+
+                  updateUserConfig(
+                    JSON.stringify({
+                      emailDigest: option.value,
+                    }), 'email notifications',
+                  );
+
+                  setEmailDigest(option.value);
+                }}
+                options={Object.keys(EmailDigestSettingTypes).map(emailDigestKey => {
+                  return {
+                    label: emailDigestLabels()[emailDigestKey as EmailDigestSettingTypes],
+                    value: emailDigestKey as EmailDigestSettingTypes,
+                  };
+                })}
+                value={{
+                  label: emailDigestLabels()[emailDigest],
+                  value: emailDigest,
+                }}
+              />
+            </div>
+            <div className='flex gap-2'>
+              <input
+                checked={showStatus}
+                id='showStatus'
+                name='showStatus'
+                onChange={() => updateStatus()}
+                type='checkbox'
+              />
+              <label className='text-sm' htmlFor='showStatus'>
+              Show online status
+              </label>
+            </div>
+            <div className='flex gap-2'>
+              <input
+                checked={showPlayStats}
+                id='showPlayStats'
+                name='showPlayStats'
+                onChange={() => {
+                  updateUserConfig(JSON.stringify({ showPlayStats: !showPlayStats }), 'play stats in level info');
+                  setShowPlayStats(prevShowPlayStats => !prevShowPlayStats);
+                }}
+                type='checkbox'
+              />
+              <label className='text-sm' htmlFor='showPlayStats'>
+              Show play stats in level info
+              </label>
+            </div>
+          </div>
+
+          {userConfig && userConfig.toursCompleted?.length > 0 &&
           <button className='italic underline' onClick={() => {
             if (confirm('This will show the onboarding tooltips again. Are you sure?')) {
               clearTours();
@@ -354,7 +437,8 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
           }}>
             Reset onboarding tooltips
           </button>
-        }
+          }
+        </div>
       </div>
     </div>
   );

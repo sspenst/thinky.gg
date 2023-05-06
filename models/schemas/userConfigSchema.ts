@@ -29,6 +29,11 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       required: false,
       default: [],
     },
+    pushNotificationsList: {
+      type: [{ type: String, enum: NotificationType }],
+      required: false,
+      default: [],
+    },
     mobileDeviceTokens: {
       type: [String],
       required: false,
