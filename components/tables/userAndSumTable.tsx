@@ -1,26 +1,25 @@
 import Dimensions from '@root/constants/dimensions';
+import { AppContext } from '@root/contexts/appContext';
 import { UserAndSum } from '@root/contexts/levelContext';
 import { DATA_TABLE_CUSTOM_STYLES } from '@root/helpers/dataTableCustomStyles';
-import User from '@root/models/db/user';
-import React from 'react';
+import React, { useContext } from 'react';
 import DataTable from 'react-data-table-component';
 import FormattedUser from '../formattedUser';
 
-interface UserAndValueRankTableProps {
-    data: UserAndSum[];
-    reqUser?: User;
-    valueHeader: string;
+interface UserAndSumTableProps {
+  data: UserAndSum[];
+  sumName: string;
 }
 
-export default function UserAndValueRankTable({ data, reqUser, valueHeader }: UserAndValueRankTableProps) {
+export default function UserAndSumTable({ data, sumName }: UserAndSumTableProps) {
+  const { user } = useContext(AppContext);
+
   return <DataTable
     columns={[
       {
         name: '#',
         cell: (row: UserAndSum, index: number) => index + 1,
-
         width: '50px',
-
       },
       {
         name: 'User',
@@ -28,12 +27,12 @@ export default function UserAndValueRankTable({ data, reqUser, valueHeader }: Us
         minWidth: '200px',
       },
       {
-        name: valueHeader,
+        name: sumName,
         selector: (row) => row.sum,
       },
     ]}
     conditionalRowStyles={[{
-      when: row => row?.user._id === reqUser?._id,
+      when: row => row?.user._id === user?._id,
       style: {
         backgroundColor: 'var(--bg-color-4)',
       },
@@ -43,7 +42,7 @@ export default function UserAndValueRankTable({ data, reqUser, valueHeader }: Us
     dense
     noDataComponent={
       <div className='p-3'>
-  Nothing to display...
+        Nothing to display...
       </div>
     }
     striped

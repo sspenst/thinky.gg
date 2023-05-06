@@ -310,6 +310,7 @@ export default function Game({
 
   const loadCheckpoint = useCallback((slot: number) => {
     if (!checkpoints) {
+      toast.dismiss();
       toast.error('No checkpoints to restore');
 
       return;
@@ -318,6 +319,7 @@ export default function Game({
     const checkpoint = checkpoints[slot];
 
     if (!checkpoint) {
+      toast.dismiss();
       toast.error(`No checkpoint at slot ${slot}`);
 
       return;
@@ -326,6 +328,7 @@ export default function Game({
     const clonedCheckpoint = cloneGameState(checkpoint);
 
     if (!isValidGameState(clonedCheckpoint)) {
+      toast.dismiss();
       toast.error('Corrupted checkpoint');
 
       return;
@@ -333,6 +336,7 @@ export default function Game({
 
     // check if the checkpoint is the same as the current game state
     if (JSON.stringify(clonedCheckpoint) === JSON.stringify(gameState) && JSON.stringify(gameState) !== JSON.stringify(oldGameState.current)) {
+      toast.dismiss();
       toast.error('Undoing checkpoint restore', { duration: 1500, icon: '👍' });
       oldGameState.current && setGameState(oldGameState.current);
     } else {
@@ -341,6 +345,7 @@ export default function Game({
       setMadeMove(true);
       const keepOldStateRef = cloneGameState(oldGameState.current);
 
+      toast.dismiss();
       toast.success(
         <div>
           {`Restored checkpoint ${slot}. Press ${slot} again to `}

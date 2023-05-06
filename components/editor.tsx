@@ -30,9 +30,9 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   const historyIndex = useRef<number>(0);
   const [isCreateLevelOpen, setIsCreateLevelOpen] = useState(false);
   const [isDataOpen, setIsDataOpen] = useState(false);
+  const [isEditLevelModalOpen, setIsEditLevelOpen] = useState(false);
   const [isModifyOpen, setIsModifyOpen] = useState(false);
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
-  const [isEditLevelModalOpen, setIsEditLevelOpen] = useState(false);
   const [isSizeOpen, setIsSizeOpen] = useState(false);
   const { preventKeyDownEvent } = useContext(PageContext);
   const router = useRouter();
@@ -296,13 +296,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
         controls={[
           new Control('btn-undo', () => undo(), <>Undo</>, historyIndex.current === 0),
           new Control('btn-redo', () => redo(), <>Redo</>, historyIndex.current === history.current.length - 1),
-          new Control('btn-edit', () => {
-            if (id) {
-              setIsEditLevelOpen(true);
-            } else {
-              setIsCreateLevelOpen(true);
-            }
-          }, <>Edit</>),
           new Control('btn-size', () => setIsSizeOpen(true), <>Size</>),
           new Control('btn-data', () => setIsDataOpen(true), <>Data</>),
           new Control('btn-modify', () => setIsModifyOpen(true), <>Modify</>),
@@ -314,6 +307,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
             }
           }, <>Save</>),
           ...(!id ? [] : [
+            new Control('btn-edit', () => setIsEditLevelOpen(true), <>Edit</>, isDirty),
             new Control('btn-test', () => router.push(`/test/${id}`), <>Test</>, isDirty),
             new Control('btn-publish', () => setIsPublishLevelOpen(true), <>Publish</>, isDirty || level.leastMoves === 0),
           ]),
@@ -338,11 +332,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       setIsDirty={() => setIsDirty(true)}
       setLevel={setLevel}
     />
-    <EditLevelModal
-      closeModal={() => setIsEditLevelOpen(false)}
-      isOpen={isEditLevelModalOpen}
-      level={level}
-    />
     <ModifyModal
       closeModal={() => setIsModifyOpen(false)}
       historyPush={historyPush}
@@ -356,6 +345,11 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
         setIsDirty(false);
       }}
       isOpen={isCreateLevelOpen}
+      level={level}
+    />
+    <EditLevelModal
+      closeModal={() => setIsEditLevelOpen(false)}
+      isOpen={isEditLevelModalOpen}
       level={level}
     />
     <PublishLevelModal
