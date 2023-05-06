@@ -1,4 +1,5 @@
 import { EmailDigestSettingTypes } from '@root/constants/emailDigest';
+import NotificationType from '@root/constants/notificationType';
 import Role from '@root/constants/role';
 import { generatePassword } from '@root/helpers/generatePassword';
 import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
@@ -46,6 +47,8 @@ async function createUser({ email, name, password, tutorialCompletedAt, roles }:
       emailConfirmed: false,
       emailConfirmationToken: emailConfirmationToken,
       emailDigest: emailDigest,
+      emailNotificationsList: [Object.values(NotificationType)],
+      pushNotificationsList: [Object.values(NotificationType)],
     }], queryOptions),
   ]);
 
