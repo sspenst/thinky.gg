@@ -10,6 +10,7 @@ interface UserConfig {
   emailConfirmed: boolean;
   emailDigest: EmailDigestSettingTypes;
   emailNotificationsList: NotificationType[];
+  pushNotificationsList: NotificationType[];
   mobileDeviceTokens: string[];
   showPlayStats: boolean;
   stripeCustomerId: string;
