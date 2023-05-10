@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="BackstopJS" tests="14" failures="14" errors="14" skipped="0">
+    <testcase classname="document" name=" ›› Pathology Homepage">
+      <failure message="Design deviation ›› Pathology Homepage (document) component"/>
+      <error message="Design deviation ›› Pathology Homepage (document) component"/>
+    </testcase>
+    <testcase classname="document" name=" ›› Pathology Homepage">
+      <failure message="Design deviation ›› Pathology Homepage (document) component"/>
+      <error message="Design deviation ›› Pathology Homepage (document) component"/>
+    </testcase>
+    <testcase classname="document" name=" ›› Pathology Login">
+      <failure message="Design deviation ›› Pathology Login (document) component"/>
+      <error message="Design deviation ›› Pathology Login (document) component"/>
+    </testcase>
+    <testcase classname="document" name=" ›› Pathology Login">
+      <failure message="Design deviation ›› Pathology Login (document) component"/>
+      <error message="Design deviation ›› Pathology Login (document) component"/>
+    </testcase>
+    <testcase classname="document" name=" ›› Pathology Homepage Logged in">
+      <failure message="Design deviation ›› Pathology Homepage Logged in (document) component"/>
+      <error message="Design deviation ›› Pathology Homepage Logged in (document) component"/>
+    </testcase>
+    <testcase classname="document" name=" ›› Pathology Homepage Logged in">
+      <failure message="Design deviation ›› Pathology Homepage Logged in (document) component"/>
+      <error message="Design deviation ›› Pathology Homepage Logged in (document) component"/>
+    </testcase>
+    <testcase classname="document" name=" ›› Pathology Homepage Create Level">
+      <failure message="Design deviation ›› Pathology Homepage Create Level (document) component"/>
+      <error message="Design deviation ›› Pathology Homepage Create Level (document) component"/>
+    </testcase>
+    <testcase classname="document" name=" ›› Pathology Homepage Create Level">
+      <failure message="Design deviation ›› Pathology Homepage Create Level (document) component"/>
+      <error message="Design deviation ›› Pathology Homepage Create Level (document) component"/>
+    </testcase>
+    <testcase classname="document" name=" ›› Pathology Profile page">
+      <failure message="Design deviation ›› Pathology Profile page (document) component"/>
+      <error message="Design deviation ›› Pathology Profile page (document) component"/>
+    </testcase>
+    <testcase classname="document" name=" ›› Pathology Profile page">
+      <failure message="Design deviation ›› Pathology Profile page (document) component"/>
+      <error message="Design deviation ›› Pathology Profile page (document) component"/>
+    </testcase>
+    <testcase classname="document" name=" ›› Pathology Search page">
+      <failure message="Design deviation ›› Pathology Search page (document) component"/>
+      <error message="Design deviation ›› Pathology Search page (document) component"/>
+    </testcase>
+    <testcase classname="document" name=" ›› Pathology Search page">
+      <failure message="Design deviation ›› Pathology Search page (document) component"/>
+      <error message="Design deviation ›› Pathology Search page (document) component"/>
+    </testcase>
+    <testcase classname="document" name=" ›› Pathology Settings page">
+      <failure message="Design deviation ›› Pathology Settings page (document) component"/>
+      <error message="Design deviation ›› Pathology Settings page (document) component"/>
+    </testcase>
+    <testcase classname="document" name=" ›› Pathology Settings page">
+      <failure message="Design deviation ›› Pathology Settings page (document) component"/>
+      <error message="Design deviation ›› Pathology Settings page (document) component"/>
+    </testcase>
+  </testsuite>
+</testsuites>
