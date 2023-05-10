@@ -15,6 +15,7 @@ import BasicLayout from './level/basicLayout';
 import Square from './level/square';
 import CreateLevelModal from './modal/createLevelModal';
 import DataModal from './modal/dataModal';
+import EditLevelModal from './modal/editLevelModal';
 import PublishLevelModal from './modal/publishLevelModal';
 
 interface EditorProps {
@@ -29,6 +30,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   const historyIndex = useRef<number>(0);
   const [isCreateLevelOpen, setIsCreateLevelOpen] = useState(false);
   const [isDataOpen, setIsDataOpen] = useState(false);
+  const [isEditLevelModalOpen, setIsEditLevelOpen] = useState(false);
   const [isModifyOpen, setIsModifyOpen] = useState(false);
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
   const [isSizeOpen, setIsSizeOpen] = useState(false);
@@ -305,6 +307,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
             }
           }, <>Save</>),
           ...(!id ? [] : [
+            new Control('btn-edit', () => setIsEditLevelOpen(true), <>Edit</>, isDirty),
             new Control('btn-test', () => router.push(`/test/${id}`), <>Test</>, isDirty),
             new Control('btn-publish', () => setIsPublishLevelOpen(true), <>Publish</>, isDirty || level.leastMoves === 0),
           ]),
@@ -342,6 +345,11 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
         setIsDirty(false);
       }}
       isOpen={isCreateLevelOpen}
+      level={level}
+    />
+    <EditLevelModal
+      closeModal={() => setIsEditLevelOpen(false)}
+      isOpen={isEditLevelModalOpen}
       level={level}
     />
     <PublishLevelModal

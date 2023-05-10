@@ -87,6 +87,84 @@ async function getCommunityStepData(levelId: string, onlyLeastMoves: boolean) {
   return agg;
 }
 
+async function getCommunityPlayAttemptsData(levelId: string, userId: string) {
+  const agg = await PlayAttemptModel.aggregate([
+    {
+      $match: {
+        levelId: new mongoose.Types.ObjectId(levelId as string),
+        userId: { $ne: new mongoose.Types.ObjectId(userId) },
+        attemptContext: AttemptContext.JUST_BEATEN,
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        players_with_beaten_playattempt: { $push: '$userId' },
+      },
+    },
+    {
+      $lookup: {
+        from: 'playattempts',
+        let: {
+          levelId: new mongoose.Types.ObjectId(levelId as string),
+          players_with_beaten_playattempt: '$players_with_beaten_playattempt' },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$levelId', '$$levelId'] },
+                  // check where user is in players_with_beaten_playattempt
+                  { $in: ['$userId', '$$players_with_beaten_playattempt'] },
+                  { $ne: ['$startTime', '$endTime'] },
+
+                ],
+              },
+            },
+          },
+          {
+            $match: {
+              attemptContext: { $in: [AttemptContext.JUST_BEATEN, AttemptContext.UNBEATEN] },
+            },
+          },
+          {
+            $group: {
+              _id: '$levelId',
+              sumDuration: { $sum: { $subtract: ['$endTime', '$startTime'] } },
+              count: { $sum: 1 },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              levelId: '$_id',
+              sumDuration: 1,
+              count: 1,
+            },
+          },
+        ],
+        as: 'otherplayattempts',
+      },
+    },
+    {
+      $unwind: {
+        path: '$otherplayattempts',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        count: { $size: '$players_with_beaten_playattempt' },
+        sum: '$otherplayattempts.sumDuration',
+
+      },
+    },
+  ]);
+
+  return agg && agg[0];
+}
+
 async function getPlayAttemptsOverTime(levelId: string, userId: string) {
   return await PlayAttemptModel.aggregate([
     {
@@ -186,12 +264,16 @@ export default withAuth({
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   const { id: levelId } = req.query as { id: string };
   const pro = isPro(req.user);
-  const [communityStepData, playAttemptsOverTime] = await Promise.all([
+  const [communityStepData, playAttemptsOverTime, communityPlayAttemptsData] = await Promise.all([
     getCommunityStepData(levelId, !pro),
-    ...(pro ? [getPlayAttemptsOverTime(levelId, req.userId)] : []),
+    ...(!pro ? [] : [
+      getPlayAttemptsOverTime(levelId, req.userId),
+      getCommunityPlayAttemptsData(levelId, req.userId),
+    ]),
   ]);
 
   return res.status(200).json({
+    [ProStatsLevelType.CommunityPlayAttemptsData]: communityPlayAttemptsData,
     [ProStatsLevelType.CommunityStepData]: communityStepData,
     [ProStatsLevelType.PlayAttemptsOverTime]: playAttemptsOverTime,
   });

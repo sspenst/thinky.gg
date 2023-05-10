@@ -19,6 +19,23 @@ afterAll(async() => {
 });
 enableFetchMocks();
 
+const throwMock = () => {
+  throw new Error('Mock email error');
+};
+const acceptMock = () => {
+  return { rejected: [] };
+};
+
+const sendMailRefMock = { ref: acceptMock };
+
+jest.mock('nodemailer', () => ({
+  createTransport: jest.fn().mockImplementation(() => ({
+    sendMail: jest.fn().mockImplementation(() => {
+      return sendMailRefMock.ref();
+    }),
+  })),
+}));
+
 describe('Testing a valid user', () => {
   test('Getting a valid user all the fields except password', async () => {
     await testApiHandler({

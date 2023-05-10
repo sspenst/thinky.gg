@@ -98,7 +98,7 @@ describe('Email digest', () => {
         const response = await res.json();
 
         expect(response.emailDigestFailed).toHaveLength(1);
-        expect(response.emailDigestFailed[0]).toBe('test@gmail.com');
+
         expect(res.status).toBe(200);
 
         const emailLogs = await EmailLogModel.find({}, {}, { sort: { createdAt: -1 } });

@@ -3,20 +3,12 @@ import Link from 'next/link';
 import React, { useContext, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { AppContext } from '../contexts/appContext';
-import { isProvisional, MUTLIPLAYER_PROVISIONAL_GAME_LIMIT } from '../helpers/multiplayerHelperFunctions';
+import { isProvisional, multiplayerMatchTypeToText, MUTLIPLAYER_PROVISIONAL_GAME_LIMIT } from '../helpers/multiplayerHelperFunctions';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
 import MultiplayerProfile from '../models/db/multiplayerProfile';
 import { MatchAction, MatchLogDataGameRecap, MultiplayerMatchState, MultiplayerMatchType } from '../models/MultiplayerEnums';
 import FormattedUser from './formattedUser';
 import StyledTooltip from './styledTooltip';
-
-interface MatchStatusProps {
-  isMatchPage?: boolean;
-  match: MultiplayerMatch;
-  onJoinClick?: (matchId: string) => void;
-  onLeaveClick?: (matchId: string) => void;
-  recap?: MatchLogDataGameRecap;
-}
 
 export function getMatchTypeNameFromMatchType(type: MultiplayerMatchType): string {
   switch (type) {
@@ -57,33 +49,11 @@ export function getMatchCountFromProfile(profile: MultiplayerProfile, type: Mult
   }
 }
 
-export function getProfileRatingDisplayClean(type: MultiplayerMatchType, profile?: MultiplayerProfile): JSX.Element {
+export function getProfileRatingDisplay(type: MultiplayerMatchType, profile?: MultiplayerProfile, showType = true) {
   if (profile && !isProvisional(type, profile) && getRatingFromProfile(profile, type)) {
     return (
-      <div className='flex flex-col items-center' >
-        <span data-tooltip-id='profile-rating-clean' data-tooltip-content={`Played ${getMatchCountFromProfile(profile, type)} matches`} >{Math.round(getRatingFromProfile(profile, type))}</span>
-        <StyledTooltip id='profile-rating-clean' />
-      </div>
-    );
-  } else {
-    const matchesRemaining = !profile ? MUTLIPLAYER_PROVISIONAL_GAME_LIMIT : MUTLIPLAYER_PROVISIONAL_GAME_LIMIT - getMatchCountFromProfile(profile, type);
-
-    return (
-      <div className='flex flex-col items-center' >
-        <span data-tooltip-id='unrated-clean' data-tooltip-content={`${matchesRemaining} match${matchesRemaining === 1 ? '' : 'es'} remaining`} className='italic text-xs' style={{
-          color: 'var(--color-gray)',
-        }}>Unrated</span>
-        <StyledTooltip id='unrated-clean' />
-      </div>
-    );
-  }
-}
-
-export function getProfileRatingDisplay(type: MultiplayerMatchType, profile?: MultiplayerProfile): JSX.Element {
-  if (profile && !isProvisional(type, profile) && getRatingFromProfile(profile, type)) {
-    return (
-      <div className='flex flex-col items-center' >
-        <span className='text-xs'>{getMatchTypeNameFromMatchType(type)}</span>
+      <div className='flex flex-col items-center'>
+        {showType && <span className='text-xs'>{getMatchTypeNameFromMatchType(type)}</span>}
         <span data-tooltip-id='profile-rating' data-tooltip-content={`Played ${getMatchCountFromProfile(profile, type)} matches`} className='text-xs italic' style={{
           color: 'var(--color-gray)',
         }}>{Math.round(getRatingFromProfile(profile, type))}</span>
@@ -95,7 +65,7 @@ export function getProfileRatingDisplay(type: MultiplayerMatchType, profile?: Mu
 
     return (
       <div className='flex flex-col items-center' >
-        <span className={'text-xs match-type-text-' + type}>{getMatchTypeNameFromMatchType(type)}</span>
+        {showType && <span className={'text-xs match-type-text-' + type}>{getMatchTypeNameFromMatchType(type)}</span>}
         <span data-tooltip-id='unrated' data-tooltip-content={`${matchesRemaining} match${matchesRemaining === 1 ? '' : 'es'} remaining`} className='text-xs italic' style={{
           color: 'var(--color-gray)',
         }}>Unrated</span>
@@ -103,6 +73,14 @@ export function getProfileRatingDisplay(type: MultiplayerMatchType, profile?: Mu
       </div>
     );
   }
+}
+
+interface MatchStatusProps {
+  isMatchPage?: boolean;
+  match: MultiplayerMatch;
+  onJoinClick?: (matchId: string) => void;
+  onLeaveClick?: (matchId: string) => void;
+  recap?: MatchLogDataGameRecap;
 }
 
 export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveClick, recap }: MatchStatusProps) {
@@ -195,7 +173,7 @@ export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveCl
     >
       {match.players.some(player => user?._id.toString() !== player._id.toString()) && (match.state === MultiplayerMatchState.OPEN) &&
         <button
-          className='w-20 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
+          className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
           onClick={joinMatch}
         >
           Join
@@ -203,7 +181,7 @@ export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveCl
       }
       {match.players.some(player => user?._id.toString() === player._id.toString()) && (match.state === MultiplayerMatchState.OPEN || match.state === MultiplayerMatchState.ACTIVE) &&
         <button
-          className='w-20 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded'
+          className='bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded'
           onClick={leaveMatch}
         >
           Leave
@@ -211,87 +189,83 @@ export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveCl
       }
       {!isMatchPage && !match.players.some(player => user?._id.toString() === player._id.toString()) && (match.state === MultiplayerMatchState.ACTIVE) &&
         <Link
-          className='w-20 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-center'
+          className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-center'
           href={`/match/${match.matchId}`}
         >
           View
         </Link>
       }
-      {match.state === MultiplayerMatchState.ACTIVE && match.timeUntilEnd > 0 && (
-        <span className={classNames('font-bold text-xl flex justify-center w-12', {
-          'text-red-500 animate-pulse': countDown <= 30,
-          'hidden': countDown === 0,
-        })}>
-          {timeUntilEndCleanStr}
+      <div className='flex flex-col gap-1 items-center'>
+        <span className='font-bold whitespace-nowrap'>
+          {multiplayerMatchTypeToText(match.type)}
         </span>
-      )}
-
-      {match.players.map((player) => (
-        <div
-          className={'flex gap-2 items-center'}
-          key={player._id.toString()}
-        >
-          <FormattedUser user={player} />
-          {getProfileRatingDisplay(match.type, player.multiplayerProfile)}
-
-          {recap?.winner?.userId.toString() === player._id.toString() && <span className='text-sm' style={{
-            color: 'var(--color-gray)',
-          }}>{`${Math.round(recap.eloWinner)} ${Math.round(recap.eloChangeWinner) >= 0 ? '+' : ''}${Math.round(recap.eloChangeWinner)}`}</span>}
-          {recap?.loser?.userId.toString() === player._id.toString() && <span className='text-sm' style={{
-            color: 'var(--color-gray)',
-          }}>{`${Math.round(recap.eloLoser)} ${Math.round(recap.eloChangeLoser) >= 0 ? '+' : ''}${Math.round(recap.eloChangeLoser)}`}</span>}
-          {player._id.toString() in match.scoreTable && <span className='font-bold text-2xl ml-2'>{match.scoreTable[player._id.toString()]}</span>}
-        </div>
-      ))}
-
-      <span className='flex flex-col gap-1' style={{
-        color: 'var(--color-gray)',
-      }}>
-        <div className='flex flex-cols gap-1 items-center'>
-          <span className='text-xs italic'>
-            {
-              ({
-                [MultiplayerMatchType.RushBullet]: '3m',
-                [MultiplayerMatchType.RushBlitz]: '5m',
-                [MultiplayerMatchType.RushRapid]: '10m',
-                [MultiplayerMatchType.RushClassical]: '30m'
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              } as any)[match.type]
-            }
-
+        <div className='flex gap-1'>
+          <span className='italic text-xs'>
+            {match.private ? 'Private' : 'Public'}
           </span>
-          {match.private ? (
-            <span className='italic text-xs'>Private</span>
-          ) : <span className='italic text-xs'>Public</span>}
-
+          {!match.rated ? (<>
+            <span className='italic text-xs' data-tooltip-id='unrated-match' data-tooltip-content='This match will not affect elo ratings'>Unrated</span>
+            <StyledTooltip id='unrated-match' />
+          </>) : <span className='italic text-xs'>Rated</span>}
         </div>
+        {match.state === MultiplayerMatchState.ACTIVE && match.timeUntilEnd > 0 && (
+          <span className={classNames('font-bold text-xl flex justify-center w-12', {
+            'text-red-500 animate-pulse': countDown <= 30,
+            'hidden': countDown === 0,
+          })}>
+            {timeUntilEndCleanStr}
+          </span>
+        )}
+      </div>
+      <div className='flex flex-col gap-1'>
+        {match.players.map((player) => (
+          <div
+            className={'flex gap-2 items-center'}
+            key={player._id.toString()}
+          >
+            {player._id.toString() in match.scoreTable && <span className='font-bold text-2xl w-10 text-center'>{match.scoreTable[player._id.toString()]}</span>}
+            <FormattedUser user={player} />
+            {getProfileRatingDisplay(match.type, player.multiplayerProfile, false)}
+            {recap?.winner?.userId.toString() === player._id.toString() &&
+              <span className='text-xs italic' style={{
+                color: 'var(--color-gray)',
+              }}>
+                {`(${Math.round(recap.eloChangeWinner) >= 0 ? '+' : ''}${Math.round(recap.eloChangeWinner)})`}
+              </span>
+            }
+            {recap?.loser?.userId.toString() === player._id.toString() &&
+              <span className='text-xs italic' style={{
+                color: 'var(--color-gray)',
+              }}>
+                {`(${Math.round(recap.eloChangeLoser) >= 0 ? '+' : ''}${Math.round(recap.eloChangeLoser)})`}
+              </span>
+            }
+          </div>
+        ))}
+      </div>
+      {match.state === MultiplayerMatchState.OPEN && <>
+        <Link
+          className='underline italic text-xs'
+          data-tooltip-content='Copy match link to clipboard'
+          data-tooltip-id='copy-match-link'
+          href={`/match/${match.matchId}`}
+          id='copytoclipboard'
+          onClick={(e) => {
+            // copy to clipboard
+            navigator.clipboard.writeText(`${window.location.origin}/match/${match.matchId}`);
+            toast.success('Copied to clipboard');
+            e.preventDefault();
 
-        {!match.rated ? (<>
-          <span className='italic text-xs' data-tooltip-id='unrated-match' data-tooltip-content='This match will not affect elo ratings'>Unrated</span>
-          <StyledTooltip id='unrated-match' />
-        </>) : 'Rated'}
-      </span>
-      <Link
-        className='underline italic text-xs'
-        data-tooltip-content='Copy match link to clipboard'
-        data-tooltip-id='copy-match-link'
-        href={`/match/${match.matchId}`}
-        id='copytoclipboard'
-        onClick={(e) => {
-          // copy to clipboard
-          navigator.clipboard.writeText(`${window.location.origin}/match/${match.matchId}`);
-          toast.success('Copied to clipboard');
-          e.preventDefault();
-
-          return false;
-        }}
-      >
-        <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-clipboard' viewBox='0 0 16 16'>
-          <path d='M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z' />
-          <path d='M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z' />
-        </svg>
-      </Link>
-      <StyledTooltip id='copy-match-link' />
+            return false;
+          }}
+        >
+          <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-clipboard' viewBox='0 0 16 16'>
+            <path d='M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z' />
+            <path d='M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z' />
+          </svg>
+        </Link>
+        <StyledTooltip id='copy-match-link' />
+      </>}
     </div>
   );
 }

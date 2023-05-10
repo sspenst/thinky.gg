@@ -135,6 +135,7 @@ export default function Game({
   const { preventKeyDownEvent } = useContext(PageContext);
   const [shiftKeyDown, setShiftKeyDown] = useState(false);
   const { checkpoints, mutateCheckpoints } = useCheckpoints(level._id, disableCheckpoints || user === null || !isPro(user));
+  const [madeMove, setMadeMove] = useState(false);
 
   useEffect(() => {
     if (enableLocalSessionRestore && !localSessionRestored && typeof window.sessionStorage !== 'undefined') {
@@ -204,12 +205,16 @@ export default function Game({
   }), []);
 
   useEffect(() => {
+    if (!madeMove) {
+      return;
+    }
+
     if (disablePlayAttempts || gameState.actionCount === 0) {
       return;
     }
 
     fetchPlayAttempt();
-  }, [disablePlayAttempts, fetchPlayAttempt, gameState.actionCount]);
+  }, [disablePlayAttempts, fetchPlayAttempt, gameState.actionCount, madeMove]);
 
   const trackStats = useCallback((codes: string[], levelId: string, maxRetries: number) => {
     if (disableStats) {
@@ -305,6 +310,7 @@ export default function Game({
 
   const loadCheckpoint = useCallback((slot: number) => {
     if (!checkpoints) {
+      toast.dismiss();
       toast.error('No checkpoints to restore');
 
       return;
@@ -313,6 +319,7 @@ export default function Game({
     const checkpoint = checkpoints[slot];
 
     if (!checkpoint) {
+      toast.dismiss();
       toast.error(`No checkpoint at slot ${slot}`);
 
       return;
@@ -321,6 +328,7 @@ export default function Game({
     const clonedCheckpoint = cloneGameState(checkpoint);
 
     if (!isValidGameState(clonedCheckpoint)) {
+      toast.dismiss();
       toast.error('Corrupted checkpoint');
 
       return;
@@ -328,13 +336,16 @@ export default function Game({
 
     // check if the checkpoint is the same as the current game state
     if (JSON.stringify(clonedCheckpoint) === JSON.stringify(gameState) && JSON.stringify(gameState) !== JSON.stringify(oldGameState.current)) {
+      toast.dismiss();
       toast.error('Undoing checkpoint restore', { duration: 1500, icon: '👍' });
       oldGameState.current && setGameState(oldGameState.current);
     } else {
       oldGameState.current = gameState;
       setGameState(clonedCheckpoint);
+      setMadeMove(true);
       const keepOldStateRef = cloneGameState(oldGameState.current);
 
+      toast.dismiss();
       toast.success(
         <div>
           {`Restored checkpoint ${slot}. Press ${slot} again to `}
@@ -483,6 +494,7 @@ export default function Game({
           return initGameState(level.data, prevGameState.actionCount + 1);
         }
 
+        setMadeMove(true);
         // treat prevGameState as immutable
         const blocks = prevGameState.blocks.map(block => block.clone());
         const board = prevGameState.board.map(row => {

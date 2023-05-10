@@ -1,3 +1,6 @@
+import Discord from '@root/constants/discord';
+import queueDiscordWebhook from '@root/helpers/discordWebhook';
+import { multiplayerMatchTypeToText } from '@root/helpers/multiplayerHelperFunctions';
 import { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { DIFFICULTY_NAMES, getDifficultyRangeFromDifficultyName } from '../../../components/difficultyDisplay';
@@ -364,7 +367,7 @@ export default withAuth(
           matchId: matchId,
         }) as MultiplayerMatch;
 
-        const updatedMatch = await MultiplayerMatchModel.findOneAndUpdate(
+        const updatedMatch = await MultiplayerMatchModel.findOneAndUpdate<MultiplayerMatch>(
           {
             matchId: matchId,
             state: MultiplayerMatchState.OPEN,
@@ -434,25 +437,32 @@ export default withAuth(
           const dedupedLevels = new Set([...l0, ...l1, ...l2, ...l3]);
 
           // add levels to match
-          await MultiplayerMatchModel.updateOne(
-            { matchId: matchId },
-            {
-              levels: [...dedupedLevels].map((level: Level) => level._id),
-              gameTable: {
-                [updatedMatch.players[0]._id]: [],
-                [updatedMatch.players[1]._id]: [],
-              },
-            }
-          );
+          const matchUrl = `${req.headers.origin}/match/${matchId}`;
+          const discordMessage = `*${multiplayerMatchTypeToText(match.type)}* match starting between ${updatedMatch.players?.map(p => `**${p.name}**`).join(' and ')}! [Spectate here](<${matchUrl}>)`;
+
+          Promise.all([
+            MultiplayerMatchModel.updateOne(
+              { matchId: matchId },
+              {
+                levels: [...dedupedLevels].map((level: Level) => level._id),
+                gameTable: {
+                  [updatedMatch.players[0]._id.toString()]: [],
+                  [updatedMatch.players[1]._id.toString()]: [],
+                },
+              }
+            ),
+            !match.private && queueDiscordWebhook(Discord.Multiplayer, discordMessage),
+          ]);
         }
 
         enrichMultiplayerMatch(updatedMatch, req.userId);
-        await Promise.all([requestBroadcastMatches(),
+
+        await Promise.all([
+          requestBroadcastMatches(),
           requestBroadcastPrivateAndInvitedMatches(req.user._id),
           requestBroadcastMatch(updatedMatch.matchId),
-          requestScheduleBroadcastMatch(
-            updatedMatch.matchId
-          )]);
+          requestScheduleBroadcastMatch(updatedMatch.matchId),
+        ]);
 
         return res.status(200).json(updatedMatch);
       } else if (action === MatchAction.QUIT) {

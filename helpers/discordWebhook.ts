@@ -15,6 +15,7 @@ export default async function queueDiscordWebhook(id: string, content: string, o
     [Discord.NotifsId]: process.env.DISCORD_WEBHOOK_TOKEN_NOTIFS,
     [Discord.GeneralId]: process.env.DISCORD_WEBHOOK_TOKEN_PATHOLOGY,
     [Discord.DevPriv]: process.env.DISCORD_WEBHOOK_TOKEN_DEVPRIV,
+    [Discord.Multiplayer]: process.env.DISCORD_WEBHOOK_TOKEN_MULTIPLAYER,
   } as Record<string, string | undefined>;
 
   const token = tokenToIdMap[id];
@@ -25,7 +26,7 @@ export default async function queueDiscordWebhook(id: string, content: string, o
 
   const dedupeHash = crypto.createHash('sha256').update(content).digest('hex');
 
-  return queueFetch(`https://discord.com/api/webhooks/${id}/${token}`, {
+  return queueFetch(`https://discord.com/api/webhooks/${id}/${token}?wait=true`, {
     method: 'POST',
     body: JSON.stringify({
       content: content,

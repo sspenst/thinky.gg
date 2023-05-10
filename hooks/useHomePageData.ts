@@ -6,8 +6,8 @@ export enum HomepageDataType {
   LatestLevels = 'latestLevels',
   LatestReviews = 'latestReviews',
   LevelOfDay = 'levelOfDay',
-  RecommendedEasyLevel = 'recommendedEasyLevel',
-  RecommendedPendingLevel = 'recommendedPendingLevel',
+  RecommendedLevel = 'recommendedLevel',
+  RecommendedUnattemptedLevel = 'recommendedUnattemptedLevel',
   TopLevelsThisMonth = 'topLevelsThisMonth'
 }
 

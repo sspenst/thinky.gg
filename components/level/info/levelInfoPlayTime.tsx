@@ -1,5 +1,6 @@
 import { Tab } from '@headlessui/react';
 import { RoleIcon } from '@root/components/roleIcons';
+import StyledTooltip from '@root/components/styledTooltip';
 import Role from '@root/constants/role';
 import { AppContext } from '@root/contexts/appContext';
 import isPro from '@root/helpers/isPro';
@@ -15,34 +16,17 @@ function getTimePlayedStr(sum: number, short = false) {
   const duration = moment.duration(sum, 'seconds');
 
   if (duration.asSeconds() < 60) {
-    // return seconds
-    return `${duration.asSeconds().toFixed(0)}${short ? 's' : ` second${duration.asSeconds() === 1 ? '' : 's'}`}`;
+    const seconds = duration.seconds();
+
+    return `${seconds}${short ? 's' : ` second${seconds === 1 ? '' : 's'}`}`;
   }
 
-  if (duration.asMinutes() < 60) {
-    // return minutes
-    return `${duration.asMinutes().toFixed(0)}${short ? 'm' : ` minute${duration.asMinutes() === 1 ? '' : 's'}`}`;
-  }
-
-  if (duration.asHours() < 24) {
-    // return hours and minutes
-    const hours = duration.hours();
-    const minutes = duration.minutes();
-    const hoursStr = `${hours}${short ? 'h' : ` hour${hours === 1 ? '' : 's'}`}`;
-    const minutesStr = `${minutes}${short ? 'm' : ` minute${minutes === 1 ? '' : 's'}`}`;
-
-    return `${hoursStr} ${minutesStr}`;
-  }
-
-  // return days, hours, and minutes
-  const days = duration.days();
-  const hours = duration.hours();
+  const hours = Math.floor(duration.asHours());
   const minutes = duration.minutes();
-  const daysStr = `${days}${short ? 'd' : ` day${days === 1 ? '' : 's'}`}`;
   const hoursStr = `${hours}${short ? 'h' : ` hour${hours === 1 ? '' : 's'}`}`;
   const minutesStr = `${minutes}${short ? 'm' : ` minute${minutes === 1 ? '' : 's'}`}`;
 
-  return `${daysStr} ${hoursStr} ${minutesStr}`;
+  return hours === 0 ? minutesStr : `${hoursStr} ${minutesStr}`;
 }
 
 export default function LevelInfoPlayTime() {
@@ -63,14 +47,14 @@ export default function LevelInfoPlayTime() {
     );
   }
 
-  if (!proStatsLevel || !proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime] || proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime].length === 0) {
+  if (!proStatsLevel || !proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime]) {
     return <div className='text-sm'>No play time data available.</div>;
   }
 
   return (
     <div className='flex flex-col gap-2'>
       <Tab.Group>
-        <Tab.List className='flex flex-wrap gap-x-1 items-start rounded text-sm'>
+        <Tab.List className='flex flex-wrap gap-x-1 items-start rounded text-sm' >
           <Tab as={Fragment}>
             {({ selected }) => (
               <button className={classNames(
@@ -111,10 +95,19 @@ export default function LevelInfoPlayTime() {
                   );
                 })
               }
-              <div className='flex flex-row gap-4 items-center font-bold'>
-                <div className='w-20 text-right'>Total</div>
-                <div className='w-1/2 text-left'>{getTimePlayedStr(proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime].reduce((a, b) => a + b.sum, 0))}</div>
-              </div>
+              {(proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime].length > 0) ? (
+                <div className='flex flex-row gap-4 items-center font-bold'>
+                  <div className='w-20 text-right'>Total</div>
+                  <div className='w-1/2 text-left'>{getTimePlayedStr(proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime].reduce((a, b) => a + b.sum, 0))}</div>
+                </div>
+              ) : <div className='text-sm text-center'>You have no play time recorded for this level.</div> }
+              {proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData] && proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData].count >= 1 && (<>
+                <div className='flex flex-row gap-4 items-center font-medium'>
+                  <div data-tooltip-id='others-tooltip' className='w-20 text-right underline decoration-dashed cursor-help' data-tooltip-content='Average time for others who solved this level'>Others</div>
+                  <div className='w-1/2 text-left'>{getTimePlayedStr((proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData]?.sum / proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData]?.count) || 0)}</div>
+                </div>
+                <StyledTooltip id='others-tooltip' />
+              </>)}
             </div>
           </Tab.Panel>
           <Tab.Panel tabIndex={-1}>
