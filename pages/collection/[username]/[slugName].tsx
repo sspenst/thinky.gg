@@ -130,11 +130,11 @@ export default function CollectionPage({ collection }: CollectionProps) {
       title={collection.name ?? 'Loading...'}
     >
       <div className='flex flex-col gap-2 justify-center'>
-        <div className='flex flex-wrap gap-2 text-center justify-center items-center pt-3'>
-          <h1 className='text-2xl  font-bold'>
+        <div className='flex flex-wrap gap-2 text-center justify-center items-center pt-3 px-3'>
+          <h1 className='text-2xl font-bold break-words max-w-full'>
             {collection.name}
           </h1>
-          <div className='flex flex-row gap-2 justify-center items-center'>
+          <div className='flex flex-row gap-2 justify-center items-center truncate'>
             <span>by</span>
             <FormattedUser user={collection.userId} />
           </div>

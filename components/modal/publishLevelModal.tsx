@@ -66,7 +66,7 @@ export default function PublishLevelModal({ closeModal, isOpen, level }: Publish
       title={'Publish Level'}
     >
       <>
-        <div>
+        <div className='break-words'>
           <span className='font-bold'>Name:</span> {level.name}
           <br />
           <span className='font-bold'>Moves:</span> {level.leastMoves}

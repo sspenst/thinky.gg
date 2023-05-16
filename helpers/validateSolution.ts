@@ -15,6 +15,11 @@ export default function validateSolution(codes: string[], level: Level) {
   }
 
   for (let i = 0; i < codes.length; i++) {
+    // cannot continue moving if already on an exit
+    if (data[pos.y * level.width + pos.x] === TileType.End) {
+      return false;
+    }
+
     const direction = getDirectionFromCode(codes[i]);
 
     if (!direction) {

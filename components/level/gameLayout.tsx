@@ -14,6 +14,7 @@ import Sidebar from './sidebar';
 
 interface GameLayoutProps {
   controls: Control[];
+  disableCheckpoints?: boolean;
   gameState: GameState;
   hideSidebar?: boolean;
   level: EnrichedLevel;
@@ -21,7 +22,7 @@ interface GameLayoutProps {
   onCellClick: (x: number, y: number) => void;
 }
 
-export default function GameLayout({ controls, gameState, hideSidebar, level, matchId, onCellClick }: GameLayoutProps) {
+export default function GameLayout({ controls, disableCheckpoints, gameState, hideSidebar, level, matchId, onCellClick }: GameLayoutProps) {
   const [fullScreen, setFullScreen] = useState(false);
   const [isCheckpointOpen, setIsCheckpointOpen] = React.useState(false);
   const { setPreventKeyDownEvent } = useContext(PageContext);
@@ -62,29 +63,32 @@ export default function GameLayout({ controls, gameState, hideSidebar, level, ma
 
   return (
     <div className='flex flex-row h-full w-full'>
-      <div className='flex grow flex-col h-full relative'>
+      <div className='flex grow flex-col h-full relative max-w-full'>
         {!matchId && level.userId &&
           <div className='flex items-center justify-center py-1 px-2 gap-1 block xl:hidden'>
-            <button className='mr-1' onClick={() => setIsCheckpointOpen(!isCheckpointOpen)}>
-              <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
-                <path strokeLinecap='round' strokeLinejoin='round' d='M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5' />
-              </svg>
-            </button>
+            {!disableCheckpoints &&
+              <button className='mr-1' onClick={() => setIsCheckpointOpen(!isCheckpointOpen)}>
+                <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+                  <path strokeLinecap='round' strokeLinejoin='round' d='M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5' />
+                </svg>
+              </button>
+            }
             <h1
+              className='whitespace-nowrap truncate'
               style={{
                 color: level.userMoves ? (level.userMoves === level.leastMoves ? 'var(--color-complete)' : 'var(--color-incomplete)') : 'var(--color)',
               }}
             >{level.name}</h1>
             by
-            <div className='truncate'>
+            <div style={{ minWidth: 100 }}>
               <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.userId} />
             </div>
           </div>
         }
         {grid}
         <Controls controls={controls} />
-        {!hideSidebar &&
-          <div className='gap-4 absolute bottom-0 right-0 m-3 z-10 transition-opacity hidden xl:flex'>
+        <div className='gap-4 absolute bottom-0 right-0 m-3 z-10 transition-opacity hidden xl:flex'>
+          {!disableCheckpoints && <>
             <button id='checkpointBtn' onClick={() => setIsCheckpointOpen(!isCheckpointOpen)}>
               <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
                 <path strokeLinecap='round' strokeLinejoin='round' d='M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5' />
@@ -94,6 +98,8 @@ export default function GameLayout({ controls, gameState, hideSidebar, level, ma
               closeModal={() => setIsCheckpointOpen(false)}
               isOpen={isCheckpointOpen}
             />
+          </>}
+          {!hideSidebar &&
             <button id='fullscreenBtn' onClick={() => setFullScreen(f => !f)}>
               {fullScreen ?
                 <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
@@ -105,8 +111,8 @@ export default function GameLayout({ controls, gameState, hideSidebar, level, ma
                 </svg>
               }
             </button>
-          </div>
-        }
+          }
+        </div>
       </div>
       {!hideSidebar && !fullScreen && <Sidebar level={level} />}
     </div>

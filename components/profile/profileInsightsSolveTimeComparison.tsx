@@ -71,9 +71,9 @@ export default function ProfileInsightsSolveTimeComparison({ user }: { user: Use
   }
 
   return (<>
-    <div className='flex flex-col gap-2'>
+    <div className='flex flex-col gap-2 max-w-full'>
       <h2 className='text-xl font-bold'>Solve Time Comparisons</h2>
-      <p className='text-sm'>
+      <p className='text-sm break-words'>
         This chart shows solve time vs average solve time for the levels {user.name} has solved in the last 6 months (max 500).
         <br />
         Green indicates it took {user.name} less time to solve the level than the average user.
