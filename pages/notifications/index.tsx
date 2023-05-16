@@ -118,7 +118,7 @@ export default function NotificationsPage({ notifications, searchQuery, totalRow
 
   return (
     <Page title='Notifications'>
-      <div className='flex justify-center max-w-3xl mx-auto'>
+      <div className='flex justify-center max-w-xl mx-auto'>
         <div className='p-3 w-full'>
           <div className='flex justify-center'>
             <FilterButton selected={searchQuery.filter === 'unread'} value='unread' first last onClick={onUnreadFilterButtonClick} element={<span className='text-sm'>Unread</span>} />

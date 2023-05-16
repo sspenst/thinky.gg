@@ -64,9 +64,9 @@ export default function ProfileInsightsScoreChart({ user }: { user: User }) {
 
   // use recharts to create a score chart over time
   return (<>
-    <div className='flex flex-col gap-2'>
+    <div className='flex flex-col gap-2 max-w-full'>
       <h2 className='text-xl font-bold'>Score Chart</h2>
-      <p className='text-sm'>
+      <p className='text-sm break-words'>
         This chart shows the daily & cumulative completions over the last 90 days for {user.name}.<br />You can compare these stats against another user by selecting them below.
       </p>
     </div>

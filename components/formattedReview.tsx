@@ -79,8 +79,10 @@ export default function FormattedReview({ hideBorder, level, onDeleteClick, onEd
         }}
       >
         <div className='flex gap-x-2 items-center flex-wrap'>
-          <FormattedUser user={user} />
-          <FormattedDate ts={review.ts} />
+          <div className='flex gap-x-2 items-center truncate'>
+            <FormattedUser user={user} />
+            <FormattedDate ts={review.ts} />
+          </div>
           {level && <EnrichedLevelLink level={level} />}
         </div>
         {review.score ? <Stars stars={review.score} /> : null}

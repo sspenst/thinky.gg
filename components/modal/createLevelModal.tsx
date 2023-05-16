@@ -168,7 +168,7 @@ export default function CreateLevelModal({ closeModal, isOpen, level }: CreateLe
                         type='checkbox'
                         value={collectionId}
                       />
-                      {collection.name}
+                      <span className='truncate'>{collection.name}</span>
                     </div>
                   );
                 })}

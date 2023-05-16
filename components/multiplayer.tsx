@@ -114,7 +114,7 @@ export default function Multiplayer() {
       </div>
       }
       {openMatches.length > 0 &&
-        <div className='flex flex-col gap-2 items-center'>
+        <div className='flex flex-col gap-2 items-center max-w-full'>
           <h2 className='text-2xl font-bold mb-2'>Open Matches</h2>
           {openMatches.length === 0 && <span className='italic flex justify-center'>No open matches!</span>}
           {openMatches.sort((a, b) => sortByRating(a.players[0], b.players[0], MultiplayerMatchType.RushBullet)).map((match: MultiplayerMatch) => (
@@ -123,14 +123,14 @@ export default function Multiplayer() {
         </div>
       }
       {activeMatches.length > 0 &&
-        <div className='flex flex-col gap-2 items-center'>
+        <div className='flex flex-col gap-2 items-center max-w-full'>
           <h2 className='text-2xl font-bold mb-2'>Active Matches</h2>
           {activeMatches.map((match: MultiplayerMatch) => (
             <MatchStatus key={match._id.toString()} match={match} />
           ))}
         </div>
       }
-      <div className='flex flex-col gap-4'>
+      <div className='flex flex-col gap-4 max-w-full'>
         <h2 className='text-2xl font-bold flex justify-center'>Currently Online</h2>
         <div className='flex flex-col gap-2'>
           {connectedPlayers.map(player => (
@@ -144,7 +144,7 @@ export default function Multiplayer() {
           ))}
         </div>
       </div>
-      <div className='flex flex-col gap-2 items-center'>
+      <div className='flex flex-col gap-2 items-center max-w-full'>
         <h2 className='text-2xl font-bold mb-2'>Recent Matches</h2>
         {!recentMatches || recentMatches.length === 0 && <span className='italic flex justify-center'>No active matches!</span>}
         {recentMatches && recentMatches.map((match: MultiplayerMatch) => (

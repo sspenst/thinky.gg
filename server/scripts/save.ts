@@ -1,12 +1,16 @@
-// run with ts-node -r tsconfig-paths/register --files server/scripts/save.ts --levels
+// run with ts-node -r tsconfig-paths/register --files server/scripts/save.ts
 // import dotenv
 // import tsconfig-paths
 
+import AchievementInfo from '@root/constants/achievementInfo';
+import AchievementType from '@root/constants/achievementType';
+import { createNewAchievement } from '@root/helpers/notificationHelper';
+import Achievement from '@root/models/db/achievement';
 import cliProgress from 'cli-progress';
 import dotenv from 'dotenv';
 import dbConnect from '../../lib/dbConnect';
 import User from '../../models/db/user';
-import { LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, StatModel, UserModel } from '../../models/mongoose';
+import { AchievementModel, LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, StatModel, UserModel } from '../../models/mongoose';
 import { MultiplayerMatchType } from '../../models/MultiplayerEnums';
 import { calcPlayAttempts, refreshIndexCalcs } from '../../models/schemas/levelSchema';
 import { calcCreatorCounts } from '../../models/schemas/userSchema';
@@ -168,12 +172,43 @@ async function integrityCheckUsersScore() {
   console.log('All done');
 }
 
+async function integrityCheckAcheivements() {
+  console.log('Connecting to db...');
+  await dbConnect();
+  console.log('Querying all users into memory...');
+  const users = await UserModel.find<User>({}, '_id name score', { lean: false, sort: { score: -1 } });
+
+  console.log(users[0]);
+
+  console.log('Querying all achievements into memory...');
+  const achievements = await AchievementModel.find<Achievement>();
+
+  console.log(achievements.length);
+
+  for (const achievementType in AchievementInfo) {
+    console.log(achievementType);
+
+    const achievementInfo = AchievementInfo[achievementType];
+
+    // go through each user that qualifies for the achievement
+    for (const user of users.filter(user => achievementInfo.unlocked(user))) {
+      if (!achievements.some((achievement) => achievement.type === achievementType as AchievementType && achievement.userId !== user._id)) {
+        console.warn(`\nIssuing ${achievementType} for ${user.name}`);
+        createNewAchievement(achievementType as AchievementType, user._id);
+      }
+    }
+  }
+
+  console.log('integrityCheckAcheivements done');
+}
+
 // get command line arguments. check for existence of --levels and --users
 async function init() {
   const args = process.argv.slice(2);
   const runLevels = args.includes('--levels');
   const runUsers = args.includes('--users');
   const runMultiplayerProfiles = args.includes('--multiplayer');
+  const runAchievements = args.includes('--achievements');
 
   // chunks and chunk-index are used to split up the work into chunks
   const chunks = parseInt(args.find((x: any) => x.startsWith('--chunks='))?.split('=')[1] || '1');
@@ -189,6 +224,10 @@ async function init() {
 
   if (runMultiplayerProfiles) {
     await integrityCheckMultiplayerProfiles();
+  }
+
+  if (runAchievements) {
+    await integrityCheckAcheivements();
   }
 }
 

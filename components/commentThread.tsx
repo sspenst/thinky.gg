@@ -178,8 +178,8 @@ export default function CommentThread({ className, comment, mutateComments, onSe
       className={classNames('flex flex-col gap-1 rounded-lg', { 'flashBackground': queryCommentId.current.length > 0 && comment._id.toString() === queryCommentId.current.toString() }, className)}
       id={'comment-div-' + comment._id}
     >
-      <div className='flex justify-between'>
-        <div className='flex gap-x-2 items-center flex-wrap '>
+      <div className='flex justify-between gap-2'>
+        <div className='flex gap-x-2 items-center truncate'>
           <FormattedUser user={comment.author} />
           {comment.createdAt !== comment.updatedAt &&
             <span className='text-sm' style={{

@@ -101,29 +101,29 @@ interface FormattedNotificationProps {
 export default function FormattedNotification({ notification, onMarkAsRead }: FormattedNotificationProps) {
   return (
     <div
-      className={'mt-2 p-3 border rounded shadow flex flex-cols-3 gap-3 items-center'}
+      className='p-3 border rounded shadow flex flex-cols-2 justify-between gap-2 items-center'
       style={{
         borderColor: 'var(--bg-color-4)',
         color: notification.read ? 'var(--color-gray)' : undefined,
       }}
     >
-      {notification.sourceModel === 'User' ?
-        <FormattedUser
-          onClick={() => onMarkAsRead(true)}
-          size={Dimensions.AvatarSizeSmall}
-          user={notification.source as User}
-        />
-        :
-        <div className='flex'>
-          <Image alt='logo' src='/logo.svg' width='32' height='32' className='h-6 w-6' />
-        </div>
-      }
-      <div className='w-full'>
-        <div className='flex items-center justify-between w-full'>
-          <div className='focus:outline-none text-sm leading-none'>
+      <div className='flex flex-col gap-1 truncate'>
+        {notification.sourceModel === 'User' ?
+          <FormattedUser
+            onClick={() => onMarkAsRead(true)}
+            size={Dimensions.AvatarSizeSmall}
+            user={notification.source as User}
+          />
+          :
+          <div className='flex items-center gap-2 truncate'>
+            <Image alt='logo' src='/logo.svg' width='24' height='24' className='h-6 w-6' />
+            <span className='font-bold'>Pathology</span>
+          </div>
+        }
+        <div className='flex items-center justify-between'>
+          <div className='focus:outline-none text-sm whitespace-normal'>
             <NotificationMessage notification={notification} onMarkAsRead={() => onMarkAsRead(true)} />
           </div>
-          <div aria-label='close icon' role='button' className='focus:outline-none cursor-pointer' />
         </div>
         <FormattedDate className='text-xs' date={notification.createdAt} />
       </div>
@@ -132,6 +132,7 @@ export default function FormattedNotification({ notification, onMarkAsRead }: Fo
           'w-4 h-4 border rounded-2xl',
           notification.read ? 'hover:bg-green-500 focus:bg-inherit' : 'bg-green-500 hover:bg-green-300'
         )} />
+        <div aria-label='close icon' role='button' className='focus:outline-none cursor-pointer' />
       </div>
     </div>
   );

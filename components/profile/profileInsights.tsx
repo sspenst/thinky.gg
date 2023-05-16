@@ -14,7 +14,7 @@ interface ProfileInsightsProps {
 export default function ProfileInsights({ reqUser, user }: ProfileInsightsProps) {
   if (!isPro(reqUser)) {
     return (
-      <div className='text-center text-lg'>
+      <div className='text-center text-lg break-words'>
         Get <Link href='/settings/proaccount' className='text-blue-300'>
           Pathology Pro
         </Link> to unlock additional insights for {user.name}.

@@ -38,9 +38,7 @@ export default function LevelInfoRecords() {
           {record.moves}
         </span>
         <StyledTooltip id='steps' />
-        <div className='truncate'>
-          <FormattedUser size={Dimensions.AvatarSizeSmall} user={record.userId} />
-        </div>
+        <FormattedUser size={Dimensions.AvatarSizeSmall} user={record.userId} />
         <FormattedDate ts={record.ts} />
       </div>
     );

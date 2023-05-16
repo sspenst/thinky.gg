@@ -28,13 +28,13 @@ export default function MatchResults({ match, recap, showViewLink }: MatchResult
 
   return (
     <div
-      className='flex flex-col flex-wrap justify-center gap-4 py-3 px-4 border rounded-md shadow-lg items-center w-fit'
+      className='flex flex-col flex-wrap justify-center gap-4 py-3 px-4 border rounded-md shadow-lg items-center w-fit max-w-full'
       style={{
         backgroundColor: 'var(--bg-color-2)',
         borderColor: 'var(--bg-color-3)',
       }}
     >
-      <div className='flex gap-2 items-center'>
+      <div className='flex gap-2 items-center max-w-full'>
         {showViewLink &&
           <Link
             className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2'
@@ -58,13 +58,17 @@ export default function MatchResults({ match, recap, showViewLink }: MatchResult
           </div>
           <FormattedDate date={match.endTime} />
         </div>
-        <div className='flex flex-col gap-1'>
+        <div className='flex flex-col gap-1 truncate pr-0.5'>
           {sortedPlayers.map((player) => (
             <div
-              className={'flex gap-2 items-center'}
+              className='flex gap-2 items-center'
               key={player._id.toString()}
             >
-              {player._id.toString() in match.scoreTable && <span className='font-bold text-2xl w-10 text-center'>{match.scoreTable[player._id.toString()]}</span>}
+              {player._id.toString() in match.scoreTable &&
+                <span className='font-bold text-2xl w-10 text-center' style={{ minWidth: 40 }}>
+                  {match.scoreTable[player._id.toString()]}
+                </span>
+              }
               <FormattedUser user={player} />
               {getProfileRatingDisplay(match.type, player.multiplayerProfile, false)}
               {recap?.winner?.userId.toString() === player._id.toString() &&

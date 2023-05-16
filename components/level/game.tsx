@@ -341,6 +341,9 @@ export default function Game({
       oldGameState.current && setGameState(oldGameState.current);
     } else {
       oldGameState.current = gameState;
+      // TODO: https://github.com/sspenst/pathology/issues/910
+      // should reapply the checkpoint rather than just cloning the state
+      // so that in the editor checkpoints can be properly loaded even when the level content changes
       setGameState(clonedCheckpoint);
       setMadeMove(true);
       const keepOldStateRef = cloneGameState(oldGameState.current);
@@ -888,6 +891,7 @@ export default function Game({
     }}>
       <GameLayout
         controls={controls}
+        disableCheckpoints={disableCheckpoints}
         gameState={gameState}
         hideSidebar={hideSidebar}
         level={level}

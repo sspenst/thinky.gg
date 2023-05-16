@@ -423,7 +423,7 @@ export default function ProfilePage({
           <Avatar size={Dimensions.AvatarSizeLarge} user={user} />
         </div>
         <div className='flex gap-2 items-center justify-center'>
-          <h2 className='text-3xl font-bold'>{user.name}</h2>
+          <h2 className='text-3xl font-bold truncate'>{user.name}</h2>
           <RoleIcons size={24} user={user} />
         </div>
         <p className='text-center italic text-sm break-words mt-2'>{user.bio || 'No bio'}</p>
@@ -476,7 +476,7 @@ export default function ProfilePage({
         </div>
       </>
       :
-      <div className='text-center'>
+      <div className='text-center break-words'>
         {user.name} has not yet registered on Pathology.
       </div>
     ),
@@ -602,7 +602,7 @@ export default function ProfilePage({
         </div>
       ,
       reviewsWrittenCount === 0 &&
-        <div>
+        <div className='text-center'>
           No reviews written!
         </div>
       ,

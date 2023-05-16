@@ -202,7 +202,7 @@ export default function EditLevelModal({ closeModal, isOpen, level }: EditLevelM
                         type='checkbox'
                         value={collectionId}
                       />
-                      {collection.name}
+                      <span className='truncate'>{collection.name}</span>
                     </div>
                   );
                 })}

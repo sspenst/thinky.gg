@@ -152,7 +152,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
         height: 1,
       }} />
       <div className='flex flex-row gap-2 items-center'>
-        <span className='font-bold'>Archived by:</span>
+        <span className='font-bold whitespace-nowrap'>Archived by:</span>
         <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.archivedBy} />
         <FormattedDate ts={level.archivedTs} />
       </div>

@@ -55,7 +55,7 @@ export default function UnpublishLevelModal({ closeModal, isOpen, level }: Unpub
       onConfirm={onConfirm}
       title={'Unpublish Level'}
     >
-      <div style={{ textAlign: 'center' }}>
+      <div className='break-words' style={{ textAlign: 'center' }}>
         {`Are you sure you want to unpublish your level '${level.name}'?`}
         <br />
         {'All stats and reviews for this level will be deleted.'}

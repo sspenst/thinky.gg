@@ -1,3 +1,5 @@
+import AchievementInfo from '@root/constants/achievementInfo';
+import User from '@root/models/db/user';
 import mongoose, { SaveOptions, Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import AchievementType from '../../../constants/achievementType';
@@ -22,28 +24,12 @@ import { forceCompleteLatestPlayAttempt } from '../play-attempt';
 export function issueAchievements(userId: Types.ObjectId, score: number, options: SaveOptions) {
   const promises = [];
 
-  if (score >= 100) {
-    promises.push(createNewAchievement(AchievementType.COMPLETED_LEVELS_100, userId, options));
-  }
+  for (const achievementType in AchievementInfo) {
+    const achievementInfo = AchievementInfo[achievementType];
 
-  if (score >= 500) {
-    promises.push(createNewAchievement(AchievementType.COMPLETED_LEVELS_500, userId, options));
-  }
-
-  if (score >= 1000) {
-    promises.push(createNewAchievement(AchievementType.COMPLETED_LEVELS_1000, userId, options));
-  }
-
-  if (score >= 2000) {
-    promises.push(createNewAchievement(AchievementType.COMPLETED_LEVELS_2000, userId, options));
-  }
-
-  if (score >= 3000) {
-    promises.push(createNewAchievement(AchievementType.COMPLETED_LEVELS_3000, userId, options));
-  }
-
-  if (score >= 4000) {
-    promises.push(createNewAchievement(AchievementType.COMPLETED_LEVELS_4000, userId, options));
+    if (achievementInfo.exactlyUnlocked({ score: score } as User)) {
+      promises.push(createNewAchievement(achievementType as AchievementType, userId, options));
+    }
   }
 
   return promises;
