@@ -165,7 +165,7 @@ export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveCl
 
   return (
     <div
-      className='flex flex-row flex-wrap justify-center gap-4 py-3 px-4 border rounded-md shadow-lg items-center w-fit'
+      className='flex flex-row justify-center gap-4 py-3 px-4 border rounded-md shadow-lg items-center w-fit max-w-full'
       style={{
         backgroundColor: 'var(--bg-color-2)',
         borderColor: 'var(--bg-color-3)',
@@ -217,13 +217,17 @@ export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveCl
           </span>
         )}
       </div>
-      <div className='flex flex-col gap-1'>
+      <div className='flex flex-col gap-1 truncate pr-0.5'>
         {match.players.map((player) => (
           <div
-            className={'flex gap-2 items-center'}
+            className='flex gap-2 items-center'
             key={player._id.toString()}
           >
-            {player._id.toString() in match.scoreTable && <span className='font-bold text-2xl w-10 text-center'>{match.scoreTable[player._id.toString()]}</span>}
+            {player._id.toString() in match.scoreTable &&
+              <span className='font-bold text-2xl w-10 text-center' style={{ minWidth: 40 }}>
+                {match.scoreTable[player._id.toString()]}
+              </span>
+            }
             <FormattedUser user={player} />
             {getProfileRatingDisplay(match.type, player.multiplayerProfile, false)}
             {recap?.winner?.userId.toString() === player._id.toString() &&
