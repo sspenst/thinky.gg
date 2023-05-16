@@ -1,3 +1,6 @@
+import NotificationType from '@root/constants/notificationType';
+import Notification from '@root/models/db/notification';
+import { NotificationModel } from '@root/models/mongoose';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
@@ -242,6 +245,51 @@ describe('Testing commenting', () => {
       },
     });
   });
+  test('Create another comment ON another comment', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_B),
+          },
+          query: {
+            id: commentId,
+          },
+          body: {
+            targetModel: 'Comment',
+            text: 'My SUB comment 2',
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+        expect(response.metadata).toBeDefined();
+        expect(response.metadata.totalRows).toBe(2);
+        expect(response.data).toHaveLength(2);
+        const com = response.data[1];
+
+        expect(com.text).toBe('My SUB comment 2');
+        expect(com.author._id).toBe(TestId.USER_B);
+
+        const notifications = await NotificationModel.find<Notification>({ type: NotificationType.NEW_WALL_REPLY });
+
+        expect(notifications.length).toBe(1);
+        expect(notifications[0].target.toString()).toBe(TestId.USER_B);
+        expect(notifications[0].userId.toString()).toBe(TestId.USER);
+      },
+    });
+  });
   test('Get comments for a user', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -277,7 +325,7 @@ describe('Testing commenting', () => {
         expect(comment._id).toBe(commentId);
         expect(comment.target).toBeDefined();
         expect(comment.targetModel).toBe('User');
-        expect(comment.totalReplies).toBe(1);
+        expect(comment.totalReplies).toBe(2);
         expect(comment.replies[0].targetModel).toBe('Comment');
         expect(comment.replies[0].text).toBe('My SUB comment');
       },
