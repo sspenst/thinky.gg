@@ -297,7 +297,7 @@ export default function Match() {
           <path strokeLinecap='round' strokeLinejoin='round' d='M16 12H8' />
         </svg>
       </div>
-      <div className='text-xs w-8 justify-center flex'>
+      <div className='text-xs w-8 justify-center flex' style={{ minWidth: 32 }}>
         {'-'}
       </div>
     </>);
@@ -326,7 +326,7 @@ export default function Match() {
             } as SelectOption}
           />
         </div>
-        <div className='flex flex-col gap-2 justify-left'>
+        <div className='flex flex-col gap-2 justify-left truncate'>
           {match.players.map(player => (
             <div className='flex flex-row gap-2 items-center' key={player._id.toString()}>
               {getLevelResultIcon(level, player._id.toString())}
@@ -376,7 +376,7 @@ export default function Match() {
             <div className='w-full max-w-screen-lg h-96'>
               <MatchChart match={match} />
             </div>
-            <div className='flex flex-col justify-center gap-2'>
+            <div className='flex flex-col justify-center gap-2 max-w-full'>
               {levelResults.reverse()}
             </div>
           </div>
@@ -404,7 +404,7 @@ export default function Match() {
                 fetchMarkReady();
               }}>Mark Ready</button>
             )}
-            <div className='pt-1'>
+            <div className='pt-1 px-1 max-w-full'>
               <MatchStatus
                 isMatchPage={true}
                 match={match}
