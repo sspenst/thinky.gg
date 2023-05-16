@@ -41,7 +41,7 @@ export default function CreateHome({ levels, user }: CreatePageProps) {
             },
           }}
         >
-          My published levels
+          My Published Levels
         </Link>
         <Link
           className='py-2 px-4 rounded-lg hover:bg-neutral-500'

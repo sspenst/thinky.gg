@@ -55,7 +55,7 @@ export default function ArchiveLevelModal({ closeModal, isOpen, level }: Archive
       onConfirm={onConfirm}
       title={'Archive Level'}
     >
-      <div style={{ textAlign: 'center' }}>
+      <div className='break-words' style={{ textAlign: 'center' }}>
         {`Are you sure you want to archive your level '${level.name}'?`}
         <br />
         {'Your level will be moved to the Archive account.'}

@@ -29,7 +29,7 @@ export default function Directory({ folders, subtitle, title }: DirectoryProps) 
     for (let i = 0; i < folders.length; i++) {
       folderLinks.push(<FolderDivider key={`divider-${folders[i].text}`} />);
       folderLinks.push(
-        <div key={`folder-${folders[i].text}`}>
+        <div className='truncate' key={`folder-${folders[i].text}`} style={{ minWidth: 32 }}>
           {folders[i].toElement()}
         </div>
       );
@@ -50,10 +50,10 @@ export default function Directory({ folders, subtitle, title }: DirectoryProps) 
         </>
       }
     </div>
-    <div className='gap-2 items-center hidden xl:flex'>
+    <div className='gap-2 items-center hidden xl:flex truncate'>
       {folderLinks}
       <FolderDivider />
-      <h1 className='text-lg align-middle truncate'>
+      <h1 className='text-lg align-middle truncate' style={{ minWidth: 32 }}>
         {title?.toElement()}
         {!subtitle ? null :
           <>
