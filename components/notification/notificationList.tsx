@@ -78,7 +78,7 @@ export default function NotificationList({ notifications, setNotifications }: No
   const anyUnread = notifications.some(notification => !notification.read);
 
   return (
-    <div className='px-3 py-2'>
+    <div className='px-3 py-2 flex flex-col gap-2'>
       <div className='flex flex-cols-2 justify-between gap-2'>
         <h2 className='focus:outline-none text-xl font-semibold'>Notifications</h2>
         <button

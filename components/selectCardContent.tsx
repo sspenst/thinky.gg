@@ -11,16 +11,16 @@ interface SelectCardContentProps {
 export default function SelectCardContent({ option }: SelectCardContentProps) {
   return (
     <div
-      className={classNames('font-bold break-words p-2')}
+      className='font-bold break-words p-2'
       style={{
         width: Dimensions.OptionWidth,
       }}
     >
-      <div className={classNames((option.text as string)?.length >= 20 ? 'text-sm' : 'text-lg')}>
+      <div className={classNames('truncate', (option.text as string)?.length >= 20 ? 'text-sm' : 'text-lg')}>
         {option.text}
       </div>
       <div className='text-sm'>
-        {option.author && <div className='pt-1 italic'>{option.author}</div>}
+        {option.author && <div className='pt-1 italic truncate'>{option.author}</div>}
         {!option.hideDifficulty && option.level &&
           <div className='pt-1'>
             {getFormattedDifficulty(

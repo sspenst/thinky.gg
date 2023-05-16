@@ -63,7 +63,7 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, hi
 
   return (
     <div className='flex flex-row h-full w-full'>
-      <div className='flex grow flex-col h-full relative'>
+      <div className='flex grow flex-col h-full relative max-w-full'>
         {!matchId && level.userId &&
           <div className='flex items-center justify-center py-1 px-2 gap-1 block xl:hidden'>
             {!disableCheckpoints &&
@@ -74,12 +74,13 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, hi
               </button>
             }
             <h1
+              className='whitespace-nowrap truncate'
               style={{
                 color: level.userMoves ? (level.userMoves === level.leastMoves ? 'var(--color-complete)' : 'var(--color-incomplete)') : 'var(--color)',
               }}
             >{level.name}</h1>
             by
-            <div className='truncate'>
+            <div style={{ minWidth: 100 }}>
               <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.userId} />
             </div>
           </div>

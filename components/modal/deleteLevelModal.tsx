@@ -45,7 +45,7 @@ export default function DeleteLevelModal({ closeModal, isOpen, level }: DeleteLe
       onConfirm={onConfirm}
       title={'Delete Level'}
     >
-      <div style={{ textAlign: 'center' }}>
+      <div className='break-words' style={{ textAlign: 'center' }}>
         {`Are you sure you want to delete your level '${level.name}'?`}
         <br />
         {'All data associated with this level will also be deleted.'}

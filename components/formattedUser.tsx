@@ -15,7 +15,7 @@ interface FormattedUserProps {
 export default function FormattedUser({ noLinks, onClick, size, user }: FormattedUserProps) {
   if (!user) {
     return (
-      <div className='flex items-center font-bold gap-2'>
+      <div className='flex items-center font-bold gap-2 truncate'>
         <span className='truncate'>
           [deleted]
         </span>
@@ -24,11 +24,11 @@ export default function FormattedUser({ noLinks, onClick, size, user }: Formatte
   }
 
   return (
-    <div className='flex items-center gap-2'>
+    <div className='flex items-center gap-2 truncate'>
       {noLinks ?
         <>
           <Avatar size={size} user={user} />
-          <span>{user.name}</span>
+          <span className='truncate'>{user.name}</span>
         </>
         :
         <>
