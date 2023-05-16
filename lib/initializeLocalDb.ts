@@ -46,6 +46,7 @@ export default async function initializeLocalDb() {
     _id: new Types.ObjectId(),
     theme: Theme.Modern,
     userId: new Types.ObjectId(TestId.USER_B),
+    emailConfirmed: true,
   }));
 
   // USER_C
