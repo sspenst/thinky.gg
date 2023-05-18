@@ -53,7 +53,7 @@ export async function getUserFromToken(
       }),
       ...ipData,
     },
-    { lean: true, new: true, projection: '+email +bio' }
+    { lean: true, new: true, projection: '+email +bio' },
   );
 
   if (user === null) {
