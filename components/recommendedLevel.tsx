@@ -35,7 +35,7 @@ export default function RecommendedLevel({ id, level, title }: RecommendedLevelP
           :
           <SelectCard
             option={{
-              author: level.userId.name,
+              author: level.userId?.name,
               height: Dimensions.OptionHeightLarge,
               href: `/level/${level.slug}`,
               id: level._id.toString(),

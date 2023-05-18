@@ -59,7 +59,6 @@ export function isVisibleInDom(id: string) {
 
 /* istanbul ignore next */
 export default function Home({ user }: HomeProps) {
-  const [loadLastLevelPlayed, setLoadLastLevelPlayed] = useState(false);
   const [loadLatestLevels, setLoadLatestLevels] = useState(false);
   const [loadLatestReviews, setLoadLatestReviews] = useState(false);
   const [loadLevelOfDay, setLoadLevelOfDay] = useState(false);
@@ -69,10 +68,6 @@ export default function Home({ user }: HomeProps) {
 
   useEffect(() => {
     const checkDomVisibility = () => {
-      if (isVisibleInDom('last-level-played')) {
-        setLoadLastLevelPlayed(true);
-      }
-
       if (isVisibleInDom('latest-levels')) {
         setLoadLatestLevels(true);
       }
@@ -109,16 +104,6 @@ export default function Home({ user }: HomeProps) {
     };
   }, []);
 
-  const chunks = [
-    loadLastLevelPlayed ? [HomepageDataType.LastLevelPlayed] : [],
-    loadLatestLevels ? [HomepageDataType.LatestLevels] : [],
-    loadLatestReviews ? [HomepageDataType.LatestReviews] : [],
-    loadLevelOfDay ? [HomepageDataType.LevelOfDay] : [],
-    loadRecommendedLevel ? [HomepageDataType.RecommendedLevel] : [],
-    loadRecommendedUnattemptedLevel ? [HomepageDataType.RecommendedUnattemptedLevel] : [],
-    loadTopLevelsThisMonth ? [HomepageDataType.TopLevelsThisMonth] : [],
-  ].map((chunk) => chunk.filter((x) => x));
-
   const { cache } = useSWRConfig();
 
   // clear cache
@@ -138,41 +123,33 @@ export default function Home({ user }: HomeProps) {
     }
   }, [cache]);
 
-  const { data: chunk1 } = useHomePageData(chunks[0]);
-  const { data: chunk2 } = useHomePageData(chunks[1]);
-  const { data: chunk3 } = useHomePageData(chunks[2]);
-  const { data: chunk4 } = useHomePageData(chunks[3]);
-  const { data: chunk5 } = useHomePageData(chunks[4]);
-  const { data: chunk6 } = useHomePageData(chunks[5]);
-  const { data: chunk7 } = useHomePageData(chunks[6]);
+  const chunks = [
+    [HomepageDataType.LastLevelPlayed],
+    loadLatestLevels ? [HomepageDataType.LatestLevels] : [],
+    loadLatestReviews ? [HomepageDataType.LatestReviews] : [],
+    loadLevelOfDay ? [HomepageDataType.LevelOfDay] : [],
+    loadRecommendedLevel ? [HomepageDataType.RecommendedLevel] : [],
+    loadRecommendedUnattemptedLevel ? [HomepageDataType.RecommendedUnattemptedLevel] : [],
+    loadTopLevelsThisMonth ? [HomepageDataType.TopLevelsThisMonth] : [],
+  ];
 
   const dataMerge = {
-    ...chunk1,
-    ...chunk2,
-    ...chunk3,
-    ...chunk4,
-    ...chunk5,
-    ...chunk6,
-    ...chunk7,
-  };
+    ...useHomePageData(chunks[0]).data,
+    ...useHomePageData(chunks[1]).data,
+    ...useHomePageData(chunks[2]).data,
+    ...useHomePageData(chunks[3]).data,
+    ...useHomePageData(chunks[4]).data,
+    ...useHomePageData(chunks[5]).data,
+    ...useHomePageData(chunks[6]).data,
+  } as HomepageDataProps;
 
-  let lastLevelPlayed = undefined;
-  let latestLevels = undefined;
-  let latestReviews = undefined;
-  let levelOfDay = undefined;
-  let recommendedLevel = undefined;
-  let recommendedUnattemptedLevel = undefined;
-  let topLevelsThisMonth = undefined;
-
-  if (dataMerge as HomepageDataProps) {
-    lastLevelPlayed = dataMerge[HomepageDataType.LastLevelPlayed];
-    latestLevels = dataMerge[HomepageDataType.LatestLevels];
-    latestReviews = dataMerge[HomepageDataType.LatestReviews];
-    levelOfDay = dataMerge[HomepageDataType.LevelOfDay];
-    recommendedLevel = dataMerge[HomepageDataType.RecommendedLevel];
-    recommendedUnattemptedLevel = dataMerge[HomepageDataType.RecommendedUnattemptedLevel];
-    topLevelsThisMonth = dataMerge[HomepageDataType.TopLevelsThisMonth];
-  }
+  const lastLevelPlayed = dataMerge[HomepageDataType.LastLevelPlayed];
+  const latestLevels = dataMerge[HomepageDataType.LatestLevels];
+  const latestReviews = dataMerge[HomepageDataType.LatestReviews];
+  const levelOfDay = dataMerge[HomepageDataType.LevelOfDay];
+  const recommendedLevel = dataMerge[HomepageDataType.RecommendedLevel];
+  const recommendedUnattemptedLevel = dataMerge[HomepageDataType.RecommendedUnattemptedLevel];
+  const topLevelsThisMonth = dataMerge[HomepageDataType.TopLevelsThisMonth];
 
   return (
     <Page title={'Pathology'}>
