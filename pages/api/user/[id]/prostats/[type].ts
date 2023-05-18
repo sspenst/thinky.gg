@@ -302,14 +302,6 @@ async function getMostSolvesForUserLevels(userId: string) {
       },
     },
     {
-      $sort: {
-        sum: -1,
-      },
-    },
-    {
-      $limit: 100,
-    },
-    {
       $lookup: {
         from: 'users',
         localField: '_id',
@@ -328,6 +320,15 @@ async function getMostSolvesForUserLevels(userId: string) {
           ...USER_DEFAULT_PROJECTION
         },
       },
+    },
+    {
+      $sort: {
+        sum: -1,
+        'user.name': 1,
+      },
+    },
+    {
+      $limit: 100,
     },
   ]);
 
