@@ -44,7 +44,7 @@ export default function Square({
   const fontSize = innerSize / fontSizeRatio * (classic ? 1.5 : 1);
   const overStepped = text !== undefined && leastMoves !== 0 && text > leastMoves;
   const textColor = overStepped ?
-    'var(--level-grid-text-extra)' : 'var(--level-grid-text)';
+    'var(--level-player-extra)' : 'var(--level-grid-text)';
 
   function getBackgroundColor() {
     switch (tileType) {
@@ -101,13 +101,13 @@ export default function Square({
     child = (
       <span className={'theme-' + theme + '-' + tileType} style={{ position: 'absolute', zIndex: 0, }}>
         {icon({
-          innerSize: innerSize / 1.5,
           fontSize: fontSize,
-          tileType: tileType,
+          innerSize: innerSize / 1.5,
+          leastMoves: leastMoves,
+          overstepped: overStepped,
           size: size,
           text: <>{text}</>,
-          leastMoves: leastMoves,
-          overstepped: overStepped
+          tileType: tileType,
         })}
       </span>
     );
