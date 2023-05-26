@@ -259,7 +259,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       <div
         key={`level-data-type-${tileTypeKey}`}
         style={{
-          borderColor: tileType === tileTypeKey ? 'rgb(255, 30, 30)' : 'var(--bg-color)',
+          borderColor: tileType === tileTypeKey ? 'var(--level-grid-text-extra)' : 'var(--bg-color)',
           borderWidth: tileType === tileTypeKey ? 3 : 1,
           height: size,
           width: size,
