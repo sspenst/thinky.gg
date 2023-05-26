@@ -2,17 +2,17 @@ import TileType from '@root/constants/tileType';
 import React from 'react';
 
 export interface ThemeIconProps {
-    tileType: TileType;
-    innerSize: number;
-    size: number;
-    fontSize: number;
-    text: JSX.Element;
-    leastMoves: number;
-    overstepped: boolean;
+  fontSize: number;
+  innerSize: number;
+  leastMoves: number;
+  overstepped: boolean;
+  size: number;
+  text: JSX.Element;
+  tileType: TileType;
 }
 
 // TOOD figure out how to memoize these functions so they don't get recreated on every render
-function Monkey({ size, overstepped }: ThemeIconProps) {
+function Monkey({ overstepped, size }: ThemeIconProps) {
   return (
     <svg
       xmlns='http://www.w3.org/2000/svg'
