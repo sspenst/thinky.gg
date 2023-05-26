@@ -3,6 +3,7 @@ import React, { useContext, useEffect, useMemo, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import Control from '../../models/control';
 import { EnrichedLevel } from '../../models/db/level';
+import Complete from '../complete';
 import FormattedUser from '../formattedUser';
 import CheckpointsModal from '../modal/checkpointsModal';
 import Block from './block';
@@ -79,6 +80,7 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, hi
                 color: level.userMoves ? (level.userMoves === level.leastMoves ? 'var(--color-complete)' : 'var(--color-incomplete)') : 'var(--color)',
               }}
             >{level.name}</h1>
+            {level.userMoves === level.leastMoves && <Complete className='-ml-1' />}
             by
             <div style={{ minWidth: 100 }}>
               <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.userId} />
