@@ -47,7 +47,7 @@ export default function Square({
   function getBackgroundColor() {
     switch (tileType) {
     case TileType.Default:
-      return text !== undefined ? (text > leastMoves ? 'var(--level-grid-extra)' : 'var(--level-grid-used)') : 'var(--level-grid)';
+      return text !== undefined ? 'var(--level-grid-used)' : 'var(--level-grid)';
     case TileType.Wall:
       return 'var(--level-wall)';
     case TileType.End:
