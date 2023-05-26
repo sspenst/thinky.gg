@@ -42,9 +42,7 @@ export default function Square({
   const fontSizeRatio = text === undefined || String(text).length <= 3 ?
     2 : (1 + (String(text).length - 1) / 2);
   const fontSize = innerSize / fontSizeRatio * (classic ? 1.5 : 1);
-  const overStepped = text !== undefined && leastMoves !== 0 && text > leastMoves;
-  const textColor = overStepped ?
-    'var(--level-grid-text-extra)' : 'var(--level-grid-text)';
+  const overstepped = text !== undefined && leastMoves !== 0 && text > leastMoves;
 
   function getBackgroundColor() {
     switch (tileType) {
@@ -68,7 +66,7 @@ export default function Square({
   let child = <div>{text}</div>;
   let style = {
     // NB: for some reason needed to put this first to get the color to work on refresh
-    color: textColor,
+    color: 'var(--level-grid-text)',
     backgroundColor: getBackgroundColor(),
     borderBottomWidth: tileType === TileType.Hole || TileTypeHelper.canMoveUp(tileType) ? innerBorderWidth : 0,
     borderColor: tileType === TileType.Hole ? 'var(--level-hole-border)' : 'var(--level-block-border)',
@@ -101,13 +99,13 @@ export default function Square({
     child = (
       <span className={'theme-' + theme + '-' + tileType} style={{ position: 'absolute', zIndex: 0, }}>
         {icon({
-          innerSize: innerSize / 1.5,
           fontSize: fontSize,
-          tileType: tileType,
+          innerSize: innerSize / 1.5,
+          leastMoves: leastMoves,
+          overstepped: overstepped,
           size: size,
           text: <>{text}</>,
-          leastMoves: leastMoves,
-          overstepped: overStepped
+          tileType: tileType,
         })}
       </span>
     );
