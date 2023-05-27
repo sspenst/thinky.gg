@@ -25,7 +25,7 @@ export default function EnrichedLevelLink({ level, onClick }: EnrichedLevelLinkP
       }}
     >
       <span className='truncate'>{level.name}</span>
-      {isComplete && <Complete />}
+      {isComplete && <Complete className='-mr-1' />}
     </Link>
   );
 }
