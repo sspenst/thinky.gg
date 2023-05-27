@@ -671,7 +671,7 @@ export default function Game({
   const touchXDown = useRef<number>(0);
   const touchYDown = useRef<number>(0);
   const validTouchStart = useRef<boolean>(false);
-  const [lastTouchTimestamp, setLastTouchTimestamp] = useState<number>(Date.now());
+  const lastTouchTimestamp = useRef<number>(Date.now());
   const lastMovetimestamp = useRef(Date.now());
   const isSwiping = useRef<boolean>(false);
   const handleKeyDownEvent = useCallback((event: KeyboardEvent) => {
@@ -716,9 +716,7 @@ export default function Game({
       touchXDown.current = event.touches[0].clientX;
       touchYDown.current = event.touches[0].clientY;
       isSwiping.current = false;
-      const ts = Date.now();
-
-      setLastTouchTimestamp(ts);
+      lastTouchTimestamp.current = Date.now();
       event.preventDefault();
     }
   }, [preventKeyDownEvent]);
@@ -743,7 +741,7 @@ export default function Game({
       return;
     }
 
-    const timeSince = Date.now() - lastTouchTimestamp;
+    const timeSince = Date.now() - lastTouchTimestamp.current;
 
     if (timeSince > 500) {
       isSwiping.current = false;
@@ -788,14 +786,14 @@ export default function Game({
       // setTouchXDown(undefined);
       // setTouchYDown(undefined);
     }
-  }, [gameState.height, gameState.width, lastTouchTimestamp, moveByDXDY, preventKeyDownEvent]);
+  }, [gameState.height, gameState.width, moveByDXDY, preventKeyDownEvent]);
 
   const handleTouchEndEvent = useCallback((event: TouchEvent) => {
     if (!validTouchStart.current || preventKeyDownEvent) {
       return;
     }
 
-    const timeSince = Date.now() - lastTouchTimestamp;
+    const timeSince = Date.now() - lastTouchTimestamp.current;
 
     if (timeSince <= 500 && touchXDown !== undefined && touchYDown !== undefined) {
       // for swipe control instead of drag
@@ -820,15 +818,16 @@ export default function Game({
       touchXDown.current = clientX;
       touchYDown.current = clientY;
     }
-  }, [lastTouchTimestamp, moveByDXDY, preventKeyDownEvent, touchXDown, touchYDown]);
+  }, [moveByDXDY, preventKeyDownEvent, touchXDown, touchYDown]);
 
   useEffect(() => {
     window.addEventListener('blur', handleBlurEvent);
     document.addEventListener('keydown', handleKeyDownEvent);
     document.addEventListener('keyup', handleKeyUpEvent);
-    document.addEventListener('touchstart', handleTouchStartEvent);
-    document.addEventListener('touchmove', handleTouchMoveEvent);
-    document.addEventListener('touchend', handleTouchEndEvent);
+    // NB: even though the default value for passive is false, you have to specifically set it to false here in order to prevent swipe navigation in the browser
+    document.addEventListener('touchstart', handleTouchStartEvent, { passive: false });
+    document.addEventListener('touchmove', handleTouchMoveEvent, { passive: false });
+    document.addEventListener('touchend', handleTouchEndEvent, { passive: false });
 
     return () => {
       window.removeEventListener('blur', handleBlurEvent);
