@@ -35,7 +35,7 @@ export async function getLevelByUrlPath(username: string, slugName: string, reqU
     const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPipelineSteps(reqUser, '_id', '');
 
     const levelAgg = await LevelModel.aggregate<Level>(
-      ([
+      [
         {
           $match: {
             slug: username + '/' + slugName,
@@ -94,7 +94,7 @@ export async function getLevelByUrlPath(username: string, slugName: string, reqU
           }
         },
         ...lookupPipelineUser
-      ] as PipelineStage[]));
+      ] as PipelineStage[]);
 
     if (levelAgg.length === 0) {
       return null;

@@ -13,7 +13,8 @@ interface FormattedUserProps {
 }
 
 export default function FormattedUser({ noLinks, onClick, size, user }: FormattedUserProps) {
-  if (!user) {
+  // NB: user could be an empty object here if it came from a projection after using preserveNullAndEmptyArrays
+  if (!user || Object.keys(user).length === 0) {
     return (
       <div className='flex items-center font-bold gap-2 truncate'>
         <span className='truncate'>

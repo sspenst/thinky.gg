@@ -122,7 +122,8 @@ export default function HomeLoggedIn({
       <RecommendedLevel id='level-of-day' level={levelOfDay} title='Level of the Day' />
       <RecommendedLevel id='recommended-level' level={recommendedLevel} title='Try this Level' />
       <RecommendedLevel id='recommended-unattempted-level' level={recommendedUnattemptedLevel} title='Unexplored' />
-      {lastLevelPlayed && <RecommendedLevel id='last-level-played' level={lastLevelPlayed} title='Continue Playing' />}
+      {/* extra check to hide the level if it is already completed (in case of corrupted playattempt data) */}
+      {lastLevelPlayed && lastLevelPlayed.leastMoves !== lastLevelPlayed.userMoves && <RecommendedLevel id='last-level-played' level={lastLevelPlayed} title='Continue Playing' />}
     </div>
     <div className='flex justify-center m-6'>
       <div className='max-w-xs space-y-2 md:space-y-0 md:space-x-4 flex flex-col md:flex-row rounded-md justify-center'>
