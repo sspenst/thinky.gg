@@ -1,6 +1,6 @@
 import { UserAndSum } from '@root/contexts/levelContext';
 import React, { useContext } from 'react';
-import DataTable from 'react-data-table-component';
+import DataTable from 'react-data-table-component-sspenst';
 import Dimensions from '../../constants/dimensions';
 import { AppContext } from '../../contexts/appContext';
 import { DATA_TABLE_CUSTOM_STYLES } from '../../helpers/dataTableCustomStyles';
