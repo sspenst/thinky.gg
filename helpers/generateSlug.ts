@@ -7,8 +7,8 @@ async function getLevelBySlug(slug: string, options?: QueryOptions): Promise<Lev
   return await LevelModel.findOne({ slug: slug }, {}, options);
 }
 
-async function getCollectionBySlug(slug: string): Promise<Collection | null> {
-  return await CollectionModel.findOne({ slug: slug });
+async function getCollectionBySlug(slug: string, options?: QueryOptions): Promise<Collection | null> {
+  return await CollectionModel.findOne({ slug: slug }, {}, options);
 }
 
 function slugify(str: string) {
@@ -21,13 +21,18 @@ function slugify(str: string) {
   return slug === '' ? '-' : slug;
 }
 
-export async function generateCollectionSlug(userName: string, collectionName: string, existingCollectionId?: string) {
+export async function generateCollectionSlug(
+  userName: string,
+  collectionName: string,
+  existingCollectionId?: string,
+  options?: QueryOptions,
+) {
   const og_slug = slugify(userName) + '/' + slugify(collectionName);
   let slug = og_slug;
   let i = 2;
 
   while (i < 20) {
-    const collection = await getCollectionBySlug(slug);
+    const collection = await getCollectionBySlug(slug, options);
 
     if (!collection) {
       return slug;
@@ -44,7 +49,12 @@ export async function generateCollectionSlug(userName: string, collectionName: s
   throw new Error('Couldn\'t generate a unique collection slug');
 }
 
-export async function generateLevelSlug(userName: string, levelName: string, existingLevelId?: string, options?: QueryOptions) {
+export async function generateLevelSlug(
+  userName: string,
+  levelName: string,
+  existingLevelId?: string,
+  options?: QueryOptions,
+) {
   const og_slug = slugify(userName) + '/' + slugify(levelName);
   let slug = og_slug;
   let i = 2;
