@@ -4,7 +4,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN npm install -g ts-node
 
-WORKDIR /app
+WORKDIR /pathology_app
 
 COPY --chown=node:node package*.json ./
 RUN npm install
