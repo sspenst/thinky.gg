@@ -56,6 +56,7 @@ export default withAuth({
 
     await dbConnect();
 
+    // TODO: should all of this be in a transaction? might be more efficient / less error prone
     const [level, stat] = await Promise.all([
       LevelModel.findOne<Level>({ _id: levelId, isDeleted: { $ne: true } }, {}, { lean: true }),
       StatModel.findOne<Stat>({ levelId: levelId, userId: req.userId }, {}, { lean: true }),
@@ -107,6 +108,9 @@ export default withAuth({
 
         complete = moves <= levelTransaction.leastMoves;
 
+        // TODO: if complete, and previously not complete, then call forceCompleteLatestPlayAttempt
+        // in the case of a record, we don't need to call forceCompleteLatestPlayAttempt early
+
         if (!stat) {
           // add the stat if it did not previously exist
           await StatModel.create([{
@@ -124,7 +128,7 @@ export default withAuth({
             await Promise.all([
               UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }, { session: session }),
               ...issueAchievements(req.user._id, req.user.score + 1, { session: session }),
-              forceCompleteLatestPlayAttempt( req.userId, levelId, ts, { session: session }),
+              forceCompleteLatestPlayAttempt(req.userId, levelId, ts, { session: session }),
             ]);
           }
         } else if (moves < stat.moves) {
@@ -145,7 +149,7 @@ export default withAuth({
             await UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }, { session: session });
             await Promise.all([
               ...issueAchievements(req.user._id, req.user.score + 1, { session: session }),
-              forceCompleteLatestPlayAttempt( req.userId, levelId, ts, { session: session }),
+              forceCompleteLatestPlayAttempt(req.userId, levelId, ts, { session: session }),
             ]);
           }
         } else {
