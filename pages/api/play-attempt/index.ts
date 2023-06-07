@@ -207,7 +207,9 @@ export default withAuth({
                 _id: 1,
                 attemptContext: 1,
                 endTime: 1,
-              }
+              },
+              // NB: must update the latest one if there are multiple options, otherwise time ranges will overlap
+              sort: { _id: -1 },
             },
           ),
           LevelModel.findOne<EnrichedLevel>(
