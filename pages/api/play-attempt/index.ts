@@ -17,17 +17,18 @@ const MINUTE = 60;
 
 export async function getLastLevelPlayed(user: User) {
   const lastAgg = await PlayAttemptModel.aggregate([
+    // find the latest playattempt
     {
       $match: {
         isDeleted: { $ne: true },
-        // GTE 0? is it possible
-        updateCount: { $gt: 0 },
         userId: user._id,
       },
     },
     {
       $sort: {
         endTime: -1,
+        // NB: if end time is identical, we want to get the highest attempt context (JUST_BEATEN over UNBEATEN)
+        attemptContext: -1,
       },
     },
     {
@@ -39,6 +40,7 @@ export async function getLastLevelPlayed(user: User) {
     {
       $limit: 1,
     },
+    // we only want to show the playattempt if the level is still unbeaten
     {
       $match: {
         attemptContext: AttemptContext.UNBEATEN,
@@ -114,8 +116,6 @@ export async function forceCompleteLatestPlayAttempt(userId: string, levelId: st
     ...opts,
   });
 
-  // TODO: does this case cause https://github.com/sspenst/pathology/issues/821
-  // 0 updatecount playattempt beaten
   if (!found) {
     // create one if it did not exist... rare but technically possible
     await PlayAttemptModel.create([{
