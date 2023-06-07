@@ -15,7 +15,7 @@ import Stat from '../../../../models/db/stat';
 import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../../models/mongoose';
 import { AttemptContext } from '../../../../models/schemas/playAttemptSchema';
 import { processQueueMessages, queueCalcPlayAttempts } from '../../../../pages/api/internal-jobs/worker';
-import handler, { forceCompleteLatestPlayAttempt } from '../../../../pages/api/play-attempt/index';
+import handler, { forceCompleteLatestPlayAttempt, getLastLevelPlayed } from '../../../../pages/api/play-attempt/index';
 import statsHandler from '../../../../pages/api/stats/index';
 
 beforeAll(async () => {
@@ -297,6 +297,30 @@ const tests = [
       expect(playAttemptDocs[0].endTime).toBe(0.1 * MINUTE);
       expect(lvl.calc_playattempts_duration_sum).toBe(0);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
+    }
+  },
+  {
+    levelId: TestId.LEVEL_4,
+    name: 'win immediately then check last level played (can occur on 1 step levels)',
+    list: [
+      ['win_inefficient', 1, 'ok'],
+      ['play', 1, 'created'],
+    ],
+    tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
+      expect(playAttemptDocs.length).toBe(2);
+      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.BEATEN);
+      expect(playAttemptDocs[0].startTime).toBe(MINUTE);
+      expect(playAttemptDocs[0].endTime).toBe(MINUTE);
+      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.JUST_BEATEN);
+      expect(playAttemptDocs[1].startTime).toBe(MINUTE);
+      expect(playAttemptDocs[1].endTime).toBe(MINUTE);
+      expect(lvl.calc_playattempts_duration_sum).toBe(0);
+      expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
+
+      const user = await UserModel.findById(TestId.USER);
+      const lastLevelPlayed = await getLastLevelPlayed(user);
+
+      expect(lastLevelPlayed).toBeNull();
     }
   },
   {
