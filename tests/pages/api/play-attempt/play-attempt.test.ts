@@ -901,4 +901,56 @@ describe('Testing stats api', () => {
       },
     });
   });
+  test('POST with transaction error', async () => {
+    const playAttemptId1 = new Types.ObjectId();
+    const playAttempt1 = {
+      _id: playAttemptId1,
+      attemptContext: AttemptContext.UNBEATEN,
+      endTime: 10,
+      levelId: new Types.ObjectId(TestId.LEVEL),
+      startTime: 1,
+      userId: new Types.ObjectId(TestId.USER),
+    } as PlayAttempt;
+
+    const playAttemptId2 = new Types.ObjectId();
+    const playAttempt2 = {
+      _id: playAttemptId2,
+      attemptContext: AttemptContext.UNBEATEN,
+      endTime: 20,
+      levelId: new Types.ObjectId(TestId.LEVEL),
+      startTime: 11,
+      userId: new Types.ObjectId(TestId.USER),
+    } as PlayAttempt;
+
+    await PlayAttemptModel.create([playAttempt1, playAttempt2]);
+
+    jest.spyOn(TimerUtil, 'getTs').mockReturnValue(30);
+
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            levelId: TestId.LEVEL,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(res.status).toBe(200);
+        expect(response.message).toBe('updated');
+        expect(response.playAttempt).toBe(playAttemptId2.toString());
+      },
+    });
+  });
 });
