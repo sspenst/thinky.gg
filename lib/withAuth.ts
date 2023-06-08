@@ -1,4 +1,5 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
+import { addCustomAttribute } from 'newrelic';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import requestIp from 'request-ip';
 import { parseReq, ReqValidator } from '../helpers/apiWrapper';
@@ -8,6 +9,7 @@ import User from '../models/db/user';
 import { UserModel } from '../models/mongoose';
 import dbConnect from './dbConnect';
 import getTokenCookie from './getTokenCookie';
+import isLocal from './isLocal';
 
 export type NextApiRequestWithAuth = NextApiRequest & {
   user: User;
@@ -28,9 +30,13 @@ export async function getUserFromToken(
   }
 
   const decoded = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload;
-  const userId = decoded.userId;
+  const userId = decoded.userId as string;
 
-  // check if user exists
+  // track user id attribute for newrelic
+  if (!isLocal()) {
+    addCustomAttribute('User Id', userId);
+  }
+
   await dbConnect();
 
   // Update meta data from user
@@ -96,6 +102,7 @@ export default function withAuth(
       res.setHeader('Set-Cookie', refreshCookie);
       req.user = reqUser;
       req.userId = reqUser._id.toString();
+
       const validate = parseReq(validator, req);
 
       if (validate !== null) {
