@@ -5,9 +5,8 @@ import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
 import getDifficultyEstimate from '../../../helpers/getDifficultyEstimate';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
-import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import Level, { EnrichedLevel } from '../../../models/db/level';
+import { EnrichedLevel } from '../../../models/db/level';
 import User from '../../../models/db/user';
 import { LevelModel, PlayAttemptModel, StatModel } from '../../../models/mongoose';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
@@ -17,18 +16,19 @@ import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 const MINUTE = 60;
 
 export async function getLastLevelPlayed(user: User) {
-  // Instead of the above, use aggregate.. quick benchmark showed this ~100ms faster
   const lastAgg = await PlayAttemptModel.aggregate([
+    // find the latest playattempt
     {
       $match: {
         isDeleted: { $ne: true },
-        updateCount: { $gt: 0 },
-        userId: new Types.ObjectId(user._id),
+        userId: user._id,
       },
     },
     {
       $sort: {
         endTime: -1,
+        // NB: if end time is identical, we want to get the highest attempt context (JUST_BEATEN over UNBEATEN)
+        attemptContext: -1,
       },
     },
     {
@@ -40,6 +40,7 @@ export async function getLastLevelPlayed(user: User) {
     {
       $limit: 1,
     },
+    // we only want to show the playattempt if the level is still unbeaten
     {
       $match: {
         attemptContext: AttemptContext.UNBEATEN,
@@ -87,17 +88,14 @@ export async function getLastLevelPlayed(user: User) {
       $replaceRoot: {
         newRoot: '$levelId',
       }
-    }
-
+    },
   ]);
 
   if (lastAgg.length === 0) {
     return null;
   }
 
-  const level = lastAgg[0];
-
-  return level as EnrichedLevel;
+  return lastAgg[0] as EnrichedLevel;
 }
 
 export async function forceCompleteLatestPlayAttempt(userId: string, levelId: string, ts: number, opts: QueryOptions) {
@@ -131,19 +129,32 @@ export async function forceCompleteLatestPlayAttempt(userId: string, levelId: st
     }], { ...opts });
   }
 
-  const level = await LevelModel.findByIdAndUpdate(levelId, {
+  const level = await LevelModel.findByIdAndUpdate<EnrichedLevel>(levelId, {
     $inc: {
       calc_playattempts_duration_sum: found ? ts - found.endTime : 0,
       calc_playattempts_just_beaten_count: 1,
     },
     $addToSet: {
       calc_playattempts_unique_users: new Types.ObjectId(userId),
-    }
-  }, { new: true, ...opts });
+    },
+  }, {
+    new: true,
+    lean: true,
+    projection: {
+      calc_playattempts_duration_sum: 1,
+      calc_playattempts_just_beaten_count: 1,
+      calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' },
+    },
+    ...opts,
+  });
+
+  if (!level) {
+    throw new Error('Level ' + levelId + ' not found within transaction');
+  }
 
   await LevelModel.findByIdAndUpdate(levelId, {
     $set: {
-      calc_difficulty_estimate: getDifficultyEstimate(level, level.calc_playattempts_unique_users.length),
+      calc_difficulty_estimate: getDifficultyEstimate(level, level.calc_playattempts_unique_users_count ?? 0),
     },
   }, opts);
 }
@@ -163,58 +174,67 @@ export default withAuth({
   },
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
-    // find the last play attempt for this user and context
     const lastPlayed = await getLastLevelPlayed(req.user);
-
-    if (!lastPlayed) {
-      return res.status(200).json(null);
-    }
 
     return res.status(200).json(lastPlayed);
   } else if (req.method === 'POST') {
     const { levelId } = req.body;
-
-    await dbConnect();
     const now = TimerUtil.getTs();
-
     const session = await mongoose.startSession();
-    let resTrack = { status: 500, data: {} };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const resTrack = { status: 500, json: { error: 'Error in POST play-attempt' } as any };
 
     try {
       await session.withTransaction(async () => {
-        const [playAttempt, level] = await Promise.all([ PlayAttemptModel.findOneAndUpdate({
-          userId: req.user._id,
-          levelId: levelId,
-          endTime: { $gt: now - 3 * MINUTE },
-          attemptContext: {
-            $ne: AttemptContext.JUST_BEATEN
-          }
-        }, {
-          $set: { endTime: now },
-          $inc: { updateCount: 1 },
-        }, {
-          new: false,
-          lean: true,
-          session: session,
-          projection: {
-            _id: 1,
-            attemptContext: 1,
-            endTime: 1,
-          }
-        }),
-        LevelModel.findOne<Level & { calc_playattempts_unique_users_count: number }>({ _id: levelId, isDeleted: { $ne: true } },
-          {
-            isDraft: 1,
-            calc_playattempts_duration_sum: 1,
-            calc_playattempts_just_beaten_count: 1,
-            calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' },
-          },
-          { lean: true })]
-        );
+        const [playAttempt, level] = await Promise.all([
+          PlayAttemptModel.findOneAndUpdate(
+            {
+              userId: req.user._id,
+              levelId: levelId,
+              endTime: { $gt: now - 3 * MINUTE },
+              attemptContext: {
+                $ne: AttemptContext.JUST_BEATEN
+              }
+            },
+            {
+              $set: { endTime: now },
+              $inc: { updateCount: 1 },
+            },
+            {
+              new: false,
+              lean: true,
+              session: session,
+              projection: {
+                _id: 1,
+                attemptContext: 1,
+                endTime: 1,
+              },
+              // NB: must update the latest one if there are multiple options, otherwise time ranges will overlap
+              sort: { _id: -1 },
+            },
+          ),
+          LevelModel.findOne<EnrichedLevel>(
+            {
+              _id: levelId,
+              isDeleted: { $ne: true },
+              isDraft: false,
+            },
+            {
+              calc_playattempts_duration_sum: 1,
+              calc_playattempts_just_beaten_count: 1,
+              calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' },
+            },
+            {
+              lean: true,
+              session: session,
+            },
+          ),
+        ]);
 
-        if (!level || level.isDraft) {
-          resTrack = { status: 404, data: { error: 'Level not found' } };
-          throw new Error('Level ' + levelId + ' not found within transaction'); // this should revert the transaction
+        if (!level) {
+          resTrack.status = 404;
+          resTrack.json.error = `Level ${levelId} not found`;
+          throw new Error(resTrack.json.error);
         }
 
         if (playAttempt) {
@@ -222,7 +242,7 @@ export default withAuth({
           if (playAttempt.attemptContext !== AttemptContext.BEATEN) {
             const newPlayDuration = now - playAttempt.endTime;
 
-            const updatedLevel = await LevelModel.findByIdAndUpdate(levelId, {
+            const updatedLevel = await LevelModel.findByIdAndUpdate<EnrichedLevel>(levelId, {
               $inc: {
                 calc_playattempts_duration_sum: newPlayDuration,
               },
@@ -240,9 +260,15 @@ export default withAuth({
               session: session,
             });
 
+            if (!updatedLevel) {
+              resTrack.status = 404;
+              resTrack.json.error = `Level ${levelId} not found`;
+              throw new Error(resTrack.json.error);
+            }
+
             await LevelModel.updateOne({ _id: levelId }, {
               $set: {
-                calc_difficulty_estimate: getDifficultyEstimate(updatedLevel, updatedLevel.calc_playattempts_unique_users_count),
+                calc_difficulty_estimate: getDifficultyEstimate(updatedLevel, updatedLevel.calc_playattempts_unique_users_count ?? 0),
               },
             }, {
               lean: true,
@@ -250,44 +276,34 @@ export default withAuth({
             });
           }
 
-          resTrack = { status: 200, data: { message: 'updated', playAttempt: playAttempt._id } };
+          resTrack.status = 200;
+          resTrack.json = { message: 'updated', playAttempt: playAttempt._id };
+        } else {
+          const statRecord = await StatModel.findOne({
+            userId: req.user._id,
+            levelId: levelId,
+          }, 'complete', { session: session, lean: true });
 
-          return resTrack;
+          const resp = await PlayAttemptModel.create([{
+            _id: new Types.ObjectId(),
+            userId: req.user._id,
+            levelId: levelId,
+            startTime: now,
+            endTime: now,
+            updateCount: 0,
+            attemptContext: statRecord?.complete ? AttemptContext.BEATEN : AttemptContext.UNBEATEN,
+          }], { session: session });
+
+          resTrack.status = 200;
+          resTrack.json = { message: 'created', playAttempt: resp[0]._id };
         }
-
-        const statRecord = await StatModel.findOne({
-          userId: req.user._id,
-          levelId: levelId,
-        }, 'complete', { session: session, lean: true });
-
-        const resp = await PlayAttemptModel.create([{
-          _id: new Types.ObjectId(),
-          userId: req.user._id,
-          levelId: levelId,
-          startTime: now,
-          endTime: now,
-          updateCount: 0,
-          attemptContext: statRecord?.complete ? AttemptContext.BEATEN : AttemptContext.UNBEATEN,
-        }], { session: session });
-
-        resTrack = { status: 200, data: { message: 'created', playAttempt: resp[0]._id } };
-
-        return;
       });
-      session.endSession();
     } catch (err) {
-      logger.error('Error in api/playattempt', err);
-      session.endSession();
-
-      if (resTrack.status !== 500) {
-        return res.status(resTrack.status).json(resTrack.data);
-      }
-
-      return res.status(500).json({
-        error: 'Error in POST play-attempt',
-      });
+      logger.error('Error in api/play-attempt', err);
     }
 
-    return res.status(resTrack.status).json(resTrack.data);
+    session.endSession();
+
+    return res.status(resTrack.status).json(resTrack.json);
   }
 });
