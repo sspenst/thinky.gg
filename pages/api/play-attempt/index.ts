@@ -181,7 +181,8 @@ export default withAuth({
     const { levelId } = req.body;
     const now = TimerUtil.getTs();
     const session = await mongoose.startSession();
-    let resTrack = { status: 500, data: {} };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const resTrack = { status: 500, json: { error: 'Error in POST play-attempt' } as any };
 
     try {
       await session.withTransaction(async () => {
@@ -231,8 +232,9 @@ export default withAuth({
         ]);
 
         if (!level) {
-          resTrack = { status: 404, data: { error: 'Level not found' } };
-          throw new Error('Level ' + levelId + ' not found within transaction');
+          resTrack.status = 404;
+          resTrack.json.error = `Level ${levelId} not found`;
+          throw new Error(resTrack.json.error);
         }
 
         if (playAttempt) {
@@ -259,8 +261,9 @@ export default withAuth({
             });
 
             if (!updatedLevel) {
-              resTrack = { status: 500, data: { error: 'Level not found' } };
-              throw new Error('Level ' + levelId + ' not found within transaction');
+              resTrack.status = 404;
+              resTrack.json.error = `Level ${levelId} not found`;
+              throw new Error(resTrack.json.error);
             }
 
             await LevelModel.updateOne({ _id: levelId }, {
@@ -273,7 +276,8 @@ export default withAuth({
             });
           }
 
-          resTrack = { status: 200, data: { message: 'updated', playAttempt: playAttempt._id } };
+          resTrack.status = 200;
+          resTrack.json = { message: 'updated', playAttempt: playAttempt._id };
         } else {
           const statRecord = await StatModel.findOne({
             userId: req.user._id,
@@ -290,24 +294,16 @@ export default withAuth({
             attemptContext: statRecord?.complete ? AttemptContext.BEATEN : AttemptContext.UNBEATEN,
           }], { session: session });
 
-          resTrack = { status: 200, data: { message: 'created', playAttempt: resp[0]._id } };
+          resTrack.status = 200;
+          resTrack.json = { message: 'created', playAttempt: resp[0]._id };
         }
       });
-
-      session.endSession();
     } catch (err) {
-      logger.error('Error in api/playattempt', err);
-      session.endSession();
-
-      if (resTrack.status !== 500) {
-        return res.status(resTrack.status).json(resTrack.data);
-      }
-
-      return res.status(500).json({
-        error: 'Error in POST play-attempt',
-      });
+      logger.error('Error in api/play-attempt', err);
     }
 
-    return res.status(resTrack.status).json(resTrack.data);
+    session.endSession();
+
+    return res.status(resTrack.status).json(resTrack.json);
   }
 });
