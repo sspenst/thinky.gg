@@ -111,7 +111,7 @@ export async function forceCompleteLatestPlayAttempt(userId: string, levelId: st
     $inc: { updateCount: 1 }
   }, {
     new: false,
-    sort: { _id: -1 },
+    sort: { endTime: -1 },
     lean: true,
     ...opts,
   });
@@ -210,7 +210,7 @@ export default withAuth({
                 endTime: 1,
               },
               // NB: must update the latest one if there are multiple options, otherwise time ranges will overlap
-              sort: { _id: -1 },
+              sort: { endTime: -1 },
             },
           ),
           LevelModel.findOne<EnrichedLevel>(

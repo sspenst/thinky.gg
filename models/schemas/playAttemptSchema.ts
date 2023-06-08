@@ -46,6 +46,7 @@ const PlayAttemptSchema = new mongoose.Schema<PlayAttempt>({
   },
 });
 
-PlayAttemptSchema.index({ levelId: 1, userId: 1 });
+PlayAttemptSchema.index({ levelId: 1, userId: 1, endTime: -1 });
+PlayAttemptSchema.index({ userId: 1, endTime: -1 });
 
 export default PlayAttemptSchema;
