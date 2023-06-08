@@ -1,5 +1,5 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
-import { addCustomAttribute } from 'newrelic';
+import newrelic from 'newrelic';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import requestIp from 'request-ip';
 import { parseReq, ReqValidator } from '../helpers/apiWrapper';
@@ -33,8 +33,9 @@ export async function getUserFromToken(
   const userId = decoded.userId as string;
 
   // track user id attribute for newrelic
+  // https://github.com/newrelic/node-newrelic/issues/956#issuecomment-962729137
   if (!isLocal()) {
-    addCustomAttribute('User Id', userId);
+    newrelic.addCustomAttribute('User Id', userId);
   }
 
   await dbConnect();
