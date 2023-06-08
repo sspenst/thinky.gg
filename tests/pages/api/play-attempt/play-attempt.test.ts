@@ -918,15 +918,25 @@ describe('Testing stats api', () => {
     const playAttempt2 = {
       _id: playAttemptId2,
       attemptContext: AttemptContext.UNBEATEN,
+      endTime: 30,
+      levelId: new Types.ObjectId(TestId.LEVEL),
+      startTime: 21,
+      userId: new Types.ObjectId(TestId.USER),
+    } as PlayAttempt;
+
+    const playAttemptId3 = new Types.ObjectId();
+    const playAttempt3 = {
+      _id: playAttemptId3,
+      attemptContext: AttemptContext.UNBEATEN,
       endTime: 20,
       levelId: new Types.ObjectId(TestId.LEVEL),
       startTime: 11,
       userId: new Types.ObjectId(TestId.USER),
     } as PlayAttempt;
 
-    await PlayAttemptModel.create([playAttempt1, playAttempt2]);
+    await PlayAttemptModel.create([playAttempt1, playAttempt2, playAttempt3]);
 
-    jest.spyOn(TimerUtil, 'getTs').mockReturnValue(30);
+    jest.spyOn(TimerUtil, 'getTs').mockReturnValue(40);
 
     await testApiHandler({
       handler: async (_, res) => {
