@@ -631,6 +631,8 @@ describe('Testing stats api', () => {
   });
   test('Doing a POST with an invalid level should error', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    const levelId = new Types.ObjectId();
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -639,7 +641,7 @@ describe('Testing stats api', () => {
             token: getTokenCookieValue(TestId.USER),
           },
           body: {
-            levelId: new Types.ObjectId()
+            levelId: levelId,
           },
           headers: {
             'content-type': 'application/json',
@@ -652,7 +654,7 @@ describe('Testing stats api', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Level not found');
+        expect(response.error).toBe(`Level ${levelId} not found`);
         expect(res.status).toBe(404);
       },
     });
