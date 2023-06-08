@@ -1,3 +1,4 @@
+import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
 import { Types } from 'mongoose';
 import Role from '../constants/role';
 import TestId from '../constants/testId';
@@ -204,7 +205,7 @@ export default async function initializeLocalDb() {
   }));
   promises.push(PlayAttemptModel.create({
     _id: new Types.ObjectId(),
-    attemptContext: 0,
+    attemptContext: AttemptContext.UNBEATEN,
     endTime: 200,
     isDeleted: true,
     levelId: new Types.ObjectId(TestId.LEVEL_DELETED),
