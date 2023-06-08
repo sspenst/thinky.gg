@@ -93,7 +93,7 @@ export async function quitMatch(matchId: string, userId: Types.ObjectId) {
   return updatedMatch;
 }
 
-export async function MatchMarkSkipLevel(
+export async function matchMarkSkipLevel(
   userId: Types.ObjectId,
   matchId: string,
   levelId: Types.ObjectId,
@@ -131,7 +131,7 @@ export async function MatchMarkSkipLevel(
   return updated;
 }
 
-export async function MatchMarkCompleteLevel(
+export async function matchMarkCompleteLevel(
   userId: Types.ObjectId,
   matchId: string,
   levelId: Types.ObjectId,
@@ -477,7 +477,7 @@ export default withAuth(
         return res.status(200).json(updatedMatch);
       } else if (action === MatchAction.SKIP_LEVEL) {
         // skipping level
-        const result = await MatchMarkSkipLevel(
+        const result = await matchMarkSkipLevel(
           req.user._id,
           matchId as string,
           levelId,

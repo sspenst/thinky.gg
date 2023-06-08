@@ -17,8 +17,8 @@ import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
 import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
 import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
-import { queueCalcPlayAttempts, queueRefreshIndexCalcs } from '../internal-jobs/worker';
-import { MatchMarkCompleteLevel } from '../match/[matchId]';
+import { queueRefreshIndexCalcs } from '../internal-jobs/worker';
+import { matchMarkCompleteLevel } from '../match/[matchId]';
 import { forceCompleteLatestPlayAttempt } from '../play-attempt';
 
 export function issueAchievements(userId: Types.ObjectId, score: number, options: SaveOptions) {
@@ -238,18 +238,13 @@ export default withAuth({
     const promises = [];
 
     if (complete && matchId) {
-      // if there is a match Id... let's go ahead and update the match
-      promises.push(MatchMarkCompleteLevel(req.user._id, matchId, level._id));
+      promises.push(matchMarkCompleteLevel(req.user._id, matchId, level._id));
     }
 
     promises.push(queueRefreshIndexCalcs(level._id));
 
     if (newRecord) {
-      // TODO: What happens if while calcPlayAttempts is running a new play attempt is recorded?
-      promises.push([
-        queueCalcPlayAttempts(level._id),
-        queueDiscordWebhook(Discord.LevelsId, `**${req.user?.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`),
-      ]);
+      promises.push(queueDiscordWebhook(Discord.LevelsId, `**${req.user?.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`));
     }
 
     await Promise.all(promises);
