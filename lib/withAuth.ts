@@ -1,4 +1,5 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
+// https://github.com/newrelic/node-newrelic/issues/956#issuecomment-962729137
 import newrelic from 'newrelic';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import requestIp from 'request-ip';
@@ -32,10 +33,8 @@ export async function getUserFromToken(
   const decoded = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload;
   const userId = decoded.userId as string;
 
-  // track user id attribute for newrelic
-  // https://github.com/newrelic/node-newrelic/issues/956#issuecomment-962729137
   if (!isLocal()) {
-    newrelic.addCustomAttribute('User Id', userId);
+    newrelic.addCustomAttribute('userId', userId);
   }
 
   await dbConnect();
@@ -63,8 +62,8 @@ export async function getUserFromToken(
     { lean: true, new: true, projection: '+email +bio' },
   );
 
-  if (user === null) {
-    return null;
+  if (user && !isLocal()) {
+    newrelic.addCustomAttribute('userName', user.name);
   }
 
   return user;
