@@ -7,7 +7,6 @@
 /coverage
 
 #newrelic
-newrelic.js
 newrelic_agent.log
 
 #vscode
