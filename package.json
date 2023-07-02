@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@aws-sdk/client-ses": "^3.348.0",
-    "@aws-sdk/credential-provider-node": "^3.348.0",
+    "@aws-sdk/credential-provider-node": "^3.350.0",
     "@headlessui/react": "^1.7.14",
     "@headlessui/tailwindcss": "^0.1.3",
     "@newrelic/next": "^0.5.1",
