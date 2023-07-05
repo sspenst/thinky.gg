@@ -1,4 +1,4 @@
-FROM node:18
+FROM node:18.15
 WORKDIR /pathology_app
 
 ENV NEXT_TELEMETRY_DISABLED=1
