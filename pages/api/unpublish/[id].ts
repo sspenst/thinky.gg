@@ -66,10 +66,10 @@ export default withAuth({ POST: {
           lean: true,
           session: session,
         }),
-        StatModel.find<Stat>({ levelId: id }, {}, { session: session }),
+        StatModel.find<Stat>({ levelId: id, complete: true }, 'userId', { lean: true, session: session }),
       ]);
 
-      const userIds = stats.filter(stat => stat.complete).map(stat => stat.userId);
+      const userIds = stats.map(stat => stat.userId);
 
       if (!levelClone) {
         throw new Error('Level not found');
