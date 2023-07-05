@@ -33,38 +33,42 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
     return { notFound: true };
   }
 
-  await dbConnect();
+  let usersWithLevels: UserWithLevels[] = [];
 
-  // get all levels grouped by userId
-  const usersWithLevels = await LevelModel.aggregate<UserWithLevels>([
-    {
-      $match: { isDeleted: { $ne: true }, isDraft: false },
-    },
-    {
-      $group: {
-        _id: '$userId',
-        levels: { $push: '$_id' },
+  if (process.env.OFFLINE_BUILD !== 'true') {
+    await dbConnect();
+
+    // get all levels grouped by userId
+    usersWithLevels = await LevelModel.aggregate<UserWithLevels>([
+      {
+        $match: { isDeleted: { $ne: true }, isDraft: false },
       },
-    },
-    {
-      $lookup: {
-        from: 'users',
-        localField: '_id',
-        foreignField: '_id',
-        as: 'user',
+      {
+        $group: {
+          _id: '$userId',
+          levels: { $push: '$_id' },
+        },
       },
-    },
-    {
-      $unwind: '$user',
-    },
-    {
-      $project: {
-        _id: '$_id',
-        levels: '$levels',
-        name: '$user.name',
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'user',
+        },
       },
-    },
-  ]);
+      {
+        $unwind: '$user',
+      },
+      {
+        $project: {
+          _id: '$_id',
+          levels: '$levels',
+          name: '$user.name',
+        },
+      },
+    ]);
+  }
 
   return {
     props: {

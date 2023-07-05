@@ -11,7 +11,11 @@ import { EnrichedLevel } from '../models/db/level';
 import { getLevelOfDay } from './api/level-of-day';
 
 export async function getStaticProps() {
-  const levelOfDay = await getLevelOfDay();
+  let levelOfDay: EnrichedLevel | null = null;
+
+  if (process.env.OFFLINE_BUILD !== 'true') {
+    levelOfDay = await getLevelOfDay();
+  }
 
   return {
     props: {
