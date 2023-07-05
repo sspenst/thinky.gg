@@ -17,7 +17,7 @@ RUN npm install --platform=linuxmusl
 RUN chown -R node:node node_modules/
 
 COPY --chown=node:node . .
-RUN npm run build --production
+RUN npm run build --omit=dev
 RUN chown -R node:node .next/
 
 USER node
