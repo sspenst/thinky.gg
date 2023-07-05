@@ -167,6 +167,8 @@ export default withAuth({
     try {
       await session.withTransaction(async () => {
         const levels = await LevelModel.find<Level>({
+          isDeleted: { $ne: true },
+          isDraft: false,
           userId: req.userId,
         }, '_id name', { lean: true, session: session });
 
