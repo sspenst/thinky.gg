@@ -71,7 +71,7 @@ export default withAuth({
     const { id } = req.query;
     const { authorNote, collectionIds, name } = req.body;
 
-    if (!name || !collectionIds) {
+    if (!collectionIds || !name) {
       return res.status(400).json({
         error: 'Missing required fields',
       });
@@ -87,43 +87,49 @@ export default withAuth({
       });
     }
 
-    const alreadyIn = await CollectionModel.find({
-      _id: {
-        $in: collectionIds,
-      },
-      userId: req.userId,
-      levels: id,
-    }, {
-      _id: 1,
-    }, {
-      lean: true,
-    });
-
-    const alreadyInIds = alreadyIn.map((c: Collection) => c._id.toString());
-
-    const notIn = collectionIds.filter((c: string) => !alreadyInIds.includes(c));
-
-    const promises = [
-      CollectionModel.updateMany({
-        _id: { $in: collectionIds },
-        userId: req.userId,
-      }, {
-        $addToSet: {
+    if (collectionIds) {
+      const promises: Promise<unknown>[] = [
+        CollectionModel.updateMany({
+          _id: { $in: collectionIds },
+          userId: req.userId,
+        }, {
+          $addToSet: {
+            levels: id,
+          },
+        }),
+        CollectionModel.updateMany({
+          _id: { $nin: collectionIds },
           levels: id,
-        },
-      }),
-      CollectionModel.updateMany({
-        _id: { $nin: collectionIds },
-        levels: id,
-        userId: req.userId,
-      }, {
-        $pull: {
+          userId: req.userId,
+        }, {
+          $pull: {
+            levels: id,
+          },
+        }),
+        queueRefreshIndexCalcs(new Types.ObjectId(id as string))
+      ];
+
+      // if it's not your own level, notify others that the level has been added to your collection
+      if (level.userId.toString() !== req.userId) {
+        const alreadyIn = await CollectionModel.find({
+          _id: {
+            $in: collectionIds,
+          },
+          userId: req.userId,
           levels: id,
-        },
-      }),
-      createNewLevelAddedToCollectionNotification(req.user, level, notIn),
-      queueRefreshIndexCalcs(new Types.ObjectId(id as string))
-    ];
+        }, {
+          _id: 1,
+        }, {
+          lean: true,
+        });
+        const alreadyInIds = alreadyIn.map((c: Collection) => c._id.toString());
+        const notIn = collectionIds.filter((c: string) => !alreadyInIds.includes(c));
+
+        promises.push(createNewLevelAddedToCollectionNotification(req.user, level, notIn));
+      }
+
+      await Promise.all(promises);
+    }
 
     if (isCurator(req.user) || req.userId === level.userId.toString()) {
       const session = await mongoose.startSession();
@@ -163,8 +169,6 @@ export default withAuth({
         });
       }
     }
-
-    await Promise.all(promises);
 
     return res.status(200).json(level);
   } else if (req.method === 'DELETE') {
