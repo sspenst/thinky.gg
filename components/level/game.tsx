@@ -659,14 +659,16 @@ export default function Game({
 
       const newGameState = getNewGameState();
 
-      if (newGameState.board[newGameState.pos.y][newGameState.pos.x].levelDataType === TileType.End &&
-        newGameState.moves.length <= level.leastMoves && onComplete) {
-        onComplete();
-      }
-
       return newGameState;
     });
-  }, [allowFreeUndo, disableCheckpoints, level._id, level.data, level.leastMoves, loadCheckpoint, onComplete, onNext, onPrev, saveCheckpoint, shiftKeyDown, trackStats, user]);
+  }, [allowFreeUndo, disableCheckpoints, level._id, level.data, loadCheckpoint, onNext, onPrev, saveCheckpoint, shiftKeyDown, trackStats, user]);
+
+  useEffect(() => {
+    if (gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === TileType.End &&
+      gameState.moves.length <= level.leastMoves && onComplete) {
+      onComplete();
+    }
+  }, [gameState, level.leastMoves, onComplete]);
 
   const touchXDown = useRef<number>(0);
   const touchYDown = useRef<number>(0);
