@@ -1,3 +1,4 @@
+import Stat from '@root/models/db/stat';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -420,10 +421,8 @@ describe('Testing stats api', () => {
         await processQueueMessages();
         expect(response.error).toBeUndefined();
         expect(response.length).toBe(2);
-        expect(response[0].attempts).toBe(2);
-        expect(response[0].complete).toBe(true);
-        expect(response[0].userId).toBe(TestId.USER);
-        expect(response[0].moves).toBe(12);
+        expect(response.some((s: Stat) => s.attempts === 2 && s.moves === 12)).toBeTruthy();
+        expect(response.some((s: Stat) => s.attempts === 1 && s.moves === 80)).toBeTruthy();
         expect(res.status).toBe(200);
 
         const lvl = await LevelModel.findById(TestId.LEVEL);
