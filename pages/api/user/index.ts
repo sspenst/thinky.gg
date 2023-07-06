@@ -124,26 +124,39 @@ export default withAuth({
     }
 
     if (trimmedName) {
-      // TODO: in extremely rare cases there could be a race condition, might need a transaction here
-      const levels = await LevelModel.find<Level>({
-        userId: req.userId,
-      }, '_id name', { lean: true });
+      const session = await mongoose.startSession();
 
-      for (const level of levels) {
-        const slug = await generateLevelSlug(trimmedName, level.name, level._id.toString());
+      try {
+        await session.withTransaction(async () => {
+          const levels = await LevelModel.find<Level>({
+            isDeleted: { $ne: true },
+            userId: req.userId,
+          }, '_id name', { lean: true, session: session });
 
-        await LevelModel.updateOne({ _id: level._id }, { $set: { slug: slug } });
-      }
+          for (const level of levels) {
+            const slug = await generateLevelSlug(trimmedName, level.name, level._id.toString(), { session: session });
 
-      // Do the same for collections
-      const collections = await CollectionModel.find({
-        userId: req.userId,
-      }, '_id name', { lean: true });
+            await LevelModel.updateOne({ _id: level._id }, { $set: { slug: slug } }, { session: session });
+          }
 
-      for (const collection of collections) {
-        const slug = await generateCollectionSlug(trimmedName, collection.name, collection._id.toString());
+          // Do the same for collections
+          const collections = await CollectionModel.find({
+            userId: req.userId,
+          }, '_id name', { lean: true, session: session });
 
-        await CollectionModel.updateOne({ _id: collection._id }, { $set: { slug: slug } });
+          for (const collection of collections) {
+            const slug = await generateCollectionSlug(trimmedName, collection.name, collection._id.toString(), { session: session });
+
+            await CollectionModel.updateOne({ _id: collection._id }, { $set: { slug: slug } }, { session: session });
+          }
+        });
+
+        session.endSession();
+      } catch (err) {
+        logger.error(err);
+        session.endSession();
+
+        return res.status(500).json({ error: 'Internal server error' });
       }
     }
 

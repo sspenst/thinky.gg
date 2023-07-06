@@ -1,6 +1,7 @@
+import { logger } from '@root/helpers/logger';
 import { createNewLevelAddedToCollectionNotification } from '@root/helpers/notificationHelper';
 import Collection from '@root/models/db/collection';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidObjectId } from '../../../../helpers/apiWrapper';
 import { enrichLevels } from '../../../../helpers/enrich';
@@ -125,29 +126,42 @@ export default withAuth({
     ];
 
     if (isCurator(req.user) || req.userId === level.userId.toString()) {
-      const trimmedAuthorNote = authorNote?.trim() ?? '';
-      const trimmedName = name.trim();
-      // TODO: in extremely rare cases there could be a race condition, might need a transaction here
-      const slug = await generateLevelSlug(level.slug.split('/')[0], trimmedName, id as string);
+      const session = await mongoose.startSession();
 
-      promises.push(
-        LevelModel.updateOne({
-          _id: id,
-        }, {
-          $set: {
-            authorNote: trimmedAuthorNote,
-            name: trimmedName,
-            slug: slug,
-          },
-        }, {
-          runValidators: true,
-        }),
-      );
+      try {
+        await session.withTransaction(async () => {
+          const trimmedAuthorNote = authorNote?.trim() ?? '';
+          const trimmedName = name.trim();
+          const slug = await generateLevelSlug(level.slug.split('/')[0], trimmedName, id as string, { session: session });
 
-      // update level properties for return object
-      level.authorNote = trimmedAuthorNote;
-      level.name = trimmedName;
-      level.slug = slug;
+          await LevelModel.updateOne({
+            _id: id,
+          }, {
+            $set: {
+              authorNote: trimmedAuthorNote,
+              name: trimmedName,
+              slug: slug,
+            },
+          }, {
+            runValidators: true,
+            session: session,
+          });
+
+          // update level properties for return object
+          level.authorNote = trimmedAuthorNote;
+          level.name = trimmedName;
+          level.slug = slug;
+        });
+
+        session.endSession();
+      } catch (err) {
+        logger.error(err);
+        session.endSession();
+
+        return res.status(500).json({
+          error: `Error updating slug for level id ${level._id.toString()}`,
+        });
+      }
     }
 
     await Promise.all(promises);
