@@ -50,6 +50,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   });
   const router = useRouter();
   const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);
+  const [theme, setTheme] = useState<string>();
   const { matches, privateAndInvitedMatches } = multiplayerSocket;
 
   Router.events.on('routeChangeStart', () => nProgress.start());
@@ -172,7 +173,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       // need to remove the default theme so we can add the userConfig theme
       document.body.classList.remove(Theme.Modern);
       document.body.classList.add(user.config.theme);
-      forceUpdate();
+      setTheme(user.config.theme);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.config]);
@@ -251,7 +252,9 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         multiplayerSocket: multiplayerSocket,
         mutateUser: mutateUser,
         setShouldAttemptAuth: setShouldAttemptAuth,
+        setTheme: setTheme,
         shouldAttemptAuth: shouldAttemptAuth,
+        theme: theme,
         user: user,
         userConfig: user?.config,
         userLoading: isLoading,

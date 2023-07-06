@@ -25,8 +25,7 @@ export default function Player({ borderWidth, gameState, leastMoves, size }: Pla
   const text = String(gameState.moveCount);
   const fontSizeRatio = text.length <= 3 ? 2 : (1 + (text.length - 1) / 2);
   const fontSize = innerSize / fontSizeRatio;
-  const { user } = useContext(AppContext);
-  const theme = user?.config.theme;
+  const { theme } = useContext(AppContext);
   const parentStyle = {
     backgroundColor: 'var(--bg-color)',
     height: size,

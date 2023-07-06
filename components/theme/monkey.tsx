@@ -339,6 +339,7 @@ function Banana({ fontSize, size, text }: ThemeIconProps) {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function Rock() {
   return <svg
     xmlns='http://www.w3.org/2000/svg'

@@ -34,8 +34,7 @@ export default function Square({
     event.preventDefault();
   }, [handleClick]);
 
-  const { user } = useContext(AppContext);
-  const theme = user?.config.theme;
+  const { theme } = useContext(AppContext);
   const classic = isTheme(Theme.Classic);
   const innerSize = size - 2 * borderWidth;
   const innerBorderWidth = Math.round(innerSize / 4.5);
