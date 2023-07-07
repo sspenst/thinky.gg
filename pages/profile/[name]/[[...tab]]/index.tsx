@@ -426,7 +426,7 @@ export default function ProfilePage({
           <h2 className='text-3xl font-bold truncate'>{user.name}</h2>
           <RoleIcons size={24} user={user} />
         </div>
-        <p className='text-center italic text-sm break-words mt-2'>{user.bio || 'No bio'}</p>
+        {user.bio && <p className='text-center italic text-sm break-words mt-2'>{user.bio}</p>}
         {reqUser && reqUserIsFollowing !== undefined && reqUser._id.toString() !== user._id.toString() && (
           <div className='m-4 text-center'>
             <FollowButton
