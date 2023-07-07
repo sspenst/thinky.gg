@@ -1,22 +1,26 @@
 import TileType from '@root/constants/tileType';
+import { AppContext } from '@root/contexts/appContext';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
+import Position from '@root/models/position';
 import classNames from 'classnames';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import Theme from '../../constants/theme';
-import isTheme from '../../helpers/isTheme';
 import SquareState from '../../models/squareState';
 import { teko } from '../../pages/_app';
+import Player from './player';
 import Square from './square';
 
 interface GridProps {
   board: SquareState[][];
+  cellClassName?: (x: number, y: number) => string | undefined;
   generateMovables?: (borderWidth: number, squareSize: number) => JSX.Element;
   leastMoves: number;
   onCellClick: (x: number, y: number, rightClick: boolean) => void;
 }
 
-export default function Grid({ board, generateMovables, leastMoves, onCellClick }: GridProps) {
-  const classic = isTheme(Theme.Classic);
+export default function Grid({ board, cellClassName, generateMovables, leastMoves, onCellClick }: GridProps) {
+  const { theme } = useContext(AppContext);
+  const classic = theme === Theme.Classic;
   const grid = [];
   const [gridHeight, setGridHeight] = useState<number>();
   const gridRef = useRef<HTMLDivElement>(null);
@@ -67,29 +71,50 @@ export default function Grid({ board, generateMovables, leastMoves, onCellClick 
           board[y][x].text[board[y][x].text.length - 1];
 
       grid.push(
-        <div
-          className='absolute'
-          key={`grid-${x}-${y}`}
-          style={{
-            left: squareSize * x + (!classic ? borderWidth : TileTypeHelper.isRaised(tileType) ? 2 * borderWidth : 0),
-            top: squareSize * y + (!classic ? borderWidth : TileTypeHelper.isRaised(tileType) ? 0 : 2 * borderWidth),
-          }}
-        >
-          <Square
+        tileType === TileType.Start ?
+          <Player
             borderWidth={borderWidth}
-            handleClick={(rightClick: boolean) => onCellClick(x, y, rightClick)}
+            className={cellClassName ? cellClassName(x, y) : undefined}
+            gameState={{
+              actionCount: 0,
+              blocks: [],
+              board: [],
+              height: height,
+              moveCount: 0,
+              moves: [],
+              pos: new Position(x, y),
+              width: width,
+            }}
+            handleClick={() => onCellClick(x, y, false)}
+            key={`grid-${x}-${y}`}
             leastMoves={leastMoves}
             size={squareSize}
-            text={text}
-            tileType={tileType}
+            tileType={TileType.Default}
           />
-        </div>
+          :
+          <div
+            className={classNames('absolute', cellClassName ? cellClassName(x, y) : undefined)}
+            key={`grid-${x}-${y}`}
+            style={{
+              left: squareSize * x + (!classic ? borderWidth : TileTypeHelper.isRaised(tileType) ? 2 * borderWidth : 0),
+              top: squareSize * y + (!classic ? borderWidth : TileTypeHelper.isRaised(tileType) ? 0 : 2 * borderWidth),
+            }}
+          >
+            <Square
+              borderWidth={borderWidth}
+              handleClick={(rightClick: boolean) => onCellClick(x, y, rightClick)}
+              leastMoves={leastMoves}
+              size={squareSize}
+              text={text}
+              tileType={tileType}
+            />
+          </div>
       );
     }
   }
 
   return (
-    <div className={classNames('grow', { [teko.className]: isTheme(Theme.Classic) })} id='grid' ref={gridRef}>
+    <div className={classNames('grow', { [teko.className]: classic })} id='grid' ref={gridRef}>
       {/* NB: need a fixed div here so the actual content won't affect the size of the gridRef */}
       {gridHeight && gridWidth &&
         <div className='fixed'>

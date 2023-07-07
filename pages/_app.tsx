@@ -15,7 +15,6 @@ import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 import { io, Socket } from 'socket.io-client';
 import Theme from '../constants/theme';
 import { AppContext } from '../contexts/appContext';
-import isTheme from '../helpers/isTheme';
 import useUser from '../hooks/useUser';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
 import User, { UserWithMultiplayerProfile } from '../models/db/user';
@@ -169,7 +168,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       return;
     }
 
-    if (Object.values(Theme).includes(user.config.theme as Theme) && !isTheme(user.config.theme)) {
+    if (Object.values(Theme).includes(user.config.theme as Theme) && theme !== user.config.theme) {
       // need to remove the default theme so we can add the userConfig theme
       document.body.classList.remove(Theme.Modern);
       document.body.classList.add(user.config.theme);
