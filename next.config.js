@@ -36,4 +36,6 @@ module.exports = {
       'tests',
     ],
   },
+  // https://github.com/vercel/next.js/issues/49677#issuecomment-1609501025
+  appDir: false,
 };
