@@ -10,7 +10,6 @@ import TimeRange from '../constants/timeRange';
 import { AppContext } from '../contexts/appContext';
 import { FilterSelectOption } from '../helpers/filterSelectOptions';
 import getProfileSlug from '../helpers/getProfileSlug';
-import isTheme from '../helpers/isTheme';
 import { useTour } from '../hooks/useTour';
 import { EnrichedLevel } from '../models/db/level';
 import Review from '../models/db/review';
@@ -46,12 +45,12 @@ export default function HomeLoggedIn({
   topLevelsThisMonth,
   user,
 }: HomeLoggedInProps) {
-  const { multiplayerSocket, userConfig } = useContext(AppContext);
+  const { multiplayerSocket, theme, userConfig } = useContext(AppContext);
   const router = useRouter();
   const [search, setSearch] = useState('');
   const { matches, socket } = multiplayerSocket;
   const buttonClassNames = classNames('py-2.5 px-3.5 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm whitespace-nowrap',
-    isTheme(Theme.Light) ?
+    theme === Theme.Light ?
       'bg-green-100 hover:bg-gray-50 border-gray-300 text-gray-700' :
       'bg-gray-800 hover:bg-slate-600 border-gray-700 text-gray-300'
   );

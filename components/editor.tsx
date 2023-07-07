@@ -1,18 +1,13 @@
-import classNames from 'classnames';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import ModifyModal from '../components/modal/modifyModal';
 import SizeModal from '../components/modal/sizeModal';
-import Theme from '../constants/theme';
 import TileType from '../constants/tileType';
 import { PageContext } from '../contexts/pageContext';
-import isTheme from '../helpers/isTheme';
 import Control from '../models/control';
 import Level from '../models/db/level';
-import { teko } from '../pages/_app';
 import BasicLayout from './level/basicLayout';
-import Square from './level/square';
 import CreateLevelModal from './modal/createLevelModal';
 import DataModal from './modal/dataModal';
 import EditLevelModal from './modal/editLevelModal';
@@ -242,55 +237,27 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
     });
   }
 
-  const listBlockChoices = [];
-  const size = 40;
-
-  // loop through the enum TileType
-  for (const tileTypeKey of Object.values(TileType)) {
-    let txt = undefined;
-
-    if (tileTypeKey === TileType.End) {
-      txt = level.leastMoves;
-    } else if (tileTypeKey === TileType.Start) {
-      txt = 0;
-    }
-
-    listBlockChoices.push(
-      <div
-        key={`level-data-type-${tileTypeKey}`}
-        style={{
-          borderColor: tileType === tileTypeKey ? 'rgb(255, 30, 30)' : 'var(--bg-color)',
-          borderWidth: tileType === tileTypeKey ? 3 : 1,
-          height: size,
-          width: size,
-        }}
-      >
-        <Square
-          borderWidth={1}
-          handleClick={() => setTileType(tileTypeKey as TileType)}
-          leastMoves={0}
-          noBoxShadow={true}
-          size={size - (tileType === tileTypeKey ? 4 : 0)}
-          text={txt}
-          tileType={tileTypeKey as TileType}
-        />
-      </div>
-    );
-  }
-
-  const blockList = <>{ listBlockChoices }</>;
+  const allTiles = '0123456789\nABCDEFGHIJ';
 
   return (<>
     <div className='flex flex-col h-full'>
-      <div className={classNames('flex flex-wrap shrink-0', { [teko.className]: isTheme(Theme.Classic) })} id='editor-block-list'>
-        <div
-          className='mt-1 border-2 rounded-md p-1 m-auto lg:flex lg:flex-rows grid grid-cols-10'
-          style={{
-            borderColor: 'var(--color)',
+      <div className='flex flex-col h-24 py-1'>
+        <BasicLayout
+          cellClassName={(index) => {
+            if (allTiles[index] !== tileType) {
+              return 'opacity-50 hover:opacity-100 transition cursor-pointer';
+            } else {
+              return 'editor-selected';
+            }
           }}
-        >
-          {blockList}
-        </div>
+          level={{
+            data: allTiles,
+            height: 2,
+            leastMoves: 0,
+            width: 10,
+          } as Level}
+          onClick={(index) => setTileType(allTiles[index] as TileType)}
+        />
       </div>
       <BasicLayout
         controls={[
