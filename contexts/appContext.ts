@@ -11,6 +11,7 @@ interface AppContextInterface {
   setShouldAttemptAuth: React.Dispatch<React.SetStateAction<boolean>>;
   setTheme: React.Dispatch<React.SetStateAction<string | undefined>>;
   shouldAttemptAuth: boolean;
+  sounds: { [key: string]: HTMLAudioElement };
   theme: string | undefined;
   user?: ReqUser;
   userConfig?: UserConfig;
@@ -30,6 +31,7 @@ export const AppContext = createContext<AppContextInterface>({
   setShouldAttemptAuth: () => { return; },
   setTheme: () => { return; },
   shouldAttemptAuth: true,
+  sounds: {},
   theme: undefined,
   userLoading: true,
 });
