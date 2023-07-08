@@ -49,8 +49,17 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   });
   const router = useRouter();
   const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);
+  const [sounds, setSounds] = useState<{ [key: string]: HTMLAudioElement }>({});
   const [theme, setTheme] = useState<string>();
   const { matches, privateAndInvitedMatches } = multiplayerSocket;
+
+  useEffect(() => {
+    // preload sounds
+    setSounds({
+      'start': new Audio('/sounds/start.wav'),
+      'warning': new Audio('/sounds/warning.wav'),
+    });
+  }, []);
 
   Router.events.on('routeChangeStart', () => nProgress.start());
   Router.events.on('routeChangeComplete', () => nProgress.done());
@@ -253,6 +262,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         setShouldAttemptAuth: setShouldAttemptAuth,
         setTheme: setTheme,
         shouldAttemptAuth: shouldAttemptAuth,
+        sounds: sounds,
         theme: theme,
         user: user,
         userConfig: user?.config,

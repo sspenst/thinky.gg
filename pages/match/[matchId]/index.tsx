@@ -46,22 +46,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 /* istanbul ignore next */
 export default function Match() {
   const [match, setMatch] = useState<MultiplayerMatch>();
-  const router = useRouter();
-  const [usedSkip, setUsedSkip] = useState<boolean>(false);
-  const { user } = useContext(AppContext);
   const readyMark = useRef(false);
-  const { matchId } = router.query as { matchId: string };
-
-  // load sounds from /sounds/warning.wav and /sounds/start.wav
-  const [warningSound, setWarningSound] = useState<HTMLAudioElement | null>(null);
-  const [startSound, setStartSound] = useState<HTMLAudioElement | null>(null);
+  const router = useRouter();
   const startSoundPlayed = useRef(false);
-
-  // now load them
-  useEffect(() => {
-    setWarningSound(new Audio('/sounds/warning.wav'));
-    setStartSound(new Audio('/sounds/start.wav'));
-  }, []);
+  const { sounds, user } = useContext(AppContext);
+  const [usedSkip, setUsedSkip] = useState<boolean>(false);
+  const { matchId } = router.query as { matchId: string };
 
   useEffect(() => {
     const socketConn = io('', {
@@ -181,11 +171,11 @@ export default function Match() {
 
       if (match.state === MultiplayerMatchState.ACTIVE) {
         if (ncd > 0) {
+          // set the title to the countdown
           document.title = `Starting in ${ncd >> 0} seconds!`;
 
           if (!startSoundPlayed.current) {
-            // set the title to the countdown
-            startSound?.play();
+            sounds['start']?.play();
             startSoundPlayed.current = true;
           }
         } else {
@@ -207,7 +197,7 @@ export default function Match() {
     }, 250);
 
     return () => clearInterval(iv);
-  }, [fetchMarkReady, match, startSound]);
+  }, [fetchMarkReady, match, sounds]);
 
   useEffect(() => {
     if (!match) {
