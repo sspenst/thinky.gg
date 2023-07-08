@@ -351,7 +351,7 @@ export default withAuth(
           // if reqUser is involved in their own match (still OPEN), then we
           // can safely quit that match and allow them to join the new match
           if (involvedMatch.state === MultiplayerMatchState.OPEN) {
-            await quitMatch(matchId as string, req.user._id);
+            await quitMatch(involvedMatch.matchId as string, req.user._id);
           } else {
             return res.status(400).json({
               error:
