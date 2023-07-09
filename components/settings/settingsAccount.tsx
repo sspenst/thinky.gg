@@ -253,7 +253,6 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
     );
   };
 
-  console.log(emailNotifs);
   const notifList = (
     <table className='table-fixed'>
       <thead>
@@ -301,62 +300,64 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
 
   return (
     <div className='flex justify-center'>
-      <div className='flex flex-col gap-6 p-6'>
+      <div className='flex flex-col'>
 
-        <div>
-          <form className='flex flex-col items-start mt-4' onSubmit={updateUsername}>
-            <label className='block font-bold mb-2' htmlFor='username'>
-            Username
-            </label>
-            <input
-              className={inputClass}
-              id='username'
-              name='username'
-              onChange={e => setUsername(e.target.value)}
-              placeholder='Username'
-              required
-              type='text'
-              value={username}
-            />
-            <button className='italic underline mb-4' type='submit'>Update</button>
-          </form>
-          <form className='flex flex-col items-start ' onSubmit={
-            (!userConfig?.emailConfirmed && email === user.email ? resendEmailConfirmation : updateEmail)
-          }>
-            <label className='block font-bold mb-2' htmlFor='email'>
-              {'Email - '}
-              {userConfig?.emailConfirmed && email === user.email ?
-                <span className='text-green-500'>Confirmed</span>
-                :
-                <span className='text-red-500'>Unconfirmed</span>
-              }
-            </label>
-            <input
-              className={inputClass}
-              id='email'
-              name='email'
-              onChange={e => setEmail(e.target.value)}
-              placeholder='Email'
-              required
-              type='email'
-              value={email}
-            />
-            <button className='italic underline mb-4' type='submit'>
-              {!userConfig?.emailConfirmed && email === user.email ? 'Resend confirmation' : 'Update'}
-            </button>
-          </form>
-          <form className='flex flex-col items-start' onSubmit={updatePassword}>
-            <label className='block font-bold mb-2' htmlFor='password'>
-            Password
-            </label>
-            <input autoComplete='current-password'
-              onChange={e => setCurrentPassword(e.target.value)} className={inputClass} id='password' value={currentPassword} type='password' placeholder='Enter current password' required />
-            <input autoComplete='new-password'
-              onChange={e => setPassword(e.target.value)} className={inputClass} type='password' placeholder='Enter new password' required />
-            <input autoComplete='new-password'
-              onChange={e => setPassword2(e.target.value)} className={inputClass} type='password' placeholder='Re-enter new password' required />
-            <button className='italic underline mb-4' type='submit'>Update</button>
-          </form>
+        <div className='flex flex-col md:flex-row gap-6'>
+          <div>
+            <form className='flex flex-col items-start mt-4' onSubmit={updateUsername}>
+              <label className='block font-bold mb-2' htmlFor='username'>
+              Username
+              </label>
+              <input
+                className={inputClass}
+                id='username'
+                name='username'
+                onChange={e => setUsername(e.target.value)}
+                placeholder='Username'
+                required
+                type='text'
+                value={username}
+              />
+              <button className='italic underline mb-4' type='submit'>Update</button>
+            </form>
+            <form className='flex flex-col items-start ' onSubmit={
+              (!userConfig?.emailConfirmed && email === user.email ? resendEmailConfirmation : updateEmail)
+            }>
+              <label className='block font-bold mb-2' htmlFor='email'>
+                {'Email - '}
+                {userConfig?.emailConfirmed && email === user.email ?
+                  <span className='text-green-500'>Confirmed</span>
+                  :
+                  <span className='text-red-500'>Unconfirmed</span>
+                }
+              </label>
+              <input
+                className={inputClass}
+                id='email'
+                name='email'
+                onChange={e => setEmail(e.target.value)}
+                placeholder='Email'
+                required
+                type='email'
+                value={email}
+              />
+              <button className='italic underline mb-4' type='submit'>
+                {!userConfig?.emailConfirmed && email === user.email ? 'Resend confirmation' : 'Update'}
+              </button>
+            </form>
+            <form className='flex flex-col items-start' onSubmit={updatePassword}>
+              <label className='block font-bold mb-2' htmlFor='password'>
+              Password
+              </label>
+              <input autoComplete='current-password'
+                onChange={e => setCurrentPassword(e.target.value)} className={inputClass} id='password' value={currentPassword} type='password' placeholder='Enter current password' required />
+              <input autoComplete='new-password'
+                onChange={e => setPassword(e.target.value)} className={inputClass} type='password' placeholder='Enter new password' required />
+              <input autoComplete='new-password'
+                onChange={e => setPassword2(e.target.value)} className={inputClass} type='password' placeholder='Re-enter new password' required />
+              <button className='italic underline mb-4' type='submit'>Update</button>
+            </form>
+          </div>
           {notifList}
 
         </div>
@@ -364,7 +365,7 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
 
           <div className='flex flex-col gap-2'>
             <div className='block font-bold'>
-            Options
+            Daily Digest
             </div>
             <div>
               <Select
