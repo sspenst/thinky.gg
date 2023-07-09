@@ -114,7 +114,9 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, hi
             :
             <div className='w-6' />
           }
-          <Controls controls={controls} />
+          <div className='grow'>
+            <Controls controls={controls} />
+          </div>
           {!hideSidebar &&
             <button id='fullscreenBtn' onClick={() => {
               const el = document.getElementById('game-layout');
