@@ -4,13 +4,11 @@ import classNames from 'classnames';
 import React, { useCallback, useContext } from 'react';
 import Theme, { getIconFromTheme } from '../../constants/theme';
 import TileType from '../../constants/tileType';
-import isTheme from '../../helpers/isTheme';
 
 interface SquareProps {
   borderWidth: number;
   handleClick?: (rightClick: boolean) => void;
   leastMoves: number;
-  noBoxShadow?: boolean;
   size: number;
   text?: number;
   tileType: TileType;
@@ -20,7 +18,6 @@ export default function Square({
   borderWidth,
   handleClick,
   leastMoves,
-  noBoxShadow,
   size,
   text,
   tileType,
@@ -34,9 +31,8 @@ export default function Square({
     event.preventDefault();
   }, [handleClick]);
 
-  const { user } = useContext(AppContext);
-  const theme = user?.config.theme;
-  const classic = isTheme(Theme.Classic);
+  const { theme } = useContext(AppContext);
+  const classic = theme === Theme.Classic;
   const innerSize = size - 2 * borderWidth;
   const innerBorderWidth = Math.round(innerSize / 4.5);
   const fontSizeRatio = text === undefined || String(text).length <= 3 ?
@@ -44,7 +40,7 @@ export default function Square({
   const fontSize = innerSize / fontSizeRatio * (classic ? 1.5 : 1);
   const overStepped = text !== undefined && leastMoves !== 0 && text > leastMoves;
   const textColor = overStepped ?
-    'var(--level-grid-text-extra)' : 'var(--level-grid-text)';
+    'var(--level-player-extra)' : 'var(--level-grid-text)';
 
   function getBackgroundColor() {
     switch (tileType) {
@@ -75,7 +71,7 @@ export default function Square({
     borderLeftWidth: tileType === TileType.Hole || TileTypeHelper.canMoveRight(tileType) ? innerBorderWidth : 0,
     borderRightWidth: tileType === TileType.Hole || TileTypeHelper.canMoveLeft(tileType) ? innerBorderWidth : 0,
     borderTopWidth: tileType === TileType.Hole || TileTypeHelper.canMoveDown(tileType) ? innerBorderWidth : 0,
-    boxShadow: noBoxShadow ? undefined : !classic ? `0 0 0 ${borderWidth}px 'var(--bg-color)` :
+    boxShadow: !classic ? `0 0 0 ${borderWidth}px var(--bg-color)` :
       tileType === TileType.Wall ||
     tileType === TileType.Start ||
     TileTypeHelper.canMove(tileType) ?
@@ -101,13 +97,13 @@ export default function Square({
     child = (
       <span className={'theme-' + theme + '-' + tileType} style={{ position: 'absolute', zIndex: 0, }}>
         {icon({
-          innerSize: innerSize / 1.5,
           fontSize: fontSize,
-          tileType: tileType,
+          innerSize: innerSize / 1.5,
+          leastMoves: leastMoves,
+          overstepped: overStepped,
           size: size,
           text: <>{text}</>,
-          leastMoves: leastMoves,
-          overstepped: overStepped
+          tileType: tileType,
         })}
       </span>
     );

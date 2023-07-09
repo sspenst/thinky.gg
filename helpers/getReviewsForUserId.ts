@@ -72,7 +72,10 @@ export async function getReviewsForUserId(id: string | string[] | undefined, req
         },
       },
       {
-        $unwind: '$userId',
+        $unwind: {
+          path: '$userId',
+          preserveNullAndEmptyArrays: true,
+        },
       },
       {
         $project: {

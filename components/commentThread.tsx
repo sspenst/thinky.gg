@@ -5,7 +5,6 @@ import toast from 'react-hot-toast';
 import { KeyedMutator } from 'swr';
 import Theme from '../constants/theme';
 import { AppContext } from '../contexts/appContext';
-import isTheme from '../helpers/isTheme';
 import { COMMENT_QUERY_LIMIT } from '../models/CommentEnums';
 import { EnrichedComment } from '../models/db/comment';
 import { CommentQuery } from '../pages/api/comment/[id]';
@@ -30,7 +29,7 @@ export default function CommentThread({ className, comment, mutateComments, onSe
   const [text, setText] = useState('');
   const [totalRows, setTotalRows] = useState(comment.totalReplies || 0);
   const [page, setPage] = useState(0);
-  const { user } = useContext(AppContext);
+  const { theme, user } = useContext(AppContext);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -213,7 +212,7 @@ export default function CommentThread({ className, comment, mutateComments, onSe
           <textarea
             className={classNames(
               'block p-1 w-full rounded-lg border disabled:opacity-25',
-              isTheme(Theme.Light) ?
+              theme === Theme.Light ?
                 'bg-gray-100 focus:ring-blue-500 focus:border-blue-500 border-gray-300' :
                 'bg-gray-700 border-gray-600 placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500'
             )}

@@ -1,6 +1,6 @@
 import { UserAndSum } from '@root/contexts/levelContext';
 import React, { useContext } from 'react';
-import DataTable from 'react-data-table-component';
+import DataTable from 'react-data-table-component-sspenst';
 import Dimensions from '../../constants/dimensions';
 import { AppContext } from '../../contexts/appContext';
 import { DATA_TABLE_CUSTOM_STYLES } from '../../helpers/dataTableCustomStyles';
@@ -9,10 +9,10 @@ import User from '../../models/db/user';
 import FormattedUser from '../formattedUser';
 
 export default function ProfileInsightsMostCompletions({ user }: {user: User}) {
-  const { proStatsUser: mostSolvesForUserLevels } = useProStatsUser(user, ProStatsUserType.MostSolvesForUserLevels);
+  const { proStatsUser } = useProStatsUser(user, ProStatsUserType.MostSolvesForUserLevels);
   const { user: reqUser } = useContext(AppContext);
 
-  if (!mostSolvesForUserLevels || !mostSolvesForUserLevels[ProStatsUserType.MostSolvesForUserLevels]) {
+  if (!proStatsUser || !proStatsUser[ProStatsUserType.MostSolvesForUserLevels]) {
     return <span>Loading...</span>;
   }
 
@@ -36,7 +36,7 @@ export default function ProfileInsightsMostCompletions({ user }: {user: User}) {
         },
       }]}
       customStyles={DATA_TABLE_CUSTOM_STYLES}
-      data={mostSolvesForUserLevels[ProStatsUserType.MostSolvesForUserLevels]}
+      data={proStatsUser[ProStatsUserType.MostSolvesForUserLevels]}
       dense
       noDataComponent={
         <div className='p-3'>

@@ -2,6 +2,7 @@ import classNames from 'classnames';
 import React from 'react';
 import Dimensions from '../constants/dimensions';
 import SelectOption from '../models/selectOption';
+import Complete from './complete';
 import { getFormattedDifficulty } from './difficultyDisplay';
 
 interface SelectCardContentProps {
@@ -9,7 +10,7 @@ interface SelectCardContentProps {
 }
 
 export default function SelectCardContent({ option }: SelectCardContentProps) {
-  return (
+  return (<>
     <div
       className='font-bold break-words p-2'
       style={{
@@ -35,5 +36,10 @@ export default function SelectCardContent({ option }: SelectCardContentProps) {
         {option.stats && <div className='pt-1 italic'>{option.stats.getText()}</div>}
       </div>
     </div>
-  );
+    {option.stats?.isComplete() &&
+      <div className='absolute bottom-0 right-0'>
+        <Complete />
+      </div>
+    }
+  </>);
 }

@@ -10,9 +10,9 @@ services:
         - NEW_RELIC_LICENSE_KEY=dummy
         - NEW_RELIC_APP_NAME=dummy
     volumes:
-      - ./:/app
-      - /app/node_modules
-      - /app/.next    
+      - ./:/pathology_app
+      - /pathology_app/node_modules
+      - /pathology_app/.next    
     networks:
       - dev-network
     ports:
@@ -27,9 +27,9 @@ services:
           - NEW_RELIC_LICENSE_KEY=dummy
           - NEW_RELIC_APP_NAME=dummy
     volumes:
-        - ./:/app
-        - /app/node_modules
-        - /app/.next 
+        - ./:/pathology_app
+        - /pathology_app/node_modules
+        - /pathology_app/.next 
     networks:
         - dev-network
     command: ts-node -P tsconfig.json -r tsconfig-paths/register --files server/socket/socket-server.ts

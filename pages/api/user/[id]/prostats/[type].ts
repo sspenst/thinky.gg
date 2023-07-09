@@ -33,7 +33,6 @@ async function getDifficultyDataComparisons(userId: string) {
         ts: 1,
       },
     },
-
     {
       $lookup: {
         from: 'levels',
@@ -65,8 +64,6 @@ async function getDifficultyDataComparisons(userId: string) {
     {
       $limit: 500
     },
-
-    /* look up all the unique users that have a playattempt attemptContext === AttemptContext.Beaten */
     {
       $lookup: {
         from: 'playattempts',
@@ -84,7 +81,7 @@ async function getDifficultyDataComparisons(userId: string) {
           },
           {
             $match: {
-              attemptContext: { $in: [AttemptContext.JUST_BEATEN] },
+              attemptContext: AttemptContext.JUST_BEATEN,
             },
           },
           {
@@ -302,14 +299,6 @@ async function getMostSolvesForUserLevels(userId: string) {
       },
     },
     {
-      $sort: {
-        sum: -1,
-      },
-    },
-    {
-      $limit: 100,
-    },
-    {
       $lookup: {
         from: 'users',
         localField: '_id',
@@ -328,6 +317,15 @@ async function getMostSolvesForUserLevels(userId: string) {
           ...USER_DEFAULT_PROJECTION
         },
       },
+    },
+    {
+      $sort: {
+        sum: -1,
+        'user.name': 1,
+      },
+    },
+    {
+      $limit: 100,
     },
   ]);
 

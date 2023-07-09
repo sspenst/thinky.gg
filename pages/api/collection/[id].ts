@@ -1,4 +1,5 @@
-import { PipelineStage, Types } from 'mongoose';
+import { logger } from '@root/helpers/logger';
+import mongoose, { PipelineStage, Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidObjectId, ValidObjectIdArray, ValidType } from '../../../helpers/apiWrapper';
 import { enrichLevels } from '../../../helpers/enrich';
@@ -150,8 +151,6 @@ export default withAuth({
   if (req.method === 'GET') {
     const { id } = req.query;
 
-    await dbConnect();
-
     const collection = await getCollection({ $match: {
       _id: new Types.ObjectId(id as string),
       userId: req.user._id,
@@ -174,35 +173,47 @@ export default withAuth({
       return;
     }
 
-    await dbConnect();
+    const session = await mongoose.startSession();
+    let collection: Collection | null = null;
 
-    const setObj: UpdateLevelParams = {};
+    try {
+      await session.withTransaction(async () => {
+        const setObj: UpdateLevelParams = {};
 
-    if (authorNote) {
-      setObj.authorNote = authorNote.trim();
+        if (authorNote) {
+          setObj.authorNote = authorNote.trim();
+        }
+
+        if (name) {
+          const trimmedName = name.trim();
+
+          setObj.name = trimmedName;
+          setObj.slug = await generateCollectionSlug(req.user.name, trimmedName, id as string, { session: session });
+        }
+
+        if (levels) {
+          setObj.levels = (levels as string[]).map(i => new Types.ObjectId(i));
+        }
+
+        collection = await CollectionModel.findOneAndUpdate({
+          _id: id,
+          userId: req.userId,
+        }, {
+          $set: setObj,
+        }, {
+          new: true,
+          runValidators: true,
+          session: session,
+        });
+      });
+
+      session.endSession();
+    } catch (err) /* istanbul ignore next */ {
+      logger.error(err);
+      session.endSession();
+
+      return res.status(500).json({ error: 'Error creating collection' });
     }
-
-    if (name) {
-      const trimmedName = name.trim();
-
-      setObj.name = trimmedName;
-      // TODO: in extremely rare cases there could be a race condition, might need a transaction here
-      setObj.slug = await generateCollectionSlug(req.user.name, trimmedName, id as string);
-    }
-
-    if (levels) {
-      setObj.levels = (levels as string[]).map(i => new Types.ObjectId(i));
-    }
-
-    const collection = await CollectionModel.findOneAndUpdate({
-      _id: id,
-      userId: req.userId,
-    }, {
-      $set: setObj,
-    }, {
-      new: true,
-      runValidators: true,
-    });
 
     if (!collection) {
       return res.status(401).json({ error: 'User is not authorized to perform this action' });

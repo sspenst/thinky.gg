@@ -25,4 +25,8 @@ export default class SelectOptionStats {
   getText() {
     return `${this.userTotal === undefined ? '' : this.userTotal}/${this.total}`;
   }
+
+  isComplete() {
+    return this.userTotal === this.total;
+  }
 }

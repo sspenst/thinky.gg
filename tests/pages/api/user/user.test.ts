@@ -19,9 +19,6 @@ afterAll(async() => {
 });
 enableFetchMocks();
 
-const throwMock = () => {
-  throw new Error('Mock email error');
-};
 const acceptMock = () => {
   return { rejected: [] };
 };

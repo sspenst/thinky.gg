@@ -10,7 +10,7 @@ import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery, ParsedUrlQueryInput } from 'querystring';
 import React, { Fragment, useCallback, useEffect, useState } from 'react';
-import DataTable, { Alignment, TableColumn } from 'react-data-table-component';
+import DataTable, { Alignment, TableColumn } from 'react-data-table-component-sspenst';
 import { getDifficultyColor, getDifficultyList, getFormattedDifficulty } from '../../components/difficultyDisplay';
 import EnrichedLevelLink from '../../components/enrichedLevelLink';
 import FilterButton from '../../components/filterButton';
@@ -100,6 +100,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     props: {
       enrichedLevels: JSON.parse(JSON.stringify(query.levels)),
       reqUser: JSON.parse(JSON.stringify(reqUser)),
+      searchAuthor: JSON.parse(JSON.stringify(query.searchAuthor)),
       searchQuery: searchQuery,
       totalRows: query.totalRows,
     } as SearchProps,
@@ -109,12 +110,13 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 interface SearchProps {
   enrichedLevels: EnrichedLevel[];
   reqUser: User;
+  searchAuthor: User | null;
   searchQuery: SearchQuery;
   totalRows: number;
 }
 
 /* istanbul ignore next */
-export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows }: SearchProps) {
+export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQuery, totalRows }: SearchProps) {
   const [data, setData] = useState<EnrichedLevel[]>();
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState(searchQuery);
@@ -322,7 +324,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
           />
         </div>
         <div>
-          <MultiSelectUser key='search-author-input' defaultValue={query.searchAuthor} onSelect={(user) => {
+          <MultiSelectUser key='search-author-input' defaultValue={searchAuthor} onSelect={(user) => {
             setQueryHelper({
               searchAuthor: user?.name || '',
             });

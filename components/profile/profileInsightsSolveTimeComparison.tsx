@@ -104,48 +104,56 @@ export default function ProfileInsightsSolveTimeComparison({ user }: { user: Use
             top: 10, right: 30, bottom: 10, left: 50,
           }
         }>
-          <XAxis dataKey='difficulty' type='number'
-            scale={'sqrt'}
-            name='Difficulty'
+          <XAxis
+            dataKey='difficulty'
             domain={[0, max]}
-            // show the word difficulty
             label={{ value: 'Difficulty', position: 'insideBottom', offset: 10 }}
-            // disable the ticks
+            name='Difficulty'
+            scale={'sqrt'}
             tick={false}
+            type='number'
           />
-          <YAxis dataKey='diff' type='number'
-          // disable the y axis
-            hide={false}
-            // hide the ticks
-            tick={false}
-            width={20}
-            scale={'log'}
+          <YAxis
+            dataKey='diff'
             domain={[minYValue, maxYValue]}
-            // put two labels, Solver Faster on top and Solved Slower on bottom.
+            hide={false}
             label={{ value: '<- Slower ... Faster ->', offset: 0, angle: -90, }}
-
+            scale={'log'}
+            tick={false}
+            type='number'
+            width={20}
           />
           {/* add ability to zoom */}
           <Brush dataKey='difficulty' height={30} stroke='#8884d8' />
           <ReferenceLine y={1} stroke='white' />
           {
-
             difficulties.map((d, i) => {
-              const color = getDifficultyColor(d.value);
+              if (d.name === 'Pending') {
+                return null;
+              }
+
+              const x1 = d.value;
+
+              // user has not completed any levels in this category
+              if (max <= x1) {
+                return null;
+              }
+
               let x2 = difficulties[i + 1]?.value;
 
               if (!x2) {
                 x2 = max;
               }
 
-              if (d.name === 'Pending') {
-                return;
-              }
-
               return (
-                <ReferenceArea key={'refline-' + i} x1={d.value} x2={x2} stroke='white' fill={color} opacity={0.25}
-                // show the word difficulty vertical
+                <ReferenceArea
+                  fill={getDifficultyColor(d.value)}
+                  key={'refline-' + i}
                   label={{ value: d.name, position: 'insideRight', offset: 10, angle: 90 }}
+                  opacity={0.25}
+                  stroke='white'
+                  x1={x1}
+                  x2={x2}
                 />
               );
             })

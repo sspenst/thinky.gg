@@ -1,4 +1,5 @@
 import { Tab } from '@headlessui/react';
+import Complete from '@root/components/complete';
 import FormattedDate from '@root/components/formattedDate';
 import Image from 'next/image';
 import React, { useContext, useState } from 'react';
@@ -69,6 +70,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
             }}>
               {stat.getText()}
             </span>
+            {stat.isComplete() && <Complete className='-mx-2' />}
             <span className='flex'>
               <FormattedDate ts={level.userMovesTs} />
               {userConfig?.showPlayStats &&

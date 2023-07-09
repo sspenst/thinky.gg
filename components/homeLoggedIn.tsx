@@ -10,7 +10,6 @@ import TimeRange from '../constants/timeRange';
 import { AppContext } from '../contexts/appContext';
 import { FilterSelectOption } from '../helpers/filterSelectOptions';
 import getProfileSlug from '../helpers/getProfileSlug';
-import isTheme from '../helpers/isTheme';
 import { useTour } from '../hooks/useTour';
 import { EnrichedLevel } from '../models/db/level';
 import Review from '../models/db/review';
@@ -46,12 +45,12 @@ export default function HomeLoggedIn({
   topLevelsThisMonth,
   user,
 }: HomeLoggedInProps) {
-  const { multiplayerSocket, userConfig } = useContext(AppContext);
+  const { multiplayerSocket, theme, userConfig } = useContext(AppContext);
   const router = useRouter();
   const [search, setSearch] = useState('');
   const { matches, socket } = multiplayerSocket;
   const buttonClassNames = classNames('py-2.5 px-3.5 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm whitespace-nowrap',
-    isTheme(Theme.Light) ?
+    theme === Theme.Light ?
       'bg-green-100 hover:bg-gray-50 border-gray-300 text-gray-700' :
       'bg-gray-800 hover:bg-slate-600 border-gray-700 text-gray-300'
   );
@@ -122,7 +121,8 @@ export default function HomeLoggedIn({
       <RecommendedLevel id='level-of-day' level={levelOfDay} title='Level of the Day' />
       <RecommendedLevel id='recommended-level' level={recommendedLevel} title='Try this Level' />
       <RecommendedLevel id='recommended-unattempted-level' level={recommendedUnattemptedLevel} title='Unexplored' />
-      {lastLevelPlayed && <RecommendedLevel id='last-level-played' level={lastLevelPlayed} title='Continue Playing' />}
+      {/* extra check to hide the level if it is already completed (in case of corrupted playattempt data) */}
+      {lastLevelPlayed && lastLevelPlayed.leastMoves !== lastLevelPlayed.userMoves && <RecommendedLevel id='last-level-played' level={lastLevelPlayed} title='Continue Playing' />}
     </div>
     <div className='flex justify-center m-6'>
       <div className='max-w-xs space-y-2 md:space-y-0 md:space-x-4 flex flex-col md:flex-row rounded-md justify-center'>

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React from 'react';
+import User from '@root/models/db/user';
+import React, { useState } from 'react';
 import AsyncSelect from 'react-select/async';
 import { debounce } from 'throttle-debounce';
 import Dimensions from '../constants/dimensions';
@@ -7,13 +8,14 @@ import FormattedUser from './formattedUser';
 
 interface MultiSelectUserProps {
   controlStyles?: any;
-  defaultValue?: string;
+  defaultValue?: User | null;
   onSelect?: (selectedList: any, selectedItem: any) => void;
   placeholder?: string
 }
 
 export default function MultiSelectUser({ controlStyles, defaultValue, onSelect, placeholder }: MultiSelectUserProps) {
-  const [options, setOptions] = React.useState([]);
+  const [options, setOptions] = useState([]);
+  const [value, setValue] = useState(defaultValue);
 
   const doSearch = async (searchText: any, callback: any) => {
     const search = encodeURI(searchText) || '';
@@ -39,7 +41,6 @@ export default function MultiSelectUser({ controlStyles, defaultValue, onSelect,
       DropdownIndicator: null,
       IndicatorSeparator: null,
     }}
-    defaultInputValue={defaultValue}
     formatOptionLabel={(option: any) => (
       <FormattedUser size={Dimensions.AvatarSizeSmall} noLinks={true} user={option} />
     )}
@@ -51,6 +52,8 @@ export default function MultiSelectUser({ controlStyles, defaultValue, onSelect,
     loadOptions={debounceDoSearch}
     noOptionsMessage={() => 'No users found'}
     onChange={(selectedOption: any, selectedAction: any) => {
+      setValue(selectedOption);
+
       if (!selectedAction) {
         return;
       }
@@ -119,5 +122,6 @@ export default function MultiSelectUser({ controlStyles, defaultValue, onSelect,
         color: 'black',
       }),
     }}
+    value={value}
   />;
 }

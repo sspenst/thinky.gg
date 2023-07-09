@@ -41,12 +41,11 @@ body {
   --level-end: rgb(60, 166, 229);
   --level-grid: rgb(255, 255, 255);
   --level-grid-text: rgb(0, 0, 0);
-  --level-grid-text-extra: rgb(255, 60, 60);
   --level-grid-used: rgb(247, 127, 171);
   --level-hole: rgb(7,187,202);
   --level-hole-border: rgb(0, 77, 64);
   --level-player: rgb(246, 97, 96);
-  --level-player-extra: rgb(255, 55, 55);
+  --level-player-extra: rgb(175, 255, 117);
   --level-player-text: rgb(0, 0, 0);
   --level-wall: rgb(0, 0, 0);
 }
@@ -66,7 +65,6 @@ body {
   --level-end: rgb(255, 255, 255);
   --level-grid: rgb(100, 118, 50);
   --level-grid-text: rgb(0, 0, 0);
-  --level-grid-text-extra: rgb(181, 12, 12);
   --level-grid-used: rgb(126, 152, 26);
   --level-hole: rgb(51, 51, 51);
   --level-hole-border: rgb(100, 100, 100);
@@ -91,7 +89,6 @@ body {
   --level-end: rgb(255, 248, 144);
   --level-grid: rgb(46, 139, 87);
   --level-grid-text: rgb(0, 0, 0);
-  --level-grid-text-extra: rgb(255, 99, 71);
   --level-grid-used: rgb(0, 128, 0);
   --level-hole: rgb(51, 51, 51);
   --level-hole-border: rgb(100, 100, 100);
@@ -134,7 +131,6 @@ body {
   --level-end: rgb(255, 255, 255);
   --level-grid: rgb(120, 120, 120);
   --level-grid-text: rgb(0, 0, 0);
-  --level-grid-text-extra: rgb(255, 60, 60);
   --level-grid-used: rgb(90, 90, 90);
   --level-hole: rgb(30, 30, 30);
   --level-hole-border: rgb(60, 60, 60);
@@ -159,7 +155,6 @@ body {
   --level-end: rgb(255, 181, 181);
   --level-grid: rgb(153, 204, 254);
   --level-grid-text: rgb(0, 0, 0);
-  --level-grid-text-extra: rgb(255, 60, 60);
   --level-grid-used: rgb(172, 214, 255);
   --level-hole: rgb(98, 98, 98);
   --level-hole-border: rgb(165, 165, 165);
@@ -184,12 +179,11 @@ body {
   --level-end: rgb(229, 229, 229);
   --level-grid: rgb(14, 168, 117);
   --level-grid-text: rgb(0, 0, 0);
-  --level-grid-text-extra: rgb(255, 60, 60);
-  --level-grid-used: rgb(4, 120, 87);
+  --level-grid-used: rgb(4, 110, 80);
   --level-hole: rgb(65, 65, 65);
   --level-hole-border: rgb(106, 106, 106);
   --level-player: rgb(244, 114, 182);
-  --level-player-extra: rgb(244, 86, 86);
+  --level-player-extra: rgb(240, 80, 80);
   --level-player-text: rgb(0, 0, 0);
   --level-wall: rgb(38, 38, 38);
 }
@@ -209,7 +203,6 @@ body {
   --level-end: rgb(198, 195, 195);
   --level-grid: rgb(206, 9, 9);
   --level-grid-text: rgb(0, 0, 0);
-  --level-grid-text-extra: rgb(255, 60, 60);
   --level-grid-used: rgb(121, 38, 38);
   --level-hole: rgb(65, 65, 65);
   --level-hole-border: rgb(106, 106, 106);
@@ -234,12 +227,11 @@ body {
   --level-end: rgb(229, 229, 229);
   --level-grid: rgba(21,103,117,255);
   --level-grid-text: rgb(0, 0, 0);
-  --level-grid-text-extra: rgb(255, 60, 60);
   --level-grid-used: rgba(76,147,164,255);
   --level-hole: rgb(65, 65, 65);
   --level-hole-border: rgb(106, 106, 106);
   --level-player: rgb(244, 114, 182);
-  --level-player-extra: rgb(244, 86, 86);
+  --level-player-extra: rgb(244, 144, 144);
   --level-player-text: rgb(0, 0, 0);
   --level-wall: rgb(38, 38, 38);
 }
@@ -259,12 +251,11 @@ body {
   --level-end: rgb(133, 226, 31);
   --level-grid: rgb(247, 95, 28);
   --level-grid-text: rgb(0, 0, 0);
-  --level-grid-text-extra: rgb(12, 8, 225);
   --level-grid-used: rgb(255, 154, 0);
   --level-hole: rgb(65, 65, 65);
   --level-hole-border: rgb(106, 106, 106);
   --level-player: rgb(136, 30, 228);
-  --level-player-extra: rgb(244, 86, 86);
+  --level-player-extra: rgb(178, 0, 111);
   --level-player-text: rgb(0, 0, 0);
   --level-wall: rgb(38, 38, 38);
 }
@@ -485,4 +476,16 @@ body {
 
 .subscription-plan-button:hover {
   background-color: var(--bg-color-3);
+}
+
+.editor-selected::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 2px solid rgb(230, 50, 50);
+  pointer-events: none;
+  z-index: 30;
 }

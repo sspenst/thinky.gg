@@ -15,7 +15,7 @@ import Stat from '../../../../models/db/stat';
 import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../../models/mongoose';
 import { AttemptContext } from '../../../../models/schemas/playAttemptSchema';
 import { processQueueMessages, queueCalcPlayAttempts } from '../../../../pages/api/internal-jobs/worker';
-import handler, { forceCompleteLatestPlayAttempt } from '../../../../pages/api/play-attempt/index';
+import handler, { forceCompleteLatestPlayAttempt, getLastLevelPlayed } from '../../../../pages/api/play-attempt/index';
 import statsHandler from '../../../../pages/api/stats/index';
 
 beforeAll(async () => {
@@ -297,6 +297,30 @@ const tests = [
       expect(playAttemptDocs[0].endTime).toBe(0.1 * MINUTE);
       expect(lvl.calc_playattempts_duration_sum).toBe(0);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
+    }
+  },
+  {
+    levelId: TestId.LEVEL_4,
+    name: 'win immediately then check last level played (can occur on 1 step levels)',
+    list: [
+      ['win_inefficient', 1, 'ok'],
+      ['play', 1, 'created'],
+    ],
+    tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
+      expect(playAttemptDocs.length).toBe(2);
+      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.BEATEN);
+      expect(playAttemptDocs[0].startTime).toBe(MINUTE);
+      expect(playAttemptDocs[0].endTime).toBe(MINUTE);
+      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.JUST_BEATEN);
+      expect(playAttemptDocs[1].startTime).toBe(MINUTE);
+      expect(playAttemptDocs[1].endTime).toBe(MINUTE);
+      expect(lvl.calc_playattempts_duration_sum).toBe(0);
+      expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
+
+      const user = await UserModel.findById(TestId.USER);
+      const lastLevelPlayed = await getLastLevelPlayed(user);
+
+      expect(lastLevelPlayed).toBeNull();
     }
   },
   {
@@ -607,6 +631,8 @@ describe('Testing stats api', () => {
   });
   test('Doing a POST with an invalid level should error', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    const levelId = new Types.ObjectId();
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -615,7 +641,7 @@ describe('Testing stats api', () => {
             token: getTokenCookieValue(TestId.USER),
           },
           body: {
-            levelId: new Types.ObjectId()
+            levelId: levelId,
           },
           headers: {
             'content-type': 'application/json',
@@ -628,7 +654,7 @@ describe('Testing stats api', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Level not found');
+        expect(response.error).toBe(`Level ${levelId} not found`);
         expect(res.status).toBe(404);
       },
     });
@@ -874,6 +900,68 @@ describe('Testing stats api', () => {
 
         expect(response.error).toBe('Error in POST play-attempt');
         expect(res.status).toBe(500);
+      },
+    });
+  });
+  test('POST with transaction error', async () => {
+    const playAttemptId1 = new Types.ObjectId();
+    const playAttempt1 = {
+      _id: playAttemptId1,
+      attemptContext: AttemptContext.UNBEATEN,
+      endTime: 10,
+      levelId: new Types.ObjectId(TestId.LEVEL),
+      startTime: 1,
+      userId: new Types.ObjectId(TestId.USER),
+    } as PlayAttempt;
+
+    const playAttemptId2 = new Types.ObjectId();
+    const playAttempt2 = {
+      _id: playAttemptId2,
+      attemptContext: AttemptContext.UNBEATEN,
+      endTime: 30,
+      levelId: new Types.ObjectId(TestId.LEVEL),
+      startTime: 21,
+      userId: new Types.ObjectId(TestId.USER),
+    } as PlayAttempt;
+
+    const playAttemptId3 = new Types.ObjectId();
+    const playAttempt3 = {
+      _id: playAttemptId3,
+      attemptContext: AttemptContext.UNBEATEN,
+      endTime: 20,
+      levelId: new Types.ObjectId(TestId.LEVEL),
+      startTime: 11,
+      userId: new Types.ObjectId(TestId.USER),
+    } as PlayAttempt;
+
+    await PlayAttemptModel.create([playAttempt1, playAttempt2, playAttempt3]);
+
+    jest.spyOn(TimerUtil, 'getTs').mockReturnValue(40);
+
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            levelId: TestId.LEVEL,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(res.status).toBe(200);
+        expect(response.message).toBe('updated');
+        expect(response.playAttempt).toBe(playAttemptId2.toString());
       },
     });
   });
