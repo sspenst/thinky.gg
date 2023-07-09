@@ -1,7 +1,9 @@
+import AchievementType from '@root/constants/achievementType';
 import NotificationType from '@root/constants/notificationType';
-import { createNewFollowerNotification, createNewReviewOnYourLevelNotification } from '@root/helpers/notificationHelper';
+import { createNewAchievement, createNewFollowerNotification, createNewReviewOnYourLevelNotification } from '@root/helpers/notificationHelper';
 import { processQueueMessages } from '@root/pages/api/internal-jobs/worker';
 import { enableFetchMocks } from 'jest-fetch-mock';
+import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { EmailDigestSettingTypes } from '../../../../constants/emailDigest';
 import TestId from '../../../../constants/testId';
@@ -125,5 +127,25 @@ describe('account settings notification preferences', () => {
     expect(queueProcessed).toBe('Processed 2 messages with no errors');
     expect(originalSendEmail.sendEmail).toHaveBeenCalledTimes(0); // important
     expect(originalSendPush.sendPush).toHaveBeenCalledTimes(1); // important!
+  });
+  test('create a new achievement notification', async () => {
+    // spy on sendMailRefMock.ref
+
+    const originalSendEmail = jest.requireActual('@root/pages/api/internal-jobs/worker/sendEmail');
+    const originalSendPush = jest.requireActual('@root/pages/api/internal-jobs/worker/sendPush');
+
+    originalSendEmail.sendEmail = jest.fn().mockImplementation(() => {
+      // do nothing
+    });
+    originalSendPush.sendPush = jest.fn().mockImplementation(() => {
+      // do nothing
+    });
+    await createNewAchievement(AchievementType.COMPLETED_LEVELS_100, new Types.ObjectId(TestId.USER_GUEST) );
+
+    const queueProcessed = await processQueueMessages();
+
+    expect(queueProcessed).toBe('Processed 2 messages with no errors');
+    expect(originalSendEmail.sendEmail).toHaveBeenCalledTimes(0); // important
+    expect(originalSendPush.sendPush).toHaveBeenCalledTimes(0); // important!
   });
 });

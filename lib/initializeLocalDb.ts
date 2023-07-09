@@ -74,6 +74,23 @@ export default async function initializeLocalDb() {
     // no ts
   }));
 
+  // user guest
+  promises.push(UserModel.create({
+    _id: new Types.ObjectId(TestId.USER_GUEST),
+    calc_records: 0,
+    email: 'bbb@gmail.com',
+    name: 'BBB',
+    password: 'BBB12345',
+    score: 0,
+    roles: [Role.GUEST],
+    ts: ts,
+  }));
+  promises.push(UserConfigModel.create({
+    _id: new Types.ObjectId(),
+    theme: Theme.Modern,
+    userId: new Types.ObjectId(TestId.USER_GUEST),
+    emailConfirmed: false,
+  }));
   // LEVEL
   promises.push(LevelModel.create({
     _id: new Types.ObjectId(TestId.LEVEL),

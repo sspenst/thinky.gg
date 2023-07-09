@@ -15,6 +15,7 @@ enum TestId {
   USER_B = '600000000000000000000006',
   USER_C = 'cccccccccccccccccccccccc',
   USER_D = 'dddddddddddddddddddddddd',
+  USER_GUEST = 'eeeeeeeeeeeeeeeeeeeeeeee',
 }
 
 export default TestId;
