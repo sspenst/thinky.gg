@@ -19,6 +19,9 @@ beforeEach(async () => {
 afterAll(async() => {
   await dbDisconnect();
 });
+afterEach(() => {
+  //jest.restoreAllMocks();
+});
 enableFetchMocks();
 
 jest.mock('nodemailer', () => ({
@@ -29,7 +32,7 @@ jest.mock('nodemailer', () => ({
   })),
 }));
 
-describe('pages/api/collection/index.ts', () => {
+describe('pages/api/signup', () => {
   const cookie = getTokenCookieValue(TestId.USER);
 
   test('Creating a user but not passing recaptcha should fail with 400', async () => {
@@ -64,12 +67,14 @@ describe('pages/api/collection/index.ts', () => {
     });
   });
   test('Creating a user, pass recaptcha where fetch fails', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+
     process.env.RECAPTCHA_SECRET = 'defined';
 
     // mock fetch failing with 400
-    fetchMock.mockResponseOnce(JSON.stringify({}), { status: 408 });
+    fetchMock.mockResponseOnce(JSON.stringify({ 'mock': true }), { status: 408 });
 
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    //    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

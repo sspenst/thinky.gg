@@ -47,8 +47,8 @@ async function createUser({ email, name, password, tutorialCompletedAt, roles }:
       emailConfirmed: false,
       emailConfirmationToken: emailConfirmationToken,
       emailDigest: emailDigest,
-      emailNotificationsList: [Object.values(NotificationType)],
-      pushNotificationsList: [Object.values(NotificationType)],
+      emailNotificationsList: Object.values(NotificationType),
+      pushNotificationsList: Object.values(NotificationType),
     }], queryOptions),
   ]);
 
@@ -83,6 +83,7 @@ export default apiWrapper({ POST: {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: `secret=${RECAPTCHA_SECRET}&response=${recaptchaToken}`,
     });
+
     const recaptchaData = await recaptchaResponse.json();
 
     if (!recaptchaResponse.ok || !recaptchaData?.success) {
