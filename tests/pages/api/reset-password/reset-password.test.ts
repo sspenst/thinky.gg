@@ -11,13 +11,11 @@ import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { UserModel } from '../../../../models/mongoose';
 import resetPasswordHandler from '../../../../pages/api/reset-password/index';
 
-const sendMailMock: jest.Mock = jest.fn((obj: SentMessageInfo) => {
-  throw new Error('Email was not expected to be sent, but received' + obj);
-});
-
 jest.mock('nodemailer', () => ({
   createTransport: jest.fn().mockImplementation(() => ({
-    sendMail: sendMailMock,
+    sendMail: jest.fn((obj: SentMessageInfo) => {
+      throw new Error('Email was not expected to be sent, but received' + obj);
+    }),
   })),
 }));
 afterEach(() => {
