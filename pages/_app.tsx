@@ -268,10 +268,13 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         userConfig: user?.config,
         userLoading: isLoading,
       }}>
-        <main className={rubik.className}>
+        <div className={rubik.className} style={{
+          backgroundColor: 'var(--bg-color)',
+          color: 'var(--color)',
+        }}>
           <Toaster toastOptions={{ duration: 1500 }} />
           <Component {...pageProps} />
-        </main>
+        </div>
       </AppContext.Provider>
     </>
   );
