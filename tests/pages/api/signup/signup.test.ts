@@ -1,3 +1,6 @@
+import NotificationList from '@root/components/notification/notificationList';
+import NotificationType from '@root/constants/notificationType';
+import UserConfig from '@root/models/db/userConfig';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
@@ -6,7 +9,7 @@ import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { UserModel } from '../../../../models/mongoose';
+import { UserConfigModel, UserModel } from '../../../../models/mongoose';
 import loginUserHandler from '../../../../pages/api/login/index';
 import signupUserHandler from '../../../../pages/api/signup/index';
 
@@ -303,6 +306,11 @@ describe('pages/api/signup', () => {
         expect(db).toBeDefined();
         expect(db.name).toBe('Test2');
         expect(db.password).not.toBe('password2'); // should be salted
+        const config = await UserConfigModel.findOne({ userId: db._id }) as UserConfig;
+
+        expect(config).toBeDefined();
+        expect(config.emailNotificationsList.sort()).toStrictEqual(Object.values(NotificationType).sort());
+        expect(config.pushNotificationsList.sort()).toStrictEqual(Object.values(NotificationType).sort());
       },
     });
   });

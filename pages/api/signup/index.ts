@@ -29,6 +29,7 @@ async function createUser({ email, name, password, tutorialCompletedAt, roles }:
   }
 
   const emailConfirmationToken = getEmailConfirmationToken();
+
   const [userCreated, configCreated] = await Promise.all([
     UserModel.create([{
       _id: id,
