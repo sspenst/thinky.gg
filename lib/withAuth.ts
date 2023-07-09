@@ -1,4 +1,6 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
+// https://github.com/newrelic/node-newrelic/issues/956#issuecomment-962729137
+import newrelic from 'newrelic';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import requestIp from 'request-ip';
 import { parseReq, ReqValidator } from '../helpers/apiWrapper';
@@ -8,6 +10,7 @@ import User from '../models/db/user';
 import { UserModel } from '../models/mongoose';
 import dbConnect from './dbConnect';
 import getTokenCookie from './getTokenCookie';
+import isLocal from './isLocal';
 
 export type NextApiRequestWithAuth = NextApiRequest & {
   user: User;
@@ -28,9 +31,12 @@ export async function getUserFromToken(
   }
 
   const decoded = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload;
-  const userId = decoded.userId;
+  const userId = decoded.userId as string;
 
-  // check if user exists
+  if (!isLocal()) {
+    newrelic.addCustomAttribute('userId', userId);
+  }
+
   await dbConnect();
 
   // Update meta data from user
@@ -53,11 +59,11 @@ export async function getUserFromToken(
       }),
       ...ipData,
     },
-    { lean: true, new: true, projection: '+email +bio' }
+    { lean: true, new: true, projection: '+email +bio' },
   );
 
-  if (user === null) {
-    return null;
+  if (user && !isLocal()) {
+    newrelic.addCustomAttribute('userName', user.name);
   }
 
   return user;
@@ -96,6 +102,7 @@ export default function withAuth(
       res.setHeader('Set-Cookie', refreshCookie);
       req.user = reqUser;
       req.userId = reqUser._id.toString();
+
       const validate = parseReq(validator, req);
 
       if (validate !== null) {

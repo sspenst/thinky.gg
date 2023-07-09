@@ -3,8 +3,8 @@ import React, { useEffect, useState } from 'react';
 import Dimensions from '../constants/dimensions';
 import { PageContext } from '../contexts/pageContext';
 import Footer from './footer';
+import Header from './header';
 import LinkInfo from './linkInfo';
-import Menu from './menu';
 
 interface PageProps {
   children: JSX.Element;
@@ -26,6 +26,7 @@ export default function Page({
   titleHref,
 }: PageProps) {
   const [preventKeyDownEvent, setPreventKeyDownEvent] = useState(false);
+  const [showHeader, setShowHeader] = useState(true);
 
   useEffect(() => {
     if (isFullScreen) {
@@ -40,30 +41,27 @@ export default function Page({
   }, [isFullScreen]);
 
   return (
-    <>
-      <div className={classNames({ 'fixed inset-0 overflow-hidden': isFullScreen })} style={{
-        color: 'var(--color)',
-      }}>
-        <PageContext.Provider value={{
-          preventKeyDownEvent: preventKeyDownEvent,
-          setPreventKeyDownEvent: setPreventKeyDownEvent,
+    <PageContext.Provider value={{
+      preventKeyDownEvent: preventKeyDownEvent,
+      setShowHeader: setShowHeader,
+      setPreventKeyDownEvent: setPreventKeyDownEvent,
+      showHeader: showHeader,
+    }}>
+      <div className={classNames('flex flex-col', { 'fixed inset-0 overflow-hidden': isFullScreen })}>
+        {showHeader &&
+          <Header
+            folders={folders}
+            subtitle={subtitle ? new LinkInfo(subtitle, subtitleHref) : undefined}
+            title={title ? new LinkInfo(title, titleHref) : undefined}
+          />
+        }
+        <main className='grow z-10' style={{
+          height: showHeader ? `calc(100% - ${Dimensions.MenuHeight}px)` : '100%',
         }}>
-          <div className='flex flex-col h-full'>
-            <Menu
-              folders={folders}
-              subtitle={subtitle ? new LinkInfo(subtitle, subtitleHref) : undefined}
-              title={title ? new LinkInfo(title, titleHref) : undefined}
-            />
-            <div className='grow z-10' style={{
-              backgroundColor: 'var(--bg-color)',
-              height: `calc(100% - ${Dimensions.MenuHeight}px)`,
-            }}>
-              {children}
-            </div>
-          </div>
-        </PageContext.Provider>
-        {!isFullScreen && <Footer />}
+          {children}
+        </main>
       </div>
-    </>
+      {!isFullScreen && <Footer />}
+    </PageContext.Provider>
   );
 }

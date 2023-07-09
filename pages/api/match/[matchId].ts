@@ -93,7 +93,7 @@ export async function quitMatch(matchId: string, userId: Types.ObjectId) {
   return updatedMatch;
 }
 
-export async function MatchMarkSkipLevel(
+export async function matchMarkSkipLevel(
   userId: Types.ObjectId,
   matchId: string,
   levelId: Types.ObjectId,
@@ -131,7 +131,7 @@ export async function MatchMarkSkipLevel(
   return updated;
 }
 
-export async function MatchMarkCompleteLevel(
+export async function matchMarkCompleteLevel(
   userId: Types.ObjectId,
   matchId: string,
   levelId: Types.ObjectId,
@@ -351,7 +351,7 @@ export default withAuth(
           // if reqUser is involved in their own match (still OPEN), then we
           // can safely quit that match and allow them to join the new match
           if (involvedMatch.state === MultiplayerMatchState.OPEN) {
-            await quitMatch(matchId as string, req.user._id);
+            await quitMatch(involvedMatch.matchId as string, req.user._id);
           } else {
             return res.status(400).json({
               error:
@@ -477,7 +477,7 @@ export default withAuth(
         return res.status(200).json(updatedMatch);
       } else if (action === MatchAction.SKIP_LEVEL) {
         // skipping level
-        const result = await MatchMarkSkipLevel(
+        const result = await matchMarkSkipLevel(
           req.user._id,
           matchId as string,
           levelId,

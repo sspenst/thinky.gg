@@ -1,3 +1,4 @@
+import Stat from '@root/models/db/stat';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -166,6 +167,7 @@ describe('Testing stats api', () => {
   });
   test('Doing a PUT on an unknown level should error', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    const levelId = new Types.ObjectId();
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -176,7 +178,7 @@ describe('Testing stats api', () => {
           },
           body: {
             codes: ['ArrowRight'],
-            levelId: new Types.ObjectId()
+            levelId: levelId,
           },
           headers: {
             'content-type': 'application/json',
@@ -189,12 +191,14 @@ describe('Testing stats api', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Error finding Level');
+        expect(response.error).toBe(`Error finding level ${levelId.toString()}`);
         expect(res.status).toBe(404);
       },
     });
   });
   test('Doing a PUT with a body but incorrect level solution should be OK', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+
     const codeTests = [
       ['ArrowLeft'], // test left border
       ['WRONG', 'ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowRight'], // test invalid
@@ -231,7 +235,7 @@ describe('Testing stats api', () => {
           const lvl = await LevelModel.findById(TestId.LEVEL);
 
           expect(lvl.leastMoves).toBe(20);
-          expect(response.error).toBe('Invalid solution provided');
+          expect(response.error).toBe(`Invalid solution provided for level ${TestId.LEVEL}`);
           expect(res.status).toBe(400);
           const u = await UserModel.findById(TestId.USER);
 
@@ -319,6 +323,8 @@ describe('Testing stats api', () => {
     });
   });
   test('Doing ANOTHER PUT with USERB with correct level solution (that is long, 14 steps) with a DIFFERENT user on a draft level should FAIL', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -326,10 +332,9 @@ describe('Testing stats api', () => {
           cookies: {
             token: getTokenCookieValue(TestId.USER_B),
           },
-
           body: {
             codes: ['ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowRight', 'ArrowUp', 'ArrowLeft', 'ArrowLeft', 'ArrowDown', 'ArrowDown', 'ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowDown'],
-            levelId: TestId.LEVEL
+            levelId: TestId.LEVEL,
           },
           headers: {
             'content-type': 'application/json',
@@ -342,7 +347,7 @@ describe('Testing stats api', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Error finding Level');
+        expect(response.error).toBe(`Error finding level ${TestId.LEVEL}`);
         expect(res.status).toBe(404);
         const u = await UserModel.findById(TestId.USER);
 
@@ -416,10 +421,8 @@ describe('Testing stats api', () => {
         await processQueueMessages();
         expect(response.error).toBeUndefined();
         expect(response.length).toBe(2);
-        expect(response[0].attempts).toBe(2);
-        expect(response[0].complete).toBe(true);
-        expect(response[0].userId).toBe(TestId.USER);
-        expect(response[0].moves).toBe(12);
+        expect(response.some((s: Stat) => s.attempts === 2 && s.moves === 12)).toBeTruthy();
+        expect(response.some((s: Stat) => s.attempts === 1 && s.moves === 80)).toBeTruthy();
         expect(res.status).toBe(200);
 
         const lvl = await LevelModel.findById(TestId.LEVEL);

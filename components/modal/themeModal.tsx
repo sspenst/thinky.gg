@@ -1,5 +1,5 @@
 import TileType from '@root/constants/tileType';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect } from 'react';
 import Theme, { getIconFromTheme } from '../../constants/theme';
 import { AppContext } from '../../contexts/appContext';
 import RadioButton from '../radioButton';
@@ -12,8 +12,7 @@ interface ThemeModalProps {
 }
 
 export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
-  const { forceUpdate, mutateUser } = useContext(AppContext);
-  const [theme, setTheme] = useState<string>();
+  const { mutateUser, setTheme, theme } = useContext(AppContext);
 
   useEffect(() => {
     for (const className of document.body.classList.values()) {
@@ -23,7 +22,7 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
         return;
       }
     }
-  }, [isOpen]);
+  }, [isOpen, setTheme]);
 
   function onChange(e: React.ChangeEvent<HTMLInputElement>) {
     const newTheme = e.currentTarget.value;
@@ -34,7 +33,6 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
 
     document.body.classList.add(newTheme);
     setTheme(newTheme);
-    forceUpdate();
   }
 
   function putTheme() {
@@ -70,14 +68,15 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
 
           return (
             <div key={`theme-${Theme[themeText]}-parent-div`} className='flex flex-row'>
-              <div><RadioButton
-                currentValue={theme}
-                key={`theme-${Theme[themeText]}`}
-                name={'theme'}
-                onChange={onChange}
-                text={themeText}
-                value={Theme[themeText]}
-              />
+              <div>
+                <RadioButton
+                  currentValue={theme}
+                  key={`theme-${Theme[themeText]}`}
+                  name={'theme'}
+                  onChange={onChange}
+                  text={themeText}
+                  value={Theme[themeText]}
+                />
               </div>
               <span className='ml-2 w-6 h-6'>
                 {icon && icon({

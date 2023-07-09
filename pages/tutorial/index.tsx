@@ -1,13 +1,10 @@
 /* istanbul ignore file */
 
 import { NextSeo } from 'next-seo';
-import React, { useState } from 'react';
-import Page from '../../components/page';
+import React from 'react';
 import Tutorial from '../../components/tutorial';
 
 export default function TutorialPage() {
-  const [isFullScreen, setIsFullScreen] = useState(false);
-
   return (<>
     <NextSeo
       title={'Tutorial - Pathology'}
@@ -18,8 +15,6 @@ export default function TutorialPage() {
         url: '/tutorial',
       }}
     />
-    <Page isFullScreen={isFullScreen} title={'Tutorial'}>
-      <Tutorial setIsFullScreen={setIsFullScreen} />
-    </Page>
+    <Tutorial />
   </>);
 }

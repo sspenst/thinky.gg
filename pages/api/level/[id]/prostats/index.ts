@@ -171,7 +171,6 @@ async function getPlayAttemptsOverTime(levelId: string, userId: string) {
       $match: {
         levelId: new mongoose.Types.ObjectId(levelId),
         userId: new mongoose.Types.ObjectId(userId),
-        // attemptContext is either BEATEN or UNBEATEN
         attemptContext: { $in: [AttemptContext.JUST_BEATEN, AttemptContext.UNBEATEN] },
       }
     },

@@ -1,6 +1,7 @@
+import { logger } from '@root/helpers/logger';
 import { createNewLevelAddedToCollectionNotification } from '@root/helpers/notificationHelper';
 import Collection from '@root/models/db/collection';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidObjectId } from '../../../../helpers/apiWrapper';
 import { enrichLevels } from '../../../../helpers/enrich';
@@ -70,7 +71,7 @@ export default withAuth({
     const { id } = req.query;
     const { authorNote, collectionIds, name } = req.body;
 
-    if (!name || !collectionIds) {
+    if (!collectionIds || !name) {
       return res.status(400).json({
         error: 'Missing required fields',
       });
@@ -86,71 +87,88 @@ export default withAuth({
       });
     }
 
-    const alreadyIn = await CollectionModel.find({
-      _id: {
-        $in: collectionIds,
-      },
-      userId: req.userId,
-      levels: id,
-    }, {
-      _id: 1,
-    }, {
-      lean: true,
-    });
-
-    const alreadyInIds = alreadyIn.map((c: Collection) => c._id.toString());
-
-    const notIn = collectionIds.filter((c: string) => !alreadyInIds.includes(c));
-
-    const promises = [
-      CollectionModel.updateMany({
-        _id: { $in: collectionIds },
-        userId: req.userId,
-      }, {
-        $addToSet: {
-          levels: id,
-        },
-      }),
-      CollectionModel.updateMany({
-        _id: { $nin: collectionIds },
-        levels: id,
-        userId: req.userId,
-      }, {
-        $pull: {
-          levels: id,
-        },
-      }),
-      createNewLevelAddedToCollectionNotification(req.user, level, notIn),
-      queueRefreshIndexCalcs(new Types.ObjectId(id as string))
-    ];
-
-    if (isCurator(req.user) || req.userId === level.userId.toString()) {
-      const trimmedAuthorNote = authorNote?.trim() ?? '';
-      const trimmedName = name.trim();
-      // TODO: in extremely rare cases there could be a race condition, might need a transaction here
-      const slug = await generateLevelSlug(level.slug.split('/')[0], trimmedName, id as string);
-
-      promises.push(
-        LevelModel.updateOne({
-          _id: id,
+    if (collectionIds) {
+      const promises: Promise<unknown>[] = [
+        CollectionModel.updateMany({
+          _id: { $in: collectionIds },
+          userId: req.userId,
         }, {
-          $set: {
-            authorNote: trimmedAuthorNote,
-            name: trimmedName,
-            slug: slug,
+          $addToSet: {
+            levels: id,
           },
-        }, {
-          runValidators: true,
         }),
-      );
+        CollectionModel.updateMany({
+          _id: { $nin: collectionIds },
+          levels: id,
+          userId: req.userId,
+        }, {
+          $pull: {
+            levels: id,
+          },
+        }),
+        queueRefreshIndexCalcs(new Types.ObjectId(id as string))
+      ];
 
-      // update level properties for return object
-      level.authorNote = trimmedAuthorNote;
-      level.name = trimmedName;
-      level.slug = slug;
+      // if it's not your own level, notify others that the level has been added to your collection
+      if (level.userId.toString() !== req.userId) {
+        const alreadyIn = await CollectionModel.find({
+          _id: {
+            $in: collectionIds,
+          },
+          userId: req.userId,
+          levels: id,
+        }, {
+          _id: 1,
+        }, {
+          lean: true,
+        });
+        const alreadyInIds = alreadyIn.map((c: Collection) => c._id.toString());
+        const notIn = collectionIds.filter((c: string) => !alreadyInIds.includes(c));
+
+        promises.push(createNewLevelAddedToCollectionNotification(req.user, level, notIn));
+      }
+
+      await Promise.all(promises);
     }
 
-    await Promise.all(promises);
+    if (isCurator(req.user) || req.userId === level.userId.toString()) {
+      const session = await mongoose.startSession();
+
+      try {
+        await session.withTransaction(async () => {
+          const trimmedAuthorNote = authorNote?.trim() ?? '';
+          const trimmedName = name.trim();
+          const slug = await generateLevelSlug(level.slug.split('/')[0], trimmedName, id as string, { session: session });
+
+          await LevelModel.updateOne({
+            _id: id,
+          }, {
+            $set: {
+              authorNote: trimmedAuthorNote,
+              name: trimmedName,
+              slug: slug,
+            },
+          }, {
+            runValidators: true,
+            session: session,
+          });
+
+          // update level properties for return object
+          level.authorNote = trimmedAuthorNote;
+          level.name = trimmedName;
+          level.slug = slug;
+        });
+
+        session.endSession();
+      } catch (err) {
+        logger.error(err);
+        session.endSession();
+
+        return res.status(500).json({
+          error: `Error updating slug for level id ${level._id.toString()}`,
+        });
+      }
+    }
 
     return res.status(200).json(level);
   } else if (req.method === 'DELETE') {

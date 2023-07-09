@@ -7,12 +7,13 @@ import Controls from './controls';
 import Grid from './grid';
 
 interface BasicLayoutProps {
+  cellClassName?: (index: number) => string | undefined;
   controls?: Control[];
   level: Level;
   onClick?: (index: number, rightClick: boolean) => void;
 }
 
-export default function BasicLayout({ controls, level, onClick }: BasicLayoutProps) {
+export default function BasicLayout({ cellClassName, controls, level, onClick }: BasicLayoutProps) {
   const data = level.data.split('\n');
   const height = level.height;
   const width = level.width;
@@ -22,10 +23,11 @@ export default function BasicLayout({ controls, level, onClick }: BasicLayoutPro
   const grid = useMemo(() => {
     return <Grid
       board={board}
+      cellClassName={(x, y) => cellClassName ? cellClassName(y * (level.width + 1) + x) : undefined}
       leastMoves={level.leastMoves}
       onCellClick={(x, y, rightClick) => onClick ? onClick(y * (level.width + 1) + x, rightClick) : undefined}
     />;
-  }, [board, level.leastMoves, level.width, onClick]);
+  }, [board, cellClassName, level.leastMoves, level.width, onClick]);
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {

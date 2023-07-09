@@ -171,7 +171,7 @@ export default withAuth({
       }
     } else if (targetModel === 'Comment') {
       const [parentComment, everyoneInThread] = await Promise.all([
-        CommentModel.findOne({
+        CommentModel.findOne<Comment>({
           _id: target,
           deletedAt: null,
         }, {}, {
@@ -204,7 +204,10 @@ export default withAuth({
           await createNewWallPostNotification(NotificationType.NEW_WALL_REPLY, parentComment.author, req.user._id, parentComment.target, JSON.stringify(comment));
         }
 
-        for (const user of everyoneInThread) {
+        const othersInThread = everyoneInThread.filter(x => x._id.toString() !== parentComment.author.toString());
+
+        // notify everyone else in the thread
+        for (const user of othersInThread) {
           if (user._id.toString() !== req.user._id.toString()) {
             await createNewWallPostNotification(NotificationType.NEW_WALL_REPLY, user._id, req.user._id, parentComment.target, JSON.stringify(comment));
           }

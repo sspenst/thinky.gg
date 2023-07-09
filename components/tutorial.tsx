@@ -5,7 +5,7 @@ import TileType from '@root/constants/tileType';
 import classNames from 'classnames';
 import { Types } from 'mongoose';
 import Link from 'next/link';
-import React, { Dispatch, SetStateAction, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { AppContext } from '../contexts/appContext';
 import { TimerUtil } from '../helpers/getTs';
 import Control from '../models/control';
@@ -16,6 +16,7 @@ import BasicLayout from './level/basicLayout';
 import Controls from './level/controls';
 import styles from './level/Controls.module.css';
 import Game, { GameState } from './level/game';
+import Page from './page';
 
 interface Tooltip {
   canClose?: boolean;
@@ -39,11 +40,7 @@ interface TutorialStep {
   tooltip?: Tooltip;
 }
 
-interface TutorialProps {
-  setIsFullScreen: Dispatch<SetStateAction<boolean>>;
-}
-
-export default function Tutorial({ setIsFullScreen }: TutorialProps) {
+export default function Tutorial() {
   function getLevel(data: string, override: Partial<Level> = {}): Level {
     const sp = data.split('\n');
     const width = sp[0].length;
@@ -63,12 +60,12 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
   }
 
   const globalTimeout = useRef<NodeJS.Timeout | null>(null);
-  const [header, setHeader] = useState(<>Please wait...</>);
   const [isNextButtonDisabled, setIsNextButtonDisabled] = useState(false);
   const [isPrevButtonDisabled, setIsPrevButtonDisabled] = useState(false);
   const { mutateUser, user } = useContext(AppContext);
   const [popperInstance, setPopperInstance] = useState<Instance | null>(null);
   const popperUpdateInterval = useRef<NodeJS.Timer | null>(null);
+  const [showNiceJob, setShowNiceJob] = useState(false);
   const [tooltip, setTooltip] = useState<Tooltip>();
   const [tutorialStepIndex, setTutorialStepIndex] = useState(0);
   const [tutorialStepIndexMax, setTutorialStepIndexMax] = useState(0);
@@ -105,16 +102,15 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
   }, [tutorialStepIndex, tutorialStepIndexMax]);
 
   const initializeTooltip = useCallback((tooltip: Tooltip | undefined) => {
-    setTooltip(tooltip);
+    // set opacity of tooltip to 0
+    const tooltipEl = document.getElementById('tooltip');
+
+    if (tooltipEl) {
+      tooltipEl.style.opacity = '0';
+      tooltipEl.style.display = 'none';
+    }
 
     if (tooltip) {
-      // set opacity of tooltip to 0
-      const tooltipEl = document.getElementById('tooltip');
-
-      if (tooltipEl) {
-        tooltipEl.style.opacity = '0';
-      }
-
       // loop every 1ms until DOM has loeaded, then show the tooltip
       const popperI = setInterval(() => {
         if (!tooltip) {
@@ -133,11 +129,14 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
 
         if (!targetY) {
           tooltipEl.style.opacity = '0';
+          tooltipEl.style.display = 'none';
 
           return;
         }
 
         tooltipEl.style.opacity = '0.9';
+        tooltipEl.style.display = 'block';
+
         const instance = createPopper(target, tooltipEl, {
           placement: tooltip.dir || 'top',
           modifiers: [
@@ -159,16 +158,26 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
 
         clearInterval(popperI);
         setPopperInstance(instance);
+        setTooltip(tooltip);
       }, 1);
     } else {
       setPopperInstance(null);
+      setTooltip(undefined);
     }
   }, []);
 
   const niceJob = useCallback(() => {
+    // set opacity of tooltip to 0
+    const tooltipEl = document.getElementById('tooltip');
+
+    if (tooltipEl) {
+      tooltipEl.style.opacity = '0';
+      tooltipEl.style.display = 'none';
+    }
+
     setTooltip(undefined);
     setPopperInstance(null);
-    setHeader(<div className='text-3xl glow'>Nice job!</div>);
+    setShowNiceJob(true);
 
     const gameDivParent = document.getElementById('game-div-parent');
 
@@ -186,6 +195,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
     }
 
     globalTimeout.current = setTimeout(() => {
+      setShowNiceJob(false);
       setTutorialStepIndex(i => i + 1);
     }, 1500);
   }, []);
@@ -590,11 +600,9 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
     const tutorialSteps = getTutorialSteps();
     const tutorialStep = tutorialSteps[tutorialStepIndex];
 
-    setHeader(tutorialStep.header);
     setIsNextButtonDisabled(!!tutorialStep.isNextButtonDisabled);
     setIsPrevButtonDisabled(false);
     initializeTooltip(tutorialStep.tooltip);
-    setIsFullScreen(!!tutorialStep.editorGrid || !!tutorialStep.gameGrid);
 
     // mark tutorial as completed on the last step
     if (tutorialSteps.length - 1 === tutorialStepIndex) {
@@ -605,7 +613,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
         localStorage.setItem('tutorialCompletedAt', '' + TimerUtil.getTs());
       }
     }
-  }, [getTutorialSteps, initializeTooltip, isLoggedIn, putTutorialCompletedAt, setIsFullScreen, tutorialStepIndex]);
+  }, [getTutorialSteps, initializeTooltip, isLoggedIn, putTutorialCompletedAt, tutorialStepIndex]);
 
   const tutorialStep = getTutorialSteps()[tutorialStepIndex];
 
@@ -674,82 +682,93 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
   }, [tutorialStepIndex]);
 
   return (
-    <div className='flex flex-col h-full' id='tutorial-container'>
-      <div className='w-full bg-gray-200 h-1 mb-1'>
-        <div className='bg-blue-600 h-1' style={{
-          width: (100 * tutorialStepIndex / (getTutorialSteps().length - 1)) + '%',
-          transition: 'width 0.5s ease'
-        }} />
-      </div>
-      {tutorialStep.editorGrid && tutorialStep.level && (
-        <div key={'div-' + tutorialStep.key} className={classNames('grow flex flex-col', tutorialStep.gameClasses)}>
-          <BasicLayout
-            controls={controls}
-            key={tutorialStep.key}
-            level={tutorialStep.level}
-          />
+    <Page isFullScreen={!!tutorialStep.editorGrid || !!tutorialStep.gameGrid} title={'Tutorial'}>
+      <div className='flex flex-col h-full' id='tutorial-container'>
+        <div className='w-full bg-gray-200 h-1 mb-1'>
+          <div className='bg-blue-600 h-1' style={{
+            width: (100 * tutorialStepIndex / (getTutorialSteps().length - 1)) + '%',
+            transition: 'width 0.5s ease'
+          }} />
         </div>
-      )}
-      {tutorialStep.gameGrid && tutorialStep.level && (
-        <div id='game-div-parent' key={'div-' + tutorialStep.key} className={classNames('grow', tutorialStep.gameClasses)}>
-          <Game
-            disableCheckpoints={true}
-            disablePlayAttempts={true}
-            disableStats={true}
-            extraControls={controls}
-            hideSidebar={true}
-            key={tutorialStep.key}
-            level={tutorialStep.level}
-            onComplete={tutorialStep.onComplete}
-            onMove={(gameState: GameState) => {
-              const restartButton = document.getElementById('btn-restart') as HTMLButtonElement;
-
-              // show restart notification if they have reached the exit in too many moves
-              if (gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === TileType.End && gameState.moveCount > (tutorialStep.level?.leastMoves ?? 0)) {
-                restartButton?.classList.add(styles['highlight-red']);
-              } else {
-                restartButton?.classList.remove(styles['highlight-red']);
-              }
-
-              if (tutorialStep.key !== 'tutorial-player-intro') {
-                const undoButton = document.getElementById('btn-undo') as HTMLButtonElement;
-
-                // show undo notification if they have made too many moves
-                if (gameState.moveCount > (tutorialStep.level?.leastMoves ?? 0)) {
-                  undoButton?.classList.add(styles['highlight-red']);
-                } else {
-                  undoButton?.classList.remove(styles['highlight-red']);
-                }
-              }
-
-              if (tutorialStep.onMove) {
-                tutorialStep.onMove(gameState);
-              }
-            }}
-          />
-        </div>
-      )}
-      <div className='p-8 w-full text-center flex flex-col gap-6'>
-        {header}
-        {!tutorialStep.editorGrid && !tutorialStep.gameGrid &&
-          <div>
-            <Controls controls={controls} />
+        {showNiceJob &&
+          <div className='text-4xl glow w-full h-full absolute flex items-center justify-center font-medium z-30'>
+            Nice job!
           </div>
         }
-      </div>
-      {tooltip ?
+        {tutorialStep.editorGrid && tutorialStep.level && (
+          <div key={'div-' + tutorialStep.key} className={classNames('grow flex flex-col', tutorialStep.gameClasses)}>
+            <BasicLayout
+              controls={controls}
+              key={tutorialStep.key}
+              level={tutorialStep.level}
+            />
+          </div>
+        )}
+        {tutorialStep.gameGrid && tutorialStep.level && (
+          <div id='game-div-parent' key={'div-' + tutorialStep.key} className={classNames('grow', tutorialStep.gameClasses)}>
+            <Game
+              disableCheckpoints={true}
+              disablePlayAttempts={true}
+              disableStats={true}
+              extraControls={controls}
+              hideSidebar={true}
+              key={tutorialStep.key}
+              level={tutorialStep.level}
+              onComplete={tutorialStep.onComplete}
+              onMove={(gameState: GameState) => {
+                const restartButton = document.getElementById('btn-restart') as HTMLButtonElement;
+
+                // show restart notification if they have reached the exit in too many moves
+                if (gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === TileType.End && gameState.moveCount > (tutorialStep.level?.leastMoves ?? 0)) {
+                  restartButton?.classList.add(styles['highlight-red']);
+                } else {
+                  restartButton?.classList.remove(styles['highlight-red']);
+                }
+
+                if (tutorialStep.key !== 'tutorial-player-intro') {
+                  const undoButton = document.getElementById('btn-undo') as HTMLButtonElement;
+
+                  // show undo notification if they have made too many moves
+                  if (gameState.moveCount > (tutorialStep.level?.leastMoves ?? 0)) {
+                    undoButton?.classList.add(styles['highlight-red']);
+                  } else {
+                    undoButton?.classList.remove(styles['highlight-red']);
+                  }
+                }
+
+                if (tutorialStep.onMove) {
+                  tutorialStep.onMove(gameState);
+                }
+              }}
+            />
+          </div>
+        )}
+        <div className={classNames('p-8 w-full text-center flex flex-col gap-6', { 'invisible': showNiceJob })}>
+          {tutorialStep.header}
+          {!tutorialStep.editorGrid && !tutorialStep.gameGrid &&
+            <div>
+              <Controls controls={controls} />
+            </div>
+          }
+        </div>
         <div
-          key={'tooltip-' + tutorialStepIndex} className='bg-white rounded-lg text-black p-3 font-bold justify-center opacity-90 flex fadeIn z-30' id='tooltip' role='tooltip' style={{
+          className='bg-white rounded-lg text-black p-3 font-bold justify-center opacity-90 z-30 fadeIn'
+          id='tooltip'
+          key={'tooltip-' + tutorialStepIndex}
+          role='tooltip'
+          style={{
             animationDelay: '0.5s',
           }}
         >
-          {tooltip.title}
-          {tooltip.canClose && <DismissToast onClick={() => setTooltip(undefined)} />}
+          {!!tooltip &&
+            <div className='flex'>
+              {tooltip?.title}
+              {tooltip?.canClose && <DismissToast onClick={() => setTooltip(undefined)} />}
+            </div>
+          }
           <div id='arrow' data-popper-arrow />
         </div>
-        :
-        <div id='tooltip' />
-      }
-    </div>
+      </div>
+    </Page>
   );
 }

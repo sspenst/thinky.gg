@@ -51,15 +51,17 @@ if (process.env.NO_LOGS !== 'true') {
   }
 }
 
-const benchmark_start = Date.now();
-const containerRunInstanceId = new Types.ObjectId();
+if (process.env.OFFLINE_BUILD !== 'true') {
+  const benchmark_start = Date.now();
+  const containerRunInstanceId = new Types.ObjectId();
 
-logger.warn('[Run ID ' + containerRunInstanceId + '] Starting... Trying to connect to DB');
-dbConnect().then(async () => { // Hopefully this works... and prevents the big spike in performance on every deploy...
-  await UserModel.findOne({}, { _id: 1 }, { lean: true });
+  logger.warn('[Run ID ' + containerRunInstanceId + '] Starting... Trying to connect to DB');
+  dbConnect().then(async () => { // Hopefully this works... and prevents the big spike in performance on every deploy...
+    await UserModel.findOne({}, { _id: 1 }, { lean: true });
 
-  logger.warn('[Run ID ' + containerRunInstanceId + '] Connected to database and ran a sample query in ' + (Date.now() - benchmark_start) + 'ms');
-});
+    logger.warn('[Run ID ' + containerRunInstanceId + '] Connected to database and ran a sample query in ' + (Date.now() - benchmark_start) + 'ms');
+  });
+}
 
 interface DocumentProps extends DocumentInitialProps {
   browserTimingHeader: string;

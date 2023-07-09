@@ -1,52 +1,76 @@
 import React from 'react';
 
+interface ExternalLinkProps {
+  children: JSX.Element | string;
+  href: string;
+}
+
+function ExternalLink({ children, href }: ExternalLinkProps) {
+  return (
+    <a
+      className='hover:underline w-fit'
+      href={href}
+      rel='noreferrer'
+      style={{ color: 'var(--color-gray)' }}
+      target='_blank'
+    >
+      {children}
+    </a>
+  );
+}
+
 export default function Footer() {
   return (
-    <div className='flex flex-col p-6 gap-6 mt-4' style={{
-      borderTop: '1px solid',
-      borderColor: 'var(--bg-color-3)',
+    <footer className='flex flex-col p-10 gap-10' style={{
+      borderTop: '1px solid var(--bg-color-3)',
     }}>
-      <div className='w-full flex justify-center gap-6 text-sm text-center'>
-        <div className='flex flex-col w-32'>
-          <h3 className='font-bold mb-2 text-lg' style={{ color: 'var(--color-gray)' }}>Social</h3>
-          <a className='hover:underline' href='https://discord.gg/j6RxRdqq4A' rel='noreferrer' target='_blank'>
+      <div className='flex justify-center gap-6 text-sm text-center'>
+        <div className='flex flex-col gap-4 text-left w-32'>
+          <h3 className='font-medium'>
+            Social
+          </h3>
+          <ExternalLink href='https://discord.gg/j6RxRdqq4A'>
             Discord
-          </a>
-          <a className='hover:underline' href='https://twitter.com/pathologygame' rel='noreferrer' target='_blank'>
+          </ExternalLink>
+          <ExternalLink href='https://twitter.com/pathologygame'>
             Twitter
-          </a>
-          <a className='hover:underline' href='https://www.instagram.com/pathologygame' rel='noreferrer' target='_blank'>
+          </ExternalLink>
+          <ExternalLink href='https://www.instagram.com/pathologygame'>
             Instagram
-          </a>
+          </ExternalLink>
         </div>
-        <div className='flex flex-col w-32'>
-          <h3 className='font-bold mb-2 text-lg' style={{ color: 'var(--color-gray)' }}>Connect</h3>
-          <a className='hover:underline' href='https://apps.apple.com/app/pathology-block-pushing-game/id1668925562' rel='noreferrer' target='_blank'>
-            iOS App
-          </a>
-          <a className='hover:underline' href='https://play.google.com/store/apps/details?id=com.pathology.gg' rel='noreferrer' target='_blank'>
-            Android App
-          </a>
-          <a className='hover:underline' href='https://github.com/sspenst/pathology' rel='noreferrer' target='_blank'>
+        <div className='flex flex-col gap-4 text-left w-32'>
+          <h3 className='font-medium'>
+            Mobile
+          </h3>
+          <ExternalLink href='https://apps.apple.com/app/pathology-block-pushing-game/id1668925562'>
+            App Store
+          </ExternalLink>
+          <ExternalLink href='https://play.google.com/store/apps/details?id=com.pathology.gg'>
+            Google Play
+          </ExternalLink>
+        </div>
+        <div className='flex flex-col gap-4 text-left w-32'>
+          <h3 className='font-medium'>
+            Resources
+          </h3>
+          <ExternalLink href='https://forms.gle/xz3cuXvxFR8hb6un8'>
+            Contact
+          </ExternalLink>
+          <ExternalLink href='https://github.com/sspenst/pathology'>
             GitHub
-          </a>
-        </div>
-        <div className='flex flex-col w-32'>
-          <h3 className='font-bold mb-2 text-lg' style={{ color: 'var(--color-gray)' }}>Admin</h3>
-          <a className='hover:underline' href='https://forms.gle/xz3cuXvxFR8hb6un8' rel='noreferrer' target='_blank'>
-            Contact Us
-          </a>
-          <a className='hover:underline' href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub' rel='noreferrer' target='_blank'>
+          </ExternalLink>
+          <ExternalLink href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub'>
             Privacy Policy
-          </a>
-          <a className='hover:underline' href='https://docs.google.com/document/d/e/2PACX-1vR4E-RcuIpXSrRtR3T3y9begevVF_yq7idcWWx1A-I9w_VRcHhPTkW1A7DeUx2pGOcyuKifEad3Qokn/pub' rel='noreferrer' target='_blank'>
+          </ExternalLink>
+          <ExternalLink href='https://docs.google.com/document/d/e/2PACX-1vR4E-RcuIpXSrRtR3T3y9begevVF_yq7idcWWx1A-I9w_VRcHhPTkW1A7DeUx2pGOcyuKifEad3Qokn/pub'>
             Terms of Service
-          </a>
+          </ExternalLink>
         </div>
       </div>
-      <div className='text-center text-sm'>
+      <div className='text-center text-sm' style={{ color: 'var(--color-gray)' }}>
         © {(new Date()).getFullYear()} Pathology.gg
       </div>
-    </div>
+    </footer>
   );
 }

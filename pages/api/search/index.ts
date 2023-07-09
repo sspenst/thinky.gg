@@ -101,6 +101,7 @@ export function cleanInput(input: string) {
 
 export type SearchResult = {
   levels: EnrichedLevel[];
+  searchAuthor: User | null;
   totalRows: number;
 };
 
@@ -131,12 +132,21 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
     };
   }
 
+  let searchAuthor: User | null = null;
+
   if (query.searchAuthor && query.searchAuthor.length > 0) {
     const searchAuthorStr = cleanInput(query.searchAuthor);
-    const user = await UserModel.findOne<User>({ 'name': searchAuthorStr }, {}, { lean: true });
 
-    if (user) {
-      searchObj['userId'] = user._id;
+    searchAuthor = await UserModel.findOne<User>(
+      { 'name': searchAuthorStr },
+      'name hideStatus last_visited_at avatarUpdatedAt',
+      { lean: true }
+    );
+
+    cleanUser(searchAuthor);
+
+    if (searchAuthor) {
+      searchObj['userId'] = searchAuthor._id;
     }
   } else if (query.searchAuthorId) {
     if (Types.ObjectId.isValid(query.searchAuthorId)) {
@@ -429,7 +439,7 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
       cleanUser(level.userId);
     });
 
-    return { levels: levels, totalRows: totalRows } as SearchResult;
+    return { levels: levels, searchAuthor: searchAuthor, totalRows: totalRows } as SearchResult;
   } catch (e) {
     logger.error(e);
 

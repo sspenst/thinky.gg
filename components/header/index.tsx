@@ -8,17 +8,17 @@ import Directory from './directory';
 import Dropdown from './dropdown';
 import UserInfo from './userInfo';
 
-interface MenuProps {
+interface HeaderProps {
   folders?: LinkInfo[];
   subtitle?: LinkInfo;
   title?: LinkInfo;
 }
 
-export default function Menu({
+export default function Header({
   folders,
   subtitle,
   title,
-}: MenuProps) {
+}: HeaderProps) {
   const [background, setBackground] = useState('var(--bg-color-2)');
   const { user, userLoading } = useContext(AppContext);
 
@@ -29,13 +29,14 @@ export default function Menu({
   }, []);
 
   return (
-    <div
+    <header
       className='select-none shadow-md w-full flex justify-between px-4 gap-4'
       style={{
         background: background,
         borderBottom: '1px solid',
         borderColor: 'var(--bg-color-4)',
         height: Dimensions.MenuHeight,
+        minHeight: Dimensions.MenuHeight,
       }}
     >
       <div className='flex truncate'>
@@ -50,6 +51,6 @@ export default function Menu({
         <UserInfo />
         <Dropdown />
       </div>
-    </div>
+    </header>
   );
 }

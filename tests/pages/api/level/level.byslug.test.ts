@@ -117,13 +117,10 @@ describe('Testing slugs for levels', () => {
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
 
-        // check to see if we have a notification
+        // should not have a notification
         const notifs = await NotificationModel.find({ type: NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION });
 
-        expect(notifs.length).toBe(1);
-        expect(notifs[0].userId.toString()).toBe(TestId.USER);
-        expect(notifs[0].source?._id.toString()).toBe(level_id_1);
-        expect(notifs[0].target?._id.toString()).toBe(TestId.COLLECTION_2);
+        expect(notifs.length).toBe(0);
       },
     });
     await testApiHandler({
@@ -155,6 +152,45 @@ describe('Testing slugs for levels', () => {
         expect(response.userId._id).toBe(TestId.USER);
         expect(response._id).toBe(level_id_1);
         expect(res.status).toBe(200);
+      },
+    });
+  });
+  test('Adding a level to your collection should create a notification', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          userId: TestId.USER_B,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_B),
+          },
+          body: {
+            collectionIds: [TestId.COLLECTION_B],
+            name: 'TODO: name is required even though it is ignored'
+          },
+          query: {
+            id: level_id_1,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await modifyLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+
+        const notifs = await NotificationModel.find({ type: NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION });
+
+        expect(notifs.length).toBe(1);
+        expect(notifs[0].userId.toString()).toBe(TestId.USER);
+        expect(notifs[0].source?._id.toString()).toBe(level_id_1);
+        expect(notifs[0].target?._id.toString()).toBe(TestId.COLLECTION_B);
       },
     });
   });

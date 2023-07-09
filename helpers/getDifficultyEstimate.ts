@@ -1,10 +1,13 @@
-import Level from '../models/db/level';
+import Level, { EnrichedLevel } from '../models/db/level';
 
 export const DIFFICULTY_LOGISTIC_M = 20;
 export const DIFFICULTY_LOGISTIC_T = 0.2;
 export const DIFFICULTY_LOGISTIC_K = 1.5;
 
-export default function getDifficultyEstimate(level: Level | Partial<Level>, uniqueUsersCount: number) {
+export default function getDifficultyEstimate(
+  level: Level | EnrichedLevel | Partial<Level>,
+  uniqueUsersCount: number,
+) {
   if (!level || uniqueUsersCount < 10 || level.calc_playattempts_duration_sum === undefined) {
     return -1;
   }

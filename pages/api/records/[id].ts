@@ -40,7 +40,10 @@ export default apiWrapper({ GET: {
         }
       },
       {
-        $unwind: '$userId',
+        $unwind: {
+          path: '$userId',
+          preserveNullAndEmptyArrays: true,
+        },
       },
       {
         $sort: {

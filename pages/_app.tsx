@@ -15,7 +15,6 @@ import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 import { io, Socket } from 'socket.io-client';
 import Theme from '../constants/theme';
 import { AppContext } from '../contexts/appContext';
-import isTheme from '../helpers/isTheme';
 import useUser from '../hooks/useUser';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
 import User, { UserWithMultiplayerProfile } from '../models/db/user';
@@ -50,7 +49,17 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   });
   const router = useRouter();
   const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);
+  const [sounds, setSounds] = useState<{ [key: string]: HTMLAudioElement }>({});
+  const [theme, setTheme] = useState<string>();
   const { matches, privateAndInvitedMatches } = multiplayerSocket;
+
+  useEffect(() => {
+    // preload sounds
+    setSounds({
+      'start': new Audio('/sounds/start.wav'),
+      'warning': new Audio('/sounds/warning.wav'),
+    });
+  }, []);
 
   Router.events.on('routeChangeStart', () => nProgress.start());
   Router.events.on('routeChangeComplete', () => nProgress.done());
@@ -168,11 +177,11 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       return;
     }
 
-    if (Object.values(Theme).includes(user.config.theme as Theme) && !isTheme(user.config.theme)) {
+    if (Object.values(Theme).includes(user.config.theme as Theme) && theme !== user.config.theme) {
       // need to remove the default theme so we can add the userConfig theme
       document.body.classList.remove(Theme.Modern);
       document.body.classList.add(user.config.theme);
-      forceUpdate();
+      setTheme(user.config.theme);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.config]);
@@ -251,15 +260,21 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         multiplayerSocket: multiplayerSocket,
         mutateUser: mutateUser,
         setShouldAttemptAuth: setShouldAttemptAuth,
+        setTheme: setTheme,
         shouldAttemptAuth: shouldAttemptAuth,
+        sounds: sounds,
+        theme: theme,
         user: user,
         userConfig: user?.config,
         userLoading: isLoading,
       }}>
-        <main className={rubik.className}>
+        <div className={rubik.className} style={{
+          backgroundColor: 'var(--bg-color)',
+          color: 'var(--color)',
+        }}>
           <Toaster toastOptions={{ duration: 1500 }} />
           <Component {...pageProps} />
-        </main>
+        </div>
       </AppContext.Provider>
     </>
   );

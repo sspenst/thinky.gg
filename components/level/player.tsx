@@ -1,40 +1,57 @@
 import { AppContext } from '@root/contexts/appContext';
 import classNames from 'classnames';
-import React, { useContext, useState } from 'react';
+import React, { useCallback, useContext, useState } from 'react';
 import Theme, { getIconFromTheme } from '../../constants/theme';
 import TileType from '../../constants/tileType';
-import isTheme from '../../helpers/isTheme';
 import Position from '../../models/position';
 import { GameState } from './game';
 import styles from './Player.module.css';
 
 interface PlayerProps {
   borderWidth: number;
+  className?: string | undefined;
+  handleClick?: () => void;
   gameState: GameState;
   leastMoves: number;
   size: number;
+  tileType: TileType;
 }
 
-export default function Player({ borderWidth, gameState, leastMoves, size }: PlayerProps) {
+export default function Player({
+  borderWidth,
+  className,
+  gameState,
+  handleClick,
+  leastMoves,
+  size,
+  tileType,
+}: PlayerProps) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const onClick = useCallback((event: any) => {
+    if (handleClick) {
+      handleClick();
+    }
+
+    event.preventDefault();
+  }, [handleClick]);
+
   // initialize the block at the starting position to avoid an animation from the top left
   const [initPos] = useState(new Position(gameState.pos.x, gameState.pos.y));
-  const tileType = gameState.board[gameState.pos.y][gameState.pos.x].levelDataType;
   const atEnd = tileType === TileType.End;
-  const classic = isTheme(Theme.Classic);
   const innerSize = size - 2 * borderWidth;
   const text = String(gameState.moveCount);
   const fontSizeRatio = text.length <= 3 ? 2 : (1 + (text.length - 1) / 2);
   const fontSize = innerSize / fontSizeRatio;
-  const { user } = useContext(AppContext);
-  const theme = user?.config.theme;
+  const { theme } = useContext(AppContext);
+  const classic = theme === Theme.Classic;
   const parentStyle = {
     backgroundColor: 'var(--bg-color)',
-    height: size,
-    left: size * initPos.x + (classic ? 2 * borderWidth : borderWidth),
+    height: classic ? size : innerSize,
+    left: size * initPos.x + (classic ? 0 : borderWidth),
     top: size * initPos.y + (classic ? 0 : borderWidth),
     transform: `translate(${(gameState.pos.x - initPos.x) * size}px, ${(gameState.pos.y - initPos.y) * size}px)`,
     transition: 'transform 0.1s',
-    width: size,
+    width: classic ? size : innerSize,
   };
   const icon = getIconFromTheme(theme, TileType.Start);
 
@@ -42,12 +59,14 @@ export default function Player({ borderWidth, gameState, leastMoves, size }: Pla
     const overstepped = leastMoves !== 0 && gameState.moveCount > leastMoves;
 
     return <div
-      className='absolute'
+      className={classNames('absolute', className)}
+      onClick={onClick}
+      onTouchEnd={(e) => onClick(e)}
       style={parentStyle}
     >
       <div
         className={classNames(
-          'cursor-default select-none z-20',
+          'select-none z-20',
           overstepped ? styles.extra : undefined,
           !atEnd ? undefined : leastMoves !== 0 && gameState.moveCount > leastMoves ? styles.lose :
             classic ? styles['win-classic'] : styles.win,
@@ -90,10 +109,15 @@ export default function Player({ borderWidth, gameState, leastMoves, size }: Pla
   }
 
   return (
-    <div className='absolute' style={parentStyle}>
+    <div
+      className={classNames('absolute', className)}
+      onClick={onClick}
+      onTouchEnd={(e) => onClick(e)}
+      style={parentStyle}
+    >
       <div
         className={classNames(
-          'cursor-default select-none z-20',
+          'select-none z-20',
           leastMoves !== 0 && gameState.moveCount > leastMoves ? styles.extra : undefined,
           !atEnd ? undefined : leastMoves !== 0 && gameState.moveCount > leastMoves ? styles.lose :
             classic ? styles['win-classic'] : styles.win,
@@ -110,7 +134,9 @@ export default function Player({ borderWidth, gameState, leastMoves, size }: Pla
           color: 'var(--level-player-text)',
           fontSize: fontSize,
           height: innerSize,
+          left: classic ? 2 * borderWidth : 0,
           lineHeight: innerSize + 'px',
+          position: 'relative',
           textAlign: 'center',
           verticalAlign: 'middle',
           width: innerSize,

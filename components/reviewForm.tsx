@@ -6,7 +6,6 @@ import Theme from '../constants/theme';
 import { AppContext } from '../contexts/appContext';
 import { LevelContext } from '../contexts/levelContext';
 import { PageContext } from '../contexts/pageContext';
-import isTheme from '../helpers/isTheme';
 import Review from '../models/db/review';
 import FormattedReview, { Star } from './formattedReview';
 import isNotFullAccountToast from './isNotFullAccountToast';
@@ -25,7 +24,7 @@ export default function ReviewForm({ inModal, userReview }: ReviewFormProps) {
   const [reviewBody, setReviewBody] = useState(userReview?.text || '');
   const { setPreventKeyDownEvent } = useContext(PageContext);
   const [showUserReview, setShowUserReview] = useState(!!userReview);
-  const { user } = useContext(AppContext);
+  const { theme, user } = useContext(AppContext);
 
   // only prevent keydown when the delete modal is the first modal open
   // (not opened from within the review modal)
@@ -123,7 +122,7 @@ export default function ReviewForm({ inModal, userReview }: ReviewFormProps) {
       <textarea
         className={classNames(
           'block p-1 my-2 w-full rounded-lg border disabled:opacity-25',
-          isTheme(Theme.Light) ?
+          theme === Theme.Light ?
             'bg-gray-100 focus:ring-blue-500 focus:border-blue-500 border-gray-300' :
             'bg-gray-700 border-gray-600 placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500'
         )}

@@ -121,7 +121,7 @@ export default function FormattedNotification({ notification, onMarkAsRead }: Fo
           </div>
         }
         <div className='flex items-center justify-between'>
-          <div className='focus:outline-none text-sm whitespace-normal'>
+          <div className='focus:outline-none text-sm whitespace-normal truncate flex items-center gap-1 flex-wrap'>
             <NotificationMessage notification={notification} onMarkAsRead={() => onMarkAsRead(true)} />
           </div>
         </div>

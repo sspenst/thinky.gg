@@ -3,7 +3,7 @@ import { AppContext } from '@root/contexts/appContext';
 import { UserAndSum } from '@root/contexts/levelContext';
 import { DATA_TABLE_CUSTOM_STYLES } from '@root/helpers/dataTableCustomStyles';
 import React, { useContext } from 'react';
-import DataTable from 'react-data-table-component';
+import DataTable from 'react-data-table-component-sspenst';
 import FormattedUser from '../formattedUser';
 
 interface UserAndSumTableProps {

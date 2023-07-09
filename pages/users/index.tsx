@@ -5,7 +5,7 @@ import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery, ParsedUrlQueryInput } from 'querystring';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import DataTable, { Alignment, TableColumn } from 'react-data-table-component';
+import DataTable, { Alignment, TableColumn } from 'react-data-table-component-sspenst';
 import FormattedUser from '../../components/formattedUser';
 import { getProfileRatingDisplay } from '../../components/matchStatus';
 import Page from '../../components/page';
