@@ -26,6 +26,7 @@ export default function Page({
   titleHref,
 }: PageProps) {
   const [preventKeyDownEvent, setPreventKeyDownEvent] = useState(false);
+  const [showHeader, setShowHeader] = useState(true);
 
   useEffect(() => {
     if (isFullScreen) {
@@ -42,16 +43,20 @@ export default function Page({
   return (
     <PageContext.Provider value={{
       preventKeyDownEvent: preventKeyDownEvent,
+      setShowHeader: setShowHeader,
       setPreventKeyDownEvent: setPreventKeyDownEvent,
+      showHeader: showHeader,
     }}>
       <div className={classNames('flex flex-col', { 'fixed inset-0 overflow-hidden': isFullScreen })}>
-        <Header
-          folders={folders}
-          subtitle={subtitle ? new LinkInfo(subtitle, subtitleHref) : undefined}
-          title={title ? new LinkInfo(title, titleHref) : undefined}
-        />
+        {showHeader &&
+          <Header
+            folders={folders}
+            subtitle={subtitle ? new LinkInfo(subtitle, subtitleHref) : undefined}
+            title={title ? new LinkInfo(title, titleHref) : undefined}
+          />
+        }
         <main className='grow z-10' style={{
-          height: `calc(100% - ${Dimensions.MenuHeight}px)`,
+          height: showHeader ? `calc(100% - ${Dimensions.MenuHeight}px)` : '100%',
         }}>
           {children}
         </main>
