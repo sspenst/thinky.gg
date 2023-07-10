@@ -116,19 +116,17 @@ export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFa
         _id: 1,
         email: 1,
         name: 1,
-        roles: 1
+        roles: 1,
       },
       emailDigest: 1,
     },
   },
   {
-    // // match userId roles: { $ne: Role.GUEST },
     $match: {
       'userId.roles': {
         $ne: Role.GUEST,
       },
     },
-
   },
   // join notifications and count how many are unread, createdAt { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }, and userId is the same as the user
   {
