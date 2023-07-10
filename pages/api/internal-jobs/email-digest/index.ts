@@ -1,6 +1,7 @@
 import * as aws from '@aws-sdk/client-ses';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import Discord from '@root/constants/discord';
+import NotificationType from '@root/constants/notificationType';
 import Role from '@root/constants/role';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import { convert } from 'html-to-text';
@@ -43,7 +44,7 @@ const transporter = isLocal() ? nodemailer.createTransport({
   sendingRate: 10 // max 10 messages/second
 });
 
-export async function sendMail(batchId: Types.ObjectId, type: EmailType, user: User, subject: string, body: string) {
+export async function sendMail(batchId: Types.ObjectId, type: EmailType | NotificationType, user: User, subject: string, body: string) {
   /* istanbul ignore next */
   const textVersion = convert(body, {
     wordwrap: 130,

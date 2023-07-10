@@ -1,4 +1,3 @@
-import { EmailType } from '@root/constants/emailDigest';
 import getEmailBody from '@root/helpers/emails/getEmailBody';
 import getMobileNotification from '@root/helpers/getMobileNotification';
 import Notification from '@root/models/db/notification';
@@ -6,7 +5,7 @@ import { EmailLogModel, UserConfigModel, UserModel } from '@root/models/mongoose
 import { Types } from 'mongoose';
 import { sendMail } from '../email-digest';
 
-export async function sendEmail(notification: Notification) {
+export async function sendEmailNotification(notification: Notification) {
   const userConfig = await UserConfigModel.findOne({ userId: notification.userId }, { emailNotificationsList: 1 }, { lean: true });
   const validTypes = userConfig?.emailNotificationsList || [];
 
@@ -31,7 +30,7 @@ export async function sendEmail(notification: Notification) {
     const mobileNotification = getMobileNotification(notification);
     const emailBody = getEmailBody(null, 0, mobileNotification.title, notification.userId, mobileNotification.body, mobileNotification.url, 'View');
 
-    await sendMail(new Types.ObjectId(), EmailType.EMAIL_WALL_POST, notification.userId, mobileNotification.title, emailBody);
+    await sendMail(new Types.ObjectId(), notification.type, notification.userId, mobileNotification.title, emailBody);
 
     return 'email sent';
   }
