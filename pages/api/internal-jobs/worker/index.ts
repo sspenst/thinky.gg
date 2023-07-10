@@ -23,13 +23,10 @@ export async function queue(dedupeKey: string, type: QueueMessageType, message: 
     state: QueueMessageState.PENDING,
     type: type,
   }, {
-    $set: {
-      dedupeKey: dedupeKey,
-      message: message,
-      state: QueueMessageState.PENDING,
-      type: type,
-      // clear out
-    },
+    dedupeKey: dedupeKey,
+    message: message,
+    state: QueueMessageState.PENDING,
+    type: type,
   }, {
     upsert: true,
     ...options,
@@ -41,7 +38,6 @@ export interface EmailQueueMessage {
   fromUser: Types.ObjectId | string;
   subject: string;
   text: string;
-
 }
 
 export async function queuePushNotification(notificationId: Types.ObjectId, options?: QueryOptions) {
@@ -206,14 +202,12 @@ async function processQueueMessage(queueMessage: QueueMessage) {
   }
 
   await QueueMessageModel.updateOne({ _id: queueMessage._id }, {
-
     isProcessing: false,
     state: state,
     processingCompletedAt: new Date(),
     $push: {
       log: log,
     }
-
   });
 
   return error;
