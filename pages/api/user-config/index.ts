@@ -1,10 +1,10 @@
 import isGuest from '@root/helpers/isGuest';
+import { logger } from '@root/helpers/logger';
 import UserConfig from '@root/models/db/userConfig';
 import { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import Theme from '../../../constants/theme';
 import { ValidArray, ValidNumber, ValidType } from '../../../helpers/apiWrapper';
-import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { UserConfigModel } from '../../../models/mongoose';
@@ -30,6 +30,9 @@ export default withAuth({
     body: {
       deviceToken: ValidType('string', false),
       emailDigest: ValidType('string', false),
+      emailNotificationsList: ValidArray(false),
+      pushNotificationsList: ValidArray(false),
+      showPlayStats: ValidType('boolean', false),
       theme: ValidType('string', false),
       tutorialCompletedAt: ValidNumber(false),
       toursCompleted: ValidArray(false),
@@ -46,6 +49,8 @@ export default withAuth({
     const {
       deviceToken,
       emailDigest,
+      emailNotificationsList,
+      pushNotificationsList,
       showPlayStats,
       theme,
       toursCompleted,
@@ -80,12 +85,18 @@ export default withAuth({
       setObj['toursCompleted'] = toursCompleted;
     }
 
+    if (emailNotificationsList) {
+      setObj['emailNotificationsList'] = emailNotificationsList;
+    }
+
+    if (pushNotificationsList) {
+      setObj['pushNotificationsList'] = pushNotificationsList;
+    }
+
     // check if setObj is blank
     if (!deviceToken && Object.keys(setObj).length === 0) {
       return res.status(400).json({ error: 'Missing required parameters' });
     }
-
-    await dbConnect();
 
     try {
       const updateResult = await UserConfigModel.updateOne({ userId: req.userId }, { $set: setObj, $addToSet: { mobileDeviceTokens: deviceToken } });

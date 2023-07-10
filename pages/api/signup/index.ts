@@ -1,4 +1,5 @@
 import { EmailDigestSettingTypes } from '@root/constants/emailDigest';
+import NotificationType from '@root/constants/notificationType';
 import Role from '@root/constants/role';
 import { generatePassword } from '@root/helpers/generatePassword';
 import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
@@ -28,6 +29,7 @@ async function createUser({ email, name, password, tutorialCompletedAt, roles }:
   }
 
   const emailConfirmationToken = getEmailConfirmationToken();
+
   const [userCreated, configCreated] = await Promise.all([
     UserModel.create([{
       _id: id,
@@ -46,6 +48,8 @@ async function createUser({ email, name, password, tutorialCompletedAt, roles }:
       emailConfirmed: false,
       emailConfirmationToken: emailConfirmationToken,
       emailDigest: emailDigest,
+      emailNotificationsList: [NotificationType.NEW_WALL_POST, NotificationType.NEW_WALL_REPLY],
+      pushNotificationsList: Object.values(NotificationType),
     }], queryOptions),
   ]);
 
@@ -80,6 +84,7 @@ export default apiWrapper({ POST: {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: `secret=${RECAPTCHA_SECRET}&response=${recaptchaToken}`,
     });
+
     const recaptchaData = await recaptchaResponse.json();
 
     if (!recaptchaResponse.ok || !recaptchaData?.success) {

@@ -1,3 +1,4 @@
+import NotificationType from '@root/constants/notificationType';
 import { TourType } from '@root/hooks/useTour';
 import mongoose from 'mongoose';
 import { EmailDigestSettingTypes } from '../../constants/emailDigest';
@@ -23,12 +24,22 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       enum: EmailDigestSettingTypes,
       default: EmailDigestSettingTypes.DAILY,
     },
+    emailNotificationsList: {
+      type: [{ type: String, enum: NotificationType }],
+      required: false,
+      default: [],
+    },
     mobileDeviceTokens: {
       type: [String],
       required: false,
       select: false,
       default: [],
       maxlength: 100, // max 100 devices @TODO: should probably 'rotate' this list and remove oldest device tokens on push of new one
+    },
+    pushNotificationsList: {
+      type: [{ type: String, enum: NotificationType }],
+      required: false,
+      default: [],
     },
     showPlayStats: {
       type: Boolean,

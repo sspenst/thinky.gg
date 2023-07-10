@@ -1,3 +1,4 @@
+import NotificationType from '@root/constants/notificationType';
 import { TourType } from '@root/hooks/useTour';
 import { Types } from 'mongoose';
 import EmailDigestSettingTypes from '../../constants/emailDigest';
@@ -8,7 +9,9 @@ interface UserConfig {
   emailConfirmationToken: string;
   emailConfirmed: boolean;
   emailDigest: EmailDigestSettingTypes;
+  emailNotificationsList: NotificationType[];
   mobileDeviceTokens: string[];
+  pushNotificationsList: NotificationType[];
   showPlayStats: boolean;
   stripeCustomerId: string;
   theme: string;
