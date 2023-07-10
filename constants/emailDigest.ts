@@ -11,6 +11,5 @@ export enum EmailType {
 
 export enum EmailDigestSettingTypes {
   DAILY = 'DAILY',
-  ONLY_NOTIFICATIONS = 'ONLY_NOTIFICATIONS',
   NONE = 'NONE',
 }

@@ -13,7 +13,7 @@ export interface SettingsAccountProps {
 export default function SettingsAccount({ user, userConfig }: SettingsAccountProps) {
   const [currentPassword, setCurrentPassword] = useState<string>('');
   const [email, setEmail] = useState<string>(user.email);
-  const [emailDigest, setEmailDigest] = useState<EmailDigestSettingTypes>(userConfig?.emailDigest ?? EmailDigestSettingTypes.ONLY_NOTIFICATIONS);
+  const [emailDigest, setEmailDigest] = useState<EmailDigestSettingTypes>(userConfig?.emailDigest ?? EmailDigestSettingTypes.DAILY);
   const [isUserConfigLoading, setIsUserConfigLoading] = useState<boolean>(false);
   const [password, setPassword] = useState<string>('');
   const [password2, setPassword2] = useState<string>('');
@@ -188,9 +188,8 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
 
   const emailDigestLabels = useCallback(() => {
     return {
-      [EmailDigestSettingTypes.DAILY]: 'Daily digest',
-      [EmailDigestSettingTypes.ONLY_NOTIFICATIONS]: 'Only for unread notifications',
-      [EmailDigestSettingTypes.NONE]: 'No daily digest',
+      [EmailDigestSettingTypes.DAILY]: 'Level of the day',
+      [EmailDigestSettingTypes.NONE]: 'None',
     };
   }, []);
 
