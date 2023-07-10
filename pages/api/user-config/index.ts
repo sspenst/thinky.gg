@@ -5,7 +5,6 @@ import { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import Theme from '../../../constants/theme';
 import { ValidArray, ValidNumber, ValidType } from '../../../helpers/apiWrapper';
-import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { UserConfigModel } from '../../../models/mongoose';
 
@@ -40,8 +39,6 @@ export default withAuth({
   },
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
-    await dbConnect();
-
     const userConfig = await getUserConfig(req.user._id);
 
     return res.status(200).json(userConfig);
