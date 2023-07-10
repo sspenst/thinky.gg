@@ -1,4 +1,5 @@
 import isGuest from '@root/helpers/isGuest';
+import { logger } from '@root/helpers/logger';
 import UserConfig from '@root/models/db/userConfig';
 import { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
@@ -97,10 +98,16 @@ export default withAuth({
       return res.status(400).json({ error: 'Missing required parameters' });
     }
 
-    const updateResult = await UserConfigModel.updateOne({ userId: req.userId }, { $set: setObj, $addToSet: { mobileDeviceTokens: deviceToken } });
+    try {
+      const updateResult = await UserConfigModel.updateOne({ userId: req.userId }, { $set: setObj, $addToSet: { mobileDeviceTokens: deviceToken } });
 
-    /* istanbul ignore next */
-    if (updateResult.acknowledged === false) {
+      /* istanbul ignore next */
+      if (updateResult.acknowledged === false) {
+        return res.status(500).json({ error: 'Error updating config', updated: false });
+      }
+    } catch (err) {
+      logger.error(err);
+
       return res.status(500).json({ error: 'Error updating config', updated: false });
     }
 

@@ -1,4 +1,3 @@
-import NotificationList from '@root/components/notification/notificationList';
 import NotificationType from '@root/constants/notificationType';
 import UserConfig from '@root/models/db/userConfig';
 import { enableFetchMocks } from 'jest-fetch-mock';
@@ -309,7 +308,7 @@ describe('pages/api/signup', () => {
         const config = await UserConfigModel.findOne({ userId: db._id }) as UserConfig;
 
         expect(config).toBeDefined();
-        expect(config.emailNotificationsList.sort()).toStrictEqual(Object.values(NotificationType).sort());
+        expect(config.emailNotificationsList.sort()).toStrictEqual([NotificationType.NEW_WALL_POST, NotificationType.NEW_WALL_REPLY]);
         expect(config.pushNotificationsList.sort()).toStrictEqual(Object.values(NotificationType).sort());
       },
     });
