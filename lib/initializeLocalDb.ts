@@ -78,7 +78,7 @@ export default async function initializeLocalDb() {
   promises.push(UserModel.create({
     _id: new Types.ObjectId(TestId.USER_GUEST),
     calc_records: 0,
-    email: 'guest@gmail.com',
+    email: 'guest@guest.com',
     name: 'BBB',
     password: 'BBB12345',
     score: 0,
