@@ -1,11 +1,27 @@
+import { EmailDigestSettingTypes } from '@root/constants/emailDigest';
 import NotificationType from '@root/constants/notificationType';
 import { AppContext } from '@root/contexts/appContext';
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
+import Select from 'react-select';
 
 export default function SettingsNotifications() {
-// NotificationType is an enum
-  const { userConfig, mutateUser } = useContext(AppContext);
+  const [emailDigest, setEmailDigest] = useState(EmailDigestSettingTypes.DAILY);
+  const [isUserConfigLoading, setIsUserConfigLoading] = useState(false);
+  const { mutateUser, userConfig } = useContext(AppContext);
+
+  const emailDigestLabels = useMemo(() => {
+    return {
+      [EmailDigestSettingTypes.DAILY]: 'Daily',
+      [EmailDigestSettingTypes.NONE]: 'None',
+    };
+  }, []);
+
+  useEffect(() => {
+    if (userConfig?.emailDigest) {
+      setEmailDigest(userConfig.emailDigest);
+    }
+  }, [userConfig]);
 
   function updateUserConfig(
     body: string,
@@ -13,6 +29,7 @@ export default function SettingsNotifications() {
   ) {
     toast.dismiss();
     toast.loading(`Updating ${property}...`);
+    setIsUserConfigLoading(true);
 
     fetch('/api/user-config', {
       method: 'PUT',
@@ -37,6 +54,7 @@ export default function SettingsNotifications() {
       toast.error(`Error updating ${property}`);
     }).finally(() => {
       mutateUser();
+      setIsUserConfigLoading(false);
     });
   }
 
@@ -183,10 +201,47 @@ export default function SettingsNotifications() {
   );
 
   return (
-    <div className='flex justify-center'>
-      <div className='flex flex-col'>
-        {notifList}
+    <div className='flex flex-col items-center gap-8 mb-4'>
+      <div>
+        <div className='block font-bold mb-2'>
+          Level of the day
+        </div>
+        <div>
+          <Select
+            className='text-black w-52 max-w-full text-sm'
+            components={{
+              IndicatorSeparator: null,
+            }}
+            isDisabled={isUserConfigLoading}
+            isLoading={isUserConfigLoading}
+            loadingMessage={() => 'Loading...'}
+            onChange={option => {
+              if (!option) {
+                return;
+              }
+
+              updateUserConfig(
+                JSON.stringify({
+                  emailDigest: option.value,
+                }), 'email notifications',
+              );
+
+              setEmailDigest(option.value);
+            }}
+            options={Object.keys(EmailDigestSettingTypes).map(emailDigestKey => {
+              return {
+                label: emailDigestLabels[emailDigestKey as EmailDigestSettingTypes],
+                value: emailDigestKey as EmailDigestSettingTypes,
+              };
+            })}
+            value={{
+              label: emailDigestLabels[emailDigest],
+              value: emailDigest,
+            }}
+          />
+        </div>
       </div>
+      {notifList}
     </div>
   );
 }
