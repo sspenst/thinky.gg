@@ -82,15 +82,16 @@ export default function SettingsNotifications() {
         <thead>
           <tr className='border-b'>
             <th className='w-1/2 px-4 py-2'>Notification</th>
-            <th className='w-1/4 px-4 py-2'>
+            <th className=' px-4 py-2'>
               <div id='toggleAllEmailNotifs' className='flex items-center justify-between'>
                 <label className='text-sm' htmlFor='toggleAllEmailNotifs'>
-                  Toggle all
+                  Email
                 </label>
                 <input
                   checked={emailNotifs.length === allNotifs.length}
                   id='toggleAllEmailNotifs'
                   name='toggleAllEmailNotifs'
+
                   onChange={() => {
                     if (emailNotifs.length === allNotifs.length) {
                       updateUserConfig(
@@ -112,10 +113,10 @@ export default function SettingsNotifications() {
                 />
               </div>
             </th>
-            <th className='w-1/4 px-4 py-2'>
+            <th className=' px-4 py-2'>
               <div id='toggleAllPushNotifs' className='flex items-center justify-between'>
                 <label className='text-sm' htmlFor='toggleAllPushNotifs'>
-                  Toggle all
+                  Mobile Notifs
                 </label>
                 <input
                   checked={pushNotifs.length === allNotifs.length}
