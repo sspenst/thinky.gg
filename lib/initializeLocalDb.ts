@@ -79,7 +79,7 @@ export default async function initializeLocalDb() {
     _id: new Types.ObjectId(TestId.USER_GUEST),
     calc_records: 0,
     email: 'guest@guest.com',
-    name: 'BBB',
+    name: 'guest',
     password: 'BBB12345',
     score: 0,
     roles: [Role.GUEST],
