@@ -4,7 +4,6 @@ import { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import Theme from '../../../constants/theme';
 import { ValidArray, ValidNumber, ValidType } from '../../../helpers/apiWrapper';
-import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { UserConfigModel } from '../../../models/mongoose';
@@ -98,18 +97,10 @@ export default withAuth({
       return res.status(400).json({ error: 'Missing required parameters' });
     }
 
-    await dbConnect();
+    const updateResult = await UserConfigModel.updateOne({ userId: req.userId }, { $set: setObj, $addToSet: { mobileDeviceTokens: deviceToken } });
 
-    try {
-      const updateResult = await UserConfigModel.updateOne({ userId: req.userId }, { $set: setObj, $addToSet: { mobileDeviceTokens: deviceToken } });
-
-      /* istanbul ignore next */
-      if (updateResult.acknowledged === false) {
-        return res.status(500).json({ error: 'Error updating config', updated: false });
-      }
-    } catch (err) {
-      logger.error(err);
-
+    /* istanbul ignore next */
+    if (updateResult.acknowledged === false) {
       return res.status(500).json({ error: 'Error updating config', updated: false });
     }
 

@@ -14,7 +14,6 @@ interface AppContextInterface {
   sounds: { [key: string]: HTMLAudioElement };
   theme: string | undefined;
   user?: ReqUser;
-  pageProps?: any;
   userConfig?: UserConfig;
   userLoading: boolean;
 }

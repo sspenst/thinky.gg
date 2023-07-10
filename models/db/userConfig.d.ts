@@ -1,7 +1,7 @@
 import NotificationType from '@root/constants/notificationType';
 import { TourType } from '@root/hooks/useTour';
 import { Types } from 'mongoose';
-import EmailDigestSettingTypes, { EmailType } from '../../constants/emailDigest';
+import EmailDigestSettingTypes from '../../constants/emailDigest';
 import User from './user';
 
 interface UserConfig {
