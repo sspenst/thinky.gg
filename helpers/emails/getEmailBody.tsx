@@ -13,8 +13,8 @@ export default function getEmailBody(
   title: string,
   user: User,
   message?: string,
-  ctaUrl?: string,
-  ctaText?: string,
+  linkHref?: string,
+  linkText?: string,
 ) {
   return renderToStaticMarkup(
     <html>
@@ -28,7 +28,7 @@ export default function getEmailBody(
           <tr>
             <td align='center' style={{
               display: 'block',
-              /*padding: 20,*/
+              padding: 20,
               verticalAlign: 'top',
             }}>
               <table role='presentation' cellPadding='0' cellSpacing='0' style={{
@@ -61,70 +61,61 @@ export default function getEmailBody(
                       {message && (
                         <p>{message}</p>
                       )}
-                      {ctaUrl && ctaText && (
-                        // make a button styled like tailwind for email
-                        <div style={{
-                          // center
-                          margin: '0 auto',
-                          backgroundColor: 'rgb(96 165 250)',
-                          borderRadius: 4,
-                          color: '#FFF',
-                          display: 'inline-block',
-                          padding: '10px 20px',
-                          textDecoration: 'none',
-                        }}>
-                          <a href={ctaUrl}
-                            style={{
-                              color: '#FFF',
-                              textDecoration: 'none',
-                            }}
-                          >
-                            {ctaText}</a>
-
-                        </div>
-                      )}
+                      {linkHref && linkText &&
+                        <a
+                          href={linkHref}
+                          style={{
+                            margin: '0 auto',
+                            backgroundColor: 'rgb(96 165 250)',
+                            borderRadius: 4,
+                            color: '#FFF',
+                            display: 'inline-block',
+                            padding: '10px 20px',
+                            textDecoration: 'none',
+                          }}
+                        >
+                          {linkText}
+                        </a>
+                      }
                       {levelOfDay &&
-                      <div>
-                        <h2>Check out the level of the day:</h2>
-                        <div style={{
-                          textAlign: 'center',
-                        }}>
-                          <a href={`https://pathology.gg/level/${levelOfDay.slug}`} style={{
-                            color: '#4890ce',
-                            textDecoration: 'none',
-                          }}>
-                            {levelOfDay.name}
-                          </a>
-                          {' by '}
-                          <a href={`https://pathology.gg/profile/${encodeURI(levelOfDay.userId.name)}`} style={{
-                            color: '#4890ce',
-                            textDecoration: 'none',
-                          }}>
-                            {levelOfDay.userId.name}
-                          </a>
+                        <div>
+                          <h2>Check out the level of the day:</h2>
                           <div style={{
-                            padding: 20,
+                            textAlign: 'center',
                           }}>
                             <a href={`https://pathology.gg/level/${levelOfDay.slug}`} style={{
                               color: '#4890ce',
                               textDecoration: 'none',
                             }}>
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={`https://pathology.gg/api/level/image/${levelOfDay._id}.png`} width='100%' alt={levelOfDay.name} />
+                              {levelOfDay.name}
                             </a>
+                            {' by '}
+                            <a href={`https://pathology.gg/profile/${encodeURI(levelOfDay.userId.name)}`} style={{
+                              color: '#4890ce',
+                              textDecoration: 'none',
+                            }}>
+                              {levelOfDay.userId.name}
+                            </a>
+                            <div style={{
+                              padding: 20,
+                            }}>
+                              <a href={`https://pathology.gg/level/${levelOfDay.slug}`} style={{
+                                color: '#4890ce',
+                                textDecoration: 'none',
+                              }}>
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={`https://pathology.gg/api/level/image/${levelOfDay._id}.png`} width='100%' alt={levelOfDay.name} />
+                              </a>
+                            </div>
                           </div>
                         </div>
-                      </div>
                       }
-                      <div style={{
-                        padding: 10,
-                        textAlign: 'center',
-                      }}>
-                      Thanks for playing <a href='https://pathology.gg' style={{
+                      <p>
+                        Thanks for playing <a href='https://pathology.gg' style={{
                           color: '#4890ce',
                           textDecoration: 'none',
                         }}>Pathology</a>!
-                      </div>
+                      </p>
                       <div id='footer' style={{
                         fontSize: '10px',
                         color: '#999',
@@ -134,7 +125,7 @@ export default function getEmailBody(
                           color: '#4890ce',
                           textDecoration: 'none',
                         }}>Pathology Discord</a> to chat with other players and the developers!</p>
-                        <p><a href='https://pathology.gg/settings/account' style={{
+                        <p><a href='https://pathology.gg/settings/notifications' style={{
                           color: '#4890ce',
                           textDecoration: 'none',
                         }}>Manage your email notification settings</a></p>

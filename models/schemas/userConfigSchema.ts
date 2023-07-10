@@ -29,17 +29,17 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       required: false,
       default: [],
     },
-    pushNotificationsList: {
-      type: [{ type: String, enum: NotificationType }],
-      required: false,
-      default: [],
-    },
     mobileDeviceTokens: {
       type: [String],
       required: false,
       select: false,
       default: [],
       maxlength: 100, // max 100 devices @TODO: should probably 'rotate' this list and remove oldest device tokens on push of new one
+    },
+    pushNotificationsList: {
+      type: [{ type: String, enum: NotificationType }],
+      required: false,
+      default: [],
     },
     showPlayStats: {
       type: Boolean,

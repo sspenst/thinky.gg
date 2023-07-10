@@ -30,7 +30,6 @@ export async function queue(dedupeKey: string, type: QueueMessageType, message: 
       type: type,
       // clear out
     },
-
   }, {
     upsert: true,
     ...options,
@@ -46,18 +45,22 @@ export interface EmailQueueMessage {
 }
 
 export async function queuePushNotification(notificationId: Types.ObjectId, options?: QueryOptions) {
-  await Promise.all([queue(
-    notificationId.toString(),
-    QueueMessageType.PUSH_NOTIFICATION,
-    JSON.stringify({ notificationId: notificationId.toString() }),
-    options,
-  ),
-  queue(
-    notificationId.toString(),
-    QueueMessageType.EMAIL_NOTIFICATION,
-    JSON.stringify({ notificationId: notificationId.toString() }),
-    options,
-  )]);
+  const message = JSON.stringify({ notificationId: notificationId.toString() });
+
+  await Promise.all([
+    queue(
+      `push-${notificationId.toString()}`,
+      QueueMessageType.PUSH_NOTIFICATION,
+      message,
+      options,
+    ),
+    queue(
+      `email-${notificationId.toString()}`,
+      QueueMessageType.EMAIL_NOTIFICATION,
+      message,
+      options,
+    )
+  ]);
 }
 
 export async function queueFetch(url: string, options: RequestInit, dedupeKey?: string, queryOptions?: QueryOptions) {
@@ -225,9 +228,7 @@ export async function processQueueMessages() {
     isProcessing: true,
     processingStartedAt: { $lt: new Date(Date.now() - 1000 * 60 * 5) }, // 5 minutes
   }, {
-
     isProcessing: false,
-
   });
 
   const genJobRunId = new Types.ObjectId();
@@ -262,14 +263,12 @@ export async function processQueueMessages() {
       await QueueMessageModel.updateMany({
         _id: { $in: queueMessages.map(x => x._id) },
       }, {
-
         jobRunId: genJobRunId,
         isProcessing: true,
         processingStartedAt: processingStartedAt,
         $inc: {
           processingAttempts: 1,
         },
-
       }, { session: session, lean: true });
 
       // manually update queueMessages so we don't have to query again
