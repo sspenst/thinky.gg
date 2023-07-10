@@ -87,7 +87,7 @@ export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFa
   const userConfigsAggQ = UserConfigModel.aggregate([{
     $match: {
       emailDigest: {
-        $in: [EmailDigestSettingTypes.DAILY, EmailDigestSettingTypes.ONLY_NOTIFICATIONS],
+        $in: [EmailDigestSettingTypes.DAILY],
       }
     },
   }, {
@@ -102,6 +102,7 @@ export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFa
             email: 1,
             name: 1,
             _id: 1,
+            roles: 1,
           }
         }
       ]
@@ -114,9 +115,19 @@ export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFa
         _id: 1,
         email: 1,
         name: 1,
+        roles: 1
       },
       emailDigest: 1,
     },
+  },
+  {
+    // // match userId roles: { $ne: Role.GUEST },
+    $match: {
+      'userId.roles': {
+        $ne: Role.GUEST,
+      },
+    },
+
   },
   // join notifications and count how many are unread, createdAt { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }, and userId is the same as the user
   {
@@ -202,12 +213,6 @@ export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFa
             { 'emailDigest': EmailDigestSettingTypes.DAILY },
           ],
         },
-        {
-          $and: [
-            { 'emailDigest': EmailDigestSettingTypes.ONLY_NOTIFICATIONS },
-            { 'notificationsCount': { $gt: 0 } },
-          ],
-        },
       ],
     },
   },
@@ -228,13 +233,8 @@ export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFa
     }
 
     const user = userConfig.userId as User;
-    const [notificationsCount, lastSentEmailLog] = [userConfig.notificationsCount, userConfig.lastSentEmailLog];
 
-    if (userConfig.emailDigest === EmailDigestSettingTypes.ONLY_NOTIFICATIONS && notificationsCount === 0) {
-      // TODO: Should never get called
-      logger.error('should never get called. remove this after inspecting enough logs to confirm');
-      continue;
-    }
+    const [notificationsCount, lastSentEmailLog] = [userConfig.notificationsCount, userConfig.lastSentEmailLog];
 
     const lastSentTs = lastSentEmailLog ? new Date(lastSentEmailLog.createdAt) as unknown as Date : null;
 
