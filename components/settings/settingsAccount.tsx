@@ -1,9 +1,7 @@
 import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
-import Select from 'react-select';
-import { EmailDigestSettingTypes } from '../../constants/emailDigest';
 
 interface SettingsAccountProps {
   user: User;
@@ -13,8 +11,6 @@ interface SettingsAccountProps {
 export default function SettingsAccount({ user, userConfig }: SettingsAccountProps) {
   const [currentPassword, setCurrentPassword] = useState<string>('');
   const [email, setEmail] = useState<string>(user.email);
-  const [emailDigest, setEmailDigest] = useState<EmailDigestSettingTypes>(userConfig?.emailDigest ?? EmailDigestSettingTypes.ONLY_NOTIFICATIONS);
-  const [isUserConfigLoading, setIsUserConfigLoading] = useState<boolean>(false);
   const [password, setPassword] = useState<string>('');
   const [password2, setPassword2] = useState<string>('');
   const [showPlayStats, setShowPlayStats] = useState(userConfig?.showPlayStats ?? false);
@@ -84,7 +80,6 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
   ) {
     toast.dismiss();
     toast.loading(`Updating ${property}...`);
-    setIsUserConfigLoading(true);
 
     fetch('/api/user-config', {
       method: 'PUT',
@@ -107,8 +102,6 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
       console.error(err);
       toast.dismiss();
       toast.error(`Error updating ${property}`);
-    }).finally(() => {
-      setIsUserConfigLoading(false);
     });
   }
 
@@ -186,14 +179,6 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
 
   const inputClass = 'shadow appearance-none border mb-2 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline';
 
-  const emailDigestLabels = useCallback(() => {
-    return {
-      [EmailDigestSettingTypes.DAILY]: 'Daily digest',
-      [EmailDigestSettingTypes.ONLY_NOTIFICATIONS]: 'Only for unread notifications',
-      [EmailDigestSettingTypes.NONE]: 'None',
-    };
-  }, []);
-
   async function clearTours() {
     const res = await fetch('/api/user-config', {
       method: 'PUT',
@@ -247,45 +232,6 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
             <label className='text-sm' htmlFor='showPlayStats'>
               Show play stats in level info
             </label>
-          </div>
-        </div>
-        <div>
-          <div className='block font-bold mb-2'>
-            Email Notifications
-          </div>
-          <div>
-            <Select
-              className='text-black w-full text-sm'
-              components={{
-                IndicatorSeparator: null,
-              }}
-              isDisabled={isUserConfigLoading}
-              isLoading={isUserConfigLoading}
-              loadingMessage={() => 'Loading...'}
-              onChange={option => {
-                if (!option) {
-                  return;
-                }
-
-                updateUserConfig(
-                  JSON.stringify({
-                    emailDigest: option.value,
-                  }), 'email notifications',
-                );
-
-                setEmailDigest(option.value);
-              }}
-              options={Object.keys(EmailDigestSettingTypes).map(emailDigestKey => {
-                return {
-                  label: emailDigestLabels()[emailDigestKey as EmailDigestSettingTypes],
-                  value: emailDigestKey as EmailDigestSettingTypes,
-                };
-              })}
-              value={{
-                label: emailDigestLabels()[emailDigest],
-                value: emailDigest,
-              }}
-            />
           </div>
         </div>
         <form className='flex flex-col items-start' onSubmit={updateUsername}>

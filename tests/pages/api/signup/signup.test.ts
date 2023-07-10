@@ -1,3 +1,5 @@
+import NotificationType from '@root/constants/notificationType';
+import UserConfig from '@root/models/db/userConfig';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
@@ -6,7 +8,7 @@ import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { UserModel } from '../../../../models/mongoose';
+import { UserConfigModel, UserModel } from '../../../../models/mongoose';
 import loginUserHandler from '../../../../pages/api/login/index';
 import signupUserHandler from '../../../../pages/api/signup/index';
 
@@ -19,6 +21,9 @@ beforeEach(async () => {
 afterAll(async() => {
   await dbDisconnect();
 });
+afterEach(() => {
+  //jest.restoreAllMocks();
+});
 enableFetchMocks();
 
 jest.mock('nodemailer', () => ({
@@ -29,7 +34,7 @@ jest.mock('nodemailer', () => ({
   })),
 }));
 
-describe('pages/api/collection/index.ts', () => {
+describe('pages/api/signup', () => {
   const cookie = getTokenCookieValue(TestId.USER);
 
   test('Creating a user but not passing recaptcha should fail with 400', async () => {
@@ -64,12 +69,14 @@ describe('pages/api/collection/index.ts', () => {
     });
   });
   test('Creating a user, pass recaptcha where fetch fails', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+
     process.env.RECAPTCHA_SECRET = 'defined';
 
     // mock fetch failing with 400
-    fetchMock.mockResponseOnce(JSON.stringify({}), { status: 408 });
+    fetchMock.mockResponseOnce(JSON.stringify({ 'mock': true }), { status: 408 });
 
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    //    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -298,6 +305,11 @@ describe('pages/api/collection/index.ts', () => {
         expect(db).toBeDefined();
         expect(db.name).toBe('Test2');
         expect(db.password).not.toBe('password2'); // should be salted
+        const config = await UserConfigModel.findOne({ userId: db._id }) as UserConfig;
+
+        expect(config).toBeDefined();
+        expect(config.emailNotificationsList.sort()).toStrictEqual([NotificationType.NEW_WALL_POST, NotificationType.NEW_WALL_REPLY]);
+        expect(config.pushNotificationsList.sort()).toStrictEqual(Object.values(NotificationType).sort());
       },
     });
   });

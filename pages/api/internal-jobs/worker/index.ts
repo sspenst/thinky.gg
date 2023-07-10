@@ -1,18 +1,18 @@
-import admin from 'firebase-admin';
+import UserConfig from '@root/models/db/userConfig';
 import mongoose, { QueryOptions, Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
 import { getEnrichNotificationPipelineStages } from '../../../../helpers/enrich';
-import getMobileNotification from '../../../../helpers/getMobileNotification';
 import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
-import Device from '../../../../models/db/device';
 import Notification from '../../../../models/db/notification';
 import QueueMessage from '../../../../models/db/queueMessage';
-import { DeviceModel, NotificationModel, QueueMessageModel } from '../../../../models/mongoose';
+import { NotificationModel, QueueMessageModel, UserConfigModel } from '../../../../models/mongoose';
 import { calcPlayAttempts, refreshIndexCalcs } from '../../../../models/schemas/levelSchema';
 import { QueueMessageState, QueueMessageType } from '../../../../models/schemas/queueMessageSchema';
-import { calcCreatorCounts } from '../../../../models/schemas/userSchema';
+import { calcCreatorCounts, USER_DEFAULT_PROJECTION } from '../../../../models/schemas/userSchema';
+import { sendEmailNotification } from './sendEmailNotification';
+import { sendPushNotification } from './sendPushNotification';
 
 const MAX_PROCESSING_ATTEMPTS = 3;
 
@@ -33,13 +33,30 @@ export async function queue(dedupeKey: string, type: QueueMessageType, message: 
   });
 }
 
+export interface EmailQueueMessage {
+  toUser: Types.ObjectId | string;
+  fromUser: Types.ObjectId | string;
+  subject: string;
+  text: string;
+}
+
 export async function queuePushNotification(notificationId: Types.ObjectId, options?: QueryOptions) {
-  await queue(
-    notificationId.toString(),
-    QueueMessageType.PUSH_NOTIFICATION,
-    JSON.stringify({ notificationId: notificationId.toString() }),
-    options,
-  );
+  const message = JSON.stringify({ notificationId: notificationId.toString() });
+
+  await Promise.all([
+    queue(
+      `push-${notificationId.toString()}`,
+      QueueMessageType.PUSH_NOTIFICATION,
+      message,
+      options,
+    ),
+    queue(
+      `email-${notificationId.toString()}`,
+      QueueMessageType.EMAIL_NOTIFICATION,
+      message,
+      options,
+    )
+  ]);
 }
 
 export async function queueFetch(url: string, options: RequestInit, dedupeKey?: string, queryOptions?: QueryOptions) {
@@ -100,7 +117,7 @@ async function processQueueMessage(queueMessage: QueueMessage) {
       log = `${url}: ${e.message}`;
       error = true;
     }
-  } else if (queueMessage.type === QueueMessageType.PUSH_NOTIFICATION) {
+  } else if (queueMessage.type === QueueMessageType.PUSH_NOTIFICATION || queueMessage.type === QueueMessageType.EMAIL_NOTIFICATION) {
     try {
       const { notificationId } = JSON.parse(queueMessage.message) as { notificationId: string };
 
@@ -113,6 +130,14 @@ async function processQueueMessage(queueMessage: QueueMessage) {
             localField: 'userId',
             foreignField: '_id',
             as: 'userId',
+            pipeline: [
+              {
+                $project: {
+                  ...USER_DEFAULT_PROJECTION,
+                  email: 1,
+                }
+              }
+            ]
           },
         },
         {
@@ -127,59 +152,19 @@ async function processQueueMessage(queueMessage: QueueMessage) {
         log = `Notification ${notificationId} not sent: not found`;
       } else {
         const notification = notificationAgg[0];
-        const devices = await DeviceModel.find({ userId: notification.userId._id });
 
-        if (devices.length === 0) {
-          log = `Notification ${notificationId} not sent: no devices found`;
+        const whereSend = queueMessage.type === QueueMessageType.PUSH_NOTIFICATION ? sendPushNotification : sendEmailNotification;
+        const userConfig = await UserConfigModel.findOne({ userId: notification.userId._id }) as UserConfig;
+
+        const allowedEmail = userConfig.emailNotificationsList.includes(notification.type);
+        const allowedPush = userConfig.pushNotificationsList.includes(notification.type);
+
+        if (whereSend === sendEmailNotification && !allowedEmail) {
+          log = `Notification ${notificationId} not sent: ` + notification.type + ' not allowed by user (email)';
+        } else if (whereSend === sendPushNotification && !allowedPush) {
+          log = `Notification ${notificationId} not sent: ` + notification.type + ' not allowed by user (push)';
         } else {
-          const mobileNotification = getMobileNotification(notification);
-          const tokens = devices.map((token: Device) => token.deviceToken);
-
-          if (!global.firebaseApp) {
-            global.firebaseApp = admin.initializeApp({
-              credential: admin.credential.cert({
-                'client_email': process.env.FIREBASE_CLIENT_EMAIL,
-                'private_key': process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-                'project_id': process.env.FIREBASE_PROJECT_ID,
-              } as admin.ServiceAccount),
-            });
-          }
-
-          const res = await global.firebaseApp.messaging().sendMulticast({
-            tokens: tokens,
-            data: {
-              notificationId: notification._id.toString(),
-              url: mobileNotification.url,
-            },
-            notification: {
-              title: mobileNotification.title,
-              body: mobileNotification.body,
-              imageUrl: mobileNotification.imageUrl,
-            },
-            apns: {
-              payload: {
-                aps: {
-                  'mutable-content': 1,
-                  'content-available': 1,
-                },
-                notifee_options: {
-                  data: {
-                    notificationId: notification._id.toString(),
-                    url: mobileNotification.url,
-                  },
-                  image: mobileNotification.imageUrl,
-                },
-              },
-            },
-            android: {
-              notification: {
-                imageUrl: mobileNotification.imageUrl,
-              },
-            },
-          });
-          const responseJSON = JSON.stringify(res);
-
-          log = `${responseJSON}`;
+          log = await whereSend(notification);
         }
       }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

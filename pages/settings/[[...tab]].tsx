@@ -1,4 +1,5 @@
 import SettingsAccountGuest from '@root/components/settings/settingsAccountGuest';
+import SettingsNotifications from '@root/components/settings/settingsNotifications';
 import isGuest from '@root/helpers/isGuest';
 import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
@@ -20,6 +21,7 @@ enum SettingsTab {
   Danger = 'danger',
   General = 'general',
   Pro = 'proaccount',
+  Notifications = 'notifications',
 }
 
 interface TabProps {
@@ -82,7 +84,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   let userConfig: UserConfig | null = null;
 
-  if (tab === SettingsTab.Account) {
+  if (tab === SettingsTab.Account || tab === SettingsTab.Notifications) {
     userConfig = await getUserConfig(reqUser._id);
   }
 
@@ -136,6 +138,8 @@ export default function Settings({
       return <SettingsPro stripeCustomerPortalLink={stripeCustomerPortalLink} stripePaymentLink={stripePaymentLink} stripePaymentYearlyLink={stripePaymentYearlyLink} />;
     case SettingsTab.Danger:
       return <SettingsDanger />;
+    case SettingsTab.Notifications:
+      return <SettingsNotifications />;
     default:
       return <SettingsGeneral user={user} />;
     }
@@ -154,6 +158,11 @@ export default function Settings({
             activeTab={tab}
             label='Account'
             value={SettingsTab.Account}
+          />
+          <Tab
+            activeTab={tab}
+            label='Notifications'
+            value={SettingsTab.Notifications}
           />
           <Tab
             activeTab={tab}
