@@ -11,8 +11,8 @@ import { NotificationModel, QueueMessageModel, UserConfigModel } from '../../../
 import { calcPlayAttempts, refreshIndexCalcs } from '../../../../models/schemas/levelSchema';
 import { QueueMessageState, QueueMessageType } from '../../../../models/schemas/queueMessageSchema';
 import { calcCreatorCounts, USER_DEFAULT_PROJECTION } from '../../../../models/schemas/userSchema';
-import { sendEmail } from './sendEmail';
-import { sendPush } from './sendPush';
+import { sendEmailNotification } from './sendEmailNotification';
+import { sendPushNotification } from './sendPushNotification';
 
 const MAX_PROCESSING_ATTEMPTS = 3;
 
@@ -157,15 +157,15 @@ async function processQueueMessage(queueMessage: QueueMessage) {
       } else {
         const notification = notificationAgg[0];
 
-        const whereSend = queueMessage.type === QueueMessageType.PUSH_NOTIFICATION ? sendPush : sendEmail;
+        const whereSend = queueMessage.type === QueueMessageType.PUSH_NOTIFICATION ? sendPushNotification : sendEmailNotification;
         const userConfig = await UserConfigModel.findOne({ userId: notification.userId._id }) as UserConfig;
 
         const allowedEmail = userConfig.emailNotificationsList.includes(notification.type);
         const allowedPush = userConfig.pushNotificationsList.includes(notification.type);
 
-        if (whereSend === sendEmail && !allowedEmail) {
+        if (whereSend === sendEmailNotification && !allowedEmail) {
           log = `Notification ${notificationId} not sent: ` + notification.type + ' not allowed by user (email)';
-        } else if (whereSend === sendPush && !allowedPush) {
+        } else if (whereSend === sendPushNotification && !allowedPush) {
           log = `Notification ${notificationId} not sent: ` + notification.type + ' not allowed by user (push)';
         } else {
           log = await whereSend(notification);
