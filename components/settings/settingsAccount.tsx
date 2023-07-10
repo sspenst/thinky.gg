@@ -217,7 +217,7 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
     <div className='flex justify-center'>
       <div className='flex flex-col'>
 
-        <div className='flex flex-col md:flex-row gap-6'>
+        <div className='flex flex-col gap-6'>
           <div>
             <form className='flex flex-col items-start mt-4' onSubmit={updateUsername}>
               <label className='block font-bold mb-2' htmlFor='username'>
