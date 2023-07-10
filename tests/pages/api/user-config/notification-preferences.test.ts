@@ -91,13 +91,13 @@ describe('account settings notification preferences', () => {
   test('create a new review on your level notification', async () => {
     // spy on sendMailRefMock.ref
 
-    const originalSendEmail = jest.requireActual('@root/pages/api/internal-jobs/worker/sendEmail');
-    const originalSendPush = jest.requireActual('@root/pages/api/internal-jobs/worker/sendPush');
+    const originalSendEmail = jest.requireActual('@root/pages/api/internal-jobs/worker/sendEmailNotification');
+    const originalSendPush = jest.requireActual('@root/pages/api/internal-jobs/worker/sendPushNotification');
 
-    originalSendEmail.sendEmail = jest.fn().mockImplementation(() => {
+    originalSendEmail.sendEmailNotification = jest.fn().mockImplementation(() => {
       // do nothing
     });
-    originalSendPush.sendPush = jest.fn().mockImplementation(() => {
+    originalSendPush.sendPushNotification = jest.fn().mockImplementation(() => {
       // do nothing
     });
     await createNewReviewOnYourLevelNotification(TestId.USER, TestId.USER_B, TestId.LEVEL, 'Sample review');
@@ -105,19 +105,19 @@ describe('account settings notification preferences', () => {
     const queueProcessed = await processQueueMessages();
 
     expect(queueProcessed).toBe('Processed 2 messages with no errors');
-    expect(originalSendEmail.sendEmail).toHaveBeenCalledTimes(1);
-    expect(originalSendPush.sendPush).toHaveBeenCalledTimes(1);
+    expect(originalSendEmail.sendEmailNotification).toHaveBeenCalledTimes(1);
+    expect(originalSendPush.sendPushNotification).toHaveBeenCalledTimes(1);
   });
   test('create a new follower notification', async () => {
     // spy on sendMailRefMock.ref
 
-    const originalSendEmail = jest.requireActual('@root/pages/api/internal-jobs/worker/sendEmail');
-    const originalSendPush = jest.requireActual('@root/pages/api/internal-jobs/worker/sendPush');
+    const originalSendEmail = jest.requireActual('@root/pages/api/internal-jobs/worker/sendEmailNotification');
+    const originalSendPush = jest.requireActual('@root/pages/api/internal-jobs/worker/sendPushNotification');
 
-    originalSendEmail.sendEmail = jest.fn().mockImplementation(() => {
+    originalSendEmail.sendEmailNotification = jest.fn().mockImplementation(() => {
       // do nothing
     });
-    originalSendPush.sendPush = jest.fn().mockImplementation(() => {
+    originalSendPush.sendPushNotification = jest.fn().mockImplementation(() => {
       // do nothing
     });
     await createNewFollowerNotification(TestId.USER_B, TestId.USER);
@@ -125,19 +125,19 @@ describe('account settings notification preferences', () => {
     const queueProcessed = await processQueueMessages();
 
     expect(queueProcessed).toBe('Processed 2 messages with no errors');
-    expect(originalSendEmail.sendEmail).toHaveBeenCalledTimes(0); // important
-    expect(originalSendPush.sendPush).toHaveBeenCalledTimes(1); // important!
+    expect(originalSendEmail.sendEmailNotification).toHaveBeenCalledTimes(0); // important
+    expect(originalSendPush.sendPushNotification).toHaveBeenCalledTimes(1); // important!
   });
   test('create a new achievement notification', async () => {
     // spy on sendMailRefMock.ref
 
-    const originalSendEmail = jest.requireActual('@root/pages/api/internal-jobs/worker/sendEmail');
-    const originalSendPush = jest.requireActual('@root/pages/api/internal-jobs/worker/sendPush');
+    const originalSendEmail = jest.requireActual('@root/pages/api/internal-jobs/worker/sendEmailNotification');
+    const originalSendPush = jest.requireActual('@root/pages/api/internal-jobs/worker/sendPushNotification');
 
-    originalSendEmail.sendEmail = jest.fn().mockImplementation(() => {
+    originalSendEmail.sendEmailNotification = jest.fn().mockImplementation(() => {
       // do nothing
     });
-    originalSendPush.sendPush = jest.fn().mockImplementation(() => {
+    originalSendPush.sendPushNotification = jest.fn().mockImplementation(() => {
       // do nothing
     });
     await createNewAchievement(AchievementType.COMPLETED_LEVELS_100, new Types.ObjectId(TestId.USER_GUEST) );
@@ -145,7 +145,7 @@ describe('account settings notification preferences', () => {
     const queueProcessed = await processQueueMessages();
 
     expect(queueProcessed).toBe('Processed 2 messages with no errors');
-    expect(originalSendEmail.sendEmail).toHaveBeenCalledTimes(0); // important
-    expect(originalSendPush.sendPush).toHaveBeenCalledTimes(0); // important!
+    expect(originalSendEmail.sendEmailNotification).toHaveBeenCalledTimes(0); // important
+    expect(originalSendPush.sendPushNotification).toHaveBeenCalledTimes(0); // important!
   });
 });
