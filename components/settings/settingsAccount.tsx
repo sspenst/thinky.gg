@@ -1,4 +1,3 @@
-import NotificationType from '@root/constants/notificationType';
 import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
 import React, { useCallback, useState } from 'react';
@@ -6,7 +5,7 @@ import toast from 'react-hot-toast';
 import Select from 'react-select';
 import { EmailDigestSettingTypes } from '../../constants/emailDigest';
 
-interface SettingsAccountProps {
+export interface SettingsAccountProps {
   user: User;
   userConfig: UserConfig | null;
 }
@@ -19,7 +18,6 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
   const [password, setPassword] = useState<string>('');
   const [password2, setPassword2] = useState<string>('');
   const [showPlayStats, setShowPlayStats] = useState(userConfig?.showPlayStats ?? false);
-  const [emailOnPrivateMessage, setEmailOnPrivateMessage] = useState<NotificationType[]>(userConfig?.emailNotificationsList ?? []);
   const [showStatus, setShowStatus] = useState(!user.hideStatus);
   const [username, setUsername] = useState<string>(user.name);
 
@@ -216,88 +214,6 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
     }
   }
 
-  // NotificationType is an enum
-  const allNotifs = Object.values(NotificationType);
-
-  const notifLabels = {
-    [NotificationType.NEW_ACHIEVEMENT]: 'New achievement',
-    [NotificationType.NEW_FOLLOWER]: 'New follower',
-    [NotificationType.NEW_LEVEL]: 'New level from someone you follow',
-    [NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION]: 'One of your created levels added to a collection',
-    [NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT]: 'New record on a level you previous beat',
-    [NotificationType.NEW_REVIEW_ON_YOUR_LEVEL]: 'New review on one of your levels',
-    [NotificationType.NEW_WALL_POST]: 'Someone posts to your profile',
-    [NotificationType.NEW_WALL_REPLY]: 'Someone replies to your post',
-  };
-
-  const emailNotifs = userConfig?.emailNotificationsList || [];
-  const pushNotifs = userConfig?.pushNotificationsList || [];
-  // Create a formatted list of all notification types with two checkboxes... one for email and one for mobile push notifications.
-
-  const updateNotifs = (notif: NotificationType, type: 'email' | 'push') => {
-    const notifList = type === 'email' ? emailNotifs : pushNotifs;
-    const notifIndex = notifList.indexOf(notif);
-
-    if (notifIndex === -1) {
-      notifList.push(notif);
-    } else {
-      notifList.splice(notifIndex, 1);
-    }
-
-    updateUserConfig(
-      JSON.stringify({
-        emailNotificationsList: emailNotifs,
-        pushNotificationsList: pushNotifs,
-      }),
-      'notification settings',
-    );
-  };
-
-  const notifList = (
-    <table className='table-fixed'>
-      <thead>
-        <tr className='border-b'>
-          <th className='w-1/2 px-4 py-2'>Notification</th>
-          <th className='w-1/4 px-4 py-2'>Email</th>
-          <th className='w-1/4 px-4 py-2'>Push</th>
-        </tr>
-      </thead>
-      <tbody>
-        {allNotifs.map((notif) => {
-          const label = notifLabels[notif];
-
-          return (
-            <tr key={notif} className='border-b'>
-              <td className='px-4 py-2'>
-                <label className='text-sm' htmlFor={notif}>
-                  {label}
-                </label>
-              </td>
-              <td className='px-4 py-2 text-center'>
-                <input
-                  checked={emailNotifs.includes(notif)}
-                  id={notif + '-email'}
-                  name={notif}
-                  onChange={() => updateNotifs(notif, 'email')}
-                  type='checkbox'
-                />
-              </td>
-              <td className='px-4 py-2 text-center'>
-                <input
-                  checked={pushNotifs.includes(notif)}
-                  id={notif + '-push'}
-                  name={notif}
-                  onChange={() => updateNotifs(notif, 'push')}
-                  type='checkbox'
-                />
-              </td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
-  );
-
   return (
     <div className='flex justify-center'>
       <div className='flex flex-col'>
@@ -358,8 +274,6 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
               <button className='italic underline mb-4' type='submit'>Update</button>
             </form>
           </div>
-          {notifList}
-
         </div>
         <div className='flex flex-col p-3'>
 
