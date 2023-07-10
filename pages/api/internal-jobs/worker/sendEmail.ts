@@ -29,7 +29,7 @@ export async function sendEmail(notification: Notification) {
     }
 
     const mobileNotification = getMobileNotification(notification);
-    const emailBody = getEmailBody(null, 0, mobileNotification.title, notification.userId, mobileNotification.body, mobileNotification.url, 'View' );
+    const emailBody = getEmailBody(null, 0, mobileNotification.title, notification.userId, mobileNotification.body, mobileNotification.url, 'View');
 
     await sendMail(new Types.ObjectId(), EmailType.EMAIL_WALL_POST, notification.userId, mobileNotification.title, emailBody);
 

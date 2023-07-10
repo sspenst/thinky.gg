@@ -64,11 +64,11 @@ export default function SettingsNotifications() {
     [NotificationType.NEW_ACHIEVEMENT]: 'New achievement',
     [NotificationType.NEW_FOLLOWER]: 'New follower',
     [NotificationType.NEW_LEVEL]: 'New level from someone you follow',
-    [NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION]: 'One of your created levels added to a collection',
-    [NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT]: 'New record on a level you previous beat',
+    [NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION]: 'Someone adds your level to a collection',
+    [NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT]: 'New record on a level you previously beat',
     [NotificationType.NEW_REVIEW_ON_YOUR_LEVEL]: 'New review on one of your levels',
-    [NotificationType.NEW_WALL_POST]: 'Someone posts to your profile',
-    [NotificationType.NEW_WALL_REPLY]: 'Someone replies to your post',
+    [NotificationType.NEW_WALL_POST]: 'New profile comment',
+    [NotificationType.NEW_WALL_REPLY]: 'New reply to profile comment',
   };
 
   const emailNotifs = userConfig?.emailNotificationsList || [];
@@ -99,9 +99,9 @@ export default function SettingsNotifications() {
       <table className='table-fixed'>
         <thead>
           <tr className='border-b'>
-            <th className='w-1/2 px-4 py-2'>Notification</th>
-            <th className=' px-4 py-2'>
-              <div id='toggleAllEmailNotifs' className='flex items-center justify-between'>
+            <th className='w-1/2 px-4 py-2 text-left'>Notification</th>
+            <th className='px-4 py-2'>
+              <div id='toggleAllEmailNotifs' className='flex justify-center gap-2'>
                 <label className='text-sm' htmlFor='toggleAllEmailNotifs'>
                   Email
                 </label>
@@ -131,10 +131,10 @@ export default function SettingsNotifications() {
                 />
               </div>
             </th>
-            <th className=' px-4 py-2'>
-              <div id='toggleAllPushNotifs' className='flex items-center justify-between'>
+            <th className='px-4 py-2'>
+              <div id='toggleAllPushNotifs' className='flex justify-center gap-2'>
                 <label className='text-sm' htmlFor='toggleAllPushNotifs'>
-                  Mobile Notifs
+                  Push
                 </label>
                 <input
                   checked={pushNotifs.length === allNotifs.length}
