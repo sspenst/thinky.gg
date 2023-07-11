@@ -887,11 +887,16 @@ export default function Game({
 
     _controls.push(
       new Control('btn-restart', () => handleKeyDown('KeyR'), <><span className='underline'>R</span>estart</>),
-      new Control('btn-undo', () => handleKeyDown('Backspace'), <><span className='underline'>U</span>ndo</>, false, false, () => {
+      shiftKeyDown ? new Control('btn-redi', () => handleKeyDown('Backspace'), <>Redo</>, false, false, () => {
         handleKeyDown('Backspace');
 
         return true;
-      }),
+      }) :
+        new Control('btn-undo', () => handleKeyDown('Backspace'), <><span className='underline'>U</span>ndo</>, false, false, () => {
+          handleKeyDown('Backspace');
+
+          return true;
+        }),
     );
 
     if (onNext) {
