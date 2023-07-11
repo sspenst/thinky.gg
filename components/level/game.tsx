@@ -1,4 +1,5 @@
 import { GameContext } from '@root/contexts/gameContext';
+import isGuest from '@root/helpers/isGuest';
 import isPro from '@root/helpers/isPro';
 import { isValidGameState } from '@root/helpers/isValidGameState';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
@@ -127,6 +128,7 @@ export default function Game({
 }: GameProps) {
   const [gameState, setGameState] = useState<GameState>(initGameState(level.data));
   const [lastCodes, setLastCodes] = useState<string[]>([]);
+  const [redoMoves, setRedoMoves] = useState<GameState[]>([]);
   const levelContext = useContext(LevelContext);
   const [localSessionRestored, setLocalSessionRestored] = useState(false);
   const mutateLevel = levelContext?.mutateLevel;
@@ -491,11 +493,27 @@ export default function Game({
       function getNewGameState() {
         // restart
         if (code === 'KeyR') {
-          if (prevGameState.moveCount > 0) {
-            oldGameState.current = cloneGameState(prevGameState);
-          }
+          if (shiftKeyDown) {
+            // redo...
+            if (!isPro(user)) {
+              toast.dismiss();
+              toast.error('Redo is only available for Pro users');
 
-          return initGameState(level.data, prevGameState.actionCount + 1);
+              return gameState;
+            }
+
+            const redo = redoMoves.pop();
+
+            if (redo) {
+              return redo;
+            }
+          } else {
+            if (prevGameState.moveCount > 0) {
+              oldGameState.current = cloneGameState(prevGameState);
+            }
+
+            return initGameState(level.data, prevGameState.actionCount + 1);
+          }
         }
 
         setMadeMove(true);
@@ -522,6 +540,7 @@ export default function Game({
             return returnState || prevGameState;
           }
 
+          redoMoves.push(cloneGameState(gameState));
           // remove text only from the current position for smoother animations
           const text = board[prevGameState.pos.y][prevGameState.pos.x].text;
 
@@ -655,6 +674,8 @@ export default function Game({
         }
 
         // if not, just make the move normally
+        setRedoMoves([]);
+
         return makeMove(direction);
       }
 
@@ -662,7 +683,7 @@ export default function Game({
 
       return newGameState;
     });
-  }, [allowFreeUndo, disableCheckpoints, level._id, level.data, loadCheckpoint, onNext, onPrev, saveCheckpoint, shiftKeyDown, trackStats, user]);
+  }, [allowFreeUndo, disableCheckpoints, gameState, level._id, level.data, loadCheckpoint, onNext, onPrev, redoMoves, saveCheckpoint, shiftKeyDown, trackStats, user]);
 
   useEffect(() => {
     if (gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === TileType.End &&
