@@ -48,7 +48,7 @@ async function createUser({ email, name, password, tutorialCompletedAt, roles }:
       emailConfirmed: false,
       emailConfirmationToken: emailConfirmationToken,
       emailDigest: emailDigest,
-      emailNotificationsList: [NotificationType.NEW_WALL_POST, NotificationType.NEW_WALL_REPLY],
+      emailNotificationsList: [NotificationType.NEW_WALL_POST, NotificationType.NEW_WALL_REPLY, NotificationType.NEW_ACHIEVEMENT],
       pushNotificationsList: Object.values(NotificationType),
     }], queryOptions),
   ]);
