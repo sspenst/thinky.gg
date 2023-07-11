@@ -493,27 +493,11 @@ export default function Game({
       function getNewGameState() {
         // restart
         if (code === 'KeyR') {
-          if (shiftKeyDown) {
-            // redo...
-            if (!isPro(user)) {
-              toast.dismiss();
-              toast.error('Redo is only available for Pro users');
-
-              return gameState;
-            }
-
-            const redo = redoMoves.pop();
-
-            if (redo) {
-              return redo;
-            }
-          } else {
-            if (prevGameState.moveCount > 0) {
-              oldGameState.current = cloneGameState(prevGameState);
-            }
-
-            return initGameState(level.data, prevGameState.actionCount + 1);
+          if (prevGameState.moveCount > 0) {
+            oldGameState.current = cloneGameState(prevGameState);
           }
+
+          return initGameState(level.data, prevGameState.actionCount + 1);
         }
 
         setMadeMove(true);
@@ -638,6 +622,27 @@ export default function Game({
 
         // if explicitly asked to undo, undo
         if (code === 'Backspace' || code === 'KeyU' || code == 'KeyZ') {
+          if (shiftKeyDown) {
+            // redo...
+            if (!isPro(user)) {
+              toast.dismiss();
+              toast.error('Redo is only available for Pro users');
+
+              return gameState;
+            }
+
+            const redo = redoMoves.pop();
+
+            if (redo) {
+              return redo;
+            }
+
+            toast.dismiss();
+            toast.error('Nothing to redo');
+
+            return gameState;
+          }
+
           return undo();
         }
 
