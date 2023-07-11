@@ -85,7 +85,7 @@ describe('api/user/[id]/checkpoints', () => {
       },
       expectedStatus: 200,
       additionalAssertions: async (response) => {
-        expect(response).toStrictEqual(Array(10).fill(null));
+        expect(response).toStrictEqual(Array(11).fill(null));
       }
     });
   });
