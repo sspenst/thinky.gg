@@ -5,16 +5,17 @@ import getPngDataClient from '@root/helpers/getPngDataClient';
 import isPro from '@root/helpers/isPro';
 import Link from 'next/link';
 import React, { useContext, useEffect, useState } from 'react';
-import { GameState } from '../level/game';
+import { GameState, USER_BEST_MOVE_CHECKPOINT_SLOT } from '../level/game';
 import Modal from '.';
 
 interface CheckpointImageProps {
   checkpoint: GameState | null;
   closeModal: () => void;
   slot: number;
+  title?: string;
 }
 
-function CheckpointImage({ checkpoint, closeModal, slot }: CheckpointImageProps) {
+function CheckpointImage({ checkpoint, closeModal, slot, title }: CheckpointImageProps) {
   const [backgroundImage, setBackgroundImage] = useState<string>();
   const { loadCheckpoint, saveCheckpoint } = useContext(GameContext);
 
@@ -62,14 +63,15 @@ function CheckpointImage({ checkpoint, closeModal, slot }: CheckpointImageProps)
         }
       }}
     >
-      <span className='font-medium'>{`Slot ${slot}`}</span>
+      <span className='font-medium'>{title ? title : `Slot ${slot}`}</span>
       {checkpoint ?
         <>
           <div
             className='background rounded-md bg-cover bg-center w-full'
             style={{
               backgroundImage: backgroundImage ? 'url("' + backgroundImage + '")' : 'none',
-              aspectRatio: '40 / 21'
+              aspectRatio: '40 / 21',
+              width: 250,
             }}
           />
           <span className='text-sm italic'>
@@ -101,19 +103,20 @@ export default function CheckpointsModal({ closeModal, isOpen }: CheckpointsModa
       title={'Checkpoints'}
     >
       {isPro(user) ?
-        <div className='flex flex-col gap-4 max-w-full'>
+        <div className='flex flex-col gap-4 '>
           <span className='text-center'>
             Keyboard shortcuts for slots 0-9:<br />
             Save: Shift + 0-9<br />
             Load: 0-9
           </span>
-          <div className='flex flex-col gap-1 w-80 max-w-full justify-center'>
+          <div className='flex flex-col gap-1 justify-center md:grid md:grid-cols-2 md:gap-4'>
             {checkpoints?.map((checkpoint, i) => (
               <CheckpointImage
                 checkpoint={checkpoint}
                 closeModal={closeModal}
                 key={'checkpoint-' + i}
                 slot={i}
+                title={i === USER_BEST_MOVE_CHECKPOINT_SLOT ? 'Your Best' : undefined}
               />
             ))}
           </div>

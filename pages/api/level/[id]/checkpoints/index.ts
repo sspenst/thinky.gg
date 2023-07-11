@@ -8,13 +8,13 @@ export default withAuth({
   GET: {},
   POST: {
     body: {
-      checkpointIndex: ValidNumber(true, 0, 9),
+      checkpointIndex: ValidNumber(true, 0, 10),
       checkpointValue: ValidGameState(),
     }
   },
   DELETE: {
     body: {
-      checkpointIndex: ValidNumber(true, 0, 9),
+      checkpointIndex: ValidNumber(true, 0, 10),
       checkpointValue: ValidGameState(),
     }
   },
@@ -39,7 +39,7 @@ export default withAuth({
     const checkpoint = await KeyValueModel.findOne({ key: KV_Checkpoint_Hash });
     const checkpointArr = [];
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 11; i++) {
       checkpointArr[i] = checkpoint?.value[i];
     }
 

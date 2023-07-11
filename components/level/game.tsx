@@ -15,12 +15,13 @@ import { LevelContext } from '../../contexts/levelContext';
 import { PageContext } from '../../contexts/pageContext';
 import BlockState from '../../models/blockState';
 import Control from '../../models/control';
-import Level from '../../models/db/level';
+import Level, { EnrichedLevel } from '../../models/db/level';
 import Move from '../../models/move';
 import Position, { getDirectionFromCode } from '../../models/position';
 import SquareState from '../../models/squareState';
 import GameLayout from './gameLayout';
 
+export const USER_BEST_MOVE_CHECKPOINT_SLOT = 10;
 export interface GameState {
   actionCount: number;
   blocks: BlockState[];
@@ -666,9 +667,17 @@ export default function Game({
   useEffect(() => {
     if (gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === TileType.End &&
       gameState.moves.length <= level.leastMoves && onComplete) {
+      const enrichedLevel = level as EnrichedLevel;
+
+      if (enrichedLevel.userMoves === undefined || gameState.moves.length <= enrichedLevel.userMoves) {
+        if (enrichedLevel.userMoves === undefined || gameState.moves.length < enrichedLevel.userMoves) {
+          saveCheckpoint(USER_BEST_MOVE_CHECKPOINT_SLOT);
+        }
+      }
+
       onComplete();
     }
-  }, [gameState, level.leastMoves, onComplete]);
+  }, [gameState, level, level.leastMoves, onComplete, saveCheckpoint]);
 
   const touchXDown = useRef<number>(0);
   const touchYDown = useRef<number>(0);
