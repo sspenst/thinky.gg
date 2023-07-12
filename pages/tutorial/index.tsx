@@ -11,6 +11,7 @@ export default function TutorialPage() {
       canonical={'https://pathology.gg/tutorial'}
       openGraph={{
         title: 'Tutorial - Pathology',
+        description: 'Learn how to play Pathology - The sokoban style mind-bending puzzle game',
         type: 'article',
         url: '/tutorial',
       }}
