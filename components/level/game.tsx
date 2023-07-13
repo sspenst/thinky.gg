@@ -714,9 +714,6 @@ export default function Game({
     const atEnd = gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === TileType.End;
     const newBest = enrichedLevel.userMoves === undefined || gameState.moves.length < enrichedLevel.userMoves;
 
-    // TODO: /test always saves because userMoves is always null
-    // need to pass enrichedlevel for test
-    // or just use api/stats
     if (!disableCheckpoints && atEnd && newBest) {
       saveCheckpoint(BEST_CHECKPOINT_INDEX);
     }

@@ -213,10 +213,7 @@ describe('api/user/[id]/checkpoints', () => {
         method: 'DELETE',
         query: {
           id: TestId.LEVEL,
-        },
-        body: {
-          checkpointIndex: 1,
-          checkpointValue: GAME_STATE_2,
+          checkpointIndex: '1',
         },
       },
       expectedStatus: 200,
@@ -319,14 +316,11 @@ describe('api/user/[id]/checkpoints', () => {
         method: 'DELETE',
         query: {
           id: TestId.LEVEL,
-        },
-        body: {
-          checkpointIndex: BEST_CHECKPOINT_INDEX,
-          checkpointValue: GAME_STATE_2,
+          checkpointIndex: String(BEST_CHECKPOINT_INDEX),
         },
       },
       expectedStatus: 400,
-      expectedError: 'Invalid body.checkpointIndex',
+      expectedError: 'Invalid query.checkpointIndex',
     });
   });
 });

@@ -48,7 +48,8 @@ export default withAuth({
   } else if (req.method === 'POST') {
     const { checkpointIndex, checkpointValue } = req.body as { checkpointIndex: number, checkpointValue: GameState };
 
-    if (checkpointIndex === BEST_CHECKPOINT_INDEX) {
+    // always overwrite draft levels
+    if (!level.isDraft && checkpointIndex === BEST_CHECKPOINT_INDEX) {
       const existingCheckpoint = await KeyValueModel.findOne({ key: KV_Checkpoint_Hash });
       const savedMovedCount = existingCheckpoint?.value[String(BEST_CHECKPOINT_INDEX)]?.moveCount;
 
