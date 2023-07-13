@@ -2,7 +2,7 @@ import { GameContext } from '@root/contexts/gameContext';
 import isPro from '@root/helpers/isPro';
 import { isValidGameState } from '@root/helpers/isValidGameState';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
-import useCheckpoints from '@root/hooks/useCheckpoints';
+import useCheckpoints, { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import { Types } from 'mongoose';
 import Link from 'next/link';
 import NProgress from 'nprogress';
@@ -21,7 +21,6 @@ import Position, { getDirectionFromCode } from '../../models/position';
 import SquareState from '../../models/squareState';
 import GameLayout from './gameLayout';
 
-export const USER_BEST_MOVE_CHECKPOINT_SLOT = 10;
 export interface GameState {
   actionCount: number;
   blocks: BlockState[];
@@ -137,6 +136,7 @@ export default function Game({
   const [shiftKeyDown, setShiftKeyDown] = useState(false);
   const { checkpoints, mutateCheckpoints } = useCheckpoints(level._id, disableCheckpoints || user === null || !isPro(user));
   const [madeMove, setMadeMove] = useState(false);
+  const enrichedLevel = level as EnrichedLevel;
 
   useEffect(() => {
     if (enableLocalSessionRestore && !localSessionRestored && typeof window.sessionStorage !== 'undefined') {
@@ -297,6 +297,7 @@ export default function Game({
     }).then(async res => {
       if (res.status === 200) {
         toast.dismiss();
+        // TODO: don't show this toast for best checkpoint
         toast.success(`Saved checkpoint ${slot}`);
         mutateCheckpoints();
       } else {
@@ -665,19 +666,24 @@ export default function Game({
   }, [allowFreeUndo, disableCheckpoints, level._id, level.data, loadCheckpoint, onNext, onPrev, saveCheckpoint, shiftKeyDown, trackStats, user]);
 
   useEffect(() => {
-    if (gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === TileType.End &&
-      gameState.moves.length <= level.leastMoves && onComplete) {
-      const enrichedLevel = level as EnrichedLevel;
+    const atEnd = gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === TileType.End;
 
-      if (enrichedLevel.userMoves === undefined || gameState.moves.length <= enrichedLevel.userMoves) {
-        if (enrichedLevel.userMoves === undefined || gameState.moves.length < enrichedLevel.userMoves) {
-          saveCheckpoint(USER_BEST_MOVE_CHECKPOINT_SLOT);
-        }
-      }
-
+    if (atEnd && gameState.moves.length <= level.leastMoves && onComplete) {
       onComplete();
     }
-  }, [gameState, level, level.leastMoves, onComplete, saveCheckpoint]);
+  }, [gameState, level.leastMoves, onComplete]);
+
+  useEffect(() => {
+    const atEnd = gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === TileType.End;
+    const newBest = enrichedLevel.userMoves === undefined || gameState.moves.length < enrichedLevel.userMoves;
+
+    // TODO: /test always saves because userMoves is always null
+    // need to pass enrichedlevel for test
+    // or just use api/stats
+    if (!disableCheckpoints && atEnd && newBest) {
+      saveCheckpoint(BEST_CHECKPOINT_INDEX);
+    }
+  }, [disableCheckpoints, enrichedLevel.userMoves, gameState, saveCheckpoint]);
 
   const touchXDown = useRef<number>(0);
   const touchYDown = useRef<number>(0);

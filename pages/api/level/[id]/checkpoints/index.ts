@@ -1,4 +1,5 @@
 import { GameState } from '@root/components/level/game';
+import { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import { NextApiResponse } from 'next';
 import { ValidGameState, ValidNumber } from '../../../../../helpers/apiWrapper';
 import isPro from '../../../../../helpers/isPro';
@@ -15,7 +16,7 @@ export default withAuth({
   },
   DELETE: {
     body: {
-      checkpointIndex: ValidNumber(true, 0, 10),
+      checkpointIndex: ValidNumber(true, 0, 9),
       checkpointValue: ValidGameState(),
     }
   },
@@ -48,14 +49,13 @@ export default withAuth({
   } else if (req.method === 'POST') {
     const { checkpointIndex, checkpointValue } = req.body as { checkpointIndex: number, checkpointValue: GameState };
 
-    if (checkpointIndex === 10) {
-      const existingCheckpoints = await KeyValueModel.findOne(
-        { key: KV_Checkpoint_Hash },
-      );
+    if (checkpointIndex === BEST_CHECKPOINT_INDEX) {
+      const existingCheckpoint = await KeyValueModel.findOne({ key: KV_Checkpoint_Hash });
+      const savedMovedCount = existingCheckpoint?.value[String(BEST_CHECKPOINT_INDEX)]?.moveCount;
 
-      if (existingCheckpoints?.value['10'] && existingCheckpoints.value['10'].moveCount >= checkpointValue.moveCount) {
+      if (savedMovedCount && savedMovedCount <= checkpointValue.moveCount) {
         return res.status(400).json({
-          error: 'Cannot overwrite a lower move count',
+          error: 'Best checkpoint must have a lower move count',
         });
       }
     }

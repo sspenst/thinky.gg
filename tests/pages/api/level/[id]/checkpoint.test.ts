@@ -1,5 +1,6 @@
 import Role from '@root/constants/role';
 import TestId from '@root/constants/testId';
+import { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { getTokenCookieValue } from '@root/lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '@root/lib/withAuth';
@@ -201,58 +202,6 @@ describe('api/user/[id]/checkpoints', () => {
       }
     });
   });
-  test('try to save on special checkpoint index 10', async () => {
-    expect(GAME_STATE_2.moveCount).toBe(6);
-    await UserModel.findByIdAndUpdate(TestId.USER, {
-      $addToSet: {
-        roles: Role.PRO
-      }
-    });
-    await query({
-      params: {
-        method: 'POST',
-        query: {
-          id: TestId.LEVEL,
-        },
-        body: {
-          checkpointIndex: 10,
-          checkpointValue: GAME_STATE_2,
-        },
-      },
-      expectedStatus: 200,
-      additionalAssertions: async (response) => {
-        expect(response).toBeDefined();
-        expect(response[0]).toStrictEqual(GAME_STATE_1);
-        expect(response[1]).toStrictEqual(GAME_STATE_2);
-        expect(response[2]).toBeUndefined();
-        expect(response[10]).toStrictEqual(GAME_STATE_2);
-      }
-    });
-  });
-  test('try to save on special checkpoint index 10 but on a step move that is not lower than existing', async () => {
-    expect(GAME_STATE_2.moveCount).toBe(6);
-    expect(GAME_STATE_1.moveCount).toBe(6);
-    await UserModel.findByIdAndUpdate(TestId.USER, {
-      $addToSet: {
-        roles: Role.PRO
-      }
-    });
-    await query({
-      params: {
-        method: 'POST',
-        query: {
-          id: TestId.LEVEL,
-        },
-        body: {
-          checkpointIndex: 10,
-          checkpointValue: GAME_STATE_1,
-        },
-      },
-      expectedStatus: 400,
-      expectedError: 'Cannot overwrite a lower move count',
-
-    });
-  });
   test('try to delete checkpoint index 1', async () => {
     await UserModel.findByIdAndUpdate(TestId.USER, {
       $addToSet: {
@@ -275,6 +224,109 @@ describe('api/user/[id]/checkpoints', () => {
         expect(response).toBeDefined();
         expect(response[0]).toStrictEqual(GAME_STATE_1);
       }
+    });
+  });
+  test('save BEST_CHECKPOINT_INDEX', async () => {
+    expect(GAME_STATE_2.moveCount).toBe(6);
+    await UserModel.findByIdAndUpdate(TestId.USER, {
+      $addToSet: {
+        roles: Role.PRO
+      }
+    });
+    await query({
+      params: {
+        method: 'POST',
+        query: {
+          id: TestId.LEVEL,
+        },
+        body: {
+          checkpointIndex: BEST_CHECKPOINT_INDEX,
+          checkpointValue: GAME_STATE_2,
+        },
+      },
+      expectedStatus: 200,
+      additionalAssertions: async (response) => {
+        expect(response).toBeDefined();
+        expect(response[0]).toStrictEqual(GAME_STATE_1);
+        expect(response[1]).toBeUndefined();
+        expect(response[10]).toStrictEqual(GAME_STATE_2);
+      }
+    });
+  });
+  test('updating BEST_CHECKPOINT_INDEX to a higher move count should fail', async () => {
+    const newGameState = { ...GAME_STATE_1 };
+
+    newGameState.moveCount += 1;
+
+    expect(GAME_STATE_2.moveCount).toBe(6);
+    expect(newGameState.moveCount).toBe(7);
+
+    await UserModel.findByIdAndUpdate(TestId.USER, {
+      $addToSet: {
+        roles: Role.PRO
+      }
+    });
+    await query({
+      params: {
+        method: 'POST',
+        query: {
+          id: TestId.LEVEL,
+        },
+        body: {
+          checkpointIndex: BEST_CHECKPOINT_INDEX,
+          checkpointValue: newGameState,
+        },
+      },
+      expectedStatus: 400,
+      expectedError: 'Best checkpoint must have a lower move count',
+    });
+  });
+  test('updating BEST_CHECKPOINT_INDEX to a lower move count should succeed', async () => {
+    const newGameState = { ...GAME_STATE_1 };
+
+    newGameState.moveCount -= 1;
+
+    expect(GAME_STATE_2.moveCount).toBe(6);
+    expect(newGameState.moveCount).toBe(5);
+
+    await UserModel.findByIdAndUpdate(TestId.USER, {
+      $addToSet: {
+        roles: Role.PRO
+      }
+    });
+    await query({
+      params: {
+        method: 'POST',
+        query: {
+          id: TestId.LEVEL,
+        },
+        body: {
+          checkpointIndex: BEST_CHECKPOINT_INDEX,
+          checkpointValue: newGameState,
+        },
+      },
+      expectedStatus: 200,
+    });
+  });
+  test('should not be able to delete BEST_CHECKPOINT_INDEX', async () => {
+    await UserModel.findByIdAndUpdate(TestId.USER, {
+      $addToSet: {
+        roles: Role.PRO
+      }
+    });
+    await query({
+      params: {
+        method: 'DELETE',
+        query: {
+          id: TestId.LEVEL,
+        },
+        body: {
+          checkpointIndex: BEST_CHECKPOINT_INDEX,
+          checkpointValue: GAME_STATE_2,
+        },
+      },
+      expectedStatus: 400,
+      expectedError: 'Invalid body.checkpointIndex',
     });
   });
 });

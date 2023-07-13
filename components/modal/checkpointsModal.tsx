@@ -3,9 +3,10 @@ import { AppContext } from '@root/contexts/appContext';
 import { GameContext } from '@root/contexts/gameContext';
 import getPngDataClient from '@root/helpers/getPngDataClient';
 import isPro from '@root/helpers/isPro';
+import { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import Link from 'next/link';
 import React, { useContext, useEffect, useState } from 'react';
-import { GameState, USER_BEST_MOVE_CHECKPOINT_SLOT } from '../level/game';
+import { GameState } from '../level/game';
 import Modal from '.';
 
 interface CheckpointImageProps {
@@ -71,7 +72,6 @@ function CheckpointImage({ checkpoint, closeModal, slot, title }: CheckpointImag
             style={{
               backgroundImage: backgroundImage ? 'url("' + backgroundImage + '")' : 'none',
               aspectRatio: '40 / 21',
-              width: 250,
             }}
           />
           <span className='text-sm italic'>
@@ -103,37 +103,38 @@ export default function CheckpointsModal({ closeModal, isOpen }: CheckpointsModa
       title={'Checkpoints'}
     >
       {isPro(user) ?
-        <div className='flex flex-col gap-4 '>
+        <div className='flex flex-col gap-4 max-w-full'>
           <span className='text-center'>
             Keyboard shortcuts for slots 0-9:<br />
             Save: Shift + 0-9<br />
             Load: 0-9
+            {/* TODO: shortcut for best checkpoint */}
           </span>
-          <div className='flex flex-col gap-1 justify-center md:grid md:grid-cols-2 md:gap-4'>
+          {/* TODO: show best first */}
+          <div className='flex flex-col gap-1 w-80 max-w-full justify-center'>
             {checkpoints?.map((checkpoint, i) => (
               <CheckpointImage
                 checkpoint={checkpoint}
                 closeModal={closeModal}
                 key={'checkpoint-' + i}
                 slot={i}
-                title={i === USER_BEST_MOVE_CHECKPOINT_SLOT ? 'Your Best' : undefined}
+                title={i === BEST_CHECKPOINT_INDEX ? 'Your Best' : undefined}
               />
             ))}
           </div>
         </div>
         :
-        <div className='p-6 rounded-md shadow-md'>
-          <div className='mb-3'>With Checkpoints, you can <span className='font-bold italic'>save the state</span> of the board to Pathology servers at any moment using hotkeys 0-9, making it easy to jump back and retry from a specific point.</div>
-          <div className='mb-3'>By upgrading to <Link href='/settings/proaccount' className='text-blue-500 hover:text-blue-600 outline-none'>Pathology Pro</Link>, you will gain access to this game-changing feature, along with additional benefits designed to enhance your gameplay:</div>
-          <div className='text-blue-500 hover:text-blue-600 cursor-pointer transition-colors duration-150 text-center'>
-            <div>
-              <Link href='/settings/proaccount' className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer'>
-                <span className=''>Upgrade to Pro</span>
-              </Link>
-            </div>
+        <div className='flex flex-col gap-4 items-center'>
+          <div>
+            With Checkpoints, you can <span className='font-bold italic'>save the state</span> of the board to Pathology servers at any moment using hotkeys 0-9, making it easy to jump back and retry from a specific point.
           </div>
+          <div>
+            By upgrading to <Link href='/settings/proaccount' className='text-blue-500 hover:text-blue-300 outline-none'>Pathology Pro</Link>, you will gain access to this game-changing feature, along with additional benefits designed to enhance your gameplay:
+          </div>
+          <Link href='/settings/proaccount' className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 m-2 rounded focus:outline-none focus:shadow-outline cursor-pointer'>
+            <span className=''>Upgrade to Pro</span>
+          </Link>
         </div>
-
       }
     </Modal>
   );
