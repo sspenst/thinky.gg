@@ -33,7 +33,7 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
 
     if (password !== password2) {
       toast.dismiss();
-      toast.error('Password does not match');
+      toast.error('Passwords do not match');
 
       return;
     }
