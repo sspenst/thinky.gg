@@ -15,9 +15,8 @@ export default withAuth({
     }
   },
   DELETE: {
-    body: {
+    query: {
       checkpointIndex: ValidNumber(true, 0, 9),
-      checkpointValue: ValidGameState(),
     }
   },
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
@@ -69,14 +68,12 @@ export default withAuth({
 
     return res.status(200).json(checkpoint?.value);
   } else if (req.method === 'DELETE') {
-    const { checkpointIndex, checkpointValue } = req.body as { checkpointIndex: number, checkpointValue: GameState };
-
-    // make sure the level exists
+    const { checkpointIndex } = req.query;
 
     /** findOneAndUpdate upsert this value... We need to be able set the specific index of the array the value of checkpointValue */
     const checkpoint = await KeyValueModel.findOneAndUpdate(
       { key: KV_Checkpoint_Hash },
-      { $unset: { [`value.${checkpointIndex}`]: checkpointValue } },
+      { $unset: { [`value.${checkpointIndex}`]: '' } },
       { upsert: true, new: true }
     );
 
