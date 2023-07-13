@@ -1,3 +1,5 @@
+import { GameState } from '@root/components/level/game';
+import { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import { NextApiResponse } from 'next';
 import { ValidGameState, ValidNumber } from '../../../../../helpers/apiWrapper';
 import isPro from '../../../../../helpers/isPro';
@@ -8,14 +10,13 @@ export default withAuth({
   GET: {},
   POST: {
     body: {
-      checkpointIndex: ValidNumber(true, 0, 9),
+      checkpointIndex: ValidNumber(true, 0, 10),
       checkpointValue: ValidGameState(),
     }
   },
   DELETE: {
-    body: {
+    query: {
       checkpointIndex: ValidNumber(true, 0, 9),
-      checkpointValue: ValidGameState(),
     }
   },
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
@@ -39,15 +40,25 @@ export default withAuth({
     const checkpoint = await KeyValueModel.findOne({ key: KV_Checkpoint_Hash });
     const checkpointArr = [];
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 11; i++) {
       checkpointArr[i] = checkpoint?.value[i];
     }
 
     return res.status(200).json(checkpointArr);
   } else if (req.method === 'POST') {
-    const { checkpointIndex, checkpointValue } = req.body as { checkpointIndex: number, checkpointValue: number };
+    const { checkpointIndex, checkpointValue } = req.body as { checkpointIndex: number, checkpointValue: GameState };
 
-    // make sure the level exists
+    // always overwrite draft levels
+    if (!level.isDraft && checkpointIndex === BEST_CHECKPOINT_INDEX) {
+      const existingCheckpoint = await KeyValueModel.findOne({ key: KV_Checkpoint_Hash });
+      const savedMovedCount = existingCheckpoint?.value[String(BEST_CHECKPOINT_INDEX)]?.moveCount;
+
+      if (savedMovedCount && savedMovedCount <= checkpointValue.moveCount) {
+        return res.status(400).json({
+          error: 'Best checkpoint must have a lower move count',
+        });
+      }
+    }
 
     /** findOneAndUpdate upsert this value... We need to be able set the specific index of the array the value of checkpointValue */
     const checkpoint = await KeyValueModel.findOneAndUpdate(
@@ -58,14 +69,12 @@ export default withAuth({
 
     return res.status(200).json(checkpoint?.value);
   } else if (req.method === 'DELETE') {
-    const { checkpointIndex, checkpointValue } = req.body as { checkpointIndex: number, checkpointValue: number };
-
-    // make sure the level exists
+    const { checkpointIndex } = req.query;
 
     /** findOneAndUpdate upsert this value... We need to be able set the specific index of the array the value of checkpointValue */
     const checkpoint = await KeyValueModel.findOneAndUpdate(
       { key: KV_Checkpoint_Hash },
-      { $unset: { [`value.${checkpointIndex}`]: checkpointValue } },
+      { $unset: { [`value.${checkpointIndex}`]: '' } },
       { upsert: true, new: true }
     );
 
