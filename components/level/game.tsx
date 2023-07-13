@@ -2,7 +2,7 @@ import { GameContext } from '@root/contexts/gameContext';
 import isPro from '@root/helpers/isPro';
 import { isValidGameState } from '@root/helpers/isValidGameState';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
-import useCheckpoints from '@root/hooks/useCheckpoints';
+import useCheckpoints, { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import { Types } from 'mongoose';
 import Link from 'next/link';
 import NProgress from 'nprogress';
@@ -15,7 +15,7 @@ import { LevelContext } from '../../contexts/levelContext';
 import { PageContext } from '../../contexts/pageContext';
 import BlockState from '../../models/blockState';
 import Control from '../../models/control';
-import Level from '../../models/db/level';
+import Level, { EnrichedLevel } from '../../models/db/level';
 import Move from '../../models/move';
 import Position, { getDirectionFromCode } from '../../models/position';
 import SquareState from '../../models/squareState';
@@ -136,6 +136,7 @@ export default function Game({
   const [shiftKeyDown, setShiftKeyDown] = useState(false);
   const { checkpoints, mutateCheckpoints } = useCheckpoints(level._id, disableCheckpoints || user === null || !isPro(user));
   const [madeMove, setMadeMove] = useState(false);
+  const enrichedLevel = level as EnrichedLevel;
 
   useEffect(() => {
     if (enableLocalSessionRestore && !localSessionRestored && typeof window.sessionStorage !== 'undefined') {
@@ -281,8 +282,10 @@ export default function Game({
   }, [disableStats, lastCodes, matchId, mutateLevel, mutateProStatsLevel, mutateUser, onStatsSuccess]);
 
   const saveCheckpoint = useCallback((slot: number) => {
-    toast.dismiss();
-    toast.loading(`Saving checkpoint ${slot}...`);
+    if (slot !== BEST_CHECKPOINT_INDEX) {
+      toast.dismiss();
+      toast.loading(`Saving checkpoint ${slot}...`);
+    }
 
     fetch('/api/level/' + level._id + '/checkpoints', {
       method: 'POST',
@@ -295,8 +298,11 @@ export default function Game({
       }),
     }).then(async res => {
       if (res.status === 200) {
-        toast.dismiss();
-        toast.success(`Saved checkpoint ${slot}`);
+        if (slot !== BEST_CHECKPOINT_INDEX) {
+          toast.dismiss();
+          toast.success(`Saved checkpoint ${slot}`);
+        }
+
         mutateCheckpoints();
       } else {
         throw res.text();
@@ -307,6 +313,32 @@ export default function Game({
       toast.error(JSON.parse(await err)?.error || 'Error saving checkpoint');
     });
   }, [gameState, level._id, mutateCheckpoints]);
+
+  const deleteCheckpoint = useCallback((slot: number) => {
+    if (slot !== BEST_CHECKPOINT_INDEX) {
+      toast.dismiss();
+      toast.loading(`Deleting checkpoint ${slot}...`);
+    }
+
+    fetch(`/api/level/${level._id}/checkpoints?checkpointIndex=${slot}`, {
+      method: 'DELETE',
+    }).then(async res => {
+      if (res.status === 200) {
+        if (slot !== BEST_CHECKPOINT_INDEX) {
+          toast.dismiss();
+          toast.success(`Deleted checkpoint ${slot}`);
+        }
+
+        mutateCheckpoints();
+      } else {
+        throw res.text();
+      }
+    }).catch(async err => {
+      console.error(err);
+      toast.dismiss();
+      toast.error(JSON.parse(await err)?.error || 'Error deleting checkpoint');
+    });
+  }, [level._id, mutateCheckpoints]);
 
   const loadCheckpoint = useCallback((slot: number) => {
     if (!checkpoints) {
@@ -319,9 +351,6 @@ export default function Game({
     const checkpoint = checkpoints[slot];
 
     if (!checkpoint) {
-      toast.dismiss();
-      toast.error(`No checkpoint at slot ${slot}`);
-
       return;
     }
 
@@ -349,9 +378,14 @@ export default function Game({
       const keepOldStateRef = cloneGameState(oldGameState.current);
 
       toast.dismiss();
+
       toast.success(
         <div>
-          {`Restored checkpoint ${slot}. Press ${slot} again to `}
+          {slot === BEST_CHECKPOINT_INDEX ?
+            'Restored your best solve. Press B again to '
+            :
+            `Restored checkpoint ${slot}. Press ${slot} again to `
+          }
           <span
             className='text-blue-400'
             style={{ cursor: 'pointer' }}
@@ -395,12 +429,13 @@ export default function Game({
     }
 
     // check if code starts with the words Digit
-    if (code.startsWith('Digit')) {
+    if (code.startsWith('Digit') || code === 'KeyB') {
       if (disableCheckpoints) {
         return;
       }
 
       if (!isPro(user)) {
+        toast.dismiss();
         toast.error(
           <div className='flex flex-col text-lg'>
             <div>Upgrade to <Link href='/settings/proaccount' className='text-blue-500'>Pathology Pro</Link> to unlock checkpoints!</div>
@@ -414,12 +449,16 @@ export default function Game({
         return;
       }
 
-      const slot = parseInt(code.replace('Digit', ''));
+      if (code.startsWith('Digit')) {
+        const slot = parseInt(code.replace('Digit', ''));
 
-      if (shiftKeyDown) {
-        saveCheckpoint(slot);
+        if (shiftKeyDown) {
+          saveCheckpoint(slot);
+        } else {
+          loadCheckpoint(slot);
+        }
       } else {
-        loadCheckpoint(slot);
+        loadCheckpoint(BEST_CHECKPOINT_INDEX);
       }
 
       return;
@@ -664,11 +703,21 @@ export default function Game({
   }, [allowFreeUndo, disableCheckpoints, level._id, level.data, loadCheckpoint, onNext, onPrev, saveCheckpoint, shiftKeyDown, trackStats, user]);
 
   useEffect(() => {
-    if (gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === TileType.End &&
-      gameState.moves.length <= level.leastMoves && onComplete) {
+    const atEnd = gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === TileType.End;
+
+    if (atEnd && gameState.moves.length <= level.leastMoves && onComplete) {
       onComplete();
     }
   }, [gameState, level.leastMoves, onComplete]);
+
+  useEffect(() => {
+    const atEnd = gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === TileType.End;
+    const newBest = enrichedLevel.userMoves === undefined || gameState.moves.length < enrichedLevel.userMoves;
+
+    if (!disableCheckpoints && atEnd && newBest) {
+      saveCheckpoint(BEST_CHECKPOINT_INDEX);
+    }
+  }, [disableCheckpoints, enrichedLevel.userMoves, gameState, saveCheckpoint]);
 
   const touchXDown = useRef<number>(0);
   const touchYDown = useRef<number>(0);
@@ -887,6 +936,7 @@ export default function Game({
   return (
     <GameContext.Provider value={{
       checkpoints: checkpoints,
+      deleteCheckpoint: deleteCheckpoint,
       loadCheckpoint: loadCheckpoint,
       saveCheckpoint: saveCheckpoint,
     }}>
