@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { useContext, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
 import toast from 'react-hot-toast';
 import { useSWRConfig } from 'swr';
@@ -34,6 +34,13 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
     if (password !== password2) {
       toast.dismiss();
       toast.error('Password does not match');
+
+      return;
+    }
+
+    if (password.length < 8 || password.length > 50) {
+      toast.dismiss();
+      toast.error('Password must be between 8 and 50 characters');
 
       return;
     }
