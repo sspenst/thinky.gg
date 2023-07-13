@@ -679,13 +679,7 @@ export default function Game({
             return prevGameState;
           }
 
-          const redo = redoMoves.pop();
-
-          if (redo) {
-            return redo;
-          }
-
-          return prevGameState;
+          return redoMoves.pop() ?? prevGameState;
         }
 
         const direction = getDirectionFromCode(code);
