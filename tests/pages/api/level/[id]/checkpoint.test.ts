@@ -202,58 +202,6 @@ describe('api/user/[id]/checkpoints', () => {
       }
     });
   });
-  test('try to save on special checkpoint index 10', async () => {
-    expect(GAME_STATE_2.moveCount).toBe(6);
-    await UserModel.findByIdAndUpdate(TestId.USER, {
-      $addToSet: {
-        roles: Role.PRO
-      }
-    });
-    await query({
-      params: {
-        method: 'POST',
-        query: {
-          id: TestId.LEVEL,
-        },
-        body: {
-          checkpointIndex: 10,
-          checkpointValue: GAME_STATE_2,
-        },
-      },
-      expectedStatus: 200,
-      additionalAssertions: async (response) => {
-        expect(response).toBeDefined();
-        expect(response[0]).toStrictEqual(GAME_STATE_1);
-        expect(response[1]).toStrictEqual(GAME_STATE_2);
-        expect(response[2]).toBeUndefined();
-        expect(response[10]).toStrictEqual(GAME_STATE_2);
-      }
-    });
-  });
-  test('try to save on special checkpoint index 10 but on a step move that is not lower than existing', async () => {
-    expect(GAME_STATE_2.moveCount).toBe(6);
-    expect(GAME_STATE_1.moveCount).toBe(6);
-    await UserModel.findByIdAndUpdate(TestId.USER, {
-      $addToSet: {
-        roles: Role.PRO
-      }
-    });
-    await query({
-      params: {
-        method: 'POST',
-        query: {
-          id: TestId.LEVEL,
-        },
-        body: {
-          checkpointIndex: 10,
-          checkpointValue: GAME_STATE_1,
-        },
-      },
-      expectedStatus: 400,
-      expectedError: 'Cannot overwrite a lower move count',
-
-    });
-  });
   test('try to delete checkpoint index 1', async () => {
     await UserModel.findByIdAndUpdate(TestId.USER, {
       $addToSet: {

@@ -34,7 +34,6 @@ interface CheckpointModalItemProps {
   checkpoint: GameState | null;
   closeModal: () => void;
   slot: number;
-  title?: string;
 }
 
 function CheckpointModalItem({ checkpoint, closeModal, slot }: CheckpointModalItemProps) {

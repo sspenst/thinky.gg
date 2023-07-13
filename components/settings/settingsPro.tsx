@@ -120,7 +120,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
             title='Pro Badge'
           />
           <ProFeature
-            description='Redo your moves in the game.'
+            description='Redo your moves in the game'
             icon={
               <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='currentColor' className='bi bi-arrow-clockwise' viewBox='0 0 16 16'>
                 <path fillRule='evenodd' d='M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z' />

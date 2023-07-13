@@ -1,5 +1,4 @@
 import { GameContext } from '@root/contexts/gameContext';
-import isGuest from '@root/helpers/isGuest';
 import isPro from '@root/helpers/isPro';
 import { isValidGameState } from '@root/helpers/isValidGameState';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
@@ -22,7 +21,6 @@ import Position, { getDirectionFromCode } from '../../models/position';
 import SquareState from '../../models/squareState';
 import GameLayout from './gameLayout';
 
-export const USER_BEST_MOVE_CHECKPOINT_SLOT = 10;
 export interface GameState {
   actionCount: number;
   blocks: BlockState[];
@@ -736,7 +734,7 @@ export default function Game({
     if (atEnd && gameState.moves.length <= level.leastMoves && onComplete) {
       onComplete();
     }
-  }, [gameState, level, level.leastMoves, onComplete, saveCheckpoint]);
+  }, [gameState, level.leastMoves, onComplete]);
 
   useEffect(() => {
     if (disableCheckpoints || !pro || !checkpoints) {
