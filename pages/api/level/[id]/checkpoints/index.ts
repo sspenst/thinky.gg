@@ -1,3 +1,4 @@
+import { GameState } from '@root/components/level/game';
 import { NextApiResponse } from 'next';
 import { ValidGameState, ValidNumber } from '../../../../../helpers/apiWrapper';
 import isPro from '../../../../../helpers/isPro';
@@ -45,9 +46,19 @@ export default withAuth({
 
     return res.status(200).json(checkpointArr);
   } else if (req.method === 'POST') {
-    const { checkpointIndex, checkpointValue } = req.body as { checkpointIndex: number, checkpointValue: number };
+    const { checkpointIndex, checkpointValue } = req.body as { checkpointIndex: number, checkpointValue: GameState };
 
-    // make sure the level exists
+    if (checkpointIndex === 10) {
+      const existingCheckpoints = await KeyValueModel.findOne(
+        { key: KV_Checkpoint_Hash },
+      );
+
+      if (existingCheckpoints?.value['10'] && existingCheckpoints.value['10'].moveCount >= checkpointValue.moveCount) {
+        return res.status(400).json({
+          error: 'Cannot overwrite a lower move count',
+        });
+      }
+    }
 
     /** findOneAndUpdate upsert this value... We need to be able set the specific index of the array the value of checkpointValue */
     const checkpoint = await KeyValueModel.findOneAndUpdate(
@@ -58,7 +69,7 @@ export default withAuth({
 
     return res.status(200).json(checkpoint?.value);
   } else if (req.method === 'DELETE') {
-    const { checkpointIndex, checkpointValue } = req.body as { checkpointIndex: number, checkpointValue: number };
+    const { checkpointIndex, checkpointValue } = req.body as { checkpointIndex: number, checkpointValue: GameState };
 
     // make sure the level exists
 
