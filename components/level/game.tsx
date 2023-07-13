@@ -126,17 +126,18 @@ export default function Game({
 }: GameProps) {
   const [gameState, setGameState] = useState<GameState>(initGameState(level.data));
   const [lastCodes, setLastCodes] = useState<string[]>([]);
-  const [redoMoves, setRedoMoves] = useState<GameState[]>([]);
   const levelContext = useContext(LevelContext);
   const [localSessionRestored, setLocalSessionRestored] = useState(false);
+  const [madeMove, setMadeMove] = useState(false);
   const mutateLevel = levelContext?.mutateLevel;
   const mutateProStatsLevel = levelContext?.mutateProStatsLevel;
-  const { user, mutateUser, shouldAttemptAuth } = useContext(AppContext);
+  const { mutateUser, shouldAttemptAuth, user } = useContext(AppContext);
   const oldGameState = useRef<GameState>();
   const { preventKeyDownEvent } = useContext(PageContext);
   const [shiftKeyDown, setShiftKeyDown] = useState(false);
+  const [redoMoves, setRedoMoves] = useState<GameState[]>([]);
+
   const { checkpoints, mutateCheckpoints } = useCheckpoints(level._id, disableCheckpoints || user === null || !isPro(user));
-  const [madeMove, setMadeMove] = useState(false);
   const enrichedLevel = level as EnrichedLevel;
   const pro = isPro(user);
 
@@ -439,9 +440,7 @@ export default function Game({
       if (!pro) {
         toast.dismiss();
         toast.error(
-          <div className='flex flex-col text-lg'>
-            <div>Upgrade to <Link href='/settings/proaccount' className='text-blue-500'>Pathology Pro</Link> to unlock checkpoints!</div>
-          </div>,
+          <div>Upgrade to <Link href='/settings/proaccount' className='text-blue-500'>Pathology Pro</Link> to unlock checkpoints!</div>,
           {
             duration: 5000,
             icon: '🔒',
@@ -562,7 +561,8 @@ export default function Game({
             return returnState || prevGameState;
           }
 
-          redoMoves.push(cloneGameState(gameState));
+          redoMoves.push(cloneGameState(prevGameState));
+
           // remove text only from the current position for smoother animations
           const text = board[prevGameState.pos.y][prevGameState.pos.x].text;
 
@@ -658,30 +658,34 @@ export default function Game({
           };
         }
 
-        // if explicitly asked to undo, undo
-        if (code === 'Backspace' || code === 'KeyU' || code == 'KeyZ') {
-          if (shiftKeyDown) {
-            // redo...
-            if (!isPro(user)) {
-              toast.dismiss();
-              toast.error('Redo is only available for Pro users');
+        const undoKey = code === 'Backspace' || code === 'KeyU' || code == 'KeyZ';
 
-              return gameState;
-            }
+        if (undoKey && !shiftKeyDown) {
+          return undo();
+        }
 
-            const redo = redoMoves.pop();
-
-            if (redo) {
-              return redo;
-            }
-
+        // redo
+        if (undoKey || code === 'KeyY') {
+          if (!pro) {
             toast.dismiss();
-            toast.error('Nothing to redo');
+            toast.error(
+              <div>Upgrade to <Link href='/settings/proaccount' className='text-blue-500'>Pathology Pro</Link> to unlock redo!</div>,
+              {
+                duration: 5000,
+                icon: '🔒',
+              }
+            );
 
-            return gameState;
+            return prevGameState;
           }
 
-          return undo();
+          const redo = redoMoves.pop();
+
+          if (redo) {
+            return redo;
+          }
+
+          return prevGameState;
         }
 
         const direction = getDirectionFromCode(code);
@@ -716,9 +720,9 @@ export default function Game({
           return prevGameState;
         }
 
-        // if not, just make the move normally
         setRedoMoves([]);
 
+        // if not, just make the move normally
         return makeMove(direction);
       }
 
@@ -726,7 +730,7 @@ export default function Game({
 
       return newGameState;
     });
-  }, [allowFreeUndo, disableCheckpoints, level._id, level.data, loadCheckpoint, onNext, onPrev, pro, saveCheckpoint, shiftKeyDown, trackStats]);
+  }, [allowFreeUndo, disableCheckpoints, level._id, level.data, loadCheckpoint, onNext, onPrev, pro, redoMoves, saveCheckpoint, shiftKeyDown, trackStats]);
 
   useEffect(() => {
     const atEnd = gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === TileType.End;
@@ -931,16 +935,16 @@ export default function Game({
 
     _controls.push(
       new Control('btn-restart', () => handleKeyDown('KeyR'), <><span className='underline'>R</span>estart</>),
-      shiftKeyDown ? new Control('btn-redi', () => handleKeyDown('Backspace'), <>Redo</>, false, false, () => {
+      new Control('btn-undo', () => handleKeyDown('Backspace'), <><span className='underline'>U</span>ndo</>, false, false, () => {
         handleKeyDown('Backspace');
 
         return true;
-      }) :
-        new Control('btn-undo', () => handleKeyDown('Backspace'), <><span className='underline'>U</span>ndo</>, false, false, () => {
-          handleKeyDown('Backspace');
+      }),
+      new Control('btn-redo', () => handleKeyDown('KeyY'), <>Redo</>, redoMoves.length === 0, false, () => {
+        handleKeyDown('KeyY');
 
-          return true;
-        }),
+        return true;
+      }),
     );
 
     if (onNext) {
@@ -952,7 +956,7 @@ export default function Game({
     } else {
       setControls(_controls);
     }
-  }, [extraControls, gameState.moveCount, handleKeyDown, onNext, onPrev, setControls]);
+  }, [extraControls, gameState.moveCount, handleKeyDown, onNext, onPrev, redoMoves.length, setControls]);
 
   function onCellClick(x: number, y: number) {
     if (isSwiping.current) {
