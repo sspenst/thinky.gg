@@ -1,4 +1,5 @@
 import { GameState } from '@root/components/level/game';
+import { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import { NextApiResponse } from 'next';
 import { ValidGameState, ValidNumber } from '../../../../../helpers/apiWrapper';
 import isPro from '../../../../../helpers/isPro';
@@ -14,9 +15,8 @@ export default withAuth({
     }
   },
   DELETE: {
-    body: {
-      checkpointIndex: ValidNumber(true, 0, 10),
-      checkpointValue: ValidGameState(),
+    query: {
+      checkpointIndex: ValidNumber(true, 0, 9),
     }
   },
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
@@ -48,14 +48,14 @@ export default withAuth({
   } else if (req.method === 'POST') {
     const { checkpointIndex, checkpointValue } = req.body as { checkpointIndex: number, checkpointValue: GameState };
 
-    if (checkpointIndex === 10) {
-      const existingCheckpoints = await KeyValueModel.findOne(
-        { key: KV_Checkpoint_Hash },
-      );
+    // always overwrite draft levels
+    if (!level.isDraft && checkpointIndex === BEST_CHECKPOINT_INDEX) {
+      const existingCheckpoint = await KeyValueModel.findOne({ key: KV_Checkpoint_Hash });
+      const savedMovedCount = existingCheckpoint?.value[String(BEST_CHECKPOINT_INDEX)]?.moveCount;
 
-      if (existingCheckpoints?.value['10'] && existingCheckpoints.value['10'].moveCount >= checkpointValue.moveCount) {
+      if (savedMovedCount && savedMovedCount <= checkpointValue.moveCount) {
         return res.status(400).json({
-          error: 'Cannot overwrite a lower move count',
+          error: 'Best checkpoint must have a lower move count',
         });
       }
     }
@@ -69,14 +69,12 @@ export default withAuth({
 
     return res.status(200).json(checkpoint?.value);
   } else if (req.method === 'DELETE') {
-    const { checkpointIndex, checkpointValue } = req.body as { checkpointIndex: number, checkpointValue: GameState };
-
-    // make sure the level exists
+    const { checkpointIndex } = req.query;
 
     /** findOneAndUpdate upsert this value... We need to be able set the specific index of the array the value of checkpointValue */
     const checkpoint = await KeyValueModel.findOneAndUpdate(
       { key: KV_Checkpoint_Hash },
-      { $unset: { [`value.${checkpointIndex}`]: checkpointValue } },
+      { $unset: { [`value.${checkpointIndex}`]: '' } },
       { upsert: true, new: true }
     );
 
