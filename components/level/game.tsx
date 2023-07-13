@@ -740,11 +740,12 @@ export default function Game({
   useEffect(() => {
     const atEnd = gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === TileType.End;
     const newBest = enrichedLevel.userMoves === undefined || gameState.moves.length < enrichedLevel.userMoves;
+    const pro = isPro(user);
 
-    if (!disableCheckpoints && atEnd && newBest) {
+    if (!disableCheckpoints && atEnd && newBest && pro) {
       saveCheckpoint(BEST_CHECKPOINT_INDEX);
     }
-  }, [disableCheckpoints, enrichedLevel.userMoves, gameState, saveCheckpoint]);
+  }, [disableCheckpoints, enrichedLevel.userMoves, gameState, saveCheckpoint, user]);
 
   const touchXDown = useRef<number>(0);
   const touchYDown = useRef<number>(0);
