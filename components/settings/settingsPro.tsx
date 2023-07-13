@@ -199,7 +199,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
               </RadioGroup>
               <a
                 className='bg-green-300 hover:bg-green-500 text-black font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline cursor-pointer w-full text-center'
-                href={`${plan === 'year' ? stripePaymentYearlyLink : stripePaymentLink}?client_reference_id=${user?._id}`}
+                href={`${plan === 'year' ? stripePaymentYearlyLink : stripePaymentLink}?client_reference_id=${user?._id}&prefilled_email=${user?.email}`}
                 rel='noreferrer'
                 target='_blank'
               >
