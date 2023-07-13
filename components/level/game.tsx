@@ -934,7 +934,7 @@ export default function Game({
 
         return true;
       }),
-      new Control('btn-redo', () => handleKeyDown('KeyY'), <>Redo</>, redoMoves.length === 0, false, () => {
+      new Control('btn-redo', () => handleKeyDown('KeyY'), <>{!pro ? '🔒 Redo' : 'Redo'}</>, redoMoves.length === 0, false, () => {
         handleKeyDown('KeyY');
 
         return true;
