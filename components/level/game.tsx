@@ -140,6 +140,7 @@ export default function Game({
   const { checkpoints, mutateCheckpoints } = useCheckpoints(level._id, disableCheckpoints || user === null || !isPro(user));
   const [madeMove, setMadeMove] = useState(false);
   const enrichedLevel = level as EnrichedLevel;
+  const pro = isPro(user);
 
   useEffect(() => {
     if (enableLocalSessionRestore && !localSessionRestored && typeof window.sessionStorage !== 'undefined') {
@@ -437,7 +438,7 @@ export default function Game({
         return;
       }
 
-      if (!isPro(user)) {
+      if (!pro) {
         toast.dismiss();
         toast.error(
           <div className='flex flex-col text-lg'>
@@ -727,7 +728,7 @@ export default function Game({
 
       return newGameState;
     });
-  }, [allowFreeUndo, disableCheckpoints, gameState, level._id, level.data, loadCheckpoint, onNext, onPrev, redoMoves, saveCheckpoint, shiftKeyDown, trackStats, user]);
+  }, [allowFreeUndo, disableCheckpoints, level._id, level.data, loadCheckpoint, onNext, onPrev, pro, saveCheckpoint, shiftKeyDown, trackStats]);
 
   useEffect(() => {
     const atEnd = gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === TileType.End;
@@ -738,14 +739,17 @@ export default function Game({
   }, [gameState, level, level.leastMoves, onComplete, saveCheckpoint]);
 
   useEffect(() => {
-    const atEnd = gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === TileType.End;
-    const newBest = enrichedLevel.userMoves === undefined || gameState.moves.length < enrichedLevel.userMoves;
-    const pro = isPro(user);
+    if (disableCheckpoints || !pro || !checkpoints) {
+      return;
+    }
 
-    if (!disableCheckpoints && atEnd && newBest && pro) {
+    const atEnd = gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === TileType.End;
+    const newBest = !checkpoints[BEST_CHECKPOINT_INDEX] || gameState.moves.length < checkpoints[BEST_CHECKPOINT_INDEX].moveCount;
+
+    if (atEnd && newBest) {
       saveCheckpoint(BEST_CHECKPOINT_INDEX);
     }
-  }, [disableCheckpoints, enrichedLevel.userMoves, gameState, saveCheckpoint, user]);
+  }, [checkpoints, disableCheckpoints, enrichedLevel.userMoves, gameState, pro, saveCheckpoint]);
 
   const touchXDown = useRef<number>(0);
   const touchYDown = useRef<number>(0);
