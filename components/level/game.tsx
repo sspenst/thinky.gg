@@ -4,6 +4,7 @@ import { isValidGameState } from '@root/helpers/isValidGameState';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import useCheckpoints, { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import { Types } from 'mongoose';
+import Image from 'next/image';
 import Link from 'next/link';
 import NProgress from 'nprogress';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
@@ -443,7 +444,7 @@ export default function Game({
           <div>Upgrade to <Link href='/settings/proaccount' className='text-blue-500'>Pathology Pro</Link> to unlock checkpoints!</div>,
           {
             duration: 5000,
-            icon: '🔒',
+            icon: <Image alt='pro' src='/pro.svg' width='16' height='16' />,
           }
         );
 
@@ -672,7 +673,7 @@ export default function Game({
               <div>Upgrade to <Link href='/settings/proaccount' className='text-blue-500'>Pathology Pro</Link> to unlock redo!</div>,
               {
                 duration: 5000,
-                icon: '🔒',
+                icon: <Image alt='pro' src='/pro.svg' width='16' height='16' />,
               }
             );
 
@@ -934,11 +935,21 @@ export default function Game({
 
         return true;
       }),
-      new Control('btn-redo', () => handleKeyDown('KeyY'), <>{!pro ? '🔒 Redo' : 'Redo'}</>, redoMoves.length === 0, false, () => {
-        handleKeyDown('KeyY');
+      new Control(
+        'btn-redo',
+        () => handleKeyDown('KeyY'),
+        <span className='flex gap-2 justify-center'>
+          <Image alt='pro' src='/pro.svg' width='16' height='16' />
+          {'Redo'}
+        </span>,
+        redoMoves.length === 0,
+        false,
+        () => {
+          handleKeyDown('KeyY');
 
-        return true;
-      }),
+          return true;
+        },
+      ),
     );
 
     if (onNext) {
@@ -950,7 +961,7 @@ export default function Game({
     } else {
       setControls(_controls);
     }
-  }, [extraControls, gameState.moveCount, handleKeyDown, onNext, onPrev, redoMoves.length, setControls]);
+  }, [extraControls, gameState.moveCount, handleKeyDown, onNext, onPrev, pro, redoMoves.length, setControls]);
 
   function onCellClick(x: number, y: number) {
     if (isSwiping.current) {
