@@ -313,8 +313,11 @@ export default function Game({
       }
     }).catch(async err => {
       console.error(err);
-      toast.dismiss();
-      toast.error(JSON.parse(await err)?.error || 'Error saving checkpoint');
+
+      if (slot !== BEST_CHECKPOINT_INDEX) {
+        toast.dismiss();
+        toast.error(JSON.parse(await err)?.error || 'Error saving checkpoint');
+      }
     });
   }, [gameState, level._id, mutateCheckpoints]);
 
