@@ -12,7 +12,7 @@ import SESTransport from 'nodemailer/lib/ses-transport';
 import SMTPPool from 'nodemailer/lib/smtp-pool';
 import { EmailDigestSettingTypes, EmailType } from '../../../../constants/emailDigest';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
-import getEmailBody from '../../../../helpers/emails/getEmailBody';
+import getEmailBody from '../../../../helpers/getEmailBody';
 import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
 import isLocal from '../../../../lib/isLocal';

@@ -2,8 +2,8 @@
 
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { EnrichedLevel } from '../../models/db/level';
-import User from '../../models/db/user';
+import { EnrichedLevel } from '../models/db/level';
+import User from '../models/db/user';
 
 // good place to test the output:
 // https://htmlemail.io/inline/
@@ -33,7 +33,7 @@ export default function getEmailBody(
             }}>
               <table role='presentation' cellPadding='0' cellSpacing='0' style={{
                 color: '#000',
-                maxWidth: '75%',
+                maxWidth: 580,
                 width: '100%'
               }}>
                 <tr>
