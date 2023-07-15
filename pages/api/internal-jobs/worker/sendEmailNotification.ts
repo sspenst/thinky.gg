@@ -1,4 +1,4 @@
-import getEmailBody from '@root/helpers/emails/getEmailBody';
+import getEmailBody from '@root/helpers/getEmailBody';
 import getMobileNotification from '@root/helpers/getMobileNotification';
 import Notification from '@root/models/db/notification';
 import { EmailLogModel, UserConfigModel, UserModel } from '@root/models/mongoose';
