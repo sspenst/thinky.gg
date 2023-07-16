@@ -7,11 +7,12 @@ import FormattedNotification from './formattedNotification';
 import styles from './NotificationList.module.css';
 
 interface NotificationListProps {
+  close?: () => void;
   notifications: Notification[];
   setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>;
 }
 
-export default function NotificationList({ notifications, setNotifications }: NotificationListProps) {
+export default function NotificationList({ close, notifications, setNotifications }: NotificationListProps) {
   const { mutateUser } = useContext(AppContext);
 
   const putNotification = useCallback((notifications: Notification[], read: boolean) => {
@@ -61,7 +62,11 @@ export default function NotificationList({ notifications, setNotifications }: No
 
       return newNotifications;
     });
-  }, [putNotification, setNotifications]);
+
+    if (close) {
+      close();
+    }
+  }, [close, putNotification, setNotifications]);
 
   const formattedNotifications = useCallback(() => {
     return notifications.map(notification => {
