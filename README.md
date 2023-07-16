@@ -1,10 +1,10 @@
 # <img src="public/logo.svg"> [Pathology](https://pathology.gg)
 
-A recreation of [k2xl](https://k2xl.com)'s Psychopath 2 using [Next.js](https://nextjs.org/), [TypeScript](https://www.typescriptlang.org/), [Tailwind CSS](https://tailwindcss.com/), and [mongoose](https://mongoosejs.com/). Find your way to the exit in the least number of moves.
-
 [![codecov](https://codecov.io/gh/sspenst/pathology/branch/main/graph/badge.svg?token=BX0RSQ9R57)](https://codecov.io/gh/sspenst/pathology)
 ![Tests](https://github.com/sspenst/pathology/actions/workflows/node.js.yml/badge.svg)
+[![](https://dcbadge.vercel.app/api/server/j6RxRdqq4A?style=flat&theme=default-inverted)](https://discord.gg/j6RxRdqq4A)
 
+Shortest path puzzle game. Get to the exit in the least number of moves.
 
 ## Dev Environment
 
@@ -34,7 +34,13 @@ REVALIDATE_SECRET=whatever
 - Test your changes locally
 - Create a [pull request](https://github.com/sspenst/pathology/pulls)
 
-## Discord
+## Tech Stack
 
-Join the [Pathology Discord](https://discord.gg/j6RxRdqq4A)!
-
+- [Next.js](https://nextjs.org/)
+- [React](https://react.dev/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [mongoose](https://mongoosejs.com/)
+- [Docker](https://www.docker.com/)
+- [NGINX](https://www.nginx.com/)
+- [New Relic](https://newrelic.com/)

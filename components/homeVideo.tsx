@@ -18,7 +18,7 @@ export default function HomeVideo() {
         <div className='flex justify-center items-center h-full'>
           <div className='text-white transition-blur duration-75'>
             <h2 className='fadeIn font-semibold text-4xl my-4'>Pathology</h2>
-            <h4 className='fadeIn font-semibold text-xl mb-6'>Find the way</h4>
+            <h3 className='fadeIn font-semibold text-xl mb-6'>Find the way</h3>
             <div className='flex flex-col items-center mb-4'>
               <Link
                 className='fadeIn inline-block px-3 py-1.5 mb-1 border-4 border-neutral-400 bg-white text-black font-bold text-3xl leading-snug rounded-xl hover:ring-4 hover:bg-blue-500 hover:text-white ring-blue-500/50 focus:ring-0 transition duration-400 ease-in-out'

@@ -44,17 +44,17 @@ export default function Grid({ board, cellClassName, generateMovables, leastMove
 
     // Add event listener
     window.addEventListener('resize', handleResize);
+    screen.orientation.addEventListener('change', handleResize);
+
     // Call handler right away so state gets updated with initial window size
     handleResize();
 
     // Remove event listener on cleanup
-    return () => window.removeEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      screen.orientation.removeEventListener('change', handleResize);
+    };
   }, []); // Empty array ensures that effect is only run on mount
-
-  // NB: kind of a hack for the tutorial...
-  useEffect(() => {
-    window.dispatchEvent(new Event('resize'));
-  }, [gridRef.current?.offsetHeight, gridRef.current?.offsetWidth]);
 
   // calculate the square size based on the available game space and the level dimensions
   // NB: forcing the square size to be an integer allows the block animations to travel along actual pixels
