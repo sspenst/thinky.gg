@@ -13,14 +13,12 @@ import { PageContext } from '../../contexts/pageContext';
 import getProfileSlug from '../../helpers/getProfileSlug';
 import Avatar from '../avatar';
 import DismissToast from '../dismissToast';
-import AboutModal from '../modal/aboutModal';
 import EditLevelModal from '../modal/editLevelModal';
 import LevelInfoModal from '../modal/levelInfoModal';
 import ReviewsModal from '../modal/reviewsModal';
 import ThemeModal from '../modal/themeModal';
 
 const enum Modal {
-  About,
   AddLevelToCollection,
   LevelInfo,
   Reviews,
@@ -97,7 +95,7 @@ export default function Dropdown() {
       }
     </>}
     <Menu>
-      <Menu.Button id='dropdownMenuBtn'>
+      <Menu.Button id='dropdownMenuBtn' aria-label='dropdown menu'>
         {user ?
           <Avatar user={user} />
           :
@@ -191,22 +189,6 @@ export default function Dropdown() {
                     <path strokeLinecap='round' strokeLinejoin='round' d='M4.098 19.902a3.75 3.75 0 005.304 0l6.401-6.402M6.75 21A3.75 3.75 0 013 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 003.75-3.75V8.197M6.75 21h13.125c.621 0 1.125-.504 1.125-1.125v-5.25c0-.621-.504-1.125-1.125-1.125h-4.072M10.5 8.197l2.88-2.88c.438-.439 1.15-.439 1.59 0l3.712 3.713c.44.44.44 1.152 0 1.59l-2.879 2.88M6.75 17.25h.008v.008H6.75v-.008z' />
                   </svg>
                   Theme
-                </div>
-              )}
-            </Menu.Item>
-            <Menu.Item>
-              {({ active }) => (
-                <div
-                  className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3'
-                  onClick={() => setOpenModal(Modal.About)}
-                  style={{
-                    backgroundColor: active ? 'var(--bg-color-3)' : undefined,
-                  }}
-                >
-                  <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-info-lg' viewBox='0 0 16 16'>
-                    <path d='m9.708 6.075-3.024.379-.108.502.595.108c.387.093.464.232.38.619l-.975 4.577c-.255 1.183.14 1.74 1.067 1.74.72 0 1.554-.332 1.933-.789l.116-.549c-.263.232-.65.325-.905.325-.363 0-.494-.255-.402-.704l1.323-6.208Zm.091-2.755a1.32 1.32 0 1 1-2.64 0 1.32 1.32 0 0 1 2.64 0Z' />
-                  </svg>
-                  About
                 </div>
               )}
             </Menu.Item>
@@ -304,6 +286,5 @@ export default function Dropdown() {
       </>
     }
     <ThemeModal closeModal={() => closeModal()} isOpen={openModal === Modal.Theme} />
-    <AboutModal closeModal={() => closeModal()} isOpen={openModal === Modal.About} />
   </>);
 }

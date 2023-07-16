@@ -54,7 +54,7 @@ export default function Footer() {
           <h3 className='font-medium'>
             Resources
           </h3>
-          <ExternalLink href='https://forms.gle/xz3cuXvxFR8hb6un8'>
+          <ExternalLink href='mailto:help@pathology.gg'>
             Contact
           </ExternalLink>
           <ExternalLink href='https://github.com/sspenst/pathology'>
