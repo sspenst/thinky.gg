@@ -284,8 +284,6 @@ export default withAuth({
           levelUpdate['$inc']['calc_playattempts_just_beaten_count'] = 1;
         }
 
-        console.log(levelUpdate);
-
         const enrichedLevel = await LevelModel.findByIdAndUpdate<EnrichedLevel>(level._id, levelUpdate, {
           new: true,
           lean: true,

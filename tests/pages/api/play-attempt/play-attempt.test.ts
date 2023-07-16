@@ -415,17 +415,12 @@ const tests = [
     name: 'CarlAndre bug',
     list: [
       ['play', 0, 'created'],
-      ['play', 15, 'updated'],
       ['play', 30, 'updated'],
       ['win_20', 30, ''],
       ['play', 41, 'created'],
-      ['play', 45, 'updated'],
-      ['play', 56, 'updated'],
-      ['play', 71, 'updated'],
       ['play', 86, 'updated'],
       ['win_10', 89, ''],
       ['play', 103, 'created'],
-      ['play', 109, 'updated'],
       ['play', 120, 'updated'],
       ['win_8', 125, ''],
     ],
@@ -435,12 +430,40 @@ const tests = [
       expect(lvl.calc_playattempts_duration_sum).toBe(100);
 
       expect(playAttemptDocs.length).toBe(3);
-      expect(playAttemptDocs[0].updateCount).toBe(3);
+      expect(playAttemptDocs[0].updateCount).toBe(2);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_BEATEN);
-      expect(playAttemptDocs[1].updateCount).toBe(5);
+      expect(playAttemptDocs[1].updateCount).toBe(2);
       expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.UNBEATEN);
-      expect(playAttemptDocs[2].updateCount).toBe(3);
+      expect(playAttemptDocs[2].updateCount).toBe(2);
       expect(playAttemptDocs[2].attemptContext).toBe(AttemptContext.UNBEATEN);
+      expect(lvl.calc_playattempts_unique_users).toStrictEqual([new Types.ObjectId(TestId.USER)]);
+      expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
+    }
+  },
+  {
+    levelId: TestId.LEVEL_4,
+    name: 'screwtape bug',
+    list: [
+      ['play', 0, 'created'],
+      ['play', 30, 'updated'],
+      ['win_10', 30, ''],
+      ['play', 41, 'created'],
+      ['play', 86, 'updated'],
+      ['win_10', 89, ''],
+      ['play', 103, 'updated'],
+      ['play', 120, 'updated'],
+      ['win_8', 125, ''],
+    ],
+    tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
+      expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
+      // 0-30, 41-125
+      expect(lvl.calc_playattempts_duration_sum).toBe(114);
+
+      expect(playAttemptDocs.length).toBe(2);
+      expect(playAttemptDocs[0].updateCount).toBe(4);
+      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_BEATEN);
+      expect(playAttemptDocs[1].updateCount).toBe(2);
+      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.UNBEATEN);
       expect(lvl.calc_playattempts_unique_users).toStrictEqual([new Types.ObjectId(TestId.USER)]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
     }
@@ -457,8 +480,6 @@ const tests = [
       ['win_8', 50, ''],
     ],
     tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
-      console.log(playAttemptDocs);
-
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
       expect(lvl.calc_playattempts_duration_sum).toBe(50);
 
