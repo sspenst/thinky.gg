@@ -1,5 +1,7 @@
 import AchievementInfo from '@root/constants/achievementInfo';
+import getDifficultyEstimate from '@root/helpers/getDifficultyEstimate';
 import User from '@root/models/db/user';
+import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
 import mongoose, { SaveOptions, Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import AchievementType from '../../../constants/achievementType';
@@ -11,27 +13,21 @@ import { logger } from '../../../helpers/logger';
 import { createNewAchievement, createNewRecordOnALevelYouBeatNotifications } from '../../../helpers/notificationHelper';
 import validateSolution from '../../../helpers/validateSolution';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import Level from '../../../models/db/level';
+import Level, { EnrichedLevel } from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
 import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
-import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
 import { queueRefreshIndexCalcs } from '../internal-jobs/worker';
 import { matchMarkCompleteLevel } from '../match/[matchId]';
-import { forceCompleteLatestPlayAttempt } from '../play-attempt';
 
-export function issueAchievements(userId: Types.ObjectId, score: number, options: SaveOptions) {
-  const promises = [];
-
+export async function issueAchievements(userId: Types.ObjectId, score: number, options: SaveOptions) {
   for (const achievementType in AchievementInfo) {
     const achievementInfo = AchievementInfo[achievementType];
 
     if (achievementInfo.exactlyUnlocked({ score: score } as User)) {
-      promises.push(createNewAchievement(achievementType as AchievementType, userId, options));
+      await createNewAchievement(achievementType as AchievementType, userId, options);
     }
   }
-
-  return promises;
 }
 
 export default withAuth({
@@ -59,9 +55,15 @@ export default withAuth({
       await session.withTransaction(async () => {
         const level = await LevelModel.findOne<Level>({ _id: levelId, isDeleted: { $ne: true } }, {}, { lean: true, session: session });
 
-        if (!level || (level.isDraft && level.userId.toString() !== req.userId)) {
+        if (!level) {
           resTrack.status = 404;
           resTrack.json.error = `Error finding level ${levelId}`;
+          throw new Error(resTrack.json.error);
+        }
+
+        if (level.isDraft && level.userId.toString() !== req.userId) {
+          resTrack.status = 401;
+          resTrack.json.error = `Unauthorized access for level ${levelId}`;
           throw new Error(resTrack.json.error);
         }
 
@@ -76,7 +78,7 @@ export default withAuth({
         // ensure no stats are saved for draft levels
         if (level.isDraft || level.leastMoves === 0) {
           if (moves < level.leastMoves || level.leastMoves === 0) {
-            await LevelModel.updateOne({ _id: levelId }, {
+            await LevelModel.updateOne({ _id: level._id }, {
               $set: { leastMoves: moves },
             }, { session: session });
           }
@@ -84,35 +86,34 @@ export default withAuth({
           return;
         }
 
-        const stat = await StatModel.findOne<Stat>({ levelId: levelId, userId: req.userId }, {}, { lean: true, session: session });
         const complete = moves <= level.leastMoves;
 
-        // TODO: if complete, and previously not complete, then call forceCompleteLatestPlayAttempt
-        // in the case of a record, we don't need to call forceCompleteLatestPlayAttempt early
-        // TODO: keep track of updates to UserModel and update all at once (currently may $inc twice)
+        if (complete && matchId) {
+          // TODO: use session here
+          await matchMarkCompleteLevel(req.user._id, matchId, level._id);
+        }
 
+        const stat = await StatModel.findOne<Stat>({ levelId: level._id, userId: req.user._id }, {}, { lean: true, session: session });
+
+        // level was previously solved and no personal best was set, only need to $inc attempts and return
+        if (stat && moves >= stat.moves) {
+          await StatModel.updateOne({ _id: stat._id }, { $inc: { attempts: 1 } }, { session: session });
+
+          return;
+        }
+
+        // track the new personal best in a stat
         if (!stat) {
-          // add the stat if it did not previously exist
           await StatModel.create([{
             _id: new Types.ObjectId(),
             attempts: 1,
             complete: complete,
-            levelId: new Types.ObjectId(levelId),
+            levelId: level._id,
             moves: moves,
             ts: ts,
-            userId: new Types.ObjectId(req.userId),
+            userId: req.user._id,
           }], { session: session });
-
-          if (complete) {
-            // NB: await to avoid multiple user updates in parallel
-            await Promise.all([
-              UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }, { session: session }),
-              ...issueAchievements(req.user._id, req.user.score + 1, { session: session }),
-              forceCompleteLatestPlayAttempt(req.userId, levelId, ts, { session: session }),
-            ]);
-          }
-        } else if (moves < stat.moves) {
-          // update stat if it exists and a new personal best is set
+        } else {
           await StatModel.updateOne({ _id: stat._id }, {
             $inc: {
               attempts: 1,
@@ -122,24 +123,25 @@ export default withAuth({
               moves: moves,
               ts: ts,
             },
-          }, { session: session }).exec();
-
-          if (!stat.complete && complete) {
-            // NB: await to avoid multiple user updates in parallel
-            await UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }, { session: session });
-            await Promise.all([
-              ...issueAchievements(req.user._id, req.user.score + 1, { session: session }),
-              forceCompleteLatestPlayAttempt(req.userId, levelId, ts, { session: session }),
-            ]);
-          }
-        } else {
-          // increment attempts in all other cases
-          await StatModel.updateOne({ _id: stat._id }, { $inc: { attempts: 1 } }, { session: session });
+          }, { session: session });
         }
 
-        // if a new record was set
-        if (moves < level.leastMoves) {
-          const prevRecord = await RecordModel.findOne<Record>({ levelId: levelId }, {}, { session: session }).sort({ ts: -1 });
+        // if the level was not completed optimally, nothing more to be done
+        if (!complete) {
+          return;
+        }
+
+        // if the level was previously incomplete, increment score
+        if (!stat?.complete) {
+          await UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }, { session: session });
+          await issueAchievements(req.user._id, req.user.score + 1, { session: session });
+        }
+
+        const newRecord = moves < level.leastMoves;
+        let incPlayattemptsDurationSum = 0;
+
+        if (newRecord) {
+          const prevRecord = await RecordModel.findOne<Record>({ levelId: level._id }, {}, { session: session }).sort({ ts: -1 });
 
           // update calc_records if the previous record was set by a different user
           if (prevRecord && prevRecord.userId.toString() !== req.userId) {
@@ -157,62 +159,154 @@ export default withAuth({
             }
           }
 
-          // update level with new leastMoves data
-          await LevelModel.updateOne({ _id: levelId }, {
-            $set: {
-              leastMoves: moves,
-              // NB: set to 0 here because forceUpdateLatestPlayAttempt will increment to 1
-              calc_playattempts_just_beaten_count: 0,
-            },
-          }, { session: session });
           await RecordModel.create([{
             _id: new Types.ObjectId(),
-            levelId: new Types.ObjectId(levelId),
+            levelId: level._id,
             moves: moves,
             ts: ts,
-            userId: new Types.ObjectId(req.userId),
+            userId: req.user._id,
           }], { session: session });
-          await PlayAttemptModel.updateMany(
-            { levelId: new Types.ObjectId(levelId) },
-            { $set: { attemptContext: AttemptContext.UNBEATEN } },
-            { session: session },
-          );
-          await forceCompleteLatestPlayAttempt(req.userId, levelId, ts, { session: session });
-          // find the userIds that need to be updated
+
+          // find the stats and users that that need to be updated
           const stats = await StatModel.find<Stat>({
             complete: true,
-            levelId: new Types.ObjectId(levelId),
+            levelId: level._id,
             userId: { $ne: req.userId },
           }, 'userId', {
             lean: true,
             session: session,
           });
 
-          if (stats && stats.length > 0) {
-            // update all stats/users that had the record on this level
+          // update all stats/users that had the record on this level
+          if (stats.length > 0) {
             const statUserIds = stats.map(s => s.userId);
 
             await StatModel.updateMany(
-              { _id: { $in: stats.map(stat => stat._id) } },
-              { $set: { complete: false } }, { session: session }
+              { _id: { $in: stats.map(s => s._id) } },
+              { $set: { complete: false } },
+              { session: session },
             );
             await UserModel.updateMany(
-              { _id: { $in: statUserIds } }, { $inc: { score: -1 } }, { session: session }
+              { _id: { $in: statUserIds } },
+              { $inc: { score: -1 } },
+              { session: session },
             );
 
             // create a notification for each user
-            await createNewRecordOnALevelYouBeatNotifications(statUserIds, req.userId, levelId, moves.toString(), { session: session });
+            await createNewRecordOnALevelYouBeatNotifications(statUserIds, req.userId, level._id, moves.toString(), { session: session });
           }
 
-          await queueDiscordWebhook(Discord.LevelsId, `**${req.user?.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`, { session: session });
+          // keep track of all playtime after the record was set
+          const sumDuration = await PlayAttemptModel.aggregate([
+            {
+              $match: {
+                levelId: level._id,
+                attemptContext: AttemptContext.BEATEN,
+              }
+            },
+            {
+              $group: {
+                _id: null,
+                sumDuration: {
+                  $sum: {
+                    $subtract: ['$endTime', '$startTime']
+                  }
+                }
+              }
+            }
+          ], { session: session });
+
+          incPlayattemptsDurationSum += sumDuration[0]?.sumDuration ?? 0;
+
+          // reset all playattempts to unbeaten
+          await PlayAttemptModel.updateMany(
+            { levelId: level._id },
+            { $set: { attemptContext: AttemptContext.UNBEATEN } },
+            { session: session },
+          );
+
+          await queueDiscordWebhook(Discord.LevelsId, `**${req.user.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`, { session: session });
         }
+
+        // extend the user's recent playattempt up to current ts
+        const found = await PlayAttemptModel.findOneAndUpdate({
+          endTime: { $gt: ts - 3 * 60 },
+          levelId: level._id,
+          userId: req.user._id,
+        }, {
+          $set: {
+            attemptContext: AttemptContext.JUST_BEATEN,
+            endTime: ts,
+          },
+          $inc: { updateCount: 1 }
+        }, {
+          new: false,
+          lean: true,
+          session: session,
+          sort: {
+            endTime: -1,
+            // NB: if end time is identical, we want to get the highest attempt context (JUST_BEATEN over UNBEATEN)
+            attemptContext: -1,
+          },
+        });
+
+        if (!found) {
+          // create one if it did not exist... rare but possible
+          await PlayAttemptModel.create([{
+            _id: new Types.ObjectId(),
+            attemptContext: AttemptContext.JUST_BEATEN,
+            startTime: ts,
+            endTime: ts,
+            updateCount: 0,
+            levelId: level._id,
+            userId: req.user._id,
+          }], { session: session });
+        } else {
+          incPlayattemptsDurationSum += ts - found.endTime;
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const levelUpdate: mongoose.AnyKeys<any> = {
+          $addToSet: {
+            calc_playattempts_unique_users: req.user._id,
+          },
+          $inc: {
+            calc_playattempts_duration_sum: incPlayattemptsDurationSum,
+          },
+        };
+
+        if (newRecord) {
+          levelUpdate['$set'] = {
+            calc_playattempts_just_beaten_count: 1,
+            leastMoves: moves,
+          };
+        } else {
+          levelUpdate['$inc']['calc_playattempts_just_beaten_count'] = 1;
+        }
+
+        const enrichedLevel = await LevelModel.findByIdAndUpdate<EnrichedLevel>(level._id, levelUpdate, {
+          new: true,
+          lean: true,
+          projection: {
+            calc_playattempts_duration_sum: 1,
+            calc_playattempts_just_beaten_count: 1,
+            calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' },
+          },
+          session: session,
+        });
+
+        // should be impossible, but need this check for typescript to be happy
+        if (!enrichedLevel) {
+          throw new Error('Level ' + levelId + ' not found within transaction');
+        }
+
+        await LevelModel.findByIdAndUpdate(level._id, {
+          $set: {
+            calc_difficulty_estimate: getDifficultyEstimate(enrichedLevel, enrichedLevel.calc_playattempts_unique_users_count ?? 0),
+          },
+        }, { session: session });
 
         await queueRefreshIndexCalcs(level._id, { session: session });
-
-        if (complete && matchId) {
-          // TODO: use session here
-          await matchMarkCompleteLevel(req.user._id, matchId, level._id);
-        }
       });
 
       resTrack.status = 200;

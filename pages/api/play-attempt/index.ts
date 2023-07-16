@@ -1,4 +1,5 @@
-import mongoose, { PipelineStage, QueryOptions, Types } from 'mongoose';
+import PlayAttempt from '@root/models/db/playAttempt';
+import mongoose, { PipelineStage, Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { ValidEnum, ValidObjectId } from '../../../helpers/apiWrapper';
 import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
@@ -8,12 +9,10 @@ import { logger } from '../../../helpers/logger';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { EnrichedLevel } from '../../../models/db/level';
 import User from '../../../models/db/user';
-import { LevelModel, PlayAttemptModel, StatModel } from '../../../models/mongoose';
+import { LevelModel, PlayAttemptModel } from '../../../models/mongoose';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
 import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
-
-const MINUTE = 60;
 
 export async function getLastLevelPlayed(user: User) {
   const lastAgg = await PlayAttemptModel.aggregate([
@@ -98,67 +97,6 @@ export async function getLastLevelPlayed(user: User) {
   return lastAgg[0] as EnrichedLevel;
 }
 
-export async function forceCompleteLatestPlayAttempt(userId: string, levelId: string, ts: number, opts: QueryOptions) {
-  const found = await PlayAttemptModel.findOneAndUpdate({
-    userId: userId,
-    levelId: levelId,
-    endTime: { $gt: ts - 3 * MINUTE },
-  }, {
-    $set: {
-      attemptContext: AttemptContext.JUST_BEATEN,
-      endTime: ts,
-    },
-    $inc: { updateCount: 1 }
-  }, {
-    new: false,
-    sort: { endTime: -1 },
-    lean: true,
-    ...opts,
-  });
-
-  if (!found) {
-    // create one if it did not exist... rare but technically possible
-    await PlayAttemptModel.create([{
-      _id: new Types.ObjectId(),
-      attemptContext: AttemptContext.JUST_BEATEN,
-      startTime: ts,
-      endTime: ts,
-      updateCount: 0,
-      levelId: new Types.ObjectId(levelId),
-      userId: new Types.ObjectId(userId),
-    }], { ...opts });
-  }
-
-  const level = await LevelModel.findByIdAndUpdate<EnrichedLevel>(levelId, {
-    $inc: {
-      calc_playattempts_duration_sum: found ? ts - found.endTime : 0,
-      calc_playattempts_just_beaten_count: 1,
-    },
-    $addToSet: {
-      calc_playattempts_unique_users: new Types.ObjectId(userId),
-    },
-  }, {
-    new: true,
-    lean: true,
-    projection: {
-      calc_playattempts_duration_sum: 1,
-      calc_playattempts_just_beaten_count: 1,
-      calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' },
-    },
-    ...opts,
-  });
-
-  if (!level) {
-    throw new Error('Level ' + levelId + ' not found within transaction');
-  }
-
-  await LevelModel.findByIdAndUpdate(levelId, {
-    $set: {
-      calc_difficulty_estimate: getDifficultyEstimate(level, level.calc_playattempts_unique_users_count ?? 0),
-    },
-  }, opts);
-}
-
 // This API extends an existing playAttempt, or creates a new one if the last
 // playAttempt was over 15 minutes ago.
 export default withAuth({
@@ -179,6 +117,7 @@ export default withAuth({
     return res.status(200).json(lastPlayed);
   } else if (req.method === 'POST') {
     const { levelId } = req.body;
+    const levelObjectId = new Types.ObjectId(levelId);
     const now = TimerUtil.getTs();
     const session = await mongoose.startSession();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -186,63 +125,84 @@ export default withAuth({
 
     try {
       await session.withTransaction(async () => {
-        const [playAttempt, level] = await Promise.all([
-          PlayAttemptModel.findOneAndUpdate(
-            {
-              userId: req.user._id,
-              levelId: levelId,
-              endTime: { $gt: now - 3 * MINUTE },
-              attemptContext: {
-                $ne: AttemptContext.JUST_BEATEN
-              }
+        const latestPlayAttempt = await PlayAttemptModel.findOne<PlayAttempt>(
+          {
+            isDeleted: { $ne: true },
+            levelId: levelObjectId,
+            userId: req.user._id,
+          },
+          {
+            _id: 1,
+            attemptContext: 1,
+            endTime: 1,
+          },
+          {
+            lean: true,
+            session: session,
+            $sort: {
+              endTime: -1,
+              // NB: if end time is identical, we want to get the highest attempt context (JUST_BEATEN over UNBEATEN)
+              attemptContext: -1,
             },
+          },
+        );
+
+        if (!latestPlayAttempt) {
+          // there is no playattempt yet, so need to check if the level exists before continuing
+          const level = await LevelModel.findOne<EnrichedLevel>(
             {
-              $set: { endTime: now },
-              $inc: { updateCount: 1 },
-            },
-            {
-              new: false,
-              lean: true,
-              session: session,
-              projection: {
-                _id: 1,
-                attemptContext: 1,
-                endTime: 1,
-              },
-              // NB: must update the latest one if there are multiple options, otherwise time ranges will overlap
-              sort: { endTime: -1 },
-            },
-          ),
-          LevelModel.findOne<EnrichedLevel>(
-            {
-              _id: levelId,
+              _id: levelObjectId,
               isDeleted: { $ne: true },
               isDraft: false,
             },
             {
-              calc_playattempts_duration_sum: 1,
-              calc_playattempts_just_beaten_count: 1,
-              calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' },
+              userId: 1,
             },
             {
               lean: true,
               session: session,
             },
-          ),
-        ]);
+          );
 
-        if (!level) {
-          resTrack.status = 404;
-          resTrack.json.error = `Level ${levelId} not found`;
-          throw new Error(resTrack.json.error);
+          if (!level) {
+            resTrack.status = 404;
+            resTrack.json.error = `Level ${levelId} not found`;
+            throw new Error(resTrack.json.error);
+          }
+
+          // create the user's first playattempt for this level and return
+          const resp = await PlayAttemptModel.create([{
+            _id: new Types.ObjectId(),
+            attemptContext: level.userId.toString() === req.userId ? AttemptContext.BEATEN : AttemptContext.UNBEATEN,
+            endTime: now,
+            levelId: levelObjectId,
+            startTime: now,
+            updateCount: 0,
+            userId: req.user._id,
+          }], { session: session });
+
+          resTrack.status = 200;
+          resTrack.json = { message: 'created', playAttempt: resp[0]._id };
+
+          return;
         }
 
-        if (playAttempt) {
-          // increment the level's calc_playattempts_duration_sum
-          if (playAttempt.attemptContext !== AttemptContext.BEATEN) {
-            const newPlayDuration = now - playAttempt.endTime;
+        if (latestPlayAttempt.endTime > (now - 3 * 60) && latestPlayAttempt.attemptContext !== AttemptContext.JUST_BEATEN) {
+          // extend recent playattempts
+          await PlayAttemptModel.updateOne(
+            { _id: latestPlayAttempt._id },
+            {
+              $inc: { updateCount: 1 },
+              $set: { endTime: now },
+            },
+            { session: session },
+          );
 
-            const updatedLevel = await LevelModel.findByIdAndUpdate<EnrichedLevel>(levelId, {
+          // increment the level's calc_playattempts_duration_sum
+          if (latestPlayAttempt.attemptContext === AttemptContext.UNBEATEN) {
+            const newPlayDuration = now - latestPlayAttempt.endTime;
+
+            const updatedLevel = await LevelModel.findByIdAndUpdate<EnrichedLevel>(levelObjectId, {
               $inc: {
                 calc_playattempts_duration_sum: newPlayDuration,
               },
@@ -266,7 +226,7 @@ export default withAuth({
               throw new Error(resTrack.json.error);
             }
 
-            await LevelModel.updateOne({ _id: levelId }, {
+            await LevelModel.updateOne({ _id: levelObjectId }, {
               $set: {
                 calc_difficulty_estimate: getDifficultyEstimate(updatedLevel, updatedLevel.calc_playattempts_unique_users_count ?? 0),
               },
@@ -277,26 +237,23 @@ export default withAuth({
           }
 
           resTrack.status = 200;
-          resTrack.json = { message: 'updated', playAttempt: playAttempt._id };
-        } else {
-          const statRecord = await StatModel.findOne({
-            userId: req.user._id,
-            levelId: levelId,
-          }, 'complete', { session: session, lean: true });
+          resTrack.json = { message: 'updated', playAttempt: latestPlayAttempt._id };
 
-          const resp = await PlayAttemptModel.create([{
-            _id: new Types.ObjectId(),
-            userId: req.user._id,
-            levelId: levelId,
-            startTime: now,
-            endTime: now,
-            updateCount: 0,
-            attemptContext: statRecord?.complete ? AttemptContext.BEATEN : AttemptContext.UNBEATEN,
-          }], { session: session });
-
-          resTrack.status = 200;
-          resTrack.json = { message: 'created', playAttempt: resp[0]._id };
+          return;
         }
+
+        const resp = await PlayAttemptModel.create([{
+          _id: new Types.ObjectId(),
+          attemptContext: latestPlayAttempt.attemptContext === AttemptContext.UNBEATEN ? AttemptContext.UNBEATEN : AttemptContext.BEATEN,
+          endTime: now,
+          levelId: levelObjectId,
+          startTime: now,
+          updateCount: 0,
+          userId: req.user._id,
+        }], { session: session });
+
+        resTrack.status = 200;
+        resTrack.json = { message: 'created', playAttempt: resp[0]._id };
       });
     } catch (err) {
       logger.error('Error in api/play-attempt', err);
