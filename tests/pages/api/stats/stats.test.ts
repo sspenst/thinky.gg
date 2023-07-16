@@ -347,8 +347,8 @@ describe('Testing stats api', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe(`Error finding level ${TestId.LEVEL}`);
-        expect(res.status).toBe(404);
+        expect(response.error).toBe(`Unauthorized access for level ${TestId.LEVEL}`);
+        expect(res.status).toBe(401);
         const u = await UserModel.findById(TestId.USER);
 
         expect(u.calc_records).toEqual(2);
@@ -554,11 +554,8 @@ describe('Testing stats api', () => {
     // The findOne that api/stats checks for a stat existing already, let's make this fail by returning a promise that errors
 
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    jest.spyOn(StatModel, 'updateOne').mockRejectedValueOnce(new Error('Test DB error'));
 
-    jest.spyOn(StatModel, 'updateOne').mockReturnValueOnce({
-      exec: () => {throw new Error('Test DB error');}
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any);
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
