@@ -93,7 +93,7 @@ async function integrityCheckLevels(chunks = 1, chunkIndex = 0) {
         }
       }
 
-      console.log('Changed count is now ' + changedCount + '. Percent error rate is ' + (changedCount / (end - start) * 100).toFixed(2) + '%');
+      console.log('Changed count is now ' + changedCount + '. Percent error rate is ' + (changedCount / (i + 1 - start) * 100).toFixed(2) + '%');
     }
 
     progressBar.increment();
@@ -199,13 +199,29 @@ async function integrityCheckPlayAttempts() {
   // stream with async interator, sorted using the existing index
   for await (const playAttempt of PlayAttemptModel.find<PlayAttempt>({}, {}, { lean: true, sort: { levelId: 1, userId: 1, endTime: -1, attemptContext: -1 } })) {
     if (playAttempt.startTime > playAttempt.endTime) {
-      console.error(`startTime greater than endTime for playAttempt ${playAttempt._id.toString()}`);
+      console.warn(`[${playAttempt._id.toString()}, ${playAttempt.levelId.toString()}, ${playAttempt.userId.toString()}] startTime greater than endTime`);
+      continue;
     }
 
     // comparing play attempts from the same level and user
     if (prevPlayAttempt && prevPlayAttempt.levelId.toString() === playAttempt.levelId.toString() && prevPlayAttempt.userId.toString() === playAttempt.userId.toString()) {
       if (playAttempt.attemptContext > prevPlayAttempt.attemptContext) {
-        console.error(`attemptContext out of order for levelId ${playAttempt.levelId.toString()} and userId ${playAttempt.userId.toString()} (${playAttempt._id.toString()})`);
+        console.warn(`[${playAttempt._id.toString()}, ${playAttempt.levelId.toString()}, ${playAttempt.userId.toString()}] attemptContext out of order`);
+      }
+
+      if (playAttempt.attemptContext === AttemptContext.UNBEATEN && prevPlayAttempt.attemptContext === AttemptContext.BEATEN) {
+        if (playAttempt.startTime === playAttempt.endTime) {
+          // sometimes this is a bug where an author has UNBEATEN on their own level - safe to delete either way
+          await PlayAttemptModel.deleteOne({ _id: playAttempt._id });
+          console.log(`[${playAttempt._id.toString()}, ${playAttempt.levelId.toString()}, ${playAttempt.userId.toString()}] DELETED - missing AttemptContext.JUST_BEATEN`);
+          continue;
+        } else {
+          // otherwise attempt to correct the data
+          await PlayAttemptModel.findByIdAndUpdate(playAttempt._id, { $set: { attemptContext: AttemptContext.JUST_BEATEN } });
+          playAttempt.attemptContext = AttemptContext.JUST_BEATEN;
+
+          console.log(`[${playAttempt._id.toString()}, ${playAttempt.levelId.toString()}, ${playAttempt.userId.toString()}] UPDATED - AttemptContext.JUST_BEATEN`);
+        }
       }
 
       if (playAttempt.attemptContext === AttemptContext.JUST_BEATEN) {
@@ -213,35 +229,20 @@ async function integrityCheckPlayAttempts() {
           await PlayAttemptModel.findByIdAndUpdate(playAttempt._id, { $set: { attemptContext: AttemptContext.UNBEATEN } });
           playAttempt.attemptContext = AttemptContext.UNBEATEN;
 
-          console.error(`multiple AttemptContext.JUST_BEATEN for levelId ${playAttempt.levelId.toString()} and userId ${playAttempt.userId.toString()} (${playAttempt._id.toString()})`);
+          console.log(`[${playAttempt._id.toString()}, ${playAttempt.levelId.toString()}, ${playAttempt.userId.toString()}] UPDATED - multiple AttemptContext.JUST_BEATEN`);
         } else {
           trackJustBeaten = true;
         }
       }
 
-      if (playAttempt.attemptContext === AttemptContext.UNBEATEN && prevPlayAttempt.attemptContext === AttemptContext.BEATEN) {
-        if (playAttempt.startTime === playAttempt.endTime) {
-          // sometimes this is a bug where an author has UNBEATEN on their own level - safe to delete either way
-          await PlayAttemptModel.deleteOne({ _id: playAttempt._id });
-          console.log(`missing AttemptContext.JUST_BEATEN - deleted ${playAttempt._id.toString()}`);
-          continue;
-        } else {
-          // otherwise attempt to correct the data
-          await PlayAttemptModel.findByIdAndUpdate(playAttempt._id, { $set: { attemptContext: AttemptContext.JUST_BEATEN } });
-          playAttempt.attemptContext = AttemptContext.JUST_BEATEN;
-
-          console.error(`inserted AttemptContext.JUST_BEATEN for levelId ${playAttempt.levelId.toString()} and userId ${playAttempt.userId.toString()} (${playAttempt._id.toString()})`);
-        }
-      }
-
       if (playAttempt.endTime > prevPlayAttempt.startTime) {
-        if (playAttempt.startTime === playAttempt.endTime && playAttempt.attemptContext !== AttemptContext.JUST_BEATEN) {
+        if (playAttempt.startTime >= prevPlayAttempt.startTime && playAttempt.attemptContext !== AttemptContext.JUST_BEATEN) {
           await PlayAttemptModel.deleteOne({ _id: playAttempt._id });
-          console.log(`time range overlapping - deleted ${playAttempt._id.toString()}`);
+          console.log(`[${playAttempt._id.toString()}, ${playAttempt.levelId.toString()}, ${playAttempt.userId.toString()}] DELETED - time range overlapping`);
           continue;
         }
 
-        console.error(`time range overlapping for levelId ${playAttempt.levelId.toString()} and userId ${playAttempt.userId.toString()} (${playAttempt._id.toString()})`);
+        console.warn(`[${playAttempt._id.toString()}, ${playAttempt.levelId.toString()}, ${playAttempt.userId.toString()}] time range overlapping`);
       }
     } else {
       // reset tracking variable
