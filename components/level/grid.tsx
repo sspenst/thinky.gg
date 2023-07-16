@@ -44,7 +44,6 @@ export default function Grid({ board, cellClassName, generateMovables, leastMove
 
     // Add event listener
     window.addEventListener('resize', handleResize);
-    screen.orientation.addEventListener('change', handleResize);
 
     // Call handler right away so state gets updated with initial window size
     handleResize();
@@ -52,7 +51,6 @@ export default function Grid({ board, cellClassName, generateMovables, leastMove
     // Remove event listener on cleanup
     return () => {
       window.removeEventListener('resize', handleResize);
-      screen.orientation.removeEventListener('change', handleResize);
     };
   }, []); // Empty array ensures that effect is only run on mount
 
