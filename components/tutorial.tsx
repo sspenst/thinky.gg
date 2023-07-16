@@ -676,7 +676,7 @@ export default function Tutorial() {
     );
   }
 
-  // NB: trying to force the grid to resize
+  // TODO: this is a hack to force the grid to resize...
   useEffect(() => {
     window.dispatchEvent(new Event('resize'));
   }, [tutorialStepIndex]);
