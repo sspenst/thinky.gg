@@ -799,7 +799,7 @@ export default function Game({
     }
 
     // NB: must start the touch event within the game layout
-    const isValid = event.composedPath().some(e => (e as HTMLElement).id === 'grid');
+    const isValid = event.composedPath().some(e => (e as HTMLElement).id === `grid-${level._id.toString()}`);
 
     validTouchStart.current = isValid;
 
@@ -811,7 +811,7 @@ export default function Game({
       lastTouchTimestamp.current = Date.now();
       event.preventDefault();
     }
-  }, [preventKeyDownEvent]);
+  }, [level._id, preventKeyDownEvent]);
 
   const moveByDXDY = useCallback((dx: number, dy: number) => {
     const timeSince = Date.now() - lastMovetimestamp.current;
@@ -843,7 +843,7 @@ export default function Game({
       const { clientX, clientY } = event.changedTouches[0];
       const dx: number = clientX - touchXDown.current;
       const dy: number = clientY - touchYDown.current;
-      const containerDiv = document.getElementById('grid');
+      const containerDiv = document.getElementById(`grid-${level._id.toString()}`);
 
       const maxHeight = containerDiv?.offsetHeight || 0;
       const maxWidth = containerDiv?.offsetWidth || 0;
@@ -878,7 +878,7 @@ export default function Game({
       // setTouchXDown(undefined);
       // setTouchYDown(undefined);
     }
-  }, [gameState.height, gameState.width, moveByDXDY, preventKeyDownEvent]);
+  }, [gameState.height, gameState.width, level._id, moveByDXDY, preventKeyDownEvent]);
 
   const handleTouchEndEvent = useCallback((event: TouchEvent) => {
     if (!validTouchStart.current || preventKeyDownEvent) {
