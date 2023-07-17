@@ -676,11 +676,6 @@ export default function Tutorial() {
     );
   }
 
-  // TODO: this is a hack to force the grid to resize...
-  useEffect(() => {
-    window.dispatchEvent(new Event('resize'));
-  }, [tutorialStepIndex]);
-
   return (
     <Page isFullScreen={!!tutorialStep.editorGrid || !!tutorialStep.gameGrid} title={'Tutorial'}>
       <div className='flex flex-col h-full' id='tutorial-container'>
@@ -696,7 +691,7 @@ export default function Tutorial() {
           </div>
         }
         {tutorialStep.editorGrid && tutorialStep.level && (
-          <div key={'div-' + tutorialStep.key} className={classNames('grow flex flex-col', tutorialStep.gameClasses)}>
+          <div key={'div-' + tutorialStep.key} className={classNames('grow flex flex-col overflow-hidden', tutorialStep.gameClasses)}>
             <BasicLayout
               controls={controls}
               key={tutorialStep.key}
@@ -705,7 +700,7 @@ export default function Tutorial() {
           </div>
         )}
         {tutorialStep.gameGrid && tutorialStep.level && (
-          <div id='game-div-parent' key={'div-' + tutorialStep.key} className={classNames('grow', tutorialStep.gameClasses)}>
+          <div id='game-div-parent' key={'div-' + tutorialStep.key} className={classNames('grow overflow-hidden', tutorialStep.gameClasses)}>
             <Game
               disableCheckpoints={true}
               disablePlayAttempts={true}

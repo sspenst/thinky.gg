@@ -1,5 +1,5 @@
 import { PageContext } from '@root/contexts/pageContext';
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import Control from '../../models/control';
 import { EnrichedLevel } from '../../models/db/level';
@@ -42,46 +42,17 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, hi
 
   useEffect(() => {
     setShowHeader(!fullScreen);
-    window.dispatchEvent(new Event('resize'));
   }, [fullScreen, setShowHeader]);
 
   useEffect(() => {
     setPreventKeyDownEvent(isCheckpointOpen);
   }, [isCheckpointOpen, setPreventKeyDownEvent]);
 
-  const grid = useMemo(() => {
-    return <Grid
-      board={gameState.board}
-      generateMovables={(borderWidth, squareSize) => <>
-        {gameState.blocks.map(block => <Block
-          block={block}
-          borderWidth={borderWidth}
-          key={`block-${block.id}`}
-          onClick={() => onCellClick(block.pos.x, block.pos.y)}
-          size={squareSize}
-        />)}
-        <Player
-          borderWidth={borderWidth}
-          gameState={gameState}
-          leastMoves={level.leastMoves}
-          size={squareSize}
-          tileType={gameState.board[gameState.pos.y][gameState.pos.x].levelDataType}
-        />
-      </>}
-      leastMoves={level.leastMoves}
-      onCellClick={(x, y, rightClick) => {
-        if (!rightClick) {
-          onCellClick(x, y);
-        }
-      }}
-    />;
-  }, [gameState, level.leastMoves, onCellClick]);
-
   return (
     <div className='flex flex-row h-full w-full' id='game-layout' style={{
       backgroundColor: 'var(--bg-color)',
     }}>
-      <div className='flex grow flex-col h-full relative max-w-full'>
+      <div className='grow flex flex-col overflow-hidden'>
         {!matchId && level.userId && !fullScreen &&
           <div className='flex items-center justify-center py-1 px-2 gap-1 block xl:hidden'>
             <h1
@@ -97,7 +68,32 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, hi
             </div>
           </div>
         }
-        {grid}
+        <Grid
+          board={gameState.board}
+          generateMovables={(borderWidth, squareSize) => <>
+            {gameState.blocks.map(block => <Block
+              block={block}
+              borderWidth={borderWidth}
+              key={`block-${block.id}`}
+              onClick={() => onCellClick(block.pos.x, block.pos.y)}
+              size={squareSize}
+            />)}
+            <Player
+              borderWidth={borderWidth}
+              gameState={gameState}
+              leastMoves={level.leastMoves}
+              size={squareSize}
+              tileType={gameState.board[gameState.pos.y][gameState.pos.x].levelDataType}
+            />
+          </>}
+          id={level._id.toString()}
+          leastMoves={level.leastMoves}
+          onCellClick={(x, y, rightClick) => {
+            if (!rightClick) {
+              onCellClick(x, y);
+            }
+          }}
+        />
         <div className='gap-2 mx-3 z-10 transition-opacity flex'>
           {!disableCheckpoints && !fullScreen ?
             <>
