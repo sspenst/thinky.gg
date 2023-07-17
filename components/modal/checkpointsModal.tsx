@@ -1,12 +1,12 @@
 import TileType, { TileTypeDefaultVisited } from '@root/constants/tileType';
 import { AppContext } from '@root/contexts/appContext';
 import { GameContext } from '@root/contexts/gameContext';
+import { CheckpointState } from '@root/helpers/checkpointHelpers';
 import getPngDataClient from '@root/helpers/getPngDataClient';
 import isPro from '@root/helpers/isPro';
 import { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import Link from 'next/link';
 import React, { useContext, useEffect, useState } from 'react';
-import { GameState } from '../level/game';
 import Modal from '.';
 
 interface CheckpointButtonProps {
@@ -31,7 +31,7 @@ function CheckpointButton({ onClick, shortcut, text }: CheckpointButtonProps) {
 }
 
 interface CheckpointModalItemProps {
-  checkpoint: GameState | null;
+  checkpoint: CheckpointState | null;
   closeModal: () => void;
   slot: number;
 }

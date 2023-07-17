@@ -1,6 +1,6 @@
 import { GameContext } from '@root/contexts/gameContext';
+import { CheckpointState, convertFromCheckpointState, convertToCheckpointState, isValidCheckpointState } from '@root/helpers/checkpointHelpers';
 import isPro from '@root/helpers/isPro';
-import { isValidGameState } from '@root/helpers/isValidGameState';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import useCheckpoints, { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import { Types } from 'mongoose';
@@ -33,9 +33,9 @@ export interface GameState {
   width: number;
 }
 
-interface GameStateStorage {
+interface SessionCheckpointState {
   _id: Types.ObjectId;
-  gameState: GameState;
+  checkpointState: CheckpointState;
 }
 
 interface GameProps {
@@ -55,19 +55,21 @@ interface GameProps {
   onStatsSuccess?: () => void;
 }
 
-function cloneGameState(state: GameState) {
-  return {
-    actionCount: state.actionCount,
-    blocks: state.blocks.map(block => BlockState.clone(block)),
-    board: state.board.map(row => {
+function cloneGameState(gameState: GameState) {
+  const newGameState: GameState = {
+    actionCount: gameState.actionCount,
+    blocks: gameState.blocks.map(block => BlockState.clone(block)),
+    board: gameState.board.map(row => {
       return row.map(square => SquareState.clone(square));
     }),
-    height: state.height,
-    moveCount: state.moveCount,
-    moves: state.moves.map(move => Move.clone(move)),
-    pos: new Position(state.pos.x, state.pos.y),
-    width: state.width,
+    height: gameState.height,
+    moveCount: gameState.moveCount,
+    moves: gameState.moves.map(move => Move.clone(move)),
+    pos: new Position(gameState.pos.x, gameState.pos.y),
+    width: gameState.width,
   };
+
+  return newGameState;
 }
 
 function initGameState(levelData: string, actionCount = 0) {
@@ -144,21 +146,23 @@ export default function Game({
 
   useEffect(() => {
     if (enableLocalSessionRestore && !localSessionRestored && typeof window.sessionStorage !== 'undefined') {
-      const levelSessionStorage = window.sessionStorage.getItem('level');
+      const sessionCheckpointStateStr = window.sessionStorage.getItem('sessionCheckpointState');
 
-      if (levelSessionStorage) {
-        const gameStateStorage = JSON.parse(levelSessionStorage) as GameStateStorage;
+      if (sessionCheckpointStateStr) {
+        const sessionCheckpointState = JSON.parse(sessionCheckpointStateStr) as SessionCheckpointState;
 
-        if (gameStateStorage._id === level._id && gameStateStorage.gameState) {
-          const gameStateLocal = cloneGameState(gameStateStorage.gameState);
+        if (sessionCheckpointState._id === level._id && sessionCheckpointState.checkpointState) {
+          const newGameState = convertFromCheckpointState(sessionCheckpointState.checkpointState);
 
           setGameState(prevGameState => {
-            // Compare local game state with server game state
-            const isEqual = prevGameState.board.length === gameStateLocal.board.length &&
-              prevGameState.height === gameStateLocal.height &&
-              prevGameState.width === gameStateLocal.width &&
+            // ensure the new game state is valid for this level layout
+            // (it can be different if a level is republished with different data,
+            // or if the session storage is manually altered)
+            const isEqual = prevGameState.board.length === newGameState.board.length &&
+              prevGameState.height === newGameState.height &&
+              prevGameState.width === newGameState.width &&
               prevGameState.blocks.every((serverBlock, i) => {
-                const localBlock = gameStateLocal.blocks[i];
+                const localBlock = newGameState.blocks[i];
 
                 return serverBlock.type === localBlock.type;
               });
@@ -166,9 +170,8 @@ export default function Game({
             if (isEqual) {
               setLocalSessionRestored(true);
 
-              return gameStateLocal;
+              return newGameState;
             } else {
-              // this happens... super weird... but at least we catch it now
               return prevGameState;
             }
           });
@@ -184,10 +187,10 @@ export default function Game({
       }
 
       if (enableLocalSessionRestore && typeof window.sessionStorage !== 'undefined') {
-        window.sessionStorage.setItem('level', JSON.stringify({
+        window.sessionStorage.setItem('sessionCheckpointState', JSON.stringify({
           _id: level._id,
-          gameState: gameState,
-        } as GameStateStorage));
+          checkpointState: convertToCheckpointState(gameState),
+        } as SessionCheckpointState));
       }
     }
   }, [enableLocalSessionRestore, gameState, level._id, level.ts, onMove]);
@@ -291,6 +294,8 @@ export default function Game({
       toast.loading(`Saving checkpoint ${slot}...`);
     }
 
+    const checkpointState = convertToCheckpointState(gameState);
+
     fetch('/api/level/' + level._id + '/checkpoints', {
       method: 'POST',
       headers: {
@@ -298,7 +303,7 @@ export default function Game({
       },
       body: JSON.stringify({
         checkpointIndex: slot,
-        checkpointValue: gameState,
+        checkpointValue: checkpointState,
       }),
     }).then(async res => {
       if (res.status === 200) {
@@ -361,17 +366,17 @@ export default function Game({
       return;
     }
 
-    const clonedCheckpoint = cloneGameState(checkpoint);
-
-    if (!isValidGameState(clonedCheckpoint)) {
+    if (!isValidCheckpointState(checkpoint)) {
       toast.dismiss();
       toast.error('Corrupted checkpoint');
 
       return;
     }
 
+    const newGameState = convertFromCheckpointState(checkpoint);
+
     // check if the checkpoint is the same as the current game state
-    if (JSON.stringify(clonedCheckpoint) === JSON.stringify(gameState) && JSON.stringify(gameState) !== JSON.stringify(oldGameState.current)) {
+    if (JSON.stringify(newGameState) === JSON.stringify(gameState) && JSON.stringify(gameState) !== JSON.stringify(oldGameState.current)) {
       toast.dismiss();
       toast.error('Undoing checkpoint restore', { duration: 1500, icon: '👍' });
       oldGameState.current && setGameState(oldGameState.current);
@@ -380,7 +385,7 @@ export default function Game({
       // TODO: https://github.com/sspenst/pathology/issues/910
       // should reapply the checkpoint rather than just cloning the state
       // so that in the editor checkpoints can be properly loaded even when the level content changes
-      setGameState(clonedCheckpoint);
+      setGameState(newGameState);
       setMadeMove(true);
       const keepOldStateRef = cloneGameState(oldGameState.current);
 
@@ -591,7 +596,7 @@ export default function Game({
             }
           }
 
-          return {
+          const newGameState: GameState = {
             actionCount: prevGameState.actionCount + 1,
             blocks: blocks,
             board: board,
@@ -601,6 +606,8 @@ export default function Game({
             pos: prevMove.pos.clone(),
             width: prevGameState.width,
           };
+
+          return newGameState;
         }
 
         function makeMove(direction: Position) {
@@ -650,7 +657,7 @@ export default function Game({
             trackStats(moves.map(move => move.code), level._id.toString(), 3);
           }
 
-          return {
+          const newGameState: GameState = {
             actionCount: prevGameState.actionCount + 1,
             blocks: blocks,
             board: board,
@@ -660,6 +667,8 @@ export default function Game({
             pos: pos,
             width: prevGameState.width,
           };
+
+          return newGameState;
         }
 
         const undoKey = code === 'Backspace' || code === 'KeyU' || code == 'KeyZ';
