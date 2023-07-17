@@ -1,7 +1,7 @@
+import { isValidCheckpointState } from '@root/helpers/checkpointHelpers';
 import { Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { NextApiRequestWithAuth } from '../lib/withAuth';
-import { isValidGameState } from './isValidGameState';
 import { logger } from './logger';
 
 export interface ReqValidator {
@@ -66,9 +66,9 @@ export function ValidArray(mustExist = true) {
   };
 }
 
-export function ValidGameState() {
+export function ValidCheckpointState() {
   return (value?: unknown) => {
-    return isValidGameState(value);
+    return isValidCheckpointState(value);
   };
 }
 

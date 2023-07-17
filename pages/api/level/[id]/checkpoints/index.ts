@@ -1,7 +1,7 @@
-import { GameState } from '@root/components/level/game';
+import { CheckpointState } from '@root/helpers/checkpointHelpers';
 import { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import { NextApiResponse } from 'next';
-import { ValidGameState, ValidNumber } from '../../../../../helpers/apiWrapper';
+import { ValidCheckpointState, ValidNumber } from '../../../../../helpers/apiWrapper';
 import isPro from '../../../../../helpers/isPro';
 import withAuth, { NextApiRequestWithAuth } from '../../../../../lib/withAuth';
 import { KeyValueModel, LevelModel } from '../../../../../models/mongoose';
@@ -11,7 +11,7 @@ export default withAuth({
   POST: {
     body: {
       checkpointIndex: ValidNumber(true, 0, 10),
-      checkpointValue: ValidGameState(),
+      checkpointValue: ValidCheckpointState(),
     }
   },
   DELETE: {
@@ -46,7 +46,7 @@ export default withAuth({
 
     return res.status(200).json(checkpointArr);
   } else if (req.method === 'POST') {
-    const { checkpointIndex, checkpointValue } = req.body as { checkpointIndex: number, checkpointValue: GameState };
+    const { checkpointIndex, checkpointValue } = req.body as { checkpointIndex: number, checkpointValue: CheckpointState };
 
     // always overwrite draft levels
     if (!level.isDraft && checkpointIndex === BEST_CHECKPOINT_INDEX) {
