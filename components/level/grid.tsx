@@ -3,7 +3,7 @@ import { AppContext } from '@root/contexts/appContext';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import Position from '@root/models/position';
 import classNames from 'classnames';
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import Theme from '../../constants/theme';
 import SquareState from '../../models/squareState';
 import { teko } from '../../pages/_app';
@@ -14,52 +14,50 @@ interface GridProps {
   board: SquareState[][];
   cellClassName?: (x: number, y: number) => string | undefined;
   generateMovables?: (borderWidth: number, squareSize: number) => JSX.Element;
+  id: string;
   leastMoves: number;
   onCellClick: (x: number, y: number, rightClick: boolean) => void;
 }
 
-export default function Grid({ board, cellClassName, generateMovables, leastMoves, onCellClick }: GridProps) {
+export default function Grid({ board, cellClassName, generateMovables, id, leastMoves, onCellClick }: GridProps) {
   const { theme } = useContext(AppContext);
   const classic = theme === Theme.Classic;
-  const grid = [];
-  const [gridHeight, setGridHeight] = useState<number>();
-  const gridRef = useRef<HTMLDivElement>(null);
-  const [gridWidth, setGridWidth] = useState<number>();
   const height = board.length;
   const width = board[0].length;
+  const gridId = `grid-${id}`;
+  const [squareSize, setSquareSize] = useState(0);
 
   useEffect(() => {
-    // Handler to call on window resize
-    function handleResize() {
-      if (gridRef.current) {
-        if (gridRef.current.offsetHeight > 0) {
-          setGridHeight(gridRef.current.offsetHeight);
-        }
+    const el = document.getElementById(gridId);
 
-        if (gridRef.current.offsetWidth > 0) {
-          setGridWidth(gridRef.current.offsetWidth);
-        }
-      }
+    if (!el) {
+      return;
     }
 
-    // Add event listener
-    window.addEventListener('resize', handleResize);
+    const resizeObserver = new ResizeObserver((entries) => {
+      // https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserverEntry/contentBoxSize
+      const gridHeight = entries[0].contentBoxSize[0].blockSize;
+      const gridWidth = entries[0].contentBoxSize[0].inlineSize;
 
-    // Call handler right away so state gets updated with initial window size
-    handleResize();
+      // calculate the square size based on the available game space and the level dimensions
+      // NB: forcing the square size to be an integer allows the block animations to travel along actual pixels
+      const newSquareSize = !gridHeight || !gridWidth ? 0 :
+        width / height > gridWidth / gridHeight ?
+          Math.floor(gridWidth / width) : Math.floor(gridHeight / height);
 
-    // Remove event listener on cleanup
+      // NB: setting square size here instead of gridHeight / gridWidth avoids rendering on every resize
+      setSquareSize(newSquareSize);
+    });
+
+    resizeObserver.observe(el);
+
     return () => {
-      window.removeEventListener('resize', handleResize);
+      resizeObserver.unobserve(el);
     };
-  }, []); // Empty array ensures that effect is only run on mount
+  }, [gridId, height, width]);
 
-  // calculate the square size based on the available game space and the level dimensions
-  // NB: forcing the square size to be an integer allows the block animations to travel along actual pixels
-  const squareSize = !gridHeight || !gridWidth ? 0 :
-    width / height > gridWidth / gridHeight ?
-      Math.floor(gridWidth / width) : Math.floor(gridHeight / height);
   const borderWidth = Math.round(squareSize / 40) || 1;
+  const grid = [];
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
@@ -112,25 +110,17 @@ export default function Grid({ board, cellClassName, generateMovables, leastMove
   }
 
   return (
-    <div className={classNames('grow', { [teko.className]: classic })} id='grid' ref={gridRef}>
-      {/* NB: need a fixed div here so the actual content won't affect the size of the gridRef */}
-      {gridHeight && gridWidth &&
-        <div className='fixed'>
-          <div className='flex flex-col items-center justify-center overflow-hidden' style={{
-            height: gridHeight,
-            width: gridWidth,
-          }}>
-            <div
-              className='relative'
-              style={{
-                height: squareSize * height,
-                width: squareSize * width,
-              }}
-            >
-              {grid}
-              {generateMovables ? generateMovables(borderWidth, squareSize) : null}
-            </div>
-          </div>
+    <div className={classNames('grow flex items-center justify-center overflow-hidden', { [teko.className]: classic })} id={gridId}>
+      {squareSize !== 0 &&
+        <div
+          className='relative'
+          style={{
+            height: squareSize * height,
+            width: squareSize * width,
+          }}
+        >
+          {grid}
+          {generateMovables ? generateMovables(borderWidth, squareSize) : null}
         </div>
       }
     </div>

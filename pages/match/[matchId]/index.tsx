@@ -404,7 +404,7 @@ export default function Match() {
               />
             </div>
             {activeLevel && (
-              <div className='grow h-full w-full' key={'div-' + activeLevel._id.toString()}>
+              <div className='grow h-full w-full overflow-hidden' key={'div-' + activeLevel._id.toString()}>
                 <Game
                   allowFreeUndo={true}
                   disableCheckpoints={true}
