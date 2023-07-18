@@ -113,7 +113,7 @@ export default function Grid({ board, cellClassName, generateMovables, id, least
     <div className={classNames('grow flex items-center justify-center overflow-hidden', { [teko.className]: classic })} id={gridId}>
       {squareSize !== 0 &&
         <div
-          className='relative'
+          className='absolute'
           style={{
             height: squareSize * height,
             width: squareSize * width,

@@ -691,7 +691,7 @@ export default function Tutorial() {
           </div>
         }
         {tutorialStep.editorGrid && tutorialStep.level && (
-          <div key={'div-' + tutorialStep.key} className={classNames('grow flex flex-col overflow-hidden', tutorialStep.gameClasses)}>
+          <div key={'div-' + tutorialStep.key} className={classNames('grow flex flex-col', tutorialStep.gameClasses)}>
             <BasicLayout
               controls={controls}
               key={tutorialStep.key}
@@ -700,7 +700,7 @@ export default function Tutorial() {
           </div>
         )}
         {tutorialStep.gameGrid && tutorialStep.level && (
-          <div id='game-div-parent' key={'div-' + tutorialStep.key} className={classNames('grow overflow-hidden', tutorialStep.gameClasses)}>
+          <div id='game-div-parent' key={'div-' + tutorialStep.key} className={classNames('grow', tutorialStep.gameClasses)}>
             <Game
               disableCheckpoints={true}
               disablePlayAttempts={true}
