@@ -1,4 +1,3 @@
-import { Types } from 'mongoose';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -252,7 +251,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
             }
           }}
           level={{
-            _id: new Types.ObjectId('editor-tiles'),
             data: allTiles,
             height: 2,
             leastMoves: 0,

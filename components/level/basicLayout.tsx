@@ -1,3 +1,4 @@
+import { Types } from 'mongoose';
 import React from 'react';
 import TileType from '../../constants/tileType';
 import Control from '../../models/control';
@@ -36,7 +37,7 @@ export default function BasicLayout({ cellClassName, controls, level, onClick }:
       <Grid
         board={board}
         cellClassName={(x, y) => cellClassName ? cellClassName(y * (level.width + 1) + x) : undefined}
-        id={level._id?.toString()}
+        id={(level._id ?? new Types.ObjectId()).toString()}
         leastMoves={level.leastMoves}
         onCellClick={(x, y, rightClick) => onClick ? onClick(y * (level.width + 1) + x, rightClick) : undefined}
       />
