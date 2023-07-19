@@ -24,7 +24,7 @@ export default function BasicLayout({ cellClassName, controls, level, onClick }:
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
-      board[y][x].levelDataType = data[y][x] as TileType;
+      board[y][x].tileType = data[y][x] as TileType;
 
       if (data[y][x] === TileType.Start) {
         board[y][x].text.push(0);

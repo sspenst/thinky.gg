@@ -83,7 +83,7 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, hi
               gameState={gameState}
               leastMoves={level.leastMoves}
               size={squareSize}
-              tileType={gameState.board[gameState.pos.y][gameState.pos.x].levelDataType}
+              tileType={gameState.board[gameState.pos.y][gameState.pos.x].tileType}
             />
           </>}
           id={level._id.toString()}

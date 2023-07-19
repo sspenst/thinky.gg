@@ -714,7 +714,7 @@ export default function Tutorial() {
                 const restartButton = document.getElementById('btn-restart') as HTMLButtonElement;
 
                 // show restart notification if they have reached the exit in too many moves
-                if (gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === TileType.End && gameState.moveCount > (tutorialStep.level?.leastMoves ?? 0)) {
+                if (gameState.board[gameState.pos.y][gameState.pos.x].tileType === TileType.End && gameState.moveCount > (tutorialStep.level?.leastMoves ?? 0)) {
                   restartButton?.classList.add(styles['highlight-red']);
                 } else {
                   restartButton?.classList.remove(styles['highlight-red']);
