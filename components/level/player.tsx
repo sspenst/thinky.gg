@@ -4,27 +4,28 @@ import React, { useCallback, useContext, useState } from 'react';
 import Theme, { getIconFromTheme } from '../../constants/theme';
 import TileType from '../../constants/tileType';
 import Position from '../../models/position';
-import { GameState } from './game';
 import styles from './Player.module.css';
 
 interface PlayerProps {
+  atEnd?: boolean;
   borderWidth: number;
   className?: string | undefined;
   handleClick?: () => void;
-  gameState: GameState;
   leastMoves: number;
+  moveCount: number;
+  pos: Position;
   size: number;
-  tileType: TileType;
 }
 
 export default function Player({
+  atEnd,
   borderWidth,
   className,
-  gameState,
   handleClick,
   leastMoves,
+  moveCount,
+  pos,
   size,
-  tileType,
 }: PlayerProps) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onClick = useCallback((event: any) => {
@@ -36,10 +37,9 @@ export default function Player({
   }, [handleClick]);
 
   // initialize the block at the starting position to avoid an animation from the top left
-  const [initPos] = useState(new Position(gameState.pos.x, gameState.pos.y));
-  const atEnd = tileType === TileType.End;
+  const [initPos] = useState(new Position(pos.x, pos.y));
   const innerSize = size - 2 * borderWidth;
-  const text = String(gameState.moveCount);
+  const text = String(moveCount);
   const fontSizeRatio = text.length <= 3 ? 2 : (1 + (text.length - 1) / 2);
   const fontSize = innerSize / fontSizeRatio;
   const { theme } = useContext(AppContext);
@@ -49,64 +49,12 @@ export default function Player({
     height: classic ? size : innerSize,
     left: size * initPos.x + (classic ? 0 : borderWidth),
     top: size * initPos.y + (classic ? 0 : borderWidth),
-    transform: `translate(${(gameState.pos.x - initPos.x) * size}px, ${(gameState.pos.y - initPos.y) * size}px)`,
+    transform: `translate(${(pos.x - initPos.x) * size}px, ${(pos.y - initPos.y) * size}px)`,
     transition: 'transform 0.1s',
     width: classic ? size : innerSize,
   };
   const icon = getIconFromTheme(theme, TileType.Start);
-
-  if (icon) {
-    const overstepped = leastMoves !== 0 && gameState.moveCount > leastMoves;
-
-    return <div
-      className={classNames('absolute', className)}
-      onClick={onClick}
-      onTouchEnd={(e) => onClick(e)}
-      style={parentStyle}
-    >
-      <div
-        className={classNames(
-          'select-none z-20',
-          overstepped ? styles.extra : undefined,
-          !atEnd ? undefined : leastMoves !== 0 && gameState.moveCount > leastMoves ? styles.lose :
-            classic ? styles['win-classic'] : styles.win,
-          classic ? styles.classic : undefined,
-        )}
-        id='player'
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          position: 'relative',
-          backgroundColor: 'var(--level-player)',
-          borderColor: 'var(--level-player-extra)',
-          borderWidth: classic ? 1 : 0,
-          boxShadow: classic ?
-            `-${2 * borderWidth}px ${2 * borderWidth}px 0 0 var(--bg-color)` :
-            `0 0 0 ${borderWidth}px var(--bg-color)`,
-          color: 'var(--level-player-text)',
-          fontSize: fontSize,
-          height: innerSize,
-          lineHeight: innerSize + 'px',
-          textAlign: 'center',
-          verticalAlign: 'middle',
-          width: innerSize,
-        }}
-      >
-        <span className='theme-monkey-player' style={{ position: 'absolute', zIndex: 0, bottom: 0 }}>
-          {icon({
-            fontSize: fontSize,
-            innerSize: innerSize,
-            leastMoves: leastMoves,
-            overstepped: overstepped,
-            size: size,
-            text: <>{text}</>,
-            tileType: tileType,
-          })}
-        </span>
-      </div>
-    </div>;
-  }
+  const overstepped = leastMoves !== 0 && moveCount > leastMoves;
 
   return (
     <div
@@ -117,9 +65,9 @@ export default function Player({
     >
       <div
         className={classNames(
-          'select-none z-20',
-          leastMoves !== 0 && gameState.moveCount > leastMoves ? styles.extra : undefined,
-          !atEnd ? undefined : leastMoves !== 0 && gameState.moveCount > leastMoves ? styles.lose :
+          'select-none z-20 flex items-center justify-center relative',
+          overstepped ? styles.extra : undefined,
+          !atEnd ? undefined : overstepped ? styles.lose :
             classic ? styles['win-classic'] : styles.win,
           classic ? styles.classic : undefined,
         )}
@@ -136,13 +84,23 @@ export default function Player({
           height: innerSize,
           left: classic ? 2 * borderWidth : 0,
           lineHeight: innerSize + 'px',
-          position: 'relative',
           textAlign: 'center',
           verticalAlign: 'middle',
           width: innerSize,
         }}
       >
-        {text}
+        {icon ?
+          <span className='theme-monkey-player absolute z-0 bottom-0'>
+            {icon({
+              fontSize: fontSize,
+              overstepped: overstepped,
+              size: size,
+              text: <>{text}</>,
+            })}
+          </span>
+          :
+          text
+        }
       </div>
     </div>
   );

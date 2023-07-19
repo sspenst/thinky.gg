@@ -1,14 +1,12 @@
 import TileType from '@root/constants/tileType';
 import { AppContext } from '@root/contexts/appContext';
-import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import Position from '@root/models/position';
 import classNames from 'classnames';
 import React, { useContext, useEffect, useState } from 'react';
 import Theme from '../../constants/theme';
 import SquareState from '../../models/squareState';
 import { teko } from '../../pages/_app';
-import Player from './player';
-import Square from './square';
+import Tile from './tile';
 
 interface GridProps {
   board: SquareState[][];
@@ -26,6 +24,7 @@ export default function Grid({ board, cellClassName, generateMovables, id, least
   const width = board[0].length;
   const gridId = `grid-${id}`;
   const [squareSize, setSquareSize] = useState(0);
+  const borderWidth = Math.round(squareSize / 40) || 1;
 
   useEffect(() => {
     const el = document.getElementById(gridId);
@@ -56,59 +55,6 @@ export default function Grid({ board, cellClassName, generateMovables, id, least
     };
   }, [gridId, height, width]);
 
-  const borderWidth = Math.round(squareSize / 40) || 1;
-  const grid = [];
-
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const tileType = board[y][x].tileType;
-      const text = tileType === TileType.End ? leastMoves :
-        board[y][x].text.length === 0 ? undefined :
-          board[y][x].text[board[y][x].text.length - 1];
-
-      grid.push(
-        tileType === TileType.Start ?
-          <Player
-            borderWidth={borderWidth}
-            className={cellClassName ? cellClassName(x, y) : undefined}
-            gameState={{
-              actionCount: 0,
-              blocks: [],
-              board: [],
-              height: height,
-              moveCount: 0,
-              moves: [],
-              pos: new Position(x, y),
-              width: width,
-            }}
-            handleClick={() => onCellClick(x, y, false)}
-            key={`grid-${x}-${y}`}
-            leastMoves={leastMoves}
-            size={squareSize}
-            tileType={TileType.Default}
-          />
-          :
-          <div
-            className={classNames('absolute', cellClassName ? cellClassName(x, y) : undefined)}
-            key={`grid-${x}-${y}`}
-            style={{
-              left: squareSize * x + (!classic ? borderWidth : TileTypeHelper.isRaised(tileType) ? 2 * borderWidth : 0),
-              top: squareSize * y + (!classic ? borderWidth : TileTypeHelper.isRaised(tileType) ? 0 : 2 * borderWidth),
-            }}
-          >
-            <Square
-              borderWidth={borderWidth}
-              handleClick={(rightClick: boolean) => onCellClick(x, y, rightClick)}
-              leastMoves={leastMoves}
-              size={squareSize}
-              text={text}
-              tileType={tileType}
-            />
-          </div>
-      );
-    }
-  }
-
   return (
     <div className={classNames('grow flex items-center justify-center overflow-hidden', { [teko.className]: classic })} id={gridId}>
       {squareSize !== 0 &&
@@ -119,7 +65,27 @@ export default function Grid({ board, cellClassName, generateMovables, id, least
             width: squareSize * width,
           }}
         >
-          {grid}
+          {board.map((row, y) => row.map((squareState, x) => {
+            const tileType = squareState.tileType;
+            const text = tileType === TileType.Start ? 0 :
+              tileType === TileType.End ? leastMoves :
+                squareState.text.length === 0 ? undefined :
+                  squareState.text[squareState.text.length - 1];
+
+            return (
+              <Tile
+                borderWidth={borderWidth}
+                className={cellClassName ? cellClassName(x, y) : undefined}
+                handleClick={(rightClick: boolean) => onCellClick(x, y, rightClick)}
+                key={`tile-${y}-${x}`}
+                leastMoves={leastMoves}
+                pos={new Position(x, y)}
+                size={squareSize}
+                text={text}
+                tileType={tileType}
+              />
+            );
+          }))}
           {generateMovables ? generateMovables(borderWidth, squareSize) : null}
         </div>
       }
