@@ -94,11 +94,12 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
 }
 
 interface FormattedNotificationProps {
+  close?: () => void;
   notification: Notification;
   onMarkAsRead: (read: boolean) => void;
 }
 
-export default function FormattedNotification({ notification, onMarkAsRead }: FormattedNotificationProps) {
+export default function FormattedNotification({ close, notification, onMarkAsRead }: FormattedNotificationProps) {
   return (
     <div
       className='p-3 border rounded shadow flex flex-cols-2 justify-between gap-2 items-center'
@@ -110,7 +111,13 @@ export default function FormattedNotification({ notification, onMarkAsRead }: Fo
       <div className='flex flex-col gap-1 truncate'>
         {notification.sourceModel === 'User' ?
           <FormattedUser
-            onClick={() => onMarkAsRead(true)}
+            onClick={() => {
+              onMarkAsRead(true);
+
+              if (close) {
+                close();
+              }
+            }}
             size={Dimensions.AvatarSizeSmall}
             user={notification.source as User}
           />
@@ -122,7 +129,16 @@ export default function FormattedNotification({ notification, onMarkAsRead }: Fo
         }
         <div className='flex items-center justify-between'>
           <div className='focus:outline-none text-sm whitespace-normal truncate flex items-center gap-1 flex-wrap'>
-            <NotificationMessage notification={notification} onMarkAsRead={() => onMarkAsRead(true)} />
+            <NotificationMessage
+              notification={notification}
+              onMarkAsRead={() => {
+                onMarkAsRead(true);
+
+                if (close) {
+                  close();
+                }
+              }}
+            />
           </div>
         </div>
         <FormattedDate className='text-xs' date={notification.createdAt} />

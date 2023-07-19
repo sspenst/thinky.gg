@@ -62,23 +62,20 @@ export default function NotificationList({ close, notifications, setNotification
 
       return newNotifications;
     });
-
-    if (close) {
-      close();
-    }
-  }, [close, putNotification, setNotifications]);
+  }, [putNotification, setNotifications]);
 
   const formattedNotifications = useCallback(() => {
     return notifications.map(notification => {
       return (
         <FormattedNotification
+          close={close}
           key={'notification-' + notification._id}
           notification={notification}
           onMarkAsRead={(read: boolean) => onMarkAsRead([notification], read)}
         />
       );
     });
-  }, [notifications, onMarkAsRead]);
+  }, [close, notifications, onMarkAsRead]);
 
   const anyUnread = notifications.some(notification => !notification.read);
 
@@ -95,6 +92,10 @@ export default function NotificationList({ close, notifications, setNotification
           onClick={() => {
             if (anyUnread) {
               onMarkAsRead(notifications, true);
+            }
+
+            if (close) {
+              close();
             }
           }}
           style={{
