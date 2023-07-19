@@ -1,24 +1,24 @@
 import TileType from '../constants/tileType';
 
 export default class SquareState {
-  levelDataType: TileType;
+  tileType: TileType;
   text: number[];
 
-  constructor(levelDataType: TileType = TileType.Default, text: number[] = []) {
-    this.levelDataType = levelDataType;
+  constructor(tileType: TileType = TileType.Default, text: number[] = []) {
+    this.tileType = tileType;
     this.text = text.slice();
   }
 
   static clone(squareState: SquareState) {
     return new SquareState(
-      squareState.levelDataType,
+      squareState.tileType,
       squareState.text.slice(),
     );
   }
 
   clone() {
     return new SquareState(
-      this.levelDataType,
+      this.tileType,
       this.text.slice(),
     );
   }

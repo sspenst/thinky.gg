@@ -1,16 +1,24 @@
 import { GameState } from '@root/components/level/game';
+import TileType from '@root/constants/tileType';
 import BlockState from '@root/models/blockState';
 import Move from '@root/models/move';
 import Position from '@root/models/position';
 import SquareState from '@root/models/squareState';
 
+interface CheckpointSquareState {
+  levelDataType: TileType;
+  text: number[];
+}
+
 // NB: legacy interface to allow for refactoring the original GameState
 export interface CheckpointState {
   actionCount: number;
+  // TODO: CheckpointBlockState if this is refactored
   blocks: BlockState[];
-  board: SquareState[][];
+  board: CheckpointSquareState[][];
   height: number;
   moveCount: number;
+  // TODO: CheckpointMove if this is refactored
   moves: Move[];
   pos: Position;
   width: number;
@@ -44,7 +52,14 @@ export function convertToCheckpointState(gameState: GameState) {
     actionCount: gameState.actionCount,
     blocks: gameState.blocks.map(block => BlockState.clone(block)),
     board: gameState.board.map(row => {
-      return row.map(square => SquareState.clone(square));
+      return row.map(square => {
+        const checkpointSquareState: CheckpointSquareState = {
+          levelDataType: square.tileType,
+          text: square.text,
+        };
+
+        return checkpointSquareState;
+      });
     }),
     height: gameState.height,
     moveCount: gameState.moveCount,
@@ -61,7 +76,7 @@ export function convertFromCheckpointState(checkpointState: CheckpointState) {
     actionCount: checkpointState.actionCount,
     blocks: checkpointState.blocks.map(block => BlockState.clone(block)),
     board: checkpointState.board.map(row => {
-      return row.map(square => SquareState.clone(square));
+      return row.map(square => new SquareState(square.levelDataType, square.text));
     }),
     height: checkpointState.height,
     moveCount: checkpointState.moveCount,

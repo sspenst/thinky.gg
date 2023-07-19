@@ -61,7 +61,7 @@ export default function Grid({ board, cellClassName, generateMovables, id, least
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
-      const tileType = board[y][x].levelDataType;
+      const tileType = board[y][x].tileType;
       const text = tileType === TileType.End ? leastMoves :
         board[y][x].text.length === 0 ? undefined :
           board[y][x].text[board[y][x].text.length - 1];

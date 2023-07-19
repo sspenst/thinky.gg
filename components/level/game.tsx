@@ -90,7 +90,7 @@ function initGameState(levelData: string, actionCount = 0) {
       if (tileType === TileType.Wall ||
         tileType === TileType.End ||
         tileType === TileType.Hole) {
-        board[y][x].levelDataType = tileType;
+        board[y][x].tileType = tileType;
       } else if (tileType === TileType.Start) {
         pos = new Position(x, y);
       } else if (TileTypeHelper.canMove(tileType)) {
@@ -490,8 +490,8 @@ export default function Game({
       pos: Position,
       width: number,
     ) {
-      return isPositionValid(height, pos, width) && board[pos.y][pos.x].levelDataType !== TileType.Wall &&
-        board[pos.y][pos.x].levelDataType !== TileType.Hole;
+      return isPositionValid(height, pos, width) && board[pos.y][pos.x].tileType !== TileType.Wall &&
+        board[pos.y][pos.x].tileType !== TileType.Hole;
     }
 
     // can a block move to this position
@@ -502,7 +502,7 @@ export default function Game({
       pos: Position,
       width: number,
     ) {
-      return isPositionValid(height, pos, width) && board[pos.y][pos.x].levelDataType !== TileType.Wall &&
+      return isPositionValid(height, pos, width) && board[pos.y][pos.x].tileType !== TileType.Wall &&
         !isBlockAtPosition(blocks, pos);
     }
 
@@ -590,7 +590,7 @@ export default function Game({
                 block.inHole = false;
 
                 if (prevMove.holePos !== undefined) {
-                  board[prevMove.holePos.y][prevMove.holePos.x].levelDataType = TileType.Hole;
+                  board[prevMove.holePos.y][prevMove.holePos.x].tileType = TileType.Hole;
                 }
               }
             }
@@ -634,9 +634,9 @@ export default function Game({
             block.pos = blockPos;
 
             // remove block if it is pushed onto a hole
-            if (board[blockPos.y][blockPos.x].levelDataType === TileType.Hole) {
+            if (board[blockPos.y][blockPos.x].tileType === TileType.Hole) {
               block.inHole = true;
-              board[blockPos.y][blockPos.x].levelDataType = TileType.Default;
+              board[blockPos.y][blockPos.x].tileType = TileType.Default;
               move.holePos = blockPos.clone();
             }
           }
@@ -653,7 +653,7 @@ export default function Game({
 
           const moveCount = prevGameState.moveCount + 1;
 
-          if (board[pos.y][pos.x].levelDataType === TileType.End) {
+          if (board[pos.y][pos.x].tileType === TileType.End) {
             trackStats(moves.map(move => move.code), level._id.toString(), 3);
           }
 
@@ -723,7 +723,7 @@ export default function Game({
         }
 
         // lock movement once you reach the finish
-        if (prevGameState.board[prevGameState.pos.y][prevGameState.pos.x].levelDataType === TileType.End) {
+        if (prevGameState.board[prevGameState.pos.y][prevGameState.pos.x].tileType === TileType.End) {
           return prevGameState;
         }
 
@@ -740,7 +740,7 @@ export default function Game({
   }, [allowFreeUndo, disableCheckpoints, level._id, level.data, loadCheckpoint, onNext, onPrev, pro, redoMoves, saveCheckpoint, shiftKeyDown, trackStats]);
 
   useEffect(() => {
-    const atEnd = gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === TileType.End;
+    const atEnd = gameState.board[gameState.pos.y][gameState.pos.x].tileType === TileType.End;
 
     if (atEnd && gameState.moves.length <= level.leastMoves && onComplete) {
       onComplete();
@@ -752,7 +752,7 @@ export default function Game({
       return;
     }
 
-    const atEnd = gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === TileType.End;
+    const atEnd = gameState.board[gameState.pos.y][gameState.pos.x].tileType === TileType.End;
     const newBest = !checkpoints[BEST_CHECKPOINT_INDEX] || gameState.moves.length < checkpoints[BEST_CHECKPOINT_INDEX].moveCount;
 
     if (atEnd && newBest) {

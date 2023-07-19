@@ -107,12 +107,12 @@ describe('models/*.ts', () => {
     const s2 = s.clone();
     const s3 = SquareState.clone(s);
 
-    expect(s2.levelDataType).toBe(TileType.Default);
-    expect(s3.levelDataType).toBe(TileType.Default);
-    s2.levelDataType = TileType.Block;
-    expect(s.levelDataType).toBe(TileType.Default);
-    s3.levelDataType = TileType.Wall;
-    expect(s.levelDataType).toBe(TileType.Default);
+    expect(s2.tileType).toBe(TileType.Default);
+    expect(s3.tileType).toBe(TileType.Default);
+    s2.tileType = TileType.Block;
+    expect(s.tileType).toBe(TileType.Default);
+    s3.tileType = TileType.Wall;
+    expect(s.tileType).toBe(TileType.Default);
   });
   test('Control', () => {
     const control = new Control('id', () => { return; }, {} as JSX.Element, true);
