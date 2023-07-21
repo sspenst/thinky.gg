@@ -59,7 +59,7 @@ export default function Grid({ board, cellClassName, generateMovables, id, least
     <div className={classNames('grow flex items-center justify-center overflow-hidden', { [teko.className]: classic })} id={gridId}>
       {squareSize !== 0 &&
         <div
-          className='absolute'
+          className='absolute overflow-hidden'
           style={{
             height: squareSize * height,
             width: squareSize * width,
@@ -86,7 +86,7 @@ export default function Grid({ board, cellClassName, generateMovables, id, least
               />
             );
           }))}
-          {/* TODO: automatically generatemovables if isGame */}
+          {/* TODO: automatically generatemovables if isGame (can maybe do this within Tile by auto-creating squares underneath blocks) */}
           {generateMovables ? generateMovables(borderWidth, squareSize) : null}
         </div>
       }
