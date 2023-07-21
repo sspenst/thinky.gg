@@ -321,6 +321,11 @@ async function getPlayLogForUsersCreatedLevels(userId: string) {
     }
   ]);
 
+  // cleanUser for each user
+  playLogsForUserCreatedLevels.forEach((userAndStatTs) => {
+    cleanUser(userAndStatTs.user);
+  });
+
   return playLogsForUserCreatedLevels;
 }
 
