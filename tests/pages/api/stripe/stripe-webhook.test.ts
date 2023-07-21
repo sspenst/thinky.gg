@@ -58,6 +58,7 @@ async function runStripeWebhookTest({
   mockDbError = false,
 }: {
   eventType: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payloadData: any;
   expectedError: string | undefined;
   expectedStatus: number;
@@ -228,7 +229,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
         id: 'cs_test_123',
         customer: fakeCustomerId,
       },
-      expectedError: 'User with customer id ' + fakeCustomerId + ' does not exist',
+      expectedError: 'UserConfig with customer id ' + fakeCustomerId + ' does not exist',
       expectedStatus: 400,
       additionalAssertions: async () => {
         //
@@ -305,7 +306,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
         id: 'cs_test_123',
         customer: fakeCustomerId,
       },
-      expectedError: 'User with customer id ' + fakeCustomerId + ' does not exist',
+      expectedError: 'UserConfig with customer id ' + fakeCustomerId + ' does not exist',
       expectedStatus: 400,
       additionalAssertions: async () => {
         //
