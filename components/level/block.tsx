@@ -9,6 +9,7 @@ import styles from './Block.module.css';
 
 interface BlockProps {
   borderWidth: number;
+  className?: string | undefined;
   inHole: boolean;
   onClick?: () => void;
   pos: Position;
@@ -16,7 +17,7 @@ interface BlockProps {
   tileType: TileType;
 }
 
-export default function Block({ borderWidth, inHole, onClick, pos, size, tileType }: BlockProps) {
+export default function Block({ borderWidth, className, inHole, onClick, pos, size, tileType }: BlockProps) {
   // initialize the block at the starting position to avoid an animation from the top left
   const [initPos] = useState(new Position(pos.x, pos.y));
   const { theme } = useContext(AppContext);
@@ -27,14 +28,18 @@ export default function Block({ borderWidth, inHole, onClick, pos, size, tileTyp
 
   return (
     <div
-      className={`block_type_${tileType}`}
+      className={classNames(`absolute block_type_${tileType}`, className)}
       style={{
+        height: classic ? size : innerSize,
+        left: size * initPos.x + (classic ? 0 : borderWidth),
+        top: size * initPos.y + (classic ? 0 : borderWidth),
         transform: `translate(${(pos.x - initPos.x) * size}px, ${(pos.y - initPos.y) * size}px)`,
         transition: 'transform 0.1s',
+        width: classic ? size : innerSize,
       }}
     >
       <div
-        className={classNames('cursor-default select-none absolute z-20',
+        className={classNames('select-none absolute z-20',
           inHole ? styles['in-hole'] : undefined)}
         onClick={onClick}
         onTouchEnd={onClick}
@@ -49,8 +54,7 @@ export default function Block({ borderWidth, inHole, onClick, pos, size, tileTyp
             `-${2 * borderWidth}px ${2 * borderWidth}px 0 0 var(--bg-color)` :
             `0 0 0 ${borderWidth}px var(--bg-color)`,
           height: innerSize,
-          left: size * initPos.x + (classic ? 2 * borderWidth : borderWidth),
-          top: size * initPos.y + (classic ? 0 : borderWidth),
+          left: classic ? 2 * borderWidth : 0,
           width: innerSize,
         }}
       />

@@ -77,7 +77,6 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, hi
                   borderWidth={borderWidth}
                   handleClick={() => onCellClick(block.pos.x, block.pos.y)}
                   inHole={block.inHole}
-                  isMovable={true}
                   key={`block-${block.id}`}
                   leastMoves={level.leastMoves}
                   pos={block.pos}
