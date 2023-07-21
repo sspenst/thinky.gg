@@ -1,44 +1,26 @@
 import { AppContext } from '@root/contexts/appContext';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
-import Position from '@root/models/position';
 import classNames from 'classnames';
-import React, { useCallback, useContext } from 'react';
+import React, { useContext } from 'react';
 import Theme, { getIconFromTheme } from '../../constants/theme';
 import TileType from '../../constants/tileType';
-import styles from './Square.module.css';
 
 interface SquareProps {
   borderWidth: number;
-  className?: string | undefined;
-  handleClick?: (rightClick: boolean) => void;
-  inHole?: boolean;
   leastMoves: number;
-  pos: Position;
   size: number;
   text?: number;
   tileType: TileType;
 }
 
+// NB: this component now only handles Default, Wall, End, and Hole
 export default function Square({
   borderWidth,
-  className,
-  handleClick,
-  inHole,
   leastMoves,
-  pos,
   size,
   text,
   tileType,
 }: SquareProps) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const onClick = useCallback((event: any) => {
-    if (handleClick) {
-      handleClick(event.type === 'contextmenu');
-    }
-
-    event.preventDefault();
-  }, [handleClick]);
-
   const { theme } = useContext(AppContext);
   const classic = theme === Theme.Classic;
   const innerSize = size - 2 * borderWidth;
@@ -87,7 +69,9 @@ export default function Square({
         `${2 * borderWidth}px -${2 * borderWidth}px 0 0 var(--bg-color)`,
     fontSize: fontSize,
     height: innerSize,
+    left: (!classic ? 0 : TileTypeHelper.isRaised(tileType) ? 2 * borderWidth : 0),
     lineHeight: innerSize * (classic ? 1.1 : 1) + 'px',
+    top: (!classic ? 0 : TileTypeHelper.isRaised(tileType) ? 0 : 2 * borderWidth),
     width: innerSize,
   } as React.CSSProperties;
 
@@ -116,26 +100,14 @@ export default function Square({
 
   return (
     <div
-      className={classNames('absolute', className)}
-      style={{
-        left: size * pos.x + (!classic ? borderWidth : TileTypeHelper.isRaised(tileType) ? 2 * borderWidth : 0),
-        top: size * pos.y + (!classic ? borderWidth : TileTypeHelper.isRaised(tileType) ? 0 : 2 * borderWidth),
-      }}
+      className={classNames(
+        `select-none absolute tile_type_${tileType} text-center align-middle`,
+        { 'square-movable': TileTypeHelper.canMove(tileType) },
+        { 'square-hole': tileType === TileType.Hole },
+      )}
+      style={style}
     >
-      <div
-        className={classNames(
-          `select-none block_type_${tileType} text-center align-middle`,
-          { 'square-movable': TileTypeHelper.canMove(tileType) },
-          { 'square-hole': tileType === TileType.Hole },
-          inHole ? styles['in-hole'] : undefined,
-        )}
-        onClick={onClick}
-        onContextMenu={onClick}
-        onTouchEnd={(e) => onClick(e)}
-        style={style}
-      >
-        {child}
-      </div>
+      {child}
     </div>
   );
 }

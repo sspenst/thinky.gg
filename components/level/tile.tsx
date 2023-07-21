@@ -1,6 +1,9 @@
+import Theme from '@root/constants/theme';
+import { AppContext } from '@root/contexts/appContext';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import Position from '@root/models/position';
-import React from 'react';
+import classNames from 'classnames';
+import React, { useCallback, useContext, useMemo, useState } from 'react';
 import TileType from '../../constants/tileType';
 import Block from './block';
 import Player from './player';
@@ -31,46 +34,71 @@ export default function Tile({
   text,
   tileType,
 }: TileProps) {
-  if (tileType === TileType.Start) {
-    return (
-      <Player
-        atEnd={atEnd}
-        borderWidth={borderWidth}
-        className={className}
-        handleClick={handleClick ? () => handleClick(false) : undefined}
-        leastMoves={leastMoves}
-        moveCount={text ?? 0}
-        pos={pos}
-        size={size}
-      />
-    );
-  }
+  // initialize the block at the starting position to avoid an animation from the top left
+  const [initPos] = useState(new Position(pos.x, pos.y));
+  const innerSize = size - 2 * borderWidth;
+  const { theme } = useContext(AppContext);
+  const classic = theme === Theme.Classic;
 
-  if (TileTypeHelper.canMove(tileType)) {
+  const onClick = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    if (handleClick) {
+      handleClick(event.type === 'contextmenu');
+      event.preventDefault();
+    }
+  }, [handleClick]);
+
+  const innerTile = useMemo(() => {
+    if (tileType === TileType.Start) {
+      return (
+        <Player
+          atEnd={atEnd}
+          borderWidth={borderWidth}
+          leastMoves={leastMoves}
+          moveCount={text ?? 0}
+          size={size}
+        />
+      );
+    }
+
+    if (TileTypeHelper.canMove(tileType)) {
+      return (
+        <Block
+          borderWidth={borderWidth}
+          inHole={inHole ?? false}
+          size={size}
+          tileType={tileType}
+        />
+      );
+    }
+
     return (
-      <Block
+      <Square
         borderWidth={borderWidth}
-        className={className}
-        inHole={inHole ?? false}
-        onClick={() => handleClick ? handleClick(false) : undefined}
-        pos={pos}
+        leastMoves={leastMoves}
         size={size}
+        text={text}
         tileType={tileType}
       />
     );
-  }
+  }, [atEnd, borderWidth, inHole, leastMoves, size, text, tileType]);
 
   return (
-    <Square
-      borderWidth={borderWidth}
-      className={className}
-      handleClick={handleClick}
-      inHole={inHole}
-      leastMoves={leastMoves}
-      pos={pos}
-      size={size}
-      text={text}
-      tileType={tileType}
-    />
+    <div
+      className={classNames(`absolute tile_type_${tileType}`, className)}
+      onClick={onClick}
+      onContextMenu={onClick}
+      onTouchEnd={() => handleClick ? handleClick(false) : undefined}
+      style={{
+        backgroundColor: tileType === TileType.Start ? 'var(--bg-color)' : undefined,
+        height: classic ? size : innerSize,
+        left: size * initPos.x + (classic ? 0 : borderWidth),
+        top: size * initPos.y + (classic ? 0 : borderWidth),
+        transform: `translate(${(pos.x - initPos.x) * size}px, ${(pos.y - initPos.y) * size}px)`,
+        transition: 'transform 0.1s',
+        width: classic ? size : innerSize,
+      }}
+    >
+      {innerTile}
+    </div>
   );
 }

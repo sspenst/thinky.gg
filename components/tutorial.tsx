@@ -253,7 +253,7 @@ export default function Tutorial() {
         header: <div key='tutorial-player-intro-header' className='text-2xl'>That square in the middle is the <span className='font-bold'>Player</span> you will be controlling.</div>,
         key: 'tutorial-player-intro',
         level: getLevel(GRID_WITH_PLAYER),
-        tooltip: { target: '.block_type_4', title: <div>Player</div> },
+        tooltip: { target: '.tile_type_4', title: <div>Player</div> },
       },
       {
         gameGrid: true,
@@ -406,7 +406,7 @@ export default function Tutorial() {
         </>,
         key: 'tutorial-level-1-only-end',
         level: getLevel(LEVEL_1_ONLY_END, { leastMoves: 5 }),
-        tooltip: { target: '.block_type_3', title: <div>Exit</div>, dir: 'top' },
+        tooltip: { target: '.tile_type_3', title: <div>Exit</div>, dir: 'top' },
       },
       {
         gameGrid: true,
@@ -430,7 +430,7 @@ export default function Tutorial() {
             undoButton?.classList.remove(styles['highlight-red']);
           }
         },
-        tooltip: { canClose: true, target: '.block_type_3', title: <div>Move the Player here in 5 moves</div>, dir: 'bottom' },
+        tooltip: { canClose: true, target: '.tile_type_3', title: <div>Move the Player here in 5 moves</div>, dir: 'bottom' },
       },
       {
         gameClasses: 'fadeIn',
@@ -439,7 +439,7 @@ export default function Tutorial() {
         key: 'tutorial-wall',
         level: getLevel(WALL_INTRO, { leastMoves: 7 }),
         onComplete: niceJob,
-        tooltip: { canClose: true, target: '.block_type_1', title: <div>You are not able to go through walls</div> },
+        tooltip: { canClose: true, target: '.tile_type_1', title: <div>You are not able to go through walls</div> },
       },
       {
         gameClasses: 'fadeIn',
@@ -479,7 +479,7 @@ export default function Tutorial() {
         header: <div key='tutorial-restricted-movables-header' className='text-3xl fadeIn'>Blocks can only be pushed <span className='underline'>from sides with borders.</span></div>,
         key: 'tutorial-restricted-movables',
         level: getLevel(RESTRICTED_MOVABLES),
-        tooltip: { canClose: true, target: '.block_type_D', title: <div>Can only be pushed down and to the left</div>, dir: 'bottom' },
+        tooltip: { canClose: true, target: '.tile_type_D', title: <div>Can only be pushed down and to the left</div>, dir: 'bottom' },
       },
       {
         gameClasses: 'fadeIn',
