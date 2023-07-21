@@ -1,3 +1,4 @@
+import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import Position from '@root/models/position';
 import React from 'react';
 import TileType from '../../constants/tileType';
@@ -11,7 +12,6 @@ interface TileProps {
   className?: string | undefined;
   handleClick?: (rightClick: boolean) => void;
   inHole?: boolean;
-  isMovable?: boolean;
   leastMoves: number;
   pos: Position;
   size: number;
@@ -25,7 +25,6 @@ export default function Tile({
   className,
   handleClick,
   inHole,
-  isMovable,
   leastMoves,
   pos,
   size,
@@ -47,11 +46,11 @@ export default function Tile({
     );
   }
 
-  // TODO: remove isMovable and combine Block and Square
-  if (isMovable) {
+  if (TileTypeHelper.canMove(tileType)) {
     return (
       <Block
         borderWidth={borderWidth}
+        className={className}
         inHole={inHole ?? false}
         onClick={() => handleClick ? handleClick(false) : undefined}
         pos={pos}
