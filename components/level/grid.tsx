@@ -86,6 +86,7 @@ export default function Grid({ board, cellClassName, generateMovables, id, least
               />
             );
           }))}
+          {/* TODO: automatically generatemovables if isGame */}
           {generateMovables ? generateMovables(borderWidth, squareSize) : null}
         </div>
       }
