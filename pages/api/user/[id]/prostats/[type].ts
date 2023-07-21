@@ -267,12 +267,71 @@ async function getDifficultyDataComparisons(userId: string) {
   return difficultyData;
 }
 
+async function getPlayLogForUsersCreatedLevels(userId: string) {
+  const playLogsForUserCreatedLevels = await LevelModel.aggregate([
+    {
+      $match: {
+        userId: new mongoose.Types.ObjectId(userId),
+        isDraft: { $ne: true },
+        isDeleted: { $ne: true },
+      },
+    },
+    {
+      $lookup: {
+        from: 'stats',
+        localField: '_id',
+        foreignField: 'levelId',
+        as: 'stats',
+      },
+    },
+    {
+      $unwind: '$stats',
+    },
+    {
+      $match: {
+        'stats.complete': true,
+        'stats.isDeleted': { $ne: true },
+      },
+    },
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'stats.userId',
+        foreignField: '_id',
+        as: 'user',
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        ts: '$stats.ts',
+        user: {
+          ...USER_DEFAULT_PROJECTION
+        },
+      },
+    },
+    // order by stats.ts desc
+    {
+      $sort: {
+        'stats.ts': -1,
+      },
+    },
+    {
+      $limit: 25,
+    }
+  ]);
+
+  return playLogsForUserCreatedLevels;
+}
+
 async function getMostSolvesForUserLevels(userId: string) {
 /** get the users that have solved the most levels created by userId */
   const mostSolvesForUserLevels = await LevelModel.aggregate([
     {
       $match: {
         userId: new mongoose.Types.ObjectId(userId),
+        isDraft: { $ne: true },
+        isDeleted: { $ne: true },
       },
     },
     {
@@ -396,7 +455,7 @@ export default withAuth({
   const { id: userId, type } = req.query as { id: string, type: string };
 
   // let's get the sum of this players playattempts sum(playattempt.endTime - playattempt.startTime) and divide by 1000
-  let scoreHistory, difficultyLevelsComparisons, mostSolvesForUserLevels;
+  let scoreHistory, difficultyLevelsComparisons, mostSolvesForUserLevels, playLogForUserCreatedLevels;
 
   if (type === ProStatsUserType.DifficultyLevelsComparisons) {
     if (userId !== req.user._id.toString()) {
@@ -410,11 +469,14 @@ export default withAuth({
     scoreHistory = await getScoreHistory(userId);
   } else if (type === ProStatsUserType.MostSolvesForUserLevels) {
     mostSolvesForUserLevels = await getMostSolvesForUserLevels(userId);
+  } else if (type === ProStatsUserType.PlayLogForUserCreatedLevels) {
+    playLogForUserCreatedLevels = await getPlayLogForUsersCreatedLevels(userId);
   }
 
   return res.status(200).json({
     [ProStatsUserType.ScoreHistory]: scoreHistory,
     [ProStatsUserType.DifficultyLevelsComparisons]: difficultyLevelsComparisons,
     [ProStatsUserType.MostSolvesForUserLevels]: mostSolvesForUserLevels,
+    [ProStatsUserType.PlayLogForUserCreatedLevels]: playLogForUserCreatedLevels,
   });
 });
