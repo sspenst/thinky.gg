@@ -313,7 +313,7 @@ async function getPlayLogForUsersCreatedLevels(userId: string) {
     // order by stats.ts desc
     {
       $sort: {
-        'stats.ts': -1,
+        'ts': -1,
       },
     },
     {
