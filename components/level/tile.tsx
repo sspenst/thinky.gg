@@ -1,9 +1,5 @@
-import { AppContext } from '@root/contexts/appContext';
-import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import Position from '@root/models/position';
-import classNames from 'classnames';
-import React, { useContext } from 'react';
-import Theme from '../../constants/theme';
+import React from 'react';
 import TileType from '../../constants/tileType';
 import Block from './block';
 import Player from './player';
@@ -36,9 +32,6 @@ export default function Tile({
   text,
   tileType,
 }: TileProps) {
-  const { theme } = useContext(AppContext);
-  const classic = theme === Theme.Classic;
-
   if (tileType === TileType.Start) {
     return (
       <Player
@@ -69,22 +62,16 @@ export default function Tile({
   }
 
   return (
-    <div
-      className={classNames('absolute', className)}
-      style={{
-        left: size * pos.x + (!classic ? borderWidth : TileTypeHelper.isRaised(tileType) ? 2 * borderWidth : 0),
-        top: size * pos.y + (!classic ? borderWidth : TileTypeHelper.isRaised(tileType) ? 0 : 2 * borderWidth),
-      }}
-    >
-      <Square
-        borderWidth={borderWidth}
-        handleClick={handleClick}
-        inHole={inHole}
-        leastMoves={leastMoves}
-        size={size}
-        text={text}
-        tileType={tileType}
-      />
-    </div>
+    <Square
+      borderWidth={borderWidth}
+      className={className}
+      handleClick={handleClick}
+      inHole={inHole}
+      leastMoves={leastMoves}
+      pos={pos}
+      size={size}
+      text={text}
+      tileType={tileType}
+    />
   );
 }
