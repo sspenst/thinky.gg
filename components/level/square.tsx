@@ -13,7 +13,7 @@ interface SquareProps {
   tileType: TileType;
 }
 
-// NB: this component now only handles Default, Wall, End, and Hole
+// NB: this component handles Default, Wall, End, and Hole TileTypes
 export default function Square({
   borderWidth,
   leastMoves,
@@ -40,74 +40,56 @@ export default function Square({
       return 'var(--level-wall)';
     case TileType.End:
       return 'var(--level-end)';
-    case TileType.Start:
-      return 'var(--level-player)';
     case TileType.Hole:
       return 'var(--level-hole)';
-    case TileType.Block:
-      return classic ? 'var(--level-block-border)' : 'var(--level-block)';
     default:
-      return 'var(--level-block)';
+      return undefined;
     }
   }
 
-  let child = <div>{text}</div>;
-  let style = {
-    // NB: for some reason needed to put this first to get the color to work on refresh
-    color: textColor,
-    backgroundColor: getBackgroundColor(),
-    borderBottomWidth: tileType === TileType.Hole || TileTypeHelper.canMoveUp(tileType) ? innerBorderWidth : 0,
-    borderColor: tileType === TileType.Hole ? 'var(--level-hole-border)' : 'var(--level-block-border)',
-    borderLeftWidth: tileType === TileType.Hole || TileTypeHelper.canMoveRight(tileType) ? innerBorderWidth : 0,
-    borderRightWidth: tileType === TileType.Hole || TileTypeHelper.canMoveLeft(tileType) ? innerBorderWidth : 0,
-    borderTopWidth: tileType === TileType.Hole || TileTypeHelper.canMoveDown(tileType) ? innerBorderWidth : 0,
-    boxShadow: !classic ? `0 0 0 ${borderWidth}px var(--bg-color)` :
-      tileType === TileType.Wall ||
-      tileType === TileType.Start ||
-      TileTypeHelper.canMove(tileType) ?
-        `-${2 * borderWidth}px ${2 * borderWidth}px 0 0 var(--bg-color)` :
-        `${2 * borderWidth}px -${2 * borderWidth}px 0 0 var(--bg-color)`,
-    fontSize: fontSize,
-    height: innerSize,
-    left: (!classic ? 0 : TileTypeHelper.isRaised(tileType) ? 2 * borderWidth : 0),
-    lineHeight: innerSize * (classic ? 1.1 : 1) + 'px',
-    top: (!classic ? 0 : TileTypeHelper.isRaised(tileType) ? 0 : 2 * borderWidth),
-    width: innerSize,
-  } as React.CSSProperties;
-
   const icon = getIconFromTheme(theme, tileType);
-
-  if (icon) {
-    style = {
-      ...style,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      position: 'relative',
-    };
-
-    child = (
-      <span className={'theme-' + theme + '-' + tileType} style={{ position: 'absolute', zIndex: 0, }}>
-        {icon({
-          fontSize: fontSize,
-          overstepped: overStepped,
-          size: size,
-          text: <>{text}</>,
-        })}
-      </span>
-    );
-  }
 
   return (
     <div
       className={classNames(
-        `select-none absolute tile_type_${tileType} text-center align-middle`,
+        `select-none tile_type_${tileType} text-center align-middle flex items-center justify-center relative`,
         { 'square-movable': TileTypeHelper.canMove(tileType) },
         { 'square-hole': tileType === TileType.Hole },
       )}
-      style={style}
+      style={{
+        backgroundColor: getBackgroundColor(),
+        borderBottomWidth: tileType === TileType.Hole || TileTypeHelper.canMoveUp(tileType) ? innerBorderWidth : 0,
+        borderColor: tileType === TileType.Hole ? 'var(--level-hole-border)' : 'var(--level-block-border)',
+        borderLeftWidth: tileType === TileType.Hole || TileTypeHelper.canMoveRight(tileType) ? innerBorderWidth : 0,
+        borderRightWidth: tileType === TileType.Hole || TileTypeHelper.canMoveLeft(tileType) ? innerBorderWidth : 0,
+        borderTopWidth: tileType === TileType.Hole || TileTypeHelper.canMoveDown(tileType) ? innerBorderWidth : 0,
+        boxShadow: !classic ? `0 0 0 ${borderWidth}px var(--bg-color)` :
+          tileType === TileType.Wall ||
+          tileType === TileType.Start ||
+          TileTypeHelper.canMove(tileType) ?
+            `-${2 * borderWidth}px ${2 * borderWidth}px 0 0 var(--bg-color)` :
+            `${2 * borderWidth}px -${2 * borderWidth}px 0 0 var(--bg-color)`,
+        color: textColor,
+        fontSize: fontSize,
+        height: innerSize,
+        left: (!classic ? 0 : TileTypeHelper.isRaised(tileType) ? 2 * borderWidth : 0),
+        lineHeight: innerSize * (classic ? 1.1 : 1) + 'px',
+        top: (!classic ? 0 : TileTypeHelper.isRaised(tileType) ? 0 : 2 * borderWidth),
+        width: innerSize,
+      }}
     >
-      {child}
+      {icon ?
+        <span className={'theme-' + theme + '-' + tileType} style={{ position: 'absolute', zIndex: 0, }}>
+          {icon({
+            fontSize: fontSize,
+            overstepped: overStepped,
+            size: size,
+            text: <>{text}</>,
+          })}
+        </span>
+        :
+        text
+      }
     </div>
   );
 }

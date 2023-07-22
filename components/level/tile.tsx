@@ -11,7 +11,6 @@ import Square from './square';
 
 interface TileProps {
   atEnd?: boolean;
-  borderWidth: number;
   className?: string | undefined;
   handleClick?: (rightClick: boolean) => void;
   inHole?: boolean;
@@ -24,7 +23,6 @@ interface TileProps {
 
 export default function Tile({
   atEnd,
-  borderWidth,
   className,
   handleClick,
   inHole,
@@ -34,6 +32,7 @@ export default function Tile({
   text,
   tileType,
 }: TileProps) {
+  const borderWidth = Math.round(size / 40) || 1;
   // initialize the block at the starting position to avoid an animation from the top left
   const [initPos] = useState(new Position(pos.x, pos.y));
   const innerSize = size - 2 * borderWidth;

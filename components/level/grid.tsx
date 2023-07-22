@@ -11,7 +11,7 @@ import Tile from './tile';
 interface GridProps {
   board: SquareState[][];
   cellClassName?: (x: number, y: number) => string | undefined;
-  generateMovables?: (borderWidth: number, squareSize: number) => JSX.Element;
+  generateMovables?: (squareSize: number) => JSX.Element;
   id: string;
   leastMoves: number;
   onCellClick: (x: number, y: number, rightClick: boolean) => void;
@@ -24,7 +24,6 @@ export default function Grid({ board, cellClassName, generateMovables, id, least
   const width = board[0].length;
   const gridId = `grid-${id}`;
   const [squareSize, setSquareSize] = useState(0);
-  const borderWidth = Math.round(squareSize / 40) || 1;
 
   useEffect(() => {
     const el = document.getElementById(gridId);
@@ -74,7 +73,6 @@ export default function Grid({ board, cellClassName, generateMovables, id, least
 
             return (
               <Tile
-                borderWidth={borderWidth}
                 className={cellClassName ? cellClassName(x, y) : undefined}
                 handleClick={(rightClick: boolean) => onCellClick(x, y, rightClick)}
                 key={`tile-${y}-${x}`}
@@ -86,8 +84,7 @@ export default function Grid({ board, cellClassName, generateMovables, id, least
               />
             );
           }))}
-          {/* TODO: automatically generatemovables if isGame (can maybe do this within Tile by auto-creating squares underneath blocks) */}
-          {generateMovables ? generateMovables(borderWidth, squareSize) : null}
+          {generateMovables ? generateMovables(squareSize) : null}
         </div>
       }
     </div>
