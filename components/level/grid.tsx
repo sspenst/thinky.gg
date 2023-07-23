@@ -64,6 +64,7 @@ export default function Grid({ board, cellClassName, generateMovables, id, least
         <GridContext.Provider value={{
           borderWidth: Math.round(tileSize / 40) || 1,
           innerTileSize: innerTileSize,
+          leastMoves: leastMoves,
           tileSize: tileSize,
         }}>
           <div
@@ -85,7 +86,6 @@ export default function Grid({ board, cellClassName, generateMovables, id, least
                   className={cellClassName ? cellClassName(x, y) : undefined}
                   handleClick={(rightClick: boolean) => onCellClick(x, y, rightClick)}
                   key={`tile-${y}-${x}`}
-                  leastMoves={leastMoves}
                   pos={new Position(x, y)}
                   text={text}
                   tileType={tileType}

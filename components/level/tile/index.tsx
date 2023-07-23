@@ -14,7 +14,6 @@ interface TileProps {
   className?: string | undefined;
   handleClick?: (rightClick: boolean) => void;
   inHole?: boolean;
-  leastMoves: number;
   pos: Position;
   text?: number | undefined;
   tileType: TileType;
@@ -25,7 +24,6 @@ export default function Tile({
   className,
   handleClick,
   inHole,
-  leastMoves,
   pos,
   text,
   tileType,
@@ -48,7 +46,6 @@ export default function Tile({
       return (
         <Player
           atEnd={atEnd}
-          leastMoves={leastMoves}
           moveCount={text ?? 0}
         />
       );
@@ -61,7 +58,6 @@ export default function Tile({
     ) {
       return (
         <Square
-          leastMoves={leastMoves}
           text={text}
           tileType={tileType}
         />
@@ -74,7 +70,7 @@ export default function Tile({
         tileType={tileType}
       />
     );
-  }, [atEnd, inHole, leastMoves, text, tileType]);
+  }, [atEnd, inHole, text, tileType]);
 
   return (
     <div
