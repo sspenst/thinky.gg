@@ -1,19 +1,18 @@
 import TileType from '@root/constants/tileType';
 import { AppContext } from '@root/contexts/appContext';
-import TileTypeHelper from '@root/helpers/tileTypeHelper';
+import { GridContext } from '@root/contexts/gridContext';
 import Position from '@root/models/position';
 import classNames from 'classnames';
 import React, { useContext, useEffect, useState } from 'react';
 import Theme from '../../constants/theme';
 import SquareState from '../../models/squareState';
 import { teko } from '../../pages/_app';
-import Player from './player';
-import Square from './square';
+import Tile from './tile/tile';
 
 interface GridProps {
   board: SquareState[][];
   cellClassName?: (x: number, y: number) => string | undefined;
-  generateMovables?: (borderWidth: number, squareSize: number) => JSX.Element;
+  generateMovables?: () => JSX.Element;
   id: string;
   leastMoves: number;
   onCellClick: (x: number, y: number, rightClick: boolean) => void;
@@ -25,7 +24,7 @@ export default function Grid({ board, cellClassName, generateMovables, id, least
   const height = board.length;
   const width = board[0].length;
   const gridId = `grid-${id}`;
-  const [squareSize, setSquareSize] = useState(0);
+  const [tileSize, setTileSize] = useState(0);
 
   useEffect(() => {
     const el = document.getElementById(gridId);
@@ -39,14 +38,14 @@ export default function Grid({ board, cellClassName, generateMovables, id, least
       const gridHeight = entries[0].contentBoxSize[0].blockSize;
       const gridWidth = entries[0].contentBoxSize[0].inlineSize;
 
-      // calculate the square size based on the available game space and the level dimensions
-      // NB: forcing the square size to be an integer allows the block animations to travel along actual pixels
-      const newSquareSize = !gridHeight || !gridWidth ? 0 :
+      // calculate the tile size based on the available game space and the level dimensions
+      // NB: forcing the tile size to be an integer allows the block animations to travel along actual pixels
+      const newTileSize = !gridHeight || !gridWidth ? 0 :
         width / height > gridWidth / gridHeight ?
           Math.floor(gridWidth / width) : Math.floor(gridHeight / height);
 
-      // NB: setting square size here instead of gridHeight / gridWidth avoids rendering on every resize
-      setSquareSize(newSquareSize);
+      // NB: calculting tile size here instead of setting grid height/width avoids rendering on every resize
+      setTileSize(newTileSize);
     });
 
     resizeObserver.observe(el);
@@ -56,72 +55,46 @@ export default function Grid({ board, cellClassName, generateMovables, id, least
     };
   }, [gridId, height, width]);
 
-  const borderWidth = Math.round(squareSize / 40) || 1;
-  const grid = [];
-
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const tileType = board[y][x].tileType;
-      const text = tileType === TileType.End ? leastMoves :
-        board[y][x].text.length === 0 ? undefined :
-          board[y][x].text[board[y][x].text.length - 1];
-
-      grid.push(
-        tileType === TileType.Start ?
-          <Player
-            borderWidth={borderWidth}
-            className={cellClassName ? cellClassName(x, y) : undefined}
-            gameState={{
-              actionCount: 0,
-              blocks: [],
-              board: [],
-              height: height,
-              moveCount: 0,
-              moves: [],
-              pos: new Position(x, y),
-              width: width,
-            }}
-            handleClick={() => onCellClick(x, y, false)}
-            key={`grid-${x}-${y}`}
-            leastMoves={leastMoves}
-            size={squareSize}
-            tileType={TileType.Default}
-          />
-          :
-          <div
-            className={classNames('absolute', cellClassName ? cellClassName(x, y) : undefined)}
-            key={`grid-${x}-${y}`}
-            style={{
-              left: squareSize * x + (!classic ? borderWidth : TileTypeHelper.isRaised(tileType) ? 2 * borderWidth : 0),
-              top: squareSize * y + (!classic ? borderWidth : TileTypeHelper.isRaised(tileType) ? 0 : 2 * borderWidth),
-            }}
-          >
-            <Square
-              borderWidth={borderWidth}
-              handleClick={(rightClick: boolean) => onCellClick(x, y, rightClick)}
-              leastMoves={leastMoves}
-              size={squareSize}
-              text={text}
-              tileType={tileType}
-            />
-          </div>
-      );
-    }
-  }
+  const borderWidth = Math.round(tileSize / 40) || 1;
+  const innerTileSize = tileSize - 2 * borderWidth;
 
   return (
     <div className={classNames('grow flex items-center justify-center overflow-hidden', { [teko.className]: classic })} id={gridId}>
-      {squareSize !== 0 &&
-        <div
-          className='absolute'
-          style={{
-            height: squareSize * height,
-            width: squareSize * width,
-          }}
-        >
-          {grid}
-          {generateMovables ? generateMovables(borderWidth, squareSize) : null}
-        </div>
+      {tileSize !== 0 &&
+        <GridContext.Provider value={{
+          borderWidth: borderWidth,
+          innerTileSize: innerTileSize,
+          leastMoves: leastMoves,
+          tileSize: tileSize,
+        }}>
+          <div
+            className='absolute overflow-hidden'
+            style={{
+              height: tileSize * height,
+              width: tileSize * width,
+            }}
+          >
+            {board.map((row, y) => row.map((squareState, x) => {
+              const tileType = squareState.tileType;
+              const text = tileType === TileType.Start ? 0 :
+                tileType === TileType.End ? leastMoves :
+                  squareState.text.length === 0 ? undefined :
+                    squareState.text[squareState.text.length - 1];
+
+              return (
+                <Tile
+                  className={cellClassName ? cellClassName(x, y) : undefined}
+                  handleClick={(rightClick: boolean) => onCellClick(x, y, rightClick)}
+                  key={`tile-${y}-${x}`}
+                  pos={new Position(x, y)}
+                  text={text}
+                  tileType={tileType}
+                />
+              );
+            }))}
+            {generateMovables ? generateMovables() : null}
+          </div>
+        </GridContext.Provider>
       }
     </div>
   );

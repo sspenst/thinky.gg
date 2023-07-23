@@ -97,10 +97,8 @@ body {
   --level-player-text: rgb(0, 0, 0);
   --level-wall: rgb(112, 67, 54);
 }
-.theme-monkey-player {
-  position: absolute;
-  z-index: 0;
-  bottom: 0;
+
+.theme-monkey-4 {
   animation: rotateMonkey 2s infinite linear;
 }
 
