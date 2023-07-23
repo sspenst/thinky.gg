@@ -8,16 +8,11 @@ import styles from './Player.module.css';
 
 interface PlayerProps {
   atEnd?: boolean;
-  leastMoves: number;
   moveCount: number;
 }
 
-export default function Player({
-  atEnd,
-  leastMoves,
-  moveCount,
-}: PlayerProps) {
-  const { borderWidth, innerTileSize, tileSize } = useContext(GridContext);
+export default function Player({ atEnd, moveCount }: PlayerProps) {
+  const { borderWidth, innerTileSize, leastMoves, tileSize } = useContext(GridContext);
   const text = String(moveCount);
   const fontSizeRatio = text.length <= 3 ? 2 : (1 + (text.length - 1) / 2);
   const fontSize = innerTileSize / fontSizeRatio;

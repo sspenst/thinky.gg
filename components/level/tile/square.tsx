@@ -7,17 +7,12 @@ import Theme, { getIconFromTheme } from '../../../constants/theme';
 import TileType from '../../../constants/tileType';
 
 interface SquareProps {
-  leastMoves: number;
   text?: number;
   tileType: TileType.Default | TileType.Wall | TileType.End | TileType.Hole;
 }
 
-export default function Square({
-  leastMoves,
-  text,
-  tileType,
-}: SquareProps) {
-  const { borderWidth, innerTileSize, tileSize } = useContext(GridContext);
+export default function Square({ text, tileType }: SquareProps) {
+  const { borderWidth, innerTileSize, leastMoves, tileSize } = useContext(GridContext);
   const { theme } = useContext(AppContext);
   const classic = theme === Theme.Classic;
   const innerBorderWidth = Math.round(innerTileSize / 4.5);

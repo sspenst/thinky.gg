@@ -77,7 +77,6 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, hi
                   handleClick={() => onCellClick(block.pos.x, block.pos.y)}
                   inHole={block.inHole}
                   key={`block-${block.id}`}
-                  leastMoves={level.leastMoves}
                   pos={block.pos}
                   tileType={block.type}
                 />
@@ -85,7 +84,6 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, hi
             })}
             <Tile
               atEnd={gameState.board[gameState.pos.y][gameState.pos.x].tileType === TileType.End}
-              leastMoves={level.leastMoves}
               pos={gameState.pos}
               text={gameState.moveCount}
               tileType={TileType.Start}
