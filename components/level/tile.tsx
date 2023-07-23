@@ -1,6 +1,6 @@
 import Theme from '@root/constants/theme';
 import { AppContext } from '@root/contexts/appContext';
-import TileTypeHelper from '@root/helpers/tileTypeHelper';
+import { GridContext } from '@root/contexts/gridContext';
 import Position from '@root/models/position';
 import classNames from 'classnames';
 import React, { useCallback, useContext, useMemo, useState } from 'react';
@@ -16,7 +16,6 @@ interface TileProps {
   inHole?: boolean;
   leastMoves: number;
   pos: Position;
-  size: number;
   text?: number | undefined;
   tileType: TileType;
 }
@@ -28,14 +27,12 @@ export default function Tile({
   inHole,
   leastMoves,
   pos,
-  size,
   text,
   tileType,
 }: TileProps) {
-  const borderWidth = Math.round(size / 40) || 1;
+  const { borderWidth, innerTileSize, tileSize } = useContext(GridContext);
   // initialize the block at the starting position to avoid an animation from the top left
   const [initPos] = useState(new Position(pos.x, pos.y));
-  const innerSize = size - 2 * borderWidth;
   const { theme } = useContext(AppContext);
   const classic = theme === Theme.Classic;
 
@@ -46,40 +43,38 @@ export default function Tile({
     }
   }, [handleClick]);
 
-  const innerTile = useMemo(() => {
+  const tile = useMemo(() => {
     if (tileType === TileType.Start) {
       return (
         <Player
           atEnd={atEnd}
-          borderWidth={borderWidth}
           leastMoves={leastMoves}
           moveCount={text ?? 0}
-          size={size}
         />
       );
     }
 
-    if (TileTypeHelper.canMove(tileType)) {
+    if (tileType === TileType.Default ||
+      tileType === TileType.Wall ||
+      tileType === TileType.End ||
+      tileType === TileType.Hole
+    ) {
       return (
-        <Block
-          borderWidth={borderWidth}
-          inHole={inHole ?? false}
-          size={size}
+        <Square
+          leastMoves={leastMoves}
+          text={text}
           tileType={tileType}
         />
       );
     }
 
     return (
-      <Square
-        borderWidth={borderWidth}
-        leastMoves={leastMoves}
-        size={size}
-        text={text}
+      <Block
+        inHole={inHole ?? false}
         tileType={tileType}
       />
     );
-  }, [atEnd, borderWidth, inHole, leastMoves, size, text, tileType]);
+  }, [atEnd, inHole, leastMoves, text, tileType]);
 
   return (
     <div
@@ -89,15 +84,15 @@ export default function Tile({
       onTouchEnd={() => handleClick ? handleClick(false) : undefined}
       style={{
         backgroundColor: tileType === TileType.Start ? 'var(--bg-color)' : undefined,
-        height: classic ? size : innerSize,
-        left: size * initPos.x + (classic ? 0 : borderWidth),
-        top: size * initPos.y + (classic ? 0 : borderWidth),
-        transform: `translate(${(pos.x - initPos.x) * size}px, ${(pos.y - initPos.y) * size}px)`,
+        height: classic ? tileSize : innerTileSize,
+        left: tileSize * initPos.x + (classic ? 0 : borderWidth),
+        top: tileSize * initPos.y + (classic ? 0 : borderWidth),
+        transform: `translate(${(pos.x - initPos.x) * tileSize}px, ${(pos.y - initPos.y) * tileSize}px)`,
         transition: 'transform 0.1s',
-        width: classic ? size : innerSize,
+        width: classic ? tileSize : innerTileSize,
       }}
     >
-      {innerTile}
+      {tile}
     </div>
   );
 }
