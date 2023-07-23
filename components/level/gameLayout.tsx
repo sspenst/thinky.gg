@@ -11,7 +11,7 @@ import Controls from './controls';
 import { GameState } from './game';
 import Grid from './grid';
 import Sidebar from './sidebar';
-import Tile from './tile';
+import Tile from './tile/tile';
 
 interface GameLayoutProps {
   controls: Control[];
