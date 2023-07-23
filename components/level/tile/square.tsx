@@ -1,7 +1,6 @@
 import { AppContext } from '@root/contexts/appContext';
 import { GridContext } from '@root/contexts/gridContext';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
-import classNames from 'classnames';
 import React, { useContext } from 'react';
 import Theme, { getIconFromTheme } from '../../../constants/theme';
 import TileType from '../../../constants/tileType';
@@ -42,11 +41,7 @@ export default function Square({ text, tileType }: SquareProps) {
 
   return (
     <div
-      className={classNames(
-        `select-none tile_type_${tileType} text-center align-middle flex items-center justify-center relative`,
-        { 'square-movable': TileTypeHelper.canMove(tileType) },
-        { 'square-hole': tileType === TileType.Hole },
-      )}
+      className={`select-none tile-type-${tileType} flex items-center justify-center relative`}
       style={{
         backgroundColor: getBackgroundColor(),
         borderBottomWidth: tileType === TileType.Hole || TileTypeHelper.canMoveUp(tileType) ? innerBorderWidth : 0,
@@ -68,7 +63,7 @@ export default function Square({ text, tileType }: SquareProps) {
       }}
     >
       {icon ?
-        <span className={'theme-' + theme + '-' + tileType} style={{ position: 'absolute', zIndex: 0, }}>
+        <span className={`${theme}-${tileType}`}>
           {icon({
             fontSize: fontSize,
             overstepped: overStepped,

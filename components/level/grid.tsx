@@ -7,7 +7,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import Theme from '../../constants/theme';
 import SquareState from '../../models/squareState';
 import { teko } from '../../pages/_app';
-import Tile from './tile';
+import Tile from './tile/tile';
 
 interface GridProps {
   board: SquareState[][];
@@ -44,7 +44,7 @@ export default function Grid({ board, cellClassName, generateMovables, id, least
         width / height > gridWidth / gridHeight ?
           Math.floor(gridWidth / width) : Math.floor(gridHeight / height);
 
-      // NB: setting square size here instead of gridHeight / gridWidth avoids rendering on every resize
+      // NB: calculting tile size here instead of setting grid height/width avoids rendering on every resize
       setTileSize(newTileSize);
     });
 
@@ -62,7 +62,7 @@ export default function Grid({ board, cellClassName, generateMovables, id, least
     <div className={classNames('grow flex items-center justify-center overflow-hidden', { [teko.className]: classic })} id={gridId}>
       {tileSize !== 0 &&
         <GridContext.Provider value={{
-          borderWidth: Math.round(tileSize / 40) || 1,
+          borderWidth: borderWidth,
           innerTileSize: innerTileSize,
           leastMoves: leastMoves,
           tileSize: tileSize,

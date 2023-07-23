@@ -74,7 +74,7 @@ export default function Tile({
 
   return (
     <div
-      className={classNames(`absolute tile_type_${tileType}`, className)}
+      className={classNames(`absolute tile-type-${tileType}`, className)}
       onClick={onClick}
       onContextMenu={onClick}
       onTouchEnd={() => handleClick ? handleClick(false) : undefined}

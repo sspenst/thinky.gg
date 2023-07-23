@@ -22,7 +22,7 @@ export default function Block({ inHole, tileType }: BlockProps) {
   return (
     <div
       className={classNames(
-        'select-none absolute z-20',
+        'select-none relative z-20',
         inHole ? styles['in-hole'] : undefined,
       )}
       style={{

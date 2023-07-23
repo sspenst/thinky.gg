@@ -43,14 +43,12 @@ export default function Player({ atEnd, moveCount }: PlayerProps) {
         height: innerTileSize,
         left: classic ? 2 * borderWidth : 0,
         lineHeight: innerTileSize + 'px',
-        textAlign: 'center',
         top: 0,
-        verticalAlign: 'middle',
         width: innerTileSize,
       }}
     >
       {icon ?
-        <span className='theme-monkey-player absolute z-0 bottom-0'>
+        <span className={`${theme}-${TileType.Start}`}>
           {icon({
             fontSize: fontSize,
             overstepped: overstepped,
