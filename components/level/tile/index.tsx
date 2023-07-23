@@ -4,7 +4,7 @@ import { GridContext } from '@root/contexts/gridContext';
 import Position from '@root/models/position';
 import classNames from 'classnames';
 import React, { useCallback, useContext, useMemo, useState } from 'react';
-import TileType from '../../constants/tileType';
+import TileType from '../../../constants/tileType';
 import Block from './block';
 import Player from './player';
 import Square from './square';

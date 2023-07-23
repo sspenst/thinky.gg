@@ -4,7 +4,7 @@ import { GridContext } from '@root/contexts/gridContext';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import classNames from 'classnames';
 import React, { useContext } from 'react';
-import Theme from '../../constants/theme';
+import Theme from '../../../constants/theme';
 import styles from './Block.module.css';
 
 interface BlockProps {
@@ -17,7 +17,7 @@ export default function Block({ inHole, tileType }: BlockProps) {
   const { theme } = useContext(AppContext);
   const classic = theme === Theme.Classic;
   const fillCenter = classic && tileType === TileType.Block;
-  const innerBorderWidth = Math.round(innerTileSize / 5);
+  const innerBorderWidth = Math.round(innerTileSize / 4.5);
 
   return (
     <div
