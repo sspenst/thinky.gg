@@ -70,7 +70,7 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, hi
         }
         <Grid
           board={gameState.board}
-          generateMovables={(squareSize) => <>
+          generateMovables={() => <>
             {gameState.blocks.map(block => {
               return (
                 <Tile
@@ -79,7 +79,6 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, hi
                   key={`block-${block.id}`}
                   leastMoves={level.leastMoves}
                   pos={block.pos}
-                  size={squareSize}
                   tileType={block.type}
                 />
               );
@@ -88,7 +87,6 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, hi
               atEnd={gameState.board[gameState.pos.y][gameState.pos.x].tileType === TileType.End}
               leastMoves={level.leastMoves}
               pos={gameState.pos}
-              size={squareSize}
               text={gameState.moveCount}
               tileType={TileType.Start}
             />

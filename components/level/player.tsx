@@ -1,4 +1,5 @@
 import { AppContext } from '@root/contexts/appContext';
+import { GridContext } from '@root/contexts/gridContext';
 import classNames from 'classnames';
 import React, { useContext } from 'react';
 import Theme, { getIconFromTheme } from '../../constants/theme';
@@ -7,23 +8,19 @@ import styles from './Player.module.css';
 
 interface PlayerProps {
   atEnd?: boolean;
-  borderWidth: number;
   leastMoves: number;
   moveCount: number;
-  size: number;
 }
 
 export default function Player({
   atEnd,
-  borderWidth,
   leastMoves,
   moveCount,
-  size,
 }: PlayerProps) {
-  const innerSize = size - 2 * borderWidth;
+  const { borderWidth, innerTileSize, tileSize } = useContext(GridContext);
   const text = String(moveCount);
   const fontSizeRatio = text.length <= 3 ? 2 : (1 + (text.length - 1) / 2);
-  const fontSize = innerSize / fontSizeRatio;
+  const fontSize = innerTileSize / fontSizeRatio;
   const { theme } = useContext(AppContext);
   const classic = theme === Theme.Classic;
   const icon = getIconFromTheme(theme, TileType.Start);
@@ -48,13 +45,13 @@ export default function Player({
           `0 0 0 ${borderWidth}px var(--bg-color)`,
         color: 'var(--level-player-text)',
         fontSize: fontSize,
-        height: innerSize,
+        height: innerTileSize,
         left: classic ? 2 * borderWidth : 0,
-        lineHeight: innerSize + 'px',
+        lineHeight: innerTileSize + 'px',
         textAlign: 'center',
         top: 0,
         verticalAlign: 'middle',
-        width: innerSize,
+        width: innerTileSize,
       }}
     >
       {icon ?
@@ -62,7 +59,7 @@ export default function Player({
           {icon({
             fontSize: fontSize,
             overstepped: overstepped,
-            size: size,
+            size: tileSize,
             text: <>{text}</>,
           })}
         </span>
