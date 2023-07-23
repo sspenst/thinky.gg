@@ -1,3 +1,4 @@
+import TileType from '@root/constants/tileType';
 import { PageContext } from '@root/contexts/pageContext';
 import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
@@ -6,12 +7,11 @@ import { EnrichedLevel } from '../../models/db/level';
 import Complete from '../complete';
 import FormattedUser from '../formattedUser';
 import CheckpointsModal from '../modal/checkpointsModal';
-import Block from './block';
 import Controls from './controls';
 import { GameState } from './game';
 import Grid from './grid';
-import Player from './player';
 import Sidebar from './sidebar';
+import Tile from './tile/tile';
 
 interface GameLayoutProps {
   controls: Control[];
@@ -70,20 +70,23 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, hi
         }
         <Grid
           board={gameState.board}
-          generateMovables={(borderWidth, squareSize) => <>
-            {gameState.blocks.map(block => <Block
-              block={block}
-              borderWidth={borderWidth}
-              key={`block-${block.id}`}
-              onClick={() => onCellClick(block.pos.x, block.pos.y)}
-              size={squareSize}
-            />)}
-            <Player
-              borderWidth={borderWidth}
-              gameState={gameState}
-              leastMoves={level.leastMoves}
-              size={squareSize}
-              tileType={gameState.board[gameState.pos.y][gameState.pos.x].tileType}
+          generateMovables={() => <>
+            {gameState.blocks.map(block => {
+              return (
+                <Tile
+                  handleClick={() => onCellClick(block.pos.x, block.pos.y)}
+                  inHole={block.inHole}
+                  key={`block-${block.id}`}
+                  pos={block.pos}
+                  tileType={block.type}
+                />
+              );
+            })}
+            <Tile
+              atEnd={gameState.board[gameState.pos.y][gameState.pos.x].tileType === TileType.End}
+              pos={gameState.pos}
+              text={gameState.moveCount}
+              tileType={TileType.Start}
             />
           </>}
           id={level._id.toString()}

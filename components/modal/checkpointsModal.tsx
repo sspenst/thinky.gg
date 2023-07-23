@@ -48,7 +48,7 @@ function CheckpointModalItem({ checkpoint, closeModal, slot }: CheckpointModalIt
     }
 
     const data = checkpoint.board.map(row => row.map(s => {
-      // show darker green for visited squares
+      // show darker green for visited tiles
       if (s.levelDataType === TileType.Default && s.text.length > 0) {
         return TileTypeDefaultVisited;
       } else {
