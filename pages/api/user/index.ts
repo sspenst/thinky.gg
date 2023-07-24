@@ -169,7 +169,7 @@ export default withAuth({
       const subscription = (data as Partial<Stripe.Subscription>);
 
       if (subscription.status === 'active' && subscription.cancel_at_period_end === false) {
-        return res.status(400).json({ error: 'Please must cancel your subscription before deleting your account.' });
+        return res.status(400).json({ error: 'You must cancel your subscription before deleting your account.' });
       }
     }
 
