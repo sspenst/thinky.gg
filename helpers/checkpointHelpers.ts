@@ -2,7 +2,7 @@ import { GameState } from '@root/components/level/game';
 import TileType from '@root/constants/tileType';
 import BlockState from '@root/models/blockState';
 import Move from '@root/models/move';
-import Position from '@root/models/position';
+import Position, { getDirectionFromCode } from '@root/models/position';
 import SquareState from '@root/models/squareState';
 
 interface CheckpointSquareState {
@@ -76,13 +76,18 @@ export function convertToCheckpointState(gameState: GameState) {
         pos: move.pos.clone(),
       };
 
-      if (move.block) {
-        checkpointMove.block = move.block.clone();
+      if (move.blockId !== undefined) {
+        const block = blocks.find(b => b.id === move.blockId);
+        const direction = getDirectionFromCode(move.code);
 
-        const block = blocks.find(b => b.id === move.block?.id);
+        if (block && direction) {
+          checkpointMove.block = block.clone();
+          checkpointMove.block.pos = checkpointMove.block.pos.sub(direction);
 
-        if (block?.inHole) {
-          checkpointMove.holePos = block.pos.clone();
+          if (block.inHole) {
+            checkpointMove.block.inHole = false;
+            checkpointMove.holePos = block.pos.clone();
+          }
         }
       }
 
@@ -105,22 +110,11 @@ export function convertFromCheckpointState(checkpointState: CheckpointState) {
     height: checkpointState.height,
     moveCount: checkpointState.moveCount,
     moves: checkpointState.moves.map(checkpointMove => {
-      const pos = new Position(checkpointMove.pos.x, checkpointMove.pos.y);
-      const move = new Move(checkpointMove.code, pos);
-
-      if (checkpointMove.block) {
-        const block = new BlockState(
-          checkpointMove.block.id,
-          checkpointMove.block.type,
-          checkpointMove.block.pos.x,
-          checkpointMove.block.pos.y,
-          checkpointMove.block.inHole,
-        );
-
-        move.block = block;
-      }
-
-      return move;
+      return new Move(
+        checkpointMove.code,
+        new Position(checkpointMove.pos.x, checkpointMove.pos.y),
+        checkpointMove.block?.id,
+      );
     }),
     pos: new Position(checkpointState.pos.x, checkpointState.pos.y),
     width: checkpointState.width,

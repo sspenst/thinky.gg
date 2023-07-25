@@ -580,30 +580,23 @@ export default function Game({
             text.pop();
           }
 
-          if (prevMove.block) {
-            const block = getBlockById(blocks, prevMove.block.id);
+          // undo the block push
+          if (prevMove.blockId !== undefined) {
+            const block = getBlockById(blocks, prevMove.blockId);
+            const direction = getDirectionFromCode(prevMove.code);
 
-            if (!block) {
+            if (!block || !direction) {
               return prevGameState;
             }
 
-            // move the block back to its original position
-            block.pos = prevMove.block.pos.clone();
-
-            // if it was pushed into a hole, restore the hole
+            // restore the hole if necessary
             if (block.inHole) {
               block.inHole = false;
-
-              const direction = getDirectionFromCode(prevMove.code);
-
-              if (!direction) {
-                return prevGameState;
-              }
-
-              const holePos = block.pos.add(direction);
-
-              board[holePos.y][holePos.x].tileType = TileType.Hole;
+              board[block.pos.y][block.pos.x].tileType = TileType.Hole;
             }
+
+            // move the block back to its original position
+            block.pos = block.pos.sub(direction);
           }
 
           const newGameState: GameState = {
@@ -640,7 +633,7 @@ export default function Game({
               return prevGameState;
             }
 
-            move.block = block.clone();
+            move.blockId = block.id;
             block.pos = blockPos;
 
             // remove block if it is pushed onto a hole
@@ -724,7 +717,7 @@ export default function Game({
           //  if the board state has not changed and you're backtracking
           const lastMove = moves[moves.length - 1];
 
-          return pos.equals(lastMove.pos) && !lastMove.block;
+          return pos.equals(lastMove.pos) && lastMove.blockId === undefined;
         }
 
         if (allowFreeUndo && checkForFreeUndo()) {
