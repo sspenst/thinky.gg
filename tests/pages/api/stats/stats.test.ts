@@ -131,7 +131,7 @@ describe('Testing stats api', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Invalid body.levelId');
+        expect(response.error).toBe('Invalid body.directions, body.levelId');
         expect(res.status).toBe(400);
       },
     });
@@ -197,12 +197,42 @@ describe('Testing stats api', () => {
       },
     });
   });
-  test('Doing a PUT with a body but incorrect level solution should be OK', async () => {
+  test('Doing a PUT with an invalid direction should 400', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    const levelId = new Types.ObjectId();
+
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            directions: [5, Direction.RIGHT],
+            levelId: levelId,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Invalid direction provided: 5');
+        expect(res.status).toBe(400);
+      },
+    });
+  });
+  test('Doing a PUT with a body but incorrect level solution should 400', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
-    const codeTests = [
+    const directionTests = [
       [Direction.LEFT], // test left border
-      [5, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT], // test invalid
       [Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.DOWN, Direction.LEFT, Direction.LEFT], // tries to go over hole
       [Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.DOWN, Direction.DOWN, Direction.DOWN], // tries to push directional movable where it cant be pushed
       [Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT], // tries to push directional movable where it cant be pushed because of edge
@@ -211,7 +241,7 @@ describe('Testing stats api', () => {
       [Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.LEFT], // push movable into wall
     ];
 
-    for (const codeTest of codeTests) {
+    for (const directionTest of directionTests) {
       await testApiHandler({
         handler: async (_, res) => {
           const req: NextApiRequestWithAuth = {
@@ -220,7 +250,7 @@ describe('Testing stats api', () => {
               token: getTokenCookieValue(TestId.USER),
             },
             body: {
-              directions: codeTest,
+              directions: directionTest,
               levelId: TestId.LEVEL
             },
             headers: {
