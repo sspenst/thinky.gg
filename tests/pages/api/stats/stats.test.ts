@@ -1,3 +1,4 @@
+import Direction from '@root/constants/direction';
 import Stat from '@root/models/db/stat';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
@@ -130,7 +131,7 @@ describe('Testing stats api', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Invalid body.codes, body.levelId');
+        expect(response.error).toBe('Invalid body.levelId');
         expect(res.status).toBe(400);
       },
     });
@@ -146,7 +147,7 @@ describe('Testing stats api', () => {
             token: getTokenCookieValue(TestId.USER),
           },
           body: {
-            codes: '12345',
+            directions: '12345',
             levelId: TestId.LEVEL
           },
           headers: {
@@ -160,7 +161,7 @@ describe('Testing stats api', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Invalid body.codes');
+        expect(response.error).toBe('Invalid body.directions');
         expect(res.status).toBe(400);
       },
     });
@@ -177,7 +178,7 @@ describe('Testing stats api', () => {
             token: getTokenCookieValue(TestId.USER),
           },
           body: {
-            codes: ['ArrowRight'],
+            directions: [Direction.RIGHT],
             levelId: levelId,
           },
           headers: {
@@ -200,14 +201,14 @@ describe('Testing stats api', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     const codeTests = [
-      ['ArrowLeft'], // test left border
-      ['WRONG', 'ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowRight'], // test invalid
-      ['ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowLeft'], // tries to go over hole
-      ['ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowDown', 'ArrowDown', 'ArrowDown'], // tries to push directional movable where it cant be pushed
-      ['ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowRight'], // tries to push directional movable where it cant be pushed because of edge
-      ['ArrowDown'], // run into wall
-      ['ArrowRight', 'ArrowDown', 'ArrowRight', 'ArrowRight'], // tries to push directional movable where it cant be pushed because something in way
-      ['ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowLeft'], // push movable into wall
+      [Direction.LEFT], // test left border
+      [5, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT], // test invalid
+      [Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.DOWN, Direction.LEFT, Direction.LEFT], // tries to go over hole
+      [Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.DOWN, Direction.DOWN, Direction.DOWN], // tries to push directional movable where it cant be pushed
+      [Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT], // tries to push directional movable where it cant be pushed because of edge
+      [Direction.DOWN], // run into wall
+      [Direction.RIGHT, Direction.DOWN, Direction.RIGHT, Direction.RIGHT], // tries to push directional movable where it cant be pushed because something in way
+      [Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.LEFT], // push movable into wall
     ];
 
     for (const codeTest of codeTests) {
@@ -219,7 +220,7 @@ describe('Testing stats api', () => {
               token: getTokenCookieValue(TestId.USER),
             },
             body: {
-              codes: codeTest,
+              directions: codeTest,
               levelId: TestId.LEVEL
             },
             headers: {
@@ -260,7 +261,7 @@ describe('Testing stats api', () => {
           },
 
           body: {
-            codes: ['ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowRight', 'ArrowUp', 'ArrowLeft', 'ArrowLeft', 'ArrowDown', 'ArrowDown', 'ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowDown'],
+            directions: [Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.RIGHT, Direction.UP, Direction.LEFT, Direction.LEFT, Direction.DOWN, Direction.DOWN, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.DOWN],
             levelId: TestId.LEVEL
           },
           headers: {
@@ -296,7 +297,7 @@ describe('Testing stats api', () => {
           },
 
           body: {
-            codes: ['ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowRight', 'ArrowUp', 'ArrowLeft', 'ArrowLeft', 'ArrowDown', 'ArrowDown', 'ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowDown'],
+            directions: [Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.RIGHT, Direction.UP, Direction.LEFT, Direction.LEFT, Direction.DOWN, Direction.DOWN, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.DOWN],
             levelId: TestId.LEVEL
           },
           headers: {
@@ -333,7 +334,7 @@ describe('Testing stats api', () => {
             token: getTokenCookieValue(TestId.USER_B),
           },
           body: {
-            codes: ['ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowRight', 'ArrowUp', 'ArrowLeft', 'ArrowLeft', 'ArrowDown', 'ArrowDown', 'ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowDown'],
+            directions: [Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.RIGHT, Direction.UP, Direction.LEFT, Direction.LEFT, Direction.DOWN, Direction.DOWN, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.DOWN],
             levelId: TestId.LEVEL,
           },
           headers: {
@@ -373,7 +374,7 @@ describe('Testing stats api', () => {
           },
 
           body: {
-            codes: ['ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowDown', 'ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'ArrowDown', 'ArrowDown'],
+            directions: [Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.DOWN, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.LEFT, Direction.UP, Direction.DOWN, Direction.DOWN],
             levelId: TestId.LEVEL
           },
           headers: {
@@ -441,7 +442,7 @@ describe('Testing stats api', () => {
             token: getTokenCookieValue(TestId.USER_B),
           },
           body: {
-            codes: ['ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowRight', 'ArrowUp', 'ArrowLeft', 'ArrowLeft', 'ArrowDown', 'ArrowDown', 'ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowDown'],
+            directions: [Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.RIGHT, Direction.UP, Direction.LEFT, Direction.LEFT, Direction.DOWN, Direction.DOWN, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.DOWN],
             levelId: TestId.LEVEL
           },
           headers: {
@@ -479,7 +480,7 @@ describe('Testing stats api', () => {
             token: getTokenCookieValue(TestId.USER_B),
           },
           body: {
-            codes: ['ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowRight', 'ArrowUp', 'ArrowLeft', 'ArrowLeft', 'ArrowDown', 'ArrowDown', 'ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowDown'],
+            directions: [Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.RIGHT, Direction.UP, Direction.LEFT, Direction.LEFT, Direction.DOWN, Direction.DOWN, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.DOWN],
             levelId: TestId.LEVEL
           },
           headers: {
@@ -521,7 +522,7 @@ describe('Testing stats api', () => {
             token: getTokenCookieValue(TestId.USER_B),
           },
           body: {
-            codes: ['ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowDown', 'ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'ArrowDown', 'ArrowDown'],
+            directions: [Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.DOWN, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.LEFT, Direction.UP, Direction.DOWN, Direction.DOWN],
             levelId: TestId.LEVEL
           },
           headers: {
@@ -564,7 +565,7 @@ describe('Testing stats api', () => {
             token: getTokenCookieValue(TestId.USER_B),
           },
           body: {
-            codes: [ 'ArrowRight', 'ArrowDown', 'ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowDown', 'ArrowDown'],
+            directions: [ Direction.RIGHT, Direction.DOWN, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.DOWN, Direction.DOWN],
             levelId: TestId.LEVEL
           },
           headers: {
@@ -617,7 +618,7 @@ describe('Testing stats api', () => {
             token: getTokenCookieValue(TestId.USER_C),
           },
           body: {
-            codes: [ 'ArrowRight', 'ArrowDown', 'ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowDown', 'ArrowDown'],
+            directions: [ Direction.RIGHT, Direction.DOWN, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.DOWN, Direction.DOWN],
             levelId: TestId.LEVEL
           },
           headers: {
@@ -676,7 +677,7 @@ describe('Testing stats api', () => {
             token: getTokenCookieValue(TestId.USER_B),
           },
           body: {
-            codes: [ 'ArrowRight', 'ArrowDown', 'ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowDown', 'ArrowDown'],
+            directions: [ Direction.RIGHT, Direction.DOWN, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.DOWN, Direction.DOWN],
             levelId: TestId.LEVEL
           },
           headers: {

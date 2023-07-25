@@ -1,3 +1,4 @@
+import Direction from '@root/constants/direction';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -744,7 +745,7 @@ describe('pages/api/level/index.ts', () => {
             token: getTokenCookieValue(TestId.USER_B),
           },
           body: {
-            codes: ['ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowDown', 'ArrowDown', 'ArrowDown'],
+            directions: [Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.DOWN, Direction.DOWN, Direction.DOWN],
             levelId: test_level_id_delete
           },
           headers: {

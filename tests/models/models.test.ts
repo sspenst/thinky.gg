@@ -1,3 +1,4 @@
+import Direction, { getDirectionFromCode } from '@root/constants/direction';
 import TileType from '@root/constants/tileType';
 import TestId from '../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
@@ -6,7 +7,7 @@ import Control from '../../models/control';
 import User from '../../models/db/user';
 import { LevelModel, UserModel } from '../../models/mongoose';
 import Move from '../../models/move';
-import Position, { getDirectionFromCode } from '../../models/position';
+import Position from '../../models/position';
 import { calcPlayAttempts } from '../../models/schemas/levelSchema';
 import SelectOptionStats from '../../models/selectOptionStats';
 import SquareState from '../../models/squareState';
@@ -73,7 +74,7 @@ describe('models/*.ts', () => {
     expect(getDirectionFromCode('KeyB')).toBe(undefined);
   });
   test('Move', () => {
-    const move = new Move('code', new Position(1, 1), 0);
+    const move = new Move(Direction.LEFT, new Position(1, 1), 0);
     const move2 = move.clone();
     const move3 = Move.clone(move);
 

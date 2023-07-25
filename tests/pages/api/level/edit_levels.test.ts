@@ -1,3 +1,4 @@
+import Direction from '@root/constants/direction';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types, UpdateQuery } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -369,15 +370,15 @@ describe('Editing levels should work correctly', () => {
           },
           body: {
             levelId: level_id_1,
-            codes: [
-              'ArrowRight',
-              'ArrowRight',
-              'ArrowRight',
-              'ArrowRight',
-              'ArrowDown',
-              'ArrowDown',
-              'ArrowDown',
-              'ArrowDown',
+            directions: [
+              Direction.RIGHT,
+              Direction.RIGHT,
+              Direction.RIGHT,
+              Direction.RIGHT,
+              Direction.DOWN,
+              Direction.DOWN,
+              Direction.DOWN,
+              Direction.DOWN,
             ],
           },
           headers: {
@@ -502,15 +503,15 @@ describe('Editing levels should work correctly', () => {
           },
           body: {
             levelId: level_id_1,
-            codes: [
-              'ArrowRight',
-              'ArrowRight',
-              'ArrowRight',
-              'ArrowRight',
-              'ArrowDown',
-              'ArrowDown',
-              'ArrowDown',
-              'ArrowDown',
+            directions: [
+              Direction.RIGHT,
+              Direction.RIGHT,
+              Direction.RIGHT,
+              Direction.RIGHT,
+              Direction.DOWN,
+              Direction.DOWN,
+              Direction.DOWN,
+              Direction.DOWN,
             ],
           },
           headers: {

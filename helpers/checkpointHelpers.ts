@@ -1,8 +1,9 @@
 import { GameState } from '@root/components/level/game';
+import Direction, { directionToPosition, getDirectionFromCode } from '@root/constants/direction';
 import TileType from '@root/constants/tileType';
 import BlockState from '@root/models/blockState';
 import Move from '@root/models/move';
-import Position, { getDirectionFromCode } from '@root/models/position';
+import Position from '@root/models/position';
 import SquareState from '@root/models/squareState';
 
 interface CheckpointSquareState {
@@ -53,6 +54,19 @@ export function isValidCheckpointState(value: unknown) {
   return true;
 }
 
+function directionToCode(direction: Direction) {
+  switch (direction) {
+  case Direction.LEFT:
+    return 'ArrowLeft';
+  case Direction.UP:
+    return 'ArrowUp';
+  case Direction.RIGHT:
+    return 'ArrowRight';
+  case Direction.DOWN:
+    return 'ArrowDown';
+  }
+}
+
 export function convertToCheckpointState(gameState: GameState) {
   const blocks = gameState.blocks.map(block => BlockState.clone(block));
   const checkpointState: CheckpointState = {
@@ -72,17 +86,16 @@ export function convertToCheckpointState(gameState: GameState) {
     moveCount: gameState.moveCount,
     moves: gameState.moves.map(move => {
       const checkpointMove: CheckpointMove = {
-        code: move.code,
+        code: directionToCode(move.direction),
         pos: move.pos.clone(),
       };
 
       if (move.blockId !== undefined) {
         const block = blocks.find(b => b.id === move.blockId);
-        const direction = getDirectionFromCode(move.code);
 
-        if (block && direction) {
+        if (block) {
           checkpointMove.block = block.clone();
-          checkpointMove.block.pos = checkpointMove.block.pos.sub(direction);
+          checkpointMove.block.pos = checkpointMove.block.pos.sub(directionToPosition(move.direction));
 
           if (block.inHole) {
             checkpointMove.block.inHole = false;
@@ -110,8 +123,14 @@ export function convertFromCheckpointState(checkpointState: CheckpointState) {
     height: checkpointState.height,
     moveCount: checkpointState.moveCount,
     moves: checkpointState.moves.map(checkpointMove => {
+      const direction = getDirectionFromCode(checkpointMove.code);
+
+      if (!direction) {
+        throw new Error(`Invalid checkpoint code ${checkpointMove.code}`);
+      }
+
       return new Move(
-        checkpointMove.code,
+        direction,
         new Position(checkpointMove.pos.x, checkpointMove.pos.y),
         checkpointMove.block?.id,
       );
