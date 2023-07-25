@@ -23,11 +23,6 @@ export default function validateSolution(directions: Direction[], level: Level) 
 
     const direction = directions[i];
 
-    // account for bad user input from the API
-    if (!(direction in Direction)) {
-      return false;
-    }
-
     // validate and update position with direction
     pos = pos.add(directionToPosition(direction));
 
