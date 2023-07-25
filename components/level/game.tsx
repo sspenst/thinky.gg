@@ -583,16 +583,26 @@ export default function Game({
           if (prevMove.block) {
             const block = getBlockById(blocks, prevMove.block.id);
 
-            if (block) {
-              block.pos = prevMove.block.pos.clone();
+            if (!block) {
+              return prevGameState;
+            }
 
-              if (block.inHole) {
-                block.inHole = false;
+            // move the block back to its original position
+            block.pos = prevMove.block.pos.clone();
 
-                if (prevMove.holePos !== undefined) {
-                  board[prevMove.holePos.y][prevMove.holePos.x].tileType = TileType.Hole;
-                }
+            // if it was pushed into a hole, restore the hole
+            if (block.inHole) {
+              block.inHole = false;
+
+              const direction = getDirectionFromCode(prevMove.code);
+
+              if (!direction) {
+                return prevGameState;
               }
+
+              const holePos = block.pos.add(direction);
+
+              board[holePos.y][holePos.x].tileType = TileType.Hole;
             }
           }
 
@@ -637,7 +647,6 @@ export default function Game({
             if (board[blockPos.y][blockPos.x].tileType === TileType.Hole) {
               block.inHole = true;
               board[blockPos.y][blockPos.x].tileType = TileType.Default;
-              move.holePos = blockPos.clone();
             }
           }
 

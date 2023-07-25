@@ -88,19 +88,19 @@ describe('models/*.ts', () => {
       'code',
       new Position(1, 1),
       new BlockState(0, TileType.Block, 0, 0),
-      new Position(0, 0),
     );
 
     expect(move4.block?.id).toBe(0);
-    expect(move4.holePos?.x).toBe(0);
 
     const move5 = Move.clone(move4);
 
-    if (move5.holePos) {
-      move5.holePos.x = 2;
+    expect(move5.block).toBeDefined();
+
+    if (move5.block) {
+      move5.block.pos.x = 2;
     }
 
-    expect(move4.holePos?.x).toBe(0);
+    expect(move4.block?.pos.x).toBe(0);
   });
   test('SquareState', () => {
     const s = new SquareState();

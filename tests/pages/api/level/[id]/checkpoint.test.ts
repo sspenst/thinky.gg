@@ -1,7 +1,6 @@
 import Role from '@root/constants/role';
 import TestId from '@root/constants/testId';
-import TileType from '@root/constants/tileType';
-import { CheckpointState, convertFromCheckpointState, convertToCheckpointState } from '@root/helpers/checkpointHelpers';
+import { convertFromCheckpointState, convertToCheckpointState } from '@root/helpers/checkpointHelpers';
 import { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { getTokenCookieValue } from '@root/lib/getTokenCookie';
@@ -11,6 +10,8 @@ import handler from '@root/pages/api/level/[id]/checkpoints';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import mongoose from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
+import CHECKPOINT_STATE_1 from './checkpointState1';
+import CHECKPOINT_STATE_2 from './checkpointState2';
 
 beforeAll(async () => {
   await dbConnect();
@@ -22,8 +23,6 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 enableFetchMocks();
-const CHECKPOINT_STATE_1 = { 'actionCount': 6, 'blocks': [{ 'id': 0, 'pos': { 'x': 1, 'y': 1 }, 'type': '6', 'inHole': false }, { 'id': 1, 'pos': { 'x': 5, 'y': 1 }, 'type': '8', 'inHole': false }, { 'id': 2, 'pos': { 'x': 1, 'y': 2 }, 'type': 'H', 'inHole': false }, { 'id': 3, 'pos': { 'x': 3, 'y': 2 }, 'type': 'C', 'inHole': false }, { 'id': 4, 'pos': { 'x': 5, 'y': 2 }, 'type': '6', 'inHole': false }, { 'id': 5, 'pos': { 'x': 1, 'y': 3 }, 'type': 'F', 'inHole': false }, { 'id': 6, 'pos': { 'x': 5, 'y': 3 }, 'type': 'E', 'inHole': false }, { 'id': 7, 'pos': { 'x': 1, 'y': 4 }, 'type': 'I', 'inHole': false }, { 'id': 8, 'pos': { 'x': 3, 'y': 4 }, 'type': 'A', 'inHole': false }, { 'id': 9, 'pos': { 'x': 5, 'y': 4 }, 'type': 'I', 'inHole': false }, { 'id': 10, 'pos': { 'x': 1, 'y': 5 }, 'type': '2', 'inHole': false }, { 'id': 11, 'pos': { 'x': 5, 'y': 5 }, 'type': '2', 'inHole': false }], 'board': [[{ 'levelDataType': '1', 'text': [] }, { 'levelDataType': '1', 'text': [] }, { 'levelDataType': '1', 'text': [] }, { 'levelDataType': '3', 'text': [] }, { 'levelDataType': '1', 'text': [] }, { 'levelDataType': '1', 'text': [] }, { 'levelDataType': '1', 'text': [] }], [{ 'levelDataType': '0', 'text': [] }, { 'levelDataType': '0', 'text': [] }, { 'levelDataType': '5', 'text': [] }, { 'levelDataType': '5', 'text': [] }, { 'levelDataType': '5', 'text': [] }, { 'levelDataType': '0', 'text': [] }, { 'levelDataType': '0', 'text': [] }], [{ 'levelDataType': '0', 'text': [] }, { 'levelDataType': '0', 'text': [] }, { 'levelDataType': '5', 'text': [] }, { 'levelDataType': '0', 'text': [] }, { 'levelDataType': '5', 'text': [] }, { 'levelDataType': '0', 'text': [] }, { 'levelDataType': '0', 'text': [] }], [{ 'levelDataType': '0', 'text': [] }, { 'levelDataType': '0', 'text': [] }, { 'levelDataType': '5', 'text': [] }, { 'levelDataType': '5', 'text': [] }, { 'levelDataType': '5', 'text': [] }, { 'levelDataType': '0', 'text': [] }, { 'levelDataType': '0', 'text': [] }], [{ 'levelDataType': '0', 'text': [] }, { 'levelDataType': '0', 'text': [] }, { 'levelDataType': '5', 'text': [] }, { 'levelDataType': '0', 'text': [] }, { 'levelDataType': '5', 'text': [] }, { 'levelDataType': '0', 'text': [] }, { 'levelDataType': '0', 'text': [5] }], [{ 'levelDataType': '0', 'text': [] }, { 'levelDataType': '0', 'text': [] }, { 'levelDataType': '5', 'text': [] }, { 'levelDataType': '5', 'text': [] }, { 'levelDataType': '5', 'text': [] }, { 'levelDataType': '0', 'text': [] }, { 'levelDataType': '0', 'text': [4] }], [{ 'levelDataType': '0', 'text': [] }, { 'levelDataType': '0', 'text': [] }, { 'levelDataType': '0', 'text': [] }, { 'levelDataType': '0', 'text': [0] }, { 'levelDataType': '0', 'text': [1] }, { 'levelDataType': '0', 'text': [2] }, { 'levelDataType': '0', 'text': [3] }]], 'height': 7, 'moveCount': 6, 'moves': [{ 'code': 'ArrowRight', 'pos': { 'x': 3, 'y': 6 } }, { 'code': 'ArrowRight', 'pos': { 'x': 4, 'y': 6 } }, { 'code': 'ArrowRight', 'pos': { 'x': 5, 'y': 6 } }, { 'code': 'ArrowUp', 'pos': { 'x': 6, 'y': 6 } }, { 'code': 'ArrowUp', 'pos': { 'x': 6, 'y': 5 } }, { 'code': 'ArrowUp', 'pos': { 'x': 6, 'y': 4 } }], 'pos': { 'x': 6, 'y': 3 }, 'width': 7 } as CheckpointState;
-const CHECKPOINT_STATE_2 = { 'actionCount': 26, 'blocks': [{ 'id': 0, 'pos': { 'x': 1, 'y': 1 }, 'type': '6', 'inHole': false }, { 'id': 1, 'pos': { 'x': 5, 'y': 1 }, 'type': '8', 'inHole': false }, { 'id': 2, 'pos': { 'x': 1, 'y': 2 }, 'type': 'H', 'inHole': false }, { 'id': 3, 'pos': { 'x': 3, 'y': 2 }, 'type': 'C', 'inHole': false }, { 'id': 4, 'pos': { 'x': 5, 'y': 2 }, 'type': '6', 'inHole': false }, { 'id': 5, 'pos': { 'x': 1, 'y': 3 }, 'type': 'F', 'inHole': false }, { 'id': 6, 'pos': { 'x': 5, 'y': 3 }, 'type': 'E', 'inHole': false }, { 'id': 7, 'pos': { 'x': 1, 'y': 4 }, 'type': 'I', 'inHole': false }, { 'id': 8, 'pos': { 'x': 3, 'y': 4 }, 'type': 'A', 'inHole': false }, { 'id': 9, 'pos': { 'x': 5, 'y': 4 }, 'type': 'I', 'inHole': false }, { 'id': 10, 'pos': { 'x': 1, 'y': 5 }, 'type': '2', 'inHole': false }, { 'id': 11, 'pos': { 'x': 5, 'y': 5 }, 'type': '2', 'inHole': false }], 'board': [[{ 'levelDataType': '1', 'text': [] }, { 'levelDataType': '1', 'text': [] }, { 'levelDataType': '1', 'text': [] }, { 'levelDataType': '3', 'text': [] }, { 'levelDataType': '1', 'text': [] }, { 'levelDataType': '1', 'text': [] }, { 'levelDataType': '1', 'text': [] }], [{ 'levelDataType': '0', 'text': [] }, { 'levelDataType': '0', 'text': [] }, { 'levelDataType': '5', 'text': [] }, { 'levelDataType': '5', 'text': [] }, { 'levelDataType': '5', 'text': [] }, { 'levelDataType': '0', 'text': [] }, { 'levelDataType': '0', 'text': [] }], [{ 'levelDataType': '0', 'text': [] }, { 'levelDataType': '0', 'text': [] }, { 'levelDataType': '5', 'text': [] }, { 'levelDataType': '0', 'text': [] }, { 'levelDataType': '5', 'text': [] }, { 'levelDataType': '0', 'text': [] }, { 'levelDataType': '0', 'text': [] }], [{ 'levelDataType': '0', 'text': [] }, { 'levelDataType': '0', 'text': [] }, { 'levelDataType': '5', 'text': [] }, { 'levelDataType': '5', 'text': [] }, { 'levelDataType': '5', 'text': [] }, { 'levelDataType': '0', 'text': [] }, { 'levelDataType': '0', 'text': [] }], [{ 'levelDataType': '0', 'text': [5] }, { 'levelDataType': '0', 'text': [] }, { 'levelDataType': '5', 'text': [] }, { 'levelDataType': '0', 'text': [] }, { 'levelDataType': '5', 'text': [] }, { 'levelDataType': '0', 'text': [] }, { 'levelDataType': '0', 'text': [] }], [{ 'levelDataType': '0', 'text': [4] }, { 'levelDataType': '0', 'text': [] }, { 'levelDataType': '5', 'text': [] }, { 'levelDataType': '5', 'text': [] }, { 'levelDataType': '5', 'text': [] }, { 'levelDataType': '0', 'text': [] }, { 'levelDataType': '0', 'text': [] }], [{ 'levelDataType': '0', 'text': [3] }, { 'levelDataType': '0', 'text': [2] }, { 'levelDataType': '0', 'text': [1] }, { 'levelDataType': '0', 'text': [0] }, { 'levelDataType': '0', 'text': [] }, { 'levelDataType': '0', 'text': [] }, { 'levelDataType': '0', 'text': [] }]], 'height': 7, 'moveCount': 6, 'moves': [{ 'code': 'ArrowLeft', 'pos': { 'x': 3, 'y': 6 } }, { 'code': 'ArrowLeft', 'pos': { 'x': 2, 'y': 6 } }, { 'code': 'ArrowLeft', 'pos': { 'x': 1, 'y': 6 } }, { 'code': 'ArrowUp', 'pos': { 'x': 0, 'y': 6 } }, { 'code': 'ArrowUp', 'pos': { 'x': 0, 'y': 5 } }, { 'code': 'ArrowUp', 'pos': { 'x': 0, 'y': 4 } }], 'pos': { 'x': 0, 'y': 3 }, 'width': 7 } as CheckpointState;
 
 async function query({ params, expectedError, expectedStatus, additionalAssertions }: {
     params: Partial<NextApiRequestWithAuth>,
@@ -329,13 +328,14 @@ describe('api/user/[id]/checkpoints', () => {
 
 describe('checkpiontHelpers.ts', () => {
   test('convert to gameState and back', () => {
-    const gameState = convertFromCheckpointState(CHECKPOINT_STATE_1);
+    const gameState1 = convertFromCheckpointState(CHECKPOINT_STATE_1);
+    const checkpointState1 = convertToCheckpointState(gameState1);
 
-    expect(gameState).toBeDefined();
-    expect(gameState.board[0][0].tileType).toBe(TileType.Wall);
+    expect(JSON.stringify(checkpointState1)).toEqual(JSON.stringify(CHECKPOINT_STATE_1));
 
-    const checkpointState = convertToCheckpointState(gameState);
+    const gameState2 = convertFromCheckpointState(CHECKPOINT_STATE_2);
+    const checkpointState2 = convertToCheckpointState(gameState2);
 
-    expect(JSON.stringify(checkpointState)).toEqual(JSON.stringify(CHECKPOINT_STATE_1));
+    expect(JSON.stringify(checkpointState2)).toEqual(JSON.stringify(CHECKPOINT_STATE_2));
   });
 });
