@@ -1,3 +1,4 @@
+import Direction from '@root/constants/direction';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
@@ -18,10 +19,10 @@ afterAll(async () => {
 });
 enableFetchMocks();
 
-const SOL_14 = ['ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowRight', 'ArrowUp', 'ArrowLeft', 'ArrowLeft', 'ArrowDown', 'ArrowDown', 'ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowDown'];
-const SOL_12 = ['ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowDown', 'ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'ArrowDown', 'ArrowDown'];
+const SOL_14 = [Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.RIGHT, Direction.UP, Direction.LEFT, Direction.LEFT, Direction.DOWN, Direction.DOWN, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.DOWN];
+const SOL_12 = [Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.DOWN, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.LEFT, Direction.UP, Direction.DOWN, Direction.DOWN];
 
-async function sendStat(user: string, solution: string[]) {
+async function sendStat(user: string, solution: Direction[]) {
   await testApiHandler({
     handler: async (_, res) => {
       const req: NextApiRequestWithAuth = {
@@ -31,7 +32,7 @@ async function sendStat(user: string, solution: string[]) {
         },
 
         body: {
-          codes: solution,
+          directions: solution,
           levelId: TestId.LEVEL
         },
         headers: {

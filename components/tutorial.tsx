@@ -1,6 +1,7 @@
 /* istanbul ignore file */
 
 import { createPopper, Instance, Placement } from '@popperjs/core';
+import { directionToPosition } from '@root/constants/direction';
 import TileType from '@root/constants/tileType';
 import classNames from 'classnames';
 import { Types } from 'mongoose';
@@ -10,7 +11,7 @@ import { AppContext } from '../contexts/appContext';
 import { TimerUtil } from '../helpers/getTs';
 import Control from '../models/control';
 import Level from '../models/db/level';
-import Position, { getDirectionFromCode } from '../models/position';
+import Position from '../models/position';
 import DismissToast from './dismissToast';
 import BasicLayout from './level/basicLayout';
 import Controls from './level/controls';
@@ -421,9 +422,9 @@ export default function Tutorial() {
           // notify the user to undo if they have gone past the exit (too far right or down)
           // or if they have gone left or up at any point
           if (gameState.pos.x > 4 || gameState.pos.y > 3 || gameState.moves.some(move => {
-            const direction = getDirectionFromCode(move.code);
+            const pos = directionToPosition(move.direction);
 
-            return direction?.equals(new Position(-1, 0)) || direction?.equals(new Position(0, -1));
+            return pos.equals(new Position(-1, 0)) || pos.equals(new Position(0, -1));
           })) {
             undoButton?.classList.add(styles['highlight-red']);
           } else {

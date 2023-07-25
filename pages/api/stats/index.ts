@@ -1,4 +1,5 @@
 import AchievementInfo from '@root/constants/achievementInfo';
+import Direction, { getDirectionFromCode } from '@root/constants/direction';
 import getDifficultyEstimate from '@root/helpers/getDifficultyEstimate';
 import User from '@root/models/db/user';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
@@ -34,7 +35,8 @@ export default withAuth({
   GET: {},
   PUT: {
     body: {
-      codes: ValidArray(),
+      codes: ValidArray(false),
+      directions: ValidArray(false),
       levelId: ValidObjectId(),
       matchId: ValidType('string', false),
     }
@@ -45,7 +47,16 @@ export default withAuth({
 
     return res.status(200).json(stats);
   } else if (req.method === 'PUT') {
-    const { codes, levelId, matchId } = req.body;
+    const { codes, directions, levelId, matchId } = req.body;
+
+    if (!directions && !codes) {
+      return res.status(400).json({
+        error: 'No directions or codes provided',
+      });
+    }
+
+    const dirs: Direction[] = directions ?? codes.map((code: string) => getDirectionFromCode(code));
+
     const ts = TimerUtil.getTs();
     const session = await mongoose.startSession();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -67,13 +78,13 @@ export default withAuth({
           throw new Error(resTrack.json.error);
         }
 
-        if (!validateSolution(codes, level)) {
+        if (!validateSolution(dirs, level)) {
           resTrack.status = 400;
           resTrack.json.error = `Invalid solution provided for level ${levelId}`;
           throw new Error(resTrack.json.error);
         }
 
-        const moves = codes.length;
+        const moves = dirs.length;
 
         // ensure no stats are saved for draft levels
         if (level.isDraft || level.leastMoves === 0) {

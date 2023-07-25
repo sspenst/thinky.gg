@@ -1,3 +1,4 @@
+import Direction, { directionToPosition, getDirectionFromCode } from '@root/constants/direction';
 import { GameContext } from '@root/contexts/gameContext';
 import { CheckpointState, convertFromCheckpointState, convertToCheckpointState, isValidCheckpointState } from '@root/helpers/checkpointHelpers';
 import isPro from '@root/helpers/isPro';
@@ -18,7 +19,7 @@ import BlockState from '../../models/blockState';
 import Control from '../../models/control';
 import Level, { EnrichedLevel } from '../../models/db/level';
 import Move from '../../models/move';
-import Position, { getDirectionFromCode } from '../../models/position';
+import Position from '../../models/position';
 import SquareState from '../../models/squareState';
 import GameLayout from './gameLayout';
 
@@ -128,7 +129,7 @@ export default function Game({
   onStatsSuccess,
 }: GameProps) {
   const [gameState, setGameState] = useState<GameState>(initGameState(level.data));
-  const [lastCodes, setLastCodes] = useState<string[]>([]);
+  const lastDirections = useRef<Direction[]>([]);
   const levelContext = useContext(LevelContext);
   const [localSessionRestored, setLocalSessionRestored] = useState(false);
   const [madeMove, setMadeMove] = useState(false);
@@ -224,13 +225,13 @@ export default function Game({
     fetchPlayAttempt();
   }, [disablePlayAttempts, fetchPlayAttempt, gameState.actionCount, madeMove]);
 
-  const trackStats = useCallback((codes: string[], levelId: string, maxRetries: number) => {
+  const trackStats = useCallback((directions: Direction[], levelId: string, maxRetries: number) => {
     if (disableStats) {
       return;
     }
 
-    // if codes array is identical to lastCodes array, don't PUT stats
-    if (codes.length === lastCodes.length && codes.every((code, index) => code === lastCodes[index])) {
+    // if directions array is identical to lastDirections array, don't PUT stats
+    if (directions.length === lastDirections.current.length && directions.every((direction, index) => direction === lastDirections.current[index])) {
       return;
     }
 
@@ -239,7 +240,7 @@ export default function Game({
     fetch('/api/stats', {
       method: 'PUT',
       body: JSON.stringify({
-        codes: codes,
+        directions: directions,
         levelId: levelId,
         matchId: matchId,
       }),
@@ -263,7 +264,7 @@ export default function Game({
           onStatsSuccess();
         }
 
-        setLastCodes(codes);
+        lastDirections.current = directions;
       } else if (res.status === 500) {
         throw res.text();
       } else {
@@ -276,17 +277,17 @@ export default function Game({
     }).catch(async err => {
       const error = JSON.parse(await err)?.error;
 
-      console.error(`Error updating stats: { codes: ${codes}, levelId: ${levelId} }`, error);
+      console.error(`Error updating stats: { directions: ${directions}, levelId: ${levelId} }`, error);
       toast.dismiss();
       toast.error(`Error updating stats: ${error}`, { duration: 3000 });
 
       if (maxRetries > 0) {
-        trackStats(codes, levelId, maxRetries - 1);
+        trackStats(directions, levelId, maxRetries - 1);
       }
     }).finally(() => {
       NProgress.done();
     });
-  }, [disableStats, lastCodes, matchId, mutateLevel, mutateProStatsLevel, mutateUser, onStatsSuccess]);
+  }, [disableStats, matchId, mutateLevel, mutateProStatsLevel, mutateUser, onStatsSuccess]);
 
   const saveCheckpoint = useCallback((slot: number) => {
     if (slot !== BEST_CHECKPOINT_INDEX) {
@@ -583,9 +584,8 @@ export default function Game({
           // undo the block push
           if (prevMove.blockId !== undefined) {
             const block = getBlockById(blocks, prevMove.blockId);
-            const direction = getDirectionFromCode(prevMove.code);
 
-            if (!block || !direction) {
+            if (!block) {
               return prevGameState;
             }
 
@@ -596,7 +596,7 @@ export default function Game({
             }
 
             // move the block back to its original position
-            block.pos = block.pos.sub(direction);
+            block.pos = block.pos.sub(directionToPosition(prevMove.direction));
           }
 
           const newGameState: GameState = {
@@ -613,19 +613,19 @@ export default function Game({
           return newGameState;
         }
 
-        function makeMove(direction: Position) {
+        function makeMove(direction: Direction) {
           // if the position didn't change or the new position is invalid
           if (!isPlayerPositionValid(board, prevGameState.height, pos, prevGameState.width)) {
             return prevGameState;
           }
 
           const blockIndex = getBlockIndexAtPosition(blocks, pos);
-          const move = new Move(code, prevGameState.pos);
+          const move = new Move(direction, prevGameState.pos);
 
           // if there is a block at the new position
           if (blockIndex !== -1) {
             const block = blocks[blockIndex];
-            const blockPos = block.pos.add(direction);
+            const blockPos = block.pos.add(directionToPosition(direction));
 
             // if the block is not allowed to move this direction or the new position is invalid
             if (!block.canMoveTo(blockPos) ||
@@ -656,7 +656,7 @@ export default function Game({
           const moveCount = prevGameState.moveCount + 1;
 
           if (board[pos.y][pos.x].tileType === TileType.End) {
-            trackStats(moves.map(move => move.code), level._id.toString(), 3);
+            trackStats(moves.map(move => move.direction), level._id.toString(), 3);
           }
 
           const newGameState: GameState = {
@@ -705,7 +705,7 @@ export default function Game({
         }
 
         // calculate the target tile to move to
-        const pos = prevGameState.pos.add(direction);
+        const pos = prevGameState.pos.add(directionToPosition(direction));
 
         // before making a move, check if undo is a better choice
         function checkForFreeUndo() {

@@ -1,22 +1,22 @@
+import Direction from '@root/constants/direction';
 import Position from './position';
 
 export default class Move {
-  // keycode of the move direction
-  code: string;
+  direction: Direction;
   // position before the move
   pos: Position;
   // the id of the block pushed during this move
   blockId?: number;
 
-  constructor(code: string, pos: Position, blockId?: number) {
-    this.code = code;
+  constructor(direction: Direction, pos: Position, blockId?: number) {
+    this.direction = direction;
     this.pos = pos.clone();
     this.blockId = blockId;
   }
 
   static clone(move: Move) {
     return new Move(
-      move.code,
+      move.direction,
       new Position(move.pos.x, move.pos.y),
       move.blockId,
     );
@@ -24,7 +24,7 @@ export default class Move {
 
   clone() {
     return new Move(
-      this.code,
+      this.direction,
       this.pos,
       this.blockId,
     );
