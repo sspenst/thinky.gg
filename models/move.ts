@@ -2,16 +2,17 @@ import BlockState from './blockState';
 import Position from './position';
 
 export default class Move {
+  // keycode of the move direction
   code: string;
+  // position before the move
   pos: Position;
+  // if a block was moved, this is its position before the move
   block: BlockState | undefined;
-  holePos: Position | undefined;
 
-  constructor(code: string, pos: Position, block?: BlockState, holePos?: Position) {
+  constructor(code: string, pos: Position, block?: BlockState) {
     this.code = code;
     this.pos = pos.clone();
     this.block = block?.clone();
-    this.holePos = holePos?.clone();
   }
 
   static clone(move: Move) {
@@ -19,7 +20,6 @@ export default class Move {
       move.code,
       new Position(move.pos.x, move.pos.y),
       move.block ? BlockState.clone(move.block) : undefined,
-      move.holePos ? new Position(move.holePos.x, move.holePos.y) : undefined,
     );
   }
 
@@ -28,7 +28,6 @@ export default class Move {
       this.code,
       this.pos,
       this.block,
-      this.holePos,
     );
   }
 }

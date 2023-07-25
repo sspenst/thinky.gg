@@ -10,6 +10,13 @@ interface CheckpointSquareState {
   text: number[];
 }
 
+interface CheckpointMove {
+  code: string;
+  pos: Position;
+  block?: BlockState;
+  holePos?: Position;
+}
+
 // NB: legacy interface to allow for refactoring the original GameState
 export interface CheckpointState {
   actionCount: number;
@@ -18,8 +25,7 @@ export interface CheckpointState {
   board: CheckpointSquareState[][];
   height: number;
   moveCount: number;
-  // TODO: CheckpointMove if this is refactored
-  moves: Move[];
+  moves: CheckpointMove[];
   pos: Position;
   width: number;
 }
@@ -48,9 +54,10 @@ export function isValidCheckpointState(value: unknown) {
 }
 
 export function convertToCheckpointState(gameState: GameState) {
+  const blocks = gameState.blocks.map(block => BlockState.clone(block));
   const checkpointState: CheckpointState = {
     actionCount: gameState.actionCount,
-    blocks: gameState.blocks.map(block => BlockState.clone(block)),
+    blocks: blocks,
     board: gameState.board.map(row => {
       return row.map(square => {
         const checkpointSquareState: CheckpointSquareState = {
@@ -63,7 +70,24 @@ export function convertToCheckpointState(gameState: GameState) {
     }),
     height: gameState.height,
     moveCount: gameState.moveCount,
-    moves: gameState.moves.map(move => Move.clone(move)),
+    moves: gameState.moves.map(move => {
+      const checkpointMove: CheckpointMove = {
+        code: move.code,
+        pos: move.pos.clone(),
+      };
+
+      if (move.block) {
+        checkpointMove.block = move.block.clone();
+
+        const block = blocks.find(b => b.id === move.block?.id);
+
+        if (block?.inHole) {
+          checkpointMove.holePos = block.pos.clone();
+        }
+      }
+
+      return checkpointMove;
+    }),
     pos: new Position(gameState.pos.x, gameState.pos.y),
     width: gameState.width,
   };
@@ -80,7 +104,24 @@ export function convertFromCheckpointState(checkpointState: CheckpointState) {
     }),
     height: checkpointState.height,
     moveCount: checkpointState.moveCount,
-    moves: checkpointState.moves.map(move => Move.clone(move)),
+    moves: checkpointState.moves.map(checkpointMove => {
+      const pos = new Position(checkpointMove.pos.x, checkpointMove.pos.y);
+      const move = new Move(checkpointMove.code, pos);
+
+      if (checkpointMove.block) {
+        const block = new BlockState(
+          checkpointMove.block.id,
+          checkpointMove.block.type,
+          checkpointMove.block.pos.x,
+          checkpointMove.block.pos.y,
+          checkpointMove.block.inHole,
+        );
+
+        move.block = block;
+      }
+
+      return move;
+    }),
     pos: new Position(checkpointState.pos.x, checkpointState.pos.y),
     width: checkpointState.width,
   };
