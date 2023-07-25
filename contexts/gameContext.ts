@@ -1,8 +1,9 @@
+import Direction from '@root/constants/direction';
 import { CheckpointState } from '@root/helpers/checkpointHelpers';
 import { createContext } from 'react';
 
 interface GameContextInterface {
-  checkpoints?: (CheckpointState | null)[];
+  checkpoints?: (CheckpointState | Direction[] | null)[];
   deleteCheckpoint: (slot: number) => void;
   loadCheckpoint: (slot: number) => void;
   saveCheckpoint: (slot: number) => void;

@@ -1,6 +1,6 @@
 import Role from '@root/constants/role';
 import TestId from '@root/constants/testId';
-import { convertFromCheckpointState, convertToCheckpointState } from '@root/helpers/checkpointHelpers';
+import { checkpointToGameState, gameStateToCheckpoint, isValidCheckpointState } from '@root/helpers/checkpointHelpers';
 import { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { getTokenCookieValue } from '@root/lib/getTokenCookie';
@@ -328,14 +328,29 @@ describe('api/user/[id]/checkpoints', () => {
 
 describe('checkpiontHelpers.ts', () => {
   test('convert to gameState and back', () => {
-    const gameState1 = convertFromCheckpointState(CHECKPOINT_STATE_1);
-    const checkpointState1 = convertToCheckpointState(gameState1);
+    const gameState1 = checkpointToGameState(CHECKPOINT_STATE_1);
 
-    expect(JSON.stringify(checkpointState1)).toEqual(JSON.stringify(CHECKPOINT_STATE_1));
+    expect(gameState1).toBeDefined();
 
-    const gameState2 = convertFromCheckpointState(CHECKPOINT_STATE_2);
-    const checkpointState2 = convertToCheckpointState(gameState2);
+    if (gameState1) {
+      const checkpointState1 = gameStateToCheckpoint(gameState1);
 
-    expect(JSON.stringify(checkpointState2)).toEqual(JSON.stringify(CHECKPOINT_STATE_2));
+      expect(JSON.stringify(checkpointState1)).toEqual(JSON.stringify(CHECKPOINT_STATE_1));
+    }
+
+    const gameState2 = checkpointToGameState(CHECKPOINT_STATE_2);
+
+    expect(gameState2).toBeDefined();
+
+    if (gameState2) {
+      const checkpointState2 = gameStateToCheckpoint(gameState2);
+
+      expect(JSON.stringify(checkpointState2)).toEqual(JSON.stringify(CHECKPOINT_STATE_2));
+    }
+  });
+  test('isValidCheckpointState', () => {
+    expect(isValidCheckpointState(undefined)).toBe(false);
+    expect(isValidCheckpointState(CHECKPOINT_STATE_1)).toBe(true);
+    expect(isValidCheckpointState(CHECKPOINT_STATE_2)).toBe(true);
   });
 });

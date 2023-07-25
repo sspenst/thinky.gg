@@ -1,6 +1,6 @@
 import Direction, { directionToPosition, getDirectionFromCode } from '@root/constants/direction';
 import { GameContext } from '@root/contexts/gameContext';
-import { CheckpointState, convertFromCheckpointState, convertToCheckpointState, isValidCheckpointState } from '@root/helpers/checkpointHelpers';
+import { CheckpointState, checkpointToGameState, gameStateToCheckpoint, isValidCheckpointState, isValidSessionCheckpointState, sessionCheckpointStateToGameState } from '@root/helpers/checkpointHelpers';
 import isPro from '@root/helpers/isPro';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import useCheckpoints, { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
@@ -34,9 +34,10 @@ export interface GameState {
   width: number;
 }
 
-interface SessionCheckpointState {
+export interface SessionCheckpointState {
   _id: Types.ObjectId;
-  checkpointState: CheckpointState;
+  checkpointState?: CheckpointState;
+  directions?: Direction[];
 }
 
 interface GameProps {
@@ -131,7 +132,7 @@ export default function Game({
   const [gameState, setGameState] = useState<GameState>(initGameState(level.data));
   const lastDirections = useRef<Direction[]>([]);
   const levelContext = useContext(LevelContext);
-  const [localSessionRestored, setLocalSessionRestored] = useState(false);
+  const localSessionRestored = useRef(false);
   const [madeMove, setMadeMove] = useState(false);
   const mutateLevel = levelContext?.mutateLevel;
   const mutateProStatsLevel = levelContext?.mutateProStatsLevel;
@@ -146,40 +147,50 @@ export default function Game({
   const pro = isPro(user);
 
   useEffect(() => {
-    if (enableLocalSessionRestore && !localSessionRestored && typeof window.sessionStorage !== 'undefined') {
-      const sessionCheckpointStateStr = window.sessionStorage.getItem('sessionCheckpointState');
-
-      if (sessionCheckpointStateStr) {
-        const sessionCheckpointState = JSON.parse(sessionCheckpointStateStr) as SessionCheckpointState;
-
-        if (sessionCheckpointState._id === level._id && sessionCheckpointState.checkpointState) {
-          const newGameState = convertFromCheckpointState(sessionCheckpointState.checkpointState);
-
-          setGameState(prevGameState => {
-            // ensure the new game state is valid for this level layout
-            // (it can be different if a level is republished with different data,
-            // or if the session storage is manually altered)
-            const isEqual = prevGameState.board.length === newGameState.board.length &&
-              prevGameState.height === newGameState.height &&
-              prevGameState.width === newGameState.width &&
-              prevGameState.blocks.every((serverBlock, i) => {
-                const localBlock = newGameState.blocks[i];
-
-                return serverBlock.type === localBlock.type;
-              });
-
-            if (isEqual) {
-              setLocalSessionRestored(true);
-
-              return newGameState;
-            } else {
-              return prevGameState;
-            }
-          });
-        }
-      }
+    if (!enableLocalSessionRestore || localSessionRestored.current || typeof window.sessionStorage === 'undefined') {
+      return;
     }
-  }, [enableLocalSessionRestore, level._id, level.ts, localSessionRestored]);
+
+    const sessionCheckpointStateStr = window.sessionStorage.getItem('sessionCheckpointState');
+
+    if (!sessionCheckpointStateStr) {
+      return;
+    }
+
+    const sessionCheckpointState = JSON.parse(sessionCheckpointStateStr) as SessionCheckpointState;
+
+    if (sessionCheckpointState._id !== level._id || !isValidSessionCheckpointState(sessionCheckpointState)) {
+      return;
+    }
+
+    const newGameState = sessionCheckpointStateToGameState(sessionCheckpointState);
+
+    if (!newGameState) {
+      return;
+    }
+
+    setGameState(prevGameState => {
+      // ensure the new game state is valid for this level layout
+      // (it can be different if a level is republished with different data,
+      // or if the session storage is manually altered)
+      const isEqual = prevGameState.board.length === newGameState.board.length &&
+        prevGameState.height === newGameState.height &&
+        prevGameState.width === newGameState.width &&
+        prevGameState.blocks.every((serverBlock, i) => {
+          const localBlock = newGameState.blocks[i];
+
+          return serverBlock.type === localBlock.type;
+        });
+
+      if (isEqual) {
+        localSessionRestored.current = true;
+
+        return newGameState;
+      } else {
+        return prevGameState;
+      }
+    });
+  }, [enableLocalSessionRestore, level._id]);
 
   useEffect(() => {
     if (gameState.actionCount > 0) {
@@ -190,7 +201,7 @@ export default function Game({
       if (enableLocalSessionRestore && typeof window.sessionStorage !== 'undefined') {
         window.sessionStorage.setItem('sessionCheckpointState', JSON.stringify({
           _id: level._id,
-          checkpointState: convertToCheckpointState(gameState),
+          directions: gameStateToCheckpoint(gameState),
         } as SessionCheckpointState));
       }
     }
@@ -295,7 +306,7 @@ export default function Game({
       toast.loading(`Saving checkpoint ${slot}...`);
     }
 
-    const checkpointState = convertToCheckpointState(gameState);
+    const checkpointState = gameStateToCheckpoint(gameState);
 
     fetch('/api/level/' + level._id + '/checkpoints', {
       method: 'POST',
@@ -374,7 +385,14 @@ export default function Game({
       return;
     }
 
-    const newGameState = convertFromCheckpointState(checkpoint);
+    const newGameState = checkpointToGameState(checkpoint);
+
+    if (!newGameState) {
+      toast.dismiss();
+      toast.error('Invalid checkpoint');
+
+      return;
+    }
 
     // check if the checkpoint is the same as the current game state
     if (JSON.stringify(newGameState) === JSON.stringify(gameState) && JSON.stringify(gameState) !== JSON.stringify(oldGameState.current)) {
@@ -755,9 +773,21 @@ export default function Game({
     }
 
     const atEnd = gameState.board[gameState.pos.y][gameState.pos.x].tileType === TileType.End;
-    const newBest = !checkpoints[BEST_CHECKPOINT_INDEX] || gameState.moves.length < checkpoints[BEST_CHECKPOINT_INDEX].moveCount;
+    const bestCheckpoint = checkpoints[BEST_CHECKPOINT_INDEX];
 
-    if (atEnd && newBest) {
+    function newBest() {
+      if (!bestCheckpoint) {
+        return true;
+      }
+
+      if (Array.isArray(bestCheckpoint)) {
+        return gameState.moves.length < bestCheckpoint.length;
+      }
+
+      return gameState.moves.length < bestCheckpoint.moveCount;
+    }
+
+    if (atEnd && newBest()) {
       saveCheckpoint(BEST_CHECKPOINT_INDEX);
     }
   }, [checkpoints, disableCheckpoints, enrichedLevel.userMoves, gameState, pro, saveCheckpoint]);
