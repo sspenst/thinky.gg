@@ -73,7 +73,7 @@ describe('models/*.ts', () => {
     expect(getDirectionFromCode('KeyB')).toBe(undefined);
   });
   test('Move', () => {
-    const move = new Move('code', new Position(1, 1), 0);
+    const move = new Move('code', 0);
     const move2 = move.clone();
     const move3 = Move.clone(move);
 

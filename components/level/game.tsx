@@ -570,6 +570,12 @@ export default function Game({
             return returnState || prevGameState;
           }
 
+          const prevDirection = getDirectionFromCode(prevMove.code);
+
+          if (!prevDirection) {
+            return prevGameState;
+          }
+
           redoMoves.push(cloneGameState(prevGameState));
 
           // remove text only from the current position for smoother animations
@@ -583,9 +589,8 @@ export default function Game({
           // undo the block push
           if (prevMove.blockId !== undefined) {
             const block = getBlockById(blocks, prevMove.blockId);
-            const direction = getDirectionFromCode(prevMove.code);
 
-            if (!block || !direction) {
+            if (!block) {
               return prevGameState;
             }
 
@@ -596,7 +601,7 @@ export default function Game({
             }
 
             // move the block back to its original position
-            block.pos = block.pos.sub(direction);
+            block.pos = block.pos.sub(prevDirection);
           }
 
           const newGameState: GameState = {
@@ -606,7 +611,7 @@ export default function Game({
             height: prevGameState.height,
             moveCount: prevGameState.moveCount - 1,
             moves: moves,
-            pos: prevMove.pos.clone(),
+            pos: prevGameState.pos.sub(prevDirection),
             width: prevGameState.width,
           };
 
@@ -620,7 +625,7 @@ export default function Game({
           }
 
           const blockIndex = getBlockIndexAtPosition(blocks, pos);
-          const move = new Move(code, prevGameState.pos);
+          const move = new Move(code);
 
           // if there is a block at the new position
           if (blockIndex !== -1) {
@@ -709,18 +714,30 @@ export default function Game({
 
         // before making a move, check if undo is a better choice
         function checkForFreeUndo() {
-          if (moves.length === 0) {
+          if (!allowFreeUndo || moves.length === 0) {
             return false;
           }
 
           // logic for valid free undo:
-          //  if the board state has not changed and you're backtracking
+          // if the board state has not changed and you're backtracking
           const lastMove = moves[moves.length - 1];
 
-          return pos.equals(lastMove.pos) && lastMove.blockId === undefined;
+          // no free undo if you moved a block
+          if (lastMove.blockId !== undefined) {
+            return false;
+          }
+
+          const lastDirection = getDirectionFromCode(lastMove.code);
+
+          if (!lastDirection) {
+            return false;
+          }
+
+          // free undo if you are going back to the same position
+          return prevGameState.pos.sub(lastDirection).equals(pos);
         }
 
-        if (allowFreeUndo && checkForFreeUndo()) {
+        if (checkForFreeUndo()) {
           return undo();
         }
 
