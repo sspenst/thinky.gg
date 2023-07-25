@@ -73,7 +73,7 @@ describe('models/*.ts', () => {
     expect(getDirectionFromCode('KeyB')).toBe(undefined);
   });
   test('Move', () => {
-    const move = new Move('code', new Position(1, 1));
+    const move = new Move('code', new Position(1, 1), 0);
     const move2 = move.clone();
     const move3 = Move.clone(move);
 
@@ -83,24 +83,6 @@ describe('models/*.ts', () => {
     expect(move.pos.x).toBe(1);
     move3.pos.x = 3;
     expect(move.pos.x).toBe(1);
-
-    const move4 = new Move(
-      'code',
-      new Position(1, 1),
-      new BlockState(0, TileType.Block, 0, 0),
-    );
-
-    expect(move4.block?.id).toBe(0);
-
-    const move5 = Move.clone(move4);
-
-    expect(move5.block).toBeDefined();
-
-    if (move5.block) {
-      move5.block.pos.x = 2;
-    }
-
-    expect(move4.block?.pos.x).toBe(0);
   });
   test('SquareState', () => {
     const s = new SquareState();
