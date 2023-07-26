@@ -3,7 +3,7 @@ import { AppContext } from '@root/contexts/appContext';
 import { GridContext } from '@root/contexts/gridContext';
 import Position from '@root/models/position';
 import classNames from 'classnames';
-import React, { useCallback, useContext, useMemo, useState } from 'react';
+import React, { useContext, useMemo, useState } from 'react';
 import TileType from '../../../constants/tileType';
 import Block from './block';
 import Player from './player';
@@ -34,12 +34,21 @@ export default function Tile({
   const { theme } = useContext(AppContext);
   const classic = theme === Theme.Classic;
 
-  const onClick = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+  function onClick(e: React.MouseEvent<HTMLDivElement>) {
     if (handleClick) {
-      handleClick(event.type === 'contextmenu');
-      event.preventDefault();
+      handleClick(e.type === 'contextmenu');
     }
-  }, [handleClick]);
+
+    e.preventDefault();
+  }
+
+  function onTouch(e: React.TouchEvent<HTMLDivElement>) {
+    if (handleClick) {
+      handleClick(false);
+    }
+
+    e.preventDefault();
+  }
 
   const tile = useMemo(() => {
     if (tileType === TileType.Start) {
@@ -77,7 +86,7 @@ export default function Tile({
       className={classNames(`absolute tile-type-${tileType}`, className)}
       onClick={onClick}
       onContextMenu={onClick}
-      onTouchEnd={() => handleClick ? handleClick(false) : undefined}
+      onTouchEnd={onTouch}
       style={{
         backgroundColor: tileType === TileType.Start ? 'var(--bg-color)' : undefined,
         height: classic ? tileSize : innerTileSize,
