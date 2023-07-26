@@ -39,7 +39,7 @@ interface CheckpointModalItemProps {
 
 function CheckpointModalItem({ checkpoint, closeModal, slot }: CheckpointModalItemProps) {
   const [backgroundImage, setBackgroundImage] = useState<string>();
-  const { deleteCheckpoint, loadCheckpoint, saveCheckpoint } = useContext(GameContext);
+  const { deleteCheckpoint, level, loadCheckpoint, saveCheckpoint } = useContext(GameContext);
 
   useEffect(() => {
     if (!checkpoint) {
@@ -48,7 +48,7 @@ function CheckpointModalItem({ checkpoint, closeModal, slot }: CheckpointModalIt
       return;
     }
 
-    const gameState = checkpointToGameState(checkpoint);
+    const gameState = checkpointToGameState(checkpoint, level.data);
 
     if (!gameState) {
       setBackgroundImage(undefined);
@@ -81,7 +81,7 @@ function CheckpointModalItem({ checkpoint, closeModal, slot }: CheckpointModalIt
     const joinedData = data.map(row => row.join('')).join('\n');
 
     setBackgroundImage(getPngDataClient(joinedData));
-  }, [checkpoint]);
+  }, [checkpoint, level.data]);
 
   let checkpointMoveCount: number | undefined = undefined;
 

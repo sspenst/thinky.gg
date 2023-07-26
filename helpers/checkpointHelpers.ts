@@ -5,7 +5,7 @@ import BlockState from '@root/models/blockState';
 import Move from '@root/models/move';
 import Position from '@root/models/position';
 import SquareState from '@root/models/squareState';
-import { GameState } from './gameStateHelpers';
+import { GameState, initGameState, makeMove } from './gameStateHelpers';
 
 interface CheckpointSquareState {
   levelDataType: TileType;
@@ -88,21 +88,27 @@ export function gameStateToCheckpoint(gameState: GameState): Direction[] {
   return gameState.moves.map(move => move.direction);
 }
 
-export function sessionCheckpointStateToGameState(sessionCheckpointState: SessionCheckpointState): GameState | null {
+export function sessionCheckpointStateToGameState(sessionCheckpointState: SessionCheckpointState, levelData: string): GameState | null {
   if (sessionCheckpointState.directions) {
-    return checkpointToGameState(sessionCheckpointState.directions);
+    return checkpointToGameState(sessionCheckpointState.directions, levelData);
   } else if (sessionCheckpointState.checkpointState) {
-    return checkpointToGameState(sessionCheckpointState.checkpointState);
+    return checkpointToGameState(sessionCheckpointState.checkpointState, levelData);
   } else {
     return null;
   }
 }
 
-export function checkpointToGameState(checkpointState: CheckpointState | Direction[]): GameState | null {
+export function checkpointToGameState(checkpointState: CheckpointState | Direction[], levelData: string): GameState | null {
   if (Array.isArray(checkpointState)) {
-    // TODO: produce game state from directions (need level data as param or something)
-    // return null for invalid game state
-    return null;
+    const gameState = initGameState(levelData);
+
+    for (const direction of checkpointState) {
+      if (!makeMove(gameState, direction)) {
+        return null;
+      }
+    }
+
+    return gameState;
   }
 
   const gameState: GameState = {

@@ -59,19 +59,21 @@ export default function Game({
   onPrev,
   onStatsSuccess,
 }: GameProps) {
-  const [gameState, setGameState] = useState<GameState>(initGameState(level.data));
-  const lastDirections = useRef<Direction[]>([]);
   const levelContext = useContext(LevelContext);
-  const localSessionRestored = useRef(false);
-  const [madeMove, setMadeMove] = useState(false);
+  const { mutateUser, shouldAttemptAuth, user } = useContext(AppContext);
+  const { preventKeyDownEvent } = useContext(PageContext);
   const mutateLevel = levelContext?.mutateLevel;
   const mutateProStatsLevel = levelContext?.mutateProStatsLevel;
-  const { mutateUser, shouldAttemptAuth, user } = useContext(AppContext);
-  const oldGameState = useRef<GameState>();
-  const { preventKeyDownEvent } = useContext(PageContext);
-  const [shiftKeyDown, setShiftKeyDown] = useState(false);
+
+  const [gameState, setGameState] = useState<GameState>(initGameState(level.data));
+  const [madeMove, setMadeMove] = useState(false);
   // TODO: combine redomoves with gameState?
   const [redoMoves, setRedoMoves] = useState<GameState[]>([]);
+
+  const lastDirections = useRef<Direction[]>([]);
+  const localSessionRestored = useRef(false);
+  const oldGameState = useRef<GameState>();
+  const shiftKeyDown = useRef(false);
 
   const { checkpoints, mutateCheckpoints } = useCheckpoints(level._id, disableCheckpoints || user === null || !isPro(user));
   const enrichedLevel = level as EnrichedLevel;
@@ -94,7 +96,7 @@ export default function Game({
       return;
     }
 
-    const newGameState = sessionCheckpointStateToGameState(sessionCheckpointState);
+    const newGameState = sessionCheckpointStateToGameState(sessionCheckpointState, level.data);
 
     if (!newGameState) {
       return;
@@ -121,7 +123,7 @@ export default function Game({
         return prevGameState;
       }
     });
-  }, [enableLocalSessionRestore, level._id]);
+  }, [enableLocalSessionRestore, level._id, level.data]);
 
   useEffect(() => {
     if (gameState.actionCount > 0) {
@@ -316,7 +318,7 @@ export default function Game({
       return;
     }
 
-    const newGameState = checkpointToGameState(checkpoint);
+    const newGameState = checkpointToGameState(checkpoint, level.data);
 
     if (!newGameState) {
       toast.dismiss();
@@ -364,7 +366,7 @@ export default function Game({
     }
 
     return;
-  }, [checkpoints, gameState]);
+  }, [checkpoints, gameState, level.data]);
 
   const handleKeyDown = useCallback((code: string) => {
     if (code === 'KeyN') {
@@ -385,7 +387,7 @@ export default function Game({
 
     // check if code is the shift key
     if (code.startsWith('Shift')) {
-      setShiftKeyDown(true);
+      shiftKeyDown.current = true;
 
       return;
     }
@@ -412,7 +414,7 @@ export default function Game({
       if (code.startsWith('Digit')) {
         const slot = parseInt(code.replace('Digit', ''));
 
-        if (shiftKeyDown) {
+        if (shiftKeyDown.current) {
           saveCheckpoint(slot);
         } else {
           loadCheckpoint(slot);
@@ -513,7 +515,7 @@ export default function Game({
 
       const undoKey = code === 'Backspace' || code === 'KeyU' || code == 'KeyZ';
 
-      if (undoKey && !shiftKeyDown) {
+      if (undoKey && !shiftKeyDown.current) {
         return undo();
       }
 
@@ -578,7 +580,7 @@ export default function Game({
 
       return newGameState;
     });
-  }, [allowFreeUndo, disableCheckpoints, level._id, level.data, loadCheckpoint, onNext, onPrev, pro, redoMoves, saveCheckpoint, shiftKeyDown, trackStats]);
+  }, [allowFreeUndo, disableCheckpoints, level._id, level.data, loadCheckpoint, onNext, onPrev, pro, redoMoves, saveCheckpoint, trackStats]);
 
   useEffect(() => {
     const atEnd = gameState.board[gameState.pos.y][gameState.pos.x].tileType === TileType.End;
@@ -638,12 +640,12 @@ export default function Game({
     const code = event.code;
 
     if (code.startsWith('Shift')) {
-      setShiftKeyDown(false);
+      shiftKeyDown.current = false;
     }
   }, []);
 
   const handleBlurEvent = useCallback(() => {
-    setShiftKeyDown(false);
+    shiftKeyDown.current = false;
   }, []);
 
   const handleTouchStartEvent = useCallback((event: TouchEvent) => {
@@ -846,6 +848,7 @@ export default function Game({
     <GameContext.Provider value={{
       checkpoints: checkpoints,
       deleteCheckpoint: deleteCheckpoint,
+      level: level,
       loadCheckpoint: loadCheckpoint,
       saveCheckpoint: saveCheckpoint,
     }}>

@@ -128,7 +128,6 @@ function isBlockAtPosition(blocks: BlockState[], pos: Position) {
  * update a gameState in-place using the given direction
  * @returns if the move was valid
  */
-// TODO: use this in game.tsx
 export function makeMove(gameState: GameState, direction: Direction): boolean {
   // lock movement once you reach the finish
   if (gameState.board[gameState.pos.y][gameState.pos.x].tileType === TileType.End) {

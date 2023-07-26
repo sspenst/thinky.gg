@@ -328,7 +328,7 @@ describe('api/user/[id]/checkpoints', () => {
 
 describe('checkpiontHelpers.ts', () => {
   test('convert to gameState and back', () => {
-    const gameState1 = checkpointToGameState(CHECKPOINT_STATE_1);
+    const gameState1 = checkpointToGameState(CHECKPOINT_STATE_1, '');
 
     expect(gameState1).toBeDefined();
 
@@ -338,7 +338,7 @@ describe('checkpiontHelpers.ts', () => {
       expect(JSON.stringify(checkpointState1)).toEqual(JSON.stringify(CHECKPOINT_STATE_1));
     }
 
-    const gameState2 = checkpointToGameState(CHECKPOINT_STATE_2);
+    const gameState2 = checkpointToGameState(CHECKPOINT_STATE_2, '');
 
     expect(gameState2).toBeDefined();
 
