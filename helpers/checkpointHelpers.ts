@@ -12,7 +12,7 @@ interface CheckpointSquareState {
   text: number[];
 }
 
-interface CheckpointMove {
+export interface CheckpointMove {
   code: string;
   pos: Position;
   block?: BlockState;
