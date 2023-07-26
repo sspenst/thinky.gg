@@ -65,7 +65,6 @@ export default function Game({
   const mutateProStatsLevel = levelContext?.mutateProStatsLevel;
 
   const [gameState, setGameState] = useState<GameState>(initGameState(level.data));
-  const [madeMove, setMadeMove] = useState(false);
   const [redoMoves, setRedoMoves] = useState<GameState[]>([]);
 
   const lastDirections = useRef<Direction[]>([]);
@@ -123,21 +122,6 @@ export default function Game({
     });
   }, [enableSessionCheckpoint, level._id, level.data]);
 
-  useEffect(() => {
-    if (gameState.actionCount > 0) {
-      if (onMove) {
-        onMove(gameState);
-      }
-
-      if (enableSessionCheckpoint && typeof window.sessionStorage !== 'undefined') {
-        window.sessionStorage.setItem('sessionCheckpoint', JSON.stringify({
-          _id: level._id,
-          directions: gameState.moves.map(move => move.direction),
-        } as SessionCheckpoint));
-      }
-    }
-  }, [enableSessionCheckpoint, gameState, level._id, level.ts, onMove]);
-
   const SECOND = 1000;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const fetchPlayAttempt = useCallback(throttle(15 * SECOND, async () => {
@@ -154,18 +138,6 @@ export default function Game({
       });
     }
   }), []);
-
-  useEffect(() => {
-    if (!madeMove) {
-      return;
-    }
-
-    if (disablePlayAttempts || gameState.actionCount === 0) {
-      return;
-    }
-
-    fetchPlayAttempt();
-  }, [disablePlayAttempts, fetchPlayAttempt, gameState.actionCount, madeMove]);
 
   const trackStats = useCallback((directions: Direction[], levelId: string, maxRetries: number) => {
     if (disableStats) {
@@ -334,7 +306,6 @@ export default function Game({
       // should reapply the checkpoint rather than just cloning the state
       // so that in the editor checkpoints can be properly loaded even when the level content changes
       setGameState(newGameState);
-      setMadeMove(true);
       const keepOldStateRef = cloneGameState(oldGameState.current);
 
       toast.dismiss();
@@ -433,153 +404,172 @@ export default function Game({
     }
 
     setGameState(prevGameState => {
-      // restart
-      if (code === 'KeyR') {
-        if (prevGameState.moves.length > 0) {
-          oldGameState.current = cloneGameState(prevGameState);
+      function getNewGameState() {
+        if (!disablePlayAttempts) {
+          fetchPlayAttempt();
         }
 
-        return initGameState(level.data, prevGameState.actionCount + 1);
-      }
-
-      setMadeMove(true);
-      // treat prevGameState as immutable
-      const blocks = prevGameState.blocks.map(block => block.clone());
-      const board = prevGameState.board.map(row => {
-        return row.map(square => square.clone());
-      });
-      const moves = prevGameState.moves.map(move => cloneMove(move));
-
-      // undo
-      function undo() {
-        const prevMove = moves.pop();
-
-        // nothing to undo
-        if (prevMove === undefined) {
-          let returnState = undefined;
-
-          if (oldGameState.current) {
-            returnState = cloneGameState(oldGameState.current);
-            oldGameState.current = undefined;
+        // restart
+        if (code === 'KeyR') {
+          if (prevGameState.moves.length > 0) {
+            oldGameState.current = cloneGameState(prevGameState);
           }
 
-          return returnState || prevGameState;
+          return initGameState(level.data);
         }
 
-        redoMoves.push(cloneGameState(prevGameState));
+        // treat prevGameState as immutable
+        const blocks = prevGameState.blocks.map(block => block.clone());
+        const board = prevGameState.board.map(row => {
+          return row.map(square => square.clone());
+        });
+        const moves = prevGameState.moves.map(move => cloneMove(move));
 
-        // remove text only from the current position for smoother animations
-        const text = board[prevGameState.pos.y][prevGameState.pos.x].text;
+        // undo
+        function undo() {
+          const prevMove = moves.pop();
 
-        // the text may not exist since it is only added when moving away from a position
-        if (text[text.length - 1] === prevGameState.moves.length) {
-          text.pop();
+          // nothing to undo
+          if (prevMove === undefined) {
+            let returnState = undefined;
+
+            if (oldGameState.current) {
+              returnState = cloneGameState(oldGameState.current);
+              oldGameState.current = undefined;
+            }
+
+            return returnState || prevGameState;
+          }
+
+          redoMoves.push(cloneGameState(prevGameState));
+
+          // remove text only from the current position for smoother animations
+          const text = board[prevGameState.pos.y][prevGameState.pos.x].text;
+
+          // the text may not exist since it is only added when moving away from a position
+          if (text[text.length - 1] === prevGameState.moves.length) {
+            text.pop();
+          }
+
+          // undo the block push
+          if (prevMove.blockId !== undefined) {
+            const block = getBlockById(blocks, prevMove.blockId);
+
+            if (!block) {
+              return prevGameState;
+            }
+
+            // restore the hole if necessary
+            if (block.inHole) {
+              block.inHole = false;
+              board[block.pos.y][block.pos.x].tileType = TileType.Hole;
+            }
+
+            // move the block back to its original position
+            block.pos = block.pos.sub(directionToVector(prevMove.direction));
+          }
+
+          const newGameState: GameState = {
+            blocks: blocks,
+            board: board,
+            height: prevGameState.height,
+            moves: moves,
+            pos: prevGameState.pos.sub(directionToVector(prevMove.direction)),
+            width: prevGameState.width,
+          };
+
+          return newGameState;
         }
 
-        // undo the block push
-        if (prevMove.blockId !== undefined) {
-          const block = getBlockById(blocks, prevMove.blockId);
+        const undoKey = code === 'Backspace' || code === 'KeyU' || code == 'KeyZ';
 
-          if (!block) {
+        if (undoKey && !shiftKeyDown.current) {
+          return undo();
+        }
+
+        // redo
+        if (undoKey || code === 'KeyY') {
+          if (!pro) {
+            toast.dismiss();
+            toast.error(
+              <div>Upgrade to <Link href='/settings/proaccount' className='text-blue-500'>Pathology Pro</Link> to unlock redo!</div>,
+              {
+                duration: 5000,
+                icon: <Image alt='pro' src='/pro.svg' width='16' height='16' />,
+              }
+            );
+
             return prevGameState;
           }
 
-          // restore the hole if necessary
-          if (block.inHole) {
-            block.inHole = false;
-            board[block.pos.y][block.pos.x].tileType = TileType.Hole;
-          }
-
-          // move the block back to its original position
-          block.pos = block.pos.sub(directionToVector(prevMove.direction));
+          return redoMoves.pop() ?? prevGameState;
         }
 
-        const newGameState: GameState = {
-          actionCount: prevGameState.actionCount + 1,
-          blocks: blocks,
-          board: board,
-          height: prevGameState.height,
-          moves: moves,
-          pos: prevGameState.pos.sub(directionToVector(prevMove.direction)),
-          width: prevGameState.width,
-        };
+        const direction = getDirectionFromCode(code);
+
+        // return if no valid direction was pressed
+        if (!direction) {
+          return prevGameState;
+        }
+
+        // calculate the target tile to move to
+        const pos = prevGameState.pos.add(directionToVector(direction));
+
+        // before making a move, check if undo is a better choice
+        function checkForFreeUndo() {
+          if (!allowFreeUndo || moves.length === 0) {
+            return false;
+          }
+
+          // logic for valid free undo:
+          // if the board state has not changed and you're backtracking
+          const lastMove = moves[moves.length - 1];
+
+          // no free undo if you moved a block
+          if (lastMove.blockId !== undefined) {
+            return false;
+          }
+
+          // free undo if you are going back to the same position
+          return prevGameState.pos.sub(directionToVector(lastMove.direction)).equals(pos);
+        }
+
+        if (checkForFreeUndo()) {
+          return undo();
+        }
+
+        const newGameState = cloneGameState(prevGameState);
+        const validMove = makeMove(newGameState, direction);
+
+        if (!validMove) {
+          return prevGameState;
+        }
+
+        setRedoMoves([]);
+
+        if (enableSessionCheckpoint && typeof window.sessionStorage !== 'undefined') {
+          window.sessionStorage.setItem('sessionCheckpoint', JSON.stringify({
+            _id: level._id,
+            directions: newGameState.moves.map(move => move.direction),
+          } as SessionCheckpoint));
+        }
+
+        if (newGameState.board[newGameState.pos.y][newGameState.pos.x].tileType === TileType.End) {
+          trackStats(newGameState.moves.map(move => move.direction), level._id.toString(), 3);
+        }
 
         return newGameState;
       }
 
-      const undoKey = code === 'Backspace' || code === 'KeyU' || code == 'KeyZ';
+      const newGameState = getNewGameState();
 
-      if (undoKey && !shiftKeyDown.current) {
-        return undo();
-      }
-
-      // redo
-      if (undoKey || code === 'KeyY') {
-        if (!pro) {
-          toast.dismiss();
-          toast.error(
-            <div>Upgrade to <Link href='/settings/proaccount' className='text-blue-500'>Pathology Pro</Link> to unlock redo!</div>,
-            {
-              duration: 5000,
-              icon: <Image alt='pro' src='/pro.svg' width='16' height='16' />,
-            }
-          );
-
-          return prevGameState;
-        }
-
-        return redoMoves.pop() ?? prevGameState;
-      }
-
-      const direction = getDirectionFromCode(code);
-
-      // return if no valid direction was pressed
-      if (!direction) {
-        return prevGameState;
-      }
-
-      // calculate the target tile to move to
-      const pos = prevGameState.pos.add(directionToVector(direction));
-
-      // before making a move, check if undo is a better choice
-      function checkForFreeUndo() {
-        if (!allowFreeUndo || moves.length === 0) {
-          return false;
-        }
-
-        // logic for valid free undo:
-        // if the board state has not changed and you're backtracking
-        const lastMove = moves[moves.length - 1];
-
-        // no free undo if you moved a block
-        if (lastMove.blockId !== undefined) {
-          return false;
-        }
-
-        // free undo if you are going back to the same position
-        return prevGameState.pos.sub(directionToVector(lastMove.direction)).equals(pos);
-      }
-
-      if (checkForFreeUndo()) {
-        return undo();
-      }
-
-      const newGameState = cloneGameState(prevGameState);
-      const validMove = makeMove(newGameState, direction);
-
-      if (!validMove) {
-        return prevGameState;
-      }
-
-      setRedoMoves([]);
-
-      if (newGameState.board[newGameState.pos.y][newGameState.pos.x].tileType === TileType.End) {
-        trackStats(newGameState.moves.map(move => move.direction), level._id.toString(), 3);
+      if (onMove) {
+        onMove(newGameState);
       }
 
       return newGameState;
     });
-  }, [allowFreeUndo, disableCheckpoints, level._id, level.data, loadCheckpoint, onNext, onPrev, pro, redoMoves, saveCheckpoint, trackStats]);
+  }, [allowFreeUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, level._id, level.data, loadCheckpoint, onMove, onNext, onPrev, pro, redoMoves, saveCheckpoint, trackStats]);
 
   useEffect(() => {
     const atEnd = gameState.board[gameState.pos.y][gameState.pos.x].tileType === TileType.End;

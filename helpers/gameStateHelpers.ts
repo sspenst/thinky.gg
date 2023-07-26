@@ -21,7 +21,6 @@ export function cloneMove(move: Move) {
 }
 
 export interface GameState {
-  actionCount: number;
   blocks: BlockState[];
   board: SquareState[][];
   height: number;
@@ -32,7 +31,6 @@ export interface GameState {
 
 export function cloneGameState(gameState: GameState) {
   const newGameState: GameState = {
-    actionCount: gameState.actionCount,
     blocks: gameState.blocks.map(block => BlockState.clone(block)),
     board: gameState.board.map(row => {
       return row.map(square => SquareState.clone(square));
@@ -46,7 +44,7 @@ export function cloneGameState(gameState: GameState) {
   return newGameState;
 }
 
-export function initGameState(levelData: string, actionCount = 0) {
+export function initGameState(levelData: string) {
   const blocks: BlockState[] = [];
   const data = levelData.split('\n');
   const height = data.length;
@@ -74,7 +72,6 @@ export function initGameState(levelData: string, actionCount = 0) {
   }
 
   return {
-    actionCount: actionCount,
     blocks: blocks,
     board: board,
     height: height,
@@ -185,7 +182,6 @@ export function makeMove(gameState: GameState, direction: Direction): boolean {
   }
 
   gameState.moves.push(move);
-  gameState.actionCount += 1;
 
   return true;
 }
