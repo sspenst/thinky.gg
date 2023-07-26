@@ -99,27 +99,7 @@ export default function Game({
       return;
     }
 
-    setGameState(prevGameState => {
-      // ensure the new game state is valid for this level layout
-      // (it can be different if a level is republished with different data,
-      // or if the session storage is manually altered)
-      const isEqual = prevGameState.board.length === newGameState.board.length &&
-        prevGameState.height === newGameState.height &&
-        prevGameState.width === newGameState.width &&
-        prevGameState.blocks.every((serverBlock, i) => {
-          const localBlock = newGameState.blocks[i];
-
-          return serverBlock.type === localBlock.type;
-        });
-
-      if (isEqual) {
-        sessionCheckpointRestored.current = true;
-
-        return newGameState;
-      } else {
-        return prevGameState;
-      }
-    });
+    setGameState(newGameState);
   }, [enableSessionCheckpoint, level._id, level.data]);
 
   const SECOND = 1000;
@@ -472,10 +452,8 @@ export default function Game({
           const newGameState: GameState = {
             blocks: blocks,
             board: board,
-            height: prevGameState.height,
             moves: moves,
             pos: prevGameState.pos.sub(directionToVector(prevMove.direction)),
-            width: prevGameState.width,
           };
 
           return newGameState;
@@ -687,8 +665,8 @@ export default function Game({
 
       const maxHeight = containerDiv?.offsetHeight || 0;
       const maxWidth = containerDiv?.offsetWidth || 0;
-      const squareSize = gameState.width / gameState.height > maxWidth / maxHeight ?
-        Math.floor(maxWidth / gameState.width) : Math.floor(maxHeight / gameState.height);
+      const squareSize = level.width / level.height > maxWidth / maxHeight ?
+        Math.floor(maxWidth / level.width) : Math.floor(maxHeight / level.height);
 
       const squareMargin = Math.round(squareSize / 40) || 1;
 
@@ -718,7 +696,7 @@ export default function Game({
       // setTouchXDown(undefined);
       // setTouchYDown(undefined);
     }
-  }, [gameState.height, gameState.width, level._id, moveByDXDY, preventKeyDownEvent]);
+  }, [level._id, level.height, level.width, moveByDXDY, preventKeyDownEvent]);
 
   const handleTouchEndEvent = useCallback((event: TouchEvent) => {
     if (!validTouchStart.current || preventKeyDownEvent) {

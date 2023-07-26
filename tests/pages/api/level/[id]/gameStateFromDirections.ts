@@ -237,7 +237,6 @@ const gameStateFromDirections = {
       }
     ]
   ],
-  'height': 5,
   'moves': [
     {
       'direction': 3
@@ -263,8 +262,7 @@ const gameStateFromDirections = {
   'pos': {
     'x': 4,
     'y': 0
-  },
-  'width': 6
+  }
 } as GameState;
 
 export default gameStateFromDirections;

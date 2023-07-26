@@ -23,10 +23,8 @@ export function cloneMove(move: Move) {
 export interface GameState {
   blocks: BlockState[];
   board: SquareState[][];
-  height: number;
   moves: Move[];
   pos: Position;
-  width: number;
 }
 
 export function cloneGameState(gameState: GameState) {
@@ -35,10 +33,8 @@ export function cloneGameState(gameState: GameState) {
     board: gameState.board.map(row => {
       return row.map(square => SquareState.clone(square));
     }),
-    height: gameState.height,
     moves: gameState.moves.map(move => cloneMove(move)),
     pos: new Position(gameState.pos.x, gameState.pos.y),
-    width: gameState.width,
   };
 
   return newGameState;
@@ -71,33 +67,30 @@ export function initGameState(levelData: string) {
     }
   }
 
-  return {
+  const gameState: GameState = {
     blocks: blocks,
     board: board,
-    height: height,
     moves: [],
     pos: pos,
-    width: width,
-  } as GameState;
+  };
+
+  return gameState;
 }
 
 // boundary checks
-function isPositionValid(
-  height: number,
-  pos: Position,
-  width: number,
-) {
-  return pos.x >= 0 && pos.x < width && pos.y >= 0 && pos.y < height;
+function isPositionValid(board: SquareState[][], pos: Position) {
+  const row = board[pos.y];
+
+  if (!row) {
+    return false;
+  }
+
+  return !!row[pos.x];
 }
 
 // can the player move to this position
-function isPlayerPositionValid(
-  board: SquareState[][],
-  height: number,
-  pos: Position,
-  width: number,
-) {
-  return isPositionValid(height, pos, width) && board[pos.y][pos.x].tileType !== TileType.Wall &&
+function isPlayerPositionValid(board: SquareState[][], pos: Position) {
+  return isPositionValid(board, pos) && board[pos.y][pos.x].tileType !== TileType.Wall &&
     board[pos.y][pos.x].tileType !== TileType.Hole;
 }
 
@@ -117,14 +110,8 @@ function getBlockIndexAtPosition(blocks: BlockState[], pos: Position) {
 }
 
 // can a block move to this position
-function isBlockPositionValid(
-  board: SquareState[][],
-  blocks: BlockState[],
-  height: number,
-  pos: Position,
-  width: number,
-) {
-  return isPositionValid(height, pos, width) && board[pos.y][pos.x].tileType !== TileType.Wall &&
+function isBlockPositionValid(board: SquareState[][], blocks: BlockState[], pos: Position) {
+  return isPositionValid(board, pos) && board[pos.y][pos.x].tileType !== TileType.Wall &&
     !isBlockAtPosition(blocks, pos);
 }
 
@@ -153,7 +140,7 @@ export function makeMove(gameState: GameState, direction: Direction): boolean {
   gameState.pos = gameState.pos.add(directionToVector(direction));
 
   // if the position didn't change or the new position is invalid
-  if (!isPlayerPositionValid(gameState.board, gameState.height, gameState.pos, gameState.width)) {
+  if (!isPlayerPositionValid(gameState.board, gameState.pos)) {
     return false;
   }
 
@@ -167,7 +154,7 @@ export function makeMove(gameState: GameState, direction: Direction): boolean {
 
     // if the block is not allowed to move this direction or the new position is invalid
     if (!block.canMoveTo(blockPos) ||
-      !isBlockPositionValid(gameState.board, gameState.blocks, gameState.height, blockPos, gameState.width)) {
+      !isBlockPositionValid(gameState.board, gameState.blocks, blockPos)) {
       return false;
     }
 
