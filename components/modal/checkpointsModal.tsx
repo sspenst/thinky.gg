@@ -34,10 +34,10 @@ function CheckpointButton({ onClick, shortcut, text }: CheckpointButtonProps) {
 interface CheckpointModalItemProps {
   checkpoint: CheckpointState | Direction[] | null;
   closeModal: () => void;
-  slot: number;
+  index: number;
 }
 
-function CheckpointModalItem({ checkpoint, closeModal, slot }: CheckpointModalItemProps) {
+function CheckpointModalItem({ checkpoint, closeModal, index }: CheckpointModalItemProps) {
   const [backgroundImage, setBackgroundImage] = useState<string>();
   const { deleteCheckpoint, level, loadCheckpoint, saveCheckpoint } = useContext(GameContext);
 
@@ -96,7 +96,7 @@ function CheckpointModalItem({ checkpoint, closeModal, slot }: CheckpointModalIt
   return (
     <div className='flex flex-col gap-2 w-80 max-w-full items-center'>
       <div>
-        <span className='font-medium'>{slot === BEST_CHECKPOINT_INDEX ? 'Your Best' : `Slot ${slot}`}</span>
+        <span className='font-medium'>{index === BEST_CHECKPOINT_INDEX ? 'Your Best' : `Slot ${index}`}</span>
         {checkpointMoveCount !== undefined &&
           <span className='text-sm italic'>
             {` - ${checkpointMoveCount} step${checkpointMoveCount === 1 ? '' : 's'}`}
@@ -115,23 +115,23 @@ function CheckpointModalItem({ checkpoint, closeModal, slot }: CheckpointModalIt
         {checkpoint &&
           <CheckpointButton
             onClick={() => {
-              loadCheckpoint(slot);
+              loadCheckpoint(index);
               closeModal();
             }}
-            shortcut={slot === BEST_CHECKPOINT_INDEX ? 'B' : String(slot)}
+            shortcut={index === BEST_CHECKPOINT_INDEX ? 'B' : String(index)}
             text='Load'
           />
         }
-        {slot !== BEST_CHECKPOINT_INDEX &&
+        {index !== BEST_CHECKPOINT_INDEX &&
           <CheckpointButton
-            onClick={() => saveCheckpoint(slot)}
-            shortcut={`SHIFT ${String(slot)}`}
+            onClick={() => saveCheckpoint(index)}
+            shortcut={`SHIFT ${String(index)}`}
             text='Save'
           />
         }
-        {slot !== BEST_CHECKPOINT_INDEX && checkpoint &&
+        {index !== BEST_CHECKPOINT_INDEX && checkpoint &&
           <CheckpointButton
-            onClick={() => deleteCheckpoint(slot)}
+            onClick={() => deleteCheckpoint(index)}
             text='Delete'
           />
         }
@@ -157,14 +157,14 @@ function ProCheckpointsModal({ closeModal }: ProCheckpointsModalProps) {
         checkpoint={checkpoints[BEST_CHECKPOINT_INDEX]}
         closeModal={closeModal}
         key={'checkpoint-best'}
-        slot={BEST_CHECKPOINT_INDEX}
+        index={BEST_CHECKPOINT_INDEX}
       />
       {checkpoints?.filter((_, i) => i < BEST_CHECKPOINT_INDEX).map((checkpoint, i) => (
         <CheckpointModalItem
           checkpoint={checkpoint}
           closeModal={closeModal}
           key={'checkpoint-' + i}
-          slot={i}
+          index={i}
         />
       ))}
     </div>

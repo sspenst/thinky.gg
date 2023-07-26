@@ -67,7 +67,6 @@ export default function Game({
 
   const [gameState, setGameState] = useState<GameState>(initGameState(level.data));
   const [madeMove, setMadeMove] = useState(false);
-  // TODO: combine redomoves with gameState?
   const [redoMoves, setRedoMoves] = useState<GameState[]>([]);
 
   const lastDirections = useRef<Direction[]>([]);
@@ -233,13 +232,13 @@ export default function Game({
     });
   }, [disableStats, matchId, mutateLevel, mutateProStatsLevel, mutateUser, onStatsSuccess]);
 
-  const saveCheckpoint = useCallback((slot: number) => {
-    if (slot !== BEST_CHECKPOINT_INDEX) {
+  const saveCheckpoint = useCallback((index: number) => {
+    if (index !== BEST_CHECKPOINT_INDEX) {
       toast.dismiss();
-      toast.loading(`Saving checkpoint ${slot}...`);
+      toast.loading(`Saving checkpoint ${index}...`);
     }
 
-    const checkpointState = gameStateToCheckpoint(gameState);
+    const directions = gameStateToCheckpoint(gameState);
 
     fetch('/api/level/' + level._id + '/checkpoints', {
       method: 'POST',
@@ -247,14 +246,14 @@ export default function Game({
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        checkpointIndex: slot,
-        checkpointValue: checkpointState,
+        index: index,
+        directions: directions,
       }),
     }).then(async res => {
       if (res.status === 200) {
-        if (slot !== BEST_CHECKPOINT_INDEX) {
+        if (index !== BEST_CHECKPOINT_INDEX) {
           toast.dismiss();
-          toast.success(`Saved checkpoint ${slot}`);
+          toast.success(`Saved checkpoint ${index}`);
         }
 
         mutateCheckpoints();
@@ -264,26 +263,26 @@ export default function Game({
     }).catch(async err => {
       console.error(err);
 
-      if (slot !== BEST_CHECKPOINT_INDEX) {
+      if (index !== BEST_CHECKPOINT_INDEX) {
         toast.dismiss();
         toast.error(JSON.parse(await err)?.error || 'Error saving checkpoint');
       }
     });
   }, [gameState, level._id, mutateCheckpoints]);
 
-  const deleteCheckpoint = useCallback((slot: number) => {
-    if (slot !== BEST_CHECKPOINT_INDEX) {
+  const deleteCheckpoint = useCallback((index: number) => {
+    if (index !== BEST_CHECKPOINT_INDEX) {
       toast.dismiss();
-      toast.loading(`Deleting checkpoint ${slot}...`);
+      toast.loading(`Deleting checkpoint ${index}...`);
     }
 
-    fetch(`/api/level/${level._id}/checkpoints?checkpointIndex=${slot}`, {
+    fetch(`/api/level/${level._id}/checkpoints?index=${index}`, {
       method: 'DELETE',
     }).then(async res => {
       if (res.status === 200) {
-        if (slot !== BEST_CHECKPOINT_INDEX) {
+        if (index !== BEST_CHECKPOINT_INDEX) {
           toast.dismiss();
-          toast.success(`Deleted checkpoint ${slot}`);
+          toast.success(`Deleted checkpoint ${index}`);
         }
 
         mutateCheckpoints();
@@ -297,7 +296,7 @@ export default function Game({
     });
   }, [level._id, mutateCheckpoints]);
 
-  const loadCheckpoint = useCallback((slot: number) => {
+  const loadCheckpoint = useCallback((index: number) => {
     if (!checkpoints) {
       toast.dismiss();
       toast.error('No checkpoints to restore');
@@ -305,7 +304,7 @@ export default function Game({
       return;
     }
 
-    const checkpoint = checkpoints[slot];
+    const checkpoint = checkpoints[index];
 
     if (!checkpoint) {
       return;
@@ -345,10 +344,10 @@ export default function Game({
 
       toast.success(
         <div>
-          {slot === BEST_CHECKPOINT_INDEX ?
+          {index === BEST_CHECKPOINT_INDEX ?
             'Restored your best solve. Press B again to '
             :
-            `Restored checkpoint ${slot}. Press ${slot} again to `
+            `Restored checkpoint ${index}. Press ${index} again to `
           }
           <span
             className='text-blue-400'
@@ -412,12 +411,12 @@ export default function Game({
       }
 
       if (code.startsWith('Digit')) {
-        const slot = parseInt(code.replace('Digit', ''));
+        const index = parseInt(code.replace('Digit', ''));
 
         if (shiftKeyDown.current) {
-          saveCheckpoint(slot);
+          saveCheckpoint(index);
         } else {
-          loadCheckpoint(slot);
+          loadCheckpoint(index);
         }
       } else {
         loadCheckpoint(BEST_CHECKPOINT_INDEX);
@@ -448,7 +447,6 @@ export default function Game({
 
       setMadeMove(true);
       // treat prevGameState as immutable
-      // TODO: can just clone the prevGameState and do the rest in place?
       const blocks = prevGameState.blocks.map(block => block.clone());
       const board = prevGameState.board.map(row => {
         return row.map(square => square.clone());
@@ -545,7 +543,6 @@ export default function Game({
       }
 
       // calculate the target tile to move to
-      // TODO: combine this with makeMove
       const pos = prevGameState.pos.add(directionToPosition(direction));
 
       // before making a move, check if undo is a better choice

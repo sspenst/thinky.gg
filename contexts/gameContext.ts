@@ -5,10 +5,10 @@ import { createContext } from 'react';
 
 interface GameContextInterface {
   checkpoints?: (CheckpointState | Direction[] | null)[];
-  deleteCheckpoint: (slot: number) => void;
+  deleteCheckpoint: (index: number) => void;
   level: Level;
-  loadCheckpoint: (slot: number) => void;
-  saveCheckpoint: (slot: number) => void;
+  loadCheckpoint: (index: number) => void;
+  saveCheckpoint: (index: number) => void;
 }
 
 export const GameContext = createContext<GameContextInterface>({

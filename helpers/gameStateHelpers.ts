@@ -145,9 +145,6 @@ export function makeMove(gameState: GameState, direction: Direction): boolean {
   // calculate the target tile to move to
   gameState.pos = gameState.pos.add(directionToPosition(direction));
 
-  // TODO: need to check for free undo here
-  // optional allowFreeUndo param
-
   // if the position didn't change or the new position is invalid
   if (!isPlayerPositionValid(gameState.board, gameState.height, gameState.pos, gameState.width)) {
     return false;

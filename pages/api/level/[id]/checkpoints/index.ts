@@ -10,13 +10,13 @@ export default withAuth({
   GET: {},
   POST: {
     body: {
-      checkpointIndex: ValidNumber(true, 0, 10),
-      checkpointValue: ValidDirections(),
+      index: ValidNumber(true, 0, 10),
+      directions: ValidDirections(),
     }
   },
   DELETE: {
     query: {
-      checkpointIndex: ValidNumber(true, 0, 9),
+      index: ValidNumber(true, 0, 9),
     }
   },
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
@@ -46,35 +46,35 @@ export default withAuth({
 
     return res.status(200).json(checkpointArr);
   } else if (req.method === 'POST') {
-    const { checkpointIndex, checkpointValue } = req.body as { checkpointIndex: number, checkpointValue: Direction[] };
+    const { index, directions } = req.body as { index: number, directions: Direction[] };
 
     // always overwrite draft levels
-    if (!level.isDraft && checkpointIndex === BEST_CHECKPOINT_INDEX) {
+    if (!level.isDraft && index === BEST_CHECKPOINT_INDEX) {
       const existingCheckpoint = await KeyValueModel.findOne({ key: KV_Checkpoint_Hash });
-      const savedMovedCount = existingCheckpoint?.value[String(BEST_CHECKPOINT_INDEX)]?.moveCount;
+      const savedMovedCount = existingCheckpoint?.value[String(BEST_CHECKPOINT_INDEX)]?.length;
 
-      if (savedMovedCount && savedMovedCount <= checkpointValue.length) {
+      if (savedMovedCount && savedMovedCount <= directions.length) {
         return res.status(400).json({
           error: 'Best checkpoint must have a lower move count',
         });
       }
     }
 
-    /** findOneAndUpdate upsert this value... We need to be able set the specific index of the array the value of checkpointValue */
+    /** findOneAndUpdate upsert this value... We need to be able set the specific index of the array the value of directions */
     const checkpoint = await KeyValueModel.findOneAndUpdate(
       { key: KV_Checkpoint_Hash },
-      { $set: { [`value.${checkpointIndex}`]: checkpointValue } },
+      { $set: { [`value.${index}`]: directions } },
       { upsert: true, new: true }
     );
 
     return res.status(200).json(checkpoint?.value);
   } else if (req.method === 'DELETE') {
-    const { checkpointIndex } = req.query;
+    const { index } = req.query;
 
-    /** findOneAndUpdate upsert this value... We need to be able set the specific index of the array the value of checkpointValue */
+    /** findOneAndUpdate upsert this value... We need to be able set the specific index of the array the value of directions */
     const checkpoint = await KeyValueModel.findOneAndUpdate(
       { key: KV_Checkpoint_Hash },
-      { $unset: { [`value.${checkpointIndex}`]: '' } },
+      { $unset: { [`value.${index}`]: '' } },
       { upsert: true, new: true }
     );
 

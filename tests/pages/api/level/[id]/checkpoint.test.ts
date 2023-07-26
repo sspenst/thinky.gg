@@ -1,6 +1,8 @@
+import Direction from '@root/constants/direction';
 import Role from '@root/constants/role';
 import TestId from '@root/constants/testId';
-import { checkpointToGameState, gameStateToCheckpoint, isValidCheckpointState } from '@root/helpers/checkpointHelpers';
+import { checkpointToGameState, gameStateToCheckpoint, isValidCheckpointState, isValidDirections } from '@root/helpers/checkpointHelpers';
+import { cloneGameState } from '@root/helpers/gameStateHelpers';
 import { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { getTokenCookieValue } from '@root/lib/getTokenCookie';
@@ -23,6 +25,24 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 enableFetchMocks();
+
+const DIRECTIONS_1 = [
+  Direction.RIGHT,
+  Direction.RIGHT,
+  Direction.RIGHT,
+  Direction.UP,
+  Direction.UP,
+  Direction.UP,
+];
+
+const DIRECTIONS_2 = [
+  Direction.RIGHT,
+  Direction.DOWN,
+  Direction.RIGHT,
+  Direction.RIGHT,
+  Direction.UP,
+  Direction.RIGHT,
+];
 
 async function query({ params, expectedError, expectedStatus, additionalAssertions }: {
     params: Partial<NextApiRequestWithAuth>,
@@ -104,12 +124,12 @@ describe('api/user/[id]/checkpoints', () => {
           id: new mongoose.Types.ObjectId().toString(),
         },
         body: {
-          checkpointIndex: 0,
-          checkpointValue: { checkpointState: CHECKPOINT_STATE_1 },
+          index: 0,
+          directions: CHECKPOINT_STATE_1,
         },
       },
       expectedStatus: 400,
-      expectedError: 'Invalid body.checkpointValue',
+      expectedError: 'Invalid body.directions',
     });
   });
   test('try to save with an invalid CheckpointState (extra fields)', async () => {
@@ -125,12 +145,12 @@ describe('api/user/[id]/checkpoints', () => {
           id: new mongoose.Types.ObjectId().toString(),
         },
         body: {
-          checkpointIndex: 0,
-          checkpointValue: { ...CHECKPOINT_STATE_1, ...{ 'otherkey': 'blah' } },
+          index: 0,
+          directions: [5],
         },
       },
       expectedStatus: 400,
-      expectedError: 'Invalid body.checkpointValue',
+      expectedError: 'Invalid body.directions',
     });
   });
   test('try to save on level that does not exist', async () => {
@@ -146,8 +166,8 @@ describe('api/user/[id]/checkpoints', () => {
           id: new mongoose.Types.ObjectId().toString(),
         },
         body: {
-          checkpointIndex: 0,
-          checkpointValue: CHECKPOINT_STATE_1,
+          index: 0,
+          directions: DIRECTIONS_1,
         },
       },
       expectedStatus: 404,
@@ -167,14 +187,14 @@ describe('api/user/[id]/checkpoints', () => {
           id: TestId.LEVEL,
         },
         body: {
-          checkpointIndex: 0,
-          checkpointValue: CHECKPOINT_STATE_1,
+          index: 0,
+          directions: DIRECTIONS_1,
         },
       },
       expectedStatus: 200,
       additionalAssertions: async (response) => {
         expect(response).toBeDefined();
-        expect(response[0]).toStrictEqual(CHECKPOINT_STATE_1);
+        expect(response[0]).toStrictEqual(DIRECTIONS_1);
       }
     });
   });
@@ -191,15 +211,15 @@ describe('api/user/[id]/checkpoints', () => {
           id: TestId.LEVEL,
         },
         body: {
-          checkpointIndex: 1,
-          checkpointValue: CHECKPOINT_STATE_2,
+          index: 1,
+          directions: DIRECTIONS_2,
         },
       },
       expectedStatus: 200,
       additionalAssertions: async (response) => {
         expect(response).toBeDefined();
-        expect(response[0]).toStrictEqual(CHECKPOINT_STATE_1);
-        expect(response[1]).toStrictEqual(CHECKPOINT_STATE_2);
+        expect(response[0]).toStrictEqual(DIRECTIONS_1);
+        expect(response[1]).toStrictEqual(DIRECTIONS_2);
       }
     });
   });
@@ -214,13 +234,13 @@ describe('api/user/[id]/checkpoints', () => {
         method: 'DELETE',
         query: {
           id: TestId.LEVEL,
-          checkpointIndex: '1',
+          index: '1',
         },
       },
       expectedStatus: 200,
       additionalAssertions: async (response) => {
         expect(response).toBeDefined();
-        expect(response[0]).toStrictEqual(CHECKPOINT_STATE_1);
+        expect(response[0]).toStrictEqual(DIRECTIONS_1);
       }
     });
   });
@@ -238,26 +258,26 @@ describe('api/user/[id]/checkpoints', () => {
           id: TestId.LEVEL,
         },
         body: {
-          checkpointIndex: BEST_CHECKPOINT_INDEX,
-          checkpointValue: CHECKPOINT_STATE_2,
+          index: BEST_CHECKPOINT_INDEX,
+          directions: DIRECTIONS_2,
         },
       },
       expectedStatus: 200,
       additionalAssertions: async (response) => {
         expect(response).toBeDefined();
-        expect(response[0]).toStrictEqual(CHECKPOINT_STATE_1);
+        expect(response[0]).toStrictEqual(DIRECTIONS_1);
         expect(response[1]).toBeUndefined();
-        expect(response[10]).toStrictEqual(CHECKPOINT_STATE_2);
+        expect(response[10]).toStrictEqual(DIRECTIONS_2);
       }
     });
   });
   test('updating BEST_CHECKPOINT_INDEX to a higher move count should fail', async () => {
-    const newCheckpointState = { ...CHECKPOINT_STATE_1 };
+    const newDirections = [...DIRECTIONS_1];
 
-    newCheckpointState.moveCount += 1;
+    newDirections.push(Direction.LEFT);
 
-    expect(CHECKPOINT_STATE_2.moveCount).toBe(6);
-    expect(newCheckpointState.moveCount).toBe(7);
+    expect(DIRECTIONS_1.length).toBe(6);
+    expect(newDirections.length).toBe(7);
 
     await UserModel.findByIdAndUpdate(TestId.USER, {
       $addToSet: {
@@ -271,8 +291,8 @@ describe('api/user/[id]/checkpoints', () => {
           id: TestId.LEVEL,
         },
         body: {
-          checkpointIndex: BEST_CHECKPOINT_INDEX,
-          checkpointValue: newCheckpointState,
+          index: BEST_CHECKPOINT_INDEX,
+          directions: newDirections,
         },
       },
       expectedStatus: 400,
@@ -280,12 +300,12 @@ describe('api/user/[id]/checkpoints', () => {
     });
   });
   test('updating BEST_CHECKPOINT_INDEX to a lower move count should succeed', async () => {
-    const newCheckpointState = { ...CHECKPOINT_STATE_1 };
+    const newDirections = [...DIRECTIONS_1];
 
-    newCheckpointState.moveCount -= 1;
+    newDirections.pop();
 
-    expect(CHECKPOINT_STATE_2.moveCount).toBe(6);
-    expect(newCheckpointState.moveCount).toBe(5);
+    expect(DIRECTIONS_1.length).toBe(6);
+    expect(newDirections.length).toBe(5);
 
     await UserModel.findByIdAndUpdate(TestId.USER, {
       $addToSet: {
@@ -299,8 +319,8 @@ describe('api/user/[id]/checkpoints', () => {
           id: TestId.LEVEL,
         },
         body: {
-          checkpointIndex: BEST_CHECKPOINT_INDEX,
-          checkpointValue: newCheckpointState,
+          index: BEST_CHECKPOINT_INDEX,
+          directions: newDirections,
         },
       },
       expectedStatus: 200,
@@ -317,11 +337,11 @@ describe('api/user/[id]/checkpoints', () => {
         method: 'DELETE',
         query: {
           id: TestId.LEVEL,
-          checkpointIndex: String(BEST_CHECKPOINT_INDEX),
+          index: String(BEST_CHECKPOINT_INDEX),
         },
       },
       expectedStatus: 400,
-      expectedError: 'Invalid query.checkpointIndex',
+      expectedError: 'Invalid query.index',
     });
   });
 });
@@ -335,7 +355,7 @@ describe('checkpiontHelpers.ts', () => {
     if (gameState1) {
       const checkpointState1 = gameStateToCheckpoint(gameState1);
 
-      expect(JSON.stringify(checkpointState1)).toEqual(JSON.stringify(CHECKPOINT_STATE_1));
+      expect(JSON.stringify(checkpointState1)).toEqual(JSON.stringify(DIRECTIONS_1));
     }
 
     const gameState2 = checkpointToGameState(CHECKPOINT_STATE_2, '');
@@ -345,12 +365,27 @@ describe('checkpiontHelpers.ts', () => {
     if (gameState2) {
       const checkpointState2 = gameStateToCheckpoint(gameState2);
 
-      expect(JSON.stringify(checkpointState2)).toEqual(JSON.stringify(CHECKPOINT_STATE_2));
+      expect(JSON.stringify(checkpointState2)).toEqual(JSON.stringify(DIRECTIONS_2));
+    }
+
+    const gameState3 = checkpointToGameState(DIRECTIONS_2, '4000B0\n120000\n050000\n678900\nABCD30');
+
+    // new directions produces same game state as old checkpointstate
+    expect(JSON.stringify(gameState3)).toEqual(JSON.stringify(gameState2));
+
+    if (gameState3) {
+      expect(JSON.stringify(gameStateToCheckpoint(gameState3))).toEqual(JSON.stringify(DIRECTIONS_2));
+      expect(JSON.stringify(cloneGameState(gameState3))).toEqual(JSON.stringify(gameState3));
     }
   });
   test('isValidCheckpointState', () => {
     expect(isValidCheckpointState(undefined)).toBe(false);
+    expect(isValidCheckpointState('checkpoint')).toBe(false);
+    expect(isValidCheckpointState([1, 2, 3, 4])).toBe(true);
+    expect(isValidCheckpointState([1, 2, 3, 4, 5])).toBe(false);
     expect(isValidCheckpointState(CHECKPOINT_STATE_1)).toBe(true);
     expect(isValidCheckpointState(CHECKPOINT_STATE_2)).toBe(true);
+
+    expect(isValidDirections(CHECKPOINT_STATE_1)).toBe(false);
   });
 });
