@@ -85,7 +85,7 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, hi
             <Tile
               atEnd={gameState.board[gameState.pos.y][gameState.pos.x].tileType === TileType.End}
               pos={gameState.pos}
-              text={gameState.moveCount}
+              text={gameState.moves.length}
               tileType={TileType.Start}
             />
           </>}

@@ -435,7 +435,7 @@ export default function Game({
     setGameState(prevGameState => {
       // restart
       if (code === 'KeyR') {
-        if (prevGameState.moveCount > 0) {
+        if (prevGameState.moves.length > 0) {
           oldGameState.current = cloneGameState(prevGameState);
         }
 
@@ -472,7 +472,7 @@ export default function Game({
         const text = board[prevGameState.pos.y][prevGameState.pos.x].text;
 
         // the text may not exist since it is only added when moving away from a position
-        if (text[text.length - 1] === prevGameState.moveCount) {
+        if (text[text.length - 1] === prevGameState.moves.length) {
           text.pop();
         }
 
@@ -499,7 +499,6 @@ export default function Game({
           blocks: blocks,
           board: board,
           height: prevGameState.height,
-          moveCount: prevGameState.moveCount - 1,
           moves: moves,
           pos: prevGameState.pos.sub(directionToVector(prevMove.direction)),
           width: prevGameState.width,
@@ -824,7 +823,7 @@ export default function Game({
     } else {
       setControls(_controls);
     }
-  }, [extraControls, gameState.moveCount, handleKeyDown, onNext, onPrev, pro, redoMoves.length, setControls]);
+  }, [extraControls, gameState.moves.length, handleKeyDown, onNext, onPrev, pro, redoMoves.length, setControls]);
 
   function onCellClick(x: number, y: number) {
     if (isSwiping.current) {
