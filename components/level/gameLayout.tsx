@@ -1,5 +1,6 @@
 import TileType from '@root/constants/tileType';
 import { PageContext } from '@root/contexts/pageContext';
+import { GameState } from '@root/helpers/gameStateHelpers';
 import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import Control from '../../models/control';
@@ -8,7 +9,6 @@ import Complete from '../complete';
 import FormattedUser from '../formattedUser';
 import CheckpointsModal from '../modal/checkpointsModal';
 import Controls from './controls';
-import { GameState } from './game';
 import Grid from './grid';
 import Sidebar from './sidebar';
 import Tile from './tile/tile';

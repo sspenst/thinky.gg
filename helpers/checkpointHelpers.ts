@@ -1,10 +1,11 @@
-import { GameState, SessionCheckpointState } from '@root/components/level/game';
+import { SessionCheckpointState } from '@root/components/level/game';
 import Direction, { getDirectionFromCode } from '@root/constants/direction';
 import TileType from '@root/constants/tileType';
 import BlockState from '@root/models/blockState';
 import Move from '@root/models/move';
 import Position from '@root/models/position';
 import SquareState from '@root/models/squareState';
+import { GameState } from './gameStateHelpers';
 
 interface CheckpointSquareState {
   levelDataType: TileType;

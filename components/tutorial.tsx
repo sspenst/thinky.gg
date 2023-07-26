@@ -3,6 +3,7 @@
 import { createPopper, Instance, Placement } from '@popperjs/core';
 import { directionToPosition } from '@root/constants/direction';
 import TileType from '@root/constants/tileType';
+import { GameState } from '@root/helpers/gameStateHelpers';
 import classNames from 'classnames';
 import { Types } from 'mongoose';
 import Link from 'next/link';
@@ -16,7 +17,7 @@ import DismissToast from './dismissToast';
 import BasicLayout from './level/basicLayout';
 import Controls from './level/controls';
 import styles from './level/Controls.module.css';
-import Game, { GameState } from './level/game';
+import Game from './level/game';
 import Page from './page';
 
 interface Tooltip {

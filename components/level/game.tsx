@@ -1,8 +1,8 @@
 import Direction, { directionToPosition, getDirectionFromCode } from '@root/constants/direction';
 import { GameContext } from '@root/contexts/gameContext';
 import { CheckpointState, checkpointToGameState, gameStateToCheckpoint, isValidCheckpointState, isValidSessionCheckpointState, sessionCheckpointStateToGameState } from '@root/helpers/checkpointHelpers';
+import { cloneGameState, GameState, initGameState, makeMove } from '@root/helpers/gameStateHelpers';
 import isPro from '@root/helpers/isPro';
-import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import useCheckpoints, { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import { Types } from 'mongoose';
 import Image from 'next/image';
@@ -18,21 +18,7 @@ import { PageContext } from '../../contexts/pageContext';
 import BlockState from '../../models/blockState';
 import Control from '../../models/control';
 import Level, { EnrichedLevel } from '../../models/db/level';
-import Move from '../../models/move';
-import Position from '../../models/position';
-import SquareState from '../../models/squareState';
 import GameLayout from './gameLayout';
-
-export interface GameState {
-  actionCount: number;
-  blocks: BlockState[];
-  board: SquareState[][];
-  height: number;
-  moveCount: number;
-  moves: Move[];
-  pos: Position;
-  width: number;
-}
 
 export interface SessionCheckpointState {
   _id: Types.ObjectId;
@@ -55,62 +41,6 @@ interface GameProps {
   onNext?: () => void;
   onPrev?: () => void;
   onStatsSuccess?: () => void;
-}
-
-function cloneGameState(gameState: GameState) {
-  const newGameState: GameState = {
-    actionCount: gameState.actionCount,
-    blocks: gameState.blocks.map(block => BlockState.clone(block)),
-    board: gameState.board.map(row => {
-      return row.map(square => SquareState.clone(square));
-    }),
-    height: gameState.height,
-    moveCount: gameState.moveCount,
-    moves: gameState.moves.map(move => Move.clone(move)),
-    pos: new Position(gameState.pos.x, gameState.pos.y),
-    width: gameState.width,
-  };
-
-  return newGameState;
-}
-
-function initGameState(levelData: string, actionCount = 0) {
-  const blocks: BlockState[] = [];
-  const data = levelData.split('\n');
-  const height = data.length;
-  const width = data[0].length;
-  const board = Array(height).fill(undefined).map(() =>
-    new Array(width).fill(undefined).map(() =>
-      new SquareState()));
-  let blockId = 0;
-  let pos = new Position(0, 0);
-
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const tileType = data[y][x] as TileType;
-
-      if (tileType === TileType.Wall ||
-        tileType === TileType.End ||
-        tileType === TileType.Hole) {
-        board[y][x].tileType = tileType;
-      } else if (tileType === TileType.Start) {
-        pos = new Position(x, y);
-      } else if (TileTypeHelper.canMove(tileType)) {
-        blocks.push(new BlockState(blockId++, tileType as TileType, x, y));
-      }
-    }
-  }
-
-  return {
-    actionCount: actionCount,
-    blocks: blocks,
-    board: board,
-    height: height,
-    moveCount: 0,
-    moves: [],
-    pos: pos,
-    width: width,
-  } as GameState;
 }
 
 export default function Game({
@@ -140,6 +70,7 @@ export default function Game({
   const oldGameState = useRef<GameState>();
   const { preventKeyDownEvent } = useContext(PageContext);
   const [shiftKeyDown, setShiftKeyDown] = useState(false);
+  // TODO: combine redomoves with gameState?
   const [redoMoves, setRedoMoves] = useState<GameState[]>([]);
 
   const { checkpoints, mutateCheckpoints } = useCheckpoints(level._id, disableCheckpoints || user === null || !isPro(user));
@@ -493,38 +424,6 @@ export default function Game({
       return;
     }
 
-    // boundary checks
-    function isPositionValid(
-      height: number,
-      pos: Position,
-      width: number,
-    ) {
-      return pos.x >= 0 && pos.x < width && pos.y >= 0 && pos.y < height;
-    }
-
-    // can the player move to this position
-    function isPlayerPositionValid(
-      board: SquareState[][],
-      height: number,
-      pos: Position,
-      width: number,
-    ) {
-      return isPositionValid(height, pos, width) && board[pos.y][pos.x].tileType !== TileType.Wall &&
-        board[pos.y][pos.x].tileType !== TileType.Hole;
-    }
-
-    // can a block move to this position
-    function isBlockPositionValid(
-      board: SquareState[][],
-      blocks: BlockState[],
-      height: number,
-      pos: Position,
-      width: number,
-    ) {
-      return isPositionValid(height, pos, width) && board[pos.y][pos.x].tileType !== TileType.Wall &&
-        !isBlockAtPosition(blocks, pos);
-    }
-
     function getBlockById(blocks: BlockState[], id: number) {
       for (let i = 0; i < blocks.length; i++) {
         if (blocks[i].id === id) {
@@ -535,225 +434,147 @@ export default function Game({
       return undefined;
     }
 
-    function getBlockIndexAtPosition(blocks: BlockState[], pos: Position) {
-      for (let i = 0; i < blocks.length; i++) {
-        // ignore blocks in hole
-        if (blocks[i].inHole) {
-          continue;
-        }
-
-        if (blocks[i].pos.equals(pos)) {
-          return i;
-        }
-      }
-
-      return -1;
-    }
-
-    function isBlockAtPosition(blocks: BlockState[], pos: Position) {
-      return getBlockIndexAtPosition(blocks, pos) !== -1;
-    }
-
     setGameState(prevGameState => {
-      function getNewGameState() {
-        // restart
-        if (code === 'KeyR') {
-          if (prevGameState.moveCount > 0) {
-            oldGameState.current = cloneGameState(prevGameState);
-          }
-
-          return initGameState(level.data, prevGameState.actionCount + 1);
+      // restart
+      if (code === 'KeyR') {
+        if (prevGameState.moveCount > 0) {
+          oldGameState.current = cloneGameState(prevGameState);
         }
 
-        setMadeMove(true);
-        // treat prevGameState as immutable
-        const blocks = prevGameState.blocks.map(block => block.clone());
-        const board = prevGameState.board.map(row => {
-          return row.map(square => square.clone());
-        });
-        const moves = prevGameState.moves.map(move => move.clone());
-
-        // undo
-        function undo() {
-          const prevMove = moves.pop();
-
-          // nothing to undo
-          if (prevMove === undefined) {
-            let returnState = undefined;
-
-            if (oldGameState.current) {
-              returnState = cloneGameState(oldGameState.current);
-              oldGameState.current = undefined;
-            }
-
-            return returnState || prevGameState;
-          }
-
-          redoMoves.push(cloneGameState(prevGameState));
-
-          // remove text only from the current position for smoother animations
-          const text = board[prevGameState.pos.y][prevGameState.pos.x].text;
-
-          // the text may not exist since it is only added when moving away from a position
-          if (text[text.length - 1] === prevGameState.moveCount) {
-            text.pop();
-          }
-
-          // undo the block push
-          if (prevMove.blockId !== undefined) {
-            const block = getBlockById(blocks, prevMove.blockId);
-
-            if (!block) {
-              return prevGameState;
-            }
-
-            // restore the hole if necessary
-            if (block.inHole) {
-              block.inHole = false;
-              board[block.pos.y][block.pos.x].tileType = TileType.Hole;
-            }
-
-            // move the block back to its original position
-            block.pos = block.pos.sub(directionToPosition(prevMove.direction));
-          }
-
-          const newGameState: GameState = {
-            actionCount: prevGameState.actionCount + 1,
-            blocks: blocks,
-            board: board,
-            height: prevGameState.height,
-            moveCount: prevGameState.moveCount - 1,
-            moves: moves,
-            pos: prevMove.pos.clone(),
-            width: prevGameState.width,
-          };
-
-          return newGameState;
-        }
-
-        function makeMove(direction: Direction) {
-          // if the position didn't change or the new position is invalid
-          if (!isPlayerPositionValid(board, prevGameState.height, pos, prevGameState.width)) {
-            return prevGameState;
-          }
-
-          const blockIndex = getBlockIndexAtPosition(blocks, pos);
-          const move = new Move(direction, prevGameState.pos);
-
-          // if there is a block at the new position
-          if (blockIndex !== -1) {
-            const block = blocks[blockIndex];
-            const blockPos = block.pos.add(directionToPosition(direction));
-
-            // if the block is not allowed to move this direction or the new position is invalid
-            if (!block.canMoveTo(blockPos) ||
-              !isBlockPositionValid(board, blocks, prevGameState.height, blockPos, prevGameState.width)) {
-              return prevGameState;
-            }
-
-            move.blockId = block.id;
-            block.pos = blockPos;
-
-            // remove block if it is pushed onto a hole
-            if (board[blockPos.y][blockPos.x].tileType === TileType.Hole) {
-              block.inHole = true;
-              board[blockPos.y][blockPos.x].tileType = TileType.Default;
-            }
-          }
-
-          const text = board[prevGameState.pos.y][prevGameState.pos.x].text;
-
-          // save text if it doesn't already exist (may exist due to undo)
-          if (text[text.length - 1] !== prevGameState.moveCount) {
-            text.push(prevGameState.moveCount);
-          }
-
-          // save history from this move
-          moves.push(move);
-
-          const moveCount = prevGameState.moveCount + 1;
-
-          if (board[pos.y][pos.x].tileType === TileType.End) {
-            trackStats(moves.map(move => move.direction), level._id.toString(), 3);
-          }
-
-          const newGameState: GameState = {
-            actionCount: prevGameState.actionCount + 1,
-            blocks: blocks,
-            board: board,
-            height: prevGameState.height,
-            moveCount: moveCount,
-            moves: moves,
-            pos: pos,
-            width: prevGameState.width,
-          };
-
-          return newGameState;
-        }
-
-        const undoKey = code === 'Backspace' || code === 'KeyU' || code == 'KeyZ';
-
-        if (undoKey && !shiftKeyDown) {
-          return undo();
-        }
-
-        // redo
-        if (undoKey || code === 'KeyY') {
-          if (!pro) {
-            toast.dismiss();
-            toast.error(
-              <div>Upgrade to <Link href='/settings/proaccount' className='text-blue-500'>Pathology Pro</Link> to unlock redo!</div>,
-              {
-                duration: 5000,
-                icon: <Image alt='pro' src='/pro.svg' width='16' height='16' />,
-              }
-            );
-
-            return prevGameState;
-          }
-
-          return redoMoves.pop() ?? prevGameState;
-        }
-
-        const direction = getDirectionFromCode(code);
-
-        // return if no valid direction was pressed
-        if (!direction) {
-          return prevGameState;
-        }
-
-        // calculate the target tile to move to
-        const pos = prevGameState.pos.add(directionToPosition(direction));
-
-        // before making a move, check if undo is a better choice
-        function checkForFreeUndo() {
-          if (moves.length === 0) {
-            return false;
-          }
-
-          // logic for valid free undo:
-          //  if the board state has not changed and you're backtracking
-          const lastMove = moves[moves.length - 1];
-
-          return pos.equals(lastMove.pos) && lastMove.blockId === undefined;
-        }
-
-        if (allowFreeUndo && checkForFreeUndo()) {
-          return undo();
-        }
-
-        // lock movement once you reach the finish
-        if (prevGameState.board[prevGameState.pos.y][prevGameState.pos.x].tileType === TileType.End) {
-          return prevGameState;
-        }
-
-        setRedoMoves([]);
-
-        // if not, just make the move normally
-        return makeMove(direction);
+        return initGameState(level.data, prevGameState.actionCount + 1);
       }
 
-      const newGameState = getNewGameState();
+      setMadeMove(true);
+      // treat prevGameState as immutable
+      // TODO: can just clone the prevGameState and do the rest in place?
+      const blocks = prevGameState.blocks.map(block => block.clone());
+      const board = prevGameState.board.map(row => {
+        return row.map(square => square.clone());
+      });
+      const moves = prevGameState.moves.map(move => move.clone());
+
+      // undo
+      function undo() {
+        const prevMove = moves.pop();
+
+        // nothing to undo
+        if (prevMove === undefined) {
+          let returnState = undefined;
+
+          if (oldGameState.current) {
+            returnState = cloneGameState(oldGameState.current);
+            oldGameState.current = undefined;
+          }
+
+          return returnState || prevGameState;
+        }
+
+        redoMoves.push(cloneGameState(prevGameState));
+
+        // remove text only from the current position for smoother animations
+        const text = board[prevGameState.pos.y][prevGameState.pos.x].text;
+
+        // the text may not exist since it is only added when moving away from a position
+        if (text[text.length - 1] === prevGameState.moveCount) {
+          text.pop();
+        }
+
+        // undo the block push
+        if (prevMove.blockId !== undefined) {
+          const block = getBlockById(blocks, prevMove.blockId);
+
+          if (!block) {
+            return prevGameState;
+          }
+
+          // restore the hole if necessary
+          if (block.inHole) {
+            block.inHole = false;
+            board[block.pos.y][block.pos.x].tileType = TileType.Hole;
+          }
+
+          // move the block back to its original position
+          block.pos = block.pos.sub(directionToPosition(prevMove.direction));
+        }
+
+        const newGameState: GameState = {
+          actionCount: prevGameState.actionCount + 1,
+          blocks: blocks,
+          board: board,
+          height: prevGameState.height,
+          moveCount: prevGameState.moveCount - 1,
+          moves: moves,
+          pos: prevMove.pos.clone(),
+          width: prevGameState.width,
+        };
+
+        return newGameState;
+      }
+
+      const undoKey = code === 'Backspace' || code === 'KeyU' || code == 'KeyZ';
+
+      if (undoKey && !shiftKeyDown) {
+        return undo();
+      }
+
+      // redo
+      if (undoKey || code === 'KeyY') {
+        if (!pro) {
+          toast.dismiss();
+          toast.error(
+            <div>Upgrade to <Link href='/settings/proaccount' className='text-blue-500'>Pathology Pro</Link> to unlock redo!</div>,
+            {
+              duration: 5000,
+              icon: <Image alt='pro' src='/pro.svg' width='16' height='16' />,
+            }
+          );
+
+          return prevGameState;
+        }
+
+        return redoMoves.pop() ?? prevGameState;
+      }
+
+      const direction = getDirectionFromCode(code);
+
+      // return if no valid direction was pressed
+      if (!direction) {
+        return prevGameState;
+      }
+
+      // calculate the target tile to move to
+      // TODO: combine this with makeMove
+      const pos = prevGameState.pos.add(directionToPosition(direction));
+
+      // before making a move, check if undo is a better choice
+      function checkForFreeUndo() {
+        if (moves.length === 0) {
+          return false;
+        }
+
+        // logic for valid free undo:
+        //  if the board state has not changed and you're backtracking
+        const lastMove = moves[moves.length - 1];
+
+        return pos.equals(lastMove.pos) && lastMove.blockId === undefined;
+      }
+
+      if (allowFreeUndo && checkForFreeUndo()) {
+        return undo();
+      }
+
+      const newGameState = cloneGameState(prevGameState);
+      const validMove = makeMove(newGameState, direction);
+
+      if (!validMove) {
+        return prevGameState;
+      }
+
+      setRedoMoves([]);
+
+      if (newGameState.board[newGameState.pos.y][newGameState.pos.x].tileType === TileType.End) {
+        trackStats(newGameState.moves.map(move => move.direction), level._id.toString(), 3);
+      }
 
       return newGameState;
     });
