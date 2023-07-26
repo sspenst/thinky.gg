@@ -1,7 +1,6 @@
 import { GameState } from '@root/helpers/gameStateHelpers';
 
 const gameStateFromDirections = {
-  'actionCount': 6,
   'blocks': [
     {
       'id': 0,
