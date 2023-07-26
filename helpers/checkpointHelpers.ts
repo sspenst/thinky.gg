@@ -1,17 +1,18 @@
-import { GameState } from '@root/components/level/game';
-import Direction, { directionToPosition, getDirectionFromCode } from '@root/constants/direction';
+import { SessionCheckpointState } from '@root/components/level/game';
+import Direction, { getDirectionFromCode } from '@root/constants/direction';
 import TileType from '@root/constants/tileType';
 import BlockState from '@root/models/blockState';
 import Move from '@root/models/move';
 import Position from '@root/models/position';
 import SquareState from '@root/models/squareState';
+import { GameState, initGameState, makeMove } from './gameStateHelpers';
 
 interface CheckpointSquareState {
   levelDataType: TileType;
   text: number[];
 }
 
-interface CheckpointMove {
+export interface CheckpointMove {
   code: string;
   pos: Position;
   block?: BlockState;
@@ -31,7 +32,36 @@ export interface CheckpointState {
   width: number;
 }
 
+export function isValidSessionCheckpointState(sessionCheckpointState: SessionCheckpointState): boolean {
+  if (sessionCheckpointState.directions) {
+    return isValidDirections(sessionCheckpointState.directions);
+  } else if (sessionCheckpointState.checkpointState) {
+    return isValidCheckpointState(sessionCheckpointState.checkpointState);
+  } else {
+    return false;
+  }
+}
+
+export function isValidDirections(directions: unknown) {
+  if (!Array.isArray(directions)) {
+    return false;
+  }
+
+  for (const direction of directions) {
+    if (!(direction in Direction)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+// checks for valid CheckpointState or Direction[]
 export function isValidCheckpointState(value: unknown) {
+  if (isValidDirections(value)) {
+    return true;
+  }
+
   if (typeof value !== 'object') {
     return false;
   }
@@ -54,66 +84,33 @@ export function isValidCheckpointState(value: unknown) {
   return true;
 }
 
-function directionToCode(direction: Direction) {
-  switch (direction) {
-  case Direction.LEFT:
-    return 'ArrowLeft';
-  case Direction.UP:
-    return 'ArrowUp';
-  case Direction.RIGHT:
-    return 'ArrowRight';
-  case Direction.DOWN:
-    return 'ArrowDown';
+export function gameStateToCheckpoint(gameState: GameState): Direction[] {
+  return gameState.moves.map(move => move.direction);
+}
+
+export function sessionCheckpointStateToGameState(sessionCheckpointState: SessionCheckpointState, levelData: string): GameState | null {
+  if (sessionCheckpointState.directions) {
+    return checkpointToGameState(sessionCheckpointState.directions, levelData);
+  } else if (sessionCheckpointState.checkpointState) {
+    return checkpointToGameState(sessionCheckpointState.checkpointState, levelData);
+  } else {
+    return null;
   }
 }
 
-export function convertToCheckpointState(gameState: GameState) {
-  const blocks = gameState.blocks.map(block => BlockState.clone(block));
-  const checkpointState: CheckpointState = {
-    actionCount: gameState.actionCount,
-    blocks: blocks,
-    board: gameState.board.map(row => {
-      return row.map(square => {
-        const checkpointSquareState: CheckpointSquareState = {
-          levelDataType: square.tileType,
-          text: square.text,
-        };
+export function checkpointToGameState(checkpointState: CheckpointState | Direction[], levelData: string): GameState | null {
+  if (Array.isArray(checkpointState)) {
+    const gameState = initGameState(levelData);
 
-        return checkpointSquareState;
-      });
-    }),
-    height: gameState.height,
-    moveCount: gameState.moveCount,
-    moves: gameState.moves.map(move => {
-      const checkpointMove: CheckpointMove = {
-        code: directionToCode(move.direction),
-        pos: move.pos.clone(),
-      };
-
-      if (move.blockId !== undefined) {
-        const block = blocks.find(b => b.id === move.blockId);
-
-        if (block) {
-          checkpointMove.block = block.clone();
-          checkpointMove.block.pos = checkpointMove.block.pos.sub(directionToPosition(move.direction));
-
-          if (block.inHole) {
-            checkpointMove.block.inHole = false;
-            checkpointMove.holePos = block.pos.clone();
-          }
-        }
+    for (const direction of checkpointState) {
+      if (!makeMove(gameState, direction)) {
+        return null;
       }
+    }
 
-      return checkpointMove;
-    }),
-    pos: new Position(gameState.pos.x, gameState.pos.y),
-    width: gameState.width,
-  };
+    return gameState;
+  }
 
-  return checkpointState;
-}
-
-export function convertFromCheckpointState(checkpointState: CheckpointState) {
   const gameState: GameState = {
     actionCount: checkpointState.actionCount,
     blocks: checkpointState.blocks.map(block => BlockState.clone(block)),
