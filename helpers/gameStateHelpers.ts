@@ -25,7 +25,6 @@ export interface GameState {
   blocks: BlockState[];
   board: SquareState[][];
   height: number;
-  moveCount: number;
   moves: Move[];
   pos: Position;
   width: number;
@@ -39,7 +38,6 @@ export function cloneGameState(gameState: GameState) {
       return row.map(square => SquareState.clone(square));
     }),
     height: gameState.height,
-    moveCount: gameState.moveCount,
     moves: gameState.moves.map(move => cloneMove(move)),
     pos: new Position(gameState.pos.x, gameState.pos.y),
     width: gameState.width,
@@ -80,7 +78,6 @@ export function initGameState(levelData: string, actionCount = 0) {
     blocks: blocks,
     board: board,
     height: height,
-    moveCount: 0,
     moves: [],
     pos: pos,
     width: width,
@@ -151,8 +148,8 @@ export function makeMove(gameState: GameState, direction: Direction): boolean {
   const text = gameState.board[gameState.pos.y][gameState.pos.x].text;
 
   // save text if it doesn't already exist (may exist due to undo)
-  if (text[text.length - 1] !== gameState.moveCount) {
-    text.push(gameState.moveCount);
+  if (text[text.length - 1] !== gameState.moves.length) {
+    text.push(gameState.moves.length);
   }
 
   // calculate the target tile to move to
@@ -189,7 +186,6 @@ export function makeMove(gameState: GameState, direction: Direction): boolean {
 
   gameState.moves.push(move);
   gameState.actionCount += 1;
-  gameState.moveCount += 1;
 
   return true;
 }

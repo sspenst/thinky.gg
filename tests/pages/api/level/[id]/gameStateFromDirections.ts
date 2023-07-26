@@ -239,7 +239,6 @@ const gameStateFromDirections = {
     ]
   ],
   'height': 5,
-  'moveCount': 6,
   'moves': [
     {
       'direction': 3
