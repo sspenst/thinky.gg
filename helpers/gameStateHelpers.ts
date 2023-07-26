@@ -1,10 +1,24 @@
-import Direction, { directionToPosition } from '@root/constants/direction';
+import Direction, { directionToVector } from '@root/constants/direction';
 import TileType from '@root/constants/tileType';
 import BlockState from '@root/models/blockState';
-import Move from '@root/models/move';
 import Position from '@root/models/position';
 import SquareState from '@root/models/squareState';
 import TileTypeHelper from './tileTypeHelper';
+
+export interface Move {
+  // the id of the block pushed during this move
+  blockId?: number;
+  direction: Direction;
+}
+
+export function cloneMove(move: Move) {
+  const newMove: Move = {
+    blockId: move.blockId,
+    direction: move.direction,
+  };
+
+  return newMove;
+}
 
 export interface GameState {
   actionCount: number;
@@ -26,7 +40,7 @@ export function cloneGameState(gameState: GameState) {
     }),
     height: gameState.height,
     moveCount: gameState.moveCount,
-    moves: gameState.moves.map(move => Move.clone(move)),
+    moves: gameState.moves.map(move => cloneMove(move)),
     pos: new Position(gameState.pos.x, gameState.pos.y),
     width: gameState.width,
   };
@@ -134,7 +148,6 @@ export function makeMove(gameState: GameState, direction: Direction): boolean {
     return false;
   }
 
-  const move = new Move(direction, gameState.pos);
   const text = gameState.board[gameState.pos.y][gameState.pos.x].text;
 
   // save text if it doesn't already exist (may exist due to undo)
@@ -143,7 +156,7 @@ export function makeMove(gameState: GameState, direction: Direction): boolean {
   }
 
   // calculate the target tile to move to
-  gameState.pos = gameState.pos.add(directionToPosition(direction));
+  gameState.pos = gameState.pos.add(directionToVector(direction));
 
   // if the position didn't change or the new position is invalid
   if (!isPlayerPositionValid(gameState.board, gameState.height, gameState.pos, gameState.width)) {
@@ -151,11 +164,12 @@ export function makeMove(gameState: GameState, direction: Direction): boolean {
   }
 
   const blockIndex = getBlockIndexAtPosition(gameState.blocks, gameState.pos);
+  const move: Move = { direction: direction };
 
   // if there is a block at the new position
   if (blockIndex !== -1) {
     const block = gameState.blocks[blockIndex];
-    const blockPos = block.pos.add(directionToPosition(direction));
+    const blockPos = block.pos.add(directionToVector(direction));
 
     // if the block is not allowed to move this direction or the new position is invalid
     if (!block.canMoveTo(blockPos) ||

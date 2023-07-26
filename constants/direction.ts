@@ -21,7 +21,7 @@ export function getDirectionFromCode(code: string) {
   }
 }
 
-export function directionToPosition(direction: Direction) {
+export function directionToVector(direction: Direction) {
   switch (direction) {
   case Direction.LEFT:
     return new Position(-1, 0);

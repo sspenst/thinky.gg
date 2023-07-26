@@ -1,7 +1,7 @@
 /* istanbul ignore file */
 
 import { createPopper, Instance, Placement } from '@popperjs/core';
-import { directionToPosition } from '@root/constants/direction';
+import { directionToVector } from '@root/constants/direction';
 import TileType from '@root/constants/tileType';
 import { GameState } from '@root/helpers/gameStateHelpers';
 import classNames from 'classnames';
@@ -423,7 +423,7 @@ export default function Tutorial() {
           // notify the user to undo if they have gone past the exit (too far right or down)
           // or if they have gone left or up at any point
           if (gameState.pos.x > 4 || gameState.pos.y > 3 || gameState.moves.some(move => {
-            const pos = directionToPosition(move.direction);
+            const pos = directionToVector(move.direction);
 
             return pos.equals(new Position(-1, 0)) || pos.equals(new Position(0, -1));
           })) {
