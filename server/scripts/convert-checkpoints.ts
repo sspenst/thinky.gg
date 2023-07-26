@@ -1,7 +1,7 @@
+// this script is now outdated
 // run with ts-node -r tsconfig-paths/register --files server/scripts/convert-checkpoints.ts
 
 import Direction, { getDirectionFromCode } from '@root/constants/direction';
-import { CheckpointMove } from '@root/helpers/checkpointHelpers';
 import cliProgress from 'cli-progress';
 import dotenv from 'dotenv';
 import dbConnect from '../../lib/dbConnect';
@@ -38,7 +38,8 @@ async function init() {
         continue;
       }
 
-      const directions = checkpoint.moves.map((move: CheckpointMove) => getDirectionFromCode(move.code));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const directions = checkpoint.moves.map((move: any) => getDirectionFromCode(move.code));
 
       for (const direction of directions) {
         if (!(direction in Direction)) {

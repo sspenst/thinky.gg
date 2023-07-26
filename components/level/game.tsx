@@ -1,6 +1,6 @@
 import Direction, { directionToPosition, getDirectionFromCode } from '@root/constants/direction';
 import { GameContext } from '@root/contexts/gameContext';
-import { CheckpointState, checkpointToGameState, gameStateToCheckpoint, isValidCheckpointState, isValidSessionCheckpointState, sessionCheckpointStateToGameState } from '@root/helpers/checkpointHelpers';
+import { directionsToGameState, isValidDirections } from '@root/helpers/checkpointHelpers';
 import { cloneGameState, GameState, initGameState, makeMove } from '@root/helpers/gameStateHelpers';
 import isPro from '@root/helpers/isPro';
 import useCheckpoints, { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
@@ -20,18 +20,17 @@ import Control from '../../models/control';
 import Level, { EnrichedLevel } from '../../models/db/level';
 import GameLayout from './gameLayout';
 
-export interface SessionCheckpointState {
+interface SessionCheckpoint {
   _id: Types.ObjectId;
-  checkpointState?: CheckpointState;
-  directions?: Direction[];
+  directions: Direction[];
 }
 
 interface GameProps {
   allowFreeUndo?: boolean;
+  disableCheckpoints?: boolean;
   disablePlayAttempts?: boolean;
   disableStats?: boolean;
-  enableLocalSessionRestore?: boolean;
-  disableCheckpoints?: boolean;
+  enableSessionCheckpoint?: boolean;
   extraControls?: Control[];
   hideSidebar?: boolean;
   level: Level;
@@ -48,7 +47,7 @@ export default function Game({
   disableCheckpoints,
   disablePlayAttempts,
   disableStats,
-  enableLocalSessionRestore,
+  enableSessionCheckpoint,
   extraControls,
   hideSidebar,
   level,
@@ -70,8 +69,8 @@ export default function Game({
   const [redoMoves, setRedoMoves] = useState<GameState[]>([]);
 
   const lastDirections = useRef<Direction[]>([]);
-  const localSessionRestored = useRef(false);
   const oldGameState = useRef<GameState>();
+  const sessionCheckpointRestored = useRef(false);
   const shiftKeyDown = useRef(false);
 
   const { checkpoints, mutateCheckpoints } = useCheckpoints(level._id, disableCheckpoints || user === null || !isPro(user));
@@ -79,23 +78,23 @@ export default function Game({
   const pro = isPro(user);
 
   useEffect(() => {
-    if (!enableLocalSessionRestore || localSessionRestored.current || typeof window.sessionStorage === 'undefined') {
+    if (!enableSessionCheckpoint || sessionCheckpointRestored.current || typeof window.sessionStorage === 'undefined') {
       return;
     }
 
-    const sessionCheckpointStateStr = window.sessionStorage.getItem('sessionCheckpointState');
+    const sessionCheckpointStr = window.sessionStorage.getItem('sessionCheckpoint');
 
-    if (!sessionCheckpointStateStr) {
+    if (!sessionCheckpointStr) {
       return;
     }
 
-    const sessionCheckpointState = JSON.parse(sessionCheckpointStateStr) as SessionCheckpointState;
+    const sessionCheckpoint = JSON.parse(sessionCheckpointStr) as SessionCheckpoint;
 
-    if (sessionCheckpointState._id !== level._id || !isValidSessionCheckpointState(sessionCheckpointState)) {
+    if (sessionCheckpoint._id !== level._id || !isValidDirections(sessionCheckpoint.directions)) {
       return;
     }
 
-    const newGameState = sessionCheckpointStateToGameState(sessionCheckpointState, level.data);
+    const newGameState = directionsToGameState(sessionCheckpoint.directions, level.data);
 
     if (!newGameState) {
       return;
@@ -115,14 +114,14 @@ export default function Game({
         });
 
       if (isEqual) {
-        localSessionRestored.current = true;
+        sessionCheckpointRestored.current = true;
 
         return newGameState;
       } else {
         return prevGameState;
       }
     });
-  }, [enableLocalSessionRestore, level._id, level.data]);
+  }, [enableSessionCheckpoint, level._id, level.data]);
 
   useEffect(() => {
     if (gameState.actionCount > 0) {
@@ -130,14 +129,14 @@ export default function Game({
         onMove(gameState);
       }
 
-      if (enableLocalSessionRestore && typeof window.sessionStorage !== 'undefined') {
-        window.sessionStorage.setItem('sessionCheckpointState', JSON.stringify({
+      if (enableSessionCheckpoint && typeof window.sessionStorage !== 'undefined') {
+        window.sessionStorage.setItem('sessionCheckpoint', JSON.stringify({
           _id: level._id,
-          directions: gameStateToCheckpoint(gameState),
-        } as SessionCheckpointState));
+          directions: gameState.moves.map(move => move.direction),
+        } as SessionCheckpoint));
       }
     }
-  }, [enableLocalSessionRestore, gameState, level._id, level.ts, onMove]);
+  }, [enableSessionCheckpoint, gameState, level._id, level.ts, onMove]);
 
   const SECOND = 1000;
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -238,8 +237,6 @@ export default function Game({
       toast.loading(`Saving checkpoint ${index}...`);
     }
 
-    const directions = gameStateToCheckpoint(gameState);
-
     fetch('/api/level/' + level._id + '/checkpoints', {
       method: 'POST',
       headers: {
@@ -247,7 +244,7 @@ export default function Game({
       },
       body: JSON.stringify({
         index: index,
-        directions: directions,
+        directions: gameState.moves.map(move => move.direction),
       }),
     }).then(async res => {
       if (res.status === 200) {
@@ -310,14 +307,14 @@ export default function Game({
       return;
     }
 
-    if (!isValidCheckpointState(checkpoint)) {
+    if (!isValidDirections(checkpoint)) {
       toast.dismiss();
       toast.error('Corrupted checkpoint');
 
       return;
     }
 
-    const newGameState = checkpointToGameState(checkpoint, level.data);
+    const newGameState = directionsToGameState(checkpoint, level.data);
 
     if (!newGameState) {
       toast.dismiss();
@@ -600,11 +597,7 @@ export default function Game({
         return true;
       }
 
-      if (Array.isArray(bestCheckpoint)) {
-        return gameState.moves.length < bestCheckpoint.length;
-      }
-
-      return gameState.moves.length < bestCheckpoint.moveCount;
+      return gameState.moves.length < bestCheckpoint.length;
     }
 
     if (atEnd && newBest()) {

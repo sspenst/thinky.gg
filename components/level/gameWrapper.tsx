@@ -54,7 +54,7 @@ export default function GameWrapper({ collection, level, onNext, onPrev, user }:
       allowFreeUndo={true}
       disablePlayAttempts={!user}
       disableStats={!user}
-      enableLocalSessionRestore={true}
+      enableSessionCheckpoint={true}
       key={`game-${level._id.toString()}`}
       level={level}
       onComplete={() => {

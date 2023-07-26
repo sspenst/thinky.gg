@@ -1,8 +1,7 @@
 import Direction from '@root/constants/direction';
 import Role from '@root/constants/role';
 import TestId from '@root/constants/testId';
-import { checkpointToGameState, gameStateToCheckpoint, isValidCheckpointState, isValidDirections } from '@root/helpers/checkpointHelpers';
-import { cloneGameState } from '@root/helpers/gameStateHelpers';
+import { directionsToGameState, isValidDirections } from '@root/helpers/checkpointHelpers';
 import { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { getTokenCookieValue } from '@root/lib/getTokenCookie';
@@ -12,8 +11,7 @@ import handler from '@root/pages/api/level/[id]/checkpoints';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import mongoose from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
-import CHECKPOINT_STATE_1 from './checkpointState1';
-import CHECKPOINT_STATE_2 from './checkpointState2';
+import gameStateFromDirections from './gameStateFromDirections';
 
 beforeAll(async () => {
   await dbConnect();
@@ -111,28 +109,7 @@ describe('api/user/[id]/checkpoints', () => {
       }
     });
   });
-  test('try to save with an invalid CheckpointState', async () => {
-    await UserModel.findByIdAndUpdate(TestId.USER, {
-      $addToSet: {
-        roles: Role.PRO
-      }
-    });
-    await query({
-      params: {
-        method: 'POST',
-        query: {
-          id: new mongoose.Types.ObjectId().toString(),
-        },
-        body: {
-          index: 0,
-          directions: CHECKPOINT_STATE_1,
-        },
-      },
-      expectedStatus: 400,
-      expectedError: 'Invalid body.directions',
-    });
-  });
-  test('try to save with an invalid CheckpointState (extra fields)', async () => {
+  test('try to save with invalid directions', async () => {
     await UserModel.findByIdAndUpdate(TestId.USER, {
       $addToSet: {
         roles: Role.PRO
@@ -147,6 +124,27 @@ describe('api/user/[id]/checkpoints', () => {
         body: {
           index: 0,
           directions: [5],
+        },
+      },
+      expectedStatus: 400,
+      expectedError: 'Invalid body.directions',
+    });
+  });
+  test('try to save with invalid directions (object)', async () => {
+    await UserModel.findByIdAndUpdate(TestId.USER, {
+      $addToSet: {
+        roles: Role.PRO
+      }
+    });
+    await query({
+      params: {
+        method: 'POST',
+        query: {
+          id: new mongoose.Types.ObjectId().toString(),
+        },
+        body: {
+          index: 0,
+          directions: { invalid: true },
         },
       },
       expectedStatus: 400,
@@ -245,7 +243,7 @@ describe('api/user/[id]/checkpoints', () => {
     });
   });
   test('save BEST_CHECKPOINT_INDEX', async () => {
-    expect(CHECKPOINT_STATE_2.moveCount).toBe(6);
+    expect(DIRECTIONS_2.length).toBe(6);
     await UserModel.findByIdAndUpdate(TestId.USER, {
       $addToSet: {
         roles: Role.PRO
@@ -347,45 +345,17 @@ describe('api/user/[id]/checkpoints', () => {
 });
 
 describe('checkpiontHelpers.ts', () => {
-  test('convert to gameState and back', () => {
-    const gameState1 = checkpointToGameState(CHECKPOINT_STATE_1, '');
-
-    expect(gameState1).toBeDefined();
-
-    if (gameState1) {
-      const checkpointState1 = gameStateToCheckpoint(gameState1);
-
-      expect(JSON.stringify(checkpointState1)).toEqual(JSON.stringify(DIRECTIONS_1));
-    }
-
-    const gameState2 = checkpointToGameState(CHECKPOINT_STATE_2, '');
-
-    expect(gameState2).toBeDefined();
-
-    if (gameState2) {
-      const checkpointState2 = gameStateToCheckpoint(gameState2);
-
-      expect(JSON.stringify(checkpointState2)).toEqual(JSON.stringify(DIRECTIONS_2));
-    }
-
-    const gameState3 = checkpointToGameState(DIRECTIONS_2, '4000B0\n120000\n050000\n678900\nABCD30');
-
-    // new directions produces same game state as old checkpointstate
-    expect(JSON.stringify(gameState3)).toEqual(JSON.stringify(gameState2));
-
-    if (gameState3) {
-      expect(JSON.stringify(gameStateToCheckpoint(gameState3))).toEqual(JSON.stringify(DIRECTIONS_2));
-      expect(JSON.stringify(cloneGameState(gameState3))).toEqual(JSON.stringify(gameState3));
-    }
+  test('isValidDirections', () => {
+    expect(isValidDirections(undefined)).toBe(false);
+    expect(isValidDirections('checkpoint')).toBe(false);
+    expect(isValidDirections([1, 2, 3, 4, 5])).toBe(false);
+    expect(isValidDirections([1, 2, 3, 4])).toBe(true);
   });
-  test('isValidCheckpointState', () => {
-    expect(isValidCheckpointState(undefined)).toBe(false);
-    expect(isValidCheckpointState('checkpoint')).toBe(false);
-    expect(isValidCheckpointState([1, 2, 3, 4])).toBe(true);
-    expect(isValidCheckpointState([1, 2, 3, 4, 5])).toBe(false);
-    expect(isValidCheckpointState(CHECKPOINT_STATE_1)).toBe(true);
-    expect(isValidCheckpointState(CHECKPOINT_STATE_2)).toBe(true);
+  test('directionsToGameState', () => {
+    expect(directionsToGameState(DIRECTIONS_1, '4000B0\n120000\n050000\n678900\nABCD30')).toBeNull();
 
-    expect(isValidDirections(CHECKPOINT_STATE_1)).toBe(false);
+    const gameState = directionsToGameState(DIRECTIONS_2, '4000B0\n120000\n050000\n678900\nABCD30');
+
+    expect(JSON.stringify(gameState)).toEqual(JSON.stringify(gameStateFromDirections));
   });
 });
