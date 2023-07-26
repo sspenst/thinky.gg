@@ -1,6 +1,6 @@
-import { CheckpointState } from '@root/helpers/checkpointHelpers';
+import { GameState } from '@root/helpers/gameStateHelpers';
 
-const CHECKPOINT_STATE_2 = {
+const gameStateFromDirections = {
   'actionCount': 6,
   'blocks': [
     {
@@ -97,143 +97,143 @@ const CHECKPOINT_STATE_2 = {
   'board': [
     [
       {
-        'levelDataType': '0',
+        'tileType': '0',
         'text': [
           0
         ]
       },
       {
-        'levelDataType': '0',
+        'tileType': '0',
         'text': [
           1
         ]
       },
       {
-        'levelDataType': '0',
+        'tileType': '0',
         'text': []
       },
       {
-        'levelDataType': '0',
+        'tileType': '0',
         'text': [
           5
         ]
       },
       {
-        'levelDataType': '0',
+        'tileType': '0',
         'text': []
       },
       {
-        'levelDataType': '0',
+        'tileType': '0',
         'text': []
       }
     ],
     [
       {
-        'levelDataType': '1',
+        'tileType': '1',
         'text': []
       },
       {
-        'levelDataType': '0',
+        'tileType': '0',
         'text': [
           2
         ]
       },
       {
-        'levelDataType': '0',
+        'tileType': '0',
         'text': [
           3
         ]
       },
       {
-        'levelDataType': '0',
+        'tileType': '0',
         'text': [
           4
         ]
       },
       {
-        'levelDataType': '0',
+        'tileType': '0',
         'text': []
       },
       {
-        'levelDataType': '0',
+        'tileType': '0',
         'text': []
       }
     ],
     [
       {
-        'levelDataType': '0',
+        'tileType': '0',
         'text': []
       },
       {
-        'levelDataType': '0',
+        'tileType': '0',
         'text': []
       },
       {
-        'levelDataType': '0',
+        'tileType': '0',
         'text': []
       },
       {
-        'levelDataType': '0',
+        'tileType': '0',
         'text': []
       },
       {
-        'levelDataType': '0',
+        'tileType': '0',
         'text': []
       },
       {
-        'levelDataType': '0',
+        'tileType': '0',
         'text': []
       }
     ],
     [
       {
-        'levelDataType': '0',
+        'tileType': '0',
         'text': []
       },
       {
-        'levelDataType': '0',
+        'tileType': '0',
         'text': []
       },
       {
-        'levelDataType': '0',
+        'tileType': '0',
         'text': []
       },
       {
-        'levelDataType': '0',
+        'tileType': '0',
         'text': []
       },
       {
-        'levelDataType': '0',
+        'tileType': '0',
         'text': []
       },
       {
-        'levelDataType': '0',
+        'tileType': '0',
         'text': []
       }
     ],
     [
       {
-        'levelDataType': '0',
+        'tileType': '0',
         'text': []
       },
       {
-        'levelDataType': '0',
+        'tileType': '0',
         'text': []
       },
       {
-        'levelDataType': '0',
+        'tileType': '0',
         'text': []
       },
       {
-        'levelDataType': '0',
+        'tileType': '0',
         'text': []
       },
       {
-        'levelDataType': '3',
+        'tileType': '3',
         'text': []
       },
       {
-        'levelDataType': '0',
+        'tileType': '0',
         'text': []
       }
     ]
@@ -242,68 +242,48 @@ const CHECKPOINT_STATE_2 = {
   'moveCount': 6,
   'moves': [
     {
-      'code': 'ArrowRight',
+      'direction': 3,
       'pos': {
         'x': 0,
         'y': 0
       }
     },
     {
-      'code': 'ArrowDown',
+      'direction': 4,
       'pos': {
         'x': 1,
         'y': 0
       },
-      'block': {
-        'id': 1,
-        'pos': {
-          'x': 1,
-          'y': 1
-        },
-        'type': '2',
-        'inHole': false
-      },
-      'holePos': {
-        'x': 1,
-        'y': 2
-      }
+      'blockId': 1
     },
     {
-      'code': 'ArrowRight',
+      'direction': 3,
       'pos': {
         'x': 1,
         'y': 1
       }
     },
     {
-      'code': 'ArrowRight',
+      'direction': 3,
       'pos': {
         'x': 2,
         'y': 1
       }
     },
     {
-      'code': 'ArrowUp',
+      'direction': 2,
       'pos': {
         'x': 3,
         'y': 1
       }
     },
     {
-      'code': 'ArrowRight',
+      'direction': 3,
       'pos': {
         'x': 3,
         'y': 0
       },
-      'block': {
-        'id': 0,
-        'pos': {
-          'x': 4,
-          'y': 0
-        },
-        'type': 'B',
-        'inHole': false
-      }
+      'blockId': 0
     }
   ],
   'pos': {
@@ -311,6 +291,6 @@ const CHECKPOINT_STATE_2 = {
     'y': 0
   },
   'width': 6
-} as CheckpointState;
+} as GameState;
 
-export default CHECKPOINT_STATE_2;
+export default gameStateFromDirections;

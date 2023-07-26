@@ -2,7 +2,7 @@ import Direction from '@root/constants/direction';
 import TileType, { TileTypeDefaultVisited } from '@root/constants/tileType';
 import { AppContext } from '@root/contexts/appContext';
 import { GameContext } from '@root/contexts/gameContext';
-import { CheckpointState, checkpointToGameState } from '@root/helpers/checkpointHelpers';
+import { directionsToGameState } from '@root/helpers/checkpointHelpers';
 import getPngDataClient from '@root/helpers/getPngDataClient';
 import isPro from '@root/helpers/isPro';
 import { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
@@ -32,7 +32,7 @@ function CheckpointButton({ onClick, shortcut, text }: CheckpointButtonProps) {
 }
 
 interface CheckpointModalItemProps {
-  checkpoint: CheckpointState | Direction[] | null;
+  checkpoint: Direction[] | null;
   closeModal: () => void;
   index: number;
 }
@@ -48,7 +48,7 @@ function CheckpointModalItem({ checkpoint, closeModal, index }: CheckpointModalI
       return;
     }
 
-    const gameState = checkpointToGameState(checkpoint, level.data);
+    const gameState = directionsToGameState(checkpoint, level.data);
 
     if (!gameState) {
       setBackgroundImage(undefined);
@@ -83,23 +83,13 @@ function CheckpointModalItem({ checkpoint, closeModal, index }: CheckpointModalI
     setBackgroundImage(getPngDataClient(joinedData));
   }, [checkpoint, level.data]);
 
-  let checkpointMoveCount: number | undefined = undefined;
-
-  if (checkpoint) {
-    if (Array.isArray(checkpoint)) {
-      checkpointMoveCount = checkpoint.length;
-    } else {
-      checkpointMoveCount = checkpoint.moveCount;
-    }
-  }
-
   return (
     <div className='flex flex-col gap-2 w-80 max-w-full items-center'>
       <div>
         <span className='font-medium'>{index === BEST_CHECKPOINT_INDEX ? 'Your Best' : `Slot ${index}`}</span>
-        {checkpointMoveCount !== undefined &&
+        {checkpoint &&
           <span className='text-sm italic'>
-            {` - ${checkpointMoveCount} step${checkpointMoveCount === 1 ? '' : 's'}`}
+            {` - ${checkpoint.length} step${checkpoint.length === 1 ? '' : 's'}`}
           </span>
         }
       </div>
