@@ -1,4 +1,4 @@
-import Direction, { directionToPosition } from '@root/constants/direction';
+import Direction, { directionToVector } from '@root/constants/direction';
 import TileType from '@root/constants/tileType';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import Level from '../models/db/level';
@@ -24,7 +24,7 @@ export default function validateSolution(directions: Direction[], level: Level) 
     const direction = directions[i];
 
     // validate and update position with direction
-    pos = pos.add(directionToPosition(direction));
+    pos = pos.add(directionToVector(direction));
 
     if (pos.x < 0 || pos.x >= level.width || pos.y < 0 || pos.y >= level.height) {
       return false;
@@ -50,7 +50,7 @@ export default function validateSolution(directions: Direction[], level: Level) 
       }
 
       // validate and update block position with direction
-      const blockPos = pos.add(directionToPosition(direction));
+      const blockPos = pos.add(directionToVector(direction));
 
       if (blockPos.x < 0 || blockPos.x >= level.width || blockPos.y < 0 || blockPos.y >= level.height) {
         return false;

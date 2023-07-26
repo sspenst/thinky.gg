@@ -1,7 +1,7 @@
-import Direction, { directionToPosition, getDirectionFromCode } from '@root/constants/direction';
+import Direction, { directionToVector, getDirectionFromCode } from '@root/constants/direction';
 import { GameContext } from '@root/contexts/gameContext';
 import { directionsToGameState, isValidDirections } from '@root/helpers/checkpointHelpers';
-import { cloneGameState, GameState, initGameState, makeMove } from '@root/helpers/gameStateHelpers';
+import { cloneGameState, cloneMove, GameState, initGameState, makeMove } from '@root/helpers/gameStateHelpers';
 import isPro from '@root/helpers/isPro';
 import useCheckpoints, { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import { Types } from 'mongoose';
@@ -448,7 +448,7 @@ export default function Game({
       const board = prevGameState.board.map(row => {
         return row.map(square => square.clone());
       });
-      const moves = prevGameState.moves.map(move => move.clone());
+      const moves = prevGameState.moves.map(move => cloneMove(move));
 
       // undo
       function undo() {
@@ -491,7 +491,7 @@ export default function Game({
           }
 
           // move the block back to its original position
-          block.pos = block.pos.sub(directionToPosition(prevMove.direction));
+          block.pos = block.pos.sub(directionToVector(prevMove.direction));
         }
 
         const newGameState: GameState = {
@@ -501,7 +501,7 @@ export default function Game({
           height: prevGameState.height,
           moveCount: prevGameState.moveCount - 1,
           moves: moves,
-          pos: prevMove.pos.clone(),
+          pos: prevGameState.pos.sub(directionToVector(prevMove.direction)),
           width: prevGameState.width,
         };
 
@@ -540,22 +540,28 @@ export default function Game({
       }
 
       // calculate the target tile to move to
-      const pos = prevGameState.pos.add(directionToPosition(direction));
+      const pos = prevGameState.pos.add(directionToVector(direction));
 
       // before making a move, check if undo is a better choice
       function checkForFreeUndo() {
-        if (moves.length === 0) {
+        if (!allowFreeUndo || moves.length === 0) {
           return false;
         }
 
         // logic for valid free undo:
-        //  if the board state has not changed and you're backtracking
+        // if the board state has not changed and you're backtracking
         const lastMove = moves[moves.length - 1];
 
-        return pos.equals(lastMove.pos) && lastMove.blockId === undefined;
+        // no free undo if you moved a block
+        if (lastMove.blockId !== undefined) {
+          return false;
+        }
+
+        // free undo if you are going back to the same position
+        return prevGameState.pos.sub(directionToVector(lastMove.direction)).equals(pos);
       }
 
-      if (allowFreeUndo && checkForFreeUndo()) {
+      if (checkForFreeUndo()) {
         return undo();
       }
 

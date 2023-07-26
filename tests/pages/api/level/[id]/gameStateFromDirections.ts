@@ -242,47 +242,23 @@ const gameStateFromDirections = {
   'moveCount': 6,
   'moves': [
     {
-      'direction': 3,
-      'pos': {
-        'x': 0,
-        'y': 0
-      }
+      'direction': 3
     },
     {
       'direction': 4,
-      'pos': {
-        'x': 1,
-        'y': 0
-      },
       'blockId': 1
     },
     {
-      'direction': 3,
-      'pos': {
-        'x': 1,
-        'y': 1
-      }
+      'direction': 3
+    },
+    {
+      'direction': 3
+    },
+    {
+      'direction': 2
     },
     {
       'direction': 3,
-      'pos': {
-        'x': 2,
-        'y': 1
-      }
-    },
-    {
-      'direction': 2,
-      'pos': {
-        'x': 3,
-        'y': 1
-      }
-    },
-    {
-      'direction': 3,
-      'pos': {
-        'x': 3,
-        'y': 0
-      },
       'blockId': 0
     }
   ],

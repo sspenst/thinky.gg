@@ -1,12 +1,12 @@
 import Direction, { getDirectionFromCode } from '@root/constants/direction';
 import TileType from '@root/constants/tileType';
+import { cloneMove, Move } from '@root/helpers/gameStateHelpers';
 import TestId from '../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 import BlockState from '../../models/blockState';
 import Control from '../../models/control';
 import User from '../../models/db/user';
 import { LevelModel, UserModel } from '../../models/mongoose';
-import Move from '../../models/move';
 import Position from '../../models/position';
 import { calcPlayAttempts } from '../../models/schemas/levelSchema';
 import SelectOptionStats from '../../models/selectOptionStats';
@@ -74,16 +74,14 @@ describe('models/*.ts', () => {
     expect(getDirectionFromCode('KeyB')).toBe(undefined);
   });
   test('Move', () => {
-    const move = new Move(Direction.LEFT, new Position(1, 1), 0);
-    const move2 = move.clone();
-    const move3 = Move.clone(move);
+    const move: Move = {
+      blockId: 0,
+      direction: Direction.LEFT,
+    };
 
-    expect(move2.pos.x).toBe(1);
-    expect(move3.pos.x).toBe(1);
-    move2.pos.x = 2;
-    expect(move.pos.x).toBe(1);
-    move3.pos.x = 3;
-    expect(move.pos.x).toBe(1);
+    const move2 = cloneMove(move);
+
+    expect(JSON.stringify(move2)).toBe(JSON.stringify(move));
   });
   test('SquareState', () => {
     const s = new SquareState();
