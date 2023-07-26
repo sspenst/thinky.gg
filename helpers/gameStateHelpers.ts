@@ -2,8 +2,21 @@ import Direction, { directionToVector } from '@root/constants/direction';
 import TileType from '@root/constants/tileType';
 import BlockState from '@root/models/blockState';
 import Position from '@root/models/position';
-import SquareState from '@root/models/squareState';
 import TileTypeHelper from './tileTypeHelper';
+
+export interface TileState {
+  tileType: TileType;
+  text: number[];
+}
+
+export function cloneTileState(tileState: TileState) {
+  const newTileState: TileState = {
+    tileType: tileState.tileType,
+    text: tileState.text.slice(),
+  };
+
+  return newTileState;
+}
 
 export interface Move {
   // the id of the block pushed during this move
@@ -22,7 +35,7 @@ export function cloneMove(move: Move) {
 
 export interface GameState {
   blocks: BlockState[];
-  board: SquareState[][];
+  board: TileState[][];
   moves: Move[];
   pos: Position;
 }
@@ -31,7 +44,7 @@ export function cloneGameState(gameState: GameState) {
   const newGameState: GameState = {
     blocks: gameState.blocks.map(block => BlockState.clone(block)),
     board: gameState.board.map(row => {
-      return row.map(square => SquareState.clone(square));
+      return row.map(tileState => cloneTileState(tileState));
     }),
     moves: gameState.moves.map(move => cloneMove(move)),
     pos: new Position(gameState.pos.x, gameState.pos.y),
@@ -46,8 +59,12 @@ export function initGameState(levelData: string) {
   const height = data.length;
   const width = data[0].length;
   const board = Array(height).fill(undefined).map(() =>
-    new Array(width).fill(undefined).map(() =>
-      new SquareState()));
+    new Array(width).fill(undefined).map(() => {
+      return {
+        tileType: TileType.Default,
+        text: [],
+      } as TileState;
+    }));
   let blockId = 0;
   let pos = new Position(0, 0);
 
@@ -78,7 +95,7 @@ export function initGameState(levelData: string) {
 }
 
 // boundary checks
-function isPositionValid(board: SquareState[][], pos: Position) {
+function isPositionValid(board: TileState[][], pos: Position) {
   const row = board[pos.y];
 
   if (!row) {
@@ -89,7 +106,7 @@ function isPositionValid(board: SquareState[][], pos: Position) {
 }
 
 // can the player move to this position
-function isPlayerPositionValid(board: SquareState[][], pos: Position) {
+function isPlayerPositionValid(board: TileState[][], pos: Position) {
   return isPositionValid(board, pos) && board[pos.y][pos.x].tileType !== TileType.Wall &&
     board[pos.y][pos.x].tileType !== TileType.Hole;
 }
@@ -110,7 +127,7 @@ function getBlockIndexAtPosition(blocks: BlockState[], pos: Position) {
 }
 
 // can a block move to this position
-function isBlockPositionValid(board: SquareState[][], blocks: BlockState[], pos: Position) {
+function isBlockPositionValid(board: TileState[][], blocks: BlockState[], pos: Position) {
   return isPositionValid(board, pos) && board[pos.y][pos.x].tileType !== TileType.Wall &&
     !isBlockAtPosition(blocks, pos);
 }
