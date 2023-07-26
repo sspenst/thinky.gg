@@ -1,9 +1,9 @@
+import { TileState } from '@root/helpers/gameStateHelpers';
 import { Types } from 'mongoose';
 import React from 'react';
 import TileType from '../../constants/tileType';
 import Control from '../../models/control';
 import Level from '../../models/db/level';
-import SquareState from '../../models/squareState';
 import Controls from './controls';
 import Grid from './grid';
 
@@ -19,8 +19,12 @@ export default function BasicLayout({ cellClassName, controls, level, onClick }:
   const height = level.height;
   const width = level.width;
   const board = Array(height).fill(undefined).map(() =>
-    new Array(width).fill(undefined).map(() =>
-      new SquareState()));
+    new Array(width).fill(undefined).map(() => {
+      return {
+        tileType: TileType.Default,
+        text: [],
+      } as TileState;
+    }));
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {

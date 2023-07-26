@@ -1,6 +1,6 @@
 import Direction, { getDirectionFromCode } from '@root/constants/direction';
 import TileType from '@root/constants/tileType';
-import { cloneMove, Move } from '@root/helpers/gameStateHelpers';
+import { cloneMove, cloneTileState, Move, TileState } from '@root/helpers/gameStateHelpers';
 import TestId from '../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 import BlockState from '../../models/blockState';
@@ -10,7 +10,6 @@ import { LevelModel, UserModel } from '../../models/mongoose';
 import Position from '../../models/position';
 import { calcPlayAttempts } from '../../models/schemas/levelSchema';
 import SelectOptionStats from '../../models/selectOptionStats';
-import SquareState from '../../models/squareState';
 
 beforeAll(async () => {
   await dbConnect();
@@ -82,18 +81,22 @@ describe('models/*.ts', () => {
     const move2 = cloneMove(move);
 
     expect(JSON.stringify(move2)).toBe(JSON.stringify(move));
-  });
-  test('SquareState', () => {
-    const s = new SquareState();
-    const s2 = s.clone();
-    const s3 = SquareState.clone(s);
 
-    expect(s2.tileType).toBe(TileType.Default);
-    expect(s3.tileType).toBe(TileType.Default);
-    s2.tileType = TileType.Block;
-    expect(s.tileType).toBe(TileType.Default);
-    s3.tileType = TileType.Wall;
-    expect(s.tileType).toBe(TileType.Default);
+    move2.direction = Direction.UP;
+    expect(move.direction).toBe(Direction.LEFT);
+  });
+  test('TileState', () => {
+    const tileState: TileState = {
+      tileType: TileType.Default,
+      text: [],
+    };
+
+    const tileState2 = cloneTileState(tileState);
+
+    expect(JSON.stringify(tileState2)).toBe(JSON.stringify(tileState));
+
+    tileState2.tileType = TileType.Block;
+    expect(tileState.tileType).toBe(TileType.Default);
   });
   test('Control', () => {
     const control = new Control('id', () => { return; }, {} as JSX.Element, true);

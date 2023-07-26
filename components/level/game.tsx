@@ -1,7 +1,7 @@
 import Direction, { directionToVector, getDirectionFromCode } from '@root/constants/direction';
 import { GameContext } from '@root/contexts/gameContext';
 import { directionsToGameState, isValidDirections } from '@root/helpers/checkpointHelpers';
-import { cloneGameState, cloneMove, GameState, initGameState, makeMove } from '@root/helpers/gameStateHelpers';
+import { cloneGameState, cloneMove, cloneTileState, GameState, initGameState, makeMove } from '@root/helpers/gameStateHelpers';
 import isPro from '@root/helpers/isPro';
 import useCheckpoints, { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import { Types } from 'mongoose';
@@ -401,7 +401,7 @@ export default function Game({
         // treat prevGameState as immutable
         const blocks = prevGameState.blocks.map(block => block.clone());
         const board = prevGameState.board.map(row => {
-          return row.map(square => square.clone());
+          return row.map(tileState => cloneTileState(tileState));
         });
         const moves = prevGameState.moves.map(move => cloneMove(move));
 
@@ -665,10 +665,10 @@ export default function Game({
 
       const maxHeight = containerDiv?.offsetHeight || 0;
       const maxWidth = containerDiv?.offsetWidth || 0;
-      const squareSize = level.width / level.height > maxWidth / maxHeight ?
+      const tileSize = level.width / level.height > maxWidth / maxHeight ?
         Math.floor(maxWidth / level.width) : Math.floor(maxHeight / level.height);
 
-      const squareMargin = Math.round(squareSize / 40) || 1;
+      const tileMargin = Math.round(tileSize / 40) || 1;
 
       // drag distance
       const dragDistance = Math.sqrt(dx * dx + dy * dy);
@@ -682,7 +682,7 @@ export default function Game({
         return;
       }
 
-      if (Math.abs(dx) < squareSize + squareMargin && Math.abs(dy) < squareSize + squareMargin) {
+      if (Math.abs(dx) < tileSize + tileMargin && Math.abs(dy) < tileSize + tileMargin) {
         return;
       }
 

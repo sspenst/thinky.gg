@@ -1,16 +1,16 @@
 import TileType from '@root/constants/tileType';
 import { AppContext } from '@root/contexts/appContext';
 import { GridContext } from '@root/contexts/gridContext';
+import { TileState } from '@root/helpers/gameStateHelpers';
 import Position from '@root/models/position';
 import classNames from 'classnames';
 import React, { useContext, useEffect, useState } from 'react';
 import Theme from '../../constants/theme';
-import SquareState from '../../models/squareState';
 import { teko } from '../../pages/_app';
 import Tile from './tile/tile';
 
 interface GridProps {
-  board: SquareState[][];
+  board: TileState[][];
   cellClassName?: (x: number, y: number) => string | undefined;
   generateMovables?: () => JSX.Element;
   id: string;
@@ -74,12 +74,12 @@ export default function Grid({ board, cellClassName, generateMovables, id, least
               width: tileSize * width,
             }}
           >
-            {board.map((row, y) => row.map((squareState, x) => {
-              const tileType = squareState.tileType;
+            {board.map((row, y) => row.map((tileState, x) => {
+              const tileType = tileState.tileType;
               const text = tileType === TileType.Start ? 0 :
                 tileType === TileType.End ? leastMoves :
-                  squareState.text.length === 0 ? undefined :
-                    squareState.text[squareState.text.length - 1];
+                  tileState.text.length === 0 ? undefined :
+                    tileState.text[tileState.text.length - 1];
 
               return (
                 <Tile
