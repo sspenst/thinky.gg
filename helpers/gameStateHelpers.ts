@@ -133,7 +133,7 @@ function isBlockPositionValid(board: TileState[][], pos: Position) {
 }
 
 /**
- * update a gameState in-place using the given direction
+ * update a gameState in-place with a new move
  * @returns if the move was valid
  */
 export function makeMove(gameState: GameState, direction: Direction): boolean {
@@ -191,6 +191,54 @@ export function makeMove(gameState: GameState, direction: Direction): boolean {
 
   gameState.moves.push(move);
   gameState.pos = newPos;
+
+  return true;
+}
+
+/**
+ * undo the latest move from a gameState in-place
+ * @returns if the undo was successful
+ */
+export function undo(gameState: GameState): boolean {
+  const prevMove = gameState.moves.pop();
+
+  // nothing to undo
+  if (!prevMove) {
+    return false;
+  }
+
+  const posTileState = gameState.board[gameState.pos.y][gameState.pos.x];
+
+  // remove text only from the current position for smoother animations
+  const text = posTileState.text;
+
+  // the text may not exist since it is only added when moving away from a position
+  if (text[text.length - 1] === gameState.moves.length + 1) {
+    text.pop();
+  }
+
+  // undo the block push
+  if (prevMove.blockId !== undefined) {
+    const blockPos = gameState.pos.add(directionToVector(prevMove.direction));
+    const blockPosTileState = gameState.board[blockPos.y][blockPos.x];
+
+    if (blockPosTileState.block?.id === prevMove.blockId) {
+      // restore previous block position
+      posTileState.block = blockPosTileState.block;
+      blockPosTileState.block = undefined;
+    } else if (blockPosTileState.blockInHole?.id === prevMove.blockId) {
+      // restore hole and previous block in hole position
+      posTileState.block = blockPosTileState.blockInHole;
+      blockPosTileState.blockInHole = undefined;
+      blockPosTileState.tileType = TileType.Hole;
+    } else {
+      // should not happen unless gameState is manually altered
+      return false;
+    }
+  }
+
+  // restore previous position
+  gameState.pos = gameState.pos.sub(directionToVector(prevMove.direction));
 
   return true;
 }

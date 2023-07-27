@@ -1,7 +1,7 @@
 import Direction, { directionToVector, getDirectionFromCode } from '@root/constants/direction';
 import { GameContext } from '@root/contexts/gameContext';
 import { directionsToGameState, isValidDirections } from '@root/helpers/checkpointHelpers';
-import { cloneGameState, cloneMove, cloneTileState, GameState, initGameState, makeMove } from '@root/helpers/gameStateHelpers';
+import { cloneGameState, GameState, initGameState, makeMove, undo } from '@root/helpers/gameStateHelpers';
 import isPro from '@root/helpers/isPro';
 import useCheckpoints, { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import { Types } from 'mongoose';
@@ -374,10 +374,6 @@ export default function Game({
 
     setGameState(prevGameState => {
       function getNewGameState() {
-        if (!disablePlayAttempts) {
-          fetchPlayAttempt();
-        }
-
         // restart
         if (code === 'KeyR') {
           if (prevGameState.moves.length > 0) {
@@ -387,69 +383,31 @@ export default function Game({
           return initGameState(level.data);
         }
 
-        // treat prevGameState as immutable
-        const board = prevGameState.board.map(row => {
-          return row.map(tileState => cloneTileState(tileState));
-        });
-        const moves = prevGameState.moves.map(move => cloneMove(move));
-
-        // undo
-        function undo() {
-          const prevMove = moves.pop();
-
-          // nothing to undo
-          if (prevMove === undefined) {
-            let returnState = undefined;
-
-            if (oldGameState.current) {
-              returnState = cloneGameState(oldGameState.current);
-              oldGameState.current = undefined;
-            }
-
-            return returnState || prevGameState;
-          }
-
-          redoMoves.push(cloneGameState(prevGameState));
-
-          // remove text only from the current position for smoother animations
-          const text = board[prevGameState.pos.y][prevGameState.pos.x].text;
-
-          // the text may not exist since it is only added when moving away from a position
-          if (text[text.length - 1] === prevGameState.moves.length) {
-            text.pop();
-          }
-
-          // undo the block push
-          if (prevMove.blockId !== undefined) {
-            const blockPos = prevGameState.pos.add(directionToVector(prevMove.direction));
-            const tileStateAtBlock = board[blockPos.y][blockPos.x];
-
-            if (tileStateAtBlock.block?.id === prevMove.blockId) {
-              board[prevGameState.pos.y][prevGameState.pos.x].block = tileStateAtBlock.block;
-              tileStateAtBlock.block = undefined;
-            } else if (tileStateAtBlock.blockInHole?.id === prevMove.blockId) {
-              board[prevGameState.pos.y][prevGameState.pos.x].block = tileStateAtBlock.blockInHole;
-              tileStateAtBlock.blockInHole = undefined;
-              tileStateAtBlock.tileType = TileType.Hole;
-            } else {
-              // unexpected - block not found
-              return prevGameState;
-            }
-          }
-
-          const newGameState: GameState = {
-            board: board,
-            moves: moves,
-            pos: prevGameState.pos.sub(directionToVector(prevMove.direction)),
-          };
-
-          return newGameState;
-        }
+        const newGameState = cloneGameState(prevGameState);
 
         const undoKey = code === 'Backspace' || code === 'KeyU' || code == 'KeyZ';
 
         if (undoKey && !shiftKeyDown.current) {
-          return undo();
+          // nothing to undo, restore the old game state if it exists
+          if (newGameState.moves.length === 0) {
+            if (!oldGameState.current) {
+              return prevGameState;
+            }
+
+            const clonedOldGameState = cloneGameState(oldGameState.current);
+
+            oldGameState.current = undefined;
+
+            return clonedOldGameState;
+          }
+
+          if (!undo(newGameState)) {
+            return prevGameState;
+          }
+
+          redoMoves.push(cloneGameState(prevGameState));
+
+          return newGameState;
         }
 
         // redo
@@ -482,13 +440,13 @@ export default function Game({
 
         // before making a move, check if undo is a better choice
         function checkForFreeUndo() {
-          if (!allowFreeUndo || moves.length === 0) {
+          if (!allowFreeUndo || newGameState.moves.length === 0) {
             return false;
           }
 
           // logic for valid free undo:
           // if the board state has not changed and you're backtracking
-          const lastMove = moves[moves.length - 1];
+          const lastMove = newGameState.moves[newGameState.moves.length - 1];
 
           // no free undo if you moved a block
           if (lastMove.blockId !== undefined) {
@@ -500,18 +458,20 @@ export default function Game({
         }
 
         if (checkForFreeUndo()) {
-          return undo();
+          if (!undo(newGameState)) {
+            return prevGameState;
+          }
+
+          return newGameState;
         }
 
-        const newGameState = cloneGameState(prevGameState);
-        const validMove = makeMove(newGameState, direction);
-
-        if (!validMove) {
+        if (!makeMove(newGameState, direction)) {
           return prevGameState;
         }
 
         setRedoMoves([]);
 
+        // keep track of gameState in session storage
         if (enableSessionCheckpoint && typeof window.sessionStorage !== 'undefined') {
           window.sessionStorage.setItem('sessionCheckpoint', JSON.stringify({
             _id: level._id,
@@ -524,6 +484,10 @@ export default function Game({
         }
 
         return newGameState;
+      }
+
+      if (!disablePlayAttempts) {
+        fetchPlayAttempt();
       }
 
       const newGameState = getNewGameState();
