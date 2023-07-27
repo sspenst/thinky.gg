@@ -1,7 +1,7 @@
 import Direction, { getDirectionFromCode } from '@root/constants/direction';
 import { GameContext } from '@root/contexts/gameContext';
 import { directionsToGameState, isValidDirections } from '@root/helpers/checkpointHelpers';
-import { cloneGameState, GameState, initGameState, makeMove, undo } from '@root/helpers/gameStateHelpers';
+import { areEqualGameStates, cloneGameState, GameState, initGameState, makeMove, undo } from '@root/helpers/gameStateHelpers';
 import isPro from '@root/helpers/isPro';
 import useCheckpoints, { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import { Types } from 'mongoose';
@@ -274,7 +274,7 @@ export default function Game({
       return;
     }
 
-    if (JSON.stringify(checkpointGameState) !== JSON.stringify(gameState)) {
+    if (areEqualGameStates(checkpointGameState, gameState)) {
       // if the checkpoint is different than the game state, load it normally
       oldGameState.current = cloneGameState(gameState);
       setGameState(checkpointGameState);

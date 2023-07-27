@@ -1,5 +1,5 @@
 import Direction from '@root/constants/direction';
-import { cloneGameState, initGameState, makeMove } from '@root/helpers/gameStateHelpers';
+import { areEqualGameStates, cloneGameState, initGameState, makeMove } from '@root/helpers/gameStateHelpers';
 
 describe('helpers/gameStateHelpers.ts', () => {
   test('gameStateHelpers flow', () => {
@@ -7,7 +7,7 @@ describe('helpers/gameStateHelpers.ts', () => {
     let gameState = cloneGameState(initialGameState);
 
     // verify clone works
-    expect(JSON.stringify(gameState)).toEqual(JSON.stringify(initialGameState));
+    expect(areEqualGameStates(gameState, initialGameState)).toBeTruthy();
 
     // move out of bounds
     expect(makeMove(gameState, Direction.LEFT)).toBeFalsy();

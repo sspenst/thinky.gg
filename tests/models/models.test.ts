@@ -77,8 +77,8 @@ describe('models/*.ts', () => {
   });
   test('TileState', () => {
     const tileState: TileState = {
-      tileType: TileType.Default,
       text: [],
+      tileType: TileType.Default,
     };
 
     const tileState2 = cloneTileState(tileState);
