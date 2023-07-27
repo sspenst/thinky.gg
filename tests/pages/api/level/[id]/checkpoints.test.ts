@@ -2,6 +2,7 @@ import Direction from '@root/constants/direction';
 import Role from '@root/constants/role';
 import TestId from '@root/constants/testId';
 import { directionsToGameState, isValidDirections } from '@root/helpers/checkpointHelpers';
+import { areEqualGameStates } from '@root/helpers/gameStateHelpers';
 import { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { getTokenCookieValue } from '@root/lib/getTokenCookie';
@@ -356,6 +357,10 @@ describe('checkpiontHelpers.ts', () => {
 
     const gameState = directionsToGameState(DIRECTIONS_2, '4000B0\n120000\n050000\n678900\nABCD30');
 
-    expect(JSON.stringify(gameState)).toEqual(JSON.stringify(gameStateFromDirections));
+    expect(gameState).toBeDefined();
+
+    if (gameState) {
+      expect(areEqualGameStates(gameState, gameStateFromDirections)).toBeTruthy();
+    }
   });
 });

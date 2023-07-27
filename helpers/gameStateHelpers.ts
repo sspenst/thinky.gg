@@ -6,16 +6,16 @@ import TileTypeHelper from './tileTypeHelper';
 export interface TileState {
   block?: BlockState;
   blockInHole?: BlockState;
-  tileType: TileType;
   text: number[];
+  tileType: TileType;
 }
 
 export function cloneTileState(tileState: TileState) {
   const newTileState: TileState = {
     block: tileState.block ? cloneBlockState(tileState.block) : undefined,
     blockInHole: tileState.blockInHole ? cloneBlockState(tileState.blockInHole) : undefined,
-    tileType: tileState.tileType,
     text: tileState.text.slice(),
+    tileType: tileState.tileType,
   };
 
   return newTileState;
@@ -70,6 +70,29 @@ export function cloneGameState(gameState: GameState) {
   return newGameState;
 }
 
+export function areEqualGameStates(g1: GameState, g2: GameState) {
+  return g1.board.length === g2.board.length &&
+    g1.board.every((row, y) => {
+      return row.length === g2.board[y].length &&
+        row.every((tileState, x) => {
+          return tileState.block?.id === g2.board[y][x].block?.id &&
+            tileState.block?.tileType === g2.board[y][x].block?.tileType &&
+            tileState.blockInHole?.id === g2.board[y][x].blockInHole?.id &&
+            tileState.blockInHole?.tileType === g2.board[y][x].blockInHole?.tileType &&
+            tileState.text.every((t, i) => t === g2.board[y][x].text[i]) &&
+            tileState.tileType === g2.board[y][x].tileType;
+        });
+    }) &&
+    g1.moves.every((move, i) => {
+      return move.blockId === g2.moves[i].blockId &&
+        move.direction === g2.moves[i].direction;
+    }) &&
+    g1.pos.equals(g2.pos) &&
+    g1.redoStack.length === g2.redoStack.length &&
+    g1.redoStack.every((direction, i) => direction === g2.redoStack[i])
+  ;
+}
+
 export function initGameState(levelData: string) {
   const data = levelData.split('\n');
   const height = data.length;
@@ -78,8 +101,8 @@ export function initGameState(levelData: string) {
     new Array(width).fill(undefined).map(() => {
       return {
         block: undefined,
-        tileType: TileType.Default,
         text: [],
+        tileType: TileType.Default,
       } as TileState;
     }));
   let blockId = 0;

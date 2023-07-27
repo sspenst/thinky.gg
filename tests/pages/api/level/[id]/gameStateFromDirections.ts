@@ -1,4 +1,5 @@
 import { GameState } from '@root/helpers/gameStateHelpers';
+import Position from '@root/models/position';
 
 const gameStateFromDirections = {
   'board': [
@@ -207,10 +208,8 @@ const gameStateFromDirections = {
       'blockId': 0
     }
   ],
-  'pos': {
-    'x': 4,
-    'y': 0
-  }
+  'pos': new Position(4, 0),
+  'redoStack': [],
 } as GameState;
 
 export default gameStateFromDirections;

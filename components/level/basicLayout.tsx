@@ -21,8 +21,8 @@ export default function BasicLayout({ cellClassName, controls, level, onClick }:
   const board = Array(height).fill(undefined).map(() =>
     new Array(width).fill(undefined).map(() => {
       return {
-        tileType: TileType.Default,
         text: [],
+        tileType: TileType.Default,
       } as TileState;
     }));
 
