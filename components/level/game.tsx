@@ -64,7 +64,6 @@ export default function Game({
   const mutateProStatsLevel = levelContext?.mutateProStatsLevel;
 
   const [gameState, setGameState] = useState<GameState>(initGameState(level.data));
-  const [redoMoves, setRedoMoves] = useState<GameState[]>([]);
 
   const lastDirections = useRef<Direction[]>([]);
   const oldGameState = useRef<GameState>();
@@ -405,30 +404,25 @@ export default function Game({
             return prevGameState;
           }
 
-          redoMoves.push(cloneGameState(prevGameState));
-
           return newGameState;
         }
 
-        // redo
-        if (undoKey || code === 'KeyY') {
-          if (!pro) {
-            toast.dismiss();
-            toast.error(
-              <div>Upgrade to <Link href='/settings/proaccount' className='text-blue-500'>Pathology Pro</Link> to unlock redo!</div>,
-              {
-                duration: 5000,
-                icon: <Image alt='pro' src='/pro.svg' width='16' height='16' />,
-              }
-            );
+        const redo = undoKey || code === 'KeyY';
 
-            return prevGameState;
-          }
+        if (redo && !pro) {
+          toast.dismiss();
+          toast.error(
+            <div>Upgrade to <Link href='/settings/proaccount' className='text-blue-500'>Pathology Pro</Link> to unlock redo!</div>,
+            {
+              duration: 5000,
+              icon: <Image alt='pro' src='/pro.svg' width='16' height='16' />,
+            }
+          );
 
-          return redoMoves.pop() ?? prevGameState;
+          return prevGameState;
         }
 
-        const direction = getDirectionFromCode(code);
+        const direction = redo ? newGameState.redoStack[newGameState.redoStack.length - 1] : getDirectionFromCode(code);
 
         // return if no valid direction was pressed
         if (!direction) {
@@ -438,8 +432,6 @@ export default function Game({
         if (!makeMove(newGameState, direction, allowFreeUndo)) {
           return prevGameState;
         }
-
-        setRedoMoves([]);
 
         // track stats upon reaching an exit
         if (newGameState.board[newGameState.pos.y][newGameState.pos.x].tileType === TileType.End) {
@@ -469,7 +461,7 @@ export default function Game({
 
       return newGameState;
     });
-  }, [allowFreeUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, level._id, level.data, loadCheckpoint, onMove, onNext, onPrev, pro, redoMoves, saveCheckpoint, trackStats]);
+  }, [allowFreeUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, level._id, level.data, loadCheckpoint, onMove, onNext, onPrev, pro, saveCheckpoint, trackStats]);
 
   useEffect(() => {
     const atEnd = gameState.board[gameState.pos.y][gameState.pos.x].tileType === TileType.End;
@@ -694,7 +686,7 @@ export default function Game({
           <Image alt='pro' src='/pro.svg' width='16' height='16' />
           {'Redo'}
         </span>,
-        redoMoves.length === 0,
+        gameState.redoStack.length === 0,
         false,
         () => {
           handleKeyDown('KeyY');
@@ -713,7 +705,7 @@ export default function Game({
     } else {
       setControls(_controls);
     }
-  }, [extraControls, gameState.moves.length, handleKeyDown, onNext, onPrev, pro, redoMoves.length, setControls]);
+  }, [extraControls, gameState.redoStack.length, handleKeyDown, onNext, onPrev, pro, setControls]);
 
   function onCellClick(x: number, y: number) {
     if (isSwiping.current) {

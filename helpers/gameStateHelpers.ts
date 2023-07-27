@@ -54,6 +54,7 @@ export interface GameState {
   board: TileState[][];
   moves: Move[];
   pos: Position;
+  redoStack: Direction[];
 }
 
 export function cloneGameState(gameState: GameState) {
@@ -63,6 +64,7 @@ export function cloneGameState(gameState: GameState) {
     }),
     moves: gameState.moves.map(move => cloneMove(move)),
     pos: new Position(gameState.pos.x, gameState.pos.y),
+    redoStack: [...gameState.redoStack],
   };
 
   return newGameState;
@@ -106,6 +108,7 @@ export function initGameState(levelData: string) {
     board: board,
     moves: [],
     pos: pos,
+    redoStack: [],
   };
 
   return gameState;
@@ -219,6 +222,11 @@ export function makeMove(gameState: GameState, direction: Direction, allowFreeUn
   gameState.moves.push(move);
   gameState.pos = newPos;
 
+  // clear the redo stack if this direction doesn't match
+  if (direction !== gameState.redoStack.pop()) {
+    gameState.redoStack = [];
+  }
+
   return true;
 }
 
@@ -266,6 +274,7 @@ export function undo(gameState: GameState): boolean {
 
   // restore previous position
   gameState.pos = gameState.pos.sub(directionToVector(prevMove.direction));
+  gameState.redoStack.push(prevMove.direction);
 
   return true;
 }
