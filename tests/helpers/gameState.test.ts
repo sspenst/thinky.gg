@@ -25,7 +25,8 @@ describe('helpers/gameStateHelpers.ts', () => {
     // push a block into a hole
     expect(makeMove(gameState, Direction.DOWN)).toBeTruthy();
     expect(gameState.moves.length).toBe(2);
-    expect(gameState.blocks[1].inHole).toBeTruthy();
+    expect(gameState.board[2][1].block).toBeFalsy();
+    expect(gameState.board[2][1].blockInHole).toBeTruthy();
 
     // go to block and push it
     expect(makeMove(gameState, Direction.RIGHT)).toBeTruthy();

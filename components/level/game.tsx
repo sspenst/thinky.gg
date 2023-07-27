@@ -15,7 +15,6 @@ import TileType from '../../constants/tileType';
 import { AppContext } from '../../contexts/appContext';
 import { LevelContext } from '../../contexts/levelContext';
 import { PageContext } from '../../contexts/pageContext';
-import BlockState from '../../models/blockState';
 import Control from '../../models/control';
 import Level, { EnrichedLevel } from '../../models/db/level';
 import GameLayout from './gameLayout';
@@ -373,16 +372,6 @@ export default function Game({
       return;
     }
 
-    function getBlockById(blocks: BlockState[], id: number) {
-      for (let i = 0; i < blocks.length; i++) {
-        if (blocks[i].id === id) {
-          return blocks[i];
-        }
-      }
-
-      return undefined;
-    }
-
     setGameState(prevGameState => {
       function getNewGameState() {
         if (!disablePlayAttempts) {
@@ -399,7 +388,6 @@ export default function Game({
         }
 
         // treat prevGameState as immutable
-        const blocks = prevGameState.blocks.map(block => block.clone());
         const board = prevGameState.board.map(row => {
           return row.map(tileState => cloneTileState(tileState));
         });
@@ -433,24 +421,23 @@ export default function Game({
 
           // undo the block push
           if (prevMove.blockId !== undefined) {
-            const block = getBlockById(blocks, prevMove.blockId);
+            const blockPos = prevGameState.pos.add(directionToVector(prevMove.direction));
+            const tileStateAtBlock = board[blockPos.y][blockPos.x];
 
-            if (!block) {
+            if (tileStateAtBlock.block?.id === prevMove.blockId) {
+              board[prevGameState.pos.y][prevGameState.pos.x].block = tileStateAtBlock.block;
+              tileStateAtBlock.block = undefined;
+            } else if (tileStateAtBlock.blockInHole?.id === prevMove.blockId) {
+              board[prevGameState.pos.y][prevGameState.pos.x].block = tileStateAtBlock.blockInHole;
+              tileStateAtBlock.blockInHole = undefined;
+              tileStateAtBlock.tileType = TileType.Hole;
+            } else {
+              // unexpected - block not found
               return prevGameState;
             }
-
-            // restore the hole if necessary
-            if (block.inHole) {
-              block.inHole = false;
-              board[block.pos.y][block.pos.x].tileType = TileType.Hole;
-            }
-
-            // move the block back to its original position
-            block.pos = block.pos.sub(directionToVector(prevMove.direction));
           }
 
           const newGameState: GameState = {
-            blocks: blocks,
             board: board,
             moves: moves,
             pos: prevGameState.pos.sub(directionToVector(prevMove.direction)),
