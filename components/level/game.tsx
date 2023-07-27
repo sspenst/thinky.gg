@@ -1,4 +1,4 @@
-import Direction, { directionToVector, getDirectionFromCode } from '@root/constants/direction';
+import Direction, { getDirectionFromCode } from '@root/constants/direction';
 import { GameContext } from '@root/contexts/gameContext';
 import { directionsToGameState, isValidDirections } from '@root/helpers/checkpointHelpers';
 import { cloneGameState, GameState, initGameState, makeMove, undo } from '@root/helpers/gameStateHelpers';
@@ -435,50 +435,13 @@ export default function Game({
           return prevGameState;
         }
 
-        // calculate the target tile to move to
-        const pos = prevGameState.pos.add(directionToVector(direction));
-
-        // before making a move, check if undo is a better choice
-        function checkForFreeUndo() {
-          if (!allowFreeUndo || newGameState.moves.length === 0) {
-            return false;
-          }
-
-          // logic for valid free undo:
-          // if the board state has not changed and you're backtracking
-          const lastMove = newGameState.moves[newGameState.moves.length - 1];
-
-          // no free undo if you moved a block
-          if (lastMove.blockId !== undefined) {
-            return false;
-          }
-
-          // free undo if you are going back to the same position
-          return prevGameState.pos.sub(directionToVector(lastMove.direction)).equals(pos);
-        }
-
-        if (checkForFreeUndo()) {
-          if (!undo(newGameState)) {
-            return prevGameState;
-          }
-
-          return newGameState;
-        }
-
-        if (!makeMove(newGameState, direction)) {
+        if (!makeMove(newGameState, direction, allowFreeUndo)) {
           return prevGameState;
         }
 
         setRedoMoves([]);
 
-        // keep track of gameState in session storage
-        if (enableSessionCheckpoint && typeof window.sessionStorage !== 'undefined') {
-          window.sessionStorage.setItem('sessionCheckpoint', JSON.stringify({
-            _id: level._id,
-            directions: newGameState.moves.map(move => move.direction),
-          } as SessionCheckpoint));
-        }
-
+        // track stats upon reaching an exit
         if (newGameState.board[newGameState.pos.y][newGameState.pos.x].tileType === TileType.End) {
           trackStats(newGameState.moves.map(move => move.direction), level._id.toString(), 3);
         }
@@ -491,6 +454,14 @@ export default function Game({
       }
 
       const newGameState = getNewGameState();
+
+      // keep track of gameState in session storage
+      if (enableSessionCheckpoint && typeof window.sessionStorage !== 'undefined') {
+        window.sessionStorage.setItem('sessionCheckpoint', JSON.stringify({
+          _id: level._id,
+          directions: newGameState.moves.map(move => move.direction),
+        } as SessionCheckpoint));
+      }
 
       if (onMove) {
         onMove(newGameState);
