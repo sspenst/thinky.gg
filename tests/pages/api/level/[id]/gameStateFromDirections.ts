@@ -1,98 +1,6 @@
 import { GameState } from '@root/helpers/gameStateHelpers';
 
 const gameStateFromDirections = {
-  'blocks': [
-    {
-      'id': 0,
-      'pos': {
-        'x': 5,
-        'y': 0
-      },
-      'type': 'B',
-      'inHole': false
-    },
-    {
-      'id': 1,
-      'pos': {
-        'x': 1,
-        'y': 2
-      },
-      'type': '2',
-      'inHole': true
-    },
-    {
-      'id': 2,
-      'pos': {
-        'x': 0,
-        'y': 3
-      },
-      'type': '6',
-      'inHole': false
-    },
-    {
-      'id': 3,
-      'pos': {
-        'x': 1,
-        'y': 3
-      },
-      'type': '7',
-      'inHole': false
-    },
-    {
-      'id': 4,
-      'pos': {
-        'x': 2,
-        'y': 3
-      },
-      'type': '8',
-      'inHole': false
-    },
-    {
-      'id': 5,
-      'pos': {
-        'x': 3,
-        'y': 3
-      },
-      'type': '9',
-      'inHole': false
-    },
-    {
-      'id': 6,
-      'pos': {
-        'x': 0,
-        'y': 4
-      },
-      'type': 'A',
-      'inHole': false
-    },
-    {
-      'id': 7,
-      'pos': {
-        'x': 1,
-        'y': 4
-      },
-      'type': 'B',
-      'inHole': false
-    },
-    {
-      'id': 8,
-      'pos': {
-        'x': 2,
-        'y': 4
-      },
-      'type': 'C',
-      'inHole': false
-    },
-    {
-      'id': 9,
-      'pos': {
-        'x': 3,
-        'y': 4
-      },
-      'type': 'D',
-      'inHole': false
-    }
-  ],
   'board': [
     [
       {
@@ -123,7 +31,11 @@ const gameStateFromDirections = {
       },
       {
         'tileType': '0',
-        'text': []
+        'text': [],
+        'block': {
+          'id': 0,
+          'tileType': 'B'
+        }
       }
     ],
     [
@@ -165,7 +77,11 @@ const gameStateFromDirections = {
       },
       {
         'tileType': '0',
-        'text': []
+        'text': [],
+        'blockInHole': {
+          'id': 1,
+          'tileType': '2'
+        }
       },
       {
         'tileType': '0',
@@ -187,19 +103,35 @@ const gameStateFromDirections = {
     [
       {
         'tileType': '0',
-        'text': []
+        'text': [],
+        'block': {
+          'id': 2,
+          'tileType': '6'
+        }
       },
       {
         'tileType': '0',
-        'text': []
+        'text': [],
+        'block': {
+          'id': 3,
+          'tileType': '7'
+        }
       },
       {
         'tileType': '0',
-        'text': []
+        'text': [],
+        'block': {
+          'id': 4,
+          'tileType': '8'
+        }
       },
       {
         'tileType': '0',
-        'text': []
+        'text': [],
+        'block': {
+          'id': 5,
+          'tileType': '9'
+        }
       },
       {
         'tileType': '0',
@@ -213,19 +145,35 @@ const gameStateFromDirections = {
     [
       {
         'tileType': '0',
-        'text': []
+        'text': [],
+        'block': {
+          'id': 6,
+          'tileType': 'A'
+        }
       },
       {
         'tileType': '0',
-        'text': []
+        'text': [],
+        'block': {
+          'id': 7,
+          'tileType': 'B'
+        }
       },
       {
         'tileType': '0',
-        'text': []
+        'text': [],
+        'block': {
+          'id': 8,
+          'tileType': 'C'
+        }
       },
       {
         'tileType': '0',
-        'text': []
+        'text': [],
+        'block': {
+          'id': 9,
+          'tileType': 'D'
+        }
       },
       {
         'tileType': '3',

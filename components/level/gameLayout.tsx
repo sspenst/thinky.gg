@@ -1,4 +1,3 @@
-import TileType from '@root/constants/tileType';
 import { PageContext } from '@root/contexts/pageContext';
 import { GameState } from '@root/helpers/gameStateHelpers';
 import React, { useContext, useEffect, useState } from 'react';
@@ -11,7 +10,6 @@ import CheckpointsModal from '../modal/checkpointsModal';
 import Controls from './controls';
 import Grid from './grid';
 import Sidebar from './sidebar';
-import Tile from './tile/tile';
 
 interface GameLayoutProps {
   controls: Control[];
@@ -69,26 +67,7 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, hi
           </div>
         }
         <Grid
-          board={gameState.board}
-          generateMovables={() => <>
-            {gameState.blocks.map(block => {
-              return (
-                <Tile
-                  handleClick={() => onCellClick(block.pos.x, block.pos.y)}
-                  inHole={block.inHole}
-                  key={`block-${block.id}`}
-                  pos={block.pos}
-                  tileType={block.type}
-                />
-              );
-            })}
-            <Tile
-              atEnd={gameState.board[gameState.pos.y][gameState.pos.x].tileType === TileType.End}
-              pos={gameState.pos}
-              text={gameState.moves.length}
-              tileType={TileType.Start}
-            />
-          </>}
+          gameState={gameState}
           id={level._id.toString()}
           leastMoves={level.leastMoves}
           onCellClick={(x, y, rightClick) => {

@@ -56,26 +56,22 @@ function CheckpointModalItem({ checkpoint, closeModal, index }: CheckpointModalI
       return;
     }
 
-    const data = gameState.board.map(row => row.map(s => {
-      // show darker green for visited tiles
-      if (s.tileType === TileType.Default && s.text.length > 0) {
-        return TileTypeDefaultVisited;
-      } else {
-        return s.tileType;
+    const data = gameState.board.map(row => row.map(tileState => {
+      if (tileState.block) {
+        return tileState.block.tileType;
       }
+
+      // show darker green for visited tiles
+      if (tileState.tileType === TileType.Default && tileState.text.length > 0) {
+        return TileTypeDefaultVisited;
+      }
+
+      return tileState.tileType;
     }));
 
     // hide player if the level is finished
     if (data[gameState.pos.y][gameState.pos.x] !== TileType.End) {
       data[gameState.pos.y][gameState.pos.x] = TileType.Start;
-    }
-
-    for (const block of gameState.blocks) {
-      if (block.inHole) {
-        continue;
-      }
-
-      data[block.pos.y][block.pos.x] = block.type;
     }
 
     const joinedData = data.map(row => row.join('')).join('\n');

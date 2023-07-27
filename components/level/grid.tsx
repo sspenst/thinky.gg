@@ -1,7 +1,7 @@
 import TileType from '@root/constants/tileType';
 import { AppContext } from '@root/contexts/appContext';
 import { GridContext } from '@root/contexts/gridContext';
-import { TileState } from '@root/helpers/gameStateHelpers';
+import { GameState } from '@root/helpers/gameStateHelpers';
 import Position from '@root/models/position';
 import classNames from 'classnames';
 import React, { useContext, useEffect, useState } from 'react';
@@ -10,21 +10,22 @@ import { teko } from '../../pages/_app';
 import Tile from './tile/tile';
 
 interface GridProps {
-  board: TileState[][];
   cellClassName?: (x: number, y: number) => string | undefined;
-  generateMovables?: () => JSX.Element;
+  gameState: GameState;
   id: string;
   leastMoves: number;
   onCellClick: (x: number, y: number, rightClick: boolean) => void;
 }
 
-export default function Grid({ board, cellClassName, generateMovables, id, leastMoves, onCellClick }: GridProps) {
+export default function Grid({ cellClassName, gameState, id, leastMoves, onCellClick }: GridProps) {
   const { theme } = useContext(AppContext);
   const classic = theme === Theme.Classic;
-  const height = board.length;
-  const width = board[0].length;
+  const height = gameState.board.length;
+  const width = gameState.board[0].length;
   const gridId = `grid-${id}`;
   const [tileSize, setTileSize] = useState(0);
+  const borderWidth = Math.round(tileSize / 40) || 1;
+  const innerTileSize = tileSize - 2 * borderWidth;
 
   useEffect(() => {
     const el = document.getElementById(gridId);
@@ -55,8 +56,53 @@ export default function Grid({ board, cellClassName, generateMovables, id, least
     };
   }, [gridId, height, width]);
 
-  const borderWidth = Math.round(tileSize / 40) || 1;
-  const innerTileSize = tileSize - 2 * borderWidth;
+  const tiles = [];
+  const blocks: { [id: number]: JSX.Element } = {};
+
+  for (let y = 0; y < gameState.board.length; y++) {
+    for (let x = 0; x < gameState.board[y].length; x++) {
+      const tileState = gameState.board[y][x];
+      const tileType = tileState.tileType;
+      const text = tileType === TileType.Start ? 0 :
+        tileType === TileType.End ? leastMoves :
+          tileState.text.length === 0 ? undefined :
+            tileState.text[tileState.text.length - 1];
+
+      tiles.push(
+        <Tile
+          className={cellClassName ? cellClassName(x, y) : undefined}
+          handleClick={(rightClick: boolean) => onCellClick(x, y, rightClick)}
+          key={`tile-${y}-${x}`}
+          pos={new Position(x, y)}
+          text={text}
+          tileType={tileType}
+        />
+      );
+
+      if (tileState.block) {
+        blocks[tileState.block.id] = (
+          <Tile
+            handleClick={(rightClick: boolean) => onCellClick(x, y, rightClick)}
+            key={`block-${tileState.block.id}`}
+            pos={new Position(x, y)}
+            tileType={tileState.block.tileType}
+          />
+        );
+      }
+
+      if (tileState.blockInHole) {
+        blocks[tileState.blockInHole.id] = (
+          <Tile
+            handleClick={(rightClick: boolean) => onCellClick(x, y, rightClick)}
+            inHole={true}
+            key={`block-${tileState.blockInHole.id}`}
+            pos={new Position(x, y)}
+            tileType={tileState.blockInHole.tileType}
+          />
+        );
+      }
+    }
+  }
 
   return (
     <div className={classNames('grow flex items-center justify-center overflow-hidden', { [teko.className]: classic })} id={gridId}>
@@ -74,25 +120,16 @@ export default function Grid({ board, cellClassName, generateMovables, id, least
               width: tileSize * width,
             }}
           >
-            {board.map((row, y) => row.map((tileState, x) => {
-              const tileType = tileState.tileType;
-              const text = tileType === TileType.Start ? 0 :
-                tileType === TileType.End ? leastMoves :
-                  tileState.text.length === 0 ? undefined :
-                    tileState.text[tileState.text.length - 1];
-
-              return (
-                <Tile
-                  className={cellClassName ? cellClassName(x, y) : undefined}
-                  handleClick={(rightClick: boolean) => onCellClick(x, y, rightClick)}
-                  key={`tile-${y}-${x}`}
-                  pos={new Position(x, y)}
-                  text={text}
-                  tileType={tileType}
-                />
-              );
-            }))}
-            {generateMovables ? generateMovables() : null}
+            {tiles}
+            {Object.values(blocks)}
+            {gameState.pos &&
+              <Tile
+                atEnd={gameState.board[gameState.pos.y][gameState.pos.x].tileType === TileType.End}
+                pos={gameState.pos}
+                text={gameState.moves.length}
+                tileType={TileType.Start}
+              />
+            }
           </div>
         </GridContext.Provider>
       }
