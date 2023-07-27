@@ -71,7 +71,8 @@ export function cloneGameState(gameState: GameState) {
 }
 
 export function areEqualGameStates(g1: GameState, g2: GameState) {
-  return g1.board.length === g2.board.length &&
+  return (
+    g1.board.length === g2.board.length &&
     g1.board.every((row, y) => {
       return row.length === g2.board[y].length &&
         row.every((tileState, x) => {
@@ -90,7 +91,7 @@ export function areEqualGameStates(g1: GameState, g2: GameState) {
     g1.pos.equals(g2.pos) &&
     g1.redoStack.length === g2.redoStack.length &&
     g1.redoStack.every((direction, i) => direction === g2.redoStack[i])
-  ;
+  );
 }
 
 export function initGameState(levelData: string) {
