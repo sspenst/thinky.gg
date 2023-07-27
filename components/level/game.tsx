@@ -66,6 +66,7 @@ export default function Game({
   const [gameState, setGameState] = useState<GameState>(initGameState(level.data));
 
   const lastDirections = useRef<Direction[]>([]);
+  // keeping track of the game state before restarting or loading a checkpoint
   const oldGameState = useRef<GameState>();
   const sessionCheckpointRestored = useRef(false);
   const shiftKeyDown = useRef(false);
@@ -264,30 +265,21 @@ export default function Game({
       return;
     }
 
-    const newGameState = directionsToGameState(checkpoint, level.data);
+    const checkpointGameState = directionsToGameState(checkpoint, level.data);
 
-    if (!newGameState) {
+    if (!checkpointGameState) {
       toast.dismiss();
       toast.error('Invalid checkpoint');
 
       return;
     }
 
-    // check if the checkpoint is the same as the current game state
-    if (JSON.stringify(newGameState) === JSON.stringify(gameState) && JSON.stringify(gameState) !== JSON.stringify(oldGameState.current)) {
-      toast.dismiss();
-      toast.error('Undoing checkpoint restore', { duration: 1500, icon: '👍' });
-      oldGameState.current && setGameState(oldGameState.current);
-    } else {
-      oldGameState.current = gameState;
-      // TODO: https://github.com/sspenst/pathology/issues/910
-      // should reapply the checkpoint rather than just cloning the state
-      // so that in the editor checkpoints can be properly loaded even when the level content changes
-      setGameState(newGameState);
-      const keepOldStateRef = cloneGameState(oldGameState.current);
+    if (JSON.stringify(checkpointGameState) !== JSON.stringify(gameState)) {
+      // if the checkpoint is different than the game state, load it normally
+      oldGameState.current = cloneGameState(gameState);
+      setGameState(checkpointGameState);
 
       toast.dismiss();
-
       toast.success(
         <div>
           {index === BEST_CHECKPOINT_INDEX ?
@@ -299,7 +291,7 @@ export default function Game({
             className='text-blue-400'
             style={{ cursor: 'pointer' }}
             onClick={() => {
-              setGameState(keepOldStateRef);
+              loadCheckpoint(index);
               toast.dismiss();
             }}
           >
@@ -308,6 +300,13 @@ export default function Game({
         </div>,
         { duration: 3000 },
       );
+    } else if (oldGameState.current) {
+      // otherwise restore the old game state if it exists
+      setGameState(cloneGameState(oldGameState.current));
+      oldGameState.current = undefined;
+
+      toast.dismiss();
+      toast.error('Undoing checkpoint restore', { duration: 1500, icon: '👍' });
     }
 
     return;
