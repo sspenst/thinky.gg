@@ -133,15 +133,42 @@ function isBlockPositionValid(board: TileState[][], pos: Position) {
 }
 
 /**
+ * check if a free undo is possible (backtracking without pushing blocks)
+ */
+function checkForFreeUndo(gameState: GameState, direction: Direction): boolean {
+  if (gameState.moves.length === 0) {
+    return false;
+  }
+
+  const lastMove = gameState.moves[gameState.moves.length - 1];
+
+  // no free undo if you moved a block
+  if (lastMove.blockId !== undefined) {
+    return false;
+  }
+
+  const newPos = gameState.pos.add(directionToVector(direction));
+  const undoPos = gameState.pos.sub(directionToVector(lastMove.direction));
+
+  // free undo if you are going back to the same position
+  return undoPos.equals(newPos);
+}
+
+/**
  * update a gameState in-place with a new move
  * @returns if the move was valid
  */
-export function makeMove(gameState: GameState, direction: Direction): boolean {
+export function makeMove(gameState: GameState, direction: Direction, allowFreeUndo = false): boolean {
   const posTileState = gameState.board[gameState.pos.y][gameState.pos.x];
 
   // lock movement once you reach the finish
   if (posTileState.tileType === TileType.End) {
     return false;
+  }
+
+  // before making a move, check if undo is a better choice
+  if (allowFreeUndo && checkForFreeUndo(gameState, direction)) {
+    return undo(gameState);
   }
 
   const text = posTileState.text;
