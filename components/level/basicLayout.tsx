@@ -1,4 +1,4 @@
-import { TileState } from '@root/helpers/gameStateHelpers';
+import { GameState, TileState } from '@root/helpers/gameStateHelpers';
 import { Types } from 'mongoose';
 import React from 'react';
 import TileType from '../../constants/tileType';
@@ -21,8 +21,8 @@ export default function BasicLayout({ cellClassName, controls, level, onClick }:
   const board = Array(height).fill(undefined).map(() =>
     new Array(width).fill(undefined).map(() => {
       return {
-        tileType: TileType.Default,
         text: [],
+        tileType: TileType.Default,
       } as TileState;
     }));
 
@@ -39,8 +39,8 @@ export default function BasicLayout({ cellClassName, controls, level, onClick }:
   return (
     <>
       <Grid
-        board={board}
         cellClassName={(x, y) => cellClassName ? cellClassName(y * (level.width + 1) + x) : undefined}
+        gameState={{ board: board } as GameState}
         id={(level._id ?? new Types.ObjectId()).toString()}
         leastMoves={level.leastMoves}
         onCellClick={(x, y, rightClick) => onClick ? onClick(y * (level.width + 1) + x, rightClick) : undefined}
