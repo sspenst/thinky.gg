@@ -274,7 +274,7 @@ export default function Game({
       return;
     }
 
-    if (areEqualGameStates(checkpointGameState, gameState)) {
+    if (!areEqualGameStates(checkpointGameState, gameState)) {
       // if the checkpoint is different than the game state, load it normally
       oldGameState.current = cloneGameState(gameState);
       setGameState(checkpointGameState);
@@ -308,8 +308,6 @@ export default function Game({
       toast.dismiss();
       toast.error('Undoing checkpoint restore', { duration: 1500, icon: '👍' });
     }
-
-    return;
   }, [checkpoints, gameState, level.data]);
 
   const handleKeyDown = useCallback((code: string) => {
