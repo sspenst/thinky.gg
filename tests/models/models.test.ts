@@ -1,9 +1,8 @@
 import Direction, { getDirectionFromCode } from '@root/constants/direction';
 import TileType from '@root/constants/tileType';
-import { cloneMove, cloneTileState, Move, TileState } from '@root/helpers/gameStateHelpers';
+import { BlockState, cloneBlockState, cloneMove, cloneTileState, Move, TileState } from '@root/helpers/gameStateHelpers';
 import TestId from '../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
-import BlockState from '../../models/blockState';
 import Control from '../../models/control';
 import User from '../../models/db/user';
 import { LevelModel, UserModel } from '../../models/mongoose';
@@ -40,26 +39,17 @@ describe('models/*.ts', () => {
     expect(statsClone.getColor('color')).toBe('var(--color-complete)');
   });
   test('BlockState', () => {
-    const blockState = new BlockState(0, TileType.NotLeft, 1, 1);
+    const blockState: BlockState = {
+      id: 0,
+      tileType: TileType.NotLeft,
+    };
 
-    expect(blockState.canMoveTo(new Position(1, 1))).toBe(true);
-    expect(blockState.canMoveTo(new Position(0, 1))).toBe(false);
-    expect(blockState.canMoveTo(new Position(2, 1))).toBe(true);
-    expect(blockState.canMoveTo(new Position(1, 0))).toBe(true);
-    expect(blockState.canMoveTo(new Position(1, 2))).toBe(true);
-    expect(blockState.canMoveTo(new Position(-1, 1))).toBe(false);
+    const blockState2 = cloneBlockState(blockState);
 
-    let blockStateClone = blockState.clone();
+    expect(JSON.stringify(blockState2)).toBe(JSON.stringify(blockState));
 
-    expect(blockStateClone.id).toBe(0);
-    blockStateClone.id = 1;
-    expect(blockState.id).toBe(0);
-
-    blockStateClone = BlockState.clone(blockState);
-
-    expect(blockStateClone.id).toBe(0);
-    blockStateClone.id = 1;
-    expect(blockState.id).toBe(0);
+    blockState2.tileType = TileType.Block;
+    expect(blockState.tileType).toBe(TileType.NotLeft);
   });
   test('Position', () => {
     const pos = new Position(1, 1);
@@ -87,8 +77,8 @@ describe('models/*.ts', () => {
   });
   test('TileState', () => {
     const tileState: TileState = {
-      tileType: TileType.Default,
       text: [],
+      tileType: TileType.Default,
     };
 
     const tileState2 = cloneTileState(tileState);

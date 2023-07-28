@@ -1,5 +1,5 @@
 import Direction from '@root/constants/direction';
-import { cloneGameState, initGameState, makeMove } from '@root/helpers/gameStateHelpers';
+import { areEqualGameStates, cloneGameState, initGameState, makeMove, undo } from '@root/helpers/gameStateHelpers';
 
 describe('helpers/gameStateHelpers.ts', () => {
   test('gameStateHelpers flow', () => {
@@ -7,10 +7,13 @@ describe('helpers/gameStateHelpers.ts', () => {
     let gameState = cloneGameState(initialGameState);
 
     // verify clone works
-    expect(JSON.stringify(gameState)).toEqual(JSON.stringify(initialGameState));
+    expect(areEqualGameStates(gameState, initialGameState)).toBeTruthy();
+
+    // nothing to undo
+    expect(undo(gameState)).toBeFalsy();
 
     // move out of bounds
-    expect(makeMove(gameState, Direction.LEFT)).toBeFalsy();
+    expect(makeMove(gameState, Direction.LEFT, true)).toBeFalsy();
 
     // move into a wall
     gameState = cloneGameState(initialGameState);
@@ -25,10 +28,28 @@ describe('helpers/gameStateHelpers.ts', () => {
     // push a block into a hole
     expect(makeMove(gameState, Direction.DOWN)).toBeTruthy();
     expect(gameState.moves.length).toBe(2);
-    expect(gameState.blocks[1].inHole).toBeTruthy();
+    expect(gameState.board[2][1].block).toBeFalsy();
+    expect(gameState.board[2][1].blockInHole).toBeTruthy();
+
+    // undo block in hole
+    expect(undo(gameState)).toBeTruthy();
+    expect(gameState.board[1][1].block).toBeTruthy();
+    expect(gameState.board[2][1].blockInHole).toBeFalsy();
+
+    // allow free undo
+    expect(makeMove(gameState, Direction.DOWN)).toBeTruthy();
+    expect(makeMove(gameState, Direction.RIGHT)).toBeTruthy();
+    expect(makeMove(gameState, Direction.RIGHT)).toBeTruthy();
+    expect(makeMove(gameState, Direction.LEFT, true)).toBeTruthy();
+    expect(makeMove(gameState, Direction.LEFT, true)).toBeTruthy();
+    expect(gameState.moves.length).toBe(2);
+    expect(gameState.redoStack.length).toBe(2);
+
+    // redo should pop once when retracing
+    expect(makeMove(gameState, Direction.RIGHT)).toBeTruthy();
+    expect(gameState.redoStack.length).toBe(1);
 
     // go to block and push it
-    expect(makeMove(gameState, Direction.RIGHT)).toBeTruthy();
     expect(makeMove(gameState, Direction.RIGHT)).toBeTruthy();
     expect(makeMove(gameState, Direction.UP)).toBeTruthy();
     expect(makeMove(gameState, Direction.RIGHT)).toBeTruthy();
@@ -39,7 +60,19 @@ describe('helpers/gameStateHelpers.ts', () => {
 
     expect(makeMove(gameState2, Direction.RIGHT)).toBeFalsy();
 
+    // no free undo after pushing a block
+    expect(makeMove(gameState, Direction.LEFT, true)).toBeTruthy();
+    expect(gameState.board[0][4].block).toBeUndefined();
+    expect(gameState.board[0][5].block).toBeDefined();
+
+    // undo the block push
+    expect(undo(gameState)).toBeTruthy();
+    expect(undo(gameState)).toBeTruthy();
+    expect(gameState.board[0][4].block).toBeDefined();
+    expect(gameState.board[0][5].block).toBeUndefined();
+
     // go to the exit
+    expect(makeMove(gameState, Direction.RIGHT)).toBeTruthy();
     expect(makeMove(gameState, Direction.DOWN)).toBeTruthy();
     expect(makeMove(gameState, Direction.DOWN)).toBeTruthy();
     expect(makeMove(gameState, Direction.DOWN)).toBeTruthy();
