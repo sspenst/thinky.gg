@@ -1,4 +1,6 @@
-import mongoose from 'mongoose';
+import { getEnrichLevelsPipelineSteps } from '@root/helpers/enrich';
+import User from '@root/models/db/user';
+import mongoose, { PipelineStage } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { ValidEnum } from '../../../../../helpers/apiWrapper';
 import { DIFFICULTY_LOGISTIC_K, DIFFICULTY_LOGISTIC_M, DIFFICULTY_LOGISTIC_T } from '../../../../../helpers/getDifficultyEstimate';
@@ -267,7 +269,7 @@ async function getDifficultyDataComparisons(userId: string) {
   return difficultyData;
 }
 
-async function getPlayLogForUsersCreatedLevels(userId: string) {
+async function getPlayLogForUsersCreatedLevels(reqUser: User, userId: string) {
   const playLogsForUserCreatedLevels = await LevelModel.aggregate([
     {
       $match: {
@@ -300,7 +302,7 @@ async function getPlayLogForUsersCreatedLevels(userId: string) {
       }
     },
     {
-      $limit: 5,
+      $limit: 25,
     },
     {
       $lookup: {
@@ -330,6 +332,9 @@ async function getPlayLogForUsersCreatedLevels(userId: string) {
         localField: 'levelId',
         foreignField: '_id',
         as: 'levelId',
+        pipeline: [
+          ...getEnrichLevelsPipelineSteps(reqUser, '_id', '') as PipelineStage.Lookup[],
+        ]
       },
     },
     {
@@ -491,7 +496,7 @@ export default withAuth({
   } else if (type === ProStatsUserType.MostSolvesForUserLevels) {
     mostSolvesForUserLevels = await getMostSolvesForUserLevels(userId);
   } else if (type === ProStatsUserType.PlayLogForUserCreatedLevels) {
-    playLogForUserCreatedLevels = await getPlayLogForUsersCreatedLevels(userId);
+    playLogForUserCreatedLevels = await getPlayLogForUsersCreatedLevels(req.user, userId);
   }
 
   return res.status(200).json({

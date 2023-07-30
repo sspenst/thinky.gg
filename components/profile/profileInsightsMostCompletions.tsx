@@ -35,6 +35,9 @@ export default function ProfileInsightsMostCompletions({ user }: {user: User}) {
           backgroundColor: 'var(--bg-color-4)',
         },
       }]}
+      paginationComponentOptions={{
+        noRowsPerPage: true,
+      }}
       customStyles={DATA_TABLE_CUSTOM_STYLES}
       data={proStatsUser[ProStatsUserType.MostSolvesForUserLevels]}
       dense
