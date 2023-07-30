@@ -1,6 +1,7 @@
 import Discord from '@root/constants/discord';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import isPro from '@root/helpers/isPro';
+import UserConfig from '@root/models/db/userConfig';
 import { buffer } from 'micro';
 import mongoose from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
@@ -19,6 +20,8 @@ export const config = {
 };
 
 async function subscriptionDeleted(userToDowngrade: User) {
+  logger.info(`subscriptionDeleted - ${userToDowngrade.name} (${userToDowngrade._id.toString()})`);
+
   // we want to downgrade the user
   const session = await mongoose.startSession();
 
@@ -57,6 +60,8 @@ async function subscriptionDeleted(userToDowngrade: User) {
 }
 
 async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.Checkout.Session) {
+  logger.info(`checkoutSessionComplete - ${userToUpgrade.name} (${userToUpgrade._id.toString()})`);
+
   const customerId = properties.customer;
 
   // otherwise... let's upgrade the user?
@@ -134,7 +139,7 @@ export class StripeWebhookHelper {
 export default apiWrapper({
   POST: {
   } }, async (req: NextApiRequest, res: NextApiResponse) => {
-  let event;
+  let event: Stripe.Event;
 
   try {
     event = await StripeWebhookHelper.createStripeSigned(req);
@@ -193,17 +198,27 @@ export default apiWrapper({
     if (!customerId) {
       error = 'No customerId';
     } else {
-      const userConfig = await UserConfigModel.findOne({
-        stripeCustomerId: customerId
-      });
+      const userConfigAgg = await UserConfigModel.aggregate<UserConfig>([
+        {
+          $match: { stripeCustomerId: customerId },
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'userId',
+            foreignField: '_id',
+            as: 'userId',
+          },
+        },
+        {
+          $unwind: '$userId',
+        }
+      ]);
 
-      const userTarget = userConfig?.userId;
-
-      if (!userTarget) {
-      // we want to log the error
-        error = `User with customer id ${customerId} does not exist`;
+      if (userConfigAgg.length === 0) {
+        error = `UserConfig with customer id ${customerId} does not exist`;
       } else {
-        error = await subscriptionDeleted(userTarget);
+        error = await subscriptionDeleted(userConfigAgg[0].userId as User);
       }
     }
   } else {

@@ -290,7 +290,7 @@ describe('Testing a valid user', () => {
     const originalImplementation = UserModel.findOneAndUpdate;
 
     jest.spyOn(UserModel, 'findOneAndUpdate')
-      .mockImplementationOnce(function (this: any, ...args) {
+      .mockImplementationOnce(function (this: typeof UserModel, ...args) {
       // Call the original implementation for the first call
         return originalImplementation.apply(this, args);
       })

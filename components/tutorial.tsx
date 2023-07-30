@@ -1,7 +1,9 @@
 /* istanbul ignore file */
 
 import { createPopper, Instance, Placement } from '@popperjs/core';
+import { directionToVector } from '@root/constants/direction';
 import TileType from '@root/constants/tileType';
+import { GameState } from '@root/helpers/gameStateHelpers';
 import classNames from 'classnames';
 import { Types } from 'mongoose';
 import Link from 'next/link';
@@ -10,12 +12,12 @@ import { AppContext } from '../contexts/appContext';
 import { TimerUtil } from '../helpers/getTs';
 import Control from '../models/control';
 import Level from '../models/db/level';
-import Position, { getDirectionFromCode } from '../models/position';
+import Position from '../models/position';
 import DismissToast from './dismissToast';
 import BasicLayout from './level/basicLayout';
 import Controls from './level/controls';
 import styles from './level/Controls.module.css';
-import Game, { GameState } from './level/game';
+import Game from './level/game';
 import Page from './page';
 
 interface Tooltip {
@@ -253,7 +255,7 @@ export default function Tutorial() {
         header: <div key='tutorial-player-intro-header' className='text-2xl'>That square in the middle is the <span className='font-bold'>Player</span> you will be controlling.</div>,
         key: 'tutorial-player-intro',
         level: getLevel(GRID_WITH_PLAYER),
-        tooltip: { target: '.block_type_4', title: <div>Player</div> },
+        tooltip: { target: '.tile-type-4', title: <div>Player</div> },
       },
       {
         gameGrid: true,
@@ -406,7 +408,7 @@ export default function Tutorial() {
         </>,
         key: 'tutorial-level-1-only-end',
         level: getLevel(LEVEL_1_ONLY_END, { leastMoves: 5 }),
-        tooltip: { target: '.block_type_3', title: <div>Exit</div>, dir: 'top' },
+        tooltip: { target: '.tile-type-3', title: <div>Exit</div>, dir: 'top' },
       },
       {
         gameGrid: true,
@@ -421,16 +423,16 @@ export default function Tutorial() {
           // notify the user to undo if they have gone past the exit (too far right or down)
           // or if they have gone left or up at any point
           if (gameState.pos.x > 4 || gameState.pos.y > 3 || gameState.moves.some(move => {
-            const direction = getDirectionFromCode(move.code);
+            const pos = directionToVector(move.direction);
 
-            return direction?.equals(new Position(-1, 0)) || direction?.equals(new Position(0, -1));
+            return pos.equals(new Position(-1, 0)) || pos.equals(new Position(0, -1));
           })) {
             undoButton?.classList.add(styles['highlight-red']);
           } else {
             undoButton?.classList.remove(styles['highlight-red']);
           }
         },
-        tooltip: { canClose: true, target: '.block_type_3', title: <div>Move the Player here in 5 moves</div>, dir: 'bottom' },
+        tooltip: { canClose: true, target: '.tile-type-3', title: <div>Move the Player here in 5 moves</div>, dir: 'bottom' },
       },
       {
         gameClasses: 'fadeIn',
@@ -439,7 +441,7 @@ export default function Tutorial() {
         key: 'tutorial-wall',
         level: getLevel(WALL_INTRO, { leastMoves: 7 }),
         onComplete: niceJob,
-        tooltip: { canClose: true, target: '.block_type_1', title: <div>You are not able to go through walls</div> },
+        tooltip: { canClose: true, target: '.tile-type-1', title: <div>You are not able to go through walls</div> },
       },
       {
         gameClasses: 'fadeIn',
@@ -479,7 +481,7 @@ export default function Tutorial() {
         header: <div key='tutorial-restricted-movables-header' className='text-3xl fadeIn'>Blocks can only be pushed <span className='underline'>from sides with borders.</span></div>,
         key: 'tutorial-restricted-movables',
         level: getLevel(RESTRICTED_MOVABLES),
-        tooltip: { canClose: true, target: '.block_type_D', title: <div>Can only be pushed down and to the left</div>, dir: 'bottom' },
+        tooltip: { canClose: true, target: '.tile-type-D', title: <div>Can only be pushed down and to the left</div>, dir: 'bottom' },
       },
       {
         gameClasses: 'fadeIn',
@@ -498,7 +500,7 @@ export default function Tutorial() {
         </div>,
         key: 'tutorial-holes-explain',
         level: getLevel(HOLES_EXPLAIN, { leastMoves: 9 }),
-        tooltip: { target: '.square-hole', title: <div>Hole</div> },
+        tooltip: { target: '.tile-type-5', title: <div>Hole</div> },
       },
       {
         gameGrid: true,
@@ -714,7 +716,7 @@ export default function Tutorial() {
                 const restartButton = document.getElementById('btn-restart') as HTMLButtonElement;
 
                 // show restart notification if they have reached the exit in too many moves
-                if (gameState.board[gameState.pos.y][gameState.pos.x].tileType === TileType.End && gameState.moveCount > (tutorialStep.level?.leastMoves ?? 0)) {
+                if (gameState.board[gameState.pos.y][gameState.pos.x].tileType === TileType.End && gameState.moves.length > (tutorialStep.level?.leastMoves ?? 0)) {
                   restartButton?.classList.add(styles['highlight-red']);
                 } else {
                   restartButton?.classList.remove(styles['highlight-red']);
@@ -724,7 +726,7 @@ export default function Tutorial() {
                   const undoButton = document.getElementById('btn-undo') as HTMLButtonElement;
 
                   // show undo notification if they have made too many moves
-                  if (gameState.moveCount > (tutorialStep.level?.leastMoves ?? 0)) {
+                  if (gameState.moves.length > (tutorialStep.level?.leastMoves ?? 0)) {
                     undoButton?.classList.add(styles['highlight-red']);
                   } else {
                     undoButton?.classList.remove(styles['highlight-red']);

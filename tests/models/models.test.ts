@@ -1,15 +1,14 @@
+import Direction, { getDirectionFromCode } from '@root/constants/direction';
 import TileType from '@root/constants/tileType';
+import { BlockState, cloneBlockState, cloneMove, cloneTileState, Move, TileState } from '@root/helpers/gameStateHelpers';
 import TestId from '../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
-import BlockState from '../../models/blockState';
 import Control from '../../models/control';
 import User from '../../models/db/user';
 import { LevelModel, UserModel } from '../../models/mongoose';
-import Move from '../../models/move';
-import Position, { getDirectionFromCode } from '../../models/position';
+import Position from '../../models/position';
 import { calcPlayAttempts } from '../../models/schemas/levelSchema';
 import SelectOptionStats from '../../models/selectOptionStats';
-import SquareState from '../../models/squareState';
 
 beforeAll(async () => {
   await dbConnect();
@@ -40,26 +39,17 @@ describe('models/*.ts', () => {
     expect(statsClone.getColor('color')).toBe('var(--color-complete)');
   });
   test('BlockState', () => {
-    const blockState = new BlockState(0, TileType.NotLeft, 1, 1);
+    const blockState: BlockState = {
+      id: 0,
+      tileType: TileType.NotLeft,
+    };
 
-    expect(blockState.canMoveTo(new Position(1, 1))).toBe(true);
-    expect(blockState.canMoveTo(new Position(0, 1))).toBe(false);
-    expect(blockState.canMoveTo(new Position(2, 1))).toBe(true);
-    expect(blockState.canMoveTo(new Position(1, 0))).toBe(true);
-    expect(blockState.canMoveTo(new Position(1, 2))).toBe(true);
-    expect(blockState.canMoveTo(new Position(-1, 1))).toBe(false);
+    const blockState2 = cloneBlockState(blockState);
 
-    let blockStateClone = blockState.clone();
+    expect(JSON.stringify(blockState2)).toBe(JSON.stringify(blockState));
 
-    expect(blockStateClone.id).toBe(0);
-    blockStateClone.id = 1;
-    expect(blockState.id).toBe(0);
-
-    blockStateClone = BlockState.clone(blockState);
-
-    expect(blockStateClone.id).toBe(0);
-    blockStateClone.id = 1;
-    expect(blockState.id).toBe(0);
+    blockState2.tileType = TileType.Block;
+    expect(blockState.tileType).toBe(TileType.NotLeft);
   });
   test('Position', () => {
     const pos = new Position(1, 1);
@@ -73,46 +63,30 @@ describe('models/*.ts', () => {
     expect(getDirectionFromCode('KeyB')).toBe(undefined);
   });
   test('Move', () => {
-    const move = new Move('code', new Position(1, 1));
-    const move2 = move.clone();
-    const move3 = Move.clone(move);
+    const move: Move = {
+      blockId: 0,
+      direction: Direction.LEFT,
+    };
 
-    expect(move2.pos.x).toBe(1);
-    expect(move3.pos.x).toBe(1);
-    move2.pos.x = 2;
-    expect(move.pos.x).toBe(1);
-    move3.pos.x = 3;
-    expect(move.pos.x).toBe(1);
+    const move2 = cloneMove(move);
 
-    const move4 = new Move(
-      'code',
-      new Position(1, 1),
-      new BlockState(0, TileType.Block, 0, 0),
-      new Position(0, 0),
-    );
+    expect(JSON.stringify(move2)).toBe(JSON.stringify(move));
 
-    expect(move4.block?.id).toBe(0);
-    expect(move4.holePos?.x).toBe(0);
-
-    const move5 = Move.clone(move4);
-
-    if (move5.holePos) {
-      move5.holePos.x = 2;
-    }
-
-    expect(move4.holePos?.x).toBe(0);
+    move2.direction = Direction.UP;
+    expect(move.direction).toBe(Direction.LEFT);
   });
-  test('SquareState', () => {
-    const s = new SquareState();
-    const s2 = s.clone();
-    const s3 = SquareState.clone(s);
+  test('TileState', () => {
+    const tileState: TileState = {
+      text: [],
+      tileType: TileType.Default,
+    };
 
-    expect(s2.tileType).toBe(TileType.Default);
-    expect(s3.tileType).toBe(TileType.Default);
-    s2.tileType = TileType.Block;
-    expect(s.tileType).toBe(TileType.Default);
-    s3.tileType = TileType.Wall;
-    expect(s.tileType).toBe(TileType.Default);
+    const tileState2 = cloneTileState(tileState);
+
+    expect(JSON.stringify(tileState2)).toBe(JSON.stringify(tileState));
+
+    tileState2.tileType = TileType.Block;
+    expect(tileState.tileType).toBe(TileType.Default);
   });
   test('Control', () => {
     const control = new Control('id', () => { return; }, {} as JSX.Element, true);

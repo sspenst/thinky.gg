@@ -1,4 +1,4 @@
-import { isValidCheckpointState } from '@root/helpers/checkpointHelpers';
+import { isValidDirections } from '@root/helpers/checkpointHelpers';
 import { Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { NextApiRequestWithAuth } from '../lib/withAuth';
@@ -66,9 +66,9 @@ export function ValidArray(mustExist = true) {
   };
 }
 
-export function ValidCheckpointState() {
+export function ValidDirections() {
   return (value?: unknown) => {
-    return isValidCheckpointState(value);
+    return isValidDirections(value);
   };
 }
 

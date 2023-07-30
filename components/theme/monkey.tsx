@@ -3,12 +3,9 @@ import React from 'react';
 
 export interface ThemeIconProps {
   fontSize: number;
-  innerSize: number;
-  leastMoves: number;
   overstepped: boolean;
   size: number;
   text: JSX.Element;
-  tileType: TileType;
 }
 
 // TOOD figure out how to memoize these functions so they don't get recreated on every render

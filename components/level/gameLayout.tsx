@@ -1,4 +1,5 @@
 import { PageContext } from '@root/contexts/pageContext';
+import { GameState } from '@root/helpers/gameStateHelpers';
 import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import Control from '../../models/control';
@@ -6,11 +7,8 @@ import { EnrichedLevel } from '../../models/db/level';
 import Complete from '../complete';
 import FormattedUser from '../formattedUser';
 import CheckpointsModal from '../modal/checkpointsModal';
-import Block from './block';
 import Controls from './controls';
-import { GameState } from './game';
 import Grid from './grid';
-import Player from './player';
 import Sidebar from './sidebar';
 
 interface GameLayoutProps {
@@ -52,7 +50,7 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, hi
     <div className='flex flex-row h-full w-full' id='game-layout' style={{
       backgroundColor: 'var(--bg-color)',
     }}>
-      <div className='grow flex flex-col'>
+      <div className='grow flex flex-col max-w-full'>
         {!matchId && level.userId && !fullScreen &&
           <div className='flex items-center justify-center py-1 px-2 gap-1 block xl:hidden'>
             <h1
@@ -69,23 +67,7 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, hi
           </div>
         }
         <Grid
-          board={gameState.board}
-          generateMovables={(borderWidth, squareSize) => <>
-            {gameState.blocks.map(block => <Block
-              block={block}
-              borderWidth={borderWidth}
-              key={`block-${block.id}`}
-              onClick={() => onCellClick(block.pos.x, block.pos.y)}
-              size={squareSize}
-            />)}
-            <Player
-              borderWidth={borderWidth}
-              gameState={gameState}
-              leastMoves={level.leastMoves}
-              size={squareSize}
-              tileType={gameState.board[gameState.pos.y][gameState.pos.x].tileType}
-            />
-          </>}
+          gameState={gameState}
           id={level._id.toString()}
           leastMoves={level.leastMoves}
           onCellClick={(x, y, rightClick) => {

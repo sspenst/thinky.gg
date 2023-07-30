@@ -25,7 +25,7 @@ export async function getSubscription(req: NextApiRequestWithAuth): Promise<[num
     return [404, { error: 'No subscription found for this user.' }];
   }
 
-  let subscriptions;
+  let subscriptions: Stripe.Response<Stripe.ApiList<Stripe.Subscription>>;
 
   try {
     subscriptions = await stripe.subscriptions.list({ customer: userConfig.stripeCustomerId });
@@ -42,12 +42,12 @@ export async function getSubscription(req: NextApiRequestWithAuth): Promise<[num
   }
 
   return [200, {
-    subscriptionId: subscription.id,
-    plan: subscription.items?.data[0].plan,
-    current_period_start: subscription.current_period_start,
-    current_period_end: subscription.current_period_end,
     cancel_at_period_end: subscription.cancel_at_period_end,
+    current_period_end: subscription.current_period_end,
+    current_period_start: subscription.current_period_start,
+    plan: subscription.items.data[0].plan,
     status: subscription.status,
+    subscriptionId: subscription.id,
   }];
 }
 
@@ -60,7 +60,7 @@ export async function cancelSubscription(req: NextApiRequestWithAuth): Promise<[
     return [404, { error: 'No subscription found for this user.' }];
   }
 
-  let subscriptions;
+  let subscriptions: Stripe.Response<Stripe.ApiList<Stripe.Subscription>>;
 
   try {
     subscriptions = await stripe.subscriptions.list({ customer: userConfig.stripeCustomerId });

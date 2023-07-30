@@ -1,3 +1,4 @@
+import Direction from '@root/constants/direction';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -203,7 +204,7 @@ describe('matchCreateJoinAndPlay', () => {
             token: getTokenCookieValue(TestId.USER),
           },
           body: {
-            codes: ['ArrowRight'],
+            directions: [Direction.RIGHT],
             levelId: levels[0]._id,
             matchId: matchId, // Here we go
           },

@@ -86,7 +86,7 @@ export default function FormattedReview({ hideBorder, level, onDeleteClick, onEd
           {level && <EnrichedLevelLink level={level} />}
         </div>
         {review.score ? <Stars stars={review.score} /> : null}
-        <span style={{ whiteSpace: 'pre-wrap' }}>{review.text}</span>
+        <span className='whitespace-pre-wrap'>{review.text}</span>
         {(onEditClick || onDeleteClick) && <div className='mt-1'>
           {onEditClick && <button
             className='bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 mr-2 rounded-lg text-sm focus:bg-blue-800 disabled:opacity-25'

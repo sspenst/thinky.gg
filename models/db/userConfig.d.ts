@@ -17,7 +17,7 @@ interface UserConfig {
   theme: string;
   toursCompleted: TourType[];
   tutorialCompletedAt: number; // represents the timestamp they completed the tutorial
-  userId: Types.ObjectId & User;
+  userId: Types.ObjectId | User;
 }
 
 export default UserConfig;

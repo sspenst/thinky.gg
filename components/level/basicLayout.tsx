@@ -1,9 +1,9 @@
+import { GameState, TileState } from '@root/helpers/gameStateHelpers';
 import { Types } from 'mongoose';
 import React from 'react';
 import TileType from '../../constants/tileType';
 import Control from '../../models/control';
 import Level from '../../models/db/level';
-import SquareState from '../../models/squareState';
 import Controls from './controls';
 import Grid from './grid';
 
@@ -19,8 +19,12 @@ export default function BasicLayout({ cellClassName, controls, level, onClick }:
   const height = level.height;
   const width = level.width;
   const board = Array(height).fill(undefined).map(() =>
-    new Array(width).fill(undefined).map(() =>
-      new SquareState()));
+    new Array(width).fill(undefined).map(() => {
+      return {
+        text: [],
+        tileType: TileType.Default,
+      } as TileState;
+    }));
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
@@ -35,8 +39,8 @@ export default function BasicLayout({ cellClassName, controls, level, onClick }:
   return (
     <>
       <Grid
-        board={board}
         cellClassName={(x, y) => cellClassName ? cellClassName(y * (level.width + 1) + x) : undefined}
+        gameState={{ board: board } as GameState}
         id={(level._id ?? new Types.ObjectId()).toString()}
         leastMoves={level.leastMoves}
         onCellClick={(x, y, rightClick) => onClick ? onClick(y * (level.width + 1) + x, rightClick) : undefined}

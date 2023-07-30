@@ -24,18 +24,11 @@ export default class Position {
       this.y + pos.y,
     );
   }
-}
 
-export function getDirectionFromCode(code: string) {
-  if (code === 'ArrowLeft' || code === 'KeyA') {
-    return new Position(-1, 0);
-  } else if (code === 'ArrowUp' || code === 'KeyW') {
-    return new Position(0, -1);
-  } else if (code === 'ArrowRight' || code === 'KeyD') {
-    return new Position(1, 0);
-  } else if (code === 'ArrowDown' || code === 'KeyS') {
-    return new Position(0, 1);
-  } else {
-    return undefined;
+  sub(pos: Position) {
+    return new Position(
+      this.x - pos.x,
+      this.y - pos.y,
+    );
   }
 }

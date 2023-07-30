@@ -1,9 +1,10 @@
+import Direction, { directionToVector } from '@root/constants/direction';
 import TileType from '@root/constants/tileType';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import Level from '../models/db/level';
-import Position, { getDirectionFromCode } from '../models/position';
+import Position from '../models/position';
 
-export default function validateSolution(codes: string[], level: Level) {
+export default function validateSolution(directions: Direction[], level: Level) {
   const data = level.data.replace(/\n/g, '').split('') as TileType[];
   const endIndices = [];
   const posIndex = data.indexOf(TileType.Start);
@@ -14,20 +15,16 @@ export default function validateSolution(codes: string[], level: Level) {
     endIndices.push(endIndex);
   }
 
-  for (let i = 0; i < codes.length; i++) {
+  for (let i = 0; i < directions.length; i++) {
     // cannot continue moving if already on an exit
     if (data[pos.y * level.width + pos.x] === TileType.End) {
       return false;
     }
 
-    const direction = getDirectionFromCode(codes[i]);
-
-    if (!direction) {
-      return false;
-    }
+    const direction = directions[i];
 
     // validate and update position with direction
-    pos = pos.add(direction);
+    pos = pos.add(directionToVector(direction));
 
     if (pos.x < 0 || pos.x >= level.width || pos.y < 0 || pos.y >= level.height) {
       return false;
@@ -45,15 +42,15 @@ export default function validateSolution(codes: string[], level: Level) {
     // if a block is being moved
     if (TileTypeHelper.canMove(tileTypeAtPos)) {
       // validate block is allowed to move in this direction
-      if ((direction.equals(new Position(-1, 0)) && !TileTypeHelper.canMoveLeft(tileTypeAtPos)) ||
-          (direction.equals(new Position(0, -1)) && !TileTypeHelper.canMoveUp(tileTypeAtPos)) ||
-          (direction.equals(new Position(1, 0)) && !TileTypeHelper.canMoveRight(tileTypeAtPos)) ||
-          (direction.equals(new Position(0, 1)) && !TileTypeHelper.canMoveDown(tileTypeAtPos))) {
+      if ((direction === Direction.LEFT && !TileTypeHelper.canMoveLeft(tileTypeAtPos)) ||
+          (direction === Direction.UP && !TileTypeHelper.canMoveUp(tileTypeAtPos)) ||
+          (direction === Direction.RIGHT && !TileTypeHelper.canMoveRight(tileTypeAtPos)) ||
+          (direction === Direction.DOWN && !TileTypeHelper.canMoveDown(tileTypeAtPos))) {
         return false;
       }
 
       // validate and update block position with direction
-      const blockPos = pos.add(direction);
+      const blockPos = pos.add(directionToVector(direction));
 
       if (blockPos.x < 0 || blockPos.x >= level.width || blockPos.y < 0 || blockPos.y >= level.height) {
         return false;
