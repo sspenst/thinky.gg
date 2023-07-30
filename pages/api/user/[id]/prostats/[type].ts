@@ -293,6 +293,15 @@ async function getPlayLogForUsersCreatedLevels(userId: string) {
         'stats.isDeleted': { $ne: true },
       },
     },
+    // order by stats.ts desc
+    {
+      $sort: {
+        'stats.ts': -1,
+      }
+    },
+    {
+      $limit: 5,
+    },
     {
       $lookup: {
         from: 'users',
@@ -302,23 +311,30 @@ async function getPlayLogForUsersCreatedLevels(userId: string) {
       },
     },
     {
+      $unwind: '$user',
+    },
+    {
       $project: {
         _id: 0,
-        ts: '$stats.ts',
+        levelId: '$_id',
+        statTs: '$stats.ts',
         user: {
           ...USER_DEFAULT_PROJECTION
         },
       },
     },
-    // order by stats.ts desc
+    // also get the level
     {
-      $sort: {
-        'ts': -1,
+      $lookup: {
+        from: 'levels',
+        localField: 'levelId',
+        foreignField: '_id',
+        as: 'levelId',
       },
     },
     {
-      $limit: 25,
-    }
+      $unwind: '$levelId',
+    },
   ]);
 
   // cleanUser for each user

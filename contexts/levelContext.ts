@@ -32,6 +32,12 @@ export interface UserAndStatTs {
   user: User | null;
 }
 
+export interface UserLevelAndStatTs {
+  statTs: number;
+  levelId: EnrichedLevel;
+  user: User | null;
+}
+
 export interface ProStatsCommunityStepData {
   count: number;
   moves: number;
