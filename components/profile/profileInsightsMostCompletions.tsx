@@ -16,7 +16,7 @@ export default function ProfileInsightsMostCompletions({ user }: {user: User}) {
     return <span>Loading...</span>;
   }
 
-  return (<>
+  return (<div className='flex flex-col'>
     <h2 className='text-xl font-bold break-words max-w-full'>Most Completions of {user.name}&apos;s Levels</h2>
     <DataTable
       columns={[
@@ -49,5 +49,5 @@ export default function ProfileInsightsMostCompletions({ user }: {user: User}) {
       pagination={true}
       striped
     />
-  </>);
+  </div>);
 }
