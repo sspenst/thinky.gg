@@ -1,3 +1,4 @@
+import Direction from '@root/constants/direction';
 import TileType from '../constants/tileType';
 
 export default class TileTypeHelper {
@@ -65,6 +66,19 @@ export default class TileTypeHelper {
       tileType === TileType.NotUp ||
       tileType === TileType.NotRight ||
       tileType === TileType.UpDown;
+  }
+
+  static canMoveInDirection(tileType: TileType, direction: Direction) {
+    switch (direction) {
+    case Direction.LEFT:
+      return this.canMoveLeft(tileType);
+    case Direction.UP:
+      return this.canMoveUp(tileType);
+    case Direction.RIGHT:
+      return this.canMoveRight(tileType);
+    case Direction.DOWN:
+      return this.canMoveDown(tileType);
+    }
   }
 
   // used for the classic theme to know if a block type should have height

@@ -25,6 +25,7 @@ async function query({ userId, type, expectedError, expectedStatus, additionalAs
     type: ProStatsUserType,
     expectedError?: string,
     expectedStatus: number,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     additionalAssertions?: (response: any) => Promise<void>,
     }) {
   await testApiHandler({
@@ -78,7 +79,7 @@ describe('api/user/[id]/prostats/[type]', () => {
     await query({
       type: ProStatsUserType.ScoreHistory,
       expectedStatus: 200,
-      additionalAssertions: async (response: any) => {
+      additionalAssertions: async response => {
         expect(response[ProStatsUserType.DifficultyLevelsComparisons]).toBeUndefined();
         expect(response[ProStatsUserType.MostSolvesForUserLevels]).toBeUndefined();
         expect(response[ProStatsUserType.ScoreHistory]).toBeDefined();
@@ -96,7 +97,7 @@ describe('api/user/[id]/prostats/[type]', () => {
     await query({
       type: ProStatsUserType.MostSolvesForUserLevels,
       expectedStatus: 200,
-      additionalAssertions: async (response: any) => {
+      additionalAssertions: async response => {
         expect(response[ProStatsUserType.DifficultyLevelsComparisons]).toBeUndefined();
         expect(response[ProStatsUserType.ScoreHistory]).toBeUndefined();
         expect(response[ProStatsUserType.MostSolvesForUserLevels]).toBeDefined();
@@ -116,7 +117,7 @@ describe('api/user/[id]/prostats/[type]', () => {
       type: ProStatsUserType.DifficultyLevelsComparisons,
       expectedStatus: 401,
       expectedError: 'Not authorized',
-      additionalAssertions: async (response: any) => {
+      additionalAssertions: async response => {
         expect(response[ProStatsUserType.ScoreHistory]).toBeUndefined();
         expect(response[ProStatsUserType.MostSolvesForUserLevels]).toBeUndefined();
         expect(response[ProStatsUserType.DifficultyLevelsComparisons]).toBeUndefined();
@@ -134,7 +135,7 @@ describe('api/user/[id]/prostats/[type]', () => {
       userId: TestId.USER,
       type: ProStatsUserType.DifficultyLevelsComparisons,
       expectedStatus: 200,
-      additionalAssertions: async (response: any) => {
+      additionalAssertions: async response => {
         expect(response[ProStatsUserType.ScoreHistory]).toBeUndefined();
         expect(response[ProStatsUserType.MostSolvesForUserLevels]).toBeUndefined();
         expect(response[ProStatsUserType.DifficultyLevelsComparisons]).toBeDefined();

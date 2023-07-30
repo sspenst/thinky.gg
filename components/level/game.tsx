@@ -1,7 +1,8 @@
+import Direction, { getDirectionFromCode } from '@root/constants/direction';
 import { GameContext } from '@root/contexts/gameContext';
-import { CheckpointState, convertFromCheckpointState, convertToCheckpointState, isValidCheckpointState } from '@root/helpers/checkpointHelpers';
+import { directionsToGameState, isValidDirections } from '@root/helpers/checkpointHelpers';
+import { areEqualGameStates, cloneGameState, GameState, initGameState, makeMove, undo } from '@root/helpers/gameStateHelpers';
 import isPro from '@root/helpers/isPro';
-import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import useCheckpoints, { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import { Types } from 'mongoose';
 import Image from 'next/image';
@@ -14,36 +15,21 @@ import TileType from '../../constants/tileType';
 import { AppContext } from '../../contexts/appContext';
 import { LevelContext } from '../../contexts/levelContext';
 import { PageContext } from '../../contexts/pageContext';
-import BlockState from '../../models/blockState';
 import Control from '../../models/control';
 import Level, { EnrichedLevel } from '../../models/db/level';
-import Move from '../../models/move';
-import Position, { getDirectionFromCode } from '../../models/position';
-import SquareState from '../../models/squareState';
 import GameLayout from './gameLayout';
 
-export interface GameState {
-  actionCount: number;
-  blocks: BlockState[];
-  board: SquareState[][];
-  height: number;
-  moveCount: number;
-  moves: Move[];
-  pos: Position;
-  width: number;
-}
-
-interface SessionCheckpointState {
+interface SessionCheckpoint {
   _id: Types.ObjectId;
-  checkpointState: CheckpointState;
+  directions: Direction[];
 }
 
 interface GameProps {
   allowFreeUndo?: boolean;
+  disableCheckpoints?: boolean;
   disablePlayAttempts?: boolean;
   disableStats?: boolean;
-  enableLocalSessionRestore?: boolean;
-  disableCheckpoints?: boolean;
+  enableSessionCheckpoint?: boolean;
   extraControls?: Control[];
   hideSidebar?: boolean;
   level: Level;
@@ -55,68 +41,12 @@ interface GameProps {
   onStatsSuccess?: () => void;
 }
 
-function cloneGameState(gameState: GameState) {
-  const newGameState: GameState = {
-    actionCount: gameState.actionCount,
-    blocks: gameState.blocks.map(block => BlockState.clone(block)),
-    board: gameState.board.map(row => {
-      return row.map(square => SquareState.clone(square));
-    }),
-    height: gameState.height,
-    moveCount: gameState.moveCount,
-    moves: gameState.moves.map(move => Move.clone(move)),
-    pos: new Position(gameState.pos.x, gameState.pos.y),
-    width: gameState.width,
-  };
-
-  return newGameState;
-}
-
-function initGameState(levelData: string, actionCount = 0) {
-  const blocks: BlockState[] = [];
-  const data = levelData.split('\n');
-  const height = data.length;
-  const width = data[0].length;
-  const board = Array(height).fill(undefined).map(() =>
-    new Array(width).fill(undefined).map(() =>
-      new SquareState()));
-  let blockId = 0;
-  let pos = new Position(0, 0);
-
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const tileType = data[y][x] as TileType;
-
-      if (tileType === TileType.Wall ||
-        tileType === TileType.End ||
-        tileType === TileType.Hole) {
-        board[y][x].tileType = tileType;
-      } else if (tileType === TileType.Start) {
-        pos = new Position(x, y);
-      } else if (TileTypeHelper.canMove(tileType)) {
-        blocks.push(new BlockState(blockId++, tileType as TileType, x, y));
-      }
-    }
-  }
-
-  return {
-    actionCount: actionCount,
-    blocks: blocks,
-    board: board,
-    height: height,
-    moveCount: 0,
-    moves: [],
-    pos: pos,
-    width: width,
-  } as GameState;
-}
-
 export default function Game({
   allowFreeUndo,
   disableCheckpoints,
   disablePlayAttempts,
   disableStats,
-  enableLocalSessionRestore,
+  enableSessionCheckpoint,
   extraControls,
   hideSidebar,
   level,
@@ -127,73 +57,49 @@ export default function Game({
   onPrev,
   onStatsSuccess,
 }: GameProps) {
-  const [gameState, setGameState] = useState<GameState>(initGameState(level.data));
-  const [lastCodes, setLastCodes] = useState<string[]>([]);
   const levelContext = useContext(LevelContext);
-  const [localSessionRestored, setLocalSessionRestored] = useState(false);
-  const [madeMove, setMadeMove] = useState(false);
+  const { mutateUser, shouldAttemptAuth, user } = useContext(AppContext);
+  const { preventKeyDownEvent } = useContext(PageContext);
   const mutateLevel = levelContext?.mutateLevel;
   const mutateProStatsLevel = levelContext?.mutateProStatsLevel;
-  const { mutateUser, shouldAttemptAuth, user } = useContext(AppContext);
+
+  const [gameState, setGameState] = useState<GameState>(initGameState(level.data));
+
+  const lastDirections = useRef<Direction[]>([]);
+  // keeping track of the game state before restarting or loading a checkpoint
   const oldGameState = useRef<GameState>();
-  const { preventKeyDownEvent } = useContext(PageContext);
-  const [shiftKeyDown, setShiftKeyDown] = useState(false);
-  const [redoMoves, setRedoMoves] = useState<GameState[]>([]);
+  const sessionCheckpointRestored = useRef(false);
+  const shiftKeyDown = useRef(false);
 
   const { checkpoints, mutateCheckpoints } = useCheckpoints(level._id, disableCheckpoints || user === null || !isPro(user));
   const enrichedLevel = level as EnrichedLevel;
   const pro = isPro(user);
 
   useEffect(() => {
-    if (enableLocalSessionRestore && !localSessionRestored && typeof window.sessionStorage !== 'undefined') {
-      const sessionCheckpointStateStr = window.sessionStorage.getItem('sessionCheckpointState');
-
-      if (sessionCheckpointStateStr) {
-        const sessionCheckpointState = JSON.parse(sessionCheckpointStateStr) as SessionCheckpointState;
-
-        if (sessionCheckpointState._id === level._id && sessionCheckpointState.checkpointState) {
-          const newGameState = convertFromCheckpointState(sessionCheckpointState.checkpointState);
-
-          setGameState(prevGameState => {
-            // ensure the new game state is valid for this level layout
-            // (it can be different if a level is republished with different data,
-            // or if the session storage is manually altered)
-            const isEqual = prevGameState.board.length === newGameState.board.length &&
-              prevGameState.height === newGameState.height &&
-              prevGameState.width === newGameState.width &&
-              prevGameState.blocks.every((serverBlock, i) => {
-                const localBlock = newGameState.blocks[i];
-
-                return serverBlock.type === localBlock.type;
-              });
-
-            if (isEqual) {
-              setLocalSessionRestored(true);
-
-              return newGameState;
-            } else {
-              return prevGameState;
-            }
-          });
-        }
-      }
+    if (!enableSessionCheckpoint || sessionCheckpointRestored.current || typeof window.sessionStorage === 'undefined') {
+      return;
     }
-  }, [enableLocalSessionRestore, level._id, level.ts, localSessionRestored]);
 
-  useEffect(() => {
-    if (gameState.actionCount > 0) {
-      if (onMove) {
-        onMove(gameState);
-      }
+    const sessionCheckpointStr = window.sessionStorage.getItem('sessionCheckpoint');
 
-      if (enableLocalSessionRestore && typeof window.sessionStorage !== 'undefined') {
-        window.sessionStorage.setItem('sessionCheckpointState', JSON.stringify({
-          _id: level._id,
-          checkpointState: convertToCheckpointState(gameState),
-        } as SessionCheckpointState));
-      }
+    if (!sessionCheckpointStr) {
+      return;
     }
-  }, [enableLocalSessionRestore, gameState, level._id, level.ts, onMove]);
+
+    const sessionCheckpoint = JSON.parse(sessionCheckpointStr) as SessionCheckpoint;
+
+    if (sessionCheckpoint._id !== level._id || !isValidDirections(sessionCheckpoint.directions)) {
+      return;
+    }
+
+    const newGameState = directionsToGameState(sessionCheckpoint.directions, level.data);
+
+    if (!newGameState) {
+      return;
+    }
+
+    setGameState(newGameState);
+  }, [enableSessionCheckpoint, level._id, level.data]);
 
   const SECOND = 1000;
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -212,25 +118,13 @@ export default function Game({
     }
   }), []);
 
-  useEffect(() => {
-    if (!madeMove) {
-      return;
-    }
-
-    if (disablePlayAttempts || gameState.actionCount === 0) {
-      return;
-    }
-
-    fetchPlayAttempt();
-  }, [disablePlayAttempts, fetchPlayAttempt, gameState.actionCount, madeMove]);
-
-  const trackStats = useCallback((codes: string[], levelId: string, maxRetries: number) => {
+  const trackStats = useCallback((directions: Direction[], levelId: string, maxRetries: number) => {
     if (disableStats) {
       return;
     }
 
-    // if codes array is identical to lastCodes array, don't PUT stats
-    if (codes.length === lastCodes.length && codes.every((code, index) => code === lastCodes[index])) {
+    // if directions array is identical to lastDirections array, don't PUT stats
+    if (directions.length === lastDirections.current.length && directions.every((direction, index) => direction === lastDirections.current[index])) {
       return;
     }
 
@@ -239,7 +133,7 @@ export default function Game({
     fetch('/api/stats', {
       method: 'PUT',
       body: JSON.stringify({
-        codes: codes,
+        directions: directions,
         levelId: levelId,
         matchId: matchId,
       }),
@@ -263,7 +157,7 @@ export default function Game({
           onStatsSuccess();
         }
 
-        setLastCodes(codes);
+        lastDirections.current = directions;
       } else if (res.status === 500) {
         throw res.text();
       } else {
@@ -276,25 +170,23 @@ export default function Game({
     }).catch(async err => {
       const error = JSON.parse(await err)?.error;
 
-      console.error(`Error updating stats: { codes: ${codes}, levelId: ${levelId} }`, error);
+      console.error(`Error updating stats: { directions: ${directions}, levelId: ${levelId} }`, error);
       toast.dismiss();
       toast.error(`Error updating stats: ${error}`, { duration: 3000 });
 
       if (maxRetries > 0) {
-        trackStats(codes, levelId, maxRetries - 1);
+        trackStats(directions, levelId, maxRetries - 1);
       }
     }).finally(() => {
       NProgress.done();
     });
-  }, [disableStats, lastCodes, matchId, mutateLevel, mutateProStatsLevel, mutateUser, onStatsSuccess]);
+  }, [disableStats, matchId, mutateLevel, mutateProStatsLevel, mutateUser, onStatsSuccess]);
 
-  const saveCheckpoint = useCallback((slot: number) => {
-    if (slot !== BEST_CHECKPOINT_INDEX) {
+  const saveCheckpoint = useCallback((index: number) => {
+    if (index !== BEST_CHECKPOINT_INDEX) {
       toast.dismiss();
-      toast.loading(`Saving checkpoint ${slot}...`);
+      toast.loading(`Saving checkpoint ${index}...`);
     }
-
-    const checkpointState = convertToCheckpointState(gameState);
 
     fetch('/api/level/' + level._id + '/checkpoints', {
       method: 'POST',
@@ -302,14 +194,14 @@ export default function Game({
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        checkpointIndex: slot,
-        checkpointValue: checkpointState,
+        index: index,
+        directions: gameState.moves.map(move => move.direction),
       }),
     }).then(async res => {
       if (res.status === 200) {
-        if (slot !== BEST_CHECKPOINT_INDEX) {
+        if (index !== BEST_CHECKPOINT_INDEX) {
           toast.dismiss();
-          toast.success(`Saved checkpoint ${slot}`);
+          toast.success(`Saved checkpoint ${index}`);
         }
 
         mutateCheckpoints();
@@ -319,26 +211,26 @@ export default function Game({
     }).catch(async err => {
       console.error(err);
 
-      if (slot !== BEST_CHECKPOINT_INDEX) {
+      if (index !== BEST_CHECKPOINT_INDEX) {
         toast.dismiss();
         toast.error(JSON.parse(await err)?.error || 'Error saving checkpoint');
       }
     });
   }, [gameState, level._id, mutateCheckpoints]);
 
-  const deleteCheckpoint = useCallback((slot: number) => {
-    if (slot !== BEST_CHECKPOINT_INDEX) {
+  const deleteCheckpoint = useCallback((index: number) => {
+    if (index !== BEST_CHECKPOINT_INDEX) {
       toast.dismiss();
-      toast.loading(`Deleting checkpoint ${slot}...`);
+      toast.loading(`Deleting checkpoint ${index}...`);
     }
 
-    fetch(`/api/level/${level._id}/checkpoints?checkpointIndex=${slot}`, {
+    fetch(`/api/level/${level._id}/checkpoints?index=${index}`, {
       method: 'DELETE',
     }).then(async res => {
       if (res.status === 200) {
-        if (slot !== BEST_CHECKPOINT_INDEX) {
+        if (index !== BEST_CHECKPOINT_INDEX) {
           toast.dismiss();
-          toast.success(`Deleted checkpoint ${slot}`);
+          toast.success(`Deleted checkpoint ${index}`);
         }
 
         mutateCheckpoints();
@@ -352,7 +244,7 @@ export default function Game({
     });
   }, [level._id, mutateCheckpoints]);
 
-  const loadCheckpoint = useCallback((slot: number) => {
+  const loadCheckpoint = useCallback((index: number) => {
     if (!checkpoints) {
       toast.dismiss();
       toast.error('No checkpoints to restore');
@@ -360,49 +252,46 @@ export default function Game({
       return;
     }
 
-    const checkpoint = checkpoints[slot];
+    const checkpoint = checkpoints[index];
 
     if (!checkpoint) {
       return;
     }
 
-    if (!isValidCheckpointState(checkpoint)) {
+    if (!isValidDirections(checkpoint)) {
       toast.dismiss();
       toast.error('Corrupted checkpoint');
 
       return;
     }
 
-    const newGameState = convertFromCheckpointState(checkpoint);
+    const checkpointGameState = directionsToGameState(checkpoint, level.data);
 
-    // check if the checkpoint is the same as the current game state
-    if (JSON.stringify(newGameState) === JSON.stringify(gameState) && JSON.stringify(gameState) !== JSON.stringify(oldGameState.current)) {
+    if (!checkpointGameState) {
       toast.dismiss();
-      toast.error('Undoing checkpoint restore', { duration: 1500, icon: '👍' });
-      oldGameState.current && setGameState(oldGameState.current);
-    } else {
-      oldGameState.current = gameState;
-      // TODO: https://github.com/sspenst/pathology/issues/910
-      // should reapply the checkpoint rather than just cloning the state
-      // so that in the editor checkpoints can be properly loaded even when the level content changes
-      setGameState(newGameState);
-      setMadeMove(true);
-      const keepOldStateRef = cloneGameState(oldGameState.current);
+      toast.error('Invalid checkpoint');
+
+      return;
+    }
+
+    if (!areEqualGameStates(checkpointGameState, gameState)) {
+      // if the checkpoint is different than the game state, load it normally
+      oldGameState.current = cloneGameState(gameState);
+      setGameState(checkpointGameState);
 
       toast.dismiss();
-
       toast.success(
         <div>
-          {slot === BEST_CHECKPOINT_INDEX ?
+          {index === BEST_CHECKPOINT_INDEX ?
             'Restored your best solve. Press B again to '
             :
-            `Restored checkpoint ${slot}. Press ${slot} again to `
+            `Restored checkpoint ${index}. Press ${index} again to `
           }
           <span
             className='text-blue-400'
             style={{ cursor: 'pointer' }}
             onClick={() => {
-              setGameState(keepOldStateRef);
+              loadCheckpoint(index);
               toast.dismiss();
             }}
           >
@@ -411,10 +300,15 @@ export default function Game({
         </div>,
         { duration: 3000 },
       );
-    }
+    } else if (oldGameState.current) {
+      // otherwise restore the old game state if it exists
+      setGameState(cloneGameState(oldGameState.current));
+      oldGameState.current = undefined;
 
-    return;
-  }, [checkpoints, gameState]);
+      toast.dismiss();
+      toast.error('Undoing checkpoint restore', { duration: 1500, icon: '👍' });
+    }
+  }, [checkpoints, gameState, level.data]);
 
   const handleKeyDown = useCallback((code: string) => {
     if (code === 'KeyN') {
@@ -435,7 +329,7 @@ export default function Game({
 
     // check if code is the shift key
     if (code.startsWith('Shift')) {
-      setShiftKeyDown(true);
+      shiftKeyDown.current = true;
 
       return;
     }
@@ -460,12 +354,12 @@ export default function Game({
       }
 
       if (code.startsWith('Digit')) {
-        const slot = parseInt(code.replace('Digit', ''));
+        const index = parseInt(code.replace('Digit', ''));
 
-        if (shiftKeyDown) {
-          saveCheckpoint(slot);
+        if (shiftKeyDown.current) {
+          saveCheckpoint(index);
         } else {
-          loadCheckpoint(slot);
+          loadCheckpoint(index);
         }
       } else {
         loadCheckpoint(BEST_CHECKPOINT_INDEX);
@@ -474,270 +368,97 @@ export default function Game({
       return;
     }
 
-    // boundary checks
-    function isPositionValid(
-      height: number,
-      pos: Position,
-      width: number,
-    ) {
-      return pos.x >= 0 && pos.x < width && pos.y >= 0 && pos.y < height;
-    }
-
-    // can the player move to this position
-    function isPlayerPositionValid(
-      board: SquareState[][],
-      height: number,
-      pos: Position,
-      width: number,
-    ) {
-      return isPositionValid(height, pos, width) && board[pos.y][pos.x].tileType !== TileType.Wall &&
-        board[pos.y][pos.x].tileType !== TileType.Hole;
-    }
-
-    // can a block move to this position
-    function isBlockPositionValid(
-      board: SquareState[][],
-      blocks: BlockState[],
-      height: number,
-      pos: Position,
-      width: number,
-    ) {
-      return isPositionValid(height, pos, width) && board[pos.y][pos.x].tileType !== TileType.Wall &&
-        !isBlockAtPosition(blocks, pos);
-    }
-
-    function getBlockById(blocks: BlockState[], id: number) {
-      for (let i = 0; i < blocks.length; i++) {
-        if (blocks[i].id === id) {
-          return blocks[i];
-        }
-      }
-
-      return undefined;
-    }
-
-    function getBlockIndexAtPosition(blocks: BlockState[], pos: Position) {
-      for (let i = 0; i < blocks.length; i++) {
-        // ignore blocks in hole
-        if (blocks[i].inHole) {
-          continue;
-        }
-
-        if (blocks[i].pos.equals(pos)) {
-          return i;
-        }
-      }
-
-      return -1;
-    }
-
-    function isBlockAtPosition(blocks: BlockState[], pos: Position) {
-      return getBlockIndexAtPosition(blocks, pos) !== -1;
-    }
-
     setGameState(prevGameState => {
       function getNewGameState() {
         // restart
         if (code === 'KeyR') {
-          if (prevGameState.moveCount > 0) {
+          if (prevGameState.moves.length > 0) {
             oldGameState.current = cloneGameState(prevGameState);
           }
 
-          return initGameState(level.data, prevGameState.actionCount + 1);
+          return initGameState(level.data);
         }
 
-        setMadeMove(true);
-        // treat prevGameState as immutable
-        const blocks = prevGameState.blocks.map(block => block.clone());
-        const board = prevGameState.board.map(row => {
-          return row.map(square => square.clone());
-        });
-        const moves = prevGameState.moves.map(move => move.clone());
-
-        // undo
-        function undo() {
-          const prevMove = moves.pop();
-
-          // nothing to undo
-          if (prevMove === undefined) {
-            let returnState = undefined;
-
-            if (oldGameState.current) {
-              returnState = cloneGameState(oldGameState.current);
-              oldGameState.current = undefined;
-            }
-
-            return returnState || prevGameState;
-          }
-
-          redoMoves.push(cloneGameState(prevGameState));
-
-          // remove text only from the current position for smoother animations
-          const text = board[prevGameState.pos.y][prevGameState.pos.x].text;
-
-          // the text may not exist since it is only added when moving away from a position
-          if (text[text.length - 1] === prevGameState.moveCount) {
-            text.pop();
-          }
-
-          if (prevMove.block) {
-            const block = getBlockById(blocks, prevMove.block.id);
-
-            if (block) {
-              block.pos = prevMove.block.pos.clone();
-
-              if (block.inHole) {
-                block.inHole = false;
-
-                if (prevMove.holePos !== undefined) {
-                  board[prevMove.holePos.y][prevMove.holePos.x].tileType = TileType.Hole;
-                }
-              }
-            }
-          }
-
-          const newGameState: GameState = {
-            actionCount: prevGameState.actionCount + 1,
-            blocks: blocks,
-            board: board,
-            height: prevGameState.height,
-            moveCount: prevGameState.moveCount - 1,
-            moves: moves,
-            pos: prevMove.pos.clone(),
-            width: prevGameState.width,
-          };
-
-          return newGameState;
-        }
-
-        function makeMove(direction: Position) {
-          // if the position didn't change or the new position is invalid
-          if (!isPlayerPositionValid(board, prevGameState.height, pos, prevGameState.width)) {
-            return prevGameState;
-          }
-
-          const blockIndex = getBlockIndexAtPosition(blocks, pos);
-          const move = new Move(code, prevGameState.pos);
-
-          // if there is a block at the new position
-          if (blockIndex !== -1) {
-            const block = blocks[blockIndex];
-            const blockPos = block.pos.add(direction);
-
-            // if the block is not allowed to move this direction or the new position is invalid
-            if (!block.canMoveTo(blockPos) ||
-              !isBlockPositionValid(board, blocks, prevGameState.height, blockPos, prevGameState.width)) {
-              return prevGameState;
-            }
-
-            move.block = block.clone();
-            block.pos = blockPos;
-
-            // remove block if it is pushed onto a hole
-            if (board[blockPos.y][blockPos.x].tileType === TileType.Hole) {
-              block.inHole = true;
-              board[blockPos.y][blockPos.x].tileType = TileType.Default;
-              move.holePos = blockPos.clone();
-            }
-          }
-
-          const text = board[prevGameState.pos.y][prevGameState.pos.x].text;
-
-          // save text if it doesn't already exist (may exist due to undo)
-          if (text[text.length - 1] !== prevGameState.moveCount) {
-            text.push(prevGameState.moveCount);
-          }
-
-          // save history from this move
-          moves.push(move);
-
-          const moveCount = prevGameState.moveCount + 1;
-
-          if (board[pos.y][pos.x].tileType === TileType.End) {
-            trackStats(moves.map(move => move.code), level._id.toString(), 3);
-          }
-
-          const newGameState: GameState = {
-            actionCount: prevGameState.actionCount + 1,
-            blocks: blocks,
-            board: board,
-            height: prevGameState.height,
-            moveCount: moveCount,
-            moves: moves,
-            pos: pos,
-            width: prevGameState.width,
-          };
-
-          return newGameState;
-        }
+        const newGameState = cloneGameState(prevGameState);
 
         const undoKey = code === 'Backspace' || code === 'KeyU' || code == 'KeyZ';
 
-        if (undoKey && !shiftKeyDown) {
-          return undo();
-        }
+        if (undoKey && !shiftKeyDown.current) {
+          // nothing to undo, restore the old game state if it exists
+          if (newGameState.moves.length === 0) {
+            if (!oldGameState.current) {
+              return prevGameState;
+            }
 
-        // redo
-        if (undoKey || code === 'KeyY') {
-          if (!pro) {
-            toast.dismiss();
-            toast.error(
-              <div>Upgrade to <Link href='/settings/proaccount' className='text-blue-500'>Pathology Pro</Link> to unlock redo!</div>,
-              {
-                duration: 5000,
-                icon: <Image alt='pro' src='/pro.svg' width='16' height='16' />,
-              }
-            );
+            const clonedOldGameState = cloneGameState(oldGameState.current);
 
+            oldGameState.current = undefined;
+
+            return clonedOldGameState;
+          }
+
+          if (!undo(newGameState)) {
             return prevGameState;
           }
 
-          return redoMoves.pop() ?? prevGameState;
+          return newGameState;
         }
 
-        const direction = getDirectionFromCode(code);
+        const redo = undoKey || code === 'KeyY';
+
+        if (redo && !pro) {
+          toast.dismiss();
+          toast.error(
+            <div>Upgrade to <Link href='/settings/proaccount' className='text-blue-500'>Pathology Pro</Link> to unlock redo!</div>,
+            {
+              duration: 5000,
+              icon: <Image alt='pro' src='/pro.svg' width='16' height='16' />,
+            }
+          );
+
+          return prevGameState;
+        }
+
+        const direction = redo ? newGameState.redoStack[newGameState.redoStack.length - 1] : getDirectionFromCode(code);
 
         // return if no valid direction was pressed
         if (!direction) {
           return prevGameState;
         }
 
-        // calculate the target tile to move to
-        const pos = prevGameState.pos.add(direction);
-
-        // before making a move, check if undo is a better choice
-        function checkForFreeUndo() {
-          if (moves.length === 0) {
-            return false;
-          }
-
-          // logic for valid free undo:
-          //  if the board state has not changed and you're backtracking
-          const lastMove = moves[moves.length - 1];
-
-          return pos.equals(lastMove.pos) && !lastMove.block;
-        }
-
-        if (allowFreeUndo && checkForFreeUndo()) {
-          return undo();
-        }
-
-        // lock movement once you reach the finish
-        if (prevGameState.board[prevGameState.pos.y][prevGameState.pos.x].tileType === TileType.End) {
+        if (!makeMove(newGameState, direction, allowFreeUndo)) {
           return prevGameState;
         }
 
-        setRedoMoves([]);
+        // track stats upon reaching an exit
+        if (newGameState.board[newGameState.pos.y][newGameState.pos.x].tileType === TileType.End) {
+          trackStats(newGameState.moves.map(move => move.direction), level._id.toString(), 3);
+        }
 
-        // if not, just make the move normally
-        return makeMove(direction);
+        return newGameState;
+      }
+
+      if (!disablePlayAttempts) {
+        fetchPlayAttempt();
       }
 
       const newGameState = getNewGameState();
 
+      // keep track of gameState in session storage
+      if (enableSessionCheckpoint && typeof window.sessionStorage !== 'undefined') {
+        window.sessionStorage.setItem('sessionCheckpoint', JSON.stringify({
+          _id: level._id,
+          directions: newGameState.moves.map(move => move.direction),
+        } as SessionCheckpoint));
+      }
+
+      if (onMove) {
+        onMove(newGameState);
+      }
+
       return newGameState;
     });
-  }, [allowFreeUndo, disableCheckpoints, level._id, level.data, loadCheckpoint, onNext, onPrev, pro, redoMoves, saveCheckpoint, shiftKeyDown, trackStats]);
+  }, [allowFreeUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, level._id, level.data, loadCheckpoint, onMove, onNext, onPrev, pro, saveCheckpoint, trackStats]);
 
   useEffect(() => {
     const atEnd = gameState.board[gameState.pos.y][gameState.pos.x].tileType === TileType.End;
@@ -753,9 +474,17 @@ export default function Game({
     }
 
     const atEnd = gameState.board[gameState.pos.y][gameState.pos.x].tileType === TileType.End;
-    const newBest = !checkpoints[BEST_CHECKPOINT_INDEX] || gameState.moves.length < checkpoints[BEST_CHECKPOINT_INDEX].moveCount;
+    const bestCheckpoint = checkpoints[BEST_CHECKPOINT_INDEX];
 
-    if (atEnd && newBest) {
+    function newBest() {
+      if (!bestCheckpoint) {
+        return true;
+      }
+
+      return gameState.moves.length < bestCheckpoint.length;
+    }
+
+    if (atEnd && newBest()) {
       saveCheckpoint(BEST_CHECKPOINT_INDEX);
     }
   }, [checkpoints, disableCheckpoints, enrichedLevel.userMoves, gameState, pro, saveCheckpoint]);
@@ -785,12 +514,12 @@ export default function Game({
     const code = event.code;
 
     if (code.startsWith('Shift')) {
-      setShiftKeyDown(false);
+      shiftKeyDown.current = false;
     }
   }, []);
 
   const handleBlurEvent = useCallback(() => {
-    setShiftKeyDown(false);
+    shiftKeyDown.current = false;
   }, []);
 
   const handleTouchStartEvent = useCallback((event: TouchEvent) => {
@@ -847,10 +576,10 @@ export default function Game({
 
       const maxHeight = containerDiv?.offsetHeight || 0;
       const maxWidth = containerDiv?.offsetWidth || 0;
-      const squareSize = gameState.width / gameState.height > maxWidth / maxHeight ?
-        Math.floor(maxWidth / gameState.width) : Math.floor(maxHeight / gameState.height);
+      const tileSize = level.width / level.height > maxWidth / maxHeight ?
+        Math.floor(maxWidth / level.width) : Math.floor(maxHeight / level.height);
 
-      const squareMargin = Math.round(squareSize / 40) || 1;
+      const tileMargin = Math.round(tileSize / 40) || 1;
 
       // drag distance
       const dragDistance = Math.sqrt(dx * dx + dy * dy);
@@ -864,7 +593,7 @@ export default function Game({
         return;
       }
 
-      if (Math.abs(dx) < squareSize + squareMargin && Math.abs(dy) < squareSize + squareMargin) {
+      if (Math.abs(dx) < tileSize + tileMargin && Math.abs(dy) < tileSize + tileMargin) {
         return;
       }
 
@@ -878,7 +607,7 @@ export default function Game({
       // setTouchXDown(undefined);
       // setTouchYDown(undefined);
     }
-  }, [gameState.height, gameState.width, level._id, moveByDXDY, preventKeyDownEvent]);
+  }, [level._id, level.height, level.width, moveByDXDY, preventKeyDownEvent]);
 
   const handleTouchEndEvent = useCallback((event: TouchEvent) => {
     if (!validTouchStart.current || preventKeyDownEvent) {
@@ -954,7 +683,7 @@ export default function Game({
           <Image alt='pro' src='/pro.svg' width='16' height='16' />
           {'Redo'}
         </span>,
-        redoMoves.length === 0,
+        gameState.redoStack.length === 0,
         false,
         () => {
           handleKeyDown('KeyY');
@@ -973,7 +702,7 @@ export default function Game({
     } else {
       setControls(_controls);
     }
-  }, [extraControls, gameState.moveCount, handleKeyDown, onNext, onPrev, pro, redoMoves.length, setControls]);
+  }, [extraControls, gameState.redoStack.length, handleKeyDown, onNext, onPrev, pro, setControls]);
 
   function onCellClick(x: number, y: number) {
     if (isSwiping.current) {
@@ -993,6 +722,7 @@ export default function Game({
     <GameContext.Provider value={{
       checkpoints: checkpoints,
       deleteCheckpoint: deleteCheckpoint,
+      level: level,
       loadCheckpoint: loadCheckpoint,
       saveCheckpoint: saveCheckpoint,
     }}>

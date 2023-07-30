@@ -1,7 +1,8 @@
+import Direction from '@root/constants/direction';
 import TileType, { TileTypeDefaultVisited } from '@root/constants/tileType';
 import { AppContext } from '@root/contexts/appContext';
 import { GameContext } from '@root/contexts/gameContext';
-import { CheckpointState } from '@root/helpers/checkpointHelpers';
+import { directionsToGameState } from '@root/helpers/checkpointHelpers';
 import getPngDataClient from '@root/helpers/getPngDataClient';
 import isPro from '@root/helpers/isPro';
 import { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
@@ -31,14 +32,14 @@ function CheckpointButton({ onClick, shortcut, text }: CheckpointButtonProps) {
 }
 
 interface CheckpointModalItemProps {
-  checkpoint: CheckpointState | null;
+  checkpoint: Direction[] | null;
   closeModal: () => void;
-  slot: number;
+  index: number;
 }
 
-function CheckpointModalItem({ checkpoint, closeModal, slot }: CheckpointModalItemProps) {
+function CheckpointModalItem({ checkpoint, closeModal, index }: CheckpointModalItemProps) {
   const [backgroundImage, setBackgroundImage] = useState<string>();
-  const { deleteCheckpoint, loadCheckpoint, saveCheckpoint } = useContext(GameContext);
+  const { deleteCheckpoint, level, loadCheckpoint, saveCheckpoint } = useContext(GameContext);
 
   useEffect(() => {
     if (!checkpoint) {
@@ -47,40 +48,44 @@ function CheckpointModalItem({ checkpoint, closeModal, slot }: CheckpointModalIt
       return;
     }
 
-    const data = checkpoint.board.map(row => row.map(s => {
-      // show darker green for visited squares
-      if (s.levelDataType === TileType.Default && s.text.length > 0) {
-        return TileTypeDefaultVisited;
-      } else {
-        return s.levelDataType;
+    const gameState = directionsToGameState(checkpoint, level.data);
+
+    if (!gameState) {
+      setBackgroundImage(undefined);
+
+      return;
+    }
+
+    const data = gameState.board.map(row => row.map(tileState => {
+      if (tileState.block) {
+        return tileState.block.tileType;
       }
+
+      // show darker green for visited tiles
+      if (tileState.tileType === TileType.Default && tileState.text.length > 0) {
+        return TileTypeDefaultVisited;
+      }
+
+      return tileState.tileType;
     }));
 
     // hide player if the level is finished
-    if (data[checkpoint.pos.y][checkpoint.pos.x] !== TileType.End) {
-      data[checkpoint.pos.y][checkpoint.pos.x] = TileType.Start;
-    }
-
-    for (const block of checkpoint.blocks) {
-      if (block.inHole) {
-        continue;
-      }
-
-      data[block.pos.y][block.pos.x] = block.type;
+    if (data[gameState.pos.y][gameState.pos.x] !== TileType.End) {
+      data[gameState.pos.y][gameState.pos.x] = TileType.Start;
     }
 
     const joinedData = data.map(row => row.join('')).join('\n');
 
     setBackgroundImage(getPngDataClient(joinedData));
-  }, [checkpoint]);
+  }, [checkpoint, level.data]);
 
   return (
     <div className='flex flex-col gap-2 w-80 max-w-full items-center'>
       <div>
-        <span className='font-medium'>{slot === BEST_CHECKPOINT_INDEX ? 'Your Best' : `Slot ${slot}`}</span>
+        <span className='font-medium'>{index === BEST_CHECKPOINT_INDEX ? 'Your Best' : `Slot ${index}`}</span>
         {checkpoint &&
           <span className='text-sm italic'>
-            {` - ${checkpoint.moveCount} step${checkpoint.moveCount === 1 ? '' : 's'}`}
+            {` - ${checkpoint.length} step${checkpoint.length === 1 ? '' : 's'}`}
           </span>
         }
       </div>
@@ -96,23 +101,23 @@ function CheckpointModalItem({ checkpoint, closeModal, slot }: CheckpointModalIt
         {checkpoint &&
           <CheckpointButton
             onClick={() => {
-              loadCheckpoint(slot);
+              loadCheckpoint(index);
               closeModal();
             }}
-            shortcut={slot === BEST_CHECKPOINT_INDEX ? 'B' : String(slot)}
+            shortcut={index === BEST_CHECKPOINT_INDEX ? 'B' : String(index)}
             text='Load'
           />
         }
-        {slot !== BEST_CHECKPOINT_INDEX &&
+        {index !== BEST_CHECKPOINT_INDEX &&
           <CheckpointButton
-            onClick={() => saveCheckpoint(slot)}
-            shortcut={`SHIFT ${String(slot)}`}
+            onClick={() => saveCheckpoint(index)}
+            shortcut={`SHIFT ${String(index)}`}
             text='Save'
           />
         }
-        {slot !== BEST_CHECKPOINT_INDEX && checkpoint &&
+        {index !== BEST_CHECKPOINT_INDEX && checkpoint &&
           <CheckpointButton
-            onClick={() => deleteCheckpoint(slot)}
+            onClick={() => deleteCheckpoint(index)}
             text='Delete'
           />
         }
@@ -138,14 +143,14 @@ function ProCheckpointsModal({ closeModal }: ProCheckpointsModalProps) {
         checkpoint={checkpoints[BEST_CHECKPOINT_INDEX]}
         closeModal={closeModal}
         key={'checkpoint-best'}
-        slot={BEST_CHECKPOINT_INDEX}
+        index={BEST_CHECKPOINT_INDEX}
       />
       {checkpoints?.filter((_, i) => i < BEST_CHECKPOINT_INDEX).map((checkpoint, i) => (
         <CheckpointModalItem
           checkpoint={checkpoint}
           closeModal={closeModal}
           key={'checkpoint-' + i}
-          slot={i}
+          index={i}
         />
       ))}
     </div>

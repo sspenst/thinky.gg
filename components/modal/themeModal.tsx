@@ -67,11 +67,11 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
           const icon = getIconFromTheme(Theme[themeText], TileType.Start);
 
           return (
-            <div key={`theme-${Theme[themeText]}-parent-div`} className='flex flex-row'>
+            <div key={`${Theme[themeText]}-parent-div`} className='flex flex-row'>
               <div>
                 <RadioButton
                   currentValue={theme}
-                  key={`theme-${Theme[themeText]}`}
+                  key={`${Theme[themeText]}`}
                   name={'theme'}
                   onChange={onChange}
                   text={themeText}
