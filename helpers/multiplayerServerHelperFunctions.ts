@@ -1,13 +1,15 @@
 import User from '@root/models/db/user';
 import { MultiplayerMatchModel } from '@root/models/mongoose';
 import { MultiplayerMatchState } from '@root/models/MultiplayerEnums';
+import { Types } from 'mongoose';
 
-export async function getMultiplayerRecords(user: User) {
+export async function getMultiplayerRecords(user: Types.ObjectId, vs?: Types.ObjectId) {
   const agg = await MultiplayerMatchModel.aggregate([
     {
       // first match all where players contains user and rated is true
       $match: {
-        players: user._id,
+        // check if vs is set, if so check if players contains both user and vs, otherwise just check if players contains user
+        players: vs ? { $all: [user._id, vs] } : user._id,
         rated: true,
         state: MultiplayerMatchState.FINISHED
       }
