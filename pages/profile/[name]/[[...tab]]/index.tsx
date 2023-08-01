@@ -1,5 +1,11 @@
 import FormattedDate from '@root/components/formattedDate';
+import ProfileMultiplayer from '@root/components/profile/proifleMultiplayer';
 import RoleIcons from '@root/components/roleIcons';
+import getUsers from '@root/helpers/getUsersFromIds';
+import { getMultiplayerRecords } from '@root/helpers/multiplayerServerHelperFunctions';
+import MultiplayerMatch from '@root/models/db/multiplayerMatch';
+import { MultiplayerMatchState } from '@root/models/MultiplayerEnums';
+import { doMatchQuery } from '@root/pages/api/match/search';
 import classNames from 'classnames';
 import { debounce } from 'debounce';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
@@ -40,7 +46,7 @@ import Collection, { EnrichedCollection } from '../../../../models/db/collection
 import { EnrichedLevel } from '../../../../models/db/level';
 import Review from '../../../../models/db/review';
 import User from '../../../../models/db/user';
-import { AchievementModel, CollectionModel, GraphModel, LevelModel, StatModel, UserModel } from '../../../../models/mongoose';
+import { AchievementModel, CollectionModel, GraphModel, LevelModel, MultiplayerMatchModel, StatModel, UserModel } from '../../../../models/mongoose';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../../models/schemas/levelSchema';
 import SelectOption from '../../../../models/selectOption';
 import SelectOptionStats from '../../../../models/selectOptionStats';
@@ -54,6 +60,7 @@ export const enum ProfileTab {
   Insights = 'insights',
   Profile = '',
   Levels = 'levels',
+  Multiplayer = 'multiplayer',
   ReviewsWritten = 'reviews-written',
   ReviewsReceived = 'reviews-received',
 }
@@ -148,13 +155,16 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   await dbConnect();
 
-  const user = await UserModel.findOne({ name: name }, '+bio', { lean: true });
+  //const user = await UserModel.findOne({ name: name }, '+bio', { lean: true });
+  const users = await getUsers({ name: name }, { bio: 1, ts: 1, calc_levels_created_count: 1, calc_records: 1, score: 1 });
 
-  if (!user) {
+  if (!users || users.length === 0) {
     return {
       notFound: true
     };
   }
+
+  const user = users[0];
 
   cleanUser(user);
 
@@ -167,6 +177,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     followData,
     levelsCompletedByDifficulty,
     levelsCount,
+    multiplayerCount,
+    multiplayerRecords,
     reviewsReceived,
     reviewsWritten,
     reviewsReceivedCount,
@@ -178,6 +190,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     getFollowData(user._id.toString(), reqUser),
     profileTab === ProfileTab.Profile ? getCompletionByDifficultyTable(user) : {},
     LevelModel.countDocuments({ isDeleted: { $ne: true }, isDraft: false, userId: userId }),
+    MultiplayerMatchModel.countDocuments({ players: userId, state: MultiplayerMatchState.FINISHED }),
+    profileTab === ProfileTab.Multiplayer ? getMultiplayerRecords(user) : [] as any,
     profileTab === ProfileTab.ReviewsReceived ? getReviewsForUserId(userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
     profileTab === ProfileTab.ReviewsWritten ? getReviewsByUserId(userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
     getReviewsForUserIdCount(userId),
@@ -191,6 +205,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     followerCountInit: followData.followerCount,
     levelsCompletedByDifficulty: levelsCompletedByDifficulty,
     levelsCount: levelsCount,
+    multiplayerCount: multiplayerCount,
+    multiplayerRecords: JSON.parse(JSON.stringify(multiplayerRecords)),
     pageProp: page,
     profileTab: profileTab,
     reqUser: reqUser ? JSON.parse(JSON.stringify(reqUser)) : null,
@@ -279,6 +295,8 @@ export interface ProfilePageProps {
   followerCountInit: number;
   levelsCompletedByDifficulty: { [key: string]: number };
   levelsCount: number;
+  multiplayerCount: number;
+  multiplayerRecords: any;
   pageProp: number;
   profileTab: ProfileTab;
   reqUser: User | null;
@@ -303,6 +321,8 @@ export default function ProfilePage({
   followerCountInit,
   levelsCompletedByDifficulty,
   levelsCount,
+  multiplayerCount,
+  multiplayerRecords,
   pageProp,
   profileTab,
   reqUser,
@@ -481,6 +501,7 @@ export default function ProfilePage({
       </div>
     ),
     [ProfileTab.Insights]: <ProfileInsights reqUser={reqUser} user={user} />,
+    [ProfileTab.Multiplayer]: <ProfileMultiplayer user={user} records={multiplayerRecords} />,
     [ProfileTab.Collections]: (
       <div className='flex flex-col gap-2 justify-center'>
         {getCollectionOptions().length > 0 &&
@@ -711,6 +732,12 @@ export default function ProfilePage({
               <Image alt='pro' src='/pro.svg' width='16' height='16' />
               <span>Insights</span>
             </div>
+          </Link>
+          <Link
+            className={getTabClassNames(ProfileTab.Multiplayer)}
+            href={`/profile/${user.name}/${ProfileTab.Multiplayer}`}
+          >
+            Multiplayer ({multiplayerCount})
           </Link>
           <Link
             className={getTabClassNames(ProfileTab.Collections)}

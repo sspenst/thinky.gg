@@ -1,19 +1,20 @@
-import { ValidNumber, ValidObjectIdArray, ValidType } from '@root/helpers/apiWrapper';
+import { ValidCommaSeparated, ValidNumber, ValidObjectId, ValidObjectIdArray, ValidType } from '@root/helpers/apiWrapper';
 import withAuth, { NextApiRequestWithAuth } from '@root/lib/withAuth';
 import { MultiplayerMatchModel } from '@root/models/mongoose';
 import { MultiplayerMatchState } from '@root/models/MultiplayerEnums';
 import { enrichMultiplayerMatch } from '@root/models/schemas/multiplayerMatchSchema';
 import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
+import { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 
 interface MatchQuery {
   matchId?: string;
   limit?: number;
   offset?: number;
-  players?: string[];
+  players?: Types.ObjectId[];
 }
 
-async function doMatchQuery(query: MatchQuery) {
+export async function doMatchQuery(query: MatchQuery) {
   const searchObj = {
     state: MultiplayerMatchState.FINISHED,
     // private: false // TODO: seems right to show private matches...
@@ -93,7 +94,7 @@ export default withAuth(
   {
     GET: {
       query: {
-        players: ValidObjectIdArray(false),
+        players: ValidCommaSeparated(false, ValidObjectId(false)),
         matchId: ValidType('string', false),
         limit: ValidNumber(false, 1, 100),
         offset: ValidNumber(false, 0, 1000)
@@ -101,10 +102,10 @@ export default withAuth(
     },
   },
   async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-    const { userIds, matchId, limit, offset } = req.query;
+    const { players, matchId, limit, offset } = req.query;
 
     const query: MatchQuery = {
-      players: userIds as string[],
+      players: ((players as string).split(','))?.map((id: string) => new Types.ObjectId(id.toString())),
       matchId: matchId as string,
       limit: parseInt(limit as string),
       offset: parseInt(offset as string)

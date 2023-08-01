@@ -96,10 +96,10 @@ export default function Multiplayer() {
           <div className='py-0.5 px-2.5 -mt-2 border rounded flex items-center gap-2' style={{
             borderColor: 'var(--bg-color-3)',
           }}>
-            {getProfileRatingDisplay(MultiplayerMatchType.RushBullet, user.multiplayerProfile)}
-            {getProfileRatingDisplay(MultiplayerMatchType.RushBlitz, user.multiplayerProfile)}
-            {getProfileRatingDisplay(MultiplayerMatchType.RushRapid, user.multiplayerProfile)}
-            {getProfileRatingDisplay(MultiplayerMatchType.RushClassical, user.multiplayerProfile)}
+            {getProfileRatingDisplay({ type: MultiplayerMatchType.RushBullet, profile: user.multiplayerProfile })}
+            {getProfileRatingDisplay({ type: MultiplayerMatchType.RushBlitz, profile: user.multiplayerProfile })}
+            {getProfileRatingDisplay({ type: MultiplayerMatchType.RushRapid, profile: user.multiplayerProfile })}
+            {getProfileRatingDisplay({ type: MultiplayerMatchType.RushClassical, profile: user.multiplayerProfile })}
           </div>
         </>}
       </div>
@@ -136,10 +136,10 @@ export default function Multiplayer() {
           {connectedPlayers.map(player => (
             <div key={'multiplayer-' + player._id.toString()} className='flex items-center gap-2'>
               <FormattedUser user={player} />
-              {getProfileRatingDisplay(MultiplayerMatchType.RushBullet, player.multiplayerProfile)}
-              {getProfileRatingDisplay(MultiplayerMatchType.RushBlitz, player.multiplayerProfile)}
-              {getProfileRatingDisplay(MultiplayerMatchType.RushRapid, player.multiplayerProfile)}
-              {getProfileRatingDisplay(MultiplayerMatchType.RushClassical, player.multiplayerProfile)}
+              {getProfileRatingDisplay({ type: MultiplayerMatchType.RushBullet, profile: player.multiplayerProfile })}
+              {getProfileRatingDisplay({ type: MultiplayerMatchType.RushBlitz, profile: player.multiplayerProfile })}
+              {getProfileRatingDisplay({ type: MultiplayerMatchType.RushRapid, profile: player.multiplayerProfile })}
+              {getProfileRatingDisplay({ type: MultiplayerMatchType.RushClassical, profile: player.multiplayerProfile })}
             </div>
           ))}
         </div>
