@@ -63,6 +63,13 @@ export default function MatchResults({ match, recap, showViewLink }: MatchResult
             <div
               className='flex gap-2 items-center'
               key={player._id.toString()}
+              style={{
+                backgroundColor: (match.winners as string[])?.includes(player._id.toString()) ? 'var(--bg-color-4)' : '',
+                // rounded corners
+                borderRadius: 4,
+                // padding
+                padding: '0 0.315rem',
+              }}
             >
               {player._id.toString() in match.scoreTable &&
                 <span className='font-bold text-2xl w-10 text-center' style={{ minWidth: 40 }}>
@@ -70,7 +77,7 @@ export default function MatchResults({ match, recap, showViewLink }: MatchResult
                 </span>
               }
               <FormattedUser user={player} />
-              {getProfileRatingDisplay(match.type, player.multiplayerProfile, false)}
+              {getProfileRatingDisplay({ type: match.type, profile: player.multiplayerProfile, hideType: true })}
               {recap?.winner?.userId.toString() === player._id.toString() &&
                 <span className='text-xs italic' style={{
                   color: 'var(--color-gray)',

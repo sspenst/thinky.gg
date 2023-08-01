@@ -4,14 +4,18 @@ import { UserWithMultiplayerProfile } from '../models/db/user';
 import { UserModel } from '../models/mongoose';
 import { USER_DEFAULT_PROJECTION } from '../models/schemas/userSchema';
 
-export default async function getUsersFromIds(ids: Types.ObjectId[]): Promise<UserWithMultiplayerProfile[]> {
+export async function getUsersFromIds(ids: Types.ObjectId[]) {
+  return getUsers({
+    _id: {
+      $in: ids
+    }
+  }, {});
+}
+
+export default async function getUsers(match: any, additionalFields: any): Promise<UserWithMultiplayerProfile[]> {
   const users = await UserModel.aggregate([
     {
-      $match: {
-        _id: {
-          $in: ids,
-        },
-      },
+      $match: match
     },
     // join with multiplayer profile
     {
@@ -31,6 +35,7 @@ export default async function getUsersFromIds(ids: Types.ObjectId[]): Promise<Us
     {
       $project: {
         ...USER_DEFAULT_PROJECTION,
+        ...additionalFields,
         multiplayerProfile: 1
 
       }
