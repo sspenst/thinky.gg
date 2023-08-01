@@ -10,21 +10,27 @@ import MultiSelectUser from '../multiSelectUser';
 
 interface ProfileMultiplayerProps {
   user: UserWithMultiplayerProfile;
-  records?: {
-    RushBullet?: { wins: number; losses: number; draws: number };
-    RushBlitz?: { wins: number; losses: number; draws: number };
-    RushRapid?: { wins: number; losses: number; draws: number };
-    RushClassical?: { wins: number; losses: number; draws: number };
-  };
+}
+interface MultiplayerRecord {
+        RushBullet?: { wins: number; losses: number; draws: number };
+        RushBlitz?: { wins: number; losses: number; draws: number };
+        RushRapid?: { wins: number; losses: number; draws: number };
+        RushClassical?: { wins: number; losses: number; draws: number };
+
 }
 
-export default function ProfileMultiplayer({ user, records }: ProfileMultiplayerProps) {
+export default function ProfileMultiplayer({ user }: ProfileMultiplayerProps) {
   // return a list of multiplayer games
   const qs = user._id.toString();
   const [compare, setCompare] = useState<User>();
   const { data: multiplayerGames } = useSWRHelper<MultiplayerMatch[]>(
     '/api/match/search?limit=100&players=' + qs + (compare ? ',' + compare?._id.toString() : ''),
   );
+  const { data: records } = useSWRHelper<MultiplayerRecord>(
+    '/api/match/record?' + (compare && compare._id.toString().length > 0 ? 'compareUser=' + compare._id.toString() + '&' : '') + 'player=' + qs,
+  );
+
+  console.log('/api/match/record?' + (compare ? 'compareUser=' + compare?._id.toString() + '' : '') + 'player=' + qs,);
 
   if (!multiplayerGames) {
     return <span>Loading...</span>;

@@ -7,7 +7,7 @@ import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 
-interface MatchQuery {
+export interface MatchQuery {
   matchId?: string;
   limit?: number;
   offset?: number;
