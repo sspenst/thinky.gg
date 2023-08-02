@@ -1,9 +1,7 @@
-import { Editor } from '@tinymce/tinymce-react';
 import classNames from 'classnames';
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Rating } from 'react-simple-star-rating';
-import tinymce from 'tinymce/tinymce';
 import Theme from '../constants/theme';
 import { AppContext } from '../contexts/appContext';
 import { LevelContext } from '../contexts/levelContext';
@@ -72,14 +70,6 @@ export default function ReviewForm({ inModal, userReview }: ReviewFormProps) {
     });
   }
 
-  const editorRef = useRef(null) as any;
-
-  const log = () => {
-    if (editorRef.current) {
-      console.log(editorRef.current.getContent());
-    }
-  };
-
   if (!user) {
     return null;
   }
@@ -129,26 +119,6 @@ export default function ReviewForm({ inModal, userReview }: ReviewFormProps) {
           </button>
         }
       </div>
-      <Editor
-        tinymceScriptSrc={'https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.6.0/tinymce.min.js'}
-        onInit={(evt, editor) => editorRef.current = editor}
-        initialValue='<p>This is the initial content of the editor.</p>'
-        init={{
-          height: 500,
-          menubar: false,
-          plugins: [
-            'advlist autolink lists link image charmap print preview anchor',
-            'searchreplace visualblocks code fullscreen',
-            'insertdatetime media table paste code help wordcount'
-          ],
-
-          toolbar: 'undo redo | formatselect | ' +
-           'bold italic backcolor | alignleft aligncenter ' +
-           'alignright alignjustify | bullist numlist outdent indent | ' +
-           'removeformat | help',
-          content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
-        }}
-      />
       <textarea
         className={classNames(
           'block p-1 my-2 w-full rounded-lg border disabled:opacity-25',
