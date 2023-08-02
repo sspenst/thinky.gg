@@ -69,7 +69,7 @@ describe('api/user/[id]/prostats/[type]', () => {
 
     });
   });
-  test('should be able to get ScoreHistory now on promode', async () => {
+  test('should be able to get ScoreHistory with Pro', async () => {
     await UserModel.findByIdAndUpdate(TestId.USER, {
       $addToSet: {
         roles: Role.PRO
@@ -84,10 +84,11 @@ describe('api/user/[id]/prostats/[type]', () => {
         expect(response[ProStatsUserType.MostSolvesForUserLevels]).toBeUndefined();
         expect(response[ProStatsUserType.ScoreHistory]).toBeDefined();
         expect(response[ProStatsUserType.ScoreHistory].length).toBe(1);
+        expect(response[ProStatsUserType.PlayLogForUserCreatedLevels]).toBeUndefined();
       }
     });
   });
-  test('should be able to get MostSolvesForUserLevels now on promode', async () => {
+  test('should be able to get MostSolvesForUserLevels with Pro', async () => {
     await UserModel.findByIdAndUpdate(TestId.USER, {
       $addToSet: {
         roles: Role.PRO
@@ -102,6 +103,7 @@ describe('api/user/[id]/prostats/[type]', () => {
         expect(response[ProStatsUserType.ScoreHistory]).toBeUndefined();
         expect(response[ProStatsUserType.MostSolvesForUserLevels]).toBeDefined();
         expect(response[ProStatsUserType.MostSolvesForUserLevels].length).toBe(1);
+        expect(response[ProStatsUserType.PlayLogForUserCreatedLevels]).toBeUndefined();
       }
     });
   });
@@ -121,10 +123,11 @@ describe('api/user/[id]/prostats/[type]', () => {
         expect(response[ProStatsUserType.ScoreHistory]).toBeUndefined();
         expect(response[ProStatsUserType.MostSolvesForUserLevels]).toBeUndefined();
         expect(response[ProStatsUserType.DifficultyLevelsComparisons]).toBeUndefined();
+        expect(response[ProStatsUserType.PlayLogForUserCreatedLevels]).toBeUndefined();
       }
     });
   });
-  test('should be able to get DifficultyLevelsComparisons now on promode', async () => {
+  test('should be able to get DifficultyLevelsComparisons with Pro', async () => {
     await UserModel.findByIdAndUpdate(TestId.USER, {
       $addToSet: {
         roles: Role.PRO
@@ -139,8 +142,28 @@ describe('api/user/[id]/prostats/[type]', () => {
         expect(response[ProStatsUserType.ScoreHistory]).toBeUndefined();
         expect(response[ProStatsUserType.MostSolvesForUserLevels]).toBeUndefined();
         expect(response[ProStatsUserType.DifficultyLevelsComparisons]).toBeDefined();
-
         expect(response[ProStatsUserType.DifficultyLevelsComparisons].length).toBe(0); // TODO - would be good to add some score history to test the response
+        expect(response[ProStatsUserType.PlayLogForUserCreatedLevels]).toBeUndefined();
+      }
+    });
+  });
+  test('should be able to get PlayLogForUserCreatedLevels with Pro', async () => {
+    await UserModel.findByIdAndUpdate(TestId.USER, {
+      $addToSet: {
+        roles: Role.PRO
+      }
+    });
+
+    await query({
+      userId: TestId.USER,
+      type: ProStatsUserType.PlayLogForUserCreatedLevels,
+      expectedStatus: 200,
+      additionalAssertions: async response => {
+        expect(response[ProStatsUserType.ScoreHistory]).toBeUndefined();
+        expect(response[ProStatsUserType.MostSolvesForUserLevels]).toBeUndefined();
+        expect(response[ProStatsUserType.DifficultyLevelsComparisons]).toBeUndefined();
+        expect(response[ProStatsUserType.PlayLogForUserCreatedLevels]).toBeDefined();
+        expect(response[ProStatsUserType.PlayLogForUserCreatedLevels].length).toBe(2);
       }
     });
   });
