@@ -3,77 +3,12 @@ import Link from 'next/link';
 import React, { useContext, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { AppContext } from '../contexts/appContext';
-import { isProvisional, multiplayerMatchTypeToText, MUTLIPLAYER_PROVISIONAL_GAME_LIMIT } from '../helpers/multiplayerHelperFunctions';
+import { multiplayerMatchTypeToText } from '../helpers/multiplayerHelperFunctions';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
-import MultiplayerProfile from '../models/db/multiplayerProfile';
-import { MatchAction, MatchLogDataGameRecap, MultiplayerMatchState, MultiplayerMatchType } from '../models/MultiplayerEnums';
+import { MatchAction, MatchLogDataGameRecap, MultiplayerMatchState } from '../models/MultiplayerEnums';
 import FormattedUser from './formattedUser';
+import MultiplayerRating from './multiplayerRating';
 import StyledTooltip from './styledTooltip';
-
-export function getMatchTypeNameFromMatchType(type: MultiplayerMatchType): string {
-  switch (type) {
-  case MultiplayerMatchType.RushBullet:
-    return 'Bullet';
-  case MultiplayerMatchType.RushBlitz:
-    return 'Blitz';
-  case MultiplayerMatchType.RushRapid:
-    return 'Rapid';
-  case MultiplayerMatchType.RushClassical:
-    return 'Classical';
-  }
-}
-
-export function getRatingFromProfile(profile: MultiplayerProfile, type: MultiplayerMatchType) {
-  switch (type) {
-  case MultiplayerMatchType.RushBullet:
-    return profile.ratingRushBullet;
-  case MultiplayerMatchType.RushBlitz:
-    return profile.ratingRushBlitz;
-  case MultiplayerMatchType.RushRapid:
-    return profile.ratingRushRapid;
-  case MultiplayerMatchType.RushClassical:
-    return profile.ratingRushClassical;
-  }
-}
-
-export function getMatchCountFromProfile(profile: MultiplayerProfile, type: MultiplayerMatchType) {
-  switch (type) {
-  case MultiplayerMatchType.RushBullet:
-    return profile.calcRushBulletCount || 0;
-  case MultiplayerMatchType.RushBlitz:
-    return profile.calcRushBlitzCount || 0;
-  case MultiplayerMatchType.RushRapid:
-    return profile.calcRushRapidCount || 0;
-  case MultiplayerMatchType.RushClassical:
-    return profile.calcRushClassicalCount || 0;
-  }
-}
-
-export function getProfileRatingDisplay(type: MultiplayerMatchType, profile?: MultiplayerProfile, showType = true) {
-  if (profile && !isProvisional(type, profile) && getRatingFromProfile(profile, type)) {
-    return (
-      <div className='flex flex-col items-center'>
-        {showType && <span className='text-xs'>{getMatchTypeNameFromMatchType(type)}</span>}
-        <span data-tooltip-id='profile-rating' data-tooltip-content={`Played ${getMatchCountFromProfile(profile, type)} matches`} className='text-xs italic' style={{
-          color: 'var(--color-gray)',
-        }}>{Math.round(getRatingFromProfile(profile, type))}</span>
-        <StyledTooltip id='profile-rating' />
-      </div>
-    );
-  } else {
-    const matchesRemaining = !profile ? MUTLIPLAYER_PROVISIONAL_GAME_LIMIT : MUTLIPLAYER_PROVISIONAL_GAME_LIMIT - getMatchCountFromProfile(profile, type);
-
-    return (
-      <div className='flex flex-col items-center' >
-        {showType && <span className={'text-xs match-type-text-' + type}>{getMatchTypeNameFromMatchType(type)}</span>}
-        <span data-tooltip-id='unrated' data-tooltip-content={`${matchesRemaining} match${matchesRemaining === 1 ? '' : 'es'} remaining`} className='text-xs italic' style={{
-          color: 'var(--color-gray)',
-        }}>Unrated</span>
-        <StyledTooltip id='unrated' />
-      </div>
-    );
-  }
-}
 
 interface MatchStatusProps {
   isMatchPage?: boolean;
@@ -229,7 +164,7 @@ export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveCl
               </span>
             }
             <FormattedUser user={player} />
-            {getProfileRatingDisplay(match.type, player.multiplayerProfile, false)}
+            <MultiplayerRating hideType profile={player.multiplayerProfile} type={match.type} />
             {recap?.winner?.userId.toString() === player._id.toString() &&
               <span className='text-xs italic' style={{
                 color: 'var(--color-gray)',

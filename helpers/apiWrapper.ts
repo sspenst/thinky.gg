@@ -110,6 +110,26 @@ export function ValidObjectId(mustExist = true) {
   };
 }
 
+export function ValidCommaSeparated(mustExist = true, validateEachElement?: (value: string) => boolean) {
+  return (value?: unknown) => {
+    if (!mustExist && !value) {
+      return true;
+    }
+
+    if (typeof value !== 'string') {
+      return false;
+    }
+
+    const values = value.split(',');
+
+    if (validateEachElement) {
+      return values.every(validateEachElement);
+    }
+
+    return true;
+  };
+}
+
 export function ValidObjectIdArray(mustExist = true) {
   return (value?: unknown) => {
     if (!mustExist && !value) {

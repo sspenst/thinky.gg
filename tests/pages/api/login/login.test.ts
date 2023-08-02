@@ -1,3 +1,4 @@
+import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import { logger } from '../../../../helpers/logger';
@@ -13,6 +14,7 @@ afterAll(async() => {
 afterEach(() => {
   jest.restoreAllMocks();
 });
+enableFetchMocks();
 describe('pages/api/login/index.ts', () => {
   jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
   test('Sending nothing should return 405', async () => {
