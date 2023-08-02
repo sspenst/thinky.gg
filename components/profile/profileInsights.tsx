@@ -2,6 +2,7 @@ import isPro from '@root/helpers/isPro';
 import Link from 'next/link';
 import React from 'react';
 import User from '../../models/db/user';
+import ProfileInsightsLevelPlayLog from './profileInsightsLevelPlayLog';
 import ProfileInsightsMostCompletions from './profileInsightsMostCompletions';
 import ProfileInsightsScoreChart from './profileInsightsScoreChart';
 import ProfileInsightsSolveTimeComparison from './profileInsightsSolveTimeComparison';
@@ -23,7 +24,8 @@ export default function ProfileInsights({ reqUser, user }: ProfileInsightsProps)
   }
 
   return (
-    <div className='flex flex-col gap-4 text-center justify-center items-center'>
+    <div className='flex flex-col gap-4 text-center justify-center items-center w-full'>
+      <ProfileInsightsLevelPlayLog user={user} />
       <ProfileInsightsMostCompletions user={user} />
       <ProfileInsightsScoreChart user={user} />
       {reqUser?._id === user._id && <ProfileInsightsSolveTimeComparison user={user} />}

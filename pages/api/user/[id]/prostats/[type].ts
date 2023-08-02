@@ -1,4 +1,6 @@
-import mongoose from 'mongoose';
+import { getEnrichLevelsPipelineSteps } from '@root/helpers/enrich';
+import User from '@root/models/db/user';
+import mongoose, { PipelineStage } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { ValidEnum } from '../../../../../helpers/apiWrapper';
 import { DIFFICULTY_LOGISTIC_K, DIFFICULTY_LOGISTIC_M, DIFFICULTY_LOGISTIC_T } from '../../../../../helpers/getDifficultyEstimate';
@@ -267,12 +269,95 @@ async function getDifficultyDataComparisons(userId: string) {
   return difficultyData;
 }
 
+async function getPlayLogForUsersCreatedLevels(reqUser: User, userId: string) {
+  const playLogsForUserCreatedLevels = await LevelModel.aggregate([
+    {
+      $match: {
+        userId: new mongoose.Types.ObjectId(userId),
+        isDraft: { $ne: true },
+        isDeleted: { $ne: true },
+      },
+    },
+    {
+      $lookup: {
+        from: 'stats',
+        localField: '_id',
+        foreignField: 'levelId',
+        as: 'stats',
+      },
+    },
+    {
+      $unwind: '$stats',
+    },
+    {
+      $match: {
+        'stats.complete': true,
+        'stats.isDeleted': { $ne: true },
+      },
+    },
+    // order by stats.ts desc
+    {
+      $sort: {
+        'stats.ts': -1,
+      }
+    },
+    {
+      $limit: 50,
+    },
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'stats.userId',
+        foreignField: '_id',
+        as: 'user',
+      },
+    },
+    {
+      $unwind: '$user',
+    },
+    {
+      $project: {
+        _id: 0,
+        levelId: '$_id',
+        statTs: '$stats.ts',
+        user: {
+          ...USER_DEFAULT_PROJECTION
+        },
+      },
+    },
+    // also get the level
+    {
+      $lookup: {
+        from: 'levels',
+        localField: 'levelId',
+        foreignField: '_id',
+        as: 'levelId',
+        pipeline: [
+          ...getEnrichLevelsPipelineSteps(reqUser, '_id', '') as PipelineStage.Lookup[],
+        ]
+      },
+    },
+    {
+      $unwind: '$levelId',
+    },
+  ]);
+
+  // cleanUser for each user
+  playLogsForUserCreatedLevels.forEach((userAndStatTs) => {
+    cleanUser(userAndStatTs.user);
+  });
+
+  return playLogsForUserCreatedLevels;
+}
+
 async function getMostSolvesForUserLevels(userId: string) {
 /** get the users that have solved the most levels created by userId */
   const mostSolvesForUserLevels = await LevelModel.aggregate([
     {
       $match: {
         userId: new mongoose.Types.ObjectId(userId),
+        isDraft: { $ne: true },
+        isDeleted: { $ne: true },
       },
     },
     {
@@ -394,9 +479,7 @@ export default withAuth({
   }
 
   const { id: userId, type } = req.query as { id: string, type: string };
-
-  // let's get the sum of this players playattempts sum(playattempt.endTime - playattempt.startTime) and divide by 1000
-  let scoreHistory, difficultyLevelsComparisons, mostSolvesForUserLevels;
+  let scoreHistory, difficultyLevelsComparisons, mostSolvesForUserLevels, playLogForUserCreatedLevels;
 
   if (type === ProStatsUserType.DifficultyLevelsComparisons) {
     if (userId !== req.user._id.toString()) {
@@ -410,11 +493,14 @@ export default withAuth({
     scoreHistory = await getScoreHistory(userId);
   } else if (type === ProStatsUserType.MostSolvesForUserLevels) {
     mostSolvesForUserLevels = await getMostSolvesForUserLevels(userId);
+  } else if (type === ProStatsUserType.PlayLogForUserCreatedLevels) {
+    playLogForUserCreatedLevels = await getPlayLogForUsersCreatedLevels(req.user, userId);
   }
 
   return res.status(200).json({
     [ProStatsUserType.ScoreHistory]: scoreHistory,
     [ProStatsUserType.DifficultyLevelsComparisons]: difficultyLevelsComparisons,
     [ProStatsUserType.MostSolvesForUserLevels]: mostSolvesForUserLevels,
+    [ProStatsUserType.PlayLogForUserCreatedLevels]: playLogForUserCreatedLevels,
   });
 });

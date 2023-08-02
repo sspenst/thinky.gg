@@ -1,4 +1,3 @@
-import { UserAndSum } from '@root/contexts/levelContext';
 import React, { useContext } from 'react';
 import DataTable from 'react-data-table-component-sspenst';
 import Dimensions from '../../constants/dimensions';
@@ -6,39 +5,46 @@ import { AppContext } from '../../contexts/appContext';
 import { DATA_TABLE_CUSTOM_STYLES } from '../../helpers/dataTableCustomStyles';
 import useProStatsUser, { ProStatsUserType } from '../../hooks/useProStatsUser';
 import User from '../../models/db/user';
+import EnrichedLevelLink from '../enrichedLevelLink';
+import FormattedDate from '../formattedDate';
 import FormattedUser from '../formattedUser';
 
-export default function ProfileInsightsMostCompletions({ user }: {user: User}) {
-  const { proStatsUser } = useProStatsUser(user, ProStatsUserType.MostSolvesForUserLevels);
+export default function ProfileInsightsLevelPlayLog({ user }: {user: User}) {
+  const { proStatsUser } = useProStatsUser(user, ProStatsUserType.PlayLogForUserCreatedLevels);
   const { user: reqUser } = useContext(AppContext);
 
-  if (!proStatsUser || !proStatsUser[ProStatsUserType.MostSolvesForUserLevels]) {
+  if (!proStatsUser || !proStatsUser[ProStatsUserType.PlayLogForUserCreatedLevels]) {
     return <span>Loading...</span>;
   }
 
   return (<>
-    <h2 className='text-xl font-bold break-words max-w-full'>Most Completions of {user.name}&apos;s Levels</h2>
-    <div className='w-full max-w-md'>
+    <h2 className='text-xl font-bold break-words max-w-full'>Play Log for {user.name}&apos;s Levels</h2>
+    <div className='w-full max-w-lg'>
       <DataTable
         columns={[
           {
             name: 'User',
-            cell: (row: UserAndSum) => <FormattedUser size={Dimensions.AvatarSizeSmall} user={row.user} />,
+            cell: (row) => <FormattedUser size={Dimensions.AvatarSizeSmall} user={row.user} />,
             grow: 2,
           },
           {
-            name: 'Levels Completed',
-            selector: (row) => row.sum,
+            name: 'Level',
+            cell: (row) => <EnrichedLevelLink level={row.levelId} />,
+            grow: 2,
+          },
+          {
+            name: 'When',
+            cell: (row) => <FormattedDate ts={row.statTs} />,
           },
         ]}
         conditionalRowStyles={[{
-          when: row => row.user._id === reqUser?._id,
+          when: row => row.user?._id === reqUser?._id,
           style: {
             backgroundColor: 'var(--bg-color-4)',
           },
         }]}
         customStyles={DATA_TABLE_CUSTOM_STYLES}
-        data={proStatsUser[ProStatsUserType.MostSolvesForUserLevels]}
+        data={proStatsUser[ProStatsUserType.PlayLogForUserCreatedLevels]}
         dense
         noDataComponent={
           <div className='p-3'>
