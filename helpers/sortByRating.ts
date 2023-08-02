@@ -1,7 +1,6 @@
-import { getRatingFromProfile } from '../components/matchStatus';
 import { UserWithMultiplayerProfile } from '../models/db/user';
 import { MultiplayerMatchType } from '../models/MultiplayerEnums';
-import { isProvisional } from './multiplayerHelperFunctions';
+import { getRatingFromProfile, isProvisional } from './multiplayerHelperFunctions';
 
 export default function sortByRating(a: UserWithMultiplayerProfile, b: UserWithMultiplayerProfile, type: MultiplayerMatchType) {
   const aprofile = a.multiplayerProfile;
