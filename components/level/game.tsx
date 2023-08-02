@@ -430,16 +430,15 @@ export default function Game({
           return prevGameState;
         }
 
-        // track stats upon reaching an exit
         if (newGameState.board[newGameState.pos.y][newGameState.pos.x].tileType === TileType.End) {
+          // track stats upon reaching an exit
           trackStats(newGameState.moves.map(move => move.direction), level._id.toString(), 3);
+        } else if (!disablePlayAttempts) {
+          // track play attempts upon making a successful move
+          fetchPlayAttempt();
         }
 
         return newGameState;
-      }
-
-      if (!disablePlayAttempts) {
-        fetchPlayAttempt();
       }
 
       const newGameState = getNewGameState();
