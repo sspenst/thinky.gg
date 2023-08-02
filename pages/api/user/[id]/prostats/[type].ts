@@ -302,7 +302,7 @@ async function getPlayLogForUsersCreatedLevels(reqUser: User, userId: string) {
       }
     },
     {
-      $limit: 25,
+      $limit: 50,
     },
     {
       $lookup: {
@@ -479,8 +479,6 @@ export default withAuth({
   }
 
   const { id: userId, type } = req.query as { id: string, type: string };
-
-  // let's get the sum of this players playattempts sum(playattempt.endTime - playattempt.startTime) and divide by 1000
   let scoreHistory, difficultyLevelsComparisons, mostSolvesForUserLevels, playLogForUserCreatedLevels;
 
   if (type === ProStatsUserType.DifficultyLevelsComparisons) {

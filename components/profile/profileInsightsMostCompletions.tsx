@@ -16,38 +16,41 @@ export default function ProfileInsightsMostCompletions({ user }: {user: User}) {
     return <span>Loading...</span>;
   }
 
-  return (<div className='flex flex-col'>
+  return (<>
     <h2 className='text-xl font-bold break-words max-w-full'>Most Completions of {user.name}&apos;s Levels</h2>
-    <DataTable
-      columns={[
-        {
-          name: 'User',
-          cell: (row: UserAndSum) => <FormattedUser size={Dimensions.AvatarSizeSmall} user={row.user} />,
-        },
-        {
-          name: 'Levels Completed',
-          selector: (row) => row.sum,
-        },
-      ]}
-      conditionalRowStyles={[{
-        when: row => row.user._id === reqUser?._id,
-        style: {
-          backgroundColor: 'var(--bg-color-4)',
-        },
-      }]}
-      paginationComponentOptions={{
-        noRowsPerPage: true,
-      }}
-      customStyles={DATA_TABLE_CUSTOM_STYLES}
-      data={proStatsUser[ProStatsUserType.MostSolvesForUserLevels]}
-      dense
-      noDataComponent={
-        <div className='p-3'>
-          Nothing to display...
-        </div>
-      }
-      pagination={true}
-      striped
-    />
-  </div>);
+    <div className='w-full max-w-md'>
+      <DataTable
+        columns={[
+          {
+            name: 'User',
+            cell: (row: UserAndSum) => <FormattedUser size={Dimensions.AvatarSizeSmall} user={row.user} />,
+            grow: 2,
+          },
+          {
+            name: 'Levels Completed',
+            selector: (row) => row.sum,
+          },
+        ]}
+        conditionalRowStyles={[{
+          when: row => row.user._id === reqUser?._id,
+          style: {
+            backgroundColor: 'var(--bg-color-4)',
+          },
+        }]}
+        customStyles={DATA_TABLE_CUSTOM_STYLES}
+        data={proStatsUser[ProStatsUserType.MostSolvesForUserLevels]}
+        dense
+        noDataComponent={
+          <div className='p-3'>
+            Nothing to display...
+          </div>
+        }
+        pagination={true}
+        paginationComponentOptions={{
+          noRowsPerPage: true,
+        }}
+        striped
+      />
+    </div>
+  </>);
 }

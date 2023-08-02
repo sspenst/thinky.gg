@@ -1,5 +1,5 @@
 import { DifficultyLevelComparison } from '../components/profile/profileInsightsSolveTimeComparison';
-import { DateAndSum, UserAndStatTs, UserAndSum, UserLevelAndStatTs } from '../contexts/levelContext';
+import { DateAndSum, UserAndSum, UserLevelAndStatTs } from '../contexts/levelContext';
 import User from '../models/db/user';
 import useSWRHelper from './useSWRHelper';
 

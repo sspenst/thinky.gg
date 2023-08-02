@@ -33,8 +33,8 @@ export interface UserAndStatTs {
 }
 
 export interface UserLevelAndStatTs {
-  statTs: number;
   levelId: EnrichedLevel;
+  statTs: number;
   user: User | null;
 }
 
