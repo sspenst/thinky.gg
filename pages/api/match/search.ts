@@ -7,14 +7,14 @@ import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 
-export interface MatchQuery {
+interface MatchQuery {
   matchId?: string;
   limit?: number;
   offset?: number;
   players?: Types.ObjectId[];
 }
 
-export async function doMatchQuery(query: MatchQuery) {
+async function doMatchQuery(query: MatchQuery) {
   const searchObj = {
     state: MultiplayerMatchState.FINISHED,
     // private: false // TODO: seems right to show private matches...

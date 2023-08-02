@@ -1,7 +1,7 @@
+import { getUsersWithMultiplayerProfileFromIds } from '@root/helpers/getUsersWithMultiplayerProfile';
 import { Emitter } from '@socket.io/mongo-emitter';
 import { Types } from 'mongoose';
 import { Server } from 'socket.io';
-import getUsersFromIds from '../../helpers/getUsersFromIds';
 import { logger } from '../../helpers/logger';
 import sortByRating from '../../helpers/sortByRating';
 import User from '../../models/db/user';
@@ -109,7 +109,7 @@ export async function broadcastConnectedPlayers(emitter: Server) {
   });
 
   // we have all the connected user ids now... so let's get all of them
-  const users = await getUsersFromIds(connectedUserIds);
+  const users = await getUsersWithMultiplayerProfileFromIds(connectedUserIds);
   // remove users with hideStatus: true and inactive users
   const filteredUsers = users.filter(user => !user.hideStatus);
 

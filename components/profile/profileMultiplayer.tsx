@@ -11,12 +11,15 @@ import MultiSelectUser from '../multiSelectUser';
 interface ProfileMultiplayerProps {
   user: UserWithMultiplayerProfile;
 }
-interface MultiplayerRecord {
-        RushBullet?: { wins: number; losses: number; draws: number };
-        RushBlitz?: { wins: number; losses: number; draws: number };
-        RushRapid?: { wins: number; losses: number; draws: number };
-        RushClassical?: { wins: number; losses: number; draws: number };
 
+export interface MultiplayerRecord {
+  draws: number;
+  losses: number;
+  wins: number;
+}
+
+export type MultiplayerRecords = {
+  [T in MultiplayerMatchType]: MultiplayerRecord;
 }
 
 export default function ProfileMultiplayer({ user }: ProfileMultiplayerProps) {
@@ -24,9 +27,9 @@ export default function ProfileMultiplayer({ user }: ProfileMultiplayerProps) {
   const qs = user._id.toString();
   const [compare, setCompare] = useState<User>();
   const { data: multiplayerGames } = useSWRHelper<MultiplayerMatch[]>(
-    '/api/match/search?limit=100&players=' + qs + (compare ? ',' + compare?._id.toString() : ''),
+    '/api/match/search?limit=100&players=' + qs + (compare ? ',' + compare._id.toString() : ''),
   );
-  const { data: records } = useSWRHelper<MultiplayerRecord>(
+  const { data: records } = useSWRHelper<MultiplayerRecords>(
     '/api/match/record?' + (compare && compare._id.toString().length > 0 ? 'compareUser=' + compare._id.toString() + '&' : '') + 'player=' + qs,
   );
 
@@ -70,7 +73,7 @@ export default function ProfileMultiplayer({ user }: ProfileMultiplayerProps) {
             type={MultiplayerMatchType.RushClassical}
           />
         </div>
-        <div className='flex flex-col gap-4 text-center justify-center items-center'>
+        <div className='flex flex-col gap-2 text-center justify-center items-center'>
           {multiplayerGames.map((game) => (
             <MatchResults
               showViewLink={true}
