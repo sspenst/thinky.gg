@@ -1,17 +1,29 @@
-import { Types } from 'mongoose';
+import dbConnect from '@root/lib/dbConnect';
+import { FilterQuery, Types } from 'mongoose';
 import cleanUser from '../lib/cleanUser';
 import { UserWithMultiplayerProfile } from '../models/db/user';
 import { UserModel } from '../models/mongoose';
 import { USER_DEFAULT_PROJECTION } from '../models/schemas/userSchema';
 
-export default async function getUsersFromIds(ids: Types.ObjectId[]): Promise<UserWithMultiplayerProfile[]> {
+export async function getUsersWithMultiplayerProfileFromIds(ids: Types.ObjectId[]) {
+  return getUsersWithMultiplayerProfile({
+    _id: {
+      $in: ids
+    }
+  }, {});
+}
+
+export async function getUsersWithMultiplayerProfile(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  match: FilterQuery<any>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  project: { [field: string]: any },
+): Promise<UserWithMultiplayerProfile[]> {
+  await dbConnect();
+
   const users = await UserModel.aggregate([
     {
-      $match: {
-        _id: {
-          $in: ids,
-        },
-      },
+      $match: match
     },
     // join with multiplayer profile
     {
@@ -31,8 +43,8 @@ export default async function getUsersFromIds(ids: Types.ObjectId[]): Promise<Us
     {
       $project: {
         ...USER_DEFAULT_PROJECTION,
-        multiplayerProfile: 1
-
+        ...project,
+        multiplayerProfile: 1,
       }
     },
   ]) as UserWithMultiplayerProfile[];

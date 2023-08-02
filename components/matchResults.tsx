@@ -5,7 +5,7 @@ import Link from 'next/link';
 import React from 'react';
 import FormattedDate from './formattedDate';
 import FormattedUser from './formattedUser';
-import { getProfileRatingDisplay } from './matchStatus';
+import MultiplayerRating from './multiplayerRating';
 import StyledTooltip from './styledTooltip';
 
 interface MatchResultsProps {
@@ -70,7 +70,7 @@ export default function MatchResults({ match, recap, showViewLink }: MatchResult
                 </span>
               }
               <FormattedUser user={player} />
-              {getProfileRatingDisplay(match.type, player.multiplayerProfile, false)}
+              <MultiplayerRating hideType profile={player.multiplayerProfile} type={match.type} />
               {recap?.winner?.userId.toString() === player._id.toString() &&
                 <span className='text-xs italic' style={{
                   color: 'var(--color-gray)',

@@ -3,13 +3,14 @@ import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import FormattedUser from '../components/formattedUser';
-import MatchStatus, { getProfileRatingDisplay } from '../components/matchStatus';
+import MatchStatus from '../components/matchStatus';
 import CreateMatchModal from '../components/modal/createMatchModal';
 import { AppContext } from '../contexts/appContext';
 import sortByRating from '../helpers/sortByRating';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
 import { MultiplayerMatchState, MultiplayerMatchType } from '../models/MultiplayerEnums';
 import MatchResults from './matchResults';
+import MultiplayerRating from './multiplayerRating';
 import OnlineUsers from './onlineUsers';
 
 export default function Multiplayer() {
@@ -96,10 +97,10 @@ export default function Multiplayer() {
           <div className='py-0.5 px-2.5 -mt-2 border rounded flex items-center gap-2' style={{
             borderColor: 'var(--bg-color-3)',
           }}>
-            {getProfileRatingDisplay(MultiplayerMatchType.RushBullet, user.multiplayerProfile)}
-            {getProfileRatingDisplay(MultiplayerMatchType.RushBlitz, user.multiplayerProfile)}
-            {getProfileRatingDisplay(MultiplayerMatchType.RushRapid, user.multiplayerProfile)}
-            {getProfileRatingDisplay(MultiplayerMatchType.RushClassical, user.multiplayerProfile)}
+            <MultiplayerRating profile={user.multiplayerProfile} type={MultiplayerMatchType.RushBullet} />
+            <MultiplayerRating profile={user.multiplayerProfile} type={MultiplayerMatchType.RushBlitz} />
+            <MultiplayerRating profile={user.multiplayerProfile} type={MultiplayerMatchType.RushRapid} />
+            <MultiplayerRating profile={user.multiplayerProfile} type={MultiplayerMatchType.RushClassical} />
           </div>
         </>}
       </div>
@@ -136,10 +137,10 @@ export default function Multiplayer() {
           {connectedPlayers.map(player => (
             <div key={'multiplayer-' + player._id.toString()} className='flex items-center gap-2'>
               <FormattedUser user={player} />
-              {getProfileRatingDisplay(MultiplayerMatchType.RushBullet, player.multiplayerProfile)}
-              {getProfileRatingDisplay(MultiplayerMatchType.RushBlitz, player.multiplayerProfile)}
-              {getProfileRatingDisplay(MultiplayerMatchType.RushRapid, player.multiplayerProfile)}
-              {getProfileRatingDisplay(MultiplayerMatchType.RushClassical, player.multiplayerProfile)}
+              <MultiplayerRating profile={player.multiplayerProfile} type={MultiplayerMatchType.RushBullet} />
+              <MultiplayerRating profile={player.multiplayerProfile} type={MultiplayerMatchType.RushBlitz} />
+              <MultiplayerRating profile={player.multiplayerProfile} type={MultiplayerMatchType.RushRapid} />
+              <MultiplayerRating profile={player.multiplayerProfile} type={MultiplayerMatchType.RushClassical} />
             </div>
           ))}
         </div>

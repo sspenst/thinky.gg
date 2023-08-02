@@ -1,4 +1,5 @@
 import FormattedDate from '@root/components/formattedDate';
+import MultiplayerRating from '@root/components/multiplayerRating';
 import debounce from 'debounce';
 import { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
@@ -7,7 +8,6 @@ import { ParsedUrlQuery, ParsedUrlQueryInput } from 'querystring';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import DataTable, { Alignment, TableColumn } from 'react-data-table-component-sspenst';
 import FormattedUser from '../../components/formattedUser';
-import { getProfileRatingDisplay } from '../../components/matchStatus';
 import Page from '../../components/page';
 import Dimensions from '../../constants/dimensions';
 import GraphType from '../../constants/graphType';
@@ -420,7 +420,7 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
       id: 'ratingRushBullet',
       name: 'Bullet',
       selector: row => row.ratingRushBullet || 0,
-      format: row => getProfileRatingDisplay(MultiplayerMatchType.RushBullet, row as unknown as MultiplayerProfile, false),
+      format: row => <MultiplayerRating hideType profile={row as unknown as MultiplayerProfile} type={MultiplayerMatchType.RushBullet} />,
       sortable: true,
       allowOverflow: true,
     },
@@ -428,7 +428,7 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
       id: 'ratingRushBlitz',
       name: 'Blitz',
       selector: row => row.ratingRushBlitz || 0,
-      format: row => getProfileRatingDisplay(MultiplayerMatchType.RushBlitz, row as unknown as MultiplayerProfile, false),
+      format: row => <MultiplayerRating hideType profile={row as unknown as MultiplayerProfile} type={MultiplayerMatchType.RushBlitz} />,
       sortable: true,
       allowOverflow: true,
     },
@@ -436,7 +436,7 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
       id: 'ratingRushRapid',
       name: 'Rapid',
       selector: row => row.ratingRushRapid || 0,
-      format: row => getProfileRatingDisplay(MultiplayerMatchType.RushRapid, row as unknown as MultiplayerProfile, false),
+      format: row => <MultiplayerRating hideType profile={row as unknown as MultiplayerProfile} type={MultiplayerMatchType.RushRapid} />,
       sortable: true,
       allowOverflow: true,
     },
@@ -444,7 +444,7 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
       id: 'ratingRushClassical',
       name: 'Classical',
       selector: row => row.ratingRushClassical || 0,
-      format: row => getProfileRatingDisplay(MultiplayerMatchType.RushClassical, row as unknown as MultiplayerProfile, false),
+      format: row => <MultiplayerRating hideType profile={row as unknown as MultiplayerProfile} type={MultiplayerMatchType.RushClassical} />,
       sortable: true,
       allowOverflow: true,
     },
