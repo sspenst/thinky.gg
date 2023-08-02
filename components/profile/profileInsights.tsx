@@ -24,11 +24,9 @@ export default function ProfileInsights({ reqUser, user }: ProfileInsightsProps)
   }
 
   return (
-    <div className='flex flex-col gap-4 text-center justify-center items-center'>
-      <div className='flex flex-row gap-2 justify-center align-center items-center p-1'>
-        <ProfileInsightsLevelPlayLog user={user} />
-        <ProfileInsightsMostCompletions user={user} />
-      </div>
+    <div className='flex flex-col gap-4 text-center justify-center items-center w-full'>
+      <ProfileInsightsLevelPlayLog user={user} />
+      <ProfileInsightsMostCompletions user={user} />
       <ProfileInsightsScoreChart user={user} />
       {reqUser?._id === user._id && <ProfileInsightsSolveTimeComparison user={user} />}
     </div>
