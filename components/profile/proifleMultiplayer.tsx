@@ -5,7 +5,7 @@ import { MultiplayerMatchType } from '@root/models/MultiplayerEnums';
 import Link from 'next/link';
 import React, { useState } from 'react';
 import MatchResults from '../matchResults';
-import { getProfileRatingDisplay } from '../matchStatus';
+import MultiplayerRating from '../multiplayerRating';
 import MultiSelectUser from '../multiSelectUser';
 
 interface ProfileMultiplayerProps {
@@ -30,8 +30,6 @@ export default function ProfileMultiplayer({ user }: ProfileMultiplayerProps) {
     '/api/match/record?' + (compare && compare._id.toString().length > 0 ? 'compareUser=' + compare._id.toString() + '&' : '') + 'player=' + qs,
   );
 
-  console.log('/api/match/record?' + (compare ? 'compareUser=' + compare?._id.toString() + '' : '') + 'player=' + qs,);
-
   if (!multiplayerGames) {
     return <span>Loading...</span>;
   }
@@ -51,34 +49,26 @@ export default function ProfileMultiplayer({ user }: ProfileMultiplayerProps) {
       </div>
       <div className='flex flex-col gap-4'>
         <div className='flex flex-row gap-4 text-center justify-center items-center'>
-          {getProfileRatingDisplay({
-            type: MultiplayerMatchType.RushBullet,
-            profile: user.multiplayerProfile,
-            hideType: false,
-            record: records?.RushBullet
-          }
-          )}
-          {getProfileRatingDisplay({
-            type: MultiplayerMatchType.RushBlitz,
-            profile: user.multiplayerProfile,
-            hideType: false,
-            record: records?.RushBlitz
-          }
-          )}
-          {getProfileRatingDisplay({
-            type: MultiplayerMatchType.RushRapid,
-            profile: user.multiplayerProfile,
-            hideType: false,
-            record: records?.RushRapid
-          }
-          )}
-          {getProfileRatingDisplay({
-            type: MultiplayerMatchType.RushClassical,
-            profile: user.multiplayerProfile,
-            hideType: false,
-            record: records?.RushClassical
-          }
-          )}
+          <MultiplayerRating
+            profile={user.multiplayerProfile}
+            record={records?.RushBullet}
+            type={MultiplayerMatchType.RushBullet}
+          />
+          <MultiplayerRating
+            profile={user.multiplayerProfile}
+            record={records?.RushBlitz}
+            type={MultiplayerMatchType.RushBlitz}
+          />
+          <MultiplayerRating
+            profile={user.multiplayerProfile}
+            record={records?.RushRapid}
+            type={MultiplayerMatchType.RushRapid}
+          />
+          <MultiplayerRating
+            profile={user.multiplayerProfile}
+            record={records?.RushClassical}
+            type={MultiplayerMatchType.RushClassical}
+          />
         </div>
         <div className='flex flex-col gap-4 text-center justify-center items-center'>
           {multiplayerGames.map((game) => (
