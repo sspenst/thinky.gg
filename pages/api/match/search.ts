@@ -1,4 +1,4 @@
-import { ValidCommaSeparated, ValidNumber, ValidObjectId, ValidObjectIdArray, ValidType } from '@root/helpers/apiWrapper';
+import { ValidCommaSeparated, ValidNumber, ValidObjectId, ValidType } from '@root/helpers/apiWrapper';
 import withAuth, { NextApiRequestWithAuth } from '@root/lib/withAuth';
 import { MultiplayerMatchModel } from '@root/models/mongoose';
 import { MultiplayerMatchState } from '@root/models/MultiplayerEnums';
@@ -105,7 +105,7 @@ export default withAuth(
     const { players, matchId, limit, offset } = req.query;
 
     const query: MatchQuery = {
-      players: ((players as string).split(','))?.map((id: string) => new Types.ObjectId(id.toString())),
+      players: ((players as string)?.split(','))?.map((id: string) => new Types.ObjectId(id.toString())),
       matchId: matchId as string,
       limit: parseInt(limit as string),
       offset: parseInt(offset as string)
