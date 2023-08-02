@@ -1,5 +1,5 @@
 import { DifficultyLevelComparison } from '../components/profile/profileInsightsSolveTimeComparison';
-import { DateAndSum, UserAndSum } from '../contexts/levelContext';
+import { DateAndSum, UserAndSum, UserLevelAndStatTs } from '../contexts/levelContext';
 import User from '../models/db/user';
 import useSWRHelper from './useSWRHelper';
 
@@ -7,6 +7,7 @@ export enum ProStatsUserType {
   DifficultyLevelsComparisons = 'difficulty-levels-comparisons',
   MostSolvesForUserLevels = 'most-solves-for-user-levels',
   ScoreHistory = 'score-history',
+  PlayLogForUserCreatedLevels = 'play-log-for-user-created-levels',
 }
 
 export interface ProStatsUser {
@@ -14,6 +15,7 @@ export interface ProStatsUser {
   [ProStatsUserType.ScoreHistory]?: DateAndSum[];
   [ProStatsUserType.DifficultyLevelsComparisons]?: DifficultyLevelComparison[];
   [ProStatsUserType.MostSolvesForUserLevels]?: UserAndSum[];
+  [ProStatsUserType.PlayLogForUserCreatedLevels]?: UserLevelAndStatTs[];
 }
 
 export default function useProStatsUser(user: User | null, type: ProStatsUserType) {
