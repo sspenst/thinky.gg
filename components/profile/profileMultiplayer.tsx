@@ -34,7 +34,11 @@ export default function ProfileMultiplayer({ user }: ProfileMultiplayerProps) {
   );
 
   if (!multiplayerGames) {
-    return <span>Loading...</span>;
+    return (
+      <div className='text-center'>
+        <span>Loading...</span>
+      </div>
+    );
   }
 
   return (
