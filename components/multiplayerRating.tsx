@@ -2,12 +2,13 @@ import React from 'react';
 import { getMatchCountFromProfile, getMatchTypeNameFromMatchType, getRatingFromProfile, isProvisional, MUTLIPLAYER_PROVISIONAL_GAME_LIMIT } from '../helpers/multiplayerHelperFunctions';
 import MultiplayerProfile from '../models/db/multiplayerProfile';
 import { MultiplayerMatchType } from '../models/MultiplayerEnums';
+import { MultiplayerRecord } from './profile/profileMultiplayer';
 import StyledTooltip from './styledTooltip';
 
 export interface MultiplayerRatingProps {
   hideType?: boolean;
   profile?: MultiplayerProfile;
-  record?: { wins: number; losses: number; draws: number };
+  record?: MultiplayerRecord;
   type: MultiplayerMatchType;
 }
 

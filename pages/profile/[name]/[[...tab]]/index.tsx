@@ -1,7 +1,7 @@
 import FormattedDate from '@root/components/formattedDate';
-import ProfileMultiplayer from '@root/components/profile/proifleMultiplayer';
+import ProfileMultiplayer from '@root/components/profile/profileMultiplayer';
 import RoleIcons from '@root/components/roleIcons';
-import getUsers from '@root/helpers/getUsersFromIds';
+import { getUsersWithMultiplayerProfile } from '@root/helpers/getUsersWithMultiplayerProfile';
 import { MultiplayerMatchState } from '@root/models/MultiplayerEnums';
 import classNames from 'classnames';
 import { debounce } from 'debounce';
@@ -36,14 +36,13 @@ import { getReviewsByUserId, getReviewsByUserIdCount } from '../../../../helpers
 import { getReviewsForUserId, getReviewsForUserIdCount } from '../../../../helpers/getReviewsForUserId';
 import naturalSort from '../../../../helpers/naturalSort';
 import cleanUser from '../../../../lib/cleanUser';
-import dbConnect from '../../../../lib/dbConnect';
 import { getUserFromToken } from '../../../../lib/withAuth';
 import Achievement from '../../../../models/db/achievement';
 import Collection, { EnrichedCollection } from '../../../../models/db/collection';
 import { EnrichedLevel } from '../../../../models/db/level';
 import Review from '../../../../models/db/review';
 import User from '../../../../models/db/user';
-import { AchievementModel, CollectionModel, GraphModel, LevelModel, MultiplayerMatchModel, StatModel, UserModel } from '../../../../models/mongoose';
+import { AchievementModel, CollectionModel, GraphModel, LevelModel, MultiplayerMatchModel, StatModel } from '../../../../models/mongoose';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../../models/schemas/levelSchema';
 import SelectOption from '../../../../models/selectOption';
 import SelectOptionStats from '../../../../models/selectOptionStats';
@@ -149,13 +148,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   const profileTab = !tab ? ProfileTab.Profile : tab[0] as ProfileTab;
+  const users = await getUsersWithMultiplayerProfile({ name: name }, { bio: 1, ts: 1, calc_levels_created_count: 1, calc_records: 1, score: 1 });
 
-  await dbConnect();
-
-  //const user = await UserModel.findOne({ name: name }, '+bio', { lean: true });
-  const users = await getUsers({ name: name }, { bio: 1, ts: 1, calc_levels_created_count: 1, calc_records: 1, score: 1 });
-
-  if (!users || users.length === 0) {
+  if (!users || users.length !== 1) {
     return {
       notFound: true
     };
@@ -290,7 +285,6 @@ export interface ProfilePageProps {
   levelsCompletedByDifficulty: { [key: string]: number };
   levelsCount: number;
   multiplayerCount: number;
-
   pageProp: number;
   profileTab: ProfileTab;
   reqUser: User | null;
@@ -316,7 +310,6 @@ export default function ProfilePage({
   levelsCompletedByDifficulty,
   levelsCount,
   multiplayerCount,
-
   pageProp,
   profileTab,
   reqUser,
