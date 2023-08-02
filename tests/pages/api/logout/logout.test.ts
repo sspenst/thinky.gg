@@ -1,3 +1,4 @@
+import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import { logger } from '../../../../helpers/logger';
@@ -13,6 +14,7 @@ afterEach(() => {
 beforeAll(async () => {
   await dbConnect();
 });
+enableFetchMocks();
 describe('Testing logout api', () => {
   jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 

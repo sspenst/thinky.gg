@@ -1,3 +1,4 @@
+import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
@@ -12,6 +13,7 @@ afterAll(async() => {
 beforeAll(async () => {
   await dbConnect();
 });
+enableFetchMocks();
 describe('pages/api/collections.ts', () => {
   test('GET collections', async () => {
     await testApiHandler({

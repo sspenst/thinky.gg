@@ -1,3 +1,4 @@
+import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
@@ -11,9 +12,6 @@ import { CollectionModel } from '../../../../models/mongoose';
 import createCollectionHandler from '../../../../pages/api/collection/index';
 import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
 
-afterEach(() => {
-  jest.restoreAllMocks();
-});
 beforeAll(async () => {
   await dbConnect();
 });
@@ -25,6 +23,7 @@ afterEach(() => {
 });
 let collection_id: string;
 
+enableFetchMocks();
 describe('pages/api/collection/index.ts', () => {
   test('Sending nothing should return 401', async () => {
     await testApiHandler({
