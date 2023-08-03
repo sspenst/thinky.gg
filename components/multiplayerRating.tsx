@@ -21,11 +21,12 @@ export default function MultiplayerRating({ hideType, profile, record, type }: M
           color: 'var(--color-gray)',
         }}>{Math.round(getRatingFromProfile(profile, type))}</span>
         {record && (
-          <div className='text-xs'>
+          <div data-tooltip-id='profile-record' className='text-xs' data-tooltip-content={'Wins-Draws-Losses'}>
           ({record.wins}-{record.draws}-{record.losses})
           </div>
         )}
         <StyledTooltip id='profile-rating' />
+        <StyledTooltip id='profile-record' />
       </div>
     );
   } else {
