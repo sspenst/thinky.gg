@@ -14,6 +14,7 @@ interface MatchQuery {
   offset?: number;
   filter?: MultiplayerMatchHistoryFilters;
   players?: Types.ObjectId[];
+  rated?: boolean;
 }
 
 async function doMatchQuery(query: MatchQuery) {
@@ -31,6 +32,10 @@ async function doMatchQuery(query: MatchQuery) {
 
   if (query.matchId) {
     searchObj['matchId'] = query.matchId;
+  }
+
+  if (query.rated) {
+    searchObj['rated'] = query.rated;
   }
 
   if (query.filter) {
@@ -122,6 +127,7 @@ export default withAuth(
       query: {
         players: ValidCommaSeparated(false, ValidObjectId(false)),
         filter: ValidEnum(Object.values(MultiplayerMatchHistoryFilters)),
+        rated: ValidType('boolean', false, true),
         matchId: ValidType('string', false),
         limit: ValidNumber(false, 1, 100),
         offset: ValidNumber(false, 0, 1000)
@@ -135,6 +141,7 @@ export default withAuth(
       players: ((players as string)?.split(','))?.map((id: string) => new Types.ObjectId(id.toString())),
       matchId: matchId as string,
       filter: req.query.filter as MultiplayerMatchHistoryFilters,
+      rated: req.query.rated === 'true',
       limit: parseInt(limit as string),
       offset: parseInt(offset as string)
     };
