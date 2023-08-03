@@ -86,7 +86,7 @@ export default function ProfileMultiplayer({ user }: ProfileMultiplayerProps) {
             className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
             id='nextPage'
             style={{
-              visibility: multiplayerGames.length < 5 ? 'hidden' : 'visible',
+              visibility: multiplayerGames.length < 5 ? 'hidden' : 'visible', // TODO: we don't return the total results... so we don't know if there are more pages if it is exactly 5 left
             }}
             onClick={() => setPage(page + 1)}
           >
