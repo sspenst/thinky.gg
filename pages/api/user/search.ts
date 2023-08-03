@@ -24,7 +24,7 @@ export default apiWrapper({ GET: {
     roles: {
       $ne: Role.GUEST
     }
-  }, 'id name hideStatus last_visited_at avatarUpdatedAt', { lean: true, limit: 5, sort: { name: 1 } });
+  }, 'id name hideStatus last_visited_at avatarUpdatedAt', { lean: true, limit: 5, sort: { last_visited_at: -1, name: 1 } });
 
   users.map((user) => cleanUser(user));
 
