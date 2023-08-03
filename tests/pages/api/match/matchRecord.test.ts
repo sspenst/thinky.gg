@@ -5,9 +5,9 @@ import { NextApiRequestWithAuth } from '@root/lib/withAuth';
 import { MultiplayerMatchModel } from '@root/models/mongoose';
 import { MultiplayerMatchState, MultiplayerMatchType } from '@root/models/MultiplayerEnums';
 import { enableFetchMocks } from 'jest-fetch-mock';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
-import handler from '../../../../pages/api/match/search';
+import handler from '../../../../pages/api/match/record';
 
 afterEach(() => {
   jest.restoreAllMocks();
@@ -22,19 +22,30 @@ beforeAll(async () => {
     rated: true,
     state: MultiplayerMatchState.FINISHED,
     type: MultiplayerMatchType.RushBullet,
-    winners: [new Types.ObjectId(TestId.USER)],
+    winners: [new mongoose.Types.ObjectId(TestId.USER)],
   });
   await MultiplayerMatchModel.create({
     matchId: 'def',
     createdBy: TestId.USER_B,
-    players: [TestId.USER_B, TestId.USER_C],
+    players: [new Types.ObjectId(TestId.USER_B), new Types.ObjectId(TestId.USER_C)],
     private: false,
     rated: true,
     state: MultiplayerMatchState.FINISHED,
     type: MultiplayerMatchType.RushBlitz,
     winners: [new Types.ObjectId(TestId.USER_B)],
   });
+  await MultiplayerMatchModel.create({
+    matchId: 'ghi',
+    createdBy: TestId.USER,
+    players: [new Types.ObjectId(TestId.USER), new Types.ObjectId(TestId.USER_B)],
+    private: false,
+    rated: true,
+    state: MultiplayerMatchState.FINISHED,
+    type: MultiplayerMatchType.RushBullet,
+    winners: [], // tie
+  });
 });
+
 afterAll(async () => {
   await dbDisconnect();
 });
@@ -45,15 +56,13 @@ const DefaultReq = {
   cookies: {
     token: getTokenCookieValue(TestId.USER),
   },
-  query: {
 
-  },
   headers: {
     'content-type': 'application/json',
   },
 };
 
-describe('/api/match/search', () => {
+describe('/api/match/record', () => {
   // create two multiplayer matches
   // one with user1 and user2
 
@@ -62,34 +71,9 @@ describe('/api/match/search', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...DefaultReq,
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBeUndefined();
-        expect(res.status).toBe(200);
-
-        expect(response).toHaveLength(2);
-        const first = response[0];
-        const second = response[1];
-
-        expect(first).toHaveProperty('type', MultiplayerMatchType.RushBullet);
-        expect(second).toHaveProperty('type', MultiplayerMatchType.RushBlitz);
-      },
-    });
-  });
-  test('Trying to GET filter player', async () => {
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          ...DefaultReq,
           query: {
-            players: TestId.USER_C.toString(),
-          }
+            player: TestId.USER,
+          },
         } as unknown as NextApiRequestWithAuth;
 
         await handler(req, res);
@@ -101,13 +85,13 @@ describe('/api/match/search', () => {
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
 
-        expect(response).toHaveLength(1);
-        const first = response[0];
-
-        expect(first).toHaveProperty('type', MultiplayerMatchType.RushBlitz);
-        expect(first.players).toHaveLength(2);
-        expect(first.players[0]._id.toString()).toBe(TestId.USER_B.toString());
-        expect(first.players[1]._id.toString()).toBe(TestId.USER_C.toString());
+        expect(response).toStrictEqual({
+          [ MultiplayerMatchType.RushBullet]: {
+            draws: 1,
+            losses: 0,
+            wins: 1,
+          }
+        });
       },
     });
   });

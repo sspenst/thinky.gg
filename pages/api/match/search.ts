@@ -1,4 +1,5 @@
-import { ValidCommaSeparated, ValidNumber, ValidObjectId, ValidType } from '@root/helpers/apiWrapper';
+import { MultiplayerMatchHistoryFilters } from '@root/components/profile/profileMultiplayer';
+import { ValidCommaSeparated, ValidEnum, ValidNumber, ValidObjectId, ValidType } from '@root/helpers/apiWrapper';
 import withAuth, { NextApiRequestWithAuth } from '@root/lib/withAuth';
 import { MultiplayerMatchModel } from '@root/models/mongoose';
 import { MultiplayerMatchState } from '@root/models/MultiplayerEnums';
@@ -11,6 +12,7 @@ interface MatchQuery {
   matchId?: string;
   limit?: number;
   offset?: number;
+  filter?: MultiplayerMatchHistoryFilters;
   players?: Types.ObjectId[];
 }
 
@@ -29,6 +31,30 @@ async function doMatchQuery(query: MatchQuery) {
 
   if (query.matchId) {
     searchObj['matchId'] = query.matchId;
+  }
+
+  if (query.filter) {
+    switch (query.filter) {
+    case MultiplayerMatchHistoryFilters.Wins:
+      searchObj['winners'] = {
+        $in: query.players
+      };
+      break;
+    case MultiplayerMatchHistoryFilters.Losses:
+      // check if not in winners AND that winners is not empty
+      searchObj['winners'] = {
+        $not: {
+          $in: query.players
+        },
+        $ne: []
+      };
+      break;
+    case MultiplayerMatchHistoryFilters.Draws:
+      searchObj['winners'] = {
+        $size: 0
+      };
+      break;
+    }
   }
 
   const agg = await MultiplayerMatchModel.aggregate([
@@ -95,6 +121,7 @@ export default withAuth(
     GET: {
       query: {
         players: ValidCommaSeparated(false, ValidObjectId(false)),
+        filter: ValidEnum(Object.values(MultiplayerMatchHistoryFilters)),
         matchId: ValidType('string', false),
         limit: ValidNumber(false, 1, 100),
         offset: ValidNumber(false, 0, 1000)
@@ -107,6 +134,7 @@ export default withAuth(
     const query: MatchQuery = {
       players: ((players as string)?.split(','))?.map((id: string) => new Types.ObjectId(id.toString())),
       matchId: matchId as string,
+      filter: req.query.filter as MultiplayerMatchHistoryFilters,
       limit: parseInt(limit as string),
       offset: parseInt(offset as string)
     };

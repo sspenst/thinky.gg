@@ -181,7 +181,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     getFollowData(user._id.toString(), reqUser),
     profileTab === ProfileTab.Profile ? getCompletionByDifficultyTable(user) : {},
     LevelModel.countDocuments({ isDeleted: { $ne: true }, isDraft: false, userId: userId }),
-    MultiplayerMatchModel.countDocuments({ players: userId, state: MultiplayerMatchState.FINISHED }),
+    MultiplayerMatchModel.countDocuments({ players: userId, state: MultiplayerMatchState.FINISHED, rated: true }),
     profileTab === ProfileTab.ReviewsReceived ? getReviewsForUserId(userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
     profileTab === ProfileTab.ReviewsWritten ? getReviewsByUserId(userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
     getReviewsForUserIdCount(userId),
