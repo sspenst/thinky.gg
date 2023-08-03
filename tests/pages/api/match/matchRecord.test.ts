@@ -22,19 +22,30 @@ beforeAll(async () => {
     rated: true,
     state: MultiplayerMatchState.FINISHED,
     type: MultiplayerMatchType.RushBullet,
-    winners: new mongoose.Types.ObjectId(TestId.USER),
+    winners: [new mongoose.Types.ObjectId(TestId.USER)],
   });
   await MultiplayerMatchModel.create({
     matchId: 'def',
     createdBy: TestId.USER_B,
-    players: [TestId.USER_B, TestId.USER_C],
+    players: [new Types.ObjectId(TestId.USER_B), new Types.ObjectId(TestId.USER_C)],
     private: false,
     rated: true,
     state: MultiplayerMatchState.FINISHED,
     type: MultiplayerMatchType.RushBlitz,
     winners: [new Types.ObjectId(TestId.USER_B)],
   });
+  await MultiplayerMatchModel.create({
+    matchId: 'ghi',
+    createdBy: TestId.USER,
+    players: [new Types.ObjectId(TestId.USER), new Types.ObjectId(TestId.USER_B)],
+    private: false,
+    rated: true,
+    state: MultiplayerMatchState.FINISHED,
+    type: MultiplayerMatchType.RushBullet,
+    winners: [], // tie
+  });
 });
+
 afterAll(async () => {
   await dbDisconnect();
 });
@@ -76,7 +87,7 @@ describe('/api/match/record', () => {
 
         expect(response).toStrictEqual({
           [ MultiplayerMatchType.RushBullet]: {
-            draws: 0,
+            draws: 1,
             losses: 0,
             wins: 1,
           }

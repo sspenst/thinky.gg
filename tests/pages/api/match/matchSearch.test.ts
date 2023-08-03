@@ -3,7 +3,7 @@ import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { getTokenCookieValue } from '@root/lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '@root/lib/withAuth';
 import { MultiplayerMatchModel } from '@root/models/mongoose';
-import { MultiplayerMatchType } from '@root/models/MultiplayerEnums';
+import { MultiplayerMatchState, MultiplayerMatchType } from '@root/models/MultiplayerEnums';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -15,24 +15,24 @@ afterEach(() => {
 beforeAll(async () => {
   await dbConnect();
   await MultiplayerMatchModel.create({
-    matchId: new Types.ObjectId(),
+    matchId: 'abc',
     createdBy: TestId.USER,
-    players: [TestId.USER, TestId.USER_B],
+    players: [new Types.ObjectId(TestId.USER), new Types.ObjectId(TestId.USER_B)],
     private: false,
     rated: true,
-    state: 'FINISHED',
+    state: MultiplayerMatchState.FINISHED,
     type: MultiplayerMatchType.RushBullet,
-    winners: [TestId.USER],
+    winners: [new Types.ObjectId(TestId.USER)],
   });
   await MultiplayerMatchModel.create({
-    matchId: new Types.ObjectId(),
+    matchId: 'def',
     createdBy: TestId.USER_B,
     players: [TestId.USER_B, TestId.USER_C],
     private: false,
     rated: true,
-    state: 'FINISHED',
+    state: MultiplayerMatchState.FINISHED,
     type: MultiplayerMatchType.RushBlitz,
-    winners: [TestId.USER_B],
+    winners: [new Types.ObjectId(TestId.USER_B)],
   });
 });
 afterAll(async () => {
