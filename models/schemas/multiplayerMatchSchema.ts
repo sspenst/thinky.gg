@@ -94,13 +94,13 @@ const MultiplayerMatchSchema = new mongoose.Schema<MultiplayerMatch>(
       enum: MultiplayerMatchState,
       required: true,
     },
-    winners: [
+    winners:
       {
         type: [mongoose.Schema.Types.ObjectId],
         ref: 'User',
         default: [],
       },
-    ],
+
   },
   {
     timestamps: true,
