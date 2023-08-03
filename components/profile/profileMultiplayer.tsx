@@ -106,6 +106,7 @@ export default function ProfileMultiplayer({ user }: ProfileMultiplayerProps) {
         <MultiSelectUser
           defaultValue={compare}
           onSelect={(selected: User) => {
+            setPage(0);
             setCompare(selected);
           }}
         />
