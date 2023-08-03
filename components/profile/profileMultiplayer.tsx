@@ -35,9 +35,10 @@ export default function ProfileMultiplayer({ user }: ProfileMultiplayerProps) {
   const [compare, setCompare] = useState<User>();
   const [page, setPage] = useState<number>(0);
   const [filter, setFilter] = useState<MultiplayerMatchHistoryFilters>(MultiplayerMatchHistoryFilters.All);
+  const [rated, setRated] = useState<boolean>(true);
   const offset = page * 5;
   const { data: multiplayerGames } = useSWRHelper<MultiplayerMatch[]>(
-    '/api/match/search?filter=' + filter + '&limit=5&offset=' +
+    '/api/match/search?rated=' + rated + '&filter=' + filter + '&limit=5&offset=' +
       offset +
       '&players=' +
       qs +
@@ -137,21 +138,29 @@ export default function ProfileMultiplayer({ user }: ProfileMultiplayerProps) {
             type={MultiplayerMatchType.RushClassical}
           />
         </div>
+
         <div className='flex flex-row gap-2 text-center justify-center items-center'>
-          <FilterButton selected={filter === MultiplayerMatchHistoryFilters.Wins} value='Wins' first last onClick={() => {
-            if (filter === MultiplayerMatchHistoryFilters.Wins) setFilter(MultiplayerMatchHistoryFilters.All);
-            else setFilter(MultiplayerMatchHistoryFilters.Wins);
-          }} element={<span className='text-sm'>Wins</span>} />
-          <FilterButton selected={filter === MultiplayerMatchHistoryFilters.Losses} value='Losses' first last onClick={() => {
-            if (filter === MultiplayerMatchHistoryFilters.Losses) setFilter(MultiplayerMatchHistoryFilters.All);
-            else setFilter(MultiplayerMatchHistoryFilters.Losses);
-          }
-          } element={<span className='text-sm'>Losses</span>} />
-          <FilterButton selected={filter === MultiplayerMatchHistoryFilters.Draws} value='Draws' first last onClick={() => {
-            if (filter === MultiplayerMatchHistoryFilters.Draws) setFilter(MultiplayerMatchHistoryFilters.All);
-            else setFilter(MultiplayerMatchHistoryFilters.Draws);
-          }
-          } element={<span className='text-sm'>Draws</span>} />
+          <input type='checkbox' checked={rated} onChange={() => {
+            setPage(0);
+            setRated(!rated);
+          }} />
+          <span className='text-sm'>Rated</span>
+          <div className='flex flex-row text-center justify-center items-center'>
+            <FilterButton selected={filter === MultiplayerMatchHistoryFilters.Wins} value='Wins' first onClick={() => {
+              if (filter === MultiplayerMatchHistoryFilters.Wins) setFilter(MultiplayerMatchHistoryFilters.All);
+              else setFilter(MultiplayerMatchHistoryFilters.Wins);
+            }} element={<span className='text-sm'>Wins</span>} />
+            <FilterButton selected={filter === MultiplayerMatchHistoryFilters.Losses} value='Losses' onClick={() => {
+              if (filter === MultiplayerMatchHistoryFilters.Losses) setFilter(MultiplayerMatchHistoryFilters.All);
+              else setFilter(MultiplayerMatchHistoryFilters.Losses);
+            }
+            } element={<span className='text-sm'>Losses</span>} />
+            <FilterButton selected={filter === MultiplayerMatchHistoryFilters.Draws} value='Draws' last onClick={() => {
+              if (filter === MultiplayerMatchHistoryFilters.Draws) setFilter(MultiplayerMatchHistoryFilters.All);
+              else setFilter(MultiplayerMatchHistoryFilters.Draws);
+            }
+            } element={<span className='text-sm'>Draws</span>} />
+          </div>
         </div>
         <div />
         <div className='flex flex-col gap-2 text-center justify-center items-center'>
