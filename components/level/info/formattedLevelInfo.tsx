@@ -1,6 +1,7 @@
 import { Tab } from '@headlessui/react';
 import Complete from '@root/components/complete';
 import FormattedDate from '@root/components/formattedDate';
+import FormattedLevelReviews from '@root/components/formattedLevelReviews';
 import Image from 'next/image';
 import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -199,6 +200,14 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
           Unpublish
         </button>
       </div>
+      {/* Reviews */}
+      {!levelContext?.inCampaign && <>
+        <div className='m-3' style={{
+          backgroundColor: 'var(--bg-color-4)',
+          height: 1,
+        }} />
+        <FormattedLevelReviews />
+      </>}
       <EditLevelModal
         closeModal={() => {
           setIsEditLevelOpen(false);
