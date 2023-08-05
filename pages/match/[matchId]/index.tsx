@@ -60,6 +60,7 @@ export default function Match() {
   const [player1GameState, setPlayer1GameState] = useState<GameState | null>(null);
   const [player2GameState, setPlayer2GameState] = useState<GameState | null>(null);
   const notPlaying = !match?.players.some(player => player._id.toString() === user?._id.toString());
+  const player1 = match?.players[0]._id.toString();
 
   function emitGameState(gameState: GameState) {
     multiplayerSocket?.socket?.emit('gameState', {
@@ -69,6 +70,7 @@ export default function Match() {
   }
 
   useEffect(() => {
+    console.log('connecting to socket');
     const socketConn = io('', {
       path: '/api/socket/',
       withCredentials: true,
@@ -81,9 +83,9 @@ export default function Match() {
       socketConn.on('gameState', (data: { userId: string, gameState: GameState }) => {
         const { userId: userIdString, gameState } = data;
 
-        console.log('gameState', userIdString, gameState);
+        console.log('gameState', userIdString, player1);
 
-        if (userIdString === match?.players[0]._id.toString()) {
+        if (userIdString === player1) {
           setPlayer1GameState(gameState);
         } else {
           setPlayer2GameState(gameState);
@@ -107,10 +109,11 @@ export default function Match() {
     return () => {
       socketConn.off('match');
       socketConn.off('matchNotFound');
+      socketConn.off('connectedPlayersInRoom');
       socketConn.off('gameState');
       socketConn.disconnect();
     };
-  }, [match?.players, matchId, notPlaying, router]);
+  }, [matchId, notPlaying, player1, router]);
 
   const [countDown, setCountDown] = useState<number>(-1);
 

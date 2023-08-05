@@ -144,6 +144,7 @@ export default async function startSocketIOServer() {
 
         if (isValidGameState(gameState)) {
           await broadcastGameState(mongoEmitter, userId, matchId, gameState);
+          await broadcastCountOfUsersInRoom(adapted, matchId); // TODO: probably worth finding a better place to put this
         }
       });
       socket.on('disconnect', async () => {
