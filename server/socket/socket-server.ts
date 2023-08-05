@@ -11,7 +11,7 @@ import { MultiplayerMatchModel } from '../../models/mongoose';
 import { MultiplayerMatchState } from '../../models/MultiplayerEnums';
 import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
 import { getMatch } from '../../pages/api/match/[matchId]';
-import { broadcastConnectedPlayers, broadcastGameState, broadcastMatch, broadcastMatches, broadcastPrivateAndInvitedMatches, scheduleBroadcastMatch } from './socketFunctions';
+import { broadcastConnectedPlayers, broadcastCountOfUsersInRoom, broadcastGameState, broadcastMatch, broadcastMatches, broadcastPrivateAndInvitedMatches, scheduleBroadcastMatch } from './socketFunctions';
 
 'use strict';
 
@@ -174,6 +174,7 @@ export default async function startSocketIOServer() {
 
           enrichMultiplayerMatch(matchClone, reqUser?._id.toString());
           socket?.emit('match', matchClone);
+          broadcastCountOfUsersInRoom(adapted, matchId);
         } else {
           socket?.emit('matchNotFound');
         }

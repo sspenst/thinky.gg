@@ -2,6 +2,7 @@ import GameLayout from '@root/components/level/gameLayout';
 import Grid from '@root/components/level/grid';
 import MatchResults from '@root/components/matchResults';
 import { GameState } from '@root/helpers/gameStateHelpers';
+import { UserWithMultiplayerProfile } from '@root/models/db/user';
 import moment from 'moment';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
@@ -49,6 +50,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 /* istanbul ignore next */
 export default function Match() {
   const [match, setMatch] = useState<MultiplayerMatch>();
+  const [connectedPlayersInRoom, setConnectedPlayersInRoom] = useState<{count: number, users: UserWithMultiplayerProfile[]}>([]);
   const readyMark = useRef(false);
   const router = useRouter();
   const startSoundPlayed = useRef(false);
@@ -91,6 +93,10 @@ export default function Match() {
       );
     }
 
+    socketConn.on('connectedPlayersInRoom', (players: any) => {
+      console.log('connectedPlayersInRoom', players);
+      setConnectedPlayersInRoom(players);
+    });
     socketConn.on('match', (match: MultiplayerMatch) => {
       setMatch(match);
     });
@@ -384,6 +390,21 @@ export default function Match() {
             } as any)[match.state]
           }
         </h1>
+        {connectedPlayersInRoom && connectedPlayersInRoom.count > 2 && (
+          <div className=' absolute items-center justify-center p-1'>
+            <div
+              className='-ml-1 px-0.5 text-xs rounded-full text-green-500'
+              style={{
+                backgroundColor: 'var(--bg-color-2)',
+                fontSize: '0.75rem',
+                lineHeight: '0.75rem',
+                borderColor: 'var(--bg-color-2)',
+              }}
+            >
+              {connectedPlayersInRoom.count - 2} spectating
+            </div>
+          </div>
+        )}
         {match.state === MultiplayerMatchState.FINISHED || match.state === MultiplayerMatchState.ABORTED || notPlaying ? (
           <div className='flex flex-col items-center justify-center p-3 gap-6'>
             <Link
