@@ -54,7 +54,7 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, hi
     }}>
       <div className='grow flex flex-col max-w-full'>
         {!matchId && level.userId && !fullScreen && <>
-          <div className='flex items-center justify-center py-1 px-2 gap-2 block xl:hidden'>
+          <div className='flex items-center justify-center py-1 px-2 gap-1 block xl:hidden'>
             <button
               className='flex gap-2 items-center truncate'
               onClick={() => setIsLevelInfoOpen(true)}

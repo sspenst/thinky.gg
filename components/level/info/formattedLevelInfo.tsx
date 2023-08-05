@@ -201,13 +201,11 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
         </button>
       </div>
       {/* Reviews */}
-      {!levelContext?.inCampaign && <>
-        <div className='m-3' style={{
-          backgroundColor: 'var(--bg-color-4)',
-          height: 1,
-        }} />
-        <FormattedLevelReviews />
-      </>}
+      <div className='m-3' style={{
+        backgroundColor: 'var(--bg-color-4)',
+        height: 1,
+      }} />
+      <FormattedLevelReviews />
       <EditLevelModal
         closeModal={() => {
           setIsEditLevelOpen(false);
