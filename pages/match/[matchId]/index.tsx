@@ -421,7 +421,7 @@ export default function Match() {
 
                 <div className='flex flex-col h-48 w-full '>
                   <FormattedUser size={Dimensions.AvatarSizeSmall} user={match.players[0]} />
-                  <Grid id='player1' gameState={player1GameState} leastMoves={0} onCellClick={() => {console.log('click');}} />
+                  <Grid id='player1' gameState={player1GameState} leastMoves={player1GameState.leastMoves || 0} onCellClick={() => {console.log('click');}} />
 
                 </div>
 
@@ -429,7 +429,7 @@ export default function Match() {
 
                   <FormattedUser size={Dimensions.AvatarSizeSmall} user={match.players[1]} />
 
-                  <Grid id='player1' gameState={player2GameState} leastMoves={0} onCellClick={() => {console.log('click');}} />
+                  <Grid id='player1' gameState={player2GameState} leastMoves={player2GameState.leastMoves || 0} onCellClick={() => {console.log('click');}} />
 
                 </div>
               </div>
@@ -488,6 +488,7 @@ export default function Match() {
                   matchId={match.matchId}
                   onMove={(gameState) => {
                     // sent the move to the server using socket
+                    gameState.leastMoves = activeLevel.leastMoves;
                     emitGameState(gameState);
                   }
                   }
