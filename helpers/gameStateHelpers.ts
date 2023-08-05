@@ -57,6 +57,48 @@ export interface GameState {
   redoStack: Direction[];
 }
 
+export function isValidGameState(object: any): object is GameState {
+  if (typeof object !== 'object' || object === null) return false;
+
+  const hasValidBoard = Array.isArray(object.board) && object.board.every((row: any[]) => Array.isArray(row) && row.every(tile => isValidTileState(tile)));
+
+  const hasValidMoves = Array.isArray(object.moves) && object.moves.every((move: any) => isValidMove(move));
+
+  const hasValidPos = object.pos instanceof Position;
+
+  const hasValidRedoStack = Array.isArray(object.redoStack) && object.redoStack.every((dir: any) => typeof dir === 'number');
+
+  return hasValidBoard && hasValidMoves && hasValidPos && hasValidRedoStack;
+}
+
+function isValidTileState(object: any): object is TileState {
+  if (typeof object !== 'object' || object === null) return false;
+
+  const hasValidBlock = typeof object.block === 'undefined' || isValidBlockState(object.block);
+  const hasValidBlockInHole = typeof object.blockInHole === 'undefined' || isValidBlockState(object.blockInHole);
+  const hasValidText = Array.isArray(object.text) && object.text.every((item: any) => typeof item === 'number');
+  const hasValidTileType = Object.values(TileType).includes(object.tileType);
+
+  return hasValidBlock && hasValidBlockInHole && hasValidText && hasValidTileType;
+}
+
+function isValidBlockState(object: any): object is BlockState {
+  if (typeof object !== 'object' || object === null) return false;
+  const hasValidId = typeof object.id === 'number';
+  const hasValidTileType = Object.values(TileType).includes(object.tileType);
+
+  return hasValidId && hasValidTileType;
+}
+
+function isValidMove(object: any): object is Move {
+  if (typeof object !== 'object' || object === null) return false;
+
+  const hasValidBlockId = typeof object.blockId === 'undefined' || typeof object.blockId === 'number';
+  const hasValidDirection = typeof object.direction === 'number';
+
+  return hasValidBlockId && hasValidDirection;
+}
+
 export function cloneGameState(gameState: GameState) {
   const newGameState: GameState = {
     board: gameState.board.map(row => {

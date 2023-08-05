@@ -1,4 +1,3 @@
-import GameLayout from '@root/components/level/gameLayout';
 import Grid from '@root/components/level/grid';
 import MatchResults from '@root/components/matchResults';
 import { GameState } from '@root/helpers/gameStateHelpers';
@@ -50,7 +49,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 /* istanbul ignore next */
 export default function Match() {
   const [match, setMatch] = useState<MultiplayerMatch>();
-  const [connectedPlayersInRoom, setConnectedPlayersInRoom] = useState<{count: number, users: UserWithMultiplayerProfile[]}>([]);
+  const [connectedPlayersInRoom, setConnectedPlayersInRoom] = useState<{count: number, users: UserWithMultiplayerProfile[]}>();
   const readyMark = useRef(false);
   const router = useRouter();
   const startSoundPlayed = useRef(false);
@@ -79,7 +78,7 @@ export default function Match() {
     });
 
     if (notPlaying) {
-      socketConn.on('gameState', (data: any) => {
+      socketConn.on('gameState', (data: { userId: string, gameState: GameState }) => {
         const { userId: userIdString, gameState } = data;
 
         console.log('gameState', userIdString, gameState);
@@ -93,8 +92,7 @@ export default function Match() {
       );
     }
 
-    socketConn.on('connectedPlayersInRoom', (players: any) => {
-      console.log('connectedPlayersInRoom', players);
+    socketConn.on('connectedPlayersInRoom', (players: {count: number, users: UserWithMultiplayerProfile[]}) => {
       setConnectedPlayersInRoom(players);
     });
     socketConn.on('match', (match: MultiplayerMatch) => {
@@ -112,7 +110,7 @@ export default function Match() {
       socketConn.off('gameState');
       socketConn.disconnect();
     };
-  }, [matchId, notPlaying, router]);
+  }, [match?.players, matchId, notPlaying, router]);
 
   const [countDown, setCountDown] = useState<number>(-1);
 

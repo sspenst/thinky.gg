@@ -1,5 +1,5 @@
 import Direction from '@root/constants/direction';
-import { areEqualGameStates, cloneGameState, initGameState, makeMove, undo } from '@root/helpers/gameStateHelpers';
+import { areEqualGameStates, cloneGameState, initGameState, isValidGameState, makeMove, undo } from '@root/helpers/gameStateHelpers';
 
 describe('helpers/gameStateHelpers.ts', () => {
   test('gameStateHelpers flow', () => {
@@ -81,5 +81,10 @@ describe('helpers/gameStateHelpers.ts', () => {
 
     // try to move off the exit
     expect(makeMove(gameState, Direction.RIGHT)).toBeFalsy();
+
+    // validate gameState
+    const isValid = isValidGameState(gameState);
+
+    expect(isValid).toBeTruthy();
   });
 });
