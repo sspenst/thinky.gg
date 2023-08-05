@@ -126,7 +126,7 @@ export default withAuth(
     GET: {
       query: {
         players: ValidCommaSeparated(false, ValidObjectId(false)),
-        filter: ValidEnum(Object.values(MultiplayerMatchHistoryFilters)),
+        filter: ValidEnum(Object.values(MultiplayerMatchHistoryFilters), false),
         rated: ValidType('boolean', false, true),
         matchId: ValidType('string', false),
         limit: ValidNumber(false, 1, 100),
