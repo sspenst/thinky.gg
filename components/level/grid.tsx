@@ -46,7 +46,6 @@ export default function Grid({ cellClassName, gameState, id, leastMoves, onCellC
           Math.floor(gridWidth / width) : Math.floor(gridHeight / height);
 
       // NB: calculting tile size here instead of setting grid height/width avoids rendering on every resize
-      console.log(entries[0].contentBoxSize[0]);
       setTileSize(newTileSize);
     });
 
