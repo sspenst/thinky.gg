@@ -55,6 +55,7 @@ export interface GameState {
   moves: Move[];
   pos: Position;
   redoStack: Direction[];
+  leastMoves?: number;
 }
 
 export function isValidGameState(object: any): object is GameState {
@@ -68,7 +69,9 @@ export function isValidGameState(object: any): object is GameState {
 
   const hasValidRedoStack = Array.isArray(object.redoStack) && object.redoStack.every((dir: any) => typeof dir === 'number');
 
-  return hasValidBoard && hasValidMoves && hasValidPos && hasValidRedoStack;
+  const hasValidLeastMoves = typeof object.leastMoves === 'undefined' || typeof object.leastMoves === 'number';
+
+  return hasValidBoard && hasValidMoves && hasValidPos && hasValidRedoStack && hasValidLeastMoves;
 }
 
 function isValidTileState(object: any): object is TileState {
