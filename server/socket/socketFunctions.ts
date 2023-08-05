@@ -1,3 +1,4 @@
+import { GameState } from '@root/helpers/gameStateHelpers';
 import { getUsersWithMultiplayerProfileFromIds } from '@root/helpers/getUsersWithMultiplayerProfile';
 import { Emitter } from '@socket.io/mongo-emitter';
 import { Types } from 'mongoose';
@@ -143,7 +144,7 @@ export async function broadcastConnectedPlayers(emitter: Server) {
   emitter?.emit('connectedPlayers', { users: filteredUsers.sort((a, b) => sortByRating(a, b, MultiplayerMatchType.RushBullet)).slice(0, 20), count: filteredUsers.length });
 }
 
-export async function broadcastGameState(emitter: Emitter, userId: Types.ObjectId, matchId: string, gameState: any) {
+export async function broadcastGameState(emitter: Emitter, userId: Types.ObjectId, matchId: string, gameState: GameState) {
   emitter?.to(matchId).emit('gameState', {
     userId: userId.toString(),
     gameState: gameState,
