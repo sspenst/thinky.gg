@@ -11,7 +11,7 @@ import { MultiplayerMatchModel } from '../../models/mongoose';
 import { MultiplayerMatchState } from '../../models/MultiplayerEnums';
 import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
 import { getMatch } from '../../pages/api/match/[matchId]';
-import { broadcastConnectedPlayers, broadcastMatches, broadcastPrivateAndInvitedMatches, scheduleBroadcastMatch } from './socketFunctions';
+import { broadcastConnectedPlayers, broadcastGameState, broadcastMatch, broadcastMatches, broadcastPrivateAndInvitedMatches, scheduleBroadcastMatch } from './socketFunctions';
 
 'use strict';
 
@@ -137,6 +137,12 @@ export default async function startSocketIOServer() {
         return;
       }
 
+      socket.on('gameState', async (data) => {
+        const userId = socket.data?._id as Types.ObjectId;
+        const { matchId, gameState } = data;
+
+        await broadcastGameState(mongoEmitter, userId, matchId, gameState);
+      });
       socket.on('disconnect', async () => {
         const userId = socket.data?._id as Types.ObjectId;
 

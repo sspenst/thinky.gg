@@ -147,11 +147,13 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
           <input onChange={e => setPassword2(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='password2' type='password' placeholder='******************' />
         </div>
         <div className='w-full pt-2'>
-          <ReCAPTCHA
-            onChange={onRecaptchaChange}
-            ref={recaptchaRef}
-            sitekey={recaptchaPublicKey ?? ''}
-          />
+          {recaptchaPublicKey && (
+            <ReCAPTCHA
+              onChange={onRecaptchaChange}
+              ref={recaptchaRef}
+              sitekey={recaptchaPublicKey ?? ''}
+            />
+          )}
         </div>
         <div className='flex items-center justify-between gap-1'>
           <input type='checkbox' id='terms_agree_checkbox' required />
