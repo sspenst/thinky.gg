@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../contexts/appContext';
 import { LevelContext } from '../contexts/levelContext';
 import FormattedReview from './formattedReview';
@@ -9,11 +9,16 @@ interface FormattedLevelReviewsProps {
 }
 
 export default function FormattedLevelReviews({ inModal }: FormattedLevelReviewsProps) {
+  const [hideReviews, setHideReviews] = useState<boolean>();
   const levelContext = useContext(LevelContext);
   const { user } = useContext(AppContext);
 
   const reviewDivs = [];
   let userReview = undefined;
+
+  useEffect(() => {
+    setHideReviews(!!levelContext?.inCampaign);
+  }, [levelContext?.inCampaign]);
 
   if (!levelContext || !levelContext.reviews) {
     return <span>Loading...</span>;
@@ -53,7 +58,15 @@ export default function FormattedLevelReviews({ inModal }: FormattedLevelReviews
         }
       </div>
       <ReviewForm inModal={inModal} key={`user-review-${userReview?._id.toString()}`} userReview={userReview} />
-      {reviewDivs}
+      {hideReviews === undefined ? null : hideReviews ?
+        <div className='flex justify-center'>
+          <button className='font-medium px-2 py-1 bg-neutral-200 hover:bg-white transition text-black rounded-lg border border-neutral-400 mt-2' onClick={() => setHideReviews(false)}>
+            Show all reviews
+          </button>
+        </div>
+        :
+        reviewDivs
+      }
     </>
   );
 }
