@@ -181,9 +181,9 @@ describe('api/user/search', () => {
 
         expect(response.error).toBeUndefined();
         expect(response).toHaveLength(3);
-        expect(response[0].name).toBe('AncientUser');
-        expect(response[1].name).toBe('Curator');
-        expect(response[2].name).toBe('test'); // notice the t
+        expect(response[0].name).toBe('test');
+        expect(response[1].name).toBe('AncientUser');
+        expect(response[2].name).toBe('Curator');
 
         expect(res.status).toBe(200);
       },

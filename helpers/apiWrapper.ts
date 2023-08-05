@@ -46,10 +46,10 @@ export function ValidType(type: string, mustExist = true, parsedString = false) 
   };
 }
 
-export function ValidEnum(values: string[]) {
+export function ValidEnum(values: string[], mustExist = true) {
   return (value?: unknown) => {
     if (!value) {
-      return false;
+      return !mustExist;
     }
 
     return values.includes(value as string);
