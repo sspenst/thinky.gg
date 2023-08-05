@@ -86,5 +86,11 @@ describe('helpers/gameStateHelpers.ts', () => {
     const isValid = isValidGameState(gameState);
 
     expect(isValid).toBeTruthy();
+
+    const isNotValid = isValidGameState({
+      'blah': 'blah'
+    });
+
+    expect(isNotValid).toBeFalsy();
   });
 });
