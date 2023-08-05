@@ -64,7 +64,7 @@ export function isValidGameState(object: any): object is GameState {
 
   const hasValidMoves = Array.isArray(object.moves) && object.moves.every((move: any) => isValidMove(move));
 
-  const hasValidPos = object.pos instanceof Position;
+  const hasValidPos = typeof object.pos === 'object' && object.pos !== null && typeof object.pos.x === 'number' && typeof object.pos.y === 'number';
 
   const hasValidRedoStack = Array.isArray(object.redoStack) && object.redoStack.every((dir: any) => typeof dir === 'number');
 
