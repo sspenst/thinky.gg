@@ -200,12 +200,6 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
           Unpublish
         </button>
       </div>
-      {/* Reviews */}
-      <div className='m-3' style={{
-        backgroundColor: 'var(--bg-color-4)',
-        height: 1,
-      }} />
-      <FormattedLevelReviews />
       <EditLevelModal
         closeModal={() => {
           setIsEditLevelOpen(false);
@@ -232,5 +226,11 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
         level={level}
       />
     </>}
+    {/* Reviews */}
+    <div className='m-3' style={{
+      backgroundColor: 'var(--bg-color-4)',
+      height: 1,
+    }} />
+    <FormattedLevelReviews />
   </>);
 }
