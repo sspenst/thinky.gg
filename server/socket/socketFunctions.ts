@@ -117,6 +117,13 @@ export async function broadcastConnectedPlayers(emitter: Server) {
   emitter?.emit('connectedPlayers', { users: filteredUsers.sort((a, b) => sortByRating(a, b, MultiplayerMatchType.RushBullet)).slice(0, 20), count: filteredUsers.length });
 }
 
+export async function broadcastGameState(emitter: Emitter, userId: Types.ObjectId, matchId: string, gameState: any) {
+  emitter?.to(matchId).emit('gameState', {
+    userId: userId.toString(),
+    gameState: gameState,
+  });
+}
+
 export async function broadcastMatch(emitter: Emitter, matchId: string) {
   const match = await getMatch(matchId);
 
