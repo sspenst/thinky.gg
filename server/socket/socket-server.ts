@@ -1,4 +1,5 @@
 // ts-node --files server/socket/socket-server.ts
+import { isValidGameState } from '@root/helpers/gameStateHelpers';
 import { createAdapter } from '@socket.io/mongo-adapter';
 import { Emitter } from '@socket.io/mongo-emitter';
 import dotenv from 'dotenv';
@@ -11,7 +12,7 @@ import { MultiplayerMatchModel } from '../../models/mongoose';
 import { MultiplayerMatchState } from '../../models/MultiplayerEnums';
 import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
 import { getMatch } from '../../pages/api/match/[matchId]';
-import { broadcastConnectedPlayers, broadcastMatches, broadcastPrivateAndInvitedMatches, scheduleBroadcastMatch } from './socketFunctions';
+import { broadcastConnectedPlayers, broadcastCountOfUsersInRoom, broadcastGameState, broadcastMatches, broadcastPrivateAndInvitedMatches, scheduleBroadcastMatch } from './socketFunctions';
 
 'use strict';
 
@@ -137,6 +138,15 @@ export default async function startSocketIOServer() {
         return;
       }
 
+      socket.on('gameState', async (data) => {
+        const userId = socket.data?._id as Types.ObjectId;
+        const { matchId, gameState } = data;
+
+        if (isValidGameState(gameState)) {
+          await broadcastGameState(mongoEmitter, userId, matchId, gameState);
+          await broadcastCountOfUsersInRoom(adapted, matchId); // TODO: probably worth finding a better place to put this
+        }
+      });
       socket.on('disconnect', async () => {
         const userId = socket.data?._id as Types.ObjectId;
 
@@ -168,6 +178,7 @@ export default async function startSocketIOServer() {
 
           enrichMultiplayerMatch(matchClone, reqUser?._id.toString());
           socket?.emit('match', matchClone);
+          broadcastCountOfUsersInRoom(adapted, matchId);
         } else {
           socket?.emit('matchNotFound');
         }
