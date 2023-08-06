@@ -1,3 +1,4 @@
+import { GameState } from '@root/helpers/gameStateHelpers';
 import { getUsersWithMultiplayerProfileFromIds } from '@root/helpers/getUsersWithMultiplayerProfile';
 import { Emitter } from '@socket.io/mongo-emitter';
 import { Types } from 'mongoose';
@@ -90,6 +91,32 @@ export async function clearBroadcastMatchSchedule(matchId: string) {
   }
 }
 
+export async function broadcastCountOfUsersInRoom(emitter: Server, matchId: string) {
+  let clientsMap;
+
+  try {
+    clientsMap = await emitter?.in(matchId).fetchSockets();
+  } catch (e) {
+    logger.error('error fetching sockets', e);
+
+    return;
+  }
+
+  // clientsMap is a map of socketId -> socket, let's just get the array of sockets
+  const clients = Array.from(clientsMap.values());
+  const connectedUserIds = clients.map((client) => {
+    return client.data._id;
+  });
+
+  // we have all the connected user ids now... so let's get all of them
+  const users = await getUsersWithMultiplayerProfileFromIds(connectedUserIds);
+  // remove users with hideStatus: true and inactive users
+  const filteredUsers = users.filter(user => !user.hideStatus);
+
+  // limit to 20 users
+  emitter?.in(matchId).emit('connectedPlayersInRoom', { users: filteredUsers.sort((a, b) => sortByRating(a, b, MultiplayerMatchType.RushBullet)).slice(0, 20), count: filteredUsers.length });
+}
+
 export async function broadcastConnectedPlayers(emitter: Server) {
   // return an array of all the connected players
   let clientsMap;
@@ -115,6 +142,13 @@ export async function broadcastConnectedPlayers(emitter: Server) {
 
   // limit to 20 users
   emitter?.emit('connectedPlayers', { users: filteredUsers.sort((a, b) => sortByRating(a, b, MultiplayerMatchType.RushBullet)).slice(0, 20), count: filteredUsers.length });
+}
+
+export async function broadcastGameState(emitter: Emitter, userId: Types.ObjectId, matchId: string, gameState: GameState) {
+  emitter?.to(matchId).emit('gameState', {
+    userId: userId.toString(),
+    gameState: gameState,
+  });
 }
 
 export async function broadcastMatch(emitter: Emitter, matchId: string) {

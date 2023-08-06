@@ -1,4 +1,7 @@
+import Grid from '@root/components/level/grid';
 import MatchResults from '@root/components/matchResults';
+import { GameState } from '@root/helpers/gameStateHelpers';
+import { UserWithMultiplayerProfile } from '@root/models/db/user';
 import moment from 'moment';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
@@ -46,14 +49,33 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 /* istanbul ignore next */
 export default function Match() {
   const [match, setMatch] = useState<MultiplayerMatch>();
+  const [connectedPlayersInRoom, setConnectedPlayersInRoom] = useState<{count: number, users: UserWithMultiplayerProfile[]}>();
   const readyMark = useRef(false);
   const router = useRouter();
   const startSoundPlayed = useRef(false);
-  const { sounds, user } = useContext(AppContext);
+  const { sounds, user, multiplayerSocket } = useContext(AppContext);
   const [usedSkip, setUsedSkip] = useState<boolean>(false);
   const { matchId } = router.query as { matchId: string };
+  const [activeLevel, setActiveLevel] = useState<Level | null>(null);
+  const [player1GameState, setPlayer1GameState] = useState<GameState | null>(null);
+  const [player2GameState, setPlayer2GameState] = useState<GameState | null>(null);
+  const notPlaying = !match?.players.some(player => player._id.toString() === user?._id.toString());
+  const player1 = useRef(match?.players[0]._id.toString());
+
+  // set a useeffect to change player1?
+  useEffect(() => {
+    player1.current = match?.players[0]._id.toString();
+  }, [match?.players]);
+
+  function emitGameState(gameState: GameState) {
+    multiplayerSocket?.socket?.emit('gameState', {
+      matchId: match?.matchId,
+      gameState: gameState,
+    });
+  }
 
   useEffect(() => {
+    console.log('connecting to socket');
     const socketConn = io('', {
       path: '/api/socket/',
       withCredentials: true,
@@ -62,6 +84,24 @@ export default function Match() {
       }
     });
 
+    if (notPlaying) {
+      socketConn.on('gameState', (data: { userId: string, gameState: GameState }) => {
+        const { userId: userIdString, gameState } = data;
+
+        console.log('gameState', userIdString, player1.current);
+
+        if (userIdString === player1.current) {
+          setPlayer1GameState(gameState);
+        } else {
+          setPlayer2GameState(gameState);
+        }
+      }
+      );
+    }
+
+    socketConn.on('connectedPlayersInRoom', (players: {count: number, users: UserWithMultiplayerProfile[]}) => {
+      setConnectedPlayersInRoom(players);
+    });
     socketConn.on('match', (match: MultiplayerMatch) => {
       setMatch(match);
     });
@@ -72,12 +112,15 @@ export default function Match() {
     });
 
     return () => {
+      console.log('BAD! unmounting');
       socketConn.off('match');
+      socketConn.off('matchNotFound');
+      socketConn.off('connectedPlayersInRoom');
+      socketConn.off('gameState');
       socketConn.disconnect();
     };
-  }, [matchId, router]);
+  }, [matchId, notPlaying, router]);
 
-  const [activeLevel, setActiveLevel] = useState<Level | null>(null);
   const [countDown, setCountDown] = useState<number>(-1);
 
   const btnSkip = useCallback(async() => {
@@ -354,7 +397,22 @@ export default function Match() {
             } as any)[match.state]
           }
         </h1>
-        {match.state === MultiplayerMatchState.FINISHED || match.state === MultiplayerMatchState.ABORTED || !match.players.some(player => player._id.toString() === user?._id.toString()) ? (
+        {connectedPlayersInRoom && connectedPlayersInRoom.count > 2 && (
+          <div className=' absolute items-center justify-center p-1'>
+            <div
+              className='-ml-1 px-0.5 text-xs rounded-full text-green-500'
+              style={{
+                backgroundColor: 'var(--bg-color-2)',
+                fontSize: '0.75rem',
+                lineHeight: '0.75rem',
+                borderColor: 'var(--bg-color-2)',
+              }}
+            >
+              {connectedPlayersInRoom.count - 2} spectating
+            </div>
+          </div>
+        )}
+        {match.state === MultiplayerMatchState.FINISHED || match.state === MultiplayerMatchState.ABORTED || notPlaying ? (
           <div className='flex flex-col items-center justify-center p-3 gap-6'>
             <Link
               className='px-4 py-2 text-lg font-bold text-white bg-blue-500 rounded-md hover:bg-blue-600'
@@ -363,6 +421,25 @@ export default function Match() {
               Back
             </Link>
             <MatchResults match={match} recap={match.matchLog?.find(log => log.type === MatchAction.GAME_RECAP)?.data as MatchLogDataGameRecap} showViewLink={false} />
+            {player1GameState && player2GameState &&
+            (
+              <div className='flex flex-row gap-2 h-48 w-full'>
+
+                <div className='flex flex-col h-48 w-full '>
+                  <FormattedUser size={Dimensions.AvatarSizeSmall} user={match.players[0]} />
+                  <Grid id='player1' gameState={player1GameState} leastMoves={player1GameState.leastMoves || 0} onCellClick={() => {console.log('click');}} />
+
+                </div>
+
+                <div className='flex flex-col h-48 w-full '>
+
+                  <FormattedUser size={Dimensions.AvatarSizeSmall} user={match.players[1]} />
+
+                  <Grid id='player1' gameState={player2GameState} leastMoves={player2GameState.leastMoves || 0} onCellClick={() => {console.log('click');}} />
+
+                </div>
+              </div>
+            )}
             <div className='w-full max-w-screen-lg h-96'>
               <MatchChart match={match} />
             </div>
@@ -403,6 +480,7 @@ export default function Match() {
                 }}
               />
             </div>
+
             {activeLevel && (
               <div className='grow h-full w-full' key={'div-' + activeLevel._id.toString()}>
                 <Game
@@ -414,6 +492,12 @@ export default function Match() {
                   key={'game-' + activeLevel._id.toString()}
                   level={activeLevel}
                   matchId={match.matchId}
+                  onMove={(gameState) => {
+                    // sent the move to the server using socket
+                    gameState.leastMoves = activeLevel.leastMoves;
+                    emitGameState(gameState);
+                  }
+                  }
                 />
               </div>
             )}
