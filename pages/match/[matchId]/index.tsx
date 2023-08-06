@@ -76,7 +76,6 @@ export default function Match() {
       }
 
       let completedBy = (log.data as MatchLogDataUserLeveId)?.userId?.toString();
-      const level = (log.data as MatchLogDataLevelComplete)?.levelId?.toString();
 
       if (log.type === MatchAction.COMPLETE_LEVEL || log.type === MatchAction.SKIP_LEVEL) {
         completedBy = (log.data as MatchLogDataLevelComplete).userId.toString();
@@ -106,7 +105,6 @@ export default function Match() {
   }
 
   useEffect(() => {
-    console.log('connecting to socket');
     const socketConn = io('', {
       path: '/api/socket/',
       withCredentials: true,
@@ -118,8 +116,6 @@ export default function Match() {
     if (notPlaying) {
       socketConn.on('gameState', (data: { userId: string, gameState: GameState }) => {
         const { userId: userIdString, gameState } = data;
-
-        console.log('gameState', userIdString, player1.current);
 
         if (userIdString === player1.current) {
           setPlayer1GameState(gameState);
