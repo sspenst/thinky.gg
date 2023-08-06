@@ -1,3 +1,4 @@
+import EnrichedLevelLink from '@root/components/enrichedLevelLink';
 import Grid from '@root/components/level/grid';
 import MatchResults from '@root/components/matchResults';
 import { GameState } from '@root/helpers/gameStateHelpers';
@@ -24,7 +25,7 @@ import { getUserFromToken } from '../../../lib/withAuth';
 import Control from '../../../models/control';
 import Level from '../../../models/db/level';
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
-import { MatchAction, MatchLogDataGameRecap, MatchLogDataLevelComplete, MultiplayerMatchState } from '../../../models/MultiplayerEnums';
+import { MatchAction, MatchLogDataGameRecap, MatchLogDataLevelComplete, MatchLogDataUserLeveId, MultiplayerMatchState } from '../../../models/MultiplayerEnums';
 import SelectOption from '../../../models/selectOption';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -61,6 +62,36 @@ export default function Match() {
   const [player2GameState, setPlayer2GameState] = useState<GameState | null>(null);
   const notPlaying = !match?.players.some(player => player._id.toString() === user?._id.toString());
   const player1 = useRef(match?.players[0]._id.toString());
+
+  let player1CurrentLevelIndex = 0;
+  let player2CurrentLevelIndex = 0;
+
+  // TODO: probably would be good to put this in a separate function
+  if (match && match.matchLog) {
+    for (let i = 0; i < match?.matchLog?.length; i++) {
+      const log = match.matchLog[i];
+
+      if (![MatchAction.COMPLETE_LEVEL, MatchAction.SKIP_LEVEL].includes(log.type as MatchAction)) {
+        continue;
+      }
+
+      let completedBy = (log.data as MatchLogDataUserLeveId)?.userId?.toString();
+      const level = (log.data as MatchLogDataLevelComplete)?.levelId?.toString();
+
+      if (log.type === MatchAction.COMPLETE_LEVEL || log.type === MatchAction.SKIP_LEVEL) {
+        completedBy = (log.data as MatchLogDataLevelComplete).userId.toString();
+
+        if (completedBy === player1.current) {
+          player1CurrentLevelIndex++;
+        } else {
+          player2CurrentLevelIndex++;
+        }
+      }
+    }
+  }
+
+  const player1CurrentLevel = match?.levels[player1CurrentLevelIndex] as Level;
+  const player2CurrentLevel = match?.levels[player2CurrentLevelIndex] as Level;
 
   // set a useeffect to change player1?
   useEffect(() => {
@@ -428,7 +459,7 @@ export default function Match() {
                 <div className='flex flex-col h-48 w-full '>
                   <FormattedUser size={Dimensions.AvatarSizeSmall} user={match.players[0]} />
                   <Grid id='player1' gameState={player1GameState} leastMoves={player1GameState.leastMoves || 0} onCellClick={() => {console.log('click');}} />
-
+                  <Link className='text-sm underline text-center' href={ `/level/${player1CurrentLevel.slug}`}>{player1CurrentLevel?.name}</Link>
                 </div>
 
                 <div className='flex flex-col h-48 w-full '>
@@ -436,7 +467,7 @@ export default function Match() {
                   <FormattedUser size={Dimensions.AvatarSizeSmall} user={match.players[1]} />
 
                   <Grid id='player1' gameState={player2GameState} leastMoves={player2GameState.leastMoves || 0} onCellClick={() => {console.log('click');}} />
-
+                  <Link className='text-sm underline text-center' href={ `/level/${player2CurrentLevel.slug}`}>{player2CurrentLevel?.name}</Link>
                 </div>
               </div>
             )}
