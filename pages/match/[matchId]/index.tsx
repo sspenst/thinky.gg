@@ -462,7 +462,7 @@ export default function Match() {
 
                   <FormattedUser size={Dimensions.AvatarSizeSmall} user={match.players[1]} />
 
-                  <Grid id='player1' gameState={player2GameState} leastMoves={player2GameState.leastMoves || 0} onCellClick={() => {console.log('click');}} />
+                  <Grid id='player2' gameState={player2GameState} leastMoves={player2GameState.leastMoves || 0} onCellClick={() => {console.log('click');}} />
                   <Link className='text-sm underline text-center' href={ `/level/${player2CurrentLevel.slug}`}>{player2CurrentLevel?.name}</Link>
                 </div>
               </div>
