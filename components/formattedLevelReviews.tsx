@@ -61,7 +61,7 @@ export default function FormattedLevelReviews({ inModal }: FormattedLevelReviews
       {hideReviews === undefined ? null : hideReviews ?
         <div className='flex justify-center'>
           <button className='font-medium px-2 py-1 bg-neutral-200 hover:bg-white transition text-black rounded-lg border border-neutral-400 mt-2' onClick={() => setHideReviews(false)}>
-            Show all reviews
+            Show all reviews ({levelContext.reviews.length})
           </button>
         </div>
         :
