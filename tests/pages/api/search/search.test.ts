@@ -222,13 +222,13 @@ testRuns = testRuns.concat([
   },
   // min max steps
   {
-    query: '?minSteps=0&maxSteps=110',
+    query: '?minSteps=1&maxSteps=110',
     test: async (response: any) => {
       expect(response.totalRows).toBe(14);
       expect(response.levels.length).toBe(14);
 
       for (let i = 0; i < response.levels.length; i++) {
-        expect(response.levels[i].leastMoves).toBeGreaterThanOrEqual(0);
+        expect(response.levels[i].leastMoves).toBeGreaterThanOrEqual(1);
         expect(response.levels[i].leastMoves).toBeLessThanOrEqual(110);
       }
     }

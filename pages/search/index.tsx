@@ -66,7 +66,7 @@ const DefaultQuery = {
   maxSteps: '2500',
   minDimension1: '',
   minDimension2: '',
-  minSteps: '0',
+  minSteps: '1',
   page: '1',
   search: '',
   searchAuthor: '',
@@ -453,6 +453,22 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
             </Transition>
           </Menu>
         </div>
+        <label htmlFor='min-step' className='text-xs font-medium pr-1'>Min steps</label>
+        <input
+          className='form-range pl-2 w-16 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white mr-2'
+          id='min-step'
+          max='2500'
+          min='1'
+          onChange={(e: React.FormEvent<HTMLInputElement>) => {
+            setQueryHelper({
+              minSteps: (e.target as HTMLInputElement).value,
+              page: '1',
+            });
+          }}
+          step='1'
+          type='number'
+          value={query.minSteps}
+        />
         <label htmlFor='max-step' className='text-xs font-medium pr-1'>Max steps</label>
         <input
           className='form-range pl-2 w-16 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
