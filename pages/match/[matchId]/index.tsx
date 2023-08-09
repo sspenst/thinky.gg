@@ -1,4 +1,3 @@
-import EnrichedLevelLink from '@root/components/enrichedLevelLink';
 import Grid from '@root/components/level/grid';
 import MatchResults from '@root/components/matchResults';
 import { GameState } from '@root/helpers/gameStateHelpers';

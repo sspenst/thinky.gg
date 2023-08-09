@@ -60,6 +60,9 @@ export default function Footer() {
           <ExternalLink href='https://github.com/sspenst/pathology'>
             GitHub
           </ExternalLink>
+          <ExternalLink href='https://github.com/sspenst/pathology/wiki'>
+            Wiki
+          </ExternalLink>
           <ExternalLink href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub'>
             Privacy Policy
           </ExternalLink>
