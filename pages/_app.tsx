@@ -38,12 +38,12 @@ function useForceUpdate() {
   return () => setState(!value);
 }
 
-const FEATURES_ENDPOINT = process.env.GROWTHBOOK_FEATURES_ENDPOINT;
+const FEATURES_ENDPOINT = process.env.NEXT_PUBLIC_GROWTHBOOK_FEATURES_ENDPOINT;
 
 // Create a GrowthBook instance
 const growthbook = new GrowthBook({
-  apiHost: process.env.GROWTHBOOK_API_HOST,
-  clientKey: process.env.GROWTHBOOK_CLIENT_KEY,
+  apiHost: process.env.NEXT_PUBLIC_GROWTHBOOK_API_HOST,
+  clientKey: process.env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY,
   enableDevMode: process.env.NODE_ENV === 'development',
   trackingCallback: (experiment, result) => {
     console.log('Viewed Experiment', experiment, result);
@@ -77,14 +77,6 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       'warning': new Audio('/sounds/warning.wav'),
     });
   }, []);
-
-  Router.events.on('routeChangeStart', () => nProgress.start());
-  Router.events.on('routeChangeComplete', () => {
-    updateGrowthBookURL();
-    nProgress.done();
-  });
-
-  Router.events.on('routeChangeError', () => nProgress.done());
 
   // initialize shouldAttemptAuth if it exists in sessionStorage
   useEffect(() => {
@@ -238,24 +230,27 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   }, [matches, privateAndInvitedMatches, router, user]);
 
   useEffect(() => {
-    fetch(FEATURES_ENDPOINT as string)
-      .then((res) => res.json())
-      .then((json) => {
-        console.log('setting features', json);
-        growthbook.setFeatures(json.features);
-      });
+    Router.events.on('routeChangeStart', () => nProgress.start());
+    Router.events.on('routeChangeComplete', () => {
+      updateGrowthBookURL();
+      nProgress.done();
+    });
 
-    if (user) {
-      growthbook.setAttributes({
-        id: user?._id,
-        name: user?.name,
-        browser: navigator.userAgent,
-        url: router.pathname,
-        host: window.location.host,
+    Router.events.on('routeChangeError', () => nProgress.done());
+    growthbook.loadFeatures({ autoRefresh: true });
 
-      });
-    }
-  }, [router.pathname, user]);
+    growthbook.setAttributes({
+      id: user?._id,
+      name: user?.name,
+      browser: navigator.userAgent,
+      url: router.pathname,
+      host: window.location.host,
+
+    });
+    router.events.on('routeChangeComplete', updateGrowthBookURL);
+
+    return () => router.events.off('routeChangeComplete', updateGrowthBookURL);
+  }, [router.events, router.pathname, user]);
 
   const isEU = Intl.DateTimeFormat().resolvedOptions().timeZone.startsWith('Europe');
 
