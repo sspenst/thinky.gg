@@ -15,7 +15,7 @@ interface MatchResultsProps {
 }
 
 export default function MatchResults({ match, recap, showViewLink }: MatchResultsProps) {
-  const sortedPlayers = match.players.sort((p1, p2) => {
+  const sortedPlayers = [...match.players].sort((p1, p2) => {
     const p1Score = match.scoreTable[p1._id.toString()];
     const p2Score = match.scoreTable[p2._id.toString()];
 

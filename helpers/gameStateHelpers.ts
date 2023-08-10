@@ -55,36 +55,46 @@ export interface GameState {
   moves: Move[];
   pos: Position;
   redoStack: Direction[];
-  leastMoves?: number;
 }
 
-export function isValidGameState(object: any): object is GameState {
+export interface MatchGameState extends GameState {
+  leastMoves: number;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function isValidMatchGameState(object: any): object is MatchGameState {
   if (typeof object !== 'object' || object === null) return false;
 
-  const hasValidBoard = Array.isArray(object.board) && object.board.every((row: any[]) => Array.isArray(row) && row.every(tile => isValidTileState(tile)));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const hasValidBoard = Array.isArray(object.board) && object.board.every((row: any) => Array.isArray(row) && row.every(tile => isValidTileState(tile)));
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const hasValidMoves = Array.isArray(object.moves) && object.moves.every((move: any) => isValidMove(move));
 
   const hasValidPos = typeof object.pos === 'object' && object.pos !== null && typeof object.pos.x === 'number' && typeof object.pos.y === 'number';
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const hasValidRedoStack = Array.isArray(object.redoStack) && object.redoStack.every((dir: any) => typeof dir === 'number');
 
-  const hasValidLeastMoves = typeof object.leastMoves === 'undefined' || typeof object.leastMoves === 'number';
+  const hasValidLeastMoves = typeof object.leastMoves === 'number';
 
   return hasValidBoard && hasValidMoves && hasValidPos && hasValidRedoStack && hasValidLeastMoves;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isValidTileState(object: any): object is TileState {
   if (typeof object !== 'object' || object === null) return false;
 
   const hasValidBlock = typeof object.block === 'undefined' || isValidBlockState(object.block);
   const hasValidBlockInHole = typeof object.blockInHole === 'undefined' || isValidBlockState(object.blockInHole);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const hasValidText = Array.isArray(object.text) && object.text.every((item: any) => typeof item === 'number');
   const hasValidTileType = Object.values(TileType).includes(object.tileType);
 
   return hasValidBlock && hasValidBlockInHole && hasValidText && hasValidTileType;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isValidBlockState(object: any): object is BlockState {
   if (typeof object !== 'object' || object === null) return false;
   const hasValidId = typeof object.id === 'number';
@@ -93,6 +103,7 @@ function isValidBlockState(object: any): object is BlockState {
   return hasValidId && hasValidTileType;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isValidMove(object: any): object is Move {
   if (typeof object !== 'object' || object === null) return false;
 

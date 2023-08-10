@@ -14,7 +14,7 @@ interface GridProps {
   gameState: GameState;
   id: string;
   leastMoves: number;
-  onCellClick: (x: number, y: number, rightClick: boolean) => void;
+  onCellClick?: (x: number, y: number, rightClick: boolean) => void;
 }
 
 export default function Grid({ cellClassName, gameState, id, leastMoves, onCellClick }: GridProps) {
@@ -71,7 +71,7 @@ export default function Grid({ cellClassName, gameState, id, leastMoves, onCellC
       tiles.push(
         <Tile
           className={cellClassName ? cellClassName(x, y) : undefined}
-          handleClick={(rightClick: boolean) => onCellClick(x, y, rightClick)}
+          handleClick={onCellClick ? (rightClick: boolean) => onCellClick(x, y, rightClick) : undefined}
           key={`tile-${y}-${x}`}
           pos={new Position(x, y)}
           text={text}
@@ -82,7 +82,7 @@ export default function Grid({ cellClassName, gameState, id, leastMoves, onCellC
       if (tileState.block) {
         blocks[tileState.block.id] = (
           <Tile
-            handleClick={(rightClick: boolean) => onCellClick(x, y, rightClick)}
+            handleClick={onCellClick ? (rightClick: boolean) => onCellClick(x, y, rightClick) : undefined}
             key={`block-${tileState.block.id}`}
             pos={new Position(x, y)}
             tileType={tileState.block.tileType}
@@ -93,7 +93,7 @@ export default function Grid({ cellClassName, gameState, id, leastMoves, onCellC
       if (tileState.blockInHole) {
         blocks[tileState.blockInHole.id] = (
           <Tile
-            handleClick={(rightClick: boolean) => onCellClick(x, y, rightClick)}
+            handleClick={onCellClick ? (rightClick: boolean) => onCellClick(x, y, rightClick) : undefined}
             inHole={true}
             key={`block-${tileState.blockInHole.id}`}
             pos={new Position(x, y)}
