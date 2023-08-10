@@ -1,4 +1,4 @@
-import { GameState } from '@root/helpers/gameStateHelpers';
+import { MatchGameState } from '@root/helpers/gameStateHelpers';
 import { getUsersWithMultiplayerProfileFromIds } from '@root/helpers/getUsersWithMultiplayerProfile';
 import { Emitter } from '@socket.io/mongo-emitter';
 import { Types } from 'mongoose';
@@ -105,7 +105,7 @@ export async function broadcastCountOfUsersInRoom(emitter: Server, matchId: stri
   // clientsMap is a map of socketId -> socket, let's just get the array of sockets
   const clients = Array.from(clientsMap.values());
   const connectedUserIds = clients.map((client) => {
-    return client.data._id;
+    return client.data.userId;
   });
 
   // we have all the connected user ids now... so let's get all of them
@@ -132,7 +132,7 @@ export async function broadcastConnectedPlayers(emitter: Server) {
   // clientsMap is a map of socketId -> socket, let's just get the array of sockets
   const clients = Array.from(clientsMap.values());
   const connectedUserIds = clients.map((client) => {
-    return client.data._id;
+    return client.data.userId;
   });
 
   // we have all the connected user ids now... so let's get all of them
@@ -144,10 +144,10 @@ export async function broadcastConnectedPlayers(emitter: Server) {
   emitter?.emit('connectedPlayers', { users: filteredUsers.sort((a, b) => sortByRating(a, b, MultiplayerMatchType.RushBullet)).slice(0, 20), count: filteredUsers.length });
 }
 
-export async function broadcastGameState(emitter: Emitter, userId: Types.ObjectId, matchId: string, gameState: GameState) {
-  emitter?.to(matchId).emit('gameState', {
+export async function broadcastMatchGameState(emitter: Emitter, userId: Types.ObjectId, matchId: string, matchGameState: MatchGameState) {
+  emitter?.to(matchId).emit('userMatchGameState', {
     userId: userId.toString(),
-    gameState: gameState,
+    matchGameState: matchGameState,
   });
 }
 

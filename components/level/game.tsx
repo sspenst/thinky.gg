@@ -369,93 +369,91 @@ export default function Game({
     }
 
     setGameState(prevGameState => {
-      function getNewGameState() {
-        // restart
-        if (code === 'KeyR') {
-          if (prevGameState.moves.length > 0) {
-            oldGameState.current = cloneGameState(prevGameState);
-          }
-
-          return initGameState(level.data);
+      function onSuccessfulMove(gameState: GameState) {
+        // keep track of gameState in session storage
+        if (enableSessionCheckpoint && typeof window.sessionStorage !== 'undefined') {
+          window.sessionStorage.setItem('sessionCheckpoint', JSON.stringify({
+            _id: level._id,
+            directions: gameState.moves.map(move => move.direction),
+          } as SessionCheckpoint));
         }
 
-        const newGameState = cloneGameState(prevGameState);
+        if (onMove) {
+          onMove(gameState);
+        }
 
-        const undoKey = code === 'Backspace' || code === 'KeyU' || code == 'KeyZ';
+        return gameState;
+      }
 
-        if (undoKey && !shiftKeyDown.current) {
-          // nothing to undo, restore the old game state if it exists
-          if (newGameState.moves.length === 0) {
-            if (!oldGameState.current) {
-              return prevGameState;
-            }
+      // restart
+      if (code === 'KeyR') {
+        if (prevGameState.moves.length > 0) {
+          oldGameState.current = cloneGameState(prevGameState);
+        }
 
-            const clonedOldGameState = cloneGameState(oldGameState.current);
+        return onSuccessfulMove(initGameState(level.data));
+      }
 
-            oldGameState.current = undefined;
+      const newGameState = cloneGameState(prevGameState);
 
-            return clonedOldGameState;
-          }
+      const undoKey = code === 'Backspace' || code === 'KeyU' || code == 'KeyZ';
 
-          if (!undo(newGameState)) {
+      if (undoKey && !shiftKeyDown.current) {
+        // nothing to undo, restore the old game state if it exists
+        if (newGameState.moves.length === 0) {
+          if (!oldGameState.current) {
             return prevGameState;
           }
 
-          return newGameState;
+          const clonedOldGameState = cloneGameState(oldGameState.current);
+
+          oldGameState.current = undefined;
+
+          return onSuccessfulMove(clonedOldGameState);
         }
 
-        const redo = undoKey || code === 'KeyY';
-
-        if (redo && !pro) {
-          toast.dismiss();
-          toast.error(
-            <div>Upgrade to <Link href='/settings/proaccount' className='text-blue-500'>Pathology Pro</Link> to unlock redo!</div>,
-            {
-              duration: 5000,
-              icon: <Image alt='pro' src='/pro.svg' width='16' height='16' />,
-            }
-          );
-
+        if (!undo(newGameState)) {
           return prevGameState;
         }
 
-        const direction = redo ? newGameState.redoStack[newGameState.redoStack.length - 1] : getDirectionFromCode(code);
-
-        // return if no valid direction was pressed
-        if (!direction) {
-          return prevGameState;
-        }
-
-        if (!makeMove(newGameState, direction, allowFreeUndo)) {
-          return prevGameState;
-        }
-
-        if (newGameState.board[newGameState.pos.y][newGameState.pos.x].tileType === TileType.End) {
-          // track stats upon reaching an exit
-          trackStats(newGameState.moves.map(move => move.direction), level._id.toString(), 3);
-        } else if (!disablePlayAttempts) {
-          // track play attempts upon making a successful move
-          fetchPlayAttempt();
-        }
-
-        return newGameState;
+        return onSuccessfulMove(newGameState);
       }
 
-      const newGameState = getNewGameState();
+      const redo = undoKey || code === 'KeyY';
 
-      // keep track of gameState in session storage
-      if (enableSessionCheckpoint && typeof window.sessionStorage !== 'undefined') {
-        window.sessionStorage.setItem('sessionCheckpoint', JSON.stringify({
-          _id: level._id,
-          directions: newGameState.moves.map(move => move.direction),
-        } as SessionCheckpoint));
+      if (redo && !pro) {
+        toast.dismiss();
+        toast.error(
+          <div>Upgrade to <Link href='/settings/proaccount' className='text-blue-500'>Pathology Pro</Link> to unlock redo!</div>,
+          {
+            duration: 5000,
+            icon: <Image alt='pro' src='/pro.svg' width='16' height='16' />,
+          }
+        );
+
+        return prevGameState;
       }
 
-      if (onMove) {
-        onMove(newGameState);
+      const direction = redo ? newGameState.redoStack[newGameState.redoStack.length - 1] : getDirectionFromCode(code);
+
+      // return if no valid direction was pressed
+      if (!direction) {
+        return prevGameState;
       }
 
-      return newGameState;
+      if (!makeMove(newGameState, direction, allowFreeUndo)) {
+        return prevGameState;
+      }
+
+      if (newGameState.board[newGameState.pos.y][newGameState.pos.x].tileType === TileType.End) {
+        // track stats upon reaching an exit
+        trackStats(newGameState.moves.map(move => move.direction), level._id.toString(), 3);
+      } else if (!disablePlayAttempts) {
+        // track play attempts upon making a successful move
+        fetchPlayAttempt();
+      }
+
+      return onSuccessfulMove(newGameState);
     });
   }, [allowFreeUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, level._id, level.data, loadCheckpoint, onMove, onNext, onPrev, pro, saveCheckpoint, trackStats]);
 
