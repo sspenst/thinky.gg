@@ -42,6 +42,7 @@ const FEATURES_ENDPOINT = process.env.GROWTHBOOK_FEATURES_ENDPOINT;
 
 // Create a GrowthBook instance
 const growthbook = new GrowthBook({
+  apiHost: process.env.GROWTHBOOK_API_HOST,
   clientKey: process.env.GROWTHBOOK_CLIENT_KEY,
   enableDevMode: process.env.NODE_ENV === 'development',
   trackingCallback: (experiment, result) => {
