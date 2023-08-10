@@ -2,6 +2,7 @@
 
 import '../styles/global.css';
 import 'react-tooltip/dist/react-tooltip.css';
+import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react';
 import type { AppProps } from 'next/app';
 import { Rubik, Teko } from 'next/font/google';
 import Head from 'next/head';
@@ -36,6 +37,16 @@ function useForceUpdate() {
 
   return () => setState(!value);
 }
+
+const FEATURES_ENDPOINT = process.env.GROWTHBOOK_FEATURES_ENDPOINT;
+
+// Create a GrowthBook instance
+const growthbook = new GrowthBook({
+  enableDevMode: process.env.NODE_ENV === 'development',
+  trackingCallback: (experiment, result) => {
+    console.log('Viewed Experiment', experiment, result);
+  },
+});
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   const forceUpdate = useForceUpdate();
@@ -216,66 +227,87 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     }
   }, [matches, privateAndInvitedMatches, router, user]);
 
+  useEffect(() => {
+    fetch(FEATURES_ENDPOINT)
+      .then((res) => res.json())
+      .then((json) => {
+        growthbook.setFeatures(json.features);
+      });
+
+    if (user) {
+      growthbook.setAttributes({
+        id: user?._id,
+        name: user?.name,
+        browser: navigator.userAgent,
+        url: router.pathname,
+        host: window.location.host,
+
+      });
+    }
+  }, [router.pathname, user]);
+
   const isEU = Intl.DateTimeFormat().resolvedOptions().timeZone.startsWith('Europe');
 
   return (
     <>
-      <Head>
-        <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' />
-        <meta name='apple-itunes-app' content='app-id=1668925562, app-argument=pathology.gg' />
-      </Head>
-      <DefaultSeo
-        defaultTitle='Pathology - Shortest Path Puzzle Game'
-        description='The goal of the puzzle game Pathology is simple. Get to the exit in the least number of moves.'
-        canonical='https://pathology.gg/'
-        openGraph={{
-          type: 'website',
-          url: 'https://pathology.gg',
-          siteName: 'Pathology',
-        }}
-        twitter={{
-          handle: '@pathologygame',
-          site: 'https://pathology.gg',
-          cardType: 'summary_large_image'
-        }}
-      />
-      {isEU && (
-        <CookieConsent
-          buttonStyle={{ color: '#000000', backgroundColor: '#FFFFFF', fontSize: '13px', borderRadius: '2px' }}
-          buttonText='Got it'
-          cookieName='cookie_consent'
-          location='bottom'
-          style={{ background: '#2B373B', alignItems: 'center' }}
-          expires={360}
-        >
+      <GrowthBookProvider growthbook={growthbook}>
+        <Head>
+          <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' />
+          <meta name='apple-itunes-app' content='app-id=1668925562, app-argument=pathology.gg' />
+        </Head>
+        <DefaultSeo
+          defaultTitle='Pathology - Shortest Path Puzzle Game'
+          description='The goal of the puzzle game Pathology is simple. Get to the exit in the least number of moves.'
+          canonical='https://pathology.gg/'
+          openGraph={{
+            type: 'website',
+            url: 'https://pathology.gg',
+            siteName: 'Pathology',
+          }}
+          twitter={{
+            handle: '@pathologygame',
+            site: 'https://pathology.gg',
+            cardType: 'summary_large_image'
+          }}
+        />
+        {isEU && (
+          <CookieConsent
+            buttonStyle={{ color: '#000000', backgroundColor: '#FFFFFF', fontSize: '13px', borderRadius: '2px' }}
+            buttonText='Got it'
+            cookieName='cookie_consent'
+            location='bottom'
+            style={{ background: '#2B373B', alignItems: 'center' }}
+            expires={360}
+          >
           Our website uses cookies to improve your browsing experience. By continuing to use this site, you consent to our use of cookies.
-          <br />
-          <span style={{ fontSize: '10px' }}>
+            <br />
+            <span style={{ fontSize: '10px' }}>
             Learn more in our <a className='hover:underline text-blue-300' href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub' rel='noreferrer' target='_blank'>privacy policy</a>.
-          </span>
-        </CookieConsent>
-      )}
-      <AppContext.Provider value={{
-        forceUpdate: forceUpdate,
-        multiplayerSocket: multiplayerSocket,
-        mutateUser: mutateUser,
-        setShouldAttemptAuth: setShouldAttemptAuth,
-        setTheme: setTheme,
-        shouldAttemptAuth: shouldAttemptAuth,
-        sounds: sounds,
-        theme: theme,
-        user: user,
-        userConfig: user?.config,
-        userLoading: isLoading,
-      }}>
-        <div className={rubik.className} style={{
-          backgroundColor: 'var(--bg-color)',
-          color: 'var(--color)',
+            </span>
+          </CookieConsent>
+        )}
+        <AppContext.Provider value={{
+          forceUpdate: forceUpdate,
+          multiplayerSocket: multiplayerSocket,
+          mutateUser: mutateUser,
+          setShouldAttemptAuth: setShouldAttemptAuth,
+          setTheme: setTheme,
+          shouldAttemptAuth: shouldAttemptAuth,
+          sounds: sounds,
+          theme: theme,
+          user: user,
+          userConfig: user?.config,
+          userLoading: isLoading,
         }}>
-          <Toaster toastOptions={{ duration: 1500 }} />
-          <Component {...pageProps} />
-        </div>
-      </AppContext.Provider>
+          <div className={rubik.className} style={{
+            backgroundColor: 'var(--bg-color)',
+            color: 'var(--color)',
+          }}>
+            <Toaster toastOptions={{ duration: 1500 }} />
+            <Component {...pageProps} />
+          </div>
+        </AppContext.Provider>
+      </GrowthBookProvider>
     </>
   );
 }

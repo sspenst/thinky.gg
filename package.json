@@ -5,6 +5,8 @@
   "dependencies": {
     "@aws-sdk/client-ses": "^3.387.0",
     "@aws-sdk/credential-provider-node": "^3.387.0",
+    "@growthbook/growthbook": "^0.27.0",
+    "@growthbook/growthbook-react": "^0.17.0",
     "@headlessui/react": "^1.7.16",
     "@headlessui/tailwindcss": "^0.2.0",
     "@newrelic/next": "^0.5.2",
