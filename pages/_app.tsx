@@ -50,6 +50,10 @@ const growthbook = new GrowthBook({
   },
 });
 
+function updateGrowthBookURL() {
+  growthbook.setURL(window.location.href);
+}
+
 export default function MyApp({ Component, pageProps }: AppProps) {
   const forceUpdate = useForceUpdate();
   const { isLoading, mutateUser, user } = useUser();
@@ -75,7 +79,11 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   }, []);
 
   Router.events.on('routeChangeStart', () => nProgress.start());
-  Router.events.on('routeChangeComplete', () => nProgress.done());
+  Router.events.on('routeChangeComplete', () => {
+    updateGrowthBookURL();
+    nProgress.done();
+  });
+
   Router.events.on('routeChangeError', () => nProgress.done());
 
   // initialize shouldAttemptAuth if it exists in sessionStorage
@@ -230,9 +238,10 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   }, [matches, privateAndInvitedMatches, router, user]);
 
   useEffect(() => {
-    fetch(FEATURES_ENDPOINT)
+    fetch(FEATURES_ENDPOINT as string)
       .then((res) => res.json())
       .then((json) => {
+        console.log('setting features', json);
         growthbook.setFeatures(json.features);
       });
 
@@ -252,42 +261,43 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
   return (
     <>
-      <GrowthBookProvider growthbook={growthbook}>
-        <Head>
-          <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' />
-          <meta name='apple-itunes-app' content='app-id=1668925562, app-argument=pathology.gg' />
-        </Head>
-        <DefaultSeo
-          defaultTitle='Pathology - Shortest Path Puzzle Game'
-          description='The goal of the puzzle game Pathology is simple. Get to the exit in the least number of moves.'
-          canonical='https://pathology.gg/'
-          openGraph={{
-            type: 'website',
-            url: 'https://pathology.gg',
-            siteName: 'Pathology',
-          }}
-          twitter={{
-            handle: '@pathologygame',
-            site: 'https://pathology.gg',
-            cardType: 'summary_large_image'
-          }}
-        />
-        {isEU && (
-          <CookieConsent
-            buttonStyle={{ color: '#000000', backgroundColor: '#FFFFFF', fontSize: '13px', borderRadius: '2px' }}
-            buttonText='Got it'
-            cookieName='cookie_consent'
-            location='bottom'
-            style={{ background: '#2B373B', alignItems: 'center' }}
-            expires={360}
-          >
+
+      <Head>
+        <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' />
+        <meta name='apple-itunes-app' content='app-id=1668925562, app-argument=pathology.gg' />
+      </Head>
+      <DefaultSeo
+        defaultTitle='Pathology - Shortest Path Puzzle Game'
+        description='The goal of the puzzle game Pathology is simple. Get to the exit in the least number of moves.'
+        canonical='https://pathology.gg/'
+        openGraph={{
+          type: 'website',
+          url: 'https://pathology.gg',
+          siteName: 'Pathology',
+        }}
+        twitter={{
+          handle: '@pathologygame',
+          site: 'https://pathology.gg',
+          cardType: 'summary_large_image'
+        }}
+      />
+      {isEU && (
+        <CookieConsent
+          buttonStyle={{ color: '#000000', backgroundColor: '#FFFFFF', fontSize: '13px', borderRadius: '2px' }}
+          buttonText='Got it'
+          cookieName='cookie_consent'
+          location='bottom'
+          style={{ background: '#2B373B', alignItems: 'center' }}
+          expires={360}
+        >
           Our website uses cookies to improve your browsing experience. By continuing to use this site, you consent to our use of cookies.
-            <br />
-            <span style={{ fontSize: '10px' }}>
+          <br />
+          <span style={{ fontSize: '10px' }}>
             Learn more in our <a className='hover:underline text-blue-300' href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub' rel='noreferrer' target='_blank'>privacy policy</a>.
-            </span>
-          </CookieConsent>
-        )}
+          </span>
+        </CookieConsent>
+      )}
+      <GrowthBookProvider growthbook={growthbook}>
         <AppContext.Provider value={{
           forceUpdate: forceUpdate,
           multiplayerSocket: multiplayerSocket,
