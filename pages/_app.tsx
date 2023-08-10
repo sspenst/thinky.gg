@@ -238,10 +238,10 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
     Router.events.on('routeChangeError', () => nProgress.done());
     growthbook.loadFeatures({ autoRefresh: true });
-
     growthbook.setAttributes({
       id: user?._id,
       name: user?.name,
+      loggedIn: user !== undefined,
       browser: navigator.userAgent,
       url: router.pathname,
       host: window.location.host,
