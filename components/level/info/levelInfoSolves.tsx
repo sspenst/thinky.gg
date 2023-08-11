@@ -13,7 +13,7 @@ import React, { Fragment, useContext, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import ProStatsLevelType from '../../../constants/proStatsLevelType';
-import { CountAndSum, LevelContext, ProStatsCommunityStepData } from '../../../contexts/levelContext';
+import { LevelContext, ProStatsCommunityStepData } from '../../../contexts/levelContext';
 
 export default function LevelInfoSolves() {
   const [disabled, setDisabled] = useState(false);
