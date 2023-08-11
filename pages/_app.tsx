@@ -38,15 +38,13 @@ function useForceUpdate() {
   return () => setState(!value);
 }
 
-const FEATURES_ENDPOINT = process.env.NEXT_PUBLIC_GROWTHBOOK_FEATURES_ENDPOINT;
-
 // Create a GrowthBook instance
 const growthbook = new GrowthBook({
   apiHost: process.env.NEXT_PUBLIC_GROWTHBOOK_API_HOST,
   clientKey: process.env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY,
   enableDevMode: process.env.NODE_ENV === 'development',
   trackingCallback: (experiment, result) => {
-    console.log('Viewed Experiment', experiment, result);
+    console.info('Viewed Experiment', experiment, result);
   },
 });
 
@@ -245,6 +243,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       browser: navigator.userAgent,
       url: router.pathname,
       host: window.location.host,
+      roles: user?.roles,
 
     });
     router.events.on('routeChangeComplete', updateGrowthBookURL);
