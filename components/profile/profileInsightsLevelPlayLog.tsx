@@ -44,7 +44,7 @@ export default function ProfileInsightsLevelPlayLog({ user }: {user: User}) {
           },
         }]}
         customStyles={DATA_TABLE_CUSTOM_STYLES}
-        data={proStatsUser[ProStatsUserType.PlayLogForUserCreatedLevels]}
+        data={proStatsUser[ProStatsUserType.PlayLogForUserCreatedLevels] as any[]}
         dense
         noDataComponent={
           <div className='p-3'>

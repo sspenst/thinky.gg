@@ -1,5 +1,6 @@
 import PagePath from '@root/constants/pagePath';
 import { TOUR_STEPS_MULTIPLAYER_PAGE } from '@root/constants/tourSteps/MULTIPLAYER_PAGE';
+import { TourType } from '@root/constants/tourType';
 import { AppContext } from '@root/contexts/appContext';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
@@ -11,16 +12,6 @@ import { TOUR_STEPS_HOME_PAGE } from '../constants/tourSteps/HOME_PAGE';
 import { TOUR_STEPS_PLAY_PAGE } from '../constants/tourSteps/PLAY_PAGE';
 import { TOUR_STEPS_SECOND_LEVEL } from '../constants/tourSteps/SECOND_LEVEL';
 import { TOUR_STEPS_THIRD_LEVEL } from '../constants/tourSteps/THIRD_LEVEL';
-
-export enum TourType {
-  HOME_PAGE = 'TOUR',
-  CHAPTER_1 = 'CHAPTER_1',
-  FIRST_LEVEL = 'FIRST_LEVEL',
-  SECOND_LEVEL = 'SECOND_LEVEL',
-  THIRD_LEVEL = 'THIRD_LEVEL',
-  PLAY_PAGE = 'PLAY_PAGE',
-  MULTIPLAYER_PAGE = 'MULTIPLAYER_PAGE',
-}
 
 export const TOUR_DATA: { [key in TourType]: Step[] } = {
   [TourType.PLAY_PAGE]: TOUR_STEPS_PLAY_PAGE,

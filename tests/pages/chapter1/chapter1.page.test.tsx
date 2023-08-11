@@ -33,7 +33,7 @@ describe('pages/chapter1 page', () => {
     const ret = await getServerSideProps(context as GetServerSidePropsContext);
 
     expect(ret).toBeDefined();
-    expect(ret.props).toBeUndefined();
+    expect((ret as any).props).toBeUndefined();
   });
   test('getServerSideProps logged in', async () => {
     // Created from initialize db file
@@ -47,9 +47,9 @@ describe('pages/chapter1 page', () => {
     const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
 
     expect(ret).toBeDefined();
-    expect(ret.props).toBeDefined();
-    expect(ret.props?.enrichedCollections).toBeDefined();
-    expect(ret.props?.enrichedCollections[0]._id).toBe(TestId.COLLECTION);
+    expect((ret as any).props).toBeDefined();
+    expect((ret as any).props?.enrichedCollections).toBeDefined();
+    expect((ret as any).props?.enrichedCollections[0]._id).toBe(TestId.COLLECTION);
   });
   test('getServerSideProps logged in no collection exists', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
@@ -65,6 +65,6 @@ describe('pages/chapter1 page', () => {
     const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
 
     expect(ret).toBeDefined();
-    expect(ret.props).toBeUndefined();
+    expect((ret as any).props).toBeUndefined();
   });
 });

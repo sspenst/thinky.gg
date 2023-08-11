@@ -32,6 +32,8 @@ services:
         - /pathology_app/.next 
     networks:
         - dev-network
+        # for prod `node -r module-alias/register dist/server/socket/socket-server.js`
+        # for dev `ts-node --transpile-only -P tsconfig.json -r tsconfig-paths/register --files server/socket/socket-server.ts`
     command: ts-node --transpile-only -P tsconfig.json -r tsconfig-paths/register --files server/socket/socket-server.ts
     ports:
         - "3001:3001"
