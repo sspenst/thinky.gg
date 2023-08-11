@@ -2,6 +2,7 @@
 
 import '../styles/global.css';
 import 'react-tooltip/dist/react-tooltip.css';
+import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react';
 import type { AppProps } from 'next/app';
 import { Rubik, Teko } from 'next/font/google';
 import Head from 'next/head';
@@ -37,6 +38,20 @@ function useForceUpdate() {
   return () => setState(!value);
 }
 
+// Create a GrowthBook instance
+const growthbook = new GrowthBook({
+  apiHost: process.env.NEXT_PUBLIC_GROWTHBOOK_API_HOST,
+  clientKey: process.env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY,
+  enableDevMode: process.env.NODE_ENV === 'development',
+  trackingCallback: (experiment, result) => {
+    console.info('Viewed Experiment', experiment, result);
+  },
+});
+
+function updateGrowthBookURL() {
+  growthbook.setURL(window.location.href);
+}
+
 export default function MyApp({ Component, pageProps }: AppProps) {
   const forceUpdate = useForceUpdate();
   const { isLoading, mutateUser, user } = useUser();
@@ -60,10 +75,6 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       'warning': new Audio('/sounds/warning.wav'),
     });
   }, []);
-
-  Router.events.on('routeChangeStart', () => nProgress.start());
-  Router.events.on('routeChangeComplete', () => nProgress.done());
-  Router.events.on('routeChangeError', () => nProgress.done());
 
   // initialize shouldAttemptAuth if it exists in sessionStorage
   useEffect(() => {
@@ -216,10 +227,35 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     }
   }, [matches, privateAndInvitedMatches, router, user]);
 
+  useEffect(() => {
+    Router.events.on('routeChangeStart', () => nProgress.start());
+    Router.events.on('routeChangeComplete', () => {
+      updateGrowthBookURL();
+      nProgress.done();
+    });
+
+    Router.events.on('routeChangeError', () => nProgress.done());
+    growthbook.loadFeatures({ autoRefresh: true });
+    growthbook.setAttributes({
+      id: user?._id,
+      name: user?.name,
+      loggedIn: user !== undefined,
+      browser: navigator.userAgent,
+      url: router.pathname,
+      host: window.location.host,
+      roles: user?.roles,
+
+    });
+    router.events.on('routeChangeComplete', updateGrowthBookURL);
+
+    return () => router.events.off('routeChangeComplete', updateGrowthBookURL);
+  }, [router.events, router.pathname, user]);
+
   const isEU = Intl.DateTimeFormat().resolvedOptions().timeZone.startsWith('Europe');
 
   return (
     <>
+
       <Head>
         <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' />
         <meta name='apple-itunes-app' content='app-id=1668925562, app-argument=pathology.gg' />
@@ -255,27 +291,29 @@ export default function MyApp({ Component, pageProps }: AppProps) {
           </span>
         </CookieConsent>
       )}
-      <AppContext.Provider value={{
-        forceUpdate: forceUpdate,
-        multiplayerSocket: multiplayerSocket,
-        mutateUser: mutateUser,
-        setShouldAttemptAuth: setShouldAttemptAuth,
-        setTheme: setTheme,
-        shouldAttemptAuth: shouldAttemptAuth,
-        sounds: sounds,
-        theme: theme,
-        user: user,
-        userConfig: user?.config,
-        userLoading: isLoading,
-      }}>
-        <div className={rubik.className} style={{
-          backgroundColor: 'var(--bg-color)',
-          color: 'var(--color)',
+      <GrowthBookProvider growthbook={growthbook}>
+        <AppContext.Provider value={{
+          forceUpdate: forceUpdate,
+          multiplayerSocket: multiplayerSocket,
+          mutateUser: mutateUser,
+          setShouldAttemptAuth: setShouldAttemptAuth,
+          setTheme: setTheme,
+          shouldAttemptAuth: shouldAttemptAuth,
+          sounds: sounds,
+          theme: theme,
+          user: user,
+          userConfig: user?.config,
+          userLoading: isLoading,
         }}>
-          <Toaster toastOptions={{ duration: 1500 }} />
-          <Component {...pageProps} />
-        </div>
-      </AppContext.Provider>
+          <div className={rubik.className} style={{
+            backgroundColor: 'var(--bg-color)',
+            color: 'var(--color)',
+          }}>
+            <Toaster toastOptions={{ duration: 1500 }} />
+            <Component {...pageProps} />
+          </div>
+        </AppContext.Provider>
+      </GrowthBookProvider>
     </>
   );
 }
