@@ -125,11 +125,13 @@ export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?
         <li>Your guest account may be deleted after 7 days of no activity</li>
         <li>By creating a guest account you agree to our <a className='underline' href='https://docs.google.com/document/d/e/2PACX-1vR4E-RcuIpXSrRtR3T3y9begevVF_yq7idcWWx1A-I9w_VRcHhPTkW1A7DeUx2pGOcyuKifEad3Qokn/pub' rel='noreferrer' target='_blank'>terms of service</a> and reviewed the <a className='underline' href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub' rel='noreferrer' target='_blank'>privacy policy</a></li>
       </ul>
-      <ReCAPTCHA
-        onChange={onRecaptchaChange}
-        ref={recaptchaRef}
-        sitekey={recaptchaPublicKey ?? ''}
-      />
+      { recaptchaPublicKey && (
+        <ReCAPTCHA
+          onChange={onRecaptchaChange}
+          ref={recaptchaRef}
+          sitekey={recaptchaPublicKey ?? ''}
+        />
+      )}
       <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer' onClick={fetchSignup}>
         Play
       </button>
