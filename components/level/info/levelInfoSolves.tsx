@@ -13,7 +13,7 @@ import React, { Fragment, useContext, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import ProStatsLevelType from '../../../constants/proStatsLevelType';
-import { LevelContext } from '../../../contexts/levelContext';
+import { LevelContext, ProStatsCommunityStepData } from '../../../contexts/levelContext';
 
 export default function LevelInfoSolves() {
   const [disabled, setDisabled] = useState(false);
@@ -74,14 +74,14 @@ export default function LevelInfoSolves() {
     });
   }
 
-  if (!proStatsLevel || !proStatsLevel[ProStatsLevelType.CommunityStepData] || proStatsLevel[ProStatsLevelType.CommunityStepData].length === 0) {
+  if (!proStatsLevel || !proStatsLevel[ProStatsLevelType.CommunityStepData] || (proStatsLevel[ProStatsLevelType.CommunityStepData] as ProStatsCommunityStepData[]).length === 0) {
     return <div className='text-sm'>No solve data available.</div>;
   }
 
   const solveDivs = [];
 
-  for (let i = 0; i < proStatsLevel[ProStatsLevelType.CommunityStepData].length; i++) {
-    const solve = proStatsLevel[ProStatsLevelType.CommunityStepData][i];
+  for (let i = 0; i < (proStatsLevel[ProStatsLevelType.CommunityStepData] as ProStatsCommunityStepData[]).length; i++) {
+    const solve = (proStatsLevel[ProStatsLevelType.CommunityStepData] as ProStatsCommunityStepData[])[i];
 
     // green bar fill for the users that completed the level
     if (i === 0) {

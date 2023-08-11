@@ -2,6 +2,9 @@
   "name": "pathology",
   "version": "0.1.0",
   "private": true,
+  "_moduleAliases": {
+    "@root": "dist"
+  },
   "dependencies": {
     "@aws-sdk/client-ses": "^3.387.0",
     "@aws-sdk/credential-provider-node": "^3.387.0",
@@ -21,6 +24,7 @@
     "firebase-admin": "^11.10.1",
     "jsonwebtoken": "^9.0.1",
     "micro": "^10.0.1",
+    "module-alias": "^2.2.3",
     "moment": "^2.29.4",
     "mongoose": "^7.4.2",
     "newrelic": "^10.6.2",

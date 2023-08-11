@@ -1,5 +1,5 @@
-// ts-node --files server/socket/socket-server.ts
-import { isValidGameState } from '@root/helpers/gameStateHelpers';
+// ts-node --transpile-only --files server/socket/socket-server.ts
+import { isValidMatchGameState } from '@root/helpers/gameStateHelpers';
 import { createAdapter } from '@socket.io/mongo-adapter';
 import { Emitter } from '@socket.io/mongo-emitter';
 import dotenv from 'dotenv';
@@ -12,7 +12,7 @@ import { MultiplayerMatchModel } from '../../models/mongoose';
 import { MultiplayerMatchState } from '../../models/MultiplayerEnums';
 import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
 import { getMatch } from '../../pages/api/match/[matchId]';
-import { broadcastConnectedPlayers, broadcastCountOfUsersInRoom, broadcastGameState, broadcastMatches, broadcastPrivateAndInvitedMatches, scheduleBroadcastMatch } from './socketFunctions';
+import { broadcastConnectedPlayers, broadcastCountOfUsersInRoom, broadcastMatches, broadcastMatchGameState, broadcastPrivateAndInvitedMatches, scheduleBroadcastMatch } from './socketFunctions';
 
 'use strict';
 
@@ -34,22 +34,20 @@ process.on('unhandledRejection', (err) => {
   logger.error('unhandledRejection', err);
   process.exit(1);
 });
-// before exit
-process.on('beforeExit', (code) => {
-  logger.info('Process beforeExit event with code: ', code);
-});
+
 process.on('exit', (code) => {
-  console.log('Process exit event with code: ', code);
+  console.log('Process exit event with code: ' + code);
 });
 // ctrl c
 process.on('SIGINT', () => {
   logger.info('SIGINT signal received.');
+  // exit 0
   process.exit(0);
 });
 // kill
 process.on('SIGTERM', () => {
   logger.info('SIGTERM signal received.');
-  process.exit(0);
+  // exit 0
 });
 let GlobalSocketIO: Server;
 
@@ -138,17 +136,17 @@ export default async function startSocketIOServer() {
         return;
       }
 
-      socket.on('gameState', async (data) => {
-        const userId = socket.data?._id as Types.ObjectId;
-        const { matchId, gameState } = data;
+      socket.on('matchGameState', async (data) => {
+        const userId = socket.data.userId as Types.ObjectId | undefined;
+        const { matchId, matchGameState } = data;
 
-        if (isValidGameState(gameState)) {
-          await broadcastGameState(mongoEmitter, userId, matchId, gameState);
+        if (userId && isValidMatchGameState(matchGameState)) {
+          await broadcastMatchGameState(mongoEmitter, userId, matchId, matchGameState);
           await broadcastCountOfUsersInRoom(adapted, matchId); // TODO: probably worth finding a better place to put this
         }
       });
       socket.on('disconnect', async () => {
-        const userId = socket.data?._id as Types.ObjectId;
+        const userId = socket.data.userId as Types.ObjectId;
 
         if (!userId) {
           return;
@@ -163,9 +161,9 @@ export default async function startSocketIOServer() {
       // TODO can't find anywhere in docs what socket type is... so using any for now
       // TODO: On reconnection, we need to add the user back to any rooms they should have been in before
       socket.data = {
-        _id: reqUser._id,
+        userId: reqUser._id,
       };
-      socket.join(reqUser?._id.toString());
+      socket.join(reqUser._id.toString());
       // note socket on the same computer will have the same id
       const matchId = socket.handshake.query.matchId as string;
 
@@ -176,10 +174,11 @@ export default async function startSocketIOServer() {
         if (match) {
           const matchClone = JSON.parse(JSON.stringify(match));
 
-          enrichMultiplayerMatch(matchClone, reqUser?._id.toString());
+          enrichMultiplayerMatch(matchClone, reqUser._id.toString());
           socket?.emit('match', matchClone);
           broadcastCountOfUsersInRoom(adapted, matchId);
         } else {
+          // TODO: emit only to matchId? or can we just show a 404 here?
           socket?.emit('matchNotFound');
         }
       } else {
