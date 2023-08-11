@@ -41,10 +41,13 @@ process.on('exit', (code) => {
 // ctrl c
 process.on('SIGINT', () => {
   logger.info('SIGINT signal received.');
+  // exit 0
+  process.exit(0);
 });
 // kill
 process.on('SIGTERM', () => {
   logger.info('SIGTERM signal received.');
+  // exit 0
 });
 let GlobalSocketIO: Server;
 

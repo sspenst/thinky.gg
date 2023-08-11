@@ -38,7 +38,7 @@ export default function ProfileInsightsMostCompletions({ user }: {user: User}) {
           },
         }]}
         customStyles={DATA_TABLE_CUSTOM_STYLES}
-        data={proStatsUser[ProStatsUserType.MostSolvesForUserLevels]}
+        data={proStatsUser[ProStatsUserType.MostSolvesForUserLevels] as UserAndSum[]}
         dense
         noDataComponent={
           <div className='p-3'>

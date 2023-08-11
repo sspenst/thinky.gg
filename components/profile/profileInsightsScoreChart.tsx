@@ -57,7 +57,7 @@ export default function ProfileInsightsScoreChart({ user }: { user: User }) {
     return <span>Loading...</span>;
   }
 
-  const scores = scoreChartData[ProStatsUserType.ScoreHistory];
+  const scores = scoreChartData[ProStatsUserType.ScoreHistory] as DateAndSum[];
   const cumulativeScores = getCumulativeScores(scores);
   const cumulativeScoresCompare = getCumulativeScores(compareData || []);
   const mergedData = mergeData(cumulativeScores, cumulativeScoresCompare);
