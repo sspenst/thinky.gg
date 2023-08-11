@@ -39,7 +39,7 @@ export default function ProfileInsightsSolveTimeComparison({ user }: { user: Use
   }
 
   // draw a scatter plot with a difficulty bucket on the x axis and the two dots on the y axis for the difficulty and average duration
-  let data = difficultyComparisonData[ProStatsUserType.DifficultyLevelsComparisons];
+  let data = difficultyComparisonData[ProStatsUserType.DifficultyLevelsComparisons] as DifficultyLevelComparison[];
 
   data = data.filter(d => d.otherPlayattemptsAverageDuration && d.myPlayattemptsSumDuration);
 

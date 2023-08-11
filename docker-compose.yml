@@ -32,7 +32,7 @@ services:
         - /pathology_app/.next 
     networks:
         - dev-network
-    command: tsc   server/socket/socket-server.ts
+    command: node -r module-alias/register dist/server/socket/socket-server.js
     ports:
         - "3001:3001"
   nginx:

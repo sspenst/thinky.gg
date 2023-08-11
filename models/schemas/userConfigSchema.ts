@@ -1,5 +1,5 @@
 import NotificationType from '@root/constants/notificationType';
-import { TourType } from '@root/hooks/useTour';
+import { TourType } from '@root/constants/tourType';
 import mongoose from 'mongoose';
 import { EmailDigestSettingTypes } from '../../constants/emailDigest';
 import UserConfig from '../db/userConfig';

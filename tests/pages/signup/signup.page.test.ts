@@ -29,7 +29,7 @@ describe('pages/signup page', () => {
 
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
-    expect(ret.redirect).toBeUndefined();
+    expect((ret as any).redirect).toBeUndefined();
   });
   test('getServerProps with params', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
@@ -44,7 +44,7 @@ describe('pages/signup page', () => {
     const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
 
     expect(ret.props).toBeUndefined();
-    expect(ret.redirect).toBeDefined();
-    expect(ret.redirect?.destination).toBe('/home');
+    expect((ret as any).redirect).toBeDefined();
+    expect((ret as any).redirect?.destination).toBe('/home');
   });
 });
