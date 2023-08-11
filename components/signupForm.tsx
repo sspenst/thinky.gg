@@ -23,7 +23,7 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
   const [recaptchaToken, setRecaptchaToken] = useState<string>('');
   const recaptchaRef = useRef<ReCAPTCHA>(null);
 
-  const redirectFeatureFlag = useFeatureIsOn('redirect-home-instead-play');
+  const redirectFeatureFlag = useFeatureIsOn('post-tutorial-redirect-to-home');
 
   function onRecaptchaChange(value: string | null) {
     if (value) {
