@@ -1,4 +1,4 @@
-// ts-node --files server/socket/socket-server.ts
+// ts-node --transpile-only --files server/socket/socket-server.ts
 import { isValidMatchGameState } from '@root/helpers/gameStateHelpers';
 import { createAdapter } from '@socket.io/mongo-adapter';
 import { Emitter } from '@socket.io/mongo-emitter';
