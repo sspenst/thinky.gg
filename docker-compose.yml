@@ -32,7 +32,7 @@ services:
         - /pathology_app/.next 
     networks:
         - dev-network
-    command: ts-node --transpile-only -P tsconfig.json -r tsconfig-paths/register --files server/socket/socket-server.ts
+    command: tsc   server/socket/socket-server.ts
     ports:
         - "3001:3001"
   nginx:

@@ -2,14 +2,15 @@ FROM node:18
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN npm install -g ts-node
-
 WORKDIR /pathology_app
 
 COPY --chown=node:node package*.json ./
 RUN npm install
 
 COPY --chown=node:node . .
+
+RUN npm install -g typescript ts-node 
+
 
 #USER node
 
