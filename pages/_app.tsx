@@ -44,7 +44,7 @@ const growthbook = new GrowthBook({
   clientKey: process.env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY || 'sdk-XUcOzkOQARhQXpCL',
   enableDevMode: process.env.NODE_ENV === 'development',
   trackingCallback: (experiment, result) => {
-    console.info('Viewed Experiment', experiment, result);
+    console.log('Viewed Experiment', experiment, result);
 
     if ('gtag' in window) {
       (window as any).gtag('event', 'experiment_viewed', {
