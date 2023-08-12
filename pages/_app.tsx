@@ -45,6 +45,16 @@ const growthbook = new GrowthBook({
   enableDevMode: process.env.NODE_ENV === 'development',
   trackingCallback: (experiment, result) => {
     console.info('Viewed Experiment', experiment, result);
+
+    if ('gtag' in window) {
+      (window as any).gtag('event', 'experiment_viewed', {
+        event_category: 'experiment',
+        experiment_id: experiment.key,
+        variation_id: result.variationId,
+      });
+    } else {
+      console.warn('no gtag');
+    }
   },
 });
 

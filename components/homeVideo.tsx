@@ -6,7 +6,6 @@ import { AppContext } from '../contexts/appContext';
 export default function HomeVideo() {
   const { userConfig } = useContext(AppContext);
 
-  const featureFlagButtonSize = useFeatureIsOn('main-cta-button-size');
   const featureFlagButtonSizeValue = useFeatureValue('main-cta-button-size', 'text-3xl');
   const ctaClass = 'fadeIn inline-block px-3 py-1.5 mb-1 border-4 border-neutral-400 bg-white text-black font-bold ' + featureFlagButtonSizeValue + ' leading-snug rounded-xl hover:ring-4 hover:bg-blue-500 hover:text-white ring-blue-500/50 focus:ring-0 transition duration-400 ease-in-out';
 
