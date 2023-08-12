@@ -238,11 +238,16 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   }, [matches, privateAndInvitedMatches, router, user]);
 
   useEffect(() => {
-    Router.events.on('routeChangeStart', () => nProgress.start());
-    Router.events.on('routeChangeComplete', () => {
+    const handleRouteChange = (url: string) => {
       updateGrowthBookURL();
       nProgress.done();
-    });
+
+      if ('gtag' in window) {
+        (window as any).gtag.pageview(url);
+      }
+    };
+
+    Router.events.on('routeChangeStart', () => nProgress.start());
 
     Router.events.on('routeChangeError', () => nProgress.done());
     growthbook.loadFeatures({ autoRefresh: true });
@@ -256,9 +261,9 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       roles: user?.roles,
 
     });
-    router.events.on('routeChangeComplete', updateGrowthBookURL);
+    router.events.on('routeChangeComplete', handleRouteChange);
 
-    return () => router.events.off('routeChangeComplete', updateGrowthBookURL);
+    return () => router.events.off('routeChangeComplete', handleRouteChange);
   }, [router.events, router.pathname, user]);
 
   const isEU = Intl.DateTimeFormat().resolvedOptions().timeZone.startsWith('Europe');
