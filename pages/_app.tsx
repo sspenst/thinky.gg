@@ -42,7 +42,7 @@ function useForceUpdate() {
 const growthbook = new GrowthBook({
   apiHost: process.env.NEXT_PUBLIC_GROWTHBOOK_API_HOST || 'https://cdn.growthbook.io',
   clientKey: process.env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY || 'sdk-XUcOzkOQARhQXpCL',
-  enableDevMode: process.env.NODE_ENV === 'development',
+  enableDevMode: true,
   trackingCallback: (experiment, result) => {
     console.log('Viewed Experiment', experiment, result);
 
@@ -239,6 +239,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
   useEffect(() => {
     const handleRouteChange = (url: string) => {
+      console.log('routeChangeComplete', url);
       updateGrowthBookURL();
       nProgress.done();
 
