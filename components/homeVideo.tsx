@@ -1,4 +1,4 @@
-import { useFeatureIsOn, useFeatureValue } from '@growthbook/growthbook-react';
+import { useFeatureValue } from '@growthbook/growthbook-react';
 import Link from 'next/link';
 import React, { useContext } from 'react';
 import { AppContext } from '../contexts/appContext';
