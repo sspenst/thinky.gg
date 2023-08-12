@@ -40,8 +40,8 @@ function useForceUpdate() {
 
 // Create a GrowthBook instance
 const growthbook = new GrowthBook({
-  apiHost: process.env.NEXT_PUBLIC_GROWTHBOOK_API_HOST,
-  clientKey: process.env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY,
+  apiHost: process.env.NEXT_PUBLIC_GROWTHBOOK_API_HOST || 'https://cdn.growthbook.io',
+  clientKey: process.env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY || 'sdk-XUcOzkOQARhQXpCL',
   enableDevMode: process.env.NODE_ENV === 'development',
   trackingCallback: (experiment, result) => {
     console.info('Viewed Experiment', experiment, result);
