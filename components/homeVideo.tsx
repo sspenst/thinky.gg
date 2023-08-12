@@ -1,9 +1,14 @@
+import { useFeatureIsOn, useFeatureValue } from '@growthbook/growthbook-react';
 import Link from 'next/link';
 import React, { useContext } from 'react';
 import { AppContext } from '../contexts/appContext';
 
 export default function HomeVideo() {
   const { userConfig } = useContext(AppContext);
+
+  const featureFlagButtonSize = useFeatureIsOn('main-cta-button-size');
+  const featureFlagButtonSizeValue = useFeatureValue('main-cta-button-size', 'text-3xl');
+  const ctaClass = 'fadeIn inline-block px-3 py-1.5 mb-1 border-4 border-neutral-400 bg-white text-black font-bold ' + featureFlagButtonSizeValue + ' leading-snug rounded-xl hover:ring-4 hover:bg-blue-500 hover:text-white ring-blue-500/50 focus:ring-0 transition duration-400 ease-in-out';
 
   return (
     <div className='grid grid-cols-1 grid-rows-1 place-items-center'>
@@ -21,7 +26,7 @@ export default function HomeVideo() {
             <h3 className='fadeIn font-semibold text-xl mb-6'>Find the way</h3>
             <div className='flex flex-col items-center mb-4'>
               <Link
-                className='fadeIn inline-block px-3 py-1.5 mb-1 border-4 border-neutral-400 bg-white text-black font-bold text-3xl leading-snug rounded-xl hover:ring-4 hover:bg-blue-500 hover:text-white ring-blue-500/50 focus:ring-0 transition duration-400 ease-in-out'
+                className={ctaClass}
                 style={{
                   animationDelay: '0.5s',
                 }}
