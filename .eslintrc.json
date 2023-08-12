@@ -27,6 +27,7 @@
   ],
   "rules": {
     "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-unused-vars": "warn",
     "@typescript-eslint/type-annotation-spacing": "warn",
     "arrow-spacing": "warn",
     "brace-style": ["warn", "1tbs", { "allowSingleLine": true }],

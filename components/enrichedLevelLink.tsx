@@ -13,7 +13,7 @@ export default function EnrichedLevelLink({ level, onClick }: EnrichedLevelLinkP
 
   return (
     <Link
-      className='flex items-center font-bold underline'
+      className='flex items-center font-bold underline w-fit'
       href={`/level/${level.slug}`}
       onClick={onClick}
       passHref

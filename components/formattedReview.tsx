@@ -6,6 +6,7 @@ import User from '../models/db/user';
 import EnrichedLevelLink from './enrichedLevelLink';
 import FormattedDate from './formattedDate';
 import FormattedUser from './formattedUser';
+import ReviewDropdown from './reviewDropdown';
 
 interface StarProps {
   empty: boolean;
@@ -63,13 +64,12 @@ export function Stars({ stars }: StarsProps) {
 interface FormattedReviewProps {
   hideBorder?: boolean;
   level?: EnrichedLevel;
-  onDeleteClick?: () => void;
   onEditClick?: () => void;
   review: Review;
   user: User;
 }
 
-export default function FormattedReview({ hideBorder, level, onDeleteClick, onEditClick, review, user }: FormattedReviewProps) {
+export default function FormattedReview({ hideBorder, level, onEditClick, review, user }: FormattedReviewProps) {
   return (
     <div className='flex align-center justify-center text-left break-words'>
       <div
@@ -79,26 +79,17 @@ export default function FormattedReview({ hideBorder, level, onDeleteClick, onEd
         }}
       >
         <div className='flex gap-x-2 items-center flex-wrap'>
-          <div className='flex gap-x-2 items-center truncate'>
-            <FormattedUser user={user} />
-            <FormattedDate ts={review.ts} />
+          <div className='flex justify-between w-full items-center'>
+            <div className='flex gap-x-2 items-center truncate'>
+              <FormattedUser user={user} />
+              <FormattedDate ts={review.ts} />
+            </div>
+            {onEditClick && <ReviewDropdown onEditClick={onEditClick} />}
           </div>
           {level && <EnrichedLevelLink level={level} />}
         </div>
         {review.score ? <Stars stars={review.score} /> : null}
         <span className='whitespace-pre-wrap'>{review.text}</span>
-        {(onEditClick || onDeleteClick) && <div className='mt-1'>
-          {onEditClick && <button
-            className='bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 mr-2 rounded-lg text-sm focus:bg-blue-800 disabled:opacity-25'
-            onClick={onEditClick}>
-            Edit
-          </button>}
-          {onDeleteClick && <button
-            className='bg-red-500 hover:bg-red-700 text-white font-bold p-2 rounded-lg text-sm focus:bg-red-800 disabled:opacity-25'
-            onClick={onDeleteClick}>
-            Delete
-          </button>}
-        </div>}
       </div>
     </div>
   );
