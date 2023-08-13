@@ -32,17 +32,17 @@ export default function FormattedLevelReviews({ inModal }: FormattedLevelReviews
     } else {
       reviewDivs.push(
         <div key={`review-${review._id.toString()}-line`}>
-          <div
-            className='m-3 opacity-30'
-            style={{
-              backgroundColor: 'var(--bg-color-4)',
-              height: 1,
-            }}
-          />
           <FormattedReview
             hideBorder={true}
             review={review}
             user={review.userId}
+          />
+          <div
+            className='mt-3 opacity-30'
+            style={{
+              backgroundColor: 'var(--bg-color-4)',
+              height: 1,
+            }}
           />
         </div>
       );
@@ -50,9 +50,9 @@ export default function FormattedLevelReviews({ inModal }: FormattedLevelReviews
   }
 
   return (
-    <>
-      <div className='font-bold text-lg mb-2'>
-        {levelContext.reviews.length === 0 ?
+    <div className='flex flex-col gap-3'>
+      <div className='font-medium text-lg'>
+        {levelContext.reviews.length == 0 ?
           <>No reviews yet!</> :
           <>{levelContext.reviews.length} review{levelContext.reviews.length !== 1 && 's'}:</>
         }
@@ -67,6 +67,6 @@ export default function FormattedLevelReviews({ inModal }: FormattedLevelReviews
         :
         reviewDivs
       }
-    </>
+    </div>
   );
 }
