@@ -1,5 +1,4 @@
 /* istanbul ignore file */
-
 import '../styles/global.css';
 import 'react-tooltip/dist/react-tooltip.css';
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react';
@@ -7,7 +6,9 @@ import type { AppProps } from 'next/app';
 import { Rubik, Teko } from 'next/font/google';
 import Head from 'next/head';
 import Router, { useRouter } from 'next/router';
+import Script from 'next/script';
 import { DefaultSeo } from 'next-seo';
+import { event, GoogleAnalytics } from 'nextjs-google-analytics';
 import nProgress from 'nprogress';
 import React, { useEffect, useState } from 'react';
 import CookieConsent from 'react-cookie-consent';
@@ -46,17 +47,14 @@ const growthbook = new GrowthBook({
   trackingCallback: (experiment, result) => {
     console.log('Viewed Experiment', experiment, result);
 
-    if ('gtag' in window) {
-      (window as any).gtag('event', 'experiment_viewed', {
-        event_category: 'experiment',
-        experiment_id: experiment.key,
-        variation_id: result.variationId,
-      });
-    } else {
-      console.warn('no gtag');
-    }
+    event('experiment_viewed', {
+      event_category: 'experiment',
+      experiment_id: experiment.key,
+      variation_id: result.variationId,
+    });
   },
 });
+const GA_TRACKING_ID = 'G-K1H91CWPY7';
 
 function updateGrowthBookURL() {
   growthbook.setURL(window.location.href);
@@ -240,16 +238,15 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   const [GA_ClientID, setGA_ClientID] = useState<string>();
 
   useEffect(() => {
+    console.log('yo', (window as any).ga, (window as any).gtag);
+
     if ('gtag' in window) {
-      (window as any).gtag('get', 'G-K1H91CWPY7', 'client_id', (clientId: string) => {
+      (window as any).gtag('get', GA_TRACKING_ID, 'client_id', (clientId: string) => {
         console.log('GA ClientID = ', clientId);
         setGA_ClientID(clientId);
       });
     } else {
-      const randomHash = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-
-      console.warn('no gtag, randomizing GA ClientID = ', randomHash);
-      setGA_ClientID(randomHash);
+      console.warn('no gtag... cant get GA ClientID');
     }
   }, []);
 
@@ -258,10 +255,6 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       console.log('routeChangeComplete', url);
       updateGrowthBookURL();
       nProgress.done();
-
-      if ('gtag' in window) {
-        (window as any).gtag.pageview(url);
-      }
     };
 
     Router.events.on('routeChangeStart', () => nProgress.start());
@@ -269,17 +262,20 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     Router.events.on('routeChangeError', () => nProgress.done());
     growthbook.loadFeatures({ autoRefresh: true });
     console.log('CLIENT ID = ', GA_ClientID);
-    growthbook.setAttributes({
-      id: user?._id || GA_ClientID,
-      userId: user?._id,
-      clientId: GA_ClientID,
-      name: user?.name,
-      loggedIn: user !== undefined,
-      browser: navigator.userAgent,
-      url: router.pathname,
-      host: window.location.host,
-      roles: user?.roles,
-    });
+
+    if (GA_ClientID) {
+      growthbook.setAttributes({
+        id: user?._id || GA_ClientID,
+        userId: user?._id,
+        clientId: GA_ClientID,
+        name: user?.name,
+        loggedIn: user !== undefined,
+        browser: navigator.userAgent,
+        url: router.pathname,
+        host: window.location.host,
+        roles: user?.roles,
+      });
+    }
 
     router.events.on('routeChangeComplete', handleRouteChange);
 
@@ -295,6 +291,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' />
         <meta name='apple-itunes-app' content='app-id=1668925562, app-argument=pathology.gg' />
       </Head>
+      <GoogleAnalytics trackPageViews gaMeasurementId={GA_TRACKING_ID} />
       <DefaultSeo
         defaultTitle='Pathology - Shortest Path Puzzle Game'
         description='The goal of the puzzle game Pathology is simple. Get to the exit in the least number of moves.'
