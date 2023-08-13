@@ -237,6 +237,22 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     }
   }, [matches, privateAndInvitedMatches, router, user]);
 
+  const [GA_ClientID, setGA_ClientID] = useState<string>();
+
+  useEffect(() => {
+    if ('gtag' in window) {
+      (window as any).gtag('get', 'G-K1H91CWPY7', 'client_id', (clientId: string) => {
+        console.log('GA ClientID = ', clientId);
+        setGA_ClientID(clientId);
+      });
+    } else {
+      const randomHash = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+      console.warn('no gtag, randomizing GA ClientID = ', randomHash);
+      setGA_ClientID(randomHash);
+    }
+  }, []);
+
   useEffect(() => {
     const handleRouteChange = (url: string) => {
       console.log('routeChangeComplete', url);
@@ -252,20 +268,23 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
     Router.events.on('routeChangeError', () => nProgress.done());
     growthbook.loadFeatures({ autoRefresh: true });
+    console.log('CLIENT ID = ', GA_ClientID);
     growthbook.setAttributes({
-      id: user?._id,
+      id: user?._id || GA_ClientID,
+      userId: user?._id,
+      clientId: GA_ClientID,
       name: user?.name,
       loggedIn: user !== undefined,
       browser: navigator.userAgent,
       url: router.pathname,
       host: window.location.host,
       roles: user?.roles,
-
     });
+
     router.events.on('routeChangeComplete', handleRouteChange);
 
     return () => router.events.off('routeChangeComplete', handleRouteChange);
-  }, [router.events, router.pathname, user]);
+  }, [GA_ClientID, router.events, router.pathname, user]);
 
   const isEU = Intl.DateTimeFormat().resolvedOptions().timeZone.startsWith('Europe');
 
