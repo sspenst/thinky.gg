@@ -6,7 +6,6 @@ import type { AppProps } from 'next/app';
 import { Rubik, Teko } from 'next/font/google';
 import Head from 'next/head';
 import Router, { useRouter } from 'next/router';
-import Script from 'next/script';
 import { DefaultSeo } from 'next-seo';
 import { event, GoogleAnalytics } from 'nextjs-google-analytics';
 import nProgress from 'nprogress';
