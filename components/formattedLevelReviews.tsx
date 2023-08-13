@@ -38,7 +38,7 @@ export default function FormattedLevelReviews({ inModal }: FormattedLevelReviews
             user={review.userId}
           />
           <div
-            className='mt-4 opacity-30'
+            className='mt-3 opacity-30'
             style={{
               backgroundColor: 'var(--bg-color-4)',
               height: 1,
@@ -50,7 +50,7 @@ export default function FormattedLevelReviews({ inModal }: FormattedLevelReviews
   }
 
   return (
-    <div className='flex flex-col gap-4'>
+    <div className='flex flex-col gap-3'>
       <div className='font-medium text-lg'>
         {levelContext.reviews.length == 0 ?
           <>No reviews yet!</> :
