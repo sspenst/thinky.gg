@@ -260,6 +260,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     console.log('CLIENT ID = ', GA_ClientID);
 
     if (GA_ClientID) {
+      console.log('Setting attributes', user?._id || GA_ClientID);
       (window as any).gtag('config', GA_TRACKING_ID, {
         'user_id': user?._id || GA_ClientID,
       });
