@@ -45,7 +45,7 @@ const growthbook = new GrowthBook({
   enableDevMode: true,
   trackingCallback: (experiment, result) => {
     console.log('Viewed Experiment', experiment, result, 'calling window.gtag (which is ', (window as any).gtag);
-    (window as any).gtag('event', 'experiment_viewed', {
+    (window as any)?.gtag('event', 'experiment_viewed', {
       event_category: 'experiment',
       experiment_id: experiment.key,
       variation_id: result.variationId,
@@ -236,10 +236,8 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   const [GA_ClientID, setGA_ClientID] = useState<string>();
 
   useEffect(() => {
-    console.log('yo', (window as any).ga, (window as any).gtag);
-
     if ('gtag' in window) {
-      (window as any).gtag('get', GA_TRACKING_ID, 'client_id', (clientId: string) => {
+      (window as any)?.gtag('get', GA_TRACKING_ID, 'client_id', (clientId: string) => {
         console.log('GA ClientID = ', clientId);
         setGA_ClientID(clientId);
       });
@@ -262,6 +260,9 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     console.log('CLIENT ID = ', GA_ClientID);
 
     if (GA_ClientID) {
+      (window as any).gtag('config', GA_TRACKING_ID, {
+        'user_id': user?._id || GA_ClientID,
+      });
       growthbook.setAttributes({
         id: user?._id || GA_ClientID,
         userId: user?._id,
