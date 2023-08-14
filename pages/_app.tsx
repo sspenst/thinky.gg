@@ -7,7 +7,7 @@ import { Rubik, Teko } from 'next/font/google';
 import Head from 'next/head';
 import Router, { useRouter } from 'next/router';
 import { DefaultSeo } from 'next-seo';
-import { event, GoogleAnalytics } from 'nextjs-google-analytics';
+import { GoogleAnalytics } from 'nextjs-google-analytics';
 import nProgress from 'nprogress';
 import React, { useEffect, useState } from 'react';
 import CookieConsent from 'react-cookie-consent';
