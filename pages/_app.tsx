@@ -55,7 +55,7 @@ const growthbook = new GrowthBook({
   },
 });
 
-const GA_TRACKING_ID = 'G-3F9TMKMV08';
+const GA_TRACKING_ID = 'G-K1H91CWPY7';
 
 function updateGrowthBookURL() {
   growthbook.setURL(window.location.href);
