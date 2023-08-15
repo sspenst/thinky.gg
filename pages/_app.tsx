@@ -258,16 +258,6 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     growthbook.loadFeatures({ autoRefresh: true });
 
     if (GA_ClientID) {
-      (window as any).gtag('config', GA_TRACKING_ID, {
-        'user_id': user?._id || GA_ClientID,
-      });
-      (window as any).dataLayer = (window as any).dataLayer || [];
-      (window as any).dataLayer.push({
-        'event': 'userId_set',
-        'user_id': user?._id || GA_ClientID
-      });
-      (window as any).gtag('set', { 'user_id': user?._id || GA_ClientID });
-
       growthbook.setAttributes({
         id: user?._id || GA_ClientID,
         userId: user?._id,
@@ -279,6 +269,18 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         host: window.location.host,
         roles: user?.roles,
       });
+    }
+
+    if (user?._id) {
+      (window as any).gtag('config', GA_TRACKING_ID, {
+        'user_id': user._id.toString(),
+      });
+      (window as any).dataLayer = (window as any).dataLayer || [];
+      (window as any).dataLayer.push({
+        'event': 'userId_set',
+        'user_id': user?._id.toString() || GA_ClientID
+      });
+      (window as any).gtag('set', { 'user_id': user?._id.toString() });
     }
 
     router.events.on('routeChangeComplete', handleRouteChange);
