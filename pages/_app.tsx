@@ -2,17 +2,15 @@
 import '../styles/global.css';
 import 'react-tooltip/dist/react-tooltip.css';
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react';
-import GoogleTagManager from '@root/components/analytics/GoogleTagManager';
 import type { AppProps } from 'next/app';
 import { Rubik, Teko } from 'next/font/google';
 import Head from 'next/head';
 import Router, { useRouter } from 'next/router';
-import Script from 'next/script';
 import { DefaultSeo } from 'next-seo';
-import { GoogleAnalytics } from 'nextjs-google-analytics';
 import nProgress from 'nprogress';
 import React, { useEffect, useState } from 'react';
 import CookieConsent from 'react-cookie-consent';
+import TagManager, { TagManagerArgs } from 'react-gtm-module';
 import { Toaster } from 'react-hot-toast';
 import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 import { io, Socket } from 'socket.io-client';
@@ -55,7 +53,7 @@ const growthbook = new GrowthBook({
   },
 });
 
-const GA_TRACKING_ID = 'G-K1H91CWPY7';
+const GTM_TRACKING_ID = 'GTM-WBDLFZ5T';
 
 function updateGrowthBookURL() {
   growthbook.setURL(window.location.href);
@@ -239,13 +237,22 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   const [GA_ClientID, setGA_ClientID] = useState<string>();
 
   useEffect(() => {
-    if ('gtag' in window) {
+  /*  if ('gtag' in window) {
       (window as any)?.gtag('get', GA_TRACKING_ID, 'client_id', (clientId: string) => {
         setGA_ClientID(clientId);
       });
     } else {
       console.warn('no gtag... cant get GA ClientID');
-    }
+    }*/
+  }, []);
+
+  useEffect(() => {
+    const gtmId = GTM_TRACKING_ID;
+    const taskManagerArgs: TagManagerArgs = {
+      gtmId,
+    };
+
+    TagManager.initialize(taskManagerArgs);
   }, []);
 
   useEffect(() => {
@@ -274,7 +281,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     }
 
     if (user?._id && (window as any).gtag) {
-      (window as any).gtag('config', GA_TRACKING_ID, {
+      /*(window as any).gtag('config', GA_TRACKING_ID, {
         'user_id': user._id.toString(),
       });
       (window as any).dataLayer = (window as any).dataLayer || [];
@@ -282,7 +289,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         'event': 'userId_set',
         'user_id': user?._id.toString() || GA_ClientID
       });
-      (window as any).gtag('set', { 'user_id': user?._id.toString() });
+      (window as any).gtag('set', { 'user_id': user?._id.toString() });*/
     }
 
     router.events.on('routeChangeComplete', handleRouteChange);
@@ -350,9 +357,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
             color: 'var(--color)',
           }}>
             <Toaster toastOptions={{ duration: 1500 }} />
-            <GoogleTagManager>
-              <Component {...pageProps} />
-            </GoogleTagManager>
+            <Component {...pageProps} />
           </div>
         </AppContext.Provider>
       </GrowthBookProvider>
