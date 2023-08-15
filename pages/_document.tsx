@@ -1,6 +1,8 @@
 /* istanbul ignore file */
+import { GTM_ID } from '@root/lib/gtm';
 import { Types } from 'mongoose';
 import Document, { DocumentContext, DocumentInitialProps, Head, Html, Main, NextScript } from 'next/document';
+import Script from 'next/script';
 import React from 'react';
 import Theme from '../constants/theme';
 import { logger } from '../helpers/logger';
@@ -96,8 +98,40 @@ class MyDocument extends Document<DocumentProps> {
             dangerouslySetInnerHTML={{ __html: this.props.browserTimingHeader }}
             type='text/javascript'
           />
+
+          <Script id='gtaginit' dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              window.gtag = gtag;
+              console.log("YOO");
+              `,
+          }} />
+
         </Head>
+
+        <Script
+          id = 'gtm'
+          dangerouslySetInnerHTML={{
+            __html: `
+            
+              (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+              new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+              j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+              'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+              })(window,document,'script','dataLayer', '${GTM_ID}');
+              `,
+          }}
+        />
         <body className={Theme.Modern}>
+          <noscript>
+            <iframe
+              src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
+              height='0'
+              width='0'
+              style={{ display: 'none', visibility: 'hidden' }}
+            />
+          </noscript>
           <Main />
           <NextScript />
         </body>
