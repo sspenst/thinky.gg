@@ -2,7 +2,6 @@
 import '../styles/global.css';
 import 'react-tooltip/dist/react-tooltip.css';
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react';
-import { GoogleAnalytics2 } from '@root/components/analytics/GoogleAnalytics2';
 import type { AppProps } from 'next/app';
 import { Rubik, Teko } from 'next/font/google';
 import Head from 'next/head';
@@ -267,6 +266,8 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         'event': 'userId_set',
         'user_id': user?._id || GA_ClientID
       });
+      (window as any).gtag('set', { 'user_id': user?._id || GA_ClientID });
+
       growthbook.setAttributes({
         id: user?._id || GA_ClientID,
         userId: user?._id,
@@ -294,7 +295,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' />
         <meta name='apple-itunes-app' content='app-id=1668925562, app-argument=pathology.gg' />
       </Head>
-      <GoogleAnalytics2 trackPageViews gaMeasurementId={GA_TRACKING_ID} userId={user?._id.toString() || GA_ClientID} />
+      <GoogleAnalytics trackPageViews gaMeasurementId={GA_TRACKING_ID} />
       <DefaultSeo
         defaultTitle='Pathology - Shortest Path Puzzle Game'
         description='The goal of the puzzle game Pathology is simple. Get to the exit in the least number of moves.'
