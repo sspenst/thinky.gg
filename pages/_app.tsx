@@ -263,6 +263,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       });
       (window as any).dataLayer = (window as any).dataLayer || [];
       (window as any).dataLayer.push({
+        'event': 'userId_set',
         'user_id': user?._id || GA_ClientID //this number must be replaced with an actual User ID
       });
       growthbook.setAttributes({
