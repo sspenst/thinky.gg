@@ -238,7 +238,6 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   useEffect(() => {
     if ('gtag' in window) {
       (window as any)?.gtag('get', GA_TRACKING_ID, 'client_id', (clientId: string) => {
-        console.log('GA ClientID = ', clientId);
         setGA_ClientID(clientId);
       });
     } else {
@@ -248,7 +247,6 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
   useEffect(() => {
     const handleRouteChange = (url: string) => {
-      console.log('routeChangeComplete', url);
       updateGrowthBookURL();
       nProgress.done();
     };
@@ -257,10 +255,8 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
     Router.events.on('routeChangeError', () => nProgress.done());
     growthbook.loadFeatures({ autoRefresh: true });
-    console.log('CLIENT ID = ', GA_ClientID);
 
     if (GA_ClientID) {
-      console.log('Setting attributes', user?._id || GA_ClientID);
       (window as any).gtag('config', GA_TRACKING_ID, {
         'user_id': user?._id || GA_ClientID,
       });
