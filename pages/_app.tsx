@@ -2,10 +2,12 @@
 import '../styles/global.css';
 import 'react-tooltip/dist/react-tooltip.css';
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react';
+import GoogleTagManager from '@root/components/analytics/GoogleTagManager';
 import type { AppProps } from 'next/app';
 import { Rubik, Teko } from 'next/font/google';
 import Head from 'next/head';
 import Router, { useRouter } from 'next/router';
+import Script from 'next/script';
 import { DefaultSeo } from 'next-seo';
 import { GoogleAnalytics } from 'nextjs-google-analytics';
 import nProgress from 'nprogress';
@@ -271,7 +273,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       });
     }
 
-    if (user?._id) {
+    if (user?._id && (window as any).gtag) {
       (window as any).gtag('config', GA_TRACKING_ID, {
         'user_id': user._id.toString(),
       });
@@ -297,7 +299,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' />
         <meta name='apple-itunes-app' content='app-id=1668925562, app-argument=pathology.gg' />
       </Head>
-      <GoogleAnalytics trackPageViews gaMeasurementId={GA_TRACKING_ID} />
+
       <DefaultSeo
         defaultTitle='Pathology - Shortest Path Puzzle Game'
         description='The goal of the puzzle game Pathology is simple. Get to the exit in the least number of moves.'
@@ -348,7 +350,9 @@ export default function MyApp({ Component, pageProps }: AppProps) {
             color: 'var(--color)',
           }}>
             <Toaster toastOptions={{ duration: 1500 }} />
-            <Component {...pageProps} />
+            <GoogleTagManager>
+              <Component {...pageProps} />
+            </GoogleTagManager>
           </div>
         </AppContext.Provider>
       </GrowthBookProvider>
