@@ -127,7 +127,7 @@ export default function ReviewForm({ inModal, userReview }: ReviewFormProps) {
       </div>
       <TextareaAutosize
         className={classNames(
-          'bg-inherit block py-1 -mt-2 w-full border-b border-neutral-500 disabled:text-neutral-500 transition resize-none placeholder:text-neutral-500 focus:outline-0',
+          'bg-inherit block py-1 -mt-2 w-full border-b border-neutral-500 disabled:text-neutral-500 transition resize-none placeholder:text-neutral-500 focus:outline-0 rounded-none',
           theme === Theme.Light ? 'focus:border-black' : 'focus:border-white',
         )}
         disabled={isUpdating}
