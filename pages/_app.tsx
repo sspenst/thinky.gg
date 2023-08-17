@@ -280,16 +280,12 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       });
     }
 
-    if (user?._id && (window as any).gtag) {
-      /*(window as any).gtag('config', GA_TRACKING_ID, {
-        'user_id': user._id.toString(),
-      });
+    if (user?._id) {
       (window as any).dataLayer = (window as any).dataLayer || [];
       (window as any).dataLayer.push({
         'event': 'userId_set',
         'user_id': user?._id.toString() || GA_ClientID
       });
-      (window as any).gtag('set', { 'user_id': user?._id.toString() });*/
     }
 
     router.events.on('routeChangeComplete', handleRouteChange);
