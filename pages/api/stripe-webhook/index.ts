@@ -1,6 +1,7 @@
 import Discord from '@root/constants/discord';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import isPro from '@root/helpers/isPro';
+import dbConnect from '@root/lib/dbConnect';
 import UserConfig from '@root/models/db/userConfig';
 import { buffer } from 'micro';
 import mongoose from 'mongoose';
@@ -118,6 +119,45 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
   return error;
 }
 
+async function splitPaymentIntent(paymentIntentId: string) {
+  if (!process.env.STRIPE_CONNECTED_ACCOUNT_ID) {
+    return `splitPaymentIntent(${paymentIntentId}): missing STRIPE_CONNECTED_ACCOUNT_ID`;
+  }
+
+  // https://stripe.com/docs/expand/use-cases#stripe-fee-for-payment
+  const paymentIntent = await stripe.paymentIntents.retrieve(
+    paymentIntentId,
+    {
+      expand: ['latest_charge.balance_transaction'],
+    }
+  );
+
+  const charge = paymentIntent.latest_charge as Stripe.Charge | null | undefined;
+
+  if (!charge) {
+    return `splitPaymentIntent(${paymentIntentId}): missing latest_charge`;
+  }
+
+  const balanceTransaction = charge.balance_transaction as Stripe.BalanceTransaction | null | undefined;
+  const stripeFee = balanceTransaction?.fee;
+
+  if (stripeFee === undefined) {
+    return `splitPaymentIntent(${paymentIntentId}): missing balance_transaction.fee`;
+  }
+
+  const net = paymentIntent.amount - stripeFee;
+  const split = Math.round(net / 2);
+
+  await stripe.transfers.create({
+    amount: split,
+    currency: 'usd',
+    source_transaction: charge.id,
+    destination: process.env.STRIPE_CONNECTED_ACCOUNT_ID,
+  });
+
+  logger.info(`splitPaymentIntent transferred ${split} from ${paymentIntentId}`);
+}
+
 //create a small class with createStripeSigned as a member function makes it easier to mock
 /* istanbul ignore next */
 export class StripeWebhookHelper {
@@ -137,8 +177,10 @@ export class StripeWebhookHelper {
 }
 
 export default apiWrapper({
-  POST: {
-  } }, async (req: NextApiRequest, res: NextApiResponse) => {
+  POST: {},
+}, async (req: NextApiRequest, res: NextApiResponse) => {
+  await dbConnect();
+
   let event: Stripe.Event;
 
   try {
@@ -151,8 +193,6 @@ export default apiWrapper({
   }
 
   logger.info(`Stripe webhook event: ${event.type}`);
-
-  console.log(JSON.stringify(event.data.object));
 
   // Handle the event
   let error, actorUser;
@@ -208,60 +248,19 @@ export default apiWrapper({
       }
     }
   } else if (event.type === 'payment_intent.succeeded') {
-    // https://stripe.com/docs/expand/use-cases#stripe-fee-for-payment
-    const paymentIntent = await stripe.paymentIntents.retrieve(
-      dataObject.id,
-      {
-        expand: ['latest_charge.balance_transaction'],
-      }
-    );
-
-    const charge = paymentIntent.latest_charge as Stripe.Charge | null | undefined;
-    const balanceTransaction = charge?.balance_transaction as Stripe.BalanceTransaction | null | undefined;
-    const stripeFee = balanceTransaction?.fee;
-
-    const connectedAccountId = process.env.STRIPE_CONNECTED_ACCOUNT_ID;
-
-    if (stripeFee !== undefined && connectedAccountId) {
-      const total = paymentIntent.amount;
-      const split = Math.round((total - stripeFee) / 2);
-
-      // can charge connected account with some math
-      const splitPaymentIntent = await stripe.paymentIntents.create({
-        amount: total,
-        currency: 'usd',
-        application_fee_amount: split,
-        transfer_data: {
-          // amount: split,
-          destination: connectedAccountId,
-        },
-        // TODO: payment method id?
-        payment_method: '',
-      });
-
-      // await stripe.paymentIntents.confirm(
-      //   splitPaymentIntent.id,
-      //   {
-      //     payment_method: 
-      //   }
-      // );
-
-      console.log('CANADA', total, split, JSON.stringify(splitPaymentIntent));
-    }
-
-    console.log('PAYMENT_INTENT.SUCCEEDED', stripeFee, JSON.stringify(paymentIntent));
+    error = await splitPaymentIntent(dataObject.id);
   } else {
     logger.info(`Unhandled event type: ${event.type}`);
   }
 
   await StripeEventModel.create({
-    stripeId: event.id,
-    customerId: customerId,
-    userId: actorUser,
-    type: event.type,
     created: event.created,
+    customerId: customerId,
     data: JSON.stringify(event),
-    error: error
+    error: error,
+    stripeId: event.id,
+    type: event.type,
+    userId: actorUser,
   });
 
   // Return a 200 response to acknowledge receipt of the event
