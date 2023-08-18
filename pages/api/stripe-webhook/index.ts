@@ -150,34 +150,20 @@ export default apiWrapper({
     return res.status(400).json({ error: `Webhook error: ${err.message}` });
   }
 
-  logger.info('Stripe webhook event:', event.type);
+  logger.info(`Stripe webhook event: ${event.type}`);
+
+  console.log(JSON.stringify(event.data.object));
 
   // Handle the event
   let error, actorUser;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const properties = event.data.object as any;
+  const dataObject = event.data.object as any;
+  const customerId = dataObject?.customer;
+  const client_reference_id = dataObject?.client_reference_id;
 
-  const customerId = properties?.customer;
-
-  const subscriptionId = properties?.subscription;
-  // we want to get the customer id from the event
-  // we want to get the customer email from the event
-  const customerEmail = properties?.email;
-
-  const client_reference_id = properties?.client_reference_id;
-
-  logger.info('subscriptionId:' + subscriptionId);
-  logger.info('customerId:' + customerId);
-  logger.info('customerEmail:' + customerEmail);
-  logger.info('client_reference_id:' + client_reference_id);
-  // we want to get the user id from the event
-
-  // grab the user from the database
-
-  if (!event.type) {
-    return res.status(400).json({ error: 'No event type' });
-  }
+  logger.info(`customerId: ${customerId}`);
+  logger.info(`client_reference_id: ${client_reference_id}`);
 
   // the case we want to handle first is the one that will be triggered when a new subscription is created
   if (event.type === 'checkout.session.completed') {
@@ -221,9 +207,51 @@ export default apiWrapper({
         error = await subscriptionDeleted(userConfigAgg[0].userId as User);
       }
     }
+  } else if (event.type === 'payment_intent.succeeded') {
+    // https://stripe.com/docs/expand/use-cases#stripe-fee-for-payment
+    const paymentIntent = await stripe.paymentIntents.retrieve(
+      dataObject.id,
+      {
+        expand: ['latest_charge.balance_transaction'],
+      }
+    );
+
+    const charge = paymentIntent.latest_charge as Stripe.Charge | null | undefined;
+    const balanceTransaction = charge?.balance_transaction as Stripe.BalanceTransaction | null | undefined;
+    const stripeFee = balanceTransaction?.fee;
+
+    const connectedAccountId = process.env.STRIPE_CONNECTED_ACCOUNT_ID;
+
+    if (stripeFee !== undefined && connectedAccountId) {
+      const total = paymentIntent.amount;
+      const split = Math.round((total - stripeFee) / 2);
+
+      // can charge connected account with some math
+      const splitPaymentIntent = await stripe.paymentIntents.create({
+        amount: total,
+        currency: 'usd',
+        application_fee_amount: split,
+        transfer_data: {
+          // amount: split,
+          destination: connectedAccountId,
+        },
+        // TODO: payment method id?
+        payment_method: '',
+      });
+
+      // await stripe.paymentIntents.confirm(
+      //   splitPaymentIntent.id,
+      //   {
+      //     payment_method: 
+      //   }
+      // );
+
+      console.log('CANADA', total, split, JSON.stringify(splitPaymentIntent));
+    }
+
+    console.log('PAYMENT_INTENT.SUCCEEDED', stripeFee, JSON.stringify(paymentIntent));
   } else {
-    logger.error(`Unhandled event type: ${event.type}`);
-    // error = `Unhandled event type: ${event.type}`;
+    logger.info(`Unhandled event type: ${event.type}`);
   }
 
   await StripeEventModel.create({
@@ -238,9 +266,10 @@ export default apiWrapper({
 
   // Return a 200 response to acknowledge receipt of the event
   if (error) {
+    logger.error(`api/stripe-webhook error: ${error}`);
+
     return res.status(400).json({ error: error });
   }
 
   res.status(200).json({ received: true });
-}
-);
+});
