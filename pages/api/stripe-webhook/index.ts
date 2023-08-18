@@ -148,6 +148,7 @@ async function splitPaymentIntent(paymentIntentId: string) {
   const net = paymentIntent.amount - stripeFee;
   const split = Math.round(net / 2);
 
+  // https://stripe.com/docs/connect/separate-charges-and-transfers#transfer-availability
   await stripe.transfers.create({
     amount: split,
     currency: 'usd',
