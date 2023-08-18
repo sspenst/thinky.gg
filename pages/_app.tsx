@@ -284,7 +284,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       (window as any).dataLayer = (window as any).dataLayer || [];
       (window as any).dataLayer.push({
         'event': 'userId_set',
-        'user_id': user?._id.toString() || GA_ClientID
+        'userId': user?._id.toString() || GA_ClientID
       });
     }
 
