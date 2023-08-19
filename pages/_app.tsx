@@ -248,19 +248,17 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
   useEffect(() => {
     const gtmId = GTM_TRACKING_ID;
-    let dataLayer = {};
+    // per https://github.com/alinemorelli/react-gtm/issues/14
+    const taskManagerArgs: TagManagerArgs = {
+      gtmId: gtmId,
+    };
 
     if (user?._id) {
-      dataLayer = {
+      taskManagerArgs.dataLayer = {
         'event': 'userId_set',
         'userId': user?._id.toString()
       };
     }
-
-    const taskManagerArgs: TagManagerArgs = {
-      gtmId: gtmId,
-      ...dataLayer
-    };
 
     TagManager.initialize(taskManagerArgs);
   }, [GA_ClientID, user?._id]);
