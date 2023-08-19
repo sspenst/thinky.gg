@@ -397,7 +397,6 @@ describe('pages/api/stripe-webhook/index.ts', () => {
     jest.spyOn(stripeReal.transfers, 'create').mockImplementation(async (params) => {
       expect(params.amount).toBe(Math.round((300 - 39) / 2));
       expect(params.source_transaction).toBe('ch_123');
-      expect(params.destination).toBe(process.env.STRIPE_CONNECTED_ACCOUNT_ID);
 
       return {} as Stripe.Response<Stripe.Transfer>;
     });

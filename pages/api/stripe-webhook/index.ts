@@ -120,10 +120,6 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
 }
 
 async function splitPaymentIntent(paymentIntentId: string) {
-  if (!process.env.STRIPE_CONNECTED_ACCOUNT_ID) {
-    return `splitPaymentIntent(${paymentIntentId}): missing STRIPE_CONNECTED_ACCOUNT_ID`;
-  }
-
   // https://stripe.com/docs/expand/use-cases#stripe-fee-for-payment
   const paymentIntent = await stripe.paymentIntents.retrieve(
     paymentIntentId,
@@ -153,7 +149,7 @@ async function splitPaymentIntent(paymentIntentId: string) {
     amount: split,
     currency: 'usd',
     source_transaction: charge.id,
-    destination: process.env.STRIPE_CONNECTED_ACCOUNT_ID,
+    destination: process.env.STRIPE_CONNECTED_ACCOUNT_ID as string,
   });
 
   logger.info(`splitPaymentIntent transferred ${split} from ${paymentIntentId}`);
