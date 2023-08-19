@@ -252,6 +252,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
     if (user?._id) {
       dataLayer = {
+        'event': 'userId_set',
         'userId': user?._id.toString()
       };
     }
