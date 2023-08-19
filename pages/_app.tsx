@@ -248,12 +248,21 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
   useEffect(() => {
     const gtmId = GTM_TRACKING_ID;
+    let dataLayer = {};
+
+    if (user?._id) {
+      dataLayer = {
+        'userId': user?._id.toString()
+      };
+    }
+
     const taskManagerArgs: TagManagerArgs = {
-      gtmId,
+      gtmId: gtmId,
+      dataLayer: dataLayer,
     };
 
     TagManager.initialize(taskManagerArgs);
-  }, []);
+  }, [GA_ClientID, user?._id]);
 
   useEffect(() => {
     const handleRouteChange = (url: string) => {
@@ -277,14 +286,6 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         url: router.pathname,
         host: window.location.host,
         roles: user?.roles,
-      });
-    }
-
-    if (user?._id) {
-      (window as any).dataLayer = (window as any).dataLayer || [];
-      (window as any).dataLayer.push({
-        'event': 'userId_set',
-        'userId': user?._id.toString() || GA_ClientID
       });
     }
 
