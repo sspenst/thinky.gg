@@ -164,16 +164,9 @@ async function splitPaymentIntent(paymentIntentId: string) {
 export class StripeWebhookHelper {
   public static async createStripeSigned(req: NextApiRequest) {
     const sig = req.headers['stripe-signature'] as string;
-
     const buf = await buffer(req);
 
-    const event = stripe.webhooks.constructEvent(
-      buf,
-      sig,
-      STRIPE_WEBHOOK_SECRET
-    );
-
-    return event;
+    return stripe.webhooks.constructEvent(buf, sig, STRIPE_WEBHOOK_SECRET);
   }
 }
 

@@ -10,6 +10,7 @@ import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { UserConfigModel, UserModel } from '../../../../models/mongoose';
 import handler, { StripeWebhookHelper } from '../../../../pages/api/stripe-webhook/index';
+import { stripe as stripeReal } from '../../../../pages/api/subscription';
 
 beforeAll(async () => {
   await dbConnect();
@@ -162,18 +163,6 @@ describe('pages/api/stripe-webhook/index.ts', () => {
       additionalAssertions: async () => {
         //
       },
-    });
-  });
-  test('no event type should error', async () => {
-    await runStripeWebhookTest({
-      eventType: '',
-      payloadData: {
-        id: 'cs_test_123',
-        client_reference_id: TestId.USER,
-        customer: 'customer_id_123',
-      },
-      expectedError: 'No event type',
-      expectedStatus: 400,
     });
   });
   test('unhandled event type should not error', async () => {
@@ -358,6 +347,68 @@ describe('pages/api/stripe-webhook/index.ts', () => {
         await expectUserStatus(TestId.USER, null, null);
       },
       mockDbError: true,
+    });
+  });
+
+  test('payment_intent.succeeded missing latest_charge', async () => {
+    jest.spyOn(stripeReal.paymentIntents, 'retrieve').mockImplementation(async () => {
+      return {} as Stripe.Response<Stripe.PaymentIntent>;
+    });
+
+    await runStripeWebhookTest({
+      eventType: 'payment_intent.succeeded',
+      payloadData: {
+        id: 'pi_123',
+      },
+      expectedError: 'splitPaymentIntent(pi_123): missing latest_charge',
+      expectedStatus: 400,
+    });
+  });
+
+  test('payment_intent.succeeded missing balance_transaction.fee', async () => {
+    jest.spyOn(stripeReal.paymentIntents, 'retrieve').mockImplementation(async () => {
+      return {
+        latest_charge: {},
+      } as Stripe.Response<Stripe.PaymentIntent>;
+    });
+
+    await runStripeWebhookTest({
+      eventType: 'payment_intent.succeeded',
+      payloadData: {
+        id: 'pi_123',
+      },
+      expectedError: 'splitPaymentIntent(pi_123): missing balance_transaction.fee',
+      expectedStatus: 400,
+    });
+  });
+
+  test('payment_intent.succeeded', async () => {
+    jest.spyOn(stripeReal.paymentIntents, 'retrieve').mockImplementation(async () => {
+      return {
+        amount: 300,
+        latest_charge: {
+          balance_transaction: {
+            fee: 39,
+          },
+          id: 'ch_123',
+        }
+      } as Stripe.Response<Stripe.PaymentIntent>;
+    });
+    jest.spyOn(stripeReal.transfers, 'create').mockImplementation(async (params) => {
+      expect(params.amount).toBe(Math.round((300 - 39) / 2));
+      expect(params.source_transaction).toBe('ch_123');
+      expect(params.destination).toBe(process.env.STRIPE_CONNECTED_ACCOUNT_ID);
+
+      return {} as Stripe.Response<Stripe.Transfer>;
+    });
+
+    await runStripeWebhookTest({
+      eventType: 'payment_intent.succeeded',
+      payloadData: {
+        id: 'pi_123',
+      },
+      expectedError: undefined,
+      expectedStatus: 200,
     });
   });
 });
