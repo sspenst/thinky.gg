@@ -259,7 +259,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
     const taskManagerArgs: TagManagerArgs = {
       gtmId: gtmId,
-      dataLayer: dataLayer,
+      ...dataLayer
     };
 
     TagManager.initialize(taskManagerArgs);
