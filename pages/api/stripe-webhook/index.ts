@@ -1,6 +1,7 @@
 import Discord from '@root/constants/discord';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import isPro from '@root/helpers/isPro';
+import dbConnect from '@root/lib/dbConnect';
 import UserConfig from '@root/models/db/userConfig';
 import { buffer } from 'micro';
 import mongoose from 'mongoose';
@@ -118,27 +119,58 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
   return error;
 }
 
+async function splitPaymentIntent(paymentIntentId: string) {
+  // https://stripe.com/docs/expand/use-cases#stripe-fee-for-payment
+  const paymentIntent = await stripe.paymentIntents.retrieve(
+    paymentIntentId,
+    {
+      expand: ['latest_charge.balance_transaction'],
+    }
+  );
+
+  const charge = paymentIntent.latest_charge as Stripe.Charge | null | undefined;
+
+  if (!charge) {
+    return `splitPaymentIntent(${paymentIntentId}): missing latest_charge`;
+  }
+
+  const balanceTransaction = charge.balance_transaction as Stripe.BalanceTransaction | null | undefined;
+  const stripeFee = balanceTransaction?.fee;
+
+  if (stripeFee === undefined) {
+    return `splitPaymentIntent(${paymentIntentId}): missing balance_transaction.fee`;
+  }
+
+  const net = paymentIntent.amount - stripeFee;
+  const split = Math.round(net / 2);
+
+  // https://stripe.com/docs/connect/separate-charges-and-transfers#transfer-availability
+  await stripe.transfers.create({
+    amount: split,
+    currency: 'usd',
+    source_transaction: charge.id,
+    destination: process.env.STRIPE_CONNECTED_ACCOUNT_ID as string,
+  });
+
+  logger.info(`splitPaymentIntent transferred ${split} from ${paymentIntentId}`);
+}
+
 //create a small class with createStripeSigned as a member function makes it easier to mock
 /* istanbul ignore next */
 export class StripeWebhookHelper {
   public static async createStripeSigned(req: NextApiRequest) {
     const sig = req.headers['stripe-signature'] as string;
-
     const buf = await buffer(req);
 
-    const event = stripe.webhooks.constructEvent(
-      buf,
-      sig,
-      STRIPE_WEBHOOK_SECRET
-    );
-
-    return event;
+    return stripe.webhooks.constructEvent(buf, sig, STRIPE_WEBHOOK_SECRET);
   }
 }
 
 export default apiWrapper({
-  POST: {
-  } }, async (req: NextApiRequest, res: NextApiResponse) => {
+  POST: {},
+}, async (req: NextApiRequest, res: NextApiResponse) => {
+  await dbConnect();
+
   let event: Stripe.Event;
 
   try {
@@ -150,34 +182,18 @@ export default apiWrapper({
     return res.status(400).json({ error: `Webhook error: ${err.message}` });
   }
 
-  logger.info('Stripe webhook event:', event.type);
+  logger.info(`Stripe webhook event: ${event.type}`);
 
   // Handle the event
   let error, actorUser;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const properties = event.data.object as any;
+  const dataObject = event.data.object as any;
+  const customerId = dataObject?.customer;
+  const client_reference_id = dataObject?.client_reference_id;
 
-  const customerId = properties?.customer;
-
-  const subscriptionId = properties?.subscription;
-  // we want to get the customer id from the event
-  // we want to get the customer email from the event
-  const customerEmail = properties?.email;
-
-  const client_reference_id = properties?.client_reference_id;
-
-  logger.info('subscriptionId:' + subscriptionId);
-  logger.info('customerId:' + customerId);
-  logger.info('customerEmail:' + customerEmail);
-  logger.info('client_reference_id:' + client_reference_id);
-  // we want to get the user id from the event
-
-  // grab the user from the database
-
-  if (!event.type) {
-    return res.status(400).json({ error: 'No event type' });
-  }
+  logger.info(`customerId: ${customerId}`);
+  logger.info(`client_reference_id: ${client_reference_id}`);
 
   // the case we want to handle first is the one that will be triggered when a new subscription is created
   if (event.type === 'checkout.session.completed') {
@@ -221,26 +237,28 @@ export default apiWrapper({
         error = await subscriptionDeleted(userConfigAgg[0].userId as User);
       }
     }
+  } else if (event.type === 'payment_intent.succeeded') {
+    error = await splitPaymentIntent(dataObject.id);
   } else {
-    logger.error(`Unhandled event type: ${event.type}`);
-    // error = `Unhandled event type: ${event.type}`;
+    logger.info(`Unhandled event type: ${event.type}`);
   }
 
   await StripeEventModel.create({
-    stripeId: event.id,
-    customerId: customerId,
-    userId: actorUser,
-    type: event.type,
     created: event.created,
+    customerId: customerId,
     data: JSON.stringify(event),
-    error: error
+    error: error,
+    stripeId: event.id,
+    type: event.type,
+    userId: actorUser,
   });
 
   // Return a 200 response to acknowledge receipt of the event
   if (error) {
+    logger.error(`api/stripe-webhook error: ${error}`);
+
     return res.status(400).json({ error: error });
   }
 
   res.status(200).json({ received: true });
-}
-);
+});
