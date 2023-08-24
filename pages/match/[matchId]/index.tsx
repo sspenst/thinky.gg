@@ -59,16 +59,16 @@ export default function Match() {
   const [usedSkip, setUsedSkip] = useState<boolean>(false);
   const { matchId } = router.query as { matchId: string };
 
-  const isSpectating = !match?.players.some(player => player._id.toString() === user?._id.toString());
+  const isSpectating = !match?.players.some(player => player._id.toString() === user?._id.toString()) && match?.state === MultiplayerMatchState.ACTIVE;
   // map of userId to game state
   const [matchGameStateMap, setMatchGameStateMap] = useState<Record<string, MatchGameState>>({});
 
   function getLevelIndexByPlayerId(playerId: string): number {
-    if (!match) {
+    if (!match || !match.scoreTable[playerId]) {
       return -1;
     }
 
-    let levelIndex = match.scoreTable[playerId] ?? 0;
+    let levelIndex = match.scoreTable[playerId];
 
     // account for skip
     if (match.matchLog?.some(log => log.type === MatchAction.SKIP_LEVEL && (log.data as MatchLogDataUserLeveId).userId.toString() === playerId)) {
@@ -423,6 +423,11 @@ export default function Match() {
                   const playerId = player._id.toString();
                   const matchGameState = matchGameStateMap[playerId];
                   const levelIndex = getLevelIndexByPlayerId(playerId);
+
+                  if (levelIndex === -1) {
+                    return null;
+                  }
+
                   const level = match.levels[levelIndex] as Level;
 
                   return (
@@ -459,7 +464,7 @@ export default function Match() {
             </div>
           </div>
         ) : (
-          <div className='flex flex-col items-center justify-center h-full gap-0.5'>
+          <div className='flex flex-col items-center justify-center h-full gap-0.5 mb-4'>
             {countDown > 0 && <h1 className='text-xl italic'>Starting in {timeUntilEndCleanStr} seconds</h1>}
             {match.state === MultiplayerMatchState.ACTIVE && match.timeUntilStart > 0 && (
               <div className='flex flex-col items-center justify-center gap-2'>
