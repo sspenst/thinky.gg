@@ -1,6 +1,6 @@
-import FormattedDate from '@root/components/formattedDate';
-import FormattedUser from '@root/components/formattedUser';
-import StyledTooltip from '@root/components/styledTooltip';
+import FormattedDate from '@root/components/formatted/formattedDate';
+import FormattedUser from '@root/components/formatted/formattedUser';
+import StyledTooltip from '@root/components/page/styledTooltip';
 import Dimensions from '@root/constants/dimensions';
 import React, { useContext, useState } from 'react';
 import { LevelContext } from '../../../contexts/levelContext';

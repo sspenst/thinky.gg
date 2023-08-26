@@ -4,7 +4,7 @@ import { UserAndSum } from '@root/contexts/levelContext';
 import { DATA_TABLE_CUSTOM_STYLES } from '@root/helpers/dataTableCustomStyles';
 import React, { useContext } from 'react';
 import DataTable from 'react-data-table-component-sspenst';
-import FormattedUser from '../formattedUser';
+import FormattedUser from '../formatted/formattedUser';
 
 interface UserAndSumTableProps {
   data: UserAndSum[];

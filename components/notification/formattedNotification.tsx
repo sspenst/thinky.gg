@@ -12,11 +12,11 @@ import Comment from '../../models/db/comment';
 import { EnrichedLevel } from '../../models/db/level';
 import Notification from '../../models/db/notification';
 import User from '../../models/db/user';
-import CollectionLink from '../collectionLink';
-import EnrichedLevelLink from '../enrichedLevelLink';
-import FormattedDate from '../formattedDate';
-import { Stars } from '../formattedReview';
-import FormattedUser from '../formattedUser';
+import CollectionLink from '../formatted/formattedCollectedLink';
+import FormattedDate from '../formatted/formattedDate';
+import FormattedLevelLink from '../formatted/formattedLevelLink';
+import { Stars } from '../formatted/formattedReview';
+import FormattedUser from '../formatted/formattedUser';
 
 interface NotificationMessageProps {
   notification: Notification;
@@ -28,7 +28,7 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
   case NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT:
     return (<>
       {'set a new record: '}
-      <EnrichedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
+      <FormattedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
       {` - ${(notification.message)} moves`}
     </>);
 
@@ -38,7 +38,7 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
         {'wrote a '}
         {isNaN(Number(notification.message)) ? notification.message : Number(notification.message) > 0 ? <Stars stars={Number(notification.message)} /> : null}
         {' review on your level '}
-        <EnrichedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
+        <FormattedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
       </span>
     );
   case NotificationType.NEW_FOLLOWER:
@@ -48,11 +48,11 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
   case NotificationType.NEW_LEVEL:
     return (<>
       {'published a new level: '}
-      <EnrichedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
+      <FormattedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
     </>);
   case NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION:
     return (<>
-      <EnrichedLevelLink level={(notification.source) as EnrichedLevel} onClick={onMarkAsRead} />
+      <FormattedLevelLink level={(notification.source) as EnrichedLevel} onClick={onMarkAsRead} />
       {' was added to the collection '}
       <CollectionLink collection={notification.target as Collection} onClick={onMarkAsRead} />
     </>);

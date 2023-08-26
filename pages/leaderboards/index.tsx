@@ -1,5 +1,5 @@
-import { DIFFICULTY_NAMES, getDifficultyColor, getDifficultyRangeFromDifficultyName } from '@root/components/difficultyDisplay';
-import Page from '@root/components/page';
+import { DIFFICULTY_NAMES, getDifficultyColor, getDifficultyRangeFromDifficultyName } from '@root/components/formatted/formattedDifficulty';
+import Page from '@root/components/page/page';
 import UserAndSumTable from '@root/components/tables/userAndSumTable';
 import { UserAndSum } from '@root/contexts/levelContext';
 import cleanUser from '@root/lib/cleanUser';

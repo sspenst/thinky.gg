@@ -4,9 +4,9 @@ import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import React, { useCallback } from 'react';
 import { CallBackProps } from 'react-joyride';
-import FormattedCampaign from '../../components/formattedCampaign';
-import LinkInfo from '../../components/linkInfo';
-import Page from '../../components/page';
+import FormattedCampaign from '../../components/formatted/formattedCampaign';
+import LinkInfo from '../../components/formatted/linkInfo';
+import Page from '../../components/page/page';
 import getCampaignProps, { CampaignProps } from '../../helpers/getCampaignProps';
 import { getUserFromToken } from '../../lib/withAuth';
 

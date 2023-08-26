@@ -1,7 +1,7 @@
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import React from 'react';
-import CreateHome from '../../components/createHome';
-import Page from '../../components/page';
+import CreateHome from '../../components/editor/createHome';
+import Page from '../../components/page/page';
 import { getUserFromToken } from '../../lib/withAuth';
 import Level from '../../models/db/level';
 import User from '../../models/db/user';

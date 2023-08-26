@@ -8,7 +8,7 @@ import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
-import Page from '../../components/page';
+import Page from '../../components/page/page';
 import SettingsAccount from '../../components/settings/settingsAccount';
 import SettingsDanger from '../../components/settings/settingsDanger';
 import SettingsGeneral from '../../components/settings/settingsGeneral';

@@ -1,4 +1,4 @@
-import Page from '@root/components/page';
+import Page from '@root/components/page/page';
 import { getUserFromToken } from '@root/lib/withAuth';
 import UserConfig from '@root/models/db/userConfig';
 import { UserConfigModel } from '@root/models/mongoose';

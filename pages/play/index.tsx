@@ -4,8 +4,8 @@ import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import React, { useCallback } from 'react';
 import { CallBackProps } from 'react-joyride';
-import ChapterSelectCard from '../../components/chapterSelectCard';
-import Page from '../../components/page';
+import ChapterSelectCard from '../../components/cards/chapterSelectCard';
+import Page from '../../components/page/page';
 import { getUserFromToken } from '../../lib/withAuth';
 import User from '../../models/db/user';
 

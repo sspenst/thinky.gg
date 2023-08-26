@@ -5,7 +5,7 @@ import { throttle } from 'throttle-debounce';
 import Collection from '../../models/db/collection';
 import { EnrichedLevel } from '../../models/db/level';
 import User from '../../models/db/user';
-import DismissToast from '../dismissToast';
+import DismissToast from '../toasts/dismissToast';
 import styles from './Controls.module.css';
 import Game from './game';
 

@@ -2,7 +2,7 @@ import TileType from '@root/constants/tileType';
 import isPro from '@root/helpers/isPro';
 import { FilterQuery, PipelineStage, Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getDifficultyRangeFromName } from '../../../components/difficultyDisplay';
+import { getDifficultyRangeFromName } from '../../../components/formatted/formattedDifficulty';
 import TimeRange from '../../../constants/timeRange';
 import apiWrapper from '../../../helpers/apiWrapper';
 import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';

@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import Dimensions from '../../constants/dimensions';
-import Avatar from './../avatar';
+import ProfileAvatar from '../profile/profileAvatar';
 
 interface UploadImageProps {
   user: User;
@@ -104,7 +104,7 @@ export default function UploadImage({ user }: UploadImageProps) {
       </label>
       <div>
         {!selectedImage ?
-          <Avatar hideStatusCircle={true} size={Dimensions.AvatarSizeLarge} user={user} />
+          <ProfileAvatar hideStatusCircle={true} size={Dimensions.AvatarSizeLarge} user={user} />
           :
           <>
             <div className='border overflow-hidden relative' style={{

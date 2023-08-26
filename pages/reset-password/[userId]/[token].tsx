@@ -1,8 +1,8 @@
 import { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
 import React from 'react';
-import Page from '../../../components/page';
-import ResetPasswordForm from '../../../components/resetPasswordForm';
+import Page from '../../../components/page/page';
+import ResetPasswordForm from '../../../components/forms/resetPasswordForm';
 import redirectToHome from '../../../helpers/redirectToHome';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {

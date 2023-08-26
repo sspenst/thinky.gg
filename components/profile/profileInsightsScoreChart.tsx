@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Bar, CartesianGrid, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { DateAndSum } from '../../contexts/levelContext';
 import User from '../../models/db/user';
-import MultiSelectUser from '../multiSelectUser';
+import MultiSelectUser from '../page/multiSelectUser';
 
 const getCumulativeScores = (scores: DateAndSum[]): DateAndSum[] => {
   let cumulativeSum = 0;
