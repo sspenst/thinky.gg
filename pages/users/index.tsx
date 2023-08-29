@@ -1,5 +1,5 @@
-import FormattedDate from '@root/components/formattedDate';
-import MultiplayerRating from '@root/components/multiplayerRating';
+import FormattedDate from '@root/components/formatted/formattedDate';
+import MultiplayerRating from '@root/components/multiplayer/multiplayerRating';
 import debounce from 'debounce';
 import { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
@@ -7,8 +7,8 @@ import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery, ParsedUrlQueryInput } from 'querystring';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import DataTable, { Alignment, TableColumn } from 'react-data-table-component-sspenst';
-import FormattedUser from '../../components/formattedUser';
-import Page from '../../components/page';
+import FormattedUser from '../../components/formatted/formattedUser';
+import Page from '../../components/page/page';
 import Dimensions from '../../constants/dimensions';
 import GraphType from '../../constants/graphType';
 import { AppContext } from '../../contexts/appContext';

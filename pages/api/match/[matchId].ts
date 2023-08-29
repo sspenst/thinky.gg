@@ -3,7 +3,7 @@ import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import { multiplayerMatchTypeToText } from '@root/helpers/multiplayerHelperFunctions';
 import { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
-import { DIFFICULTY_NAMES, getDifficultyRangeFromDifficultyName } from '../../../components/difficultyDisplay';
+import { DIFFICULTY_NAMES, getDifficultyRangeFromDifficultyName } from '../../../components/formatted/formattedDifficulty';
 import { ValidEnum } from '../../../helpers/apiWrapper';
 import { logger } from '../../../helpers/logger';
 import { requestBroadcastMatch, requestBroadcastMatches, requestBroadcastPrivateAndInvitedMatches, requestClearBroadcastMatchSchedule, requestScheduleBroadcastMatch } from '../../../lib/appSocketToClient';

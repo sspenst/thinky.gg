@@ -1,6 +1,6 @@
 import { Tab } from '@headlessui/react';
-import { RoleIcon } from '@root/components/roleIcons';
-import StyledTooltip from '@root/components/styledTooltip';
+import { RoleIcon } from '@root/components/page/roleIcons';
+import StyledTooltip from '@root/components/page/styledTooltip';
 import Role from '@root/constants/role';
 import { AppContext } from '@root/contexts/appContext';
 import isPro from '@root/helpers/isPro';

@@ -1,8 +1,8 @@
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Image from 'next/image';
 import React, { useCallback } from 'react';
-import Page from '../../components/page';
-import SelectCard from '../../components/selectCard';
+import Page from '../../components/page/page';
+import SelectCard from '../../components/cards/selectCard';
 import { enrichCampaign } from '../../helpers/enrich';
 import { logger } from '../../helpers/logger';
 import dbConnect from '../../lib/dbConnect';

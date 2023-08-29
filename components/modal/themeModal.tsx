@@ -1,8 +1,8 @@
+import RadioButton from '@root/components/page/radioButton';
 import TileType from '@root/constants/tileType';
 import React, { useContext, useEffect } from 'react';
 import Theme, { getIconFromTheme } from '../../constants/theme';
 import { AppContext } from '../../contexts/appContext';
-import RadioButton from '../radioButton';
 import { ThemeIconProps } from '../theme/monkey';
 import Modal from '.';
 

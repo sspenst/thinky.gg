@@ -1,5 +1,5 @@
 import { Menu, Transition } from '@headlessui/react';
-import FormattedDate from '@root/components/formattedDate';
+import FormattedDate from '@root/components/formatted/formattedDate';
 import isPro from '@root/helpers/isPro';
 import classNames from 'classnames';
 import { debounce } from 'debounce';
@@ -11,11 +11,11 @@ import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery, ParsedUrlQueryInput } from 'querystring';
 import React, { Fragment, useCallback, useEffect, useState } from 'react';
 import DataTable, { Alignment, TableColumn } from 'react-data-table-component-sspenst';
-import { getDifficultyColor, getDifficultyList, getFormattedDifficulty } from '../../components/difficultyDisplay';
-import EnrichedLevelLink from '../../components/enrichedLevelLink';
-import FilterButton from '../../components/filterButton';
-import MultiSelectUser from '../../components/multiSelectUser';
-import Page from '../../components/page';
+import FilterButton from '../../components/buttons/filterButton';
+import { FormattedDifficulty, getDifficultyColor, getDifficultyList } from '../../components/formatted/formattedDifficulty';
+import FormattedLevelLink from '../../components/formatted/formattedLevelLink';
+import MultiSelectUser from '../../components/page/multiSelectUser';
+import Page from '../../components/page/page';
 import TimeRange from '../../constants/timeRange';
 import { DATA_TABLE_CUSTOM_STYLES } from '../../helpers/dataTableCustomStyles';
 import { FilterSelectOption } from '../../helpers/filterSelectOptions';
@@ -215,14 +215,14 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       name: 'Name',
       grow: 2,
       maxWidth: '300px',
-      selector: (row: EnrichedLevel) => <EnrichedLevelLink level={row} />,
+      selector: (row: EnrichedLevel) => <FormattedLevelLink level={row} />,
       ignoreRowClick: true,
       sortable: true,
     },
     {
       id: 'calcDifficultyEstimate',
       name: 'Difficulty',
-      selector: (row: EnrichedLevel) => getFormattedDifficulty(row.calc_difficulty_estimate, row._id.toString(), row.calc_playattempts_unique_users_count),
+      selector: (row: EnrichedLevel) => FormattedDifficulty(row.calc_difficulty_estimate, row._id.toString(), row.calc_playattempts_unique_users_count),
       ignoreRowClick: true,
       sortable: true,
       allowOverflow: true,

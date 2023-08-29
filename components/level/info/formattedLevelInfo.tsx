@@ -1,7 +1,7 @@
 import { Tab } from '@headlessui/react';
-import Complete from '@root/components/complete';
-import FormattedDate from '@root/components/formattedDate';
-import FormattedLevelReviews from '@root/components/formattedLevelReviews';
+import Complete from '@root/components/level/info/complete';
+import FormattedDate from '@root/components/formatted/formattedDate';
+import FormattedLevelReviews from '@root/components/formatted/formattedLevelReviews';
 import Image from 'next/image';
 import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -12,9 +12,9 @@ import { PageContext } from '../../../contexts/pageContext';
 import isCurator from '../../../helpers/isCurator';
 import { EnrichedLevel } from '../../../models/db/level';
 import SelectOptionStats from '../../../models/selectOptionStats';
-import { getFormattedDifficulty } from '../../difficultyDisplay';
-import formattedAuthorNote from '../../formattedAuthorNote';
-import FormattedUser from '../../formattedUser';
+import formattedAuthorNote from '../../formatted/formattedAuthorNote';
+import { FormattedDifficulty } from '../../formatted/formattedDifficulty';
+import FormattedUser from '../../formatted/formattedUser';
 import ArchiveLevelModal from '../../modal/archiveLevelModal';
 import EditLevelModal from '../../modal/editLevelModal';
 import UnpublishLevelModal from '../../modal/unpublishLevelModal';
@@ -47,7 +47,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
           <FormattedDate ts={level.ts} />
         </div>
         <div className='text-sm flex gap-2 items-center'>
-          {getFormattedDifficulty(level.calc_difficulty_estimate, level._id.toString(), level.calc_playattempts_unique_users_count)}
+          {FormattedDifficulty(level.calc_difficulty_estimate, level._id.toString(), level.calc_playattempts_unique_users_count)}
           {!levelContext?.inCampaign &&
             <button
               className='italic underline'

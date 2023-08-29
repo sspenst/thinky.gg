@@ -1,8 +1,8 @@
 import { Tab } from '@headlessui/react';
-import FormattedDate from '@root/components/formattedDate';
-import FormattedUser from '@root/components/formattedUser';
-import { RoleIcon } from '@root/components/roleIcons';
-import StyledTooltip from '@root/components/styledTooltip';
+import FormattedDate from '@root/components/formatted/formattedDate';
+import FormattedUser from '@root/components/formatted/formattedUser';
+import { RoleIcon } from '@root/components/page/roleIcons';
+import StyledTooltip from '@root/components/page/styledTooltip';
 import Dimensions from '@root/constants/dimensions';
 import Role from '@root/constants/role';
 import { AppContext } from '@root/contexts/appContext';

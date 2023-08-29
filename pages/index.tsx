@@ -1,10 +1,10 @@
 import { NextSeo } from 'next-seo';
 import React from 'react';
 import { SWRConfig } from 'swr';
-import HomeDefault from '../components/homeDefault';
-import HomeVideo from '../components/homeVideo';
-import Page from '../components/page';
-import RecommendedLevel from '../components/recommendedLevel';
+import HomeDefault from '../components/homepage/homeDefault';
+import HomeVideo from '../components/homepage/homeVideo';
+import RecommendedLevel from '../components/homepage/recommendedLevel';
+import Page from '../components/page/page';
 import getSWRKey from '../helpers/getSWRKey';
 import useLevelOfDay from '../hooks/useLevelOfDay';
 import { EnrichedLevel } from '../models/db/level';
