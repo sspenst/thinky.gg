@@ -7,7 +7,7 @@ interface CollectionLinkProps {
   onClick?: () => void;
 }
 
-export default function EnrichedCollectionLink({ collection, onClick }: CollectionLinkProps) {
+export default function FormattedCollectionLink({ collection, onClick }: CollectionLinkProps) {
   return (
     <Link
       className='font-bold underline'
