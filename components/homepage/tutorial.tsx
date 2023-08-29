@@ -13,12 +13,12 @@ import { TimerUtil } from '../../helpers/getTs';
 import Control from '../../models/control';
 import Level from '../../models/db/level';
 import Position from '../../models/position';
-import DismissToast from '../toasts/dismissToast';
 import BasicLayout from '../level/basicLayout';
 import Controls from '../level/controls';
+import styles from '../level/Controls.module.css';
 import Game from '../level/game';
 import Page from '../page/page';
-import styles from './level/Controls.module.css';
+import DismissToast from '../toasts/dismissToast';
 
 interface Tooltip {
   canClose?: boolean;

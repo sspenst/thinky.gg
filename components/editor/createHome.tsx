@@ -6,10 +6,10 @@ import Level from '../../models/db/level';
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
 import { CreatePageProps } from '../../pages/create';
+import SelectCard from '../cards/selectCard';
 import DeleteLevelModal from '../modal/deleteLevelModal';
 import EditLevelModal from '../modal/editLevelModal';
 import PublishLevelModal from '../modal/publishLevelModal';
-import SelectCard from '../cards/selectCard';
 
 /* istanbul ignore next */
 export default function CreateHome({ levels, user }: CreatePageProps) {
