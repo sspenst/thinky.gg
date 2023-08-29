@@ -1,8 +1,8 @@
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
 import React from 'react';
-import LoginForm from '../../components/loginForm';
-import Page from '../../components/page';
+import LoginForm from '../../components/forms/loginForm';
+import Page from '../../components/page/page';
 import redirectToHome from '../../helpers/redirectToHome';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {

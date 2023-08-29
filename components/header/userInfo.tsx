@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import React, { useContext } from 'react';
 import { AppContext } from '../../contexts/appContext';
-import StyledTooltip from '../styledTooltip';
+import StyledTooltip from '../page/styledTooltip';
 import Notifications from './notifications';
 
 export default function UserInfo() {

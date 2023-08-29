@@ -5,9 +5,9 @@
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext } from 'next';
 import React, { useCallback, useState } from 'react';
-import Page from '../../../components/page';
-import Select from '../../../components/select';
-import SelectFilter from '../../../components/selectFilter';
+import Page from '../../../components/page/page';
+import Select from '../../../components/cards/select';
+import SelectFilter from '../../../components/cards/selectFilter';
 import filterSelectOptions, { FilterSelectOption } from '../../../helpers/filterSelectOptions';
 import getUserStats from '../../../helpers/getUserStats';
 import useStats from '../../../hooks/useStats';

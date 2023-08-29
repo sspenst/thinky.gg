@@ -4,8 +4,8 @@ import { useRouter } from 'next/router';
 import React, { useState } from 'react';
 import { Brush, ReferenceArea, ReferenceLine, ResponsiveContainer, Scatter, ScatterChart, Symbols, Tooltip, XAxis, YAxis } from 'recharts';
 import User from '../../models/db/user';
-import { getDifficultyColor, getDifficultyFromValue, getDifficultyList } from '../difficultyDisplay';
-import StyledTooltip from '../styledTooltip';
+import { getDifficultyColor, getDifficultyFromValue, getDifficultyList } from '../formatted/formattedDifficulty';
+import StyledTooltip from '../page/styledTooltip';
 
 export interface DifficultyLevelComparison {
   _id: string;

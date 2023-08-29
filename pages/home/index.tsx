@@ -1,8 +1,8 @@
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import React, { useEffect, useState } from 'react';
 import { useSWRConfig } from 'swr';
-import HomeLoggedIn from '../../components/homeLoggedIn';
-import Page from '../../components/page';
+import HomeLoggedIn from '../../components/homepage/homeLoggedIn';
+import Page from '../../components/page/page';
 import useHomePageData, { HomepageDataType } from '../../hooks/useHomePageData';
 import { getUserFromToken } from '../../lib/withAuth';
 import { EnrichedLevel } from '../../models/db/level';

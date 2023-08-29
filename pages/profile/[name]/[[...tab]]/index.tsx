@@ -1,6 +1,6 @@
-import FormattedDate from '@root/components/formattedDate';
+import FormattedDate from '@root/components/formatted/formattedDate';
 import ProfileMultiplayer from '@root/components/profile/profileMultiplayer';
-import RoleIcons from '@root/components/roleIcons';
+import RoleIcons from '@root/components/page/roleIcons';
 import { getUsersWithMultiplayerProfile } from '@root/helpers/getUsersWithMultiplayerProfile';
 import { MultiplayerMatchState } from '@root/models/MultiplayerEnums';
 import classNames from 'classnames';
@@ -12,19 +12,19 @@ import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useEffect, useState } from 'react';
-import Avatar from '../../../../components/avatar';
-import CommentWall from '../../../../components/commentWall';
-import { getDifficultyList, getFormattedDifficulty } from '../../../../components/difficultyDisplay';
-import FollowButton from '../../../../components/followButton';
-import FollowingList from '../../../../components/followingList';
-import FormattedAchievement from '../../../../components/formattedAchievement';
-import FormattedReview from '../../../../components/formattedReview';
+import FollowButton from '../../../../components/buttons/followButton';
+import Select from '../../../../components/cards/select';
+import SelectFilter from '../../../../components/cards/selectFilter';
+import CommentWall from '../../../../components/level/reviews/commentWall';
+import FollowingList from '../../../../components/profile/followingList';
+import FormattedAchievement from '../../../../components/formatted/formattedAchievement';
+import { FormattedDifficulty, getDifficultyList } from '../../../../components/formatted/formattedDifficulty';
+import FormattedReview from '../../../../components/formatted/formattedReview';
 import AddCollectionModal from '../../../../components/modal/addCollectionModal';
-import MultiSelectUser from '../../../../components/multiSelectUser';
-import Page from '../../../../components/page';
+import MultiSelectUser from '../../../../components/page/multiSelectUser';
+import Page from '../../../../components/page/page';
+import ProfileAvatar from '../../../../components/profile/profileAvatar';
 import ProfileInsights from '../../../../components/profile/profileInsights';
-import Select from '../../../../components/select';
-import SelectFilter from '../../../../components/selectFilter';
 import AchievementInfo from '../../../../constants/achievementInfo';
 import Dimensions from '../../../../constants/dimensions';
 import GraphType from '../../../../constants/graphType';
@@ -427,7 +427,7 @@ export default function ProfilePage({
     [ProfileTab.Profile]: (user.ts ?
       <>
         <div className='flex items-center justify-center mb-4'>
-          <Avatar size={Dimensions.AvatarSizeLarge} user={user} />
+          <ProfileAvatar size={Dimensions.AvatarSizeLarge} user={user} />
         </div>
         <div className='flex gap-2 items-center justify-center'>
           <h2 className='text-3xl font-bold truncate'>{user.name}</h2>
@@ -468,7 +468,7 @@ export default function ProfilePage({
                       <div className='w-10 text-right mr-2'>
                         {levelsCompleted}
                       </div>
-                      {getFormattedDifficulty(difficulty.value, difficulty.name)}
+                      {FormattedDifficulty(difficulty.value, difficulty.name)}
                     </div>
                   );
                 })}

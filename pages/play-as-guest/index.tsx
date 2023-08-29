@@ -1,5 +1,5 @@
-import Page from '@root/components/page';
-import StyledTooltip from '@root/components/styledTooltip';
+import Page from '@root/components/page/page';
+import StyledTooltip from '@root/components/page/styledTooltip';
 import { AppContext } from '@root/contexts/appContext';
 import redirectToHome from '@root/helpers/redirectToHome';
 import { GetServerSidePropsContext } from 'next';

@@ -4,10 +4,10 @@ import User, { UserWithMultiplayerProfile } from '@root/models/db/user';
 import { MultiplayerMatchType } from '@root/models/MultiplayerEnums';
 import Link from 'next/link';
 import React, { useState } from 'react';
-import FilterButton from '../filterButton';
-import MatchResults from '../matchResults';
-import MultiplayerRating from '../multiplayerRating';
-import MultiSelectUser from '../multiSelectUser';
+import FilterButton from '../buttons/filterButton';
+import MatchResults from '../multiplayer/matchResults';
+import MultiplayerRating from '../multiplayer/multiplayerRating';
+import MultiSelectUser from '../page/multiSelectUser';
 
 interface ProfileMultiplayerProps {
   user: UserWithMultiplayerProfile;

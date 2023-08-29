@@ -2,9 +2,9 @@
 
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import React, { useState } from 'react';
-import Editor from '../../components/editor';
-import LinkInfo from '../../components/linkInfo';
-import Page from '../../components/page';
+import Editor from '../../components/editor/editor';
+import LinkInfo from '../../components/formatted/linkInfo';
+import Page from '../../components/page/page';
 import useNavigatePrompt from '../../hooks/useNavigatePrompt';
 import { getUserFromToken } from '../../lib/withAuth';
 import Level from '../../models/db/level';

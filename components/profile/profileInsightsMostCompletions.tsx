@@ -6,7 +6,7 @@ import { AppContext } from '../../contexts/appContext';
 import { DATA_TABLE_CUSTOM_STYLES } from '../../helpers/dataTableCustomStyles';
 import useProStatsUser, { ProStatsUserType } from '../../hooks/useProStatsUser';
 import User from '../../models/db/user';
-import FormattedUser from '../formattedUser';
+import FormattedUser from '../formatted/formattedUser';
 
 export default function ProfileInsightsMostCompletions({ user }: {user: User}) {
   const { proStatsUser } = useProStatsUser(user, ProStatsUserType.MostSolvesForUserLevels);

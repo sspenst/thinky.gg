@@ -11,10 +11,10 @@ import { AppContext } from '../../contexts/appContext';
 import { LevelContext } from '../../contexts/levelContext';
 import { PageContext } from '../../contexts/pageContext';
 import getProfileSlug from '../../helpers/getProfileSlug';
-import Avatar from '../avatar';
-import DismissToast from '../dismissToast';
+import DismissToast from '../toasts/dismissToast';
 import EditLevelModal from '../modal/editLevelModal';
 import ThemeModal from '../modal/themeModal';
+import ProfileAvatar from '../profile/profileAvatar';
 
 const enum Modal {
   AddLevelToCollection,
@@ -75,7 +75,7 @@ export default function Dropdown() {
     <Menu>
       <Menu.Button id='dropdownMenuBtn' aria-label='dropdown menu'>
         {user ?
-          <Avatar user={user} />
+          <ProfileAvatar user={user} />
           :
           <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={2}>
             <path strokeLinecap='round' strokeLinejoin='round' d='M4 6h16M4 12h16M4 18h16' />

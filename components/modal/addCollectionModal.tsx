@@ -2,7 +2,7 @@ import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Collection from '../../models/db/collection';
-import isNotFullAccountToast from '../isNotFullAccountToast';
+import isNotFullAccountToast from '../toasts/isNotFullAccountToast';
 import Modal from '.';
 
 interface AddCollectionModalProps {

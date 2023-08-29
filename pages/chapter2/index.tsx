@@ -1,9 +1,9 @@
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import React from 'react';
-import FormattedCampaign from '../../components/formattedCampaign';
-import LinkInfo from '../../components/linkInfo';
-import Page from '../../components/page';
+import FormattedCampaign from '../../components/formatted/formattedCampaign';
+import LinkInfo from '../../components/formatted/linkInfo';
+import Page from '../../components/page/page';
 import getCampaignProps, { CampaignProps } from '../../helpers/getCampaignProps';
 import { getUserFromToken } from '../../lib/withAuth';
 import { UserModel } from '../../models/mongoose';

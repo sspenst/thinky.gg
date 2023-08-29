@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import React from 'react';
-import LinkInfo from '../linkInfo';
+import LinkInfo from '../formatted/linkInfo';
 
 function FolderDivider() {
   return (

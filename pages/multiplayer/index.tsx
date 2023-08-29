@@ -3,8 +3,8 @@ import { useTour } from '@root/hooks/useTour';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { NextSeo } from 'next-seo';
 import React from 'react';
-import Multiplayer from '../../components/multiplayer';
-import Page from '../../components/page';
+import Multiplayer from '../../components/multiplayer/multiplayer';
+import Page from '../../components/page/page';
 import { getUserFromToken } from '../../lib/withAuth';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {

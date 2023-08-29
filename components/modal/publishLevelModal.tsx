@@ -3,8 +3,8 @@ import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
 import { AppContext } from '../../contexts/appContext';
 import Level from '../../models/db/level';
-import formattedAuthorNote from '../formattedAuthorNote';
-import isNotFullAccountToast from '../isNotFullAccountToast';
+import formattedAuthorNote from '../formatted/formattedAuthorNote';
+import isNotFullAccountToast from '../toasts/isNotFullAccountToast';
 import Modal from '.';
 
 interface PublishLevelModalProps {

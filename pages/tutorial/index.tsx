@@ -2,7 +2,7 @@
 
 import { NextSeo } from 'next-seo';
 import React from 'react';
-import Tutorial from '../../components/tutorial';
+import Tutorial from '../../components/homepage/tutorial';
 
 export default function TutorialPage() {
   return (<>
