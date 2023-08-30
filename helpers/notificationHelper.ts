@@ -54,8 +54,8 @@ export async function createNewFollowerNotification(follower: string | Types.Obj
   await queuePushNotification(notification._id);
 }
 
-export async function createNewReviewOnYourLevelNotification(levelUserId: string | Types.ObjectId, sourceUserId: string | Types.ObjectId, targetLevelId: string | Types.ObjectId, score: number, hasText: boolean) {
-  const message = `${String(score)},${String(hasText)}`;
+export async function createNewReviewOnYourLevelNotification(levelUserId: string | Types.ObjectId, sourceUserId: string | Types.ObjectId, targetLevelId: string | Types.ObjectId, score: string, hasText?: boolean) {
+  const message = `${String(score)},${String(!!hasText)}`;
 
   const notification = await NotificationModel.findOneAndUpdate({
     source: sourceUserId,
