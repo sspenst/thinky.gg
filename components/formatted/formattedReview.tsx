@@ -4,8 +4,8 @@ import { EnrichedLevel } from '../../models/db/level';
 import Review from '../../models/db/review';
 import User from '../../models/db/user';
 import ReviewDropdown from '../level/reviews/reviewDropdown';
-import FormattedLevelLink from './formattedLevelLink';
 import FormattedDate from './formattedDate';
+import FormattedLevelLink from './formattedLevelLink';
 import FormattedUser from './formattedUser';
 
 interface StarProps {

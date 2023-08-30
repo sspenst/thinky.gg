@@ -1,10 +1,10 @@
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback } from 'react';
+import Select from '../../components/cards/select';
 import formattedAuthorNote from '../../components/formatted/formattedAuthorNote';
 import LinkInfo from '../../components/formatted/linkInfo';
 import Page from '../../components/page/page';
-import Select from '../../components/cards/select';
 import { enrichCollection } from '../../helpers/enrich';
 import { logger } from '../../helpers/logger';
 import dbConnect from '../../lib/dbConnect';

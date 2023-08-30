@@ -11,10 +11,10 @@ import { AppContext } from '../../contexts/appContext';
 import { LevelContext } from '../../contexts/levelContext';
 import { PageContext } from '../../contexts/pageContext';
 import getProfileSlug from '../../helpers/getProfileSlug';
-import DismissToast from '../toasts/dismissToast';
 import EditLevelModal from '../modal/editLevelModal';
 import ThemeModal from '../modal/themeModal';
 import ProfileAvatar from '../profile/profileAvatar';
+import DismissToast from '../toasts/dismissToast';
 
 const enum Modal {
   AddLevelToCollection,

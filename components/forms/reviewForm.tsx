@@ -9,9 +9,9 @@ import { LevelContext } from '../../contexts/levelContext';
 import { PageContext } from '../../contexts/pageContext';
 import Review from '../../models/db/review';
 import FormattedReview, { Star } from '../formatted/formattedReview';
-import isNotFullAccountToast from '../toasts/isNotFullAccountToast';
 import DeleteReviewModal from '../modal/deleteReviewModal';
 import ProfileAvatar from '../profile/profileAvatar';
+import isNotFullAccountToast from '../toasts/isNotFullAccountToast';
 
 interface ReviewFormProps {
   inModal?: boolean;
