@@ -23,6 +23,31 @@ interface NotificationMessageProps {
   onMarkAsRead: () => void;
 }
 
+function getNewReviewOnYourLevelBody(message?: string) {
+  if (!message) {
+    return 'wrote a review';
+  }
+
+  // message format should either be "score" or "score,hasText"
+  const arr = message.split(',');
+
+  if (isNaN(Number(arr[0]))) {
+    return message;
+  }
+
+  const score = Number(arr[0]);
+
+  if (score <= 0) {
+    return 'wrote a review';
+  }
+
+  const hasText = arr[1] === 'true';
+
+  return hasText ?
+    <>wrote a <Stars stars={Number(score)} /> review</> :
+    <>gave a <Stars stars={Number(score)} /> rating</>;
+}
+
 function NotificationMessage({ notification, onMarkAsRead }: NotificationMessageProps) {
   switch (notification.type) {
   case NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT:
@@ -35,9 +60,8 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
   case NotificationType.NEW_REVIEW_ON_YOUR_LEVEL:
     return (
       <span className='flex flex-wrap items-center gap-1'>
-        {'wrote a '}
-        {isNaN(Number(notification.message)) ? notification.message : Number(notification.message) > 0 ? <Stars stars={Number(notification.message)} /> : null}
-        {' review on your level '}
+        {getNewReviewOnYourLevelBody(notification.message)}
+        {' on your level '}
         <FormattedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
       </span>
     );
