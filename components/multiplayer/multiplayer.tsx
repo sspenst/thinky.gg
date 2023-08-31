@@ -6,8 +6,9 @@ import sortByRating from '@root/helpers/sortByRating';
 import useSWRHelper from '@root/hooks/useSWRHelper';
 import MultiplayerMatch from '@root/models/db/multiplayerMatch';
 import { MultiplayerMatchState, MultiplayerMatchType } from '@root/models/MultiplayerEnums';
+import WidgetBot from '@widgetbot/react-embed';
 import { useRouter } from 'next/router';
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import MatchResults from './matchResults';
 import MultiplayerRating from './multiplayerRating';
@@ -75,6 +76,20 @@ export default function Multiplayer() {
     }
   }
 
+  const discordWidget = useRef<JSX.Element | null>(null);
+
+  useEffect(() => {
+    discordWidget.current = <WidgetBot
+      style={{
+        width: '100%',
+        height: '250px',
+        // unfortunately can't customize much without paying for widgetbot upgrade
+      }}
+      server='971585343956590623'
+      channel='1049492069623791686'
+    />;
+  }, []);
+
   if (!user) {
     return <span>Loading</span>;
   }
@@ -104,6 +119,7 @@ export default function Multiplayer() {
           </div>
         </>}
       </div>
+
       {!hasCreatedMatch &&
       <div id='create_button_section' className=''>
         <button
@@ -114,7 +130,11 @@ export default function Multiplayer() {
         </button>
       </div>
       }
-      {openMatches.length > 0 &&
+      <div className='md:w-2/3 w-max md:p-2'>
+        {discordWidget.current}
+      </div>
+      <div className='md:flex md:flex-row md:gap-2'>
+        {openMatches.length > 0 &&
         <div className='flex flex-col gap-2 items-center max-w-full'>
           <h2 className='text-2xl font-bold mb-2'>Open Matches</h2>
           {openMatches.length === 0 && <span className='italic flex justify-center'>No open matches!</span>}
@@ -122,27 +142,29 @@ export default function Multiplayer() {
             <MatchStatus key={match._id.toString()} match={match} />
           ))}
         </div>
-      }
-      {activeMatches.length > 0 &&
+        }
+        {activeMatches.length > 0 &&
         <div className='flex flex-col gap-2 items-center max-w-full'>
           <h2 className='text-2xl font-bold mb-2'>Active Matches</h2>
           {activeMatches.map((match: MultiplayerMatch) => (
             <MatchStatus key={match._id.toString()} match={match} />
           ))}
         </div>
-      }
-      <div className='flex flex-col gap-4 max-w-full'>
-        <h2 className='text-2xl font-bold flex justify-center'>Currently Online</h2>
-        <div className='flex flex-col gap-2'>
-          {connectedPlayers.map(player => (
-            <div key={'multiplayer-' + player._id.toString()} className='flex items-center gap-2'>
-              <FormattedUser user={player} />
-              <MultiplayerRating profile={player.multiplayerProfile} type={MultiplayerMatchType.RushBullet} />
-              <MultiplayerRating profile={player.multiplayerProfile} type={MultiplayerMatchType.RushBlitz} />
-              <MultiplayerRating profile={player.multiplayerProfile} type={MultiplayerMatchType.RushRapid} />
-              <MultiplayerRating profile={player.multiplayerProfile} type={MultiplayerMatchType.RushClassical} />
-            </div>
-          ))}
+        }
+
+        <div className='flex flex-col gap-4 max-w-full'>
+          <h2 className='text-2xl font-bold flex justify-center'>Currently Online</h2>
+          <div className='flex flex-col gap-2'>
+            {connectedPlayers.map(player => (
+              <div key={'multiplayer-' + player._id.toString()} className='flex items-center gap-2'>
+                <FormattedUser user={player} />
+                <MultiplayerRating profile={player.multiplayerProfile} type={MultiplayerMatchType.RushBullet} />
+                <MultiplayerRating profile={player.multiplayerProfile} type={MultiplayerMatchType.RushBlitz} />
+                <MultiplayerRating profile={player.multiplayerProfile} type={MultiplayerMatchType.RushRapid} />
+                <MultiplayerRating profile={player.multiplayerProfile} type={MultiplayerMatchType.RushClassical} />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
       <div className='flex flex-col gap-2 items-center max-w-full'>

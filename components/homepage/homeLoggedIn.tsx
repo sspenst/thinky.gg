@@ -1,9 +1,10 @@
 import PagePath from '@root/constants/pagePath';
 import isGuest from '@root/helpers/isGuest';
+import WidgetBot from '@widgetbot/react-embed';
 import classNames from 'classnames';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import Theme from '../../constants/theme';
 import TimeRange from '../../constants/timeRange';
@@ -54,6 +55,20 @@ export default function HomeLoggedIn({
       'bg-green-100 hover:bg-gray-50 border-gray-300 text-gray-700' :
       'bg-gray-800 hover:bg-slate-600 border-gray-700 text-gray-300'
   );
+  const announcementWidget = useRef<JSX.Element | null>(null);
+
+  useEffect(() => {
+    announcementWidget.current = <WidgetBot
+      style={{
+        width: '500px',
+        height: '250px',
+        // unfortunately can't customize much without paying for widgetbot upgrade
+
+      }}
+      server='971585343956590623'
+      channel='977518583921913867'
+    />;
+  }, []);
 
   const tour = useTour(PagePath.HOME);
 
@@ -115,6 +130,7 @@ export default function HomeLoggedIn({
             </svg>Create
           </Link>
         </div>
+        {announcementWidget.current}
       </div>
     </div>
     <div className='flex flex-wrap justify-center m-4 gap-4'>
@@ -287,7 +303,6 @@ export default function HomeLoggedIn({
           }) : <div className='flex justify-center p-4'><LoadingSpinner /></div>}
         </div>
       </div>
-      <iframe id='discordSection' className='p-4' src='https://discord.com/widget?id=971585343956590623&theme=dark' width='640' height='640' sandbox='allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts' />
     </div>
   </>);
 }
