@@ -5,8 +5,8 @@ import { AppContext } from '../../contexts/appContext';
 import { DATA_TABLE_CUSTOM_STYLES } from '../../helpers/dataTableCustomStyles';
 import useProStatsUser, { ProStatsUserType } from '../../hooks/useProStatsUser';
 import User from '../../models/db/user';
-import FormattedLevelLink from '../formatted/formattedLevelLink';
 import FormattedDate from '../formatted/formattedDate';
+import FormattedLevelLink from '../formatted/formattedLevelLink';
 import FormattedUser from '../formatted/formattedUser';
 
 export default function ProfileInsightsLevelPlayLog({ user }: {user: User}) {

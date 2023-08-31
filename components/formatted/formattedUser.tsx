@@ -2,8 +2,8 @@ import Link from 'next/link';
 import React from 'react';
 import getProfileSlug from '../../helpers/getProfileSlug';
 import User from '../../models/db/user';
-import ProfileAvatar from '../profile/profileAvatar';
 import RoleIcons from '../page/roleIcons';
+import ProfileAvatar from '../profile/profileAvatar';
 
 interface FormattedUserProps {
   noLinks?: boolean;

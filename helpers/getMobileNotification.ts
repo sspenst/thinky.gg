@@ -15,6 +15,29 @@ interface MobileNotification {
   url: string;
 }
 
+function getNewReviewOnYourLevelBody(message?: string) {
+  if (!message) {
+    return 'wrote a review';
+  }
+
+  // message format should either be "score" or "score,hasText"
+  const arr = message.split(',');
+
+  if (isNaN(Number(arr[0]))) {
+    return message;
+  }
+
+  const score = Number(arr[0]);
+
+  if (score <= 0) {
+    return 'wrote a review';
+  }
+
+  const hasText = arr[1] === 'true';
+
+  return hasText ? `wrote a ${score} star review` : `gave a ${score} star rating`;
+}
+
 /* notification must be populated using getEnrichNotificationPipelineStages */
 export default function getMobileNotification(notification: Notification) {
   const host = 'https://pathology.gg';
@@ -79,10 +102,7 @@ export default function getMobileNotification(notification: Notification) {
 
   case NotificationType.NEW_REVIEW_ON_YOUR_LEVEL:
     mobileNotification.title = 'Pathology - New Review';
-    mobileNotification.body = `${notification.source.name} wrote a ${
-      isNaN(Number(notification.message)) ? notification.message :
-        Number(notification.message) > 0 ? `${Number(notification.message)} star` : ''
-    } review on your level ${targetAsLevel.name}`;
+    mobileNotification.body = `${notification.source.name} ${getNewReviewOnYourLevelBody(notification.message)} on your level ${targetAsLevel.name}`;
     mobileNotification.imageUrl = `${host}/api/level/image/${targetAsLevel._id}.png`;
     mobileNotification.url = `${host}/level/${targetAsLevel.slug}`;
 

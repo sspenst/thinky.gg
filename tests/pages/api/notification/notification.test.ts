@@ -94,7 +94,7 @@ describe('Notifications', () => {
     const n1: Notification[] = await createNewRecordOnALevelYouBeatNotifications([TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah') as Notification[];
 
     MockDate.set(Date.now() + ONE_DAY);
-    const n2: Notification = await createNewReviewOnYourLevelNotification(TestId.USER, TestId.USER_B, TestId.LEVEL, '⭐'.repeat(4)) as Notification;
+    const n2: Notification = await createNewReviewOnYourLevelNotification(TestId.USER, TestId.USER_B, TestId.LEVEL, '4') as Notification;
 
     expect(new Date(n1[0].updatedAt).getTime()).toBeLessThan(new Date(n2.updatedAt).getTime());
 
@@ -131,7 +131,7 @@ describe('Notifications', () => {
         expect(response.notifications[0].source.password).toBeUndefined();
         expect(response.notifications[0].target._id).toBe(TestId.LEVEL);
         expect(response.notifications[0].target.name).toBe('test level 1'); // ensure we populate this correctly
-        expect(response.notifications[0].message).toBe('⭐'.repeat(4));
+        expect(response.notifications[0].message).toBe('4,false');
         expect(response.notifications[0].type).toBe(NotificationType.NEW_REVIEW_ON_YOUR_LEVEL);
         expect(response.notifications[0].read).toBe(false);
         expect(response.notifications[1].read).toBe(false);
@@ -141,7 +141,7 @@ describe('Notifications', () => {
         const data = getMobileNotification(notificationSample);
 
         expect(data.title).toBe('Pathology - New Review');
-        expect(data.body).toBe('BBB wrote a ⭐⭐⭐⭐ review on your level test level 1');
+        expect(data.body).toBe('BBB gave a 4 star rating on your level test level 1');
         expect(data.url).toEqual('https://pathology.gg/level/test/test-level-1');
       },
     });
@@ -215,7 +215,7 @@ describe('Notifications', () => {
         expect(response[0].source.name).toBe('BBB'); // ensure we populate this correctly
         expect(response[0].target._id).toBe(TestId.LEVEL);
         expect(response[0].target.name).toBe('test level 1'); // ensure we populate this correctly
-        expect(response[0].message).toBe('⭐'.repeat(4));
+        expect(response[0].message).toBe('4,false');
         expect(response[0].type).toBe(NotificationType.NEW_REVIEW_ON_YOUR_LEVEL);
         expect(response[0].read).toBe(true); // This should have changed
         expect(response[1].type).toBe(NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT);
@@ -277,7 +277,7 @@ describe('Notifications', () => {
         expect(response[0].source.name).toBe('BBB'); // ensure we populate this correctly
         expect(response[0].target._id).toBe(TestId.LEVEL);
         expect(response[0].target.name).toBe('test level 1'); // ensure we populate this correctly
-        expect(response[0].message).toBe('⭐'.repeat(4));
+        expect(response[0].message).toBe('4,false');
         expect(response[0].type).toBe(NotificationType.NEW_REVIEW_ON_YOUR_LEVEL);
         expect(response[0].read).toBe(true);
         expect(response[1].type).toBe(NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT);

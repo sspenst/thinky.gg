@@ -12,7 +12,7 @@ import Comment from '../../models/db/comment';
 import { EnrichedLevel } from '../../models/db/level';
 import Notification from '../../models/db/notification';
 import User from '../../models/db/user';
-import CollectionLink from '../formatted/formattedCollectedLink';
+import FormattedCollectionLink from '../formatted/formattedCollectedLink';
 import FormattedDate from '../formatted/formattedDate';
 import FormattedLevelLink from '../formatted/formattedLevelLink';
 import { Stars } from '../formatted/formattedReview';
@@ -21,6 +21,31 @@ import FormattedUser from '../formatted/formattedUser';
 interface NotificationMessageProps {
   notification: Notification;
   onMarkAsRead: () => void;
+}
+
+function getNewReviewOnYourLevelBody(message?: string) {
+  if (!message) {
+    return 'wrote a review';
+  }
+
+  // message format should either be "score" or "score,hasText"
+  const arr = message.split(',');
+
+  if (isNaN(Number(arr[0]))) {
+    return message;
+  }
+
+  const score = Number(arr[0]);
+
+  if (score <= 0) {
+    return 'wrote a review';
+  }
+
+  const hasText = arr[1] === 'true';
+
+  return hasText ?
+    <>wrote a <Stars stars={Number(score)} /> review</> :
+    <>gave a <Stars stars={Number(score)} /> rating</>;
 }
 
 function NotificationMessage({ notification, onMarkAsRead }: NotificationMessageProps) {
@@ -35,9 +60,8 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
   case NotificationType.NEW_REVIEW_ON_YOUR_LEVEL:
     return (
       <span className='flex flex-wrap items-center gap-1'>
-        {'wrote a '}
-        {isNaN(Number(notification.message)) ? notification.message : Number(notification.message) > 0 ? <Stars stars={Number(notification.message)} /> : null}
-        {' review on your level '}
+        {getNewReviewOnYourLevelBody(notification.message)}
+        {' on your level '}
         <FormattedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
       </span>
     );
@@ -54,7 +78,7 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
     return (<>
       <FormattedLevelLink level={(notification.source) as EnrichedLevel} onClick={onMarkAsRead} />
       {' was added to the collection '}
-      <CollectionLink collection={notification.target as Collection} onClick={onMarkAsRead} />
+      <FormattedCollectionLink collection={notification.target as Collection} onClick={onMarkAsRead} />
     </>);
 
   case NotificationType.NEW_ACHIEVEMENT:

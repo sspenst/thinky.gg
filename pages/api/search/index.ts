@@ -406,8 +406,8 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
       LevelModel.aggregate([
         { $match: searchObj },
         { $project: { ...projection } },
-        { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
         ...(lookupUserBeforeSort ? lookupUserStage : []),
+        { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
         { '$facet': {
           metadata: [
             // eslint-disable-next-line @typescript-eslint/no-explicit-any

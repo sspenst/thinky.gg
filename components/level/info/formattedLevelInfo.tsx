@@ -1,7 +1,7 @@
 import { Tab } from '@headlessui/react';
-import Complete from '@root/components/level/info/complete';
 import FormattedDate from '@root/components/formatted/formattedDate';
 import FormattedLevelReviews from '@root/components/formatted/formattedLevelReviews';
+import Complete from '@root/components/level/info/complete';
 import Image from 'next/image';
 import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
