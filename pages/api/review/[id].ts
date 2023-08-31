@@ -151,7 +151,7 @@ export default withAuth({
       await Promise.all([
         generateDiscordWebhook(undefined, level, req, score, trimmedText, ts),
         queueRefreshIndexCalcs(new Types.ObjectId(id?.toString())),
-        createNewReviewOnYourLevelNotification(level.userId._id, req.userId, level._id, String(score)),
+        createNewReviewOnYourLevelNotification(level.userId._id, req.userId, level._id, String(score), !!trimmedText),
       ]);
 
       return res.status(200).json(review);
@@ -237,7 +237,7 @@ export default withAuth({
       await Promise.all([
         generateDiscordWebhook(review.ts, level, req, score, trimmedText, ts),
         queueRefreshIndexCalcs(new Types.ObjectId(id?.toString())),
-        createNewReviewOnYourLevelNotification(level.userId, req.userId, level._id, String(score)),
+        createNewReviewOnYourLevelNotification(level.userId, req.userId, level._id, String(score), !!trimmedText),
       ]);
 
       return res.status(200).json(review);

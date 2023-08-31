@@ -14,15 +14,15 @@ import { useTour } from '../../hooks/useTour';
 import { EnrichedLevel } from '../../models/db/level';
 import Review from '../../models/db/review';
 import User from '../../models/db/user';
+import LevelSelect from '../cards/levelSelect';
 import LoadingCard from '../cards/loadingCard';
 import FormattedReview from '../formatted/formattedReview';
-import LevelSelect from '../cards/levelSelect';
-import LoadingSpinner from '../page/loadingSpinner';
 import OnlineUsers from '../multiplayer/onlineUsers';
+import LoadingSpinner from '../page/loadingSpinner';
 import MultiSelectUser from '../page/multiSelectUser';
+import RoleIcons from '../page/roleIcons';
 import ProfileAvatar from '../profile/profileAvatar';
 import RecommendedLevel from './recommendedLevel';
-import RoleIcons from '../page/roleIcons';
 
 interface HomeLoggedInProps {
   lastLevelPlayed?: EnrichedLevel;

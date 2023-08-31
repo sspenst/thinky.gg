@@ -12,7 +12,7 @@ beforeAll(async () => {
 
   for (let i = 0; i < 30; i++) {
     MockDate.set(Date.now() + 1);
-    await createNewReviewOnYourLevelNotification(TestId.USER, TestId.USER_B, new Types.ObjectId(), 'id ' + i);
+    await createNewReviewOnYourLevelNotification(TestId.USER, TestId.USER_B, new Types.ObjectId(), 'id ' + i, true);
   }
 
   MockDate.set(Date.now() + 1);
@@ -81,8 +81,8 @@ describe('pages/notifications page', () => {
     expect(ret.props).toBeDefined();
     expect(ret.props?.notifications).toBeDefined();
     expect(ret.props?.notifications).toHaveLength(20);
-    expect(ret.props?.notifications[0].message).toBe('test level id');
-    expect(ret.props?.notifications[1].message).toBe('id 29');
+    expect(ret.props?.notifications[0].message).toBe('test level id,false');
+    expect(ret.props?.notifications[1].message).toBe('id 29,true');
   });
   it('getServerSideProps with logged in and page 2 parameters should function', async () => {
     // Created from initialize db file
@@ -104,7 +104,7 @@ describe('pages/notifications page', () => {
     expect(ret.props).toBeDefined();
     expect(ret.props?.notifications).toBeDefined();
     expect(ret.props?.notifications).toHaveLength(11);
-    expect(ret.props?.notifications[0].message).toBe('id 10');
-    expect(ret.props?.notifications[1].message).toBe('id 9');
+    expect(ret.props?.notifications[0].message).toBe('id 10,true');
+    expect(ret.props?.notifications[1].message).toBe('id 9,true');
   });
 });
