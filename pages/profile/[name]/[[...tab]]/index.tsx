@@ -1,6 +1,7 @@
 import FormattedDate from '@root/components/formatted/formattedDate';
 import RoleIcons from '@root/components/page/roleIcons';
 import ProfileMultiplayer from '@root/components/profile/profileMultiplayer';
+import { getCompletionByDifficultyTable } from '@root/helpers/getCompletionByDifficultyTable';
 import { getUsersWithMultiplayerProfile } from '@root/helpers/getUsersWithMultiplayerProfile';
 import { getPlayerRank } from '@root/helpers/playerRankHelper';
 import { MultiplayerMatchState } from '@root/models/MultiplayerEnums';
@@ -26,7 +27,7 @@ import Page from '../../../../components/page/page';
 import FollowingList from '../../../../components/profile/followingList';
 import ProfileAvatar from '../../../../components/profile/profileAvatar';
 import ProfileInsights from '../../../../components/profile/profileInsights';
-import AchievementInfo from '../../../../constants/achievementInfo';
+import AchievementScoreInfo from '../../../../constants/achievementInfo';
 import Dimensions from '../../../../constants/dimensions';
 import GraphType from '../../../../constants/graphType';
 import TimeRange from '../../../../constants/timeRange';
@@ -43,7 +44,7 @@ import Collection, { EnrichedCollection } from '../../../../models/db/collection
 import { EnrichedLevel } from '../../../../models/db/level';
 import Review from '../../../../models/db/review';
 import User from '../../../../models/db/user';
-import { AchievementModel, CollectionModel, GraphModel, LevelModel, MultiplayerMatchModel, StatModel } from '../../../../models/mongoose';
+import { AchievementModel, CollectionModel, GraphModel, LevelModel, MultiplayerMatchModel } from '../../../../models/mongoose';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../../models/schemas/levelSchema';
 import SelectOption from '../../../../models/selectOption';
 import SelectOptionStats from '../../../../models/selectOptionStats';
@@ -65,71 +66,6 @@ export const enum ProfileTab {
 export interface ProfileParams extends ParsedUrlQuery {
   name: string;
   tab: string[];
-}
-
-async function getCompletionByDifficultyTable(user: User) {
-  const difficultyList = getDifficultyList();
-  const difficultyListValues = difficultyList.map((d) => d.value);
-
-  const levelsCompletedByDifficultyData = await StatModel.aggregate([
-    {
-      $match: {
-        userId: user._id,
-        complete: true,
-        isDeleted: { $ne: true },
-      },
-    },
-    {
-      $project: {
-        _id: 0,
-        levelId: 1,
-      }
-    },
-    {
-      $lookup: {
-        from: 'levels',
-        localField: 'levelId',
-        foreignField: '_id',
-        as: 'levelInfo',
-        pipeline: [
-          {
-            $match: {
-              isDeleted: { $ne: true },
-              isDraft: false,
-            }
-          },
-          {
-            $project: {
-              _id: 0,
-              calc_difficulty_estimate: 1
-            }
-          }
-        ]
-      },
-    },
-    {
-      $unwind: '$levelInfo',
-    },
-    {
-      $bucket: {
-        groupBy: '$levelInfo.calc_difficulty_estimate',
-        boundaries: difficultyListValues,
-        default: difficultyListValues[difficultyListValues.length - 1],
-        output: {
-          count: { $sum: 1 }
-        }
-      },
-    },
-  ]);
-
-  // map of difficulty value to levels completed
-  const levelsCompletedByDifficulty: { [key: string]: number } = {};
-
-  levelsCompletedByDifficultyData.map((d: {_id: string, count: number}) => {
-    levelsCompletedByDifficulty[d._id] = d.count;
-  });
-
-  return levelsCompletedByDifficulty;
 }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -180,7 +116,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     AchievementModel.countDocuments({ userId: userId }),
     CollectionModel.countDocuments({ userId: userId }),
     getFollowData(user._id.toString(), reqUser),
-    profileTab === ProfileTab.Profile ? getCompletionByDifficultyTable(user) : {},
+    profileTab === ProfileTab.Profile ? getCompletionByDifficultyTable(user._id) : {},
     LevelModel.countDocuments({ isDeleted: { $ne: true }, isDraft: false, userId: userId }),
     MultiplayerMatchModel.countDocuments({ players: userId, state: MultiplayerMatchState.FINISHED, rated: true }),
     profileTab === ProfileTab.ReviewsReceived ? getReviewsForUserId(userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
@@ -665,7 +601,7 @@ export default function ProfilePage({
     ],
     [ProfileTab.Achievements]: (
       <div className='flex flex-wrap justify-center gap-8'>
-        {Object.keys(AchievementInfo).map(achievementType => {
+        {Object.keys(AchievementScoreInfo).map(achievementType => {
           const achievement = achievements.find(achievement => achievement.type === achievementType);
 
           if (!achievement) {
