@@ -82,7 +82,7 @@ export default function Multiplayer() {
     discordWidget.current = <WidgetBot
       style={{
         width: '100%',
-        height: '250px',
+        height: '300px',
         // unfortunately can't customize much without paying for widgetbot upgrade
       }}
       server='971585343956590623'
@@ -119,18 +119,17 @@ export default function Multiplayer() {
           </div>
         </>}
       </div>
-
       {!hasCreatedMatch &&
-      <div id='create_button_section' className=''>
-        <button
-          className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
-          onClick={btnCreateMatchClick}
-        >
-          Create Match
-        </button>
-      </div>
+        <div id='create_button_section'>
+          <button
+            className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
+            onClick={btnCreateMatchClick}
+          >
+            Create Match
+          </button>
+        </div>
       }
-      <div className='md:w-2/3 w-max md:p-2'>
+      <div className='w-full max-w-5xl'>
         {discordWidget.current}
       </div>
       <div className='md:flex md:flex-row md:gap-2'>
@@ -151,7 +150,6 @@ export default function Multiplayer() {
           ))}
         </div>
         }
-
         <div className='flex flex-col gap-4 max-w-full'>
           <h2 className='text-2xl font-bold flex justify-center'>Currently Online</h2>
           <div className='flex flex-col gap-2'>

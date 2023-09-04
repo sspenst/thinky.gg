@@ -5,7 +5,6 @@ import classNames from 'classnames';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import Dimensions from '../../constants/dimensions';
 import Theme from '../../constants/theme';
 import TimeRange from '../../constants/timeRange';
 import { AppContext } from '../../contexts/appContext';
@@ -22,7 +21,6 @@ import OnlineUsers from '../multiplayer/onlineUsers';
 import LoadingSpinner from '../page/loadingSpinner';
 import MultiSelectUser from '../page/multiSelectUser';
 import RoleIcons from '../page/roleIcons';
-import ProfileAvatar from '../profile/profileAvatar';
 import RecommendedLevel from './recommendedLevel';
 
 interface HomeLoggedInProps {
@@ -58,16 +56,17 @@ export default function HomeLoggedIn({
   const announcementWidget = useRef<JSX.Element | null>(null);
 
   useEffect(() => {
-    announcementWidget.current = <WidgetBot
-      style={{
-        width: '500px',
-        height: '250px',
-        // unfortunately can't customize much without paying for widgetbot upgrade
-
-      }}
-      server='971585343956590623'
-      channel='977518583921913867'
-    />;
+    announcementWidget.current = (
+      <WidgetBot
+        channel='977518583921913867'
+        server='971585343956590623'
+        style={{
+          height: '250px',
+          width: '500px',
+          // unfortunately can't customize much without paying for widgetbot upgrade
+        }}
+      />
+    );
   }, []);
 
   const tour = useTour(PagePath.HOME);
@@ -92,12 +91,6 @@ export default function HomeLoggedIn({
         <OnlineUsers />
       </div>
       <div className='flex justify-center items-center flex-wrap gap-6'>
-        <div className='flex flex-col gap-2'>
-          <Link href={getProfileSlug(user)} passHref>
-            <ProfileAvatar hideStatusCircle={true} size={Dimensions.AvatarSizeLarge} user={user} />
-          </Link>
-          <span className='flex justify-center font-bold'>{user.score}</span>
-        </div>
         <div className='flex flex-col gap-2'>
           <Link id='playBtn'
             className='inline-block px-3 py-1.5 border-4 border-neutral-400 bg-white text-black font-bold text-3xl leading-snug rounded-xl hover:ring-4 hover:bg-blue-500 hover:text-white ring-blue-500/50 focus:ring-0 text-center'
@@ -130,7 +123,9 @@ export default function HomeLoggedIn({
             </svg>Create
           </Link>
         </div>
-        {announcementWidget.current}
+        <div className='hidden md:block'>
+          {announcementWidget.current}
+        </div>
       </div>
     </div>
     <div className='flex flex-wrap justify-center m-4 gap-4'>
