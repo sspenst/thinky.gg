@@ -1,8 +1,8 @@
 import { getDifficultyList } from '@root/components/formatted/formattedDifficulty';
 import { StatModel } from '@root/models/mongoose';
-import { Types } from 'mongoose';
+import { SaveOptions, Types } from 'mongoose';
 
-export async function getCompletionByDifficultyTable(userId: Types.ObjectId) {
+export async function getCompletionByDifficultyTable(userId: Types.ObjectId, options: SaveOptions = {}) {
   const difficultyList = getDifficultyList();
   const difficultyListValues = difficultyList.map((d) => d.value);
 
@@ -55,7 +55,7 @@ export async function getCompletionByDifficultyTable(userId: Types.ObjectId) {
         }
       },
     },
-  ]);
+  ], options);
 
   // map of difficulty value to levels completed
   const levelsCompletedByDifficulty: { [key: string]: number } = {};

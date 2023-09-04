@@ -25,7 +25,7 @@ import { matchMarkCompleteLevel } from '../match/[matchId]';
 
 export async function issueAchievements(user: User, score: number, options: SaveOptions) {
   const userId = user._id;
-  const levelsCompletedByDifficulty = await getCompletionByDifficultyTable(userId);
+  const levelsCompletedByDifficulty = await getCompletionByDifficultyTable(userId, options);
   const rollingLevelCompletionSum = getDifficultyRollingSum(levelsCompletedByDifficulty);
 
   for (const achievementType in AchievementScoreInfo) {
