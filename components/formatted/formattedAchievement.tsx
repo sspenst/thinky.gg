@@ -13,9 +13,10 @@ export default function FormattedAchievement({ achievement }: FormattedAchieveme
     <div className='flex flex-col justify-center text-center' style={{
       borderColor: 'var(--bg-color-4)',
     }}>
-      <Image alt='logo' src='/logo.svg' width='32' height='32' className='h-12 w-full mb-2' />
+      <span className='text-4xl'>{AchievementScoreInfo[achievement.type].emoji}</span>
       <div className='flex flex-col justify-center items-center'>
         <span className='font-bold text-lg'>{AchievementScoreInfo[achievement.type].name}</span>
+
         <span className='text-sm'>{AchievementScoreInfo[achievement.type].description}</span>
       </div>
       <FormattedDate date={achievement.createdAt} />

@@ -28,6 +28,8 @@ export async function issueAchievements(user: User, score: number, options: Save
   const levelsCompletedByDifficulty = await getCompletionByDifficultyTable(userId, options);
   const rollingLevelCompletionSum = getDifficultyRollingSum(levelsCompletedByDifficulty);
 
+  console.log('Issuing achievements', { userId, score, rollingLevelCompletionSum });
+
   for (const achievementType in AchievementScoreInfo) {
     const achievementInfo = AchievementScoreInfo[achievementType];
 
