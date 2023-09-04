@@ -1,8 +1,8 @@
 import FormattedDate from '@root/components/formatted/formattedDate';
 import RoleIcons from '@root/components/page/roleIcons';
 import ProfileMultiplayer from '@root/components/profile/profileMultiplayer';
-import { getPlayerRank } from '@root/helpers/achievementHelper';
 import { getUsersWithMultiplayerProfile } from '@root/helpers/getUsersWithMultiplayerProfile';
+import { getPlayerRank } from '@root/helpers/playerRankHelper';
 import { MultiplayerMatchState } from '@root/models/MultiplayerEnums';
 import classNames from 'classnames';
 import { debounce } from 'debounce';
