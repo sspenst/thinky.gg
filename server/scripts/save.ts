@@ -2,9 +2,10 @@
 // import dotenv
 // import tsconfig-paths
 
-import AchievementInfo from '@root/constants/achievementInfo';
+import AchievementScoreInfo from '@root/constants/achievementInfo';
 import AchievementType from '@root/constants/achievementType';
 import { createNewAchievement } from '@root/helpers/notificationHelper';
+import { getDifficultyRollingSum } from '@root/helpers/playerRankHelper';
 import Achievement from '@root/models/db/achievement';
 import PlayAttempt from '@root/models/db/playAttempt';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
@@ -175,18 +176,20 @@ async function integrityCheckAcheivements() {
 
   console.log(achievements.length);
 
-  for (const achievementType in AchievementInfo) {
+  for (const achievementType in AchievementScoreInfo) {
     console.log(achievementType);
-
-    const achievementInfo = AchievementInfo[achievementType];
+    /* TODO: fix this to work again
+    const achievementInfo = AchievementScoreInfo[achievementType];
+    const levelsCompletedByDifficulty = await getCompletionByDifficultyTable(users);
+    const rollingLevelCompletionSum = getDifficultyRollingSum(levelsCompletedByDifficulty);
 
     // go through each user that qualifies for the achievement
-    for (const user of users.filter(user => achievementInfo.unlocked(user))) {
+    for (const user of users.filter(user => achievementInfo.unlocked(rollingLevelCompletionSum))) {
       if (!achievements.some((achievement) => achievement.type === achievementType as AchievementType && achievement.userId !== user._id)) {
         console.warn(`\nIssuing ${achievementType} for ${user.name}`);
         createNewAchievement(achievementType as AchievementType, user._id);
       }
-    }
+    }*/
   }
 
   console.log('integrityCheckAcheivements done');

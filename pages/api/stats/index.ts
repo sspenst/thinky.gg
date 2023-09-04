@@ -1,7 +1,8 @@
-import AchievementInfo from '@root/constants/achievementInfo';
+import AchievementScoreInfo from '@root/constants/achievementInfo';
 import Direction from '@root/constants/direction';
+import { getCompletionByDifficultyTable } from '@root/helpers/getCompletionByDifficultyTable';
 import getDifficultyEstimate from '@root/helpers/getDifficultyEstimate';
-import User from '@root/models/db/user';
+import { getDifficultyRollingSum } from '@root/helpers/playerRankHelper';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
 import mongoose, { SaveOptions, Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
@@ -22,10 +23,13 @@ import { queueRefreshIndexCalcs } from '../internal-jobs/worker';
 import { matchMarkCompleteLevel } from '../match/[matchId]';
 
 export async function issueAchievements(userId: Types.ObjectId, score: number, options: SaveOptions) {
-  for (const achievementType in AchievementInfo) {
-    const achievementInfo = AchievementInfo[achievementType];
+  const levelsCompletedByDifficulty = await getCompletionByDifficultyTable(userId);
+  const rollingLevelCompletionSum = getDifficultyRollingSum(levelsCompletedByDifficulty);
 
-    if (achievementInfo.exactlyUnlocked({ score: score } as User)) {
+  for (const achievementType in AchievementScoreInfo) {
+    const achievementInfo = AchievementScoreInfo[achievementType];
+
+    if (achievementInfo.exactlyUnlocked(rollingLevelCompletionSum)) {
       await createNewAchievement(achievementType as AchievementType, userId, options);
     }
   }
@@ -143,6 +147,7 @@ export default withAuth({
 
         // if the level was previously incomplete, increment score
         if (!stat?.complete) {
+          // TODO: can these be in a Promise.all?
           await UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }, { session: session });
           await issueAchievements(req.user._id, req.user.score + 1, { session: session });
         }
@@ -191,6 +196,7 @@ export default withAuth({
           if (stats.length > 0) {
             const statUserIds = stats.map(s => s.userId);
 
+            // TODO: Can these three awaits be in a promise.all?
             await StatModel.updateMany(
               { _id: { $in: stats.map(s => s._id) } },
               { $set: { complete: false } },

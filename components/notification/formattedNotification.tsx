@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
-import AchievementInfo from '../../constants/achievementInfo';
+import AchievementScoreInfo from '../../constants/achievementInfo';
 import Dimensions from '../../constants/dimensions';
 import NotificationType from '../../constants/notificationType';
 import getProfileSlug from '../../helpers/getProfileSlug';
@@ -86,7 +86,7 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
       const achievement = notification.source as Achievement;
 
       return (<>
-        {`Achievement unlocked! ${AchievementInfo[achievement.type].description}`}
+        {`Achievement unlocked! ${AchievementScoreInfo[achievement.type].description}`}
       </>);
     }
 
