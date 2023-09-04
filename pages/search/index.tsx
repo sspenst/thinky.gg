@@ -12,7 +12,7 @@ import { ParsedUrlQuery, ParsedUrlQueryInput } from 'querystring';
 import React, { Fragment, useCallback, useEffect, useState } from 'react';
 import DataTable, { Alignment, TableColumn } from 'react-data-table-component-sspenst';
 import FilterButton from '../../components/buttons/filterButton';
-import { FormattedDifficulty, getDifficultyColor, getDifficultyList } from '../../components/formatted/formattedDifficulty';
+import FormattedDifficulty, { getDifficultyColor, getDifficultyList } from '../../components/formatted/formattedDifficulty';
 import FormattedLevelLink from '../../components/formatted/formattedLevelLink';
 import MultiSelectUser from '../../components/page/multiSelectUser';
 import Page from '../../components/page/page';
@@ -25,6 +25,8 @@ import { getUserFromToken } from '../../lib/withAuth';
 import { EnrichedLevel } from '../../models/db/level';
 import User from '../../models/db/user';
 import { doQuery } from '../api/search';
+import DataTable2, { TableColumn2 } from '@root/components/tables/dataTable2';
+import nProgress from 'nprogress';
 
 export enum BlockFilterMask {
   NONE = 0,
@@ -54,7 +56,7 @@ export interface SearchQuery extends ParsedUrlQuery {
   searchAuthorId?: string;
   showFilter?: FilterSelectOption;
   sortBy: string;
-  sortDir?: string;
+  sortDir: 'desc' | 'asc';
   timeRange: string;
 }
 
@@ -117,21 +119,24 @@ interface SearchProps {
 
 /* istanbul ignore next */
 export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQuery, totalRows }: SearchProps) {
-  const [data, setData] = useState<EnrichedLevel[]>();
+  const [data, setData] = useState<EnrichedLevel[]>([]);
   const [loading, setLoading] = useState(false);
+  const [paginationTotalRows, setPaginationTotalRows] = useState(totalRows);
   const [query, setQuery] = useState(searchQuery);
   const router = useRouter();
+  const [searchAuthorUser, setSearchAuthorUser] = useState(searchAuthor);
 
   useEffect(() => {
     setData(enrichedLevels);
     setLoading(false);
   }, [enrichedLevels, setLoading]);
 
-  useEffect(() => {
-    setQuery(searchQuery);
-  }, [searchQuery]);
+  // useEffect(() => {
+  //   setQuery(searchQuery);
+  // }, [searchQuery]);
 
   const fetchLevels = useCallback((query: SearchQuery) => {
+    nProgress.start();
     setQuery(query);
     setLoading(true);
 
@@ -144,20 +149,50 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       }
     }
 
-    router.push({
-      query: q,
+    console.log(q);
+
+    const queryParams = new URLSearchParams(query as Record<string, string>);
+
+    fetch(`/api/search?${queryParams}`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }).then(async res => {
+      if (res.status !== 200) {
+        throw res.text();
+      }
+
+      const response = await res.json();
+
+      setData(response.levels);
+      setSearchAuthorUser(response.serachAuthor);
+      setPaginationTotalRows(response.totalRows);
+    }).catch(async err => {
+      const error = JSON.parse(await err)?.error;
+
+      console.error(`Error updating stats: ${error}`);
+      // TODO: set something here
+    }).finally(() => {
+      // NProgress.done();
+      router.push({ query: q }, undefined, { shallow: true });
+      setLoading(false);
     });
-  }, [router, setLoading]);
+
+    // router.push({ query: q });
+  }, [setLoading]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const queryDebounce = useCallback(
     debounce((q: SearchQuery) => {
+      console.log('debounce fetch');
       fetchLevels(q);
     }, 500),
     []
   );
 
-  const setQueryHelper = useCallback((update: Partial<SearchQuery>) => {
+  const queryDebounceHelper = useCallback((update: Partial<SearchQuery>) => {
     setQuery(q => {
       if (loading) {
         return q;
@@ -166,6 +201,8 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       const newQ = {
         ...q,
         ...update,
+        // setting page here causes immediate page query 
+        // page: '1',
       } as SearchQuery;
 
       queryDebounce(newQ);
@@ -174,13 +211,105 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
     });
   }, [loading, queryDebounce]);
 
+  const columns2 = [
+    {
+      id: 'userId',
+      name: 'Author',
+      selector: (row: EnrichedLevel) => (
+        <div className='flex gap-3'>
+          <button
+            onClick={() => {
+              if (query.searchAuthor === row.userId.name) {
+                fetchLevels({
+                  ...query,
+                  searchAuthor: '',
+                });
+              } else {
+                fetchLevels({
+                  ...query,
+                  searchAuthor: row.userId.name,
+                });
+              }
+            }}
+            style={{
+              display: query.searchAuthor ? 'none' : 'block',
+            }}
+          >
+            <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-filter' viewBox='0 0 16 16'>
+              <path d='M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z' />
+            </svg>
+          </button>
+          <Link href={getProfileSlug(row.userId)} className='font-bold underline truncate'>
+            {row.userId.name}
+          </Link>
+        </div>
+      ),
+      sortable: true,
+      style: {
+        minWidth: '150px',
+      },
+    },
+    {
+      id: 'name',
+      name: 'Name',
+      grow: 2,
+      selector: (row: EnrichedLevel) => <FormattedLevelLink level={row} />,
+      sortable: true,
+      style: {
+        minWidth: '150px',
+      },
+    },
+    {
+      id: 'calcDifficultyEstimate',
+      name: 'Difficulty',
+      selector: (row: EnrichedLevel) => (
+        <FormattedDifficulty
+          difficultyEstimate={row.calc_difficulty_estimate}
+          id={row._id.toString()}
+          uniqueUsers={row.calc_playattempts_unique_users_count}
+        />
+      ),
+      sortable: true,
+      allowOverflow: true,
+      style: {
+        fontSize: '13px',
+        minWidth: '150px',
+      },
+    },
+    {
+      id: 'ts',
+      name: 'Created',
+      selector: (row: EnrichedLevel) => <FormattedDate style={{ color: 'var(--color)', fontSize: 13 }} ts={row.ts} />,
+      sortable: true,
+    },
+    {
+      grow: 0.45,
+      id: 'leastMoves',
+      name: 'Steps',
+      selector: (row: EnrichedLevel) => `${row.userMoves !== undefined && row.userMoves !== row.leastMoves ? `${row.userMoves}/` : ''}${row.leastMoves}`,
+      sortable: true,
+    },
+    {
+      id: 'playersBeaten',
+      name: 'Users Won',
+      selector: (row: EnrichedLevel) => row.calc_stats_players_beaten || 0,
+      sortable: true,
+    },
+    {
+      id: 'reviewScore',
+      name: 'Review Score',
+      selector: (row: EnrichedLevel) => {return row.calc_reviews_count === 0 ? '-' : row.calc_reviews_score_laplace?.toFixed(2);},
+      sortable: true,
+    },
+  ] as TableColumn2<EnrichedLevel>[];
+
   const columns = [
     {
       id: 'userId',
       name: 'Author',
       minWidth: '150px',
       selector: (row: EnrichedLevel) => (
-        <div className='flex flex-row space-x-5'>
+        <div className='flex gap-2'>
           <button
             onClick={() => {
               if (query.searchAuthor === row.userId.name) {
@@ -222,7 +351,15 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
     {
       id: 'calcDifficultyEstimate',
       name: 'Difficulty',
-      selector: (row: EnrichedLevel) => FormattedDifficulty(row.calc_difficulty_estimate, row._id.toString(), row.calc_playattempts_unique_users_count),
+      selector: (row: EnrichedLevel) => (
+        <div className='w-fit'>
+          <FormattedDifficulty
+            difficultyEstimate={row.calc_difficulty_estimate}
+            id={row._id.toString()}
+            uniqueUsers={row.calc_playattempts_unique_users_count}
+          />
+        </div>
+      ),
       ignoreRowClick: true,
       sortable: true,
       allowOverflow: true,
@@ -314,7 +451,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
             id='default-search'
             key='search-level-input'
             onChange={e => {
-              setQueryHelper({
+              queryDebounceHelper({
                 search: e.target.value,
               });
             } }
@@ -324,8 +461,8 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
           />
         </div>
         <div>
-          <MultiSelectUser key='search-author-input' defaultValue={searchAuthor} onSelect={(user) => {
-            setQueryHelper({
+          <MultiSelectUser key='search-author-input' defaultValue={searchAuthorUser} onSelect={(user) => {
+            queryDebounceHelper({
               searchAuthor: user?.name || '',
             });
           }} />
@@ -460,7 +597,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
           max='2500'
           min='1'
           onChange={(e: React.FormEvent<HTMLInputElement>) => {
-            setQueryHelper({
+            queryDebounceHelper({
               minSteps: (e.target as HTMLInputElement).value,
               page: '1',
             });
@@ -476,7 +613,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
           max='2500'
           min='1'
           onChange={(e: React.FormEvent<HTMLInputElement>) => {
-            setQueryHelper({
+            queryDebounceHelper({
               maxSteps: (e.target as HTMLInputElement).value,
               page: '1',
             });
@@ -499,7 +636,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
               max='40'
               min='1'
               onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                setQueryHelper({
+                queryDebounceHelper({
                   minDimension1: (e.target as HTMLInputElement).value,
                   page: '1',
                 });
@@ -515,7 +652,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
               max='40'
               min='1'
               onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                setQueryHelper({
+                queryDebounceHelper({
                   minDimension2: (e.target as HTMLInputElement).value,
                   page: '1',
                 });
@@ -533,7 +670,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
               max='40'
               min='1'
               onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                setQueryHelper({
+                queryDebounceHelper({
                   maxDimension1: (e.target as HTMLInputElement).value,
                   page: '1',
                 });
@@ -549,7 +686,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
               max='40'
               min='1'
               onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                setQueryHelper({
+                queryDebounceHelper({
                   maxDimension2: (e.target as HTMLInputElement).value,
                   page: '1',
                 });
@@ -645,58 +782,92 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       }}
     />
     <Page title={'Search'}>
-      <DataTable
-        columns={columns}
-        customStyles={DATA_TABLE_CUSTOM_STYLES}
-        data={data as EnrichedLevel[]}
-        defaultSortAsc={query.sortDir === 'asc'}
-        defaultSortFieldId={query.sortBy}
-        dense
-        noDataComponent={
-          <div className='flex flex-col items-center p-3 gap-3'>
-            <span>No records to display...</span>
-            {query.timeRange !== TimeRange[TimeRange.All] &&
-              <span>
-                Try <button className='underline' onClick={() => {onTimeRangeClick(TimeRange[TimeRange.All]);}}>expanding</button> time range
-              </span>
+      <>
+        <DataTable2
+          columns={columns2}
+          data={data}
+          onSort={(columnId: string) => {
+            const update = {
+              sortBy: columnId,
+              sortDir: 'asc',
+            } as Partial<SearchQuery>;
+
+            if (columnId === query.sortBy) {
+              // swap sortDir if the same col is clicked
+              update.sortDir = query.sortDir === 'desc' ? 'asc' : 'desc';
             }
-          </div>
-        }
-        onChangePage={(pg: number) => {
-          fetchLevels({
-            ...query,
-            page: String(pg),
-          });
-        }}
-        onSort={async (column: TableColumn<EnrichedLevel>, sortDirection: string) => {
-          const update = {
-            sortDir: sortDirection,
-          } as Partial<SearchQuery>;
 
-          if (typeof column.id === 'string') {
-            update.sortBy = column.id;
+            fetchLevels({
+              ...query,
+              ...update,
+            });
+          }}
+          sortBy={query.sortBy}
+          sortDir={query.sortDir}
+        />
+        <DataTable
+          columns={columns}
+          customStyles={DATA_TABLE_CUSTOM_STYLES}
+          data={data}
+          defaultSortAsc={query.sortDir === 'asc'}
+          defaultSortFieldId={query.sortBy}
+          dense
+          noDataComponent={
+            <div className='flex flex-col items-center p-3 gap-3'>
+              <span>No records to display...</span>
+              {query.timeRange !== TimeRange[TimeRange.All] &&
+                <span>
+                  Try <button className='underline' onClick={() => {onTimeRangeClick(TimeRange[TimeRange.All]);}}>expanding</button> time range
+                </span>
+              }
+            </div>
           }
+          onChangePage={(pg: number) => {
+            console.log('change page fetch', pg);
+            fetchLevels({
+              ...query,
+              page: String(pg),
+            });
+          }}
+          onSort={async (column: TableColumn<EnrichedLevel>, sortDirection: string) => {
+            // TODO: onSort without pagination works fine
+            // but if you are on page 2, and then try to sort another column:
+            // - onSort is called correctly with the same page number
+            // - onChangePage gets called with page 1, using the existing query
+            // is this a bug with the component or my implementation?
+            // if it's the component, I am remaking it
+            const update = {
+              sortDir: sortDirection,
+            } as Partial<SearchQuery>;
 
-          fetchLevels({
-            ...query,
-            ...update,
-          });
-        }}
-        pagination={true}
-        paginationComponentOptions={{ noRowsPerPage: true }}
-        paginationDefaultPage={parseInt(query.page ?? '1')}
-        paginationPerPage={20}
-        paginationServer
-        paginationTotalRows={totalRows}
-        persistTableHead
-        progressPending={loading}
-        responsive
-        sortServer={true}
-        striped
-        subHeader
-        subHeaderAlign={Alignment.CENTER}
-        subHeaderComponent={subHeaderComponent}
-      />
+            if (typeof column.id === 'string') {
+              update.sortBy = column.id;
+            }
+
+            console.log('onsort fetch');
+
+            fetchLevels({
+              ...query,
+              ...update,
+              // page: '1',
+            });
+          }}
+          pagination={true}
+          paginationComponentOptions={{ noRowsPerPage: true }}
+          paginationDefaultPage={parseInt(query.page ?? '1')}
+          paginationPerPage={20}
+          paginationServer
+          paginationTotalRows={paginationTotalRows}
+          persistTableHead
+          progressPending={loading}
+          responsive
+          sortServer={true}
+          striped
+          subHeader
+          subHeaderAlign={Alignment.CENTER}
+          subHeaderComponent={subHeaderComponent}
+        />
+      </>
     </Page>
   </>);
 }
