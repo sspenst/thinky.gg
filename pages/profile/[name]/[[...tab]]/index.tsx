@@ -1,6 +1,7 @@
 import FormattedDate from '@root/components/formatted/formattedDate';
 import RoleIcons from '@root/components/page/roleIcons';
 import ProfileMultiplayer from '@root/components/profile/profileMultiplayer';
+import { getPlayerRank } from '@root/helpers/achievementHelper';
 import { getUsersWithMultiplayerProfile } from '@root/helpers/getUsersWithMultiplayerProfile';
 import { MultiplayerMatchState } from '@root/models/MultiplayerEnums';
 import classNames from 'classnames';
@@ -422,6 +423,8 @@ export default function ProfilePage({
     });
   };
 
+  const playerRank = getPlayerRank(levelsCompletedByDifficulty);
+
   // create an array of objects with the id, trigger element (eg. button), and the content element
   const tabsContent = {
     [ProfileTab.Profile]: (user.ts ?
@@ -446,6 +449,7 @@ export default function ProfilePage({
         <div className='flex flex-row flex-wrap justify-center text-left gap-10 m-4'>
           <div>
             <h2><span className='font-bold'>Levels Completed:</span> {user.score}</h2>
+            <h2><span className='font-bold'>Rank:</span> {playerRank}</h2>
             <h2><span className='font-bold'>Levels Created:</span> {user.calc_levels_created_count}</h2>
             {!user.hideStatus && <>
               <h2><span className='font-bold'>Last Seen:</span> <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.last_visited_at ? user.last_visited_at : user.ts} /></h2>

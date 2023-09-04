@@ -3,13 +3,27 @@ import StyledTooltip from '../page/styledTooltip';
 
 const maxDiff = 30000;
 
-interface Difficulty {
+export interface Difficulty {
   description: string;
   emoji: string;
   name: string;
   // avg solve time
   value: number;
 }
+
+export const DIFFICULTY_PRETTY_NAMES = [
+  'Pending',
+  'Kindergarten',
+  'Elementary',
+  'Junior High',
+  'Highschool',
+  'Bachelors',
+  'Masters',
+  'PhD',
+  'Professor',
+  'Grandmaster',
+  'Super Grandmaster',
+];
 
 export enum DIFFICULTY_NAMES {
   PENDING = 0,
