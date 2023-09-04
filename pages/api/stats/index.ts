@@ -3,6 +3,7 @@ import Direction from '@root/constants/direction';
 import { getCompletionByDifficultyTable } from '@root/helpers/getCompletionByDifficultyTable';
 import getDifficultyEstimate from '@root/helpers/getDifficultyEstimate';
 import { getDifficultyRollingSum } from '@root/helpers/playerRankHelper';
+import User from '@root/models/db/user';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
 import mongoose, { SaveOptions, Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
@@ -22,14 +23,15 @@ import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from 
 import { queueRefreshIndexCalcs } from '../internal-jobs/worker';
 import { matchMarkCompleteLevel } from '../match/[matchId]';
 
-export async function issueAchievements(userId: Types.ObjectId, score: number, options: SaveOptions) {
+export async function issueAchievements(user: User, score: number, options: SaveOptions) {
+  const userId = user._id;
   const levelsCompletedByDifficulty = await getCompletionByDifficultyTable(userId);
   const rollingLevelCompletionSum = getDifficultyRollingSum(levelsCompletedByDifficulty);
 
   for (const achievementType in AchievementScoreInfo) {
     const achievementInfo = AchievementScoreInfo[achievementType];
 
-    if (achievementInfo.exactlyUnlocked(rollingLevelCompletionSum)) {
+    if (achievementInfo.exactlyUnlocked({ user: user, rollingLevelCompletionSum: rollingLevelCompletionSum })) {
       await createNewAchievement(achievementType as AchievementType, userId, options);
     }
   }
@@ -149,7 +151,7 @@ export default withAuth({
         if (!stat?.complete) {
           // TODO: can these be in a Promise.all?
           await UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }, { session: session });
-          await issueAchievements(req.user._id, req.user.score + 1, { session: session });
+          await issueAchievements(req.user, req.user.score + 1, { session: session });
         }
 
         const newRecord = moves < level.leastMoves;
