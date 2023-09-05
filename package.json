@@ -54,7 +54,7 @@
     "socket.io": "^4.7.2",
     "socket.io-client": "^4.7.2",
     "stripe": "^12.18.0",
-    "swr": "^2.2.0",
+    "swr": "^2.2.1",
     "throttle-debounce": "^5.0.0",
     "tsc": "^2.0.4",
     "winston": "^3.10.0"
