@@ -3,6 +3,7 @@ import Direction from '@root/constants/direction';
 import { getCompletionByDifficultyTable } from '@root/helpers/getCompletionByDifficultyTable';
 import getDifficultyEstimate from '@root/helpers/getDifficultyEstimate';
 import { getDifficultyRollingSum } from '@root/helpers/playerRankHelper';
+import Achievement from '@root/models/db/achievement';
 import User from '@root/models/db/user';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
 import mongoose, { SaveOptions, Types } from 'mongoose';
@@ -19,17 +20,26 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level, { EnrichedLevel } from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
-import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
+import { AchievementModel, LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
 import { queueRefreshIndexCalcs } from '../internal-jobs/worker';
 import { matchMarkCompleteLevel } from '../match/[matchId]';
 
 export async function issueAchievements(user: User, options: SaveOptions) {
   const userId = user._id;
-  const levelsCompletedByDifficulty = await getCompletionByDifficultyTable(userId, options);
+  // it is more efficient to just grab all their achievements then to loop through and query each one if they have it
+  const [levelsCompletedByDifficulty, allAchievements] = await Promise.all([
+    getCompletionByDifficultyTable(userId, options),
+    AchievementModel.find<Achievement>({ userId: userId }, {}, { lean: true }),
+  ]);
   const rollingLevelCompletionSum = getDifficultyRollingSum(levelsCompletedByDifficulty);
 
   for (const achievementType in AchievementScoreInfo) {
     const achievementInfo = AchievementScoreInfo[achievementType];
+
+    // check if the user already has the achievement and if so skip it (note we already have a unique index on userId and type)
+    if (allAchievements.some(a => a.type === achievementType)) {
+      continue;
+    }
 
     if (achievementInfo.exactlyUnlocked({ user: user, rollingLevelCompletionSum: rollingLevelCompletionSum })) {
       await createNewAchievement(achievementType as AchievementType, userId, options);

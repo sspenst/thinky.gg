@@ -82,17 +82,6 @@ export async function createNewReviewOnYourLevelNotification(levelUserId: string
 }
 
 export async function createNewAchievement(achievementType: AchievementType, userId: Types.ObjectId, options?: SaveOptions) {
-  const existingAchievement = await AchievementModel.findOne<Achievement>({
-    type: achievementType,
-    userId: userId,
-  }, {}, {
-    ...options,
-  });
-
-  if (existingAchievement) {
-    return existingAchievement;
-  }
-
   const achievement = await AchievementModel.findOneAndUpdate<Achievement>({
     type: achievementType,
     userId: userId,
