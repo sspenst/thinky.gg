@@ -203,17 +203,18 @@ export default withAuth({
           if (stats.length > 0) {
             const statUserIds = stats.map(s => s.userId);
 
-            // TODO: Can these three awaits be in a promise.all?
-            await StatModel.updateMany(
-              { _id: { $in: stats.map(s => s._id) } },
-              { $set: { complete: false } },
-              { session: session },
-            );
-            await UserModel.updateMany(
-              { _id: { $in: statUserIds } },
-              { $inc: { score: -1 } },
-              { session: session },
-            );
+            await Promise.all([
+              StatModel.updateMany(
+                { _id: { $in: stats.map(s => s._id) } },
+                { $set: { complete: false } },
+                { session: session },
+              ),
+              UserModel.updateMany(
+                { _id: { $in: statUserIds } },
+                { $inc: { score: -1 } },
+                { session: session },
+              )
+            ]);
 
             // create a notification for each user
             await createNewRecordOnALevelYouBeatNotifications(statUserIds, req.userId, level._id, moves.toString(), { session: session });
