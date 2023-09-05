@@ -156,7 +156,13 @@ export function getDifficultyColor(value: number, light = 50) {
   return `hsl(${hue}, ${sat}%, ${light}%)`;
 }
 
-export function FormattedDifficulty(difficultyEstimate: number, id: string, uniqueUsers?: number) {
+interface FormattedDifficultyProps {
+  difficultyEstimate: number;
+  id: string;
+  uniqueUsers?: number;
+}
+
+export default function FormattedDifficulty({ difficultyEstimate, id, uniqueUsers }: FormattedDifficultyProps) {
   const color = getDifficultyColor(difficultyEstimate);
   const difficulty = getDifficultyFromValue(difficultyEstimate);
   const pendingRemainingUsers = 10 - (uniqueUsers ?? 0);

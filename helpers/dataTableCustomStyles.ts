@@ -1,5 +1,6 @@
 import { TableStyles } from 'react-data-table-component-sspenst';
 
+// TODO: delete this
 // https://github.com/jbetancur/react-data-table-component/blob/master/src/DataTable/styles.ts
 export const DATA_TABLE_CUSTOM_STYLES: TableStyles = {
   subHeader: {
