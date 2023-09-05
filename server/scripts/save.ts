@@ -2,7 +2,6 @@
 // import dotenv
 // import tsconfig-paths
 
-import AchievementRulesTable from '@root/constants/achievementInfo';
 import Achievement from '@root/models/db/achievement';
 import PlayAttempt from '@root/models/db/playAttempt';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
@@ -172,10 +171,10 @@ async function integrityCheckAcheivements() {
   const achievements = await AchievementModel.find<Achievement>();
 
   console.log(achievements.length);
-
+  /* TODO: fix this to work again
   for (const achievementType in AchievementRulesTable) {
     console.log(achievementType);
-    /* TODO: fix this to work again
+
     const achievementInfo = AchievementScoreInfo[achievementType];
     const levelsCompletedByDifficulty = await getCompletionByDifficultyTable(users);
     const rollingLevelCompletionSum = getDifficultyRollingSum(levelsCompletedByDifficulty);
@@ -186,9 +185,9 @@ async function integrityCheckAcheivements() {
         console.warn(`\nIssuing ${achievementType} for ${user.name}`);
         createNewAchievement(achievementType as AchievementType, user._id);
       }
-    }*/
+    }
   }
-
+*/
   console.log('integrityCheckAcheivements done');
 }
 

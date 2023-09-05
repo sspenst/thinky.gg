@@ -1,4 +1,4 @@
-import AchievementRulesTable from '@root/constants/achievementInfo';
+import { AchievementCategory, AchievementCategoryMapping } from '@root/constants/achievementInfo';
 import Direction from '@root/constants/direction';
 import { getCompletionByDifficultyTable } from '@root/helpers/getCompletionByDifficultyTable';
 import getDifficultyEstimate from '@root/helpers/getDifficultyEstimate';
@@ -6,7 +6,7 @@ import { getDifficultyRollingSum } from '@root/helpers/playerRankHelper';
 import Achievement from '@root/models/db/achievement';
 import User from '@root/models/db/user';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
-import mongoose, { SaveOptions, Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import AchievementType from '../../../constants/achievementType';
 import Discord from '../../../constants/discord';
@@ -21,28 +21,43 @@ import Level, { EnrichedLevel } from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
 import { AchievementModel, LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
-import { queueRefreshIndexCalcs } from '../internal-jobs/worker';
+import { queueRefreshAchievements, queueRefreshIndexCalcs } from '../internal-jobs/worker';
 import { matchMarkCompleteLevel } from '../match/[matchId]';
 
-export async function issueAchievements(user: User, options: SaveOptions) {
-  const userId = user._id;
+/**
+*  Creates a new achievement for the user
+ * @param userId
+ * @throws Error if user not found
+ */
+export async function refreshAchievements(userId: Types.ObjectId, categories: AchievementCategory[]) {
   // it is more efficient to just grab all their achievements then to loop through and query each one if they have it
-  const [levelsCompletedByDifficulty, allAchievements] = await Promise.all([
-    getCompletionByDifficultyTable(userId, options),
+  const [user, levelsCompletedByDifficulty, allAchievements] = await Promise.all([
+    UserModel.findById<User>(userId, { score: 1, }, { lean: true }),
+    getCompletionByDifficultyTable(userId),
     AchievementModel.find<Achievement>({ userId: userId }, { type: 1, }, { lean: true }),
   ]);
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+
   const rollingLevelCompletionSum = getDifficultyRollingSum(levelsCompletedByDifficulty);
 
-  for (const achievementType in AchievementRulesTable) {
-    const achievementInfo = AchievementRulesTable[achievementType];
+  for (const category of categories) {
+    const categoryRulesTable = AchievementCategoryMapping[category];
 
-    // check if the user already has the achievement and if so skip it (note we already have a unique index on userId and type)
-    if (allAchievements.some(a => a.type === achievementType)) {
-      continue;
-    }
+    for (const achievementType in categoryRulesTable) {
+      const achievementInfo = categoryRulesTable[achievementType];
 
-    if (achievementInfo.exactlyUnlocked({ user: user, rollingLevelCompletionSum: rollingLevelCompletionSum })) {
-      await createNewAchievement(achievementType as AchievementType, userId, options);
+      // check if the user already has the achievement and if so skip it (note we already have a unique index on userId and type)
+      if (allAchievements.some(a => a.type === achievementType)) {
+        continue;
+      }
+
+      // TODO: maybe there is a more proper way to do this so i can remove the as any...
+      if (achievementInfo.unlocked({ user: user, rollingLevelCompletionSum: rollingLevelCompletionSum } as any)) {
+        await createNewAchievement(achievementType as AchievementType, userId);
+      }
     }
   }
 }
@@ -161,11 +176,7 @@ export default withAuth({
         if (!stat?.complete) {
           await Promise.all([
             UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }, { session: session }),
-            // create anonymous function that increments score in memory and issues achievements for it... it's more performant and they are the same transaction so it should be fine...
-            (async () => {
-              req.user.score += 1;
-              issueAchievements(req.user, { session: session });
-            })(),
+            queueRefreshAchievements(req.user._id, [AchievementCategory.LEVEL_COMPLETION, AchievementCategory.USER], { session: session })
           ]);
         }
 

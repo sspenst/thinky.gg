@@ -1,3 +1,4 @@
+import { AchievementCategory } from '@root/constants/achievementInfo';
 import UserConfig from '@root/models/db/userConfig';
 import mongoose, { QueryOptions, Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
@@ -11,6 +12,7 @@ import { NotificationModel, QueueMessageModel, UserConfigModel } from '../../../
 import { calcPlayAttempts, refreshIndexCalcs } from '../../../../models/schemas/levelSchema';
 import { QueueMessageState, QueueMessageType } from '../../../../models/schemas/queueMessageSchema';
 import { calcCreatorCounts, USER_DEFAULT_PROJECTION } from '../../../../models/schemas/userSchema';
+import { refreshAchievements } from '../../stats';
 import { sendEmailNotification } from './sendEmailNotification';
 import { sendPushNotification } from './sendPushNotification';
 
@@ -57,6 +59,15 @@ export async function queuePushNotification(notificationId: Types.ObjectId, opti
       options,
     )
   ]);
+}
+
+export async function queueRefreshAchievements(userId: Types.ObjectId, categories: AchievementCategory[], options?: QueryOptions) {
+  await queue(
+    userId.toString() + '-refresh-achievements-' + new Types.ObjectId().toString(),
+    QueueMessageType.REFRESH_ACHIEVEMENTS,
+    JSON.stringify({ userId: userId.toString() }),
+    options,
+  );
 }
 
 export async function queueFetch(url: string, options: RequestInit, dedupeKey?: string, queryOptions?: QueryOptions) {
@@ -187,6 +198,20 @@ async function processQueueMessage(queueMessage: QueueMessage) {
 
     log = `calcCreatorCounts for ${userId}`;
     await calcCreatorCounts(new Types.ObjectId(userId));
+  } else if (queueMessage.type === QueueMessageType.REFRESH_ACHIEVEMENTS) {
+    const { userId, categories } = JSON.parse(queueMessage.message) as { userId: string, categories: AchievementCategory[] };
+
+    log = `refreshAchievements for ${userId}`;
+
+    try {
+      await refreshAchievements(new Types.ObjectId(userId), categories);
+    } catch (e: any) {
+      log = `refreshAchievements for ${userId} failed: ${e.message}`;
+      error = true;
+    }
+  } else {
+    log = `Unknown queue message type ${queueMessage.type}`;
+    error = true;
   }
 
   /////

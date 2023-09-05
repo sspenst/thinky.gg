@@ -1,3 +1,4 @@
+import { AchievementCategory } from '@root/constants/achievementInfo';
 import TileType from '@root/constants/tileType';
 import isFullAccount from '@root/helpers/isFullAccount';
 import mongoose, { Types } from 'mongoose';
@@ -13,8 +14,7 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import User from '../../../models/db/user';
 import { LevelModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
-import { queueCalcCreatorCounts, queueCalcPlayAttempts, queueRefreshIndexCalcs } from '../internal-jobs/worker';
-import { issueAchievements } from '../stats';
+import { queueCalcCreatorCounts, queueCalcPlayAttempts, queueRefreshAchievements, queueRefreshIndexCalcs } from '../internal-jobs/worker';
 
 export async function checkPublishRestrictions(userId: Types.ObjectId) {
   // check last 24h
@@ -156,10 +156,7 @@ export default withAuth({ POST: {
           ts: ts,
           userId: new Types.ObjectId(req.userId),
         }], { session: session }),
-        (async () => {
-          req.user.score += 1;
-          issueAchievements(req.user, { session: session });
-        })(),
+
       ]);
 
       if (!updatedLevel) {
@@ -167,6 +164,7 @@ export default withAuth({ POST: {
       }
 
       await Promise.all([
+        queueRefreshAchievements(req.user._id, [AchievementCategory.CREATOR], { session: session }),
         queueRefreshIndexCalcs(level._id, { session: session }),
         queueCalcPlayAttempts(level._id, { session: session }),
         queueCalcCreatorCounts(req.user._id, { session: session }),
