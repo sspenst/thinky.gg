@@ -250,7 +250,7 @@ export const AchievementRulesTableLevelCompletion: {[achievementType: string]: I
     description: 'Completed 7 levels on Grandmaster difficulty',
 
     unlocked: ({ rollingLevelCompletionSum }) => {
-      return rollingLevelCompletionSum[DIFFICULTY_NAMES.GRANDMASTER] + rollingLevelCompletionSum[DIFFICULTY_NAMES.SUPER_GRANDMASTER] >= 7;
+      return rollingLevelCompletionSum[DIFFICULTY_NAMES.GRANDMASTER] >= 7;
     },
   },
   [AchievementType.PLAYER_RANK_SUPER_GRANDMASTER]: {
