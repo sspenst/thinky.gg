@@ -28,8 +28,6 @@ export async function issueAchievements(user: User, score: number, options: Save
   const levelsCompletedByDifficulty = await getCompletionByDifficultyTable(userId, options);
   const rollingLevelCompletionSum = getDifficultyRollingSum(levelsCompletedByDifficulty);
 
-  console.log('Issuing achievements', { userId, score, rollingLevelCompletionSum });
-
   for (const achievementType in AchievementScoreInfo) {
     const achievementInfo = AchievementScoreInfo[achievementType];
 
@@ -151,9 +149,14 @@ export default withAuth({
 
         // if the level was previously incomplete, increment score
         if (!stat?.complete) {
-          // TODO: can these be in a Promise.all?
-          await UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }, { session: session });
-          await issueAchievements(req.user, req.user.score + 1, { session: session });
+          await Promise.all([
+            UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }, { session: session }),
+            // create anonymous function that increments score in memory and issues achievements for it... it's more performant and they are the same transaction so it should be fine...
+            (async () => {
+              req.user.score += 1;
+              issueAchievements(req.user, req.user.score + 1, { session: session });
+            })(),
+          ]);
         }
 
         const newRecord = moves < level.leastMoves;
