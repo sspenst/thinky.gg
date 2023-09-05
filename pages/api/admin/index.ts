@@ -2,6 +2,7 @@ import { AchievementCategory } from '@root/constants/achievementInfo';
 import Role from '@root/constants/role';
 import { ValidEnum, ValidObjectId } from '@root/helpers/apiWrapper';
 import withAuth, { NextApiRequestWithAuth } from '@root/lib/withAuth';
+import { AchievementModel } from '@root/models/mongoose';
 import { calcPlayAttempts, refreshIndexCalcs } from '@root/models/schemas/levelSchema';
 import { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
@@ -29,6 +30,8 @@ export default withAuth({ POST: {
   try {
     switch (command) {
     case AdminCommand.refreshAchievements:
+      //clear achievements first to make this idempotent
+      await AchievementModel.deleteMany({ userId: targetId });
       await refreshAchievements(new Types.ObjectId(targetId as string), Object.values(AchievementCategory));
       break;
     case AdminCommand.refreshIndexCalcs:
