@@ -1,4 +1,4 @@
-import { Combobox, Menu } from '@headlessui/react';
+import { Menu } from '@headlessui/react';
 import FormattedUser from '@root/components/formatted/formattedUser';
 import MultiSelectUser from '@root/components/page/multiSelectUser';
 import Page from '@root/components/page/page';
@@ -7,7 +7,6 @@ import dbConnect from '@root/lib/dbConnect';
 import { getUserFromToken } from '@root/lib/withAuth';
 import User from '@root/models/db/user';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
-import { set } from 'nprogress';
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 
@@ -37,11 +36,9 @@ export default function AdminPage() {
     <Page title='Admin Page'>
       <div className='p-2'>
         <h1 className='flex flex-col items-center justify-center  text-2xl'>Admin Page</h1>
-
         <div className='flex flex-row items-center justify-center p-2 gap-2'>
           <p className='text-xl'>Run command on user:</p>
           <MultiSelectUser defaultValue={selectedUser} onSelect={(selected: User) => setSelectedUser(selected)} />
-
           <Menu as='div' className='relative inline-block text-left'>
             <div>
               <Menu.Button className='border border-gray-300 bg-gray rounded-md shadow-sm px-4 py-2 text-sm flex flex-row items-center justify-center gap-2'>
@@ -55,7 +52,7 @@ export default function AdminPage() {
                     onClick={() => setSelectedCommand('refreshAchievements')}
                     className={`${active ? 'bg-blue-600 text-white' : 'text-gray-900'} block px-4 py-2 text-sm`}
                   >
-                  refreshAchievements
+                    refreshAchievements
                   </a>
                 )}
               </Menu.Item>
@@ -65,13 +62,12 @@ export default function AdminPage() {
                     onClick={() => setSelectedCommand('calcPlayAttempts')}
                     className={`${active ? 'bg-blue-600 text-white' : 'text-gray-900'} block px-4 py-2 text-sm`}
                   >
-                  refreshPlayAttempts
+                    refreshPlayAttempts
                   </a>
                 )}
               </Menu.Item>
             </Menu.Items>
           </Menu>
-
           <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
             disabled={runningCommand}
             onClick={async () => {
@@ -100,14 +96,13 @@ export default function AdminPage() {
               }
             }}
           >
-          Run
+            Run
           </button>
         </div>
         <div className='flex flex-row items-center justify-center p-2 gap-2'>
-          { selectedUser && <FormattedUser user={selectedUser} />}
+          {selectedUser && <FormattedUser user={selectedUser} />}
         </div>
       </div>
-
     </Page>
   );
 }
