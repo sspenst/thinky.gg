@@ -27,7 +27,7 @@ export default function FormattedDate({ className, date, style, ts }: FormattedD
 
   return (<>
     <span
-      className={classNames('text-sm whitespace-nowrap', className)}
+      className={classNames('text-sm whitespace-nowrap truncate', className)}
       data-tooltip-content={date.toUTCString()}
       data-tooltip-id={`date-${ts}`}
       style={{
