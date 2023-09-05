@@ -1,67 +1,51 @@
 import { DIFFICULTY_NAMES, DIFFICULTY_PRETTY_NAMES, getDifficultyList } from '@root/components/formatted/formattedDifficulty';
+import AchievementRulesTable from '@root/constants/achievementInfo';
+import AchievementType from '@root/constants/achievementType';
+import User from '@root/models/db/user';
 
 // TODO: reconcile with AchievementScoreInfo
 const difficultyRequirements = [
   {
     name: DIFFICULTY_PRETTY_NAMES[DIFFICULTY_NAMES.SUPER_GRANDMASTER],
-    requirement: (rollingLevelCompletionSum: number[] ) => {
-      return rollingLevelCompletionSum[DIFFICULTY_NAMES.SUPER_GRANDMASTER] >= 7;
-    },
+    requirement: AchievementRulesTable[AchievementType.PLAYER_RANK_SUPER_GRANDMASTER].unlocked,
   },
   {
     name: DIFFICULTY_PRETTY_NAMES[DIFFICULTY_NAMES.GRANDMASTER],
-    requirement: (rollingLevelCompletionSum: number[] ) => {
-      return rollingLevelCompletionSum[DIFFICULTY_NAMES.GRANDMASTER] + rollingLevelCompletionSum[DIFFICULTY_NAMES.SUPER_GRANDMASTER] >= 7;
-    },
+    requirement: AchievementRulesTable[AchievementType.PLAYER_RANK_GRANDMASTER].unlocked,
   },
   {
     name: DIFFICULTY_PRETTY_NAMES[DIFFICULTY_NAMES.PROFESSOR],
-    requirement: (rollingLevelCompletionSum: number[] ) => {
-      return rollingLevelCompletionSum[DIFFICULTY_NAMES.PROFESSOR] >= 10;
-    },
+    requirement: AchievementRulesTable[AchievementType.PLAYER_RANK_PROFESSOR].unlocked,
   },
   {
     name: DIFFICULTY_PRETTY_NAMES[DIFFICULTY_NAMES.PHD],
-    requirement: (rollingLevelCompletionSum: number[] ) => {
-      return rollingLevelCompletionSum[DIFFICULTY_NAMES.PHD] >= 10;
-    },
+    requirement: AchievementRulesTable[AchievementType.PLAYER_RANK_PHD].unlocked,
   },
   {
     name: DIFFICULTY_PRETTY_NAMES[DIFFICULTY_NAMES.MASTERS],
-    requirement: (rollingLevelCompletionSum: number[] ) => {
-      return rollingLevelCompletionSum[DIFFICULTY_NAMES.MASTERS] >= 10;
-    },
+    requirement: AchievementRulesTable[AchievementType.PLAYER_RANK_MASTERS].unlocked,
   },
   {
     name: DIFFICULTY_PRETTY_NAMES[DIFFICULTY_NAMES.BACHELORS],
-    requirement: (rollingLevelCompletionSum: number[] ) => {
-      return rollingLevelCompletionSum[DIFFICULTY_NAMES.BACHELORS] >= 25;
-    },
+    requirement: AchievementRulesTable[AchievementType.PLAYER_RANK_BACHELORS].unlocked,
   },
   {
     name: DIFFICULTY_PRETTY_NAMES[DIFFICULTY_NAMES.HIGH_SCHOOL],
-    requirement: (rollingLevelCompletionSum: number[] ) => {
-      return rollingLevelCompletionSum[DIFFICULTY_NAMES.HIGH_SCHOOL] >= 25;
-    },
+    requirement: AchievementRulesTable[AchievementType.PLAYER_RANK_HIGH_SCHOOL].unlocked,
   },
   {
     name: DIFFICULTY_PRETTY_NAMES[DIFFICULTY_NAMES.JUNIOR_HIGH],
-    requirement: (rollingLevelCompletionSum: number[] ) => {
-      return rollingLevelCompletionSum[DIFFICULTY_NAMES.JUNIOR_HIGH] >= 25;
-    },
+    requirement: AchievementRulesTable[AchievementType.PLAYER_RANK_JUNIOR_HIGH].unlocked,
   },
   {
     name: DIFFICULTY_PRETTY_NAMES[DIFFICULTY_NAMES.ELEMENTARY],
-    requirement: (rollingLevelCompletionSum: number[] ) => {
-      return rollingLevelCompletionSum[DIFFICULTY_NAMES.ELEMENTARY] >= 25;
-    },
+    requirement: AchievementRulesTable[AchievementType.PLAYER_RANK_ELEMENTARY].unlocked,
   },
   {
     name: DIFFICULTY_PRETTY_NAMES[DIFFICULTY_NAMES.KINDERGARTEN],
-    requirement: (rollingLevelCompletionSum: number[] ) => {
-      return rollingLevelCompletionSum[DIFFICULTY_NAMES.KINDERGARTEN] >= 25;
-    },
-  }
+    requirement: AchievementRulesTable[AchievementType.PLAYER_RANK_KINDERGARTEN].unlocked,
+  },
+
 ];
 
 export function getDifficultyRollingSum(levelsCompletedByDifficulty: { [key: string]: number }): number[] {
@@ -78,10 +62,11 @@ export function getDifficultyRollingSum(levelsCompletedByDifficulty: { [key: str
   return rollingSum;
 }
 
-export function getPlayerRank(levelsCompletedByDifficulty: { [key: string]: number }): string {
+export function getPlayerRank(user: User, levelsCompletedByDifficulty: { [key: string]: number }): string {
   // rolling sum should add up all from previous keys into current key
   const rollingSum = getDifficultyRollingSum(levelsCompletedByDifficulty);
-  const val = difficultyRequirements.find((difficultyRequirement) => difficultyRequirement.requirement(rollingSum))?.name || 'No rank';
+
+  const val = difficultyRequirements.find((difficultyRequirement) => difficultyRequirement.requirement({ user: user, rollingLevelCompletionSum: rollingSum }))?.name || 'No rank';
 
   return val;
 }

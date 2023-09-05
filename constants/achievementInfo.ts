@@ -15,7 +15,7 @@ export interface IAchievementInfo {
   unlocked: (features: IAchievementInfoFeatures) => boolean;
 }
 
-const AchievementScoreInfo: {[achievementType: string]: IAchievementInfo} = {
+const AchievementRulesTable: {[achievementType: string]: IAchievementInfo} = {
   [AchievementType.PLAYER_RANK_KINDERGARTEN]: {
     name: 'Kindergarten',
     emoji: getDifficultyFromValue(DIFFICULTY_NAMES.KINDERGARTEN).emoji,
@@ -214,4 +214,4 @@ const AchievementScoreInfo: {[achievementType: string]: IAchievementInfo} = {
   },
 };
 
-export default AchievementScoreInfo;
+export default AchievementRulesTable;

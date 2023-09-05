@@ -2,7 +2,7 @@
 // import dotenv
 // import tsconfig-paths
 
-import AchievementScoreInfo from '@root/constants/achievementInfo';
+import AchievementRulesTable from '@root/constants/achievementInfo';
 import Achievement from '@root/models/db/achievement';
 import PlayAttempt from '@root/models/db/playAttempt';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
@@ -173,7 +173,7 @@ async function integrityCheckAcheivements() {
 
   console.log(achievements.length);
 
-  for (const achievementType in AchievementScoreInfo) {
+  for (const achievementType in AchievementRulesTable) {
     console.log(achievementType);
     /* TODO: fix this to work again
     const achievementInfo = AchievementScoreInfo[achievementType];
