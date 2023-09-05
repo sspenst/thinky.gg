@@ -213,11 +213,9 @@ export default withAuth({
                 { _id: { $in: statUserIds } },
                 { $inc: { score: -1 } },
                 { session: session },
-              )
+              ),
+              createNewRecordOnALevelYouBeatNotifications(statUserIds, req.userId, level._id, moves.toString(), { session: session })
             ]);
-
-            // create a notification for each user
-            await createNewRecordOnALevelYouBeatNotifications(statUserIds, req.userId, level._id, moves.toString(), { session: session });
           }
 
           // keep track of all playtime after the record was set
