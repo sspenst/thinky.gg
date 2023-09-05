@@ -65,7 +65,7 @@ export async function queueRefreshAchievements(userId: Types.ObjectId, categorie
   await queue(
     userId.toString() + '-refresh-achievements-' + new Types.ObjectId().toString(),
     QueueMessageType.REFRESH_ACHIEVEMENTS,
-    JSON.stringify({ userId: userId.toString() }),
+    JSON.stringify({ userId: userId.toString(), categories: categories }),
     options,
   );
 }

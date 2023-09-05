@@ -1,3 +1,4 @@
+import AchievementType from '@root/constants/achievementType';
 import Direction from '@root/constants/direction';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types, UpdateQuery } from 'mongoose';
@@ -9,7 +10,7 @@ import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Level from '../../../../models/db/level';
-import { LevelModel, QueueMessageModel } from '../../../../models/mongoose';
+import { AchievementModel, LevelModel, QueueMessageModel } from '../../../../models/mongoose';
 import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
 import editLevelHandler from '../../../../pages/api/edit/[id]';
 import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
@@ -615,6 +616,16 @@ describe('Editing levels should work correctly', () => {
         const response = await res.json();
 
         await processQueueMessages();
+        // check queue messages for the achievement message
+
+        // check to see if we earned an achievement
+        const achievements = await AchievementModel.find({ userId: new Types.ObjectId(TestId.USER) });
+
+        // note we should have two achievements, 7 levels were created by TestId.USER so that means they earn the first created and fifth created badge
+        expect(achievements.length).toBe(2);
+        expect(achievements[0].type).toBe(AchievementType.CREATOR_CREATED_1_LEVEL);
+        expect(achievements[1].type).toBe(AchievementType.CREATOR_CREATED_5_LEVELS);
+
         expect(response.error).toBeUndefined();
         expect(response._id).toBe(level_id_1);
 
