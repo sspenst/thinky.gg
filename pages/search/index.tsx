@@ -117,21 +117,19 @@ interface SearchProps {
 
 /* istanbul ignore next */
 export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQuery, totalRows }: SearchProps) {
-  const [data, setData] = useState<EnrichedLevel[]>([]);
+  const [data, setData] = useState<EnrichedLevel[]>(enrichedLevels);
   const [loading, setLoading] = useState(false);
-  const [paginationTotalRows, setPaginationTotalRows] = useState(totalRows);
   const [query, setQuery] = useState(searchQuery);
   const router = useRouter();
-  const [searchAuthorUser, setSearchAuthorUser] = useState(searchAuthor);
 
   useEffect(() => {
     setData(enrichedLevels);
     setLoading(false);
-  }, [enrichedLevels, setLoading]);
+  }, [enrichedLevels]);
 
-  // useEffect(() => {
-  //   setQuery(searchQuery);
-  // }, [searchQuery]);
+  useEffect(() => {
+    setQuery(searchQuery);
+  }, [searchQuery]);
 
   const fetchLevels = useCallback((query: SearchQuery) => {
     nProgress.start();
@@ -147,39 +145,10 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       }
     }
 
-    console.log(q);
-
-    const queryParams = new URLSearchParams(query as Record<string, string>);
-
-    fetch(`/api/search?${queryParams}`, {
-      method: 'GET',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }).then(async res => {
-      if (res.status !== 200) {
-        throw res.text();
-      }
-
-      const response = await res.json();
-
-      setData(response.levels);
-      setSearchAuthorUser(response.serachAuthor);
-      setPaginationTotalRows(response.totalRows);
-    }).catch(async err => {
-      const error = JSON.parse(await err)?.error;
-
-      console.error(`Error updating stats: ${error}`);
-      // TODO: set something here
-    }).finally(() => {
-      // NProgress.done();
-      router.push({ query: q }, undefined, { shallow: true });
-      setLoading(false);
+    router.push({
+      query: q,
     });
-
-    // router.push({ query: q });
-  }, [setLoading]);
+  }, [router]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const queryDebounce = useCallback(
@@ -199,8 +168,6 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       const newQ = {
         ...q,
         ...update,
-        // setting page here causes immediate page query
-        // page: '1',
       } as SearchQuery;
 
       queryDebounce(newQ);
@@ -209,7 +176,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
     });
   }, [loading, queryDebounce]);
 
-  const columns2 = [
+  const columns = [
     {
       id: 'userId',
       name: 'Author',
@@ -368,7 +335,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
           />
         </div>
         <div>
-          <MultiSelectUser key='search-author-input' defaultValue={searchAuthorUser} onSelect={(user) => {
+          <MultiSelectUser key='search-author-input' defaultValue={searchAuthor} onSelect={(user) => {
             queryDebounceHelper({
               searchAuthor: user?.name || '',
             });
@@ -692,7 +659,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       <>
         {subHeaderComponent}
         <DataTable
-          columns={columns2}
+          columns={columns}
           data={data}
           itemsPerPage={20}
           noDataComponent={
@@ -716,7 +683,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
             const update = {
               sortBy: columnId,
               // default to most useful sort direction
-              sortDir: columnId === 'playersBeaten' || columnId === 'reviewScore' ? 'desc' : 'asc',
+              sortDir: columnId === 'leastMoves' || columnId === 'playersBeaten' || columnId === 'reviewScore' ? 'desc' : 'asc',
             } as Partial<SearchQuery>;
 
             if (columnId === query.sortBy) {
@@ -732,7 +699,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
           page={Number(query.page ?? '1')}
           sortBy={query.sortBy}
           sortDir={query.sortDir}
-          totalItems={paginationTotalRows}
+          totalItems={totalRows}
         />
       </>
     </Page>
