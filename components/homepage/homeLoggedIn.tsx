@@ -1,10 +1,10 @@
 import PagePath from '@root/constants/pagePath';
 import isGuest from '@root/helpers/isGuest';
-import WidgetBot from '@widgetbot/react-embed';
 import classNames from 'classnames';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useState } from 'react';
+import Dimensions from '../../constants/dimensions';
 import Theme from '../../constants/theme';
 import TimeRange from '../../constants/timeRange';
 import { AppContext } from '../../contexts/appContext';
@@ -21,6 +21,7 @@ import OnlineUsers from '../multiplayer/onlineUsers';
 import LoadingSpinner from '../page/loadingSpinner';
 import MultiSelectUser from '../page/multiSelectUser';
 import RoleIcons from '../page/roleIcons';
+import ProfileAvatar from '../profile/profileAvatar';
 import RecommendedLevel from './recommendedLevel';
 
 interface HomeLoggedInProps {
@@ -53,21 +54,6 @@ export default function HomeLoggedIn({
       'bg-green-100 hover:bg-gray-50 border-gray-300 text-gray-700' :
       'bg-gray-800 hover:bg-slate-600 border-gray-700 text-gray-300'
   );
-  const announcementWidget = useRef<JSX.Element | null>(null);
-
-  useEffect(() => {
-    announcementWidget.current = (
-      <WidgetBot
-        channel='977518583921913867'
-        server='971585343956590623'
-        style={{
-          height: '250px',
-          width: '500px',
-          // unfortunately can't customize much without paying for widgetbot upgrade
-        }}
-      />
-    );
-  }, []);
 
   const tour = useTour(PagePath.HOME);
 
@@ -91,6 +77,12 @@ export default function HomeLoggedIn({
         <OnlineUsers />
       </div>
       <div className='flex justify-center items-center flex-wrap gap-6'>
+        <div className='flex flex-col gap-2'>
+          <Link href={getProfileSlug(user)} passHref>
+            <ProfileAvatar hideStatusCircle={true} size={Dimensions.AvatarSizeLarge} user={user} />
+          </Link>
+          <span className='flex justify-center font-bold'>{user.score}</span>
+        </div>
         <div className='flex flex-col gap-2'>
           <Link id='playBtn'
             className='inline-block px-3 py-1.5 border-4 border-neutral-400 bg-white text-black font-bold text-3xl leading-snug rounded-xl hover:ring-4 hover:bg-blue-500 hover:text-white ring-blue-500/50 focus:ring-0 text-center'
@@ -122,9 +114,6 @@ export default function HomeLoggedIn({
               <path d='M.102 2.223A3.004 3.004 0 0 0 3.78 5.897l6.341 6.252A3.003 3.003 0 0 0 13 16a3 3 0 1 0-.851-5.878L5.897 3.781A3.004 3.004 0 0 0 2.223.1l2.141 2.142L4 4l-1.757.364L.102 2.223zm13.37 9.019.528.026.287.445.445.287.026.529L15 13l-.242.471-.026.529-.445.287-.287.445-.529.026L13 15l-.471-.242-.529-.026-.287-.445-.445-.287-.026-.529L11 13l.242-.471.026-.529.445-.287.287-.445.529-.026L13 11l.471.242z' />
             </svg>Create
           </Link>
-        </div>
-        <div className='hidden md:block'>
-          {announcementWidget.current}
         </div>
       </div>
     </div>
@@ -298,6 +287,7 @@ export default function HomeLoggedIn({
           }) : <div className='flex justify-center p-4'><LoadingSpinner /></div>}
         </div>
       </div>
+      <iframe id='discordSection' className='p-4' src='https://discord.com/widget?id=971585343956590623&theme=dark' width='640' height='640' sandbox='allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts' />
     </div>
   </>);
 }
