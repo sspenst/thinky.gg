@@ -115,7 +115,7 @@ const sortProperties = [
   {
     sortBy: 'ts',
     property: 'ts',
-    isInverted: true,
+    isInverted: false,
   },
   {
     sortBy: 'reviewScore',
