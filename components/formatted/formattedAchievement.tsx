@@ -8,8 +8,6 @@ interface FormattedAchievementProps {
 }
 
 export default function FormattedAchievement({ achievement }: FormattedAchievementProps) {
-  // merge all the achievement rules into one object
-
   return (
     <div className='flex flex-col justify-center text-center' style={{
       borderColor: 'var(--bg-color-4)',

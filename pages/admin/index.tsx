@@ -1,4 +1,5 @@
 import { Combobox, Menu } from '@headlessui/react';
+import FormattedUser from '@root/components/formatted/formattedUser';
 import MultiSelectUser from '@root/components/page/multiSelectUser';
 import Page from '@root/components/page/page';
 import Role from '@root/constants/role';
@@ -6,6 +7,7 @@ import dbConnect from '@root/lib/dbConnect';
 import { getUserFromToken } from '@root/lib/withAuth';
 import User from '@root/models/db/user';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
+import { set } from 'nprogress';
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 
@@ -29,6 +31,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 export default function AdminPage() {
   const [selectedCommand, setSelectedCommand] = useState('Select Command');
   const [selectedUser, setSelectedUser] = useState<User>();
+  const [runningCommand, setRunningCommand] = useState(false);
 
   return (
     <Page title='Admin Page'>
@@ -70,7 +73,9 @@ export default function AdminPage() {
           </Menu>
 
           <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
+            disabled={runningCommand}
             onClick={async () => {
+              setRunningCommand(true);
               toast.dismiss();
               toast.loading('Running command...');
               const resp = await fetch('/api/admin', {
@@ -84,6 +89,8 @@ export default function AdminPage() {
                   targetId: selectedUser?._id
                 }),
               });
+
+              setRunningCommand(false);
               const json = await resp.json();
 
               if (json.error) {
@@ -96,7 +103,9 @@ export default function AdminPage() {
           Run
           </button>
         </div>
-
+        <div className='flex flex-row items-center justify-center p-2 gap-2'>
+          { selectedUser && <FormattedUser user={selectedUser} />}
+        </div>
       </div>
 
     </Page>
