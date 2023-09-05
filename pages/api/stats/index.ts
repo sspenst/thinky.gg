@@ -27,7 +27,7 @@ import { matchMarkCompleteLevel } from '../match/[matchId]';
 /**
 *  Creates a new achievement for the user
  * @param userId
- * @throws Error if user not found
+ * @return null if user not found
  */
 export async function refreshAchievements(userId: Types.ObjectId, categories: AchievementCategory[]) {
   // it is more efficient to just grab all their achievements then to loop through and query each one if they have it
@@ -49,10 +49,11 @@ export async function refreshAchievements(userId: Types.ObjectId, categories: Ac
   ]);
 
   if (!user) {
-    throw new Error('User not found');
+    return null;
   }
 
   const rollingLevelCompletionSum = getDifficultyRollingSum(levelsCompletedByDifficulty);
+  const achievementsCreated = [];
 
   for (const category of categories) {
     const categoryRulesTable = AchievementCategoryMapping[category];
@@ -67,10 +68,12 @@ export async function refreshAchievements(userId: Types.ObjectId, categories: Ac
 
       // TODO: maybe there is a more proper way to do this so i can remove the as any...
       if (achievementInfo.unlocked({ user: user, rollingLevelCompletionSum: rollingLevelCompletionSum, levelsCreated: userCreatedLevels } as any)) {
-        await createNewAchievement(achievementType as AchievementType, userId);
+        achievementsCreated.push(await createNewAchievement(achievementType as AchievementType, userId));
       }
     }
   }
+
+  return achievementsCreated;
 }
 
 export default withAuth({
