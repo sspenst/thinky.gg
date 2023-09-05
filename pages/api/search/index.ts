@@ -199,7 +199,7 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
     } else if (query.sortBy === 'leastMoves') {
       sortObj.push(['leastMoves', sortDirection]);
     } else if (query.sortBy === 'ts') {
-      sortObj.push(['ts', sortDirection * -1]);
+      sortObj.push(['ts', sortDirection]);
     } else if (query.sortBy === 'reviewScore') {
       sortObj.push(['calc_reviews_score_laplace', sortDirection], ['calc_reviews_score_avg', sortDirection], ['calc_reviews_count', sortDirection]);
 
