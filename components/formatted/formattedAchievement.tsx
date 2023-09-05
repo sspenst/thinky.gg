@@ -1,5 +1,5 @@
 import React from 'react';
-import AchievementScoreInfo from '../../constants/achievementInfo';
+import AchievementRulesTable from '../../constants/achievementInfo';
 import Achievement from '../../models/db/achievement';
 import FormattedDate from './formattedDate';
 
@@ -12,11 +12,11 @@ export default function FormattedAchievement({ achievement }: FormattedAchieveme
     <div className='flex flex-col justify-center text-center' style={{
       borderColor: 'var(--bg-color-4)',
     }}>
-      <span className='text-4xl'>{AchievementScoreInfo[achievement.type].emoji}</span>
+      <span className='text-4xl'>{AchievementRulesTable[achievement.type].emoji}</span>
       <div className='flex flex-col justify-center items-center'>
-        <span className='font-bold text-lg'>{AchievementScoreInfo[achievement.type].name}</span>
+        <span className='font-bold text-lg'>{AchievementRulesTable[achievement.type].name}</span>
 
-        <span className='text-sm'>{AchievementScoreInfo[achievement.type].description}</span>
+        <span className='text-sm'>{AchievementRulesTable[achievement.type].description}</span>
       </div>
       <FormattedDate date={achievement.createdAt} />
     </div>

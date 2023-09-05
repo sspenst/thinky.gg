@@ -27,7 +27,7 @@ import Page from '../../../../components/page/page';
 import FollowingList from '../../../../components/profile/followingList';
 import ProfileAvatar from '../../../../components/profile/profileAvatar';
 import ProfileInsights from '../../../../components/profile/profileInsights';
-import AchievementScoreInfo from '../../../../constants/achievementInfo';
+import AchievementRulesTable from '../../../../constants/achievementInfo';
 import Dimensions from '../../../../constants/dimensions';
 import GraphType from '../../../../constants/graphType';
 import TimeRange from '../../../../constants/timeRange';
@@ -359,7 +359,7 @@ export default function ProfilePage({
     });
   };
 
-  const playerRank = getPlayerRank(levelsCompletedByDifficulty);
+  const playerRank = getPlayerRank(user, levelsCompletedByDifficulty);
 
   // create an array of objects with the id, trigger element (eg. button), and the content element
   const tabsContent = {
@@ -601,7 +601,7 @@ export default function ProfilePage({
     ],
     [ProfileTab.Achievements]: (
       <div className='flex flex-wrap justify-center gap-8'>
-        {Object.keys(AchievementScoreInfo).map(achievementType => {
+        {Object.keys(AchievementRulesTable).map(achievementType => {
           const achievement = achievements.find(achievement => achievement.type === achievementType);
 
           if (!achievement) {

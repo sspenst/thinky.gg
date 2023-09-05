@@ -1,4 +1,4 @@
-import AchievementScoreInfo from '@root/constants/achievementInfo';
+import AchievementRulesTable from '@root/constants/achievementInfo';
 import Direction from '@root/constants/direction';
 import { getCompletionByDifficultyTable } from '@root/helpers/getCompletionByDifficultyTable';
 import getDifficultyEstimate from '@root/helpers/getDifficultyEstimate';
@@ -33,8 +33,8 @@ export async function issueAchievements(user: User, options: SaveOptions) {
   ]);
   const rollingLevelCompletionSum = getDifficultyRollingSum(levelsCompletedByDifficulty);
 
-  for (const achievementType in AchievementScoreInfo) {
-    const achievementInfo = AchievementScoreInfo[achievementType];
+  for (const achievementType in AchievementRulesTable) {
+    const achievementInfo = AchievementRulesTable[achievementType];
 
     // check if the user already has the achievement and if so skip it (note we already have a unique index on userId and type)
     if (allAchievements.some(a => a.type === achievementType)) {
