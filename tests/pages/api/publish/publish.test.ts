@@ -42,6 +42,7 @@ describe('publishLevelHandler', () => {
       userId: new Types.ObjectId(TestId.USER),
       width: 6,
     });
+
     MockDate.set(Date.now() + 5000);
     const error = await checkPublishRestrictions(new Types.ObjectId(TestId.USER));
 
