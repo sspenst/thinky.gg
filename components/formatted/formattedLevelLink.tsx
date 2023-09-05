@@ -13,7 +13,7 @@ export default function FormattedLevelLink({ level, onClick }: EnrichedLevelLink
 
   return (
     <Link
-      className='flex items-center font-bold underline w-fit'
+      className='flex items-center font-bold underline w-fit max-w-full'
       href={`/level/${level.slug}`}
       onClick={onClick}
       passHref
