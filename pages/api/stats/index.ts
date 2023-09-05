@@ -53,7 +53,7 @@ export async function refreshAchievements(userId: Types.ObjectId, categories: Ac
   }
 
   const rollingLevelCompletionSum = getDifficultyRollingSum(levelsCompletedByDifficulty);
-  const achievementsCreated = [];
+  const achievementsCreatedPromises = [];
 
   for (const category of categories) {
     const categoryRulesTable = AchievementCategoryMapping[category];
@@ -68,12 +68,14 @@ export async function refreshAchievements(userId: Types.ObjectId, categories: Ac
 
       // TODO: maybe there is a more proper way to do this so i can remove the as any...
       if (achievementInfo.unlocked({ user: user, rollingLevelCompletionSum: rollingLevelCompletionSum, levelsCreated: userCreatedLevels } as any)) {
-        achievementsCreated.push(await createNewAchievement(achievementType as AchievementType, userId));
+        achievementsCreatedPromises.push(createNewAchievement(achievementType as AchievementType, userId));
       }
     }
   }
 
-  return achievementsCreated;
+  await Promise.all(achievementsCreatedPromises);
+
+  return achievementsCreatedPromises;
 }
 
 export default withAuth({
