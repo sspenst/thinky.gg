@@ -680,10 +680,12 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
             });
           }}
           onSort={(columnId: string) => {
+            const sortAsc = columnId === 'userId' || columnId === 'name' || columnId === 'calcDifficultyEstimate';
+
             const update = {
               sortBy: columnId,
               // default to most useful sort direction
-              sortDir: columnId === 'leastMoves' || columnId === 'playersBeaten' || columnId === 'reviewScore' ? 'desc' : 'asc',
+              sortDir: sortAsc ? 'asc' : 'desc',
             } as Partial<SearchQuery>;
 
             if (columnId === query.sortBy) {
