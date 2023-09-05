@@ -106,37 +106,65 @@ let testRuns = [
   }
 ];
 
-const sortByFields = [
-  ['leastMoves', 'leastMoves'],
-  ['ts', 'ts'],
-  ['reviewScore', 'calc_reviews_score_laplace'],
-  ['total_reviews', 'calc_reviews_count'],
-  ['playersBeaten', 'calc_stats_players_beaten'],
+const sortProperties = [
+  {
+    sortBy: 'leastMoves',
+    property: 'leastMoves',
+    isInverted: false,
+  },
+  {
+    sortBy: 'ts',
+    property: 'ts',
+    isInverted: true,
+  },
+  {
+    sortBy: 'reviewScore',
+    property: 'calc_reviews_score_laplace',
+    isInverted: false,
+  },
+  {
+    sortBy: 'total_reviews',
+    property: 'calc_reviews_count',
+    isInverted: false,
+  },
+  {
+    sortBy: 'playersBeaten',
+    property: 'calc_stats_players_beaten',
+    isInverted: false,
+  },
 ];
 
-for (let i = 0; i < sortByFields.length; i++) {
-  const field = sortByFields[i];
+for (let i = 0; i < sortProperties.length; i++) {
+  const sortObj = sortProperties[i];
 
   for (let page = 1; page < 4; page++) {
     testRuns.push({
-      query: '?sortBy=' + field[0] + '&page=' + page,
+      query: '?sortBy=' + sortObj.sortBy + '&page=' + page,
       test: async (response: any) => {
         expect(response.totalRows).toBe(28);
         expect(response.levels.length).toBe([20, 8, 0][page - 1]);
 
         for (let i = 1; i < response.levels.length; i++) {
-          expect(response.levels[i][field[1]]).toBeLessThanOrEqual(response.levels[i - 1][field[1]]);
+          if (sortObj.isInverted) {
+            expect(response.levels[i][sortObj.property]).toBeGreaterThanOrEqual(response.levels[i - 1][sortObj.property]);
+          } else {
+            expect(response.levels[i][sortObj.property]).toBeLessThanOrEqual(response.levels[i - 1][sortObj.property]);
+          }
         }
       }
     });
     testRuns.push({
-      query: '?sortBy=' + field[0] + '&sortDir=asc&page=' + page,
+      query: '?sortBy=' + sortObj.sortBy + '&sortDir=asc&page=' + page,
       test: async (response: any) => {
         expect(response.totalRows).toBe(28);
         expect(response.levels.length).toBe([20, 8, 0][page - 1]);
 
         for (let i = 1; i < response.levels.length; i++) {
-          expect(response.levels[i][field[1]]).toBeGreaterThanOrEqual(response.levels[i - 1][field[1]]);
+          if (sortObj.isInverted) {
+            expect(response.levels[i][sortObj.property]).toBeLessThanOrEqual(response.levels[i - 1][sortObj.property]);
+          } else {
+            expect(response.levels[i][sortObj.property]).toBeGreaterThanOrEqual(response.levels[i - 1][sortObj.property]);
+          }
         }
       }
     });

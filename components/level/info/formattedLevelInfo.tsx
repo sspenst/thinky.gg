@@ -13,7 +13,7 @@ import isCurator from '../../../helpers/isCurator';
 import { EnrichedLevel } from '../../../models/db/level';
 import SelectOptionStats from '../../../models/selectOptionStats';
 import formattedAuthorNote from '../../formatted/formattedAuthorNote';
-import { FormattedDifficulty } from '../../formatted/formattedDifficulty';
+import FormattedDifficulty from '../../formatted/formattedDifficulty';
 import FormattedUser from '../../formatted/formattedUser';
 import ArchiveLevelModal from '../../modal/archiveLevelModal';
 import EditLevelModal from '../../modal/editLevelModal';
@@ -47,7 +47,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
           <FormattedDate ts={level.ts} />
         </div>
         <div className='text-sm flex gap-2 items-center'>
-          {FormattedDifficulty(level.calc_difficulty_estimate, level._id.toString(), level.calc_playattempts_unique_users_count)}
+          <FormattedDifficulty difficultyEstimate={level.calc_difficulty_estimate} id={level._id.toString()} uniqueUsers={level.calc_playattempts_unique_users_count} />
           {!levelContext?.inCampaign &&
             <button
               className='italic underline'

@@ -16,7 +16,7 @@ import FollowButton from '../../../../components/buttons/followButton';
 import Select from '../../../../components/cards/select';
 import SelectFilter from '../../../../components/cards/selectFilter';
 import FormattedAchievement from '../../../../components/formatted/formattedAchievement';
-import { FormattedDifficulty, getDifficultyList } from '../../../../components/formatted/formattedDifficulty';
+import FormattedDifficulty, { getDifficultyList } from '../../../../components/formatted/formattedDifficulty';
 import FormattedReview from '../../../../components/formatted/formattedReview';
 import CommentWall from '../../../../components/level/reviews/commentWall';
 import AddCollectionModal from '../../../../components/modal/addCollectionModal';
@@ -468,7 +468,7 @@ export default function ProfilePage({
                       <div className='w-10 text-right mr-2'>
                         {levelsCompleted}
                       </div>
-                      {FormattedDifficulty(difficulty.value, difficulty.name)}
+                      <FormattedDifficulty difficultyEstimate={difficulty.value} id={difficulty.name} />
                     </div>
                   );
                 })}
