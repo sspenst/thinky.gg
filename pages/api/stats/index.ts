@@ -229,37 +229,35 @@ export default withAuth({
           }
 
           // keep track of all playtime after the record was set
-
-          const [sumDuration] = await Promise.all([
-            PlayAttemptModel.aggregate([
-              {
-                $match: {
-                  levelId: level._id,
-                  attemptContext: AttemptContext.BEATEN,
-                }
-              },
-              {
-                $group: {
-                  _id: null,
-                  sumDuration: {
-                    $sum: {
-                      $subtract: ['$endTime', '$startTime']
-                    }
+          const sumDuration = await PlayAttemptModel.aggregate([
+            {
+              $match: {
+                levelId: level._id,
+                attemptContext: AttemptContext.BEATEN,
+              }
+            },
+            {
+              $group: {
+                _id: null,
+                sumDuration: {
+                  $sum: {
+                    $subtract: ['$endTime', '$startTime']
                   }
                 }
               }
-            ], { session: session }),
-
-            // reset all playattempts to unbeaten
-            PlayAttemptModel.updateMany(
-              { levelId: level._id },
-              { $set: { attemptContext: AttemptContext.UNBEATEN } },
-              { session: session },
-            ),
-            queueDiscordWebhook(Discord.LevelsId, `**${req.user.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`, { session: session })
-          ]);
+            }
+          ], { session: session });
 
           incPlayattemptsDurationSum += sumDuration[0]?.sumDuration ?? 0;
+
+          // reset all playattempts to unbeaten
+          await Promise.all([PlayAttemptModel.updateMany(
+            { levelId: level._id },
+            { $set: { attemptContext: AttemptContext.UNBEATEN } },
+            { session: session },
+          ),
+          queueDiscordWebhook(Discord.LevelsId, `**${req.user.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`, { session: session })
+          ]);
         }
 
         // extend the user's recent playattempt up to current ts
