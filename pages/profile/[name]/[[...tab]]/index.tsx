@@ -1,6 +1,7 @@
 import FormattedDate from '@root/components/formatted/formattedDate';
 import RoleIcons from '@root/components/page/roleIcons';
 import ProfileMultiplayer from '@root/components/profile/profileMultiplayer';
+import { AchievementRulesCombined } from '@root/constants/achievementInfo';
 import { getCompletionByDifficultyTable } from '@root/helpers/getCompletionByDifficultyTable';
 import { getUsersWithMultiplayerProfile } from '@root/helpers/getUsersWithMultiplayerProfile';
 import { getPlayerRank } from '@root/helpers/playerRankHelper';
@@ -27,7 +28,6 @@ import Page from '../../../../components/page/page';
 import FollowingList from '../../../../components/profile/followingList';
 import ProfileAvatar from '../../../../components/profile/profileAvatar';
 import ProfileInsights from '../../../../components/profile/profileInsights';
-import AchievementRulesTable from '../../../../constants/achievementInfo';
 import Dimensions from '../../../../constants/dimensions';
 import GraphType from '../../../../constants/graphType';
 import TimeRange from '../../../../constants/timeRange';
@@ -601,7 +601,7 @@ export default function ProfilePage({
     ],
     [ProfileTab.Achievements]: (
       <div className='flex flex-wrap justify-center gap-8'>
-        {Object.keys(AchievementRulesTable).map(achievementType => {
+        {Object.keys(AchievementRulesCombined).map(achievementType => {
           const achievement = achievements.find(achievement => achievement.type === achievementType);
 
           if (!achievement) {

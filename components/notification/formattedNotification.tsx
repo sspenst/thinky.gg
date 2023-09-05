@@ -1,9 +1,9 @@
+import { AchievementRulesCombined } from '@root/constants/achievementInfo';
 import Collection from '@root/models/db/collection';
 import classNames from 'classnames';
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
-import AchievementRulesTable from '../../constants/achievementInfo';
 import Dimensions from '../../constants/dimensions';
 import NotificationType from '../../constants/notificationType';
 import getProfileSlug from '../../helpers/getProfileSlug';
@@ -86,7 +86,7 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
       const achievement = notification.source as Achievement;
 
       return (<>
-        {`Achievement unlocked! ${AchievementRulesTable[achievement.type].description}`}
+        {`Achievement unlocked! ${AchievementRulesCombined[achievement.type].description}`}
       </>);
     }
 

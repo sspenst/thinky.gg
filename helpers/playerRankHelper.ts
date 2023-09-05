@@ -1,5 +1,5 @@
 import { DIFFICULTY_NAMES, DIFFICULTY_PRETTY_NAMES, getDifficultyList } from '@root/components/formatted/formattedDifficulty';
-import AchievementRulesTable from '@root/constants/achievementInfo';
+import { AchievementRulesCombined } from '@root/constants/achievementInfo';
 import AchievementType from '@root/constants/achievementType';
 import User from '@root/models/db/user';
 
@@ -7,43 +7,43 @@ import User from '@root/models/db/user';
 const difficultyRequirements = [
   {
     name: DIFFICULTY_PRETTY_NAMES[DIFFICULTY_NAMES.SUPER_GRANDMASTER],
-    requirement: AchievementRulesTable[AchievementType.PLAYER_RANK_SUPER_GRANDMASTER].unlocked,
+    requirement: AchievementRulesCombined[AchievementType.PLAYER_RANK_SUPER_GRANDMASTER].unlocked,
   },
   {
     name: DIFFICULTY_PRETTY_NAMES[DIFFICULTY_NAMES.GRANDMASTER],
-    requirement: AchievementRulesTable[AchievementType.PLAYER_RANK_GRANDMASTER].unlocked,
+    requirement: AchievementRulesCombined[AchievementType.PLAYER_RANK_GRANDMASTER].unlocked,
   },
   {
     name: DIFFICULTY_PRETTY_NAMES[DIFFICULTY_NAMES.PROFESSOR],
-    requirement: AchievementRulesTable[AchievementType.PLAYER_RANK_PROFESSOR].unlocked,
+    requirement: AchievementRulesCombined[AchievementType.PLAYER_RANK_PROFESSOR].unlocked,
   },
   {
     name: DIFFICULTY_PRETTY_NAMES[DIFFICULTY_NAMES.PHD],
-    requirement: AchievementRulesTable[AchievementType.PLAYER_RANK_PHD].unlocked,
+    requirement: AchievementRulesCombined[AchievementType.PLAYER_RANK_PHD].unlocked,
   },
   {
     name: DIFFICULTY_PRETTY_NAMES[DIFFICULTY_NAMES.MASTERS],
-    requirement: AchievementRulesTable[AchievementType.PLAYER_RANK_MASTERS].unlocked,
+    requirement: AchievementRulesCombined[AchievementType.PLAYER_RANK_MASTERS].unlocked,
   },
   {
     name: DIFFICULTY_PRETTY_NAMES[DIFFICULTY_NAMES.BACHELORS],
-    requirement: AchievementRulesTable[AchievementType.PLAYER_RANK_BACHELORS].unlocked,
+    requirement: AchievementRulesCombined[AchievementType.PLAYER_RANK_BACHELORS].unlocked,
   },
   {
     name: DIFFICULTY_PRETTY_NAMES[DIFFICULTY_NAMES.HIGH_SCHOOL],
-    requirement: AchievementRulesTable[AchievementType.PLAYER_RANK_HIGH_SCHOOL].unlocked,
+    requirement: AchievementRulesCombined[AchievementType.PLAYER_RANK_HIGH_SCHOOL].unlocked,
   },
   {
     name: DIFFICULTY_PRETTY_NAMES[DIFFICULTY_NAMES.JUNIOR_HIGH],
-    requirement: AchievementRulesTable[AchievementType.PLAYER_RANK_JUNIOR_HIGH].unlocked,
+    requirement: AchievementRulesCombined[AchievementType.PLAYER_RANK_JUNIOR_HIGH].unlocked,
   },
   {
     name: DIFFICULTY_PRETTY_NAMES[DIFFICULTY_NAMES.ELEMENTARY],
-    requirement: AchievementRulesTable[AchievementType.PLAYER_RANK_ELEMENTARY].unlocked,
+    requirement: AchievementRulesCombined[AchievementType.PLAYER_RANK_ELEMENTARY].unlocked,
   },
   {
     name: DIFFICULTY_PRETTY_NAMES[DIFFICULTY_NAMES.KINDERGARTEN],
-    requirement: AchievementRulesTable[AchievementType.PLAYER_RANK_KINDERGARTEN].unlocked,
+    requirement: AchievementRulesCombined[AchievementType.PLAYER_RANK_KINDERGARTEN].unlocked,
   },
 
 ];

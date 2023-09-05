@@ -1,5 +1,5 @@
+import { AchievementRulesCombined } from '@root/constants/achievementInfo';
 import React from 'react';
-import AchievementRulesTable from '../../constants/achievementInfo';
 import Achievement from '../../models/db/achievement';
 import FormattedDate from './formattedDate';
 
@@ -8,15 +8,17 @@ interface FormattedAchievementProps {
 }
 
 export default function FormattedAchievement({ achievement }: FormattedAchievementProps) {
+  // merge all the achievement rules into one object
+
   return (
     <div className='flex flex-col justify-center text-center' style={{
       borderColor: 'var(--bg-color-4)',
     }}>
-      <span className='text-4xl'>{AchievementRulesTable[achievement.type].emoji}</span>
+      <span className='text-4xl'>{AchievementRulesCombined[achievement.type].emoji}</span>
       <div className='flex flex-col justify-center items-center'>
-        <span className='font-bold text-lg'>{AchievementRulesTable[achievement.type].name}</span>
+        <span className='font-bold text-lg'>{AchievementRulesCombined[achievement.type].name}</span>
 
-        <span className='text-sm'>{AchievementRulesTable[achievement.type].description}</span>
+        <span className='text-sm'>{AchievementRulesCombined[achievement.type].description}</span>
       </div>
       <FormattedDate date={achievement.createdAt} />
     </div>
