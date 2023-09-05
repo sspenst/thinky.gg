@@ -3,9 +3,6 @@
 // import tsconfig-paths
 
 import AchievementScoreInfo from '@root/constants/achievementInfo';
-import AchievementType from '@root/constants/achievementType';
-import { createNewAchievement } from '@root/helpers/notificationHelper';
-import { getDifficultyRollingSum } from '@root/helpers/playerRankHelper';
 import Achievement from '@root/models/db/achievement';
 import PlayAttempt from '@root/models/db/playAttempt';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
