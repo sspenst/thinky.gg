@@ -32,7 +32,7 @@ import { matchMarkCompleteLevel } from '../match/[matchId]';
 export async function refreshAchievements(userId: Types.ObjectId, categories: AchievementCategory[]) {
   // it is more efficient to just grab all their achievements then to loop through and query each one if they have it
   const [user, levelsCompletedByDifficulty, userCreatedLevels, allAchievements] = await Promise.all([
-    UserModel.findById<User>(userId, { score: 1, }, { lean: true }),
+    UserModel.findById<User>(userId, { score: 1, authorNote: 1, leastMoves: 1, ts: 1, calc_reviews_score_laplace: 1, calc_playattempts_unique_users: 1 }, { lean: true }),
     getCompletionByDifficultyTable(userId),
     LevelModel.find<Level>({ userId: userId, isDeleted: { $ne: true } }, { _id: 1, }, { lean: true }),
     AchievementModel.find<Achievement>({ userId: userId }, { type: 1, }, { lean: true }),
