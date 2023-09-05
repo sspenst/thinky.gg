@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import React from 'react';
 import AchievementScoreInfo from '../../constants/achievementInfo';
 import Achievement from '../../models/db/achievement';
