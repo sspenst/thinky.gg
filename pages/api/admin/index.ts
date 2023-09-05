@@ -42,7 +42,7 @@ export default withAuth({ POST: {
         error: command + ' is an invalid command'
       });
     }
-  } catch (e) {
+  } catch (e: any) {
     return res.status(500).json({
       error: e.message
     });

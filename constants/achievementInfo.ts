@@ -1,4 +1,4 @@
-import { DIFFICULTY_NAMES, getDifficultyFromValue } from '@root/components/formatted/formattedDifficulty';
+import { DIFFICULTY_NAMES, getDifficultyFromValue, getDifficultyList } from '@root/components/formatted/formattedDifficulty';
 import Level from '@root/models/db/level';
 import User from '@root/models/db/user';
 import AchievementType from './achievementType';
@@ -171,10 +171,12 @@ export const AchievementRulesTableCreator: {[achievementType: string]: IAchievem
     },
   },
 };
+const difficultyList = getDifficultyList();
+
 export const AchievementRulesTableLevelCompletion: {[achievementType: string]: IAchievementInfoLevelCompletion} = {
   [AchievementType.PLAYER_RANK_KINDERGARTEN]: {
     name: 'Kindergarten',
-    emoji: getDifficultyFromValue(DIFFICULTY_NAMES.KINDERGARTEN).emoji,
+    emoji: difficultyList[DIFFICULTY_NAMES.KINDERGARTEN].emoji,
     description: 'Completed 10 levels on Kindergarten difficulty',
 
     unlocked: ({ rollingLevelCompletionSum }) => {
@@ -183,7 +185,7 @@ export const AchievementRulesTableLevelCompletion: {[achievementType: string]: I
   },
   [AchievementType.PLAYER_RANK_ELEMENTARY]: {
     name: 'Elementary',
-    emoji: getDifficultyFromValue(DIFFICULTY_NAMES.ELEMENTARY).emoji,
+    emoji: difficultyList[DIFFICULTY_NAMES.ELEMENTARY].emoji,
     description: 'Completed 25 levels on Elementary difficulty',
 
     unlocked: ({ rollingLevelCompletionSum }) => {
@@ -192,7 +194,7 @@ export const AchievementRulesTableLevelCompletion: {[achievementType: string]: I
   },
   [AchievementType.PLAYER_RANK_JUNIOR_HIGH]: {
     name: 'Junior High',
-    emoji: getDifficultyFromValue(DIFFICULTY_NAMES.JUNIOR_HIGH).emoji,
+    emoji: difficultyList[DIFFICULTY_NAMES.JUNIOR_HIGH].emoji,
     description: 'Completed 25 levels on Junior High difficulty',
 
     unlocked: ({ rollingLevelCompletionSum }) => {
@@ -201,7 +203,7 @@ export const AchievementRulesTableLevelCompletion: {[achievementType: string]: I
   },
   [AchievementType.PLAYER_RANK_HIGH_SCHOOL]: {
     name: 'High Schooler',
-    emoji: getDifficultyFromValue(DIFFICULTY_NAMES.HIGH_SCHOOL).emoji,
+    emoji: difficultyList[DIFFICULTY_NAMES.HIGH_SCHOOL].emoji,
     description: 'Completed 25 levels on High School difficulty',
 
     unlocked: ({ rollingLevelCompletionSum }) => {
@@ -210,7 +212,7 @@ export const AchievementRulesTableLevelCompletion: {[achievementType: string]: I
   },
   [AchievementType.PLAYER_RANK_BACHELORS]: {
     name: 'Bachelor',
-    emoji: getDifficultyFromValue(DIFFICULTY_NAMES.BACHELORS).emoji,
+    emoji: difficultyList[DIFFICULTY_NAMES.BACHELORS].emoji,
     description: 'Completed 25 levels on Bachelor\'s difficulty',
 
     unlocked: ({ rollingLevelCompletionSum }) => {
@@ -219,7 +221,7 @@ export const AchievementRulesTableLevelCompletion: {[achievementType: string]: I
   },
   [AchievementType.PLAYER_RANK_MASTERS]: {
     name: 'Master',
-    emoji: getDifficultyFromValue(DIFFICULTY_NAMES.MASTERS).emoji,
+    emoji: difficultyList[DIFFICULTY_NAMES.MASTERS].emoji,
     description: 'Completed 10 levels on Master\'s difficulty',
 
     unlocked: ({ rollingLevelCompletionSum }) => {
@@ -228,7 +230,7 @@ export const AchievementRulesTableLevelCompletion: {[achievementType: string]: I
   },
   [AchievementType.PLAYER_RANK_PHD]: {
     name: 'PhD',
-    emoji: getDifficultyFromValue(DIFFICULTY_NAMES.PHD).emoji,
+    emoji: difficultyList[DIFFICULTY_NAMES.PHD].emoji,
     description: 'Completed 10 levels on PhD difficulty',
 
     unlocked: ({ rollingLevelCompletionSum }) => {
@@ -237,7 +239,7 @@ export const AchievementRulesTableLevelCompletion: {[achievementType: string]: I
   },
   [AchievementType.PLAYER_RANK_PROFESSOR]: {
     name: 'Professor',
-    emoji: getDifficultyFromValue(DIFFICULTY_NAMES.PROFESSOR).emoji,
+    emoji: difficultyList[DIFFICULTY_NAMES.PROFESSOR].emoji,
     description: 'Completed 10 levels on Professor difficulty',
 
     unlocked: ({ rollingLevelCompletionSum }) => {
@@ -246,7 +248,7 @@ export const AchievementRulesTableLevelCompletion: {[achievementType: string]: I
   },
   [AchievementType.PLAYER_RANK_GRANDMASTER]: {
     name: 'Grandmaster',
-    emoji: getDifficultyFromValue(DIFFICULTY_NAMES.GRANDMASTER).emoji,
+    emoji: difficultyList[DIFFICULTY_NAMES.GRANDMASTER].emoji,
     description: 'Completed 7 levels on Grandmaster difficulty',
 
     unlocked: ({ rollingLevelCompletionSum }) => {
@@ -255,7 +257,7 @@ export const AchievementRulesTableLevelCompletion: {[achievementType: string]: I
   },
   [AchievementType.PLAYER_RANK_SUPER_GRANDMASTER]: {
     name: 'Super Grandmaster',
-    emoji: getDifficultyFromValue(DIFFICULTY_NAMES.SUPER_GRANDMASTER).emoji,
+    emoji: difficultyList[DIFFICULTY_NAMES.SUPER_GRANDMASTER].emoji,
     description: 'Completed 7 levels on Super Grandmaster difficulty',
 
     unlocked: ({ rollingLevelCompletionSum }) => {
