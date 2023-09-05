@@ -9,7 +9,7 @@ interface FormattedAchievementProps {
 
 export default function FormattedAchievement({ achievement }: FormattedAchievementProps) {
   return (
-    <div className='flex flex-col justify-center text-center' style={{
+    <div className='flex flex-col justify-center text-center border rounded-3xl p-1 border-dotted' style={{
       borderColor: 'var(--bg-color-4)',
     }}>
       <span className='text-4xl'>{AchievementRulesCombined[achievement.type].emoji}</span>

@@ -1,5 +1,6 @@
 import FormattedDate from '@root/components/formatted/formattedDate';
 import RoleIcons from '@root/components/page/roleIcons';
+import { ProfileAchievments } from '@root/components/profile/profileAchievements';
 import ProfileMultiplayer from '@root/components/profile/profileMultiplayer';
 import { AchievementRulesCombined } from '@root/constants/achievementInfo';
 import { getCompletionByDifficultyTable } from '@root/helpers/getCompletionByDifficultyTable';
@@ -600,17 +601,7 @@ export default function ProfilePage({
       ,
     ],
     [ProfileTab.Achievements]: (
-      <div className='flex flex-wrap justify-center gap-8'>
-        {Object.keys(AchievementRulesCombined).map(achievementType => {
-          const achievement = achievements.find(achievement => achievement.type === achievementType);
-
-          if (!achievement) {
-            return null;
-          }
-
-          return <FormattedAchievement achievement={achievement} key={`achievement-${achievement._id}`} />;
-        })}
-      </div>
+      <ProfileAchievments achievements={achievements} />
     ),
   } as { [key: string]: React.ReactNode | null };
 
