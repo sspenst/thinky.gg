@@ -169,7 +169,7 @@ async function integrityCheckAcheivements() {
 
   // looping through all users
 
-  const allAchievementCategories = Object.keys(AchievementCategory);
+  const allAchievementCategories = Object.values(AchievementCategory);
   const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
 
   progressBar.start(users.length, 0);
