@@ -29,9 +29,7 @@ export async function issueAchievements(user: User, options: SaveOptions) {
   // it is more efficient to just grab all their achievements then to loop through and query each one if they have it
   const [levelsCompletedByDifficulty, allAchievements] = await Promise.all([
     getCompletionByDifficultyTable(userId, options),
-    AchievementModel.find<Achievement>({ userId: userId }, {
-      type: 1,
-    }, { lean: true }),
+    AchievementModel.find<Achievement>({ userId: userId }, { type: 1, }, { lean: true }),
   ]);
   const rollingLevelCompletionSum = getDifficultyRollingSum(levelsCompletedByDifficulty);
 
