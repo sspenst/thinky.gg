@@ -110,9 +110,12 @@ export const AchievementRulesTableCreator: {[achievementType: string]: IAchievem
   [AchievementType.CREATOR_CREATED_5_LEVELS]: {
     name: 'Apprentice',
     emoji: '🛠️',
-    description: 'Created 5 levels',
+    description: 'Created 5 quality levels',
     unlocked: ({ levelsCreated }) => {
-      return levelsCreated.length >= 5;
+      // filter for calc_reviews_score_laplace > 0.5
+      const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace > 0.5);
+
+      return qualityLevels.length >= 5;
     },
   },
 
@@ -120,30 +123,36 @@ export const AchievementRulesTableCreator: {[achievementType: string]: IAchievem
   [AchievementType.CREATOR_CREATED_10_LEVELS]: {
     name: 'Builder',
     emoji: '🏗️',
-    description: 'Created 10 levels',
+    description: 'Created 10 quality levels',
 
     unlocked: ({ levelsCreated }) => {
-      return levelsCreated.length >= 10;
+      const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace > 0.5);
+
+      return qualityLevels.length >= 10;
     },
   },
   // now one for creating 10 levels, maybe call them a builder
   [AchievementType.CREATOR_CREATED_25_LEVELS]: {
     name: 'Developer',
     emoji: '🏘',
-    description: 'Created 25 levels',
+    description: 'Created quality 25 levels',
 
     unlocked: ({ levelsCreated }) => {
-      return levelsCreated.length >= 25;
+      const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace > 0.5);
+
+      return qualityLevels.length >= 25;
     },
   },
   // now one for creating 50 levels, maybe call them an architect
   [AchievementType.CREATOR_CREATED_50_LEVELS]: {
     name: 'Engineer',
     emoji: '📐',
-    description: 'Created 50 levels',
+    description: 'Created 50 quality levels',
 
     unlocked: ({ levelsCreated }) => {
-      return levelsCreated.length >= 50;
+      const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace > 0.5);
+
+      return qualityLevels.length >= 50;
     },
   },
   [AchievementType.CREATOR_CREATED_100_LEVELS]: {
@@ -151,7 +160,9 @@ export const AchievementRulesTableCreator: {[achievementType: string]: IAchievem
     emoji: '🏛️',
     description: 'Created 100 quality levels',
     unlocked: ({ levelsCreated }) => {
-      return levelsCreated.length >= 100;
+      const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace > 0.5);
+
+      return qualityLevels.length >= 100;
     },
   },
   [AchievementType.CREATOR_CREATED_200_LEVELS]: {
@@ -159,7 +170,9 @@ export const AchievementRulesTableCreator: {[achievementType: string]: IAchievem
     emoji: '🏯',
     description: 'Created 200 quality levels',
     unlocked: ({ levelsCreated }) => {
-      return levelsCreated.length >= 200;
+      const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace > 0.5);
+
+      return qualityLevels.length >= 200;
     },
   },
   [AchievementType.CREATOR_CREATED_300_LEVELS]: {
@@ -167,7 +180,9 @@ export const AchievementRulesTableCreator: {[achievementType: string]: IAchievem
     emoji: '🏯',
     description: 'Created 300 quality levels',
     unlocked: ({ levelsCreated }) => {
-      return levelsCreated.length >= 300;
+      const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace > 0.5);
+
+      return qualityLevels.length >= 300;
     },
   },
 };

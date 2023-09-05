@@ -37,9 +37,13 @@ export async function refreshAchievements(userId: Types.ObjectId, categories: Ac
      * One way to do this is to grab the function defintion of the `unlocked` function and see what data it needs
      * Another way to is to define in the categories what data is needed and merge it in an object
      */
-    UserModel.findById<User>(userId, { score: 1, authorNote: 1, leastMoves: 1, ts: 1, calc_reviews_score_laplace: 1, calc_playattempts_just_beaten_count: 1, calc_playattempts_unique_users: 1 }, { lean: true }),
+    UserModel.findById<User>(userId, {}, { lean: true }),
     getCompletionByDifficultyTable(userId),
-    LevelModel.find<Level>({ userId: userId, isDraft: false, isDeleted: { $ne: true } }, { _id: 1, }, { lean: true }),
+    LevelModel.find<Level>(
+      {
+        userId: userId, isDraft: false, isDeleted: { $ne: true },
+      }, { score: 1, authorNote: 1, leastMoves: 1, ts: 1, calc_reviews_score_laplace: 1, calc_playattempts_just_beaten_count: 1, calc_playattempts_unique_users: 1 },
+      { lean: true }),
     AchievementModel.find<Achievement>({ userId: userId }, { type: 1, }, { lean: true }),
 
   ]);
