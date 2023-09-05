@@ -135,33 +135,35 @@ const sortProperties = [
 ];
 
 for (let i = 0; i < sortProperties.length; i++) {
+  const sortObj = sortProperties[i];
+
   for (let page = 1; page < 4; page++) {
     testRuns.push({
-      query: '?sortBy=' + sortProperties[i].sortBy + '&page=' + page,
+      query: '?sortBy=' + sortObj.sortBy + '&page=' + page,
       test: async (response: any) => {
         expect(response.totalRows).toBe(28);
         expect(response.levels.length).toBe([20, 8, 0][page - 1]);
 
         for (let i = 1; i < response.levels.length; i++) {
-          if (sortProperties[i].isInverted) {
-            expect(response.levels[i][sortProperties[i].property]).toBeGreaterThanOrEqual(response.levels[i - 1][sortProperties[i].property]);
+          if (sortObj.isInverted) {
+            expect(response.levels[i][sortObj.property]).toBeGreaterThanOrEqual(response.levels[i - 1][sortObj.property]);
           } else {
-            expect(response.levels[i][sortProperties[i].property]).toBeLessThanOrEqual(response.levels[i - 1][sortProperties[i].property]);
+            expect(response.levels[i][sortObj.property]).toBeLessThanOrEqual(response.levels[i - 1][sortObj.property]);
           }
         }
       }
     });
     testRuns.push({
-      query: '?sortBy=' + sortProperties[i].sortBy + '&sortDir=asc&page=' + page,
+      query: '?sortBy=' + sortObj.sortBy + '&sortDir=asc&page=' + page,
       test: async (response: any) => {
         expect(response.totalRows).toBe(28);
         expect(response.levels.length).toBe([20, 8, 0][page - 1]);
 
         for (let i = 1; i < response.levels.length; i++) {
-          if (sortProperties[i].isInverted) {
-            expect(response.levels[i][sortProperties[i].property]).toBeLessThanOrEqual(response.levels[i - 1][sortProperties[i].property]);
+          if (sortObj.isInverted) {
+            expect(response.levels[i][sortObj.property]).toBeLessThanOrEqual(response.levels[i - 1][sortObj.property]);
           } else {
-            expect(response.levels[i][sortProperties[i].property]).toBeGreaterThanOrEqual(response.levels[i - 1][sortProperties[i].property]);
+            expect(response.levels[i][sortObj.property]).toBeGreaterThanOrEqual(response.levels[i - 1][sortObj.property]);
           }
         }
       }
