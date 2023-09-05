@@ -23,7 +23,7 @@ import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from 
 import { queueRefreshIndexCalcs } from '../internal-jobs/worker';
 import { matchMarkCompleteLevel } from '../match/[matchId]';
 
-export async function issueAchievements(user: User, score: number, options: SaveOptions) {
+export async function issueAchievements(user: User, options: SaveOptions) {
   const userId = user._id;
   const levelsCompletedByDifficulty = await getCompletionByDifficultyTable(userId, options);
   const rollingLevelCompletionSum = getDifficultyRollingSum(levelsCompletedByDifficulty);
@@ -154,7 +154,7 @@ export default withAuth({
             // create anonymous function that increments score in memory and issues achievements for it... it's more performant and they are the same transaction so it should be fine...
             (async () => {
               req.user.score += 1;
-              issueAchievements(req.user, req.user.score + 1, { session: session });
+              issueAchievements(req.user, { session: session });
             })(),
           ]);
         }

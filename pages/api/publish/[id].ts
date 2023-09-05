@@ -156,7 +156,10 @@ export default withAuth({ POST: {
           ts: ts,
           userId: new Types.ObjectId(req.userId),
         }], { session: session }),
-        issueAchievements(req.user, req.user.score + 1, { session: session }),
+        (async () => {
+          req.user.score += 1;
+          issueAchievements(req.user, { session: session });
+        })(),
       ]);
 
       if (!updatedLevel) {
