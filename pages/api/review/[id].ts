@@ -151,6 +151,7 @@ export default withAuth({
 
       await Promise.all([
         queueRefreshAchievements(req.user._id, [AchievementCategory.REVIEWER]),
+        queueRefreshAchievements(level.userId, [AchievementCategory.REVIEWER]),
         generateDiscordWebhook(undefined, level, req, score, trimmedText, ts),
         queueRefreshIndexCalcs(new Types.ObjectId(id?.toString())),
         createNewReviewOnYourLevelNotification(level.userId._id, req.userId, level._id, String(score), !!trimmedText),
@@ -237,6 +238,8 @@ export default withAuth({
       }
 
       await Promise.all([
+        queueRefreshAchievements(req.user._id, [AchievementCategory.REVIEWER]),
+        queueRefreshAchievements(level.userId, [AchievementCategory.REVIEWER]),
         generateDiscordWebhook(review.ts, level, req, score, trimmedText, ts),
         queueRefreshIndexCalcs(new Types.ObjectId(id?.toString())),
         createNewReviewOnYourLevelNotification(level.userId, req.userId, level._id, String(score), !!trimmedText),
@@ -270,6 +273,8 @@ export default withAuth({
       });
 
       await Promise.all([
+        queueRefreshAchievements(req.user._id, [AchievementCategory.REVIEWER]),
+        queueRefreshAchievements(level.userId, [AchievementCategory.REVIEWER]),
         queueRefreshIndexCalcs(new Types.ObjectId(id?.toString())),
         clearNotifications(level.userId._id, req.userId, level._id, NotificationType.NEW_REVIEW_ON_YOUR_LEVEL),
       ]);
