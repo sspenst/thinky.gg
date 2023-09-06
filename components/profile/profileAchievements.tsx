@@ -1,4 +1,4 @@
-import { AchievementRulesTableCreator, AchievementRulesTableLevelCompletion, AchievementRulesTableUser, IAchievementInfo } from '@root/constants/achievementInfo';
+import { AchievementRulesTableCreator, AchievementRulesTableLevelCompletion, AchievementRulesTableReviewer, AchievementRulesTableUser, IAchievementInfo } from '@root/constants/achievementInfo';
 import Achievement from '@root/models/db/achievement';
 import React from 'react';
 import FormattedAchievement from '../formatted/formattedAchievement';
@@ -19,6 +19,7 @@ export function ProfileAchievments({ achievements }: { achievements: Achievement
   const creatorAchievements = getAchievementsOfType(AchievementRulesTableCreator);
   const progressAchievements = getAchievementsOfType(AchievementRulesTableLevelCompletion);
   const skillAchievements = getAchievementsOfType(AchievementRulesTableUser);
+  const reviewAchievements = getAchievementsOfType(AchievementRulesTableReviewer);
 
   return (<div className='flex flex-row gap-8 justify-center'>
     <div className='flex flex-col gap-1'>
@@ -39,6 +40,13 @@ export function ProfileAchievments({ achievements }: { achievements: Achievement
       <h1 className='text-2xl font-bold text-center'>Progress</h1>
       <div className='flex flex-col justify-center text-center' >
         {progressAchievements.length > 0 ? progressAchievements : <span className='text-center'>No achievements yet</span>}
+      </div>
+    </div>
+    <div className='flex flex-col gap-1'>
+      <h1 className='text-2xl font-bold text-center'>Reviewer</h1>
+      <div className='flex flex-col justify-center text-center' >
+
+        {reviewAchievements.length > 0 ? reviewAchievements : <span className='text-center'>No achievements yet</span>}
       </div>
     </div>
   </div>
