@@ -1,5 +1,6 @@
 import { DIFFICULTY_NAMES, getDifficultyList } from '@root/components/formatted/formattedDifficulty';
 import Level from '@root/models/db/level';
+import MultiplayerMatch from '@root/models/db/multiplayerMatch';
 import Review from '@root/models/db/review';
 import User from '@root/models/db/user';
 import AchievementType from './achievementType';
@@ -23,6 +24,21 @@ export interface IAchievementInfoCreator extends IAchievementInfo {
 export interface IAchievementInfoReviewer extends IAchievementInfo{
   unlocked: ({ reviewsCreated }: {reviewsCreated: Review[]}) => boolean;
 }
+
+export interface IAchievementInfoMultiplayer extends IAchievementInfo{
+  unlocked: ({ userMatches }: { userMatches: MultiplayerMatch[]}) => boolean;
+}
+
+export const AchievementRulesTableMultiplayer: {[achievementType: string]: IAchievementInfoMultiplayer} = {
+  [AchievementType.MULTIPLAYER_1_GAME_PLAYED]: {
+    name: 'First Game',
+    emoji: '🎮',
+    description: 'Played a rated multiplayer match',
+    unlocked: ({ userMatches }) => {
+      return userMatches.length >= 1;
+    }
+  },
+};
 export const AchievementRulesTableReviewer: {[achievementType: string]: IAchievementInfoReviewer} = {
   [AchievementType.REVIEWED_1_LEVEL]: {
     name: 'Scribbler',
@@ -336,12 +352,14 @@ export enum AchievementCategory {
   'CREATOR' = 'CREATOR',
   'LEVEL_COMPLETION' = 'LEVEL_COMPLETION',
   'REVIEWER' = 'REVIEWER',
+  'MULTIPLAYER' = 'MULTIPLAYER',
 }
 export const AchievementCategoryMapping = {
   [AchievementCategory.USER]: AchievementRulesTableUser,
   [AchievementCategory.CREATOR]: AchievementRulesTableCreator,
   [AchievementCategory.LEVEL_COMPLETION]: AchievementRulesTableLevelCompletion,
   [AchievementCategory.REVIEWER]: AchievementRulesTableReviewer,
+  [AchievementCategory.MULTIPLAYER]: AchievementRulesTableMultiplayer,
 };
 
 // dynamically calculate

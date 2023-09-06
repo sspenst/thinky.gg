@@ -17,7 +17,7 @@ interface MatchQuery {
   rated?: boolean;
 }
 
-async function doMatchQuery(query: MatchQuery) {
+export async function doMatchQuery(query: MatchQuery) {
   const searchObj = {
     state: MultiplayerMatchState.FINISHED,
     // private: false // TODO: seems right to show private matches...

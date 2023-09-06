@@ -1,3 +1,4 @@
+import { AchievementCategory } from '@root/constants/achievementInfo';
 import Discord from '@root/constants/discord';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import mongoose, { PipelineStage, Types } from 'mongoose';
@@ -23,6 +24,7 @@ import {
   generateMatchLog,
 } from '../../../models/schemas/multiplayerMatchSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
+import { queueRefreshAchievements } from '../internal-jobs/worker';
 import { abortMatch } from './[matchId]';
 
 function makeId(length: number) {
@@ -155,36 +157,37 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
         const ratingField = 'rating' + finishedMatch.type;
         const countMatchField = 'calc' + finishedMatch.type + 'Count';
 
-        await Promise.all([MultiplayerProfileModel.findOneAndUpdate(
-          {
-            userId: new Types.ObjectId(winnerId),
-          },
-          {
-            $inc: {
-              [ratingField]: eloChangeWinner,
-              [countMatchField]: 1,
+        await Promise.all([
+          MultiplayerProfileModel.findOneAndUpdate(
+            {
+              userId: new Types.ObjectId(winnerId),
             },
-          },
-          {
-            new: true,
-            session: session,
-          }
-        ),
-        MultiplayerProfileModel.findOneAndUpdate(
-          {
-            userId: new Types.ObjectId(loserId),
-          },
-          {
-            $inc: {
-              [ratingField]: eloChangeLoser,
-              [countMatchField]: 1,
+            {
+              $inc: {
+                [ratingField]: eloChangeWinner,
+                [countMatchField]: 1,
+              },
             },
-          },
-          {
-            new: true,
-            session: session,
-          }
-        )]);
+            {
+              new: true,
+              session: session,
+            }
+          ),
+          MultiplayerProfileModel.findOneAndUpdate(
+            {
+              userId: new Types.ObjectId(loserId),
+            },
+            {
+              $inc: {
+                [ratingField]: eloChangeLoser,
+                [countMatchField]: 1,
+              },
+            },
+            {
+              new: true,
+              session: session,
+            }
+          )]);
       } else {
         eloChangeWinner = 0;
         eloChangeLoser = 0;
@@ -224,7 +227,9 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
             lean: true,
             session: session,
           }
-        )
+        ),
+        queueRefreshAchievements(new Types.ObjectId(winnerId), [AchievementCategory.MULTIPLAYER]),
+        queueRefreshAchievements(new Types.ObjectId(loserId), [AchievementCategory.MULTIPLAYER]),
       ]);
 
       if (!finishedMatch) {

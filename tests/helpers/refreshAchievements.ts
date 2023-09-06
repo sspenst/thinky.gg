@@ -8,6 +8,7 @@ import Level from '@root/models/db/level';
 import Review from '@root/models/db/review';
 import User from '@root/models/db/user';
 import { AchievementModel, LevelModel, ReviewModel, UserModel } from '@root/models/mongoose';
+import { doMatchQuery } from '@root/pages/api/match/search';
 import { Types } from 'mongoose';
 
 const AchievementCategoryFetch = {
@@ -20,6 +21,11 @@ const AchievementCategoryFetch = {
     const reviewsCreated = await ReviewModel.find<Review>({ userId: userId, isDeleted: { $ne: true } }, {}, { lean: true });
 
     return { reviewsCreated: reviewsCreated };
+  },
+  [AchievementCategory.MULTIPLAYER]: async (userId: Types.ObjectId) => {
+    const userMatches = await doMatchQuery({ players: [userId], rated: true });
+
+    return { userMatches: userMatches };
   },
   [AchievementCategory.CREATOR]: async (userId: Types.ObjectId) => {
     const userCreatedLevels = await LevelModel.find<Level>(
