@@ -1,4 +1,4 @@
-import { AchievementRulesTableCreator, AchievementRulesTableLevelCompletion, AchievementRulesTableReviewer, AchievementRulesTableUser, IAchievementInfo } from '@root/constants/achievementInfo';
+import { AchievementRulesTableCreator, AchievementRulesTableLevelCompletion, AchievementRulesTableMultiplayer, AchievementRulesTableReviewer, AchievementRulesTableUser, IAchievementInfo } from '@root/constants/achievementInfo';
 import Achievement from '@root/models/db/achievement';
 import React from 'react';
 import FormattedAchievement from '../formatted/formattedAchievement';
@@ -20,7 +20,8 @@ export function ProfileAchievments({ achievements }: { achievements: Achievement
     'Skill': getAchievementsOfType(AchievementRulesTableUser),
     'Creator': getAchievementsOfType(AchievementRulesTableCreator),
     'Progress': getAchievementsOfType(AchievementRulesTableLevelCompletion),
-    'Reviewer': getAchievementsOfType(AchievementRulesTableReviewer)
+    'Reviewer': getAchievementsOfType(AchievementRulesTableReviewer),
+    'Multiplayer': getAchievementsOfType(AchievementRulesTableMultiplayer),
 
   } as { [key: string]: JSX.Element[] };
 
