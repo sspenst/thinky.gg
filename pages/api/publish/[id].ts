@@ -1,4 +1,4 @@
-import { AchievementCategory } from '@root/constants/achievementInfo';
+import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import TileType from '@root/constants/tileType';
 import isFullAccount from '@root/helpers/isFullAccount';
 import mongoose, { Types } from 'mongoose';

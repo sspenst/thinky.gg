@@ -1,4 +1,4 @@
-import { AchievementRulesCombined } from '@root/constants/achievementInfo';
+import { AchievementRulesCombined } from '@root/constants/achievements/achievementInfo';
 import Collection from '@root/models/db/collection';
 import NotificationType from '../constants/notificationType';
 import { EnrichedLevel } from '../models/db/level';

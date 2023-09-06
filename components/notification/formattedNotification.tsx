@@ -1,4 +1,4 @@
-import { AchievementRulesCombined } from '@root/constants/achievementInfo';
+import { AchievementRulesCombined } from '@root/constants/achievements/achievementInfo';
 import Collection from '@root/models/db/collection';
 import classNames from 'classnames';
 import Image from 'next/image';

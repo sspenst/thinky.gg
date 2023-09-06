@@ -1,6 +1,6 @@
 import { DIFFICULTY_NAMES, DIFFICULTY_PRETTY_NAMES, getDifficultyList } from '@root/components/formatted/formattedDifficulty';
-import { AchievementRulesTableLevelCompletion } from '@root/constants/achievementInfo';
-import AchievementType from '@root/constants/achievementType';
+import { AchievementRulesTableLevelCompletion } from '@root/constants/achievements/AchievementRulesTableLevelCompletion';
+import AchievementType from '@root/constants/achievements/achievementType';
 
 export function getDifficultyRollingSum(levelsCompletedByDifficulty: { [key: string]: number }): number[] {
   let acc = 0;

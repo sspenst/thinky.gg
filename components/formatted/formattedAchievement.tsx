@@ -1,4 +1,4 @@
-import { AchievementRulesCombined } from '@root/constants/achievementInfo';
+import { AchievementRulesCombined } from '@root/constants/achievements/achievementInfo';
 import React from 'react';
 import Achievement from '../../models/db/achievement';
 import FormattedDate from './formattedDate';

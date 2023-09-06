@@ -1,4 +1,4 @@
-import { AchievementCategory } from '@root/constants/achievementInfo';
+import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import isFullAccount from '@root/helpers/isFullAccount';
 import { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';

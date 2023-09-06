@@ -1,4 +1,4 @@
-import AchievementType from '@root/constants/achievementType';
+import AchievementType from '@root/constants/achievements/achievementType';
 import Direction from '@root/constants/direction';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types, UpdateQuery } from 'mongoose';

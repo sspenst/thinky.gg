@@ -1,4 +1,4 @@
-import { AchievementCategory } from '@root/constants/achievementInfo';
+import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import NotificationType from '@root/constants/notificationType';
 import Role from '@root/constants/role';
 import { ValidEnum, ValidObjectId } from '@root/helpers/apiWrapper';

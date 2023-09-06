@@ -1,4 +1,4 @@
-import { AchievementCategory } from '@root/constants/achievementInfo';
+import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import Direction from '@root/constants/direction';
 import getDifficultyEstimate from '@root/helpers/getDifficultyEstimate';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
