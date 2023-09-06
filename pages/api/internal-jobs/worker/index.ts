@@ -1,5 +1,6 @@
 import { AchievementCategory } from '@root/constants/achievementInfo';
 import UserConfig from '@root/models/db/userConfig';
+import { refreshAchievements } from '@root/tests/helpers/refreshAchievements';
 import mongoose, { QueryOptions, Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
@@ -12,7 +13,6 @@ import { NotificationModel, QueueMessageModel, UserConfigModel } from '../../../
 import { calcPlayAttempts, refreshIndexCalcs } from '../../../../models/schemas/levelSchema';
 import { QueueMessageState, QueueMessageType } from '../../../../models/schemas/queueMessageSchema';
 import { calcCreatorCounts, USER_DEFAULT_PROJECTION } from '../../../../models/schemas/userSchema';
-import { refreshAchievements } from '../../stats';
 import { sendEmailNotification } from './sendEmailNotification';
 import { sendPushNotification } from './sendPushNotification';
 
