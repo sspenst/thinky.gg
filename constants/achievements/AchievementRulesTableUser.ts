@@ -59,7 +59,7 @@ export const AchievementRulesTableUser: { [achievementType: string]: IAchievemen
     }
   },
   [AchievementType.COMPLETED_LEVELS_5000]: {
-    name: 'Getting Legendary',
+    name: 'Legend',
     emoji: '🐉',
     description: 'Completed 5000 levels',
 
