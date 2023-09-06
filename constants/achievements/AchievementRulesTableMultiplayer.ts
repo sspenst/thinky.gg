@@ -12,7 +12,7 @@ export const AchievementRulesTableMultiplayer: { [achievementType: string]: IAch
     emoji: '🎮',
     description: 'Played a rated multiplayer match',
     unlocked: ({ userMatches }) => {
-      return userMatches.length >= 1;
+      return userMatches?.length >= 1;
     }
   },
   [AchievementType.MULTIPLAYER_BULLET_5_GAME_PLAYED]: {
@@ -21,7 +21,7 @@ export const AchievementRulesTableMultiplayer: { [achievementType: string]: IAch
     emoji: '🚅',
     description: 'Earned an elo in bullet',
     unlocked: ({ multiplayerProfile }) => {
-      return multiplayerProfile.calcRushBulletCount >= 5;
+      return multiplayerProfile?.calcRushBulletCount >= 5;
     },
   },
   [AchievementType.MULTIPLAYER_BLITZ_5_GAME_PLAYED]: {
@@ -29,7 +29,7 @@ export const AchievementRulesTableMultiplayer: { [achievementType: string]: IAch
     emoji: '⚡',
     description: 'Earned an elo in blitz',
     unlocked: ({ multiplayerProfile }) => {
-      return multiplayerProfile.calcRushBlitzCount >= 5;
+      return multiplayerProfile?.calcRushBlitzCount >= 5;
     }
   },
   [AchievementType.MULTIPLAYER_RAPID_5_GAME_PLAYED]: {
@@ -37,7 +37,7 @@ export const AchievementRulesTableMultiplayer: { [achievementType: string]: IAch
     emoji: '🚗',
     description: 'Earned an elo in rapid',
     unlocked: ({ multiplayerProfile }) => {
-      return multiplayerProfile.calcRushRapidCount >= 5;
+      return multiplayerProfile?.calcRushRapidCount >= 5;
     }
   },
 
@@ -46,7 +46,7 @@ export const AchievementRulesTableMultiplayer: { [achievementType: string]: IAch
     emoji: '⏱️',
     description: 'Earned an elo in classical',
     unlocked: ({ multiplayerProfile }) => {
-      return multiplayerProfile.calcRushClassicalCount >= 5;
+      return multiplayerProfile?.calcRushClassicalCount >= 5;
     }
   },
 
