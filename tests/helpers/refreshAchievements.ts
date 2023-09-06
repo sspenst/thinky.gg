@@ -7,7 +7,7 @@ import Achievement from '@root/models/db/achievement';
 import Level from '@root/models/db/level';
 import Review from '@root/models/db/review';
 import User from '@root/models/db/user';
-import { AchievementModel, LevelModel, MultiplayerMatchModel, ReviewModel, UserModel } from '@root/models/mongoose';
+import { AchievementModel, LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, ReviewModel, UserModel } from '@root/models/mongoose';
 import { Types } from 'mongoose';
 
 const AchievementCategoryFetch = {
@@ -22,9 +22,14 @@ const AchievementCategoryFetch = {
     return { reviewsCreated: reviewsCreated };
   },
   [AchievementCategory.MULTIPLAYER]: async (userId: Types.ObjectId) => {
-    const userMatches = await MultiplayerMatchModel.find({ players: [userId], rated: true }, { players: 1, winners: 1, createdAt: 1, createdBy: 1 }, { lean: true });
+    const [userMatches, multiplayerProfile] = await Promise.all(
+      [
+        MultiplayerMatchModel.find({ players: userId, rated: true }, { players: 1, winners: 1, createdAt: 1, createdBy: 1 }, { lean: true }),
+        MultiplayerProfileModel.findOne({ userId: userId }, {}, { lean: true })
+      ]
+    );
 
-    return { userMatches: userMatches };
+    return { userMatches: userMatches, multiplayerProfile: multiplayerProfile };
   },
   [AchievementCategory.CREATOR]: async (userId: Types.ObjectId) => {
     const userCreatedLevels = await LevelModel.find<Level>(
