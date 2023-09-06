@@ -48,6 +48,28 @@ function getNewReviewOnYourLevelBody(message?: string) {
     <>gave a <Stars stars={Number(score)} /> rating</>;
 }
 
+function NotificationIcon({ notification }: { notification: Notification }) {
+  let icon = null;
+
+  switch (notification.type) {
+  case NotificationType.NEW_ACHIEVEMENT: {
+    const achievement = notification.source as Achievement;
+
+    const meta = AchievementRulesCombined[achievement.type];
+
+    icon = meta?.emoji;
+  }
+
+    break;
+  }
+
+  if (!icon) {
+    return <Image alt='logo' src='/logo.svg' width='24' height='24' className='h-6 w-6' />;
+  }
+
+  return icon;
+}
+
 function NotificationMessage({ notification, onMarkAsRead }: NotificationMessageProps) {
   switch (notification.type) {
   case NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT:
@@ -85,8 +107,10 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
     if (notification.source) {
       const achievement = notification.source as Achievement;
 
+      const meta = AchievementRulesCombined[achievement.type];
+
       return (<>
-        {`Achievement unlocked! ${AchievementRulesCombined[achievement.type].description}`}
+        {`Achievement unlocked! ${meta?.description}`}
       </>);
     }
 
@@ -147,7 +171,7 @@ export default function FormattedNotification({ close, notification, onMarkAsRea
           />
           :
           <div className='flex items-center gap-2 truncate'>
-            <Image alt='logo' src='/logo.svg' width='24' height='24' className='h-6 w-6' />
+            <NotificationIcon notification={notification} />
             <span className='font-bold'>Pathology</span>
           </div>
         }
