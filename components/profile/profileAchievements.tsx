@@ -30,7 +30,7 @@ export function ProfileAchievments({ achievements }: { achievements: Achievement
   } as { [key: string]: JSX.Element[] };
 
   return (
-    <div className='flex flex-row gap-8 justify-center'>
+    <div className='flex flex-col md:flex-row gap-8 justify-center'>
 
       {Object.keys(achievementsToShow).map((achievementType) => (
         <div className='flex flex-col gap-1' key={achievementType}>
