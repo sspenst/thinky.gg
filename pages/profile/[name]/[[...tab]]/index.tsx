@@ -384,7 +384,8 @@ export default function ProfilePage({
         <div className='flex flex-row flex-wrap justify-center text-left gap-10 m-4'>
           <div>
             <h2><span className='font-bold'>Levels Completed:</span> {user.score}</h2>
-            <h2><span className='font-bold'>Rank:</span> {playerRank}</h2>
+            <h2><span className='font-bold'>Rank: </span><Link href={'/profile/' + user.name + '/' + ProfileTab.Achievements}>{playerRank}</Link>
+            </h2>
             <h2><span className='font-bold'>Levels Created:</span> {user.calc_levels_created_count}</h2>
             {!user.hideStatus && <>
               <h2><span className='font-bold'>Last Seen:</span> <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.last_visited_at ? user.last_visited_at : user.ts} /></h2>
