@@ -92,4 +92,35 @@ export const AchievementRulesTableCreator: { [achievementType: string]: IAchieve
       return qualityLevels.length >= 300;
     },
   },
+  [AchievementType.CREATOR_CREATED_1_HIGH_QUALITY_LEVELS]: {
+    name: 'Stroke of Genius',
+    emoji: '🖌️',
+    description: 'Created an acclaimed level',
+    unlocked: ({ levelsCreated }) => {
+      const highQualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace > 0.93);
+
+      return highQualityLevels.length >= 10;
+    },
+  },
+  [AchievementType.CREATOR_CREATED_10_HIGH_QUALITY_LEVELS]: {
+    name: 'Artist',
+    emoji: '🎨',
+    description: 'Created 10 acclaimed levels',
+    unlocked: ({ levelsCreated }) => {
+      const highQualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace > 0.93);
+
+      return highQualityLevels.length >= 10;
+    },
+  },
+  [AchievementType.CREATOR_CREATED_25_HIGH_QUALITY_LEVELS]: {
+    name: 'Masterpiece Maker',
+    emoji: '🎻',
+    description: 'Created 25 acclaimed levels',
+    unlocked: ({ levelsCreated }) => {
+      const highQualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace > 0.93);
+
+      return highQualityLevels.length >= 25;
+    }
+  },
+
 };
