@@ -22,7 +22,7 @@ const AchievementCategoryFetch = {
     return { reviewsCreated: reviewsCreated };
   },
   [AchievementCategory.MULTIPLAYER]: async (userId: Types.ObjectId) => {
-    const userMatches = await MultiplayerMatchModel.find({ players: [userId], rated: true }, {}, { lean: true });
+    const userMatches = await MultiplayerMatchModel.find({ players: [userId], rated: true }, { players: 1, winners: 1, createdAt: 1, createdBy: 1 }, { lean: true });
 
     return { userMatches: userMatches };
   },
