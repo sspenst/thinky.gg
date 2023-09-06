@@ -5,8 +5,9 @@ import { createNewAchievement } from '@root/helpers/notificationHelper';
 import { getDifficultyRollingSum } from '@root/helpers/playerRankHelper';
 import Achievement from '@root/models/db/achievement';
 import Level from '@root/models/db/level';
+import Review from '@root/models/db/review';
 import User from '@root/models/db/user';
-import { AchievementModel, LevelModel, UserModel } from '@root/models/mongoose';
+import { AchievementModel, LevelModel, ReviewModel, UserModel } from '@root/models/mongoose';
 import { Types } from 'mongoose';
 
 const AchievementCategoryFetch = {
@@ -15,7 +16,11 @@ const AchievementCategoryFetch = {
 
     return { user: user };
   },
+  [AchievementCategory.REVIEWER]: async (userId: Types.ObjectId) => {
+    const reviewsCreated = await ReviewModel.find<Review>({ userId: userId, isDeleted: { $ne: true } }, {}, { lean: true });
 
+    return { reviewsCreated: reviewsCreated };
+  },
   [AchievementCategory.CREATOR]: async (userId: Types.ObjectId) => {
     const userCreatedLevels = await LevelModel.find<Level>(
       {

@@ -1,11 +1,8 @@
 import { DIFFICULTY_NAMES, getDifficultyList } from '@root/components/formatted/formattedDifficulty';
 import Level from '@root/models/db/level';
+import Review from '@root/models/db/review';
 import User from '@root/models/db/user';
 import AchievementType from './achievementType';
-
-export interface IAchievementFeatureUser {
-  user: User;
-}
 
 export interface IAchievementInfo {
   name: string;
@@ -23,8 +20,61 @@ export interface IAchievementInfoUser extends IAchievementInfo {
 export interface IAchievementInfoCreator extends IAchievementInfo {
   unlocked: ({ levelsCreated }: {levelsCreated: Level[]}) => boolean;
 }
+export interface IAchievementInfoReviewer extends IAchievementInfo{
+  unlocked: ({ reviewsCreated }: {reviewsCreated: Review[]}) => boolean;
+}
+export const AchievementRulesTableReviewer: {[achievementType: string]: IAchievementInfoReviewer} = {
+  [AchievementType.REVIEWED_1_LEVEL]: {
+    name: 'Scribbler',
+    emoji: '🖍️',
+    description: 'Reviewed a level',
+    unlocked: ({ reviewsCreated }) => {
+      return reviewsCreated.length >= 1;
+    }
+  },
+  [AchievementType.REVIEWED_25_LEVELS]: {
+    name: 'Commentator',
+    emoji: '💬',
+    description: 'Reviewed 25 levels',
+    unlocked: ({ reviewsCreated }) => {
+      return reviewsCreated.length >= 25;
+    }
+  },
+  [AchievementType.REVIEWED_100_LEVELS]: {
+    name: 'Reviewer',
+    emoji: '📝',
+    description: 'Reviewed 100 levels',
+    unlocked: ({ reviewsCreated }) => {
+      return reviewsCreated.length >= 100;
+    }
+  },
+  [AchievementType.REVIEWED_500_LEVELS]: {
+    name: 'Critic',
+    emoji: '🍿',
+    description: 'Reviewed 50 levels',
+    unlocked: ({ reviewsCreated }) => {
+      return reviewsCreated.length >= 500;
+    }
+  },
+  [AchievementType.REVIEWED_1000_LEVELS]: {
+    name: 'Master Critic',
+    emoji: '🎭',
+    description: 'Reviewed 500 levels',
+    unlocked: ({ reviewsCreated }) => {
+      return reviewsCreated.length >= 1000;
+    }
+  },
+  [AchievementType.REVIEWED_3000_LEVELS]: {
+    name: 'Legendary Reviewer',
+    emoji: '👑',
+    description: 'Reviewed 3000 levels',
+    unlocked: ({ reviewsCreated }) => {
+      return reviewsCreated.length >= 3000;
+    }
+  },
 
-// Now for the score achievements
+};
+
 export const AchievementRulesTableUser: {[achievementType: string]: IAchievementInfoUser} = {
   [AchievementType.COMPLETED_LEVELS_100]: {
     name: 'Getting Started',
@@ -285,11 +335,13 @@ export enum AchievementCategory {
   'USER' = 'USER',
   'CREATOR' = 'CREATOR',
   'LEVEL_COMPLETION' = 'LEVEL_COMPLETION',
+  'REVIEWER' = 'REVIEWER',
 }
 export const AchievementCategoryMapping = {
   [AchievementCategory.USER]: AchievementRulesTableUser,
   [AchievementCategory.CREATOR]: AchievementRulesTableCreator,
   [AchievementCategory.LEVEL_COMPLETION]: AchievementRulesTableLevelCompletion,
+  [AchievementCategory.REVIEWER]: AchievementRulesTableReviewer,
 };
 
 // dynamically calculate
