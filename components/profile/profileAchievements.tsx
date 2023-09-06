@@ -16,40 +16,27 @@ export function ProfileAchievments({ achievements }: { achievements: Achievement
     }).filter(achievement => achievement !== null).reverse();
   }
 
-  const creatorAchievements = getAchievementsOfType(AchievementRulesTableCreator);
-  const progressAchievements = getAchievementsOfType(AchievementRulesTableLevelCompletion);
-  const skillAchievements = getAchievementsOfType(AchievementRulesTableUser);
-  const reviewAchievements = getAchievementsOfType(AchievementRulesTableReviewer);
+  const achievementsToShow = {
+    'Skill': getAchievementsOfType(AchievementRulesTableUser),
+    'Creator': getAchievementsOfType(AchievementRulesTableCreator),
+    'Progress': getAchievementsOfType(AchievementRulesTableLevelCompletion),
+    'Reviewer': getAchievementsOfType(AchievementRulesTableReviewer)
 
-  return (<div className='flex flex-row gap-8 justify-center'>
-    <div className='flex flex-col gap-1'>
-      <h1 className='text-2xl font-bold text-center'>Skill</h1>
-      <div className='flex flex-col justify-center text-center' >
-        {skillAchievements.length > 0 ? skillAchievements : <span className='text-center'>No achievements yet</span>}
-      </div>
+  } as { [key: string]: JSX.Element[] };
+
+  return (
+    <div className='flex flex-row gap-8 justify-center'>
+
+      {Object.keys(achievementsToShow).map((achievementType) => (
+        <div className='flex flex-col gap-1' key={achievementType}>
+          <h1 className='text-2xl font-bold text-center'>{achievementType}</h1>
+          <div className='flex flex-col justify-center text-center' >
+            {achievementsToShow[achievementType].length > 0 ? achievementsToShow[achievementType] : (<span className='text-center'>No achievements yet</span>)}
+          </div>
+        </div>
+      ))
+      }
+
     </div>
-    <div className='flex flex-col gap-1'>
-      <h1 className='text-2xl font-bold text-center'>Creator</h1>
-      <div className='flex flex-col justify-center text-center' >
-
-        {creatorAchievements.length > 0 ? creatorAchievements : <span className='text-center'>No achievements yet</span>}
-      </div>
-    </div>
-
-    <div className='flex flex-col gap-1'>
-      <h1 className='text-2xl font-bold text-center'>Progress</h1>
-      <div className='flex flex-col justify-center text-center' >
-        {progressAchievements.length > 0 ? progressAchievements : <span className='text-center'>No achievements yet</span>}
-      </div>
-    </div>
-    <div className='flex flex-col gap-1'>
-      <h1 className='text-2xl font-bold text-center'>Reviewer</h1>
-      <div className='flex flex-col justify-center text-center' >
-
-        {reviewAchievements.length > 0 ? reviewAchievements : <span className='text-center'>No achievements yet</span>}
-      </div>
-    </div>
-  </div>
-
   );
 }
