@@ -2,6 +2,7 @@ import { AchievementCategory } from '@root/constants/achievementInfo';
 import Role from '@root/constants/role';
 import { ValidEnum, ValidObjectId } from '@root/helpers/apiWrapper';
 import withAuth, { NextApiRequestWithAuth } from '@root/lib/withAuth';
+import { AchievementModel } from '@root/models/mongoose';
 import { calcPlayAttempts, refreshIndexCalcs } from '@root/models/schemas/levelSchema';
 import { refreshAchievements } from '@root/tests/helpers/refreshAchievements';
 import { Types } from 'mongoose';
@@ -10,6 +11,7 @@ import { NextApiResponse } from 'next';
 enum AdminCommand {
     refreshAchievements = 'refreshAchievements',
     refreshIndexCalcs = 'refreshIndexCalcs',
+    deleteAchievements = 'deleteAchievements',
     refreshPlayAttempts = 'calcPlayAttempts',
 }
 export default withAuth({ POST: {
@@ -32,6 +34,9 @@ export default withAuth({ POST: {
     case AdminCommand.refreshAchievements:
       resp = await refreshAchievements(new Types.ObjectId(targetId as string), Object.values(AchievementCategory));
       resp = resp.length;
+      break;
+    case AdminCommand.deleteAchievements:
+      resp = await AchievementModel.deleteMany({ userId: new Types.ObjectId(targetId as string) });
       break;
     case AdminCommand.refreshIndexCalcs:
       await refreshIndexCalcs(new Types.ObjectId(targetId as string));
