@@ -13,7 +13,7 @@ export function ProfileAchievments({ achievements }: { achievements: Achievement
       }
 
       return <div key={`achievement-${achievement._id}`} className='p-3'><FormattedAchievement achievement={achievement} /></div>;
-    }).filter(achievement => achievement !== null);
+    }).filter(achievement => achievement !== null).reverse();
   }
 
   const creatorAchievements = getAchievementsOfType(AchievementRulesTableCreator);
