@@ -2,7 +2,6 @@ import FormattedDate from '@root/components/formatted/formattedDate';
 import RoleIcons from '@root/components/page/roleIcons';
 import { ProfileAchievments } from '@root/components/profile/profileAchievements';
 import ProfileMultiplayer from '@root/components/profile/profileMultiplayer';
-import { AchievementRulesCombined } from '@root/constants/achievementInfo';
 import { getCompletionByDifficultyTable } from '@root/helpers/getCompletionByDifficultyTable';
 import { getUsersWithMultiplayerProfile } from '@root/helpers/getUsersWithMultiplayerProfile';
 import { getPlayerRank } from '@root/helpers/playerRankHelper';
@@ -19,7 +18,6 @@ import React, { useCallback, useEffect, useState } from 'react';
 import FollowButton from '../../../../components/buttons/followButton';
 import Select from '../../../../components/cards/select';
 import SelectFilter from '../../../../components/cards/selectFilter';
-import FormattedAchievement from '../../../../components/formatted/formattedAchievement';
 import FormattedDifficulty, { getDifficultyList } from '../../../../components/formatted/formattedDifficulty';
 import FormattedReview from '../../../../components/formatted/formattedReview';
 import CommentWall from '../../../../components/level/reviews/commentWall';
@@ -360,7 +358,7 @@ export default function ProfilePage({
     });
   };
 
-  const playerRank = getPlayerRank(user, levelsCompletedByDifficulty);
+  const playerRank = getPlayerRank(levelsCompletedByDifficulty);
 
   // create an array of objects with the id, trigger element (eg. button), and the content element
   const tabsContent = {

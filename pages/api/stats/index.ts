@@ -1,7 +1,10 @@
 import { AchievementCategory, AchievementCategoryMapping } from '@root/constants/achievementInfo';
 import Direction from '@root/constants/direction';
+import { getCompletionByDifficultyTable } from '@root/helpers/getCompletionByDifficultyTable';
 import getDifficultyEstimate from '@root/helpers/getDifficultyEstimate';
+import { getDifficultyRollingSum } from '@root/helpers/playerRankHelper';
 import Achievement from '@root/models/db/achievement';
+import User from '@root/models/db/user';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
@@ -20,52 +23,6 @@ import Stat from '../../../models/db/stat';
 import { AchievementModel, LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
 import { queueRefreshAchievements, queueRefreshIndexCalcs } from '../internal-jobs/worker';
 import { matchMarkCompleteLevel } from '../match/[matchId]';
-
-/**
-*  Creates a new achievement for the user
- * @param userId
- * @return null if user not found
- */
-export async function refreshAchievements(userId: Types.ObjectId, categories: AchievementCategory[]) {
-  // it is more efficient to just grab all their achievements then to loop through and query each one if they have it
-
-  const fetchPromises = [];
-
-  for (const category of categories) {
-    fetchPromises.push(AchievementCategoryMapping[category].fetchData(userId));
-  }
-
-  const [neededDataArray, allAchievements] = await Promise.all([
-    Promise.all(fetchPromises),
-    AchievementModel.find<Achievement>({ userId: userId }, { type: 1, }, { lean: true }),
-
-  ]);
-  // neededDataArray is an array of objects with unique keys. Let's combine into one big object
-  const neededData = neededDataArray.reduce((acc, cur) => ({ ...acc, ...cur }), {});
-  const achievementsCreatedPromises = [];
-
-  for (const category of categories) {
-    const categoryRulesTable = AchievementCategoryMapping[category].rules;
-
-    for (const achievementType in categoryRulesTable) {
-      const achievementInfo = categoryRulesTable[achievementType];
-
-      // check if the user already has the achievement and if so skip it (note we already have a unique index on userId and type)
-      if (allAchievements.some(a => a.type === achievementType)) {
-        continue;
-      }
-
-      // TODO: maybe there is a more proper way to do this so i can remove the as any...
-      if (achievementInfo.unlocked(neededData as any)) {
-        achievementsCreatedPromises.push(createNewAchievement(achievementType as AchievementType, userId));
-      }
-    }
-  }
-
-  await Promise.all(achievementsCreatedPromises);
-
-  return achievementsCreatedPromises;
-}
 
 export default withAuth({
   GET: {},

@@ -1,9 +1,21 @@
 import { DIFFICULTY_NAMES, DIFFICULTY_PRETTY_NAMES, getDifficultyList } from '@root/components/formatted/formattedDifficulty';
 import { AchievementRulesTableLevelCompletion } from '@root/constants/achievementInfo';
 import AchievementType from '@root/constants/achievementType';
-import User from '@root/models/db/user';
 
-// TODO: reconcile with AchievementScoreInfo
+export function getDifficultyRollingSum(levelsCompletedByDifficulty: { [key: string]: number }): number[] {
+  let acc = 0;
+  const rollingSum = getDifficultyList().reverse().map((difficulty) => {
+    const add = levelsCompletedByDifficulty[difficulty.value] || 0;
+    const amount = acc + add;
+
+    acc += add;
+
+    return amount;
+  }).reverse();
+
+  return rollingSum;
+}
+
 const difficultyRequirements = [
   {
     name: DIFFICULTY_PRETTY_NAMES[DIFFICULTY_NAMES.SUPER_GRANDMASTER],
@@ -48,21 +60,9 @@ const difficultyRequirements = [
 
 ];
 
-export function getDifficultyRollingSum(levelsCompletedByDifficulty: { [key: string]: number }): number[] {
-  let acc = 0;
-  const rollingSum = getDifficultyList().reverse().map((difficulty) => {
-    const add = levelsCompletedByDifficulty[difficulty.value] || 0;
-    const amount = acc + add;
+export function getPlayerRank(levelsCompletedByDifficulty: { [key: string]: number }): string {
+  // TODO: reconcile with AchievementScoreInfo
 
-    acc += add;
-
-    return amount;
-  }).reverse();
-
-  return rollingSum;
-}
-
-export function getPlayerRank(user: User, levelsCompletedByDifficulty: { [key: string]: number }): string {
   // rolling sum should add up all from previous keys into current key
   const rollingSum = getDifficultyRollingSum(levelsCompletedByDifficulty);
 
