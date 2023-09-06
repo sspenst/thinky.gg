@@ -2,7 +2,7 @@
 // import dotenv
 // import tsconfig-paths
 
-import { AchievementCategory } from '@root/constants/achievementInfo';
+import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import Achievement from '@root/models/db/achievement';
 import PlayAttempt from '@root/models/db/playAttempt';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';

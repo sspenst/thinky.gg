@@ -1,5 +1,5 @@
-import { AchievementCategory, AchievementCategoryMapping } from '@root/constants/achievementInfo';
-import AchievementType from '@root/constants/achievementType';
+import { AchievementCategory, AchievementCategoryMapping } from '@root/constants/achievements/achievementInfo';
+import AchievementType from '@root/constants/achievements/achievementType';
 import { getCompletionByDifficultyTable } from '@root/helpers/getCompletionByDifficultyTable';
 import { createNewAchievement } from '@root/helpers/notificationHelper';
 import { getDifficultyRollingSum } from '@root/helpers/playerRankHelper';
@@ -7,8 +7,7 @@ import Achievement from '@root/models/db/achievement';
 import Level from '@root/models/db/level';
 import Review from '@root/models/db/review';
 import User from '@root/models/db/user';
-import { AchievementModel, LevelModel, ReviewModel, UserModel } from '@root/models/mongoose';
-import { doMatchQuery } from '@root/pages/api/match/search';
+import { AchievementModel, LevelModel, MultiplayerMatchModel, ReviewModel, UserModel } from '@root/models/mongoose';
 import { Types } from 'mongoose';
 
 const AchievementCategoryFetch = {
@@ -23,7 +22,7 @@ const AchievementCategoryFetch = {
     return { reviewsCreated: reviewsCreated };
   },
   [AchievementCategory.MULTIPLAYER]: async (userId: Types.ObjectId) => {
-    const userMatches = await doMatchQuery({ players: [userId], rated: true });
+    const userMatches = await MultiplayerMatchModel.find({ players: [userId], rated: true }, {}, { lean: true });
 
     return { userMatches: userMatches };
   },

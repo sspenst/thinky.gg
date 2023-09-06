@@ -1,4 +1,4 @@
-import { AchievementCategory } from '@root/constants/achievementInfo';
+import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import Discord from '@root/constants/discord';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import mongoose, { PipelineStage, Types } from 'mongoose';

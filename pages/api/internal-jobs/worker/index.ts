@@ -1,4 +1,4 @@
-import { AchievementCategory } from '@root/constants/achievementInfo';
+import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import UserConfig from '@root/models/db/userConfig';
 import { refreshAchievements } from '@root/tests/helpers/refreshAchievements';
 import mongoose, { QueryOptions, Types } from 'mongoose';

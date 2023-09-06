@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import AchievementType from '../../constants/achievementType';
+import AchievementType from '../../constants/achievements/achievementType';
 import Achievement from '../db/achievement';
 
 const AchievementSchema = new mongoose.Schema<Achievement>({

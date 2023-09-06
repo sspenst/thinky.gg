@@ -1,7 +1,7 @@
 import Level from '@root/models/db/level';
 import User from '@root/models/db/user';
 import { QueryOptions, SaveOptions, Types } from 'mongoose';
-import AchievementType from '../constants/achievementType';
+import AchievementType from '../constants/achievements/achievementType';
 import GraphType from '../constants/graphType';
 import NotificationType from '../constants/notificationType';
 import Achievement from '../models/db/achievement';
