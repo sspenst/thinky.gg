@@ -1,8 +1,9 @@
 import { AchievementCategory } from '@root/constants/achievementInfo';
+import NotificationType from '@root/constants/notificationType';
 import Role from '@root/constants/role';
 import { ValidEnum, ValidObjectId } from '@root/helpers/apiWrapper';
 import withAuth, { NextApiRequestWithAuth } from '@root/lib/withAuth';
-import { AchievementModel } from '@root/models/mongoose';
+import { AchievementModel, NotificationModel } from '@root/models/mongoose';
 import { calcPlayAttempts, refreshIndexCalcs } from '@root/models/schemas/levelSchema';
 import { refreshAchievements } from '@root/tests/helpers/refreshAchievements';
 import { Types } from 'mongoose';
@@ -36,7 +37,10 @@ export default withAuth({ POST: {
       resp = resp.length;
       break;
     case AdminCommand.deleteAchievements:
-      resp = await AchievementModel.deleteMany({ userId: new Types.ObjectId(targetId as string) });
+      resp = await Promise.all([
+        AchievementModel.deleteMany({ userId: new Types.ObjectId(targetId as string) }),
+        NotificationModel.deleteMany({ userId: new Types.ObjectId(targetId as string), type: NotificationType.NEW_ACHIEVEMENT }),
+      ]);
       break;
     case AdminCommand.refreshIndexCalcs:
       await refreshIndexCalcs(new Types.ObjectId(targetId as string));
