@@ -621,10 +621,9 @@ describe('Editing levels should work correctly', () => {
         // check to see if we earned an achievement
         const achievements = await AchievementModel.find({ userId: new Types.ObjectId(TestId.USER) });
 
-        // note we should have two achievements, 7 levels were created by TestId.USER so that means they earn the first created and fifth created badge
-        expect(achievements.length).toBe(2);
+        expect(achievements.length).toBe(1);
         expect(achievements[0].type).toBe(AchievementType.CREATOR_CREATED_1_LEVEL);
-        expect(achievements[1].type).toBe(AchievementType.CREATOR_CREATED_5_LEVELS);
+        // expect(achievements[1].type).toBe(AchievementType.CREATOR_CREATED_5_LEVELS); // Note that this is not earned yet, 7 levels created but they aren't quality
 
         expect(response.error).toBeUndefined();
         expect(response._id).toBe(level_id_1);
