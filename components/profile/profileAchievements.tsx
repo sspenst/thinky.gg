@@ -21,9 +21,9 @@ export function ProfileAchievments({ achievements }: { achievements: Achievement
   }
 
   const achievementsToShow = {
-    'Skill': getAchievementsOfType(AchievementRulesTableUser),
+    'Progress': getAchievementsOfType(AchievementRulesTableUser),
     'Creator': getAchievementsOfType(AchievementRulesTableCreator),
-    'Progress': getAchievementsOfType(AchievementRulesTableLevelCompletion),
+    'Skill': getAchievementsOfType(AchievementRulesTableLevelCompletion),
     'Reviewer': getAchievementsOfType(AchievementRulesTableReviewer),
     'Multiplayer': getAchievementsOfType(AchievementRulesTableMultiplayer),
 
