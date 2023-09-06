@@ -1,6 +1,10 @@
-import { DIFFICULTY_NAMES, getDifficultyFromValue, getDifficultyList } from '@root/components/formatted/formattedDifficulty';
+import { DIFFICULTY_NAMES, getDifficultyList } from '@root/components/formatted/formattedDifficulty';
+import { getCompletionByDifficultyTable } from '@root/helpers/getCompletionByDifficultyTable';
+import { getDifficultyRollingSum } from '@root/helpers/playerRankHelper';
 import Level from '@root/models/db/level';
 import User from '@root/models/db/user';
+import { LevelModel, UserModel } from '@root/models/mongoose';
+import { Types } from 'mongoose';
 import AchievementType from './achievementType';
 
 export interface IAchievementFeatureUser {
@@ -288,9 +292,36 @@ export enum AchievementCategory {
 }
 
 export const AchievementCategoryMapping = {
-  [AchievementCategory.USER]: AchievementRulesTableUser,
-  [AchievementCategory.CREATOR]: AchievementRulesTableCreator,
-  [AchievementCategory.LEVEL_COMPLETION]: AchievementRulesTableLevelCompletion,
+  [AchievementCategory.USER]: {
+    fetchData: async (userId: Types.ObjectId) => {
+      const user = await UserModel.findById<User>(userId, {}, { lean: true });
+
+      return { user: user };
+    },
+    rules: AchievementRulesTableUser,
+  },
+  [AchievementCategory.CREATOR]: {
+    fetchData: async (userId: Types.ObjectId) => {
+      const userCreatedLevels = await LevelModel.find<Level>(
+        {
+          userId: userId, isDraft: false, isDeleted: { $ne: true },
+        }, { score: 1, authorNote: 1, leastMoves: 1, ts: 1, calc_reviews_score_laplace: 1, calc_playattempts_just_beaten_count: 1, calc_playattempts_unique_users: 1 },
+        { lean: true });
+
+      return { levelsCreated: userCreatedLevels };
+    },
+
+    rules: AchievementRulesTableCreator,
+  },
+  [AchievementCategory.LEVEL_COMPLETION]: {
+    fetchData: async (userId: Types.ObjectId) => {
+      const levelsCompletedByDifficulty = await getCompletionByDifficultyTable(userId);
+      const rollingLevelCompletionSum = getDifficultyRollingSum(levelsCompletedByDifficulty);
+
+      return { rollingLevelCompletionSum: rollingLevelCompletionSum };
+    },
+    rules: AchievementRulesTableLevelCompletion,
+  }
 };
 
 // dynamically calculate

@@ -1,10 +1,7 @@
 import { AchievementCategory, AchievementCategoryMapping } from '@root/constants/achievementInfo';
 import Direction from '@root/constants/direction';
-import { getCompletionByDifficultyTable } from '@root/helpers/getCompletionByDifficultyTable';
 import getDifficultyEstimate from '@root/helpers/getDifficultyEstimate';
-import { getDifficultyRollingSum } from '@root/helpers/playerRankHelper';
 import Achievement from '@root/models/db/achievement';
-import User from '@root/models/db/user';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
@@ -31,32 +28,24 @@ import { matchMarkCompleteLevel } from '../match/[matchId]';
  */
 export async function refreshAchievements(userId: Types.ObjectId, categories: AchievementCategory[]) {
   // it is more efficient to just grab all their achievements then to loop through and query each one if they have it
-  const [user, levelsCompletedByDifficulty, userCreatedLevels, allAchievements] = await Promise.all([
 
-    /** TODO: conditionally fetch these based on categories since not all categories need all this data
-     * One way to do this is to grab the function defintion of the `unlocked` function and see what data it needs
-     * Another way to is to define in the categories what data is needed and merge it in an object
-     */
-    UserModel.findById<User>(userId, {}, { lean: true }),
-    getCompletionByDifficultyTable(userId),
-    LevelModel.find<Level>(
-      {
-        userId: userId, isDraft: false, isDeleted: { $ne: true },
-      }, { score: 1, authorNote: 1, leastMoves: 1, ts: 1, calc_reviews_score_laplace: 1, calc_playattempts_just_beaten_count: 1, calc_playattempts_unique_users: 1 },
-      { lean: true }),
+  const fetchPromises = [];
+
+  for (const category of categories) {
+    fetchPromises.push(AchievementCategoryMapping[category].fetchData(userId));
+  }
+
+  const [neededDataArray, allAchievements] = await Promise.all([
+    Promise.all(fetchPromises),
     AchievementModel.find<Achievement>({ userId: userId }, { type: 1, }, { lean: true }),
 
   ]);
-
-  if (!user) {
-    return null;
-  }
-
-  const rollingLevelCompletionSum = getDifficultyRollingSum(levelsCompletedByDifficulty);
+  // neededDataArray is an array of objects with unique keys. Let's combine into one big object
+  const neededData = neededDataArray.reduce((acc, cur) => ({ ...acc, ...cur }), {});
   const achievementsCreatedPromises = [];
 
   for (const category of categories) {
-    const categoryRulesTable = AchievementCategoryMapping[category];
+    const categoryRulesTable = AchievementCategoryMapping[category].rules;
 
     for (const achievementType in categoryRulesTable) {
       const achievementInfo = categoryRulesTable[achievementType];
@@ -67,7 +56,7 @@ export async function refreshAchievements(userId: Types.ObjectId, categories: Ac
       }
 
       // TODO: maybe there is a more proper way to do this so i can remove the as any...
-      if (achievementInfo.unlocked({ user: user, rollingLevelCompletionSum: rollingLevelCompletionSum, levelsCreated: userCreatedLevels } as any)) {
+      if (achievementInfo.unlocked(neededData as any)) {
         achievementsCreatedPromises.push(createNewAchievement(achievementType as AchievementType, userId));
       }
     }
