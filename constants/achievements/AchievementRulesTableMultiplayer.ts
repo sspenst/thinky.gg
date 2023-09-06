@@ -15,7 +15,33 @@ export const AchievementRulesTableMultiplayer: { [achievementType: string]: IAch
       return userMatches.length >= 1;
     }
   },
-  [AchievementType.MULTIPLAYER_CLASSICAL_1_GAME_PLAYED]: {
+  [AchievementType.MULTIPLAYER_BULLET_5_GAME_PLAYED]: {
+    name: 'Bullet Player',
+    // rabbit
+    emoji: '🚅',
+    description: 'Earned an elo in bullet',
+    unlocked: ({ multiplayerProfile }) => {
+      return multiplayerProfile.calcRushBulletCount >= 5;
+    },
+  },
+  [AchievementType.MULTIPLAYER_BLITZ_5_GAME_PLAYED]: {
+    name: 'Blitz Player',
+    emoji: '⚡',
+    description: 'Earned an elo in blitz',
+    unlocked: ({ multiplayerProfile }) => {
+      return multiplayerProfile.calcRushBlitzCount >= 5;
+    }
+  },
+  [AchievementType.MULTIPLAYER_RAPID_5_GAME_PLAYED]: {
+    name: 'Rapid Player',
+    emoji: '🚗',
+    description: 'Earned an elo in rapid',
+    unlocked: ({ multiplayerProfile }) => {
+      return multiplayerProfile.calcRushRapidCount >= 5;
+    }
+  },
+
+  [AchievementType.MULTIPLAYER_CLASSICAL_5_GAME_PLAYED]: {
     name: 'Classical Player',
     emoji: '⏱️',
     description: 'Earned an elo in classical',
@@ -23,4 +49,5 @@ export const AchievementRulesTableMultiplayer: { [achievementType: string]: IAch
       return multiplayerProfile.calcRushClassicalCount >= 5;
     }
   },
+
 };
