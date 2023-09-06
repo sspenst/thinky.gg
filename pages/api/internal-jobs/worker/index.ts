@@ -204,7 +204,14 @@ async function processQueueMessage(queueMessage: QueueMessage) {
     log = `refreshAchievements for ${userId}`;
 
     try {
-      await refreshAchievements(new Types.ObjectId(userId), categories);
+      const achievementsEarned = await refreshAchievements(new Types.ObjectId(userId), categories);
+
+      if (!achievementsEarned) {
+        log += 'refresh achievements returned null';
+        error = true;
+      } else if (achievementsEarned.length > 0) {
+        log += ` - earned ${achievementsEarned.length} achievements`;
+      }
     } catch (e: any) {
       log = `refreshAchievements for ${userId} failed: ${e.message}`;
       error = true;
