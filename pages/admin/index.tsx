@@ -6,8 +6,10 @@ import Role from '@root/constants/role';
 import dbConnect from '@root/lib/dbConnect';
 import { getUserFromToken } from '@root/lib/withAuth';
 import User from '@root/models/db/user';
+import { UserModel } from '@root/models/mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
-import React, { useState } from 'react';
+import { useRouter } from 'next/router';
+import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -22,14 +24,18 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
+  const { queryUser, queryCommand } = context.query;
+
   return {
-    props: {},
+    props: {
+      queryUser: queryUser ? JSON.parse(JSON.stringify(await UserModel.findOne({ name: queryUser }))) : null,
+      queryCommand: queryCommand || null,
+    },
   };
 }
 
-export default function AdminPage() {
-  const [selectedCommand, setSelectedCommand] = useState<{ label: string; command: string; confirm?: boolean } | null>(null);
-  const [selectedUser, setSelectedUser] = useState<User>();
+export default function AdminPage({ queryUser, queryCommand }: {queryUser: User | undefined; queryCommand: string | null}) {
+  const [selectedUser, setSelectedUser] = useState<User>(queryUser as User);
   const [runningCommand, setRunningCommand] = useState(false);
 
   const commands = [
@@ -40,6 +46,17 @@ export default function AdminPage() {
 
     // Add more commands here
   ];
+  const selectedCommandFromQuery = commands.find((cmd) => cmd.command === queryCommand);
+
+  const [selectedCommand, setSelectedCommand] = useState<{ label: string; command: string; confirm?: boolean } | null>(selectedCommandFromQuery || null);
+
+  useEffect(() => {
+    const newUrl = `${window.location.pathname}?queryUser=${selectedUser?.name}&queryCommand=${selectedCommand?.command}`;
+
+    if (window.location.href !== newUrl) {
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, [selectedUser, selectedCommand]);
 
   async function runCommand() {
     if (selectedCommand?.confirm && !window.confirm('Are you sure you want to proceed?')) return;
@@ -73,9 +90,12 @@ export default function AdminPage() {
     <Page title='Admin Page'>
       <div className='p-2'>
         <h1 className='flex flex-col items-center justify-center text-2xl'>Admin Page</h1>
-        <div className='flex flex-row items-center justify-center p-2 gap-2'>
+        <div className='flex flex-col items-center justify-center p-2 gap-2'>
           <p className='text-xl'>Run command on user:</p>
-          <MultiSelectUser defaultValue={selectedUser} onSelect={(selected: User) => setSelectedUser(selected)} />
+          <MultiSelectUser defaultValue={selectedUser} onSelect={(selected: User) => {
+            setSelectedUser(selected);
+          }
+          } />
           <Menu as='div' className='relative inline-block text-left'>
             <div>
               <Menu.Button className='border border-gray-300 bg-gray rounded-md shadow-sm px-4 py-2 text-sm flex flex-row items-center justify-center gap-2'>
@@ -87,7 +107,9 @@ export default function AdminPage() {
                 <Menu.Item key={cmd.command}>
                   {({ active }) => (
                     <a
-                      onClick={() => setSelectedCommand(cmd)}
+                      onClick={() => {
+                        setSelectedCommand(cmd);
+                      }}
                       className={`${active ? 'bg-blue-600 text-white' : 'text-gray-900'} block px-4 py-2 text-sm`}
                     >
                       {cmd.label}
