@@ -167,15 +167,20 @@ async function processQueueMessage(queueMessage: QueueMessage) {
         const whereSend = queueMessage.type === QueueMessageType.PUSH_NOTIFICATION ? sendPushNotification : sendEmailNotification;
         const userConfig = await UserConfigModel.findOne({ userId: notification.userId._id }) as UserConfig;
 
-        const allowedEmail = userConfig.emailNotificationsList.includes(notification.type);
-        const allowedPush = userConfig.pushNotificationsList.includes(notification.type);
-
-        if (whereSend === sendEmailNotification && !allowedEmail) {
-          log = `Notification ${notificationId} not sent: ` + notification.type + ' not allowed by user (email)';
-        } else if (whereSend === sendPushNotification && !allowedPush) {
-          log = `Notification ${notificationId} not sent: ` + notification.type + ' not allowed by user (push)';
+        if (userConfig === null) {
+          log = `Notification ${notificationId} not sent: user config not found`;
+          error = true;
         } else {
-          log = await whereSend(notification);
+          const allowedEmail = userConfig.emailNotificationsList.includes(notification.type);
+          const allowedPush = userConfig.pushNotificationsList.includes(notification.type);
+
+          if (whereSend === sendEmailNotification && !allowedEmail) {
+            log = `Notification ${notificationId} not sent: ` + notification.type + ' not allowed by user (email)';
+          } else if (whereSend === sendPushNotification && !allowedPush) {
+            log = `Notification ${notificationId} not sent: ` + notification.type + ' not allowed by user (push)';
+          } else {
+            log = await whereSend(notification);
+          }
         }
       }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
