@@ -1,3 +1,5 @@
+import AchievementType from '@root/constants/achievements/achievementType';
+import { QueueMessageState, QueueMessageType } from '@root/models/schemas/queueMessageSchema';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -7,7 +9,7 @@ import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { LevelModel, ReviewModel } from '../../../../models/mongoose';
+import { AchievementModel, LevelModel, QueueMessageModel, ReviewModel } from '../../../../models/mongoose';
 import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
 import reviewLevelHandler, { getScoreEmojis } from '../../../../pages/api/review/[id]';
 
@@ -448,6 +450,12 @@ describe('Reviewing levels should work correctly', () => {
         const response = await res.json();
         const processQueueRes = await processQueueMessages();
 
+        // query for achievements
+        const achievements = await AchievementModel.find({ userId: TestId.USER });
+
+        expect(achievements.length).toBe(1);
+        expect(achievements[0].type).toBe(AchievementType.REVIEWED_1_LEVEL);
+
         expect(response.error).toBeUndefined();
         expect(response.score).toBe(3.5);
         expect(response.text).toBe('t'.repeat(500));
@@ -462,7 +470,7 @@ describe('Reviewing levels should work correctly', () => {
         expect(review.score).toBe(3.5);
         expect(review.levelId._id.toString()).toBe(TestId.LEVEL_2);
 
-        expect(processQueueRes).toBe('Processed 3 messages with no errors');
+        expect(processQueueRes).toBe('Processed 5 messages with no errors');
 
         lvl = await LevelModel.findById(TestId.LEVEL_2);
         expect(lvl.calc_reviews_score_laplace.toFixed(2)).toBe('0.66');
@@ -540,7 +548,7 @@ describe('Reviewing levels should work correctly', () => {
         const response = await res.json();
         const processQueueRes = await processQueueMessages();
 
-        expect(processQueueRes).toBe('NONE');
+        expect(processQueueRes).toBe('Processed 2 messages with no errors');
         expect(response.error).toBe('Level not found');
 
         expect(res.status).toBe(404);
@@ -586,7 +594,7 @@ describe('Reviewing levels should work correctly', () => {
         const response = await res.json();
         const processQueueRes = await processQueueMessages();
 
-        expect(processQueueRes).toBe('Processed 3 messages with no errors');
+        expect(processQueueRes).toBe('Processed 5 messages with no errors');
         expect(response.error).toBeUndefined();
         expect(response.levelId.toString()).toBe(TestId.LEVEL_2);
         expect(res.status).toBe(200);
@@ -664,7 +672,7 @@ describe('Reviewing levels should work correctly', () => {
         const response = await res.json();
         const processQueueRes = await processQueueMessages();
 
-        expect(processQueueRes).toBe('Processed 3 messages with no errors');
+        expect(processQueueRes).toBe('Processed 5 messages with no errors');
 
         expect(response.error).toBeUndefined();
         expect(response.levelId.toString()).toBe(TestId.LEVEL_2);
@@ -804,7 +812,7 @@ describe('Reviewing levels should work correctly', () => {
         const response = await res.json();
         const processQueueRes = await processQueueMessages();
 
-        expect(processQueueRes).toBe('Processed 1 messages with no errors');
+        expect(processQueueRes).toBe('Processed 3 messages with no errors');
         expect(response.error).toBeUndefined();
         expect(response.success).toBe(true);
         expect(res.status).toBe(200);
