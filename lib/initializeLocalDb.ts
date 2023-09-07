@@ -1,4 +1,6 @@
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
+import { PASSWORD_SALTROUNDS } from '@root/models/schemas/userSchema';
+import bcrypt from 'bcryptjs';
 import { Types } from 'mongoose';
 import Role from '../constants/role';
 import TestId from '../constants/testId';
@@ -15,14 +17,15 @@ export default async function initializeLocalDb() {
   // USER
   const promises = [];
 
-  promises.push(UserModel.create([
+  // Note - UserModel has to use create, not insertMany, because of the pre-save hook for the password
+  promises.push(UserModel.insertMany([
     {
       _id: new Types.ObjectId(TestId.USER),
       calc_records: 2,
       email: 'test@gmail.com',
       last_visited_at: ts,
       name: 'test',
-      password: 'test1234',
+      password: await bcrypt.hash('test1234', PASSWORD_SALTROUNDS),
       score: 2,
       ts: ts,
     },
@@ -31,7 +34,7 @@ export default async function initializeLocalDb() {
       calc_records: 0,
       email: 'bbb@gmail.com',
       name: 'BBB',
-      password: 'BBB12345',
+      password: await bcrypt.hash('BBB12345', PASSWORD_SALTROUNDS),
       score: 0,
       ts: ts,
     },
@@ -40,7 +43,7 @@ export default async function initializeLocalDb() {
       calc_records: 1,
       email: 'the_curator@gmail.com',
       name: 'Curator',
-      password: 'Curator1',
+      password: await bcrypt.hash('Curator1', PASSWORD_SALTROUNDS),
       roles: [Role.CURATOR],
       score: 1,
       ts: ts,
@@ -51,7 +54,7 @@ export default async function initializeLocalDb() {
       calc_records: 1,
       email: 'someolduser@someolduser.com',
       name: 'AncientUser',
-      password: 'ancient1',
+      password: await bcrypt.hash('ancient1', PASSWORD_SALTROUNDS),
       roles: [],
       score: 1,
       // no ts
@@ -61,14 +64,16 @@ export default async function initializeLocalDb() {
       calc_records: 0,
       email: 'guest@guest.com',
       name: 'guest',
-      password: 'BBB12345',
+      password: await bcrypt.hash('BBB12345', PASSWORD_SALTROUNDS),
       score: 0,
       roles: [Role.GUEST],
       ts: ts,
     }
-  ]));
+  ],
+  { ordered: false }
+  ));
 
-  promises.push(UserConfigModel.create(
+  promises.push(UserConfigModel.insertMany(
     [
       {
         _id: new Types.ObjectId(),
@@ -89,11 +94,11 @@ export default async function initializeLocalDb() {
         userId: new Types.ObjectId(TestId.USER_GUEST),
         emailConfirmed: false,
       }
-    ]
+    ], { ordered: false }
   ));
 
   // LEVEL
-  promises.push(LevelModel.create(
+  promises.push(LevelModel.insertMany(
     [
       {
         _id: new Types.ObjectId(TestId.LEVEL),
@@ -158,8 +163,10 @@ export default async function initializeLocalDb() {
         userId: new Types.ObjectId(TestId.USER),
         width: 6,
       }
-    ]));
-  promises.push(RecordModel.create(
+    ],
+    { ordered: false }
+  ));
+  promises.push(RecordModel.insertMany(
     [
       {
         _id: new Types.ObjectId(TestId.RECORD),
@@ -190,8 +197,12 @@ export default async function initializeLocalDb() {
         ts: ts,
         userId: new Types.ObjectId(TestId.USER),
       }
-    ]));
-  promises.push(StatModel.create(
+    ],
+    {
+      ordered: false
+    }
+  ));
+  promises.push(StatModel.insertMany(
     [
       {
         _id: new Types.ObjectId(),
@@ -239,22 +250,30 @@ export default async function initializeLocalDb() {
         ts: ts,
         userId: new Types.ObjectId(TestId.USER),
       }
-    ]));
+    ],
+    {
+      ordered: false
+    }
+  ));
 
   // DELETED DOCUMENTS
 
-  promises.push(PlayAttemptModel.create({
-    _id: new Types.ObjectId(),
-    attemptContext: AttemptContext.UNBEATEN,
-    endTime: 200,
-    isDeleted: true,
-    levelId: new Types.ObjectId(TestId.LEVEL_DELETED),
-    startTime: 100,
-    updateCount: 1,
-    userId: new Types.ObjectId(TestId.USER),
-  }));
+  promises.push(PlayAttemptModel.insertMany([
+    {
+      _id: new Types.ObjectId(),
+      attemptContext: AttemptContext.UNBEATEN,
+      endTime: 200,
+      isDeleted: true,
+      levelId: new Types.ObjectId(TestId.LEVEL_DELETED),
+      startTime: 100,
+      updateCount: 1,
+      userId: new Types.ObjectId(TestId.USER),
+    }
+  ],
+  { ordered: false }
+  ));
 
-  promises.push(ReviewModel.create(
+  promises.push(ReviewModel.insertMany(
     [
       {
         _id: new Types.ObjectId(),
@@ -273,10 +292,11 @@ export default async function initializeLocalDb() {
         ts: ts,
         userId: new Types.ObjectId(TestId.USER),
       }
-    ]
+    ],
+    { ordered: false }
   ));
 
-  promises.push(CollectionModel.create(
+  promises.push(CollectionModel.insertMany(
     [
       {
         _id: new Types.ObjectId(TestId.COLLECTION),
@@ -301,9 +321,11 @@ export default async function initializeLocalDb() {
         userId: new Types.ObjectId(TestId.USER_B),
       }
 
-    ]));
+    ],
+    { ordered: false }
+  ));
 
-  promises.push(CampaignModel.create(
+  promises.push(CampaignModel.insertMany(
     [
       {
         _id: new Types.ObjectId(TestId.CAMPAIGN_OFFICIAL),
@@ -352,7 +374,7 @@ export async function initLevel(userId: string, name: string, obj: Partial<Level
       });
     }
 
-    await ReviewModel.create(revs);
+    await ReviewModel.insertMany(revs);
   }
 
   return lvl;
