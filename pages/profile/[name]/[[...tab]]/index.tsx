@@ -652,41 +652,60 @@ export default function ProfilePage({
             </div>
           </Link>
           <Link
-            className={getTabClassNames(ProfileTab.Multiplayer)}
-            href={`/profile/${user.name}/${ProfileTab.Multiplayer}`}
+            className={getTabClassNames(ProfileTab.Achievements)}
+            href={`/profile/${user.name}/${ProfileTab.Achievements}`}
           >
-            Multiplayer ({multiplayerCount})
-          </Link>
-          <Link
-            className={getTabClassNames(ProfileTab.Collections)}
-            href={`/profile/${user.name}/${ProfileTab.Collections}`}
-          >
-            Collections ({collectionsCount})
+            <div className='flex flex-row items-center gap-2'>
+              <span>🏆</span>
+              <span>Achievements ({achievementsCount})</span>
+            </div>
           </Link>
           <Link
             className={getTabClassNames(ProfileTab.Levels)}
             href={`/profile/${user.name}/${ProfileTab.Levels}`}
           >
-            Levels ({levelsCount})
+            <div className='flex flex-row items-center gap-2'>
+              <span>🏗</span>
+              <span>Levels Created ({levelsCount})</span>
+            </div>
+          </Link>
+          <Link
+            className={getTabClassNames(ProfileTab.Multiplayer)}
+            href={`/profile/${user.name}/${ProfileTab.Multiplayer}`}
+          >
+            <div className='flex flex-row items-center gap-2'>
+              <span>🎮</span>
+              <span>Multiplayer ({multiplayerCount})</span>
+            </div>
+          </Link>
+          <Link
+            className={getTabClassNames(ProfileTab.Collections)}
+            href={`/profile/${user.name}/${ProfileTab.Collections}`}
+          >
+            <div className='flex flex-row items-center gap-2'>
+              <span>📚</span>
+              <span>Collections ({collectionsCount})</span>
+            </div>
           </Link>
           <Link
             className={getTabClassNames(ProfileTab.ReviewsWritten)}
             href={`/profile/${user.name}/${ProfileTab.ReviewsWritten}`}
           >
-            Reviews Written ({reviewsWrittenCount})
+            <div className='flex flex-row items-center gap-2'>
+              <span>✍</span>
+              <span>Reviews Written ({reviewsWrittenCount})</span>
+            </div>
           </Link>
           <Link
             className={getTabClassNames(ProfileTab.ReviewsReceived)}
             href={`/profile/${user.name}/${ProfileTab.ReviewsReceived}`}
           >
-            Reviews Received ({reviewsReceivedCount})
+            <div className='flex flex-row items-center gap-2'>
+              <span>📝</span>
+              <span>Reviews Received ({reviewsReceivedCount})</span>
+            </div>
           </Link>
-          <Link
-            className={getTabClassNames(ProfileTab.Achievements)}
-            href={`/profile/${user.name}/${ProfileTab.Achievements}`}
-          >
-            Achievements ({achievementsCount})
-          </Link>
+
           <MultiSelectUser
             onSelect={(user) => {
               if (user?.name) {
