@@ -42,7 +42,7 @@ export const AchievementRulesTableCreator: { [achievementType: string]: IAchieve
   [AchievementType.CREATOR_CREATED_25_LEVELS]: {
     name: 'Developer',
     emoji: '🏘',
-    description: 'Created quality 25 levels',
+    description: 'Created 25 quality levels',
 
     unlocked: ({ levelsCreated }) => {
       const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace > 0.5);
