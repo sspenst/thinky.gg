@@ -106,7 +106,7 @@ export default function AdminPage({ queryUser, queryCommand }: {queryUser: User 
         <h1 className='flex flex-col items-center justify-center text-2xl'>Admin Page</h1>
         <div className='flex flex-col items-center justify-center p-2 gap-2'>
           <p className='text-xl'>Run command on user:</p>
-          <MultiSelectUser key={'search-' + selectedUser._id} defaultValue={selectedUser} onSelect={(selected: User) => {
+          <MultiSelectUser key={'search-' + selectedUser?._id} defaultValue={selectedUser} onSelect={(selected: User) => {
             setSelectedUser(selected);
           }
           } />
