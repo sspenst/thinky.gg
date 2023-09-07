@@ -9,12 +9,17 @@ interface FollowingListProps {
 }
 
 export default function FollowingList({ users }: FollowingListProps) {
+  const [page, setPage] = React.useState(1);
+  const currData = users.slice((page - 1) * 10, page * 10);
+
   return (
     <div className='flex flex-col items-center justify-center max-w-md'>
       <DataTable
-        onChangePage={() => {}}
+        onChangePage={(page: number) => {
+          setPage(page);
+        }}
         onSort={() => {}}
-        page={1}
+        page={page}
         sortBy='user'
         sortDir='asc'
         totalItems={users.length}
@@ -34,7 +39,7 @@ export default function FollowingList({ users }: FollowingListProps) {
           },
         ]}
         itemsPerPage={10} // TODO - this doesn't seem to work... this data table component seems like it only works with server...
-        data={users}
+        data={currData}
         noDataComponent={<div className='text-gray-500 dark:text-gray-400'>No users to show</div>}
       />
     </div>
