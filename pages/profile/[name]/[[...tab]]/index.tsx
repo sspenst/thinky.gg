@@ -640,7 +640,11 @@ export default function ProfilePage({
             className={getTabClassNames(ProfileTab.Profile)}
             href={`/profile/${user.name}`}
           >
-            Profile
+            <div className='flex flex-row items-center gap-2'>
+              <ProfileAvatar size={20} user={user} />
+              <span>Profile</span>
+            </div>
+
           </Link>
           <Link
             className={getTabClassNames(ProfileTab.Insights)}
