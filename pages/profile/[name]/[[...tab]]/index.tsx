@@ -263,7 +263,7 @@ export default function ProfilePage({
   const [searchLevelText, setSearchLevelText] = useState('');
   const [showCollectionFilter, setShowCollectionFilter] = useState(FilterSelectOption.All);
   const [showLevelFilter, setShowLevelFilter] = useState(FilterSelectOption.All);
-  const [tab, setTab] = useState(ProfileTab.Profile);
+  const [tab, setTab] = useState(profileTab);
 
   useEffect(() => {
     setFollowerCount(followerCountInit);
@@ -353,7 +353,7 @@ export default function ProfilePage({
       },
     });
   };
-  const { data: profileDataFetched } = useSWRHelper<{levelsCompletedByDifficulty: {[key: string]: number}}>('/api/user/' + user._id + '?type=levelsCompletedByDifficulty');
+  const { data: profileDataFetched } = useSWRHelper<{levelsCompletedByDifficulty: {[key: string]: number}}>('/api/user/' + user._id + '?type=levelsCompletedByDifficulty', {}, {}, tab !== ProfileTab.Profile);
   const levelsCompletedByDifficulty = profileDataFetched?.levelsCompletedByDifficulty;
   const playerRank = levelsCompletedByDifficulty ? getPlayerRank(levelsCompletedByDifficulty) : <span className='italic text-sm'>...</span>;
 
