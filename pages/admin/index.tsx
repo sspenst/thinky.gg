@@ -8,7 +8,7 @@ import { getUserFromToken } from '@root/lib/withAuth';
 import User from '@root/models/db/user';
 import { UserModel } from '@root/models/mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
-import { useRouter } from 'next/router';
+import Router from 'next/router';
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
@@ -51,10 +51,24 @@ export default function AdminPage({ queryUser, queryCommand }: {queryUser: User 
   const [selectedCommand, setSelectedCommand] = useState<{ label: string; command: string; confirm?: boolean } | null>(selectedCommandFromQuery || null);
 
   useEffect(() => {
+    if (queryUser && queryUser !== selectedUser) {
+      setSelectedUser(queryUser);
+    }
+
+    if (queryCommand && queryCommand !== selectedCommand?.command) {
+      if (selectedCommandFromQuery) {
+        setSelectedCommand(selectedCommandFromQuery);
+      }
+    }
+  }, [queryCommand, queryUser, selectedCommand?.command, selectedCommandFromQuery, selectedUser]);
+
+  useEffect(() => {
     const newUrl = `${window.location.pathname}?queryUser=${selectedUser?.name}&queryCommand=${selectedCommand?.command}`;
 
-    if (window.location.href !== newUrl) {
-      window.history.replaceState({}, '', newUrl);
+    const currentFullURL = `${window.location.pathname}${window.location.search}`;
+
+    if (currentFullURL !== newUrl) {
+      Router.push(newUrl);
     }
   }, [selectedUser, selectedCommand]);
 
@@ -92,7 +106,7 @@ export default function AdminPage({ queryUser, queryCommand }: {queryUser: User 
         <h1 className='flex flex-col items-center justify-center text-2xl'>Admin Page</h1>
         <div className='flex flex-col items-center justify-center p-2 gap-2'>
           <p className='text-xl'>Run command on user:</p>
-          <MultiSelectUser defaultValue={selectedUser} onSelect={(selected: User) => {
+          <MultiSelectUser key={'search-' + selectedUser._id} defaultValue={selectedUser} onSelect={(selected: User) => {
             setSelectedUser(selected);
           }
           } />
