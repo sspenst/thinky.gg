@@ -26,9 +26,11 @@ let userACollection: Collection | null, userBCollection: Collection | null;
 
 beforeAll(async () => {
   await dbConnect();
-  userACollection = await initCollection(TestId.USER, 'user A collection');
-  userBCollection = await initCollection(TestId.USER_B, 'user B collection');
-  userALevel1 = await initLevel(TestId.USER, 'user A level 1');
+  [userACollection, userBCollection, userALevel1] = await Promise.all([
+    initCollection(TestId.USER, 'user A collection'),
+    initCollection(TestId.USER_B, 'user B collection'),
+    initLevel(TestId.USER, 'user A level 1')
+  ]);
 });
 enableFetchMocks();
 describe('Testing archive', () => {
