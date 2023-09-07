@@ -20,6 +20,8 @@ declare global {
       thisArg?: any,
     ): number
   }
+  var __MONGOSERVER__: MongoMemoryReplSet;
+
 }
 
 export {};
