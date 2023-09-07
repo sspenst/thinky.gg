@@ -335,7 +335,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
           />
         </div>
         <div>
-          <MultiSelectUser key='search-author-input' defaultValue={searchAuthor} onSelect={(user) => {
+          <MultiSelectUser key={'search-author-input-' + searchAuthor?._id.toString()} defaultValue={searchAuthor} onSelect={(user) => {
             queryDebounceHelper({
               searchAuthor: user?.name || '',
             });
