@@ -1,10 +1,11 @@
 import FormattedDate from '@root/components/formatted/formattedDate';
+import LoadingSpinner from '@root/components/page/loadingSpinner';
 import RoleIcons from '@root/components/page/roleIcons';
 import { ProfileAchievments } from '@root/components/profile/profileAchievements';
 import ProfileMultiplayer from '@root/components/profile/profileMultiplayer';
-import { getCompletionByDifficultyTable } from '@root/helpers/getCompletionByDifficultyTable';
 import { getUsersWithMultiplayerProfile } from '@root/helpers/getUsersWithMultiplayerProfile';
 import { getPlayerRank } from '@root/helpers/playerRankHelper';
+import useSWRHelper from '@root/hooks/useSWRHelper';
 import { MultiplayerMatchState } from '@root/models/MultiplayerEnums';
 import classNames from 'classnames';
 import { debounce } from 'debounce';
@@ -103,7 +104,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     achievementsCount,
     collectionsCount,
     followData,
-    levelsCompletedByDifficulty,
     levelsCount,
     multiplayerCount,
     reviewsReceived,
@@ -115,7 +115,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     AchievementModel.countDocuments({ userId: userId }),
     CollectionModel.countDocuments({ userId: userId }),
     getFollowData(user._id.toString(), reqUser),
-    profileTab === ProfileTab.Profile ? getCompletionByDifficultyTable(user._id) : {},
     LevelModel.countDocuments({ isDeleted: { $ne: true }, isDraft: false, userId: userId }),
     MultiplayerMatchModel.countDocuments({ players: userId, state: MultiplayerMatchState.FINISHED, rated: true }),
     profileTab === ProfileTab.ReviewsReceived ? getReviewsForUserId(userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
@@ -129,7 +128,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     achievementsCount: achievementsCount,
     collectionsCount: collectionsCount,
     followerCountInit: followData.followerCount,
-    levelsCompletedByDifficulty: levelsCompletedByDifficulty,
     levelsCount: levelsCount,
     multiplayerCount: multiplayerCount,
     pageProp: page,
@@ -218,7 +216,6 @@ export interface ProfilePageProps {
   enrichedCollections: EnrichedCollection[] | undefined;
   enrichedLevels: EnrichedLevel[] | undefined;
   followerCountInit: number;
-  levelsCompletedByDifficulty: { [key: string]: number };
   levelsCount: number;
   multiplayerCount: number;
   pageProp: number;
@@ -243,7 +240,6 @@ export default function ProfilePage({
   enrichedCollections,
   enrichedLevels,
   followerCountInit,
-  levelsCompletedByDifficulty,
   levelsCount,
   multiplayerCount,
   pageProp,
@@ -357,8 +353,9 @@ export default function ProfilePage({
       },
     });
   };
-
-  const playerRank = getPlayerRank(levelsCompletedByDifficulty);
+  const { data: profileDataFetched } = useSWRHelper<{levelsCompletedByDifficulty: {[key: string]: number}}>('/api/user/' + user._id + '?type=levelsCompletedByDifficulty');
+  const levelsCompletedByDifficulty = profileDataFetched?.levelsCompletedByDifficulty;
+  const playerRank = levelsCompletedByDifficulty ? getPlayerRank(levelsCompletedByDifficulty) : <span className='italic text-sm'>...</span>;
 
   // create an array of objects with the id, trigger element (eg. button), and the content element
   const tabsContent = {
@@ -384,7 +381,7 @@ export default function ProfilePage({
         <div className='flex flex-row flex-wrap justify-center text-left gap-10 m-4'>
           <div>
             <h2><span className='font-bold'>Levels Completed:</span> {user.score}</h2>
-            <h2><span className='font-bold'>Rank: </span><Link href={'/profile/' + user.name + '/' + ProfileTab.Achievements}>{playerRank}</Link>
+            <h2 className='flex flex-row gap-2'><span className='font-bold'>Rank: </span><Link href={'/profile/' + user.name + '/' + ProfileTab.Achievements}>{playerRank}</Link>
             </h2>
             <h2><span className='font-bold'>Levels Created:</span> {user.calc_levels_created_count}</h2>
             {!user.hideStatus && <>
@@ -392,10 +389,11 @@ export default function ProfilePage({
             </>}
             <h2><span className='font-bold'>Account Created:</span> <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.ts} /></h2>
             <h2><span className='font-bold'>Followers:</span> {followerCount}</h2>
-            {levelsCompletedByDifficulty &&
-              <div className='mt-4'>
-                <h2><span className='font-bold'>Levels Completed by Difficulty:</span></h2>
-                {getDifficultyList().reverse().map(difficulty => {
+
+            <div className='mt-4'>
+              <h2><span className='font-bold'>Levels Completed by Difficulty:</span></h2>
+              {levelsCompletedByDifficulty ?
+                getDifficultyList().reverse().map(difficulty => {
                   const levelsCompleted = difficulty.value in levelsCompletedByDifficulty && levelsCompletedByDifficulty[difficulty.value] || 0;
 
                   // don't show pending unless we have to
@@ -411,9 +409,12 @@ export default function ProfilePage({
                       <FormattedDifficulty difficultyEstimate={difficulty.value} id={difficulty.name} />
                     </div>
                   );
-                })}
-              </div>
-            }
+                }) :
+                <div className='p-2'><LoadingSpinner /></div>
+              }
+
+            </div>
+
             {reqUser && reqUser._id.toString() === user._id.toString() && reqUserFollowing && (<>
               <div className='font-bold text-xl mt-4 mb-2 justify-center flex'>{`${reqUserFollowing.length} following:`}</div>
               <FollowingList users={reqUserFollowing} />
