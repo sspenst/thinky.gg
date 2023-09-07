@@ -1,21 +1,30 @@
-import Image from 'next/image';
+import { AchievementRulesCombined } from '@root/constants/achievements/achievementInfo';
+import AchievementType from '@root/constants/achievements/achievementType';
+import classNames from 'classnames';
 import React from 'react';
-import AchievementInfo from '../../constants/achievementInfo';
-import Achievement from '../../models/db/achievement';
 import FormattedDate from './formattedDate';
 
 interface FormattedAchievementProps {
-  achievement: Achievement;
+  achievementType: AchievementType;
+  createdAt?: Date;
 }
 
-export default function FormattedAchievement({ achievement }: FormattedAchievementProps) {
+export default function FormattedAchievement({ achievementType, createdAt }: FormattedAchievementProps) {
+  const locked = !createdAt;
+
   return (
-    <div className='flex flex-col justify-center text-center' style={{
-      borderColor: 'var(--bg-color-4)',
-    }}>
-      <Image alt='logo' src='/logo.svg' width='32' height='32' className='h-12 w-full mb-2' />
-      <span>{AchievementInfo[achievement.type].description}</span>
-      <FormattedDate date={achievement.createdAt} />
+    <div
+      className={classNames('flex gap-4 items-center rounded-xl', { 'opacity-30': locked })}
+      style={{
+        borderColor: 'var(--bg-color-4)',
+      }}
+    >
+      <span className='text-4xl'>{AchievementRulesCombined[achievementType].emoji}</span>
+      <div className='flex flex-col'>
+        <span className='font-bold text-lg'>{AchievementRulesCombined[achievementType].name}</span>
+        <span className='text-sm'>{AchievementRulesCombined[achievementType].description}</span>
+        {!locked && <FormattedDate date={createdAt} />}
+      </div>
     </div>
   );
 }

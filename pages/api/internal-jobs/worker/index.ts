@@ -1,3 +1,5 @@
+import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
+import { refreshAchievements } from '@root/helpers/refreshAchievements';
 import UserConfig from '@root/models/db/userConfig';
 import mongoose, { QueryOptions, Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
@@ -57,6 +59,15 @@ export async function queuePushNotification(notificationId: Types.ObjectId, opti
       options,
     )
   ]);
+}
+
+export async function queueRefreshAchievements(userId: Types.ObjectId, categories: AchievementCategory[], options?: QueryOptions) {
+  await queue(
+    userId.toString() + '-refresh-achievements-' + new Types.ObjectId().toString(),
+    QueueMessageType.REFRESH_ACHIEVEMENTS,
+    JSON.stringify({ userId: userId.toString(), categories: categories }),
+    options,
+  );
 }
 
 export async function queueFetch(url: string, options: RequestInit, dedupeKey?: string, queryOptions?: QueryOptions) {
@@ -192,6 +203,14 @@ async function processQueueMessage(queueMessage: QueueMessage) {
 
     log = `calcCreatorCounts for ${userId}`;
     await calcCreatorCounts(new Types.ObjectId(userId));
+  } else if (queueMessage.type === QueueMessageType.REFRESH_ACHIEVEMENTS) {
+    const { userId, categories } = JSON.parse(queueMessage.message) as { userId: string, categories: AchievementCategory[] };
+    const achievementsEarned = await refreshAchievements(new Types.ObjectId(userId), categories);
+
+    log = `refreshAchievements for ${userId} created ${achievementsEarned.length} achievements`;
+  } else {
+    log = `Unknown queue message type ${queueMessage.type}`;
+    error = true;
   }
 
   /////

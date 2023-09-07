@@ -1,3 +1,4 @@
+import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import isFullAccount from '@root/helpers/isFullAccount';
 import { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
@@ -14,7 +15,7 @@ import Level from '../../../models/db/level';
 import Review from '../../../models/db/review';
 import { LevelModel, ReviewModel } from '../../../models/mongoose';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
-import { queueRefreshIndexCalcs } from '../internal-jobs/worker';
+import { queueRefreshAchievements, queueRefreshIndexCalcs } from '../internal-jobs/worker';
 
 export function getScoreEmojis(score: number) {
   return '<:fullstar:1045889520001892402>'.repeat(Math.floor(score)) + (Math.floor(score) !== score ? '<:halfstar:1045889518701654046>' : '');
@@ -149,6 +150,8 @@ export default withAuth({
       });
 
       await Promise.all([
+        queueRefreshAchievements(req.user._id, [AchievementCategory.REVIEWER]),
+        queueRefreshAchievements(level.userId._id, [AchievementCategory.REVIEWER]),
         generateDiscordWebhook(undefined, level, req, score, trimmedText, ts),
         queueRefreshIndexCalcs(new Types.ObjectId(id?.toString())),
         createNewReviewOnYourLevelNotification(level.userId._id, req.userId, level._id, String(score), !!trimmedText),
@@ -235,6 +238,8 @@ export default withAuth({
       }
 
       await Promise.all([
+        queueRefreshAchievements(req.user._id, [AchievementCategory.REVIEWER]),
+        queueRefreshAchievements(level.userId._id, [AchievementCategory.REVIEWER]),
         generateDiscordWebhook(review.ts, level, req, score, trimmedText, ts),
         queueRefreshIndexCalcs(new Types.ObjectId(id?.toString())),
         createNewReviewOnYourLevelNotification(level.userId, req.userId, level._id, String(score), !!trimmedText),
@@ -268,6 +273,8 @@ export default withAuth({
       });
 
       await Promise.all([
+        queueRefreshAchievements(req.user._id, [AchievementCategory.REVIEWER]),
+        queueRefreshAchievements(level.userId._id, [AchievementCategory.REVIEWER]),
         queueRefreshIndexCalcs(new Types.ObjectId(id?.toString())),
         clearNotifications(level.userId._id, req.userId, level._id, NotificationType.NEW_REVIEW_ON_YOUR_LEVEL),
       ]);

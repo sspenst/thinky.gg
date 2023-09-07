@@ -1,4 +1,4 @@
-import AchievementType from '@root/constants/achievementType';
+import AchievementType from '@root/constants/achievements/achievementType';
 import NotificationType from '@root/constants/notificationType';
 import { createNewAchievement, createNewFollowerNotification, createNewReviewOnYourLevelNotification } from '@root/helpers/notificationHelper';
 import { processQueueMessages } from '@root/pages/api/internal-jobs/worker';
