@@ -474,11 +474,12 @@ export default apiWrapper({ GET: {
   const totalEmailedSoFar: string[] = [];
 
   try {
-    const emailUnsubscribeResult = await sendAutoUnsubscribeUsers(batchId, limitNum);
+    const [emailUnsubscribeResult, emailReactivationResult] = await Promise.all([
+      sendAutoUnsubscribeUsers(batchId, limitNum),
+      sendEmailReactivation(batchId, limitNum),
+    ]);
 
     totalEmailedSoFar.push(...emailUnsubscribeResult.sentList);
-
-    const emailReactivationResult = await sendEmailReactivation(batchId, limitNum);
 
     totalEmailedSoFar.push(...emailReactivationResult.sentList);
     const emailDigestResult = await sendEmailDigests(batchId, totalEmailedSoFar, limitNum);
