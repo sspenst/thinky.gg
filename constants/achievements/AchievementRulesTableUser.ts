@@ -15,7 +15,7 @@ export const AchievementRulesTableUser: { [achievementType: string]: IAchievemen
   [AchievementType.COMPLETED_LEVELS_500]: {
     name: 'We\'re serious',
     // choose an emoji  that represents the achievement (not a duplicate)
-    emoji: '👀',
+    emoji: '🏆',
     description: 'Completed 500 levels',
 
     unlocked: ({ user }) => {
@@ -24,7 +24,7 @@ export const AchievementRulesTableUser: { [achievementType: string]: IAchievemen
   },
   [AchievementType.COMPLETED_LEVELS_1000]: {
     name: 'Experienced',
-    emoji: '🫢',
+    emoji: '🏅',
     description: 'Completed 1000 levels',
 
     unlocked: ({ user }) => {
@@ -33,7 +33,7 @@ export const AchievementRulesTableUser: { [achievementType: string]: IAchievemen
   },
   [AchievementType.COMPLETED_LEVELS_2000]: {
     name: 'Addicted',
-    emoji: '🤭',
+    emoji: '🎯',
     description: 'Completed 2000 levels',
 
     unlocked: ({ user }) => {
@@ -42,7 +42,7 @@ export const AchievementRulesTableUser: { [achievementType: string]: IAchievemen
   },
   [AchievementType.COMPLETED_LEVELS_3000]: {
     name: 'Obsessed',
-    emoji: '🙊',
+    emoji: '🚀',
     description: 'Completed 3000 levels',
 
     unlocked: ({ user }) => {
@@ -51,7 +51,7 @@ export const AchievementRulesTableUser: { [achievementType: string]: IAchievemen
   },
   [AchievementType.COMPLETED_LEVELS_4000]: {
     name: 'Ludicrous',
-    emoji: '‼️',
+    emoji: '💥',
     description: 'Completed 4000 levels',
 
     unlocked: ({ user }) => {
