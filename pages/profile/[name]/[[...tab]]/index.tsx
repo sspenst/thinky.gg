@@ -6,6 +6,7 @@ import ProfileMultiplayer from '@root/components/profile/profileMultiplayer';
 import { getUsersWithMultiplayerProfile } from '@root/helpers/getUsersWithMultiplayerProfile';
 import { getPlayerRank } from '@root/helpers/playerRankHelper';
 import useSWRHelper from '@root/hooks/useSWRHelper';
+import Graph from '@root/models/db/graph';
 import { MultiplayerMatchState } from '@root/models/MultiplayerEnums';
 import classNames from 'classnames';
 import { debounce } from 'debounce';
@@ -146,15 +147,14 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       const followingGraph = await GraphModel.find({
         source: reqUser._id,
         type: GraphType.FOLLOW,
-      }, 'target targetModel').populate('target', 'name avatarUpdatedAt last_visited_at hideStatus').exec();
+      }, 'target targetModel createdAt').populate('target', 'name avatarUpdatedAt last_visited_at hideStatus').exec() as Graph[];
 
       /* istanbul ignore next */
       const reqUserFollowing = followingGraph.map((f) => {
         cleanUser(f.target as User);
 
-        return f.target as User;
-      })
-        .sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+        return f;
+      }).sort((a, b) => a.createdAt < b.createdAt ? 1 : -1);
 
       profilePageProps.reqUserFollowing = JSON.parse(JSON.stringify(reqUserFollowing));
     }
@@ -221,7 +221,7 @@ export interface ProfilePageProps {
   pageProp: number;
   profileTab: ProfileTab;
   reqUser: User | null;
-  reqUserFollowing: User[] | undefined;
+  reqUserFollowing: Graph[] | undefined;
   reqUserIsFollowing?: boolean;
   reviewsReceived?: Review[];
   reviewsReceivedCount: number;
@@ -417,7 +417,7 @@ export default function ProfilePage({
 
             {reqUser && reqUser._id.toString() === user._id.toString() && reqUserFollowing && (<>
               <div className='font-bold text-xl mt-4 mb-2 justify-center flex'>{`${reqUserFollowing.length} following:`}</div>
-              <FollowingList users={reqUserFollowing} />
+              <FollowingList graphs={reqUserFollowing} />
             </>)}
           </div>
           <CommentWall userId={user._id} />
