@@ -29,12 +29,15 @@ let userACollection: Collection | null, userBCollection: Collection | null;
 
 beforeAll(async () => {
   await dbConnect();
-  userACollection = await initCollection(TestId.USER, 'user A collection');
-  userBCollection = await initCollection(TestId.USER_B, 'user B collection');
-  userALevel1 = await initLevel(TestId.USER, 'user A level 1');
-  userALevel2 = await initLevel(TestId.USER, 'user A level 2');
-  userBLevel1 = await initLevel(TestId.USER_B, 'user B level 1');
-  userBLevel2 = await initLevel(TestId.USER_B, 'user B level 2');
+
+  [userACollection, userBCollection, userALevel1, userALevel2, userBLevel1, userBLevel2] = await Promise.all([
+    initCollection(TestId.USER, 'user A collection'),
+    initCollection(TestId.USER_B, 'user B collection'),
+    initLevel(TestId.USER, 'user A level 1'),
+    initLevel(TestId.USER, 'user A level 2'),
+    initLevel(TestId.USER_B, 'user B level 1'),
+    initLevel(TestId.USER_B, 'user B level 2')
+  ]);
 });
 enableFetchMocks();
 describe('Testing unpublish', () => {
