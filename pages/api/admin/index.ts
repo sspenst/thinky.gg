@@ -2,19 +2,20 @@ import { AchievementCategory } from '@root/constants/achievements/achievementInf
 import NotificationType from '@root/constants/notificationType';
 import Role from '@root/constants/role';
 import { ValidEnum, ValidObjectId } from '@root/helpers/apiWrapper';
+import { refreshAchievements } from '@root/helpers/refreshAchievements';
 import withAuth, { NextApiRequestWithAuth } from '@root/lib/withAuth';
 import { AchievementModel, NotificationModel } from '@root/models/mongoose';
 import { calcPlayAttempts, refreshIndexCalcs } from '@root/models/schemas/levelSchema';
-import { refreshAchievements } from '@root/tests/helpers/refreshAchievements';
 import { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 
 enum AdminCommand {
-    refreshAchievements = 'refreshAchievements',
-    refreshIndexCalcs = 'refreshIndexCalcs',
-    deleteAchievements = 'deleteAchievements',
-    refreshPlayAttempts = 'calcPlayAttempts',
+  refreshAchievements = 'refreshAchievements',
+  refreshIndexCalcs = 'refreshIndexCalcs',
+  deleteAchievements = 'deleteAchievements',
+  refreshPlayAttempts = 'calcPlayAttempts',
 }
+
 export default withAuth({ POST: {
   body: {
     targetId: ValidObjectId(),

@@ -19,8 +19,7 @@ export const AchievementRulesTableCreator: { [achievementType: string]: IAchieve
     emoji: '🛠️',
     description: 'Created 5 quality levels',
     unlocked: ({ levelsCreated }) => {
-      // filter for calc_reviews_score_laplace > 0.5
-      const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace > 0.5);
+      const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace > 0.66 && l.calc_reviews_count >= 3);
 
       return qualityLevels.length >= 5;
     },
@@ -33,7 +32,7 @@ export const AchievementRulesTableCreator: { [achievementType: string]: IAchieve
     description: 'Created 10 quality levels',
 
     unlocked: ({ levelsCreated }) => {
-      const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace > 0.5);
+      const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace > 0.66 && l.calc_reviews_count >= 3);
 
       return qualityLevels.length >= 10;
     },
@@ -45,7 +44,7 @@ export const AchievementRulesTableCreator: { [achievementType: string]: IAchieve
     description: 'Created 25 quality levels',
 
     unlocked: ({ levelsCreated }) => {
-      const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace > 0.5);
+      const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace > 0.66 && l.calc_reviews_count >= 3);
 
       return qualityLevels.length >= 25;
     },
@@ -57,7 +56,7 @@ export const AchievementRulesTableCreator: { [achievementType: string]: IAchieve
     description: 'Created 50 quality levels',
 
     unlocked: ({ levelsCreated }) => {
-      const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace > 0.5);
+      const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace > 0.66 && l.calc_reviews_count >= 3);
 
       return qualityLevels.length >= 50;
     },
@@ -67,7 +66,7 @@ export const AchievementRulesTableCreator: { [achievementType: string]: IAchieve
     emoji: '🏛️',
     description: 'Created 100 quality levels',
     unlocked: ({ levelsCreated }) => {
-      const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace > 0.5);
+      const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace > 0.66 && l.calc_reviews_count >= 3);
 
       return qualityLevels.length >= 100;
     },
@@ -77,7 +76,7 @@ export const AchievementRulesTableCreator: { [achievementType: string]: IAchieve
     emoji: '🏯',
     description: 'Created 200 quality levels',
     unlocked: ({ levelsCreated }) => {
-      const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace > 0.5);
+      const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace > 0.66 && l.calc_reviews_count >= 3);
 
       return qualityLevels.length >= 200;
     },
@@ -87,12 +86,12 @@ export const AchievementRulesTableCreator: { [achievementType: string]: IAchieve
     emoji: '🏯',
     description: 'Created 300 quality levels',
     unlocked: ({ levelsCreated }) => {
-      const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace > 0.5);
+      const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace > 0.66 && l.calc_reviews_count >= 3);
 
       return qualityLevels.length >= 300;
     },
   },
-  [AchievementType.CREATOR_CREATED_1_HIGH_QUALITY_LEVELS]: {
+  [AchievementType.CREATOR_CREATED_1_HIGH_QUALITY_LEVEL]: {
     name: 'Stroke of Genius',
     emoji: '🖌️',
     description: 'Created an acclaimed level',
@@ -122,5 +121,4 @@ export const AchievementRulesTableCreator: { [achievementType: string]: IAchieve
       return highQualityLevels.length >= 25;
     }
   },
-
 };

@@ -35,7 +35,7 @@ const AchievementCategoryFetch = {
     const userCreatedLevels = await LevelModel.find<Level>(
       {
         userId: userId, isDraft: false, isDeleted: { $ne: true },
-      }, { score: 1, authorNote: 1, leastMoves: 1, ts: 1, calc_reviews_score_laplace: 1, calc_playattempts_just_beaten_count: 1, calc_playattempts_unique_users: 1 },
+      }, { score: 1, authorNote: 1, leastMoves: 1, ts: 1, calc_reviews_score_laplace: 1, calc_playattempts_just_beaten_count: 1, calc_playattempts_unique_users: 1, calc_reviews_count: 1 },
       { lean: true });
 
     return { levelsCreated: userCreatedLevels };
@@ -65,7 +65,6 @@ export async function refreshAchievements(userId: Types.ObjectId, categories: Ac
   const [neededDataArray, allAchievements] = await Promise.all([
     Promise.all(fetchPromises),
     AchievementModel.find<Achievement>({ userId: userId }, { type: 1, }, { lean: true }),
-
   ]);
     // neededDataArray is an array of objects with unique keys. Let's combine into one big object
   const neededData = neededDataArray.reduce((acc, cur) => ({ ...acc, ...cur }), {});
@@ -78,7 +77,7 @@ export async function refreshAchievements(userId: Types.ObjectId, categories: Ac
       const achievementInfo = categoryRulesTable[achievementType];
 
       // check if the user already has the achievement and if so skip it (note we already have a unique index on userId and type)
-      if (allAchievements.some(a => a.type === achievementType)) {
+      if (allAchievements.some((a: Achievement) => a.type === achievementType)) {
         continue;
       }
 

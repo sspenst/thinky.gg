@@ -3,7 +3,6 @@
 // import tsconfig-paths
 
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
-import Achievement from '@root/models/db/achievement';
 import PlayAttempt from '@root/models/db/playAttempt';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
 import { queueRefreshAchievements } from '@root/pages/api/internal-jobs/worker';
@@ -11,7 +10,7 @@ import cliProgress from 'cli-progress';
 import dotenv from 'dotenv';
 import dbConnect from '../../lib/dbConnect';
 import User from '../../models/db/user';
-import { AchievementModel, LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, PlayAttemptModel, StatModel, UserModel } from '../../models/mongoose';
+import { LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, PlayAttemptModel, StatModel, UserModel } from '../../models/mongoose';
 import { MultiplayerMatchType } from '../../models/MultiplayerEnums';
 import { calcPlayAttempts, refreshIndexCalcs } from '../../models/schemas/levelSchema';
 import { calcCreatorCounts } from '../../models/schemas/userSchema';

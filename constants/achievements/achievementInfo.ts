@@ -8,7 +8,6 @@ export interface IAchievementInfo {
   name: string;
   emoji?: string;
   description: string;
-
 }
 
 export enum AchievementCategory {
@@ -18,6 +17,7 @@ export enum AchievementCategory {
   'REVIEWER' = 'REVIEWER',
   'MULTIPLAYER' = 'MULTIPLAYER',
 }
+
 export const AchievementCategoryMapping = {
   [AchievementCategory.USER]: AchievementRulesTableUser,
   [AchievementCategory.CREATOR]: AchievementRulesTableCreator,
