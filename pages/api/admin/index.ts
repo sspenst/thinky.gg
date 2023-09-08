@@ -37,7 +37,6 @@ export default withAuth({ POST: {
     case AdminCommand.refreshAchievements:
       resp = await refreshAchievements(new Types.ObjectId(targetId as string), Object.values(AchievementCategory));
       await processQueueMessages();
-      resp = resp.length;
       break;
     case AdminCommand.deleteAchievements:
       resp = await Promise.all([
