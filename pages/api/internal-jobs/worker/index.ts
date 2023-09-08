@@ -1,7 +1,6 @@
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
 import UserConfig from '@root/models/db/userConfig';
-import { refreshAchievements } from '@root/tests/helpers/refreshAchievements';
 import mongoose, { QueryOptions, Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
