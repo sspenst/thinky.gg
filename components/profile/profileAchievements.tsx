@@ -32,9 +32,9 @@ export function ProfileAchievments({ achievements }: { achievements: Achievement
   } as { [key: string]: JSX.Element[] };
 
   return (
-    <div className='flex md:flex-row md:items-start flex-col gap-6 items-center p-3'>
+    <div className='flex flex-wrap gap-6 justify-center p-3'>
       {Object.keys(achievementsByCategory).map((achievementCategory) => (
-        <div className='flex flex-col gap-4 w-96 max-w-full' key={achievementCategory}>
+        <div className='flex flex-col gap-4 w-60 max-w-full' key={achievementCategory}>
           <h1 className='text-2xl font-medium '>{achievementCategory}</h1>
           {achievementsByCategory[achievementCategory]}
         </div>
