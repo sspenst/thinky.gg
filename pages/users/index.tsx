@@ -18,7 +18,7 @@ import { logger } from '../../helpers/logger';
 import dbConnect from '../../lib/dbConnect';
 import MultiplayerProfile from '../../models/db/multiplayerProfile';
 import User from '../../models/db/user';
-import { UserModel } from '../../models/mongoose';
+import { GraphModel, MultiplayerProfileModel, ReviewModel, UserModel } from '../../models/mongoose';
 import { MultiplayerMatchType } from '../../models/MultiplayerEnums';
 import { cleanInput } from '../api/search';
 
@@ -113,7 +113,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       // mulitplayer ratings
       {
         $lookup: {
-          from: 'multiplayerprofiles',
+          from: MultiplayerProfileModel.collection.name,
           localField: '_id',
           foreignField: 'userId',
           as: 'multiplayerProfile',
@@ -128,7 +128,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       // follower count
       {
         $lookup: {
-          from: 'graphs',
+          from: GraphModel.collection.name,
           localField: '_id',
           foreignField: 'target',
           as: 'followers',
@@ -156,7 +156,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       // review counts
       {
         $lookup: {
-          from: 'reviews',
+          from: ReviewModel.collection.name,
           localField: '_id',
           foreignField: 'userId',
           as: 'reviews',

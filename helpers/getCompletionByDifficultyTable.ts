@@ -1,5 +1,5 @@
 import { getDifficultyList } from '@root/components/formatted/formattedDifficulty';
-import { StatModel } from '@root/models/mongoose';
+import { LevelModel, StatModel } from '@root/models/mongoose';
 import { SaveOptions, Types } from 'mongoose';
 
 export async function getCompletionByDifficultyTable(userId: Types.ObjectId, options: SaveOptions = {}) {
@@ -22,7 +22,7 @@ export async function getCompletionByDifficultyTable(userId: Types.ObjectId, opt
     },
     {
       $lookup: {
-        from: 'levels',
+        from: LevelModel.collection.name,
         localField: 'levelId',
         foreignField: '_id',
         as: 'levelInfo',

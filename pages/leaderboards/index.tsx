@@ -3,7 +3,7 @@ import Page from '@root/components/page/page';
 import UserAndSumTable from '@root/components/tables/userAndSumTable';
 import { UserAndSum } from '@root/contexts/levelContext';
 import cleanUser from '@root/lib/cleanUser';
-import { LevelModel } from '@root/models/mongoose';
+import { LevelModel, StatModel, UserModel } from '@root/models/mongoose';
 import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import React from 'react';
 
@@ -26,7 +26,7 @@ async function getGMLeaderboard(range: DIFFICULTY_NAMES) {
     // and then group by user and count the number of levels they've beaten
     {
       $lookup: {
-        from: 'stats',
+        from: StatModel.collection.name,
         let: { levelId: '$_id' },
         pipeline: [{
           $match: {
@@ -68,7 +68,7 @@ async function getGMLeaderboard(range: DIFFICULTY_NAMES) {
     },
     {
       $lookup: {
-        from: 'users',
+        from: UserModel.collection.name,
         localField: '_id',
         foreignField: '_id',
         as: 'user',

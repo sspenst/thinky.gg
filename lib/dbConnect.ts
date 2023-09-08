@@ -41,9 +41,9 @@ export default async function dbConnect() {
     let uri = undefined;
 
     /* istanbul ignore else */
-    if (!process.env.MONGODB_URI || process.env.NODE_ENV === 'test') {
+    if (!process.env.MONGODB_URI || process.env.MONGODB_TEST_URI || process.env.NODE_ENV === 'test') {
       // create with replica
-      if (!process.env.MONGODB_URI) {
+      if (!process.env.MONGODB_TEST_URI) {
         cached.mongoMemoryServer = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
         uri = cached.mongoMemoryServer.getUri();
       } else {

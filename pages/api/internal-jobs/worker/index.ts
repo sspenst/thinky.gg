@@ -9,7 +9,7 @@ import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
 import Notification from '../../../../models/db/notification';
 import QueueMessage from '../../../../models/db/queueMessage';
-import { NotificationModel, QueueMessageModel, UserConfigModel } from '../../../../models/mongoose';
+import { NotificationModel, QueueMessageModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
 import { calcPlayAttempts, refreshIndexCalcs } from '../../../../models/schemas/levelSchema';
 import { QueueMessageState, QueueMessageType } from '../../../../models/schemas/queueMessageSchema';
 import { calcCreatorCounts, USER_DEFAULT_PROJECTION } from '../../../../models/schemas/userSchema';
@@ -137,7 +137,7 @@ async function processQueueMessage(queueMessage: QueueMessage) {
         ...getEnrichNotificationPipelineStages(),
         {
           $lookup: {
-            from: 'users',
+            from: UserModel.collection.name,
             localField: 'userId',
             foreignField: '_id',
             as: 'userId',
