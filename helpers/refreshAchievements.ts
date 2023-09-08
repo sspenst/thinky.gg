@@ -83,7 +83,7 @@ export async function refreshAchievements(userId: Types.ObjectId, categories: Ac
 
       // TODO: maybe there is a more proper way to do this so i can remove the as any...
       if (achievementInfo.unlocked(neededData as any)) {
-        achievementsCreatedPromises.push(createNewAchievement(achievementType as AchievementType, userId));
+        achievementsCreatedPromises.push(createNewAchievement(achievementType as AchievementType, userId, achievementsCreatedPromises.length > 3));
       }
     }
   }
