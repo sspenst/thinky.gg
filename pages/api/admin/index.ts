@@ -8,6 +8,7 @@ import { AchievementModel, NotificationModel } from '@root/models/mongoose';
 import { calcPlayAttempts, refreshIndexCalcs } from '@root/models/schemas/levelSchema';
 import { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
+import { processQueueMessages } from '../internal-jobs/worker';
 
 enum AdminCommand {
   refreshAchievements = 'refreshAchievements',
@@ -35,6 +36,7 @@ export default withAuth({ POST: {
     switch (command) {
     case AdminCommand.refreshAchievements:
       resp = await refreshAchievements(new Types.ObjectId(targetId as string), Object.values(AchievementCategory));
+      await processQueueMessages();
       resp = resp.length;
       break;
     case AdminCommand.deleteAchievements:
