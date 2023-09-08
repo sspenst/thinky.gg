@@ -6,7 +6,7 @@ import Level, { EnrichedLevel } from '../models/db/level';
 import Notification from '../models/db/notification';
 import Stat from '../models/db/stat';
 import User, { ReqUser } from '../models/db/user';
-import { NotificationModel, StatModel } from '../models/mongoose';
+import { AchievementModel, CollectionModel, LevelModel, NotificationModel, StatModel, UserModel } from '../models/mongoose';
 
 export async function enrichCampaign(campaign: Campaign, reqUser: User | null) {
   const enrichedCampaign = JSON.parse(JSON.stringify(campaign)) as EnrichedCampaign;
@@ -140,7 +140,7 @@ export function getEnrichNotificationPipelineStages(reqUser?: User) {
     // Currently all sources are User so not wasting looking up users for target
     {
       $lookup: {
-        from: 'stats',
+        from: StatModel.collection.name,
         let: { levelId: '$targetLevel._id', userId: reqUser._id },
         pipeline: [
           {
@@ -175,7 +175,7 @@ export function getEnrichNotificationPipelineStages(reqUser?: User) {
   return [
     {
       $lookup: {
-        from: 'achievements',
+        from: AchievementModel.collection.name,
         localField: 'source',
         foreignField: '_id',
         as: 'sourceAchievement',
@@ -183,7 +183,7 @@ export function getEnrichNotificationPipelineStages(reqUser?: User) {
     },
     {
       $lookup: {
-        from: 'levels',
+        from: LevelModel.collection.name,
         localField: 'source',
         foreignField: '_id',
         as: 'sourceLevel',
@@ -191,7 +191,7 @@ export function getEnrichNotificationPipelineStages(reqUser?: User) {
     },
     {
       $lookup: {
-        from: 'users',
+        from: UserModel.collection.name,
         localField: 'source',
         foreignField: '_id',
         as: 'sourceUser',
@@ -199,7 +199,7 @@ export function getEnrichNotificationPipelineStages(reqUser?: User) {
     },
     {
       $lookup: {
-        from: 'levels',
+        from: LevelModel.collection.name,
         localField: 'target',
         foreignField: '_id',
         as: 'targetLevel',
@@ -207,7 +207,7 @@ export function getEnrichNotificationPipelineStages(reqUser?: User) {
     },
     {
       $lookup: {
-        from: 'users',
+        from: UserModel.collection.name,
         localField: 'target',
         foreignField: '_id',
         as: 'targetUser',
@@ -215,7 +215,7 @@ export function getEnrichNotificationPipelineStages(reqUser?: User) {
     },
     {
       $lookup: {
-        from: 'collections',
+        from: CollectionModel.collection.name,
         localField: 'target',
         foreignField: '_id',
         as: 'targetCollection',
@@ -385,7 +385,7 @@ export function getEnrichLevelsPipelineSteps(reqUser?: User | null, levelIdField
 
   const pipeline: PipelineStage[] = [{
     $lookup: {
-      from: 'stats',
+      from: StatModel.collection.name,
       let: { levelId: '$' + levelIdField, userId: reqUser?._id },
       pipeline: [
         {

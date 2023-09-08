@@ -4,7 +4,7 @@ import Campaign from '../models/db/campaign';
 import { EnrichedCollection } from '../models/db/collection';
 import Level, { EnrichedLevel } from '../models/db/level';
 import User from '../models/db/user';
-import { CampaignModel } from '../models/mongoose';
+import { CampaignModel, CollectionModel, LevelModel, UserModel } from '../models/mongoose';
 import { LEVEL_DEFAULT_PROJECTION } from '../models/schemas/levelSchema';
 import { USER_DEFAULT_PROJECTION } from '../models/schemas/userSchema';
 import { getEnrichLevelsPipelineSteps } from './enrich';
@@ -26,14 +26,14 @@ export default async function getCampaignProps(reqUser: User, slug: string) {
     },
     {
       $lookup: {
-        from: 'collections',
+        from: CollectionModel.collection.name,
         localField: 'collections',
         foreignField: '_id',
         as: 'collectionsPopulated',
         pipeline: [
           {
             $lookup: {
-              from: 'levels',
+              from: LevelModel.collection.name,
               localField: 'levels',
               foreignField: '_id',
               as: 'levelsPopulated',
@@ -51,7 +51,7 @@ export default async function getCampaignProps(reqUser: User, slug: string) {
                 ...getEnrichLevelsPipelineSteps(reqUser, '_id', '') as PipelineStage.Lookup[],
                 {
                   $lookup: {
-                    from: 'users',
+                    from: UserModel.collection.name,
                     localField: 'userId',
                     foreignField: '_id',
                     as: 'userId',

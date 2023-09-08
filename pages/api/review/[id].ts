@@ -13,7 +13,7 @@ import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import Review from '../../../models/db/review';
-import { LevelModel, ReviewModel } from '../../../models/mongoose';
+import { LevelModel, ReviewModel, UserModel } from '../../../models/mongoose';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 import { queueRefreshAchievements, queueRefreshIndexCalcs } from '../internal-jobs/worker';
 
@@ -104,7 +104,7 @@ export default withAuth({
         },
         {
           $lookup: {
-            from: 'users',
+            from: UserModel.collection.name,
             localField: 'userId',
             foreignField: '_id',
             as: 'userId',
@@ -176,7 +176,7 @@ export default withAuth({
       },
       {
         $lookup: {
-          from: 'users',
+          from: UserModel.collection.name,
           localField: 'userId',
           foreignField: '_id',
           as: 'userId',

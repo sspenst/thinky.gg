@@ -4,7 +4,7 @@ import dbConnect from '../lib/dbConnect';
 import Level from '../models/db/level';
 import Review from '../models/db/review';
 import User from '../models/db/user';
-import { LevelModel, ReviewModel } from '../models/mongoose';
+import { LevelModel, ReviewModel, UserModel } from '../models/mongoose';
 import { getEnrichLevelsPipelineSteps } from './enrich';
 import { logger } from './logger';
 
@@ -27,7 +27,7 @@ export async function getReviewsForUserId(id: string | string[] | undefined, req
       // now get all the reviwes for these levels
       {
         $lookup: {
-          from: 'reviews',
+          from: ReviewModel.collection.name,
           localField: '_id', //
           foreignField: 'levelId',
           as: 'reviews',
@@ -65,7 +65,7 @@ export async function getReviewsForUserId(id: string | string[] | undefined, req
       },
       {
         $lookup: {
-          from: 'users',
+          from: UserModel.collection.name,
           localField: 'userId',
           foreignField: '_id',
           as: 'userId',

@@ -224,7 +224,7 @@ export default withAuth({
           },
           {
             $lookup: {
-              from: 'comments',
+              from: CommentModel.collection.name,
               localField: '_id',
               foreignField: 'target',
               as: 'children',

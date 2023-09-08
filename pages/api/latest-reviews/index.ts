@@ -8,7 +8,7 @@ import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
 import Review from '../../../models/db/review';
 import User from '../../../models/db/user';
-import { ReviewModel } from '../../../models/mongoose';
+import { LevelModel, ReviewModel, UserModel } from '../../../models/mongoose';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 
@@ -45,7 +45,7 @@ export async function getLatestReviews(reqUser: User | null = null) {
       },
       {
         $lookup: {
-          from: 'levels',
+          from: LevelModel.collection.name,
           localField: 'levelId',
           foreignField: '_id',
           as: 'levelId',
@@ -68,7 +68,7 @@ export async function getLatestReviews(reqUser: User | null = null) {
       },
       {
         $lookup: {
-          from: 'users',
+          from: UserModel.collection.name,
           localField: 'userId',
           foreignField: '_id',
           as: 'userId',

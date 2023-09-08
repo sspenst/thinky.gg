@@ -2,7 +2,7 @@ import dbConnect from '@root/lib/dbConnect';
 import { FilterQuery, Types } from 'mongoose';
 import cleanUser from '../lib/cleanUser';
 import { UserWithMultiplayerProfile } from '../models/db/user';
-import { UserModel } from '../models/mongoose';
+import { MultiplayerProfileModel, UserModel } from '../models/mongoose';
 import { USER_DEFAULT_PROJECTION } from '../models/schemas/userSchema';
 
 export async function getUsersWithMultiplayerProfileFromIds(ids: Types.ObjectId[]) {
@@ -28,7 +28,7 @@ export async function getUsersWithMultiplayerProfile(
     // join with multiplayer profile
     {
       $lookup: {
-        from: 'multiplayerprofiles',
+        from: MultiplayerProfileModel.collection.name,
         localField: '_id',
         foreignField: 'userId',
         as: 'multiplayerProfile',
