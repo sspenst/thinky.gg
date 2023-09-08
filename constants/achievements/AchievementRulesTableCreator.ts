@@ -11,8 +11,9 @@ export const AchievementRulesTableCreator: { [achievementType: string]: IAchieve
     name: 'Masterpiece Maker',
     emoji: '🎻',
     description: 'Created 25 acclaimed levels',
+    tooltip: 'Acclaimed levels have a review score >= 0.91',
     unlocked: ({ levelsCreated }) => {
-      const highQualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace >= 0.9);
+      const highQualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace >= 0.91);
 
       return highQualityLevels.length >= 25;
     }
@@ -21,8 +22,9 @@ export const AchievementRulesTableCreator: { [achievementType: string]: IAchieve
     name: 'Artist',
     emoji: '🎨',
     description: 'Created 10 acclaimed levels',
+    tooltip: 'Acclaimed levels have a review score >= 0.91',
     unlocked: ({ levelsCreated }) => {
-      const highQualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace >= 0.9);
+      const highQualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace >= 0.91);
 
       return highQualityLevels.length >= 10;
     },
@@ -31,8 +33,9 @@ export const AchievementRulesTableCreator: { [achievementType: string]: IAchieve
     name: 'Stroke of Genius',
     emoji: '🖌️',
     description: 'Created an acclaimed level',
+    tooltip: 'Acclaimed levels have a review score >= 0.91',
     unlocked: ({ levelsCreated }) => {
-      const highQualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace >= 0.9);
+      const highQualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace >= 0.91);
 
       return highQualityLevels.length >= 1;
     },
@@ -41,6 +44,7 @@ export const AchievementRulesTableCreator: { [achievementType: string]: IAchieve
     name: 'Visionary Architect',
     emoji: '🏰',
     description: 'Created 300 quality levels',
+    tooltip: 'Quality levels have a review score >= 0.8',
     unlocked: ({ levelsCreated }) => {
       const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace >= 0.8);
 
@@ -51,6 +55,7 @@ export const AchievementRulesTableCreator: { [achievementType: string]: IAchieve
     name: 'Master Architect',
     emoji: '🏯',
     description: 'Created 200 quality levels',
+    tooltip: 'Quality levels have a review score >= 0.8',
     unlocked: ({ levelsCreated }) => {
       const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace >= 0.8);
 
@@ -61,6 +66,7 @@ export const AchievementRulesTableCreator: { [achievementType: string]: IAchieve
     name: 'Architect',
     emoji: '🏛️',
     description: 'Created 100 quality levels',
+    tooltip: 'Quality levels have a review score >= 0.8',
     unlocked: ({ levelsCreated }) => {
       const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace >= 0.8);
 
@@ -71,6 +77,7 @@ export const AchievementRulesTableCreator: { [achievementType: string]: IAchieve
     name: 'Engineer',
     emoji: '📐',
     description: 'Created 50 quality levels',
+    tooltip: 'Quality levels have a review score >= 0.8',
     unlocked: ({ levelsCreated }) => {
       const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace >= 0.8);
 
@@ -81,6 +88,7 @@ export const AchievementRulesTableCreator: { [achievementType: string]: IAchieve
     name: 'Developer',
     emoji: '🏘',
     description: 'Created 25 quality levels',
+    tooltip: 'Quality levels have a review score >= 0.8',
     unlocked: ({ levelsCreated }) => {
       const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace >= 0.8);
 
@@ -91,6 +99,7 @@ export const AchievementRulesTableCreator: { [achievementType: string]: IAchieve
     name: 'Builder',
     emoji: '🏗️',
     description: 'Created 10 quality levels',
+    tooltip: 'Quality levels have a review score >= 0.8',
     unlocked: ({ levelsCreated }) => {
       const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace >= 0.8);
 
@@ -101,6 +110,7 @@ export const AchievementRulesTableCreator: { [achievementType: string]: IAchieve
     name: 'Apprentice',
     emoji: '🛠️',
     description: 'Created 5 quality levels',
+    tooltip: 'Quality levels have a review score >= 0.8',
     unlocked: ({ levelsCreated }) => {
       const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace >= 0.8);
 
