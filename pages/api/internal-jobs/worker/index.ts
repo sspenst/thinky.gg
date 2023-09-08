@@ -1,4 +1,5 @@
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
+import { refreshAchievements } from '@root/helpers/refreshAchievements';
 import UserConfig from '@root/models/db/userConfig';
 import { refreshAchievements } from '@root/tests/helpers/refreshAchievements';
 import mongoose, { QueryOptions, Types } from 'mongoose';
@@ -205,17 +206,9 @@ async function processQueueMessage(queueMessage: QueueMessage) {
     await calcCreatorCounts(new Types.ObjectId(userId));
   } else if (queueMessage.type === QueueMessageType.REFRESH_ACHIEVEMENTS) {
     const { userId, categories } = JSON.parse(queueMessage.message) as { userId: string, categories: AchievementCategory[] };
+    const achievementsEarned = await refreshAchievements(new Types.ObjectId(userId), categories);
 
-    log = `refreshAchievements for ${userId}`;
-
-    try {
-      const achievementsEarned = await refreshAchievements(new Types.ObjectId(userId), categories);
-
-      log += ` created ${achievementsEarned.length} achievements`;
-    } catch (e: any) {
-      log = `refreshAchievements for ${userId} failed: ${e.message}`;
-      error = true;
-    }
+    log = `refreshAchievements for ${userId} created ${achievementsEarned.length} achievements`;
   } else {
     log = `Unknown queue message type ${queueMessage.type}`;
     error = true;
