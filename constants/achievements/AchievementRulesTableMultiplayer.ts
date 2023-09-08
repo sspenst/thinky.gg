@@ -40,7 +40,6 @@ export const AchievementRulesTableMultiplayer: { [achievementType: string]: IAch
       return multiplayerProfile?.calcRushRapidCount >= 5;
     }
   },
-
   [AchievementType.MULTIPLAYER_CLASSICAL_5_GAME_PLAYED]: {
     name: 'Classical Player',
     emoji: '⏱️',

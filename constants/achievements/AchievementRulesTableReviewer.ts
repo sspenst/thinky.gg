@@ -33,7 +33,7 @@ export const AchievementRulesTableReviewer: { [achievementType: string]: IAchiev
   [AchievementType.REVIEWED_500_LEVELS]: {
     name: 'Critic',
     emoji: '🍿',
-    description: 'Reviewed 50 levels',
+    description: 'Reviewed 500 levels',
     unlocked: ({ reviewsCreated }) => {
       return reviewsCreated.length >= 500;
     }
@@ -41,7 +41,7 @@ export const AchievementRulesTableReviewer: { [achievementType: string]: IAchiev
   [AchievementType.REVIEWED_1000_LEVELS]: {
     name: 'Master Critic',
     emoji: '🎭',
-    description: 'Reviewed 500 levels',
+    description: 'Reviewed 1000 levels',
     unlocked: ({ reviewsCreated }) => {
       return reviewsCreated.length >= 1000;
     }
