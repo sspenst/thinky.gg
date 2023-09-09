@@ -3,9 +3,12 @@ import FormattedUser from '@root/components/formatted/formattedUser';
 import MultiSelectUser from '@root/components/page/multiSelectUser';
 import Page from '@root/components/page/page';
 import Role from '@root/constants/role';
+import useSWRHelper from '@root/hooks/useSWRHelper';
+import useUser from '@root/hooks/useUser';
 import dbConnect from '@root/lib/dbConnect';
 import { getUserFromToken } from '@root/lib/withAuth';
 import User from '@root/models/db/user';
+import UserConfig from '@root/models/db/userConfig';
 import { UserModel } from '@root/models/mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Router from 'next/router';
@@ -35,7 +38,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 export default function AdminPage({ queryUser, queryCommand }: {queryUser: User | undefined; queryCommand: string | null}) {
-  const [selectedUser, setSelectedUser] = useState<User>(queryUser as User);
+  const [selectedUser, setSelectedUser] = useState<any>(queryUser as User);
   const [runningCommand, setRunningCommand] = useState(false);
 
   const commands = [
@@ -49,6 +52,7 @@ export default function AdminPage({ queryUser, queryCommand }: {queryUser: User 
   const selectedCommandFromQuery = commands.find((cmd) => cmd.command === queryCommand);
 
   const [selectedCommand, setSelectedCommand] = useState<{ label: string; command: string; confirm?: boolean } | null>(selectedCommandFromQuery || null);
+  const { data: selectedUserConfig } = useSWRHelper<any>('/api/user-config?userId=' + selectedUser._id, {}, {}, !selectedUser);
 
   useEffect(() => {
     if (queryUser && queryUser !== selectedUser) {
@@ -100,6 +104,33 @@ export default function AdminPage({ queryUser, queryCommand }: {queryUser: User 
     }
   }
 
+  function display(title: string, obj: any) {
+    return (
+      <div>
+        <h1>{title}</h1>
+        { (obj) && (
+          <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+            {Object.keys(obj).map((key) => (
+              <div key={key} style={{ flex: '1 1 calc(50% - 20px)', margin: '10px' }}>
+                <label style={{ fontWeight: 'bold', marginRight: '10px' }}>{key}:</label>
+                <input
+                  type='text'
+                  readOnly
+                  value={obj[key]}
+                  onClick={(e) => {
+                    (e.target as HTMLInputElement).select();
+                    navigator.clipboard.writeText(obj[key]);
+                  }}
+                  className='text-black p-1 rounded-md w-max'
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <Page title='Admin Page'>
       <div className='p-2'>
@@ -143,7 +174,13 @@ export default function AdminPage({ queryUser, queryCommand }: {queryUser: User 
 
         </div>
         <div className='flex flex-row items-center justify-center p-2 gap-2'>
-          {selectedUser && <FormattedUser user={selectedUser} />}
+          {selectedUser && (
+            <div className='flex flex-col gap-2'>
+              <FormattedUser user={selectedUser} />
+              {display('User', selectedUser)}
+              {display('UserConfig', selectedUserConfig)}
+            </div>
+          )}
         </div>
       </div>
     </Page>
