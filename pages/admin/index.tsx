@@ -4,11 +4,9 @@ import MultiSelectUser from '@root/components/page/multiSelectUser';
 import Page from '@root/components/page/page';
 import Role from '@root/constants/role';
 import useSWRHelper from '@root/hooks/useSWRHelper';
-import useUser from '@root/hooks/useUser';
 import dbConnect from '@root/lib/dbConnect';
 import { getUserFromToken } from '@root/lib/withAuth';
 import User from '@root/models/db/user';
-import UserConfig from '@root/models/db/userConfig';
 import { UserModel } from '@root/models/mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Router from 'next/router';
@@ -107,22 +105,26 @@ export default function AdminPage({ queryUser, queryCommand }: {queryUser: User 
   function display(title: string, obj: any) {
     return (
       <div>
-        <h1>{title}</h1>
-        { (obj) && (
-          <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-            {Object.keys(obj).map((key) => (
-              <div key={key} style={{ flex: '1 1 calc(50% - 20px)', margin: '10px' }}>
-                <label style={{ fontWeight: 'bold', marginRight: '10px' }}>{key}:</label>
-                <input
-                  type='text'
-                  readOnly
-                  value={obj[key]}
-                  onClick={(e) => {
-                    (e.target as HTMLInputElement).select();
-                    navigator.clipboard.writeText(obj[key]);
-                  }}
-                  className='text-black p-1 rounded-md w-max'
-                />
+        <h1 className='text-2xl font-bold mb-4'>{title}</h1>
+        {obj && (
+          <div className='grid grid-cols-4 gap-4'>
+            {Object.keys(obj).map((key, index) => (
+              <div key={key} className='flex items-center'>
+                <div className='flex-none font-bold pr-2'>
+                  <label>{key}:</label>
+                </div>
+                <div className='flex-grow'>
+                  <input
+                    type='text'
+                    readOnly
+                    value={obj[key]}
+                    onClick={(e) => {
+                      (e.target as HTMLInputElement).select();
+                      navigator.clipboard.writeText(obj[key]);
+                    }}
+                    className='text-black p-1 rounded-md w-full'
+                  />
+                </div>
               </div>
             ))}
           </div>
