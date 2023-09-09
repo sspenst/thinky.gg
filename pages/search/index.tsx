@@ -263,7 +263,16 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
     {
       id: 'reviewScore',
       name: 'Review Score',
-      selector: (row: EnrichedLevel) => {return row.calc_reviews_count === 0 ? '-' : row.calc_reviews_score_laplace?.toFixed(2);},
+      selector: (row: EnrichedLevel) => {
+        if (row.calc_reviews_count === 0 || !row.calc_reviews_score_laplace) {
+          return '-';
+        }
+
+        // floor to avoid showing review scores that are too high
+        // eg: .908 would show .91 if it was rounded, but it would not contribute
+        // to the acclaimed levels achievement (requires >= 0.91)
+        return (Math.floor(row.calc_reviews_score_laplace * 1000) / 1000).toFixed(3);
+      },
       sortable: true,
     },
   ] as TableColumn<EnrichedLevel>[];

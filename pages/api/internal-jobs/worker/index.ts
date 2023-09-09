@@ -207,7 +207,7 @@ async function processQueueMessage(queueMessage: QueueMessage) {
     const { userId, categories } = JSON.parse(queueMessage.message) as { userId: string, categories: AchievementCategory[] };
     const achievementsEarned = await refreshAchievements(new Types.ObjectId(userId), categories);
 
-    log = `refreshAchievements for ${userId} created ${achievementsEarned.length} achievements`;
+    log = `refreshAchievements for ${userId} created ${achievementsEarned} achievements`;
   } else {
     log = `Unknown queue message type ${queueMessage.type}`;
     error = true;
