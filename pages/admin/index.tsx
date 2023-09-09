@@ -50,7 +50,7 @@ export default function AdminPage({ queryUser, queryCommand }: {queryUser: User 
   const selectedCommandFromQuery = commands.find((cmd) => cmd.command === queryCommand);
 
   const [selectedCommand, setSelectedCommand] = useState<{ label: string; command: string; confirm?: boolean } | null>(selectedCommandFromQuery || null);
-  const { data: selectedUserConfig } = useSWRHelper<any>('/api/user-config?userId=' + selectedUser._id, {}, {}, !selectedUser);
+  const { data: selectedUserConfig } = useSWRHelper<any>('/api/user-config?userId=' + selectedUser?._id, {}, {}, !selectedUser);
 
   useEffect(() => {
     if (queryUser && queryUser !== selectedUser) {
