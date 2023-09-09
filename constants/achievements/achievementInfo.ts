@@ -5,9 +5,10 @@ import { AchievementRulesTableReviewer } from './AchievementRulesTableReviewer';
 import { AchievementRulesTableUser } from './AchievementRulesTableUser';
 
 export interface IAchievementInfo {
-  name: string;
-  emoji?: string;
   description: string;
+  emoji?: string;
+  name: string;
+  tooltip?: string;
 }
 
 export enum AchievementCategory {

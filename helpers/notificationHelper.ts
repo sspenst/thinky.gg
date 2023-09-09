@@ -81,7 +81,7 @@ export async function createNewReviewOnYourLevelNotification(levelUserId: string
   return notification;
 }
 
-export async function createNewAchievement(achievementType: AchievementType, userId: Types.ObjectId, options?: SaveOptions) {
+export async function createNewAchievement(achievementType: AchievementType, userId: Types.ObjectId, disablePushNotification?: boolean, options?: SaveOptions) {
   const achievement = await AchievementModel.findOneAndUpdate<Achievement>({
     type: achievementType,
     userId: userId,
@@ -114,7 +114,9 @@ export async function createNewAchievement(achievementType: AchievementType, use
     ...options,
   });
 
-  await queuePushNotification(notification._id);
+  if (!disablePushNotification) {
+    await queuePushNotification(notification._id);
+  }
 
   return achievement;
 }
