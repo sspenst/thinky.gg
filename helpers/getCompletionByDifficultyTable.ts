@@ -1,11 +1,9 @@
-import { getDifficultyList } from '@root/components/formatted/formattedDifficulty';
+import { difficultyList } from '@root/components/formatted/formattedDifficulty';
 import { StatModel } from '@root/models/mongoose';
 import { SaveOptions, Types } from 'mongoose';
 
 export async function getCompletionByDifficultyTable(userId: Types.ObjectId, options: SaveOptions = {}) {
-  const difficultyList = getDifficultyList();
   const difficultyListValues = difficultyList.map((d) => d.value);
-
   const levelsCompletedByDifficultyData = await StatModel.aggregate([
     {
       $match: {

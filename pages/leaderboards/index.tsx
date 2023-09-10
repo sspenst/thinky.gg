@@ -1,4 +1,4 @@
-import { DIFFICULTY_NAMES, getDifficultyColor, getDifficultyRangeFromDifficultyName } from '@root/components/formatted/formattedDifficulty';
+import { DIFFICULTY_INDEX, getDifficultyColor, getDifficultyRangeByIndex } from '@root/components/formatted/formattedDifficulty';
 import Page from '@root/components/page/page';
 import UserAndSumTable from '@root/components/tables/userAndSumTable';
 import { UserAndSum } from '@root/contexts/levelContext';
@@ -7,9 +7,8 @@ import { LevelModel } from '@root/models/mongoose';
 import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import React from 'react';
 
-async function getGMLeaderboard(range: DIFFICULTY_NAMES) {
-  const gmRange = getDifficultyRangeFromDifficultyName(range);
-
+async function getDifficultyLeaderboard(index: DIFFICULTY_INDEX) {
+  const difficultyRange = getDifficultyRangeByIndex(index);
   const agg = await LevelModel.aggregate([
     {
       $match: {
@@ -18,7 +17,7 @@ async function getGMLeaderboard(range: DIFFICULTY_NAMES) {
           $ne: true,
         },
         calc_difficulty_estimate: {
-          $gte: gmRange[0],
+          $gte: difficultyRange[0],
         }
       }
     },
@@ -113,8 +112,8 @@ async function getGMLeaderboard(range: DIFFICULTY_NAMES) {
 
 export async function getServerSideProps() {
   const [gmLeaderboard, sgmLeaderboard] = await Promise.all([
-    getGMLeaderboard(DIFFICULTY_NAMES.GRANDMASTER),
-    getGMLeaderboard(DIFFICULTY_NAMES.SUPER_GRANDMASTER),
+    getDifficultyLeaderboard(DIFFICULTY_INDEX.GRANDMASTER),
+    getDifficultyLeaderboard(DIFFICULTY_INDEX.SUPER_GRANDMASTER),
   ]);
 
   return {
@@ -131,8 +130,8 @@ interface LeaderboardsProps {
 }
 
 export default function Leaderboards({ gmLeaderboard, sgmLeaderboard }: LeaderboardsProps) {
-  const gmRange = getDifficultyRangeFromDifficultyName(DIFFICULTY_NAMES.GRANDMASTER);
-  const sgmRange = getDifficultyRangeFromDifficultyName(DIFFICULTY_NAMES.SUPER_GRANDMASTER);
+  const gmRange = getDifficultyRangeByIndex(DIFFICULTY_INDEX.GRANDMASTER);
+  const sgmRange = getDifficultyRangeByIndex(DIFFICULTY_INDEX.SUPER_GRANDMASTER);
   const gmColor = getDifficultyColor(gmRange[0]);
   const sgmColor = getDifficultyColor(sgmRange[0]);
 

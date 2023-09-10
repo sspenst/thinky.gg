@@ -11,7 +11,7 @@ interface Difficulty {
   value: number;
 }
 
-export enum DIFFICULTY_NAMES {
+export enum DIFFICULTY_INDEX {
   PENDING = 0,
   KINDERGARTEN = 1,
   ELEMENTARY = 2,
@@ -25,88 +25,83 @@ export enum DIFFICULTY_NAMES {
   SUPER_GRANDMASTER = 10,
 }
 
-export function getDifficultyRangeFromDifficultyName(name: DIFFICULTY_NAMES) {
-  const difficultyList = getDifficultyList();
-  const min = difficultyList[name].value;
-  const max = difficultyList[name + 1]?.value || Number.MAX_SAFE_INTEGER;
+export const difficultyList: Difficulty[] = [
+  {
+    description: 'Waiting for more plays',
+    emoji: '⏳',
+    name: 'Pending',
+    value: -1,
+  },
+  {
+    description: 'For new players',
+    emoji: '🐥',
+    name: 'Kindergarten',
+    value: 0,
+  },
+  {
+    description: 'Beginner level',
+    emoji: '✏️',
+    name: 'Elementary',
+    value: 45,
+  },
+  {
+    description: 'Easy level',
+    emoji: '📝',
+    name: 'Junior High',
+    value: 120,
+  },
+  {
+    description: 'Intermediate level',
+    emoji: '📚',
+    name: 'Highschool',
+    value: 300,
+  },
+  {
+    description: 'Tricky level',
+    emoji: '🎓',
+    name: 'Bachelors',
+    value: 600,
+  },
+  {
+    description: 'Difficult level',
+    emoji: '💉',
+    name: 'Masters',
+    value: 1200,
+  },
+  {
+    description: 'Very difficult level',
+    emoji: '🔬',
+    name: 'PhD',
+    value: 3000,
+  },
+  {
+    description: 'Extremely hard',
+    emoji: '🧬',
+    name: 'Professor',
+    value: 6000,
+  },
+  {
+    description: 'Insanely difficult',
+    emoji: '📜',
+    name: 'Grandmaster',
+    value: 12000,
+  },
+  {
+    description: 'Maximum difficulty',
+    emoji: '🧠',
+    name: 'Super Grandmaster',
+    value: maxDiff,
+  },
+];
+
+export function getDifficultyRangeByIndex(index: DIFFICULTY_INDEX) {
+  const min = difficultyList[index].value;
+  const max = difficultyList[index + 1]?.value || Number.MAX_SAFE_INTEGER;
 
   return [min, max];
 }
 
-export function getDifficultyList() {
-  return [
-    {
-      description: 'Waiting for more plays',
-      emoji: '⏳',
-      name: 'Pending',
-      value: -1,
-    },
-    {
-      description: 'For new players',
-      emoji: '🐥',
-      name: 'Kindergarten',
-      value: 0,
-    },
-    {
-      description: 'Beginner level',
-      emoji: '✏️',
-      name: 'Elementary',
-      value: 45,
-    },
-    {
-      description: 'Easy level',
-      emoji: '📝',
-      name: 'Junior High',
-      value: 120,
-    },
-    {
-      description: 'Intermediate level',
-      emoji: '📚',
-      name: 'Highschool',
-      value: 300,
-    },
-    {
-      description: 'Tricky level',
-      emoji: '🎓',
-      name: 'Bachelors',
-      value: 600,
-    },
-    {
-      description: 'Difficult level',
-      emoji: '💉',
-      name: 'Masters',
-      value: 1200,
-    },
-    {
-      description: 'Very difficult level',
-      emoji: '🔬',
-      name: 'PhD',
-      value: 3000,
-    },
-    {
-      description: 'Extremely hard',
-      emoji: '🧬',
-      name: 'Professor',
-      value: 6000,
-    },
-    {
-      description: 'Insanely difficult',
-      emoji: '📜',
-      name: 'Grandmaster',
-      value: 12000,
-    },
-    {
-      description: 'Maximum difficulty',
-      emoji: '🧠',
-      name: 'Super Grandmaster',
-      value: maxDiff,
-    },
-  ] as Difficulty[];
-}
-
 export function getDifficultyRangeFromName(name: string) {
-  const difficultyList = getDifficultyList();
-
   for (let i = 0; i < difficultyList.length - 1; i++) {
     if (difficultyList[i].name === name) {
       return [difficultyList[i].value, difficultyList[i + 1].value];
@@ -117,8 +112,6 @@ export function getDifficultyRangeFromName(name: string) {
 }
 
 export function getDifficultyFromValue(value: number) {
-  const difficultyList = getDifficultyList();
-
   for (let i = difficultyList.length - 1; i >= 1; i--) {
     if (value >= difficultyList[i].value) {
       return difficultyList[i];
