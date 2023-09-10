@@ -13,7 +13,7 @@ import nProgress from 'nprogress';
 import { ParsedUrlQuery, ParsedUrlQueryInput } from 'querystring';
 import React, { Fragment, useCallback, useEffect, useState } from 'react';
 import FilterButton from '../../components/buttons/filterButton';
-import FormattedDifficulty, { getDifficultyColor, getDifficultyList } from '../../components/formatted/formattedDifficulty';
+import FormattedDifficulty, { difficultyList, getDifficultyColor } from '../../components/formatted/formattedDifficulty';
 import FormattedLevelLink from '../../components/formatted/formattedLevelLink';
 import MultiSelectUser from '../../components/page/multiSelectUser';
 import Page from '../../components/page/page';
@@ -445,7 +445,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                       </button>
                     )}
                   </Menu.Item>
-                  {getDifficultyList().filter(difficulty => difficulty.name !== 'Pending').map((difficulty) => (
+                  {difficultyList.filter(difficulty => difficulty.name !== 'Pending').map((difficulty) => (
                     <Menu.Item key={`difficulty-item-${difficulty.value}`}>
                       {({ active }) => (
                         <button
