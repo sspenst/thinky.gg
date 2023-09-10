@@ -1,4 +1,4 @@
-import { AchievementRulesTableLevelCompletion } from '@root/constants/achievements/AchievementRulesTableLevelCompletion';
+import AchievementRulesTableLevelCompletion from '@root/constants/achievements/AchievementRulesTableLevelCompletion';
 import AchievementType from '@root/constants/achievements/achievementType';
 import { getDifficultyRollingSum } from '@root/helpers/playerRankHelper';
 import User from '@root/models/db/user';
