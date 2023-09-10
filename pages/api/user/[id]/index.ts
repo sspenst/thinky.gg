@@ -13,17 +13,13 @@ export default apiWrapper({
   }
 }, async (req: NextApiRequest, res: NextApiResponse) => {
   const { id: userId, type } = req.query as { id: string, type: string };
-  let levelsCompletedByDifficulty, user;
 
   const typeArray = type.split(',');
 
-  if (typeArray.includes(ProfileQueryType.LevelsCompletedByDifficulty)) {
-    levelsCompletedByDifficulty = await getCompletionByDifficultyTable(new Types.ObjectId(userId));
-  }
-
-  if (typeArray.includes(ProfileQueryType.User)) {
-    user = await getUserById(userId);
-  }
+  const [levelsCompletedByDifficulty, user] = await Promise.all([
+    typeArray.includes(ProfileQueryType.LevelsCompletedByDifficulty) ? getCompletionByDifficultyTable(new Types.ObjectId(userId)) : null,
+    typeArray.includes(ProfileQueryType.User) ? getUserById(userId) : null,
+  ]);
 
   return res.status(200).json({
     [ProfileQueryType.LevelsCompletedByDifficulty]: levelsCompletedByDifficulty,
