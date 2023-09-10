@@ -1,3 +1,4 @@
+import Dimensions from '@root/constants/dimensions';
 import Graph from '@root/models/db/graph';
 import React from 'react';
 import User from '../../models/db/user';
@@ -25,12 +26,11 @@ export default function FollowingList({ graphs }: FollowingListProps) {
         sortBy='user'
         sortDir='asc'
         totalItems={graphs.length}
-
         columns={[
           {
             id: 'user',
             name: 'User',
-            selector: (row) => <FormattedUser user={row.target as User} />,
+            selector: (row) => <FormattedUser size={Dimensions.AvatarSizeSmall} user={row.target as User} />,
             sortable: false,
           },
           {

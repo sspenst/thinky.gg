@@ -1,5 +1,5 @@
 import { AchievementRulesTableCreator } from '@root/constants/achievements/AchievementRulesTableCreator';
-import { AchievementRulesTableLevelCompletion } from '@root/constants/achievements/AchievementRulesTableLevelCompletion';
+import AchievementRulesTableLevelCompletion from '@root/constants/achievements/AchievementRulesTableLevelCompletion';
 import { AchievementRulesTableMultiplayer } from '@root/constants/achievements/AchievementRulesTableMultiplayer';
 import { AchievementRulesTableReviewer } from '@root/constants/achievements/AchievementRulesTableReviewer';
 import { AchievementRulesTableUser } from '@root/constants/achievements/AchievementRulesTableUser';

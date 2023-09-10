@@ -5,7 +5,6 @@ import getProfileSlug from '../../helpers/getProfileSlug';
 import User from '../../models/db/user';
 import LoadingSpinner from '../page/loadingSpinner';
 import RoleIcons from '../page/roleIcons';
-import LevelsCompletedByDifficultyList from '../profile/levelsCompletedByDifficultyList';
 import PlayerRank from '../profile/playerRank';
 import ProfileAvatar from '../profile/profileAvatar';
 import FormattedDate from './formattedDate';
@@ -57,8 +56,8 @@ export default function FormattedUser({ noLinks, onClick, size, user }: Formatte
   }
 
   return (
-    <div className='flex items-center gap-2 truncate'
-
+    <div
+      className='flex items-center gap-2 truncate'
       onMouseOut={() => {
         if (setTimer.current) {
           clearTimeout(setTimer.current);
@@ -98,13 +97,10 @@ export default function FormattedUser({ noLinks, onClick, size, user }: Formatte
         </>
         :
         <>
-          <Link
-
-            href={getProfileSlug(user)} passHref>
+          <Link href={getProfileSlug(user)} passHref>
             <ProfileAvatar size={size} user={user} />
           </Link>
           <Link
-
             className='font-bold underline truncate'
             href={getProfileSlug(user)}
             onClick={onClick}
@@ -119,13 +115,13 @@ export default function FormattedUser({ noLinks, onClick, size, user }: Formatte
                 const rect = (event.target as HTMLDivElement).getBoundingClientRect();
 
                 // adjust for scroll position
-
                 setPosition({ x: rect.left, y: rect.top + window.scrollY - 70 });
 
                 setTimer.current = setTimeout(() => setShowPopover(true), 1000);
               }}
-            >{user.name}</span>
-
+            >
+              {user.name}
+            </span>
           </Link>
         </>
       }
