@@ -3,11 +3,11 @@ import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import { IAchievementInfo } from './achievementInfo';
 import AchievementType from './achievementType';
 
-export interface IAchievementInfoMultiplayer extends IAchievementInfo {
+interface IAchievementInfoMultiplayer extends IAchievementInfo {
     unlocked: ({ userMatches, multiplayerProfile }: { userMatches: MultiplayerMatch[], multiplayerProfile: MultiplayerProfile }) => boolean;
 }
 
-export const AchievementRulesTableMultiplayer: { [achievementType: string]: IAchievementInfoMultiplayer; } = {
+const AchievementRulesMultiplayer: { [achievementType: string]: IAchievementInfoMultiplayer; } = {
   [AchievementType.MULTIPLAYER_CLASSICAL_5_GAME_PLAYED]: {
     name: 'Classical Player',
     emoji: '⏱️',
@@ -39,3 +39,5 @@ export const AchievementRulesTableMultiplayer: { [achievementType: string]: IAch
     unlocked: ({ userMatches }) => userMatches?.length >= 1,
   },
 };
+
+export default AchievementRulesMultiplayer;

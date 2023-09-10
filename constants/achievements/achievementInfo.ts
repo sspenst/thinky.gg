@@ -1,8 +1,8 @@
+import AchievementRulesCreator from './AchievementRulesCreator';
+import AchievementRulesMultiplayer from './AchievementRulesMultiplayer';
+import AchievementRulesProgress from './AchievementRulesProgress';
+import AchievementRulesReviewer from './AchievementRulesReviewer';
 import AchievementRulesSkill from './AchievementRulesSkill';
-import { AchievementRulesTableCreator } from './AchievementRulesTableCreator';
-import { AchievementRulesTableMultiplayer } from './AchievementRulesTableMultiplayer';
-import { AchievementRulesTableReviewer } from './AchievementRulesTableReviewer';
-import { AchievementRulesTableUser } from './AchievementRulesTableUser';
 
 export interface IAchievementInfo {
   description: string;
@@ -20,11 +20,11 @@ export enum AchievementCategory {
 }
 
 export const AchievementCategoryMapping = {
-  [AchievementCategory.USER]: AchievementRulesTableUser,
-  [AchievementCategory.CREATOR]: AchievementRulesTableCreator,
+  [AchievementCategory.USER]: AchievementRulesProgress,
+  [AchievementCategory.CREATOR]: AchievementRulesCreator,
   [AchievementCategory.LEVEL_COMPLETION]: AchievementRulesSkill,
-  [AchievementCategory.REVIEWER]: AchievementRulesTableReviewer,
-  [AchievementCategory.MULTIPLAYER]: AchievementRulesTableMultiplayer,
+  [AchievementCategory.REVIEWER]: AchievementRulesReviewer,
+  [AchievementCategory.MULTIPLAYER]: AchievementRulesMultiplayer,
 };
 
 // dynamically calculate
