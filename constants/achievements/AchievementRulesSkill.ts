@@ -2,9 +2,7 @@ import { DIFFICULTY_NAMES, getDifficultyList } from '@root/components/formatted/
 import { IAchievementInfo } from './achievementInfo';
 import AchievementType from './achievementType';
 
-export const difficultyList = getDifficultyList();
-
-export interface IAchievementInfoLevelCompletion extends IAchievementInfo {
+interface IAchievementInfoLevelCompletion extends IAchievementInfo {
   unlocked: ({ rollingLevelCompletionSum }: {rollingLevelCompletionSum: number[]}) => boolean;
 }
 
@@ -68,6 +66,7 @@ export const skillRequirements: SkillRequirement[] = [
 ];
 
 const AchievementRulesSkill: { [achievementType: string]: IAchievementInfoLevelCompletion; } = {};
+const difficultyList = getDifficultyList();
 
 skillRequirements.forEach(req => {
   const difficulty = difficultyList[req.difficultyName];

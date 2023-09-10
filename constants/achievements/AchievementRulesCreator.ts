@@ -2,11 +2,11 @@ import Level from '@root/models/db/level';
 import { IAchievementInfo } from './achievementInfo';
 import AchievementType from './achievementType';
 
-export interface IAchievementInfoCreator extends IAchievementInfo {
+interface IAchievementInfoCreator extends IAchievementInfo {
   unlocked: ({ levelsCreated }: {levelsCreated: Level[]}) => boolean;
 }
 
-export const AchievementRulesTableCreator: { [achievementType: string]: IAchievementInfoCreator; } = {
+const AchievementRulesCreator: { [achievementType: string]: IAchievementInfoCreator; } = {
   [AchievementType.CREATOR_CREATED_25_HIGH_QUALITY_LEVELS]: {
     name: 'Masterpiece Maker',
     emoji: '🎻',
@@ -124,3 +124,5 @@ export const AchievementRulesTableCreator: { [achievementType: string]: IAchieve
     unlocked: ({ levelsCreated }) => levelsCreated.length >= 1,
   },
 };
+
+export default AchievementRulesCreator;

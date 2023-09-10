@@ -2,11 +2,11 @@ import Review from '@root/models/db/review';
 import { IAchievementInfo } from './achievementInfo';
 import AchievementType from './achievementType';
 
-export interface IAchievementInfoReviewer extends IAchievementInfo{
+interface IAchievementInfoReviewer extends IAchievementInfo{
   unlocked: ({ reviewsCreated }: {reviewsCreated: Review[]}) => boolean;
 }
 
-export const AchievementRulesTableReviewer: { [achievementType: string]: IAchievementInfoReviewer; } = {
+const AchievementRulesReviewer: { [achievementType: string]: IAchievementInfoReviewer; } = {
   [AchievementType.REVIEWED_3000_LEVELS]: {
     name: 'Legendary Reviewer',
     emoji: '👑',
@@ -44,3 +44,5 @@ export const AchievementRulesTableReviewer: { [achievementType: string]: IAchiev
     unlocked: ({ reviewsCreated }) => reviewsCreated.length >= 1,
   },
 };
+
+export default AchievementRulesReviewer;
