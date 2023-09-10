@@ -2,7 +2,11 @@ import User from '@root/models/db/user';
 import { IAchievementInfo } from './achievementInfo';
 import AchievementType from './achievementType';
 
-export const AchievementRulesTableUser: { [achievementType: string]: IAchievementInfoUser; } = {
+interface IAchievementInfoUser extends IAchievementInfo {
+  unlocked: ({ user }: { user: User; }) => boolean;
+}
+
+const AchievementRulesProgress: { [achievementType: string]: IAchievementInfoUser; } = {
   [AchievementType.COMPLETED_LEVELS_5000]: {
     name: 'Legend',
     emoji: '🐉',
@@ -47,6 +51,4 @@ export const AchievementRulesTableUser: { [achievementType: string]: IAchievemen
   },
 };
 
-export interface IAchievementInfoUser extends IAchievementInfo {
-  unlocked: ({ user }: { user: User; }) => boolean;
-}
+export default AchievementRulesProgress;

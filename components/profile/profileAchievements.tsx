@@ -1,8 +1,8 @@
-import { AchievementRulesTableCreator } from '@root/constants/achievements/AchievementRulesTableCreator';
-import { AchievementRulesTableLevelCompletion } from '@root/constants/achievements/AchievementRulesTableLevelCompletion';
-import { AchievementRulesTableMultiplayer } from '@root/constants/achievements/AchievementRulesTableMultiplayer';
-import { AchievementRulesTableReviewer } from '@root/constants/achievements/AchievementRulesTableReviewer';
-import { AchievementRulesTableUser } from '@root/constants/achievements/AchievementRulesTableUser';
+import AchievementRulesCreator from '@root/constants/achievements/AchievementRulesCreator';
+import AchievementRulesMultiplayer from '@root/constants/achievements/AchievementRulesMultiplayer';
+import AchievementRulesProgress from '@root/constants/achievements/AchievementRulesProgress';
+import AchievementRulesReviewer from '@root/constants/achievements/AchievementRulesReviewer';
+import AchievementRulesSkill from '@root/constants/achievements/AchievementRulesSkill';
 import AchievementType from '@root/constants/achievements/achievementType';
 import Achievement from '@root/models/db/achievement';
 import React from 'react';
@@ -24,11 +24,11 @@ export function ProfileAchievments({ achievements }: { achievements: Achievement
   }
 
   const achievementsByCategory = {
-    'Progress': getAchievementsOfCategory(AchievementRulesTableUser),
-    'Creator': getAchievementsOfCategory(AchievementRulesTableCreator),
-    'Skill': getAchievementsOfCategory(AchievementRulesTableLevelCompletion),
-    'Reviewer': getAchievementsOfCategory(AchievementRulesTableReviewer),
-    'Multiplayer': getAchievementsOfCategory(AchievementRulesTableMultiplayer),
+    'Progress': getAchievementsOfCategory(AchievementRulesProgress),
+    'Creator': getAchievementsOfCategory(AchievementRulesCreator),
+    'Skill': getAchievementsOfCategory(AchievementRulesSkill),
+    'Reviewer': getAchievementsOfCategory(AchievementRulesReviewer),
+    'Multiplayer': getAchievementsOfCategory(AchievementRulesMultiplayer),
   } as { [key: string]: JSX.Element[] };
 
   return (
