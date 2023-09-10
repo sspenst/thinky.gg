@@ -1,10 +1,14 @@
 import FormattedDate from '@root/components/formatted/formattedDate';
+import LoadingSpinner from '@root/components/page/loadingSpinner';
 import RoleIcons from '@root/components/page/roleIcons';
+import StyledTooltip from '@root/components/page/styledTooltip';
+import LevelsCompletedByDifficultyList from '@root/components/profile/levelsCompletedByDifficultyList';
 import PlayerRank from '@root/components/profile/playerRank';
 import { ProfileAchievments } from '@root/components/profile/profileAchievements';
 import ProfileMultiplayer from '@root/components/profile/profileMultiplayer';
-import { getCompletionByDifficultyTable } from '@root/helpers/getCompletionByDifficultyTable';
 import { getUsersWithMultiplayerProfile } from '@root/helpers/getUsersWithMultiplayerProfile';
+import useSWRHelper from '@root/hooks/useSWRHelper';
+import Graph from '@root/models/db/graph';
 import { MultiplayerMatchState } from '@root/models/MultiplayerEnums';
 import classNames from 'classnames';
 import { debounce } from 'debounce';
@@ -18,7 +22,6 @@ import React, { useCallback, useEffect, useState } from 'react';
 import FollowButton from '../../../../components/buttons/followButton';
 import Select from '../../../../components/cards/select';
 import SelectFilter from '../../../../components/cards/selectFilter';
-import FormattedDifficulty, { getDifficultyList } from '../../../../components/formatted/formattedDifficulty';
 import FormattedReview from '../../../../components/formatted/formattedReview';
 import CommentWall from '../../../../components/level/reviews/commentWall';
 import AddCollectionModal from '../../../../components/modal/addCollectionModal';
@@ -103,7 +106,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     achievementsCount,
     collectionsCount,
     followData,
-    levelsCompletedByDifficulty,
     levelsCount,
     multiplayerCount,
     reviewsReceived,
@@ -115,7 +117,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     AchievementModel.countDocuments({ userId: userId }),
     CollectionModel.countDocuments({ userId: userId }),
     getFollowData(user._id.toString(), reqUser),
-    profileTab === ProfileTab.Profile ? getCompletionByDifficultyTable(user._id) : {},
     LevelModel.countDocuments({ isDeleted: { $ne: true }, isDraft: false, userId: userId }),
     MultiplayerMatchModel.countDocuments({ players: userId, state: MultiplayerMatchState.FINISHED, rated: true }),
     profileTab === ProfileTab.ReviewsReceived ? getReviewsForUserId(userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
@@ -129,7 +130,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     achievementsCount: achievementsCount,
     collectionsCount: collectionsCount,
     followerCountInit: followData.followerCount,
-    levelsCompletedByDifficulty: levelsCompletedByDifficulty,
     levelsCount: levelsCount,
     multiplayerCount: multiplayerCount,
     pageProp: page,
@@ -148,15 +148,14 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       const followingGraph = await GraphModel.find({
         source: reqUser._id,
         type: GraphType.FOLLOW,
-      }, 'target targetModel').populate('target', 'name avatarUpdatedAt last_visited_at hideStatus').exec();
+      }, 'target targetModel createdAt').populate('target', 'name avatarUpdatedAt last_visited_at hideStatus').exec() as Graph[];
 
       /* istanbul ignore next */
       const reqUserFollowing = followingGraph.map((f) => {
         cleanUser(f.target as User);
 
-        return f.target as User;
-      })
-        .sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+        return f;
+      }).sort((a, b) => a.createdAt < b.createdAt ? 1 : -1);
 
       profilePageProps.reqUserFollowing = JSON.parse(JSON.stringify(reqUserFollowing));
     }
@@ -218,13 +217,12 @@ export interface ProfilePageProps {
   enrichedCollections: EnrichedCollection[] | undefined;
   enrichedLevels: EnrichedLevel[] | undefined;
   followerCountInit: number;
-  levelsCompletedByDifficulty: { [key: string]: number };
   levelsCount: number;
   multiplayerCount: number;
   pageProp: number;
   profileTab: ProfileTab;
   reqUser: User | null;
-  reqUserFollowing: User[] | undefined;
+  reqUserFollowing: Graph[] | undefined;
   reqUserIsFollowing?: boolean;
   reviewsReceived?: Review[];
   reviewsReceivedCount: number;
@@ -243,7 +241,6 @@ export default function ProfilePage({
   enrichedCollections,
   enrichedLevels,
   followerCountInit,
-  levelsCompletedByDifficulty,
   levelsCount,
   multiplayerCount,
   pageProp,
@@ -267,7 +264,7 @@ export default function ProfilePage({
   const [searchLevelText, setSearchLevelText] = useState('');
   const [showCollectionFilter, setShowCollectionFilter] = useState(FilterSelectOption.All);
   const [showLevelFilter, setShowLevelFilter] = useState(FilterSelectOption.All);
-  const [tab, setTab] = useState(ProfileTab.Profile);
+  const [tab, setTab] = useState(profileTab);
 
   useEffect(() => {
     setFollowerCount(followerCountInit);
@@ -357,6 +354,9 @@ export default function ProfilePage({
       },
     });
   };
+  const { data: profileDataFetched } = useSWRHelper<{levelsCompletedByDifficulty: {[key: string]: number}}>('/api/user/' + user._id + '?type=levelsCompletedByDifficulty', {}, {}, tab !== ProfileTab.Profile);
+
+  const levelsCompletedByDifficulty = profileDataFetched?.levelsCompletedByDifficulty;
 
   // create an array of objects with the id, trigger element (eg. button), and the content element
   const tabsContent = {
@@ -382,8 +382,17 @@ export default function ProfilePage({
         <div className='flex flex-row flex-wrap justify-center text-left gap-10 m-4'>
           <div>
             <h2 className='flex gap-2'>
-              <span className='font-bold'>Rank: </span>
-              <PlayerRank levelsCompletedByDifficulty={levelsCompletedByDifficulty} user={user} />
+              <span
+                className='font-bold'
+                data-tooltip-content='Highest unlocked Skill achievement'
+                data-tooltip-id='rank-tooltip'
+              >
+                Rank:
+              </span>
+              <StyledTooltip id='rank-tooltip' />
+              {
+                levelsCompletedByDifficulty ? <PlayerRank levelsCompletedByDifficulty={levelsCompletedByDifficulty} user={user} /> : '...'
+              }
             </h2>
             <h2><span className='font-bold'>Levels Completed:</span> {user.score}</h2>
             <h2><span className='font-bold'>Levels Created:</span> {user.calc_levels_created_count}</h2>
@@ -392,31 +401,17 @@ export default function ProfilePage({
             </>}
             <h2><span className='font-bold'>Account Created:</span> <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.ts} /></h2>
             <h2><span className='font-bold'>Followers:</span> {followerCount}</h2>
-            {levelsCompletedByDifficulty &&
-              <div className='mt-4'>
-                <h2><span className='font-bold'>Levels Completed by Difficulty:</span></h2>
-                {getDifficultyList().reverse().map(difficulty => {
-                  const levelsCompleted = difficulty.value in levelsCompletedByDifficulty && levelsCompletedByDifficulty[difficulty.value] || 0;
-
-                  // don't show pending unless we have to
-                  if (difficulty.name === 'Pending' && levelsCompleted === 0) {
-                    return null;
-                  }
-
-                  return (
-                    <div className='flex text-sm' key={`${difficulty.name}-levels-completed`}>
-                      <div className='w-10 text-right mr-2'>
-                        {levelsCompleted}
-                      </div>
-                      <FormattedDifficulty difficultyEstimate={difficulty.value} id={difficulty.name} />
-                    </div>
-                  );
-                })}
-              </div>
-            }
+            <div className='mt-4'>
+              <h2><span className='font-bold'>Levels Completed by Difficulty:</span></h2>
+              {levelsCompletedByDifficulty ?
+                <LevelsCompletedByDifficultyList data={levelsCompletedByDifficulty} />
+                :
+                <div className='p-2'><LoadingSpinner /></div>
+              }
+            </div>
             {reqUser && reqUser._id.toString() === user._id.toString() && reqUserFollowing && (<>
               <div className='font-bold text-xl mt-4 mb-2 justify-center flex'>{`${reqUserFollowing.length} following:`}</div>
-              <FollowingList users={reqUserFollowing} />
+              <FollowingList graphs={reqUserFollowing} />
             </>)}
           </div>
           <CommentWall userId={user._id} />
@@ -639,7 +634,64 @@ export default function ProfilePage({
             className={getTabClassNames(ProfileTab.Profile)}
             href={`/profile/${user.name}`}
           >
-            Profile
+            <div className='flex flex-row items-center gap-2'>
+              <ProfileAvatar size={20} user={user} />
+              <span>Profile</span>
+            </div>
+          </Link>
+          <Link
+            className={getTabClassNames(ProfileTab.Achievements)}
+            href={`/profile/${user.name}/${ProfileTab.Achievements}`}
+          >
+            <div className='flex flex-row items-center gap-2'>
+              <span>🏆</span>
+              <span>Achievements ({achievementsCount})</span>
+            </div>
+          </Link>
+          <Link
+            className={getTabClassNames(ProfileTab.Levels)}
+            href={`/profile/${user.name}/${ProfileTab.Levels}`}
+          >
+            <div className='flex flex-row items-center gap-2'>
+              <span>🏗</span>
+              <span>Levels ({levelsCount})</span>
+            </div>
+          </Link>
+          <Link
+            className={getTabClassNames(ProfileTab.Multiplayer)}
+            href={`/profile/${user.name}/${ProfileTab.Multiplayer}`}
+          >
+            <div className='flex flex-row items-center gap-2'>
+              <span>🎮</span>
+              <span>Multiplayer ({multiplayerCount})</span>
+            </div>
+          </Link>
+          <Link
+            className={getTabClassNames(ProfileTab.Collections)}
+            href={`/profile/${user.name}/${ProfileTab.Collections}`}
+          >
+            <div className='flex flex-row items-center gap-2'>
+              <span>📚</span>
+              <span>Collections ({collectionsCount})</span>
+            </div>
+          </Link>
+          <Link
+            className={getTabClassNames(ProfileTab.ReviewsWritten)}
+            href={`/profile/${user.name}/${ProfileTab.ReviewsWritten}`}
+          >
+            <div className='flex flex-row items-center gap-2'>
+              <span>✍</span>
+              <span>Reviews Written ({reviewsWrittenCount})</span>
+            </div>
+          </Link>
+          <Link
+            className={getTabClassNames(ProfileTab.ReviewsReceived)}
+            href={`/profile/${user.name}/${ProfileTab.ReviewsReceived}`}
+          >
+            <div className='flex flex-row items-center gap-2'>
+              <span>📝</span>
+              <span>Reviews Received ({reviewsReceivedCount})</span>
+            </div>
           </Link>
           <Link
             className={getTabClassNames(ProfileTab.Insights)}
@@ -649,42 +701,6 @@ export default function ProfilePage({
               <Image alt='pro' src='/pro.svg' width='16' height='16' />
               <span>Insights</span>
             </div>
-          </Link>
-          <Link
-            className={getTabClassNames(ProfileTab.Multiplayer)}
-            href={`/profile/${user.name}/${ProfileTab.Multiplayer}`}
-          >
-            Multiplayer ({multiplayerCount})
-          </Link>
-          <Link
-            className={getTabClassNames(ProfileTab.Collections)}
-            href={`/profile/${user.name}/${ProfileTab.Collections}`}
-          >
-            Collections ({collectionsCount})
-          </Link>
-          <Link
-            className={getTabClassNames(ProfileTab.Levels)}
-            href={`/profile/${user.name}/${ProfileTab.Levels}`}
-          >
-            Levels ({levelsCount})
-          </Link>
-          <Link
-            className={getTabClassNames(ProfileTab.ReviewsWritten)}
-            href={`/profile/${user.name}/${ProfileTab.ReviewsWritten}`}
-          >
-            Reviews Written ({reviewsWrittenCount})
-          </Link>
-          <Link
-            className={getTabClassNames(ProfileTab.ReviewsReceived)}
-            href={`/profile/${user.name}/${ProfileTab.ReviewsReceived}`}
-          >
-            Reviews Received ({reviewsReceivedCount})
-          </Link>
-          <Link
-            className={getTabClassNames(ProfileTab.Achievements)}
-            href={`/profile/${user.name}/${ProfileTab.Achievements}`}
-          >
-            Achievements ({achievementsCount})
           </Link>
           <MultiSelectUser
             onSelect={(user) => {
