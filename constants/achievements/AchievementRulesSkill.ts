@@ -8,13 +8,13 @@ export interface IAchievementInfoLevelCompletion extends IAchievementInfo {
   unlocked: ({ rollingLevelCompletionSum }: {rollingLevelCompletionSum: number[]}) => boolean;
 }
 
-interface CompletionRequirement {
+interface SkillRequirement {
   achievementType: AchievementType;
   difficultyName: DIFFICULTY_NAMES;
   levels: number;
 }
 
-const completionRequirements: CompletionRequirement[] = [
+export const skillRequirements: SkillRequirement[] = [
   {
     achievementType: AchievementType.PLAYER_RANK_SUPER_GRANDMASTER,
     difficultyName: DIFFICULTY_NAMES.SUPER_GRANDMASTER,
@@ -67,12 +67,12 @@ const completionRequirements: CompletionRequirement[] = [
   },
 ];
 
-const AchievementRulesTableLevelCompletion: { [achievementType: string]: IAchievementInfoLevelCompletion; } = {};
+const AchievementRulesSkill: { [achievementType: string]: IAchievementInfoLevelCompletion; } = {};
 
-completionRequirements.forEach(req => {
+skillRequirements.forEach(req => {
   const difficulty = difficultyList[req.difficultyName];
 
-  AchievementRulesTableLevelCompletion[req.achievementType] = {
+  AchievementRulesSkill[req.achievementType] = {
     description: `Completed ${req.levels} levels at ${difficulty.name} difficulty`,
     emoji: difficulty.emoji,
     name: difficulty.name,
@@ -80,4 +80,4 @@ completionRequirements.forEach(req => {
   };
 });
 
-export default AchievementRulesTableLevelCompletion;
+export default AchievementRulesSkill;

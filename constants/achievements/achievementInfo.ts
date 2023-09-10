@@ -1,5 +1,5 @@
+import AchievementRulesSkill from './AchievementRulesSkill';
 import { AchievementRulesTableCreator } from './AchievementRulesTableCreator';
-import AchievementRulesTableLevelCompletion from './AchievementRulesTableLevelCompletion';
 import { AchievementRulesTableMultiplayer } from './AchievementRulesTableMultiplayer';
 import { AchievementRulesTableReviewer } from './AchievementRulesTableReviewer';
 import { AchievementRulesTableUser } from './AchievementRulesTableUser';
@@ -22,7 +22,7 @@ export enum AchievementCategory {
 export const AchievementCategoryMapping = {
   [AchievementCategory.USER]: AchievementRulesTableUser,
   [AchievementCategory.CREATOR]: AchievementRulesTableCreator,
-  [AchievementCategory.LEVEL_COMPLETION]: AchievementRulesTableLevelCompletion,
+  [AchievementCategory.LEVEL_COMPLETION]: AchievementRulesSkill,
   [AchievementCategory.REVIEWER]: AchievementRulesTableReviewer,
   [AchievementCategory.MULTIPLAYER]: AchievementRulesTableMultiplayer,
 };
