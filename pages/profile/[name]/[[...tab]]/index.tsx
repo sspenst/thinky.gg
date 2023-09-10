@@ -1,6 +1,7 @@
 import FormattedDate from '@root/components/formatted/formattedDate';
 import LoadingSpinner from '@root/components/page/loadingSpinner';
 import RoleIcons from '@root/components/page/roleIcons';
+import LevelsCompletedByDifficultyList from '@root/components/profile/levelsCompletedByDifficultyList';
 import PlayerRank from '@root/components/profile/playerRank';
 import { ProfileAchievments } from '@root/components/profile/profileAchievements';
 import ProfileMultiplayer from '@root/components/profile/profileMultiplayer';
@@ -397,23 +398,7 @@ export default function ProfilePage({
             <div className='mt-4'>
               <h2><span className='font-bold'>Levels Completed by Difficulty:</span></h2>
               {levelsCompletedByDifficulty ? (
-                getDifficultyList().reverse().map(difficulty => {
-                  const levelsCompleted = difficulty.value in levelsCompletedByDifficulty && levelsCompletedByDifficulty[difficulty.value] || 0;
-
-                  // don't show pending unless we have to
-                  if (difficulty.name === 'Pending' && levelsCompleted === 0) {
-                    return null;
-                  }
-
-                  return (
-                    <div className='flex text-sm' key={`${difficulty.name}-levels-completed`}>
-                      <div className='w-10 text-right mr-2'>
-                        {levelsCompleted}
-                      </div>
-                      <FormattedDifficulty difficultyEstimate={difficulty.value} id={difficulty.name} />
-                    </div>
-                  );
-                })) : (
+                <LevelsCompletedByDifficultyList data={levelsCompletedByDifficulty} />) : (
                 <div className='p-2'><LoadingSpinner /></div>
               )
               }
