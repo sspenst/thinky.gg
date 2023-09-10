@@ -1,5 +1,5 @@
+import AchievementRulesSkill from '@root/constants/achievements/AchievementRulesSkill';
 import { AchievementRulesTableCreator } from '@root/constants/achievements/AchievementRulesTableCreator';
-import AchievementRulesTableLevelCompletion from '@root/constants/achievements/AchievementRulesTableLevelCompletion';
 import { AchievementRulesTableMultiplayer } from '@root/constants/achievements/AchievementRulesTableMultiplayer';
 import { AchievementRulesTableReviewer } from '@root/constants/achievements/AchievementRulesTableReviewer';
 import { AchievementRulesTableUser } from '@root/constants/achievements/AchievementRulesTableUser';
@@ -26,7 +26,7 @@ export function ProfileAchievments({ achievements }: { achievements: Achievement
   const achievementsByCategory = {
     'Progress': getAchievementsOfCategory(AchievementRulesTableUser),
     'Creator': getAchievementsOfCategory(AchievementRulesTableCreator),
-    'Skill': getAchievementsOfCategory(AchievementRulesTableLevelCompletion),
+    'Skill': getAchievementsOfCategory(AchievementRulesSkill),
     'Reviewer': getAchievementsOfCategory(AchievementRulesTableReviewer),
     'Multiplayer': getAchievementsOfCategory(AchievementRulesTableMultiplayer),
   } as { [key: string]: JSX.Element[] };
