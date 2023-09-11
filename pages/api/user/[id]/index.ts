@@ -21,6 +21,7 @@ export default apiWrapper({
     typeArray.includes(ProfileQueryType.User) ? getUserById(userId) : null,
   ]);
 
+  // TODO: make this an object with a type definition (use it in formattedUser)
   return res.status(200).json({
     [ProfileQueryType.LevelsCompletedByDifficulty]: levelsCompletedByDifficulty,
     [ProfileQueryType.User]: user,

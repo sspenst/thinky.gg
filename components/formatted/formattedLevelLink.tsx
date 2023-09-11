@@ -49,8 +49,7 @@ export default function FormattedLevelLink({ level, onClick }: EnrichedLevelLink
           setPosition({ x: rect.left, y: rect.top + window.scrollY - 0 });
 
           setTimer.current = setTimeout(() => setShowPopover(true), 750);
-        }
-        }
+        }}
         passHref
         prefetch={false}
         style={{
@@ -72,6 +71,7 @@ export default function FormattedLevelLink({ level, onClick }: EnrichedLevelLink
           cursor: 'pointer',
           /* animate height */
           transition: 'all 0.5s ease-in-out',
+          display: showPopover ? 'block' : 'none',
 
           maxHeight: showPopover ? '1000px' : '0px',
         }}

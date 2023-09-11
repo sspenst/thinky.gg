@@ -6,7 +6,11 @@ import Link from 'next/link';
 import React from 'react';
 import FormattedDifficulty, { difficultyList } from '../formatted/formattedDifficulty';
 
-function getPlayerRank(levelsCompletedByDifficulty: { [key: string]: number }): JSX.Element {
+function getPlayerRank(levelsCompletedByDifficulty?: { [key: string]: number }) {
+  if (!levelsCompletedByDifficulty) {
+    return null;
+  }
+
   const rollingSum = getDifficultyRollingSum(levelsCompletedByDifficulty);
 
   // find the highest unlocked skill requirement
@@ -15,7 +19,7 @@ function getPlayerRank(levelsCompletedByDifficulty: { [key: string]: number }): 
   });
 
   if (!req) {
-    return <span>No rank</span>;
+    return null;
   }
 
   const difficulty = difficultyList[req.difficultyIndex];
@@ -31,7 +35,7 @@ interface PlayerRankProps {
 export default function PlayerRank({ levelsCompletedByDifficulty, user }: PlayerRankProps) {
   return (
     <Link href={'/profile/' + user.name + '/' + ProfileTab.Achievements}>
-      {getPlayerRank(levelsCompletedByDifficulty)}
+      {getPlayerRank(levelsCompletedByDifficulty) ?? <span>No rank</span>}
     </Link>
   );
 }

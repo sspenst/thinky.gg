@@ -1,10 +1,12 @@
 import { ProfileQueryType } from '@root/constants/profileQueryType';
 import Link from 'next/link';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import getProfileSlug from '../../helpers/getProfileSlug';
 import User from '../../models/db/user';
 import LoadingSpinner from '../page/loadingSpinner';
 import RoleIcons from '../page/roleIcons';
+import StyledTooltip from '../page/styledTooltip';
 import PlayerRank from '../profile/playerRank';
 import ProfileAvatar from '../profile/profileAvatar';
 import FormattedDate from './formattedDate';
@@ -15,34 +17,31 @@ interface FormattedUserProps {
   size?: number;
   user?: User | null;
 }
+
 const cache = {} as { [key: string]: any};
 
 export default function FormattedUser({ noLinks, onClick, size, user }: FormattedUserProps) {
   const [showPopover, setShowPopover] = useState(false);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-
-  const [userExtendedData, setUserExtendedData] = useState<any>({});
-  const [isLoading, setIsLoading] = useState(false);
-  const setTimer = useRef<any>(null);
+  const [userExtendedData, setUserExtendedData] = useState<any>();
 
   useEffect(() => {
-    if (showPopover && user) {
-      if (cache[user._id.toString()]) {
-        setUserExtendedData(cache[user._id.toString()]);
-
-        return;
-      }
-
-      setIsLoading(true);
-      fetch(`/api/user/${user._id}?type=` + Object.values(ProfileQueryType).join(',') )
-        .then(response => response.json())
-        .then(data => {
-          setUserExtendedData(data);
-          setIsLoading(false);
-          cache[user._id.toString()] = data;
-        });
+    if (!showPopover || !user || userExtendedData) {
+      return;
     }
-  }, [showPopover, user]);
+
+    if (cache[user._id.toString()]) {
+      setUserExtendedData(cache[user._id.toString()]);
+
+      return;
+    }
+
+    fetch(`/api/user/${user._id}?type=${Object.values(ProfileQueryType).join(',')}`).then(async res => {
+      const data = await res.json();
+
+      setUserExtendedData(data);
+      cache[user._id.toString()] = data;
+    });
+  }, [showPopover, user, userExtendedData]);
 
   // NB: user could be an empty object here if it came from a projection after using preserveNullAndEmptyArrays
   if (!user || Object.keys(user).length === 0) {
@@ -55,41 +54,34 @@ export default function FormattedUser({ noLinks, onClick, size, user }: Formatte
     );
   }
 
-  return (
+  return (<>
     <div
       className='flex items-center gap-2 truncate'
-      onMouseOut={() => {
-        if (setTimer.current) {
-          clearTimeout(setTimer.current);
-        }
-
-        setShowPopover(false);
-      }}
-    >
-      {showPopover && (
-        <div
-          className='popover absolute bg-white p-2 z-10 border rounded-lg transition-all duration-300 fadeIn'
-
-          style={{
-            left: `${position.x}px`, top: `${position.y}px`,
-            backgroundColor: 'var(--bg-color)',
-            cursor: 'pointer',
-
-          }}
-        >
-          {isLoading ? (
-            <div className='flex flex-row gap-2 justify-center items-center'><span>Loading...</span> <LoadingSpinner /></div>
-          ) : (
-            <div className='flex flex-col gap-2'>
-              <div className='flex flex-row gap-2'>
-                <span>{userExtendedData.user?.name}</span>
-                {userExtendedData.levelsCompletedByDifficulty && <PlayerRank user={user} levelsCompletedByDifficulty={userExtendedData.levelsCompletedByDifficulty} />}
-              </div>
-              {userExtendedData.user?.ts && (<span className='text-sm'>Member since <FormattedDate ts={userExtendedData.user.ts} /> </span>)}
+      data-tooltip-html={renderToStaticMarkup(
+        <div className='flex flex-col gap-1 p-1 items-start text-sm'>
+          {!userExtendedData ? <LoadingSpinner /> : <>
+            <div className='flex gap-2 text-base'>
+              <span className='font-bold'>{userExtendedData.user.name}</span>
+              <PlayerRank
+                levelsCompletedByDifficulty={userExtendedData.levelsCompletedByDifficulty}
+                user={user}
+              />
             </div>
-          )}
+            <div className='flex gap-1'>
+              <span className='font-medium'>Levels Completed:</span>
+              <span className='gray'>{userExtendedData.user.score}</span>
+            </div>
+            <div className='flex gap-1'>
+              <span className='font-medium'>Registered:</span>
+              <FormattedDate ts={userExtendedData.user.ts} />
+            </div>
+          </>}
         </div>
       )}
+      data-tooltip-id={`formatted-user-${user._id.toString()}`}
+      onMouseOut={() => setShowPopover(false)}
+      onMouseOver={() => setShowPopover(true)}
+    >
       {noLinks ?
         <>
           <ProfileAvatar size={size} user={user} />
@@ -106,26 +98,12 @@ export default function FormattedUser({ noLinks, onClick, size, user }: Formatte
             onClick={onClick}
             passHref
           >
-            <span
-              onMouseOver={(event: React.MouseEvent<HTMLDivElement>) => {
-                if (setTimer.current) {
-                  clearTimeout(setTimer.current);
-                }
-
-                const rect = (event.target as HTMLDivElement).getBoundingClientRect();
-
-                // adjust for scroll position
-                setPosition({ x: rect.left, y: rect.top + window.scrollY - 70 });
-
-                setTimer.current = setTimeout(() => setShowPopover(true), 1000);
-              }}
-            >
-              {user.name}
-            </span>
+            {user.name}
           </Link>
         </>
       }
       <RoleIcons user={user} />
     </div>
-  );
+    <StyledTooltip id={`formatted-user-${user._id.toString()}`} />
+  </>);
 }
