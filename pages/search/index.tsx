@@ -153,7 +153,6 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const queryDebounce = useCallback(
     debounce((q: SearchQuery) => {
-      console.log('debounce fetch');
       fetchLevels(q);
     }, 500),
     []

@@ -399,7 +399,7 @@ export default function ProfilePage({
             {!user.hideStatus && <>
               <h2><span className='font-bold'>Last Seen:</span> <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.last_visited_at ? user.last_visited_at : user.ts} /></h2>
             </>}
-            <h2><span className='font-bold'>Account Created:</span> <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.ts} /></h2>
+            <h2><span className='font-bold'>Registered:</span> <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.ts} /></h2>
             <h2><span className='font-bold'>Followers:</span> {followerCount}</h2>
             <div className='mt-4'>
               <h2><span className='font-bold'>Levels Completed by Difficulty:</span></h2>
