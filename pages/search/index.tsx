@@ -682,7 +682,6 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
             </div>
           }
           onChangePage={(pg: number) => {
-            console.log('change page fetch 2', pg);
             fetchLevels({
               ...query,
               page: String(pg),
