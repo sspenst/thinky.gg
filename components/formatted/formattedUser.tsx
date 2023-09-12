@@ -56,7 +56,7 @@ export default function FormattedUser({ noLinks, onClick, size, user }: Formatte
 
   return (<>
     <div
-      className='flex items-center gap-2 truncate'
+      className='flex items-center gap-2 truncate w-fit'
       data-tooltip-html={renderToStaticMarkup(
         <div className='flex flex-col gap-0.5 p-1 items-start text-sm'>
           {!userExtendedData ? <LoadingSpinner /> : <>

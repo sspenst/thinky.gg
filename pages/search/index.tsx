@@ -217,7 +217,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       id: 'name',
       name: 'Name',
       grow: 2,
-      selector: (row: EnrichedLevel) => <FormattedLevelLink level={row} />,
+      selector: (row: EnrichedLevel) => <FormattedLevelLink id='search' level={row} />,
       sortable: true,
       style: {
         minWidth: '150px',

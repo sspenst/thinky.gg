@@ -17,7 +17,7 @@ export default function StyledTooltip({ id }: StyledTooltipProps) {
         borderRadius: 6,
         color: 'var(--color)',
         fontSize: '0.7rem',
-        maxWidth: 'calc(100% - 0.7rem)',
+        maxWidth: 'calc(100vw - 0.7rem)',
         padding: '0.25rem 0.35rem 0.25rem 0.35rem',
         zIndex: 100,
       }}
