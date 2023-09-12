@@ -71,7 +71,7 @@ skillRequirements.forEach(req => {
   const difficulty = difficultyList[req.difficultyIndex];
 
   AchievementRulesSkill[req.achievementType] = {
-    description: `Completed ${req.levels} levels at ${difficulty.name} difficulty`,
+    description: `Completed ${req.levels} levels at ${difficulty.name} difficulty${req.difficultyIndex !== DIFFICULTY_INDEX.SUPER_GRANDMASTER ? ' or higher' : ''}`,
     emoji: difficulty.emoji,
     name: difficulty.name,
     unlocked: ({ rollingLevelCompletionSum }) => rollingLevelCompletionSum[req.difficultyIndex] >= req.levels,
