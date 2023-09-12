@@ -136,7 +136,7 @@ export default function CollectionPage({ collection }: CollectionProps) {
           </h1>
           <div className='flex flex-row gap-2 justify-center items-center truncate'>
             <span>by</span>
-            <FormattedUser user={collection.userId} />
+            <FormattedUser id='collection' user={collection.userId} />
           </div>
         </div>
         {!collection.authorNote ? null :

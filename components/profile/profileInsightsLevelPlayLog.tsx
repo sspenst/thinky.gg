@@ -24,7 +24,7 @@ export default function ProfileInsightsLevelPlayLog({ user }: {user: User}) {
         columns={[
           {
             name: 'User',
-            cell: (row) => <FormattedUser size={Dimensions.AvatarSizeSmall} user={row.user} />,
+            cell: (row, index) => <FormattedUser id={`play-log-${index}`} size={Dimensions.AvatarSizeSmall} user={row.user} />,
             grow: 2,
           },
           {
