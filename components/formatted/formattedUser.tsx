@@ -12,7 +12,10 @@ import ProfileAvatar from '../profile/profileAvatar';
 import FormattedDate from './formattedDate';
 
 interface FormattedUserProps {
+  // NB: this id should not contain the user id
+  id: string;
   noLinks?: boolean;
+  noTooltip?: boolean;
   onClick?: () => void;
   size?: number;
   user?: User | null;
@@ -20,7 +23,7 @@ interface FormattedUserProps {
 
 const cache = {} as { [key: string]: any};
 
-export default function FormattedUser({ noLinks, onClick, size, user }: FormattedUserProps) {
+export default function FormattedUser({ id, noLinks, noTooltip, onClick, size, user }: FormattedUserProps) {
   const [showTooltip, setShowTooltip] = useState(false);
   const [userExtendedData, setUserExtendedData] = useState<any>();
   const setTimer = useRef<NodeJS.Timeout>();
@@ -55,6 +58,8 @@ export default function FormattedUser({ noLinks, onClick, size, user }: Formatte
     );
   }
 
+  const tooltipId = `formatted-user-${user._id.toString()}-${id}`;
+
   return (<>
     <div
       className='flex items-center gap-2 truncate w-fit'
@@ -80,7 +85,7 @@ export default function FormattedUser({ noLinks, onClick, size, user }: Formatte
           </>}
         </div>
       )}
-      data-tooltip-id={`formatted-user-${user._id.toString()}`}
+      data-tooltip-id={tooltipId}
       onMouseOut={() => {
         if (setTimer.current) {
           clearTimeout(setTimer.current);
@@ -118,6 +123,6 @@ export default function FormattedUser({ noLinks, onClick, size, user }: Formatte
       }
       <RoleIcons user={user} />
     </div>
-    <StyledTooltip id={`formatted-user-${user._id.toString()}`} />
+    {!noTooltip && <StyledTooltip id={tooltipId} />}
   </>);
 }

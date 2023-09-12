@@ -30,7 +30,7 @@ export default function FollowingList({ graphs }: FollowingListProps) {
           {
             id: 'user',
             name: 'User',
-            selector: (row) => <FormattedUser size={Dimensions.AvatarSizeSmall} user={row.target as User} />,
+            selector: (row) => <FormattedUser id='following' size={Dimensions.AvatarSizeSmall} user={row.target as User} />,
             sortable: false,
           },
           {

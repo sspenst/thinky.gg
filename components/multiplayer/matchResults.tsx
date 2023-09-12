@@ -84,7 +84,7 @@ export default function MatchResults({ match, recap, showViewLink }: MatchResult
                   {match.scoreTable[player._id.toString()]}
                 </span>
               }
-              <FormattedUser user={player} />
+              <FormattedUser id='match-result' user={player} />
               <MultiplayerRating hideType profile={player.multiplayerProfile} type={match.type} />
               {recap?.winner?.userId.toString() === player._id.toString() &&
                 <span className='text-xs italic' style={{

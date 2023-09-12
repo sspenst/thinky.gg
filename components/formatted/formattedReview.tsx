@@ -81,7 +81,7 @@ export default function FormattedReview({ hideBorder, level, onEditClick, review
         <div className='flex gap-x-2 items-center flex-wrap'>
           <div className='flex justify-between w-full items-center'>
             <div className='flex gap-x-2 items-center truncate'>
-              <FormattedUser user={user} />
+              <FormattedUser id={level ? `review-${level._id.toString()}` : 'review'} user={user} />
               <FormattedDate ts={review.ts} />
             </div>
             {onEditClick && <ReviewDropdown onEditClick={onEditClick} />}

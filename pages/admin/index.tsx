@@ -178,7 +178,7 @@ export default function AdminPage({ queryUser, queryCommand }: {queryUser: User 
         <div className='flex flex-row items-center justify-center p-2 gap-2'>
           {selectedUser && (
             <div className='flex flex-col gap-2'>
-              <FormattedUser user={selectedUser} />
+              <FormattedUser id='admin' user={selectedUser} />
               {display('User', selectedUser)}
               {display('UserConfig', selectedUserConfig)}
             </div>

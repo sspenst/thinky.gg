@@ -175,6 +175,7 @@ export default function FormattedNotification({ close, notification, onMarkAsRea
       <div className='flex flex-col gap-1 truncate'>
         {notification.sourceModel === 'User' ?
           <FormattedUser
+            id={`notification-${notification._id.toString()}`}
             onClick={() => {
               onMarkAsRead(true);
 
