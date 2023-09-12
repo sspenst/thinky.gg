@@ -1,6 +1,6 @@
 import { ProfileQueryType } from '@root/constants/profileQueryType';
 import Link from 'next/link';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import getProfileSlug from '../../helpers/getProfileSlug';
 import User from '../../models/db/user';
@@ -23,6 +23,7 @@ const cache = {} as { [key: string]: any};
 export default function FormattedUser({ noLinks, onClick, size, user }: FormattedUserProps) {
   const [showTooltip, setShowTooltip] = useState(false);
   const [userExtendedData, setUserExtendedData] = useState<any>();
+  const setTimer = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     if (!showTooltip || !user || userExtendedData) {
@@ -80,8 +81,20 @@ export default function FormattedUser({ noLinks, onClick, size, user }: Formatte
         </div>
       )}
       data-tooltip-id={`formatted-user-${user._id.toString()}`}
-      onMouseOut={() => setShowTooltip(false)}
-      onMouseOver={() => setShowTooltip(true)}
+      onMouseOut={() => {
+        if (setTimer.current) {
+          clearTimeout(setTimer.current);
+        }
+
+        setShowTooltip(false);
+      }}
+      onMouseOver={() => {
+        if (setTimer.current) {
+          clearTimeout(setTimer.current);
+        }
+
+        setTimer.current = setTimeout(() => setShowTooltip(true), 200);
+      }}
     >
       {noLinks ?
         <>
