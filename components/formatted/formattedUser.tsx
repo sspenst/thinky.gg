@@ -21,11 +21,11 @@ interface FormattedUserProps {
 const cache = {} as { [key: string]: any};
 
 export default function FormattedUser({ noLinks, onClick, size, user }: FormattedUserProps) {
-  const [showPopover, setShowPopover] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
   const [userExtendedData, setUserExtendedData] = useState<any>();
 
   useEffect(() => {
-    if (!showPopover || !user || userExtendedData) {
+    if (!showTooltip || !user || userExtendedData) {
       return;
     }
 
@@ -41,7 +41,7 @@ export default function FormattedUser({ noLinks, onClick, size, user }: Formatte
       setUserExtendedData(data);
       cache[user._id.toString()] = data;
     });
-  }, [showPopover, user, userExtendedData]);
+  }, [showTooltip, user, userExtendedData]);
 
   // NB: user could be an empty object here if it came from a projection after using preserveNullAndEmptyArrays
   if (!user || Object.keys(user).length === 0) {
@@ -79,8 +79,8 @@ export default function FormattedUser({ noLinks, onClick, size, user }: Formatte
         </div>
       )}
       data-tooltip-id={`formatted-user-${user._id.toString()}`}
-      onMouseOut={() => setShowPopover(false)}
-      onMouseOver={() => setShowPopover(true)}
+      onMouseOut={() => setShowTooltip(false)}
+      onMouseOver={() => setShowTooltip(true)}
     >
       {noLinks ?
         <>
