@@ -29,7 +29,7 @@ export default function ProfileInsightsLevelPlayLog({ user }: {user: User}) {
           },
           {
             name: 'Level',
-            cell: (row) => <FormattedLevelLink level={row.levelId} />,
+            cell: (row, index) => <FormattedLevelLink id={`play-log-${index}`} level={row.levelId} />,
             grow: 2,
           },
           {
@@ -44,7 +44,7 @@ export default function ProfileInsightsLevelPlayLog({ user }: {user: User}) {
           },
         }]}
         customStyles={DATA_TABLE_CUSTOM_STYLES}
-        data={proStatsUser[ProStatsUserType.PlayLogForUserCreatedLevels] as any[]}
+        data={proStatsUser[ProStatsUserType.PlayLogForUserCreatedLevels]}
         dense
         noDataComponent={
           <div className='p-3'>

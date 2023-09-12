@@ -75,7 +75,11 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
   case NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT:
     return (<>
       {'set a new record: '}
-      <FormattedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
+      <FormattedLevelLink
+        id={`notification-${notification._id.toString()}`}
+        level={notification.target as EnrichedLevel}
+        onClick={onMarkAsRead}
+      />
       {` - ${(notification.message)} moves`}
     </>);
 
@@ -84,7 +88,11 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
       <span className='flex flex-wrap items-center gap-1'>
         {getNewReviewOnYourLevelBody(notification.message)}
         {' on your level '}
-        <FormattedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
+        <FormattedLevelLink
+          id={`notification-${notification._id.toString()}`}
+          level={notification.target as EnrichedLevel}
+          onClick={onMarkAsRead}
+        />
       </span>
     );
   case NotificationType.NEW_FOLLOWER:
@@ -94,11 +102,19 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
   case NotificationType.NEW_LEVEL:
     return (<>
       {'published a new level: '}
-      <FormattedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
+      <FormattedLevelLink
+        id={`notification-${notification._id.toString()}`}
+        level={notification.target as EnrichedLevel}
+        onClick={onMarkAsRead}
+      />
     </>);
   case NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION:
     return (<>
-      <FormattedLevelLink level={(notification.source) as EnrichedLevel} onClick={onMarkAsRead} />
+      <FormattedLevelLink
+        id={`notification-${notification._id.toString()}`}
+        level={notification.source as EnrichedLevel}
+        onClick={onMarkAsRead}
+      />
       {' was added to the collection '}
       <FormattedCollectionLink collection={notification.target as Collection} onClick={onMarkAsRead} />
     </>);

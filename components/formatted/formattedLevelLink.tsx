@@ -8,12 +8,15 @@ import Complete from '../level/info/complete';
 import StyledTooltip from '../page/styledTooltip';
 
 interface EnrichedLevelLinkProps {
+  // NB: this id should not contain the level id
+  id: string;
   level: EnrichedLevel;
   onClick?: () => void;
 }
 
-export default function FormattedLevelLink({ level, onClick }: EnrichedLevelLinkProps) {
+export default function FormattedLevelLink({ id, level, onClick }: EnrichedLevelLinkProps) {
   const isComplete = level.userMoves === level.leastMoves;
+  const tooltipId = `formatted-level-link-${level._id.toString()}-${id}`;
 
   return (<>
     <Link
@@ -27,7 +30,7 @@ export default function FormattedLevelLink({ level, onClick }: EnrichedLevelLink
           width={Dimensions.LevelCanvasWidth / 3}
         />
       )}
-      data-tooltip-id={`formatted-level-link-${level._id.toString()}`}
+      data-tooltip-id={tooltipId}
       href={`/level/${level.slug}`}
       onClick={onClick}
       passHref
@@ -41,6 +44,6 @@ export default function FormattedLevelLink({ level, onClick }: EnrichedLevelLink
       <span className='truncate'>{level.name}</span>
       {isComplete && <Complete className='-mr-1' />}
     </Link>
-    <StyledTooltip id={`formatted-level-link-${level._id.toString()}`} />
+    <StyledTooltip id={tooltipId} />
   </>);
 }

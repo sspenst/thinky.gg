@@ -86,7 +86,7 @@ export default function FormattedReview({ hideBorder, level, onEditClick, review
             </div>
             {onEditClick && <ReviewDropdown onEditClick={onEditClick} />}
           </div>
-          {level && <FormattedLevelLink level={level} />}
+          {level && <FormattedLevelLink id={`review-${user._id.toString()}`} level={level} />}
         </div>
         {review.score ? <Stars stars={review.score} /> : null}
         <span className='whitespace-pre-wrap'>{review.text}</span>
