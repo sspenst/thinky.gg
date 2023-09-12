@@ -687,7 +687,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
             });
           }}
           onSort={(columnId: string) => {
-            const sortAsc = columnId === 'userId' || columnId === 'name' || columnId === 'calcDifficultyEstimate';
+            const sortAsc = columnId === 'userId' || columnId === 'name';
 
             const update = {
               sortBy: columnId,
