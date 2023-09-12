@@ -58,10 +58,11 @@ export default function FormattedUser({ noLinks, onClick, size, user }: Formatte
     <div
       className='flex items-center gap-2 truncate'
       data-tooltip-html={renderToStaticMarkup(
-        <div className='flex flex-col gap-1 p-1 items-start text-sm'>
+        <div className='flex flex-col gap-0.5 p-1 items-start text-sm'>
           {!userExtendedData ? <LoadingSpinner /> : <>
-            <div className='flex gap-2 text-base'>
-              <span className='font-bold'>{userExtendedData.user.name}</span>
+            <span className='font-bold text-base'>{userExtendedData.user.name}</span>
+            <div className='flex gap-1'>
+              <span className='font-medium'>Rank:</span>
               <PlayerRank
                 levelsCompletedByDifficulty={userExtendedData.levelsCompletedByDifficulty}
                 user={user}
