@@ -1,6 +1,8 @@
 import { Menu, Transition } from '@headlessui/react';
 import FormattedDate from '@root/components/formatted/formattedDate';
+import FormattedUser from '@root/components/formatted/formattedUser';
 import DataTable, { TableColumn } from '@root/components/tables/dataTable';
+import Dimensions from '@root/constants/dimensions';
 import isPro from '@root/helpers/isPro';
 import classNames from 'classnames';
 import { debounce } from 'debounce';
@@ -19,7 +21,6 @@ import MultiSelectUser from '../../components/page/multiSelectUser';
 import Page from '../../components/page/page';
 import TimeRange from '../../constants/timeRange';
 import { FilterSelectOption } from '../../helpers/filterSelectOptions';
-import getProfileSlug from '../../helpers/getProfileSlug';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
 import { EnrichedLevel } from '../../models/db/level';
@@ -180,7 +181,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       id: 'userId',
       name: 'Author',
       selector: (row: EnrichedLevel) => (
-        <div className='flex gap-3'>
+        <div className='flex gap-3 truncate'>
           <button
             onClick={() => {
               if (query.searchAuthor === row.userId.name) {
@@ -203,9 +204,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
               <path d='M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z' />
             </svg>
           </button>
-          <Link href={getProfileSlug(row.userId)} className='font-bold underline truncate'>
-            {row.userId.name}
-          </Link>
+          <FormattedUser id='search' size={Dimensions.AvatarSizeSmall} user={row.userId} />
         </div>
       ),
       sortable: true,
