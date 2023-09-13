@@ -94,6 +94,7 @@ export default function FormattedReview({ hideBorder, level, onEditClick, review
           {review.score ? <Stars stars={review.score} /> : null}
 
           {review.stat?.complete && <span data-tooltip-id='completeLevelTooltip' data-tooltip-content={user.name + ' completed this level ' + moment(1000 * review.stat?.ts).fromNow()}>✅</span>}
+          {review.stat?.complete == false && <span data-tooltip-id='completeLevelTooltip' data-tooltip-content={user.name + ' has not beaten this level (at ' + review.stat.moves + ' of ' + level?.leastMoves + ' steps)'}>❌</span>}
           <StyledTooltip id='completeLevelTooltip' />
         </span>
         <span className='whitespace-pre-wrap'>{review.text}</span>
