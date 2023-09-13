@@ -67,21 +67,23 @@ export default function FormattedUser({ id, noLinks, noTooltip, onClick, size, u
         <div className='flex flex-col gap-0.5 p-1 items-start text-sm'>
           {!userExtendedData ? <LoadingSpinner /> : <>
             <span className='font-bold text-base'>{userExtendedData.user.name}</span>
-            <div className='flex gap-1'>
-              <span className='font-medium'>Rank:</span>
-              <PlayerRank
-                levelsCompletedByDifficulty={userExtendedData.levelsCompletedByDifficulty}
-                user={user}
-              />
-            </div>
-            <div className='flex gap-1'>
-              <span className='font-medium'>Levels Completed:</span>
-              <span className='gray'>{userExtendedData.user.score}</span>
-            </div>
-            <div className='flex gap-1'>
-              <span className='font-medium'>Registered:</span>
-              <FormattedDate ts={userExtendedData.user.ts} />
-            </div>
+            {!userExtendedData.user.ts ? <span>Unregistered</span> : <>
+              <div className='flex gap-1'>
+                <span className='font-medium'>Rank:</span>
+                <PlayerRank
+                  levelsCompletedByDifficulty={userExtendedData.levelsCompletedByDifficulty}
+                  user={user}
+                />
+              </div>
+              <div className='flex gap-1'>
+                <span className='font-medium'>Levels Completed:</span>
+                <span className='gray'>{userExtendedData.user.score}</span>
+              </div>
+              <div className='flex gap-1'>
+                <span className='font-medium'>Registered:</span>
+                <FormattedDate ts={userExtendedData.user.ts} />
+              </div>
+            </>}
           </>}
         </div>
       )}
