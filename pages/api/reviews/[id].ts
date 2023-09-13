@@ -1,11 +1,10 @@
 import isPro from '@root/helpers/isPro';
 import { getUserFromToken } from '@root/lib/withAuth';
 import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
-import { PipelineStage, Types } from 'mongoose';
+import { Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidObjectId } from '../../../helpers/apiWrapper';
 import cleanUser from '../../../lib/cleanUser';
-import dbConnect from '../../../lib/dbConnect';
 import { ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
 
 export default apiWrapper({ GET: {
@@ -14,14 +13,9 @@ export default apiWrapper({ GET: {
   },
 } }, async (req: NextApiRequest, res: NextApiResponse) => {
   const { id } = req.query;
-
-  await dbConnect();
-
   const token = req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, req) : null;
-
   const pro = isPro(reqUser);
-
   const statAggPipeline = [
     {
       $lookup: {
@@ -37,7 +31,6 @@ export default apiWrapper({ GET: {
                 // $eq: ['$userId', '$$userId'] is not valid because $userId is an ObjectId and $$userId is a string
                 // so we need to do this instead, refer to the _id field of the user
                 { $eq: ['$userId', '$$userId'] },
-
               ],
             }
           },
@@ -58,8 +51,8 @@ export default apiWrapper({ GET: {
       $unwind: { path: '$stat', preserveNullAndEmptyArrays: true }
     }
   ];
-  // do the same query but as an aggregation
-  const aggQuery = [
+
+  const reviewsAgg = await ReviewModel.aggregate([
     { $match: { levelId: new Types.ObjectId(id as string) } },
     { $sort: { ts: -1 } },
     { $lookup: { from: UserModel.collection.name, localField: 'userId', foreignField: '_id', as: 'userId',
@@ -84,9 +77,7 @@ export default apiWrapper({ GET: {
       $unset: ['userIdStr'],
     },
     { $unwind: '$userId' },
-
-  ];
-  const reviewsAgg = await ReviewModel.aggregate(aggQuery as PipelineStage[]);
+  ]);
 
   reviewsAgg.forEach(review => cleanUser(review.userId));
 

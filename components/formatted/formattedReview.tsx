@@ -2,8 +2,10 @@ import classNames from 'classnames';
 import moment from 'moment';
 import React from 'react';
 import { EnrichedLevel } from '../../models/db/level';
-import Review, { ReviewWithStats } from '../../models/db/review';
+import { ReviewWithStats } from '../../models/db/review';
 import User from '../../models/db/user';
+import { FolderDivider } from '../header/directory';
+import Complete from '../level/info/complete';
 import ReviewDropdown from '../level/reviews/reviewDropdown';
 import StyledTooltip from '../page/styledTooltip';
 import FormattedDate from './formattedDate';
@@ -90,12 +92,28 @@ export default function FormattedReview({ hideBorder, level, onEditClick, review
           </div>
           {level && <FormattedLevelLink id={`review-${user._id.toString()}`} level={level} />}
         </div>
-        <span className='flex flex-row gap-1'>
+        <span className='flex items-center'>
           {review.score ? <Stars stars={review.score} /> : null}
-
-          {review.stat?.complete && <span data-tooltip-id='completeLevelTooltip' data-tooltip-content={user.name + ' completed this level ' + moment(1000 * review.stat?.ts).fromNow()}>✅</span>}
-          {review.stat?.complete == false && <span data-tooltip-id='completeLevelTooltip' data-tooltip-content={user.name + ' has not beaten this level (at ' + review.stat.moves + ' of ' + level?.leastMoves + ' steps)'}>❌</span>}
-          <StyledTooltip id='completeLevelTooltip' />
+          {review.score && review.stat ? <FolderDivider /> : null}
+          {review.stat && <>
+            <div
+              className='flex items-center gap-2 flex-wrap'
+              data-tooltip-content={review.stat.complete ?
+                `Completed ${moment(new Date(review.stat.ts * 1000)).fromNow()}` :
+                `Solved in ${review.stat.moves} steps ${moment(new Date(review.stat.ts * 1000)).fromNow()}`
+              }
+              data-tooltip-id={`review-stat-${user._id.toString()}`}
+            >
+              <span className='font-bold' style={{
+                color: review.stat.complete ? 'var(--color-complete)' : 'var(--color-incomplete)',
+                textShadow: '1px 1px black',
+              }}>
+                {review.stat.moves}
+              </span>
+              {review.stat.complete && <Complete className='-mx-2' />}
+            </div>
+            <StyledTooltip id={`review-stat-${user._id.toString()}`} />
+          </>}
         </span>
         <span className='whitespace-pre-wrap'>{review.text}</span>
       </div>
