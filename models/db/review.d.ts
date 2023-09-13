@@ -12,4 +12,11 @@ interface Review {
   userId: Types.ObjectId & User;
 }
 
+export interface ReviewWithStats extends Review {
+  stat?: {
+    complete: boolean;
+    ts: number;
+  };
+}
+
 export default Review;
