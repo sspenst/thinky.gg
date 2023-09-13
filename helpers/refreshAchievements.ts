@@ -68,9 +68,10 @@ export async function refreshAchievements(userId: Types.ObjectId, categories: Ac
   ]);
     // neededDataArray is an array of objects with unique keys. Let's combine into one big object
   const neededData = neededDataArray.reduce((acc, cur) => ({ ...acc, ...cur }), {});
-  const achievementsCreatedPromises = [];
+  let achievementsCreated = 0;
 
   for (const category of categories) {
+    const achievementsCreatedPromises = [];
     const categoryRulesTable = AchievementCategoryMapping[category];
 
     for (const achievementType in categoryRulesTable) {
@@ -81,14 +82,14 @@ export async function refreshAchievements(userId: Types.ObjectId, categories: Ac
         continue;
       }
 
-      // TODO: maybe there is a more proper way to do this so i can remove the as any...
       if (achievementInfo.unlocked(neededData as any)) {
-        achievementsCreatedPromises.push(createNewAchievement(achievementType as AchievementType, userId));
+        achievementsCreatedPromises.push(createNewAchievement(achievementType as AchievementType, userId, achievementsCreatedPromises.length > 0)); // for each category, only send one push notification
       }
     }
+
+    achievementsCreated += achievementsCreatedPromises.length;
+    await Promise.all(achievementsCreatedPromises);
   }
 
-  await Promise.all(achievementsCreatedPromises);
-
-  return achievementsCreatedPromises;
+  return achievementsCreated;
 }

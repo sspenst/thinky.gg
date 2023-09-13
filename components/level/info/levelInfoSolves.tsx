@@ -108,7 +108,7 @@ export default function LevelInfoSolves() {
             {j === 0 ? solve.moves : null}
           </span>
           <StyledTooltip id='steps' />
-          <FormattedUser size={Dimensions.AvatarSizeSmall} user={userAndStatTs.user} />
+          <FormattedUser id='solve' size={Dimensions.AvatarSizeSmall} user={userAndStatTs.user} />
           <FormattedDate ts={userAndStatTs.statTs} />
         </div>
       );

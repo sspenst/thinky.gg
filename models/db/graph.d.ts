@@ -10,6 +10,7 @@ interface Graph {
   target: User | Collection;
   targetModel: string;
   type: GraphType;
+  updatedAt: Date;
 }
 
 export default Graph;

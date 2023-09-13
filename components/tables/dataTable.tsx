@@ -156,9 +156,10 @@ export default function DataTable<T>({
       {data.map((row, i) => columns.map(column => {
         return (
           <div
-            className='truncate flex items-center h-8 px-2'
+            className='truncate flex items-center px-2'
             key={`column-${column.id}`}
             style={{
+              minHeight: '32px',
               minWidth: '50px',
               ...column.style,
               backgroundColor: i % 2 === 0 ? 'var(--bg-color-3)' : 'var(--bg-color-2)',
