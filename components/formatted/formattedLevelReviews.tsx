@@ -36,6 +36,7 @@ export default function FormattedLevelReviews({ inModal }: FormattedLevelReviews
             hideBorder={true}
             review={review}
             user={review.userId}
+            level={levelContext.level}
           />
           <div
             className='mt-3 opacity-30'

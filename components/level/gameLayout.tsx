@@ -77,7 +77,7 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, hi
             </button>
             by
             <div style={{ minWidth: 100 }}>
-              <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.userId} />
+              <FormattedUser id='level-title' size={Dimensions.AvatarSizeSmall} user={level.userId} />
             </div>
           </div>
           <LevelInfoModal

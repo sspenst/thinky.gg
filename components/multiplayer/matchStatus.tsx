@@ -163,7 +163,7 @@ export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveCl
                 {match.scoreTable[player._id.toString()]}
               </span>
             }
-            <FormattedUser user={player} />
+            <FormattedUser id='match-status' user={player} />
             <MultiplayerRating hideType profile={player.multiplayerProfile} type={match.type} />
             {recap?.winner?.userId.toString() === player._id.toString() &&
               <span className='text-xs italic' style={{

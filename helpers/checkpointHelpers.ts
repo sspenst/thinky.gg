@@ -26,3 +26,7 @@ export function directionsToGameState(directions: Direction[], levelData: string
 
   return gameState;
 }
+
+export function getCheckpointKey(levelId: string, userId: string) {
+  return `${userId}_${levelId}_checkpoints`;
+}

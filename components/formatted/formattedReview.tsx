@@ -1,9 +1,11 @@
 import classNames from 'classnames';
+import moment from 'moment';
 import React from 'react';
 import { EnrichedLevel } from '../../models/db/level';
-import Review from '../../models/db/review';
+import Review, { ReviewWithStats } from '../../models/db/review';
 import User from '../../models/db/user';
 import ReviewDropdown from '../level/reviews/reviewDropdown';
+import StyledTooltip from '../page/styledTooltip';
 import FormattedDate from './formattedDate';
 import FormattedLevelLink from './formattedLevelLink';
 import FormattedUser from './formattedUser';
@@ -65,7 +67,7 @@ interface FormattedReviewProps {
   hideBorder?: boolean;
   level?: EnrichedLevel;
   onEditClick?: () => void;
-  review: Review;
+  review: ReviewWithStats;
   user: User;
 }
 
@@ -81,14 +83,20 @@ export default function FormattedReview({ hideBorder, level, onEditClick, review
         <div className='flex gap-x-2 items-center flex-wrap'>
           <div className='flex justify-between w-full items-center'>
             <div className='flex gap-x-2 items-center truncate'>
-              <FormattedUser user={user} />
+              <FormattedUser id={level ? `review-${level._id.toString()}` : 'review'} user={user} />
               <FormattedDate ts={review.ts} />
             </div>
             {onEditClick && <ReviewDropdown onEditClick={onEditClick} />}
           </div>
-          {level && <FormattedLevelLink level={level} />}
+          {level && <FormattedLevelLink id={`review-${user._id.toString()}`} level={level} />}
         </div>
-        {review.score ? <Stars stars={review.score} /> : null}
+        <span className='flex flex-row gap-1'>
+          {review.score ? <Stars stars={review.score} /> : null}
+
+          {review.stat?.complete && <span data-tooltip-id='completeLevelTooltip' data-tooltip-content={user.name + ' completed this level ' + moment(1000 * review.stat?.ts).fromNow()}>✅</span>}
+          {review.stat?.complete == false && <span data-tooltip-id='completeLevelTooltip' data-tooltip-content={user.name + ' has not beaten this level (at ' + review.stat.moves + ' of ' + level?.leastMoves + ' steps)'}>❌</span>}
+          <StyledTooltip id='completeLevelTooltip' />
+        </span>
         <span className='whitespace-pre-wrap'>{review.text}</span>
       </div>
     </div>

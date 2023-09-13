@@ -140,40 +140,6 @@ describe('pages/api/reviews', () => {
       },
     });
   });
-  test('Valid object id but query returning null', async () => {
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'GET',
-          query: {
-            id: TestId.LEVEL
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await reviewsLevelHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        jest.spyOn(ReviewModel, 'find').mockReturnValueOnce({
-          populate: function() {
-            return {
-              sort: function() {
-                return null;
-              }
-            };
-          }
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any);
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(res.status).toBe(404);
-        expect(response.error).toBe('Error finding Reviews');
-      },
-    });
-  });
   test('Valid object id but not associated with a level, should just return empty array', async () => {
     await testApiHandler({
       handler: async (_, res) => {

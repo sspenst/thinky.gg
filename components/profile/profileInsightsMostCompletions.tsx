@@ -23,7 +23,7 @@ export default function ProfileInsightsMostCompletions({ user }: {user: User}) {
         columns={[
           {
             name: 'User',
-            cell: (row: UserAndSum) => <FormattedUser size={Dimensions.AvatarSizeSmall} user={row.user} />,
+            cell: (row: UserAndSum) => <FormattedUser id='completions' size={Dimensions.AvatarSizeSmall} user={row.user} />,
             grow: 2,
           },
           {

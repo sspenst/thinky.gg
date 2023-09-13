@@ -1,6 +1,8 @@
 import { Menu, Transition } from '@headlessui/react';
 import FormattedDate from '@root/components/formatted/formattedDate';
+import FormattedUser from '@root/components/formatted/formattedUser';
 import DataTable, { TableColumn } from '@root/components/tables/dataTable';
+import Dimensions from '@root/constants/dimensions';
 import isPro from '@root/helpers/isPro';
 import classNames from 'classnames';
 import { debounce } from 'debounce';
@@ -13,13 +15,12 @@ import nProgress from 'nprogress';
 import { ParsedUrlQuery, ParsedUrlQueryInput } from 'querystring';
 import React, { Fragment, useCallback, useEffect, useState } from 'react';
 import FilterButton from '../../components/buttons/filterButton';
-import FormattedDifficulty, { getDifficultyColor, getDifficultyList } from '../../components/formatted/formattedDifficulty';
+import FormattedDifficulty, { difficultyList, getDifficultyColor } from '../../components/formatted/formattedDifficulty';
 import FormattedLevelLink from '../../components/formatted/formattedLevelLink';
 import MultiSelectUser from '../../components/page/multiSelectUser';
 import Page from '../../components/page/page';
 import TimeRange from '../../constants/timeRange';
 import { FilterSelectOption } from '../../helpers/filterSelectOptions';
-import getProfileSlug from '../../helpers/getProfileSlug';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
 import { EnrichedLevel } from '../../models/db/level';
@@ -153,7 +154,6 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const queryDebounce = useCallback(
     debounce((q: SearchQuery) => {
-      console.log('debounce fetch');
       fetchLevels(q);
     }, 500),
     []
@@ -181,7 +181,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       id: 'userId',
       name: 'Author',
       selector: (row: EnrichedLevel) => (
-        <div className='flex gap-3'>
+        <div className='flex gap-3 truncate'>
           <button
             onClick={() => {
               if (query.searchAuthor === row.userId.name) {
@@ -204,9 +204,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
               <path d='M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z' />
             </svg>
           </button>
-          <Link href={getProfileSlug(row.userId)} className='font-bold underline truncate'>
-            {row.userId.name}
-          </Link>
+          <FormattedUser id='search' size={Dimensions.AvatarSizeSmall} user={row.userId} />
         </div>
       ),
       sortable: true,
@@ -218,7 +216,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       id: 'name',
       name: 'Name',
       grow: 2,
-      selector: (row: EnrichedLevel) => <FormattedLevelLink level={row} />,
+      selector: (row: EnrichedLevel) => <FormattedLevelLink id='search' level={row} />,
       sortable: true,
       style: {
         minWidth: '150px',
@@ -263,7 +261,16 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
     {
       id: 'reviewScore',
       name: 'Review Score',
-      selector: (row: EnrichedLevel) => {return row.calc_reviews_count === 0 ? '-' : row.calc_reviews_score_laplace?.toFixed(2);},
+      selector: (row: EnrichedLevel) => {
+        if (row.calc_reviews_count === 0 || !row.calc_reviews_score_laplace) {
+          return '-';
+        }
+
+        // floor to avoid showing review scores that are too high
+        // eg: .908 would show .91 if it was rounded, but it would not contribute
+        // to the acclaimed levels achievement (requires >= 0.91)
+        return (Math.floor(row.calc_reviews_score_laplace * 1000) / 1000).toFixed(3);
+      },
       sortable: true,
     },
   ] as TableColumn<EnrichedLevel>[];
@@ -436,7 +443,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                       </button>
                     )}
                   </Menu.Item>
-                  {getDifficultyList().filter(difficulty => difficulty.name !== 'Pending').map((difficulty) => (
+                  {difficultyList.filter(difficulty => difficulty.name !== 'Pending').map((difficulty) => (
                     <Menu.Item key={`difficulty-item-${difficulty.value}`}>
                       {({ active }) => (
                         <button
@@ -673,14 +680,13 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
             </div>
           }
           onChangePage={(pg: number) => {
-            console.log('change page fetch 2', pg);
             fetchLevels({
               ...query,
               page: String(pg),
             });
           }}
           onSort={(columnId: string) => {
-            const sortAsc = columnId === 'userId' || columnId === 'name' || columnId === 'calcDifficultyEstimate';
+            const sortAsc = columnId === 'userId' || columnId === 'name';
 
             const update = {
               sortBy: columnId,

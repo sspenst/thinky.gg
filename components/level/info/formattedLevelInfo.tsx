@@ -43,7 +43,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
       <div className='flex flex-col gap-1'>
         <div className='font-bold text-2xl'>{level.name}</div>
         <div className='flex gap-2 items-center'>
-          <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.userId} />
+          <FormattedUser id='author' size={Dimensions.AvatarSizeSmall} user={level.userId} />
           <FormattedDate ts={level.ts} />
         </div>
         <div className='text-sm flex gap-2 items-center'>
@@ -156,7 +156,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
       }} />
       <div className='flex flex-row gap-2 items-center'>
         <span className='font-bold whitespace-nowrap'>Archived by:</span>
-        <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.archivedBy} />
+        <FormattedUser id='archived-by' size={Dimensions.AvatarSizeSmall} user={level.archivedBy} />
         <FormattedDate ts={level.archivedTs} />
       </div>
     </>}

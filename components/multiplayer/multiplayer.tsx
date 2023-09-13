@@ -136,7 +136,7 @@ export default function Multiplayer() {
         <div className='flex flex-col gap-2'>
           {connectedPlayers.map(player => (
             <div key={'multiplayer-' + player._id.toString()} className='flex items-center gap-2'>
-              <FormattedUser user={player} />
+              <FormattedUser id='multiplayer' user={player} />
               <MultiplayerRating profile={player.multiplayerProfile} type={MultiplayerMatchType.RushBullet} />
               <MultiplayerRating profile={player.multiplayerProfile} type={MultiplayerMatchType.RushBlitz} />
               <MultiplayerRating profile={player.multiplayerProfile} type={MultiplayerMatchType.RushRapid} />

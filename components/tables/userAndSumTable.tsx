@@ -23,7 +23,7 @@ export default function UserAndSumTable({ data, sumName }: UserAndSumTableProps)
       },
       {
         name: 'User',
-        cell: (row: UserAndSum) => <FormattedUser size={Dimensions.AvatarSizeSmall} user={row.user} />,
+        cell: (row: UserAndSum) => <FormattedUser id={`table-${sumName}`} size={Dimensions.AvatarSizeSmall} user={row.user} />,
         minWidth: '200px',
       },
       {
