@@ -480,8 +480,8 @@ export default apiWrapper({ GET: {
     ]);
 
     totalEmailedSoFar.push(...emailUnsubscribeResult.sentList);
-
     totalEmailedSoFar.push(...emailReactivationResult.sentList);
+
     const emailDigestResult = await sendEmailDigests(batchId, totalEmailedSoFar, limitNum);
 
     totalEmailedSoFar.push(...emailDigestResult.sentList);

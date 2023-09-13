@@ -3,7 +3,7 @@ import StyledTooltip from '../page/styledTooltip';
 
 const maxDiff = 30000;
 
-export interface Difficulty {
+interface Difficulty {
   description: string;
   emoji: string;
   name: string;
