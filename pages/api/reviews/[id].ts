@@ -1,11 +1,11 @@
-import { LEVEL_DEFAULT_PROJECTION } from '@root/models/schemas/levelSchema';
+import isPro from '@root/helpers/isPro';
+import { getUserFromToken } from '@root/lib/withAuth';
 import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
-import { Types } from 'mongoose';
+import { PipelineStage, Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidObjectId } from '../../../helpers/apiWrapper';
 import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
-import Review from '../../../models/db/review';
 import { ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
 
 export default apiWrapper({ GET: {
@@ -17,27 +17,12 @@ export default apiWrapper({ GET: {
 
   await dbConnect();
 
-  // do the same query but as an aggregation
-  const reviewsAgg = await ReviewModel.aggregate([
-    { $match: { levelId: new Types.ObjectId(id as string) } },
-    { $sort: { ts: -1 } },
-    { $lookup: { from: UserModel.collection.name, localField: 'userId', foreignField: '_id', as: 'userId',
-      pipeline: [
-        {
-          $project: {
-            ...USER_DEFAULT_PROJECTION
-          },
-        }
-      ]
-    } },
-    {
-      $set: {
-        userIdStr: '$userId._id',
-      }
-    },
-    {
-      $unwind: '$userIdStr',
-    },
+  const token = req?.cookies?.token;
+  const reqUser = token ? await getUserFromToken(token, req) : null;
+
+  const pro = isPro(reqUser);
+
+  const statAggPipeline = [
     {
       $lookup: {
         from: StatModel.collection.name,
@@ -70,18 +55,38 @@ export default apiWrapper({ GET: {
       },
     },
     {
+      $unwind: { path: '$stat', preserveNullAndEmptyArrays: true }
+    }
+  ];
+  // do the same query but as an aggregation
+  const aggQuery = [
+    { $match: { levelId: new Types.ObjectId(id as string) } },
+    { $sort: { ts: -1 } },
+    { $lookup: { from: UserModel.collection.name, localField: 'userId', foreignField: '_id', as: 'userId',
+      pipeline: [
+        {
+          $project: {
+            ...USER_DEFAULT_PROJECTION
+          },
+        }
+      ]
+    } },
+    {
+      $set: {
+        userIdStr: '$userId._id',
+      }
+    },
+    {
+      $unwind: '$userIdStr',
+    },
+    ...pro ? statAggPipeline : [],
+    {
       $unset: ['userIdStr'],
     },
     { $unwind: '$userId' },
-    { $unwind: { path: '$stat', preserveNullAndEmptyArrays: true } },
 
-  ]);
-
-  if (!reviewsAgg) {
-    return res.status(404).json({
-      error: 'Error finding Reviews',
-    });
-  }
+  ];
+  const reviewsAgg = await ReviewModel.aggregate(aggQuery as PipelineStage[]);
 
   reviewsAgg.forEach(review => cleanUser(review.userId));
 
