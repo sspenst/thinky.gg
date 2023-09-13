@@ -1,10 +1,10 @@
+import { getCheckpointKey } from '@root/helpers/checkpointHelpers';
 import type { NextApiResponse } from 'next';
 import { ValidNumber, ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import { KeyValueModel, LevelModel } from '../../../models/mongoose';
-import { getCheckpointKey } from '../level/[id]/checkpoints';
 
 export default withAuth({
   PUT: {
