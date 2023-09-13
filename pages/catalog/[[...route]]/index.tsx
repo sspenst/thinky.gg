@@ -12,7 +12,7 @@ import filterSelectOptions, { FilterSelectOption } from '../../../helpers/filter
 import getUserStats from '../../../helpers/getUserStats';
 import useStats from '../../../hooks/useStats';
 import dbConnect from '../../../lib/dbConnect';
-import { LevelModel } from '../../../models/mongoose';
+import { LevelModel, UserModel } from '../../../models/mongoose';
 import SelectOption from '../../../models/selectOption';
 
 export async function getStaticPaths() {
@@ -51,7 +51,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
       },
       {
         $lookup: {
-          from: 'users',
+          from: UserModel.collection.name,
           localField: '_id',
           foreignField: '_id',
           as: 'user',

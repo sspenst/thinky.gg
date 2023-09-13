@@ -11,7 +11,7 @@ import { requestBroadcastMatches, requestClearBroadcastMatchSchedule } from '../
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
 import User from '../../../models/db/user';
-import { MultiplayerMatchModel, MultiplayerProfileModel } from '../../../models/mongoose';
+import { LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, UserModel } from '../../../models/mongoose';
 import {
   MatchAction,
   MultiplayerMatchState,
@@ -364,7 +364,7 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
       },
       {
         $lookup: {
-          from: 'users',
+          from: UserModel.collection.name,
           localField: 'players',
           foreignField: '_id',
           as: 'players',
@@ -375,7 +375,7 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
             },
             {
               $lookup: {
-                from: 'multiplayerprofiles',
+                from: MultiplayerProfileModel.collection.name,
                 localField: '_id',
                 foreignField: 'userId',
                 as: 'multiplayerProfile',
@@ -392,7 +392,7 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
       },
       {
         $lookup: {
-          from: 'users',
+          from: UserModel.collection.name,
           localField: 'winners',
           foreignField: '_id',
           as: 'winners',
@@ -405,7 +405,7 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
       },
       {
         $lookup: {
-          from: 'users',
+          from: UserModel.collection.name,
           localField: 'createdBy',
           foreignField: '_id',
           as: 'createdBy',
@@ -421,7 +421,7 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
       },
       {
         $lookup: {
-          from: 'levels',
+          from: LevelModel.collection.name,
           localField: 'levels',
           foreignField: '_id',
           as: 'levelsPopulated',
@@ -436,7 +436,7 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
             ...lookupPipelineUser as PipelineStage.Lookup[],
             {
               $lookup: {
-                from: 'users',
+                from: UserModel.collection.name,
                 localField: 'userId',
                 foreignField: '_id',
                 as: 'userId',

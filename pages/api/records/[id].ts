@@ -4,7 +4,7 @@ import apiWrapper, { ValidObjectId } from '../../../helpers/apiWrapper';
 import { logger } from '../../../helpers/logger';
 import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
-import { RecordModel } from '../../../models/mongoose';
+import { RecordModel, UserModel } from '../../../models/mongoose';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 
 export default apiWrapper({ GET: {
@@ -26,7 +26,7 @@ export default apiWrapper({ GET: {
       },
       {
         $lookup: {
-          from: 'users',
+          from: UserModel.collection.name,
           localField: 'userId',
           foreignField: '_id',
           as: 'userId',

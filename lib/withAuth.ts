@@ -1,6 +1,5 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
 // https://github.com/newrelic/node-newrelic/issues/956#issuecomment-962729137
-import newrelic from 'newrelic';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import requestIp from 'request-ip';
 import { parseReq, ReqValidator } from '../helpers/apiWrapper';
@@ -32,6 +31,8 @@ export async function getUserFromToken(
 
   const decoded = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload;
   const userId = decoded.userId as string;
+  // dynamically import newrelic
+  const newrelic = await import('newrelic');
 
   if (!isLocal()) {
     newrelic.addCustomAttribute('userId', userId);

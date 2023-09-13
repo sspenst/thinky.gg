@@ -8,7 +8,7 @@ import isPro from '../../../../../helpers/isPro';
 import { ProStatsUserType } from '../../../../../hooks/useProStatsUser';
 import cleanUser from '../../../../../lib/cleanUser';
 import withAuth, { NextApiRequestWithAuth } from '../../../../../lib/withAuth';
-import { LevelModel, StatModel } from '../../../../../models/mongoose';
+import { LevelModel, PlayAttemptModel, StatModel, UserModel } from '../../../../../models/mongoose';
 import { AttemptContext } from '../../../../../models/schemas/playAttemptSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../../../models/schemas/userSchema';
 
@@ -37,7 +37,7 @@ async function getDifficultyDataComparisons(userId: string) {
     },
     {
       $lookup: {
-        from: 'levels',
+        from: LevelModel.collection.name,
         localField: 'levelId',
         foreignField: '_id',
         as: 'level',
@@ -68,7 +68,7 @@ async function getDifficultyDataComparisons(userId: string) {
     },
     {
       $lookup: {
-        from: 'playattempts',
+        from: PlayAttemptModel.collection.name,
         let: { levelId: '$level._id' },
         pipeline: [
           {
@@ -133,7 +133,7 @@ async function getDifficultyDataComparisons(userId: string) {
     },
     {
       $lookup: {
-        from: 'playattempts',
+        from: PlayAttemptModel.collection.name,
         let: { levelId: '$_id', players_with_beaten_playattempt: '$players_with_beaten_playattempt' },
         pipeline: [
           {
@@ -182,7 +182,7 @@ async function getDifficultyDataComparisons(userId: string) {
     },
     {
       $lookup: {
-        from: 'playattempts',
+        from: PlayAttemptModel.collection.name,
         let: { levelId: '$_id' },
         pipeline: [
           {
@@ -280,7 +280,7 @@ async function getPlayLogForUsersCreatedLevels(reqUser: User, userId: string) {
     },
     {
       $lookup: {
-        from: 'stats',
+        from: StatModel.collection.name,
         localField: '_id',
         foreignField: 'levelId',
         as: 'stats',
@@ -306,7 +306,7 @@ async function getPlayLogForUsersCreatedLevels(reqUser: User, userId: string) {
     },
     {
       $lookup: {
-        from: 'users',
+        from: UserModel.collection.name,
         localField: 'stats.userId',
         foreignField: '_id',
         as: 'user',
@@ -328,7 +328,7 @@ async function getPlayLogForUsersCreatedLevels(reqUser: User, userId: string) {
     // also get the level
     {
       $lookup: {
-        from: 'levels',
+        from: LevelModel.collection.name,
         localField: 'levelId',
         foreignField: '_id',
         as: 'levelId',
@@ -362,7 +362,7 @@ async function getMostSolvesForUserLevels(userId: string) {
     },
     {
       $lookup: {
-        from: 'stats',
+        from: StatModel.collection.name,
         localField: '_id',
         foreignField: 'levelId',
         as: 'stats',
@@ -385,7 +385,7 @@ async function getMostSolvesForUserLevels(userId: string) {
     },
     {
       $lookup: {
-        from: 'users',
+        from: UserModel.collection.name,
         localField: '_id',
         foreignField: '_id',
         as: 'user',
