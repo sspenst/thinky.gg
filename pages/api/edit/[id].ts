@@ -1,4 +1,5 @@
 import { getCheckpointKey } from '@root/helpers/checkpointHelpers';
+import { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import type { NextApiResponse } from 'next';
 import { ValidNumber, ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
 import dbConnect from '../../../lib/dbConnect';
@@ -50,8 +51,11 @@ export default withAuth({
         width: width,
       },
     }, { runValidators: true }),
-    // delete checkpoints as they are most likely invalid after an edit
-    KeyValueModel.deleteOne({ key: getCheckpointKey(id as string, req.userId) }),
+    // delete best checkpoint as it may now be invalid
+    KeyValueModel.findOneAndUpdate(
+      { key: getCheckpointKey(id as string, req.userId) },
+      { $unset: { [`value.${BEST_CHECKPOINT_INDEX}`]: '' } },
+    ),
   ]);
 
   return res.status(200).json(level);
