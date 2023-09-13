@@ -3,7 +3,8 @@ import { ValidNumber, ValidObjectId, ValidType } from '../../../helpers/apiWrapp
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
-import { LevelModel } from '../../../models/mongoose';
+import { KeyValueModel, LevelModel } from '../../../models/mongoose';
+import { getCheckpointKey } from '../level/[id]/checkpoints';
 
 export default withAuth({
   PUT: {
@@ -40,14 +41,18 @@ export default withAuth({
 
   const { data, height, width } = req.body;
 
-  await LevelModel.updateOne({ _id: id }, {
-    $set: {
-      data: data.trim(),
-      height: height,
-      leastMoves: 0,
-      width: width,
-    },
-  }, { runValidators: true });
+  await Promise.all([
+    LevelModel.updateOne({ _id: id }, {
+      $set: {
+        data: data.trim(),
+        height: height,
+        leastMoves: 0,
+        width: width,
+      },
+    }, { runValidators: true }),
+    // delete checkpoints as they are most likely invalid after an edit
+    KeyValueModel.deleteOne({ key: getCheckpointKey(id as string, req.userId) }),
+  ]);
 
   return res.status(200).json(level);
 });
