@@ -37,7 +37,6 @@ export default apiWrapper({ GET: {
                 // $eq: ['$userId', '$$userId'] is not valid because $userId is an ObjectId and $$userId is a string
                 // so we need to do this instead, refer to the _id field of the user
                 { $eq: ['$userId', '$$userId'] },
-                { $eq: ['$complete', true] },
 
               ],
             }
@@ -48,6 +47,7 @@ export default apiWrapper({ GET: {
             _id: 0,
             ts: 1,
             complete: 1,
+            moves: 1
           }
         }
         ],

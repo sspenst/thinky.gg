@@ -15,6 +15,7 @@ interface Review {
 export interface ReviewWithStats extends Review {
   stat?: {
     complete: boolean;
+    moves: number;
     ts: number;
   };
 }
