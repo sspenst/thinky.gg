@@ -1,14 +1,11 @@
 import Direction from '@root/constants/direction';
+import { getCheckpointKey } from '@root/helpers/checkpointHelpers';
 import { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import { NextApiResponse } from 'next';
 import { ValidDirections, ValidNumber } from '../../../../../helpers/apiWrapper';
 import isPro from '../../../../../helpers/isPro';
 import withAuth, { NextApiRequestWithAuth } from '../../../../../lib/withAuth';
 import { KeyValueModel, LevelModel } from '../../../../../models/mongoose';
-
-export function getCheckpointKey(levelId: string, userId: string) {
-  return `${userId}_${levelId}_checkpoints`;
-}
 
 export default withAuth({
   GET: {},
