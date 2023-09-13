@@ -79,7 +79,7 @@ const UserSchema = new mongoose.Schema<User>({
     select: false,
     required: true,
     minlength: 8,
-    maxlength: 50,
+    maxlength: 64,
   },
   roles: {
     type: [String],
@@ -106,7 +106,7 @@ UserSchema.index({ name: 1 }, { unique: true });
 UserSchema.index({ email: 1 }, { unique: true });
 UserSchema.index({ calc_records: -1 });
 
-const saltRounds = 10;
+export const PASSWORD_SALTROUNDS = process.env.NODE_ENV !== 'test' ? 10 : 1;
 
 UserSchema.pre('save', function(next) {
   // Check if document is new or a new password has been set
@@ -115,7 +115,7 @@ UserSchema.pre('save', function(next) {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const document = this;
 
-    bcrypt.hash(document.password as string, saltRounds,
+    bcrypt.hash(document.password as string, PASSWORD_SALTROUNDS,
       function(err, hashedPassword) {
         /* istanbul ignore if */
         if (err) {

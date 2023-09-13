@@ -354,6 +354,7 @@ export default function ProfilePage({
       },
     });
   };
+
   const { data: profileDataFetched } = useSWRHelper<{levelsCompletedByDifficulty: {[key: string]: number}}>('/api/user/' + user._id + '?type=levelsCompletedByDifficulty', {}, {}, tab !== ProfileTab.Profile);
 
   const levelsCompletedByDifficulty = profileDataFetched?.levelsCompletedByDifficulty;

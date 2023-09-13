@@ -293,7 +293,11 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
     router.events.on('routeChangeComplete', handleRouteChange);
 
-    return () => router.events.off('routeChangeComplete', handleRouteChange);
+    return () => {
+      router.events.off('routeChangeComplete', handleRouteChange);
+      router.events.off('routeChangeStart', () => nProgress.start());
+      router.events.off('routeChangeError', () => nProgress.done());
+    };
   }, [GA_ClientID, router.events, router.pathname, user]);
 
   const isEU = Intl.DateTimeFormat().resolvedOptions().timeZone.startsWith('Europe');

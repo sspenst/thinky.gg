@@ -17,7 +17,7 @@ import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
 import isLocal from '../../../../lib/isLocal';
 import User from '../../../../models/db/user';
-import { EmailLogModel, LevelModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
+import { EmailLogModel, LevelModel, NotificationModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
 import { EmailState } from '../../../../models/schemas/emailLogSchema';
 import { getLevelOfDay } from '../../level-of-day';
 
@@ -93,7 +93,7 @@ export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFa
     },
   }, {
     $lookup: {
-      from: 'users',
+      from: UserModel.collection.name,
       localField: 'userId',
       foreignField: '_id',
       as: 'userId',
@@ -131,7 +131,7 @@ export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFa
   // join notifications and count how many are unread, createdAt { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }, and userId is the same as the user
   {
     $lookup: {
-      from: 'notifications',
+      from: NotificationModel.collection.name,
       let: { userId: '$userId._id' },
       pipeline: [
         {
@@ -177,7 +177,7 @@ export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFa
   // join email logs and get the last one
   {
     $lookup: {
-      from: 'emaillogs',
+      from: EmailLogModel.collection.name,
       let: { userId: '$userId._id' },
       pipeline: [
         {
@@ -299,7 +299,7 @@ export async function sendAutoUnsubscribeUsers(batchId: Types.ObjectId, limit: n
     },
     {
       $lookup: {
-        from: 'userconfigs',
+        from: UserConfigModel.collection.name,
         localField: '_id',
         foreignField: 'userId',
         as: 'userConfig',
@@ -387,7 +387,7 @@ export async function sendEmailReactivation(batchId: Types.ObjectId, limit: numb
     },
     {
       $lookup: {
-        from: 'userconfigs',
+        from: UserConfigModel.collection.name,
         localField: '_id',
         foreignField: 'userId',
         as: 'userConfig',
@@ -474,13 +474,14 @@ export default apiWrapper({ GET: {
   const totalEmailedSoFar: string[] = [];
 
   try {
-    const emailUnsubscribeResult = await sendAutoUnsubscribeUsers(batchId, limitNum);
+    const [emailUnsubscribeResult, emailReactivationResult] = await Promise.all([
+      sendAutoUnsubscribeUsers(batchId, limitNum),
+      sendEmailReactivation(batchId, limitNum),
+    ]);
 
     totalEmailedSoFar.push(...emailUnsubscribeResult.sentList);
-
-    const emailReactivationResult = await sendEmailReactivation(batchId, limitNum);
-
     totalEmailedSoFar.push(...emailReactivationResult.sentList);
+
     const emailDigestResult = await sendEmailDigests(batchId, totalEmailedSoFar, limitNum);
 
     totalEmailedSoFar.push(...emailDigestResult.sentList);

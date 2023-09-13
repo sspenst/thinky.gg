@@ -10,7 +10,7 @@ import Page from '../../components/page/page';
 import cleanUser from '../../lib/cleanUser';
 import { getUserFromToken } from '../../lib/withAuth';
 import Level from '../../models/db/level';
-import { LevelModel } from '../../models/mongoose';
+import { LevelModel, UserModel } from '../../models/mongoose';
 import { USER_DEFAULT_PROJECTION } from '../../models/schemas/userSchema';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -38,7 +38,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     },
     {
       $lookup: {
-        from: 'users',
+        from: UserModel.collection.name,
         localField: 'userId',
         foreignField: '_id',
         as: 'userId',

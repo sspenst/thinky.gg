@@ -8,7 +8,7 @@ import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
 import Level, { EnrichedLevel } from '../../../models/db/level';
 import User from '../../../models/db/user';
-import { KeyValueModel, LevelModel } from '../../../models/mongoose';
+import { KeyValueModel, LevelModel, UserModel } from '../../../models/mongoose';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 
@@ -34,7 +34,7 @@ export async function getLevelOfDay(reqUser?: User | null) {
       },
       {
         $lookup: {
-          from: 'users',
+          from: UserModel.collection.name,
           localField: 'userId',
           foreignField: '_id',
           as: 'userId',
