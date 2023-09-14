@@ -35,7 +35,7 @@ export async function getUserFromToken(
   const newrelic = await import('newrelic');
 
   if (!isLocal()) {
-    newrelic.addCustomAttribute('userId', userId);
+    newrelic.addCustomAttribute && newrelic.addCustomAttribute('userId', userId);
   }
 
   await dbConnect();
@@ -64,7 +64,7 @@ export async function getUserFromToken(
   );
 
   if (user && !isLocal()) {
-    newrelic.addCustomAttribute('userName', user.name);
+    newrelic.addCustomAttribute && newrelic.addCustomAttribute('userName', user.name);
   }
 
   return user;
