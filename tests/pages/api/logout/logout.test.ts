@@ -42,7 +42,7 @@ describe('Testing logout api', () => {
           body: JSON.stringify(credsJSON),
           headers: {
             'content-type': 'application/json',
-            'host': 'localhost:3000'
+            'host': '127.0.0.1:3000'
           }
         });
         const response = await res.json();
