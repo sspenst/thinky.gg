@@ -74,7 +74,7 @@ describe('pages/api/collection/index.ts', () => {
       },
     );
     const [code, ] = await cancelSubscription({
-      headers: { origin: '127.0.0.1' },
+      headers: { origin: 'localhost' },
       userId: new mongoose.Types.ObjectId(TestId.USER),
       user: { name: 'test' },
     } as unknown as NextApiRequestWithAuth);
