@@ -61,8 +61,8 @@ export default async function startSocketIOServer() {
   GlobalSocketIO = new Server(3001, {
     path: '/api/socket',
     cors: {
-      // allow pathology.gg and localhost:3000
-      origin: ['http://localhost:3000', 'https://pathology.gg'],
+      // allow pathology.gg and 127.0.0.1:3000
+      origin: ['http://127.0.0.1:3000', 'https://pathology.gg'],
       methods: ['GET', 'POST'],
       credentials: true,
     },
