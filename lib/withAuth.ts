@@ -29,7 +29,17 @@ export async function getUserFromToken(
     throw new Error('JWT_SECRET not defined');
   }
 
-  const decoded = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload;
+  let verifiedSignature: JwtPayload | undefined;
+
+  try {
+    verifiedSignature = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload;
+  } catch (err) {
+    logger.error(err);
+
+    return null;
+  }
+
+  const decoded = verifiedSignature;
   const userId = decoded.userId as string;
   // dynamically import newrelic
   const newrelic = await import('newrelic');
