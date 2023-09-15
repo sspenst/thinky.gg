@@ -11,7 +11,7 @@ async function getCollectionBySlug(slug: string, options?: QueryOptions): Promis
   return await CollectionModel.findOne({ slug: slug }, {}, options);
 }
 
-export const SLUG_SETTINGS = { MAX_SLUGS_WITH_SAME_NAME: 20 };
+const MAX_SLUGS_WITH_SAME_NAME = process.env.NODE_ENV === 'test' ? 4 : 20;
 
 function slugify(str: string) {
   const slug = str
@@ -33,7 +33,7 @@ export async function generateCollectionSlug(
   let slug = og_slug;
   let i = 2;
 
-  while (i < SLUG_SETTINGS.MAX_SLUGS_WITH_SAME_NAME) {
+  while (i < MAX_SLUGS_WITH_SAME_NAME) {
     const collection = await getCollectionBySlug(slug, options);
 
     if (!collection) {
