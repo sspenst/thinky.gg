@@ -1,4 +1,3 @@
-import { SLUG_SETTINGS } from '@root/helpers/generateSlug';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -267,8 +266,6 @@ describe('pages/api/collection/index.ts', () => {
     });
   });
   test('Create 18 collections with same name in DB, so that we can test to make sure the server will not crash. The 19th should crash however.', async () => {
-    SLUG_SETTINGS.MAX_SLUGS_WITH_SAME_NAME = 4; // speed up tests
-
     for (let i = 0; i < 2; i++) {
       // expect no exceptions
       const promise = initCollection(TestId.USER, 'Sample');
