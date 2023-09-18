@@ -62,7 +62,6 @@ export const enum ProfileTab {
   Profile = '',
   Levels = 'levels',
   Multiplayer = 'multiplayer',
-  PlayHistory = 'play-history',
   ReviewsWritten = 'reviews-written',
   ReviewsReceived = 'reviews-received',
 }
@@ -426,7 +425,6 @@ export default function ProfilePage({
       </div>
     ),
     [ProfileTab.Insights]: <ProfileInsights reqUser={reqUser} user={user} />,
-    [ProfileTab.PlayHistory]: <ProfilePlayHistory reqUser={reqUser} user={user} />,
     [ProfileTab.Multiplayer]: <ProfileMultiplayer user={user} />,
     [ProfileTab.Collections]: (
       <div className='flex flex-col gap-2 justify-center'>
@@ -652,15 +650,7 @@ export default function ProfilePage({
               <span>Insights</span>
             </div>
           </Link>
-          <Link
-            className={getTabClassNames(ProfileTab.PlayHistory)}
-            href={`/profile/${user.name}/${ProfileTab.PlayHistory}`}
-          >
-            <div className='flex flex-row items-center gap-2'>
-              <Image alt='pro' src='/pro.svg' width='16' height='16' />
-              <span>Play History</span>
-            </div>
-          </Link>
+
           <Link
             className={getTabClassNames(ProfileTab.Achievements)}
             href={`/profile/${user.name}/${ProfileTab.Achievements}`}

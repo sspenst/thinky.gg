@@ -2,18 +2,16 @@
 
 import Dimensions from '@root/constants/dimensions';
 import useSWRHelper from '@root/hooks/useSWRHelper';
-import Level, { EnrichedLevel } from '@root/models/db/level';
+import { EnrichedLevel } from '@root/models/db/level';
 import PlayAttempt from '@root/models/db/playAttempt';
-import SelectOption from '@root/models/selectOption';
+import User from '@root/models/db/user';
 import SelectOptionStats from '@root/models/selectOptionStats';
 import moment from 'moment';
 import React from 'react';
 import SelectCard from '../cards/selectCard';
-import FormattedDate from '../formatted/formattedDate';
 import LoadingSpinner from '../page/loadingSpinner';
-import { ProfileInsightsProps } from './profileInsights';
 
-export default function ProfilePlayHistory({ reqUser, user }: ProfileInsightsProps) {
+export default function ProfilePlayHistory({ user }: { user: User }): JSX.Element {
   const { data: playHistory } = useSWRHelper<PlayAttempt[]>('/api/user/play-history');
 
   let prevEndTime = 0;
@@ -51,8 +49,8 @@ export default function ProfilePlayHistory({ reqUser, user }: ProfileInsightsPro
           position: 'absolute',
           width: '2px',
           backgroundColor: '#ccc',
-          top: 0,
-          bottom: 20,
+          top: 20,
+          bottom: 0,
           left: '50%',
           zIndex: 0
         }} />
@@ -67,6 +65,7 @@ export default function ProfilePlayHistory({ reqUser, user }: ProfileInsightsPro
           transform: 'translate(-50%, -50%)',
           zIndex: 1
         }} />
+        { durationInbetween && <span className='text-gray-500 dark:text-gray-400 justify-center self-center'>{durationInbetween} later</span> }
         <div className={`flex flex-row items-center relative ${isLeftAligned ? 'flex-row-reverse' : ''}`}>
           <div className={`${isLeftAligned ? 'ml-5' : 'mr-5'}`}>
             <SelectCard option={{
@@ -86,7 +85,6 @@ export default function ProfilePlayHistory({ reqUser, user }: ProfileInsightsPro
           </div>
         </div>
 
-        { durationInbetween && <span className='text-gray-500 dark:text-gray-400 justify-center self-center'>{durationInbetween} later</span> }
       </div>
     );
   });
