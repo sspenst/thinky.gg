@@ -1,0 +1,103 @@
+'use client';
+
+import Dimensions from '@root/constants/dimensions';
+import useSWRHelper from '@root/hooks/useSWRHelper';
+import Level, { EnrichedLevel } from '@root/models/db/level';
+import PlayAttempt from '@root/models/db/playAttempt';
+import SelectOption from '@root/models/selectOption';
+import SelectOptionStats from '@root/models/selectOptionStats';
+import moment from 'moment';
+import React from 'react';
+import SelectCard from '../cards/selectCard';
+import FormattedDate from '../formatted/formattedDate';
+import LoadingSpinner from '../page/loadingSpinner';
+import { ProfileInsightsProps } from './profileInsights';
+
+export default function ProfilePlayHistory({ reqUser, user }: ProfileInsightsProps) {
+  const { data: playHistory } = useSWRHelper<PlayAttempt[]>('/api/user/play-history');
+
+  let prevEndTime = 0;
+  let prevDate: string | null = null;
+  const display = playHistory && playHistory.map((playAttempt, index) => {
+    const level = playAttempt.levelId as EnrichedLevel;
+    let durationInbetween = null;
+
+    if (prevEndTime) {
+      durationInbetween = moment.duration(playAttempt.startTime - prevEndTime, 'seconds').humanize();
+    }
+
+    prevEndTime = playAttempt.endTime;
+
+    const currentDate = moment.unix(playAttempt.startTime).format('MMMM Do, YYYY');
+    const showDate = currentDate !== prevDate;
+
+    prevDate = currentDate;
+
+    const isLeftAligned = index % 2 === 0;
+
+    return (
+      <div
+        key={playAttempt._id.toString()}
+        className='flex flex-col gap-2'
+        style={{ position: 'relative' }}
+      >
+        {showDate && (
+          <div className={'absolute top-50% transform -translate-y-1/2 text-gray-500 sm:left-[-10%] lg:left-[-50%]'}>
+
+            {currentDate}
+          </div>
+        )}
+        <div style={{
+          position: 'absolute',
+          width: '2px',
+          backgroundColor: '#ccc',
+          top: 0,
+          bottom: 20,
+          left: '50%',
+          zIndex: 0
+        }} />
+        <div style={{
+          position: 'absolute',
+          height: '10px',
+          width: '10px',
+          backgroundColor: '#ccc',
+          borderRadius: '50%',
+          left: '50%',
+          top: '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 1
+        }} />
+        <div className={`flex flex-row items-center relative ${isLeftAligned ? 'flex-row-reverse' : ''}`}>
+          <div className={`${isLeftAligned ? 'ml-5' : 'mr-5'}`}>
+            <SelectCard option={{
+              author: level.userId?.name,
+              height: Dimensions.OptionHeightLarge,
+              width: Dimensions.OptionWidth * .8,
+              href: `/level/${level.slug}`,
+              id: playAttempt.levelId._id.toString() + '-' + playAttempt._id.toString(),
+              level: level,
+              stats: new SelectOptionStats(level.leastMoves, level.userMoves),
+              text: level.name,
+            }} />
+          </div>
+          <div className={'flex flex-col ' + (isLeftAligned ? 'mr-5 items-end text-right' : 'ml-5 items-start')}>
+            {moment.unix(playAttempt.startTime).format('h:mm a')}
+            <span>Played for {moment.duration(playAttempt.endTime - playAttempt.startTime, 'seconds').humanize()}</span>
+          </div>
+        </div>
+
+        { durationInbetween && <span className='text-gray-500 dark:text-gray-400 justify-center self-center'>{durationInbetween} later</span> }
+      </div>
+    );
+  });
+
+  return (
+    <div className='grid justify-center'>
+      <h1 className='text-center text-2xl font-bold mb-4'>
+        {user.name} Play History</h1>
+      <div>
+        { display ? display : <LoadingSpinner />}
+      </div>
+    </div>
+  );
+}

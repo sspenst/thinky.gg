@@ -6,6 +6,7 @@ import LevelsCompletedByDifficultyList from '@root/components/profile/levelsComp
 import PlayerRank from '@root/components/profile/playerRank';
 import { ProfileAchievments } from '@root/components/profile/profileAchievements';
 import ProfileMultiplayer from '@root/components/profile/profileMultiplayer';
+import ProfilePlayHistory from '@root/components/profile/profilePlayHistory';
 import { getUsersWithMultiplayerProfile } from '@root/helpers/getUsersWithMultiplayerProfile';
 import useSWRHelper from '@root/hooks/useSWRHelper';
 import Graph from '@root/models/db/graph';
@@ -61,6 +62,7 @@ export const enum ProfileTab {
   Profile = '',
   Levels = 'levels',
   Multiplayer = 'multiplayer',
+  PlayHistory = 'play-history',
   ReviewsWritten = 'reviews-written',
   ReviewsReceived = 'reviews-received',
 }
@@ -424,6 +426,7 @@ export default function ProfilePage({
       </div>
     ),
     [ProfileTab.Insights]: <ProfileInsights reqUser={reqUser} user={user} />,
+    [ProfileTab.PlayHistory]: <ProfilePlayHistory reqUser={reqUser} user={user} />,
     [ProfileTab.Multiplayer]: <ProfileMultiplayer user={user} />,
     [ProfileTab.Collections]: (
       <div className='flex flex-col gap-2 justify-center'>
@@ -641,6 +644,24 @@ export default function ProfilePage({
             </div>
           </Link>
           <Link
+            className={getTabClassNames(ProfileTab.Insights)}
+            href={`/profile/${user.name}/${ProfileTab.Insights}`}
+          >
+            <div className='flex flex-row items-center gap-2'>
+              <Image alt='pro' src='/pro.svg' width='16' height='16' />
+              <span>Insights</span>
+            </div>
+          </Link>
+          <Link
+            className={getTabClassNames(ProfileTab.PlayHistory)}
+            href={`/profile/${user.name}/${ProfileTab.PlayHistory}`}
+          >
+            <div className='flex flex-row items-center gap-2'>
+              <Image alt='pro' src='/pro.svg' width='16' height='16' />
+              <span>Play History</span>
+            </div>
+          </Link>
+          <Link
             className={getTabClassNames(ProfileTab.Achievements)}
             href={`/profile/${user.name}/${ProfileTab.Achievements}`}
           >
@@ -694,15 +715,7 @@ export default function ProfilePage({
               <span>Reviews Received ({reviewsReceivedCount})</span>
             </div>
           </Link>
-          <Link
-            className={getTabClassNames(ProfileTab.Insights)}
-            href={`/profile/${user.name}/${ProfileTab.Insights}`}
-          >
-            <div className='flex flex-row items-center gap-2'>
-              <Image alt='pro' src='/pro.svg' width='16' height='16' />
-              <span>Insights</span>
-            </div>
-          </Link>
+
           <MultiSelectUser
             onSelect={(user) => {
               if (user?.name) {
