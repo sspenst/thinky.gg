@@ -116,7 +116,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
         </div>
       }
       <div className='flex flex-col lg:flex-row items-center gap-4 justify-center'>
-        <div className='p-2'>
+        <div className='p-2 md:w-1/2'>
           <video autoPlay loop muted playsInline className='rounded-xl'>
             <source src='https://i.imgur.com/HzFhvYY.mp4' type='video/mp4' />
           </video>
