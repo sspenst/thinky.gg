@@ -8,6 +8,7 @@ export enum ProStatsUserType {
   MostSolvesForUserLevels = 'most-solves-for-user-levels',
   ScoreHistory = 'score-history',
   PlayLogForUserCreatedLevels = 'play-log-for-user-created-levels',
+  PlayHistory = 'play-history',
 }
 
 export interface ProStatsUser {

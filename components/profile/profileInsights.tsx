@@ -7,7 +7,7 @@ import ProfileInsightsMostCompletions from './profileInsightsMostCompletions';
 import ProfileInsightsScoreChart from './profileInsightsScoreChart';
 import ProfileInsightsSolveTimeComparison from './profileInsightsSolveTimeComparison';
 
-interface ProfileInsightsProps {
+export interface ProfileInsightsProps {
   reqUser: User | null;
   user: User;
 }
