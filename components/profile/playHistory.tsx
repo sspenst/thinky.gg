@@ -1,22 +1,80 @@
 'use client';
 
 import Dimensions from '@root/constants/dimensions';
+import isPro from '@root/helpers/isPro';
 import useSWRHelper from '@root/hooks/useSWRHelper';
 import { EnrichedLevel } from '@root/models/db/level';
 import PlayAttempt from '@root/models/db/playAttempt';
 import User from '@root/models/db/user';
 import SelectOptionStats from '@root/models/selectOptionStats';
 import moment from 'moment';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import SelectCard from '../cards/selectCard';
 import LoadingSpinner from '../page/loadingSpinner';
 
 export default function ProfilePlayHistory({ user }: { user: User }): JSX.Element {
-  const { data: playHistory } = useSWRHelper<PlayAttempt[]>('/api/user/play-history');
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [minDurationMinutes, setMinDurationMinutes] = useState(0);
+
+  const [cursor, setCursor] = useState<string | null>();
+  const [accumulatedPlayHistory, setAccumulatedPlayHistory] = useState<PlayAttempt[]>([]);
+  const [intermediateMinDuration, setIntermediateMinDuration] = useState(0);
+  const [intermediateDate, setIntermediateDate] = useState(selectedDate);
+
+  const params = { datetime: selectedDate, minDurationMinutes, cursor };
+  const queryString = Object.entries(params)
+    .filter(([, value]) => value !== null && value !== undefined)
+    .map(([key, value]) => `${key}=${value}`)
+    .join('&');
+  const { data: playHistory, isLoading } = useSWRHelper<PlayAttempt[]>(
+    `/api/user/play-history?${queryString}`,
+    undefined,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      refreshInterval: 0
+    },
+    !isPro(user)
+  );
 
   let prevEndTime = 0;
   let prevDate: string | null = null;
-  const display = playHistory && playHistory.map((playAttempt, index) => {
+
+  useEffect(() => {
+    if (playHistory) {
+      setAccumulatedPlayHistory(prev => [...prev, ...playHistory]);
+    }
+  }, [playHistory]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+        // Reached bottom
+        if (playHistory && playHistory.length > 0) {
+          setCursor(playHistory[playHistory.length - 1]._id.toString());
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [playHistory]);
+
+  const handleSliderChange = (e: any) => {
+    const newValue = e.target.value;
+
+    if (minDurationMinutes === intermediateMinDuration) {
+      return;
+    }
+
+    setIntermediateMinDuration(newValue);
+    setMinDurationMinutes(intermediateMinDuration);
+    setAccumulatedPlayHistory([]); // Clear the play history
+    setCursor(null); // Reset the cursor
+  };
+
+  const display = accumulatedPlayHistory && accumulatedPlayHistory.map((playAttempt, index) => {
     const level = playAttempt.levelId as EnrichedLevel;
     let durationInbetween = null;
 
@@ -89,12 +147,65 @@ export default function ProfilePlayHistory({ user }: { user: User }): JSX.Elemen
     );
   });
 
+  const uxControls = (
+    <div className='flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0 p-4 justify-center items-center'>
+      <div className='flex flex-col items-start'>
+        <label className='text-lg font-semibold'>View Date and Time</label>
+        <input
+          type='datetime-local'
+          min='2020-01-01T00:00'
+          max={moment().format('YYYY-MM-DDTHH:mm')}
+          value={intermediateDate ? intermediateDate : moment().format('YYYY-MM-DDTHH:mm')}
+          onChange={(e: any) => {
+            setIntermediateDate(e.target.value);
+          }}
+          onBlur={(e: any) => {
+            setAccumulatedPlayHistory([]); // Clear the play history
+            setCursor(null); // Reset the cursor
+            setSelectedDate(intermediateDate);
+          }}
+          className='p-2 border rounded text-black'
+
+        />
+      </div>
+
+      <div className='flex flex-col items-start'>
+        <label className='text-lg font-semibold'>Minimum Duration (minutes)</label>
+        <input
+          type='range'
+          min='0'
+          max='240'
+          step={5}
+          value={intermediateMinDuration}
+          onChange={(value: any) => {
+            setIntermediateMinDuration(value.target.value);
+          }}
+          onKeyUp={handleSliderChange}
+          onMouseUp={handleSliderChange}
+          onTouchEnd={handleSliderChange}
+
+          className='cursor-pointer'
+        />
+        <span className='text-sm'>{intermediateMinDuration} minutes</span>
+      </div>
+
+    </div>
+  );
+
+  const nothingToDisplay = (
+    <div className='flex flex-col items-center justify-center'>
+      <h1 className='text-xl  mb-4'>No history with these filters</h1>
+    </div>
+  );
+
   return (
     <div className='grid justify-center'>
+      <div>{uxControls}</div>
       <h1 className='text-center text-2xl font-bold mb-4'>
-        {user.name} Play History</h1>
+        {user.name} Play History
+      </h1>
       <div>
-        { display ? display : <LoadingSpinner />}
+        { (!isLoading && display.length !== 0) ? (display.length > 0 ? display : (nothingToDisplay)) : <LoadingSpinner />}
       </div>
     </div>
   );
