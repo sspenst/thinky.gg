@@ -1,5 +1,3 @@
-'use client';
-
 import Dimensions from '@root/constants/dimensions';
 import isPro from '@root/helpers/isPro';
 import useSWRHelper from '@root/hooks/useSWRHelper';
@@ -8,7 +6,7 @@ import PlayAttempt from '@root/models/db/playAttempt';
 import User from '@root/models/db/user';
 import SelectOptionStats from '@root/models/selectOptionStats';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import SelectCard from '../cards/selectCard';
 import LoadingSpinner from '../page/loadingSpinner';
 
@@ -20,7 +18,7 @@ export default function ProfilePlayHistory({ user }: { user: User }): JSX.Elemen
   const [accumulatedPlayHistory, setAccumulatedPlayHistory] = useState<PlayAttempt[]>([]);
   const [intermediateMinDuration, setIntermediateMinDuration] = useState(0);
   const [intermediateDate, setIntermediateDate] = useState(selectedDate);
-
+  const [isMobile, setIsMobile] = useState(false);
   const params = { datetime: selectedDate, minDurationMinutes, cursor };
   const queryString = Object.entries(params)
     .filter(([, value]) => value !== null && value !== undefined)
@@ -41,8 +39,25 @@ export default function ProfilePlayHistory({ user }: { user: User }): JSX.Elemen
   let prevDate: string | null = null;
 
   useEffect(() => {
+    setIsMobile(window.innerWidth < 768);
+    addEventListener('resize', () => {
+      setIsMobile(window.innerWidth < 768);
+    }, { passive: true });
+
+    return () => {
+      removeEventListener('resize', () => {
+        setIsMobile(window.innerWidth < 768);
+      });
+    };
+  }, []);
+  useEffect(() => {
     if (playHistory) {
-      setAccumulatedPlayHistory(prev => [...prev, ...playHistory]);
+      setAccumulatedPlayHistory(prev => [...prev, ...playHistory].filter((playAttempt, index, self) => {
+        return index === self.findIndex((t) => (
+          t._id.toString() === playAttempt._id.toString()
+        ));
+      })
+      );
     }
   }, [playHistory]);
 
@@ -103,33 +118,38 @@ export default function ProfilePlayHistory({ user }: { user: User }): JSX.Elemen
             {currentDate}
           </div>
         )}
-        <div style={{
-          position: 'absolute',
-          width: '2px',
-          backgroundColor: '#ccc',
-          top: 20,
-          bottom: 0,
-          left: '50%',
-          zIndex: 0
-        }} />
-        <div style={{
-          position: 'absolute',
-          height: '10px',
-          width: '10px',
-          backgroundColor: '#ccc',
-          borderRadius: '50%',
-          left: '50%',
-          top: '50%',
-          transform: 'translate(-50%, -50%)',
-          zIndex: 1
-        }} />
+
         { durationInbetween && <span className='text-gray-500 dark:text-gray-400 justify-center self-center'>{durationInbetween} later</span> }
         <div className={`flex flex-row items-center relative ${isLeftAligned ? 'flex-row-reverse' : ''}`}>
+          <div>
+            <div style={{
+              position: 'absolute',
+              width: '2px',
+              backgroundColor: '#ccc',
+              top: 0,
+              bottom: 0,
+              left: '50%',
+              transform: 'translate(-50%)',
+
+              zIndex: 0,
+            }} />
+            <div style={{
+              position: 'absolute',
+              height: '10px',
+              width: '10px',
+              backgroundColor: '#ccc',
+              borderRadius: '50%',
+              left: '50%',
+              top: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 1
+            }} />
+          </div>
           <div className={`${isLeftAligned ? 'ml-5' : 'mr-5'}`}>
             <SelectCard option={{
               author: level.userId?.name,
               height: Dimensions.OptionHeightLarge,
-              width: Dimensions.OptionWidth * .8,
+              width: Dimensions.OptionWidth * (isMobile ? 0.8 : 1),
               href: `/level/${level.slug}`,
               id: playAttempt.levelId._id.toString() + '-' + playAttempt._id.toString(),
               level: level,
@@ -138,7 +158,7 @@ export default function ProfilePlayHistory({ user }: { user: User }): JSX.Elemen
             }} />
           </div>
           <div className={'flex flex-col ' + (isLeftAligned ? 'mr-5 items-end text-right' : 'ml-5 items-start')}>
-            {moment.unix(playAttempt.startTime).format('h:mm a')}
+            {moment.unix(playAttempt.startTime).format('h:mma')}
             <span>Played for {moment.duration(playAttempt.endTime - playAttempt.startTime, 'seconds').humanize()}</span>
           </div>
         </div>
