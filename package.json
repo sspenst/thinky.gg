@@ -87,8 +87,8 @@
     ]
   },
   "devDependencies": {
-    "@babel/preset-env": "^7.22.10",
-    "@babel/preset-react": "^7.22.5",
+    "@babel/preset-env": "^7.22.15",
+    "@babel/preset-react": "^7.22.15",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.4.3",
@@ -98,7 +98,7 @@
     "@types/cookie": "^0.5.1",
     "@types/debounce": "^1.2.1",
     "@types/html-to-text": "^9.0.1",
-    "@types/jest": "^29.5.3",
+    "@types/jest": "^29.5.4",
     "@types/jsonwebtoken": "^9.0.2",
     "@types/mmmagic": "^0.4.30",
     "@types/newrelic": "^9.14.0",
