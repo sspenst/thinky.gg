@@ -124,7 +124,7 @@
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-simple-import-sort": "^10.0.0",
     "html-to-text": "^9.0.5",
-    "jest": "^29.6.2",
+    "jest": "^29.7.0",
     "jest-fetch-mock": "^3.0.3",
     "jest-slow-test-reporter": "^1.0.0",
     "leaked-handles": "^5.2.0",
