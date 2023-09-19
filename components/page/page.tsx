@@ -14,6 +14,7 @@ interface PageProps {
   subtitleHref?: string;
   title?: string;
   titleHref?: string;
+  hideFooter?: boolean;
 }
 
 export default function Page({
@@ -24,6 +25,7 @@ export default function Page({
   subtitleHref,
   title,
   titleHref,
+  hideFooter,
 }: PageProps) {
   const [preventKeyDownEvent, setPreventKeyDownEvent] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
@@ -61,7 +63,7 @@ export default function Page({
           {children}
         </main>
       </div>
-      {!isFullScreen && <Footer />}
+      {!isFullScreen || hideFooter && <Footer />}
     </PageContext.Provider>
   );
 }

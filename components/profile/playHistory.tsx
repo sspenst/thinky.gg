@@ -48,9 +48,9 @@ export default function ProfilePlayHistory({ user }: { user: User }): JSX.Elemen
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
         // Reached bottom
-        if (playHistory && playHistory.length > 0) {
+        if (playHistory && playHistory.length > 0 && !isLoading) {
           setCursor(playHistory[playHistory.length - 1]._id.toString());
         }
       }
@@ -59,7 +59,7 @@ export default function ProfilePlayHistory({ user }: { user: User }): JSX.Elemen
     window.addEventListener('scroll', handleScroll);
 
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [playHistory]);
+  }, [isLoading, playHistory]);
 
   const handleSliderChange = (e: any) => {
     const newValue = e.target.value;
@@ -199,13 +199,18 @@ export default function ProfilePlayHistory({ user }: { user: User }): JSX.Elemen
   );
 
   return (
-    <div className='grid justify-center'>
-      <div>{uxControls}</div>
-      <h1 className='text-center text-2xl font-bold mb-4'>
-        {user.name} Play History
-      </h1>
+    <div>
       <div>
-        { (!isLoading && display.length !== 0) ? (display.length > 0 ? display : (nothingToDisplay)) : <LoadingSpinner />}
+        <h1 className='text-center text-2xl font-bold mb-4'>
+          {user.name} Play History
+        </h1>
+        <div>{uxControls}</div>
+      </div>
+      <div className='grid justify-center'>
+        <div className='flex flex-col gap-3'>
+          {(display.length > 0 ? display : (!isLoading ? nothingToDisplay : null))}
+          { isLoading && <LoadingSpinner />}
+        </div>
       </div>
     </div>
   );
