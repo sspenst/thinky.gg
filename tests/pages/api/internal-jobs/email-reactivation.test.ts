@@ -132,8 +132,6 @@ describe('Email reactivation', () => {
     });
   }, 10000);
   test('Running it again right away should not send any since it has been less than 90 days (idempotency)', async () => {
-    // setup
-    //sendMailRefMock.ref = throwMock;
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
