@@ -54,7 +54,7 @@ export default function PlayHistoryPage(): JSX.Element {
     );
   }
 
-  return (<Page title={user.name + ' Play History'}>
+  return (<Page title={user.name + ' Play History'} hideFooter={true}>
     <div className='p-3'>
       <ProfilePlayHistory user={user as User} />
     </div>
