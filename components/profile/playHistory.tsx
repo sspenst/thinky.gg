@@ -113,7 +113,7 @@ export default function ProfilePlayHistory({ user }: { user: User }): JSX.Elemen
         style={{ position: 'relative' }}
       >
         {showDate && (
-          <div className={'absolute top-50% transform -translate-y-1/2 text-gray-500 sm:left-[-10%] lg:left-[-50%]'}>
+          <div className={'md:text-lg text-xs absolute top-50% transform -translate-y-1/2 text-gray-500 sm:left-[-10%] lg:left-[-50%]'}>
 
             {currentDate}
           </div>
@@ -145,7 +145,7 @@ export default function ProfilePlayHistory({ user }: { user: User }): JSX.Elemen
               zIndex: 1
             }} />
           </div>
-          <div className={`${isLeftAligned ? 'ml-5' : 'mr-5'}`}>
+          <div className={`${isLeftAligned ? '' : 'mr-10'}`}>
             <SelectCard option={{
               author: level.userId?.name,
               height: Dimensions.OptionHeightLarge,
