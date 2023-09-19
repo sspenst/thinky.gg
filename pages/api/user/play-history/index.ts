@@ -1,16 +1,40 @@
+import { ValidDate, ValidNumber, ValidObjectId } from '@root/helpers/apiWrapper';
 import isPro from '@root/helpers/isPro';
 import withAuth from '@root/lib/withAuth';
 import { PlayAttemptModel } from '@root/models/mongoose';
 import { LEVEL_DEFAULT_PROJECTION } from '@root/models/schemas/levelSchema';
-import { Types } from 'mongoose';
+import { PipelineStage, Types } from 'mongoose';
 
-async function GetPlayAttempts(userId: Types.ObjectId) {
-  // sort by end time
-  return PlayAttemptModel.aggregate([
+interface GetPlayAttemptsParams {
+  userId: Types.ObjectId;
+  cursor?: Types.ObjectId;
+  datetime?: Date;
+  minDurationMinutes?: number;
+}
+
+async function GetPlayAttempts(params: GetPlayAttemptsParams) {
+  const { userId, cursor, datetime, minDurationMinutes } = params;
+  const datetimeInSeconds = datetime ? Math.floor(datetime.getTime() / 1000) : undefined;
+
+  const minDurationInSeconds = minDurationMinutes ? minDurationMinutes * 60 : undefined;
+
+  const pipeline = [
     {
       $match: {
         userId,
+        ...(cursor && { _id: { $lt: cursor } }),
+        ...(datetimeInSeconds && { endTime: { $lte: datetimeInSeconds } }),
       },
+    },
+    {
+      $addFields: {
+        duration: { $subtract: ['$endTime', '$startTime'] }
+      }
+    },
+    {
+      $match: {
+        ...(minDurationInSeconds && { duration: { $gte: minDurationInSeconds } }),
+      }
     },
     {
       $sort: {
@@ -29,9 +53,8 @@ async function GetPlayAttempts(userId: Types.ObjectId) {
         pipeline: [
           {
             $project: LEVEL_DEFAULT_PROJECTION,
-
-          }
-        ]
+          },
+        ],
       },
     },
     {
@@ -39,11 +62,19 @@ async function GetPlayAttempts(userId: Types.ObjectId) {
         path: '$levelId',
       },
     },
-  ]);
+  ];
+
+  return PlayAttemptModel.aggregate(pipeline as PipelineStage[]);
 }
 
 export default withAuth({
-  GET: {}
+  GET: {
+    query: {
+      datetime: ValidDate(false),
+      minDurationMinutes: ValidNumber(false, 0, 60 * 24),
+      cursor: ValidObjectId(false)
+    }
+  }
 }, async (req, res) => {
   if (isPro(req.user) === false) {
     return res.status(403).json({
@@ -51,7 +82,16 @@ export default withAuth({
     });
   }
 
-  const playAttempts = await GetPlayAttempts(req.user._id);
+  const { datetime, minDurationMinutes, cursor } = req.query;
+
+  const playAttempts = await GetPlayAttempts(
+    {
+      userId: req.user._id,
+      cursor: new Types.ObjectId(cursor as string),
+      datetime: datetime ? new Date(datetime as string) : undefined,
+      minDurationMinutes: minDurationMinutes ? parseInt(minDurationMinutes as string) : undefined
+    }
+  );
 
   return res.status(200).json(playAttempts);
 });
