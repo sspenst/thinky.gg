@@ -1,6 +1,6 @@
 import Page from '@root/components/page/page';
 import SkeletonPage from '@root/components/page/skeletonPage';
-import ProfilePlayHistory from '@root/components/profile/profilePlayHistory';
+import ProfilePlayHistory from '@root/components/profile/playHistory';
 import { AppContext } from '@root/contexts/appContext';
 import isPro from '@root/helpers/isPro';
 import { getUserFromToken } from '@root/lib/withAuth';
