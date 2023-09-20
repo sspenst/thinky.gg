@@ -1,8 +1,6 @@
-import { HeaderContext } from '@root/contexts/headerContext';
-import { HeaderProvider } from '@root/contexts/headerProvider';
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { createRef, useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { AppContext } from '../../contexts/appContext';
 import AudioPlayer from '../audioPlayer';
@@ -53,7 +51,6 @@ export default function Header({
       </div>
       <div className='flex gap-4 items-center z-20'>
         <AudioPlayer />
-
         <UserInfo />
         <Dropdown />
       </div>

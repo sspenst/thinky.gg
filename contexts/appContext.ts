@@ -5,6 +5,7 @@ import UserConfig from '../models/db/userConfig';
 import { MultiplayerSocket } from '../pages/_app';
 
 interface AppContextInterface {
+  audioPlayer?: JSX.Element;
   forceUpdate: () => void;
   multiplayerSocket: MultiplayerSocket;
   mutateUser: KeyedMutator<ReqUser>;
@@ -19,6 +20,7 @@ interface AppContextInterface {
 }
 
 export const AppContext = createContext<AppContextInterface>({
+  audioPlayer: undefined,
   forceUpdate: () => { return; },
   multiplayerSocket: {
     connectedPlayers: [],

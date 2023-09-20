@@ -1,7 +1,6 @@
-import { HeaderContext } from '@root/contexts/headerContext';
-import { PageContext } from '@root/contexts/pageContext';
+import { useAudioPlayerState } from '@root/contexts/audioPlayerContext';
 import Link from 'next/link';
-import React, { useCallback, useContext } from 'react';
+import React, { useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { throttle } from 'throttle-debounce';
 import Collection from '../../models/db/collection';
@@ -50,8 +49,7 @@ export default function GameWrapper({ collection, level, onNext, onPrev, user }:
       nextButton?.classList.remove(styles['highlight-once']);
     }, 1300);
   }, []);
-
-  const { toggleVersion } = useContext(HeaderContext);
+  const [audioPlayerState] = useAudioPlayerState();
 
   return (
     <Game
@@ -63,7 +61,7 @@ export default function GameWrapper({ collection, level, onNext, onPrev, user }:
       level={level}
       onComplete={() => {
         // click on #btn-audio-player-version
-        toggleVersion('hot');
+        audioPlayerState.toggleVersion && audioPlayerState.toggleVersion('hot');
 
         if (!user) {
           signUpToast();
@@ -73,8 +71,8 @@ export default function GameWrapper({ collection, level, onNext, onPrev, user }:
           addNextButtonHighlight();
         }
       }}
-      onNext={collection ? () => {console.log(toggleVersion); toggleVersion('cool'); onNext();} : undefined}
-      onPrev={collection ? () => {toggleVersion('cool'); onPrev();} : undefined}
+      onNext={collection ? () => {onNext();} : undefined}
+      onPrev={collection ? () => {onPrev();} : undefined}
     />
   );
 }

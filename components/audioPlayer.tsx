@@ -1,6 +1,5 @@
-import { HeaderContext } from '@root/contexts/headerContext';
-import { PageContext } from '@root/contexts/pageContext';
-import React, { useCallback, useContext, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { useAudioPlayerState } from '@root/contexts/audioPlayerContext';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 const songs = [
   {
@@ -28,13 +27,15 @@ const songs = [
 ];
 
 const AudioPlayer: React.FC = () => {
-  const [currentSongIndex, setCurrentSongIndex] = useState(0);
-  const [currentTitle, setCurrentTitle] = useState('');
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [activeVersion, setActiveVersion] = useState(false);
-  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
-  const [audioActive, setAudioActive] = useState<HTMLAudioElement | null>(null);
-  const [audioAmbient, setAudioAmbient] = useState<HTMLAudioElement | null>(null);
+  const [audioPlayerState, setAudioPlayerState] = useAudioPlayerState();
+
+  const [currentSongIndex, setCurrentSongIndex] = useState(audioPlayerState.currentSongIndex);
+  const [currentTitle, setCurrentTitle] = useState(audioPlayerState.currentTitle);
+  const [isPlaying, setIsPlaying] = useState(audioPlayerState.isPlaying);
+  const isHot = useRef(audioPlayerState.isHot);
+  const [audioContext, setAudioContext] = useState<AudioContext | undefined>(audioPlayerState.audioContext);
+  const [audioActive, setAudioActive] = useState<HTMLAudioElement | undefined>(audioPlayerState.audioActive);
+  const [audioAmbient, setAudioAmbient] = useState<HTMLAudioElement | undefined>(audioPlayerState.audioAmbient);
 
   const [crossfadeProgress, setCrossfadeProgress] = useState(0);
 
@@ -44,6 +45,9 @@ const AudioPlayer: React.FC = () => {
       audioActive?.pause();
       audioAmbient?.pause();
     }
+
+    audioActive?.remove();
+    audioAmbient?.remove();
 
     // Update the index to point to the next/previous song
     setCurrentSongIndex(index);
@@ -58,37 +62,97 @@ const AudioPlayer: React.FC = () => {
     // Listen for metadata loading for active audio
     setCurrentTitle(songs[index].title);
 
-    activeAudio.volume = activeVersion ? 1 : 0;
-    ambientAudio.volume = activeVersion ? 0 : 1;
+    activeAudio.volume = isHot.current ? 1 : 0;
+    ambientAudio.volume = isHot.current ? 0 : 1;
+    activeAudio.currentTime = 0;
+    ambientAudio.currentTime = activeAudio.currentTime;
 
     if (isPlaying) {
       activeAudio.currentTime = audioAmbient?.currentTime || 0;
       activeAudio.play();
       ambientAudio.play();
+
+      // add listeners for when the audio ends
+      const onLoaded = () => {
+        activeAudio.volume = isHot.current ? 1 : 0;
+        ambientAudio.volume = isHot.current ? 0 : 1;
+        activeAudio.currentTime = 0;
+        ambientAudio.currentTime = activeAudio.currentTime;
+      };
+
+      // listen for metadata
+      ambientAudio.addEventListener('loadedmetadata', () => {
+        // go to near the end of the song
+
+        //  onLoaded();
+
+        if (index === 0) {
+          ambientAudio.currentTime = ambientAudio.duration - 5;
+        } else {
+          onLoaded();
+        }
+      });
+      activeAudio.addEventListener('loadedmetadata', () => {
+        // go to near the end of the song
+      //  onLoaded();
+
+        if (index === 0)
+          activeAudio.currentTime = activeAudio.duration - 5;
+        else {
+          onLoaded();
+        }
+      });
+
+      const next = () => {
+        ambientAudio.remove();
+        activeAudio.remove();
+        isHot.current = (false);
+        seek((index + 1) % songs.length);
+      };
+
+      ambientAudio.addEventListener('ended', () => {
+        next();
+      });
+      // I was worried that this would cause the track to seek double, but it doesn't because we use index rather than the state variable maybe
+      activeAudio.addEventListener('ended', () => {
+        // do nada
+      }
+
+      );
     }
-  }, [isPlaying, activeVersion, audioActive, audioAmbient]);
+
+    return () => {
+      activeAudio.pause();
+      ambientAudio.pause();
+
+      activeAudio.removeEventListener('ended', () => {
+        seek((index + 1) % songs.length);
+      });
+      ambientAudio.removeEventListener('ended', () => {
+        seek((index + 1) % songs.length);
+      }
+      );
+    };
+  }, [isPlaying, audioActive, audioAmbient]);
 
   const handleUserGesture = useCallback(async () => {
     if (!audioContext) {
       const context = new AudioContext();
 
-      console.log('Setting audio context');
       setAudioContext(context);
       seek(currentSongIndex);
     }
 
     if (audioContext?.state === 'suspended') {
-      console.log('Resuming audio context');
       await audioContext.resume();
     }
 
     if (isPlaying && audioActive && audioAmbient) {
-      audioActive.play();
-      audioAmbient.play();
+      seek(currentSongIndex);
       // make sure they are playing at exact same time
       audioActive.currentTime = audioAmbient.currentTime;
 
-      if (activeVersion) {
+      if (isHot.current) {
         audioActive.volume = 1;
         audioAmbient.volume = 0;
       } else {
@@ -96,8 +160,6 @@ const AudioPlayer: React.FC = () => {
         audioAmbient.volume = 1;
       }
     } else {
-      console.log('Pausing audio', audioActive, audioAmbient, isPlaying);
-
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
@@ -106,12 +168,10 @@ const AudioPlayer: React.FC = () => {
       audioActive?.pause();
       audioAmbient?.pause();
     }
-  }, [audioContext, isPlaying, audioActive, audioAmbient, seek, currentSongIndex, activeVersion]);
+  }, [audioContext, isPlaying, audioActive, audioAmbient, seek, currentSongIndex]);
 
   useEffect(() => {
     if (!audioContext) {
-      console.log('Adding event listener');
-
       document.addEventListener('click', handleUserGesture);
     }
 
@@ -136,11 +196,11 @@ const AudioPlayer: React.FC = () => {
   const intervalRef = useRef<null | NodeJS.Timeout>(null);
 
   const toggleVersion = useCallback((type: 'hot' | 'cool' | 'switch' = 'switch') => {
-    if (type === 'hot' && activeVersion) {
+    if (type === 'hot' && isHot.current) {
       return;
     }
 
-    if (type === 'cool' && !activeVersion) {
+    if (type === 'cool' && !isHot.current) {
       return;
     }
 
@@ -162,8 +222,9 @@ const AudioPlayer: React.FC = () => {
       intervalRef.current = setInterval(() => {
         progress += step / duration;
 
-        if (activeVersion) {
+        if (!isHot.current) {
         // Crossfade to ambient version
+
           audioActive.volume = Math.max(0, startActiveVol * (1 - progress));
           audioAmbient.volume = Math.min(1, startAmbientVol + (1 - startAmbientVol) * progress);
         } else {
@@ -178,22 +239,19 @@ const AudioPlayer: React.FC = () => {
         if (progress >= 1) {
           clearInterval(intervalRef.current!);
           // set volumes to exact values
-          audioActive.volume = activeVersion ? 0 : 1;
-          audioAmbient.volume = activeVersion ? 1 : 0;
+          audioActive.volume = !isHot.current ? 0 : 1;
+          audioAmbient.volume = !isHot.current ? 1 : 0;
           intervalRef.current = null;
         }
       }, step * 1000);
-
-      setActiveVersion(!activeVersion);
+      isHot.current = !isHot.current;
     }
-  }, [audioContext, audioActive, audioAmbient, activeVersion]);
-
-  const { setToggleVersion } = useContext(HeaderContext);
+  }, [audioContext, audioActive, audioAmbient]);
 
   useEffect(() => {
-    console.log('Setting toggle version');
-    setToggleVersion(() => toggleVersion);
-  }, [setToggleVersion, toggleVersion]);
+    // Update the context when local state changes
+    setAudioPlayerState({ currentSongIndex, isPlaying, isHot: isHot.current, audioContext, audioActive, audioAmbient, currentTitle, toggleVersion });
+  }, [currentSongIndex, isPlaying, setAudioPlayerState, audioContext, audioActive, audioAmbient, currentTitle, toggleVersion]);
 
   return (
     <div className=' p-2 rounded-lg flex justify-between items-center'
@@ -211,11 +269,12 @@ const AudioPlayer: React.FC = () => {
           }>
         ⏮
         </button>
-        <div className='px-3 py-1 rounded overflow-hidden truncate'
+        { currentTitle && (<div className='px-3 py-1 rounded overflow-hidden truncate'
           style={{ backgroundColor: 'var(--bg-color-2)', color: 'var(--color)' }}
         >
           {currentTitle }
         </div>
+        )}
         <button
           className='px-3 py-1 rounded'
           style={{ backgroundColor: 'var(--bg-color-2)', color: 'var(--color)' }}
@@ -245,7 +304,7 @@ const AudioPlayer: React.FC = () => {
           color: 'var(--color)' }}
         className='px-3 py-1 rounded'
       >
-        {activeVersion ? '🔥' : '❄️'}
+        {isHot.current ? '🔥' : '❄️'}
       </button>
       <button
         style={{ backgroundColor: 'var(--bg-color-2)', color: 'var(--color)' }}
