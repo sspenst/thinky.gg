@@ -44,10 +44,9 @@ const AudioPlayer: React.FC = () => {
     if (isPlaying) {
       audioActive?.pause();
       audioAmbient?.pause();
+      audioActive?.src && URL.revokeObjectURL(audioActive.src);
+      audioAmbient?.src && URL.revokeObjectURL(audioAmbient.src);
     }
-
-    audioActive?.remove();
-    audioAmbient?.remove();
 
     // Update the index to point to the next/previous song
     setCurrentSongIndex(index);
@@ -65,7 +64,7 @@ const AudioPlayer: React.FC = () => {
     activeAudio.volume = isHot.current ? 1 : 0;
     ambientAudio.volume = isHot.current ? 0 : 1;
     activeAudio.currentTime = 0;
-    ambientAudio.currentTime = activeAudio.currentTime;
+    ambientAudio.currentTime = 0;
 
     if (isPlaying) {
       activeAudio.currentTime = audioAmbient?.currentTime || 0;
