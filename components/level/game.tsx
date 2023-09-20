@@ -447,6 +447,11 @@ export default function Game({
 
       if (newGameState.board[newGameState.pos.y][newGameState.pos.x].tileType === TileType.End) {
         // track stats upon reaching an exit
+
+        if (gameState.moves.length <= level.leastMoves && onComplete) {
+          onComplete();
+        }
+
         trackStats(newGameState.moves.map(move => move.direction), level._id.toString(), 3);
       } else if (!disablePlayAttempts) {
         // track play attempts upon making a successful move
@@ -455,14 +460,16 @@ export default function Game({
 
       return onSuccessfulMove(newGameState);
     });
-  }, [allowFreeUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, level._id, level.data, loadCheckpoint, onMove, onNext, onPrev, pro, saveCheckpoint, trackStats]);
+  }, [allowFreeUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, gameState.board, gameState.moves.length, gameState.pos.x, gameState.pos.y, level._id, level.data, level.leastMoves, loadCheckpoint, onComplete, onMove, onNext, onPrev, pro, saveCheckpoint, trackStats]);
 
   useEffect(() => {
+    /* TODO: can we remove this section?
     const atEnd = gameState.board[gameState.pos.y][gameState.pos.x].tileType === TileType.End;
 
     if (atEnd && gameState.moves.length <= level.leastMoves && onComplete) {
-      onComplete();
+    //  onComplete();
     }
+    */
   }, [gameState, level.leastMoves, onComplete]);
 
   useEffect(() => {
