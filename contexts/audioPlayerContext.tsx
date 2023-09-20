@@ -3,7 +3,7 @@ import React, { createContext, useContext } from 'react';
 export interface AudioPlayerState {
   currentSongIndex: number;
   isPlaying: boolean;
-  isHot: boolean;
+  isCool: boolean;
   audioContext?: AudioContext;
   audioActive?: HTMLAudioElement;
   audioAmbient?: HTMLAudioElement;
