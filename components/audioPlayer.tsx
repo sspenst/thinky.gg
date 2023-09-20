@@ -248,7 +248,10 @@ const AudioPlayer: React.FC = () => {
 
   useEffect(() => {
     // Update the context when local state changes
-    setAudioPlayerState({ currentSongIndex, isPlaying, isHot: isHot.current, audioContext, audioActive, audioAmbient, currentTitle, toggleVersion });
+    setAudioPlayerState({ currentSongIndex, isPlaying, isHot: isHot.current, audioContext, audioActive, audioAmbient, currentTitle,
+      toggleVersion: toggleVersion
+
+    });
   }, [currentSongIndex, isPlaying, setAudioPlayerState, audioContext, audioActive, audioAmbient, currentTitle, toggleVersion]);
 
   return (
