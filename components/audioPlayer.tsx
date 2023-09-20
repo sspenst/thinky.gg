@@ -1,7 +1,5 @@
 import { useAudioPlayerState } from '@root/contexts/audioPlayerContext';
-import { debounce } from 'debounce';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { throttle } from 'throttle-debounce';
 
 const songs = [
   {
