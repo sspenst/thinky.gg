@@ -1,8 +1,11 @@
+import { HeaderContext } from '@root/contexts/headerContext';
+import { HeaderProvider } from '@root/contexts/headerProvider';
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { createRef, useContext, useEffect, useRef, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { AppContext } from '../../contexts/appContext';
+import AudioPlayer from '../audioPlayer';
 import LinkInfo from '../formatted/linkInfo';
 import Directory from './directory';
 import Dropdown from './dropdown';
@@ -29,6 +32,7 @@ export default function Header({
   }, []);
 
   return (
+
     <header
       className='select-none shadow-md w-full flex justify-between px-4 gap-4'
       style={{
@@ -48,9 +52,12 @@ export default function Header({
         <Directory folders={folders} subtitle={subtitle} title={title} />
       </div>
       <div className='flex gap-4 items-center z-20'>
+        <AudioPlayer />
+
         <UserInfo />
         <Dropdown />
       </div>
     </header>
+
   );
 }

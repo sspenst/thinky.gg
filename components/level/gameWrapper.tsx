@@ -1,5 +1,7 @@
+import { HeaderContext } from '@root/contexts/headerContext';
+import { PageContext } from '@root/contexts/pageContext';
 import Link from 'next/link';
-import React, { useCallback } from 'react';
+import React, { useCallback, useContext } from 'react';
 import toast from 'react-hot-toast';
 import { throttle } from 'throttle-debounce';
 import Collection from '../../models/db/collection';
@@ -49,6 +51,8 @@ export default function GameWrapper({ collection, level, onNext, onPrev, user }:
     }, 1300);
   }, []);
 
+  const { toggleVersion } = useContext(HeaderContext);
+
   return (
     <Game
       allowFreeUndo={true}
@@ -58,6 +62,9 @@ export default function GameWrapper({ collection, level, onNext, onPrev, user }:
       key={`game-${level._id.toString()}`}
       level={level}
       onComplete={() => {
+        // click on #btn-audio-player-version
+        toggleVersion('hot');
+
         if (!user) {
           signUpToast();
         }
@@ -66,8 +73,8 @@ export default function GameWrapper({ collection, level, onNext, onPrev, user }:
           addNextButtonHighlight();
         }
       }}
-      onNext={collection ? onNext : undefined}
-      onPrev={collection ? onPrev : undefined}
+      onNext={collection ? () => {console.log(toggleVersion); toggleVersion('cool'); onNext();} : undefined}
+      onPrev={collection ? () => {toggleVersion('cool'); onPrev();} : undefined}
     />
   );
 }
