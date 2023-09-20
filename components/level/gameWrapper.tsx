@@ -61,6 +61,7 @@ export default function GameWrapper({ collection, level, onNext, onPrev, user }:
       level={level}
       onComplete={() => {
         // click on #btn-audio-player-version
+
         audioPlayerState.toggleVersion && audioPlayerState.toggleVersion('hot');
 
         if (!user) {
