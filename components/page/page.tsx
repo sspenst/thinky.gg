@@ -1,4 +1,3 @@
-import { HeaderProvider } from '@root/contexts/headerProvider';
 import classNames from 'classnames';
 import React, { useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
@@ -49,23 +48,24 @@ export default function Page({
       showHeader: showHeader,
 
     }}>
-      <HeaderProvider>
-        <div className={classNames('flex flex-col', { 'fixed inset-0 overflow-hidden': isFullScreen })}>
-          {showHeader &&
+
+      <div className={classNames('flex flex-col', { 'fixed inset-0 overflow-hidden': isFullScreen })}>
+        {showHeader &&
           <Header
             folders={folders}
             subtitle={subtitle ? new LinkInfo(subtitle, subtitleHref) : undefined}
             title={title ? new LinkInfo(title, titleHref) : undefined}
           />
-          }
-          <main className='grow z-10' style={{
-            height: showHeader ? `calc(100% - ${Dimensions.MenuHeight}px)` : '100%',
-          }}>
-            {children}
-          </main>
-        </div>
-        {!isFullScreen && <Footer />}
-      </HeaderProvider>
+        }
+        <main className='grow z-10' style={{
+          height: showHeader ? `calc(100% - ${Dimensions.MenuHeight}px)` : '100%',
+        }}>
+          {children}
+
+        </main>
+      </div>
+      {!isFullScreen && <Footer />}
+
     </PageContext.Provider>
   );
 }

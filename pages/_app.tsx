@@ -2,13 +2,15 @@
 import '../styles/global.css';
 import 'react-tooltip/dist/react-tooltip.css';
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react';
+import AudioPlayer from '@root/components/audioPlayer';
+import { AudioPlayerContext, AudioPlayerState } from '@root/contexts/audioPlayerContext';
 import type { AppProps } from 'next/app';
 import { Rubik, Teko } from 'next/font/google';
 import Head from 'next/head';
 import Router, { useRouter } from 'next/router';
 import { DefaultSeo } from 'next-seo';
 import nProgress from 'nprogress';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import CookieConsent from 'react-cookie-consent';
 import TagManager, { TagManagerArgs } from 'react-gtm-module';
 import { Toaster } from 'react-hot-toast';
@@ -75,12 +77,15 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   const [theme, setTheme] = useState<string>();
   const { matches, privateAndInvitedMatches } = multiplayerSocket;
 
+  const audioPlayer = useRef<JSX.Element>();
+
   useEffect(() => {
     // preload sounds
     setSounds({
       'start': new Audio('/sounds/start.wav'),
       'warning': new Audio('/sounds/warning.wav'),
     });
+    audioPlayer.current = <AudioPlayer />;
   }, []);
 
   // initialize shouldAttemptAuth if it exists in sessionStorage
@@ -302,6 +307,14 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
   const isEU = Intl.DateTimeFormat().resolvedOptions().timeZone.startsWith('Europe');
 
+  const [audioPlayerState, setAudioPlayerState] = useState<AudioPlayerState>({
+    currentSongIndex: 0,
+    isPlaying: false,
+    isHot: false,
+    currentTitle: '',
+
+  });
+
   return (
     <>
 
@@ -343,6 +356,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       )}
       <GrowthBookProvider growthbook={growthbook}>
         <AppContext.Provider value={{
+          audioPlayer: audioPlayer.current,
           forceUpdate: forceUpdate,
           multiplayerSocket: multiplayerSocket,
           mutateUser: mutateUser,
@@ -360,7 +374,9 @@ export default function MyApp({ Component, pageProps }: AppProps) {
             color: 'var(--color)',
           }}>
             <Toaster toastOptions={{ duration: 1500 }} />
-            <Component {...pageProps} />
+            <AudioPlayerContext.Provider value={[audioPlayerState, setAudioPlayerState]}>
+              <Component {...pageProps} />
+            </AudioPlayerContext.Provider>
           </div>
         </AppContext.Provider>
       </GrowthBookProvider>
