@@ -310,7 +310,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   const [audioPlayerState, setAudioPlayerState] = useState<AudioPlayerState>({
     currentSongIndex: 0,
     isPlaying: false,
-    isCool: false,
+    isHot: false,
     currentTitle: '',
 
   });

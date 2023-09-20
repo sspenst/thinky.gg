@@ -32,7 +32,7 @@ const AudioPlayer: React.FC = () => {
   const [currentSongIndex, setCurrentSongIndex] = useState(audioPlayerState.currentSongIndex || (Math.random() * songs.length) >> 0);
   const [currentTitle, setCurrentTitle] = useState(audioPlayerState.currentTitle);
   const [isPlaying, setIsPlaying] = useState(audioPlayerState.isPlaying);
-  const isCool = useRef(audioPlayerState.isCool);
+  const isHot = useRef(audioPlayerState.isHot);
   const [audioContext, setAudioContext] = useState<AudioContext | undefined>(audioPlayerState.audioContext);
   const [audioActive, setAudioActive] = useState<HTMLAudioElement | undefined>(audioPlayerState.audioActive);
   const [audioAmbient, setAudioAmbient] = useState<HTMLAudioElement | undefined>(audioPlayerState.audioAmbient);
@@ -62,8 +62,8 @@ const AudioPlayer: React.FC = () => {
     // Listen for metadata loading for active audio
     setCurrentTitle(songs[index].title);
 
-    activeAudio.volume = isCool.current ? 1 : 0;
-    ambientAudio.volume = isCool.current ? 0 : 1;
+    activeAudio.volume = isHot.current ? 1 : 0;
+    ambientAudio.volume = isHot.current ? 0 : 1;
     activeAudio.currentTime = 0;
     ambientAudio.currentTime = activeAudio.currentTime;
 
@@ -74,8 +74,8 @@ const AudioPlayer: React.FC = () => {
 
       // add listeners for when the audio ends
       const onLoaded = () => {
-        activeAudio.volume = isCool.current ? 1 : 0;
-        ambientAudio.volume = isCool.current ? 0 : 1;
+        activeAudio.volume = isHot.current ? 1 : 0;
+        ambientAudio.volume = isHot.current ? 0 : 1;
         activeAudio.currentTime = 0;
         ambientAudio.currentTime = activeAudio.currentTime;
       };
@@ -105,7 +105,7 @@ const AudioPlayer: React.FC = () => {
       const next = () => {
         ambientAudio.remove();
         activeAudio.remove();
-        isCool.current = (false);
+        isHot.current = (false);
         seek((index + 1) % songs.length);
       };
 
@@ -151,7 +151,7 @@ const AudioPlayer: React.FC = () => {
       // make sure they are playing at exact same time
       audioActive.currentTime = audioAmbient.currentTime;
 
-      if (isCool.current) {
+      if (isHot.current) {
         audioActive.volume = 1;
         audioAmbient.volume = 0;
       } else {
@@ -195,11 +195,11 @@ const AudioPlayer: React.FC = () => {
   const intervalRef = useRef<null | NodeJS.Timeout>(null);
 
   const toggleVersion = useCallback((type: 'hot' | 'cool' | 'switch' = 'switch') => {
-    if (type === 'hot' && !isCool.current) {
+    if (type === 'hot' && isHot.current) {
       return;
     }
 
-    if (type === 'cool' && isCool.current) {
+    if (type === 'cool' && !isHot.current) {
       return;
     }
 
@@ -221,7 +221,7 @@ const AudioPlayer: React.FC = () => {
       intervalRef.current = setInterval(() => {
         progress += step / duration;
 
-        if (!isCool.current) {
+        if (!isHot.current) {
         // Crossfade to ambient version
 
           audioActive.volume = Math.max(0, startActiveVol * (1 - progress));
@@ -238,18 +238,18 @@ const AudioPlayer: React.FC = () => {
         if (progress >= 1) {
           clearInterval(intervalRef.current!);
           // set volumes to exact values
-          audioActive.volume = !isCool.current ? 0 : 1;
-          audioAmbient.volume = !isCool.current ? 1 : 0;
+          audioActive.volume = !isHot.current ? 0 : 1;
+          audioAmbient.volume = !isHot.current ? 1 : 0;
           intervalRef.current = null;
         }
       }, step * 1000);
-      isCool.current = !isCool.current;
+      isHot.current = !isHot.current;
     }
   }, [audioContext, audioActive, audioAmbient]);
 
   useEffect(() => {
     // Update the context when local state changes
-    setAudioPlayerState({ currentSongIndex, isPlaying, isCool: isCool.current, audioContext, audioActive, audioAmbient, currentTitle, toggleVersion });
+    setAudioPlayerState({ currentSongIndex, isPlaying, isHot: isHot.current, audioContext, audioActive, audioAmbient, currentTitle, toggleVersion });
   }, [currentSongIndex, isPlaying, setAudioPlayerState, audioContext, audioActive, audioAmbient, currentTitle, toggleVersion]);
 
   return (
@@ -303,7 +303,7 @@ const AudioPlayer: React.FC = () => {
           color: 'var(--color)' }}
         className='px-3 py-1 rounded'
       >
-        {isCool.current ? '🔥' : '❄️'}
+        {isHot.current ? '🔥' : '❄️'}
       </button>
       <button
         style={{ backgroundColor: 'var(--bg-color-2)', color: 'var(--color)' }}
