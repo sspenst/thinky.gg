@@ -29,7 +29,7 @@ const songs = [
 const AudioPlayer: React.FC = () => {
   const [audioPlayerState, setAudioPlayerState] = useAudioPlayerState();
 
-  const [currentSongIndex, setCurrentSongIndex] = useState(audioPlayerState.currentSongIndex);
+  const [currentSongIndex, setCurrentSongIndex] = useState(audioPlayerState.currentSongIndex || (Math.random() * songs.length) >> 0);
   const [currentTitle, setCurrentTitle] = useState(audioPlayerState.currentTitle);
   const [isPlaying, setIsPlaying] = useState(audioPlayerState.isPlaying);
   const isHot = useRef(audioPlayerState.isHot);
@@ -80,27 +80,26 @@ const AudioPlayer: React.FC = () => {
         ambientAudio.currentTime = activeAudio.currentTime;
       };
 
-      // listen for metadata
       ambientAudio.addEventListener('loadedmetadata', () => {
         // go to near the end of the song
 
         //  onLoaded();
-
-        if (index === 0) {
-          ambientAudio.currentTime = ambientAudio.duration - 5;
-        } else {
-          onLoaded();
-        }
+        // listen for metadata (this just makes it a bit easier to test the transition logic)
+        //        if (index === 0) {
+        //        ambientAudio.currentTime = ambientAudio.duration - 5;
+        //    } else {
+        onLoaded();
+      //  }
       });
       activeAudio.addEventListener('loadedmetadata', () => {
         // go to near the end of the song
       //  onLoaded();
 
-        if (index === 0)
-          activeAudio.currentTime = activeAudio.duration - 5;
-        else {
-          onLoaded();
-        }
+        //  if (index === 0)
+        //  activeAudio.currentTime = activeAudio.duration - 5;
+        //else {
+        onLoaded();
+        //}
       });
 
       const next = () => {
