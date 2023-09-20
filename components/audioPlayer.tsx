@@ -1,7 +1,16 @@
 import { useAudioPlayerState } from '@root/contexts/audioPlayerContext';
+import { debounce } from 'debounce';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { throttle } from 'throttle-debounce';
 
 const songs = [
+  {
+    title: 'Test',
+    active: '/sounds/music/test1high.mp3',
+    ambient: '/sounds/music/test1.mp3',
+    artist: 'Danny',
+    website: 'k2xl.com'
+  },
   {
     title: 'Automation',
     active: '/sounds/music/04 Automaton 2023-09-10.mp3',
@@ -29,7 +38,7 @@ const songs = [
 const AudioPlayer: React.FC = () => {
   const [audioPlayerState, setAudioPlayerState] = useAudioPlayerState();
 
-  const [currentSongIndex, setCurrentSongIndex] = useState(audioPlayerState.currentSongIndex || (Math.random() * songs.length) >> 0);
+  const [currentSongIndex, setCurrentSongIndex] = useState(audioPlayerState.currentSongIndex || 0); // || (Math.random() * songs.length) >> 0
   const [currentTitle, setCurrentTitle] = useState(audioPlayerState.currentTitle);
   const [isPlaying, setIsPlaying] = useState(audioPlayerState.isPlaying);
   const isHot = useRef(audioPlayerState.isHot);
@@ -105,6 +114,7 @@ const AudioPlayer: React.FC = () => {
         ambientAudio.remove();
         activeAudio.remove();
         isHot.current = (false);
+        console.log('finished...');
         seek((index + 1) % songs.length);
       };
 
@@ -194,6 +204,8 @@ const AudioPlayer: React.FC = () => {
   const intervalRef = useRef<null | NodeJS.Timeout>(null);
 
   const toggleVersion = useCallback((type: 'hot' | 'cool' | 'switch' = 'switch') => {
+    console.log('toggleVersion', type, isHot.current, audioContext);
+
     if (type === 'hot' && isHot.current) {
       return;
     }

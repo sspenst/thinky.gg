@@ -460,7 +460,7 @@ export default function Game({
 
       return onSuccessfulMove(newGameState);
     });
-  }, [allowFreeUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, gameState.board, gameState.moves.length, gameState.pos.x, gameState.pos.y, level._id, level.data, level.leastMoves, loadCheckpoint, onComplete, onMove, onNext, onPrev, pro, saveCheckpoint, trackStats]);
+  }, [allowFreeUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, gameState.moves.length, level._id, level.data, level.leastMoves, loadCheckpoint, onComplete, onMove, onNext, onPrev, pro, saveCheckpoint, trackStats]);
 
   useEffect(() => {
     /* TODO: can we remove this section?
