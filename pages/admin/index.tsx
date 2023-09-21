@@ -50,7 +50,6 @@ export default function AdminPage({ queryUser, queryCommand }: {queryUser: User 
   const selectedCommandFromQuery = commands.find((cmd) => cmd.command === queryCommand);
 
   const [selectedCommand, setSelectedCommand] = useState<{ label: string; command: string; confirm?: boolean } | null>(selectedCommandFromQuery || null);
-  const { data: selectedUserConfig } = useSWRHelper<any>('/api/user-config?userId=' + selectedUser?._id, {}, {}, !selectedUser);
 
   useEffect(() => {
     if (queryUser && queryUser !== selectedUser) {
@@ -180,7 +179,7 @@ export default function AdminPage({ queryUser, queryCommand }: {queryUser: User 
             <div className='flex flex-col gap-2'>
               <FormattedUser id='admin' user={selectedUser} />
               {display('User', selectedUser)}
-              {display('UserConfig', selectedUserConfig)}
+
             </div>
           )}
         </div>
