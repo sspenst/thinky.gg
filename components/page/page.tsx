@@ -9,23 +9,23 @@ import Footer from './footer';
 interface PageProps {
   children: JSX.Element;
   folders?: LinkInfo[];
+  hideFooter?: boolean;
   isFullScreen?: boolean;
   subtitle?: string;
   subtitleHref?: string;
   title?: string;
   titleHref?: string;
-  hideFooter?: boolean;
 }
 
 export default function Page({
   children,
   folders,
+  hideFooter,
   isFullScreen,
   subtitle,
   subtitleHref,
   title,
   titleHref,
-  hideFooter,
 }: PageProps) {
   const [preventKeyDownEvent, setPreventKeyDownEvent] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
@@ -63,7 +63,7 @@ export default function Page({
           {children}
         </main>
       </div>
-      {!isFullScreen || hideFooter && <Footer />}
+      {!isFullScreen && !hideFooter && <Footer />}
     </PageContext.Provider>
   );
 }

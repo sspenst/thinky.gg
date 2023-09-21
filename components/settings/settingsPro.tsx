@@ -115,8 +115,8 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
           }
         </div>
       }
-      <div className='flex flex-col lg:flex-row items-center gap-4 justify-center'>
-        <div className='p-2 md:w-1/2'>
+      <div className='flex flex-col 2xl:flex-row items-center gap-4 justify-center'>
+        <div className='p-2'>
           <video autoPlay loop muted playsInline className='rounded-xl'>
             <source src='https://i.imgur.com/HzFhvYY.mp4' type='video/mp4' />
           </video>
@@ -155,6 +155,15 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
             title='Extra Level Stats'
           />
           <ProFeature
+            description='Search by block type, level dimensions, and more'
+            icon={
+              <svg xmlns='http://www.w3.org/2000/svg' className='h-6 w-6' fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={2}>
+                <path strokeLinecap='round' strokeLinejoin='round' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
+              </svg>
+            }
+            title='Advanced Search Filters'
+          />
+          <ProFeature
             description='View your play history'
             icon={
               <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='currentColor' className='bi bi-clock-history w-6 h-6' viewBox='0 0 16 16'>
@@ -163,15 +172,6 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                 <path d='M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5z' />
               </svg>}
             title='Play History'
-          />
-          <ProFeature
-            description='Search by block type, level dimensions, and more'
-            icon={
-              <svg xmlns='http://www.w3.org/2000/svg' className='h-6 w-6' fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={2}>
-                <path strokeLinecap='round' strokeLinejoin='round' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
-              </svg>
-            }
-            title='Advanced Search Filters'
           />
           <ProFeature
             description='Details on levels completed per user and per creator'

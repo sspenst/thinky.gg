@@ -149,12 +149,12 @@ export default function ProfilePlayHistory({ user }: { user: User }): JSX.Elemen
             <SelectCard option={{
               author: level.userId?.name,
               height: Dimensions.OptionHeightLarge,
-              width: Dimensions.OptionWidth * (isMobile ? 0.8 : 1),
               href: `/level/${level.slug}`,
               id: playAttempt.levelId._id.toString() + '-' + playAttempt._id.toString(),
               level: level,
               stats: new SelectOptionStats(level.leastMoves, level.userMoves),
               text: level.name,
+              width: Dimensions.OptionWidth * (isMobile ? 0.8 : 1),
             }} />
           </div>
           <div className={'flex flex-col ' + (isLeftAligned ? 'mr-5 items-end text-right' : 'ml-5 items-start')}>
