@@ -6,7 +6,7 @@ import PlayAttempt from '@root/models/db/playAttempt';
 import User from '@root/models/db/user';
 import SelectOptionStats from '@root/models/selectOptionStats';
 import moment from 'moment';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import SelectCard from '../cards/selectCard';
 import LoadingSpinner from '../page/loadingSpinner';
 
@@ -99,7 +99,7 @@ export default function ProfilePlayHistory({ user }: { user: User }): JSX.Elemen
 
     prevEndTime = playAttempt.endTime;
 
-    const currentDate = moment.unix(playAttempt.startTime).format('MMMM Do, YYYY');
+    const currentDate = moment.unix(playAttempt.startTime).local().format('MMMM Do, YYYY');
     const showDate = currentDate !== prevDate;
 
     prevDate = currentDate;
@@ -158,7 +158,7 @@ export default function ProfilePlayHistory({ user }: { user: User }): JSX.Elemen
             }} />
           </div>
           <div className={'flex flex-col ' + (isLeftAligned ? 'mr-5 items-end text-right' : 'ml-5 items-start')}>
-            {moment.unix(playAttempt.startTime).format('h:mma')}
+            {moment.unix(playAttempt.startTime).local().format('h:mma')}
             <span>Played for {moment.duration(playAttempt.endTime - playAttempt.startTime, 'seconds').humanize()}</span>
           </div>
         </div>
@@ -179,7 +179,7 @@ export default function ProfilePlayHistory({ user }: { user: User }): JSX.Elemen
           onChange={(e: any) => {
             setIntermediateDate(e.target.value);
           }}
-          onBlur={(e: any) => {
+          onBlur={() => {
             setAccumulatedPlayHistory([]); // Clear the play history
             setCursor(null); // Reset the cursor
             setSelectedDate(intermediateDate);
