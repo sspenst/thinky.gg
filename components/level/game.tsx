@@ -520,9 +520,23 @@ export default function Game({
   }, []);
 
   const handleTouchStartEvent = useCallback((event: TouchEvent) => {
+    if (event.touches[0].pageX < 40 || event.touches[0].pageX > window.innerWidth - 40) {
+      // disables back and forward navigation on mobile... hopefully on all browsers
+      event.preventDefault();
+    }
+
     if (preventKeyDownEvent) {
       return;
     }
+
+    if (event.touches.length !== 1) {
+      console.log('yo');
+      validTouchStart.current = false;
+
+      return;
+    }
+
+    console.log(event.changedTouches, event.touches);
 
     // NB: must start the touch event within the game layout
     const isValid = event.composedPath().some(e => (e as HTMLElement).id === `grid-${level._id.toString()}`);
@@ -535,7 +549,6 @@ export default function Game({
       touchYDown.current = event.touches[0].clientY;
       isSwiping.current = false;
       lastTouchTimestamp.current = Date.now();
-      event.preventDefault();
     }
   }, [level._id, preventKeyDownEvent]);
 
@@ -553,6 +566,14 @@ export default function Game({
 
     handleKeyDown(code);
   }, [handleKeyDown, lastMovetimestamp]);
+
+  const handleWheelEvent = useCallback((event: WheelEvent) => {
+    console.log(event);
+
+    if (preventKeyDownEvent) {
+      return;
+    }
+  }, [preventKeyDownEvent]);
 
   const handleTouchMoveEvent = useCallback((event: TouchEvent) => {
     if (!validTouchStart.current || preventKeyDownEvent) {
@@ -640,14 +661,19 @@ export default function Game({
 
   useEffect(() => {
     window.addEventListener('blur', handleBlurEvent);
+    window.addEventListener('wheel', handleWheelEvent);
     document.addEventListener('keydown', handleKeyDownEvent);
     document.addEventListener('keyup', handleKeyUpEvent);
+    //getsture
+
     // NB: even though the default value for passive is false, you have to specifically set it to false here in order to prevent swipe navigation in the browser
+
     document.addEventListener('touchstart', handleTouchStartEvent, { passive: false });
     document.addEventListener('touchmove', handleTouchMoveEvent, { passive: false });
     document.addEventListener('touchend', handleTouchEndEvent, { passive: false });
 
     return () => {
+      window.removeEventListener('wheel', handleWheelEvent);
       window.removeEventListener('blur', handleBlurEvent);
       document.removeEventListener('keydown', handleKeyDownEvent);
       document.removeEventListener('keyup', handleKeyUpEvent);
@@ -655,7 +681,7 @@ export default function Game({
       document.removeEventListener('touchmove', handleTouchMoveEvent);
       document.removeEventListener('touchend', handleTouchEndEvent);
     };
-  }, [handleBlurEvent, handleKeyDownEvent, handleKeyUpEvent, handleTouchMoveEvent, handleTouchStartEvent, handleTouchEndEvent]);
+  }, [handleBlurEvent, handleKeyDownEvent, handleKeyUpEvent, handleTouchMoveEvent, handleTouchStartEvent, handleTouchEndEvent, handleWheelEvent]);
 
   const [controls, setControls] = useState<Control[]>([]);
 

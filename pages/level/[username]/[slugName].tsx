@@ -4,6 +4,7 @@ import PagePath from '@root/constants/pagePath';
 import isPro from '@root/helpers/isPro';
 import { useTour } from '@root/hooks/useTour';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
+import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
@@ -197,6 +198,9 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
 
   return (
     <>
+      <Head>
+        <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=1' />
+      </Head>
       {tour}
       <NextSeo
         title={`${level.name} - Pathology`}
