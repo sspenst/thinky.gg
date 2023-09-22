@@ -1,6 +1,8 @@
 import { ValidDate, ValidNumber, ValidObjectId } from '@root/helpers/apiWrapper';
+import { getEnrichLevelsPipelineSteps } from '@root/helpers/enrich';
 import isPro from '@root/helpers/isPro';
 import withAuth from '@root/lib/withAuth';
+import User from '@root/models/db/user';
 import { PlayAttemptModel } from '@root/models/mongoose';
 import { LEVEL_DEFAULT_PROJECTION } from '@root/models/schemas/levelSchema';
 import { PipelineStage, Types } from 'mongoose';
@@ -12,7 +14,7 @@ interface GetPlayAttemptsParams {
   minDurationMinutes?: number;
 }
 
-async function GetPlayAttempts(params: GetPlayAttemptsParams) {
+async function GetPlayAttempts(reqUser: User, params: GetPlayAttemptsParams) {
   const { userId, cursor, datetime, minDurationMinutes } = params;
   const datetimeInSeconds = datetime ? Math.floor(datetime.getTime() / 1000) : undefined;
 
@@ -21,7 +23,7 @@ async function GetPlayAttempts(params: GetPlayAttemptsParams) {
   const pipeline = [
     {
       $match: {
-        userId,
+        userId: userId,
         ...(cursor && { _id: { $lt: cursor } }),
         ...(datetimeInSeconds && { endTime: { $lte: datetimeInSeconds } }),
       },
@@ -54,6 +56,7 @@ async function GetPlayAttempts(params: GetPlayAttemptsParams) {
           {
             $project: LEVEL_DEFAULT_PROJECTION,
           },
+          ...getEnrichLevelsPipelineSteps(reqUser, '_id', ''),
         ],
       },
     },
@@ -62,6 +65,7 @@ async function GetPlayAttempts(params: GetPlayAttemptsParams) {
         path: '$levelId',
       },
     },
+
   ];
 
   return PlayAttemptModel.aggregate(pipeline as PipelineStage[]);
@@ -84,7 +88,7 @@ export default withAuth({
 
   const { datetime, minDurationMinutes, cursor } = req.query;
 
-  const playAttempts = await GetPlayAttempts(
+  const playAttempts = await GetPlayAttempts(req.user,
     {
       userId: req.user._id,
       cursor: new Types.ObjectId(cursor as string),

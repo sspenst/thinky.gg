@@ -104,7 +104,7 @@ export default function ProfilePlayHistory({ user }: { user: User }): JSX.Elemen
 
     prevDate = currentDate;
 
-    const isLeftAligned = index % 2 === 0;
+    const isLeftAligned = false && index % 2 === 0;
 
     return (
       <div
@@ -170,7 +170,7 @@ export default function ProfilePlayHistory({ user }: { user: User }): JSX.Elemen
   const uxControls = (
     <div className='flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0 p-4 justify-center items-center'>
       <div className='flex flex-col items-start'>
-        <label className='text-lg font-semibold'>View Date and Time</label>
+        <label className='text-lg font-semibold'>Go to Date and Time</label>
         <input
           type='datetime-local'
           min='2020-01-01T00:00'
@@ -187,6 +187,17 @@ export default function ProfilePlayHistory({ user }: { user: User }): JSX.Elemen
           className='p-2 border rounded text-black'
 
         />
+        { intermediateDate && (<button className='text-sm hover:underline'
+          onClick={() => {
+            if (intermediateDate) {
+              setIntermediateDate(null);
+              setSelectedDate(null);
+              setAccumulatedPlayHistory([]); // Clear the play history
+              setCursor(null); // Reset the cursor
+            }
+          }
+          }>Reset</button>
+        )}
       </div>
 
       <div className='flex flex-col items-start'>
