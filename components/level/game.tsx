@@ -520,20 +520,18 @@ export default function Game({
   }, []);
 
   const handleTouchStartEvent = useCallback((event: TouchEvent) => {
-    if (event.touches[0].pageX < 40 || event.touches[0].pageX > window.innerWidth - 40) {
-      // disables back and forward navigation on mobile... hopefully on all browsers
-      event.preventDefault();
-    }
-
     if (preventKeyDownEvent) {
       return;
     }
 
     if (event.touches.length !== 1) {
-      console.log('yo');
       validTouchStart.current = false;
 
       return;
+    } else if (event.touches[0].clientX < 20 || event.touches[0].clientX > window.innerWidth - 20) {
+      // disables back and forward navigation on mobile... hopefully on all browsers
+
+      event.preventDefault();
     }
 
     console.log(event.changedTouches, event.touches);
