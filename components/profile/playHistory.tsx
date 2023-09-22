@@ -4,6 +4,7 @@ import useSWRHelper from '@root/hooks/useSWRHelper';
 import { EnrichedLevel } from '@root/models/db/level';
 import PlayAttempt from '@root/models/db/playAttempt';
 import User from '@root/models/db/user';
+import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
 import SelectOptionStats from '@root/models/selectOptionStats';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
@@ -13,13 +14,14 @@ import LoadingSpinner from '../page/loadingSpinner';
 export default function ProfilePlayHistory({ user }: { user: User }): JSX.Element {
   const [selectedDate, setSelectedDate] = useState(null);
   const [minDurationMinutes, setMinDurationMinutes] = useState(0);
+  const [filterWon, setFilterWon] = useState(false);
 
   const [cursor, setCursor] = useState<string | null>();
   const [accumulatedPlayHistory, setAccumulatedPlayHistory] = useState<PlayAttempt[]>([]);
   const [intermediateMinDuration, setIntermediateMinDuration] = useState(0);
   const [intermediateDate, setIntermediateDate] = useState(selectedDate);
   const [isMobile, setIsMobile] = useState(false);
-  const params = { datetime: selectedDate, minDurationMinutes, cursor };
+  const params = { datetime: selectedDate, minDurationMinutes, cursor, filterWon: (filterWon.toString()) };
   const queryString = Object.entries(params)
     .filter(([, value]) => value !== null && value !== undefined)
     .map(([key, value]) => `${key}=${value}`)
@@ -159,7 +161,7 @@ export default function ProfilePlayHistory({ user }: { user: User }): JSX.Elemen
           </div>
           <div className={'flex flex-col ' + (isLeftAligned ? 'mr-5 items-end text-right' : 'ml-5 items-start')}>
             {moment.unix(playAttempt.startTime).local().format('h:mma')}
-            <span>Played for {moment.duration(playAttempt.endTime - playAttempt.startTime, 'seconds').humanize()}</span>
+            <span>Played for {moment.duration(playAttempt.endTime - playAttempt.startTime, 'seconds').humanize()} {playAttempt.attemptContext === AttemptContext.JUST_BEATEN && 'and won'}</span>
           </div>
         </div>
 
@@ -199,28 +201,45 @@ export default function ProfilePlayHistory({ user }: { user: User }): JSX.Elemen
           }>Reset</button>
         )}
       </div>
+      <div className='flex flex-row gap-3'>
+        <div className='flex flex-col items-start'>
+          <label className='text-md font-semibold truncate'>Minimum Duration</label>
+          <div className='flex flex-row gap-1'>
+            <input
+              type='range'
+              min='0'
+              max='240'
+              step={5}
+              value={intermediateMinDuration}
+              onChange={(value: any) => {
+                setIntermediateMinDuration(value.target.value);
+              }}
+              onKeyUp={handleSliderChange}
+              onMouseUp={handleSliderChange}
+              onTouchEnd={handleSliderChange}
 
-      <div className='flex flex-col items-start'>
-        <label className='text-lg font-semibold'>Minimum Duration (minutes)</label>
-        <input
-          type='range'
-          min='0'
-          max='240'
-          step={5}
-          value={intermediateMinDuration}
-          onChange={(value: any) => {
-            setIntermediateMinDuration(value.target.value);
-          }}
-          onKeyUp={handleSliderChange}
-          onMouseUp={handleSliderChange}
-          onTouchEnd={handleSliderChange}
+              className='cursor-pointer'
+            />
+            <span className='text-sm'>{intermediateMinDuration}m</span>
+          </div>
+        </div>
+        <div className='flex flex-row items-center gap-2'>
+          <label className='text-md font-semibold truncate'>Show Won Only</label>
+          <input
+            type='checkbox'
+            checked={filterWon}
+            onChange={() => {
+              setAccumulatedPlayHistory([]); // Clear the play history
+              setCursor(null); // Reset the cursor
+              setFilterWon(!filterWon);
+            }
 
-          className='cursor-pointer'
-        />
-        <span className='text-sm'>{intermediateMinDuration} minutes</span>
+            }
+          />
+        </div>
       </div>
-
     </div>
+
   );
 
   const nothingToDisplay = (
