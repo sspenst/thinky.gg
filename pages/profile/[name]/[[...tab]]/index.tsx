@@ -2,7 +2,7 @@ import FormattedDate from '@root/components/formatted/formattedDate';
 import LoadingSpinner from '@root/components/page/loadingSpinner';
 import RoleIcons from '@root/components/page/roleIcons';
 import StyledTooltip from '@root/components/page/styledTooltip';
-import LevelsCompletedByDifficultyList from '@root/components/profile/levelsCompletedByDifficultyList';
+import LevelsSolvedByDifficultyList from '@root/components/profile/levelsSolvedByDifficultyList';
 import PlayerRank from '@root/components/profile/playerRank';
 import { ProfileAchievments } from '@root/components/profile/profileAchievements';
 import ProfileMultiplayer from '@root/components/profile/profileMultiplayer';
@@ -295,7 +295,7 @@ export default function ProfilePage({
       return {
         href: `/collection/${enrichedCollection.slug}`,
         id: enrichedCollection._id.toString(),
-        stats: new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userCompletedCount),
+        stats: new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userSolvedCount),
         text: enrichedCollection.name,
       } as SelectOption;
     });
@@ -355,9 +355,9 @@ export default function ProfilePage({
     });
   };
 
-  const { data: profileDataFetched } = useSWRHelper<{levelsCompletedByDifficulty: {[key: string]: number}}>('/api/user/' + user._id + '?type=levelsCompletedByDifficulty', {}, {}, tab !== ProfileTab.Profile);
+  const { data: profileDataFetched } = useSWRHelper<{levelsSolvedByDifficulty: {[key: string]: number}}>('/api/user/' + user._id + '?type=levelsSolvedByDifficulty', {}, {}, tab !== ProfileTab.Profile);
 
-  const levelsCompletedByDifficulty = profileDataFetched?.levelsCompletedByDifficulty;
+  const levelsSolvedByDifficulty = profileDataFetched?.levelsSolvedByDifficulty;
 
   // create an array of objects with the id, trigger element (eg. button), and the content element
   const tabsContent = {
@@ -392,10 +392,10 @@ export default function ProfilePage({
               </span>
               <StyledTooltip id='rank-tooltip' />
               {
-                levelsCompletedByDifficulty ? <PlayerRank levelsCompletedByDifficulty={levelsCompletedByDifficulty} user={user} /> : '...'
+                levelsSolvedByDifficulty ? <PlayerRank levelsSolvedByDifficulty={levelsSolvedByDifficulty} user={user} /> : '...'
               }
             </h2>
-            <h2><span className='font-bold'>Levels Completed:</span> {user.score}</h2>
+            <h2><span className='font-bold'>Levels Solved:</span> {user.score}</h2>
             <h2><span className='font-bold'>Levels Created:</span> {user.calc_levels_created_count}</h2>
             {!user.hideStatus && <>
               <h2><span className='font-bold'>Last Seen:</span> <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.last_visited_at ? user.last_visited_at : user.ts} /></h2>
@@ -403,9 +403,9 @@ export default function ProfilePage({
             <h2><span className='font-bold'>Registered:</span> <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.ts} /></h2>
             <h2><span className='font-bold'>Followers:</span> {followerCount}</h2>
             <div className='mt-4'>
-              <h2><span className='font-bold'>Levels Completed by Difficulty:</span></h2>
-              {levelsCompletedByDifficulty ?
-                <LevelsCompletedByDifficultyList data={levelsCompletedByDifficulty} />
+              <h2><span className='font-bold'>Levels Solved by Difficulty:</span></h2>
+              {levelsSolvedByDifficulty ?
+                <LevelsSolvedByDifficultyList data={levelsSolvedByDifficulty} />
                 :
                 <div className='p-2'><LoadingSpinner /></div>
               }

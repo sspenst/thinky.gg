@@ -1,5 +1,5 @@
 import FormattedDifficulty from '@root/components/formatted/formattedDifficulty';
-import Complete from '@root/components/level/info/complete';
+import Solved from '@root/components/level/info/solved';
 import Dimensions from '@root/constants/dimensions';
 import SelectOption from '@root/models/selectOption';
 import classNames from 'classnames';
@@ -36,9 +36,9 @@ export default function SelectCardContent({ option }: SelectCardContentProps) {
         {option.stats && <div className='pt-1 italic'>{option.stats.getText()}</div>}
       </div>
     </div>
-    {option.stats?.isComplete() &&
+    {option.stats?.isSolved() &&
       <div className='absolute bottom-0 right-0'>
-        <Complete />
+        <Solved />
       </div>
     }
   </>);

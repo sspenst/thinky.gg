@@ -7,7 +7,7 @@ import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { StatModel } from '../../../../models/mongoose';
-import completionsHandler from '../../../../pages/api/completions/[id]';
+import solvesHandler from '../../../../pages/api/solves/[id]';
 
 beforeAll(async () => {
   await dbConnect();
@@ -39,7 +39,7 @@ describe('Testing records token handler', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await completionsHandler(req, res);
+        await solvesHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
@@ -67,7 +67,7 @@ describe('Testing records token handler', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await completionsHandler(req, res);
+        await solvesHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
@@ -106,13 +106,13 @@ describe('Testing records token handler', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await completionsHandler(req, res);
+        await solvesHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Error finding completions');
+        expect(response.error).toBe('Error finding solves');
         expect(res.status).toBe(500);
       },
     });

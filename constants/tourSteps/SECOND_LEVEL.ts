@@ -23,8 +23,8 @@ export const TOUR_STEPS_SECOND_LEVEL: Step[] = [
   },
   {
     disableBeacon: true,
-    target: '#levelsCompletedBtn',
-    content: 'Check how many levels you have completed.',
+    target: '#levelsSolvedBtn',
+    content: 'Check how many levels you have solved.',
   },
   {
     disableBeacon: true,

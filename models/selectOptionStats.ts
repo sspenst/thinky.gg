@@ -26,7 +26,7 @@ export default class SelectOptionStats {
     return `${this.userTotal === undefined ? '' : this.userTotal}/${this.total}`;
   }
 
-  isComplete() {
+  isSolved() {
     return this.userTotal === this.total;
   }
 }

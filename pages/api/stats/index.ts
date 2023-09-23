@@ -133,7 +133,7 @@ export default withAuth({
         if (!stat?.complete) {
           await Promise.all([
             UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }, { session: session }),
-            queueRefreshAchievements(req.user._id, [AchievementCategory.LEVEL_COMPLETION, AchievementCategory.USER], { session: session })
+            queueRefreshAchievements(req.user._id, [AchievementCategory.SKILL, AchievementCategory.USER], { session: session })
           ]);
         }
 
