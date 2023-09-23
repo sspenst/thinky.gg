@@ -189,6 +189,7 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
   const sortDirection = (query.sortDir === 'asc') ? 1 : -1;
   const sortObj = [] as [string, number][];
   let lookupUserBeforeSort = false;
+  let enrichLevelBeforeSort = false;
 
   if (query.sortBy) {
     if (query.sortBy === 'userId') {
@@ -217,6 +218,9 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
         // don't show pending levels when sorting by difficulty
         searchObj['calc_difficulty_estimate'] = { $gte: 0 };
       }
+    } else if (query.sortBy === 'solved') {
+      sortObj.push(['userMovesTs', sortDirection]);
+      enrichLevelBeforeSort = true;
     }
   }
 
@@ -407,6 +411,7 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
         { $match: searchObj },
         { $project: { ...projection } },
         ...(lookupUserBeforeSort ? lookupUserStage : []),
+        ...(enrichLevelBeforeSort ? getEnrichLevelsPipelineSteps(new Types.ObjectId(userId) as unknown as User, '_id', '') : []),
         { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
         { '$facet': {
           metadata: [
@@ -420,7 +425,7 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
             // note this last getEnrichLevelsPipeline is "technically a bit wasteful" if they select Hide Won or Show In Progress
             // Because technically the above levelFilterStatLookupStage will have this data already...
             // But since the results are limited by limit, this is constant time and not a big deal to do the lookup again...
-            ...getEnrichLevelsPipelineSteps(new Types.ObjectId(userId) as unknown as User, '_id', '') as PipelineStage.Lookup[],
+            ...(enrichLevelBeforeSort ? [] : getEnrichLevelsPipelineSteps(new Types.ObjectId(userId) as unknown as User, '_id', '')),
           ]
         } },
         {

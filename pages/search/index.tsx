@@ -273,6 +273,12 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       },
       sortable: true,
     },
+    {
+      id: 'solved',
+      name: 'Solved',
+      selector: (row: EnrichedLevel) => !row.userMovesTs ? '-' : <FormattedDate style={{ color: 'var(--color)', fontSize: 13 }} ts={row.userMovesTs} />,
+      sortable: true,
+    },
   ] as TableColumn<EnrichedLevel>[];
 
   const onTimeRangeClick = useCallback((timeRangeKey: string) => {
