@@ -71,12 +71,12 @@ export default function FormattedUser({ id, noLinks, noTooltip, onClick, size, u
               <div className='flex gap-1'>
                 <span className='font-medium'>Rank:</span>
                 <PlayerRank
-                  levelsCompletedByDifficulty={userExtendedData.levelsCompletedByDifficulty}
+                  levelsSolvedByDifficulty={userExtendedData.levelsSolvedByDifficulty}
                   user={user}
                 />
               </div>
               <div className='flex gap-1'>
-                <span className='font-medium'>Levels Completed:</span>
+                <span className='font-medium'>Levels Solved:</span>
                 <span className='gray'>{userExtendedData.user.score}</span>
               </div>
               <div className='flex gap-1'>

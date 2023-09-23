@@ -1,4 +1,4 @@
 export enum ProfileQueryType {
-  LevelsCompletedByDifficulty = 'levelsCompletedByDifficulty',
+  LevelsSolvedByDifficulty = 'levelsSolvedByDifficulty',
   User = 'user',
 }

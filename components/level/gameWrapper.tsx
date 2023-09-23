@@ -57,7 +57,7 @@ export default function GameWrapper({ collection, level, onNext, onPrev, user }:
       enableSessionCheckpoint={true}
       key={`game-${level._id.toString()}`}
       level={level}
-      onComplete={() => {
+      onSolve={() => {
         if (!user) {
           signUpToast();
         }

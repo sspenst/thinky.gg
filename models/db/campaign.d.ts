@@ -12,7 +12,7 @@ interface Campaign {
 
 export interface EnrichedCampaign extends Campaign {
   levelCount: number;
-  userCompletedCount: number;
+  userSolvedCount: number;
 }
 
 export default Campaign;

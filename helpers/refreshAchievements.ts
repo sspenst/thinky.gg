@@ -1,6 +1,6 @@
 import { AchievementCategory, AchievementCategoryMapping } from '@root/constants/achievements/achievementInfo';
 import AchievementType from '@root/constants/achievements/achievementType';
-import { getCompletionByDifficultyTable } from '@root/helpers/getCompletionByDifficultyTable';
+import { getSolvesByDifficultyTable } from '@root/helpers/getSolvesByDifficultyTable';
 import { createNewAchievement } from '@root/helpers/notificationHelper';
 import { getDifficultyRollingSum } from '@root/helpers/playerRankHelper';
 import Achievement from '@root/models/db/achievement';
@@ -40,11 +40,11 @@ const AchievementCategoryFetch = {
 
     return { levelsCreated: userCreatedLevels };
   },
-  [AchievementCategory.LEVEL_COMPLETION]: async (userId: Types.ObjectId) => {
-    const levelsCompletedByDifficulty = await getCompletionByDifficultyTable(userId);
-    const rollingLevelCompletionSum = getDifficultyRollingSum(levelsCompletedByDifficulty);
+  [AchievementCategory.SKILL]: async (userId: Types.ObjectId) => {
+    const levelsSolvedByDifficulty = await getSolvesByDifficultyTable(userId);
+    const rollingLevelSolvesSum = getDifficultyRollingSum(levelsSolvedByDifficulty);
 
-    return { rollingLevelCompletionSum: rollingLevelCompletionSum };
+    return { rollingLevelSolvesSum: rollingLevelSolvesSum };
   },
 };
 

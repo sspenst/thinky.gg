@@ -4,7 +4,7 @@ import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { getTokenCookieValue } from '@root/lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '@root/lib/withAuth';
 import { UserModel } from '@root/models/mongoose';
-import handler from '@root/pages/api/level/[id]/prostats/solves';
+import handler from '@root/pages/api/level/[id]/prostats/completions';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 

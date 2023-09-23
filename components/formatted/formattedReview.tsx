@@ -5,7 +5,7 @@ import { EnrichedLevel } from '../../models/db/level';
 import { ReviewWithStats } from '../../models/db/review';
 import User from '../../models/db/user';
 import { FolderDivider } from '../header/directory';
-import Complete from '../level/info/complete';
+import Solved from '../level/info/solved';
 import ReviewDropdown from '../level/reviews/reviewDropdown';
 import StyledTooltip from '../page/styledTooltip';
 import FormattedDate from './formattedDate';
@@ -99,8 +99,8 @@ export default function FormattedReview({ hideBorder, level, onEditClick, review
             <div
               className='flex items-center gap-2 flex-wrap'
               data-tooltip-content={review.stat.complete ?
-                `Completed ${moment(new Date(review.stat.ts * 1000)).fromNow()}` :
-                `Solved in ${review.stat.moves} steps ${moment(new Date(review.stat.ts * 1000)).fromNow()}`
+                `Solved ${moment(new Date(review.stat.ts * 1000)).fromNow()}` :
+                `Completed in ${review.stat.moves} steps ${moment(new Date(review.stat.ts * 1000)).fromNow()}`
               }
               data-tooltip-id={`review-stat-${user._id.toString()}`}
             >
@@ -110,7 +110,7 @@ export default function FormattedReview({ hideBorder, level, onEditClick, review
               }}>
                 {review.stat.moves}
               </span>
-              {review.stat.complete && <Complete className='-mx-2' />}
+              {review.stat.complete && <Solved className='-mx-2' />}
             </div>
             <StyledTooltip id={`review-stat-${user._id.toString()}`} />
           </>}
