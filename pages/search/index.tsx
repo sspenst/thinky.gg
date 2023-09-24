@@ -274,8 +274,8 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       sortable: true,
     },
     {
-      id: 'solved',
-      name: 'You Solved',
+      id: 'completed',
+      name: 'Completed',
       selector: (row: EnrichedLevel) => !row.userMovesTs ? '-' : <FormattedDate style={{ color: 'var(--color)', fontSize: 13 }} ts={row.userMovesTs} />,
       sortable: true,
     },
@@ -348,7 +348,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
           />
         </div>
         <div>
-          <MultiSelectUser key={'search-author-input-' + searchAuthor?._id.toString()} placeholder='Search authors' defaultValue={searchAuthor} onSelect={(user) => {
+          <MultiSelectUser key={'search-author-input-' + searchAuthor?._id.toString()} placeholder='Search authors...' defaultValue={searchAuthor} onSelect={(user) => {
             queryDebounceHelper({
               searchAuthor: user?.name || '',
             });
