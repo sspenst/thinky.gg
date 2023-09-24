@@ -451,6 +451,9 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
             { $count: 'totalRows' } ],
           data: [
             {
+              $skip: skip
+            },
+            {
               $limit: limit
             },
             {
@@ -461,7 +464,7 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
                 as: 'level',
                 pipeline: [
                   { $match: searchObj },
-                  ...levelFilterStatLookupStage as any,
+
                   { $project: { ...projection } },
 
                 ],
@@ -486,7 +489,7 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
               }
             },
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ...levelFilterStatLookupStage as any,
+
             ...(lookupUserBeforeSort ? [] : lookupUserStage),
             // note this last getEnrichLevelsPipeline is "technically a bit wasteful" if they select Hide Won or Show In Progress
             // Because technically the above levelFilterStatLookupStage will have this data already...
