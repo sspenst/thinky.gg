@@ -189,7 +189,7 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
   const sortDirection = (query.sortDir === 'asc') ? 1 : -1;
   const sortObj = [] as [string, number][];
   let lookupUserBeforeSort = false;
-  let enrichLevelBeforeSort = false;
+  let byStat = false;
 
   if (query.sortBy) {
     if (query.sortBy === 'userId') {
@@ -219,8 +219,8 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
         searchObj['calc_difficulty_estimate'] = { $gte: 0 };
       }
     } else if (query.sortBy === 'solved') {
-      sortObj.push(['userMovesTs', sortDirection]);
-      enrichLevelBeforeSort = true;
+      sortObj.push(['ts', sortDirection]); // stat model has same ts field...
+      byStat = true;
     }
   }
 
@@ -405,27 +405,91 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
       },
       { $unwind: '$userId' },
     ] as PipelineStage.Lookup[];
+    let agg = LevelModel.aggregate([
+      { $match: searchObj },
+      { $project: { ...projection } },
+      ...(lookupUserBeforeSort ? lookupUserStage : []),
 
-    const [levelsAgg] = await Promise.all([
-      LevelModel.aggregate([
-        { $match: searchObj },
-        { $project: { ...projection } },
-        ...(lookupUserBeforeSort ? lookupUserStage : []),
-        ...(enrichLevelBeforeSort ? getEnrichLevelsPipelineSteps(new Types.ObjectId(userId) as unknown as User, '_id', '') : []),
+      { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
+      { '$facet': {
+        metadata: [
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ...facetTotalFilterStage as any,
+          { $count: 'totalRows' } ],
+        data: [
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ...levelFilterStatLookupStage as any,
+          ...(lookupUserBeforeSort ? [] : lookupUserStage),
+          // note this last getEnrichLevelsPipeline is "technically a bit wasteful" if they select Hide Won or Show In Progress
+          // Because technically the above levelFilterStatLookupStage will have this data already...
+          // But since the results are limited by limit, this is constant time and not a big deal to do the lookup again...
+          ...getEnrichLevelsPipelineSteps(new Types.ObjectId(userId) as unknown as User, '_id', '') as PipelineStage.Lookup[],
+        ]
+      } },
+      {
+        $unwind: {
+          path: '$metadata',
+          preserveNullAndEmptyArrays: true,
+        }
+      },
+    ]);
+
+    if (byStat) {
+      agg = StatModel.aggregate([
+        {
+          $match: {
+            userId: new Types.ObjectId(userId),
+            complete: true,
+          }
+        },
         { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
+        {
+          $lookup: {
+            from: LevelModel.collection.name,
+            localField: 'levelId',
+            foreignField: '_id',
+            as: 'level',
+            pipeline: [
+              { $match: searchObj },
+              { $project: { ...projection } },
+              ...(lookupUserBeforeSort ? lookupUserStage : []),
+
+              { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
+
+            ],
+          },
+        },
+        {
+          $unwind: '$level',
+        },
+        {
+          $group: {
+            _id: null,
+            allCompletedLevels: { $push: '$level' }
+          }
+        },
+        {
+          $unwind: '$allCompletedLevels'
+        },
+        {
+          // replace root
+          $replaceRoot: {
+            newRoot: '$allCompletedLevels'
+          }
+        },
         { '$facet': {
           metadata: [
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ...facetTotalFilterStage as any,
             { $count: 'totalRows' } ],
           data: [
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ...levelFilterStatLookupStage as any,
             ...(lookupUserBeforeSort ? [] : lookupUserStage),
             // note this last getEnrichLevelsPipeline is "technically a bit wasteful" if they select Hide Won or Show In Progress
             // Because technically the above levelFilterStatLookupStage will have this data already...
             // But since the results are limited by limit, this is constant time and not a big deal to do the lookup again...
-            ...(enrichLevelBeforeSort ? [] : getEnrichLevelsPipelineSteps(new Types.ObjectId(userId) as unknown as User, '_id', '')),
+            ...getEnrichLevelsPipelineSteps(new Types.ObjectId(userId) as unknown as User, '_id', '') as PipelineStage.Lookup[],
           ]
         } },
         {
@@ -434,7 +498,11 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
             preserveNullAndEmptyArrays: true,
           }
         },
-      ]),
+      ]);
+    }
+
+    const [levelsAgg] = await Promise.all([
+      agg
     ]);
 
     const levels = levelsAgg[0]?.data as EnrichedLevel[];
