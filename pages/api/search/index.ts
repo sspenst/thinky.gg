@@ -443,47 +443,49 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
           }
         },
         { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
-        {
-          $lookup: {
-            from: LevelModel.collection.name,
-            localField: 'levelId',
-            foreignField: '_id',
-            as: 'level',
-            pipeline: [
-              { $match: searchObj },
-              { $project: { ...projection } },
-              ...(lookupUserBeforeSort ? lookupUserStage : []),
 
-              { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
-
-            ],
-          },
-        },
-        {
-          $unwind: '$level',
-        },
-        {
-          $group: {
-            _id: null,
-            allCompletedLevels: { $push: '$level' }
-          }
-        },
-        {
-          $unwind: '$allCompletedLevels'
-        },
-        {
-          // replace root
-          $replaceRoot: {
-            newRoot: '$allCompletedLevels'
-          }
-        },
         { '$facet': {
           metadata: [
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ...facetTotalFilterStage as any,
             { $count: 'totalRows' } ],
           data: [
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            {
+              $limit: limit
+            },
+            {
+              $lookup: {
+                from: LevelModel.collection.name,
+                localField: 'levelId',
+                foreignField: '_id',
+                as: 'level',
+                pipeline: [
+                  { $match: searchObj },
+                  ...levelFilterStatLookupStage as any,
+                  { $project: { ...projection } },
+
+                ],
+              },
+            },
+            {
+              $unwind: '$level',
+            },
+            {
+              $group: {
+                _id: null,
+                allCompletedLevels: { $push: '$level' }
+              }
+            },
+            {
+              $unwind: '$allCompletedLevels'
+            },
+            {
+              // replace root
+              $replaceRoot: {
+                newRoot: '$allCompletedLevels'
+              }
+            },
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ...levelFilterStatLookupStage as any,
             ...(lookupUserBeforeSort ? [] : lookupUserStage),
             // note this last getEnrichLevelsPipeline is "technically a bit wasteful" if they select Hide Won or Show In Progress
