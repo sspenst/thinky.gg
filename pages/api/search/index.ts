@@ -442,7 +442,41 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
             complete: true,
           }
         },
-        { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
+        {
+          $lookup: {
+            from: LevelModel.collection.name,
+            localField: 'levelId',
+            foreignField: '_id',
+            as: 'level',
+            pipeline: [
+              { $match: searchObj },
+
+              { $project: { ...projection } },
+              ...(lookupUserBeforeSort ? lookupUserStage : []),
+              { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
+
+            ],
+          },
+        },
+        {
+          $unwind: '$level',
+        },
+        {
+          $group: {
+            _id: null,
+            allCompletedLevels: { $push: '$level' }
+          }
+        },
+        {
+          $unwind: '$allCompletedLevels'
+        },
+
+        {
+          // replace root
+          $replaceRoot: {
+            newRoot: '$allCompletedLevels'
+          }
+        },
 
         { '$facet': {
           metadata: [
@@ -450,47 +484,18 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
             ...facetTotalFilterStage as any,
             { $count: 'totalRows' } ],
           data: [
+            { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
+
             {
               $skip: skip
             },
             {
               $limit: limit
             },
-            {
-              $lookup: {
-                from: LevelModel.collection.name,
-                localField: 'levelId',
-                foreignField: '_id',
-                as: 'level',
-                pipeline: [
-                  { $match: searchObj },
+            ...(lookupUserBeforeSort ? [] : lookupUserStage),
 
-                  { $project: { ...projection } },
-
-                ],
-              },
-            },
-            {
-              $unwind: '$level',
-            },
-            {
-              $group: {
-                _id: null,
-                allCompletedLevels: { $push: '$level' }
-              }
-            },
-            {
-              $unwind: '$allCompletedLevels'
-            },
-            {
-              // replace root
-              $replaceRoot: {
-                newRoot: '$allCompletedLevels'
-              }
-            },
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
 
-            ...(lookupUserBeforeSort ? [] : lookupUserStage),
             // note this last getEnrichLevelsPipeline is "technically a bit wasteful" if they select Hide Won or Show In Progress
             // Because technically the above levelFilterStatLookupStage will have this data already...
             // But since the results are limited by limit, this is constant time and not a big deal to do the lookup again...
