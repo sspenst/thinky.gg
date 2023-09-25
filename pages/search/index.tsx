@@ -176,17 +176,20 @@ function TimeRangeMenu({ onTimeRangeClick, timeRange }: TimeRangeMenuProps) {
 
 interface StatFilterMenuProps {
   onStatFilterClick: (statFilterKey: StatFilter) => void;
-  statFilter?: StatFilter;
+  query: SearchQuery;
 }
 
-function StatFilterMenu({ onStatFilterClick, statFilter }: StatFilterMenuProps) {
+function StatFilterMenu({ onStatFilterClick, query }: StatFilterMenuProps) {
   const statFilterStrings = {
     [StatFilter.All]: 'All Levels',
     [StatFilter.HideWon]: 'Hide Won',
     [StatFilter.ShowWon]: 'Show Won',
-    [StatFilter.ShowInProgress]: 'Show In Progress',
-    [StatFilter.ShowUnattempted]: 'Show Unattempted',
   } as Record<string, string>;
+
+  if (query.sortBy !== 'completed') {
+    statFilterStrings[StatFilter.ShowInProgress] = 'Show In Progress';
+    statFilterStrings[StatFilter.ShowUnattempted] = 'Show Unattempted';
+  }
 
   return (
     <Menu as='div' className='relative inline-block text-left'>
@@ -199,7 +202,7 @@ function StatFilterMenu({ onStatFilterClick, statFilter }: StatFilterMenuProps) 
           borderColor: 'var(--bg-color-3)',
         }}
       >
-        <span>{statFilterStrings[statFilter ?? StatFilter.All]}</span>
+        <span>{query.statFilter && query.statFilter in statFilterStrings ? statFilterStrings[query.statFilter] : statFilterStrings[StatFilter.All]}</span>
         <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
           <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
         </svg>
@@ -407,12 +410,17 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       },
       sortable: true,
     },
-    {
+    ...(!reqUser ? [] : [{
       id: 'completed',
-      name: 'Completed',
+      name: (
+        <div className='flex gap-2'>
+          <span>Completed</span>
+          <Image alt='pro' className='mr-0.5' src='/pro.svg' width='16' height='16' />
+        </div>
+      ),
       selector: (row: EnrichedLevel) => !row.userMovesTs ? '-' : <FormattedDate style={{ color: 'var(--color)', fontSize: 13 }} ts={row.userMovesTs} />,
-      sortable: true,
-    },
+      sortable: isPro(reqUser),
+    }]),
   ] as TableColumn<EnrichedLevel>[];
 
   const onTimeRangeClick = useCallback((timeRangeKey: string) => {
@@ -490,7 +498,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
         </div>
       </div>
       <div className='flex items-center justify-center flex-wrap gap-1'>
-        {reqUser && <StatFilterMenu statFilter={query.statFilter} onStatFilterClick={onStatFilterClick} />}
+        {reqUser && <StatFilterMenu onStatFilterClick={onStatFilterClick} query={query} />}
         <Menu as='div' className='relative inline-block text-left'>
           <Menu.Button
             aria-expanded='true'
@@ -817,6 +825,11 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
             if (columnId === query.sortBy) {
               // swap sortDir if the same col is clicked
               update.sortDir = query.sortDir === 'desc' ? 'asc' : 'desc';
+            }
+
+            // move off of invalid stat filter option when sorting by completed
+            if (columnId === 'completed' && (query.statFilter === StatFilter.ShowInProgress || query.statFilter === StatFilter.ShowUnattempted)) {
+              update.statFilter = StatFilter.All;
             }
 
             fetchLevels({
