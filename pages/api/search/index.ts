@@ -1,6 +1,6 @@
 import TileType from '@root/constants/tileType';
 import isPro from '@root/helpers/isPro';
-import { FilterQuery, PipelineStage, Types } from 'mongoose';
+import { Aggregate, FilterQuery, PipelineStage, Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getDifficultyRangeFromName } from '../../../components/formatted/formattedDifficulty';
 import TimeRange from '../../../constants/timeRange';
@@ -219,7 +219,7 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
         searchObj['calc_difficulty_estimate'] = { $gte: 0 };
       }
     } else if (query.sortBy === 'completed') {
-      sortObj.push(['ts', sortDirection]); // stat model has same ts field...
+      sortObj.push(['userMovesTs', sortDirection]);
       byStat = true;
     }
   }
@@ -278,7 +278,7 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
           $and: [
             { 'stat': { $exists: false } },
             { 'calc_playattempts_unique_users': { $nin: [new Types.ObjectId(userId)] } },
-          ]
+          ],
         },
       },
     );
@@ -353,8 +353,11 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
     { $unwind: '$userId' },
   ] as PipelineStage.Lookup[];
 
-  try {
-    let agg = LevelModel.aggregate([
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let agg: Aggregate<any[]> | undefined = undefined;
+
+  if (!byStat) {
+    agg = LevelModel.aggregate([
       { $match: searchObj },
       {
         '$facet': {
@@ -368,6 +371,7 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
           data: [
             ...(lookupUserBeforeSort ? lookupUserStage : []),
             // NB: projection is typically supposed to be the last stage of the pipeline, but we need it here because of potential sorting by calc_playattempts_unique_users_count
+            // TODO: instead can have an optional $addFields here, then do the projection after
             { $project: { ...projection } },
             { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
             ...statLookupAndMatchStage,
@@ -382,77 +386,90 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
         },
       },
     ]);
+  } else {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let statMatchQuery: FilterQuery<any> = {};
 
-    if (byStat) {
-      agg = StatModel.aggregate([
-        {
-          $match: {
-            userId: new Types.ObjectId(userId),
-            complete: true,
-          }
-        },
-        {
-          $lookup: {
-            from: LevelModel.collection.name,
-            localField: 'levelId',
-            foreignField: '_id',
-            as: 'level',
-            pipeline: [
-              { $match: searchObj },
+    if (query.showFilter === FilterSelectOption.HideWon) {
+      statMatchQuery = {
+        $or: [
+          { complete: false },
+          { complete: { $exists: false } },
+        ],
+      };
+    } else if (query.showFilter === FilterSelectOption.ShowWon) {
+      statMatchQuery = { complete: true };
+    } else if (query.showFilter === FilterSelectOption.ShowInProgress) {
+      statMatchQuery = { complete: false };
+    }
 
-              { $project: { ...projection } },
-              ...(lookupUserBeforeSort ? lookupUserStage : []),
-              { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
-
-            ],
-          },
+    agg = StatModel.aggregate([
+      {
+        $match: {
+          userId: new Types.ObjectId(userId),
+          ...statMatchQuery,
+        }
+      },
+      {
+        $lookup: {
+          from: LevelModel.collection.name,
+          localField: 'levelId',
+          foreignField: '_id',
+          as: 'level',
+          pipeline: [
+            { $match: searchObj },
+          ],
         },
-        {
-          $unwind: '$level',
+      },
+      {
+        $unwind: '$level',
+      },
+      {
+        $addFields: {
+          'level.userMovesTs': '$ts',
         },
-        {
-          $group: {
-            _id: null,
-            allCompletedLevels: { $push: '$level' }
-          }
-        },
-        {
-          $unwind: '$allCompletedLevels'
-        },
-
-        {
-          // replace root
-          $replaceRoot: {
-            newRoot: '$allCompletedLevels'
-          }
-        },
-
-        { '$facet': {
-          metadata: [
-            ...statLookupAndMatchStage,
-            { $count: 'totalRows' } ],
+      },
+      {
+        $group: {
+          _id: null,
+          allLevels: { $push: '$level' }
+        }
+      },
+      {
+        $unwind: '$allLevels'
+      },
+      {
+        $replaceRoot: {
+          newRoot: '$allLevels'
+        }
+      },
+      {
+        '$facet': {
+          ...(query.disableCount === 'true' ? {} : {
+            metadata: [
+              { $count: 'totalRows' },
+            ]
+          }),
           data: [
+            ...(lookupUserBeforeSort ? lookupUserStage : []),
+            // NB: projection is typically supposed to be the last stage of the pipeline, but we need it here because of potential sorting by calc_playattempts_unique_users_count
+            // TODO: instead can have an optional $addFields here, then do the projection after
+            { $project: { ...projection, userMovesTs: 1 } },
             { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
-
-            {
-              $skip: skip
-            },
-            {
-              $limit: limit
-            },
+            { $skip: skip },
+            { $limit: limit },
             ...(lookupUserBeforeSort ? [] : lookupUserStage),
-
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-
             // note this last getEnrichLevelsPipeline is "technically a bit wasteful" if they select Hide Won or Show In Progress
             // Because technically the above statLookupAndMatchStage will have this data already...
             // But since the results are limited by limit, this is constant time and not a big deal to do the lookup again...
             ...getEnrichLevelsPipelineSteps(new Types.ObjectId(userId) as unknown as User, '_id', '') as PipelineStage.Lookup[],
-          ]
-        } },
-      ]);
-    }
+          ],
+        },
+      },
+    ]);
+  }
 
+  try {
     const res = (await agg)[0];
     const levels: EnrichedLevel[] = res?.data ?? [];
     const totalRows = res?.metadata ? (res.metadata[0]?.totalRows ?? 0) : 0;
