@@ -1,7 +1,7 @@
+import StatFilter from '@root/constants/statFilter';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import TimeRange from '../../../constants/timeRange';
 import apiWrapper from '../../../helpers/apiWrapper';
-import { FilterSelectOption } from '../../../helpers/filterSelectOptions';
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
 import User from '../../../models/db/user';
@@ -31,9 +31,8 @@ export async function getLatestLevels(reqUser: User | null = null) {
     numResults: '15',
     sortBy: 'ts',
     sortDir: 'desc',
-    showFilter: FilterSelectOption.HideWon,
+    statFilter: StatFilter.HideWon,
     timeRange: TimeRange[TimeRange.All],
-
   }, reqUser, {
     ...LEVEL_SEARCH_DEFAULT_PROJECTION,
     width: 1,

@@ -383,32 +383,32 @@ export function getEnrichLevelsPipelineSteps(reqUser?: User | null, levelIdField
     outputToField = 'gotoroot';
   }
 
-  const pipeline: PipelineStage[] = [{
-    $lookup: {
-      from: StatModel.collection.name,
-      let: { levelId: '$' + levelIdField, userId: reqUser?._id },
-      pipeline: [
-        {
-          $match: {
-            $expr: {
-              $and: [
-                { $eq: ['$levelId', '$$levelId'] },
-                { $eq: ['$userId', '$$userId'] },
-              ],
+  const pipeline: PipelineStage[] = [
+    {
+      $lookup: {
+        from: StatModel.collection.name,
+        let: { levelId: '$' + levelIdField, userId: reqUser?._id },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$levelId', '$$levelId'] },
+                  { $eq: ['$userId', '$$userId'] },
+                ],
+              },
             },
           },
-        },
-      ],
-      as: 'stat',
-    }
-  },
-  {
-    $unwind: {
-      path: '$stat',
-      preserveNullAndEmptyArrays: true,
-    }
-  },
-
+        ],
+        as: 'stat',
+      }
+    },
+    {
+      $unwind: {
+        path: '$stat',
+        preserveNullAndEmptyArrays: true,
+      }
+    },
   ];
 
   if (outputToField === 'gotoroot') {
@@ -435,10 +435,7 @@ export function getEnrichLevelsPipelineSteps(reqUser?: User | null, levelIdField
     });
   }
 
-  pipeline.push(
-    {
-      $unset: 'stat',
-    });
+  pipeline.push({ $unset: 'stat' });
 
   return pipeline;
 }

@@ -2,13 +2,14 @@
 // ignoring because we will eventually deprecate this page
 /* istanbul ignore file */
 
-import { Types } from 'mongoose';
+import StatFilter from '@root/constants/statFilter';
+import * as mongoose from 'mongoose';
 import { GetServerSidePropsContext } from 'next';
 import React, { useCallback, useState } from 'react';
 import Select from '../../../components/cards/select';
 import SelectFilter from '../../../components/cards/selectFilter';
 import Page from '../../../components/page/page';
-import filterSelectOptions, { FilterSelectOption } from '../../../helpers/filterSelectOptions';
+import statFilterOptions from '../../../helpers/filterSelectOptions';
 import getUserStats from '../../../helpers/getUserStats';
 import useStats from '../../../hooks/useStats';
 import dbConnect from '../../../lib/dbConnect';
@@ -23,8 +24,8 @@ export async function getStaticPaths() {
 }
 
 export interface UserWithLevels {
-  _id: Types.ObjectId;
-  levels: Types.ObjectId[];
+  _id: mongoose.Types.ObjectId;
+  levels: mongoose.Types.ObjectId[];
   name: string;
 }
 
@@ -84,7 +85,7 @@ interface CatalogProps {
 
 export default function Catalog({ usersWithLevels }: CatalogProps) {
   const [filterText, setFilterText] = useState('');
-  const [showFilter, setShowFilter] = useState(FilterSelectOption.All);
+  const [statFilter, setStatFilter] = useState(StatFilter.All);
   const { stats } = useStats();
 
   const getOptions = useCallback(() => {
@@ -110,20 +111,20 @@ export default function Catalog({ usersWithLevels }: CatalogProps) {
   }, [stats, usersWithLevels]);
 
   const getFilteredOptions = useCallback(() => {
-    return filterSelectOptions(getOptions(), showFilter, filterText);
-  }, [filterText, getOptions, showFilter]);
+    return statFilterOptions(getOptions(), statFilter, filterText);
+  }, [filterText, getOptions, statFilter]);
 
   const onFilterClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const value = e.currentTarget.value as FilterSelectOption;
+    const value = e.currentTarget.value as StatFilter;
 
-    setShowFilter(showFilter === value ? FilterSelectOption.All : value);
+    setStatFilter(statFilter === value ? StatFilter.All : value);
   };
 
   return (
     <Page title={'Catalog'}>
       <div className='p-2'>
         <SelectFilter
-          filter={showFilter}
+          filter={statFilter}
           onFilterClick={onFilterClick}
           placeholder={`Search ${getFilteredOptions().length} author${getFilteredOptions().length !== 1 ? 's' : ''}...`}
           searchText={filterText}
