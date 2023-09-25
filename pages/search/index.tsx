@@ -108,6 +108,138 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   };
 }
 
+interface TimeRangeMenuProps {
+  onTimeRangeClick: (timeRangeKey: string) => void;
+  timeRange: string;
+}
+
+function TimeRangeMenu({ onTimeRangeClick, timeRange }: TimeRangeMenuProps) {
+  const timeRangeStrings = {
+    [TimeRange[TimeRange.Day]]: 'Today',
+    [TimeRange[TimeRange.Week]]: 'This Week',
+    [TimeRange[TimeRange.Month]]: 'This Month',
+    [TimeRange[TimeRange.Year]]: 'This Year',
+    [TimeRange[TimeRange.All]]: 'All Time',
+  };
+
+  return (
+    <Menu as='div' className='relative inline-block text-left'>
+      <Menu.Button
+        aria-expanded='true'
+        aria-haspopup='true'
+        className='flex items-center w-full justify-center rounded-md bg-white pl-2 pr-1 text-sm font-medium text-black gap-1 h-8 shadow-md border'
+        id='menu-button'
+        style={{
+          borderColor: 'var(--bg-color-3)',
+        }}
+      >
+        <span>{timeRangeStrings[timeRange]}</span>
+        <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
+          <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
+        </svg>
+      </Menu.Button>
+      <Transition
+        as={Fragment}
+        enter='transition ease-out duration-100'
+        enterFrom='transform opacity-0 scale-95'
+        enterTo='transform opacity-100 scale-100'
+        leave='transition ease-in duration-75'
+        leaveFrom='transform opacity-100 scale-100'
+        leaveTo='transform opacity-0 scale-95'
+      >
+        <Menu.Items className='absolute right-0 z-10 mt-1 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none' style={{
+          borderColor: 'var(--bg-color)',
+        }}>
+          <div>
+            {Object.keys(timeRangeStrings).map(timeRangeKey => (
+              <Menu.Item key={`time-range-${timeRangeKey}`}>
+                {({ active }) => (
+                  <button
+                    className='text-black block p-1 text-sm w-24 flex items-center gap-1 justify-center'
+                    onClick={() => onTimeRangeClick(timeRangeKey)}
+                    role='menuitem'
+                    style= {{
+                      backgroundColor: active ? 'rgb(200, 200, 200)' : '',
+                    }}
+                  >
+                    {timeRangeStrings[timeRangeKey]}
+                  </button>
+                )}
+              </Menu.Item>
+            ))}
+          </div>
+        </Menu.Items>
+      </Transition>
+    </Menu>
+  );
+}
+
+interface FilterCompletionsMenuProps {
+  filterCompletions?: FilterSelectOption;
+  onFilterCompletionsClick: (filterCompletionsKey: FilterSelectOption) => void;
+}
+
+function FilterCompletionsMenu({ filterCompletions, onFilterCompletionsClick }: FilterCompletionsMenuProps) {
+  const filterCompletionsStrings = {
+    [FilterSelectOption.All]: 'All Levels',
+    [FilterSelectOption.HideWon]: 'Hide Won',
+    [FilterSelectOption.ShowWon]: 'Show Won',
+    [FilterSelectOption.ShowInProgress]: 'Show In Progress',
+    [FilterSelectOption.ShowUnattempted]: 'Show Unattempted',
+  } as Record<string, string>;
+
+  return (
+    <Menu as='div' className='relative inline-block text-left'>
+      <Menu.Button
+        aria-expanded='true'
+        aria-haspopup='true'
+        className='flex items-center w-full justify-center rounded-md bg-white pl-2 pr-1 text-sm font-medium text-black gap-1 h-8 shadow-md border'
+        id='menu-button'
+        style={{
+          borderColor: 'var(--bg-color-3)',
+        }}
+      >
+        <span>{filterCompletionsStrings[filterCompletions ?? FilterSelectOption.All]}</span>
+        <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
+          <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
+        </svg>
+      </Menu.Button>
+      <Transition
+        as={Fragment}
+        enter='transition ease-out duration-100'
+        enterFrom='transform opacity-0 scale-95'
+        enterTo='transform opacity-100 scale-100'
+        leave='transition ease-in duration-75'
+        leaveFrom='transform opacity-100 scale-100'
+        leaveTo='transform opacity-0 scale-95'
+      >
+        <Menu.Items className='absolute right-0 z-10 mt-1 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none' style={{
+          borderColor: 'var(--bg-color)',
+        }}>
+          <div>
+            {Object.keys(filterCompletionsStrings).map(filterCompletionsKey => (
+              <Menu.Item key={`filter-completions-${filterCompletionsKey}`}>
+                {({ active }) => (
+                  <button
+                    className='text-black block p-1 text-sm w-40 flex items-center gap-1 justify-center'
+                    onClick={() => onFilterCompletionsClick(filterCompletionsKey as FilterSelectOption)}
+                    role='menuitem'
+                    style= {{
+                      backgroundColor: active ? 'rgb(200, 200, 200)' : '',
+                    }}
+                  >
+                    {filterCompletionsStrings[filterCompletionsKey]}
+                  </button>
+                )}
+              </Menu.Item>
+            ))}
+          </div>
+        </Menu.Items>
+      </Transition>
+    </Menu>
+  );
+}
+
 interface SearchProps {
   enrichedLevels: EnrichedLevel[];
   reqUser: User;
@@ -321,15 +453,13 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
     });
   };
 
-  const onPersonalFilterClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const value = e.currentTarget.value as FilterSelectOption;
-
+  const onFilterCompletionsClick = useCallback((filterCompletionsKey: FilterSelectOption) => {
     fetchLevels({
       ...query,
       page: '1',
-      showFilter: query.showFilter === value ? FilterSelectOption.All : value,
+      showFilter: query.showFilter === filterCompletionsKey ? FilterSelectOption.All : filterCompletionsKey,
     });
-  };
+  }, [fetchLevels, query]);
 
   const difficulty = difficultyList.find(d => d.name === query.difficultyFilter);
 
@@ -359,146 +489,108 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
           }} />
         </div>
       </div>
-      <div className='flex items-center justify-center' role='group'>
-        {timeRangeButtons}
+      <div className='flex items-center justify-center flex-wrap gap-1'>
+        {reqUser && <FilterCompletionsMenu filterCompletions={query.showFilter} onFilterCompletionsClick={onFilterCompletionsClick} />}
+        <Menu as='div' className='relative inline-block text-left'>
+          <Menu.Button
+            aria-expanded='true'
+            aria-haspopup='true'
+            className='flex items-center w-full justify-center rounded-md bg-white pl-2 pr-1 text-sm font-medium text-black gap-1 h-8 shadow-md border'
+            id='menu-button'
+            style={{
+              backgroundColor: difficulty ? getDifficultyColor(difficulty.name === 'Pending' ? -1 : difficulty.value * 1.5 + 30, 70) : undefined,
+              borderColor: 'var(--bg-color-3)',
+            }}
+          >
+            {!difficulty ?
+              <span>All Difficulties</span> :
+              <>
+                <span>{difficulty.emoji}</span>
+                <span>{difficulty.name}</span>
+              </>
+            }
+            <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
+              <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
+            </svg>
+          </Menu.Button>
+          <Transition
+            as={Fragment}
+            enter='transition ease-out duration-100'
+            enterFrom='transform opacity-0 scale-95'
+            enterTo='transform opacity-100 scale-100'
+            leave='transition ease-in duration-75'
+            leaveFrom='transform opacity-100 scale-100'
+            leaveTo='transform opacity-0 scale-95'
+          >
+            <Menu.Items className='absolute right-0 z-10 mt-1 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none' style={{
+              borderColor: 'var(--bg-color)',
+            }}>
+              <div>
+                <Menu.Item>
+                  {({ active }) => (
+                    <button
+                      className='text-black block p-1 text-sm w-44'
+                      onClick={() => fetchLevels({
+                        ...query,
+                        difficultyFilter: '',
+                        page: '1',
+                      })}
+                      role='menuitem'
+                      style= {{
+                        backgroundColor: active ? 'rgb(200, 200, 200)' : '',
+                      }}
+                    >
+                      All Difficulties
+                    </button>
+                  )}
+                </Menu.Item>
+                <Menu.Item>
+                  {({ active }) => (
+                    <button
+                      className='text-black block p-1 text-sm w-44 flex items-center gap-1 justify-center'
+                      onClick={() => fetchLevels({
+                        ...query,
+                        difficultyFilter: 'Pending',
+                        page: '1',
+                      })}
+                      role='menuitem'
+                      style= {{
+                        backgroundColor: active ? 'rgb(200, 200, 200)' : '',
+                      }}
+                    >
+                      <span>⏳</span>
+                      <span>Pending</span>
+                    </button>
+                  )}
+                </Menu.Item>
+                {difficultyList.filter(difficulty => difficulty.name !== 'Pending').map((difficulty) => (
+                  <Menu.Item key={`difficulty-item-${difficulty.value}`}>
+                    {({ active }) => (
+                      <button
+                        className='text-black block p-1 text-sm w-44 flex items-center gap-1 justify-center'
+                        onClick={() => fetchLevels({
+                          ...query,
+                          difficultyFilter: difficulty.name,
+                          page: '1',
+                        })}
+                        role='menuitem'
+                        style= {{
+                          backgroundColor: getDifficultyColor(difficulty.value * 1.5 + 30, active ? 50 : 70)
+                        }}
+                      >
+                        <span>{difficulty.emoji}</span>
+                        <span>{difficulty.name}</span>
+                      </button>
+                    )}
+                  </Menu.Item>
+                ))}
+              </div>
+            </Menu.Items>
+          </Transition>
+        </Menu>
+        <TimeRangeMenu onTimeRangeClick={onTimeRangeClick} timeRange={query.timeRange} />
       </div>
-      {reqUser && (
-        <div className='flex items-center justify-center' role='group'>
-          <FilterButton
-            element={<>{'Hide Won'}</>}
-            first={true}
-            onClick={onPersonalFilterClick}
-            selected={query.showFilter === FilterSelectOption.HideWon}
-            value={FilterSelectOption.HideWon}
-          />
-          <FilterButton
-            element={<>{'Show Won'}</>}
-            onClick={onPersonalFilterClick}
-            selected={query.showFilter === FilterSelectOption.ShowWon}
-            value={FilterSelectOption.ShowWon}
-          />
-          <FilterButton
-            element={<>{'Show In Progress'}</>}
-            onClick={onPersonalFilterClick}
-            selected={query.showFilter === FilterSelectOption.ShowInProgress}
-            value={FilterSelectOption.ShowInProgress}
-          />
-          <FilterButton
-            element={<>{'Show Unattempted'}</>}
-            last={true}
-            onClick={onPersonalFilterClick}
-            selected={query.showFilter === FilterSelectOption.ShowUnattempted}
-            value={FilterSelectOption.ShowUnattempted}
-          />
-        </div>
-      )}
       <div className='flex items-center justify-center py-0.5'>
-        <div className='relative inline-block text-left mr-2'>
-          <Menu as='div' className='relative inline-block text-left'>
-            <Menu.Button
-              aria-expanded='true'
-              aria-haspopup='true'
-              className='inline-flex w-full justify-center rounded-md border border-gray-300 bg-white p-1 pl-2 text-sm font-medium text-black shadow-sm gap-1'
-              id='menu-button'
-              style={{
-                backgroundColor: difficulty ? getDifficultyColor(difficulty.value + 30, 70) : undefined,
-              }}
-            >
-              {/* {difficulty?.name ?? 'All Difficulties'} */}
-              {!difficulty ?
-                <span>All Difficulties</span> :
-                <div>
-                  <span className='pr-1'>
-                    {difficulty.emoji}
-                  </span>
-                  {difficulty.name}
-                </div>
-              }
-              {/* {query.difficultyFilter !== '' ? query.difficultyFilter : 'All Difficulties' } */}
-              <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
-                <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
-              </svg>
-            </Menu.Button>
-            <Transition
-              as={Fragment}
-              enter='transition ease-out duration-100'
-              enterFrom='transform opacity-0 scale-95'
-              enterTo='transform opacity-100 scale-100'
-              leave='transition ease-in duration-75'
-              leaveFrom='transform opacity-100 scale-100'
-              leaveTo='transform opacity-0 scale-95'
-            >
-              <Menu.Items className='absolute right-0 z-10 mt-1 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none' style={{
-                borderColor: 'var(--bg-color)',
-              }}>
-                <div>
-                  <Menu.Item>
-                    {({ active }) => (
-                      <button
-                        className='text-black block p-1 text-sm w-40'
-                        onClick={() => fetchLevels({
-                          ...query,
-                          difficultyFilter: '',
-                          page: '1',
-                        })}
-                        role='menuitem'
-                        style= {{
-                          backgroundColor: active ? 'rgb(200, 200, 200)' : '',
-                        }}
-                      >
-                        All Difficulties
-                      </button>
-                    )}
-                  </Menu.Item>
-                  <Menu.Item>
-                    {({ active }) => (
-                      <button
-                        className='text-black block p-1 text-sm w-40'
-                        onClick={() => fetchLevels({
-                          ...query,
-                          difficultyFilter: 'Pending',
-                          page: '1',
-                        })}
-                        role='menuitem'
-                        style= {{
-                          backgroundColor: active ? 'rgb(200, 200, 200)' : '',
-                        }}
-                      >
-                        <span className='pr-1'>
-                          ⏳
-                        </span>
-                        Pending
-                      </button>
-                    )}
-                  </Menu.Item>
-                  {difficultyList.filter(difficulty => difficulty.name !== 'Pending').map((difficulty) => (
-                    <Menu.Item key={`difficulty-item-${difficulty.value}`}>
-                      {({ active }) => (
-                        <button
-                          className='text-black block p-1 text-sm w-40'
-                          onClick={() => fetchLevels({
-                            ...query,
-                            difficultyFilter: difficulty.name,
-                            page: '1',
-                          })}
-                          role='menuitem'
-                          style= {{
-                            backgroundColor: getDifficultyColor(difficulty.value + 30, active ? 50 : 70)
-                          }}
-                        >
-                          <span className='pr-1'>
-                            {difficulty.emoji}
-                          </span>
-                          {difficulty.name}
-                        </button>
-                      )}
-                    </Menu.Item>
-                  ))}
-                </div>
-              </Menu.Items>
-            </Transition>
-          </Menu>
-        </div>
         <label htmlFor='min-step' className='text-xs font-medium pr-1'>Min steps</label>
         <input
           className='form-range pl-2 w-16 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white mr-2'
