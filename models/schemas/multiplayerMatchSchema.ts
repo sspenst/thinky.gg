@@ -160,7 +160,7 @@ export function enrichMultiplayerMatch(
       // we need to make sure this is a Level object
       if (currentLevel && (currentLevel as Level).data) {
         // rotate
-        randomRotateLevelDataViaMatchHash(currentLevel as Level, match);
+        randomRotateLevelDataViaMatchHash(currentLevel as Level, match.matchId);
       }
 
       match.levels = [currentLevel] as Level[];
