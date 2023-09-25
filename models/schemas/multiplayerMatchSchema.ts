@@ -1,3 +1,4 @@
+import { randomRotateLevelDataViaMatchHash } from '@root/helpers/validateSolution';
 import mongoose, { ObjectId } from 'mongoose';
 import cleanUser from '../../lib/cleanUser';
 import Level from '../db/level';
@@ -153,7 +154,16 @@ export function enrichMultiplayerMatch(
 
       const levelIndex = match.gameTable[userId.toString()].length || 0;
 
-      match.levels = [match.levels[levelIndex]] as Level[];
+      const currentLevel = match.levels[levelIndex];
+
+      // hypothetically, if a level was deleted, this could be undefined
+      // we need to make sure this is a Level object
+      if (currentLevel && (currentLevel as Level).data) {
+        // rotate
+        randomRotateLevelDataViaMatchHash(currentLevel as Level, match.matchId);
+      }
+
+      match.levels = [currentLevel] as Level[];
     } else {
       match.levels = []; // hide levels if user is not in score table
     }
