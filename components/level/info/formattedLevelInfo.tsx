@@ -105,7 +105,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
       <div className='flex flex-col gap-2'>
         <Tab.Group>
           <Tab.List className='flex flex-wrap gap-x-1 items-start rounded text-sm'>
-            <Tab id='leastStepsTab' className='ui-selected:border-b-2 border-blue-500 focus:outline-none' onKeyDown={(e: any) => {
+            <Tab id='leastStepsTab' className='ui-selected:border-b-2 border-blue-500 focus:outline-none' onKeyDown={(e: React.KeyboardEvent) => {
               if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                 e.preventDefault();
               }
@@ -114,7 +114,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
                 Least Steps
               </div>
             </Tab>
-            <Tab id='solvesTab' className='ui-selected:border-b-2 border-blue-500 focus:outline-none' onKeyDown={(e: any) => {
+            <Tab id='solvesTab' className='ui-selected:border-b-2 border-blue-500 focus:outline-none' onKeyDown={(e: React.KeyboardEvent) => {
               if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                 e.preventDefault();
               }
@@ -123,7 +123,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
                 Solves
               </div>
             </Tab>
-            <Tab id='timePlayedTab' className='ui-selected:border-b-2 border-blue-500 focus:outline-none' onKeyDown={(e: any) => {
+            <Tab id='timePlayedTab' className='ui-selected:border-b-2 border-blue-500 focus:outline-none' onKeyDown={(e: React.KeyboardEvent) => {
               if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                 e.preventDefault();
               }

@@ -21,7 +21,7 @@ interface FormattedUserProps {
   user?: User | null;
 }
 
-const cache = {} as { [key: string]: any};
+const cache = {} as { [key: string]: any };
 
 export default function FormattedUser({ id, noLinks, noTooltip, onClick, size, user }: FormattedUserProps) {
   const [showTooltip, setShowTooltip] = useState(false);
