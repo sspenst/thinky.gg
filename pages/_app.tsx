@@ -2,7 +2,7 @@
 import '../styles/global.css';
 import 'react-tooltip/dist/react-tooltip.css';
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react';
-import AudioPlayer from '@root/components/audioPlayer';
+import AudioPlayer from '@root/components/audioPlayer/audioPlayer';
 import { AudioPlayerContext, AudioPlayerState } from '@root/contexts/audioPlayerContext';
 import type { AppProps } from 'next/app';
 import { Rubik, Teko } from 'next/font/google';
@@ -314,6 +314,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     isPlaying: false,
     isHot: false,
     currentTitle: '',
+    randomNumber: (Math.random() * 1000000) >> 0
 
   });
 

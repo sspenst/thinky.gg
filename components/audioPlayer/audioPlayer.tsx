@@ -1,14 +1,15 @@
 import { useAudioPlayerState } from '@root/contexts/audioPlayerContext';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { PageContext } from '@root/contexts/pageContext';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 const songs = [
-  {
+  /*{
     title: 'Test',
     active: '/sounds/music/test1high.mp3',
     ambient: '/sounds/music/test1.mp3',
     artist: 'Danny',
     website: 'k2xl.com'
-  },
+  },*/
   {
     title: 'Automation',
     active: '/sounds/music/04 Automaton 2023-09-10.mp3',
@@ -33,7 +34,13 @@ const songs = [
   // Add more songs here
 ];
 
-const AudioPlayer: React.FC = () => {
+function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideTitle, hideSettingsButton }: {
+  hideHotColdButton?: boolean;
+  hidePlayButton?: boolean;
+  hideSeekButtons?: boolean;
+  hideTitle?: boolean;
+  hideSettingsButton?: boolean;
+}) {
   const [audioPlayerState, setAudioPlayerState] = useAudioPlayerState();
 
   const [currentSongIndex, setCurrentSongIndex] = useState(audioPlayerState.currentSongIndex || 0); // || (Math.random() * songs.length) >> 0
@@ -46,6 +53,8 @@ const AudioPlayer: React.FC = () => {
 
   const [crossfadeProgress, setCrossfadeProgress] = useState(0);
 
+  console.log('In audio player main', isPlaying);
+  const { setShowAudioSettings } = useContext(PageContext);
   const seek = useCallback((index: number) => {
     // Pause current audio elements
     if (isPlaying) {
@@ -269,43 +278,48 @@ const AudioPlayer: React.FC = () => {
       style={{
         backgroundColor: 'var(--bg-color-3)',
       }}>
-      {/* Non-mobile width elements */}
       <div className='md:flex flex-row items-center hidden '>
-        <button
-          className='px-3 py-1 rounded'
-          style={{ backgroundColor: 'var(--bg-color-2)', color: 'var(--color)' }}
-          onClick={() => {
-            seek((currentSongIndex - 1 + songs.length) % songs.length);
-          }
-          }>
+        { !hideSeekButtons && (
+          <button
+            className='px-3 py-1 rounded'
+            style={{ backgroundColor: 'var(--bg-color-2)', color: 'var(--color)' }}
+            onClick={() => {
+              seek((currentSongIndex - 1 + songs.length) % songs.length);
+            }
+            }>
         ⏮
-        </button>
-        { currentTitle && (<div className='px-3 py-1 rounded overflow-hidden truncate'
+          </button>
+        )}
+        { !hideTitle && currentTitle && (<div className='px-3 py-1 rounded overflow-hidden truncate'
           style={{ backgroundColor: 'var(--bg-color-2)', color: 'var(--color)' }}
         >
           {currentTitle }
         </div>
         )}
-        <button
-          className='px-3 py-1 rounded'
-          style={{ backgroundColor: 'var(--bg-color-2)', color: 'var(--color)' }}
-          onClick={() => {
-            seek((currentSongIndex + 1) % songs.length);
-          }
-          }>
+
+        { !hideSeekButtons && (
+          <button
+            className='px-3 py-1 rounded'
+            style={{ backgroundColor: 'var(--bg-color-2)', color: 'var(--color)' }}
+            onClick={() => {
+              seek((currentSongIndex + 1) % songs.length);
+            }
+            }>
 
         ⏭
-        </button>
+          </button>
+        )}
       </div>
-
-      {/* Common elements */}
-      <button id='btn-audio-player-play'
-        onClick={togglePlay}
-        style={{ backgroundColor: 'var(--bg-color-2)', color: 'var(--color)' }}
-        className='px-3 py-1 rounded'
-      >
-        {isPlaying ? '❚❚' : '▶'}
-      </button>
+      { !hidePlayButton && (
+        <button id='btn-audio-player-play'
+          onClick={togglePlay}
+          style={{ backgroundColor: 'var(--bg-color-2)', color: 'var(--color)' }}
+          className='px-3 py-1 rounded'
+        >
+          {isPlaying ? '❚❚' : '▶'}
+        </button>
+      )}
+      { !hideHotColdButton &&
       <button id='btn-audio-player-version'
         onClick={() => {toggleVersion();}}
         style={{
@@ -317,14 +331,20 @@ const AudioPlayer: React.FC = () => {
       >
         {isHot.current ? '🔥' : '❄️'}
       </button>
+      }
+      { !hideSettingsButton &&
       <button
         style={{ backgroundColor: 'var(--bg-color-2)', color: 'var(--color)' }}
         className='px-3 py-1 rounded'
+        onClick={() => {
+          setShowAudioSettings(true);
+        }}
       >
         ⚙️ {/* Settings icon */}
       </button>
+      }
     </div>
   );
-};
+}
 
 export default AudioPlayer;
