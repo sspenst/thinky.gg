@@ -6,6 +6,7 @@ import LevelsCompletedByDifficultyList from '@root/components/profile/levelsComp
 import PlayerRank from '@root/components/profile/playerRank';
 import { ProfileAchievments } from '@root/components/profile/profileAchievements';
 import ProfileMultiplayer from '@root/components/profile/profileMultiplayer';
+import StatFilter from '@root/constants/statFilter';
 import { getUsersWithMultiplayerProfile } from '@root/helpers/getUsersWithMultiplayerProfile';
 import useSWRHelper from '@root/hooks/useSWRHelper';
 import Graph from '@root/models/db/graph';
@@ -34,7 +35,7 @@ import Dimensions from '../../../../constants/dimensions';
 import GraphType from '../../../../constants/graphType';
 import TimeRange from '../../../../constants/timeRange';
 import { enrichCollection } from '../../../../helpers/enrich';
-import filterSelectOptions, { FilterSelectOption } from '../../../../helpers/filterSelectOptions';
+import statFilterOptions from '../../../../helpers/filterSelectOptions';
 import getProfileSlug from '../../../../helpers/getProfileSlug';
 import { getReviewsByUserId, getReviewsByUserIdCount } from '../../../../helpers/getReviewsByUserId';
 import { getReviewsForUserId, getReviewsForUserIdCount } from '../../../../helpers/getReviewsForUserId';
@@ -262,8 +263,8 @@ export default function ProfilePage({
   const [page, setPage] = useState(pageProp);
   const router = useRouter();
   const [searchLevelText, setSearchLevelText] = useState('');
-  const [showCollectionFilter, setShowCollectionFilter] = useState(FilterSelectOption.All);
-  const [showLevelFilter, setShowLevelFilter] = useState(FilterSelectOption.All);
+  const [showCollectionFilter, setShowCollectionFilter] = useState(StatFilter.All);
+  const [showLevelFilter, setShowLevelFilter] = useState(StatFilter.All);
   const [tab, setTab] = useState(profileTab);
 
   useEffect(() => {
@@ -280,7 +281,7 @@ export default function ProfilePage({
 
   useEffect(() => {
     setSearchLevelText(searchQuery?.search || '');
-    setShowLevelFilter(searchQuery?.showFilter || FilterSelectOption.All);
+    setShowLevelFilter(searchQuery?.statFilter || StatFilter.All);
   }, [searchQuery]);
 
   const getCollectionOptions = useCallback(() => {
@@ -302,7 +303,7 @@ export default function ProfilePage({
   }, [enrichedCollections]);
 
   const getFilteredCollectionOptions = useCallback(() => {
-    return filterSelectOptions(getCollectionOptions(), showCollectionFilter, collectionFilterText);
+    return statFilterOptions(getCollectionOptions(), showCollectionFilter, collectionFilterText);
   }, [collectionFilterText, getCollectionOptions, showCollectionFilter]);
 
   const getLevelOptions = useCallback(() => {
@@ -330,27 +331,27 @@ export default function ProfilePage({
         query: {
           page: 1,
           search: name,
-          showFilter: showLevelFilter,
+          statFilter: showLevelFilter,
         },
       });
     }, 500), [showLevelFilter, tab]);
 
   const onFilterCollectionClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const value = e.currentTarget.value as FilterSelectOption;
+    const value = e.currentTarget.value as StatFilter;
 
-    setShowCollectionFilter(showCollectionFilter === value ? FilterSelectOption.All : value);
+    setShowCollectionFilter(showCollectionFilter === value ? StatFilter.All : value);
     setPage(1);
   };
 
   const onFilterLevelClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const value = e.currentTarget.value as FilterSelectOption;
+    const value = e.currentTarget.value as StatFilter;
 
     router.push({
       pathname: `/profile/${user.name}/${tab}`,
       query: {
         page: 1,
         search: searchLevelText,
-        showFilter: showLevelFilter === value ? FilterSelectOption.All : value,
+        statFilter: showLevelFilter === value ? StatFilter.All : value,
       },
     });
   };
@@ -489,7 +490,7 @@ export default function ProfilePage({
             {page > 1 && (
               <Link
                 className='ml-2 underline'
-                href={`/profile/${user.name}/${ProfileTab.Levels}?page=${page - 1}&search=${searchLevelText}&showFilter=${showLevelFilter}`}
+                href={`/profile/${user.name}/${ProfileTab.Levels}?page=${page - 1}&search=${searchLevelText}&statFilter=${showLevelFilter}`}
               >
                 Previous
               </Link>
@@ -498,7 +499,7 @@ export default function ProfilePage({
             {totalRows > (page * 20) && (
               <Link
                 className='ml-2 underline'
-                href={`/profile/${user.name}/${ProfileTab.Levels}?page=${page + 1}&search=${searchLevelText}&showFilter=${showLevelFilter}`}
+                href={`/profile/${user.name}/${ProfileTab.Levels}?page=${page + 1}&search=${searchLevelText}&statFilter=${showLevelFilter}`}
               >
                 Next
               </Link>
