@@ -218,7 +218,7 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
         // don't show pending levels when sorting by difficulty
         searchObj['calc_difficulty_estimate'] = { $gte: 0 };
       }
-    } else if (query.sortBy === 'completed') {
+    } else if (query.sortBy === 'completed' && isPro(reqUser)) {
       sortObj.push(['userMovesTs', sortDirection]);
       byStat = true;
     }
@@ -391,16 +391,9 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
     let statMatchQuery: FilterQuery<any> = {};
 
     if (query.statFilter === StatFilter.HideWon) {
-      statMatchQuery = {
-        $or: [
-          { complete: false },
-          { complete: { $exists: false } },
-        ],
-      };
+      statMatchQuery = { complete: false };
     } else if (query.statFilter === StatFilter.ShowWon) {
       statMatchQuery = { complete: true };
-    } else if (query.statFilter === StatFilter.ShowInProgress) {
-      statMatchQuery = { complete: false };
     }
 
     agg = StatModel.aggregate([
