@@ -9,7 +9,7 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
 import { EnrichedLevel } from '../../../models/db/level';
 import User from '../../../models/db/user';
-import { CollectionModel } from '../../../models/mongoose';
+import { CollectionModel, LevelModel, UserModel } from '../../../models/mongoose';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 
@@ -41,7 +41,7 @@ export async function getCollection(matchQuery: PipelineStage, reqUser: User | n
     },
     {
       $lookup: {
-        from: 'users',
+        from: UserModel.collection.name,
         localField: 'userId',
         foreignField: '_id',
         as: 'userId',
@@ -70,14 +70,14 @@ export async function getCollection(matchQuery: PipelineStage, reqUser: User | n
       $lookup: {
         as: 'levelsPopulated',
         foreignField: '_id',
-        from: 'levels',
+        from: LevelModel.collection.name,
         localField: 'levels',
         pipeline: levelsPipeline,
       },
     },
     {
       $lookup: {
-        from: 'users',
+        from: UserModel.collection.name,
         localField: 'userId',
         foreignField: '_id',
         as: 'userId',

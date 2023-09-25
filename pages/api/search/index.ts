@@ -13,7 +13,7 @@ import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
 import { EnrichedLevel } from '../../../models/db/level';
 import User from '../../../models/db/user';
-import { LevelModel, UserModel } from '../../../models/mongoose';
+import { LevelModel, StatModel, UserModel } from '../../../models/mongoose';
 import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 import { BlockFilterMask, SearchQuery } from '../../search';
@@ -227,7 +227,7 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
   if (query.showFilter === FilterSelectOption.HideWon) {
     levelFilterStatLookupStage = [{
       $lookup: {
-        from: 'stats',
+        from: StatModel.collection.name,
         let: { levelId: '$_id' },
         pipeline: [{
           $match: {
@@ -256,7 +256,7 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
   } else if (query.showFilter === FilterSelectOption.ShowWon) {
     levelFilterStatLookupStage = [{
       $lookup: {
-        from: 'stats',
+        from: StatModel.collection.name,
         let: { levelId: '$_id' },
         pipeline: [{
           $match: {
@@ -277,7 +277,7 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
   } else if (query.showFilter === FilterSelectOption.ShowInProgress) {
     levelFilterStatLookupStage = [{
       $lookup: {
-        from: 'stats',
+        from: StatModel.collection.name,
         let: { levelId: '$_id' },
         pipeline: [{
           $match: {
@@ -299,7 +299,7 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
     projection['calc_playattempts_unique_users'] = 1;
     levelFilterStatLookupStage = [{
       $lookup: {
-        from: 'stats',
+        from: StatModel.collection.name,
         let: { levelId: '$_id' },
         pipeline: [{
           $match: {
@@ -390,7 +390,7 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
     const lookupUserStage = [
       {
         $lookup: {
-          from: 'users',
+          from: UserModel.collection.name,
           localField: 'userId',
           foreignField: '_id',
           as: 'userId',

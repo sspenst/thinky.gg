@@ -77,6 +77,10 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
 
   return (
     <div className='flex flex-col justify-center items-center gap-4'>
+      <div className='flex gap-4'>
+        <Image alt='pro' src='/pro.svg' width='24' height='24' />
+        <h2 className='font-bold text-2xl'>Pathology Pro</h2>
+      </div>
       {isPro(user) &&
         <div className='flex flex-col gap-4 text-center justify-center items-center'>
           <div>
@@ -111,8 +115,12 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
           }
         </div>
       }
-      <div className='flex flex-col items-center justify-center gap-4'>
-        <h2 className='font-bold text-2xl'>Pathology Pro Features:</h2>
+      <div className='flex flex-col lg:flex-row items-center gap-4 justify-center'>
+        <div className='p-2'>
+          <video autoPlay loop muted playsInline className='rounded-xl'>
+            <source src='https://i.imgur.com/HzFhvYY.mp4' type='video/mp4' />
+          </video>
+        </div>
         <div className='flex flex-col items-left gap-4'>
           <ProFeature
             description='Displayed next to your username across the site'
@@ -165,63 +173,63 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
             title='User Insights'
           />
         </div>
-        {!userLoading && !isPro(user) &&
-          <>
-            <div className='flex flex-col gap-3 w-fit items-center mt-3'>
-              <RadioGroup value={plan} onChange={setPlan} className='flex flex-wrap justify-center gap-3'>
-                <RadioGroup.Option value='year'>
-                  {({ checked }) => (
-                    <div className={classNames(
-                      'flex flex-col border-2 text-sm py-2 px-4 rounded-xl cursor-pointer gap-0.5 subscription-plan-button transition',
-                      { 'border-green-300': checked },
-                    )} style={{
-                      borderColor: !checked ? 'var(--bg-color)' : '',
-                      color: 'var(--color-gray)',
-                    }}>
-                      <div className='flex gap-2 items-center'>
-                        <span>Annual Plan</span>
-                        <span className='text-xs rounded-md px-1' style={{
-                          backgroundColor: 'var(--bg-color)',
-                          color: 'rgb(134 239 172)',
-                        }}>SAVE 25%</span>
-                      </div>
-                      <span className='font-bold text-lg' style={{ color: 'var(--color)' }}>$2.25 USD / month</span>
-                      <span className='text-xs'>$27 per year billed annually</span>
+      </div>
+      <div className='flex flex-col items-center justify-center gap-4'>
+        {!userLoading && !isPro(user) && <>
+          <div className='flex flex-col gap-3 w-fit items-center mt-3'>
+            <RadioGroup value={plan} onChange={setPlan} className='flex flex-wrap justify-center gap-3'>
+              <RadioGroup.Option value='year'>
+                {({ checked }) => (
+                  <div className={classNames(
+                    'flex flex-col border-2 text-sm py-2 px-4 rounded-xl cursor-pointer gap-0.5 subscription-plan-button transition',
+                    { 'border-green-300': checked },
+                  )} style={{
+                    borderColor: !checked ? 'var(--bg-color)' : '',
+                    color: 'var(--color-gray)',
+                  }}>
+                    <div className='flex gap-2 items-center'>
+                      <span>Annual Plan</span>
+                      <span className='text-xs rounded-md px-1' style={{
+                        backgroundColor: 'var(--bg-color)',
+                        color: 'rgb(134 239 172)',
+                      }}>SAVE 25%</span>
                     </div>
-                  )}
-                </RadioGroup.Option>
-                <RadioGroup.Option value='month'>
-                  {({ checked }) => (
-                    <div className={classNames(
-                      'flex flex-col border-2 text-sm py-2 px-4 rounded-xl cursor-pointer gap-0.5 subscription-plan-button transition',
-                      { 'border-green-300': checked },
-                    )} style={{
-                      borderColor: !checked ? 'var(--bg-color)' : '',
-                      color: 'var(--color-gray)',
-                    }}>
-                      <span>Monthly Plan</span>
-                      <span className='font-bold text-lg' style={{ color: 'var(--color)' }}>$3.00 USD / month</span>
-                      <span className='text-xs'>$36 per year billed monthly</span>
-                    </div>
-                  )}
-                </RadioGroup.Option>
-              </RadioGroup>
-              <a
-                className='bg-green-300 hover:bg-green-500 text-black font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline cursor-pointer w-full text-center'
-                href={`${plan === 'year' ? stripePaymentYearlyLink : stripePaymentLink}?client_reference_id=${user?._id}&prefilled_email=${user?.email}`}
-                rel='noreferrer'
-                target='_blank'
-              >
-                Subscribe
-              </a>
-            </div>
-            <p className='text-xs text-center'>
-              By clicking Subscribe, you agree to our <a className='text-blue-300' href='https://docs.google.com/document/d/e/2PACX-1vR4E-RcuIpXSrRtR3T3y9begevVF_yq7idcWWx1A-I9w_VRcHhPTkW1A7DeUx2pGOcyuKifEad3Qokn/pub' rel='noreferrer' target='_blank'>
-                Terms of Service
-              </a>.<br />Subscriptions auto-renew until canceled, as described in the Terms.
-            </p>
-          </>
-        }
+                    <span className='font-bold text-lg' style={{ color: 'var(--color)' }}>$2.25 USD / month</span>
+                    <span className='text-xs'>$27 per year billed annually</span>
+                  </div>
+                )}
+              </RadioGroup.Option>
+              <RadioGroup.Option value='month'>
+                {({ checked }) => (
+                  <div className={classNames(
+                    'flex flex-col border-2 text-sm py-2 px-4 rounded-xl cursor-pointer gap-0.5 subscription-plan-button transition',
+                    { 'border-green-300': checked },
+                  )} style={{
+                    borderColor: !checked ? 'var(--bg-color)' : '',
+                    color: 'var(--color-gray)',
+                  }}>
+                    <span>Monthly Plan</span>
+                    <span className='font-bold text-lg' style={{ color: 'var(--color)' }}>$3.00 USD / month</span>
+                    <span className='text-xs'>$36 per year billed monthly</span>
+                  </div>
+                )}
+              </RadioGroup.Option>
+            </RadioGroup>
+            <a
+              className='bg-green-300 hover:bg-green-500 text-black font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline cursor-pointer w-full text-center'
+              href={`${plan === 'year' ? stripePaymentYearlyLink : stripePaymentLink}?client_reference_id=${user?._id}&prefilled_email=${user?.email}`}
+              rel='noreferrer'
+              target='_blank'
+            >
+              Subscribe
+            </a>
+          </div>
+          <p className='text-xs text-center'>
+            By clicking Subscribe, you agree to our <a className='text-blue-300' href='https://docs.google.com/document/d/e/2PACX-1vR4E-RcuIpXSrRtR3T3y9begevVF_yq7idcWWx1A-I9w_VRcHhPTkW1A7DeUx2pGOcyuKifEad3Qokn/pub' rel='noreferrer' target='_blank'>
+              Terms of Service
+            </a>.<br />Subscriptions auto-renew until canceled, as described in the Terms.
+          </p>
+        </>}
       </div>
     </div>
   );

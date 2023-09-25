@@ -1,8 +1,8 @@
 import { multiplayerMatchTypeToText } from '@root/helpers/multiplayerHelperFunctions';
 import MultiplayerMatch from '@root/models/db/multiplayerMatch';
-import { MatchLogDataGameRecap } from '@root/models/MultiplayerEnums';
+import { MatchLogDataGameRecap, MultiplayerMatchState } from '@root/models/MultiplayerEnums';
 import Link from 'next/link';
-import React from 'react';
+import React, { useEffect } from 'react';
 import FormattedDate from '../formatted/formattedDate';
 import FormattedUser from '../formatted/formattedUser';
 import StyledTooltip from '../page/styledTooltip';
@@ -25,6 +25,21 @@ export default function MatchResults({ match, recap, showViewLink }: MatchResult
       return p1.name > p2.name ? 1 : -1;
     }
   });
+  const [countDown, setCountDown] = React.useState<number>(0);
+
+  useEffect(() => {
+    const drift = new Date(match.endTime).getTime() - match.timeUntilEnd - Date.now();
+    const iv = setInterval(() => {
+      const cd = new Date(match.endTime).getTime() - Date.now();
+      const ncd = (-drift + cd) / 1000;
+
+      setCountDown(ncd > 0 ? ncd : 0); // TODO. verify this should be -drift not +drift...
+    }, 250);
+
+    return () => clearInterval(iv);
+  }, [match]);
+
+  const timeUntilEndCleanStr = `${Math.floor(countDown / 60)}:${((countDown % 60) >> 0).toString().padStart(2, '0')}`;
 
   return (
     <div
@@ -56,7 +71,7 @@ export default function MatchResults({ match, recap, showViewLink }: MatchResult
               <StyledTooltip id='unrated-match' />
             </>) : <span className='italic text-xs'>Rated</span>}
           </div>
-          <FormattedDate date={match.endTime} />
+          { match.state !== MultiplayerMatchState.ACTIVE ? <FormattedDate date={match.endTime} /> : timeUntilEndCleanStr }
         </div>
         <div className='flex flex-col gap-1 truncate pr-0.5'>
           {sortedPlayers.map((player) => (
@@ -69,7 +84,7 @@ export default function MatchResults({ match, recap, showViewLink }: MatchResult
                   {match.scoreTable[player._id.toString()]}
                 </span>
               }
-              <FormattedUser user={player} />
+              <FormattedUser id='match-result' user={player} />
               <MultiplayerRating hideType profile={player.multiplayerProfile} type={match.type} />
               {recap?.winner?.userId.toString() === player._id.toString() &&
                 <span className='text-xs italic' style={{

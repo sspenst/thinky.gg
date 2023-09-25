@@ -487,3 +487,11 @@ body {
   pointer-events: none;
   z-index: 30;
 }
+
+.pagination-button:enabled:hover {
+  background-color: var(--bg-color-3);
+}
+
+.gray {
+  color: var(--color-gray);
+}

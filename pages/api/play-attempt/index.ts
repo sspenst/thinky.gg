@@ -9,10 +9,10 @@ import { logger } from '../../../helpers/logger';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { EnrichedLevel } from '../../../models/db/level';
 import User from '../../../models/db/user';
-import { LevelModel, PlayAttemptModel } from '../../../models/mongoose';
+import { LevelModel, PlayAttemptModel, UserModel } from '../../../models/mongoose';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
 import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
-import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
+import UserSchema, { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 
 export async function getLastLevelPlayed(user: User) {
   const lastAgg = await PlayAttemptModel.aggregate([
@@ -47,7 +47,7 @@ export async function getLastLevelPlayed(user: User) {
     },
     {
       $lookup: {
-        from: 'levels',
+        from: LevelModel.collection.name,
         localField: 'levelId',
         foreignField: '_id',
         as: 'levelId',
@@ -67,7 +67,7 @@ export async function getLastLevelPlayed(user: User) {
     },
     {
       $lookup: {
-        from: 'users',
+        from: UserModel.collection.name,
         localField: 'levelId.userId',
         foreignField: '_id',
         as: 'levelId.userId',

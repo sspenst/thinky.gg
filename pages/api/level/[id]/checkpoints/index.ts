@@ -1,4 +1,5 @@
 import Direction from '@root/constants/direction';
+import { getCheckpointKey } from '@root/helpers/checkpointHelpers';
 import { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import { NextApiResponse } from 'next';
 import { ValidDirections, ValidNumber } from '../../../../../helpers/apiWrapper';
@@ -27,7 +28,7 @@ export default withAuth({
   }
 
   const { id: levelId } = req.query as { id: string };
-  const KV_Checkpoint_Hash = req.userId + '_' + levelId + '_checkpoints';
+  const checkpointKey = getCheckpointKey(levelId, req.userId);
   const level = await LevelModel.findById(levelId);
 
   if (!level) {
@@ -37,7 +38,7 @@ export default withAuth({
   }
 
   if (req.method === 'GET') {
-    const checkpoint = await KeyValueModel.findOne({ key: KV_Checkpoint_Hash });
+    const checkpoint = await KeyValueModel.findOne({ key: checkpointKey });
     const checkpointArr = [];
 
     for (let i = 0; i < 11; i++) {
@@ -50,7 +51,7 @@ export default withAuth({
 
     // always overwrite draft levels
     if (!level.isDraft && index === BEST_CHECKPOINT_INDEX) {
-      const existingCheckpoint = await KeyValueModel.findOne({ key: KV_Checkpoint_Hash });
+      const existingCheckpoint = await KeyValueModel.findOne({ key: checkpointKey });
       const savedMovedCount = existingCheckpoint?.value[String(BEST_CHECKPOINT_INDEX)]?.length;
 
       if (savedMovedCount && savedMovedCount <= directions.length) {
@@ -62,7 +63,7 @@ export default withAuth({
 
     /** findOneAndUpdate upsert this value... We need to be able set the specific index of the array the value of directions */
     const checkpoint = await KeyValueModel.findOneAndUpdate(
-      { key: KV_Checkpoint_Hash },
+      { key: checkpointKey },
       { $set: { [`value.${index}`]: directions } },
       { upsert: true, new: true }
     );
@@ -73,7 +74,7 @@ export default withAuth({
 
     /** findOneAndUpdate upsert this value... We need to be able set the specific index of the array the value of directions */
     const checkpoint = await KeyValueModel.findOneAndUpdate(
-      { key: KV_Checkpoint_Hash },
+      { key: checkpointKey },
       { $unset: { [`value.${index}`]: '' } },
       { upsert: true, new: true }
     );

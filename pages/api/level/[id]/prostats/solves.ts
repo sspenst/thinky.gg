@@ -5,7 +5,7 @@ import { NextApiResponse } from 'next';
 import isPro from '../../../../../helpers/isPro';
 import cleanUser from '../../../../../lib/cleanUser';
 import withAuth, { NextApiRequestWithAuth } from '../../../../../lib/withAuth';
-import { StatModel } from '../../../../../models/mongoose';
+import { StatModel, UserModel } from '../../../../../models/mongoose';
 import { USER_DEFAULT_PROJECTION } from '../../../../../models/schemas/userSchema';
 
 async function getSolvesBySteps(isPro: boolean, levelId: string, skip: number, steps: number) {
@@ -31,7 +31,7 @@ async function getSolvesBySteps(isPro: boolean, levelId: string, skip: number, s
     },
     {
       $lookup: {
-        from: 'users',
+        from: UserModel.collection.name,
         localField: 'userId',
         foreignField: '_id',
         as: 'user',
