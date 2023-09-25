@@ -66,7 +66,7 @@ export default function Tutorial() {
   const [isPrevButtonDisabled, setIsPrevButtonDisabled] = useState(false);
   const { mutateUser, user } = useContext(AppContext);
   const [popperInstance, setPopperInstance] = useState<Instance | null>(null);
-  const popperUpdateInterval = useRef<NodeJS.Timer | null>(null);
+  const popperUpdateInterval = useRef<NodeJS.Timeout | null>(null);
   const [showNiceJob, setShowNiceJob] = useState(false);
   const [tooltip, setTooltip] = useState<Tooltip>();
   const [tutorialStepIndex, setTutorialStepIndex] = useState(0);

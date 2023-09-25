@@ -8,7 +8,7 @@ import dbConnect from '../../../../lib/dbConnect';
 import { getUserFromToken } from '../../../../lib/withAuth';
 import Level, { EnrichedLevel } from '../../../../models/db/level';
 import User from '../../../../models/db/user';
-import { LevelModel } from '../../../../models/mongoose';
+import { LevelModel, UserModel } from '../../../../models/mongoose';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../../models/schemas/levelSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../../models/schemas/userSchema';
 import { LevelUrlQueryParams } from '../../../level/[username]/[slugName]';
@@ -45,7 +45,7 @@ export async function getLevelByUrlPath(username: string, slugName: string, reqU
         },
         {
           $lookup: {
-            from: 'users',
+            from: UserModel.collection.name,
             localField: 'userId',
             foreignField: '_id',
             as: 'userId',
@@ -63,7 +63,7 @@ export async function getLevelByUrlPath(username: string, slugName: string, reqU
         },
         {
           $lookup: {
-            from: 'users',
+            from: UserModel.collection.name,
             localField: 'archivedBy',
             foreignField: '_id',
             as: 'archivedBy',

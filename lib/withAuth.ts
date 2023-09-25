@@ -1,6 +1,5 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
 // https://github.com/newrelic/node-newrelic/issues/956#issuecomment-962729137
-import newrelic from 'newrelic';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import requestIp from 'request-ip';
 import { parseReq, ReqValidator } from '../helpers/apiWrapper';
@@ -30,11 +29,23 @@ export async function getUserFromToken(
     throw new Error('JWT_SECRET not defined');
   }
 
-  const decoded = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload;
+  let verifiedSignature: JwtPayload | undefined;
+
+  try {
+    verifiedSignature = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload;
+  } catch (err) {
+    logger.error(err);
+
+    return null;
+  }
+
+  const decoded = verifiedSignature;
   const userId = decoded.userId as string;
+  // dynamically import newrelic
+  const newrelic = await import('newrelic');
 
   if (!isLocal()) {
-    newrelic.addCustomAttribute('userId', userId);
+    newrelic.addCustomAttribute && newrelic.addCustomAttribute('userId', userId);
   }
 
   await dbConnect();
@@ -63,7 +74,7 @@ export async function getUserFromToken(
   );
 
   if (user && !isLocal()) {
-    newrelic.addCustomAttribute('userName', user.name);
+    newrelic.addCustomAttribute && newrelic.addCustomAttribute('userName', user.name);
   }
 
   return user;

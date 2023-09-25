@@ -1,35 +1,23 @@
-import AchievementInfo from '@root/constants/achievementInfo';
+import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import Direction from '@root/constants/direction';
 import getDifficultyEstimate from '@root/helpers/getDifficultyEstimate';
-import User from '@root/models/db/user';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
-import mongoose, { SaveOptions, Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
-import AchievementType from '../../../constants/achievementType';
 import Discord from '../../../constants/discord';
 import { ValidArray, ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
 import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
-import { createNewAchievement, createNewRecordOnALevelYouBeatNotifications } from '../../../helpers/notificationHelper';
+import { createNewRecordOnALevelYouBeatNotifications } from '../../../helpers/notificationHelper';
 import validateSolution from '../../../helpers/validateSolution';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level, { EnrichedLevel } from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
 import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
-import { queueRefreshIndexCalcs } from '../internal-jobs/worker';
+import { queueRefreshAchievements, queueRefreshIndexCalcs } from '../internal-jobs/worker';
 import { matchMarkCompleteLevel } from '../match/[matchId]';
-
-export async function issueAchievements(userId: Types.ObjectId, score: number, options: SaveOptions) {
-  for (const achievementType in AchievementInfo) {
-    const achievementInfo = AchievementInfo[achievementType];
-
-    if (achievementInfo.exactlyUnlocked({ score: score } as User)) {
-      await createNewAchievement(achievementType as AchievementType, userId, options);
-    }
-  }
-}
 
 export default withAuth({
   GET: {},
@@ -143,8 +131,10 @@ export default withAuth({
 
         // if the level was previously incomplete, increment score
         if (!stat?.complete) {
-          await UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }, { session: session });
-          await issueAchievements(req.user._id, req.user.score + 1, { session: session });
+          await Promise.all([
+            UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }, { session: session }),
+            queueRefreshAchievements(req.user._id, [AchievementCategory.LEVEL_COMPLETION, AchievementCategory.USER], { session: session })
+          ]);
         }
 
         const newRecord = moves < level.leastMoves;
@@ -191,19 +181,19 @@ export default withAuth({
           if (stats.length > 0) {
             const statUserIds = stats.map(s => s.userId);
 
-            await StatModel.updateMany(
-              { _id: { $in: stats.map(s => s._id) } },
-              { $set: { complete: false } },
-              { session: session },
-            );
-            await UserModel.updateMany(
-              { _id: { $in: statUserIds } },
-              { $inc: { score: -1 } },
-              { session: session },
-            );
-
-            // create a notification for each user
-            await createNewRecordOnALevelYouBeatNotifications(statUserIds, req.userId, level._id, moves.toString(), { session: session });
+            await Promise.all([
+              StatModel.updateMany(
+                { _id: { $in: stats.map(s => s._id) } },
+                { $set: { complete: false } },
+                { session: session },
+              ),
+              UserModel.updateMany(
+                { _id: { $in: statUserIds } },
+                { $inc: { score: -1 } },
+                { session: session },
+              ),
+              createNewRecordOnALevelYouBeatNotifications(statUserIds, req.userId, level._id, moves.toString(), { session: session })
+            ]);
           }
 
           // keep track of all playtime after the record was set
@@ -229,13 +219,13 @@ export default withAuth({
           incPlayattemptsDurationSum += sumDuration[0]?.sumDuration ?? 0;
 
           // reset all playattempts to unbeaten
-          await PlayAttemptModel.updateMany(
+          await Promise.all([PlayAttemptModel.updateMany(
             { levelId: level._id },
             { $set: { attemptContext: AttemptContext.UNBEATEN } },
             { session: session },
-          );
-
-          await queueDiscordWebhook(Discord.LevelsId, `**${req.user.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`, { session: session });
+          ),
+          queueDiscordWebhook(Discord.LevelsId, `**${req.user.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`, { session: session })
+          ]);
         }
 
         // extend the user's recent playattempt up to current ts

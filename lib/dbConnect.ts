@@ -1,5 +1,5 @@
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
-import mongoose, { ConnectOptions } from 'mongoose';
+import mongoose, { ConnectOptions, Types } from 'mongoose';
 import { logger } from '../helpers/logger';
 import { clearAllSchedules } from '../server/socket/socketFunctions';
 import { GenMongoWSEmitter } from './appSocketToClient';
@@ -41,11 +41,20 @@ export default async function dbConnect() {
     let uri = undefined;
 
     /* istanbul ignore else */
-    if (!process.env.MONGODB_URI || process.env.NODE_ENV === 'test') {
+    if (process.env.NODE_ENV === 'test' || !process.env.MONGODB_URI) {
       // create with replica
-      cached.mongoMemoryServer = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
+      if (!process.env.MONGODB_TEST_URI) {
+        cached.mongoMemoryServer = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
 
-      uri = cached.mongoMemoryServer.getUri();
+        uri = cached.mongoMemoryServer.getUri();
+      } else {
+        uri = process.env.MONGODB_TEST_URI;
+        // now set the uri to point to a randomally generated database name
+        // this is so that we can run tests in parallel
+        const randomDbName = 'test_' + new Types.ObjectId().toString();
+
+        uri = uri.replace('/?', '/' + randomDbName + '?');
+      }
     } else {
       uri = process.env.MONGODB_URI;
     }

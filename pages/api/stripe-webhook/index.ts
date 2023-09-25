@@ -220,7 +220,7 @@ export default apiWrapper({
         },
         {
           $lookup: {
-            from: 'users',
+            from: UserModel.collection.name,
             localField: 'userId',
             foreignField: '_id',
             as: 'userId',

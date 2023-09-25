@@ -1,3 +1,4 @@
+import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import Discord from '@root/constants/discord';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import mongoose, { PipelineStage, Types } from 'mongoose';
@@ -10,7 +11,7 @@ import { requestBroadcastMatches, requestClearBroadcastMatchSchedule } from '../
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
 import User from '../../../models/db/user';
-import { MultiplayerMatchModel, MultiplayerProfileModel } from '../../../models/mongoose';
+import { LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, UserModel } from '../../../models/mongoose';
 import {
   MatchAction,
   MultiplayerMatchState,
@@ -23,6 +24,7 @@ import {
   generateMatchLog,
 } from '../../../models/schemas/multiplayerMatchSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
+import { queueRefreshAchievements } from '../internal-jobs/worker';
 import { abortMatch } from './[matchId]';
 
 function makeId(length: number) {
@@ -155,36 +157,37 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
         const ratingField = 'rating' + finishedMatch.type;
         const countMatchField = 'calc' + finishedMatch.type + 'Count';
 
-        await Promise.all([MultiplayerProfileModel.findOneAndUpdate(
-          {
-            userId: new Types.ObjectId(winnerId),
-          },
-          {
-            $inc: {
-              [ratingField]: eloChangeWinner,
-              [countMatchField]: 1,
+        await Promise.all([
+          MultiplayerProfileModel.findOneAndUpdate(
+            {
+              userId: new Types.ObjectId(winnerId),
             },
-          },
-          {
-            new: true,
-            session: session,
-          }
-        ),
-        MultiplayerProfileModel.findOneAndUpdate(
-          {
-            userId: new Types.ObjectId(loserId),
-          },
-          {
-            $inc: {
-              [ratingField]: eloChangeLoser,
-              [countMatchField]: 1,
+            {
+              $inc: {
+                [ratingField]: eloChangeWinner,
+                [countMatchField]: 1,
+              },
             },
-          },
-          {
-            new: true,
-            session: session,
-          }
-        )]);
+            {
+              new: true,
+              session: session,
+            }
+          ),
+          MultiplayerProfileModel.findOneAndUpdate(
+            {
+              userId: new Types.ObjectId(loserId),
+            },
+            {
+              $inc: {
+                [ratingField]: eloChangeLoser,
+                [countMatchField]: 1,
+              },
+            },
+            {
+              new: true,
+              session: session,
+            }
+          )]);
       } else {
         eloChangeWinner = 0;
         eloChangeLoser = 0;
@@ -224,7 +227,9 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
             lean: true,
             session: session,
           }
-        )
+        ),
+        queueRefreshAchievements(new Types.ObjectId(winnerId), [AchievementCategory.MULTIPLAYER]),
+        queueRefreshAchievements(new Types.ObjectId(loserId), [AchievementCategory.MULTIPLAYER]),
       ]);
 
       if (!finishedMatch) {
@@ -359,7 +364,7 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
       },
       {
         $lookup: {
-          from: 'users',
+          from: UserModel.collection.name,
           localField: 'players',
           foreignField: '_id',
           as: 'players',
@@ -370,7 +375,7 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
             },
             {
               $lookup: {
-                from: 'multiplayerprofiles',
+                from: MultiplayerProfileModel.collection.name,
                 localField: '_id',
                 foreignField: 'userId',
                 as: 'multiplayerProfile',
@@ -387,7 +392,7 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
       },
       {
         $lookup: {
-          from: 'users',
+          from: UserModel.collection.name,
           localField: 'winners',
           foreignField: '_id',
           as: 'winners',
@@ -400,7 +405,7 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
       },
       {
         $lookup: {
-          from: 'users',
+          from: UserModel.collection.name,
           localField: 'createdBy',
           foreignField: '_id',
           as: 'createdBy',
@@ -416,7 +421,7 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
       },
       {
         $lookup: {
-          from: 'levels',
+          from: LevelModel.collection.name,
           localField: 'levels',
           foreignField: '_id',
           as: 'levelsPopulated',
@@ -431,7 +436,7 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
             ...lookupPipelineUser as PipelineStage.Lookup[],
             {
               $lookup: {
-                from: 'users',
+                from: UserModel.collection.name,
                 localField: 'userId',
                 foreignField: '_id',
                 as: 'userId',

@@ -1,3 +1,5 @@
+import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
+import { refreshAchievements } from '@root/helpers/refreshAchievements';
 import UserConfig from '@root/models/db/userConfig';
 import mongoose, { QueryOptions, Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
@@ -7,7 +9,7 @@ import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
 import Notification from '../../../../models/db/notification';
 import QueueMessage from '../../../../models/db/queueMessage';
-import { NotificationModel, QueueMessageModel, UserConfigModel } from '../../../../models/mongoose';
+import { NotificationModel, QueueMessageModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
 import { calcPlayAttempts, refreshIndexCalcs } from '../../../../models/schemas/levelSchema';
 import { QueueMessageState, QueueMessageType } from '../../../../models/schemas/queueMessageSchema';
 import { calcCreatorCounts, USER_DEFAULT_PROJECTION } from '../../../../models/schemas/userSchema';
@@ -57,6 +59,15 @@ export async function queuePushNotification(notificationId: Types.ObjectId, opti
       options,
     )
   ]);
+}
+
+export async function queueRefreshAchievements(userId: Types.ObjectId, categories: AchievementCategory[], options?: QueryOptions) {
+  await queue(
+    userId.toString() + '-refresh-achievements-' + new Types.ObjectId().toString(),
+    QueueMessageType.REFRESH_ACHIEVEMENTS,
+    JSON.stringify({ userId: userId.toString(), categories: categories }),
+    options,
+  );
 }
 
 export async function queueFetch(url: string, options: RequestInit, dedupeKey?: string, queryOptions?: QueryOptions) {
@@ -126,7 +137,7 @@ async function processQueueMessage(queueMessage: QueueMessage) {
         ...getEnrichNotificationPipelineStages(),
         {
           $lookup: {
-            from: 'users',
+            from: UserModel.collection.name,
             localField: 'userId',
             foreignField: '_id',
             as: 'userId',
@@ -156,15 +167,20 @@ async function processQueueMessage(queueMessage: QueueMessage) {
         const whereSend = queueMessage.type === QueueMessageType.PUSH_NOTIFICATION ? sendPushNotification : sendEmailNotification;
         const userConfig = await UserConfigModel.findOne({ userId: notification.userId._id }) as UserConfig;
 
-        const allowedEmail = userConfig.emailNotificationsList.includes(notification.type);
-        const allowedPush = userConfig.pushNotificationsList.includes(notification.type);
-
-        if (whereSend === sendEmailNotification && !allowedEmail) {
-          log = `Notification ${notificationId} not sent: ` + notification.type + ' not allowed by user (email)';
-        } else if (whereSend === sendPushNotification && !allowedPush) {
-          log = `Notification ${notificationId} not sent: ` + notification.type + ' not allowed by user (push)';
+        if (userConfig === null) {
+          log = `Notification ${notificationId} not sent: user config not found`;
+          error = true;
         } else {
-          log = await whereSend(notification);
+          const allowedEmail = userConfig.emailNotificationsList.includes(notification.type);
+          const allowedPush = userConfig.pushNotificationsList.includes(notification.type);
+
+          if (whereSend === sendEmailNotification && !allowedEmail) {
+            log = `Notification ${notificationId} not sent: ` + notification.type + ' not allowed by user (email)';
+          } else if (whereSend === sendPushNotification && !allowedPush) {
+            log = `Notification ${notificationId} not sent: ` + notification.type + ' not allowed by user (push)';
+          } else {
+            log = await whereSend(notification);
+          }
         }
       }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -187,6 +203,14 @@ async function processQueueMessage(queueMessage: QueueMessage) {
 
     log = `calcCreatorCounts for ${userId}`;
     await calcCreatorCounts(new Types.ObjectId(userId));
+  } else if (queueMessage.type === QueueMessageType.REFRESH_ACHIEVEMENTS) {
+    const { userId, categories } = JSON.parse(queueMessage.message) as { userId: string, categories: AchievementCategory[] };
+    const achievementsEarned = await refreshAchievements(new Types.ObjectId(userId), categories);
+
+    log = `refreshAchievements for ${userId} created ${achievementsEarned} achievements`;
+  } else {
+    log = `Unknown queue message type ${queueMessage.type}`;
+    error = true;
   }
 
   /////

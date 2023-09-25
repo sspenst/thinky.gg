@@ -2,7 +2,7 @@ import Link from 'next/link';
 import React from 'react';
 import LinkInfo from '../formatted/linkInfo';
 
-function FolderDivider() {
+export function FolderDivider() {
   return (
     <div
       className='cursor-default font-light text-xl px-2'

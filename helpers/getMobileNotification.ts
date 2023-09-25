@@ -1,5 +1,5 @@
+import { AchievementRulesCombined } from '@root/constants/achievements/achievementInfo';
 import Collection from '@root/models/db/collection';
-import AchievementInfo from '../constants/achievementInfo';
 import NotificationType from '../constants/notificationType';
 import { EnrichedLevel } from '../models/db/level';
 import Notification from '../models/db/notification';
@@ -55,11 +55,12 @@ export default function getMobileNotification(notification: Notification) {
   mobileNotification.notificationId = notification._id.toString();
 
   switch (notification.type) {
-  case NotificationType.NEW_ACHIEVEMENT:
+  case NotificationType.NEW_ACHIEVEMENT: {
     mobileNotification.title = 'Pathology - New Achievement!';
+    const meta = AchievementRulesCombined[notification.source.type];
 
     if (notification.source) {
-      mobileNotification.body = `Achievement unlocked! ${AchievementInfo[notification.source.type].description}`;
+      mobileNotification.body = `${meta?.emoji} Achievement unlocked! ${meta.description}`;
       mobileNotification.url = `${host}/profile/${user.name}/achievements`;
     } else {
       mobileNotification.body = 'Unknown achievement';
@@ -67,6 +68,7 @@ export default function getMobileNotification(notification: Notification) {
     }
 
     return mobileNotification;
+  }
 
   case NotificationType.NEW_FOLLOWER:
     mobileNotification.title = 'Pathology - New Follower';

@@ -1,5 +1,5 @@
 import Level from '@root/models/db/level';
-import { StatModel } from '@root/models/mongoose';
+import { LevelModel, StatModel } from '@root/models/mongoose';
 import TimeRange from '../../../constants/timeRange';
 import { ValidType } from '../../../helpers/apiWrapper';
 import { FilterSelectOption } from '../../../helpers/filterSelectOptions';
@@ -33,7 +33,7 @@ async function getRecentAverageDifficulty(reqUser: User, numResults = 1) {
     { $limit: numResults },
     {
       $lookup: {
-        from: 'levels',
+        from: LevelModel.collection.name,
         localField: 'levelId',
         foreignField: '_id',
         as: 'levelId',

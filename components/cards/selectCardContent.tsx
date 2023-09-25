@@ -1,4 +1,4 @@
-import { FormattedDifficulty } from '@root/components/formatted/formattedDifficulty';
+import FormattedDifficulty from '@root/components/formatted/formattedDifficulty';
 import Complete from '@root/components/level/info/complete';
 import Dimensions from '@root/constants/dimensions';
 import SelectOption from '@root/models/selectOption';
@@ -24,13 +24,13 @@ export default function SelectCardContent({ option }: SelectCardContentProps) {
         {option.author && <div className='pt-1 italic truncate'>{option.author}</div>}
         {!option.hideDifficulty && option.level &&
           <div className='pt-1'>
-            {FormattedDifficulty(
-              option.level.calc_difficulty_estimate,
-              option.id,
-              option.level.calc_playattempts_unique_users_count !== undefined ?
+            <FormattedDifficulty
+              difficultyEstimate={option.level.calc_difficulty_estimate}
+              id={option.id}
+              uniqueUsers={option.level.calc_playattempts_unique_users_count !== undefined ?
                 option.level.calc_playattempts_unique_users_count :
-                option.level.calc_playattempts_unique_users.length
-            )}
+                option.level.calc_playattempts_unique_users.length}
+            />
           </div>
         }
         {option.stats && <div className='pt-1 italic'>{option.stats.getText()}</div>}

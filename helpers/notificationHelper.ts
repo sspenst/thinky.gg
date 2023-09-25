@@ -1,7 +1,7 @@
 import Level from '@root/models/db/level';
 import User from '@root/models/db/user';
 import { QueryOptions, SaveOptions, Types } from 'mongoose';
-import AchievementType from '../constants/achievementType';
+import AchievementType from '../constants/achievements/achievementType';
 import GraphType from '../constants/graphType';
 import NotificationType from '../constants/notificationType';
 import Achievement from '../models/db/achievement';
@@ -81,18 +81,7 @@ export async function createNewReviewOnYourLevelNotification(levelUserId: string
   return notification;
 }
 
-export async function createNewAchievement(achievementType: AchievementType, userId: Types.ObjectId, options?: SaveOptions) {
-  const existingAchievement = await AchievementModel.findOne<Achievement>({
-    type: achievementType,
-    userId: userId,
-  }, {}, {
-    ...options,
-  });
-
-  if (existingAchievement) {
-    return existingAchievement;
-  }
-
+export async function createNewAchievement(achievementType: AchievementType, userId: Types.ObjectId, disablePushNotification?: boolean, options?: SaveOptions) {
   const achievement = await AchievementModel.findOneAndUpdate<Achievement>({
     type: achievementType,
     userId: userId,
@@ -125,7 +114,9 @@ export async function createNewAchievement(achievementType: AchievementType, use
     ...options,
   });
 
-  await queuePushNotification(notification._id);
+  if (!disablePushNotification) {
+    await queuePushNotification(notification._id);
+  }
 
   return achievement;
 }

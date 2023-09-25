@@ -14,6 +14,7 @@ export enum QueueMessageType {
   FETCH = 'FETCH',
   PUSH_NOTIFICATION = 'PUSH_NOTIFICATION',
   REFRESH_INDEX_CALCULATIONS = 'REFRESH_INDEX_CALCULATIONS',
+  REFRESH_ACHIEVEMENTS = 'REFRESH_ACHIEVEMENTS'
 }
 
 const QueueMessageSchema = new mongoose.Schema<QueueMessage>({

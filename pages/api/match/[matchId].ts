@@ -3,7 +3,7 @@ import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import { multiplayerMatchTypeToText } from '@root/helpers/multiplayerHelperFunctions';
 import { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
-import { DIFFICULTY_NAMES, getDifficultyRangeFromDifficultyName } from '../../../components/formatted/formattedDifficulty';
+import { DIFFICULTY_INDEX, getDifficultyRangeByIndex } from '../../../components/formatted/formattedDifficulty';
 import { ValidEnum } from '../../../helpers/apiWrapper';
 import { logger } from '../../../helpers/logger';
 import { requestBroadcastMatch, requestBroadcastMatches, requestBroadcastPrivateAndInvitedMatches, requestClearBroadcastMatchSchedule, requestScheduleBroadcastMatch } from '../../../lib/appSocketToClient';
@@ -193,15 +193,15 @@ export async function getMatch(matchId: string, reqUser?: User) {
 
 /**
  *
- * @param difficultyMin
- * @param difficultyMax Pass the same value as min to make it a single difficulty
+ * @param minDifficultyIndex
+ * @param maxDifficultyIndex Pass the same value as min to make it a single difficulty
  * @param levelCount
  * @param excludeLevelIds
  * @returns
  */
 export async function generateLevels(
-  difficultyMin: DIFFICULTY_NAMES,
-  difficultyMax: DIFFICULTY_NAMES,
+  minDifficultyIndex: DIFFICULTY_INDEX,
+  maxDifficultyIndex: DIFFICULTY_INDEX,
   options: {
     minSteps?: number;
     maxSteps?: number;
@@ -218,10 +218,8 @@ export async function generateLevels(
   const MAX_HEIGHT = options.maxHeight || 25;
   const MIN_REVIEWS = 3;
   const MIN_LAPLACE = options.minLaplace || 0.3;
-  const [difficultyRangeMin] =
-    getDifficultyRangeFromDifficultyName(difficultyMin);
-  const [, difficultyRangeMax] =
-    getDifficultyRangeFromDifficultyName(difficultyMax);
+  const [minDifficultyRange] = getDifficultyRangeByIndex(minDifficultyIndex);
+  const [, maxDifficultyRange] = getDifficultyRangeByIndex(maxDifficultyIndex);
 
   const levels = await LevelModel.aggregate<Level>([
     {
@@ -234,8 +232,8 @@ export async function generateLevels(
           $lte: MAX_STEPS,
         },
         calc_difficulty_estimate: {
-          $gte: difficultyRangeMin,
-          $lt: difficultyRangeMax,
+          $gte: minDifficultyRange,
+          $lt: maxDifficultyRange,
           $exists: true,
         },
         calc_reviews_count: {
@@ -399,8 +397,8 @@ export default withAuth(
 
         if (updatedMatch.players.length === 2) {
           const level0s = generateLevels(
-            DIFFICULTY_NAMES.KINDERGARTEN,
-            DIFFICULTY_NAMES.ELEMENTARY,
+            DIFFICULTY_INDEX.KINDERGARTEN,
+            DIFFICULTY_INDEX.ELEMENTARY,
             {
               minSteps: 6,
               maxSteps: 25,
@@ -409,20 +407,20 @@ export default withAuth(
             10
           );
           const level1s = generateLevels(
-            DIFFICULTY_NAMES.JUNIOR_HIGH,
-            DIFFICULTY_NAMES.HIGH_SCHOOL,
+            DIFFICULTY_INDEX.JUNIOR_HIGH,
+            DIFFICULTY_INDEX.HIGH_SCHOOL,
             {},
             20
           );
           const level2s = generateLevels(
-            DIFFICULTY_NAMES.BACHELORS,
-            DIFFICULTY_NAMES.PROFESSOR,
+            DIFFICULTY_INDEX.BACHELORS,
+            DIFFICULTY_INDEX.PROFESSOR,
             {},
             5
           );
           const level3s = generateLevels(
-            DIFFICULTY_NAMES.PHD,
-            DIFFICULTY_NAMES.SUPER_GRANDMASTER,
+            DIFFICULTY_INDEX.PHD,
+            DIFFICULTY_INDEX.SUPER_GRANDMASTER,
             {},
             5
           );

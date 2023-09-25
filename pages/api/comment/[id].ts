@@ -8,7 +8,7 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { COMMENT_QUERY_LIMIT } from '../../../models/CommentEnums';
 import Comment, { EnrichedComment } from '../../../models/db/comment';
 import User from '../../../models/db/user';
-import { CommentModel } from '../../../models/mongoose';
+import { CommentModel, UserModel } from '../../../models/mongoose';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 
 export interface CommentQuery {
@@ -21,7 +21,7 @@ export async function getLatestCommentsFromId(id: string, latest: boolean, page:
 
   const lookupStage = (tm === 'User' ? [{
     $lookup: {
-      from: 'comments',
+      from: CommentModel.collection.name,
       localField: '_id',
       foreignField: 'target',
       as: 'children',
@@ -39,7 +39,7 @@ export async function getLatestCommentsFromId(id: string, latest: boolean, page:
         },
         {
           $lookup: {
-            from: 'users',
+            from: UserModel.collection.name,
             localField: 'author',
             foreignField: '_id',
             as: 'author',
@@ -81,7 +81,7 @@ export async function getLatestCommentsFromId(id: string, latest: boolean, page:
     ...lookupStage,
     {
       $lookup: {
-        from: 'users',
+        from: UserModel.collection.name,
         localField: 'author',
         foreignField: '_id',
         as: 'author',

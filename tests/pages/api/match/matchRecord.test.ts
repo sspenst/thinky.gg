@@ -14,7 +14,8 @@ afterEach(() => {
 });
 beforeAll(async () => {
   await dbConnect();
-  await MultiplayerMatchModel.create({
+
+  await Promise.all([MultiplayerMatchModel.create({
     matchId: 'abc',
     createdBy: TestId.USER,
     players: [new Types.ObjectId(TestId.USER), new Types.ObjectId(TestId.USER_B)],
@@ -23,8 +24,8 @@ beforeAll(async () => {
     state: MultiplayerMatchState.FINISHED,
     type: MultiplayerMatchType.RushBullet,
     winners: [new mongoose.Types.ObjectId(TestId.USER)],
-  });
-  await MultiplayerMatchModel.create({
+  }),
+  MultiplayerMatchModel.create({
     matchId: 'def',
     createdBy: TestId.USER_B,
     players: [new Types.ObjectId(TestId.USER_B), new Types.ObjectId(TestId.USER_C)],
@@ -33,8 +34,8 @@ beforeAll(async () => {
     state: MultiplayerMatchState.FINISHED,
     type: MultiplayerMatchType.RushBlitz,
     winners: [new Types.ObjectId(TestId.USER_B)],
-  });
-  await MultiplayerMatchModel.create({
+  }),
+  MultiplayerMatchModel.create({
     matchId: 'ghi',
     createdBy: TestId.USER,
     players: [new Types.ObjectId(TestId.USER), new Types.ObjectId(TestId.USER_B)],
@@ -43,7 +44,7 @@ beforeAll(async () => {
     state: MultiplayerMatchState.FINISHED,
     type: MultiplayerMatchType.RushBullet,
     winners: [], // tie
-  });
+  })]);
 });
 
 afterAll(async () => {

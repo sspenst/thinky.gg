@@ -1,4 +1,6 @@
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
+import { PASSWORD_SALTROUNDS } from '@root/models/schemas/userSchema';
+import bcrypt from 'bcryptjs';
 import { Types } from 'mongoose';
 import Role from '../constants/role';
 import TestId from '../constants/testId';
@@ -15,290 +17,324 @@ export default async function initializeLocalDb() {
   // USER
   const promises = [];
 
-  promises.push(UserModel.create({
-    _id: new Types.ObjectId(TestId.USER),
-    calc_records: 2,
-    email: 'test@gmail.com',
-    last_visited_at: ts,
-    name: 'test',
-    password: 'test1234',
-    score: 2,
-    ts: ts,
-  }));
+  // Note - UserModel has to use create, not insertMany, because of the pre-save hook for the password
+  promises.push(UserModel.insertMany([
+    {
+      _id: new Types.ObjectId(TestId.USER),
+      calc_records: 2,
+      email: 'test@gmail.com',
+      last_visited_at: ts,
+      name: 'test',
+      password: await bcrypt.hash('test1234', PASSWORD_SALTROUNDS),
+      score: 2,
+      ts: ts,
+    },
+    {
+      _id: new Types.ObjectId(TestId.USER_B),
+      calc_records: 0,
+      email: 'bbb@gmail.com',
+      name: 'BBB',
+      password: await bcrypt.hash('BBB12345', PASSWORD_SALTROUNDS),
+      score: 0,
+      ts: ts,
+    },
+    {
+      _id: new Types.ObjectId(TestId.USER_C),
+      calc_records: 1,
+      email: 'the_curator@gmail.com',
+      name: 'Curator',
+      password: await bcrypt.hash('Curator1', PASSWORD_SALTROUNDS),
+      roles: [Role.CURATOR],
+      score: 1,
+      ts: ts,
+    },
 
-  promises.push(UserConfigModel.create({
-    _id: new Types.ObjectId(),
-    theme: Theme.Modern,
-    userId: new Types.ObjectId(TestId.USER),
-    emailConfirmed: true,
-  }));
+    {
+      _id: new Types.ObjectId(TestId.USER_D),
+      calc_records: 1,
+      email: 'someolduser@someolduser.com',
+      name: 'AncientUser',
+      password: await bcrypt.hash('ancient1', PASSWORD_SALTROUNDS),
+      roles: [],
+      score: 1,
+      // no ts
+    },
+    {
+      _id: new Types.ObjectId(TestId.USER_GUEST),
+      calc_records: 0,
+      email: 'guest@guest.com',
+      name: 'guest',
+      password: await bcrypt.hash('BBB12345', PASSWORD_SALTROUNDS),
+      score: 0,
+      roles: [Role.GUEST],
+      ts: ts,
+    }
+  ],
+  { ordered: false }
+  ));
 
-  // USER_B
-  promises.push(UserModel.create({
-    _id: new Types.ObjectId(TestId.USER_B),
-    calc_records: 0,
-    email: 'bbb@gmail.com',
-    name: 'BBB',
-    password: 'BBB12345',
-    score: 0,
-    ts: ts,
-  }));
-  promises.push(UserConfigModel.create({
-    _id: new Types.ObjectId(),
-    theme: Theme.Modern,
-    userId: new Types.ObjectId(TestId.USER_B),
-    emailConfirmed: true,
-  }));
+  promises.push(UserConfigModel.insertMany(
+    [
+      {
+        _id: new Types.ObjectId(),
+        theme: Theme.Modern,
+        userId: new Types.ObjectId(TestId.USER),
+        emailConfirmed: true,
 
-  // USER_C
-  // no UserConfig - should only possible for legacy accounts
-  promises.push(UserModel.create({
-    _id: new Types.ObjectId(TestId.USER_C),
-    calc_records: 1,
-    email: 'the_curator@gmail.com',
-    name: 'Curator',
-    password: 'Curator1',
-    roles: [Role.CURATOR],
-    score: 1,
-    ts: ts,
-  }));
+      },
+      {
+        _id: new Types.ObjectId(),
+        theme: Theme.Modern,
+        userId: new Types.ObjectId(TestId.USER_B),
+        emailConfirmed: true,
+      },
+      {
+        _id: new Types.ObjectId(),
+        theme: Theme.Modern,
+        userId: new Types.ObjectId(TestId.USER_GUEST),
+        emailConfirmed: false,
+      }
+    ], { ordered: false }
+  ));
 
-  promises.push(UserModel.create({
-    _id: new Types.ObjectId(TestId.USER_D),
-    calc_records: 1,
-    email: 'someolduser@someolduser.com',
-    name: 'AncientUser',
-    password: 'ancient1',
-    roles: [],
-    score: 1,
-    // no ts
-  }));
-
-  // user guest
-  promises.push(UserModel.create({
-    _id: new Types.ObjectId(TestId.USER_GUEST),
-    calc_records: 0,
-    email: 'guest@guest.com',
-    name: 'guest',
-    password: 'BBB12345',
-    score: 0,
-    roles: [Role.GUEST],
-    ts: ts,
-  }));
-  promises.push(UserConfigModel.create({
-    _id: new Types.ObjectId(),
-    theme: Theme.Modern,
-    userId: new Types.ObjectId(TestId.USER_GUEST),
-    emailConfirmed: false,
-  }));
   // LEVEL
-  promises.push(LevelModel.create({
-    _id: new Types.ObjectId(TestId.LEVEL),
-    authorNote: 'test level 1 author note',
-    data: '4000B0\n120000\n050000\n678900\nABCD30',
-    height: 5,
-    isDraft: false,
-    leastMoves: 20,
-    name: 'test level 1',
-    slug: 'test/test-level-1',
-    ts: ts,
-    userId: new Types.ObjectId(TestId.USER),
-    width: 6,
-  }));
-  promises.push(RecordModel.create({
-    _id: new Types.ObjectId(TestId.RECORD),
-    levelId: new Types.ObjectId(TestId.LEVEL),
-    moves: 20,
-    ts: ts,
-    userId: new Types.ObjectId(TestId.USER),
-  }));
-  promises.push(StatModel.create({
-    _id: new Types.ObjectId(),
-    attempts: 1,
-    complete: true,
-    levelId: new Types.ObjectId(TestId.LEVEL),
-    moves: 20,
-    ts: ts,
-    userId: new Types.ObjectId(TestId.USER),
-  }));
-  promises.push(StatModel.create({
-    _id: new Types.ObjectId(),
-    attempts: 1,
-    complete: false,
-    levelId: new Types.ObjectId(TestId.LEVEL),
-    moves: 22,
-    ts: ts,
-    userId: new Types.ObjectId(TestId.USER_B),
-  }));
-
-  // LEVEL_2
-  promises.push(LevelModel.create({
-    _id: new Types.ObjectId(TestId.LEVEL_2),
-    data: '40000\n12000\n05000\n67890\nABC03',
-    height: 5,
-    isDraft: true,
-    leastMoves: 20,
-    name: 'test level 2',
-    slug: 'test/test-level-2',
-    ts: ts,
-    userId: new Types.ObjectId(TestId.USER),
-    width: 5,
-  }));
-
-  // LEVEL_3
-  promises.push(LevelModel.create({
-    _id: new Types.ObjectId(TestId.LEVEL_3),
-    data: '40\n03',
-    height: 2,
-    isDraft: false,
-    leastMoves: 80,
-    name: 'x',
-    slug: 'test/x',
-    ts: ts,
-    userId: new Types.ObjectId(TestId.USER),
-    width: 2,
-  }));
-  promises.push(RecordModel.create({
-    _id: new Types.ObjectId(),
-    levelId: new Types.ObjectId(TestId.LEVEL_3),
-    moves: 80,
-    ts: ts,
-    userId: new Types.ObjectId(TestId.USER),
-  }));
-  promises.push(StatModel.create({
-    _id: new Types.ObjectId(),
-    attempts: 1,
-    complete: true,
-    levelId: new Types.ObjectId(TestId.LEVEL_3),
-    moves: 80,
-    ts: ts,
-    userId: new Types.ObjectId(TestId.USER),
-  }));
-
-  // LEVEL_4
-  promises.push(LevelModel.create({
-    _id: new Types.ObjectId(TestId.LEVEL_4),
-    data: '40000\n02000\n05000\n67890\nABCD3',
-    height: 5,
-    isDraft: false,
-    leastMoves: 20,
-    name: 'y',
-    slug: 'bbb/y',
-    ts: ts,
-    userId: new Types.ObjectId(TestId.USER_B),
-    width: 5,
-  }));
-  promises.push(RecordModel.create({
-    _id: new Types.ObjectId(),
-    levelId: new Types.ObjectId(TestId.LEVEL_4),
-    moves: 20,
-    ts: ts,
-    userId: new Types.ObjectId(TestId.USER_B),
-  }));
-  promises.push(StatModel.create({
-    _id: new Types.ObjectId(),
-    attempts: 1,
-    complete: true,
-    levelId: new Types.ObjectId(TestId.LEVEL_4),
-    moves: 20,
-    ts: ts,
-    userId: new Types.ObjectId(TestId.USER_B),
-  }));
+  promises.push(LevelModel.insertMany(
+    [
+      {
+        _id: new Types.ObjectId(TestId.LEVEL),
+        authorNote: 'test level 1 author note',
+        data: '4000B0\n120000\n050000\n678900\nABCD30',
+        height: 5,
+        isDraft: false,
+        leastMoves: 20,
+        name: 'test level 1',
+        slug: 'test/test-level-1',
+        ts: ts,
+        userId: new Types.ObjectId(TestId.USER),
+        width: 6,
+      },
+      {
+        _id: new Types.ObjectId(TestId.LEVEL_2),
+        data: '40000\n12000\n05000\n67890\nABC03',
+        height: 5,
+        isDraft: true,
+        leastMoves: 20,
+        name: 'test level 2',
+        slug: 'test/test-level-2',
+        ts: ts,
+        userId: new Types.ObjectId(TestId.USER),
+        width: 5,
+      },
+      {
+        _id: new Types.ObjectId(TestId.LEVEL_3),
+        data: '40\n03',
+        height: 2,
+        isDraft: false,
+        leastMoves: 80,
+        name: 'x',
+        slug: 'test/x',
+        ts: ts,
+        userId: new Types.ObjectId(TestId.USER),
+        width: 2,
+      },
+      {
+        _id: new Types.ObjectId(TestId.LEVEL_4),
+        data: '40000\n02000\n05000\n67890\nABCD3',
+        height: 5,
+        isDraft: false,
+        leastMoves: 20,
+        name: 'y',
+        slug: 'bbb/y',
+        ts: ts,
+        userId: new Types.ObjectId(TestId.USER_B),
+        width: 5,
+      },
+      {
+        _id: new Types.ObjectId(TestId.LEVEL_DELETED),
+        authorNote: 'test level deleted author note',
+        data: '4000B0\n120000\n050000\n678900\nABCD30',
+        height: 5,
+        isDeleted: true,
+        isDraft: false,
+        leastMoves: 20,
+        name: 'test level deleted',
+        slug: TestId.LEVEL_DELETED,
+        ts: ts,
+        userId: new Types.ObjectId(TestId.USER),
+        width: 6,
+      }
+    ],
+    { ordered: false }
+  ));
+  promises.push(RecordModel.insertMany(
+    [
+      {
+        _id: new Types.ObjectId(TestId.RECORD),
+        levelId: new Types.ObjectId(TestId.LEVEL),
+        moves: 20,
+        ts: ts,
+        userId: new Types.ObjectId(TestId.USER),
+      },
+      {
+        _id: new Types.ObjectId(),
+        levelId: new Types.ObjectId(TestId.LEVEL_3),
+        moves: 80,
+        ts: ts,
+        userId: new Types.ObjectId(TestId.USER),
+      },
+      {
+        _id: new Types.ObjectId(),
+        levelId: new Types.ObjectId(TestId.LEVEL_4),
+        moves: 20,
+        ts: ts,
+        userId: new Types.ObjectId(TestId.USER_B),
+      },
+      {
+        _id: new Types.ObjectId(),
+        isDeleted: true,
+        levelId: new Types.ObjectId(TestId.LEVEL_DELETED),
+        moves: 20,
+        ts: ts,
+        userId: new Types.ObjectId(TestId.USER),
+      }
+    ],
+    {
+      ordered: false
+    }
+  ));
+  promises.push(StatModel.insertMany(
+    [
+      {
+        _id: new Types.ObjectId(),
+        attempts: 1,
+        complete: true,
+        levelId: new Types.ObjectId(TestId.LEVEL),
+        moves: 20,
+        ts: ts,
+        userId: new Types.ObjectId(TestId.USER),
+      },
+      {
+        _id: new Types.ObjectId(),
+        attempts: 1,
+        complete: false,
+        levelId: new Types.ObjectId(TestId.LEVEL),
+        moves: 22,
+        ts: ts,
+        userId: new Types.ObjectId(TestId.USER_B),
+      },
+      {
+        _id: new Types.ObjectId(),
+        attempts: 1,
+        complete: true,
+        levelId: new Types.ObjectId(TestId.LEVEL_3),
+        moves: 80,
+        ts: ts,
+        userId: new Types.ObjectId(TestId.USER),
+      },
+      {
+        _id: new Types.ObjectId(),
+        attempts: 1,
+        complete: true,
+        levelId: new Types.ObjectId(TestId.LEVEL_4),
+        moves: 20,
+        ts: ts,
+        userId: new Types.ObjectId(TestId.USER_B),
+      },
+      {
+        _id: new Types.ObjectId(),
+        attempts: 1,
+        complete: true,
+        isDeleted: true,
+        levelId: new Types.ObjectId(TestId.LEVEL_DELETED),
+        moves: 20,
+        ts: ts,
+        userId: new Types.ObjectId(TestId.USER),
+      }
+    ],
+    {
+      ordered: false
+    }
+  ));
 
   // DELETED DOCUMENTS
-  promises.push(LevelModel.create({
-    _id: new Types.ObjectId(TestId.LEVEL_DELETED),
-    authorNote: 'test level deleted author note',
-    data: '4000B0\n120000\n050000\n678900\nABCD30',
-    height: 5,
-    isDeleted: true,
-    isDraft: false,
-    leastMoves: 20,
-    name: 'test level deleted',
-    slug: TestId.LEVEL_DELETED,
-    ts: ts,
-    userId: new Types.ObjectId(TestId.USER),
-    width: 6,
-  }));
-  promises.push(PlayAttemptModel.create({
-    _id: new Types.ObjectId(),
-    attemptContext: AttemptContext.UNBEATEN,
-    endTime: 200,
-    isDeleted: true,
-    levelId: new Types.ObjectId(TestId.LEVEL_DELETED),
-    startTime: 100,
-    updateCount: 1,
-    userId: new Types.ObjectId(TestId.USER),
-  }));
-  promises.push(RecordModel.create({
-    _id: new Types.ObjectId(),
-    isDeleted: true,
-    levelId: new Types.ObjectId(TestId.LEVEL_DELETED),
-    moves: 20,
-    ts: ts,
-    userId: new Types.ObjectId(TestId.USER),
-  }));
-  promises.push(ReviewModel.create({
-    _id: new Types.ObjectId(),
-    isDeleted: true,
-    levelId: new Types.ObjectId(TestId.LEVEL_DELETED),
-    score: 5,
-    text: 'My best creation. I can\'t really imagine anything better.',
-    ts: ts,
-    userId: new Types.ObjectId(TestId.USER),
-  }));
-  promises.push(StatModel.create({
-    _id: new Types.ObjectId(),
-    attempts: 1,
-    complete: true,
-    isDeleted: true,
-    levelId: new Types.ObjectId(TestId.LEVEL_DELETED),
-    moves: 20,
-    ts: ts,
-    userId: new Types.ObjectId(TestId.USER),
-  }));
 
-  promises.push(CollectionModel.create({
-    _id: new Types.ObjectId(TestId.COLLECTION),
-    authorNote: 'test collection author note',
-    name: 'test collection',
-    slug: await generateCollectionSlug('test', 'test collection'),
-    userId: new Types.ObjectId(TestId.USER),
-    levels: [new Types.ObjectId(TestId.LEVEL), new Types.ObjectId(TestId.LEVEL_2)]
-  }));
+  promises.push(PlayAttemptModel.insertMany([
+    {
+      _id: new Types.ObjectId(),
+      attemptContext: AttemptContext.UNBEATEN,
+      endTime: 200,
+      isDeleted: true,
+      levelId: new Types.ObjectId(TestId.LEVEL_DELETED),
+      startTime: 100,
+      updateCount: 1,
+      userId: new Types.ObjectId(TestId.USER),
+    }
+  ],
+  { ordered: false }
+  ));
 
-  promises.push(CollectionModel.create({
-    _id: new Types.ObjectId(TestId.COLLECTION_2),
-    levels: [new Types.ObjectId(TestId.LEVEL), new Types.ObjectId(TestId.LEVEL_2), new Types.ObjectId(TestId.LEVEL_3)],
-    name: 'test collection 2',
-    slug: await generateCollectionSlug('test', 'test collection 2'),
-    userId: new Types.ObjectId(TestId.USER),
-  }));
+  promises.push(ReviewModel.insertMany(
+    [
+      {
+        _id: new Types.ObjectId(),
+        isDeleted: true,
+        levelId: new Types.ObjectId(TestId.LEVEL_DELETED),
+        score: 5,
+        text: 'My best creation. I can\'t really imagine anything better.',
+        ts: ts,
+        userId: new Types.ObjectId(TestId.USER),
+      },
+      {
+        _id: new Types.ObjectId(TestId.REVIEW),
+        levelId: new Types.ObjectId(TestId.LEVEL),
+        score: 5,
+        text: 'My best creation. I can\'t really imagine anything better.',
+        ts: ts,
+        userId: new Types.ObjectId(TestId.USER),
+      }
+    ],
+    { ordered: false }
+  ));
 
-  promises.push(CollectionModel.create({
-    _id: new Types.ObjectId(TestId.COLLECTION_B),
-    levels: [new Types.ObjectId(TestId.LEVEL), new Types.ObjectId(TestId.LEVEL_2), new Types.ObjectId(TestId.LEVEL_3)],
-    name: 'test collection 3',
-    slug: await generateCollectionSlug('BBB', 'test collection 3'),
-    userId: new Types.ObjectId(TestId.USER_B),
-  }));
+  promises.push(CollectionModel.insertMany(
+    [
+      {
+        _id: new Types.ObjectId(TestId.COLLECTION),
+        authorNote: 'test collection author note',
+        name: 'test collection',
+        slug: await generateCollectionSlug('test', 'test collection'),
+        userId: new Types.ObjectId(TestId.USER),
+        levels: [new Types.ObjectId(TestId.LEVEL), new Types.ObjectId(TestId.LEVEL_2)]
+      },
+      {
+        _id: new Types.ObjectId(TestId.COLLECTION_2),
+        levels: [new Types.ObjectId(TestId.LEVEL), new Types.ObjectId(TestId.LEVEL_2), new Types.ObjectId(TestId.LEVEL_3)],
+        name: 'test collection 2',
+        slug: await generateCollectionSlug('test', 'test collection 2'),
+        userId: new Types.ObjectId(TestId.USER),
+      },
+      {
+        _id: new Types.ObjectId(TestId.COLLECTION_B),
+        levels: [new Types.ObjectId(TestId.LEVEL), new Types.ObjectId(TestId.LEVEL_2), new Types.ObjectId(TestId.LEVEL_3)],
+        name: 'test collection 3',
+        slug: await generateCollectionSlug('BBB', 'test collection 3'),
+        userId: new Types.ObjectId(TestId.USER_B),
+      }
 
-  promises.push(CampaignModel.create({
-    _id: new Types.ObjectId(TestId.CAMPAIGN_OFFICIAL),
-    authorNote: 'The official campaign!',
-    collections: [new Types.ObjectId(TestId.COLLECTION)],
-    name: 'Official Campaign',
-    slug: 'official-campaign',
-  }));
+    ],
+    { ordered: false }
+  ));
 
-  promises.push(ReviewModel.create({
-    _id: new Types.ObjectId(TestId.REVIEW),
-    levelId: new Types.ObjectId(TestId.LEVEL),
-    score: 5,
-    text: 'My best creation. I can\'t really imagine anything better.',
-    ts: ts,
-    userId: new Types.ObjectId(TestId.USER),
-  }));
+  promises.push(CampaignModel.insertMany(
+    [
+      {
+        _id: new Types.ObjectId(TestId.CAMPAIGN_OFFICIAL),
+        authorNote: 'The official campaign!',
+        collections: [new Types.ObjectId(TestId.COLLECTION)],
+        name: 'Official Campaign',
+        slug: 'official-campaign',
+      }
+    ]));
 
   await Promise.all(promises);
 }
@@ -325,8 +361,10 @@ export async function initLevel(userId: string, name: string, obj: Partial<Level
     ...obj }) as Level;
 
   if (createReviews) {
+    const revs = [];
+
     for (let i = 0; i < name.length; i++) {
-      await ReviewModel.create({
+      revs.push({
         _id: new Types.ObjectId(),
         levelId: id,
         score: (3903 * i * i + 33 * i) % 5 + 1,
@@ -335,6 +373,8 @@ export async function initLevel(userId: string, name: string, obj: Partial<Level
         userId: new Types.ObjectId(),
       });
     }
+
+    await ReviewModel.insertMany(revs);
   }
 
   return lvl;

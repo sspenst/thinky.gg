@@ -38,7 +38,7 @@ export default function LevelInfoRecords() {
           {record.moves}
         </span>
         <StyledTooltip id='steps' />
-        <FormattedUser size={Dimensions.AvatarSizeSmall} user={record.userId} />
+        <FormattedUser id={`record-${record.userId?.toString()}`} size={Dimensions.AvatarSizeSmall} user={record.userId} />
         <FormattedDate ts={record.ts} />
       </div>
     );

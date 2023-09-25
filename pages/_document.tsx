@@ -1,8 +1,6 @@
 /* istanbul ignore file */
-import { GTM_ID } from '@root/lib/gtm';
 import { Types } from 'mongoose';
 import Document, { DocumentContext, DocumentInitialProps, Head, Html, Main, NextScript } from 'next/document';
-import Script from 'next/script';
 import React from 'react';
 import Theme from '../constants/theme';
 import { logger } from '../helpers/logger';

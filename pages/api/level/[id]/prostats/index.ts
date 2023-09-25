@@ -6,7 +6,7 @@ import ProStatsLevelType from '../../../../../constants/proStatsLevelType';
 import isPro from '../../../../../helpers/isPro';
 import cleanUser from '../../../../../lib/cleanUser';
 import withAuth, { NextApiRequestWithAuth } from '../../../../../lib/withAuth';
-import { PlayAttemptModel, StatModel } from '../../../../../models/mongoose';
+import { PlayAttemptModel, StatModel, UserModel } from '../../../../../models/mongoose';
 import { AttemptContext } from '../../../../../models/schemas/playAttemptSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../../../models/schemas/userSchema';
 
@@ -29,7 +29,7 @@ async function getCommunityStepData(levelId: string, onlyLeastMoves: boolean) {
     },
     {
       $lookup: {
-        from: 'users',
+        from: UserModel.collection.name,
         localField: 'userId',
         foreignField: '_id',
         as: 'user',
@@ -104,7 +104,7 @@ async function getCommunityPlayAttemptsData(levelId: string, userId: string) {
     },
     {
       $lookup: {
-        from: 'playattempts',
+        from: PlayAttemptModel.collection.name,
         let: {
           levelId: new mongoose.Types.ObjectId(levelId as string),
           players_with_beaten_playattempt: '$players_with_beaten_playattempt' },
