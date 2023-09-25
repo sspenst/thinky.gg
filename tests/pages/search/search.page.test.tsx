@@ -69,14 +69,9 @@ describe('pages/search page', () => {
   });
   test('getServerSideProps with a db error should fail', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    jest.spyOn(LevelModel, 'aggregate').mockReturnValueOnce({
-      populate: () => {
-        return {
-          sort: () => {return null;}
-        };
-      }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any);
+    jest.spyOn(LevelModel, 'aggregate').mockImplementation(() => {
+      throw new Error('Test DB error');
+    });
     // expect this to error
     await expect(getServerSideProps({ query: {} } as unknown as GetServerSidePropsContext)).rejects.toThrow('Error querying Levels');
   });
