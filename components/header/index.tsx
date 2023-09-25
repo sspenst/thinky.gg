@@ -3,7 +3,7 @@ import Link from 'next/link';
 import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { AppContext } from '../../contexts/appContext';
-import AudioPlayer from '../audioPlayer';
+import AudioPlayer from '../audioPlayer/audioPlayer';
 import LinkInfo from '../formatted/linkInfo';
 import Directory from './directory';
 import Dropdown from './dropdown';
