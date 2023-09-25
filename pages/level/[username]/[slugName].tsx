@@ -59,7 +59,7 @@ interface LevelProps {
 export default function LevelPage({ _level, reqUser }: LevelProps) {
   const [level, setLevel] = useState(_level);
 
-  const { mutateProStatsLevel, proStatsLevel } = useProStatsLevel(level, reqUser === undefined || !isPro(reqUser));
+  const { mutateProStatsLevel, proStatsLevel } = useProStatsLevel(level);
   const router = useRouter();
   const { chapter, cid, slugName, ts, username } = router.query as LevelUrlQueryParams;
   const { collection } = useCollectionById(cid);
