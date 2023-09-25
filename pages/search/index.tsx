@@ -133,6 +133,8 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
   }, [searchQuery]);
 
   const fetchLevels = useCallback((query: SearchQuery) => {
+    // TODO: check if query is identical, in which case do nothing
+
     nProgress.start();
     setQuery(query);
     setLoading(true);
@@ -329,6 +331,8 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
     });
   };
 
+  const difficulty = difficultyList.find(d => d.name === query.difficultyFilter);
+
   const subHeaderComponent = (
     <div className='flex flex-col gap-1 p-1' id='level_search_box'>
       <div className='flex flex-row flex-wrap items-center justify-center z-10 gap-1'>
@@ -391,9 +395,27 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       <div className='flex items-center justify-center py-0.5'>
         <div className='relative inline-block text-left mr-2'>
           <Menu as='div' className='relative inline-block text-left'>
-            <Menu.Button className='inline-flex w-full justify-center rounded-md border border-gray-300 bg-white p-1 text-sm font-medium text-black shadow-sm' id='menu-button' aria-expanded='true' aria-haspopup='true'>
-              {query.difficultyFilter !== '' ? query.difficultyFilter : 'Filter Difficulty' }
-              <svg className='-mr-1 ml-2 h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
+            <Menu.Button
+              aria-expanded='true'
+              aria-haspopup='true'
+              className='inline-flex w-full justify-center rounded-md border border-gray-300 bg-white p-1 pl-2 text-sm font-medium text-black shadow-sm gap-1'
+              id='menu-button'
+              style={{
+                backgroundColor: difficulty ? getDifficultyColor(difficulty.value + 30, 70) : undefined,
+              }}
+            >
+              {/* {difficulty?.name ?? 'All Difficulties'} */}
+              {!difficulty ?
+                <span>All Difficulties</span> :
+                <div>
+                  <span className='pr-1'>
+                    {difficulty.emoji}
+                  </span>
+                  {difficulty.name}
+                </div>
+              }
+              {/* {query.difficultyFilter !== '' ? query.difficultyFilter : 'All Difficulties' } */}
+              <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
                 <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
               </svg>
             </Menu.Button>
@@ -406,7 +428,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
               leaveFrom='transform opacity-100 scale-100'
               leaveTo='transform opacity-0 scale-95'
             >
-              <Menu.Items className='absolute right-0 z-10 mt-2 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none' style={{
+              <Menu.Items className='absolute right-0 z-10 mt-1 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none' style={{
                 borderColor: 'var(--bg-color)',
               }}>
                 <div>
@@ -424,7 +446,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                           backgroundColor: active ? 'rgb(200, 200, 200)' : '',
                         }}
                       >
-                        All
+                        All Difficulties
                       </button>
                     )}
                   </Menu.Item>
