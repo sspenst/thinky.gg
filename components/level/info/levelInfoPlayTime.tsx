@@ -87,7 +87,7 @@ export default function LevelInfoPlayTime() {
                 (proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime] as DateAndSum[]).map((d, i) => {
                   return (
                     <div key={'prostat-playattemptgraph-' + i} className='flex flex-row gap-4 items-center'>
-                      <div className='w-20 text-right'>{moment(new Date(d.date)).format('M/D/YY')}</div>
+                      <div className='w-20 text-right'>{moment(new Date(d.date)).utc().format('M/D/YY')}</div>
                       <div className='w-1/2 text-left text-sm' style={{
                         color: 'var(--color-gray)',
                       }}>{getTimePlayedStr(d.sum)}</div>

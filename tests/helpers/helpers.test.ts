@@ -1,6 +1,7 @@
+import StatFilter from '@root/constants/statFilter';
 import { Types } from 'mongoose';
 import TestId from '../../constants/testId';
-import filterSelectOptions, { FilterSelectOption } from '../../helpers/filterSelectOptions';
+import statFilterOptions from '../../helpers/filterSelectOptions';
 import getDifficultyEstimate from '../../helpers/getDifficultyEstimate';
 import getProfileSlug from '../../helpers/getProfileSlug';
 import getSWRKey from '../../helpers/getSWRKey';
@@ -129,21 +130,21 @@ describe('helpers/*.ts', () => {
       },
     ] as SelectOption[];
 
-    let options = filterSelectOptions(selectOptions, FilterSelectOption.All, '');
+    let options = statFilterOptions(selectOptions, StatFilter.All, '');
 
     expect(options.length).toBe(5);
 
-    options = filterSelectOptions(selectOptions, FilterSelectOption.HideWon, '');
+    options = statFilterOptions(selectOptions, StatFilter.HideWon, '');
 
     expect(options.length).toBe(3);
     expect(options[0].text).toBe('in progress');
 
-    options = filterSelectOptions(selectOptions, FilterSelectOption.ShowInProgress, '');
+    options = statFilterOptions(selectOptions, StatFilter.ShowInProgress, '');
 
     expect(options.length).toBe(1);
     expect(options[0].text).toBe('in progress');
 
-    options = filterSelectOptions(selectOptions, FilterSelectOption.All, 'complete');
+    options = statFilterOptions(selectOptions, StatFilter.All, 'complete');
 
     expect(options.length).toBe(1);
     expect(options[0].text).toBe('complete');

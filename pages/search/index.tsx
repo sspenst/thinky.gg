@@ -3,6 +3,7 @@ import FormattedDate from '@root/components/formatted/formattedDate';
 import FormattedUser from '@root/components/formatted/formattedUser';
 import DataTable, { TableColumn } from '@root/components/tables/dataTable';
 import Dimensions from '@root/constants/dimensions';
+import StatFilter from '@root/constants/statFilter';
 import isPro from '@root/helpers/isPro';
 import classNames from 'classnames';
 import { debounce } from 'debounce';
@@ -20,7 +21,6 @@ import FormattedLevelLink from '../../components/formatted/formattedLevelLink';
 import MultiSelectUser from '../../components/page/multiSelectUser';
 import Page from '../../components/page/page';
 import TimeRange from '../../constants/timeRange';
-import { FilterSelectOption } from '../../helpers/filterSelectOptions';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
 import { EnrichedLevel } from '../../models/db/level';
@@ -53,9 +53,9 @@ export interface SearchQuery extends ParsedUrlQuery {
   search?: string;
   searchAuthor?: string;
   searchAuthorId?: string;
-  showFilter?: FilterSelectOption;
   sortBy: string;
   sortDir: 'desc' | 'asc';
+  statFilter?: StatFilter;
   timeRange: string;
 }
 
@@ -72,9 +72,9 @@ const DefaultQuery = {
   search: '',
   searchAuthor: '',
   searchAuthorId: '',
-  showFilter: FilterSelectOption.All,
   sortBy: 'reviewScore',
   sortDir: 'desc',
+  statFilter: StatFilter.All,
   timeRange: TimeRange[TimeRange.All],
 } as SearchQuery;
 
@@ -108,6 +108,141 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   };
 }
 
+interface TimeRangeMenuProps {
+  onTimeRangeClick: (timeRangeKey: string) => void;
+  timeRange: string;
+}
+
+function TimeRangeMenu({ onTimeRangeClick, timeRange }: TimeRangeMenuProps) {
+  const timeRangeStrings = {
+    [TimeRange[TimeRange.Day]]: 'Today',
+    [TimeRange[TimeRange.Week]]: 'This Week',
+    [TimeRange[TimeRange.Month]]: 'This Month',
+    [TimeRange[TimeRange.Year]]: 'This Year',
+    [TimeRange[TimeRange.All]]: 'All Time',
+  };
+
+  return (
+    <Menu as='div' className='relative inline-block text-left'>
+      <Menu.Button
+        aria-expanded='true'
+        aria-haspopup='true'
+        className='flex items-center w-full justify-center rounded-md bg-white pl-2 pr-1 text-sm font-medium text-black gap-1 h-8 shadow-md border'
+        id='menu-button'
+        style={{
+          borderColor: 'var(--bg-color-3)',
+        }}
+      >
+        <span>{timeRangeStrings[timeRange]}</span>
+        <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
+          <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
+        </svg>
+      </Menu.Button>
+      <Transition
+        as={Fragment}
+        enter='transition ease-out duration-100'
+        enterFrom='transform opacity-0 scale-95'
+        enterTo='transform opacity-100 scale-100'
+        leave='transition ease-in duration-75'
+        leaveFrom='transform opacity-100 scale-100'
+        leaveTo='transform opacity-0 scale-95'
+      >
+        <Menu.Items className='absolute right-0 z-10 mt-1 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none' style={{
+          borderColor: 'var(--bg-color)',
+        }}>
+          <div>
+            {Object.keys(timeRangeStrings).map(timeRangeKey => (
+              <Menu.Item key={`time-range-${timeRangeKey}`}>
+                {({ active }) => (
+                  <button
+                    className='text-black block p-1 text-sm w-24 flex items-center gap-1 justify-center'
+                    onClick={() => onTimeRangeClick(timeRangeKey)}
+                    role='menuitem'
+                    style= {{
+                      backgroundColor: active ? 'rgb(200, 200, 200)' : '',
+                    }}
+                  >
+                    {timeRangeStrings[timeRangeKey]}
+                  </button>
+                )}
+              </Menu.Item>
+            ))}
+          </div>
+        </Menu.Items>
+      </Transition>
+    </Menu>
+  );
+}
+
+interface StatFilterMenuProps {
+  onStatFilterClick: (statFilterKey: StatFilter) => void;
+  query: SearchQuery;
+}
+
+function StatFilterMenu({ onStatFilterClick, query }: StatFilterMenuProps) {
+  const statFilterStrings = {
+    [StatFilter.All]: 'All Levels',
+    [StatFilter.HideWon]: 'Hide Won',
+    [StatFilter.ShowWon]: 'Only Won',
+  } as Record<string, string>;
+
+  if (query.sortBy !== 'completed') {
+    statFilterStrings[StatFilter.ShowInProgress] = 'In Progress';
+    statFilterStrings[StatFilter.ShowUnattempted] = 'Unattempted';
+  }
+
+  return (
+    <Menu as='div' className='relative inline-block text-left'>
+      <Menu.Button
+        aria-expanded='true'
+        aria-haspopup='true'
+        className='flex items-center w-full justify-center rounded-md bg-white pl-2 pr-1 text-sm font-medium text-black gap-1 h-8 shadow-md border'
+        id='menu-button'
+        style={{
+          borderColor: 'var(--bg-color-3)',
+        }}
+      >
+        <span>{query.statFilter && query.statFilter in statFilterStrings ? statFilterStrings[query.statFilter] : statFilterStrings[StatFilter.All]}</span>
+        <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
+          <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
+        </svg>
+      </Menu.Button>
+      <Transition
+        as={Fragment}
+        enter='transition ease-out duration-100'
+        enterFrom='transform opacity-0 scale-95'
+        enterTo='transform opacity-100 scale-100'
+        leave='transition ease-in duration-75'
+        leaveFrom='transform opacity-100 scale-100'
+        leaveTo='transform opacity-0 scale-95'
+      >
+        <Menu.Items className='absolute right-0 z-10 mt-1 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none' style={{
+          borderColor: 'var(--bg-color)',
+        }}>
+          <div>
+            {Object.keys(statFilterStrings).map(statFilterKey => (
+              <Menu.Item key={`filter-completions-${statFilterKey}`}>
+                {({ active }) => (
+                  <button
+                    className='text-black block px-3 py-1 text-sm flex items-center gap-1 justify-center'
+                    onClick={() => onStatFilterClick(statFilterKey as StatFilter)}
+                    role='menuitem'
+                    style= {{
+                      backgroundColor: active ? 'rgb(200, 200, 200)' : '',
+                    }}
+                  >
+                    {statFilterStrings[statFilterKey]}
+                  </button>
+                )}
+              </Menu.Item>
+            ))}
+          </div>
+        </Menu.Items>
+      </Transition>
+    </Menu>
+  );
+}
+
 interface SearchProps {
   enrichedLevels: EnrichedLevel[];
   reqUser: User;
@@ -133,6 +268,8 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
   }, [searchQuery]);
 
   const fetchLevels = useCallback((query: SearchQuery) => {
+    // TODO: check if query is identical, in which case do nothing
+
     nProgress.start();
     setQuery(query);
     setLoading(true);
@@ -257,10 +394,13 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       name: 'Users Won',
       selector: (row: EnrichedLevel) => row.calc_stats_players_beaten || 0,
       sortable: true,
+      style: {
+        minWidth: '105px',
+      }
     },
     {
       id: 'reviewScore',
-      name: 'Review Score',
+      name: 'Rating',
       selector: (row: EnrichedLevel) => {
         if (row.calc_reviews_count === 0 || !row.calc_reviews_score_laplace) {
           return '-';
@@ -269,10 +409,24 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
         // floor to avoid showing review scores that are too high
         // eg: .908 would show .91 if it was rounded, but it would not contribute
         // to the acclaimed levels achievement (requires >= 0.91)
-        return (Math.floor(row.calc_reviews_score_laplace * 1000) / 1000).toFixed(3);
+        return (100 * Math.floor(row.calc_reviews_score_laplace * 1000) / 1000).toFixed(1);
       },
       sortable: true,
     },
+    ...(!reqUser ? [] : [{
+      id: 'completed',
+      style: {
+        minWidth: '125px',
+      },
+      name: (
+        <div className='flex flex-row gap-1'>
+          <span>Completed</span>
+          <Image alt='pro' className='mr-0.5' src='/pro.svg' width='16' height='16' />
+        </div>
+      ),
+      selector: (row: EnrichedLevel) => !row.userMovesTs ? '-' : <FormattedDate style={{ color: 'var(--color)', fontSize: 13 }} ts={row.userMovesTs} />,
+      sortable: isPro(reqUser),
+    }]),
   ] as TableColumn<EnrichedLevel>[];
 
   const onTimeRangeClick = useCallback((timeRangeKey: string) => {
@@ -313,15 +467,15 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
     });
   };
 
-  const onPersonalFilterClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const value = e.currentTarget.value as FilterSelectOption;
-
+  const onStatFilterClick = useCallback((statFilterKey: StatFilter) => {
     fetchLevels({
       ...query,
       page: '1',
-      showFilter: query.showFilter === value ? FilterSelectOption.All : value,
+      statFilter: query.statFilter === statFilterKey ? StatFilter.All : statFilterKey,
     });
-  };
+  }, [fetchLevels, query]);
+
+  const difficulty = difficultyList.find(d => d.name === query.difficultyFilter);
 
   const subHeaderComponent = (
     <div className='flex flex-col gap-1 p-1' id='level_search_box'>
@@ -342,135 +496,115 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
           />
         </div>
         <div>
-          <MultiSelectUser key={'search-author-input-' + searchAuthor?._id.toString()} defaultValue={searchAuthor} onSelect={(user) => {
+          <MultiSelectUser key={'search-author-input-' + searchAuthor?._id.toString()} placeholder='Search authors...' defaultValue={searchAuthor} onSelect={(user) => {
             queryDebounceHelper({
               searchAuthor: user?.name || '',
             });
           }} />
         </div>
       </div>
-      <div className='flex items-center justify-center' role='group'>
-        {timeRangeButtons}
+      <div className='flex items-center justify-center flex-wrap gap-1'>
+        {reqUser && <StatFilterMenu onStatFilterClick={onStatFilterClick} query={query} />}
+        <Menu as='div' className='relative inline-block text-left'>
+          <Menu.Button
+            aria-expanded='true'
+            aria-haspopup='true'
+            className='flex items-center w-full justify-center rounded-md bg-white pl-2 pr-1 text-sm font-medium text-black gap-1 h-8 shadow-md border'
+            id='menu-button'
+            style={{
+              backgroundColor: difficulty ? getDifficultyColor(difficulty.name === 'Pending' ? -1 : difficulty.value * 1.5 + 30, 70) : undefined,
+              borderColor: 'var(--bg-color-3)',
+            }}
+          >
+            {!difficulty ?
+              <span>All Difficulties</span> :
+              <>
+                <span>{difficulty.emoji}</span>
+                <span>{difficulty.name}</span>
+              </>
+            }
+            <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
+              <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
+            </svg>
+          </Menu.Button>
+          <Transition
+            as={Fragment}
+            enter='transition ease-out duration-100'
+            enterFrom='transform opacity-0 scale-95'
+            enterTo='transform opacity-100 scale-100'
+            leave='transition ease-in duration-75'
+            leaveFrom='transform opacity-100 scale-100'
+            leaveTo='transform opacity-0 scale-95'
+          >
+            <Menu.Items className='absolute right-0 z-10 mt-1 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none' style={{
+              borderColor: 'var(--bg-color)',
+            }}>
+              <div>
+                <Menu.Item>
+                  {({ active }) => (
+                    <button
+                      className='text-black block p-1 text-sm w-44'
+                      onClick={() => fetchLevels({
+                        ...query,
+                        difficultyFilter: '',
+                        page: '1',
+                      })}
+                      role='menuitem'
+                      style= {{
+                        backgroundColor: active ? 'rgb(200, 200, 200)' : '',
+                      }}
+                    >
+                      All Difficulties
+                    </button>
+                  )}
+                </Menu.Item>
+                <Menu.Item>
+                  {({ active }) => (
+                    <button
+                      className='text-black block p-1 text-sm w-44 flex items-center gap-1 justify-center'
+                      onClick={() => fetchLevels({
+                        ...query,
+                        difficultyFilter: 'Pending',
+                        page: '1',
+                      })}
+                      role='menuitem'
+                      style= {{
+                        backgroundColor: active ? 'rgb(200, 200, 200)' : '',
+                      }}
+                    >
+                      <span>⏳</span>
+                      <span>Pending</span>
+                    </button>
+                  )}
+                </Menu.Item>
+                {difficultyList.filter(difficulty => difficulty.name !== 'Pending').map((difficulty) => (
+                  <Menu.Item key={`difficulty-item-${difficulty.value}`}>
+                    {({ active }) => (
+                      <button
+                        className='text-black block p-1 text-sm w-44 flex items-center gap-1 justify-center'
+                        onClick={() => fetchLevels({
+                          ...query,
+                          difficultyFilter: difficulty.name,
+                          page: '1',
+                        })}
+                        role='menuitem'
+                        style= {{
+                          backgroundColor: getDifficultyColor(difficulty.value * 1.5 + 30, active ? 50 : 70)
+                        }}
+                      >
+                        <span>{difficulty.emoji}</span>
+                        <span>{difficulty.name}</span>
+                      </button>
+                    )}
+                  </Menu.Item>
+                ))}
+              </div>
+            </Menu.Items>
+          </Transition>
+        </Menu>
+        <TimeRangeMenu onTimeRangeClick={onTimeRangeClick} timeRange={query.timeRange} />
       </div>
-      {reqUser && (
-        <div className='flex items-center justify-center' role='group'>
-          <FilterButton
-            element={<>{'Hide Won'}</>}
-            first={true}
-            onClick={onPersonalFilterClick}
-            selected={query.showFilter === FilterSelectOption.HideWon}
-            value={FilterSelectOption.HideWon}
-          />
-          <FilterButton
-            element={<>{'Show Won'}</>}
-            onClick={onPersonalFilterClick}
-            selected={query.showFilter === FilterSelectOption.ShowWon}
-            value={FilterSelectOption.ShowWon}
-          />
-          <FilterButton
-            element={<>{'Show In Progress'}</>}
-            onClick={onPersonalFilterClick}
-            selected={query.showFilter === FilterSelectOption.ShowInProgress}
-            value={FilterSelectOption.ShowInProgress}
-          />
-          <FilterButton
-            element={<>{'Show Unattempted'}</>}
-            last={true}
-            onClick={onPersonalFilterClick}
-            selected={query.showFilter === FilterSelectOption.ShowUnattempted}
-            value={FilterSelectOption.ShowUnattempted}
-          />
-        </div>
-      )}
       <div className='flex items-center justify-center py-0.5'>
-        <div className='relative inline-block text-left mr-2'>
-          <Menu as='div' className='relative inline-block text-left'>
-            <Menu.Button className='inline-flex w-full justify-center rounded-md border border-gray-300 bg-white p-1 text-sm font-medium text-black shadow-sm' id='menu-button' aria-expanded='true' aria-haspopup='true'>
-              {query.difficultyFilter !== '' ? query.difficultyFilter : 'Filter Difficulty' }
-              <svg className='-mr-1 ml-2 h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
-                <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
-              </svg>
-            </Menu.Button>
-            <Transition
-              as={Fragment}
-              enter='transition ease-out duration-100'
-              enterFrom='transform opacity-0 scale-95'
-              enterTo='transform opacity-100 scale-100'
-              leave='transition ease-in duration-75'
-              leaveFrom='transform opacity-100 scale-100'
-              leaveTo='transform opacity-0 scale-95'
-            >
-              <Menu.Items className='absolute right-0 z-10 mt-2 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none' style={{
-                borderColor: 'var(--bg-color)',
-              }}>
-                <div>
-                  <Menu.Item>
-                    {({ active }) => (
-                      <button
-                        className='text-black block p-1 text-sm w-40'
-                        onClick={() => fetchLevels({
-                          ...query,
-                          difficultyFilter: '',
-                          page: '1',
-                        })}
-                        role='menuitem'
-                        style= {{
-                          backgroundColor: active ? 'rgb(200, 200, 200)' : '',
-                        }}
-                      >
-                        All
-                      </button>
-                    )}
-                  </Menu.Item>
-                  <Menu.Item>
-                    {({ active }) => (
-                      <button
-                        className='text-black block p-1 text-sm w-40'
-                        onClick={() => fetchLevels({
-                          ...query,
-                          difficultyFilter: 'Pending',
-                          page: '1',
-                        })}
-                        role='menuitem'
-                        style= {{
-                          backgroundColor: active ? 'rgb(200, 200, 200)' : '',
-                        }}
-                      >
-                        <span className='pr-1'>
-                          ⏳
-                        </span>
-                        Pending
-                      </button>
-                    )}
-                  </Menu.Item>
-                  {difficultyList.filter(difficulty => difficulty.name !== 'Pending').map((difficulty) => (
-                    <Menu.Item key={`difficulty-item-${difficulty.value}`}>
-                      {({ active }) => (
-                        <button
-                          className='text-black block p-1 text-sm w-40'
-                          onClick={() => fetchLevels({
-                            ...query,
-                            difficultyFilter: difficulty.name,
-                            page: '1',
-                          })}
-                          role='menuitem'
-                          style= {{
-                            backgroundColor: getDifficultyColor(difficulty.value + 30, active ? 50 : 70)
-                          }}
-                        >
-                          <span className='pr-1'>
-                            {difficulty.emoji}
-                          </span>
-                          {difficulty.name}
-                        </button>
-                      )}
-                    </Menu.Item>
-                  ))}
-                </div>
-              </Menu.Items>
-            </Transition>
-          </Menu>
-        </div>
         <label htmlFor='min-step' className='text-xs font-medium pr-1'>Min steps</label>
         <input
           className='form-range pl-2 w-16 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white mr-2'
@@ -697,6 +831,11 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
             if (columnId === query.sortBy) {
               // swap sortDir if the same col is clicked
               update.sortDir = query.sortDir === 'desc' ? 'asc' : 'desc';
+            }
+
+            // move off of invalid stat filter option when sorting by completed
+            if (columnId === 'completed' && (query.statFilter === StatFilter.ShowInProgress || query.statFilter === StatFilter.ShowUnattempted)) {
+              update.statFilter = StatFilter.All;
             }
 
             fetchLevels({

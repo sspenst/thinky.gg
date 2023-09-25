@@ -1,10 +1,10 @@
+import StatFilter from '@root/constants/statFilter';
 import React, { useContext } from 'react';
 import { AppContext } from '../../contexts/appContext';
-import { FilterSelectOption } from '../../helpers/filterSelectOptions';
 import FilterButton from '../buttons/filterButton';
 
 interface SelectFilterProps {
-  filter: FilterSelectOption;
+  filter: StatFilter;
   onFilterClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
   placeholder: string;
   searchText: string;
@@ -29,22 +29,22 @@ export default function SelectFilter({
               element={<>{'Hide Won'}</>}
               first={true}
               onClick={onFilterClick}
-              selected={filter === FilterSelectOption.HideWon}
-              value={FilterSelectOption.HideWon}
+              selected={filter === StatFilter.HideWon}
+              value={StatFilter.HideWon}
             />
             <FilterButton
               element={<>{'Show Won'}</>}
               onClick={onFilterClick}
               proRequired={true}
-              selected={filter === FilterSelectOption.ShowWon}
-              value={FilterSelectOption.ShowWon}
+              selected={filter === StatFilter.ShowWon}
+              value={StatFilter.ShowWon}
             />
             <FilterButton
               element={<>{'Show In Progress'}</>}
               last={true} onClick={onFilterClick}
               proRequired={true}
-              selected={filter === FilterSelectOption.ShowInProgress}
-              value={FilterSelectOption.ShowInProgress}
+              selected={filter === StatFilter.ShowInProgress}
+              value={StatFilter.ShowInProgress}
             />
           </div>
         }
