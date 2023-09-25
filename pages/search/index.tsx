@@ -183,12 +183,12 @@ function StatFilterMenu({ onStatFilterClick, query }: StatFilterMenuProps) {
   const statFilterStrings = {
     [StatFilter.All]: 'All Levels',
     [StatFilter.HideWon]: 'Hide Won',
-    [StatFilter.ShowWon]: 'Show Won',
+    [StatFilter.ShowWon]: 'Only Won',
   } as Record<string, string>;
 
   if (query.sortBy !== 'completed') {
-    statFilterStrings[StatFilter.ShowInProgress] = 'Show In Progress';
-    statFilterStrings[StatFilter.ShowUnattempted] = 'Show Unattempted';
+    statFilterStrings[StatFilter.ShowInProgress] = 'In Progress';
+    statFilterStrings[StatFilter.ShowUnattempted] = 'Unattempted';
   }
 
   return (
@@ -224,7 +224,7 @@ function StatFilterMenu({ onStatFilterClick, query }: StatFilterMenuProps) {
               <Menu.Item key={`filter-completions-${statFilterKey}`}>
                 {({ active }) => (
                   <button
-                    className='text-black block p-1 text-sm w-40 flex items-center gap-1 justify-center'
+                    className='text-black block px-3 py-1 text-sm flex items-center gap-1 justify-center'
                     onClick={() => onStatFilterClick(statFilterKey as StatFilter)}
                     role='menuitem'
                     style= {{
@@ -394,10 +394,13 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       name: 'Users Won',
       selector: (row: EnrichedLevel) => row.calc_stats_players_beaten || 0,
       sortable: true,
+      style: {
+        minWidth: '105px',
+      }
     },
     {
       id: 'reviewScore',
-      name: 'Review Score',
+      name: 'Rating',
       selector: (row: EnrichedLevel) => {
         if (row.calc_reviews_count === 0 || !row.calc_reviews_score_laplace) {
           return '-';
@@ -406,14 +409,17 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
         // floor to avoid showing review scores that are too high
         // eg: .908 would show .91 if it was rounded, but it would not contribute
         // to the acclaimed levels achievement (requires >= 0.91)
-        return (Math.floor(row.calc_reviews_score_laplace * 1000) / 1000).toFixed(3);
+        return (100 * Math.floor(row.calc_reviews_score_laplace * 1000) / 1000).toFixed(1);
       },
       sortable: true,
     },
     ...(!reqUser ? [] : [{
       id: 'completed',
+      style: {
+        minWidth: '125px',
+      },
       name: (
-        <div className='flex gap-2'>
+        <div className='flex flex-row gap-1'>
           <span>Completed</span>
           <Image alt='pro' className='mr-0.5' src='/pro.svg' width='16' height='16' />
         </div>
