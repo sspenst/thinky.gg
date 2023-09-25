@@ -29,34 +29,38 @@ async function subscriptionDeleted(userToDowngrade: User) {
   try {
     await session.withTransaction(async () => {
       await Promise.all([
-        UserModel.findOneAndUpdate(
-          {
-            _id: userToDowngrade._id
-          },
+        UserModel.findByIdAndUpdate(
+          userToDowngrade._id,
           {
             $pull: {
               roles: Role.PRO
             }
-          }
-        ), UserConfigModel.findOneAndUpdate(
+          },
+          {
+            session: session
+          },
+        ),
+        UserConfigModel.findOneAndUpdate(
           {
             userId: userToDowngrade._id
           },
           {
             stripeCustomerId: null
-          }
+          },
+          {
+            session: session
+          },
         ),
         queueDiscordWebhook(Discord.DevPriv, `🥹 [${userToDowngrade.name}](https://pathology.gg/profile/${userToDowngrade.name}) just unsubscribed.`),
       ]);
-      session.endSession();
     });
+    session.endSession();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     logger.error(err);
-
     session.endSession();
 
-    return err.message;
+    return err?.message;
   }
 }
 
@@ -91,7 +95,7 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
             },
             {
               session: session
-            }
+            },
           ),
           UserConfigModel.findOneAndUpdate(
             {
@@ -102,7 +106,7 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
             },
             {
               session: session
-            }
+            },
           ),
           queueDiscordWebhook(Discord.DevPriv, `💸 [${userToUpgrade.name}](https://pathology.gg/profile/${userToUpgrade.name}) just subscribed!`),
         ]);
