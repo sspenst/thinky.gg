@@ -1,4 +1,4 @@
-import { rotateLevelCCW } from '@root/helpers/transformLevel';
+import { randomRotateLevelDataViaMatchHash } from '@root/helpers/validateSolution';
 import mongoose, { ObjectId } from 'mongoose';
 import cleanUser from '../../lib/cleanUser';
 import Level from '../db/level';
@@ -154,25 +154,14 @@ export function enrichMultiplayerMatch(
 
       const levelIndex = match.gameTable[userId.toString()].length || 0;
 
-      const currentLevel = match.levels[levelIndex] as Level;
+      const currentLevel = match.levels[levelIndex];
 
-      // rotate
-      let currentLevelData = currentLevel.data;
-      // hash the match.createdAt. We want a number between -3 and 3
-      const rotationAmount = new Date(match.createdAt).getTime() % 7 - 3;
-
-      console.log('rotationAmount', rotationAmount);
-      // if rotationAmount is negative, we want to rotate left, otherwise rotate right
-      const rotationFunction = rotationAmount < 0 ? rotateLevelCCW : rotateLevelCCW;
-
-      if (rotationAmount !== 0) {
+      // hypothetically, if a level was deleted, this could be undefined
+      // we need to make sure this is a Level object
+      if (currentLevel && (currentLevel as Level).data) {
         // rotate
-        for (let i = 0; i < Math.abs(rotationAmount); i++) {
-          currentLevelData = rotationFunction(currentLevelData);
-        }
+        randomRotateLevelDataViaMatchHash(currentLevel as Level, match);
       }
-
-      currentLevel.data = currentLevelData;
 
       match.levels = [currentLevel] as Level[];
     } else {
