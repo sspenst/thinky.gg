@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Role from '@root/constants/role';
+import StatFilter from '@root/constants/statFilter';
 import TileType from '@root/constants/tileType';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import mongoose, { Types } from 'mongoose';
@@ -7,7 +8,6 @@ import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import TimeRange from '../../../../constants/timeRange';
-import { FilterSelectOption } from '../../../../helpers/filterSelectOptions';
 import { TimerUtil } from '../../../../helpers/getTs';
 import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
@@ -173,7 +173,7 @@ for (let i = 0; i < sortProperties.length; i++) {
 
 testRuns = testRuns.concat([
   {
-    query: `?showFilter=${FilterSelectOption.HideWon}`,
+    query: `?statFilter=${StatFilter.HideWon}`,
     test: async (response: any) => {
       expect(response.totalRows).toBe(17);
       expect(response.levels.length).toBe(17);
@@ -214,7 +214,7 @@ testRuns = testRuns.concat([
     }
   },
   {
-    query: `?showFilter=${FilterSelectOption.ShowInProgress}`,
+    query: `?statFilter=${StatFilter.ShowInProgress}`,
     test: async (response: any) => {
       expect(response.totalRows).toBe(3);
       expect(response.levels.length).toBe(3);

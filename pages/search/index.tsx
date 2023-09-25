@@ -3,6 +3,7 @@ import FormattedDate from '@root/components/formatted/formattedDate';
 import FormattedUser from '@root/components/formatted/formattedUser';
 import DataTable, { TableColumn } from '@root/components/tables/dataTable';
 import Dimensions from '@root/constants/dimensions';
+import StatFilter from '@root/constants/statFilter';
 import isPro from '@root/helpers/isPro';
 import classNames from 'classnames';
 import { debounce } from 'debounce';
@@ -20,7 +21,6 @@ import FormattedLevelLink from '../../components/formatted/formattedLevelLink';
 import MultiSelectUser from '../../components/page/multiSelectUser';
 import Page from '../../components/page/page';
 import TimeRange from '../../constants/timeRange';
-import { FilterSelectOption } from '../../helpers/filterSelectOptions';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
 import { EnrichedLevel } from '../../models/db/level';
@@ -53,9 +53,9 @@ export interface SearchQuery extends ParsedUrlQuery {
   search?: string;
   searchAuthor?: string;
   searchAuthorId?: string;
-  showFilter?: FilterSelectOption;
   sortBy: string;
   sortDir: 'desc' | 'asc';
+  statFilter?: StatFilter;
   timeRange: string;
 }
 
@@ -72,9 +72,9 @@ const DefaultQuery = {
   search: '',
   searchAuthor: '',
   searchAuthorId: '',
-  showFilter: FilterSelectOption.All,
   sortBy: 'reviewScore',
   sortDir: 'desc',
+  statFilter: StatFilter.All,
   timeRange: TimeRange[TimeRange.All],
 } as SearchQuery;
 
@@ -174,18 +174,18 @@ function TimeRangeMenu({ onTimeRangeClick, timeRange }: TimeRangeMenuProps) {
   );
 }
 
-interface FilterCompletionsMenuProps {
-  filterCompletions?: FilterSelectOption;
-  onFilterCompletionsClick: (filterCompletionsKey: FilterSelectOption) => void;
+interface StatFilterMenuProps {
+  onStatFilterClick: (statFilterKey: StatFilter) => void;
+  statFilter?: StatFilter;
 }
 
-function FilterCompletionsMenu({ filterCompletions, onFilterCompletionsClick }: FilterCompletionsMenuProps) {
-  const filterCompletionsStrings = {
-    [FilterSelectOption.All]: 'All Levels',
-    [FilterSelectOption.HideWon]: 'Hide Won',
-    [FilterSelectOption.ShowWon]: 'Show Won',
-    [FilterSelectOption.ShowInProgress]: 'Show In Progress',
-    [FilterSelectOption.ShowUnattempted]: 'Show Unattempted',
+function StatFilterMenu({ onStatFilterClick, statFilter }: StatFilterMenuProps) {
+  const statFilterStrings = {
+    [StatFilter.All]: 'All Levels',
+    [StatFilter.HideWon]: 'Hide Won',
+    [StatFilter.ShowWon]: 'Show Won',
+    [StatFilter.ShowInProgress]: 'Show In Progress',
+    [StatFilter.ShowUnattempted]: 'Show Unattempted',
   } as Record<string, string>;
 
   return (
@@ -199,7 +199,7 @@ function FilterCompletionsMenu({ filterCompletions, onFilterCompletionsClick }: 
           borderColor: 'var(--bg-color-3)',
         }}
       >
-        <span>{filterCompletionsStrings[filterCompletions ?? FilterSelectOption.All]}</span>
+        <span>{statFilterStrings[statFilter ?? StatFilter.All]}</span>
         <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
           <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
         </svg>
@@ -217,18 +217,18 @@ function FilterCompletionsMenu({ filterCompletions, onFilterCompletionsClick }: 
           borderColor: 'var(--bg-color)',
         }}>
           <div>
-            {Object.keys(filterCompletionsStrings).map(filterCompletionsKey => (
-              <Menu.Item key={`filter-completions-${filterCompletionsKey}`}>
+            {Object.keys(statFilterStrings).map(statFilterKey => (
+              <Menu.Item key={`filter-completions-${statFilterKey}`}>
                 {({ active }) => (
                   <button
                     className='text-black block p-1 text-sm w-40 flex items-center gap-1 justify-center'
-                    onClick={() => onFilterCompletionsClick(filterCompletionsKey as FilterSelectOption)}
+                    onClick={() => onStatFilterClick(statFilterKey as StatFilter)}
                     role='menuitem'
                     style= {{
                       backgroundColor: active ? 'rgb(200, 200, 200)' : '',
                     }}
                   >
-                    {filterCompletionsStrings[filterCompletionsKey]}
+                    {statFilterStrings[statFilterKey]}
                   </button>
                 )}
               </Menu.Item>
@@ -453,11 +453,11 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
     });
   };
 
-  const onFilterCompletionsClick = useCallback((filterCompletionsKey: FilterSelectOption) => {
+  const onStatFilterClick = useCallback((statFilterKey: StatFilter) => {
     fetchLevels({
       ...query,
       page: '1',
-      showFilter: query.showFilter === filterCompletionsKey ? FilterSelectOption.All : filterCompletionsKey,
+      statFilter: query.statFilter === statFilterKey ? StatFilter.All : statFilterKey,
     });
   }, [fetchLevels, query]);
 
@@ -490,7 +490,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
         </div>
       </div>
       <div className='flex items-center justify-center flex-wrap gap-1'>
-        {reqUser && <FilterCompletionsMenu filterCompletions={query.showFilter} onFilterCompletionsClick={onFilterCompletionsClick} />}
+        {reqUser && <StatFilterMenu statFilter={query.statFilter} onStatFilterClick={onStatFilterClick} />}
         <Menu as='div' className='relative inline-block text-left'>
           <Menu.Button
             aria-expanded='true'

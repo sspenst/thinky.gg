@@ -1,3 +1,4 @@
+import StatFilter from '@root/constants/statFilter';
 import TileType from '@root/constants/tileType';
 import isPro from '@root/helpers/isPro';
 import { Aggregate, FilterQuery, PipelineStage, Types } from 'mongoose';
@@ -6,7 +7,6 @@ import { getDifficultyRangeFromName } from '../../../components/formatted/format
 import TimeRange from '../../../constants/timeRange';
 import apiWrapper from '../../../helpers/apiWrapper';
 import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
-import { FilterSelectOption } from '../../../helpers/filterSelectOptions';
 import { logger } from '../../../helpers/logger';
 import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
@@ -244,7 +244,7 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
     },
   }];
 
-  if (query.showFilter === FilterSelectOption.HideWon) {
+  if (query.statFilter === StatFilter.HideWon) {
     statLookupAndMatchStage.push({
       $match: {
         $or: [
@@ -253,15 +253,15 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
         ],
       },
     });
-  } else if (query.showFilter === FilterSelectOption.ShowWon) {
+  } else if (query.statFilter === StatFilter.ShowWon) {
     statLookupAndMatchStage.push({
       $match: { 'stat.complete': true },
     });
-  } else if (query.showFilter === FilterSelectOption.ShowInProgress) {
+  } else if (query.statFilter === StatFilter.ShowInProgress) {
     statLookupAndMatchStage.push({
       $match: { 'stat.complete': false },
     });
-  } else if (query.showFilter === FilterSelectOption.ShowUnattempted) {
+  } else if (query.statFilter === StatFilter.ShowUnattempted) {
     projection['calc_playattempts_unique_users'] = 1;
 
     statLookupAndMatchStage.push(
@@ -390,16 +390,16 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let statMatchQuery: FilterQuery<any> = {};
 
-    if (query.showFilter === FilterSelectOption.HideWon) {
+    if (query.statFilter === StatFilter.HideWon) {
       statMatchQuery = {
         $or: [
           { complete: false },
           { complete: { $exists: false } },
         ],
       };
-    } else if (query.showFilter === FilterSelectOption.ShowWon) {
+    } else if (query.statFilter === StatFilter.ShowWon) {
       statMatchQuery = { complete: true };
-    } else if (query.showFilter === FilterSelectOption.ShowInProgress) {
+    } else if (query.statFilter === StatFilter.ShowInProgress) {
       statMatchQuery = { complete: false };
     }
 
