@@ -223,7 +223,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
         id: 'cs_test_123',
         customer: fakeCustomerId,
       },
-      expectedError: 'UserConfig with customer id ' + fakeCustomerId + ' does not exist',
+      expectedError: 'customer.subscription.deleted - UserConfig with customer id ' + fakeCustomerId + ' does not exist',
       expectedStatus: 400,
       additionalAssertions: async () => {
         //
@@ -300,8 +300,8 @@ describe('pages/api/stripe-webhook/index.ts', () => {
         id: 'cs_test_123',
         customer: fakeCustomerId,
       },
-      expectedError: 'UserConfig with customer id ' + fakeCustomerId + ' does not exist',
-      expectedStatus: 400,
+      expectedError: undefined,
+      expectedStatus: 200,
       additionalAssertions: async () => {
         //
       },
