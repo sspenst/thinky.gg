@@ -5,7 +5,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import ProStatsLevelType from '../../../../../constants/proStatsLevelType';
 import isPro from '../../../../../helpers/isPro';
 import cleanUser from '../../../../../lib/cleanUser';
-import withAuth, { getUserFromToken, NextApiRequestWithAuth } from '../../../../../lib/withAuth';
+import { getUserFromToken } from '../../../../../lib/withAuth';
 import { PlayAttemptModel, StatModel, UserModel } from '../../../../../models/mongoose';
 import { AttemptContext } from '../../../../../models/schemas/playAttemptSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../../../models/schemas/userSchema';
