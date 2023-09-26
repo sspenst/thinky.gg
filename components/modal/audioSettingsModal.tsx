@@ -1,4 +1,5 @@
 import { AudioPlayerContext } from '@root/contexts/audioPlayerContext';
+import Link from 'next/link';
 import React, { useContext } from 'react';
 import AudioPlayer from '../audioPlayer/audioPlayer';
 import Modal from '.';
@@ -16,7 +17,7 @@ interface AudioSettingsModalProps {
 
 // Define component
 export default function AudioSettingsModal({ closeModal, isOpen }: AudioSettingsModalProps) {
-  const { audioContext, audioActive, audioAmbient, isHot, dynamicMusic, setDynamicMusic, maxVolume, setMaxVolume } = useContext(AudioPlayerContext);
+  const { audioContext, audioActive, audioAmbient, currentMetaData, isHot, dynamicMusic, setDynamicMusic, maxVolume, setMaxVolume } = useContext(AudioPlayerContext);
 
   return (
     <Modal title='Audio Settings' isOpen={isOpen} closeModal={closeModal}>
@@ -31,7 +32,7 @@ export default function AudioSettingsModal({ closeModal, isOpen }: AudioSettings
           </div>
           <div className='flex flex-col word-wrap gap-2 text-sm'>
             <span>Changes the music depending on what is happening in the game.</span>
-            <span className='text-xs'>For example, if you are in a puzzle, the music will be more ambient ❄️.<br />After solving, the music will transition to a more energetic 🔥 track.</span>
+            <span className='text-xs'>For example, if you are in a puzzle, the music will be more ambient ❄️.<br />After solving, the music will transition to a more energetic 🔥 version.</span>
           </div>
         </div>
 
@@ -54,8 +55,14 @@ export default function AudioSettingsModal({ closeModal, isOpen }: AudioSettings
             } />
           </div>
         </div>
-        <div className='flex flex-row items-center justify-center'>
+        <div className='flex flex-col gap-2 items-center justify-center'>
           <AudioPlayer hideSettingsButton={true} />
+          <span>Artist:&nbsp;
+            <Link className='underline font-bold'
+              href={currentMetaData.website}>{currentMetaData.artist}
+            </Link>
+          </span>
+          <span className='text-xs'>Currently playing {isHot ? 'energetic 🔥' : 'ambient ❄️'} version.</span>
         </div>
       </div>
     </Modal>

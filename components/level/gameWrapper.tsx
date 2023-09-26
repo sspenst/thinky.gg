@@ -50,7 +50,7 @@ export default function GameWrapper({ collection, level, onNext, onPrev, user }:
       nextButton?.classList.remove(styles['highlight-once']);
     }, 1300);
   }, []);
-  const { setIsHot } = useContext(AudioPlayerContext);
+  const { dynamicMusic, setIsHot } = useContext(AudioPlayerContext);
 
   return (
     <Game
@@ -62,7 +62,9 @@ export default function GameWrapper({ collection, level, onNext, onPrev, user }:
       level={level}
       onComplete={() => {
         // click on #btn-audio-player-version
-        setIsHot(true);
+        if (dynamicMusic) {
+          setIsHot(true);
+        }
 
         if (!user) {
           signUpToast();
