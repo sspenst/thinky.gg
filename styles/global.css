@@ -304,6 +304,14 @@ body {
   background-color: var(--bg-color-4);
 }
 
+.audio-bar-button {
+  background-color: var(--bg-color-2);
+}
+
+.audio-bar-button:hover {
+  background-color: var(--bg-color-4);
+}
+
 .glow {
   animation: glow 1s ease-in-out infinite alternate;
   -webkit-animation: glow 1s ease-in-out infinite alternate;
