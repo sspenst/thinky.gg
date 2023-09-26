@@ -56,7 +56,9 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
     audioActive,
     setAudioActive,
     audioAmbient,
-    setAudioAmbient
+    setAudioAmbient,
+    dynamicMusic,
+    maxVolume
   } = useContext(AudioPlayerContext);
 
   const [crossfadeProgress, setCrossfadeProgress] = useState(1);
@@ -174,11 +176,11 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
       audioActive.currentTime = audioAmbient.currentTime;
 
       if (isHot) {
-        audioActive.volume = 1;
+        audioActive.volume = maxVolume;
         audioAmbient.volume = 0;
       } else {
         audioActive.volume = 0;
-        audioAmbient.volume = 1;
+        audioAmbient.volume = maxVolume;
       }
     } else {
       if (intervalRef.current) {
@@ -189,7 +191,7 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
       audioActive?.pause();
       audioAmbient?.pause();
     }
-  }, [audioContext, isPlaying, audioActive, audioAmbient, setAudioContext, seek, currentSongIndex, isHot]);
+  }, [audioContext, isPlaying, audioActive, audioAmbient, setAudioContext, seek, currentSongIndex, isHot, maxVolume]);
 
   useEffect(() => {
     if (!audioContext) {
@@ -235,7 +237,7 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
   }, [isHot, audioContext, audioActive, audioAmbient, setIsHot]);
 
   useEffect(() => {
-  // Clear any existing intervals
+    // Clear any existing intervals
     if (intervalRef.current) {
       return;
     }
@@ -251,9 +253,15 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
     const startActiveVol = audioActive.volume;
     const startAmbientVol = audioAmbient.volume;
 
-    if (startActiveVol === 1 && isHot) {
+    if (startActiveVol >= maxVolume && isHot) {
+      audioActive.volume = maxVolume;
+      audioAmbient.volume = 0;
+
       return;
-    } else if (startAmbientVol === 1 && !isHot) {
+    } else if (startAmbientVol >= maxVolume && !isHot) {
+      audioActive.volume = 0;
+      audioAmbient.volume = maxVolume;
+
       return;
     }
 
@@ -266,11 +274,11 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
         // Crossfade to ambient version
 
         audioActive.volume = Math.max(0, startActiveVol * (1 - progress));
-        audioAmbient.volume = Math.min(1, startAmbientVol + (1 - startAmbientVol) * progress);
+        audioAmbient.volume = Math.min(maxVolume, startAmbientVol + (1 - startAmbientVol) * progress);
       } else {
         // Crossfade to active version
 
-        audioActive.volume = Math.min(1, startActiveVol + (1 - startActiveVol) * progress);
+        audioActive.volume = Math.min(maxVolume, startActiveVol + (1 - startActiveVol) * progress);
         audioAmbient.volume = Math.max(0, startAmbientVol * (1 - progress));
       }
 
@@ -279,12 +287,12 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
       if (progress >= 1) {
         clearInterval(intervalRef.current!);
         // set volumes to exact values
-        audioActive.volume = !isHot ? 0 : 1;
-        audioAmbient.volume = !isHot ? 1 : 0;
+        audioActive.volume = !isHot ? 0 : maxVolume;
+        audioAmbient.volume = !isHot ? maxVolume : 0;
         intervalRef.current = null;
       }
     }, step * 1000);
-  }, [isHot, audioActive, audioAmbient, audioContext]);
+  }, [isHot, audioActive, audioAmbient, audioContext, maxVolume]);
 
   return (
     <div className=' p-2 rounded-lg flex justify-between items-center'
