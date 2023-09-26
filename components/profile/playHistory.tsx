@@ -252,7 +252,7 @@ export default function ProfilePlayHistory({ user }: { user: User }): JSX.Elemen
     <div>
       <div>
         <h1 className='text-center text-2xl font-bold mb-4'>
-          {user.name} Play History
+          Play History
         </h1>
         <div>{uxControls}</div>
       </div>

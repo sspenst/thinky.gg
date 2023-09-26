@@ -9,7 +9,7 @@ import SelectCard from '../cards/selectCard';
 interface RecommendedLevelProps {
   id?: string;
   level?: EnrichedLevel | null;
-  title: string
+  title: string | JSX.Element;
 }
 
 export default function RecommendedLevel({ id, level, title }: RecommendedLevelProps): JSX.Element {

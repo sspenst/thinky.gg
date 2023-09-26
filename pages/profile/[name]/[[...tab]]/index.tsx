@@ -4,7 +4,6 @@ import RoleIcons from '@root/components/page/roleIcons';
 import StyledTooltip from '@root/components/page/styledTooltip';
 import LevelsCompletedByDifficultyList from '@root/components/profile/levelsCompletedByDifficultyList';
 import PlayerRank from '@root/components/profile/playerRank';
-import ProfilePlayHistory from '@root/components/profile/playHistory';
 import { ProfileAchievments } from '@root/components/profile/profileAchievements';
 import ProfileMultiplayer from '@root/components/profile/profileMultiplayer';
 import StatFilter from '@root/constants/statFilter';
@@ -651,7 +650,6 @@ export default function ProfilePage({
               <span>Insights</span>
             </div>
           </Link>
-
           <Link
             className={getTabClassNames(ProfileTab.Achievements)}
             href={`/profile/${user.name}/${ProfileTab.Achievements}`}
@@ -706,7 +704,6 @@ export default function ProfilePage({
               <span>Reviews Received ({reviewsReceivedCount})</span>
             </div>
           </Link>
-
           <MultiSelectUser
             onSelect={(user) => {
               if (user?.name) {
