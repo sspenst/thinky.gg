@@ -3,7 +3,7 @@ import '../styles/global.css';
 import 'react-tooltip/dist/react-tooltip.css';
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react';
 import AudioPlayer from '@root/components/audioPlayer/audioPlayer';
-import { AudioPlayerContext, AudioPlayerState } from '@root/contexts/audioPlayerContext';
+import { AudioPlayerContext, AudioPlayerContextProvider, AudioPlayerState } from '@root/contexts/audioPlayerContext';
 import type { AppProps } from 'next/app';
 import { Rubik, Teko } from 'next/font/google';
 import Head from 'next/head';
@@ -309,15 +309,6 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
   const isEU = Intl.DateTimeFormat().resolvedOptions().timeZone.startsWith('Europe');
 
-  const [audioPlayerState, setAudioPlayerState] = useState<AudioPlayerState>({
-    currentSongIndex: 0,
-    isPlaying: false,
-    isHot: false,
-    currentTitle: '',
-    randomNumber: (Math.random() * 1000000) >> 0
-
-  });
-
   return (
     <>
 
@@ -377,9 +368,9 @@ export default function MyApp({ Component, pageProps }: AppProps) {
             color: 'var(--color)',
           }}>
             <Toaster toastOptions={{ duration: 1500 }} />
-            <AudioPlayerContext.Provider value={[audioPlayerState, setAudioPlayerState]}>
+            <AudioPlayerContextProvider >
               <Component {...pageProps} />
-            </AudioPlayerContext.Provider>
+            </AudioPlayerContextProvider>
           </div>
         </AppContext.Provider>
       </GrowthBookProvider>
