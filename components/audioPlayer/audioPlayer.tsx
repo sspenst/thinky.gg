@@ -19,9 +19,9 @@ const songs = [
     website: 'k2xl.com'
   },*/
   {
-    title: 'Automation',
-    active: '/sounds/music/04 Automaton 2023-09-10.mp3',
-    ambient: '/sounds/music/Automaton Ambient 2023-09-10.mp3',
+    title: 'Pink and Orange',
+    ambient: '/sounds/music/Pink and Orange Ambient 2023-09-20.mp3',
+    active: '/sounds/music/01 Pink and Orange 2023-08-05.mp3',
     artist: 'Tim Halbert',
     website: 'https://www.timhalbert.com/',
   },
@@ -32,10 +32,33 @@ const songs = [
     artist: 'Tim Halbert',
     website: 'https://www.timhalbert.com/',
   },
+
+  {
+    title: 'Automation',
+    active: '/sounds/music/04 Automaton 2023-09-10.mp3',
+    ambient: '/sounds/music/Automaton Ambient 2023-09-10.mp3',
+    artist: 'Tim Halbert',
+    website: 'https://www.timhalbert.com/',
+  },
+
   {
     title: 'Treason',
     ambient: '/sounds/music/Treason Ambient 2023-09-10.mp3',
     active: '/sounds/music/05 Treason 2023-09-10.mp3',
+    artist: 'Tim Halbert',
+    website: 'https://www.timhalbert.com/',
+  },
+  {
+    title: 'Insecticide',
+    ambient: '/sounds/music/Insecticide Ambient 2023-09-20.mp3',
+    active: '/sounds/music/06 Insecticide 2023-08-22.mp3',
+    artist: 'Tim Halbert',
+    website: 'https://www.timhalbert.com/',
+  },
+  {
+    title: 'Flatlander',
+    ambient: '/sounds/music/Flatlander Ambient 2023-09-20.mp3',
+    active: '/sounds/music/09 Flatlander 2023-08-24.mp3',
     artist: 'Tim Halbert',
     website: 'https://www.timhalbert.com/',
   }
