@@ -3,6 +3,13 @@ import { PageContext } from '@root/contexts/pageContext';
 import usePrevious from '@root/hooks/usePrevious';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 
+export interface SongMetaData {
+  title: string;
+  active: string;
+  ambient: string;
+  artist: string;
+  website: string;
+}
 const songs = [
   /*{
     title: 'Test',
@@ -33,7 +40,7 @@ const songs = [
     website: 'https://www.timhalbert.com/',
   }
   // Add more songs here
-];
+] as SongMetaData[];
 
 function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideTitle, hideSettingsButton, onSettingsClick }: {
   hideHotColdButton?: boolean;
@@ -44,23 +51,9 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
   onSettingsClick?: () => void;
 }) {
   const {
-    currentSongIndex,
-    setCurrentSongIndex,
-    isHot,
-    setIsHot,
-    currentTitle,
-    setCurrentTitle,
-    isPlaying,
-    setIsPlaying,
-    audioContext,
-    setAudioContext,
-    audioActive,
-    setAudioActive,
-    audioAmbient,
-    setAudioAmbient,
-    dynamicMusic,
-    maxVolume
-  } = useContext(AudioPlayerContext);
+    currentSongIndex, setCurrentSongIndex, isHot, setIsHot, currentMetaData: currentMetaData, setCurrentMetaData, isPlaying,
+    setIsPlaying, audioContext, setAudioContext, audioActive, setAudioActive, audioAmbient, setAudioAmbient,
+    dynamicMusic, maxVolume } = useContext(AudioPlayerContext);
 
   const [crossfadeProgress, setCrossfadeProgress] = useState(1);
 
@@ -84,7 +77,7 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
     setAudioActive(activeAudio);
     setAudioAmbient(ambientAudio);
     // Listen for metadata loading for active audio
-    setCurrentTitle(songs[index].title);
+    setCurrentMetaData(songs[index]);
 
     activeAudio.volume = isHot ? maxVolume : 0;
     ambientAudio.volume = isHot ? 0 : maxVolume;
@@ -129,7 +122,10 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
       const next = () => {
         ambientAudio.remove();
         activeAudio.remove();
-        setIsHot(false);
+
+        if (dynamicMusic) {
+          setIsHot(false);
+        }
 
         seek((index + 1) % songs.length);
       };
@@ -157,7 +153,7 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
       }
       );
     };
-  }, [isPlaying, setCurrentSongIndex, setAudioActive, setAudioAmbient, setCurrentTitle, isHot, maxVolume, audioActive, audioAmbient, setIsHot]);
+  }, [isPlaying, setCurrentSongIndex, setAudioActive, setAudioAmbient, setCurrentMetaData, isHot, maxVolume, audioActive, audioAmbient, dynamicMusic, setIsHot]);
 
   const handleUserGesture = useCallback(async () => {
     if (!audioContext) {
@@ -327,10 +323,10 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
         ⏮
           </button>
         )}
-        { !hideTitle && currentTitle && (<div className='px-3 py-1 rounded overflow-hidden truncate'
+        { !hideTitle && currentMetaData?.title && (<div className='px-3 py-1 rounded overflow-hidden truncate'
           style={{ backgroundColor: 'var(--bg-color-2)', color: 'var(--color)' }}
         >
-          {currentTitle }
+          {currentMetaData.title }
         </div>
         )}
 
