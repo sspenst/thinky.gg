@@ -1,11 +1,9 @@
-import { useAudioPlayerState } from '@root/contexts/audioPlayerContext';
 import classNames from 'classnames';
 import React, { useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { PageContext } from '../../contexts/pageContext';
 import LinkInfo from '../formatted/linkInfo';
 import Header from '../header';
-import AudioSettingsModal from '../modal/audioSettingsModal';
 import Footer from './footer';
 
 interface PageProps {
@@ -56,11 +54,6 @@ export default function Page({
     }}>
 
       <div className={classNames('flex flex-col', { 'fixed inset-0 overflow-hidden': isFullScreen })}>
-        <AudioSettingsModal isOpen={showAudioSettings} closeModal={() => {
-          console.log('close modal');
-
-          setShowAudioSettings(false);
-        }} />
         {showHeader &&
           <Header
             folders={folders}

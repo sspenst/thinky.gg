@@ -1,4 +1,4 @@
-import { useAudioPlayerState } from '@root/contexts/audioPlayerContext';
+import { AudioPlayerContext } from '@root/contexts/audioPlayerContext';
 import { PageContext } from '@root/contexts/pageContext';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 
@@ -34,27 +34,33 @@ const songs = [
   // Add more songs here
 ];
 
-function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideTitle, hideSettingsButton }: {
+function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideTitle, hideSettingsButton, onSettingsClick }: {
   hideHotColdButton?: boolean;
   hidePlayButton?: boolean;
   hideSeekButtons?: boolean;
   hideTitle?: boolean;
   hideSettingsButton?: boolean;
+  onSettingsClick?: () => void;
 }) {
-  const [audioPlayerState, setAudioPlayerState] = useAudioPlayerState();
-
-  const [currentSongIndex, setCurrentSongIndex] = useState(audioPlayerState.currentSongIndex || 0); // || (Math.random() * songs.length) >> 0
-  const [currentTitle, setCurrentTitle] = useState(audioPlayerState.currentTitle);
-  const [isPlaying, setIsPlaying] = useState(audioPlayerState.isPlaying);
-  const isHot = useRef(audioPlayerState.isHot);
-  const [audioContext, setAudioContext] = useState<AudioContext | undefined>(audioPlayerState.audioContext);
-  const [audioActive, setAudioActive] = useState<HTMLAudioElement | undefined>(audioPlayerState.audioActive);
-  const [audioAmbient, setAudioAmbient] = useState<HTMLAudioElement | undefined>(audioPlayerState.audioAmbient);
+  const {
+    currentSongIndex,
+    setCurrentSongIndex,
+    isHot,
+    setIsHot,
+    currentTitle,
+    setCurrentTitle,
+    isPlaying,
+    setIsPlaying,
+    audioContext,
+    setAudioContext,
+    audioActive,
+    setAudioActive,
+    audioAmbient,
+    setAudioAmbient
+  } = useContext(AudioPlayerContext);
 
   const [crossfadeProgress, setCrossfadeProgress] = useState(0);
 
-  console.log('In audio player main', isPlaying);
-  const { setShowAudioSettings } = useContext(PageContext);
   const seek = useCallback((index: number) => {
     // Pause current audio elements
     if (isPlaying) {
@@ -77,8 +83,8 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
     // Listen for metadata loading for active audio
     setCurrentTitle(songs[index].title);
 
-    activeAudio.volume = isHot.current ? 1 : 0;
-    ambientAudio.volume = isHot.current ? 0 : 1;
+    activeAudio.volume = isHot ? 1 : 0;
+    ambientAudio.volume = isHot ? 0 : 1;
     activeAudio.currentTime = 0;
     ambientAudio.currentTime = 0;
 
@@ -89,8 +95,8 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
 
       // add listeners for when the audio ends
       const onLoaded = () => {
-        activeAudio.volume = isHot.current ? 1 : 0;
-        ambientAudio.volume = isHot.current ? 0 : 1;
+        activeAudio.volume = isHot ? 1 : 0;
+        ambientAudio.volume = isHot ? 0 : 1;
         activeAudio.currentTime = 0;
         ambientAudio.currentTime = activeAudio.currentTime;
       };
@@ -120,8 +126,8 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
       const next = () => {
         ambientAudio.remove();
         activeAudio.remove();
-        isHot.current = (false);
-        console.log('finished...');
+        setIsHot(false);
+
         seek((index + 1) % songs.length);
       };
 
@@ -148,7 +154,7 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
       }
       );
     };
-  }, [isPlaying, audioActive, audioAmbient]);
+  }, [isPlaying, setCurrentSongIndex, setAudioActive, setAudioAmbient, setCurrentTitle, isHot, audioActive, audioAmbient, setIsHot]);
 
   const handleUserGesture = useCallback(async () => {
     if (!audioContext) {
@@ -167,7 +173,7 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
       // make sure they are playing at exact same time
       audioActive.currentTime = audioAmbient.currentTime;
 
-      if (isHot.current) {
+      if (isHot) {
         audioActive.volume = 1;
         audioAmbient.volume = 0;
       } else {
@@ -183,7 +189,7 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
       audioActive?.pause();
       audioAmbient?.pause();
     }
-  }, [audioContext, isPlaying, audioActive, audioAmbient, seek, currentSongIndex]);
+  }, [audioContext, isPlaying, audioActive, audioAmbient, setAudioContext, seek, currentSongIndex, isHot]);
 
   useEffect(() => {
     if (!audioContext) {
@@ -211,67 +217,74 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
   const intervalRef = useRef<null | NodeJS.Timeout>(null);
 
   const toggleVersion = useCallback((type: 'hot' | 'cool' | 'switch' = 'switch') => {
-    console.log('toggleVersion', type, isHot.current, audioContext);
-
-    if (type === 'hot' && isHot.current) {
+    if (type === 'hot' && isHot) {
       return;
     }
 
-    if (type === 'cool' && !isHot.current) {
+    if (type === 'cool' && !isHot) {
+      return;
+    }
+
+    if (intervalRef.current) {
       return;
     }
 
     if (audioContext && audioActive && audioAmbient) {
-    // Clear any existing intervals
-      if (intervalRef.current) {
-        return;
-      }
-
-      audioActive.currentTime = audioAmbient.currentTime;
-
-      const duration = 1; // crossfade duration in seconds
-      const step = 0.01; // step size
-      const startActiveVol = audioActive.volume;
-      const startAmbientVol = audioAmbient.volume;
-
-      let progress = 0;
-
-      intervalRef.current = setInterval(() => {
-        progress += step / duration;
-
-        if (!isHot.current) {
-        // Crossfade to ambient version
-
-          audioActive.volume = Math.max(0, startActiveVol * (1 - progress));
-          audioAmbient.volume = Math.min(1, startAmbientVol + (1 - startAmbientVol) * progress);
-        } else {
-        // Crossfade to active version
-
-          audioActive.volume = Math.min(1, startActiveVol + (1 - startActiveVol) * progress);
-          audioAmbient.volume = Math.max(0, startAmbientVol * (1 - progress));
-        }
-
-        setCrossfadeProgress(progress);
-
-        if (progress >= 1) {
-          clearInterval(intervalRef.current!);
-          // set volumes to exact values
-          audioActive.volume = !isHot.current ? 0 : 1;
-          audioAmbient.volume = !isHot.current ? 1 : 0;
-          intervalRef.current = null;
-        }
-      }, step * 1000);
-      isHot.current = !isHot.current;
+      setIsHot(!isHot);
     }
-  }, [audioContext, audioActive, audioAmbient]);
+  }, [isHot, audioContext, audioActive, audioAmbient, setIsHot]);
 
   useEffect(() => {
-    // Update the context when local state changes
-    setAudioPlayerState({ currentSongIndex, isPlaying, isHot: isHot.current, audioContext, audioActive, audioAmbient, currentTitle,
-      toggleVersion: toggleVersion
+  // Clear any existing intervals
+    if (intervalRef.current) {
+      return;
+    }
 
-    });
-  }, [currentSongIndex, isPlaying, setAudioPlayerState, audioContext, audioActive, audioAmbient, currentTitle, toggleVersion]);
+    if (!(audioContext && audioActive && audioAmbient)) {
+      return;
+    }
+
+    audioActive.currentTime = audioAmbient.currentTime;
+
+    const duration = 1; // crossfade duration in seconds
+    const step = 0.01; // step size
+    const startActiveVol = audioActive.volume;
+    const startAmbientVol = audioAmbient.volume;
+
+    if (startActiveVol === 1 && isHot) {
+      return;
+    } else if (startAmbientVol === 1 && !isHot) {
+      return;
+    }
+
+    let progress = 0;
+
+    intervalRef.current = setInterval(() => {
+      progress += step / duration;
+
+      if (!isHot) {
+        // Crossfade to ambient version
+
+        audioActive.volume = Math.max(0, startActiveVol * (1 - progress));
+        audioAmbient.volume = Math.min(1, startAmbientVol + (1 - startAmbientVol) * progress);
+      } else {
+        // Crossfade to active version
+
+        audioActive.volume = Math.min(1, startActiveVol + (1 - startActiveVol) * progress);
+        audioAmbient.volume = Math.max(0, startAmbientVol * (1 - progress));
+      }
+
+      setCrossfadeProgress(progress);
+
+      if (progress >= 1) {
+        clearInterval(intervalRef.current!);
+        // set volumes to exact values
+        audioActive.volume = !isHot ? 0 : 1;
+        audioAmbient.volume = !isHot ? 1 : 0;
+        intervalRef.current = null;
+      }
+    }, step * 1000);
+  }, [isHot, audioActive, audioAmbient, audioContext]);
 
   return (
     <div className=' p-2 rounded-lg flex justify-between items-center'
@@ -329,7 +342,7 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
           color: 'var(--color)' }}
         className='px-3 py-1 rounded'
       >
-        {isHot.current ? '🔥' : '❄️'}
+        {isHot ? '🔥' : '❄️'}
       </button>
       }
       { !hideSettingsButton &&
@@ -337,7 +350,7 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
         style={{ backgroundColor: 'var(--bg-color-2)', color: 'var(--color)' }}
         className='px-3 py-1 rounded'
         onClick={() => {
-          setShowAudioSettings(true);
+          onSettingsClick && onSettingsClick();
         }}
       >
         ⚙️ {/* Settings icon */}

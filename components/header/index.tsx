@@ -1,10 +1,13 @@
+import { PageContext } from '@root/contexts/pageContext';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { AppContext } from '../../contexts/appContext';
 import AudioPlayer from '../audioPlayer/audioPlayer';
+import { AudioPlayerHeader } from '../audioPlayer/audioPlayerHeader';
 import LinkInfo from '../formatted/linkInfo';
+import AudioSettingsModal from '../modal/audioSettingsModal';
 import Directory from './directory';
 import Dropdown from './dropdown';
 import UserInfo from './userInfo';
@@ -50,7 +53,7 @@ export default function Header({
         <Directory folders={folders} subtitle={subtitle} title={title} />
       </div>
       <div className='flex gap-4 items-center z-20'>
-        <AudioPlayer />
+        <AudioPlayerHeader />
         <UserInfo />
         <Dropdown />
       </div>

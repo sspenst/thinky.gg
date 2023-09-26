@@ -1,6 +1,7 @@
-import { useAudioPlayerState } from '@root/contexts/audioPlayerContext';
+import { AppContext } from '@root/contexts/appContext';
+import { AudioPlayerContext } from '@root/contexts/audioPlayerContext';
 import Link from 'next/link';
-import React, { useCallback } from 'react';
+import React, { useCallback, useContext } from 'react';
 import toast from 'react-hot-toast';
 import { throttle } from 'throttle-debounce';
 import Collection from '../../models/db/collection';
@@ -49,7 +50,7 @@ export default function GameWrapper({ collection, level, onNext, onPrev, user }:
       nextButton?.classList.remove(styles['highlight-once']);
     }, 1300);
   }, []);
-  const [audioPlayerState] = useAudioPlayerState();
+  const { setIsHot } = useContext(AudioPlayerContext);
 
   return (
     <Game
@@ -61,7 +62,7 @@ export default function GameWrapper({ collection, level, onNext, onPrev, user }:
       level={level}
       onComplete={() => {
         // click on #btn-audio-player-version
-        audioPlayerState.toggleVersion && audioPlayerState.toggleVersion('hot');
+        setIsHot(true);
 
         if (!user) {
           signUpToast();

@@ -19,6 +19,7 @@ import DismissToast from '../toasts/dismissToast';
 const enum Modal {
   AddLevelToCollection,
   Theme,
+  AudioSettings,
 }
 
 export default function Dropdown() {
