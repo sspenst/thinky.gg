@@ -1,11 +1,11 @@
 import { ProStatsCommunityStepData } from '@root/contexts/levelContext';
-import { ValidObjectId } from '@root/helpers/apiWrapper';
+import apiWrapper, { ValidObjectId } from '@root/helpers/apiWrapper';
 import mongoose from 'mongoose';
-import { NextApiResponse } from 'next';
+import { NextApiRequest, NextApiResponse } from 'next';
 import ProStatsLevelType from '../../../../../constants/proStatsLevelType';
 import isPro from '../../../../../helpers/isPro';
 import cleanUser from '../../../../../lib/cleanUser';
-import withAuth, { NextApiRequestWithAuth } from '../../../../../lib/withAuth';
+import { getUserFromToken } from '../../../../../lib/withAuth';
 import { PlayAttemptModel, StatModel, UserModel } from '../../../../../models/mongoose';
 import { AttemptContext } from '../../../../../models/schemas/playAttemptSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../../../models/schemas/userSchema';
@@ -254,20 +254,22 @@ async function getPlayAttemptsOverTime(levelId: string, userId: string) {
   ]);
 }
 
-export default withAuth({
+export default apiWrapper({
   GET: {
     query: {
       id: ValidObjectId(true),
     }
   },
-}, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+}, async (req: NextApiRequest, res: NextApiResponse) => {
+  const token = req?.cookies?.token;
+  const reqUser = token ? await getUserFromToken(token, req) : null;
   const { id: levelId } = req.query as { id: string };
-  const pro = isPro(req.user);
+  const pro = reqUser && isPro(reqUser);
   const [communityStepData, playAttemptsOverTime, communityPlayAttemptsData] = await Promise.all([
     getCommunityStepData(levelId, !pro),
     ...(!pro ? [] : [
-      getPlayAttemptsOverTime(levelId, req.userId),
-      getCommunityPlayAttemptsData(levelId, req.userId),
+      getPlayAttemptsOverTime(levelId, reqUser._id.toString()),
+      getCommunityPlayAttemptsData(levelId, reqUser._id.toString()),
     ]),
   ]);
 
