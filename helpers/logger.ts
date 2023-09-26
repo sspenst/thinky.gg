@@ -33,17 +33,12 @@ async function makeLogger() {
   let options = devLoggerOptions;
 
   if (!isLocal() && process.env.NODE_ENV !== 'test') {
-  // dynamically import newrelic formatter @newrelic/winston-enricher
-    const newrelicFormatter = (await import('@newrelic/winston-enricher')).default;
-    const newrelicWinstonFormatter = newrelicFormatter(winston);
-
     options = {
       ...devLoggerOptions,
       level: 'info',
       format: format.combine(
         winston.format.splat(),
         format.errors({ stack: true }),
-        newrelicWinstonFormatter(),
       ),
     };
   }
