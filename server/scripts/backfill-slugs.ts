@@ -68,8 +68,7 @@ async function startBackfillCollectionSlugs() {
   if (error) {
     console.error('\nExiting status code 1');
     process.exit(1);
-  }
-  else {
+  } else {
     console.log('\nWoohoo!\n\nSuccessfully completed collection smoke tests.\nExiting with status code 0');
     process.exit(0);
   }

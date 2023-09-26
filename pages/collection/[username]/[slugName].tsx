@@ -1,4 +1,5 @@
 import FormattedUser from '@root/components/formatted/formattedUser';
+import StatFilter from '@root/constants/statFilter';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import { NextSeo } from 'next-seo';
@@ -13,7 +14,7 @@ import DeleteCollectionModal from '../../../components/modal/deleteCollectionMod
 import Page from '../../../components/page/page';
 import Dimensions from '../../../constants/dimensions';
 import { AppContext } from '../../../contexts/appContext';
-import filterSelectOptions, { FilterSelectOption } from '../../../helpers/filterSelectOptions';
+import statFilterOptions from '../../../helpers/filterSelectOptions';
 import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
@@ -79,7 +80,7 @@ export default function CollectionPage({ collection }: CollectionProps) {
   const [filterText, setFilterText] = useState('');
   const [isAddCollectionOpen, setIsAddCollectionOpen] = useState(false);
   const [isDeleteCollectionOpen, setIsDeleteCollectionOpen] = useState(false);
-  const [showFilter, setShowFilter] = useState(FilterSelectOption.All);
+  const [statFilter, setStatFilter] = useState(StatFilter.All);
   const { user } = useContext(AppContext);
 
   const getOptions = useCallback(() => {
@@ -104,13 +105,13 @@ export default function CollectionPage({ collection }: CollectionProps) {
   }, [collection]);
 
   const getFilteredOptions = useCallback(() => {
-    return filterSelectOptions(getOptions(), showFilter, filterText);
-  }, [filterText, getOptions, showFilter]);
+    return statFilterOptions(getOptions(), statFilter, filterText);
+  }, [filterText, getOptions, statFilter]);
 
   const onFilterClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const value = e.currentTarget.value as FilterSelectOption;
+    const value = e.currentTarget.value as StatFilter;
 
-    setShowFilter(showFilter === value ? FilterSelectOption.All : value);
+    setStatFilter(statFilter === value ? StatFilter.All : value);
   };
 
   return (<>
@@ -183,7 +184,7 @@ export default function CollectionPage({ collection }: CollectionProps) {
           </div>
         }
         <SelectFilter
-          filter={showFilter}
+          filter={statFilter}
           onFilterClick={onFilterClick}
           placeholder={`Search ${getFilteredOptions().length} level${getFilteredOptions().length !== 1 ? 's' : ''}...`}
           searchText={filterText}

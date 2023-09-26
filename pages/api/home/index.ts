@@ -1,8 +1,8 @@
+import StatFilter from '@root/constants/statFilter';
 import Level from '@root/models/db/level';
 import { LevelModel, StatModel } from '@root/models/mongoose';
 import TimeRange from '../../../constants/timeRange';
 import { ValidType } from '../../../helpers/apiWrapper';
-import { FilterSelectOption } from '../../../helpers/filterSelectOptions';
 import withAuth from '../../../lib/withAuth';
 import User from '../../../models/db/user';
 import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
@@ -69,9 +69,9 @@ async function getRecommendedLevel(reqUser: User) {
     minRating: '0.55',
     maxRating: '1',
     numResults: '10', // randomly select one of these
-    showFilter: FilterSelectOption.HideWon,
     sortBy: 'calcDifficultyEstimate',
     sortDir: 'asc',
+    statFilter: StatFilter.HideWon,
     timeRange: TimeRange[TimeRange.All],
   } as SearchQuery;
 
@@ -87,9 +87,9 @@ async function getRecommendedLevel(reqUser: User) {
       minRating: '0.55',
       maxRating: '1',
       numResults: '10', // randomly select one of these
-      showFilter: FilterSelectOption.HideWon,
       sortBy: 'calcDifficultyEstimate',
       sortDir: 'asc',
+      statFilter: StatFilter.HideWon,
       timeRange: TimeRange[TimeRange.All],
     } as SearchQuery;
 
@@ -111,8 +111,8 @@ async function getRecommendedUnattemptedLevel(reqUser: User) {
   const query = {
     disableCount: 'true',
     numResults: '10', // randomly select one of these
-    showFilter: FilterSelectOption.ShowUnattempted,
     sortBy: 'playersBeaten',
+    statFilter: StatFilter.ShowUnattempted,
     timeRange: TimeRange[TimeRange.All],
   } as SearchQuery;
 

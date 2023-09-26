@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // run with ts-node -r tsconfig-paths/register --files server/scripts/save.ts
 // import dotenv
 // import tsconfig-paths

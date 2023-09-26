@@ -10,7 +10,7 @@ import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import { createNewRecordOnALevelYouBeatNotifications } from '../../../helpers/notificationHelper';
-import validateSolution from '../../../helpers/validateSolution';
+import validateSolution, { randomRotateLevelDataViaMatchHash } from '../../../helpers/validateSolution';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level, { EnrichedLevel } from '../../../models/db/level';
 import Record from '../../../models/db/record';
@@ -63,6 +63,10 @@ export default withAuth({
           resTrack.status = 401;
           resTrack.json.error = `Unauthorized access for level ${levelId}`;
           throw new Error(resTrack.json.error);
+        }
+
+        if (matchId) {
+          randomRotateLevelDataViaMatchHash(level, matchId);
         }
 
         if (!validateSolution(directions, level)) {

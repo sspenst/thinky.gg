@@ -66,7 +66,7 @@ export async function refreshAchievements(userId: Types.ObjectId, categories: Ac
     Promise.all(fetchPromises),
     AchievementModel.find<Achievement>({ userId: userId }, { type: 1, }, { lean: true }),
   ]);
-    // neededDataArray is an array of objects with unique keys. Let's combine into one big object
+  // neededDataArray is an array of objects with unique keys. Let's combine into one big object
   const neededData = neededDataArray.reduce((acc, cur) => ({ ...acc, ...cur }), {});
   let achievementsCreated = 0;
 
@@ -82,6 +82,7 @@ export async function refreshAchievements(userId: Types.ObjectId, categories: Ac
         continue;
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (achievementInfo.unlocked(neededData as any)) {
         achievementsCreatedPromises.push(createNewAchievement(achievementType as AchievementType, userId, achievementsCreatedPromises.length > 0)); // for each category, only send one push notification
       }

@@ -1,4 +1,5 @@
 import PagePath from '@root/constants/pagePath';
+import StatFilter from '@root/constants/statFilter';
 import isGuest from '@root/helpers/isGuest';
 import classNames from 'classnames';
 import Link from 'next/link';
@@ -8,7 +9,6 @@ import Dimensions from '../../constants/dimensions';
 import Theme from '../../constants/theme';
 import TimeRange from '../../constants/timeRange';
 import { AppContext } from '../../contexts/appContext';
-import { FilterSelectOption } from '../../helpers/filterSelectOptions';
 import getProfileSlug from '../../helpers/getProfileSlug';
 import { useTour } from '../../hooks/useTour';
 import { EnrichedLevel } from '../../models/db/level';
@@ -235,8 +235,8 @@ export default function HomeLoggedIn({
             href={{
               pathname: '/search',
               query: {
-                showFilter: FilterSelectOption.HideWon,
                 sortBy: 'ts',
+                statFilter: StatFilter.HideWon,
                 timeRange: TimeRange[TimeRange.All],
               },
             }}
