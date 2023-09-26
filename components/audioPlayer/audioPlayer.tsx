@@ -59,7 +59,7 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
     setAudioAmbient
   } = useContext(AudioPlayerContext);
 
-  const [crossfadeProgress, setCrossfadeProgress] = useState(0);
+  const [crossfadeProgress, setCrossfadeProgress] = useState(1);
 
   const seek = useCallback((index: number) => {
     // Pause current audio elements
@@ -291,11 +291,11 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
       style={{
         backgroundColor: 'var(--bg-color-3)',
       }}>
-      <div className='md:flex flex-row items-center hidden '>
+      <div className='md:flex flex-row items-center hidden'>
         { !hideSeekButtons && (
           <button
-            className='px-3 py-1 rounded'
-            style={{ backgroundColor: 'var(--bg-color-2)', color: 'var(--color)' }}
+            className='px-3 py-1 rounded audio-bar-button'
+            style={{ color: 'var(--color)' }}
             onClick={() => {
               seek((currentSongIndex - 1 + songs.length) % songs.length);
             }
@@ -312,8 +312,8 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
 
         { !hideSeekButtons && (
           <button
-            className='px-3 py-1 rounded'
-            style={{ backgroundColor: 'var(--bg-color-2)', color: 'var(--color)' }}
+            className='px-3 py-1 rounded audio-bar-button'
+            style={{ color: 'var(--color)' }}
             onClick={() => {
               seek((currentSongIndex + 1) % songs.length);
             }
@@ -326,8 +326,8 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
       { !hidePlayButton && (
         <button id='btn-audio-player-play'
           onClick={togglePlay}
-          style={{ backgroundColor: 'var(--bg-color-2)', color: 'var(--color)' }}
-          className='px-3 py-1 rounded'
+          style={{ color: 'var(--color)' }}
+          className='px-3 py-1 rounded audio-bar-button'
         >
           {isPlaying ? '❚❚' : '▶'}
         </button>
@@ -347,8 +347,8 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
       }
       { !hideSettingsButton &&
       <button
-        style={{ backgroundColor: 'var(--bg-color-2)', color: 'var(--color)' }}
-        className='px-3 py-1 rounded'
+        style={{ color: 'var(--color)' }}
+        className='px-3 py-1 rounded audio-bar-button'
         onClick={() => {
           onSettingsClick && onSettingsClick();
         }}
