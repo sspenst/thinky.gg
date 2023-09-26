@@ -1,5 +1,6 @@
 import { AudioPlayerContext } from '@root/contexts/audioPlayerContext';
 import { PageContext } from '@root/contexts/pageContext';
+import usePrevious from '@root/hooks/usePrevious';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 const songs = [
@@ -85,8 +86,8 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
     // Listen for metadata loading for active audio
     setCurrentTitle(songs[index].title);
 
-    activeAudio.volume = isHot ? 1 : 0;
-    ambientAudio.volume = isHot ? 0 : 1;
+    activeAudio.volume = isHot ? maxVolume : 0;
+    ambientAudio.volume = isHot ? 0 : maxVolume;
     activeAudio.currentTime = 0;
     ambientAudio.currentTime = 0;
 
@@ -97,8 +98,8 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
 
       // add listeners for when the audio ends
       const onLoaded = () => {
-        activeAudio.volume = isHot ? 1 : 0;
-        ambientAudio.volume = isHot ? 0 : 1;
+        activeAudio.volume = isHot ? maxVolume : 0;
+        ambientAudio.volume = isHot ? 0 : maxVolume;
         activeAudio.currentTime = 0;
         ambientAudio.currentTime = activeAudio.currentTime;
       };
@@ -156,7 +157,7 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
       }
       );
     };
-  }, [isPlaying, setCurrentSongIndex, setAudioActive, setAudioAmbient, setCurrentTitle, isHot, audioActive, audioAmbient, setIsHot]);
+  }, [isPlaying, setCurrentSongIndex, setAudioActive, setAudioAmbient, setCurrentTitle, isHot, maxVolume, audioActive, audioAmbient, setIsHot]);
 
   const handleUserGesture = useCallback(async () => {
     if (!audioContext) {
@@ -236,8 +237,23 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
     }
   }, [isHot, audioContext, audioActive, audioAmbient, setIsHot]);
 
+  const previousValues = usePrevious({ maxVolume });
+
   useEffect(() => {
     // Clear any existing intervals
+    if (previousValues?.maxVolume !== maxVolume) {
+      if (audioActive && audioAmbient) {
+        audioActive.volume = !isHot ? 0 : maxVolume;
+        audioAmbient.volume = !isHot ? maxVolume : 0;
+
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+        }
+      }
+
+      return;
+    }
+
     if (intervalRef.current) {
       return;
     }
@@ -292,7 +308,7 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
         intervalRef.current = null;
       }
     }, step * 1000);
-  }, [isHot, audioActive, audioAmbient, audioContext, maxVolume]);
+  }, [isHot, audioActive, audioAmbient, audioContext, maxVolume, previousValues?.maxVolume]);
 
   return (
     <div className=' p-2 rounded-lg flex justify-between items-center'
