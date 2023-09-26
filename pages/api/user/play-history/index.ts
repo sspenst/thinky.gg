@@ -3,29 +3,29 @@ import { getEnrichLevelsPipelineSteps } from '@root/helpers/enrich';
 import isPro from '@root/helpers/isPro';
 import withAuth from '@root/lib/withAuth';
 import User from '@root/models/db/user';
-import { PlayAttemptModel } from '@root/models/mongoose';
+import { PlayAttemptModel, UserModel } from '@root/models/mongoose';
 import { LEVEL_DEFAULT_PROJECTION } from '@root/models/schemas/levelSchema';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
+import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import { PipelineStage, Types } from 'mongoose';
 
 interface GetPlayAttemptsParams {
-  userId: Types.ObjectId;
   cursor?: Types.ObjectId;
   datetime?: Date;
-  minDurationMinutes?: number;
   filterWon?: boolean;
+  minDurationMinutes?: number;
 }
 
-async function GetPlayAttempts(reqUser: User, params: GetPlayAttemptsParams) {
-  const { userId, cursor, datetime, minDurationMinutes, filterWon } = params;
+export async function getPlayAttempts(reqUser: User, params: GetPlayAttemptsParams, limit = 10) {
+  const { cursor, datetime, filterWon, minDurationMinutes } = params;
   const datetimeInSeconds = datetime ? Math.floor(datetime.getTime() / 1000) : undefined;
-
   const minDurationInSeconds = minDurationMinutes ? minDurationMinutes * 60 : undefined;
 
-  const pipeline = [
+  return await PlayAttemptModel.aggregate([
     {
       $match: {
-        userId: userId,
+        isDeleted: { $ne: true },
+        userId: reqUser._id,
         ...(cursor && { _id: { $lt: cursor } }),
         ...(datetimeInSeconds && { endTime: { $lte: datetimeInSeconds } }),
         ...(filterWon && { attemptContext: AttemptContext.JUST_BEATEN }),
@@ -44,10 +44,12 @@ async function GetPlayAttempts(reqUser: User, params: GetPlayAttemptsParams) {
     {
       $sort: {
         endTime: -1,
+        // NB: if end time is identical, we want to get the highest attempt context (JUST_BEATEN over UNBEATEN)
+        attemptContext: -1,
       },
     },
     {
-      $limit: 10,
+      $limit: limit,
     },
     {
       $lookup: {
@@ -68,39 +70,49 @@ async function GetPlayAttempts(reqUser: User, params: GetPlayAttemptsParams) {
         path: '$levelId',
       },
     },
-
-  ];
-
-  return PlayAttemptModel.aggregate(pipeline as PipelineStage[]);
+    {
+      $lookup: {
+        from: UserModel.collection.name,
+        localField: 'levelId.userId',
+        foreignField: '_id',
+        as: 'levelId.userId',
+        pipeline: [
+          {
+            $project: USER_DEFAULT_PROJECTION,
+          },
+        ],
+      },
+    },
+    {
+      $unwind: '$levelId.userId',
+    },
+  ] as PipelineStage[]);
 }
 
 export default withAuth({
   GET: {
     query: {
+      cursor: ValidObjectId(false),
       datetime: ValidDate(false),
-      minDurationMinutes: ValidNumber(false, 0, 60 * 24),
       filterWon: ValidEnum(['true', 'false'], false),
-      cursor: ValidObjectId(false)
+      minDurationMinutes: ValidNumber(false, 0, 60 * 24),
     }
   }
 }, async (req, res) => {
-  if (isPro(req.user) === false) {
+  if (!isPro(req.user)) {
     return res.status(403).json({
       error: 'You must be a pro user to access this endpoint.',
     });
   }
 
-  const { datetime, minDurationMinutes, cursor, filterWon } = req.query;
+  const { cursor, datetime, filterWon, minDurationMinutes } = req.query;
 
-  const playAttempts = await GetPlayAttempts(req.user,
-    {
-      userId: req.user._id,
-      cursor: new Types.ObjectId(cursor as string),
-      datetime: datetime ? new Date(datetime as string) : undefined,
-      minDurationMinutes: minDurationMinutes ? parseInt(minDurationMinutes as string) : undefined,
-      filterWon: filterWon === 'true'
-    }
-  );
+  const playAttempts = await getPlayAttempts(req.user, {
+    cursor: new Types.ObjectId(cursor as string),
+    datetime: datetime ? new Date(datetime as string) : undefined,
+    filterWon: filterWon === 'true',
+    minDurationMinutes: minDurationMinutes ? parseInt(minDurationMinutes as string) : undefined,
+  });
 
   return res.status(200).json(playAttempts);
 });

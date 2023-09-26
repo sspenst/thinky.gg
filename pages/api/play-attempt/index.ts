@@ -1,100 +1,25 @@
 import PlayAttempt from '@root/models/db/playAttempt';
-import mongoose, { PipelineStage, Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { ValidEnum, ValidObjectId } from '../../../helpers/apiWrapper';
-import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
 import getDifficultyEstimate from '../../../helpers/getDifficultyEstimate';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { EnrichedLevel } from '../../../models/db/level';
 import User from '../../../models/db/user';
-import { LevelModel, PlayAttemptModel, UserModel } from '../../../models/mongoose';
-import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
+import { LevelModel, PlayAttemptModel } from '../../../models/mongoose';
 import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
-import UserSchema, { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
+import { getPlayAttempts } from '../user/play-history';
 
 export async function getLastLevelPlayed(user: User) {
-  const lastAgg = await PlayAttemptModel.aggregate([
-    // find the latest playattempt
-    {
-      $match: {
-        isDeleted: { $ne: true },
-        userId: user._id,
-      },
-    },
-    {
-      $sort: {
-        endTime: -1,
-        // NB: if end time is identical, we want to get the highest attempt context (JUST_BEATEN over UNBEATEN)
-        attemptContext: -1,
-      },
-    },
-    {
-      $project: {
-        levelId: 1,
-        attemptContext: 1,
-      }
-    },
-    {
-      $limit: 1,
-    },
-    // we only want to show the playattempt if the level is still unbeaten
-    {
-      $match: {
-        attemptContext: AttemptContext.UNBEATEN,
-      }
-    },
-    {
-      $lookup: {
-        from: LevelModel.collection.name,
-        localField: 'levelId',
-        foreignField: '_id',
-        as: 'levelId',
-        pipeline: [
-          { $match: { isDeleted: { $ne: true } } },
-          {
-            $project: {
-              ...LEVEL_DEFAULT_PROJECTION
-            }
-          },
-          ...getEnrichLevelsPipelineSteps(user, '_id', '') as PipelineStage.Lookup[]
-        ]
-      },
-    },
-    {
-      $unwind: '$levelId',
-    },
-    {
-      $lookup: {
-        from: UserModel.collection.name,
-        localField: 'levelId.userId',
-        foreignField: '_id',
-        as: 'levelId.userId',
-        pipeline: [
-          {
-            $project: {
-              ...USER_DEFAULT_PROJECTION
-            }
-          }
-        ]
-      },
-    },
-    {
-      $unwind: '$levelId.userId',
-    },
-    {
-      $replaceRoot: {
-        newRoot: '$levelId',
-      }
-    },
-  ]);
+  const playAttempts = await getPlayAttempts(user, {}, 1);
 
-  if (lastAgg.length === 0) {
+  if (playAttempts.length === 0) {
     return null;
   }
 
-  return lastAgg[0] as EnrichedLevel;
+  return playAttempts[0].levelId as EnrichedLevel;
 }
 
 // This API extends an existing playAttempt, or creates a new one if the last

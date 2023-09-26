@@ -15,7 +15,6 @@ export default function ProfilePlayHistory({ user }: { user: User }): JSX.Elemen
   const [selectedDate, setSelectedDate] = useState(null);
   const [minDurationMinutes, setMinDurationMinutes] = useState(0);
   const [filterWon, setFilterWon] = useState(false);
-
   const [cursor, setCursor] = useState<string | null>();
   const [accumulatedPlayHistory, setAccumulatedPlayHistory] = useState<PlayAttempt[]>([]);
   const [intermediateMinDuration, setIntermediateMinDuration] = useState(0);
@@ -52,6 +51,7 @@ export default function ProfilePlayHistory({ user }: { user: User }): JSX.Elemen
       });
     };
   }, []);
+
   useEffect(() => {
     if (playHistory) {
       setAccumulatedPlayHistory(prev => [...prev, ...playHistory].filter((playAttempt, index, self) => {
@@ -232,9 +232,7 @@ export default function ProfilePlayHistory({ user }: { user: User }): JSX.Elemen
               setAccumulatedPlayHistory([]); // Clear the play history
               setCursor(null); // Reset the cursor
               setFilterWon(!filterWon);
-            }
-
-            }
+            }}
           />
         </div>
       </div>
