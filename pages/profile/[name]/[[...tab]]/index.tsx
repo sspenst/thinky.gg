@@ -642,6 +642,15 @@ export default function ProfilePage({
             </div>
           </Link>
           <Link
+            className={getTabClassNames(ProfileTab.Insights)}
+            href={`/profile/${user.name}/${ProfileTab.Insights}`}
+          >
+            <div className='flex flex-row items-center gap-2'>
+              <Image alt='pro' src='/pro.svg' width='16' height='16' />
+              <span>Insights</span>
+            </div>
+          </Link>
+          <Link
             className={getTabClassNames(ProfileTab.Achievements)}
             href={`/profile/${user.name}/${ProfileTab.Achievements}`}
           >
@@ -693,15 +702,6 @@ export default function ProfilePage({
             <div className='flex flex-row items-center gap-2'>
               <span>📝</span>
               <span>Reviews Received ({reviewsReceivedCount})</span>
-            </div>
-          </Link>
-          <Link
-            className={getTabClassNames(ProfileTab.Insights)}
-            href={`/profile/${user.name}/${ProfileTab.Insights}`}
-          >
-            <div className='flex flex-row items-center gap-2'>
-              <Image alt='pro' src='/pro.svg' width='16' height='16' />
-              <span>Insights</span>
             </div>
           </Link>
           <MultiSelectUser
