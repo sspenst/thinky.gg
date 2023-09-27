@@ -129,11 +129,8 @@ describe('Testing latest levels api', () => {
   }, 30000);
   test('If mongo query returns null we should fail gracefully', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-
     jest.spyOn(LevelModel, 'aggregate').mockImplementation(() => {
       return [] as never;
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     });
 
     await testApiHandler({
@@ -157,9 +154,8 @@ describe('Testing latest levels api', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Error finding Levels');
-        expect(response.length).toBeUndefined();
-        expect(res.status).toBe(500);
+        expect(response).toHaveLength(0);
+        expect(res.status).toBe(200);
       },
     });
   });

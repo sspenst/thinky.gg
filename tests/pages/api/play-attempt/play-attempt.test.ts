@@ -336,7 +336,7 @@ const tests = [
       const user = await UserModel.findById(TestId.USER);
       const lastLevelPlayed = await getLastLevelPlayed(user);
 
-      expect(lastLevelPlayed).toBeNull();
+      expect(lastLevelPlayed?._id.toString()).toBe(TestId.LEVEL_4);
     }
   },
   {

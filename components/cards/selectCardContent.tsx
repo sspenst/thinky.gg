@@ -14,7 +14,7 @@ export default function SelectCardContent({ option }: SelectCardContentProps) {
     <div
       className='font-bold break-words p-2'
       style={{
-        width: Dimensions.OptionWidth,
+        width: option.width ?? Dimensions.OptionWidth,
       }}
     >
       <div className={classNames('truncate', (option.text as string)?.length >= 20 ? 'text-sm' : 'text-lg')}>

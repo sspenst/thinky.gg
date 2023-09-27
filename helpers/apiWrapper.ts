@@ -46,6 +46,16 @@ export function ValidType(type: string, mustExist = true, parsedString = false) 
   };
 }
 
+export function ValidDate(mustExist = true) {
+  return (value?: unknown) => {
+    if (!mustExist && !value) {
+      return true;
+    }
+
+    return !isNaN(new Date(value as string).getTime());
+  };
+}
+
 export function ValidEnum(values: string[], mustExist = true) {
   return (value?: unknown) => {
     if (!value) {
