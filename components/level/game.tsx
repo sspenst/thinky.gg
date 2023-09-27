@@ -34,10 +34,10 @@ interface GameProps {
   hideSidebar?: boolean;
   level: Level;
   matchId?: string;
-  onComplete?: () => void;
   onMove?: (gameState: GameState) => void;
   onNext?: () => void;
   onPrev?: () => void;
+  onSolve?: () => void;
   onStatsSuccess?: () => void;
 }
 
@@ -51,10 +51,10 @@ export default function Game({
   hideSidebar,
   level,
   matchId,
-  onComplete,
   onMove,
   onNext,
   onPrev,
+  onSolve,
   onStatsSuccess,
 }: GameProps) {
   const levelContext = useContext(LevelContext);
@@ -283,7 +283,7 @@ export default function Game({
       toast.success(
         <div>
           {index === BEST_CHECKPOINT_INDEX ?
-            'Restored your best solve. Press B again to '
+            'Restored your best completion. Press B again to '
             :
             `Restored checkpoint ${index}. Press ${index} again to `
           }
@@ -460,10 +460,10 @@ export default function Game({
   useEffect(() => {
     const atEnd = gameState.board[gameState.pos.y][gameState.pos.x].tileType === TileType.End;
 
-    if (atEnd && gameState.moves.length <= level.leastMoves && onComplete) {
-      onComplete();
+    if (atEnd && gameState.moves.length <= level.leastMoves && onSolve) {
+      onSolve();
     }
-  }, [gameState, level.leastMoves, onComplete]);
+  }, [gameState, level.leastMoves, onSolve]);
 
   useEffect(() => {
     if (disableCheckpoints || !pro || !checkpoints) {

@@ -9,7 +9,7 @@ import CheckpointsModal from '../modal/checkpointsModal';
 import LevelInfoModal from '../modal/levelInfoModal';
 import Controls from './controls';
 import Grid from './grid';
-import Complete from './info/complete';
+import Solved from './info/solved';
 import Sidebar from './sidebar';
 
 interface GameLayoutProps {
@@ -73,7 +73,7 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, hi
               >
                 {level.name}
               </h1>
-              {level.userMoves === level.leastMoves && <Complete className='-ml-2' />}
+              {level.userMoves === level.leastMoves && <Solved className='-ml-2' />}
             </button>
             by
             <div style={{ minWidth: 100 }}>
