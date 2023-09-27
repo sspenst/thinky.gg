@@ -64,60 +64,6 @@ export default function PlayHistory() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isLoading, playHistory]);
 
-  const display = accumulatedPlayHistory && accumulatedPlayHistory.map(playAttempt => {
-    const level = playAttempt.levelId as EnrichedLevel;
-    let durationInbetween = null;
-
-    if (prevEndTime) {
-      durationInbetween = moment.duration(playAttempt.startTime - prevEndTime, 'seconds').humanize();
-    }
-
-    prevEndTime = playAttempt.endTime;
-
-    const currentDate = moment.unix(playAttempt.startTime).local().format('MMMM Do, YYYY');
-    const showDate = currentDate !== prevDate;
-
-    prevDate = currentDate;
-
-    return (
-      <div
-        className='flex flex-col gap-2'
-        key={playAttempt._id.toString()}
-      >
-        {showDate ?
-          <span className='text-lg font-medium pt-4'>
-            {currentDate}
-          </span>
-          :
-          durationInbetween && <span className='px-1' style={{ color: 'var(--color-gray)' }}>{durationInbetween} later</span>
-        }
-        <div className='flex items-center gap-4'>
-          <div className='w-4 h-full flex justify-center relative'>
-            <div className='w-0.5 h-full rounded-full' style={{
-              backgroundColor: 'var(--color-gray)',
-            }} />
-          </div>
-          <div className='flex flex-col sm:flex-row items-start sm:items-center'>
-            <SelectCard option={{
-              author: level.userId?.name,
-              height: Dimensions.OptionHeightLarge,
-              href: `/level/${level.slug}`,
-              id: playAttempt.levelId._id.toString() + '-' + playAttempt._id.toString(),
-              level: level,
-              stats: new SelectOptionStats(level.leastMoves, level.userMoves),
-              text: level.name,
-            }} />
-            <span className='px-3 py-1'>
-              {moment.unix(playAttempt.startTime).local().format('h:mma')}
-              <br />
-              Played for {moment.duration(playAttempt.endTime - playAttempt.startTime, 'seconds').humanize()} {playAttempt.attemptContext === AttemptContext.JUST_BEATEN && 'and won'}
-            </span>
-          </div>
-        </div>
-      </div>
-    );
-  });
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleSliderChange = (e: any) => {
     const newValue = e.target.value;
@@ -204,12 +150,6 @@ export default function PlayHistory() {
     </div>
   );
 
-  const nothingToDisplay = (
-    <div className='flex flex-col items-center justify-center'>
-      <h1 className='text-xl  mb-4'>No history with these filters</h1>
-    </div>
-  );
-
   return (
     <div className='flex flex-col gap-4 p-4'>
       <h1 className='text-center text-2xl font-bold'>
@@ -218,8 +158,66 @@ export default function PlayHistory() {
       {controls}
       <div className='flex justify-center'>
         <div className='flex flex-col gap-3'>
-          {(display.length > 0 ? display : (!isLoading ? nothingToDisplay : null))}
-          {isLoading && <LoadingSpinner />}
+          {accumulatedPlayHistory.map(playAttempt => {
+            const level = playAttempt.levelId as EnrichedLevel;
+            let durationInbetween = null;
+
+            if (prevEndTime) {
+              durationInbetween = moment.duration(playAttempt.startTime - prevEndTime, 'seconds').humanize();
+            }
+
+            prevEndTime = playAttempt.endTime;
+
+            const currentDate = moment.unix(playAttempt.startTime).local().format('MMMM Do, YYYY');
+            const showDate = currentDate !== prevDate;
+
+            prevDate = currentDate;
+
+            return (
+              <div
+                className='flex flex-col gap-2'
+                key={playAttempt._id.toString()}
+              >
+                {showDate ?
+                  <span className='text-lg font-medium pt-4'>
+                    {currentDate}
+                  </span>
+                  :
+                  durationInbetween && <span className='px-1' style={{ color: 'var(--color-gray)' }}>{durationInbetween} later</span>
+                }
+                <div className='flex items-center gap-4'>
+                  <div className='w-4 h-full flex justify-center relative'>
+                    <div className='w-0.5 h-full rounded-full' style={{
+                      backgroundColor: 'var(--color-gray)',
+                    }} />
+                  </div>
+                  <div className='flex flex-col sm:flex-row items-start sm:items-center'>
+                    <SelectCard option={{
+                      author: level.userId?.name,
+                      height: Dimensions.OptionHeightLarge,
+                      href: `/level/${level.slug}`,
+                      id: playAttempt.levelId._id.toString() + '-' + playAttempt._id.toString(),
+                      level: level,
+                      stats: new SelectOptionStats(level.leastMoves, level.userMoves),
+                      text: level.name,
+                    }} />
+                    <span className='px-3 py-1'>
+                      {moment.unix(playAttempt.startTime).local().format('h:mma')}
+                      <br />
+                      Played for {moment.duration(playAttempt.endTime - playAttempt.startTime, 'seconds').humanize()} {playAttempt.attemptContext === AttemptContext.JUST_BEATEN && 'and won'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          {isLoading ?
+            <LoadingSpinner />
+            :
+            <span className='text-lg text-center p-4'>
+              {accumulatedPlayHistory.length > 0 ? 'No more history to display' : 'No history with these filters'}
+            </span>
+          }
         </div>
       </div>
     </div>
