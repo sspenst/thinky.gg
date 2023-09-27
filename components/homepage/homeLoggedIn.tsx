@@ -14,6 +14,7 @@ import { useTour } from '../../hooks/useTour';
 import { EnrichedLevel } from '../../models/db/level';
 import Review from '../../models/db/review';
 import User from '../../models/db/user';
+import ChapterSelectCard from '../cards/chapterSelectCard';
 import LevelSelect from '../cards/levelSelect';
 import LoadingCard from '../cards/loadingCard';
 import FormattedReview from '../formatted/formattedReview';
@@ -84,18 +85,28 @@ export default function HomeLoggedIn({
           <span className='flex justify-center font-bold'>{user.score}</span>
         </div>
         <div className='flex flex-col gap-2'>
-          <Link id='playBtn'
-            className='inline-block px-3 py-1.5 border-4 border-neutral-400 bg-white text-black font-bold text-3xl leading-snug rounded-xl hover:ring-4 hover:bg-blue-500 hover:text-white ring-blue-500/50 focus:ring-0 text-center'
-            style={{
-              animationDelay: '0.5s',
-            }}
-            data-mdb-ripple='true'
-            data-mdb-ripple-color='light'
-            href={userConfig && !userConfig.tutorialCompletedAt ? '/tutorial' : '/play'}
-            role='button'
-          >
-            {userConfig && !userConfig.tutorialCompletedAt ? 'Start' : 'Play'}
-          </Link>
+          { user.chapterUnlocked === 1 && <ChapterSelectCard
+            href={'/play'}
+            id='chapter1'
+            levelData={'00000000\n00000000\n00000000\n00000000'}
+            subtitle={'Grassroots'}
+            title={'Continue'}
+          /> }
+          { user.chapterUnlocked === 2 && <ChapterSelectCard
+            href={'/play'}
+            id='chapter2'
+            levelData={'005E0C00\n0G070005\n10005010\n005100I0'}
+            subtitle={'Into the Depths'}
+            title={'Continue'}
+          /> }
+          { user.chapterUnlocked === 3 && <ChapterSelectCard
+            href={'/play'}
+            id='chapter3'
+            levelData={'B519F0G0\n10JH5H52\n75F02J08\n02050B10'}
+            subtitle={'Brain Busters'}
+            title={'Continue'}
+          />
+          }
           <Link passHref href='/multiplayer' className={buttonClassNames}>
             <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
               <path strokeLinecap='round' strokeLinejoin='round' d='M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z' />
