@@ -107,27 +107,6 @@ async function getRecommendedLevel(reqUser: User) {
   return levels[randomIndex];
 }
 
-async function getRecommendedUnattemptedLevel(reqUser: User) {
-  const query = {
-    disableCount: 'true',
-    numResults: '10', // randomly select one of these
-    sortBy: 'playersBeaten',
-    statFilter: StatFilter.ShowUnattempted,
-    timeRange: TimeRange[TimeRange.All],
-  } as SearchQuery;
-
-  const result = await doQuery(query, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, data: 1, height: 1, width: 1 });
-  const levels = result?.levels;
-
-  if (!levels || levels.length === 0) {
-    return null;
-  }
-
-  const randomIndex = Math.floor(Math.random() * levels.length);
-
-  return levels[randomIndex];
-}
-
 export default withAuth({
   GET: {
     query: {
@@ -136,20 +115,18 @@ export default withAuth({
       latestReviews: ValidType('number', false, true),
       levelOfDay: ValidType('number', false, true),
       recommendedLevel: ValidType('number', false, true),
-      recommendedUnattemptedLevel: ValidType('number', false, true),
       topLevelsThisMonth: ValidType('number', false, true),
     }
   }
 }, async (req, res) => {
   const reqUser = req.user;
-  const { lastLevelPlayed, latestLevels, latestReviews, levelOfDay, recommendedLevel, recommendedUnattemptedLevel, topLevelsThisMonth } = req.query;
+  const { lastLevelPlayed, latestLevels, latestReviews, levelOfDay, recommendedLevel, topLevelsThisMonth } = req.query;
   const [
     plastLevelPlayed,
     platestLevels,
     platestReviews,
     plevelOfDay,
     precommendedLevel,
-    precommendedUnattemptedLevel,
     ptopLevelsThisMonth
   ] = await Promise.all([
     lastLevelPlayed ? getLastLevelPlayed(reqUser) : undefined,
@@ -157,7 +134,6 @@ export default withAuth({
     latestReviews ? getLatestReviews(reqUser) : undefined,
     levelOfDay ? getLevelOfDay(reqUser) : undefined,
     recommendedLevel ? getRecommendedLevel(reqUser) : undefined,
-    recommendedUnattemptedLevel ? getRecommendedUnattemptedLevel(reqUser) : undefined,
     topLevelsThisMonth ? getTopLevelsThisMonth(reqUser) : undefined,
   ]);
 
@@ -167,7 +143,6 @@ export default withAuth({
     latestReviews: platestReviews,
     levelOfDay: plevelOfDay,
     recommendedLevel: precommendedLevel,
-    recommendedUnattemptedLevel: precommendedUnattemptedLevel,
     topLevelsThisMonth: ptopLevelsThisMonth,
   });
 });

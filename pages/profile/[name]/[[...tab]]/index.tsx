@@ -369,7 +369,7 @@ export default function ProfilePage({
         </div>
         <div className='flex gap-2 items-center justify-center'>
           <h2 className='text-3xl font-bold truncate'>{user.name}</h2>
-          <RoleIcons size={24} user={user} />
+          <RoleIcons id='profile' size={24} user={user} />
         </div>
         {user.bio && <p className='text-center italic text-sm break-words mt-2'>{user.bio}</p>}
         {reqUser && reqUserIsFollowing !== undefined && reqUser._id.toString() !== user._id.toString() && (
