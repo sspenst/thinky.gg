@@ -50,7 +50,7 @@ async function getDifficultyLeaderboard(index: DIFFICULTY_INDEX) {
         'users': '$stat.userId'
       }
     },
-    // now each element has a users array with the userIds of the users that have completed the level. We want to unwind this array and then group by userId and count the number of times they appear
+    // now each element has a users array with the userIds of the users that have solved the level. We want to unwind this array and then group by userId and count the number of times they appear
     {
       $unwind: '$users'
     },
@@ -142,13 +142,13 @@ export default function Leaderboards({ gmLeaderboard, sgmLeaderboard }: Leaderbo
         <div className='flex flex-col md:flex-row gap-5 justify-center'>
           <div className='flex flex-col text-center gap-1'>
             <span className='font-bold italic text-lg' style={{ color: gmColor }}>Pathology Grandmasters</span>
-            <span className='text-xs'>Grandmasters have completed at minimum 7 Grandmaster (or harder) levels</span>
-            <UserAndSumTable data={gmLeaderboard} sumName='GMs Completed' />
+            <span className='text-xs'>Grandmasters have solved at minimum 7 Grandmaster (or harder) levels</span>
+            <UserAndSumTable data={gmLeaderboard} sumName='GMs Solved' />
           </div>
           <div className='flex flex-col text-center gap-1'>
             <span className='font-bold italic text-lg' style={{ color: sgmColor }}>Pathology Super Grandmasters</span>
-            <span className='text-xs'>Super Grandmasters have completed at minimum 7 Super Grandmaster levels</span>
-            <UserAndSumTable data={sgmLeaderboard} sumName='SGMs Completed' />
+            <span className='text-xs'>Super Grandmasters have solved at minimum 7 Super Grandmaster levels</span>
+            <UserAndSumTable data={sgmLeaderboard} sumName='SGMs Solved' />
           </div>
         </div>
       </div>

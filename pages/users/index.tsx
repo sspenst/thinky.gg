@@ -366,7 +366,7 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
     },
     {
       id: 'score',
-      name: 'Completions',
+      name: 'Solves',
       selector: row => row.score,
       sortable: true,
     },

@@ -32,26 +32,26 @@ function getCompleteIcon(complete: boolean) {
 }
 
 interface FormattedCampaignProps {
-  completedElement: JSX.Element;
-  completedLevels: number;
   enrichedCollections: EnrichedCollection[];
   hideUnlockRequirements?: boolean;
   levelHrefQuery: string;
   nextHref?: string;
   nextTitle?: string;
+  solvedElement: JSX.Element;
+  solvedLevels: number;
   subtitle?: string;
   title: string;
   totalLevels: number;
 }
 
 export default function FormattedCampaign({
-  completedElement,
-  completedLevels,
   enrichedCollections,
   hideUnlockRequirements,
   levelHrefQuery,
   nextHref,
   nextTitle,
+  solvedElement,
+  solvedLevels,
   subtitle,
   title,
   totalLevels,
@@ -81,13 +81,13 @@ export default function FormattedCampaign({
           </div>
           {disabled &&
             <div className='px-4 italic text-center'>
-              {'Complete the previous level'}
+              {'Solve the previous level'}
             </div>
           }
         </div>
       );
 
-      // in a themed collection, levels must be completed sequentially
+      // in a themed collection, levels must be solved sequentially
       if (enrichedCollection.isThemed && level.userMoves !== level.leastMoves) {
         disabled = true;
       }
@@ -105,14 +105,14 @@ export default function FormattedCampaign({
 
       if (prevMajorCollection) {
         const unlockPercent = enrichedCollection.unlockPercent ?? 50;
-        const remainingLevels = Math.ceil(prevMajorCollection.levelCount * unlockPercent / 100) - prevMajorCollection.userCompletedCount;
+        const remainingLevels = Math.ceil(prevMajorCollection.levelCount * unlockPercent / 100) - prevMajorCollection.userSolvedCount;
 
         if (remainingLevels > 0) {
-          lockedStr = `Complete ${remainingLevels} more level${remainingLevels === 1 ? '' : 's'} from ${prevMajorCollection.name}`;
+          lockedStr = `Solve ${remainingLevels} more level${remainingLevels === 1 ? '' : 's'} from ${prevMajorCollection.name}`;
         }
       }
 
-      const stats = new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userCompletedCount);
+      const stats = new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userSolvedCount);
 
       options.push(
         <div
@@ -150,9 +150,9 @@ export default function FormattedCampaign({
     return options;
   }, [enrichedCollections, getLevelOptions]);
 
-  const totalStats = new SelectOptionStats(totalLevels, completedLevels);
-  const remainingLevels = Math.ceil(totalLevels * 0.75) - completedLevels;
-  const isCampaignComplete = remainingLevels <= 0 && enrichedCollections.filter(c => !c.isThemed).every(c => Math.ceil(c.levelCount * 0.5) - c.userCompletedCount <= 0);
+  const totalStats = new SelectOptionStats(totalLevels, solvedLevels);
+  const remainingLevels = Math.ceil(totalLevels * 0.75) - solvedLevels;
+  const isCampaignComplete = remainingLevels <= 0 && enrichedCollections.filter(c => !c.isThemed).every(c => Math.ceil(c.levelCount * 0.5) - c.userSolvedCount <= 0);
 
   return (<>
     <div className='flex flex-col justify-center items-center mt-4 mb-6 gap-2 mx-2'>
@@ -169,7 +169,7 @@ export default function FormattedCampaign({
           <div className='h-full rounded' style={{
             backgroundColor: totalStats.getColor(),
             transition: 'width 0.5s ease',
-            width: completedLevels / totalLevels * 100 + '%',
+            width: solvedLevels / totalLevels * 100 + '%',
           }} />
         </div>
       </div>
@@ -179,7 +179,7 @@ export default function FormattedCampaign({
       }}>
         {totalStats.getText()}
       </div>
-      {completedLevels === totalLevels && completedElement}
+      {solvedLevels === totalLevels && solvedElement}
       {isCampaignComplete && nextTitle && nextHref &&
         <Link className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mt-2 rounded focus:outline-none focus:shadow-outline cursor-pointer' href={nextHref}>
           {nextTitle}
@@ -189,15 +189,15 @@ export default function FormattedCampaign({
         <div className='align-left flex flex-col gap-1 italic mt-2'>
           <div className='flex flex-row gap-2 items-center'>
             {getCompleteIcon(remainingLevels <= 0)}
-            <span>Complete 75% of {title}{remainingLevels > 0 ? ` (${remainingLevels} remaining)` : null}</span>
+            <span>Solve 75% of {title}{remainingLevels > 0 ? ` (${remainingLevels} remaining)` : null}</span>
           </div>
           {enrichedCollections.filter(c => !c.isThemed).map(c => {
-            const remainingLevels = Math.ceil(c.levelCount * 0.5) - c.userCompletedCount;
+            const remainingLevels = Math.ceil(c.levelCount * 0.5) - c.userSolvedCount;
 
             return (
               <div className='flex flex-row gap-2 items-center' key={`unlock-requirement-${c._id.toString()}`}>
                 {getCompleteIcon(remainingLevels <= 0)}
-                <span>Complete 50% of {c.name}{remainingLevels > 0 ? ` (${remainingLevels} remaining)` : null}</span>
+                <span>Solve 50% of {c.name}{remainingLevels > 0 ? ` (${remainingLevels} remaining)` : null}</span>
               </div>
             );
           })}

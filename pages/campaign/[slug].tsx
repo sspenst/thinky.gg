@@ -92,7 +92,7 @@ export default function CampaignPage({ campaign, enrichedCollections }: Campaign
       return {
         href: `/collection/${enrichedCollections.slug}`,
         id: enrichedCollections._id.toString(),
-        stats: new SelectOptionStats(enrichedCollections.levelCount, enrichedCollections.userCompletedCount),
+        stats: new SelectOptionStats(enrichedCollections.levelCount, enrichedCollections.userSolvedCount),
         text: enrichedCollections.name,
       } as SelectOption;
     });

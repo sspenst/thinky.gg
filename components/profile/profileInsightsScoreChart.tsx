@@ -67,7 +67,7 @@ export default function ProfileInsightsScoreChart({ user }: { user: User }) {
     <div className='flex flex-col gap-2 max-w-full'>
       <h2 className='text-xl font-bold'>Score Chart</h2>
       <p className='text-sm break-words'>
-        This chart shows the daily & cumulative completions over the last 90 days for {user.name}.<br />You can compare these stats against another user by selecting them below.
+        This chart shows the daily & cumulative solves over the last 90 days for {user.name}.<br />You can compare these stats against another user by selecting them below.
       </p>
     </div>
     <div className='w-full flex flex-col gap-2'>

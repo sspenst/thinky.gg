@@ -2,8 +2,8 @@ import { DIFFICULTY_INDEX, difficultyList } from '@root/components/formatted/for
 import { IAchievementInfo } from './achievementInfo';
 import AchievementType from './achievementType';
 
-interface IAchievementInfoLevelCompletion extends IAchievementInfo {
-  unlocked: ({ rollingLevelCompletionSum }: {rollingLevelCompletionSum: number[]}) => boolean;
+interface IAchievementInfoSkill extends IAchievementInfo {
+  unlocked: ({ rollingLevelSolvesSum }: {rollingLevelSolvesSum: number[]}) => boolean;
 }
 
 interface SkillRequirement {
@@ -65,16 +65,16 @@ export const skillRequirements: SkillRequirement[] = [
   },
 ];
 
-const AchievementRulesSkill: { [achievementType: string]: IAchievementInfoLevelCompletion; } = {};
+const AchievementRulesSkill: { [achievementType: string]: IAchievementInfoSkill; } = {};
 
 skillRequirements.forEach(req => {
   const difficulty = difficultyList[req.difficultyIndex];
 
   AchievementRulesSkill[req.achievementType] = {
-    description: `Completed ${req.levels} levels at ${difficulty.name} difficulty${req.difficultyIndex !== DIFFICULTY_INDEX.SUPER_GRANDMASTER ? ' or higher' : ''}`,
+    description: `Solved ${req.levels} levels at ${difficulty.name} difficulty${req.difficultyIndex !== DIFFICULTY_INDEX.SUPER_GRANDMASTER ? ' or higher' : ''}`,
     emoji: difficulty.emoji,
     name: difficulty.name,
-    unlocked: ({ rollingLevelCompletionSum }) => rollingLevelCompletionSum[req.difficultyIndex] >= req.levels,
+    unlocked: ({ rollingLevelSolvesSum }) => rollingLevelSolvesSum[req.difficultyIndex] >= req.levels,
   };
 });
 
