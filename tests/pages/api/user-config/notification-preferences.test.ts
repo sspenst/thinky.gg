@@ -140,7 +140,7 @@ describe('account settings notification preferences', () => {
     originalSendPush.sendPushNotification = jest.fn().mockImplementation(() => {
       // do nothing
     });
-    await createNewAchievement(AchievementType.COMPLETED_LEVELS_100, new Types.ObjectId(TestId.USER_GUEST), false );
+    await createNewAchievement(AchievementType.SOLVED_LEVELS_100, new Types.ObjectId(TestId.USER_GUEST), false );
 
     const queueProcessed = await processQueueMessages();
 

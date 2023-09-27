@@ -8,7 +8,7 @@ import withAuth, { NextApiRequestWithAuth } from '../../../../../lib/withAuth';
 import { StatModel, UserModel } from '../../../../../models/mongoose';
 import { USER_DEFAULT_PROJECTION } from '../../../../../models/schemas/userSchema';
 
-async function getSolvesBySteps(isPro: boolean, levelId: string, skip: number, steps: number) {
+async function getCompletionsBySteps(isPro: boolean, levelId: string, skip: number, steps: number) {
   const agg = await StatModel.aggregate([
     {
       $match: {
@@ -78,7 +78,7 @@ export default withAuth({
   },
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   const { id, skip, steps } = req.query;
-  const solves = await getSolvesBySteps(isPro(req.user), id as string, Number(skip), Number(steps));
+  const solves = await getCompletionsBySteps(isPro(req.user), id as string, Number(skip), Number(steps));
 
   return res.status(200).json(solves);
 });

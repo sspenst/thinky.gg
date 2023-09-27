@@ -10,7 +10,7 @@ import { AchievementModel, CollectionModel, LevelModel, NotificationModel, StatM
 
 export async function enrichCampaign(campaign: Campaign, reqUser: User | null) {
   const enrichedCampaign = JSON.parse(JSON.stringify(campaign)) as EnrichedCampaign;
-  let userCompletedCount = 0;
+  let userSolvedCount = 0;
 
   enrichedCampaign.levelCount = 0;
 
@@ -18,11 +18,11 @@ export async function enrichCampaign(campaign: Campaign, reqUser: User | null) {
     const enrichedCollection = await enrichCollection(enrichedCampaign.collections[i], reqUser);
 
     enrichedCampaign.levelCount += enrichedCollection.levelCount;
-    userCompletedCount += enrichedCollection.userCompletedCount;
+    userSolvedCount += enrichedCollection.userSolvedCount;
   }
 
   if (reqUser) {
-    enrichedCampaign.userCompletedCount = userCompletedCount;
+    enrichedCampaign.userSolvedCount = userSolvedCount;
   }
 
   return enrichedCampaign;
@@ -35,17 +35,17 @@ export async function enrichCollection(collection: Collection, reqUser: User | n
 
   if (reqUser) {
     const stats = await StatModel.find<Stat>({ userId: reqUser._id, levelId: { $in: collection.levels.map(level => level._id) } });
-    let userCompletedCount = 0;
+    let userSolvedCount = 0;
 
     collection.levels.forEach(level => {
       const stat = stats.find(stat => stat.levelId.equals(level._id));
 
       if (stat && stat.moves === level.leastMoves) {
-        userCompletedCount++;
+        userSolvedCount++;
       }
     });
 
-    enrichedCollection.userCompletedCount = userCompletedCount;
+    enrichedCollection.userSolvedCount = userSolvedCount;
   }
 
   return enrichedCollection;

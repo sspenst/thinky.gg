@@ -2,9 +2,9 @@ import { difficultyList } from '@root/components/formatted/formattedDifficulty';
 import { LevelModel, StatModel } from '@root/models/mongoose';
 import { SaveOptions, Types } from 'mongoose';
 
-export async function getCompletionByDifficultyTable(userId: Types.ObjectId, options: SaveOptions = {}) {
+export async function getSolvesByDifficultyTable(userId: Types.ObjectId, options: SaveOptions = {}) {
   const difficultyListValues = difficultyList.map((d) => d.value);
-  const levelsCompletedByDifficultyData = await StatModel.aggregate([
+  const levelsSolvedByDifficultyData = await StatModel.aggregate([
     {
       $match: {
         userId: userId,
@@ -55,12 +55,12 @@ export async function getCompletionByDifficultyTable(userId: Types.ObjectId, opt
     },
   ], options);
 
-  // map of difficulty value to levels completed
-  const levelsCompletedByDifficulty: { [key: string]: number } = {};
+  // map of difficulty value to levels solved
+  const levelsSolvedByDifficulty: { [key: string]: number } = {};
 
-  levelsCompletedByDifficultyData.map((d: {_id: string, count: number}) => {
-    levelsCompletedByDifficulty[d._id] = d.count;
+  levelsSolvedByDifficultyData.map((d: {_id: string, count: number}) => {
+    levelsSolvedByDifficulty[d._id] = d.count;
   });
 
-  return levelsCompletedByDifficulty;
+  return levelsSolvedByDifficulty;
 }

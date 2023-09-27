@@ -9,6 +9,7 @@ import Footer from './footer';
 interface PageProps {
   children: JSX.Element;
   folders?: LinkInfo[];
+  hideFooter?: boolean;
   isFullScreen?: boolean;
   subtitle?: string;
   subtitleHref?: string;
@@ -19,6 +20,7 @@ interface PageProps {
 export default function Page({
   children,
   folders,
+  hideFooter,
   isFullScreen,
   subtitle,
   subtitleHref,
@@ -61,7 +63,7 @@ export default function Page({
           {children}
         </main>
       </div>
-      {!isFullScreen && <Footer />}
+      {!isFullScreen && !hideFooter && <Footer />}
     </PageContext.Provider>
   );
 }

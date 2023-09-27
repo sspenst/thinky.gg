@@ -1,7 +1,6 @@
 /* istanbul ignore file */
 
 import PagePath from '@root/constants/pagePath';
-import isPro from '@root/helpers/isPro';
 import { useTour } from '@root/hooks/useTour';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
@@ -58,7 +57,6 @@ interface LevelProps {
 
 export default function LevelPage({ _level, reqUser }: LevelProps) {
   const [level, setLevel] = useState(_level);
-
   const { mutateProStatsLevel, proStatsLevel } = useProStatsLevel(level);
   const router = useRouter();
   const { chapter, cid, slugName, ts, username } = router.query as LevelUrlQueryParams;
