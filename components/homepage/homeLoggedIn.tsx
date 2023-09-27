@@ -119,9 +119,19 @@ export default function HomeLoggedIn({
       </div>
     </div>
     <div className='flex flex-wrap justify-center m-4 gap-4'>
-      <RecommendedLevel id='level-of-day' level={levelOfDay} title='Level of the Day' />
-      <RecommendedLevel id='recommended-level' level={recommendedLevel} title='Try this Level' />
-      <RecommendedLevel id='recommended-unattempted-level' level={recommendedUnattemptedLevel} title='Unexplored' />
+      <RecommendedLevel
+        id='level-of-day'
+        level={levelOfDay}
+        title='Level of the Day 🗓️'
+        tooltip={'Every day there is a new level of the day. Difficulty increases throughout the week!'}
+      />
+      <RecommendedLevel
+        id='recommended-level'
+        level={recommendedLevel}
+        title='Try this Level 🫴'
+        tooltip={'This is a quality level with similar difficulty to levels you\'ve played recently.'}
+      />
+      {/* <RecommendedLevel id='recommended-unattempted-level' level={recommendedUnattemptedLevel} title='Unexplored' /> */}
       <RecommendedLevel
         id='last-level-played'
         level={lastLevelPlayed}
@@ -140,15 +150,8 @@ export default function HomeLoggedIn({
             </Link>
           </div>
         }
+        tooltip='Resume your last play. Click to see your play history.'
       />
-      <RecommendedLevel id='level-of-day' level={levelOfDay} title='Level of the Day 🗓️'
-        tooltip={'Every day, there is a new level of the day. Difficulty increases throughout the week!'} />
-      <RecommendedLevel id='recommended-level' level={recommendedLevel} title='Try this Level 🫴'
-        tooltip={'This is a quality level close to your skill level that you have not completed yet.'}
-      />
-
-      {/* extra check to hide the level if it is already completed (in case of corrupted playattempt data) */}
-      {lastLevelPlayed && lastLevelPlayed.leastMoves !== lastLevelPlayed.userMoves && <RecommendedLevel id='last-level-played' level={lastLevelPlayed} title='Continue Playing ↪' tooltip='Resume your last play. Click to see your play history.' />}
     </div>
     <div className='flex justify-center m-6'>
       <div className='max-w-xs space-y-2 md:space-y-0 md:space-x-4 flex flex-col md:flex-row rounded-md justify-center'>
