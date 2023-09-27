@@ -136,7 +136,7 @@ export default function LevelInfoCompletions() {
     <div className='flex flex-col gap-2'>
       {!isPro(user) &&
         <div className='flex gap-3 items-center'>
-          <RoleIcon role={Role.PRO} size={20} />
+          <RoleIcon id='level-info-completions' role={Role.PRO} size={20} />
           <div>
             Get <Link href='/settings/proaccount' className='text-blue-300'>
               Pathology Pro
