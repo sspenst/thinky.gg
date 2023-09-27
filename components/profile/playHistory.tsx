@@ -9,22 +9,25 @@ import React, { useEffect, useState } from 'react';
 import SelectCard from '../cards/selectCard';
 import LoadingSpinner from '../page/loadingSpinner';
 
-export default function ProfilePlayHistory() {
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [minDurationMinutes, setMinDurationMinutes] = useState(0);
-  const [filterWon, setFilterWon] = useState(false);
+export default function PlayHistory() {
   const [cursor, setCursor] = useState<string | null>();
+  const [datetime, setDatetime] = useState<string | null>(null);
+  const [filterWon, setFilterWon] = useState(false);
+  const [minDurationMinutes, setMinDurationMinutes] = useState(0);
+
   const [accumulatedPlayHistory, setAccumulatedPlayHistory] = useState<PlayAttempt[]>([]);
+  const [intermediateDate, setIntermediateDate] = useState(datetime);
   const [intermediateMinDuration, setIntermediateMinDuration] = useState(0);
-  const [intermediateDate, setIntermediateDate] = useState(selectedDate);
-  const [isMobile, setIsMobile] = useState(false);
-  const params = { datetime: selectedDate, minDurationMinutes, cursor, filterWon: (filterWon.toString()) };
-  const queryString = Object.entries(params)
-    .filter(([, value]) => value !== null && value !== undefined)
-    .map(([key, value]) => `${key}=${value}`)
-    .join('&');
+
+  const queryParams = new URLSearchParams({
+    ...(cursor && { cursor: cursor.toString() }),
+    ...(datetime && { datetime: datetime.toString() }),
+    filterWon: filterWon.toString(),
+    minDurationMinutes: minDurationMinutes.toString(),
+  });
+
   const { data: playHistory, isLoading } = useSWRHelper<PlayAttempt[]>(
-    `/api/user/play-history?${queryString}`,
+    `/api/user/play-history?${queryParams}`,
     undefined,
     {
       revalidateOnFocus: false,
@@ -37,26 +40,12 @@ export default function ProfilePlayHistory() {
   let prevDate: string | null = null;
 
   useEffect(() => {
-    setIsMobile(window.innerWidth < 768);
-    addEventListener('resize', () => {
-      setIsMobile(window.innerWidth < 768);
-    }, { passive: true });
-
-    return () => {
-      removeEventListener('resize', () => {
-        setIsMobile(window.innerWidth < 768);
-      });
-    };
-  }, []);
-
-  useEffect(() => {
     if (playHistory) {
       setAccumulatedPlayHistory(prev => [...prev, ...playHistory].filter((playAttempt, index, self) => {
         return index === self.findIndex((t) => (
           t._id.toString() === playAttempt._id.toString()
         ));
-      })
-      );
+      }));
     }
   }, [playHistory]);
 
@@ -75,20 +64,7 @@ export default function ProfilePlayHistory() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isLoading, playHistory]);
 
-  const handleSliderChange = (e: any) => {
-    const newValue = e.target.value;
-
-    if (minDurationMinutes === intermediateMinDuration) {
-      return;
-    }
-
-    setIntermediateMinDuration(newValue);
-    setMinDurationMinutes(intermediateMinDuration);
-    setAccumulatedPlayHistory([]);
-    setCursor(null);
-  };
-
-  const display = accumulatedPlayHistory && accumulatedPlayHistory.map((playAttempt, index) => {
+  const display = accumulatedPlayHistory && accumulatedPlayHistory.map(playAttempt => {
     const level = playAttempt.levelId as EnrichedLevel;
     let durationInbetween = null;
 
@@ -105,41 +81,23 @@ export default function ProfilePlayHistory() {
 
     return (
       <div
-        key={playAttempt._id.toString()}
         className='flex flex-col gap-2'
+        key={playAttempt._id.toString()}
       >
         {showDate ?
-          <span className='text-lg font-medium pt-6' style={{ color: 'var(--color-gray)' }}>
+          <span className='text-lg font-medium pt-4'>
             {currentDate}
           </span>
           :
-          durationInbetween && <span className='text-center' style={{ color: 'var(--color-gray)' }}>{durationInbetween} earlier</span>
+          durationInbetween && <span className='px-1' style={{ color: 'var(--color-gray)' }}>{durationInbetween} later</span>
         }
-        <div className='flex items-center relative'>
-          <div>
-            <div style={{
-              position: 'absolute',
-              width: '2px',
-              backgroundColor: '#ccc',
-              top: 0,
-              bottom: 0,
-              left: '50%',
-              transform: 'translate(-50%)',
-              zIndex: 0,
-            }} />
-            <div style={{
-              position: 'absolute',
-              height: '10px',
-              width: '10px',
-              backgroundColor: '#ccc',
-              borderRadius: '50%',
-              left: '50%',
-              top: '50%',
-              transform: 'translate(-50%, -50%)',
-              zIndex: 1
+        <div className='flex items-center gap-4'>
+          <div className='w-4 h-full flex justify-center relative'>
+            <div className='w-0.5 h-full rounded-full' style={{
+              backgroundColor: 'var(--color-gray)',
             }} />
           </div>
-          <div className='mr-10'>
+          <div className='flex flex-col sm:flex-row items-start sm:items-center'>
             <SelectCard option={{
               author: level.userId?.name,
               height: Dimensions.OptionHeightLarge,
@@ -148,18 +106,31 @@ export default function ProfilePlayHistory() {
               level: level,
               stats: new SelectOptionStats(level.leastMoves, level.userMoves),
               text: level.name,
-              width: Dimensions.OptionWidth * (isMobile ? 0.8 : 1),
             }} />
-          </div>
-          <div className='flex flex-col ml-5 items-start'>
-            {moment.unix(playAttempt.startTime).local().format('h:mma')}
-            <span>Played for {moment.duration(playAttempt.endTime - playAttempt.startTime, 'seconds').humanize()} {playAttempt.attemptContext === AttemptContext.JUST_BEATEN && 'and won'}</span>
+            <span className='px-3 py-1'>
+              {moment.unix(playAttempt.startTime).local().format('h:mma')}
+              <br />
+              Played for {moment.duration(playAttempt.endTime - playAttempt.startTime, 'seconds').humanize()} {playAttempt.attemptContext === AttemptContext.JUST_BEATEN && 'and won'}
+            </span>
           </div>
         </div>
-
       </div>
     );
   });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleSliderChange = (e: any) => {
+    const newValue = e.target.value;
+
+    if (minDurationMinutes === intermediateMinDuration) {
+      return;
+    }
+
+    setIntermediateMinDuration(newValue);
+    setMinDurationMinutes(intermediateMinDuration);
+    setAccumulatedPlayHistory([]);
+    setCursor(null);
+  };
 
   const controls = (
     <div className='flex flex-wrap gap-y-4 gap-x-6 justify-center items-center'>
@@ -172,7 +143,7 @@ export default function ProfilePlayHistory() {
           onBlur={() => {
             setAccumulatedPlayHistory([]);
             setCursor(null);
-            setSelectedDate(intermediateDate);
+            setDatetime(intermediateDate);
           }}
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           onChange={(e: any) => {
@@ -186,7 +157,7 @@ export default function ProfilePlayHistory() {
             onClick={() => {
               if (intermediateDate) {
                 setIntermediateDate(null);
-                setSelectedDate(null);
+                setDatetime(null);
                 setAccumulatedPlayHistory([]);
                 setCursor(null);
               }
