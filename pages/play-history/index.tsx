@@ -1,5 +1,5 @@
 import Page from '@root/components/page/page';
-import ProfilePlayHistory from '@root/components/profile/playHistory';
+import PlayHistory from '@root/components/profile/playHistory';
 import isPro from '@root/helpers/isPro';
 import { getUserFromToken } from '@root/lib/withAuth';
 import User from '@root/models/db/user';
@@ -35,7 +35,7 @@ export default function PlayHistoryPage({ reqUser }: PlayHistoryPageProps): JSX.
   return (
     <Page hideFooter title='Play History'>
       {isPro(reqUser) ?
-        <ProfilePlayHistory />
+        <PlayHistory />
         :
         <div className='text-center text-lg break-words p-3'>
           Get <Link href='/settings/proaccount' className='text-blue-500 hover:text-blue-300 transition'>
