@@ -5,6 +5,7 @@ import { throttle } from 'throttle-debounce';
 import Collection from '../../models/db/collection';
 import { EnrichedLevel } from '../../models/db/level';
 import User from '../../models/db/user';
+import PostGameModal from '../modal/postGameModal';
 import DismissToast from '../toasts/dismissToast';
 import styles from './Controls.module.css';
 import Game from './game';
@@ -38,6 +39,8 @@ export default function GameWrapper({ collection, level, onNext, onPrev, user }:
       });
   });
 
+  const [postGameModalOpen, setShowPostGameModalOpen] = React.useState(false);
+
   const addNextButtonHighlight = useCallback(() => {
     // find <button> with id 'btn-next'
     const nextButton = document.getElementById('btn-next') as HTMLButtonElement;
@@ -50,24 +53,35 @@ export default function GameWrapper({ collection, level, onNext, onPrev, user }:
   }, []);
 
   return (
-    <Game
-      allowFreeUndo={true}
-      disablePlayAttempts={!user}
-      disableStats={!user}
-      enableSessionCheckpoint={true}
-      key={`game-${level._id.toString()}`}
-      level={level}
-      onSolve={() => {
-        if (!user) {
-          signUpToast();
-        }
+    <>
+      {user && (
+        <PostGameModal collection={collection} reqUser={user} isOpen={postGameModalOpen} level={level} closeModal={() => {
+          setShowPostGameModalOpen(false);
+        }}
+        />
+      )}
+      <Game
+        allowFreeUndo={true}
+        disablePlayAttempts={!user}
+        disableStats={!user}
+        enableSessionCheckpoint={true}
+        key={`game-${level._id.toString()}`}
+        level={level}
+        onSolve={() => {
+          if (!user) {
+            signUpToast();
+          }
 
-        if (collection) {
-          addNextButtonHighlight();
-        }
-      }}
-      onNext={collection ? onNext : undefined}
-      onPrev={collection ? onPrev : undefined}
-    />
+          if (collection) {
+            addNextButtonHighlight();
+          }
+
+          console.log('onSolve');
+          setShowPostGameModalOpen(true);
+        }}
+        onNext={collection ? onNext : undefined}
+        onPrev={collection ? onPrev : undefined}
+      />
+    </>
   );
 }

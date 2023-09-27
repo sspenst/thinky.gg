@@ -32,7 +32,7 @@ interface ModalProps {
   isOpen: boolean;
   onConfirm?: () => void;
   onSubmit?: () => void;
-  title: string;
+  title: string | JSX.Element;
 }
 
 export default function Modal({
