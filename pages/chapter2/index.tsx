@@ -35,8 +35,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       };
     }
 
-    const remainingLevels = Math.ceil(props.totalLevels * 0.75) - props.completedLevels;
-    const isChapter1Complete = remainingLevels <= 0 && props.enrichedCollections.filter(c => !c.isThemed).every(c => Math.ceil(c.levelCount * 0.5) - c.userCompletedCount <= 0);
+    const remainingLevels = Math.ceil(props.totalLevels * 0.75) - props.solvedLevels;
+    const isChapter1Complete = remainingLevels <= 0 && props.enrichedCollections.filter(c => !c.isThemed).every(c => Math.ceil(c.levelCount * 0.5) - c.userSolvedCount <= 0);
 
     if (!isChapter1Complete) {
       return {
@@ -55,20 +55,20 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 /* istanbul ignore next */
-export default function Chapter2Page({ completedLevels, enrichedCollections, reqUser, totalLevels }: CampaignProps) {
+export default function Chapter2Page({ enrichedCollections, reqUser, solvedLevels, totalLevels }: CampaignProps) {
   return (
     <Page folders={[new LinkInfo('Chapter Select', '/play')]} title={'Chapter 2'}>
       <FormattedCampaign
-        completedElement={
-          <div className='flex flex-col items-center justify-center text-center mt-2'>
-            <div>Congratulations! You&apos;ve completed every level in Chapter 2. Try out <Link className='font-bold underline' href='/chapter3' passHref>Chapter 3</Link> next!</div>
-          </div>
-        }
-        completedLevels={completedLevels}
         enrichedCollections={enrichedCollections}
         levelHrefQuery={'chapter=2'}
         nextHref={'/chapter3'}
         nextTitle={(reqUser.chapterUnlocked ?? 1) < 3 ? 'Unlock Chapter 3' : undefined}
+        solvedElement={
+          <div className='flex flex-col items-center justify-center text-center mt-2'>
+            <div>Congratulations! You&apos;ve solved every level in Chapter 2. Try out <Link className='font-bold underline' href='/chapter3' passHref>Chapter 3</Link> next!</div>
+          </div>
+        }
+        solvedLevels={solvedLevels}
         subtitle={'Into the Depths'}
         title={'Chapter 2'}
         totalLevels={totalLevels}

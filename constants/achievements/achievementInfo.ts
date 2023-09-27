@@ -12,17 +12,17 @@ export interface IAchievementInfo {
 }
 
 export enum AchievementCategory {
-  'USER' = 'USER',
-  'CREATOR' = 'CREATOR',
-  'LEVEL_COMPLETION' = 'LEVEL_COMPLETION',
-  'REVIEWER' = 'REVIEWER',
-  'MULTIPLAYER' = 'MULTIPLAYER',
+  USER = 'USER',
+  CREATOR = 'CREATOR',
+  SKILL = 'LEVEL_COMPLETION',
+  REVIEWER = 'REVIEWER',
+  MULTIPLAYER = 'MULTIPLAYER',
 }
 
 export const AchievementCategoryMapping = {
   [AchievementCategory.USER]: AchievementRulesProgress,
   [AchievementCategory.CREATOR]: AchievementRulesCreator,
-  [AchievementCategory.LEVEL_COMPLETION]: AchievementRulesSkill,
+  [AchievementCategory.SKILL]: AchievementRulesSkill,
   [AchievementCategory.REVIEWER]: AchievementRulesReviewer,
   [AchievementCategory.MULTIPLAYER]: AchievementRulesMultiplayer,
 };
