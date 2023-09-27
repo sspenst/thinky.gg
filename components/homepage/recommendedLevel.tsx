@@ -15,6 +15,8 @@ interface RecommendedLevelProps {
 }
 
 export default function RecommendedLevel({ id, level, title, tooltip }: RecommendedLevelProps): JSX.Element {
+  const tooltipId = `recommended-level-tooltip-${id}`;
+
   return (
     <div className='flex flex-col justify-center rounded-lg border'
       id={id}
@@ -23,10 +25,10 @@ export default function RecommendedLevel({ id, level, title, tooltip }: Recommen
         borderColor: 'var(--bg-color-3)',
       }}
     >
-      <h2 className='self-center px-4 pt-3 text-lg font-bold'>
-        {tooltip && <span className='w-20 text-center hover:underline hover:decoration-dashed cursor-help' data-tooltip-id={id + '-tooltip'} data-tooltip-content={tooltip}>{title}</span>}
-        <StyledTooltip id={id + '-tooltip'} />
+      <h2 className='self-center px-4 pt-3 text-lg font-bold' data-tooltip-id={tooltipId} data-tooltip-content={tooltip}>
+        {title}
       </h2>
+      <StyledTooltip id={tooltipId} />
       {level === undefined ? <LoadingCard /> :
         !level ?
           <SelectCard
