@@ -31,7 +31,6 @@ interface HomeLoggedInProps {
   latestReviews?: Review[];
   levelOfDay?: EnrichedLevel;
   recommendedLevel?: EnrichedLevel | null;
-  recommendedUnattemptedLevel?: EnrichedLevel | null;
   topLevelsThisMonth?: EnrichedLevel[];
   user: User;
 }
@@ -42,7 +41,6 @@ export default function HomeLoggedIn({
   latestReviews,
   levelOfDay,
   recommendedLevel,
-  recommendedUnattemptedLevel,
   topLevelsThisMonth,
   user,
 }: HomeLoggedInProps) {

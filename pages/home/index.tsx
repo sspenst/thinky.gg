@@ -129,7 +129,6 @@ export default function Home({ user }: HomeProps) {
     loadLatestReviews ? [HomepageDataType.LatestReviews] : [],
     loadLevelOfDay ? [HomepageDataType.LevelOfDay] : [],
     loadRecommendedLevel ? [HomepageDataType.RecommendedLevel] : [],
-    loadRecommendedUnattemptedLevel ? [HomepageDataType.RecommendedUnattemptedLevel] : [],
     loadTopLevelsThisMonth ? [HomepageDataType.TopLevelsThisMonth] : [],
   ];
 
@@ -148,7 +147,6 @@ export default function Home({ user }: HomeProps) {
   const latestReviews = dataMerge[HomepageDataType.LatestReviews];
   const levelOfDay = dataMerge[HomepageDataType.LevelOfDay];
   const recommendedLevel = dataMerge[HomepageDataType.RecommendedLevel];
-  const recommendedUnattemptedLevel = dataMerge[HomepageDataType.RecommendedUnattemptedLevel];
   const topLevelsThisMonth = dataMerge[HomepageDataType.TopLevelsThisMonth];
 
   return (
@@ -159,7 +157,6 @@ export default function Home({ user }: HomeProps) {
         latestReviews={latestReviews}
         levelOfDay={levelOfDay}
         recommendedLevel={recommendedLevel}
-        recommendedUnattemptedLevel={recommendedUnattemptedLevel}
         topLevelsThisMonth={topLevelsThisMonth}
         user={user}
       />
