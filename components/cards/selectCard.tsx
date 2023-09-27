@@ -32,7 +32,7 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
       <div className='wrapper rounded-md overflow-hidden relative'
         style={{
           height: option.height ?? Dimensions.OptionHeight,
-          width: Dimensions.OptionWidth,
+          width: option.width ?? Dimensions.OptionWidth,
         }}
       >
         <div
@@ -42,7 +42,7 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
             height: option.height ?? Dimensions.OptionHeight,
             opacity: 0.25,
             transform: 'scale(1.6)',
-            width: Dimensions.OptionWidth,
+            width: option.width ?? Dimensions.OptionWidth,
           }}
         />
         {option.href ?
@@ -61,7 +61,7 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
               color: color,
               height: option.height ?? Dimensions.OptionHeight,
               textShadow: '1px 1px black',
-              width: Dimensions.OptionWidth,
+              width: option.width ?? Dimensions.OptionWidth,
             }}
           >
             <SelectCardContent option={option} />
@@ -80,7 +80,7 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
               color: color,
               height: option.height ?? Dimensions.OptionHeight,
               textShadow: '1px 1px black',
-              width: Dimensions.OptionWidth,
+              width: option.width ?? Dimensions.OptionWidth,
             }}
           >
             <SelectCardContent option={option} />
