@@ -1,9 +1,7 @@
 import Dimensions from '@root/constants/dimensions';
-import isPro from '@root/helpers/isPro';
 import useSWRHelper from '@root/hooks/useSWRHelper';
 import { EnrichedLevel } from '@root/models/db/level';
 import PlayAttempt from '@root/models/db/playAttempt';
-import User from '@root/models/db/user';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
 import SelectOptionStats from '@root/models/selectOptionStats';
 import moment from 'moment';
@@ -11,7 +9,7 @@ import React, { useEffect, useState } from 'react';
 import SelectCard from '../cards/selectCard';
 import LoadingSpinner from '../page/loadingSpinner';
 
-export default function ProfilePlayHistory({ user }: { user: User }): JSX.Element {
+export default function ProfilePlayHistory() {
   const [selectedDate, setSelectedDate] = useState(null);
   const [minDurationMinutes, setMinDurationMinutes] = useState(0);
   const [filterWon, setFilterWon] = useState(false);
@@ -33,7 +31,6 @@ export default function ProfilePlayHistory({ user }: { user: User }): JSX.Elemen
       revalidateOnReconnect: false,
       refreshInterval: 0
     },
-    !isPro(user)
   );
 
   let prevEndTime = 0;
@@ -87,8 +84,8 @@ export default function ProfilePlayHistory({ user }: { user: User }): JSX.Elemen
 
     setIntermediateMinDuration(newValue);
     setMinDurationMinutes(intermediateMinDuration);
-    setAccumulatedPlayHistory([]); // Clear the play history
-    setCursor(null); // Reset the cursor
+    setAccumulatedPlayHistory([]);
+    setCursor(null);
   };
 
   const display = accumulatedPlayHistory && accumulatedPlayHistory.map((playAttempt, index) => {
@@ -106,23 +103,19 @@ export default function ProfilePlayHistory({ user }: { user: User }): JSX.Elemen
 
     prevDate = currentDate;
 
-    const isLeftAligned = false && index % 2 === 0;
-
     return (
       <div
         key={playAttempt._id.toString()}
         className='flex flex-col gap-2'
-        style={{ position: 'relative' }}
       >
-        {showDate && (
-          <div className={'md:text-lg text-xs absolute top-50% transform -translate-y-1/2 text-gray-500 sm:left-[-10%] lg:left-[-50%]'}>
-
+        {showDate ?
+          <span className='text-lg font-medium pt-6' style={{ color: 'var(--color-gray)' }}>
             {currentDate}
-          </div>
-        )}
-
-        { durationInbetween && <span className='text-gray-500 dark:text-gray-400 justify-center self-center'>{durationInbetween} later</span> }
-        <div className={`flex flex-row items-center relative ${isLeftAligned ? 'flex-row-reverse' : ''}`}>
+          </span>
+          :
+          durationInbetween && <span className='text-center' style={{ color: 'var(--color-gray)' }}>{durationInbetween} earlier</span>
+        }
+        <div className='flex items-center relative'>
           <div>
             <div style={{
               position: 'absolute',
@@ -132,7 +125,6 @@ export default function ProfilePlayHistory({ user }: { user: User }): JSX.Elemen
               bottom: 0,
               left: '50%',
               transform: 'translate(-50%)',
-
               zIndex: 0,
             }} />
             <div style={{
@@ -147,7 +139,7 @@ export default function ProfilePlayHistory({ user }: { user: User }): JSX.Elemen
               zIndex: 1
             }} />
           </div>
-          <div className={`${isLeftAligned ? '' : 'mr-10'}`}>
+          <div className='mr-10'>
             <SelectCard option={{
               author: level.userId?.name,
               height: Dimensions.OptionHeightLarge,
@@ -159,7 +151,7 @@ export default function ProfilePlayHistory({ user }: { user: User }): JSX.Elemen
               width: Dimensions.OptionWidth * (isMobile ? 0.8 : 1),
             }} />
           </div>
-          <div className={'flex flex-col ' + (isLeftAligned ? 'mr-5 items-end text-right' : 'ml-5 items-start')}>
+          <div className='flex flex-col ml-5 items-start'>
             {moment.unix(playAttempt.startTime).local().format('h:mma')}
             <span>Played for {moment.duration(playAttempt.endTime - playAttempt.startTime, 'seconds').humanize()} {playAttempt.attemptContext === AttemptContext.JUST_BEATEN && 'and won'}</span>
           </div>
@@ -169,75 +161,76 @@ export default function ProfilePlayHistory({ user }: { user: User }): JSX.Elemen
     );
   });
 
-  const uxControls = (
-    <div className='flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0 p-4 justify-center items-center'>
-      <div className='flex flex-col items-start'>
-        <label className='text-lg font-semibold'>Go to Date and Time</label>
+  const controls = (
+    <div className='flex flex-wrap gap-y-4 gap-x-6 justify-center items-center'>
+      <div className='flex flex-col items-start gap-1'>
+        <label className='font-semibold'>Go to Date and Time</label>
         <input
-          type='datetime-local'
+          className='p-2 border rounded text-black'
           min='2020-01-01T00:00'
           max={moment().format('YYYY-MM-DDTHH:mm')}
-          value={intermediateDate ? intermediateDate : moment().format('YYYY-MM-DDTHH:mm')}
+          onBlur={() => {
+            setAccumulatedPlayHistory([]);
+            setCursor(null);
+            setSelectedDate(intermediateDate);
+          }}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           onChange={(e: any) => {
             setIntermediateDate(e.target.value);
           }}
-          onBlur={() => {
-            setAccumulatedPlayHistory([]); // Clear the play history
-            setCursor(null); // Reset the cursor
-            setSelectedDate(intermediateDate);
-          }}
-          className='p-2 border rounded text-black'
-
+          type='datetime-local'
+          value={intermediateDate ? intermediateDate : moment().format('YYYY-MM-DDTHH:mm')}
         />
-        { intermediateDate && (<button className='text-sm hover:underline'
-          onClick={() => {
-            if (intermediateDate) {
-              setIntermediateDate(null);
-              setSelectedDate(null);
-              setAccumulatedPlayHistory([]); // Clear the play history
-              setCursor(null); // Reset the cursor
-            }
-          }
-          }>Reset</button>
+        {intermediateDate && (
+          <button className='text-sm hover:underline'
+            onClick={() => {
+              if (intermediateDate) {
+                setIntermediateDate(null);
+                setSelectedDate(null);
+                setAccumulatedPlayHistory([]);
+                setCursor(null);
+              }
+            }}
+          >
+            Reset
+          </button>
         )}
       </div>
-      <div className='flex flex-row gap-3'>
-        <div className='flex flex-col items-start'>
-          <label className='text-md font-semibold truncate'>Minimum Duration</label>
-          <div className='flex flex-row gap-1'>
-            <input
-              type='range'
-              min='0'
-              max='240'
-              step={5}
-              value={intermediateMinDuration}
-              onChange={(value: any) => {
-                setIntermediateMinDuration(value.target.value);
-              }}
-              onKeyUp={handleSliderChange}
-              onMouseUp={handleSliderChange}
-              onTouchEnd={handleSliderChange}
-
-              className='cursor-pointer'
-            />
-            <span className='text-sm'>{intermediateMinDuration}m</span>
-          </div>
-        </div>
-        <div className='flex flex-row items-center gap-2'>
-          <label className='text-md font-semibold truncate'>Show Won Only</label>
+      <div className='flex flex-col items-start gap-1'>
+        <label className='text-md font-semibold truncate'>Minimum Duration</label>
+        <div className='flex items-center gap-2'>
           <input
-            type='checkbox'
-            checked={filterWon}
-            onChange={() => {
-              setAccumulatedPlayHistory([]); // Clear the play history
-              setCursor(null); // Reset the cursor
-              setFilterWon(!filterWon);
+            className='cursor-pointer'
+            max='240'
+            min='0'
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            onChange={(value: any) => {
+              setIntermediateMinDuration(value.target.value);
             }}
+            onKeyUp={handleSliderChange}
+            onMouseUp={handleSliderChange}
+            onTouchEnd={handleSliderChange}
+            step={5}
+            type='range'
+            value={intermediateMinDuration}
           />
+          <span className='text-sm'>{intermediateMinDuration}m</span>
         </div>
       </div>
+      <div className='flex items-center gap-2'>
+        <label className='text-md font-semibold truncate' htmlFor='solvedOnly'>Solved Only</label>
+        <input
+          checked={filterWon}
+          id='solvedOnly'
+          onChange={() => {
+            setAccumulatedPlayHistory([]);
+            setCursor(null);
+            setFilterWon(!filterWon);
+          }}
+          type='checkbox'
+        />
+      </div>
     </div>
-
   );
 
   const nothingToDisplay = (
@@ -247,17 +240,15 @@ export default function ProfilePlayHistory({ user }: { user: User }): JSX.Elemen
   );
 
   return (
-    <div>
-      <div>
-        <h1 className='text-center text-2xl font-bold mb-4'>
-          Play History
-        </h1>
-        <div>{uxControls}</div>
-      </div>
-      <div className='grid justify-center'>
+    <div className='flex flex-col gap-4 p-4'>
+      <h1 className='text-center text-2xl font-bold'>
+        Play History
+      </h1>
+      {controls}
+      <div className='flex justify-center'>
         <div className='flex flex-col gap-3'>
           {(display.length > 0 ? display : (!isLoading ? nothingToDisplay : null))}
-          { isLoading && <LoadingSpinner />}
+          {isLoading && <LoadingSpinner />}
         </div>
       </div>
     </div>
