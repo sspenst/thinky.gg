@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import toast from 'react-hot-toast';
 import { throttle } from 'throttle-debounce';
 import Collection from '../../models/db/collection';
@@ -19,6 +19,8 @@ interface GameWrapperProps {
 }
 
 export default function GameWrapper({ collection, level, onNext, onPrev, user }: GameWrapperProps) {
+  const [postGameModalOpen, setShowPostGameModalOpen] = useState(false);
+
   const signUpToast = throttle(2500, () => {
     toast.dismiss();
     toast.success(
@@ -39,8 +41,6 @@ export default function GameWrapper({ collection, level, onNext, onPrev, user }:
       });
   });
 
-  const [postGameModalOpen, setShowPostGameModalOpen] = React.useState(false);
-
   const addNextButtonHighlight = useCallback(() => {
     // find <button> with id 'btn-next'
     const nextButton = document.getElementById('btn-next') as HTMLButtonElement;
@@ -54,12 +54,6 @@ export default function GameWrapper({ collection, level, onNext, onPrev, user }:
 
   return (
     <>
-      {user && (
-        <PostGameModal collection={collection} reqUser={user} isOpen={postGameModalOpen} level={level} closeModal={() => {
-          setShowPostGameModalOpen(false);
-        }}
-        />
-      )}
       <Game
         allowFreeUndo={true}
         disablePlayAttempts={!user}
@@ -67,21 +61,29 @@ export default function GameWrapper({ collection, level, onNext, onPrev, user }:
         enableSessionCheckpoint={true}
         key={`game-${level._id.toString()}`}
         level={level}
+        onNext={collection ? onNext : undefined}
+        onPrev={collection ? onPrev : undefined}
         onSolve={() => {
           if (!user) {
             signUpToast();
+          } else {
+            setShowPostGameModalOpen(true);
           }
 
           if (collection) {
             addNextButtonHighlight();
           }
-
-          console.log('onSolve');
-          setShowPostGameModalOpen(true);
         }}
-        onNext={collection ? onNext : undefined}
-        onPrev={collection ? onPrev : undefined}
       />
+      {user &&
+        <PostGameModal
+          closeModal={() => setShowPostGameModalOpen(false)}
+          collection={collection}
+          isOpen={postGameModalOpen}
+          level={level}
+          reqUser={user}
+        />
+      }
     </>
   );
 }

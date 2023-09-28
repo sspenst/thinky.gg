@@ -24,7 +24,6 @@ export default function DidYouKnowTip({ reqUser }: { reqUser: User }) {
   return (
     <div className='flex flex-col items-center justify-center  text-center '>
       <h2 className='text-2xl font-bold mb-2'>Did You Know?</h2>
-
       <span className=''>{randomTip.current}</span>
     </div>
   );
