@@ -14,8 +14,8 @@ export const TOUR_STEPS_FIRST_LEVEL: Step[] = [
   },
   {
     disableBeacon: true,
-    target: '#solvesTab',
-    content: 'This tab shows users that have solved this level.'
+    target: '#completionsTab',
+    content: 'This tab shows users that have completed this level.'
   },
   {
     disableBeacon: true,

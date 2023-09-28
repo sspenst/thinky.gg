@@ -115,7 +115,7 @@ export default function Campaigns({ enrichedCampaigns }: CampaignsProps) {
                   `/collection/${enrichedCampaign.collections[0].slug}` :
                   `/campaign/${enrichedCampaign.slug}`,
                 id: enrichedCampaign._id.toString(),
-                stats: new SelectOptionStats(enrichedCampaign.levelCount, enrichedCampaign.userCompletedCount),
+                stats: new SelectOptionStats(enrichedCampaign.levelCount, enrichedCampaign.userSolvedCount),
                 text: enrichedCampaign.name,
               } as SelectOption}
             />

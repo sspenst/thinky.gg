@@ -133,7 +133,7 @@ export default function ProfileInsightsSolveTimeComparison({ user }: { user: Use
 
               const x1 = d.value;
 
-              // user has not completed any levels in this category
+              // user has not solved any levels in this category
               if (max <= x1) {
                 return null;
               }

@@ -25,8 +25,8 @@ export default function UserInfo() {
         </>
         :
         <>
-          <span id='levelsCompletedBtn' className='font-bold' data-tooltip-content={'Levels Completed'} data-tooltip-id='levels-completed'>{user.score}</span>
-          <StyledTooltip id='levels-completed' />
+          <span id='levelsSolvedBtn' className='font-bold' data-tooltip-content={'Levels Solved'} data-tooltip-id='levels-solved'>{user.score}</span>
+          <StyledTooltip id='levels-solved' />
           {socket?.connected && (<>
             {connectedPlayersCount > 0 &&
               <Link id='multiplayerBtn' aria-label={`multiplayer - ${connectedPlayersCount} online`} href='/multiplayer' passHref>
