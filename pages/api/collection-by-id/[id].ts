@@ -1,14 +1,11 @@
-import cleanUser from '@root/lib/cleanUser';
-import { LEVEL_DEFAULT_PROJECTION } from '@root/models/schemas/levelSchema';
-import { PipelineStage, Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidObjectId } from '../../../helpers/apiWrapper';
-import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
+import { enrichLevels } from '../../../helpers/enrich';
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
 import User from '../../../models/db/user';
-import { CollectionModel, LevelModel } from '../../../models/mongoose';
+import { CollectionModel } from '../../../models/mongoose';
 
 export default apiWrapper({
   GET: {
@@ -33,48 +30,22 @@ export default apiWrapper({
 });
 
 export async function getCollectionById(id: string, reqUser: User | null) {
-  const collectionAgg = await CollectionModel.aggregate(([
-    {
-      $match: {
-        _id: new Types.ObjectId(id),
-      },
-    },
-    {
-      $lookup: {
-        from: LevelModel.collection.name,
-        localField: 'levels',
-        foreignField: '_id',
-        as: 'levels',
-        pipeline: [
-          {
-            $match: {
-              isDraft: false,
-              isDeleted: {
-                $ne: true
-              }
-            },
-          },
-          {
-            $project: {
-              ...LEVEL_DEFAULT_PROJECTION,
-            },
-          },
-          ...getEnrichLevelsPipelineSteps(reqUser, '_id', ''),
-        ],
-      },
-    },
+  const collection = await CollectionModel.findById<Collection>(id)
+    .populate({
+      path: 'levels',
+      match: { isDraft: false },
+      populate: { path: 'userId', model: 'User', select: 'name' },
+    })
+    .populate('userId', 'name');
 
-  ] as PipelineStage[]));
-
-  if (!collectionAgg || collectionAgg.length === 0) {
+  if (!collection) {
     return null;
   }
 
-  (collectionAgg[0] as Collection).levels?.map(level => {
-    cleanUser(level.userId);
+  const enrichedCollectionLevels = await enrichLevels(collection.levels, reqUser);
+  const newCollection = JSON.parse(JSON.stringify(collection));
 
-    return level;
-  });
+  newCollection.levels = enrichedCollectionLevels;
 
-  return collectionAgg[0];
+  return newCollection;
 }
