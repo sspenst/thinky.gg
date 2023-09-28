@@ -39,11 +39,27 @@ export async function getCollectionById(id: string, reqUser: User | null) {
         _id: new Types.ObjectId(id),
       },
     },
+
+    {
+      $addFields: {
+        'levelsWithSort': {
+          $map: {
+            input: '$levels',
+            as: 'item',
+            in: {
+              _id: '$$item', // making levels an array of objects with _id
+            }
+          }
+        }
+      }
+    },
     {
       $lookup: {
         from: LevelModel.collection.name,
-        localField: 'levels',
+        localField: 'levelsWithSort._id',
         foreignField: '_id',
+        let: { 'orderedIds': '$levelsWithSort._id' },
+
         as: 'levels',
         pipeline: [
           {
@@ -55,15 +71,32 @@ export async function getCollectionById(id: string, reqUser: User | null) {
             },
           },
           {
+            $addFields: {
+              sort: {
+                $indexOfArray: [ '$$orderedIds', '$_id' ]
+              }
+            }
+          },
+          {
+            $sort: {
+              sort: 1
+            }
+          },
+          {
             $project: {
               ...LEVEL_DEFAULT_PROJECTION,
             },
           },
+
           ...getEnrichLevelsPipelineSteps(reqUser, '_id', ''),
         ],
       },
     },
-
+    {
+      $set: {
+        levelsWithSort: 0
+      }
+    }
   ] as PipelineStage[]));
 
   if (!collectionAgg || collectionAgg.length === 0) {
