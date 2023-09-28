@@ -37,11 +37,22 @@ export default function PostGameModal({ closeModal, collection, isOpen, level, r
     }
   }
 
+  const [queryParameters, setQueryParameters] = React.useState({});
   const { data } = useHomePageData([HomepageDataType.RecommendedLevel], nextLevel !== undefined);
   const recommendedLevel = data && data[HomepageDataType.RecommendedLevel];
 
-  const queryParameters = new URLSearchParams(window.location.search);
-  const allQueryParametersToString = queryParameters.toString();
+  React.useEffect(() => {
+    const queryParameters = new URLSearchParams(window.location.search);
+
+    setQueryParameters(queryParameters);
+  }, []);
+
+  let allQueryParametersToString = '';
+
+  if (queryParameters) {
+    allQueryParametersToString = queryParameters.toString();
+  }
+
   const href = nextLevel ? `/level/${nextLevel.slug}?${allQueryParametersToString}` : '/';
 
   return (
