@@ -4,7 +4,7 @@ import Level, { EnrichedLevel } from '@root/models/db/level';
 import User from '@root/models/db/user';
 import React from 'react';
 import RecommendedLevel from '../homepage/recommendedLevel';
-import DidYouKnowTip from '../page/didYouKnowTip';
+import DidYouKnowTip from '../page/DidYouKnowTip';
 import Modal from '.';
 
 interface PostGameModalProps {
