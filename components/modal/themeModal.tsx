@@ -1,5 +1,6 @@
 import RadioButton from '@root/components/page/radioButton';
 import TileType from '@root/constants/tileType';
+import { useTheme } from 'next-themes';
 import React, { useContext, useEffect } from 'react';
 import Theme, { getIconFromTheme } from '../../constants/theme';
 import { AppContext } from '../../contexts/appContext';
@@ -13,16 +14,18 @@ interface ThemeModalProps {
 
 export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
   const { mutateUser, setTheme, theme } = useContext(AppContext);
+  const { setTheme: setAppTheme } = useTheme();
 
   useEffect(() => {
     for (const className of document.body.classList.values()) {
       if (className.startsWith('theme-')) {
         setTheme(className);
+        setAppTheme(className === Theme.Light ? 'light' : 'dark');
 
         return;
       }
     }
-  }, [isOpen, setTheme]);
+  }, [isOpen, setAppTheme, setTheme]);
 
   function onChange(e: React.ChangeEvent<HTMLInputElement>) {
     const newTheme = e.currentTarget.value;
@@ -33,6 +36,7 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
 
     document.body.classList.add(newTheme);
     setTheme(newTheme);
+    setAppTheme(newTheme === Theme.Light ? 'light' : 'dark');
   }
 
   function putTheme() {
