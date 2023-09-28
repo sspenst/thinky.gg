@@ -3,9 +3,10 @@ import { Tooltip } from 'react-tooltip';
 
 interface StyledTooltipProps {
   id: string;
+  style?: React.CSSProperties;
 }
 
-export default function StyledTooltip({ id }: StyledTooltipProps) {
+export default function StyledTooltip({ id, style }: StyledTooltipProps) {
   return (
     <Tooltip
       border='2px solid var(--bg-color-4)'
@@ -17,9 +18,11 @@ export default function StyledTooltip({ id }: StyledTooltipProps) {
         borderRadius: 6,
         color: 'var(--color)',
         fontSize: '0.7rem',
+        lineHeight: '1.4rem',
         maxWidth: 'calc(100vw - 0.7rem)',
         padding: '0.25rem 0.35rem 0.25rem 0.35rem',
         zIndex: 100,
+        ...style,
       }}
     />
   );

@@ -11,11 +11,10 @@ interface ProfileAvatarProps {
   user: User;
 }
 
-export default function ProfileAvatar({ hideStatusCircle, size, user }: ProfileAvatarProps) {
+export default function ProfileAvatar({ hideStatusCircle, size = Dimensions.AvatarSize, user }: ProfileAvatarProps) {
   const { multiplayerSocket } = useContext(AppContext);
   const connectedUser = multiplayerSocket.connectedPlayers.find(u => u._id === user._id);
-  const _size = size ?? Dimensions.AvatarSize;
-  const borderWidth = Math.round(_size / 40) || 1;
+  const borderWidth = Math.round(size / 40) || 1;
 
   return (
     <div className='flex items-end'>
@@ -26,9 +25,9 @@ export default function ProfileAvatar({ hideStatusCircle, size, user }: ProfileA
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           borderColor: 'var(--bg-color-3)',
-          borderRadius: _size / 2,
-          height: _size,
-          width: _size,
+          borderRadius: size / 2,
+          height: size,
+          width: size,
         }}
       />
       {!hideStatusCircle && (<>
@@ -38,31 +37,31 @@ export default function ProfileAvatar({ hideStatusCircle, size, user }: ProfileA
               isOnline(connectedUser) ? 'bg-green-500' : 'bg-yellow-500')}
           style={{
             borderColor: 'var(--bg-color)',
-            borderRadius: _size / 6,
+            borderRadius: size / 6,
             borderWidth: borderWidth,
-            height: _size / 3,
-            marginLeft: -(_size / 3),
-            width: _size / 3,
+            height: size / 3,
+            marginLeft: -(size / 3),
+            width: size / 3,
           }}
         >
           {connectedUser && !isOnline(connectedUser) &&
             <div
               className='overflow-hidden'
               style={{
-                height: _size / 3,
-                borderRadius: _size / 6,
+                height: size / 3,
+                borderRadius: size / 6,
                 marginLeft: -borderWidth,
                 marginTop: -borderWidth,
-                width: _size / 3,
+                width: size / 3,
               }}
             >
               <span
                 className='block'
                 style={{
                   backgroundColor: 'var(--bg-color)',
-                  borderRadius: _size / 9,
-                  height: _size / 4.5,
-                  width: _size / 4.5,
+                  borderRadius: size / 9,
+                  height: size / 4.5,
+                  width: size / 4.5,
                 }}
               />
             </div>
