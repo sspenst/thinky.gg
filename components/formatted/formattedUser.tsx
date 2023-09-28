@@ -78,7 +78,9 @@ export default function FormattedUser({ className, id, noLinks, noTooltip, onCli
           clearTimeout(setTimer.current);
         }
 
-        setTimer.current = setTimeout(() => setShowTooltip(true), 200);
+        setTimer.current = setTimeout(() => {
+          setShowTooltip(true);
+        }, 200);
       }}
     >
       <div
