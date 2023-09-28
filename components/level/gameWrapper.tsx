@@ -1,4 +1,3 @@
-import { AppContext } from '@root/contexts/appContext';
 import { AudioPlayerContext } from '@root/contexts/audioPlayerContext';
 import Link from 'next/link';
 import React, { useCallback, useContext } from 'react';
