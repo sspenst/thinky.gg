@@ -40,10 +40,14 @@ export default function PostGameModal({ closeModal, collection, isOpen, level, r
   const { data } = useHomePageData([HomepageDataType.RecommendedLevel], nextLevel !== undefined);
   const recommendedLevel = data && data[HomepageDataType.RecommendedLevel];
 
+  const queryParameters = new URLSearchParams(window.location.search);
+  const allQueryParametersToString = queryParameters.toString();
+  const href = nextLevel ? `/level/${nextLevel.slug}?${allQueryParametersToString}` : '/';
+
   return (
     <Modal title={header} closeModal={closeModal} isOpen={isOpen} >
       <div className='flex flex-col gap-4 justify-center items-center'>
-        <RecommendedLevel id='next-level' title={nextLevel ? 'Next Level' : 'Try this next!'} level={nextLevel ?? recommendedLevel} />
+        <RecommendedLevel hrefOverride={href} onClick={closeModal} id='next-level' title={nextLevel ? 'Next Level' : 'Try this next!'} level={nextLevel ?? recommendedLevel} />
         <DidYouKnowTip reqUser={reqUser} />
       </div>
     </Modal>

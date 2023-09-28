@@ -12,9 +12,11 @@ interface RecommendedLevelProps {
   level?: EnrichedLevel | null;
   title: JSX.Element | string;
   tooltip?: string;
+  onClick?: (option: SelectOption) => void;
+  hrefOverride?: string;
 }
 
-export default function RecommendedLevel({ id, level, title, tooltip }: RecommendedLevelProps): JSX.Element {
+export default function RecommendedLevel({ id, level, title, tooltip, onClick, hrefOverride }: RecommendedLevelProps): JSX.Element {
   return (
     <Card id={id} title={title} tooltip={tooltip}>
       {level === undefined ? <LoadingCard /> :
@@ -30,11 +32,12 @@ export default function RecommendedLevel({ id, level, title, tooltip }: Recommen
             option={{
               author: level.userId?.name,
               height: Dimensions.OptionHeightLarge,
-              href: `/level/${level.slug}`,
+              href: hrefOverride || `/level/${level.slug}`,
               id: level._id.toString(),
               level: level,
               stats: new SelectOptionStats(level.leastMoves, level.userMoves),
               text: level.name,
+              onClick: onClick
             } as SelectOption}
           />
       }
