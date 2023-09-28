@@ -1,5 +1,6 @@
+import { PageContext } from '@root/contexts/pageContext';
 import Link from 'next/link';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { throttle } from 'throttle-debounce';
 import Collection from '../../models/db/collection';
@@ -20,6 +21,11 @@ interface GameWrapperProps {
 
 export default function GameWrapper({ collection, level, onNext, onPrev, user }: GameWrapperProps) {
   const [postGameModalOpen, setShowPostGameModalOpen] = useState(false);
+  const { setPreventKeyDownEvent } = useContext(PageContext);
+
+  useEffect(() => {
+    setPreventKeyDownEvent(postGameModalOpen);
+  }, [postGameModalOpen, setPreventKeyDownEvent]);
 
   const signUpToast = throttle(2500, () => {
     toast.dismiss();
@@ -67,7 +73,7 @@ export default function GameWrapper({ collection, level, onNext, onPrev, user }:
           if (!user) {
             signUpToast();
           } else {
-            setShowPostGameModalOpen(true);
+            setTimeout(() => setShowPostGameModalOpen(true), 200);
           }
 
           if (collection) {
