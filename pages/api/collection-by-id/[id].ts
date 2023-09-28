@@ -1,5 +1,6 @@
 import cleanUser from '@root/lib/cleanUser';
 import { LEVEL_DEFAULT_PROJECTION } from '@root/models/schemas/levelSchema';
+import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import { PipelineStage, Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidObjectId } from '../../../helpers/apiWrapper';
@@ -8,7 +9,7 @@ import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
 import User from '../../../models/db/user';
-import { CollectionModel, LevelModel } from '../../../models/mongoose';
+import { CollectionModel, LevelModel, UserModel } from '../../../models/mongoose';
 
 export default apiWrapper({
   GET: {
@@ -89,6 +90,24 @@ export async function getCollectionById(id: string, reqUser: User | null) {
           },
 
           ...getEnrichLevelsPipelineSteps(reqUser, '_id', ''),
+          {
+            // populate user
+            $lookup: {
+              from: UserModel.collection.name,
+              localField: 'userId',
+              foreignField: '_id',
+              as: 'userId',
+              pipeline: [
+                { $project: USER_DEFAULT_PROJECTION },
+              ]
+            },
+          },
+          {
+            $unwind: {
+              path: '$userId',
+              preserveNullAndEmptyArrays: true,
+            },
+          },
         ],
       },
     },
