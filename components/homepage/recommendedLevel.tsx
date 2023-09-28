@@ -3,32 +3,20 @@ import Dimensions from '../../constants/dimensions';
 import { EnrichedLevel } from '../../models/db/level';
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
+import Card from '../cards/card';
 import LoadingCard from '../cards/loadingCard';
 import SelectCard from '../cards/selectCard';
-import StyledTooltip from '../page/styledTooltip';
 
 interface RecommendedLevelProps {
-  id?: string;
+  id: string;
   level?: EnrichedLevel | null;
   title: JSX.Element | string;
   tooltip?: string;
 }
 
 export default function RecommendedLevel({ id, level, title, tooltip }: RecommendedLevelProps): JSX.Element {
-  const tooltipId = `recommended-level-tooltip-${id}`;
-
   return (
-    <div className='flex flex-col justify-center rounded-lg border'
-      id={id}
-      style={{
-        backgroundColor: 'var(--bg-color-2)',
-        borderColor: 'var(--bg-color-3)',
-      }}
-    >
-      <h2 className='self-center px-4 pt-3 text-lg font-bold' data-tooltip-id={tooltipId} data-tooltip-content={tooltip}>
-        {title}
-      </h2>
-      <StyledTooltip id={tooltipId} />
+    <Card id={id} title={title} tooltip={tooltip}>
       {level === undefined ? <LoadingCard /> :
         !level ?
           <SelectCard
@@ -50,6 +38,6 @@ export default function RecommendedLevel({ id, level, title, tooltip }: Recommen
             } as SelectOption}
           />
       }
-    </div>
+    </Card>
   );
 }
