@@ -74,8 +74,8 @@ export default function GameWrapper({ collection, level, onNext, onPrev, user }:
           addNextButtonHighlight();
         }
       }}
-      onNext={collection ? () => {onNext();} : undefined}
-      onPrev={collection ? () => {onPrev();} : undefined}
+      onNext={collection ? onNext : undefined}
+      onPrev={collection ? onPrev : undefined}
     />
   );
 }
