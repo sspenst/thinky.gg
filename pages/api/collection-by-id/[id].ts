@@ -1,15 +1,14 @@
 import cleanUser from '@root/lib/cleanUser';
 import { LEVEL_DEFAULT_PROJECTION } from '@root/models/schemas/levelSchema';
-import { lookup } from 'dns';
 import { PipelineStage, Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidObjectId } from '../../../helpers/apiWrapper';
-import { enrichLevels, getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
+import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
 import User from '../../../models/db/user';
-import { CollectionModel, LevelModel, StatModel } from '../../../models/mongoose';
+import { CollectionModel, LevelModel } from '../../../models/mongoose';
 
 export default apiWrapper({
   GET: {
@@ -53,25 +52,19 @@ export async function getCollectionById(id: string, reqUser: User | null) {
               isDeleted: {
                 $ne: true
               }
-
             },
           },
           {
-
             $project: {
               ...LEVEL_DEFAULT_PROJECTION,
             },
           },
-
           ...getEnrichLevelsPipelineSteps(reqUser, '_id', ''),
-
         ],
       },
     },
 
   ] as PipelineStage[]));
-
-  console.log(collectionAgg[0]);
 
   if (!collectionAgg || collectionAgg.length === 0) {
     return null;
