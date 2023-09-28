@@ -68,7 +68,15 @@ export default function HomeLoggedIn({
     }
     <div className='flex flex-col gap-4 m-4 items-center'>
       <div className='flex justify-center items-center flex-wrap gap-4 max-w-full'>
-        <Card id='campaign' title='Continue Campaign'>
+        <Card
+          id='campaign'
+          title={
+            <Link className='font-bold hover:underline' href='/play'>
+              Continue Campaign
+            </Link>
+          }
+          tooltip='Click here to go to the chapter select screen, or continue with the chapter button below!'
+        >
           <div className='p-3'>
             <ChapterSelectCard chapter={user.chapterUnlocked ?? 1} />
           </div>
