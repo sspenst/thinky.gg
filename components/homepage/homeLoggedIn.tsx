@@ -281,20 +281,29 @@ export default function HomeLoggedIn({
             textAlign: 'center',
           }}
         >
-          {latestReviews ? latestReviews?.map(review => {
-            return (
-              <div
-                className='mx-4 md:mx-8 my-4'
-                key={`review-${review._id.toString()}`}
-              >
-                <FormattedReview
-                  level={review.levelId}
-                  review={review}
-                  user={review.userId}
-                />
+          {latestReviews === undefined ?
+            <div className='flex justify-center p-4'><LoadingSpinner /></div>
+            :
+            latestReviews.length === 0 ?
+              <div className='text-center italic p-3'>
+                No reviews found
               </div>
-            );
-          }) : <div className='flex justify-center p-4'><LoadingSpinner /></div>}
+              :
+              latestReviews.map(review => {
+                return (
+                  <div
+                    className='mx-4 md:mx-8 my-4'
+                    key={`review-${review._id.toString()}`}
+                  >
+                    <FormattedReview
+                      level={review.levelId}
+                      review={review}
+                      user={review.userId}
+                    />
+                  </div>
+                );
+              })
+          }
         </div>
       </div>
       <iframe id='discordSection' className='p-4' src='https://discord.com/widget?id=971585343956590623&theme=dark' width='640' height='640' sandbox='allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts' />
