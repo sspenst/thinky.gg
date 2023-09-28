@@ -1,7 +1,7 @@
 import { Tab } from '@headlessui/react';
 import FormattedDate from '@root/components/formatted/formattedDate';
 import FormattedLevelReviews from '@root/components/formatted/formattedLevelReviews';
-import Complete from '@root/components/level/info/complete';
+import Solved from '@root/components/level/info/solved';
 import Image from 'next/image';
 import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -18,9 +18,9 @@ import FormattedUser from '../../formatted/formattedUser';
 import ArchiveLevelModal from '../../modal/archiveLevelModal';
 import EditLevelModal from '../../modal/editLevelModal';
 import UnpublishLevelModal from '../../modal/unpublishLevelModal';
+import LevelInfoCompletions from './levelInfoCompletions';
 import LevelInfoPlayTime from './levelInfoPlayTime';
 import LevelInfoRecords from './levelInfoRecords';
-import LevelInfoSolves from './levelInfoSolves';
 
 interface FormattedLevelInfoProps {
   level: EnrichedLevel;
@@ -71,7 +71,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
             }}>
               {stat.getText()}
             </span>
-            {stat.isComplete() && <Complete className='-mx-2' />}
+            {stat.isSolved() && <Solved className='-mx-2' />}
             <span className='flex'>
               <FormattedDate ts={level.userMovesTs} />
               {userConfig?.showPlayStats &&
@@ -114,13 +114,13 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
                 Least Steps
               </div>
             </Tab>
-            <Tab id='solvesTab' className='ui-selected:border-b-2 border-blue-500 focus:outline-none' onKeyDown={(e: React.KeyboardEvent) => {
+            <Tab id='completionsTab' className='ui-selected:border-b-2 border-blue-500 focus:outline-none' onKeyDown={(e: React.KeyboardEvent) => {
               if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                 e.preventDefault();
               }
             }}>
               <div className='mb-1 py-1 px-2 tab rounded'>
-                Solves
+                Completions
               </div>
             </Tab>
             <Tab id='timePlayedTab' className='ui-selected:border-b-2 border-blue-500 focus:outline-none' onKeyDown={(e: React.KeyboardEvent) => {
@@ -139,7 +139,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
               <LevelInfoRecords />
             </Tab.Panel>
             <Tab.Panel tabIndex={-1}>
-              <LevelInfoSolves />
+              <LevelInfoCompletions />
             </Tab.Panel>
             <Tab.Panel tabIndex={-1}>
               <LevelInfoPlayTime />

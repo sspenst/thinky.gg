@@ -21,7 +21,6 @@ const StripeEventSchema = new mongoose.Schema<StripeEvent>({
   stripeId: {
     type: String,
     required: true,
-    unique: true
   },
   type: {
     type: String,

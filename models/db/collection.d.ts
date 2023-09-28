@@ -23,7 +23,7 @@ interface Collection {
 
 export interface EnrichedCollection extends Collection {
   levelCount: number;
-  userCompletedCount: number;
+  userSolvedCount: number;
 }
 
 export default Collection;

@@ -60,8 +60,8 @@ export default function GameWrapper({ collection, level, onNext, onPrev, user }:
       enableSessionCheckpoint={true}
       key={`game-${level._id.toString()}`}
       level={level}
-      onComplete={() => {
-        // click on #btn-audio-player-version
+
+      onSolve={() => {
         if (dynamicMusic) {
           setIsHot(true);
         }

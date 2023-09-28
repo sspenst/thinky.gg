@@ -11,9 +11,9 @@ import { getEnrichLevelsPipelineSteps } from './enrich';
 import { logger } from './logger';
 
 export interface CampaignProps {
-  completedLevels: number;
   enrichedCollections: EnrichedCollection[];
   reqUser: User;
+  solvedLevels: number;
   totalLevels: number;
 }
 
@@ -111,7 +111,7 @@ export default async function getCampaignProps(reqUser: User, slug: string) {
     enrichedCollections.push(collection);
   }
 
-  let completedLevels = 0;
+  let solvedLevels = 0;
   let totalLevels = 0;
 
   for (let i = 0; i < enrichedCollections.length; i++) {
@@ -144,19 +144,19 @@ export default async function getCampaignProps(reqUser: User, slug: string) {
 
     enrichedCollection.levels = collectionLevels;
 
-    const userCompletedCount = (enrichedCollection.levels as EnrichedLevel[]).filter((level: EnrichedLevel) => level.userMoves === level.leastMoves).length;
+    const userSolvedCount = (enrichedCollection.levels as EnrichedLevel[]).filter((level: EnrichedLevel) => level.userMoves === level.leastMoves).length;
 
-    enrichedCollection.userCompletedCount = userCompletedCount;
-    completedLevels += userCompletedCount;
+    enrichedCollection.userSolvedCount = userSolvedCount;
+    solvedLevels += userSolvedCount;
     enrichedCollection.levelCount = enrichedCollection.levels.length;
     totalLevels += enrichedCollection.levels.length;
   }
 
   return {
     props: {
-      completedLevels: completedLevels,
       enrichedCollections: JSON.parse(JSON.stringify(enrichedCollections)),
       reqUser: JSON.parse(JSON.stringify(reqUser)),
+      solvedLevels: solvedLevels,
       totalLevels: totalLevels,
     } as CampaignProps,
   };

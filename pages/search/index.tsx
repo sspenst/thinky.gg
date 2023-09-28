@@ -182,8 +182,8 @@ interface StatFilterMenuProps {
 function StatFilterMenu({ onStatFilterClick, query }: StatFilterMenuProps) {
   const statFilterStrings = {
     [StatFilter.All]: 'All Levels',
-    [StatFilter.HideWon]: 'Hide Won',
-    [StatFilter.ShowWon]: 'Only Won',
+    [StatFilter.HideWon]: 'Hide Solved',
+    [StatFilter.ShowWon]: 'Solved',
   } as Record<string, string>;
 
   if (query.sortBy !== 'completed') {
@@ -224,7 +224,7 @@ function StatFilterMenu({ onStatFilterClick, query }: StatFilterMenuProps) {
               <Menu.Item key={`filter-completions-${statFilterKey}`}>
                 {({ active }) => (
                   <button
-                    className='text-black block px-3 py-1 text-sm flex items-center gap-1 justify-center'
+                    className='text-black block p-1 text-sm w-28 flex items-center gap-1 justify-center'
                     onClick={() => onStatFilterClick(statFilterKey as StatFilter)}
                     role='menuitem'
                     style= {{
@@ -416,10 +416,10 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
     ...(!reqUser ? [] : [{
       id: 'completed',
       style: {
-        minWidth: '125px',
+        minWidth: '135px',
       },
       name: (
-        <div className='flex flex-row gap-1'>
+        <div className='flex gap-2'>
           <span>Completed</span>
           <Image alt='pro' className='mr-0.5' src='/pro.svg' width='16' height='16' />
         </div>

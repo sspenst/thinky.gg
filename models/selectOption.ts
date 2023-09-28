@@ -12,6 +12,7 @@ interface SelectOption {
   onClick?: () => void;
   stats?: SelectOptionStats | undefined;
   text: string | JSX.Element;
+  width?: number;
 }
 
 export default SelectOption;

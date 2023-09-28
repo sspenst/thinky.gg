@@ -34,10 +34,10 @@ interface GameProps {
   hideSidebar?: boolean;
   level: Level;
   matchId?: string;
-  onComplete?: () => void;
   onMove?: (gameState: GameState) => void;
   onNext?: () => void;
   onPrev?: () => void;
+  onSolve?: () => void;
   onStatsSuccess?: () => void;
 }
 
@@ -51,10 +51,10 @@ export default function Game({
   hideSidebar,
   level,
   matchId,
-  onComplete,
   onMove,
   onNext,
   onPrev,
+  onSolve,
   onStatsSuccess,
 }: GameProps) {
   const levelContext = useContext(LevelContext);
@@ -283,7 +283,7 @@ export default function Game({
       toast.success(
         <div>
           {index === BEST_CHECKPOINT_INDEX ?
-            'Restored your best solve. Press B again to '
+            'Restored your best completion. Press B again to '
             :
             `Restored checkpoint ${index}. Press ${index} again to `
           }
@@ -447,11 +447,6 @@ export default function Game({
 
       if (newGameState.board[newGameState.pos.y][newGameState.pos.x].tileType === TileType.End) {
         // track stats upon reaching an exit
-
-        if (gameState.moves.length <= level.leastMoves && onComplete) {
-          onComplete();
-        }
-
         trackStats(newGameState.moves.map(move => move.direction), level._id.toString(), 3);
       } else if (!disablePlayAttempts) {
         // track play attempts upon making a successful move
@@ -460,17 +455,15 @@ export default function Game({
 
       return onSuccessfulMove(newGameState);
     });
-  }, [allowFreeUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, gameState.moves.length, level._id, level.data, level.leastMoves, loadCheckpoint, onComplete, onMove, onNext, onPrev, pro, saveCheckpoint, trackStats]);
+  }, [allowFreeUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, level._id, level.data, loadCheckpoint, onMove, onNext, onPrev, pro, saveCheckpoint, trackStats]);
 
   useEffect(() => {
-    /* TODO: can we remove this section?
     const atEnd = gameState.board[gameState.pos.y][gameState.pos.x].tileType === TileType.End;
 
-    if (atEnd && gameState.moves.length <= level.leastMoves && onComplete) {
-    //  onComplete();
+    if (atEnd && gameState.moves.length <= level.leastMoves && onSolve) {
+      onSolve();
     }
-    */
-  }, [gameState, level.leastMoves, onComplete]);
+  }, [gameState, level.leastMoves, onSolve]);
 
   useEffect(() => {
     if (disableCheckpoints || !pro || !checkpoints) {

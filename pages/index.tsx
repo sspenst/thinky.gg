@@ -65,7 +65,14 @@ function App() {
         />
         <HomeVideo />
         <div className='flex flex-wrap justify-center m-4'>
-          {levelOfDay && <RecommendedLevel level={levelOfDay} title='Level of the Day' />}
+          {levelOfDay &&
+            <RecommendedLevel
+              id='level-of-day'
+              level={levelOfDay}
+              title='Level of the Day 🗓️'
+              tooltip={'Every day there is a new level of the day. Difficulty increases throughout the week!'}
+            />
+          }
         </div>
         <HomeDefault />
       </>

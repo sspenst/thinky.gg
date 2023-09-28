@@ -1,6 +1,6 @@
 import { ProfileQueryType } from '@root/constants/profileQueryType';
 import apiWrapper, { ValidCommaSeparated, ValidEnum } from '@root/helpers/apiWrapper';
-import { getCompletionByDifficultyTable } from '@root/helpers/getCompletionByDifficultyTable';
+import { getSolvesByDifficultyTable } from '@root/helpers/getSolvesByDifficultyTable';
 import { Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getUserById } from '../../user-by-id/[id]';
@@ -16,14 +16,14 @@ export default apiWrapper({
 
   const typeArray = type.split(',');
 
-  const [levelsCompletedByDifficulty, user] = await Promise.all([
-    typeArray.includes(ProfileQueryType.LevelsCompletedByDifficulty) ? getCompletionByDifficultyTable(new Types.ObjectId(userId)) : null,
+  const [levelsSolvedByDifficulty, user] = await Promise.all([
+    typeArray.includes(ProfileQueryType.LevelsSolvedByDifficulty) ? getSolvesByDifficultyTable(new Types.ObjectId(userId)) : null,
     typeArray.includes(ProfileQueryType.User) ? getUserById(userId) : null,
   ]);
 
   // TODO: make this an object with a type definition (use it in formattedUser)
   return res.status(200).json({
-    [ProfileQueryType.LevelsCompletedByDifficulty]: levelsCompletedByDifficulty,
+    [ProfileQueryType.LevelsSolvedByDifficulty]: levelsSolvedByDifficulty,
     [ProfileQueryType.User]: user,
   });
 });
