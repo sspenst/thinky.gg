@@ -1,10 +1,12 @@
 import PagePath from '@root/constants/pagePath';
 import StatFilter from '@root/constants/statFilter';
+import getProfileSlug from '@root/helpers/getProfileSlug';
 import isGuest from '@root/helpers/isGuest';
 import classNames from 'classnames';
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useContext } from 'react';
+import { useRouter } from 'next/router';
+import React, { useContext, useState } from 'react';
 import Theme from '../../constants/theme';
 import TimeRange from '../../constants/timeRange';
 import { AppContext } from '../../contexts/appContext';
@@ -12,12 +14,14 @@ import { useTour } from '../../hooks/useTour';
 import { EnrichedLevel } from '../../models/db/level';
 import Review from '../../models/db/review';
 import User from '../../models/db/user';
+import Card from '../cards/card';
 import ChapterSelectCard from '../cards/chapterSelectCard';
 import LevelSelect from '../cards/levelSelect';
 import LoadingCard from '../cards/loadingCard';
 import FormattedReview from '../formatted/formattedReview';
 import FormattedUser from '../formatted/formattedUser';
 import LoadingSpinner from '../page/loadingSpinner';
+import MultiSelectUser from '../page/multiSelectUser';
 import RecommendedLevel from './recommendedLevel';
 
 interface HomeLoggedInProps {
@@ -40,6 +44,8 @@ export default function HomeLoggedIn({
   user,
 }: HomeLoggedInProps) {
   const { multiplayerSocket, theme, userConfig } = useContext(AppContext);
+  const router = useRouter();
+  const [search, setSearch] = useState('');
   const { connectedPlayersCount, matches, socket } = multiplayerSocket;
   const buttonClassNames = classNames('py-2.5 px-3.5 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm whitespace-nowrap',
     theme === Theme.Light ?
@@ -61,35 +67,42 @@ export default function HomeLoggedIn({
       </div>
     }
     <div className='flex flex-col gap-4 m-4 items-center'>
-      <FormattedUser className='text-2xl' id='home' size={40} user={user} />
-      <div className='flex justify-center items-center flex-wrap gap-4'>
-        <ChapterSelectCard chapter={user.chapterUnlocked ?? 1} />
+      <div className='flex justify-center items-center flex-wrap gap-4 max-w-full'>
+        <Card id='campaign' title='Continue Campaign'>
+          <div className='p-3'>
+            <ChapterSelectCard chapter={user.chapterUnlocked ?? 1} />
+          </div>
+        </Card>
         <div className='flex flex-col gap-2'>
-          <Link passHref href='/multiplayer' className={buttonClassNames}>
-            <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
-              <path strokeLinecap='round' strokeLinejoin='round' d='M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z' />
-            </svg>
-            <div className='flex flex-col'>
-              <span className='text-xl font-bold mb-1'>Multiplayer</span>
-              {!socket?.connected ?
-                <span className='text-xs text-yellow-500'>Connecting...</span>
-                :
-                <>
-                  <span className='text-xs text-green-500'>{`${connectedPlayersCount} player${connectedPlayersCount !== 1 ? 's' : ''} online`}</span>
-                  {matches.length > 0 &&
-                    <span className='text-xs text-green-300'>
-                      {`${matches.length} current match${matches.length === 1 ? '' : 'es'}`}
-                    </span>
-                  }
-                </>
-              }
-            </div>
-          </Link>
-          <Link passHref href='/create' className={buttonClassNames}>
-            <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-wrench' viewBox='0 0 16 16'>
-              <path d='M.102 2.223A3.004 3.004 0 0 0 3.78 5.897l6.341 6.252A3.003 3.003 0 0 0 13 16a3 3 0 1 0-.851-5.878L5.897 3.781A3.004 3.004 0 0 0 2.223.1l2.141 2.142L4 4l-1.757.364L.102 2.223zm13.37 9.019.528.026.287.445.445.287.026.529L15 13l-.242.471-.026.529-.445.287-.287.445-.529.026L13 15l-.471-.242-.529-.026-.287-.445-.445-.287-.026-.529L11 13l.242-.471.026-.529.445-.287.287-.445.529-.026L13 11l.471.242z' />
-            </svg>Create
-          </Link>
+          <FormattedUser className='text-2xl' id='home' size={40} user={user} />
+          <div className='flex flex-col gap-2 w-fit'>
+            <Link passHref href='/multiplayer' className={buttonClassNames}>
+              <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
+                <path strokeLinecap='round' strokeLinejoin='round' d='M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z' />
+              </svg>
+              <div className='flex flex-col'>
+                <span className='text-lg font-bold'>Multiplayer</span>
+                {!socket?.connected ?
+                  <span className='text-xs text-yellow-500'>Connecting...</span>
+                  :
+                  <>
+                    <span className='text-xs text-green-500'>{`${connectedPlayersCount} player${connectedPlayersCount !== 1 ? 's' : ''} online`}</span>
+                    {matches.length > 0 &&
+                      <span className='text-xs text-green-300'>
+                        {`${matches.length} current match${matches.length === 1 ? '' : 'es'}`}
+                      </span>
+                    }
+                  </>
+                }
+              </div>
+            </Link>
+            <Link passHref href='/create' className={buttonClassNames}>
+              <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-wrench' viewBox='0 0 16 16'>
+                <path d='M.102 2.223A3.004 3.004 0 0 0 3.78 5.897l6.341 6.252A3.003 3.003 0 0 0 13 16a3 3 0 1 0-.851-5.878L5.897 3.781A3.004 3.004 0 0 0 2.223.1l2.141 2.142L4 4l-1.757.364L.102 2.223zm13.37 9.019.528.026.287.445.445.287.026.529L15 13l-.242.471-.026.529-.445.287-.287.445-.529.026L13 15l-.471-.242-.529-.026-.287-.445-.445-.287-.026-.529L11 13l.242-.471.026-.529.445-.287.287-.445.529-.026L13 11l.471.242z' />
+              </svg>
+              <span className='text-lg font-bold'>Create</span>
+            </Link>
+          </div>
         </div>
       </div>
     </div>
@@ -137,11 +150,6 @@ export default function HomeLoggedIn({
           </svg>Community Campaigns
         </Link>
         <Link id='usersBtn' passHref href='/users' className={buttonClassNames}>
-          <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={2}>
-            <path strokeLinecap='round' strokeLinejoin='round' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
-          </svg>Search Levels
-        </Link>
-        <Link id='usersBtn' passHref href='/users' className={buttonClassNames}>
           <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-list-ol' viewBox='0 0 16 16'>
             <path fillRule='evenodd' d='M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5z' />
             <path d='M1.713 11.865v-.474H2c.217 0 .363-.137.363-.317 0-.185-.158-.31-.361-.31-.223 0-.367.152-.373.31h-.59c.016-.467.373-.787.986-.787.588-.002.954.291.957.703a.595.595 0 0 1-.492.594v.033a.615.615 0 0 1 .569.631c.003.533-.502.8-1.051.8-.656 0-1-.37-1.008-.794h.582c.008.178.186.306.422.309.254 0 .424-.145.422-.35-.002-.195-.155-.348-.414-.348h-.3zm-.004-4.699h-.604v-.035c0-.408.295-.844.958-.844.583 0 .96.326.96.756 0 .389-.257.617-.476.848l-.537.572v.03h1.054V9H1.143v-.395l.957-.99c.138-.142.293-.304.293-.508 0-.18-.147-.32-.342-.32a.33.33 0 0 0-.342.338v.041zM2.564 5h-.635V2.924h-.031l-.598.42v-.567l.629-.443h.635V5z' />
@@ -159,8 +167,52 @@ export default function HomeLoggedIn({
         </Link>
       </div>
     </div>
+    <div className='flex items-center justify-center'>
+      <div className='flex flex-col'>
+        <div className='flex items-center'>
+          <form action='/search'>
+            <input type='hidden' name='timeRange' value='All' />
+            <input onChange={e => setSearch(e.target.value)} id='search' type='search' name='search' className='form-control relative flex-auto min-w-0 block w-52 px-2.5 py-1.5 h-10 text-base font-normal text-gray-700 placeholder:text-gray-400 bg-white bg-clip-padding border border-solid border-gray-300 rounded-md rounded-r-none rounded-b-none transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' placeholder='Search levels...' aria-label='Search' aria-describedby='button-addon2' />
+          </form>
+        </div>
+        <div>
+          <MultiSelectUser
+            controlStyles={{
+              borderBottomLeftRadius: '0.375rem',
+              borderBottomRightRadius: '0rem',
+              borderTopLeftRadius: '0rem',
+              borderTopRightRadius: '0rem',
+            }}
+            onSelect={(selectedItem: User) => {
+              router.push(
+                {
+                  pathname: getProfileSlug(selectedItem),
+                }
+              );
+            }}
+          />
+        </div>
+      </div>
+      <Link
+        className={classNames(buttonClassNames, 'py-1.5 h-20 mr-0 rounded-l-none cursor-pointer')}
+        href={{
+          pathname: '/search',
+          query: {
+            search: search,
+            timeRange: TimeRange[TimeRange.All],
+          },
+        }}
+        passHref
+      >
+        <svg xmlns='http://www.w3.org/2000/svg' className='w-5 h-5' fill='none' viewBox='0 0 24 24'
+          stroke='currentColor'>
+          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2'
+            d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
+        </svg>
+      </Link>
+    </div>
     <div className='flex flex-wrap justify-center max-w-screen-2xl mx-auto'>
-      <div className='w-full px-4'>
+      <div className='w-full pt-6 px-4'>
         <div id='top-levels-of-month' className='flex justify-center'>
           <Link
             className='font-bold text-xl text-center hover:underline'
