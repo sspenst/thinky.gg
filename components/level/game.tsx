@@ -446,6 +446,10 @@ export default function Game({
       }
 
       if (newGameState.board[newGameState.pos.y][newGameState.pos.x].tileType === TileType.End) {
+        if (newGameState.moves.length <= level.leastMoves && onSolve) {
+          onSolve();
+        }
+
         // track stats upon reaching an exit
         trackStats(newGameState.moves.map(move => move.direction), level._id.toString(), 3);
       } else if (!disablePlayAttempts) {
@@ -455,15 +459,7 @@ export default function Game({
 
       return onSuccessfulMove(newGameState);
     });
-  }, [allowFreeUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, level._id, level.data, loadCheckpoint, onMove, onNext, onPrev, pro, saveCheckpoint, trackStats]);
-
-  useEffect(() => {
-    const atEnd = gameState.board[gameState.pos.y][gameState.pos.x].tileType === TileType.End;
-
-    if (atEnd && gameState.moves.length <= level.leastMoves && onSolve) {
-      onSolve();
-    }
-  }, [gameState, level.leastMoves, onSolve]);
+  }, [allowFreeUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, level._id, level.data, level.leastMoves, loadCheckpoint, onMove, onNext, onPrev, onSolve, pro, saveCheckpoint, trackStats]);
 
   useEffect(() => {
     if (disableCheckpoints || !pro || !checkpoints) {
