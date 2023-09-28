@@ -1,28 +1,27 @@
 import PagePath from '@root/constants/pagePath';
 import StatFilter from '@root/constants/statFilter';
+import getProfileSlug from '@root/helpers/getProfileSlug';
 import isGuest from '@root/helpers/isGuest';
 import classNames from 'classnames';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useContext, useState } from 'react';
-import Dimensions from '../../constants/dimensions';
 import Theme from '../../constants/theme';
 import TimeRange from '../../constants/timeRange';
 import { AppContext } from '../../contexts/appContext';
-import getProfileSlug from '../../helpers/getProfileSlug';
 import { useTour } from '../../hooks/useTour';
 import { EnrichedLevel } from '../../models/db/level';
 import Review from '../../models/db/review';
 import User from '../../models/db/user';
+import Card from '../cards/card';
+import ChapterSelectCard from '../cards/chapterSelectCard';
 import LevelSelect from '../cards/levelSelect';
 import LoadingCard from '../cards/loadingCard';
 import FormattedReview from '../formatted/formattedReview';
-import OnlineUsers from '../multiplayer/onlineUsers';
+import FormattedUser from '../formatted/formattedUser';
 import LoadingSpinner from '../page/loadingSpinner';
 import MultiSelectUser from '../page/multiSelectUser';
-import RoleIcons from '../page/roleIcons';
-import ProfileAvatar from '../profile/profileAvatar';
 import RecommendedLevel from './recommendedLevel';
 
 interface HomeLoggedInProps {
@@ -47,7 +46,7 @@ export default function HomeLoggedIn({
   const { multiplayerSocket, theme, userConfig } = useContext(AppContext);
   const router = useRouter();
   const [search, setSearch] = useState('');
-  const { matches, socket } = multiplayerSocket;
+  const { connectedPlayersCount, matches, socket } = multiplayerSocket;
   const buttonClassNames = classNames('py-2.5 px-3.5 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm whitespace-nowrap',
     theme === Theme.Light ?
       'bg-green-100 hover:bg-gray-50 border-gray-300 text-gray-700' :
@@ -68,51 +67,50 @@ export default function HomeLoggedIn({
       </div>
     }
     <div className='flex flex-col gap-4 m-4 items-center'>
-      <div className='flex flex-wrap gap-4 items-center justify-center max-w-full'>
-        <div className='flex gap-2 items-center max-w-full'>
-          <div className='font-bold text-2xl truncate'>Welcome, {user.name}</div>
-          <RoleIcons size={20} user={user} />
-        </div>
-        <OnlineUsers />
-      </div>
-      <div className='flex justify-center items-center flex-wrap gap-6'>
-        <div className='flex flex-col gap-2'>
-          <Link href={getProfileSlug(user)} passHref>
-            <ProfileAvatar hideStatusCircle={true} size={Dimensions.AvatarSizeLarge} user={user} />
-          </Link>
-          <span className='flex justify-center font-bold'>{user.score}</span>
-        </div>
-        <div className='flex flex-col gap-2'>
-          <Link id='playBtn'
-            className='inline-block px-3 py-1.5 border-4 border-neutral-400 bg-white text-black font-bold text-3xl leading-snug rounded-xl hover:ring-4 hover:bg-blue-500 hover:text-white ring-blue-500/50 focus:ring-0 text-center'
-            style={{
-              animationDelay: '0.5s',
-            }}
-            data-mdb-ripple='true'
-            data-mdb-ripple-color='light'
-            href={userConfig && !userConfig.tutorialCompletedAt ? '/tutorial' : '/play'}
-            role='button'
-          >
-            {userConfig && !userConfig.tutorialCompletedAt ? 'Start' : 'Play'}
-          </Link>
-          <Link passHref href='/multiplayer' className={buttonClassNames}>
-            <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
-              <path strokeLinecap='round' strokeLinejoin='round' d='M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z' />
-            </svg>
-            <div className='flex flex-col'>
-              <span>Multiplayer</span>
-              {socket?.connected && matches.length > 0 &&
-                <span className='text-xs text-green-300'>
-                  {`${matches.length} current match${matches.length === 1 ? '' : 'es'}`}
-                </span>
-              }
-            </div>
-          </Link>
-          <Link passHref href='/create' className={buttonClassNames}>
-            <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-wrench' viewBox='0 0 16 16'>
-              <path d='M.102 2.223A3.004 3.004 0 0 0 3.78 5.897l6.341 6.252A3.003 3.003 0 0 0 13 16a3 3 0 1 0-.851-5.878L5.897 3.781A3.004 3.004 0 0 0 2.223.1l2.141 2.142L4 4l-1.757.364L.102 2.223zm13.37 9.019.528.026.287.445.445.287.026.529L15 13l-.242.471-.026.529-.445.287-.287.445-.529.026L13 15l-.471-.242-.529-.026-.287-.445-.445-.287-.026-.529L11 13l.242-.471.026-.529.445-.287.287-.445.529-.026L13 11l.471.242z' />
-            </svg>Create
-          </Link>
+      <div className='flex flex-col md:flex-row justify-center items-center flex-wrap gap-4 max-w-full'>
+        <Card
+          id='campaign'
+          title={
+            <Link className='font-bold hover:underline' href='/play'>
+              Continue Campaign
+            </Link>
+          }
+          tooltip='Click here to go to the chapter select screen, or continue with the chapter button below!'
+        >
+          <div className='p-3'>
+            <ChapterSelectCard chapter={user.chapterUnlocked ?? 1} />
+          </div>
+        </Card>
+        <div className='flex flex-col items-center md:items-start gap-2 max-w-full'>
+          <FormattedUser className='text-2xl' id='home' size={40} user={user} />
+          <div className='flex flex-col gap-2 w-fit'>
+            <Link passHref href='/multiplayer' className={buttonClassNames}>
+              <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
+                <path strokeLinecap='round' strokeLinejoin='round' d='M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z' />
+              </svg>
+              <div className='flex flex-col'>
+                <span className='text-lg font-bold'>Multiplayer</span>
+                {!socket?.connected ?
+                  <span className='text-xs text-yellow-500'>Connecting...</span>
+                  :
+                  <>
+                    <span className='text-xs text-green-500'>{`${connectedPlayersCount} player${connectedPlayersCount !== 1 ? 's' : ''} online`}</span>
+                    {matches.length > 0 &&
+                      <span className='text-xs text-green-300'>
+                        {`${matches.length} current match${matches.length === 1 ? '' : 'es'}`}
+                      </span>
+                    }
+                  </>
+                }
+              </div>
+            </Link>
+            <Link passHref href='/create' className={buttonClassNames}>
+              <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-wrench' viewBox='0 0 16 16'>
+                <path d='M.102 2.223A3.004 3.004 0 0 0 3.78 5.897l6.341 6.252A3.003 3.003 0 0 0 13 16a3 3 0 1 0-.851-5.878L5.897 3.781A3.004 3.004 0 0 0 2.223.1l2.141 2.142L4 4l-1.757.364L.102 2.223zm13.37 9.019.528.026.287.445.445.287.026.529L15 13l-.242.471-.026.529-.445.287-.287.445-.529.026L13 15l-.471-.242-.529-.026-.287-.445-.445-.287-.026-.529L11 13l.242-.471.026-.529.445-.287.287-.445.529-.026L13 11l.471.242z' />
+              </svg>
+              <span className='text-lg font-bold'>Create</span>
+            </Link>
+          </div>
         </div>
       </div>
     </div>
@@ -120,26 +118,20 @@ export default function HomeLoggedIn({
       <RecommendedLevel
         id='level-of-day'
         level={levelOfDay}
-        title='Level of the Day 🗓️'
+        title='Level of the Day'
         tooltip={'Every day there is a new level of the day. Difficulty increases throughout the week!'}
       />
       <RecommendedLevel
         id='recommended-level'
         level={recommendedLevel}
-        title='Try this Level 🫴'
+        title='Try this Level'
         tooltip={'This is a quality level with similar difficulty to levels you\'ve played recently.'}
       />
-      {/* <RecommendedLevel id='recommended-unattempted-level' level={recommendedUnattemptedLevel} title='Unexplored' /> */}
       <RecommendedLevel
         id='last-level-played'
         level={lastLevelPlayed}
         title={
           <div className='flex items-center gap-2'>
-            <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-clock-history' viewBox='0 0 16 16'>
-              <path d='M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022l-.074.997zm2.004.45a7.003 7.003 0 0 0-.985-.299l.219-.976c.383.086.76.2 1.126.342l-.36.933zm1.37.71a7.01 7.01 0 0 0-.439-.27l.493-.87a8.025 8.025 0 0 1 .979.654l-.615.789a6.996 6.996 0 0 0-.418-.302zm1.834 1.79a6.99 6.99 0 0 0-.653-.796l.724-.69c.27.285.52.59.747.91l-.818.576zm.744 1.352a7.08 7.08 0 0 0-.214-.468l.893-.45a7.976 7.976 0 0 1 .45 1.088l-.95.313a7.023 7.023 0 0 0-.179-.483zm.53 2.507a6.991 6.991 0 0 0-.1-1.025l.985-.17c.067.386.106.778.116 1.17l-1 .025zm-.131 1.538c.033-.17.06-.339.081-.51l.993.123a7.957 7.957 0 0 1-.23 1.155l-.964-.267c.046-.165.086-.332.12-.501zm-.952 2.379c.184-.29.346-.594.486-.908l.914.405c-.16.36-.345.706-.555 1.038l-.845-.535zm-.964 1.205c.122-.122.239-.248.35-.378l.758.653a8.073 8.073 0 0 1-.401.432l-.707-.707z' />
-              <path d='M8 1a7 7 0 1 0 4.95 11.95l.707.707A8.001 8.001 0 1 1 8 0v1z' />
-              <path d='M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5z' />
-            </svg>
             <Link className='font-bold hover:underline' href='/play-history'>
               Last Played
             </Link>
@@ -181,7 +173,6 @@ export default function HomeLoggedIn({
             <path d='M1 2.828c.885-.37 2.154-.769 3.388-.893 1.33-.134 2.458.063 3.112.752v9.746c-.935-.53-2.12-.603-3.213-.493-1.18.12-2.37.461-3.287.811V2.828zm7.5-.141c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492V2.687zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783z' />
           </svg>Catalog
         </Link>
-
       </div>
     </div>
     <div className='flex items-center justify-center'>
@@ -229,7 +220,7 @@ export default function HomeLoggedIn({
       </Link>
     </div>
     <div className='flex flex-wrap justify-center max-w-screen-2xl mx-auto'>
-      <div className='w-full pt-8 px-4'>
+      <div className='w-full pt-6 px-4'>
         <div id='top-levels-of-month' className='flex justify-center'>
           <Link
             className='font-bold text-xl text-center hover:underline'
@@ -298,20 +289,29 @@ export default function HomeLoggedIn({
             textAlign: 'center',
           }}
         >
-          {latestReviews ? latestReviews?.map(review => {
-            return (
-              <div
-                className='mx-4 md:mx-8 my-4'
-                key={`review-${review._id.toString()}`}
-              >
-                <FormattedReview
-                  level={review.levelId}
-                  review={review}
-                  user={review.userId}
-                />
+          {latestReviews === undefined ?
+            <div className='flex justify-center p-4'><LoadingSpinner /></div>
+            :
+            latestReviews.length === 0 ?
+              <div className='text-center italic p-3'>
+                No reviews found
               </div>
-            );
-          }) : <div className='flex justify-center p-4'><LoadingSpinner /></div>}
+              :
+              latestReviews.map(review => {
+                return (
+                  <div
+                    className='mx-4 md:mx-8 my-4'
+                    key={`review-${review._id.toString()}`}
+                  >
+                    <FormattedReview
+                      level={review.levelId}
+                      review={review}
+                      user={review.userId}
+                    />
+                  </div>
+                );
+              })
+          }
         </div>
       </div>
       <iframe id='discordSection' className='p-4' src='https://discord.com/widget?id=971585343956590623&theme=dark' width='640' height='640' sandbox='allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts' />

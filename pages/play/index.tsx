@@ -53,31 +53,9 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
           <div className='font-bold text-3xl text-center' id='title'>
             Pathology Official Campaign
           </div>
-          <ChapterSelectCard
-            href={'/chapter1'}
-            id='chapter1'
-            levelData={'00000000\n00000000\n00000000\n00000000'}
-            subtitle={'Grassroots'}
-            title={'Chapter 1'}
-          />
-          <ChapterSelectCard
-            disabled={chapterUnlocked < 2}
-            disabledStr={'Complete Chapter 1 to unlock Chapter 2!'}
-            href={'/chapter2'}
-            id='chapter2'
-            levelData={'005E0C00\n0G070005\n10005010\n005100I0'}
-            subtitle={'Into the Depths'}
-            title={'Chapter 2'}
-          />
-          <ChapterSelectCard
-            disabled={chapterUnlocked < 3}
-            disabledStr={'Complete Chapter 2 to unlock Chapter 3!'}
-            href={'/chapter3'}
-            id='chapter3'
-            levelData={'B519F0G0\n10JH5H52\n75F02J08\n02050B10'}
-            subtitle={'Brain Busters'}
-            title={'Chapter 3'}
-          />
+          <ChapterSelectCard chapter={1} chapterUnlocked={chapterUnlocked} />
+          <ChapterSelectCard chapter={2} chapterUnlocked={chapterUnlocked} />
+          <ChapterSelectCard chapter={3} chapterUnlocked={chapterUnlocked} />
         </div>
       </>
     </Page>

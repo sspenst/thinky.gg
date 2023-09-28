@@ -37,7 +37,7 @@ export default function LevelInfoPlayTime() {
   if (!isPro(user)) {
     return (
       <div className='flex gap-3 items-center'>
-        <RoleIcon role={Role.PRO} size={20} />
+        <RoleIcon id='level-info-play-time' role={Role.PRO} size={20} />
         <div>
           Get <Link href='/settings/proaccount' className='text-blue-300'>
             Pathology Pro
