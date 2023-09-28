@@ -67,7 +67,7 @@ export default function HomeLoggedIn({
       </div>
     }
     <div className='flex flex-col gap-4 m-4 items-center'>
-      <div className='flex justify-center items-center flex-wrap gap-4 max-w-full'>
+      <div className='flex flex-col md:flex-row justify-center items-center flex-wrap gap-4 max-w-full'>
         <Card
           id='campaign'
           title={
@@ -81,7 +81,7 @@ export default function HomeLoggedIn({
             <ChapterSelectCard chapter={user.chapterUnlocked ?? 1} />
           </div>
         </Card>
-        <div className='flex flex-col gap-2'>
+        <div className='flex flex-col items-center md:items-start gap-2 max-w-full'>
           <FormattedUser className='text-2xl' id='home' size={40} user={user} />
           <div className='flex flex-col gap-2 w-fit'>
             <Link passHref href='/multiplayer' className={buttonClassNames}>
