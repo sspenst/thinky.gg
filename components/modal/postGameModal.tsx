@@ -1,47 +1,50 @@
 import useHomePageData, { HomepageDataType } from '@root/hooks/useHomePageData';
 import Collection from '@root/models/db/collection';
-import Level from '@root/models/db/level';
+import Level, { EnrichedLevel } from '@root/models/db/level';
 import User from '@root/models/db/user';
 import React from 'react';
 import RecommendedLevel from '../homepage/recommendedLevel';
-import DidYouKnowTip from '../page/DidYouKnowTip';
+import DidYouKnowTip from '../page/didYouKnowTip';
 import Modal from '.';
 
 interface PostGameModalProps {
-    reqUser: User
-    level: Level
-    collection?: Collection
-    closeModal: () => void;
-    isOpen: boolean;
+  closeModal: () => void;
+  collection?: Collection;
+  isOpen: boolean;
+  level: Level;
+  reqUser: User;
 }
 
-export default function PostGameModal({ reqUser, level, collection, closeModal, isOpen }: PostGameModalProps) {
-  const header = <div className='flex flex-col gap-1'><h3 className='text-center text-2xl p-1'>Congratulations!</h3><h4 className='text-md'>You completed {level.name}!</h4></div>;
-  let nextLevel = undefined;
+export default function PostGameModal({ closeModal, collection, isOpen, level, reqUser }: PostGameModalProps) {
+  const header = (
+    <div className='flex flex-col gap-1'>
+      <h3 className='text-center text-2xl p-1'>
+        Congratulations!
+      </h3>
+      <h4 className='text-md'>
+        You completed {level.name}!
+      </h4>
+    </div>
+  );
 
-  if (collection) {
-    if (collection.levels) {
-      const levelIndex = collection.levels.findIndex((l) => l._id === level._id);
+  let nextLevel: EnrichedLevel | undefined = undefined;
 
-      if (levelIndex + 1 < collection.levels.length) {
-        const next = collection.levels[levelIndex + 1];
+  if (collection && collection.levels) {
+    const levelIndex = collection.levels.findIndex((l) => l._id === level._id);
 
-        nextLevel = <RecommendedLevel id='next-level' title={'Next level'} level={next} />;
-      }
+    if (levelIndex + 1 < collection.levels.length) {
+      nextLevel = collection.levels[levelIndex + 1] as EnrichedLevel;
     }
   }
 
-  const { data: dataMerge } = useHomePageData([HomepageDataType.RecommendedLevel], nextLevel !== undefined);
-
-  const recommendedLevel = dataMerge && dataMerge[HomepageDataType.RecommendedLevel];
+  const { data } = useHomePageData([HomepageDataType.RecommendedLevel], nextLevel !== undefined);
+  const recommendedLevel = data && data[HomepageDataType.RecommendedLevel];
 
   return (
     <Modal title={header} closeModal={closeModal} isOpen={isOpen} >
-      <div className='flex flex-col gap-2 justify-center items-center'>
-        {recommendedLevel && <RecommendedLevel id='try-this-next' title={'Try this next!'} level={recommendedLevel} />}
-        {nextLevel && nextLevel}
+      <div className='flex flex-col gap-4 justify-center items-center'>
+        <RecommendedLevel id='next-level' title={nextLevel ? 'Next Level' : 'Try this next!'} level={nextLevel ?? recommendedLevel} />
         <DidYouKnowTip reqUser={reqUser} />
-
       </div>
     </Modal>
   );
