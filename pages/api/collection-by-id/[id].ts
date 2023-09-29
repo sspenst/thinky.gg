@@ -24,7 +24,8 @@ export default apiWrapper({
   const reqUser = token ? await getUserFromToken(token, req) : null;
   const collection = await getCollection( {
     matchQuery: { $match: { _id: new Types.ObjectId(id as string) } },
-    reqUser
+    reqUser,
+    populateLevels: true,
   });
 
   if (!collection) {
