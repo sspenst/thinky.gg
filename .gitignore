@@ -12,3 +12,5 @@ newrelic_agent.log
 
 #vscode
 .vscode
+
+public/sounds/music/
