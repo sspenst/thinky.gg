@@ -40,10 +40,15 @@ export default withAuth({
   if (req.method === 'GET') {
     const { id } = req.query;
 
-    const collection = await getCollection({ $match: {
-      _id: new Types.ObjectId(id as string),
-      userId: req.user._id,
-    } }, req.user, false);
+    const collection = await getCollection({
+      matchQuery: {
+        $match: {
+          _id: new Types.ObjectId(id as string),
+          userId: req.user._id,
+        }
+      }, reqUser: req.user,
+      includeDraft: true
+    });
 
     if (!collection) {
       return res.status(404).json({

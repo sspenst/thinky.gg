@@ -29,10 +29,18 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  const collection = await getCollection({ $match: {
-    _id: new Types.ObjectId(id as string),
-    userId: reqUser._id,
-  } }, reqUser, false);
+  const collection = await getCollection(
+    {
+      matchQuery: {
+        $match: {
+          _id: new Types.ObjectId(id as string),
+          userId: reqUser._id,
+        }
+      },
+      reqUser,
+      populateLevels: true,
+      includeDraft: true
+    });
 
   if (!collection) {
     return {

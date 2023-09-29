@@ -22,7 +22,10 @@ export default apiWrapper({
   await dbConnect();
   const token = req.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, req) : null;
-  const collection = await getCollection( { $match: { _id: new Types.ObjectId(id as string) } }, reqUser);
+  const collection = await getCollection( {
+    matchQuery: { $match: { _id: new Types.ObjectId(id as string) } },
+    reqUser
+  });
 
   if (!collection) {
     return res.status(404).json({
@@ -33,8 +36,15 @@ export default apiWrapper({
   return res.status(200).json(collection);
 });
 
-export async function getCollection(matchQuery: PipelineStage, reqUser: User | null, noDraftLevels = true) {
-  const collections = await getCollections(matchQuery, reqUser, noDraftLevels);
+interface GetCollectionProps {
+  matchQuery: PipelineStage,
+  reqUser: User | null,
+  includeDraft?: boolean,
+  populateLevels?: boolean,
+}
+
+export async function getCollection(props: GetCollectionProps): Promise<Collection | null> {
+  const collections = await getCollections(props);
 
   if (collections.length === 0) {
     return null;
@@ -43,7 +53,7 @@ export async function getCollection(matchQuery: PipelineStage, reqUser: User | n
   return collections[0] as Collection;
 }
 
-export async function getCollections(matchQuery: PipelineStage, reqUser: User | null, noDraftLevels = true): Promise<Collection[]> {
+export async function getCollections({ matchQuery, reqUser, includeDraft, populateLevels }: GetCollectionProps): Promise<Collection[]> {
   const collectionAgg = await CollectionModel.aggregate(([
     {
       ...matchQuery,
@@ -90,7 +100,7 @@ export async function getCollections(matchQuery: PipelineStage, reqUser: User | 
         pipeline: [
           {
             $match: {
-              ...(noDraftLevels ? {
+              ...(!includeDraft ? {
                 isDraft: {
                   $ne: true
                 }
@@ -115,15 +125,15 @@ export async function getCollections(matchQuery: PipelineStage, reqUser: User | 
           {
             $project: {
               leastMoves: 1,
-              ...(noDraftLevels ? {
-
-              } : {
-                isDraft: 1,
-              }),
+              ...(includeDraft ? {
+                isDraft: 1
+              } : {}),
+              ...(populateLevels ? {
+                ...LEVEL_DEFAULT_PROJECTION
+              } : {})
             },
           },
-
-          {
+          ...(populateLevels ? getEnrichLevelsPipelineSteps(reqUser, '_id', '') : [{
             $lookup: {
               from: StatModel.collection.name,
               localField: '_id',
@@ -151,7 +161,7 @@ export async function getCollections(matchQuery: PipelineStage, reqUser: User | 
                 }
               ]
             },
-          },
+          }]),
           {
             $unwind: {
               path: '$stats',
@@ -182,6 +192,7 @@ export async function getCollections(matchQuery: PipelineStage, reqUser: User | 
     {
       $unset: 'levelsWithSort'
     },
+
     {
       $addFields: {
         levelCount: {
@@ -191,10 +202,12 @@ export async function getCollections(matchQuery: PipelineStage, reqUser: User | 
           $sum: '$levels.stats.complete'
         }
       }
-    }
+    },
+    ...(!populateLevels ? [{ $unset: 'levels' }] : []),
 
   ] as PipelineStage[]));
 
+  cleanUser(collectionAgg[0]?.userId);
   (collectionAgg[0] as Collection).levels?.map(level => {
     cleanUser(level.userId);
 

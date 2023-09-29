@@ -164,7 +164,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   if (profileTab === ProfileTab.Collections) {
-    const collectionsAgg = await getCollections({ $match: { userId: user._id } }, reqUser);
+    const collectionsAgg = await getCollections({
+      matchQuery: { $match: { userId: user._id } },
+      reqUser,
+    });
 
     profilePageProps.enrichedCollections = JSON.parse(JSON.stringify(collectionsAgg));
   }

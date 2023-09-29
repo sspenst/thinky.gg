@@ -55,7 +55,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
 
-  const collectionAgg = await getCollection({ $match: { slug: username + '/' + slugName } }, reqUser);
+  const collectionAgg = await getCollection({
+    matchQuery: { $match: { slug: username + '/' + slugName } },
+    reqUser,
+    populateLevels: true,
+  });
 
   if (!collectionAgg) {
     logger.error('CollectionModel.find returned null in pages/collection');
