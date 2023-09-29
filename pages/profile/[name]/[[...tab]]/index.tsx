@@ -147,13 +147,24 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   if (profileTab === ProfileTab.Profile) {
     if (reqUser && reqUser._id.toString() === userId) {
-      const followingGraph = await GraphModel.find({
-        source: reqUser._id,
-        type: GraphType.FOLLOW,
-      }, 'target targetModel createdAt').populate('target', 'name avatarUpdatedAt last_visited_at hideStatus').exec() as Graph[];
-
-      /* istanbul ignore next */
-      const reqUserFollowing = followingGraph.map((f) => {
+      // make a aggregation version of the same query above
+      const followingAgg = await GraphModel.aggregate([
+        { $match: { source: reqUser._id, type: GraphType.FOLLOW } },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'target',
+            foreignField: '_id',
+            as: 'target',
+            pipeline: [
+              { $project: { name: 1, avatarUpdatedAt: 1, last_visited_at: 1, hideStatus: 1 } },
+            ],
+          },
+        },
+        { $unwind: '$target' },
+        { $sort: { createdAt: -1 } },
+      ]).exec() as Graph[];
+      const reqUserFollowing = followingAgg.map((f) => {
         cleanUser(f.target as User);
 
         return f;
