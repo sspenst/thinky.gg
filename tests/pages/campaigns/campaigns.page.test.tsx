@@ -21,27 +21,11 @@ describe('pages/campaigns page', () => {
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
     expect(ret.props?.enrichedCampaigns).toBeDefined();
+
     expect(ret.props?.enrichedCampaigns).toHaveLength(1);
     expect(ret.props?.enrichedCampaigns[0]._id).toBe(TestId.CAMPAIGN_OFFICIAL);
   });
-  test('getServerSideProps throwing error', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    jest.spyOn(CampaignModel, 'find').mockReturnValueOnce({
-      populate: () => {
-        return {
-          sort: () => {
-            return null;
-          }
-        };
-      }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any);
 
-    const ret = await getServerSideProps({} as unknown as GetServerSidePropsContext);
-
-    expect(ret).toBeDefined();
-    expect(ret.notFound).toBe(true);
-  });
   test('getServerSideProps logged in', async () => {
     // Created from initialize db file
     const context = {

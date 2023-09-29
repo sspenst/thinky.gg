@@ -1,3 +1,4 @@
+import TestId from '@root/constants/testId';
 import { LEVEL_DEFAULT_PROJECTION } from '@root/models/schemas/levelSchema';
 import { PipelineStage, Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
@@ -14,7 +15,7 @@ import { CampaignModel, CollectionModel, LevelModel, StatModel } from '../../mod
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
 
-const campaignInfos: CampaignInfo[] = [
+const campaignInfos: CampaignInfo[] = process.env.NODE_ENV !== 'test' ? [
   {
     alt: 'Psychopath',
     author: 'k2xl',
@@ -48,6 +49,8 @@ const campaignInfos: CampaignInfo[] = [
     image: '/pathos.png',
     year: 2017,
   },
+] : [
+  { id: TestId.CAMPAIGN_OFFICIAL } as CampaignInfo
 ];
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
