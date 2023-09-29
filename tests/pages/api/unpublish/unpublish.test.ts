@@ -57,7 +57,6 @@ describe('Testing unpublish', () => {
           query: {
             id: userALevel1._id,
           },
-
           headers: {
             'content-type': 'application/json',
           },
@@ -158,7 +157,6 @@ describe('Testing unpublish', () => {
           query: {
             id: userALevel1._id,
           },
-
           headers: {
             'content-type': 'application/json',
           },
@@ -173,7 +171,6 @@ describe('Testing unpublish', () => {
         expect(response.error).toBe('Internal server error');
         expect(res.status).toBe(500);
       },
-
     });
   });
   test('Unpublishing one of the levels should keep it in the level owners collection but remove it from the other users collection', async () => {
@@ -187,7 +184,6 @@ describe('Testing unpublish', () => {
           query: {
             id: userALevel1._id,
           },
-
           headers: {
             'content-type': 'application/json',
           },
@@ -211,6 +207,7 @@ describe('Testing unpublish', () => {
         const levelDeleted = await LevelModel.findOne({ _id: userALevel1._id });
 
         expect(levelDeleted.isDeleted).toBe(true);
+        expect(levelDeleted.leastMoves).toBe(20);
         expect(levelDeleted.slug).toBe(userALevel1._id.toString());
 
         const levelClone = await LevelModel.findOne({ slug: userALevel1.slug });
@@ -224,15 +221,14 @@ describe('Testing unpublish', () => {
         expect((userACollection?.levels as Types.ObjectId[]).includes(userALevel1._id)).toBe(false);
         expect((userBCollection?.levels as Types.ObjectId[]).includes(userALevel1._id)).toBe(false);
 
-        const level = await LevelModel.findOne({ slug: userALevel1.slug });
-
-        expect(level._id).not.toBe(userALevel1._id);
-        expect(level.calc_difficulty_estimate).toBe(-1);
-        expect(level.calc_playattempts_unique_users).toHaveLength(0);
-        expect(level.calc_playattempts_duration_sum).toBe(0);
-        expect(level.calc_playattempts_just_beaten_count).toBe(0);
-        expect(level.calc_reviews_count).toBe(0);
-        expect(level.calc_reviews_score_laplace.toFixed(2)).toBe('0.67');
+        expect(levelClone._id).not.toBe(userALevel1._id);
+        expect(levelClone.calc_difficulty_estimate).toBe(-1);
+        expect(levelClone.calc_playattempts_unique_users).toHaveLength(0);
+        expect(levelClone.calc_playattempts_duration_sum).toBe(0);
+        expect(levelClone.calc_playattempts_just_beaten_count).toBe(0);
+        expect(levelClone.calc_reviews_count).toBe(0);
+        expect(levelClone.calc_reviews_score_laplace.toFixed(2)).toBe('0.67');
+        expect(levelClone.leastMoves).toBe(0);
       },
     });
   });
@@ -247,7 +243,6 @@ describe('Testing unpublish', () => {
           query: {
             id: new Types.ObjectId(),
           },
-
           headers: {
             'content-type': 'application/json',
           },
@@ -262,7 +257,6 @@ describe('Testing unpublish', () => {
         expect(response.error).toBe('Level not found');
         expect(res.status).toBe(404);
       },
-
     });
   });
   test('Unpublishing a level that does not belong to you should fail', async () => {
@@ -276,7 +270,6 @@ describe('Testing unpublish', () => {
           query: {
             id: TestId.LEVEL_3,
           },
-
           headers: {
             'content-type': 'application/json',
           },
@@ -291,7 +284,6 @@ describe('Testing unpublish', () => {
         expect(response.error).toBe('Not authorized to delete this Level');
         expect(res.status).toBe(401);
       },
-
     });
   });
   test('Deleting a level should remove it from all collections', async () => {
@@ -307,7 +299,6 @@ describe('Testing unpublish', () => {
           query: {
             id: userBLevel1._id,
           },
-
           headers: {
             'content-type': 'application/json',
           },
@@ -323,7 +314,6 @@ describe('Testing unpublish', () => {
         expect(res.status).toBe(200);
         newLevelId = response.levelId;
       },
-
     });
     await testApiHandler({
       handler: async (_, res) => {
@@ -335,7 +325,6 @@ describe('Testing unpublish', () => {
           query: {
             id: newLevelId as string,
           },
-
           headers: {
             'content-type': 'application/json',
           },
@@ -359,7 +348,6 @@ describe('Testing unpublish', () => {
         expect((userBCollection?.levels as Types.ObjectId[]).includes(new Types.ObjectId(newLevelId))).toBe(false);
         expect((userACollection?.levels as Types.ObjectId[]).includes(new Types.ObjectId(newLevelId))).toBe(false);
       },
-
     });
   });
 });
