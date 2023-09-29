@@ -3,7 +3,7 @@ import useHomePageData, { HomepageDataType } from '@root/hooks/useHomePageData';
 import Collection from '@root/models/db/collection';
 import Level, { EnrichedLevel } from '@root/models/db/level';
 import User from '@root/models/db/user';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import RecommendedLevel from '../homepage/recommendedLevel';
 import Modal from '.';
 
@@ -16,17 +16,6 @@ interface PostGameModalProps {
 }
 
 export default function PostGameModal({ closeModal, collection, isOpen, level, reqUser }: PostGameModalProps) {
-  const header = (
-    <div className='flex flex-col gap-1'>
-      <h3 className='text-center text-2xl p-1'>
-        Congratulations!
-      </h3>
-      <h4 className='text-md'>
-        You completed {level.name}!
-      </h4>
-    </div>
-  );
-
   let nextLevel: EnrichedLevel | undefined = undefined;
 
   if (collection && collection.levels) {
@@ -37,28 +26,45 @@ export default function PostGameModal({ closeModal, collection, isOpen, level, r
     }
   }
 
-  const [queryParameters, setQueryParameters] = React.useState({});
   const { data } = useHomePageData([HomepageDataType.RecommendedLevel], nextLevel !== undefined);
   const recommendedLevel = data && data[HomepageDataType.RecommendedLevel];
+  const [queryParams, setQueryParams] = useState({});
 
-  React.useEffect(() => {
+  // NB: this useEffect only runs when entering the level page
+  // (moving between levels within a collection does not remount this component)
+  // this is ok for now because query params are currently never expected
+  // to change when going between two level pages
+  useEffect(() => {
     const queryParameters = new URLSearchParams(window.location.search);
 
-    setQueryParameters(queryParameters);
+    setQueryParams(queryParameters);
   }, []);
 
-  let allQueryParametersToString = '';
-
-  if (queryParameters) {
-    allQueryParametersToString = queryParameters.toString();
-  }
-
-  const href = nextLevel ? `/level/${nextLevel.slug}?${allQueryParametersToString}` : '/';
+  const hrefOverride = nextLevel ? `/level/${nextLevel.slug}?${queryParams}` : undefined;
 
   return (
-    <Modal title={header} closeModal={closeModal} isOpen={isOpen} >
+    <Modal
+      closeModal={closeModal}
+      isOpen={isOpen}
+      title={
+        <div className='flex flex-col gap-1'>
+          <h3 className='text-center text-2xl p-1'>
+            Congratulations!
+          </h3>
+          <h4 className='text-md'>
+            You completed {level.name}!
+          </h4>
+        </div>
+      }
+    >
       <div className='flex flex-col gap-4 justify-center items-center'>
-        <RecommendedLevel hrefOverride={href} onClick={closeModal} id='next-level' title={nextLevel ? 'Next Level' : 'Try this next!'} level={nextLevel ?? recommendedLevel} />
+        <RecommendedLevel
+          hrefOverride={hrefOverride}
+          id='next-level'
+          level={nextLevel ?? recommendedLevel}
+          onClick={closeModal}
+          title={nextLevel ? 'Next Level' : 'Try this next!'}
+        />
         <DidYouKnowTip reqUser={reqUser} />
       </div>
     </Modal>

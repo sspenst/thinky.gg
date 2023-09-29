@@ -8,15 +8,15 @@ import LoadingCard from '../cards/loadingCard';
 import SelectCard from '../cards/selectCard';
 
 interface RecommendedLevelProps {
+  hrefOverride?: string;
   id: string;
   level?: EnrichedLevel | null;
+  onClick?: (option: SelectOption) => void;
   title: JSX.Element | string;
   tooltip?: string;
-  onClick?: (option: SelectOption) => void;
-  hrefOverride?: string;
 }
 
-export default function RecommendedLevel({ id, level, title, tooltip, onClick, hrefOverride }: RecommendedLevelProps): JSX.Element {
+export default function RecommendedLevel({ hrefOverride, id, level, onClick, title, tooltip }: RecommendedLevelProps): JSX.Element {
   return (
     <Card id={id} title={title} tooltip={tooltip}>
       {level === undefined ? <LoadingCard /> :
@@ -35,9 +35,9 @@ export default function RecommendedLevel({ id, level, title, tooltip, onClick, h
               href: hrefOverride || `/level/${level.slug}`,
               id: level._id.toString(),
               level: level,
+              onClick: onClick,
               stats: new SelectOptionStats(level.leastMoves, level.userMoves),
               text: level.name,
-              onClick: onClick
             } as SelectOption}
           />
       }
