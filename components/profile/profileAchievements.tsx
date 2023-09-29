@@ -11,7 +11,7 @@ import FormattedAchievement from '../formatted/formattedAchievement';
 export function ProfileAchievments({ achievements }: { achievements: Achievement[] }) {
   function getAchievementsOfCategory(rule: any) {
     return Object.keys(rule).map(achievementType => {
-      const achievement = achievements.find(achievement => achievement.type === achievementType);
+      const achievement = achievements.find(achievement => achievement.type === achievementType) as Achievement;
 
       return (
         <FormattedAchievement

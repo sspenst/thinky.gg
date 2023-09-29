@@ -1,22 +1,31 @@
 import { AchievementRulesCombined } from '@root/constants/achievements/achievementInfo';
 import AchievementType from '@root/constants/achievements/achievementType';
 import classNames from 'classnames';
+import { ObjectId } from 'mongoose';
+import { useRouter } from 'next/router';
 import React from 'react';
 import StyledTooltip from '../page/styledTooltip';
 import FormattedDate from './formattedDate';
 
 interface FormattedAchievementProps {
+
   achievementType: AchievementType;
   createdAt?: Date;
+  unlocked?: boolean;
 }
 
-export default function FormattedAchievement({ achievementType, createdAt }: FormattedAchievementProps) {
-  const locked = !createdAt;
+export default function FormattedAchievement({ achievementType, createdAt, unlocked }: FormattedAchievementProps) {
+  const locked = !createdAt && !unlocked;
   const achievement = AchievementRulesCombined[achievementType];
+  const router = useRouter();
 
   return (
     <div
-      className={classNames('flex gap-4 items-center rounded-xl', { 'opacity-30': locked })}
+
+      onClick={() => {
+        router.push(`/achievement/${achievementType}`);
+      }}
+      className={classNames('cursor-pointer flex gap-4 items-center rounded-xl', { 'opacity-30': locked })}
       style={{
         borderColor: 'var(--bg-color-4)',
       }}
