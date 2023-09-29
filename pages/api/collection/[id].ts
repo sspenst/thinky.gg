@@ -1,129 +1,18 @@
 import { logger } from '@root/helpers/logger';
-import mongoose, { PipelineStage, Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidObjectId, ValidObjectIdArray, ValidType } from '../../../helpers/apiWrapper';
-import { enrichLevels } from '../../../helpers/enrich';
 import { generateCollectionSlug } from '../../../helpers/generateSlug';
-import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
-import { EnrichedLevel } from '../../../models/db/level';
-import User from '../../../models/db/user';
-import { CollectionModel, LevelModel, UserModel } from '../../../models/mongoose';
-import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
-import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
+import { CollectionModel } from '../../../models/mongoose';
+import { getCollection2 } from '../collection-by-id/[id]';
 
 type UpdateLevelParams = {
   authorNote?: string,
   levels?: (string | Types.ObjectId)[],
   name?: string,
   slug?: string,
-}
-
-export async function getCollection(matchQuery: PipelineStage, reqUser: User | null, noDraftLevels = true) {
-  await dbConnect();
-
-  const levelsPipeline = [];
-
-  if (noDraftLevels) {
-    levelsPipeline.push({
-      $match: {
-        isDraft: false,
-      }
-    });
-  }
-
-  levelsPipeline.push(
-    {
-      $project: {
-        ...LEVEL_DEFAULT_PROJECTION
-      }
-    },
-    {
-      $lookup: {
-        from: UserModel.collection.name,
-        localField: 'userId',
-        foreignField: '_id',
-        as: 'userId',
-        pipeline: [
-          {
-            $project: {
-              ...USER_DEFAULT_PROJECTION
-            }
-          }
-        ]
-      }
-    },
-    {
-      $unwind: {
-        path: '$userId',
-        preserveNullAndEmptyArrays: true,
-      }
-    },
-  );
-
-  const collectionAgg = await CollectionModel.aggregate<Collection>([
-    {
-      ...matchQuery,
-    },
-    {
-      $lookup: {
-        as: 'levelsPopulated',
-        foreignField: '_id',
-        from: LevelModel.collection.name,
-        localField: 'levels',
-        pipeline: levelsPipeline,
-      },
-    },
-    {
-      $lookup: {
-        from: UserModel.collection.name,
-        localField: 'userId',
-        foreignField: '_id',
-        as: 'userId',
-        pipeline: [
-          {
-            $project: {
-              ...USER_DEFAULT_PROJECTION
-            }
-          }
-        ]
-      }
-    },
-    {
-      $unwind: {
-        path: '$userId',
-        preserveNullAndEmptyArrays: true,
-      }
-    },
-  ]);
-
-  if (collectionAgg.length !== 1) {
-    return null;
-  }
-
-  const collection = collectionAgg[0];
-  const levelMap = new Map<string, EnrichedLevel>();
-
-  if (collection.levelsPopulated) {
-    for (const level of collection.levelsPopulated) {
-      levelMap.set(level._id.toString(), level);
-    }
-
-    collection.levels = collection.levels.map((level: EnrichedLevel) => {
-      return levelMap.get(level._id.toString()) as EnrichedLevel;
-    });
-    // remove undefined levels
-    collection.levels = collection.levels.filter((level: EnrichedLevel) => level !== undefined);
-    collection.levelsPopulated = undefined;
-  }
-
-  const enrichedCollectionLevels = await enrichLevels(collection.levels, reqUser);
-  const newCollection = JSON.parse(JSON.stringify(collection)) as Collection;
-
-  newCollection.levels = enrichedCollectionLevels;
-
-  return newCollection;
 }
 
 export default withAuth({
@@ -151,7 +40,7 @@ export default withAuth({
   if (req.method === 'GET') {
     const { id } = req.query;
 
-    const collection = await getCollection({ $match: {
+    const collection = await getCollection2({ $match: {
       _id: new Types.ObjectId(id as string),
       userId: req.user._id,
     } }, req.user, false);

@@ -1,5 +1,6 @@
 import FormattedUser from '@root/components/formatted/formattedUser';
 import StatFilter from '@root/constants/statFilter';
+import { getCollection2 } from '@root/pages/api/collection-by-id/[id]';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import { NextSeo } from 'next-seo';
@@ -22,7 +23,6 @@ import { EnrichedCollection } from '../../../models/db/collection';
 import { EnrichedLevel } from '../../../models/db/level';
 import SelectOption from '../../../models/selectOption';
 import SelectOptionStats from '../../../models/selectOptionStats';
-import { getCollection } from '../../api/collection/[id]';
 
 interface CollectionUrlQueryParams extends ParsedUrlQuery {
   slugName: string;
@@ -54,9 +54,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
-  const collection = await getCollection({ $match: { slug: username + '/' + slugName } }, reqUser);
 
-  if (!collection) {
+  const collectionAgg = await getCollection2({ $match: { slug: username + '/' + slugName } }, reqUser);
+
+  if (!collectionAgg) {
     logger.error('CollectionModel.find returned null in pages/collection');
 
     return {
@@ -66,7 +67,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
-      collection: JSON.parse(JSON.stringify(collection)),
+      collection: JSON.parse(JSON.stringify(collectionAgg)),
     } as CollectionProps
   };
 }

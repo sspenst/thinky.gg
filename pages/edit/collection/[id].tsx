@@ -1,3 +1,4 @@
+import { getCollection2 } from '@root/pages/api/collection-by-id/[id]';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import nProgress from 'nprogress';
@@ -13,7 +14,6 @@ import { EnrichedLevel } from '../../../models/db/level';
 import User from '../../../models/db/user';
 import SelectOption from '../../../models/selectOption';
 import SelectOptionStats from '../../../models/selectOptionStats';
-import { getCollection } from '../../api/collection/[id]';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
@@ -29,7 +29,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  const collection = await getCollection({ $match: {
+  const collection = await getCollection2({ $match: {
     _id: new Types.ObjectId(id as string),
     userId: reqUser._id,
   } }, reqUser, false);

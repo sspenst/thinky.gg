@@ -22,7 +22,7 @@ export default apiWrapper({
   await dbConnect();
   const token = req.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, req) : null;
-  const collection = await getCollectionById(id as string, reqUser);
+  const collection = await getCollection2( { $match: { _id: new Types.ObjectId(id as string) } }, reqUser);
 
   if (!collection) {
     return res.status(404).json({
@@ -33,14 +33,31 @@ export default apiWrapper({
   return res.status(200).json(collection);
 });
 
-export async function getCollectionById(id: string, reqUser: User | null) {
+export async function getCollection2(matchQuery: PipelineStage, reqUser: User | null, noDraftLevels = true) {
   const collectionAgg = await CollectionModel.aggregate(([
     {
-      $match: {
-        _id: new Types.ObjectId(id),
+
+      ...matchQuery,
+
+    },
+    {
+      // populate user for collection
+      $lookup: {
+        from: UserModel.collection.name,
+        localField: 'userId',
+        foreignField: '_id',
+        as: 'userId',
+        pipeline: [
+          { $project: USER_DEFAULT_PROJECTION },
+        ]
       },
     },
-
+    {
+      $unwind: {
+        path: '$userId',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
     {
       $addFields: {
         'levelsWithSort': {
@@ -65,7 +82,7 @@ export async function getCollectionById(id: string, reqUser: User | null) {
         pipeline: [
           {
             $match: {
-              isDraft: false,
+              isDraft: noDraftLevels ? false : undefined,
               isDeleted: {
                 $ne: true
               }
@@ -112,10 +129,9 @@ export async function getCollectionById(id: string, reqUser: User | null) {
       },
     },
     {
-      $set: {
-        levelsWithSort: 0
-      }
-    }
+      $unset: 'levelsWithSort'
+    },
+
   ] as PipelineStage[]));
 
   if (!collectionAgg || collectionAgg.length === 0) {
