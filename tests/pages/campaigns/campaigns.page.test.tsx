@@ -1,10 +1,7 @@
 import { GetServerSidePropsContext } from 'next';
-import { Logger } from 'winston';
 import TestId from '../../../constants/testId';
-import { logger } from '../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
-import { CampaignModel } from '../../../models/mongoose';
 import { getServerSideProps } from '../../../pages/campaigns';
 
 beforeAll(async () => {
