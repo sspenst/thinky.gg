@@ -209,7 +209,7 @@ export async function getCollections({ matchQuery, reqUser, includeDraft, popula
   ] as PipelineStage[]));
 
   cleanUser(collectionAgg[0]?.userId);
-  (collectionAgg[0] as Collection).levels?.map(level => {
+  (collectionAgg[0] as Collection)?.levels?.map(level => {
     cleanUser(level.userId);
 
     return level;
