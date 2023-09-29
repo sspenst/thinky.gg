@@ -77,7 +77,10 @@ export default withAuth({ POST: {
 
       newLevelId = levelClone._id = new mongoose.Types.ObjectId();
       levelClone.isDraft = true;
+      // reset leastMoves because the author may not have set the record (and so could "steal" the record by republishing)
+      levelClone.leastMoves = 0;
 
+      // first add the new level id to all relevant collections
       await CollectionModel.updateMany({ levels: id, userId: { '$eq': req.userId } }, { $addToSet: { levels: levelClone._id } }, { session: session });
 
       await Promise.all([
