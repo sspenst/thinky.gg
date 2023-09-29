@@ -11,6 +11,7 @@ import { getUsersWithMultiplayerProfile } from '@root/helpers/getUsersWithMultip
 import useSWRHelper from '@root/hooks/useSWRHelper';
 import Graph from '@root/models/db/graph';
 import { MultiplayerMatchState } from '@root/models/MultiplayerEnums';
+import { getCollections } from '@root/pages/api/collection-by-id/[id]';
 import classNames from 'classnames';
 import { debounce } from 'debounce';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
@@ -163,16 +164,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   if (profileTab === ProfileTab.Collections) {
-    const collections = await CollectionModel.find<Collection>({ userId: user._id }, 'levels name slug')
-      .populate({
-        path: 'levels',
-        select: '_id leastMoves',
-        match: { isDraft: false },
-      })
-      .sort({ name: 1 });
-    const enrichedCollections = await Promise.all(collections.map(collection => enrichCollection(collection, reqUser)));
+    const collectionsAgg = await getCollections({ $match: { userId: user._id } }, reqUser);
 
-    profilePageProps.enrichedCollections = JSON.parse(JSON.stringify(enrichedCollections));
+    profilePageProps.enrichedCollections = JSON.parse(JSON.stringify(collectionsAgg));
   }
 
   if (profileTab === ProfileTab.Levels) {

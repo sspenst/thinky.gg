@@ -9,7 +9,7 @@ import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
 import User from '../../../models/db/user';
-import { CollectionModel, LevelModel, UserModel } from '../../../models/mongoose';
+import { CollectionModel, LevelModel, StatModel, UserModel } from '../../../models/mongoose';
 
 export default apiWrapper({
   GET: {
@@ -34,6 +34,16 @@ export default apiWrapper({
 });
 
 export async function getCollection(matchQuery: PipelineStage, reqUser: User | null, noDraftLevels = true) {
+  const collections = await getCollections(matchQuery, reqUser, noDraftLevels);
+
+  if (collections.length === 0) {
+    return null;
+  }
+
+  return collections[0] as Collection;
+}
+
+export async function getCollections(matchQuery: PipelineStage, reqUser: User | null, noDraftLevels = true): Promise<Collection[]> {
   const collectionAgg = await CollectionModel.aggregate(([
     {
       ...matchQuery,
@@ -104,7 +114,7 @@ export async function getCollection(matchQuery: PipelineStage, reqUser: User | n
           },
           {
             $project: {
-              ...LEVEL_DEFAULT_PROJECTION,
+              leastMoves: 1,
               ...(noDraftLevels ? {
 
               } : {
@@ -113,7 +123,41 @@ export async function getCollection(matchQuery: PipelineStage, reqUser: User | n
             },
           },
 
-          ...getEnrichLevelsPipelineSteps(reqUser, '_id', ''),
+          {
+            $lookup: {
+              from: StatModel.collection.name,
+              localField: '_id',
+              foreignField: 'levelId',
+              as: 'stats',
+              pipeline: [
+                {
+                  $match: {
+                    userId: reqUser?._id,
+                    complete: true
+                  },
+                },
+                {
+                  $project: {
+                    _id: 0,
+                    // project complete to 1 if it exists, otherwise 0
+                    complete: {
+                      $cond: {
+                        if: { $eq: ['$complete', true] },
+                        then: 1,
+                        else: 0
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+          },
+          {
+            $unwind: {
+              path: '$stats',
+              preserveNullAndEmptyArrays: true
+            }
+          },
           {
             // populate user
             $lookup: {
@@ -138,12 +182,18 @@ export async function getCollection(matchQuery: PipelineStage, reqUser: User | n
     {
       $unset: 'levelsWithSort'
     },
+    {
+      $addFields: {
+        levelCount: {
+          $size: '$levels'
+        },
+        userSolvedCount: {
+          $sum: '$levels.stats.complete'
+        }
+      }
+    }
 
   ] as PipelineStage[]));
-
-  if (!collectionAgg || collectionAgg.length === 0) {
-    return null;
-  }
 
   (collectionAgg[0] as Collection).levels?.map(level => {
     cleanUser(level.userId);
@@ -151,5 +201,5 @@ export async function getCollection(matchQuery: PipelineStage, reqUser: User | n
     return level;
   });
 
-  return collectionAgg[0];
+  return collectionAgg;
 }
