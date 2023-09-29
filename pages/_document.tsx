@@ -8,15 +8,13 @@ import dbConnect from '../lib/dbConnect';
 import isLocal from '../lib/isLocal';
 import { UserModel } from '../models/mongoose';
 
-// https://newrelic.com/blog/how-to-relic/nextjs-monitor-application-data
+// TODO: maybe someday try this again https://newrelic.com/blog/how-to-relic/nextjs-monitor-application-data
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-let newrelic: any;
 
 if (process.env.NO_LOGS !== 'true') {
   if (!isLocal()) {
-    logger.warn('RUNNING IN NON LOCAL MODE. Including newrelic');
+    logger.warn('RUNNING IN NON LOCAL MODE.');
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    newrelic = require('newrelic');
   } else {
     logger.warn('RUNNING IN LOCAL MODE');
   }
@@ -71,19 +69,7 @@ class MyDocument extends Document<DocumentProps> {
   static async getInitialProps(ctx: DocumentContext) {
     const initialProps = await Document.getInitialProps(ctx);
 
-    if (!newrelic) {
-      return initialProps;
-    }
-
-    // Newrelic script
-    const browserTimingHeader = newrelic.getBrowserTimingHeader({
-      hasToRemoveScriptWrapper: true,
-    });
-
-    return {
-      ...initialProps,
-      browserTimingHeader,
-    };
+    return initialProps;
   }
 
   render() {

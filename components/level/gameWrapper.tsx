@@ -35,21 +35,16 @@ export default function GameWrapper({ collection, level, onNext, onPrev, user }:
           <h1 className='text-center text-2xl'>Good job!</h1>
           <h2 className='text-center text-sm'>But your progress isn&apos;t saved...</h2>
           <div className='text-center'>
-            <Link href='/signup' className='underline font-bold'>Sign up</Link> (free) to save your progress and get access to more features.
-
-          </div>
-          <div className='text-center'>
-            Or use <Link href='/play-as-guest' className='underline font-bold'>Guest Account</Link>.
-
+            <Link href='/signup' className='underline font-bold'>Sign up</Link> (or use a <Link href='/play-as-guest' className='underline font-bold'>Guest Account</Link>) to save your progress and get access to more features.
           </div>
         </div>
         <DismissToast />
       </div>
       ,
       {
-        position: 'bottom-center',
         duration: 10000,
         icon: '🎉',
+        position: 'bottom-center',
       });
   });
 
