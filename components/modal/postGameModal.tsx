@@ -3,6 +3,7 @@ import useHomePageData, { HomepageDataType } from '@root/hooks/useHomePageData';
 import Collection from '@root/models/db/collection';
 import Level, { EnrichedLevel } from '@root/models/db/level';
 import User from '@root/models/db/user';
+import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import RecommendedLevel from '../homepage/recommendedLevel';
 import Modal from '.';
@@ -12,7 +13,7 @@ interface PostGameModalProps {
   collection?: Collection;
   isOpen: boolean;
   level: Level;
-  reqUser: User;
+  reqUser: User | null;
 }
 
 export default function PostGameModal({ closeModal, collection, isOpen, level, reqUser }: PostGameModalProps) {
@@ -58,14 +59,22 @@ export default function PostGameModal({ closeModal, collection, isOpen, level, r
       }
     >
       <div className='flex flex-col gap-4 justify-center items-center'>
-        <RecommendedLevel
-          hrefOverride={hrefOverride}
-          id='next-level'
-          level={nextLevel ?? recommendedLevel}
-          onClick={closeModal}
-          title={nextLevel ? 'Next Level' : 'Try this next!'}
-        />
-        <DidYouKnowTip reqUser={reqUser} />
+        {reqUser ?
+          <>
+            <RecommendedLevel
+              hrefOverride={hrefOverride}
+              id='next-level'
+              level={nextLevel ?? recommendedLevel}
+              onClick={closeModal}
+              title={nextLevel ? 'Next Level' : 'Try this next!'}
+            />
+            <DidYouKnowTip reqUser={reqUser} />
+          </>
+          :
+          <div className='text-center'>
+            <Link href='/signup' className='underline font-bold'>Sign up</Link> (or use a <Link href='/play-as-guest' className='underline font-bold'>Guest Account</Link>) to save your progress and get access to more features.
+          </div>
+        }
       </div>
     </Modal>
   );
