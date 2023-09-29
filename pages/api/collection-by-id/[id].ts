@@ -36,9 +36,7 @@ export default apiWrapper({
 export async function getCollection2(matchQuery: PipelineStage, reqUser: User | null, noDraftLevels = true) {
   const collectionAgg = await CollectionModel.aggregate(([
     {
-
       ...matchQuery,
-
     },
     {
       // populate user for collection
@@ -82,7 +80,11 @@ export async function getCollection2(matchQuery: PipelineStage, reqUser: User | 
         pipeline: [
           {
             $match: {
-              isDraft: noDraftLevels ? false : undefined,
+              ...(noDraftLevels ? {
+                isDraft: {
+                  $ne: true
+                }
+              } : undefined),
               isDeleted: {
                 $ne: true
               }
@@ -103,6 +105,11 @@ export async function getCollection2(matchQuery: PipelineStage, reqUser: User | 
           {
             $project: {
               ...LEVEL_DEFAULT_PROJECTION,
+              ...(noDraftLevels ? {
+
+              } : {
+                isDraft: 1,
+              }),
             },
           },
 
