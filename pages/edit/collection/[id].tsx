@@ -1,4 +1,4 @@
-import { getCollection2 } from '@root/pages/api/collection-by-id/[id]';
+import { getCollection } from '@root/pages/api/collection-by-id/[id]';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import nProgress from 'nprogress';
@@ -29,7 +29,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  const collection = await getCollection2({ $match: {
+  const collection = await getCollection({ $match: {
     _id: new Types.ObjectId(id as string),
     userId: reqUser._id,
   } }, reqUser, false);

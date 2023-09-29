@@ -1,6 +1,6 @@
 import FormattedUser from '@root/components/formatted/formattedUser';
 import StatFilter from '@root/constants/statFilter';
-import { getCollection2 } from '@root/pages/api/collection-by-id/[id]';
+import { getCollection } from '@root/pages/api/collection-by-id/[id]';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import { NextSeo } from 'next-seo';
@@ -55,7 +55,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
 
-  const collectionAgg = await getCollection2({ $match: { slug: username + '/' + slugName } }, reqUser);
+  const collectionAgg = await getCollection({ $match: { slug: username + '/' + slugName } }, reqUser);
 
   if (!collectionAgg) {
     logger.error('CollectionModel.find returned null in pages/collection');

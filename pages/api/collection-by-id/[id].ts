@@ -22,7 +22,7 @@ export default apiWrapper({
   await dbConnect();
   const token = req.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, req) : null;
-  const collection = await getCollection2( { $match: { _id: new Types.ObjectId(id as string) } }, reqUser);
+  const collection = await getCollection( { $match: { _id: new Types.ObjectId(id as string) } }, reqUser);
 
   if (!collection) {
     return res.status(404).json({
@@ -33,7 +33,7 @@ export default apiWrapper({
   return res.status(200).json(collection);
 });
 
-export async function getCollection2(matchQuery: PipelineStage, reqUser: User | null, noDraftLevels = true) {
+export async function getCollection(matchQuery: PipelineStage, reqUser: User | null, noDraftLevels = true) {
   const collectionAgg = await CollectionModel.aggregate(([
     {
       ...matchQuery,

@@ -6,7 +6,7 @@ import { generateCollectionSlug } from '../../../helpers/generateSlug';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
 import { CollectionModel } from '../../../models/mongoose';
-import { getCollection2 } from '../collection-by-id/[id]';
+import { getCollection } from '../collection-by-id/[id]';
 
 type UpdateLevelParams = {
   authorNote?: string,
@@ -40,7 +40,7 @@ export default withAuth({
   if (req.method === 'GET') {
     const { id } = req.query;
 
-    const collection = await getCollection2({ $match: {
+    const collection = await getCollection({ $match: {
       _id: new Types.ObjectId(id as string),
       userId: req.user._id,
     } }, req.user, false);
