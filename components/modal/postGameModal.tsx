@@ -7,6 +7,7 @@ import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import Card from '../cards/card';
 import ChapterSelectCard from '../cards/chapterSelectCard';
+import FormattedLevelReviews from '../formatted/formattedLevelReviews';
 import RecommendedLevel from '../homepage/recommendedLevel';
 import Modal from '.';
 
@@ -22,6 +23,31 @@ interface PostGameModalProps {
 export default function PostGameModal({ chapter, closeModal, collection, isOpen, level, reqUser }: PostGameModalProps) {
   let nextLevel: EnrichedLevel | undefined = undefined;
   let lastLevelInCollection = false;
+  const [dontShowModalAgain, setDontShowModalAgain] = useState(false);
+
+  useEffect(() => {
+    if (dontShowModalAgain) {
+      localStorage.setItem('dontShowPostGameModal', 'true');
+      // expire 24h from now
+      localStorage.setItem('dontShowPostGameModalExpire', (new Date(Date.now() + 24 * 60 * 60 * 1000)).toISOString());
+    }
+  }, [dontShowModalAgain]);
+  useEffect(() => {
+    const storedPref = localStorage.getItem('dontShowPostGameModal');
+    const storedPrefExpire = localStorage.getItem('dontShowPostGameModalExpire');
+
+    // check if expired...
+    if (storedPrefExpire && new Date(storedPrefExpire) < new Date()) {
+      localStorage.removeItem('dontShowPostGameModal');
+      localStorage.removeItem('dontShowPostGameModalExpire');
+
+      return;
+    }
+
+    if (storedPref === 'true') {
+      closeModal();
+    }
+  }, [closeModal]);
 
   if (collection && collection.levels) {
     const levelIndex = collection.levels.findIndex((l) => l._id === level._id);
@@ -34,6 +60,7 @@ export default function PostGameModal({ chapter, closeModal, collection, isOpen,
   }
 
   const { data } = useHomePageData([HomepageDataType.RecommendedLevel], nextLevel !== undefined);
+
   const recommendedLevel = data && data[HomepageDataType.RecommendedLevel];
   const [queryParams, setQueryParams] = useState({});
 
@@ -69,6 +96,7 @@ export default function PostGameModal({ chapter, closeModal, collection, isOpen,
           </div>
           :
           <>
+            <FormattedLevelReviews hideReviews={true} inModal={true} />
             {lastLevelInCollection && collection &&
               <div>
                 {level.name} is the last level in <Link className='font-bold hover:underline' href={`/collection/${collection.slug}`}>{collection.name}</Link>.
@@ -91,6 +119,14 @@ export default function PostGameModal({ chapter, closeModal, collection, isOpen,
             }
           </>
         }
+        <div className='flex items-center gap-1'>
+          <input
+            type='checkbox'
+            checked={dontShowModalAgain}
+            onChange={(e) => setDontShowModalAgain(e.target.checked)}
+          />
+          <label>Don&apos;t show this popup for 24h</label>
+        </div>
         <DidYouKnowTip reqUser={reqUser} />
       </div>
     </Modal>

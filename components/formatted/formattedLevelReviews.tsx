@@ -5,10 +5,11 @@ import ReviewForm from '../forms/reviewForm';
 import FormattedReview from './formattedReview';
 
 interface FormattedLevelReviewsProps {
+  hideReviews?: boolean;
   inModal?: boolean;
 }
 
-export default function FormattedLevelReviews({ inModal }: FormattedLevelReviewsProps) {
+export default function FormattedLevelReviews({ inModal, hideReviews: hideOtherReviews }: FormattedLevelReviewsProps) {
   const [hideReviews, setHideReviews] = useState<boolean>();
   const levelContext = useContext(LevelContext);
   const { user } = useContext(AppContext);
@@ -30,6 +31,8 @@ export default function FormattedLevelReviews({ inModal }: FormattedLevelReviews
     if (review.userId?._id === user?._id) {
       userReview = review;
     } else {
+      if (hideOtherReviews) { continue; }
+
       reviewDivs.push(
         <div key={`review-${review._id.toString()}-line`}>
           <FormattedReview
