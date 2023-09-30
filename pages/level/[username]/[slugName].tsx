@@ -59,6 +59,7 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
   const [level, setLevel] = useState(_level);
   const { mutateProStatsLevel, proStatsLevel } = useProStatsLevel(level);
   const router = useRouter();
+  const [sidebarIndex, setSidebarIndex] = useState(0);
   const { chapter, cid, slugName, ts, username } = router.query as LevelUrlQueryParams;
   const { collection } = useCollectionById(cid);
 
@@ -225,6 +226,8 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
         proStatsLevel: proStatsLevel,
         records: records,
         reviews: reviews,
+        setSidebarIndex: setSidebarIndex,
+        sidebarIndex: sidebarIndex,
       }}>
         <Page
           folders={folders}

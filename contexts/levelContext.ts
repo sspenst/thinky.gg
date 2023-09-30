@@ -50,9 +50,11 @@ interface LevelContextInterface {
   level: EnrichedLevel;
   mutateLevel: () => void;
   mutateProStatsLevel: KeyedMutator<ProStatsLevel>;
+  proStatsLevel?: ProStatsLevel;
   records: Record[] | undefined;
   reviews: Review[] | undefined;
-  proStatsLevel?: ProStatsLevel;
+  setSidebarIndex: React.Dispatch<React.SetStateAction<number>>;
+  sidebarIndex: number;
 }
 
 export const LevelContext = createContext<LevelContextInterface | null>(null);

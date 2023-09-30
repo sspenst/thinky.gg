@@ -3,7 +3,7 @@ import Link from 'next/link';
 import React, { useRef } from 'react';
 
 interface DidYouKnowTipProps {
-  reqUser: User | null;
+  reqUser: User | undefined | null;
 }
 
 export default function DidYouKnowTip({ reqUser }: DidYouKnowTipProps) {

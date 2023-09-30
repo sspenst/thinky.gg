@@ -1,3 +1,4 @@
+import { LevelContext } from '@root/contexts/levelContext';
 import { PageContext } from '@root/contexts/pageContext';
 import React, { useContext, useEffect, useState } from 'react';
 import Collection from '../../models/db/collection';
@@ -16,6 +17,7 @@ interface GameWrapperProps {
 }
 
 export default function GameWrapper({ chapter, collection, level, onNext, onPrev, user }: GameWrapperProps) {
+  const levelContext = useContext(LevelContext);
   const [postGameModalOpen, setShowPostGameModalOpen] = useState(false);
   const { setPreventKeyDownEvent } = useContext(PageContext);
 
@@ -34,7 +36,8 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
         level={level}
         onNext={collection ? onNext : undefined}
         onPrev={collection ? onPrev : undefined}
-        onSolve={() => setTimeout(() => setShowPostGameModalOpen(true), 200)}
+        // onSolve={() => setTimeout(() => setShowPostGameModalOpen(true), 200)}
+        onSolve={() => levelContext && levelContext.setSidebarIndex(1)}
       />
       <PostGameModal
         chapter={chapter}

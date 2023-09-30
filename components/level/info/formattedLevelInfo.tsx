@@ -2,6 +2,7 @@ import { Tab } from '@headlessui/react';
 import FormattedDate from '@root/components/formatted/formattedDate';
 import FormattedLevelReviews from '@root/components/formatted/formattedLevelReviews';
 import Solved from '@root/components/level/info/solved';
+import classNames from 'classnames';
 import Image from 'next/image';
 import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -21,6 +22,7 @@ import UnpublishLevelModal from '../../modal/unpublishLevelModal';
 import LevelInfoCompletions from './levelInfoCompletions';
 import LevelInfoPlayTime from './levelInfoPlayTime';
 import LevelInfoRecords from './levelInfoRecords';
+import SuggestedPanel from './suggestedPanel';
 
 interface FormattedLevelInfoProps {
   level: EnrichedLevel;
@@ -226,11 +228,47 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
         level={level}
       />
     </>}
-    {/* Reviews */}
     <div className='m-3' style={{
       backgroundColor: 'var(--bg-color-4)',
       height: 1,
     }} />
-    <FormattedLevelReviews />
+    <div className='flex flex-col gap-2'>
+      <Tab.Group selectedIndex={levelContext?.sidebarIndex} onChange={levelContext?.setSidebarIndex}>
+        <Tab.List className='flex flex-wrap gap-x-1 items-start rounded-[10px] p-1 border w-fit' style={{
+          borderColor: 'var(--bg-color-4)',
+        }}>
+          <Tab id='leastStepsTab' className='focus:outline-none' onKeyDown={(e: React.KeyboardEvent) => {
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+              e.preventDefault();
+            }
+          }}>
+            {({ selected }) => (
+              <div className={classNames('py-1 px-2 rounded-md', selected ? 'tab-active' : 'tab')}>
+                Reviews
+              </div>
+            )}
+          </Tab>
+          <Tab id='completionsTab' className='focus:outline-none' onKeyDown={(e: React.KeyboardEvent) => {
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+              e.preventDefault();
+            }
+          }}>
+            {({ selected }) => (
+              <div className={classNames('py-1 px-2 rounded-md', selected ? 'tab-active' : 'tab')}>
+                Suggestions
+              </div>
+            )}
+          </Tab>
+        </Tab.List>
+        <Tab.Panels>
+          <Tab.Panel tabIndex={-1}>
+            <FormattedLevelReviews />
+          </Tab.Panel>
+          <Tab.Panel tabIndex={-1}>
+            <SuggestedPanel level={level} reqUser={user} />
+          </Tab.Panel>
+        </Tab.Panels>
+      </Tab.Group>
+    </div>
   </>);
 }
