@@ -77,15 +77,16 @@ function ChapterSelectCardBase({
 interface ChapterSelectCardProps {
   chapter: number;
   chapterUnlocked?: number;
+  href?: string;
 }
 
-export default function ChapterSelectCard({ chapter, chapterUnlocked }: ChapterSelectCardProps) {
+export default function ChapterSelectCard({ chapter, chapterUnlocked, href }: ChapterSelectCardProps) {
   switch (chapter) {
   case 1:
     return (
       <ChapterSelectCardBase
         complete={!!chapterUnlocked && chapterUnlocked > 1}
-        href={'/chapter1'}
+        href={href ?? '/chapter1'}
         id='chapter1'
         levelData={'00000000\n00000000\n00000000\n00000000'}
         subtitle={'Grassroots'}
@@ -98,7 +99,7 @@ export default function ChapterSelectCard({ chapter, chapterUnlocked }: ChapterS
         complete={!!chapterUnlocked && chapterUnlocked > 2}
         disabled={chapterUnlocked ? chapterUnlocked < 2 : false}
         disabledStr={'Complete Chapter 1 to unlock Chapter 2!'}
-        href={'/chapter2'}
+        href={href ?? '/chapter2'}
         id='chapter2'
         levelData={'005E0C00\n0G070005\n10005010\n005100I0'}
         subtitle={'Into the Depths'}
@@ -111,7 +112,7 @@ export default function ChapterSelectCard({ chapter, chapterUnlocked }: ChapterS
         complete={!!chapterUnlocked && chapterUnlocked > 3}
         disabled={chapterUnlocked ? chapterUnlocked < 3 : false}
         disabledStr={'Complete Chapter 2 to unlock Chapter 3!'}
-        href={'/chapter3'}
+        href={href ?? '/chapter3'}
         id='chapter3'
         levelData={'B519F0G0\n10JH5H52\n75F02J08\n02050B10'}
         subtitle={'Brain Busters'}
@@ -121,8 +122,8 @@ export default function ChapterSelectCard({ chapter, chapterUnlocked }: ChapterS
   case 4:
     return (
       <ChapterSelectCardBase
-        disabled={true}
-        href={'/play'}
+        disabled={!href}
+        href={href ?? '/play'}
         id='chapter4'
         levelData={'65G9F0G5\nGBJ5GH5I\n50FF25DG\nJ5I5H505'}
         subtitle={'Coming soon...'}
