@@ -66,6 +66,7 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
   // handle pressing "Next level"
   useEffect(() => {
     setLevel(_level);
+    setSidebarIndex(0);
   }, [_level]);
 
   const mutateLevel = useCallback(() => {
@@ -218,6 +219,8 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
         }}
       />
       <LevelContext.Provider value={{
+        chapter: !isNaN(Number(chapter)) ? Number(chapter) : undefined,
+        collection: collection,
         getReviews: getReviews,
         inCampaign: !!chapter && level.userMoves !== level.leastMoves,
         level: level,

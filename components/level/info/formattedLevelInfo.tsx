@@ -232,7 +232,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
       backgroundColor: 'var(--bg-color-4)',
       height: 1,
     }} />
-    <div className='flex flex-col gap-2'>
+    <div className='flex flex-col gap-4'>
       <Tab.Group selectedIndex={levelContext?.sidebarIndex} onChange={levelContext?.setSidebarIndex}>
         <Tab.List className='flex flex-wrap gap-x-1 items-start rounded-[10px] p-1 border w-fit' style={{
           borderColor: 'var(--bg-color-4)',
@@ -243,7 +243,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
             }
           }}>
             {({ selected }) => (
-              <div className={classNames('py-1 px-2 rounded-md', selected ? 'tab-active' : 'tab')}>
+              <div className={classNames('py-1 px-2 rounded-md transition', selected ? 'tab-active' : 'tab')}>
                 Reviews
               </div>
             )}
@@ -254,7 +254,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
             }
           }}>
             {({ selected }) => (
-              <div className={classNames('py-1 px-2 rounded-md', selected ? 'tab-active' : 'tab')}>
+              <div className={classNames('py-1 px-2 rounded-md transition', selected ? 'tab-active' : 'tab')}>
                 Suggestions
               </div>
             )}
