@@ -56,6 +56,7 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
           <ChapterSelectCard chapter={1} chapterUnlocked={chapterUnlocked} />
           <ChapterSelectCard chapter={2} chapterUnlocked={chapterUnlocked} />
           <ChapterSelectCard chapter={3} chapterUnlocked={chapterUnlocked} />
+          {chapterUnlocked >= 3 && <ChapterSelectCard chapter={4} chapterUnlocked={chapterUnlocked} />}
         </div>
       </>
     </Page>
