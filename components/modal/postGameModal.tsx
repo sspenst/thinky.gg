@@ -5,10 +5,13 @@ import Level, { EnrichedLevel } from '@root/models/db/level';
 import User from '@root/models/db/user';
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
+import Card from '../cards/card';
+import ChapterSelectCard from '../cards/chapterSelectCard';
 import RecommendedLevel from '../homepage/recommendedLevel';
 import Modal from '.';
 
 interface PostGameModalProps {
+  chapter?: string;
   closeModal: () => void;
   collection?: Collection;
   isOpen: boolean;
@@ -16,14 +19,17 @@ interface PostGameModalProps {
   reqUser: User | null;
 }
 
-export default function PostGameModal({ closeModal, collection, isOpen, level, reqUser }: PostGameModalProps) {
+export default function PostGameModal({ chapter, closeModal, collection, isOpen, level, reqUser }: PostGameModalProps) {
   let nextLevel: EnrichedLevel | undefined = undefined;
+  let lastLevelInCollection = false;
 
   if (collection && collection.levels) {
     const levelIndex = collection.levels.findIndex((l) => l._id === level._id);
 
     if (levelIndex + 1 < collection.levels.length) {
       nextLevel = collection.levels[levelIndex + 1] as EnrichedLevel;
+    } else {
+      lastLevelInCollection = true;
     }
   }
 
@@ -36,9 +42,7 @@ export default function PostGameModal({ closeModal, collection, isOpen, level, r
   // this is ok for now because query params are currently never expected
   // to change when going between two level pages
   useEffect(() => {
-    const queryParameters = new URLSearchParams(window.location.search);
-
-    setQueryParams(queryParameters);
+    setQueryParams(new URLSearchParams(window.location.search));
   }, []);
 
   const hrefOverride = nextLevel ? `/level/${nextLevel.slug}?${queryParams}` : undefined;
@@ -59,22 +63,35 @@ export default function PostGameModal({ closeModal, collection, isOpen, level, r
       }
     >
       <div className='flex flex-col gap-4 justify-center items-center'>
-        {reqUser ?
-          <>
-            <RecommendedLevel
-              hrefOverride={hrefOverride}
-              id='next-level'
-              level={nextLevel ?? recommendedLevel}
-              onClick={closeModal}
-              title={nextLevel ? 'Next Level' : 'Try this next!'}
-            />
-            <DidYouKnowTip reqUser={reqUser} />
-          </>
-          :
+        {!reqUser ?
           <div className='text-center'>
             <Link href='/signup' className='underline font-bold'>Sign up</Link> (or use a <Link href='/play-as-guest' className='underline font-bold'>Guest Account</Link>) to save your progress and get access to more features.
           </div>
+          :
+          <>
+            {lastLevelInCollection && collection &&
+              <div>
+                {level.name} is the last level in <Link className='font-bold hover:underline' href={`/collection/${collection.slug}`}>{collection.name}</Link>.
+              </div>
+            }
+            {chapter && !isNaN(Number(chapter)) ?
+              <Card id='campaign' title='Head back to the campaign!'>
+                <div className='p-3'>
+                  <ChapterSelectCard chapter={Number(chapter)} />
+                </div>
+              </Card>
+              :
+              <RecommendedLevel
+                hrefOverride={hrefOverride}
+                id='next-level'
+                level={nextLevel ?? recommendedLevel}
+                onClick={closeModal}
+                title={nextLevel ? 'Next Level' : 'Try this next!'}
+              />
+            }
+          </>
         }
+        <DidYouKnowTip reqUser={reqUser} />
       </div>
     </Modal>
   );

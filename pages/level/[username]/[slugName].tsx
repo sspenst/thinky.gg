@@ -235,6 +235,7 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
         >
           {level.isDraft ? <></> :
             <GameWrapper
+              chapter={chapter as string | undefined}
               collection={collection}
               level={level}
               onNext={() => changeLevel(true)}

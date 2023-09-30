@@ -7,6 +7,7 @@ import PostGameModal from '../modal/postGameModal';
 import Game from './game';
 
 interface GameWrapperProps {
+  chapter?: string;
   collection: Collection | undefined;
   level: EnrichedLevel;
   onNext: () => void;
@@ -14,7 +15,7 @@ interface GameWrapperProps {
   user: User | null;
 }
 
-export default function GameWrapper({ collection, level, onNext, onPrev, user }: GameWrapperProps) {
+export default function GameWrapper({ chapter, collection, level, onNext, onPrev, user }: GameWrapperProps) {
   const [postGameModalOpen, setShowPostGameModalOpen] = useState(false);
   const { setPreventKeyDownEvent } = useContext(PageContext);
 
@@ -36,6 +37,7 @@ export default function GameWrapper({ collection, level, onNext, onPrev, user }:
         onSolve={() => setTimeout(() => setShowPostGameModalOpen(true), 200)}
       />
       <PostGameModal
+        chapter={chapter}
         closeModal={() => setShowPostGameModalOpen(false)}
         collection={collection}
         isOpen={postGameModalOpen}
