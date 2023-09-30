@@ -31,6 +31,10 @@ const LevelSchema = new mongoose.Schema<Level>(
       type: Number,
       default: 0,
     },
+    calc_playattempts_duration_sum_p95: {
+      type: Number,
+      default: 0,
+    },
     calc_playattempts_just_beaten_count: {
       type: Number,
       default: 0,
@@ -126,6 +130,7 @@ LevelSchema.index({ isDraft: 1 });
 LevelSchema.index({ leastMoves: 1 });
 LevelSchema.index({ calc_difficulty_estimate: 1 });
 LevelSchema.index({ calc_playattempts_duration_sum: 1 });
+LevelSchema.index({ calc_playattempts_duration_sum_p95: 1 });
 LevelSchema.index({ calc_playattempts_just_beaten_count: 1 });
 LevelSchema.index({ calc_playattempts_unique_users: 1 });
 LevelSchema.index({ calc_reviews_count: 1 });
@@ -225,6 +230,46 @@ export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {
     }
   ], options);
 
+  const sumDurationP95 = await PlayAttemptModel.aggregate([
+    {
+      $match: {
+        levelId: levelId,
+        attemptContext: { $ne: AttemptContext.BEATEN }
+      }
+    },
+    {
+      $project: {
+        duration: {
+          $subtract: ['$endTime', '$startTime']
+        }
+      }
+    },
+    { $sort: { duration: 1 } },
+    {
+      $group: {
+        _id: null,
+        durations: { $push: '$duration' }
+      }
+    },
+    {
+      $project: {
+        p95: {
+          $arrayElemAt: [
+            '$durations',
+            {
+              $floor: {
+                $multiply: [
+                  { $divide: [{ $subtract: [{ $size: '$durations' }, 1] }, 1] },
+                  0.95
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]);
+
   // get array of unique userIds from playattempt calc_playattempts_unique_users
   const uniqueUsersList = await PlayAttemptModel.aggregate([
     {
@@ -272,6 +317,7 @@ export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {
 
   const update = {
     calc_playattempts_duration_sum: sumDuration[0]?.sumDuration ?? 0,
+    calc_playattempts_duration_sum_p95: sumDurationP95[0]?.p95 ?? 0,
     calc_playattempts_just_beaten_count: countJustBeaten,
     calc_playattempts_unique_users: uniqueUsersList.map(u => u?.userId.toString()),
   } as Partial<Level>;
