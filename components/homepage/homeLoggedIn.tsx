@@ -68,17 +68,9 @@ export default function HomeLoggedIn({
     }
     <div className='flex flex-col gap-4 m-4 items-center'>
       <div className='flex flex-col md:flex-row justify-center items-center flex-wrap gap-4 max-w-full'>
-        <Card
-          id='campaign'
-          title={
-            <Link className='font-bold hover:underline' href='/play'>
-              Pathology Official Campaign
-            </Link>
-          }
-          tooltip='Click here to go to the chapter select screen, or continue with the chapter button below!'
-        >
+        <Card id='campaign' title='Pathology Official Campaign'>
           <div className='p-3'>
-            <ChapterSelectCard chapter={user.chapterUnlocked ?? 1} />
+            <ChapterSelectCard chapter={user.chapterUnlocked ?? 1} href='/play' />
           </div>
         </Card>
         <div className='flex flex-col items-center md:items-start gap-2 max-w-full'>
