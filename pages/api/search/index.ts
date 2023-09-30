@@ -154,6 +154,12 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
     }
   }
 
+  if (query.excludeLevelIds) {
+    const excludeLevelIds = query.excludeLevelIds.split(',');
+
+    searchObj['_id'] = { $nin: excludeLevelIds.map((id) => new Types.ObjectId(id)) };
+  }
+
   if (query.minSteps && query.maxSteps) {
     searchObj['leastMoves'] = {
       $gte: parseInt(query.minSteps),
