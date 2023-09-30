@@ -42,7 +42,7 @@ export default function MultiSelectUser({ controlStyles, defaultValue, onSelect,
       IndicatorSeparator: null,
     }}
     formatOptionLabel={(option: any) => (
-      <FormattedUser size={Dimensions.AvatarSizeSmall} noLinks={true} user={option} />
+      <FormattedUser id='select' noLinks noTooltip size={Dimensions.AvatarSizeSmall} user={option} />
     )}
     getOptionLabel={(option: any) => option.name}
     getOptionValue={(option: any) => option._id.toString()}

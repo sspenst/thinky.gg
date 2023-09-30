@@ -6,11 +6,11 @@ import Level, { EnrichedLevel } from '../models/db/level';
 import Notification from '../models/db/notification';
 import Stat from '../models/db/stat';
 import User, { ReqUser } from '../models/db/user';
-import { NotificationModel, StatModel } from '../models/mongoose';
+import { AchievementModel, CollectionModel, LevelModel, NotificationModel, StatModel, UserModel } from '../models/mongoose';
 
 export async function enrichCampaign(campaign: Campaign, reqUser: User | null) {
   const enrichedCampaign = JSON.parse(JSON.stringify(campaign)) as EnrichedCampaign;
-  let userCompletedCount = 0;
+  let userSolvedCount = 0;
 
   enrichedCampaign.levelCount = 0;
 
@@ -18,11 +18,11 @@ export async function enrichCampaign(campaign: Campaign, reqUser: User | null) {
     const enrichedCollection = await enrichCollection(enrichedCampaign.collections[i], reqUser);
 
     enrichedCampaign.levelCount += enrichedCollection.levelCount;
-    userCompletedCount += enrichedCollection.userCompletedCount;
+    userSolvedCount += enrichedCollection.userSolvedCount;
   }
 
   if (reqUser) {
-    enrichedCampaign.userCompletedCount = userCompletedCount;
+    enrichedCampaign.userSolvedCount = userSolvedCount;
   }
 
   return enrichedCampaign;
@@ -35,17 +35,17 @@ export async function enrichCollection(collection: Collection, reqUser: User | n
 
   if (reqUser) {
     const stats = await StatModel.find<Stat>({ userId: reqUser._id, levelId: { $in: collection.levels.map(level => level._id) } });
-    let userCompletedCount = 0;
+    let userSolvedCount = 0;
 
     collection.levels.forEach(level => {
       const stat = stats.find(stat => stat.levelId.equals(level._id));
 
       if (stat && stat.moves === level.leastMoves) {
-        userCompletedCount++;
+        userSolvedCount++;
       }
     });
 
-    enrichedCollection.userCompletedCount = userCompletedCount;
+    enrichedCollection.userSolvedCount = userSolvedCount;
   }
 
   return enrichedCollection;
@@ -140,7 +140,7 @@ export function getEnrichNotificationPipelineStages(reqUser?: User) {
     // Currently all sources are User so not wasting looking up users for target
     {
       $lookup: {
-        from: 'stats',
+        from: StatModel.collection.name,
         let: { levelId: '$targetLevel._id', userId: reqUser._id },
         pipeline: [
           {
@@ -175,7 +175,7 @@ export function getEnrichNotificationPipelineStages(reqUser?: User) {
   return [
     {
       $lookup: {
-        from: 'achievements',
+        from: AchievementModel.collection.name,
         localField: 'source',
         foreignField: '_id',
         as: 'sourceAchievement',
@@ -183,7 +183,7 @@ export function getEnrichNotificationPipelineStages(reqUser?: User) {
     },
     {
       $lookup: {
-        from: 'levels',
+        from: LevelModel.collection.name,
         localField: 'source',
         foreignField: '_id',
         as: 'sourceLevel',
@@ -191,7 +191,7 @@ export function getEnrichNotificationPipelineStages(reqUser?: User) {
     },
     {
       $lookup: {
-        from: 'users',
+        from: UserModel.collection.name,
         localField: 'source',
         foreignField: '_id',
         as: 'sourceUser',
@@ -199,7 +199,7 @@ export function getEnrichNotificationPipelineStages(reqUser?: User) {
     },
     {
       $lookup: {
-        from: 'levels',
+        from: LevelModel.collection.name,
         localField: 'target',
         foreignField: '_id',
         as: 'targetLevel',
@@ -207,7 +207,7 @@ export function getEnrichNotificationPipelineStages(reqUser?: User) {
     },
     {
       $lookup: {
-        from: 'users',
+        from: UserModel.collection.name,
         localField: 'target',
         foreignField: '_id',
         as: 'targetUser',
@@ -215,7 +215,7 @@ export function getEnrichNotificationPipelineStages(reqUser?: User) {
     },
     {
       $lookup: {
-        from: 'collections',
+        from: CollectionModel.collection.name,
         localField: 'target',
         foreignField: '_id',
         as: 'targetCollection',
@@ -383,32 +383,32 @@ export function getEnrichLevelsPipelineSteps(reqUser?: User | null, levelIdField
     outputToField = 'gotoroot';
   }
 
-  const pipeline: PipelineStage[] = [{
-    $lookup: {
-      from: 'stats',
-      let: { levelId: '$' + levelIdField, userId: reqUser?._id },
-      pipeline: [
-        {
-          $match: {
-            $expr: {
-              $and: [
-                { $eq: ['$levelId', '$$levelId'] },
-                { $eq: ['$userId', '$$userId'] },
-              ],
+  const pipeline: PipelineStage[] = [
+    {
+      $lookup: {
+        from: StatModel.collection.name,
+        let: { levelId: '$' + levelIdField, userId: reqUser?._id },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$levelId', '$$levelId'] },
+                  { $eq: ['$userId', '$$userId'] },
+                ],
+              },
             },
           },
-        },
-      ],
-      as: 'stat',
-    }
-  },
-  {
-    $unwind: {
-      path: '$stat',
-      preserveNullAndEmptyArrays: true,
-    }
-  },
-
+        ],
+        as: 'stat',
+      }
+    },
+    {
+      $unwind: {
+        path: '$stat',
+        preserveNullAndEmptyArrays: true,
+      }
+    },
   ];
 
   if (outputToField === 'gotoroot') {
@@ -435,10 +435,7 @@ export function getEnrichLevelsPipelineSteps(reqUser?: User | null, levelIdField
     });
   }
 
-  pipeline.push(
-    {
-      $unset: 'stat',
-    });
+  pipeline.push({ $unset: 'stat' });
 
   return pipeline;
 }

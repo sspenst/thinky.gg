@@ -86,7 +86,7 @@ export default function Multiplayer() {
         <OnlineUsers />
         <div>Play against other Pathology players in a realtime multiplayer match:</div>
         <ul>
-          <li>Complete as many levels as you can</li>
+          <li>Solve as many levels as you can</li>
           <li>Levels get progressively harder</li>
           <li>You are allowed to skip one level per match</li>
         </ul>
@@ -136,7 +136,7 @@ export default function Multiplayer() {
         <div className='flex flex-col gap-2'>
           {connectedPlayers.map(player => (
             <div key={'multiplayer-' + player._id.toString()} className='flex items-center gap-2'>
-              <FormattedUser user={player} />
+              <FormattedUser id='multiplayer' user={player} />
               <MultiplayerRating profile={player.multiplayerProfile} type={MultiplayerMatchType.RushBullet} />
               <MultiplayerRating profile={player.multiplayerProfile} type={MultiplayerMatchType.RushBlitz} />
               <MultiplayerRating profile={player.multiplayerProfile} type={MultiplayerMatchType.RushRapid} />

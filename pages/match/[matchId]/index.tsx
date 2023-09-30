@@ -369,7 +369,7 @@ export default function Match() {
           {match.players.map(player => (
             <div className='flex flex-row gap-2 items-center' key={player._id.toString()}>
               {getLevelResultIcon(level, player._id.toString())}
-              <FormattedUser size={Dimensions.AvatarSizeSmall} user={player} />
+              <FormattedUser id={`match-level-${i}`} size={Dimensions.AvatarSizeSmall} user={player} />
             </div>
           ))}
         </div>
@@ -433,7 +433,7 @@ export default function Match() {
                   return (
                     <div className='flex flex-col items-center w-full gap-1 truncate' key={`match-game-state-${player._id.toString()}-${level._id.toString()}`}>
                       <div className='max-w-full'>
-                        <FormattedUser size={Dimensions.AvatarSizeSmall} user={player} />
+                        <FormattedUser id='match-recap' size={Dimensions.AvatarSizeSmall} user={player} />
                       </div>
                       <div className='flex flex-col justify-center text-center w-full' style={{
                         height: '50vh',

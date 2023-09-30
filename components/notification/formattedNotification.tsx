@@ -1,9 +1,9 @@
+import { AchievementRulesCombined } from '@root/constants/achievements/achievementInfo';
 import Collection from '@root/models/db/collection';
 import classNames from 'classnames';
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
-import AchievementInfo from '../../constants/achievementInfo';
 import Dimensions from '../../constants/dimensions';
 import NotificationType from '../../constants/notificationType';
 import getProfileSlug from '../../helpers/getProfileSlug';
@@ -48,12 +48,38 @@ function getNewReviewOnYourLevelBody(message?: string) {
     <>gave a <Stars stars={Number(score)} /> rating</>;
 }
 
+function NotificationIcon({ notification }: { notification: Notification }) {
+  let icon = null;
+
+  switch (notification.type) {
+  case NotificationType.NEW_ACHIEVEMENT: {
+    const achievement = notification.source as Achievement;
+
+    const meta = AchievementRulesCombined[achievement.type];
+
+    icon = meta?.emoji;
+  }
+
+    break;
+  }
+
+  if (!icon) {
+    return <Image alt='logo' src='/logo.svg' width='24' height='24' className='h-6 w-6' />;
+  }
+
+  return icon;
+}
+
 function NotificationMessage({ notification, onMarkAsRead }: NotificationMessageProps) {
   switch (notification.type) {
   case NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT:
     return (<>
       {'set a new record: '}
-      <FormattedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
+      <FormattedLevelLink
+        id={`notification-${notification._id.toString()}`}
+        level={notification.target as EnrichedLevel}
+        onClick={onMarkAsRead}
+      />
       {` - ${(notification.message)} moves`}
     </>);
 
@@ -62,7 +88,11 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
       <span className='flex flex-wrap items-center gap-1'>
         {getNewReviewOnYourLevelBody(notification.message)}
         {' on your level '}
-        <FormattedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
+        <FormattedLevelLink
+          id={`notification-${notification._id.toString()}`}
+          level={notification.target as EnrichedLevel}
+          onClick={onMarkAsRead}
+        />
       </span>
     );
   case NotificationType.NEW_FOLLOWER:
@@ -72,11 +102,19 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
   case NotificationType.NEW_LEVEL:
     return (<>
       {'published a new level: '}
-      <FormattedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
+      <FormattedLevelLink
+        id={`notification-${notification._id.toString()}`}
+        level={notification.target as EnrichedLevel}
+        onClick={onMarkAsRead}
+      />
     </>);
   case NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION:
     return (<>
-      <FormattedLevelLink level={(notification.source) as EnrichedLevel} onClick={onMarkAsRead} />
+      <FormattedLevelLink
+        id={`notification-${notification._id.toString()}`}
+        level={notification.source as EnrichedLevel}
+        onClick={onMarkAsRead}
+      />
       {' was added to the collection '}
       <FormattedCollectionLink collection={notification.target as Collection} onClick={onMarkAsRead} />
     </>);
@@ -85,8 +123,10 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
     if (notification.source) {
       const achievement = notification.source as Achievement;
 
+      const meta = AchievementRulesCombined[achievement.type];
+
       return (<>
-        {`Achievement unlocked! ${AchievementInfo[achievement.type].description}`}
+        {`Achievement unlocked! ${meta?.description}`}
       </>);
     }
 
@@ -135,6 +175,7 @@ export default function FormattedNotification({ close, notification, onMarkAsRea
       <div className='flex flex-col gap-1 truncate'>
         {notification.sourceModel === 'User' ?
           <FormattedUser
+            id={`notification-${notification._id.toString()}`}
             onClick={() => {
               onMarkAsRead(true);
 
@@ -147,7 +188,7 @@ export default function FormattedNotification({ close, notification, onMarkAsRea
           />
           :
           <div className='flex items-center gap-2 truncate'>
-            <Image alt='logo' src='/logo.svg' width='24' height='24' className='h-6 w-6' />
+            <NotificationIcon notification={notification} />
             <span className='font-bold'>Pathology</span>
           </div>
         }

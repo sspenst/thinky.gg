@@ -3,7 +3,7 @@ import React from 'react';
 
 export interface TableColumn<T> {
   id: string;
-  name: string;
+  name: string | JSX.Element;
   selector: (row: T) => JSX.Element;
   sortable?: boolean;
   style?: React.CSSProperties | undefined;
@@ -144,10 +144,10 @@ export default function DataTable<T>({
             }}
           >
             <div
-              className={classNames('font-semibold text-sm truncate', { 'cursor-pointer hover:opacity-50': column.sortable })}
-              onClick={() => onSort(column.id)}
+              className={classNames('flex font-semibold text-sm truncate', { 'cursor-pointer hover:opacity-50': column.sortable })}
+              onClick={() => column.sortable ? onSort(column.id) : undefined}
             >
-              <span>{column.name}</span>
+              <div>{column.name}</div>
               <span className='ml-1'>{sortBy !== column.id ? null : sortDir === 'desc' ? '▼' : '▲'}</span>
             </div>
           </div>
@@ -156,9 +156,10 @@ export default function DataTable<T>({
       {data.map((row, i) => columns.map(column => {
         return (
           <div
-            className='truncate flex items-center h-8 px-2'
+            className='truncate flex items-center px-2'
             key={`column-${column.id}`}
             style={{
+              minHeight: '32px',
               minWidth: '50px',
               ...column.style,
               backgroundColor: i % 2 === 0 ? 'var(--bg-color-3)' : 'var(--bg-color-2)',

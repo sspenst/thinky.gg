@@ -1,7 +1,7 @@
 import { Tab } from '@headlessui/react';
 import FormattedDate from '@root/components/formatted/formattedDate';
 import FormattedLevelReviews from '@root/components/formatted/formattedLevelReviews';
-import Complete from '@root/components/level/info/complete';
+import Solved from '@root/components/level/info/solved';
 import Image from 'next/image';
 import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -18,9 +18,9 @@ import FormattedUser from '../../formatted/formattedUser';
 import ArchiveLevelModal from '../../modal/archiveLevelModal';
 import EditLevelModal from '../../modal/editLevelModal';
 import UnpublishLevelModal from '../../modal/unpublishLevelModal';
+import LevelInfoCompletions from './levelInfoCompletions';
 import LevelInfoPlayTime from './levelInfoPlayTime';
 import LevelInfoRecords from './levelInfoRecords';
-import LevelInfoSolves from './levelInfoSolves';
 
 interface FormattedLevelInfoProps {
   level: EnrichedLevel;
@@ -43,7 +43,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
       <div className='flex flex-col gap-1'>
         <div className='font-bold text-2xl'>{level.name}</div>
         <div className='flex gap-2 items-center'>
-          <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.userId} />
+          <FormattedUser id='author' size={Dimensions.AvatarSizeSmall} user={level.userId} />
           <FormattedDate ts={level.ts} />
         </div>
         <div className='text-sm flex gap-2 items-center'>
@@ -71,7 +71,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
             }}>
               {stat.getText()}
             </span>
-            {stat.isComplete() && <Complete className='-mx-2' />}
+            {stat.isSolved() && <Solved className='-mx-2' />}
             <span className='flex'>
               <FormattedDate ts={level.userMovesTs} />
               {userConfig?.showPlayStats &&
@@ -105,7 +105,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
       <div className='flex flex-col gap-2'>
         <Tab.Group>
           <Tab.List className='flex flex-wrap gap-x-1 items-start rounded text-sm'>
-            <Tab id='leastStepsTab' className='ui-selected:border-b-2 border-blue-500 focus:outline-none' onKeyDown={(e: any) => {
+            <Tab id='leastStepsTab' className='ui-selected:border-b-2 border-blue-500 focus:outline-none' onKeyDown={(e: React.KeyboardEvent) => {
               if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                 e.preventDefault();
               }
@@ -114,16 +114,16 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
                 Least Steps
               </div>
             </Tab>
-            <Tab id='solvesTab' className='ui-selected:border-b-2 border-blue-500 focus:outline-none' onKeyDown={(e: any) => {
+            <Tab id='completionsTab' className='ui-selected:border-b-2 border-blue-500 focus:outline-none' onKeyDown={(e: React.KeyboardEvent) => {
               if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                 e.preventDefault();
               }
             }}>
               <div className='mb-1 py-1 px-2 tab rounded'>
-                Solves
+                Completions
               </div>
             </Tab>
-            <Tab id='timePlayedTab' className='ui-selected:border-b-2 border-blue-500 focus:outline-none' onKeyDown={(e: any) => {
+            <Tab id='timePlayedTab' className='ui-selected:border-b-2 border-blue-500 focus:outline-none' onKeyDown={(e: React.KeyboardEvent) => {
               if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                 e.preventDefault();
               }
@@ -139,7 +139,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
               <LevelInfoRecords />
             </Tab.Panel>
             <Tab.Panel tabIndex={-1}>
-              <LevelInfoSolves />
+              <LevelInfoCompletions />
             </Tab.Panel>
             <Tab.Panel tabIndex={-1}>
               <LevelInfoPlayTime />
@@ -156,7 +156,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
       }} />
       <div className='flex flex-row gap-2 items-center'>
         <span className='font-bold whitespace-nowrap'>Archived by:</span>
-        <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.archivedBy} />
+        <FormattedUser id='archived-by' size={Dimensions.AvatarSizeSmall} user={level.archivedBy} />
         <FormattedDate ts={level.archivedTs} />
       </div>
     </>}

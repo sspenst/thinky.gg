@@ -1,0 +1,118 @@
+import { ValidDate, ValidEnum, ValidNumber, ValidObjectId } from '@root/helpers/apiWrapper';
+import { getEnrichLevelsPipelineSteps } from '@root/helpers/enrich';
+import isPro from '@root/helpers/isPro';
+import withAuth from '@root/lib/withAuth';
+import User from '@root/models/db/user';
+import { PlayAttemptModel, UserModel } from '@root/models/mongoose';
+import { LEVEL_DEFAULT_PROJECTION } from '@root/models/schemas/levelSchema';
+import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
+import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
+import { PipelineStage, Types } from 'mongoose';
+
+interface GetPlayAttemptsParams {
+  cursor?: Types.ObjectId;
+  datetime?: Date;
+  filterWon?: boolean;
+  minDurationMinutes?: number;
+}
+
+export async function getPlayAttempts(reqUser: User, params: GetPlayAttemptsParams, limit = 10) {
+  const { cursor, datetime, filterWon, minDurationMinutes } = params;
+  const datetimeInSeconds = datetime ? Math.floor(datetime.getTime() / 1000) : undefined;
+  const minDurationInSeconds = minDurationMinutes ? minDurationMinutes * 60 : undefined;
+
+  return await PlayAttemptModel.aggregate([
+    {
+      $match: {
+        isDeleted: { $ne: true },
+        userId: reqUser._id,
+        ...(cursor && { _id: { $lt: cursor } }),
+        ...(datetimeInSeconds && { endTime: { $lte: datetimeInSeconds } }),
+        ...(filterWon && { attemptContext: AttemptContext.JUST_BEATEN }),
+      },
+    },
+    {
+      $addFields: {
+        duration: { $subtract: ['$endTime', '$startTime'] }
+      }
+    },
+    {
+      $match: {
+        ...(minDurationInSeconds && { duration: { $gte: minDurationInSeconds } }),
+      }
+    },
+    {
+      $sort: {
+        endTime: -1,
+        // NB: if end time is identical, we want to get the highest attempt context (JUST_BEATEN over UNBEATEN)
+        attemptContext: -1,
+      },
+    },
+    {
+      $limit: limit,
+    },
+    {
+      $lookup: {
+        from: 'levels',
+        localField: 'levelId',
+        foreignField: '_id',
+        as: 'levelId',
+        pipeline: [
+          {
+            $project: LEVEL_DEFAULT_PROJECTION,
+          },
+          ...getEnrichLevelsPipelineSteps(reqUser, '_id', ''),
+        ],
+      },
+    },
+    {
+      $unwind: {
+        path: '$levelId',
+      },
+    },
+    {
+      $lookup: {
+        from: UserModel.collection.name,
+        localField: 'levelId.userId',
+        foreignField: '_id',
+        as: 'levelId.userId',
+        pipeline: [
+          {
+            $project: USER_DEFAULT_PROJECTION,
+          },
+        ],
+      },
+    },
+    {
+      $unwind: '$levelId.userId',
+    },
+  ] as PipelineStage[]);
+}
+
+export default withAuth({
+  GET: {
+    query: {
+      cursor: ValidObjectId(false),
+      datetime: ValidDate(false),
+      filterWon: ValidEnum(['true', 'false'], false),
+      minDurationMinutes: ValidNumber(false, 0, 60 * 24),
+    }
+  }
+}, async (req, res) => {
+  if (!isPro(req.user)) {
+    return res.status(403).json({
+      error: 'You must be a pro user to access this endpoint.',
+    });
+  }
+
+  const { cursor, datetime, filterWon, minDurationMinutes } = req.query;
+
+  const playAttempts = await getPlayAttempts(req.user, {
+    cursor: new Types.ObjectId(cursor as string),
+    datetime: datetime ? new Date(datetime as string) : undefined,
+    filterWon: filterWon === 'true',
+    minDurationMinutes: minDurationMinutes ? parseInt(minDurationMinutes as string) : undefined,
+  });
+
+  return res.status(200).json(playAttempts);
+});

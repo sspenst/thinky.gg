@@ -15,7 +15,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import ProStatsLevelType from '../../../constants/proStatsLevelType';
 import { LevelContext, ProStatsCommunityStepData } from '../../../contexts/levelContext';
 
-export default function LevelInfoSolves() {
+export default function LevelInfoCompletions() {
   const [disabled, setDisabled] = useState(false);
   const levelContext = useContext(LevelContext);
   const [proStatsLevel, setProStatsLevel] = useState(levelContext?.proStatsLevel);
@@ -25,13 +25,13 @@ export default function LevelInfoSolves() {
     setProStatsLevel(levelContext?.proStatsLevel);
   }, [levelContext?.proStatsLevel]);
 
-  function getSolvesBySteps(skip: number, steps: number) {
+  function getCompletionsBySteps(skip: number, steps: number) {
     setDisabled(true);
 
     toast.dismiss();
-    toast.loading('Loading solves...');
+    toast.loading('Loading completions...');
 
-    fetch(`/api/level/${levelContext?.level._id}/prostats/solves?skip=${skip}&steps=${steps}`, {
+    fetch(`/api/level/${levelContext?.level._id}/prostats/completions?skip=${skip}&steps=${steps}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -63,7 +63,7 @@ export default function LevelInfoSolves() {
         });
 
         toast.dismiss();
-        toast.success('Loaded solves');
+        toast.success('Loaded completions');
       }
     }).catch(async err => {
       console.error(err);
@@ -75,57 +75,57 @@ export default function LevelInfoSolves() {
   }
 
   if (!proStatsLevel || !proStatsLevel[ProStatsLevelType.CommunityStepData] || (proStatsLevel[ProStatsLevelType.CommunityStepData] as ProStatsCommunityStepData[]).length === 0) {
-    return <div className='text-sm'>No solve data available.</div>;
+    return <div className='text-sm'>No completion data available.</div>;
   }
 
-  const solveDivs = [];
+  const completionDivs = [];
 
   for (let i = 0; i < (proStatsLevel[ProStatsLevelType.CommunityStepData] as ProStatsCommunityStepData[]).length; i++) {
-    const solve = (proStatsLevel[ProStatsLevelType.CommunityStepData] as ProStatsCommunityStepData[])[i];
+    const completion = (proStatsLevel[ProStatsLevelType.CommunityStepData] as ProStatsCommunityStepData[])[i];
 
     // green bar fill for the users that completed the level
     if (i === 0) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (solve as any).fill = 'rgb(21 128 61)';
+      (completion as any).fill = 'rgb(21 128 61)';
     }
 
-    for (let j = 0; j < solve.users.length; j++) {
-      const userAndStatTs = solve.users[j];
+    for (let j = 0; j < completion.users.length; j++) {
+      const userAndStatTs = completion.users[j];
 
-      solveDivs.push(
+      completionDivs.push(
         <div
           className='flex gap-2 items-center'
-          key={`solve-${solve.moves}-${j}`}
+          key={`completion-${completion.moves}-${j}`}
         >
           <span
             className='font-bold w-11 text-right'
-            data-tooltip-content={`${solve.count} user${solve.count === 1 ? '' : 's'} at ${solve.moves} step${solve.moves === 1 ? '' : 's'}`}
+            data-tooltip-content={`${completion.count} user${completion.count === 1 ? '' : 's'} at ${completion.moves} step${completion.moves === 1 ? '' : 's'}`}
             data-tooltip-id='steps'
             style={{
               minWidth: 44,
             }}
           >
-            {j === 0 ? solve.moves : null}
+            {j === 0 ? completion.moves : null}
           </span>
           <StyledTooltip id='steps' />
-          <FormattedUser size={Dimensions.AvatarSizeSmall} user={userAndStatTs.user} />
+          <FormattedUser id='completion' size={Dimensions.AvatarSizeSmall} user={userAndStatTs.user} />
           <FormattedDate ts={userAndStatTs.statTs} />
         </div>
       );
     }
 
-    if (solve.users.length < solve.count) {
-      solveDivs.push(
+    if (completion.users.length < completion.count) {
+      completionDivs.push(
         <div
           className='flex gap-2 items-center'
-          key={`solve-${solve.moves}-others`}
+          key={`completion-${completion.moves}-others`}
         >
           <span className='font-bold w-11 text-right' />
           <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1} stroke='currentColor' className='w-7 h-7'>
             <path strokeLinecap='round' strokeLinejoin='round' d='M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z' />
           </svg>
-          <button className='text-sm italic underline' disabled={disabled} onClick={() => getSolvesBySteps(solve.users.length, solve.moves)}>
-            {`and ${solve.count - solve.users.length} other${solve.count - solve.users.length === 1 ? '' : 's'}`}
+          <button className='text-sm italic underline' disabled={disabled} onClick={() => getCompletionsBySteps(completion.users.length, completion.moves)}>
+            {`and ${completion.count - completion.users.length} other${completion.count - completion.users.length === 1 ? '' : 's'}`}
           </button>
         </div>
       );
@@ -136,11 +136,11 @@ export default function LevelInfoSolves() {
     <div className='flex flex-col gap-2'>
       {!isPro(user) &&
         <div className='flex gap-3 items-center'>
-          <RoleIcon role={Role.PRO} size={20} />
+          <RoleIcon id='level-info-completions' role={Role.PRO} size={20} />
           <div>
             Get <Link href='/settings/proaccount' className='text-blue-300'>
               Pathology Pro
-            </Link> to see all solves for this level.
+            </Link> to see all completions for this level.
           </div>
         </div>
       }
@@ -175,7 +175,7 @@ export default function LevelInfoSolves() {
         }
         <Tab.Panels>
           <Tab.Panel tabIndex={-1}>
-            {solveDivs}
+            {completionDivs}
           </Tab.Panel>
           <Tab.Panel tabIndex={-1}>
             <ResponsiveContainer width='100%' height={300}>

@@ -293,6 +293,7 @@ describe('matchCreateJoinAndPlay', () => {
     });
   });
   test('UNPUBLISH a level that is in the middle of a game!', async () => {
+    expect(levelThatWeWillWantToTestDeletionFor.userId).toBeDefined();
     await testApiHandler({
       handler: async (_, res) => {
         await unpublishLevelHandler({

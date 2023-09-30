@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import React, { useState } from 'react';
 import { Brush, ReferenceArea, ReferenceLine, ResponsiveContainer, Scatter, ScatterChart, Symbols, Tooltip, XAxis, YAxis } from 'recharts';
 import User from '../../models/db/user';
-import { getDifficultyColor, getDifficultyFromValue, getDifficultyList } from '../formatted/formattedDifficulty';
+import { difficultyList, getDifficultyColor, getDifficultyFromValue } from '../formatted/formattedDifficulty';
 import StyledTooltip from '../page/styledTooltip';
 
 export interface DifficultyLevelComparison {
@@ -55,19 +55,18 @@ export default function ProfileInsightsSolveTimeComparison({ user }: { user: Use
     data = sorted.slice(top1Percent, bottom1Percent);
   }
 
-  const difficulties = getDifficultyList();
   const maxDifficultySolved = Math.max(...data.map(d => d.difficulty).filter(x => x));
   // 0.9 and 1.1 because we always want to show the line at 1 on the graph
   const maxYValue = Math.max(...data.map(d => d.diff || 0).filter(x => x), 1.1);
   const minYValue = Math.min(...data.map(d => d.diff || 0).filter(x => x), 0.9);
   // remove the difficulties that are not solved
-  const difficultiesToDisplay = difficulties.findLastIndex(d => d.value <= maxDifficultySolved);
+  const difficultiesToDisplay = difficultyList.findLastIndex(d => d.value <= maxDifficultySolved);
   let max: number;
 
-  if (difficultiesToDisplay === difficulties.length - 1) {
+  if (difficultiesToDisplay === difficultyList.length - 1) {
     max = maxDifficultySolved;
   } else {
-    max = difficulties[difficultiesToDisplay + 1]?.value || difficulties[difficulties.length - 1].value;
+    max = difficultyList[difficultiesToDisplay + 1]?.value || difficultyList[difficultyList.length - 1].value;
   }
 
   return (<>
@@ -127,19 +126,19 @@ export default function ProfileInsightsSolveTimeComparison({ user }: { user: Use
           <Brush dataKey='difficulty' height={30} stroke='#8884d8' />
           <ReferenceLine y={1} stroke='white' />
           {
-            difficulties.map((d, i) => {
+            difficultyList.map((d, i) => {
               if (d.name === 'Pending') {
                 return null;
               }
 
               const x1 = d.value;
 
-              // user has not completed any levels in this category
+              // user has not solved any levels in this category
               if (max <= x1) {
                 return null;
               }
 
-              let x2 = difficulties[i + 1]?.value;
+              let x2 = difficultyList[i + 1]?.value;
 
               if (!x2) {
                 x2 = max;

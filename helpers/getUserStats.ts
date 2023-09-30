@@ -20,20 +20,20 @@ export default function getUserStats(
     } else if (!stats) {
       userStats.push(new SelectOptionStats(levelIds.length, undefined));
     } else {
-      let complete = 0;
+      let solved = 0;
       let count = 0;
 
       for (let i = 0; i < levelIds.length; i++) {
         const stat = stats.find(stat => stat.levelId === levelIds[i]);
 
         if (stat && stat.complete) {
-          complete += 1;
+          solved += 1;
         }
 
         count += 1;
       }
 
-      userStats.push(new SelectOptionStats(count, complete));
+      userStats.push(new SelectOptionStats(count, solved));
     }
   }
 

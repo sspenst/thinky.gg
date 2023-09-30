@@ -44,8 +44,8 @@ const growthbook = new GrowthBook({
   clientKey: process.env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY || 'sdk-XUcOzkOQARhQXpCL',
   enableDevMode: true,
   trackingCallback: (experiment, result) => {
-    console.log('Viewed Experiment', experiment, result, 'calling window.gtag (which is ', (window as any).gtag);
-    (window as any)?.gtag('event', 'experiment_viewed', {
+    console.log('Viewed Experiment', experiment, result, 'calling window.gtag (which is ', window?.gtag);
+    window?.gtag('event', 'experiment_viewed', {
       event_category: 'experiment',
       experiment_id: experiment.key,
       variation_id: result.variationId,
@@ -237,17 +237,17 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     }
   }, [matches, privateAndInvitedMatches, router, user]);
 
-  const [GA_ClientID, setGA_ClientID] = useState<string>();
+  // const [GA_ClientID, setGA_ClientID] = useState<string>();
 
-  useEffect(() => {
-  /*  if ('gtag' in window) {
-      (window as any)?.gtag('get', GA_TRACKING_ID, 'client_id', (clientId: string) => {
-        setGA_ClientID(clientId);
-      });
-    } else {
-      console.warn('no gtag... cant get GA ClientID');
-    }*/
-  }, []);
+  // useEffect(() => {
+  //   if (window?.gtag) {
+  //     window.gtag('get', GTM_TRACKING_ID, 'client_id', (clientId: string) => {
+  //       setGA_ClientID(clientId);
+  //     });
+  //   } else {
+  //     console.warn('no gtag... cant get GA ClientID');
+  //   }
+  // }, []);
 
   useEffect(() => {
     const gtmId = GTM_TRACKING_ID;
@@ -264,10 +264,11 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     }
 
     TagManager.initialize(taskManagerArgs);
-  }, [GA_ClientID, user?._id]);
+  }, [user?._id]);
+  // }, [GA_ClientID, user?._id]);
 
   useEffect(() => {
-    const handleRouteChange = (url: string) => {
+    const handleRouteChange = () => {
       updateGrowthBookURL();
       nProgress.done();
     };
@@ -277,24 +278,29 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     Router.events.on('routeChangeError', () => nProgress.done());
     growthbook.loadFeatures({ autoRefresh: true });
 
-    if (GA_ClientID) {
-      growthbook.setAttributes({
-        id: user?._id || GA_ClientID,
-        userId: user?._id,
-        clientId: GA_ClientID,
-        name: user?.name,
-        loggedIn: user !== undefined,
-        browser: navigator.userAgent,
-        url: router.pathname,
-        host: window.location.host,
-        roles: user?.roles,
-      });
-    }
+    // if (GA_ClientID) {
+    //   growthbook.setAttributes({
+    //     id: user?._id || GA_ClientID,
+    //     userId: user?._id,
+    //     clientId: GA_ClientID,
+    //     name: user?.name,
+    //     loggedIn: user !== undefined,
+    //     browser: navigator.userAgent,
+    //     url: router.pathname,
+    //     host: window.location.host,
+    //     roles: user?.roles,
+    //   });
+    // }
 
     router.events.on('routeChangeComplete', handleRouteChange);
 
-    return () => router.events.off('routeChangeComplete', handleRouteChange);
-  }, [GA_ClientID, router.events, router.pathname, user]);
+    return () => {
+      router.events.off('routeChangeComplete', handleRouteChange);
+      router.events.off('routeChangeStart', () => nProgress.start());
+      router.events.off('routeChangeError', () => nProgress.done());
+    };
+  }, [router.events, router.pathname, user]);
+  // }, [GA_ClientID, router.events, router.pathname, user]);
 
   const isEU = Intl.DateTimeFormat().resolvedOptions().timeZone.startsWith('Europe');
 

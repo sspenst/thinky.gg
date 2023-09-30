@@ -20,6 +20,12 @@ declare global {
       thisArg?: any,
     ): number
   }
+  interface Window {
+    // TODO: install @types/gtag.js or similar for this
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    gtag: any;
+  }
+  var __MONGOSERVER__: MongoMemoryReplSet;
 }
 
 export {};

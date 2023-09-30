@@ -34,10 +34,10 @@ interface GameProps {
   hideSidebar?: boolean;
   level: Level;
   matchId?: string;
-  onComplete?: () => void;
   onMove?: (gameState: GameState) => void;
   onNext?: () => void;
   onPrev?: () => void;
+  onSolve?: () => void;
   onStatsSuccess?: () => void;
 }
 
@@ -51,10 +51,10 @@ export default function Game({
   hideSidebar,
   level,
   matchId,
-  onComplete,
   onMove,
   onNext,
   onPrev,
+  onSolve,
   onStatsSuccess,
 }: GameProps) {
   const levelContext = useContext(LevelContext);
@@ -283,7 +283,7 @@ export default function Game({
       toast.success(
         <div>
           {index === BEST_CHECKPOINT_INDEX ?
-            'Restored your best solve. Press B again to '
+            'Restored your best completion. Press B again to '
             :
             `Restored checkpoint ${index}. Press ${index} again to `
           }
@@ -446,6 +446,10 @@ export default function Game({
       }
 
       if (newGameState.board[newGameState.pos.y][newGameState.pos.x].tileType === TileType.End) {
+        if (newGameState.moves.length <= level.leastMoves && onSolve) {
+          onSolve();
+        }
+
         // track stats upon reaching an exit
         trackStats(newGameState.moves.map(move => move.direction), level._id.toString(), 3);
       } else if (!disablePlayAttempts) {
@@ -455,15 +459,7 @@ export default function Game({
 
       return onSuccessfulMove(newGameState);
     });
-  }, [allowFreeUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, level._id, level.data, loadCheckpoint, onMove, onNext, onPrev, pro, saveCheckpoint, trackStats]);
-
-  useEffect(() => {
-    const atEnd = gameState.board[gameState.pos.y][gameState.pos.x].tileType === TileType.End;
-
-    if (atEnd && gameState.moves.length <= level.leastMoves && onComplete) {
-      onComplete();
-    }
-  }, [gameState, level.leastMoves, onComplete]);
+  }, [allowFreeUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, level._id, level.data, level.leastMoves, loadCheckpoint, onMove, onNext, onPrev, onSolve, pro, saveCheckpoint, trackStats]);
 
   useEffect(() => {
     if (disableCheckpoints || !pro || !checkpoints) {

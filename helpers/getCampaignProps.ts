@@ -4,16 +4,16 @@ import Campaign from '../models/db/campaign';
 import { EnrichedCollection } from '../models/db/collection';
 import Level, { EnrichedLevel } from '../models/db/level';
 import User from '../models/db/user';
-import { CampaignModel } from '../models/mongoose';
+import { CampaignModel, CollectionModel, LevelModel, UserModel } from '../models/mongoose';
 import { LEVEL_DEFAULT_PROJECTION } from '../models/schemas/levelSchema';
 import { USER_DEFAULT_PROJECTION } from '../models/schemas/userSchema';
 import { getEnrichLevelsPipelineSteps } from './enrich';
 import { logger } from './logger';
 
 export interface CampaignProps {
-  completedLevels: number;
   enrichedCollections: EnrichedCollection[];
   reqUser: User;
+  solvedLevels: number;
   totalLevels: number;
 }
 
@@ -26,14 +26,14 @@ export default async function getCampaignProps(reqUser: User, slug: string) {
     },
     {
       $lookup: {
-        from: 'collections',
+        from: CollectionModel.collection.name,
         localField: 'collections',
         foreignField: '_id',
         as: 'collectionsPopulated',
         pipeline: [
           {
             $lookup: {
-              from: 'levels',
+              from: LevelModel.collection.name,
               localField: 'levels',
               foreignField: '_id',
               as: 'levelsPopulated',
@@ -51,7 +51,7 @@ export default async function getCampaignProps(reqUser: User, slug: string) {
                 ...getEnrichLevelsPipelineSteps(reqUser, '_id', '') as PipelineStage.Lookup[],
                 {
                   $lookup: {
-                    from: 'users',
+                    from: UserModel.collection.name,
                     localField: 'userId',
                     foreignField: '_id',
                     as: 'userId',
@@ -111,7 +111,7 @@ export default async function getCampaignProps(reqUser: User, slug: string) {
     enrichedCollections.push(collection);
   }
 
-  let completedLevels = 0;
+  let solvedLevels = 0;
   let totalLevels = 0;
 
   for (let i = 0; i < enrichedCollections.length; i++) {
@@ -144,19 +144,19 @@ export default async function getCampaignProps(reqUser: User, slug: string) {
 
     enrichedCollection.levels = collectionLevels;
 
-    const userCompletedCount = (enrichedCollection.levels as EnrichedLevel[]).filter((level: EnrichedLevel) => level.userMoves === level.leastMoves).length;
+    const userSolvedCount = (enrichedCollection.levels as EnrichedLevel[]).filter((level: EnrichedLevel) => level.userMoves === level.leastMoves).length;
 
-    enrichedCollection.userCompletedCount = userCompletedCount;
-    completedLevels += userCompletedCount;
+    enrichedCollection.userSolvedCount = userSolvedCount;
+    solvedLevels += userSolvedCount;
     enrichedCollection.levelCount = enrichedCollection.levels.length;
     totalLevels += enrichedCollection.levels.length;
   }
 
   return {
     props: {
-      completedLevels: completedLevels,
       enrichedCollections: JSON.parse(JSON.stringify(enrichedCollections)),
       reqUser: JSON.parse(JSON.stringify(reqUser)),
+      solvedLevels: solvedLevels,
       totalLevels: totalLevels,
     } as CampaignProps,
   };

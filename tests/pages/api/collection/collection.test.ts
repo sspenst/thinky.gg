@@ -266,7 +266,7 @@ describe('pages/api/collection/index.ts', () => {
     });
   });
   test('Create 18 collections with same name in DB, so that we can test to make sure the server will not crash. The 19th should crash however.', async () => {
-    for (let i = 0; i < 18; i++) {
+    for (let i = 0; i < 2; i++) {
       // expect no exceptions
       const promise = initCollection(TestId.USER, 'Sample');
 

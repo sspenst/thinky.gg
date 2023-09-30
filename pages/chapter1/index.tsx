@@ -27,7 +27,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 /* istanbul ignore next */
-export default function Chapter1Page({ completedLevels, enrichedCollections, reqUser, totalLevels }: CampaignProps) {
+export default function Chapter1Page({ enrichedCollections, reqUser, solvedLevels, totalLevels }: CampaignProps) {
   const memoizedCallback = useCallback((data: CallBackProps) => {
     if (data.action === 'next' && data.index === 0) {
       // get the first level a tag
@@ -45,16 +45,16 @@ export default function Chapter1Page({ completedLevels, enrichedCollections, req
       <>
         {tour}
         <FormattedCampaign
-          completedElement={
-            <div className='flex flex-col items-center justify-center text-center mt-2'>
-              <div>Congratulations! You&apos;ve completed every level in Chapter 1. Try out <Link className='font-bold underline' href='/chapter2' passHref>Chapter 2</Link> next!</div>
-            </div>
-          }
-          completedLevels={completedLevels}
           enrichedCollections={enrichedCollections}
           levelHrefQuery={'chapter=1'}
           nextHref={'/chapter2'}
           nextTitle={(reqUser.chapterUnlocked ?? 1) < 2 ? 'Unlock Chapter 2' : undefined}
+          solvedElement={
+            <div className='flex flex-col items-center justify-center text-center mt-2'>
+              <div>Congratulations! You&apos;ve solved every level in Chapter 1. Try out <Link className='font-bold underline' href='/chapter2' passHref>Chapter 2</Link> next!</div>
+            </div>
+          }
+          solvedLevels={solvedLevels}
           subtitle={'Grassroots'}
           title={'Chapter 1'}
           totalLevels={totalLevels}

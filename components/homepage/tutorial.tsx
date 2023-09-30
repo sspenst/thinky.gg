@@ -35,8 +35,8 @@ interface TutorialStep {
   isNextButtonDisabled?: boolean;
   key?: string;
   level?: Level;
-  onComplete?: () => void;
   onMove?: (gameState: GameState) => void;
+  onSolve?: () => void;
   // number of steps back using the previous button
   prevSteps?: number;
   tooltip?: Tooltip;
@@ -66,7 +66,7 @@ export default function Tutorial() {
   const [isPrevButtonDisabled, setIsPrevButtonDisabled] = useState(false);
   const { mutateUser, user } = useContext(AppContext);
   const [popperInstance, setPopperInstance] = useState<Instance | null>(null);
-  const popperUpdateInterval = useRef<NodeJS.Timer | null>(null);
+  const popperUpdateInterval = useRef<NodeJS.Timeout | null>(null);
   const [showNiceJob, setShowNiceJob] = useState(false);
   const [tooltip, setTooltip] = useState<Tooltip>();
   const [tutorialStepIndex, setTutorialStepIndex] = useState(0);
@@ -412,10 +412,9 @@ export default function Tutorial() {
       },
       {
         gameGrid: true,
-        header: <div key='tutorial-level-1-header' className='text-3xl fadeIn'>Try completing your first level!</div>,
+        header: <div key='tutorial-level-1-header' className='text-3xl fadeIn'>Try solving your first level!</div>,
         key: 'tutorial-level-1',
         level: getLevel(LEVEL_1, { leastMoves: 5 }),
-        onComplete: niceJob,
         onMove: (gameState: GameState) => {
           const undoButton = document.getElementById('btn-undo') as HTMLButtonElement;
 
@@ -432,6 +431,7 @@ export default function Tutorial() {
             undoButton?.classList.remove(styles['highlight-red']);
           }
         },
+        onSolve: niceJob,
         tooltip: { canClose: true, target: '.tile-type-3', title: <div>Move the Player here in 5 moves</div>, dir: 'bottom' },
       },
       {
@@ -440,7 +440,7 @@ export default function Tutorial() {
         header: <div key='tutorial-wall-header' className='text-3xl fadeIn'>Try getting to the exit now.</div>,
         key: 'tutorial-wall',
         level: getLevel(WALL_INTRO, { leastMoves: 7 }),
-        onComplete: niceJob,
+        onSolve: niceJob,
         tooltip: { canClose: true, target: '.tile-type-1', title: <div>You are not able to go through walls</div> },
       },
       {
@@ -449,7 +449,7 @@ export default function Tutorial() {
         header: <div key='tutorial-ends-header' className='text-3xl fadeIn'>There can be multiple exits.</div>,
         key: 'tutorial-ends',
         level: getLevel(MULTIPLE_ENDS, { leastMoves: 6 }),
-        onComplete: niceJob,
+        onSolve: niceJob,
       },
       {
         gameClasses: 'fadeIn',
@@ -457,7 +457,7 @@ export default function Tutorial() {
         header: <div key='tutorial-movable-header' className='text-3xl fadeIn'>Blocks with borders can be pushed by the player.</div>,
         key: 'tutorial-movable',
         level: getLevel(MOVABLE_INTRO, { leastMoves: 6 }),
-        onComplete: niceJob,
+        onSolve: niceJob,
       },
       {
         gameClasses: 'fadeIn',
@@ -465,7 +465,7 @@ export default function Tutorial() {
         header: <div key='tutorial-movable-explain-header' className='text-3xl fadeIn'>You can only push one block at a time.</div>,
         key: 'tutorial-movable-explain',
         level: getLevel(MOVABLE_EXPLAIN, { leastMoves: 11 }),
-        onComplete: niceJob,
+        onSolve: niceJob,
       },
       {
         gameClasses: 'fadeIn',
@@ -473,7 +473,7 @@ export default function Tutorial() {
         header: <div className='text-3xl'>Blocks can cover exits.</div>,
         key: 'tutorial-movable-explain-end-cover',
         level: getLevel(MOVABLE_EXPLAIN_END_COVER, { leastMoves: 8 }),
-        onComplete: niceJob,
+        onSolve: niceJob,
       },
       {
         editorGrid: true,
@@ -489,7 +489,7 @@ export default function Tutorial() {
         header: <div key='tutorial-restricted-movables-explain-header' className='text-3xl fadeIn'>Find the path through these restricted blocks!</div>,
         key: 'tutorial-restricted-movables-explain',
         level: getLevel(RESTRICTED_MOVABLES_EXPLAIN, { leastMoves: 12 }),
-        onComplete: niceJob,
+        onSolve: niceJob,
       },
       {
         editorGrid: true,
@@ -507,7 +507,7 @@ export default function Tutorial() {
         header: <div key='tutorial-holes-intro' className='text-3xl fadeIn'>Use this block to cross over the hole!</div>,
         key: 'tutorial-holes-intro',
         level: getLevel(HOLES_INTRO, { leastMoves: 9 }),
-        onComplete: niceJob,
+        onSolve: niceJob,
       },
       {
         header: <div>
@@ -711,7 +711,6 @@ export default function Tutorial() {
               hideSidebar={true}
               key={tutorialStep.key}
               level={tutorialStep.level}
-              onComplete={tutorialStep.onComplete}
               onMove={(gameState: GameState) => {
                 const restartButton = document.getElementById('btn-restart') as HTMLButtonElement;
 
@@ -737,6 +736,7 @@ export default function Tutorial() {
                   tutorialStep.onMove(gameState);
                 }
               }}
+              onSolve={tutorialStep.onSolve}
             />
           </div>
         )}

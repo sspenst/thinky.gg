@@ -66,6 +66,12 @@ async function runStripeWebhookTest({
   additionalAssertions?: () => Promise<void>;
   mockDbError?: boolean;
 }) {
+  jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
+
+  if (expectedError) {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+  }
+
   const mockEvent = createMockStripeEvent(eventType, payloadData);
 
   const payload = JSON.stringify(mockEvent);
@@ -81,8 +87,6 @@ async function runStripeWebhookTest({
   });
 
   if (mockDbError) {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-
     jest.spyOn(UserConfigModel, 'findOneAndUpdate').mockImplementationOnce(() => {
       throw new Error('mock error');
     });
@@ -131,6 +135,7 @@ async function expectUserStatus(userId: string, role: Role | null, stripeCustome
 }
 
 describe('pages/api/stripe-webhook/index.ts', () => {
+  jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
   test('regular call should error', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -218,7 +223,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
         id: 'cs_test_123',
         customer: fakeCustomerId,
       },
-      expectedError: 'UserConfig with customer id ' + fakeCustomerId + ' does not exist',
+      expectedError: 'customer.subscription.deleted - UserConfig with customer id ' + fakeCustomerId + ' does not exist',
       expectedStatus: 400,
       additionalAssertions: async () => {
         //
@@ -295,8 +300,8 @@ describe('pages/api/stripe-webhook/index.ts', () => {
         id: 'cs_test_123',
         customer: fakeCustomerId,
       },
-      expectedError: 'UserConfig with customer id ' + fakeCustomerId + ' does not exist',
-      expectedStatus: 400,
+      expectedError: undefined,
+      expectedStatus: 200,
       additionalAssertions: async () => {
         //
       },

@@ -17,16 +17,16 @@ export default apiWrapper({ GET: {
   await dbConnect();
 
   try {
-    const completions = await StatModel.find<Record>({ levelId: id, complete: true }, {}, all === 'true' ? {} : { limit: 10 }).populate('userId').sort({ ts: -1 });
+    const stats = await StatModel.find<Record>({ levelId: id, complete: true }, {}, all === 'true' ? {} : { limit: 10 }).populate('userId').sort({ ts: -1 });
 
-    completions.forEach(completion => cleanUser(completion.userId));
+    stats.forEach(stat => cleanUser(stat.userId));
 
-    return res.status(200).json(completions);
+    return res.status(200).json(stats);
   } catch (e) {
     logger.error(e);
 
     return res.status(500).json({
-      error: 'Error finding completions',
+      error: 'Error finding solves',
     });
   }
 });

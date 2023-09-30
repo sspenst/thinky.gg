@@ -1,9 +1,13 @@
 import classNames from 'classnames';
+import moment from 'moment';
 import React from 'react';
 import { EnrichedLevel } from '../../models/db/level';
-import Review from '../../models/db/review';
+import { ReviewWithStats } from '../../models/db/review';
 import User from '../../models/db/user';
+import { FolderDivider } from '../header/directory';
+import Solved from '../level/info/solved';
 import ReviewDropdown from '../level/reviews/reviewDropdown';
+import StyledTooltip from '../page/styledTooltip';
 import FormattedDate from './formattedDate';
 import FormattedLevelLink from './formattedLevelLink';
 import FormattedUser from './formattedUser';
@@ -65,7 +69,7 @@ interface FormattedReviewProps {
   hideBorder?: boolean;
   level?: EnrichedLevel;
   onEditClick?: () => void;
-  review: Review;
+  review: ReviewWithStats;
   user: User;
 }
 
@@ -81,14 +85,36 @@ export default function FormattedReview({ hideBorder, level, onEditClick, review
         <div className='flex gap-x-2 items-center flex-wrap'>
           <div className='flex justify-between w-full items-center'>
             <div className='flex gap-x-2 items-center truncate'>
-              <FormattedUser user={user} />
+              <FormattedUser id={level ? `review-${level._id.toString()}` : 'review'} user={user} />
               <FormattedDate ts={review.ts} />
             </div>
             {onEditClick && <ReviewDropdown onEditClick={onEditClick} />}
           </div>
-          {level && <FormattedLevelLink level={level} />}
+          {level && <FormattedLevelLink id={`review-${user._id.toString()}`} level={level} />}
         </div>
-        {review.score ? <Stars stars={review.score} /> : null}
+        <span className='flex items-center'>
+          {review.score ? <Stars stars={review.score} /> : null}
+          {review.score && review.stat ? <FolderDivider /> : null}
+          {review.stat && <>
+            <div
+              className='flex items-center gap-2 flex-wrap'
+              data-tooltip-content={review.stat.complete ?
+                `Solved ${moment(new Date(review.stat.ts * 1000)).fromNow()}` :
+                `Completed in ${review.stat.moves} steps ${moment(new Date(review.stat.ts * 1000)).fromNow()}`
+              }
+              data-tooltip-id={`review-stat-${user._id.toString()}`}
+            >
+              <span className='font-bold' style={{
+                color: review.stat.complete ? 'var(--color-complete)' : 'var(--color-incomplete)',
+                textShadow: '1px 1px black',
+              }}>
+                {review.stat.moves}
+              </span>
+              {review.stat.complete && <Solved className='-mx-2' />}
+            </div>
+            <StyledTooltip id={`review-stat-${user._id.toString()}`} />
+          </>}
+        </span>
         <span className='whitespace-pre-wrap'>{review.text}</span>
       </div>
     </div>

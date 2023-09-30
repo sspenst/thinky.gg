@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import AchievementType from '../../constants/achievementType';
+import AchievementType from '../../constants/achievements/achievementType';
 import User from './user';
 
 interface Achievement {

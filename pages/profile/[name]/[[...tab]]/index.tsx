@@ -1,8 +1,17 @@
 import FormattedDate from '@root/components/formatted/formattedDate';
+import LoadingSpinner from '@root/components/page/loadingSpinner';
 import RoleIcons from '@root/components/page/roleIcons';
+import StyledTooltip from '@root/components/page/styledTooltip';
+import LevelsSolvedByDifficultyList from '@root/components/profile/levelsSolvedByDifficultyList';
+import PlayerRank from '@root/components/profile/playerRank';
+import { ProfileAchievments } from '@root/components/profile/profileAchievements';
 import ProfileMultiplayer from '@root/components/profile/profileMultiplayer';
+import StatFilter from '@root/constants/statFilter';
 import { getUsersWithMultiplayerProfile } from '@root/helpers/getUsersWithMultiplayerProfile';
+import useSWRHelper from '@root/hooks/useSWRHelper';
+import Graph from '@root/models/db/graph';
 import { MultiplayerMatchState } from '@root/models/MultiplayerEnums';
+import { getCollections } from '@root/pages/api/collection-by-id/[id]';
 import classNames from 'classnames';
 import { debounce } from 'debounce';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
@@ -15,8 +24,6 @@ import React, { useCallback, useEffect, useState } from 'react';
 import FollowButton from '../../../../components/buttons/followButton';
 import Select from '../../../../components/cards/select';
 import SelectFilter from '../../../../components/cards/selectFilter';
-import FormattedAchievement from '../../../../components/formatted/formattedAchievement';
-import FormattedDifficulty, { getDifficultyList } from '../../../../components/formatted/formattedDifficulty';
 import FormattedReview from '../../../../components/formatted/formattedReview';
 import CommentWall from '../../../../components/level/reviews/commentWall';
 import AddCollectionModal from '../../../../components/modal/addCollectionModal';
@@ -25,12 +32,10 @@ import Page from '../../../../components/page/page';
 import FollowingList from '../../../../components/profile/followingList';
 import ProfileAvatar from '../../../../components/profile/profileAvatar';
 import ProfileInsights from '../../../../components/profile/profileInsights';
-import AchievementInfo from '../../../../constants/achievementInfo';
 import Dimensions from '../../../../constants/dimensions';
 import GraphType from '../../../../constants/graphType';
 import TimeRange from '../../../../constants/timeRange';
-import { enrichCollection } from '../../../../helpers/enrich';
-import filterSelectOptions, { FilterSelectOption } from '../../../../helpers/filterSelectOptions';
+import statFilterOptions from '../../../../helpers/filterSelectOptions';
 import getProfileSlug from '../../../../helpers/getProfileSlug';
 import { getReviewsByUserId, getReviewsByUserIdCount } from '../../../../helpers/getReviewsByUserId';
 import { getReviewsForUserId, getReviewsForUserIdCount } from '../../../../helpers/getReviewsForUserId';
@@ -38,11 +43,11 @@ import naturalSort from '../../../../helpers/naturalSort';
 import cleanUser from '../../../../lib/cleanUser';
 import { getUserFromToken } from '../../../../lib/withAuth';
 import Achievement from '../../../../models/db/achievement';
-import Collection, { EnrichedCollection } from '../../../../models/db/collection';
+import { EnrichedCollection } from '../../../../models/db/collection';
 import { EnrichedLevel } from '../../../../models/db/level';
 import Review from '../../../../models/db/review';
 import User from '../../../../models/db/user';
-import { AchievementModel, CollectionModel, GraphModel, LevelModel, MultiplayerMatchModel, StatModel } from '../../../../models/mongoose';
+import { AchievementModel, CollectionModel, GraphModel, LevelModel, MultiplayerMatchModel } from '../../../../models/mongoose';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../../models/schemas/levelSchema';
 import SelectOption from '../../../../models/selectOption';
 import SelectOptionStats from '../../../../models/selectOptionStats';
@@ -64,71 +69,6 @@ export const enum ProfileTab {
 export interface ProfileParams extends ParsedUrlQuery {
   name: string;
   tab: string[];
-}
-
-async function getCompletionByDifficultyTable(user: User) {
-  const difficultyList = getDifficultyList();
-  const difficultyListValues = difficultyList.map((d) => d.value);
-
-  const levelsCompletedByDifficultyData = await StatModel.aggregate([
-    {
-      $match: {
-        userId: user._id,
-        complete: true,
-        isDeleted: { $ne: true },
-      },
-    },
-    {
-      $project: {
-        _id: 0,
-        levelId: 1,
-      }
-    },
-    {
-      $lookup: {
-        from: 'levels',
-        localField: 'levelId',
-        foreignField: '_id',
-        as: 'levelInfo',
-        pipeline: [
-          {
-            $match: {
-              isDeleted: { $ne: true },
-              isDraft: false,
-            }
-          },
-          {
-            $project: {
-              _id: 0,
-              calc_difficulty_estimate: 1
-            }
-          }
-        ]
-      },
-    },
-    {
-      $unwind: '$levelInfo',
-    },
-    {
-      $bucket: {
-        groupBy: '$levelInfo.calc_difficulty_estimate',
-        boundaries: difficultyListValues,
-        default: difficultyListValues[difficultyListValues.length - 1],
-        output: {
-          count: { $sum: 1 }
-        }
-      },
-    },
-  ]);
-
-  // map of difficulty value to levels completed
-  const levelsCompletedByDifficulty: { [key: string]: number } = {};
-
-  levelsCompletedByDifficultyData.map((d: {_id: string, count: number}) => {
-    levelsCompletedByDifficulty[d._id] = d.count;
-  });
-
-  return levelsCompletedByDifficulty;
 }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -167,7 +107,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     achievementsCount,
     collectionsCount,
     followData,
-    levelsCompletedByDifficulty,
     levelsCount,
     multiplayerCount,
     reviewsReceived,
@@ -179,7 +118,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     AchievementModel.countDocuments({ userId: userId }),
     CollectionModel.countDocuments({ userId: userId }),
     getFollowData(user._id.toString(), reqUser),
-    profileTab === ProfileTab.Profile ? getCompletionByDifficultyTable(user) : {},
     LevelModel.countDocuments({ isDeleted: { $ne: true }, isDraft: false, userId: userId }),
     MultiplayerMatchModel.countDocuments({ players: userId, state: MultiplayerMatchState.FINISHED, rated: true }),
     profileTab === ProfileTab.ReviewsReceived ? getReviewsForUserId(userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
@@ -193,7 +131,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     achievementsCount: achievementsCount,
     collectionsCount: collectionsCount,
     followerCountInit: followData.followerCount,
-    levelsCompletedByDifficulty: levelsCompletedByDifficulty,
     levelsCount: levelsCount,
     multiplayerCount: multiplayerCount,
     pageProp: page,
@@ -209,34 +146,40 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   if (profileTab === ProfileTab.Profile) {
     if (reqUser && reqUser._id.toString() === userId) {
-      const followingGraph = await GraphModel.find({
-        source: reqUser._id,
-        type: GraphType.FOLLOW,
-      }, 'target targetModel').populate('target', 'name avatarUpdatedAt last_visited_at hideStatus').exec();
-
-      /* istanbul ignore next */
-      const reqUserFollowing = followingGraph.map((f) => {
+      // make a aggregation version of the same query above
+      const followingAgg = await GraphModel.aggregate([
+        { $match: { source: reqUser._id, type: GraphType.FOLLOW } },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'target',
+            foreignField: '_id',
+            as: 'target',
+            pipeline: [
+              { $project: { name: 1, avatarUpdatedAt: 1, last_visited_at: 1, hideStatus: 1 } },
+            ],
+          },
+        },
+        { $unwind: '$target' },
+        { $sort: { createdAt: -1 } },
+      ]).exec() as Graph[];
+      const reqUserFollowing = followingAgg.map((f) => {
         cleanUser(f.target as User);
 
-        return f.target as User;
-      })
-        .sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+        return f;
+      }).sort((a, b) => a.createdAt < b.createdAt ? 1 : -1);
 
       profilePageProps.reqUserFollowing = JSON.parse(JSON.stringify(reqUserFollowing));
     }
   }
 
   if (profileTab === ProfileTab.Collections) {
-    const collections = await CollectionModel.find<Collection>({ userId: user._id }, 'levels name slug')
-      .populate({
-        path: 'levels',
-        select: '_id leastMoves',
-        match: { isDraft: false },
-      })
-      .sort({ name: 1 });
-    const enrichedCollections = await Promise.all(collections.map(collection => enrichCollection(collection, reqUser)));
+    const collectionsAgg = await getCollections({
+      matchQuery: { $match: { userId: user._id } },
+      reqUser,
+    });
 
-    profilePageProps.enrichedCollections = JSON.parse(JSON.stringify(enrichedCollections));
+    profilePageProps.enrichedCollections = JSON.parse(JSON.stringify(collectionsAgg));
   }
 
   if (profileTab === ProfileTab.Levels) {
@@ -282,13 +225,12 @@ export interface ProfilePageProps {
   enrichedCollections: EnrichedCollection[] | undefined;
   enrichedLevels: EnrichedLevel[] | undefined;
   followerCountInit: number;
-  levelsCompletedByDifficulty: { [key: string]: number };
   levelsCount: number;
   multiplayerCount: number;
   pageProp: number;
   profileTab: ProfileTab;
   reqUser: User | null;
-  reqUserFollowing: User[] | undefined;
+  reqUserFollowing: Graph[] | undefined;
   reqUserIsFollowing?: boolean;
   reviewsReceived?: Review[];
   reviewsReceivedCount: number;
@@ -307,7 +249,6 @@ export default function ProfilePage({
   enrichedCollections,
   enrichedLevels,
   followerCountInit,
-  levelsCompletedByDifficulty,
   levelsCount,
   multiplayerCount,
   pageProp,
@@ -329,9 +270,9 @@ export default function ProfilePage({
   const [page, setPage] = useState(pageProp);
   const router = useRouter();
   const [searchLevelText, setSearchLevelText] = useState('');
-  const [showCollectionFilter, setShowCollectionFilter] = useState(FilterSelectOption.All);
-  const [showLevelFilter, setShowLevelFilter] = useState(FilterSelectOption.All);
-  const [tab, setTab] = useState(ProfileTab.Profile);
+  const [showCollectionFilter, setShowCollectionFilter] = useState(StatFilter.All);
+  const [showLevelFilter, setShowLevelFilter] = useState(StatFilter.All);
+  const [tab, setTab] = useState(profileTab);
 
   useEffect(() => {
     setFollowerCount(followerCountInit);
@@ -347,7 +288,7 @@ export default function ProfilePage({
 
   useEffect(() => {
     setSearchLevelText(searchQuery?.search || '');
-    setShowLevelFilter(searchQuery?.showFilter || FilterSelectOption.All);
+    setShowLevelFilter(searchQuery?.statFilter || StatFilter.All);
   }, [searchQuery]);
 
   const getCollectionOptions = useCallback(() => {
@@ -362,14 +303,14 @@ export default function ProfilePage({
       return {
         href: `/collection/${enrichedCollection.slug}`,
         id: enrichedCollection._id.toString(),
-        stats: new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userCompletedCount),
+        stats: new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userSolvedCount),
         text: enrichedCollection.name,
       } as SelectOption;
     });
   }, [enrichedCollections]);
 
   const getFilteredCollectionOptions = useCallback(() => {
-    return filterSelectOptions(getCollectionOptions(), showCollectionFilter, collectionFilterText);
+    return statFilterOptions(getCollectionOptions(), showCollectionFilter, collectionFilterText);
   }, [collectionFilterText, getCollectionOptions, showCollectionFilter]);
 
   const getLevelOptions = useCallback(() => {
@@ -397,30 +338,34 @@ export default function ProfilePage({
         query: {
           page: 1,
           search: name,
-          showFilter: showLevelFilter,
+          statFilter: showLevelFilter,
         },
       });
     }, 500), [showLevelFilter, tab]);
 
   const onFilterCollectionClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const value = e.currentTarget.value as FilterSelectOption;
+    const value = e.currentTarget.value as StatFilter;
 
-    setShowCollectionFilter(showCollectionFilter === value ? FilterSelectOption.All : value);
+    setShowCollectionFilter(showCollectionFilter === value ? StatFilter.All : value);
     setPage(1);
   };
 
   const onFilterLevelClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const value = e.currentTarget.value as FilterSelectOption;
+    const value = e.currentTarget.value as StatFilter;
 
     router.push({
       pathname: `/profile/${user.name}/${tab}`,
       query: {
         page: 1,
         search: searchLevelText,
-        showFilter: showLevelFilter === value ? FilterSelectOption.All : value,
+        statFilter: showLevelFilter === value ? StatFilter.All : value,
       },
     });
   };
+
+  const { data: profileDataFetched } = useSWRHelper<{levelsSolvedByDifficulty: {[key: string]: number}}>('/api/user/' + user._id + '?type=levelsSolvedByDifficulty', {}, {}, tab !== ProfileTab.Profile);
+
+  const levelsSolvedByDifficulty = profileDataFetched?.levelsSolvedByDifficulty;
 
   // create an array of objects with the id, trigger element (eg. button), and the content element
   const tabsContent = {
@@ -431,7 +376,7 @@ export default function ProfilePage({
         </div>
         <div className='flex gap-2 items-center justify-center'>
           <h2 className='text-3xl font-bold truncate'>{user.name}</h2>
-          <RoleIcons size={24} user={user} />
+          <RoleIcons id='profile' size={24} user={user} />
         </div>
         {user.bio && <p className='text-center italic text-sm break-words mt-2'>{user.bio}</p>}
         {reqUser && reqUserIsFollowing !== undefined && reqUser._id.toString() !== user._id.toString() && (
@@ -445,38 +390,37 @@ export default function ProfilePage({
         )}
         <div className='flex flex-row flex-wrap justify-center text-left gap-10 m-4'>
           <div>
-            <h2><span className='font-bold'>Levels Completed:</span> {user.score}</h2>
+            <h2 className='flex gap-2'>
+              <span
+                className='font-bold'
+                data-tooltip-content='Highest unlocked Skill achievement'
+                data-tooltip-id='rank-tooltip'
+              >
+                Rank:
+              </span>
+              <StyledTooltip id='rank-tooltip' />
+              {
+                levelsSolvedByDifficulty ? <PlayerRank levelsSolvedByDifficulty={levelsSolvedByDifficulty} user={user} /> : '...'
+              }
+            </h2>
+            <h2><span className='font-bold'>Levels Solved:</span> {user.score}</h2>
             <h2><span className='font-bold'>Levels Created:</span> {user.calc_levels_created_count}</h2>
             {!user.hideStatus && <>
               <h2><span className='font-bold'>Last Seen:</span> <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.last_visited_at ? user.last_visited_at : user.ts} /></h2>
             </>}
-            <h2><span className='font-bold'>Account Created:</span> <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.ts} /></h2>
+            <h2><span className='font-bold'>Registered:</span> <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.ts} /></h2>
             <h2><span className='font-bold'>Followers:</span> {followerCount}</h2>
-            {levelsCompletedByDifficulty &&
-              <div className='mt-4'>
-                <h2><span className='font-bold'>Levels Completed by Difficulty:</span></h2>
-                {getDifficultyList().reverse().map(difficulty => {
-                  const levelsCompleted = difficulty.value in levelsCompletedByDifficulty && levelsCompletedByDifficulty[difficulty.value] || 0;
-
-                  // don't show pending unless we have to
-                  if (difficulty.name === 'Pending' && levelsCompleted === 0) {
-                    return null;
-                  }
-
-                  return (
-                    <div className='flex text-sm' key={`${difficulty.name}-levels-completed`}>
-                      <div className='w-10 text-right mr-2'>
-                        {levelsCompleted}
-                      </div>
-                      <FormattedDifficulty difficultyEstimate={difficulty.value} id={difficulty.name} />
-                    </div>
-                  );
-                })}
-              </div>
-            }
+            <div className='mt-4'>
+              <h2><span className='font-bold'>Levels Solved by Difficulty:</span></h2>
+              {levelsSolvedByDifficulty ?
+                <LevelsSolvedByDifficultyList data={levelsSolvedByDifficulty} />
+                :
+                <div className='p-2'><LoadingSpinner /></div>
+              }
+            </div>
             {reqUser && reqUser._id.toString() === user._id.toString() && reqUserFollowing && (<>
               <div className='font-bold text-xl mt-4 mb-2 justify-center flex'>{`${reqUserFollowing.length} following:`}</div>
-              <FollowingList users={reqUserFollowing} />
+              <FollowingList graphs={reqUserFollowing} />
             </>)}
           </div>
           <CommentWall userId={user._id} />
@@ -553,7 +497,7 @@ export default function ProfilePage({
             {page > 1 && (
               <Link
                 className='ml-2 underline'
-                href={`/profile/${user.name}/${ProfileTab.Levels}?page=${page - 1}&search=${searchLevelText}&showFilter=${showLevelFilter}`}
+                href={`/profile/${user.name}/${ProfileTab.Levels}?page=${page - 1}&search=${searchLevelText}&statFilter=${showLevelFilter}`}
               >
                 Previous
               </Link>
@@ -562,7 +506,7 @@ export default function ProfilePage({
             {totalRows > (page * 20) && (
               <Link
                 className='ml-2 underline'
-                href={`/profile/${user.name}/${ProfileTab.Levels}?page=${page + 1}&search=${searchLevelText}&showFilter=${showLevelFilter}`}
+                href={`/profile/${user.name}/${ProfileTab.Levels}?page=${page + 1}&search=${searchLevelText}&statFilter=${showLevelFilter}`}
               >
                 Next
               </Link>
@@ -660,17 +604,7 @@ export default function ProfilePage({
       ,
     ],
     [ProfileTab.Achievements]: (
-      <div className='flex flex-wrap justify-center gap-8'>
-        {Object.keys(AchievementInfo).map(achievementType => {
-          const achievement = achievements.find(achievement => achievement.type === achievementType);
-
-          if (!achievement) {
-            return null;
-          }
-
-          return <FormattedAchievement achievement={achievement} key={`achievement-${achievement._id}`} />;
-        })}
-      </div>
+      <ProfileAchievments achievements={achievements} />
     ),
   } as { [key: string]: React.ReactNode | null };
 
@@ -709,7 +643,10 @@ export default function ProfilePage({
             className={getTabClassNames(ProfileTab.Profile)}
             href={`/profile/${user.name}`}
           >
-            Profile
+            <div className='flex flex-row items-center gap-2'>
+              <ProfileAvatar size={20} user={user} />
+              <span>Profile</span>
+            </div>
           </Link>
           <Link
             className={getTabClassNames(ProfileTab.Insights)}
@@ -721,40 +658,58 @@ export default function ProfilePage({
             </div>
           </Link>
           <Link
-            className={getTabClassNames(ProfileTab.Multiplayer)}
-            href={`/profile/${user.name}/${ProfileTab.Multiplayer}`}
+            className={getTabClassNames(ProfileTab.Achievements)}
+            href={`/profile/${user.name}/${ProfileTab.Achievements}`}
           >
-            Multiplayer ({multiplayerCount})
-          </Link>
-          <Link
-            className={getTabClassNames(ProfileTab.Collections)}
-            href={`/profile/${user.name}/${ProfileTab.Collections}`}
-          >
-            Collections ({collectionsCount})
+            <div className='flex flex-row items-center gap-2'>
+              <span>🏆</span>
+              <span>Achievements ({achievementsCount})</span>
+            </div>
           </Link>
           <Link
             className={getTabClassNames(ProfileTab.Levels)}
             href={`/profile/${user.name}/${ProfileTab.Levels}`}
           >
-            Levels ({levelsCount})
+            <div className='flex flex-row items-center gap-2'>
+              <span>🏗</span>
+              <span>Levels ({levelsCount})</span>
+            </div>
+          </Link>
+          <Link
+            className={getTabClassNames(ProfileTab.Multiplayer)}
+            href={`/profile/${user.name}/${ProfileTab.Multiplayer}`}
+          >
+            <div className='flex flex-row items-center gap-2'>
+              <span>🎮</span>
+              <span>Multiplayer ({multiplayerCount})</span>
+            </div>
+          </Link>
+          <Link
+            className={getTabClassNames(ProfileTab.Collections)}
+            href={`/profile/${user.name}/${ProfileTab.Collections}`}
+          >
+            <div className='flex flex-row items-center gap-2'>
+              <span>📚</span>
+              <span>Collections ({collectionsCount})</span>
+            </div>
           </Link>
           <Link
             className={getTabClassNames(ProfileTab.ReviewsWritten)}
             href={`/profile/${user.name}/${ProfileTab.ReviewsWritten}`}
           >
-            Reviews Written ({reviewsWrittenCount})
+            <div className='flex flex-row items-center gap-2'>
+              <span>✍</span>
+              <span>Reviews Written ({reviewsWrittenCount})</span>
+            </div>
           </Link>
           <Link
             className={getTabClassNames(ProfileTab.ReviewsReceived)}
             href={`/profile/${user.name}/${ProfileTab.ReviewsReceived}`}
           >
-            Reviews Received ({reviewsReceivedCount})
-          </Link>
-          <Link
-            className={getTabClassNames(ProfileTab.Achievements)}
-            href={`/profile/${user.name}/${ProfileTab.Achievements}`}
-          >
-            Achievements ({achievementsCount})
+            <div className='flex flex-row items-center gap-2'>
+              <span>📝</span>
+              <span>Reviews Received ({reviewsReceivedCount})</span>
+            </div>
           </Link>
           <MultiSelectUser
             onSelect={(user) => {

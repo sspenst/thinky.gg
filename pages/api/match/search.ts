@@ -1,7 +1,7 @@
 import { MultiplayerMatchHistoryFilters } from '@root/components/profile/profileMultiplayer';
 import { ValidCommaSeparated, ValidEnum, ValidNumber, ValidObjectId, ValidType } from '@root/helpers/apiWrapper';
 import withAuth, { NextApiRequestWithAuth } from '@root/lib/withAuth';
-import { MultiplayerMatchModel } from '@root/models/mongoose';
+import { MultiplayerMatchModel, MultiplayerProfileModel, UserModel } from '@root/models/mongoose';
 import { MultiplayerMatchState } from '@root/models/MultiplayerEnums';
 import { enrichMultiplayerMatch } from '@root/models/schemas/multiplayerMatchSchema';
 import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
@@ -77,7 +77,7 @@ async function doMatchQuery(query: MatchQuery) {
     },
     {
       $lookup: {
-        from: 'users',
+        from: UserModel.collection.name,
         localField: 'players',
         foreignField: '_id',
         as: 'players',
@@ -89,7 +89,7 @@ async function doMatchQuery(query: MatchQuery) {
           },
           {
             $lookup: {
-              from: 'multiplayerprofiles',
+              from: MultiplayerProfileModel.collection.name,
               localField: '_id',
               foreignField: 'userId',
               as: 'multiplayerProfile',

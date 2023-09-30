@@ -37,7 +37,7 @@ export default function LevelInfoPlayTime() {
   if (!isPro(user)) {
     return (
       <div className='flex gap-3 items-center'>
-        <RoleIcon role={Role.PRO} size={20} />
+        <RoleIcon id='level-info-play-time' role={Role.PRO} size={20} />
         <div>
           Get <Link href='/settings/proaccount' className='text-blue-300'>
             Pathology Pro
@@ -87,7 +87,7 @@ export default function LevelInfoPlayTime() {
                 (proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime] as DateAndSum[]).map((d, i) => {
                   return (
                     <div key={'prostat-playattemptgraph-' + i} className='flex flex-row gap-4 items-center'>
-                      <div className='w-20 text-right'>{moment(new Date(d.date)).format('M/D/YY')}</div>
+                      <div className='w-20 text-right'>{moment(new Date(d.date)).utc().format('M/D/YY')}</div>
                       <div className='w-1/2 text-left text-sm' style={{
                         color: 'var(--color-gray)',
                       }}>{getTimePlayedStr(d.sum)}</div>

@@ -29,44 +29,48 @@ async function subscriptionDeleted(userToDowngrade: User) {
   try {
     await session.withTransaction(async () => {
       await Promise.all([
-        UserModel.findOneAndUpdate(
-          {
-            _id: userToDowngrade._id
-          },
+        UserModel.findByIdAndUpdate(
+          userToDowngrade._id,
           {
             $pull: {
               roles: Role.PRO
             }
-          }
-        ), UserConfigModel.findOneAndUpdate(
+          },
+          {
+            session: session
+          },
+        ),
+        UserConfigModel.findOneAndUpdate(
           {
             userId: userToDowngrade._id
           },
           {
             stripeCustomerId: null
-          }
+          },
+          {
+            session: session
+          },
         ),
         queueDiscordWebhook(Discord.DevPriv, `🥹 [${userToDowngrade.name}](https://pathology.gg/profile/${userToDowngrade.name}) just unsubscribed.`),
       ]);
-      session.endSession();
     });
+    session.endSession();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     logger.error(err);
-
     session.endSession();
 
-    return err.message;
+    return err?.message;
   }
 }
 
-async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.Checkout.Session) {
+async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.Checkout.Session): Promise<string | undefined> {
   logger.info(`checkoutSessionComplete - ${userToUpgrade.name} (${userToUpgrade._id.toString()})`);
 
   const customerId = properties.customer;
 
   // otherwise... let's upgrade the user?
-  let error;
+  let error: string | undefined;
 
   // if the user is already a pro subscriber, we don't want to do anything
   if (isPro(userToUpgrade)) {
@@ -91,7 +95,7 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
             },
             {
               session: session
-            }
+            },
           ),
           UserConfigModel.findOneAndUpdate(
             {
@@ -102,7 +106,7 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
             },
             {
               session: session
-            }
+            },
           ),
           queueDiscordWebhook(Discord.DevPriv, `💸 [${userToUpgrade.name}](https://pathology.gg/profile/${userToUpgrade.name}) just subscribed!`),
         ]);
@@ -119,7 +123,7 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
   return error;
 }
 
-async function splitPaymentIntent(paymentIntentId: string) {
+async function splitPaymentIntent(paymentIntentId: string): Promise<string | undefined> {
   // https://stripe.com/docs/expand/use-cases#stripe-fee-for-payment
   const paymentIntent = await stripe.paymentIntents.retrieve(
     paymentIntentId,
@@ -220,7 +224,7 @@ export default apiWrapper({
         },
         {
           $lookup: {
-            from: 'users',
+            from: UserModel.collection.name,
             localField: 'userId',
             foreignField: '_id',
             as: 'userId',
@@ -232,7 +236,14 @@ export default apiWrapper({
       ]);
 
       if (userConfigAgg.length === 0) {
-        error = `UserConfig with customer id ${customerId} does not exist`;
+        if (event.type === 'customer.subscription.deleted') {
+          // there must be a matching userconfig in this case, so we need to return an error here
+          error = `${event.type} - UserConfig with customer id ${customerId} does not exist`;
+        } else {
+          // failed payments without a userconfig imply the user's payment has failed before subscribing
+          // this is a valid case and should not cause an error
+          logger.info(`${event.type} - UserConfig with customer id ${customerId} does not exist`);
+        }
       } else {
         error = await subscriptionDeleted(userConfigAgg[0].userId as User);
       }

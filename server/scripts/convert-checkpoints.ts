@@ -25,12 +25,12 @@ async function init() {
   progressBar.start(checkpoints, i);
 
   for await (const kvm of KeyValueModel.find({ key: { $regex: 'checkpoints' } })) {
-    for (const key of Object.keys(kvm.value)) {
-      if (!kvm.value) {
-        console.log(`\r${kvm.key} skipping undefined value`);
-        continue;
-      }
+    if (!kvm.value) {
+      console.log(`\r${kvm.key} skipping undefined value`);
+      continue;
+    }
 
+    for (const key of Object.keys(kvm.value)) {
       const checkpoint = kvm.value[key];
 
       if (Array.isArray(checkpoint)) {

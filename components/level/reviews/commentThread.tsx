@@ -179,7 +179,7 @@ export default function CommentThread({ className, comment, mutateComments, onSe
     >
       <div className='flex justify-between gap-2'>
         <div className='flex gap-x-2 items-center truncate'>
-          <FormattedUser user={comment.author} />
+          <FormattedUser id={`comment-${comment._id.toString()}`} user={comment.author} />
           {comment.createdAt !== comment.updatedAt &&
             <span className='text-sm' style={{
               color: 'var(--color-gray)',

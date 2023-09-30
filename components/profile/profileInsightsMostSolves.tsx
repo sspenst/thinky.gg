@@ -8,7 +8,7 @@ import useProStatsUser, { ProStatsUserType } from '../../hooks/useProStatsUser';
 import User from '../../models/db/user';
 import FormattedUser from '../formatted/formattedUser';
 
-export default function ProfileInsightsMostCompletions({ user }: {user: User}) {
+export default function ProfileInsightsMostSolves({ user }: {user: User}) {
   const { proStatsUser } = useProStatsUser(user, ProStatsUserType.MostSolvesForUserLevels);
   const { user: reqUser } = useContext(AppContext);
 
@@ -17,17 +17,17 @@ export default function ProfileInsightsMostCompletions({ user }: {user: User}) {
   }
 
   return (<>
-    <h2 className='text-xl font-bold break-words max-w-full'>Most Completions of {user.name}&apos;s Levels</h2>
+    <h2 className='text-xl font-bold break-words max-w-full'>Most Solves of {user.name}&apos;s Levels</h2>
     <div className='w-full max-w-md'>
       <DataTable
         columns={[
           {
             name: 'User',
-            cell: (row: UserAndSum) => <FormattedUser size={Dimensions.AvatarSizeSmall} user={row.user} />,
+            cell: (row: UserAndSum) => <FormattedUser id='solves' size={Dimensions.AvatarSizeSmall} user={row.user} />,
             grow: 2,
           },
           {
-            name: 'Levels Completed',
+            name: 'Levels Solved',
             selector: (row) => row.sum,
           },
         ]}

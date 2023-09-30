@@ -1,18 +1,17 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // run with ts-node -r tsconfig-paths/register --files server/scripts/save.ts
 // import dotenv
 // import tsconfig-paths
 
-import AchievementInfo from '@root/constants/achievementInfo';
-import AchievementType from '@root/constants/achievementType';
-import { createNewAchievement } from '@root/helpers/notificationHelper';
-import Achievement from '@root/models/db/achievement';
+import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import PlayAttempt from '@root/models/db/playAttempt';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
+import { queueRefreshAchievements } from '@root/pages/api/internal-jobs/worker';
 import cliProgress from 'cli-progress';
 import dotenv from 'dotenv';
 import dbConnect from '../../lib/dbConnect';
 import User from '../../models/db/user';
-import { AchievementModel, LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, PlayAttemptModel, StatModel, UserModel } from '../../models/mongoose';
+import { LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, PlayAttemptModel, StatModel, UserModel } from '../../models/mongoose';
 import { MultiplayerMatchType } from '../../models/MultiplayerEnums';
 import { calcPlayAttempts, refreshIndexCalcs } from '../../models/schemas/levelSchema';
 import { calcCreatorCounts } from '../../models/schemas/userSchema';
@@ -168,27 +167,19 @@ async function integrityCheckAcheivements() {
   console.log('Querying all users into memory...');
   const users = await UserModel.find<User>({}, '_id name score', { lean: false, sort: { score: -1 } });
 
-  console.log(users[0]);
+  // looping through all users
 
-  console.log('Querying all achievements into memory...');
-  const achievements = await AchievementModel.find<Achievement>();
+  const allAchievementCategories = Object.values(AchievementCategory);
+  const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
 
-  console.log(achievements.length);
+  progressBar.start(users.length, 0);
 
-  for (const achievementType in AchievementInfo) {
-    console.log(achievementType);
-
-    const achievementInfo = AchievementInfo[achievementType];
-
-    // go through each user that qualifies for the achievement
-    for (const user of users.filter(user => achievementInfo.unlocked(user))) {
-      if (!achievements.some((achievement) => achievement.type === achievementType as AchievementType && achievement.userId !== user._id)) {
-        console.warn(`\nIssuing ${achievementType} for ${user.name}`);
-        createNewAchievement(achievementType as AchievementType, user._id);
-      }
-    }
+  for (const user of users) {
+    await queueRefreshAchievements(user._id, allAchievementCategories as AchievementCategory[], { session: null });
+    progressBar.increment();
   }
 
+  progressBar.stop();
   console.log('integrityCheckAcheivements done');
 }
 
