@@ -1,6 +1,6 @@
 import TileType, { TileTypeDefaultVisited } from '@root/constants/tileType';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
-import { Bitmap } from 'pureimage/types/bitmap';
+import { Bitmap } from 'pureimage';
 
 /* istanbul ignore next */
 export default function generateLevelCanvas(canvas: Bitmap | HTMLCanvasElement, levelData: string) {
