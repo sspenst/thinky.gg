@@ -7,6 +7,7 @@ import StatFilter from '@root/constants/statFilter';
 import isPro from '@root/helpers/isPro';
 import classNames from 'classnames';
 import { debounce } from 'debounce';
+import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -38,6 +39,7 @@ export interface SearchQuery extends ParsedUrlQuery {
   blockFilter?: string;
   difficultyFilter?: string;
   disableCount?: string;
+  excludeLevelIds?: string;
   maxDifficulty?: string;
   maxDimension1?: string;
   maxDimension2?: string;
