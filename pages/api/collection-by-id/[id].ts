@@ -96,7 +96,6 @@ export async function getCollections({ matchQuery, reqUser, includeDraft, popula
         localField: 'levelsWithSort._id',
         foreignField: '_id',
         let: { 'orderedIds': '$levelsWithSort._id' },
-
         as: 'levels',
         pipeline: [
           {
@@ -193,7 +192,6 @@ export async function getCollections({ matchQuery, reqUser, includeDraft, popula
     {
       $unset: 'levelsWithSort'
     },
-
     {
       $addFields: {
         levelCount: {
@@ -205,7 +203,6 @@ export async function getCollections({ matchQuery, reqUser, includeDraft, popula
       }
     },
     ...(!populateLevels ? [{ $unset: 'levels' }] : []),
-
   ] as PipelineStage[]));
 
   cleanUser(collectionAgg[0]?.userId);

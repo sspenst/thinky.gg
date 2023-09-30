@@ -6,7 +6,6 @@ import Select from '../../components/cards/select';
 import formattedAuthorNote from '../../components/formatted/formattedAuthorNote';
 import LinkInfo from '../../components/formatted/linkInfo';
 import Page from '../../components/page/page';
-import { enrichCollection } from '../../helpers/enrich';
 import { logger } from '../../helpers/logger';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
@@ -67,9 +66,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     {
       matchQuery: { $match: { _id: { $in: campaign.collections.map(collection => new Types.ObjectId(collection._id)) } } },
       reqUser: reqUser,
-
     },
-
   );
 
   return {

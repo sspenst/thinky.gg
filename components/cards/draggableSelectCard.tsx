@@ -93,12 +93,12 @@ export default function DraggableSelectCard({
           style={{
             backgroundColor: spec.isOver ? 'var(--bg-color-4)' : undefined,
             borderColor: color,
+            // dotted border if draft
+            borderStyle: option.level?.isDraft ? 'dashed' : undefined,
             color: color,
             height: option.height ?? Dimensions.OptionHeight,
             textShadow: '1px 1px black',
             width: Dimensions.OptionWidth,
-            // dotted border if draft
-            borderStyle: option.level?.isDraft ? 'dotted' : undefined,
           }}
         >
           <SelectCardContent option={option} />
