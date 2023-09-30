@@ -10,6 +10,7 @@ interface Level {
   calc_playattempts_duration_sum: number;
   calc_playattempts_duration_sum_p95: number;
   calc_playattempts_just_beaten_count: number;
+  calc_playattempts_just_beaten_count_p95: number;
   calc_playattempts_unique_users: Types.ObjectId[];
   calc_reviews_count: number;
   calc_reviews_score_avg: number;

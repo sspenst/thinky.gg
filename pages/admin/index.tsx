@@ -1,9 +1,11 @@
 import { Menu } from '@headlessui/react';
 import FormattedUser from '@root/components/formatted/formattedUser';
+import RecommendedLevel from '@root/components/homepage/recommendedLevel';
 import MultiSelectLevel from '@root/components/page/multiSelectLevel';
 import MultiSelectUser from '@root/components/page/multiSelectUser';
 import Page from '@root/components/page/page';
 import Role from '@root/constants/role';
+import useLevelBySlug from '@root/hooks/useLevelBySlug';
 import dbConnect from '@root/lib/dbConnect';
 import { getUserFromToken } from '@root/lib/withAuth';
 import Level from '@root/models/db/level';
@@ -27,18 +29,19 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  const { queryUser, queryLevel, queryCommand } = context.query;
+  const { queryUser, queryLevel, queryUserCommand, queryLevelCommand } = context.query;
 
   return {
     props: {
       queryLevel: queryLevel && queryLevel !== 'undefined' ? JSON.parse(JSON.stringify(await LevelModel.findById(new Types.ObjectId(queryLevel as string)))) : null,
       queryUser: queryUser && queryUser !== 'undefiend' ? JSON.parse(JSON.stringify(await UserModel.findOne({ name: queryUser }))) : null,
-      queryCommand: queryCommand || null,
+      queryUserCommand: queryUserCommand || null,
+      queryLevelCommand: queryLevelCommand || null,
     },
   };
 }
 
-export default function AdminPage({ queryUser, queryLevel, queryCommand }: {queryUser: User | undefined; queryLevel: Level, queryCommand: string | null}) {
+export default function AdminPage({ queryUser, queryLevel, queryUserCommand, queryLevelCommand }: {queryUser: User | undefined; queryLevel: Level, queryUserCommand: string | null, queryLevelCommand: string | null}) {
   const [selectedUser, setSelectedUser] = useState(queryUser);
   const [selectedLevel, setSelectedLevel] = useState(queryLevel); // TODO: [refactor] [minor
   const [runningCommand, setRunningCommand] = useState(false);
@@ -54,34 +57,28 @@ export default function AdminPage({ queryUser, queryLevel, queryCommand }: {quer
     { label: 'Refresh Play Attempts', command: 'calcPlayAttempts' },
     { label: 'Refresh Index Calculations', command: 'refreshIndexCalcs' },
   ];
-  const selectedCommandFromQuery = commandsUser.find((cmd) => cmd.command === queryCommand);
+  const selectedUserCommandFromQuery = commandsUser.find((cmd) => cmd.command === queryUserCommand);
 
-  const [selectedCommand, setSelectedCommand] = useState<{ label: string; command: string; confirm?: boolean } | null>(selectedCommandFromQuery || null);
+  const [selectedUserCommand, setSelectedUserCommand] = useState<{ label: string; command: string; confirm?: boolean } | null>(selectedUserCommandFromQuery || null);
 
-  useEffect(() => {
-    if (queryUser && queryUser !== selectedUser) {
-      setSelectedUser(queryUser);
-    }
+  const selectedLevelCommandFromQuery = commandsLevel.find((cmd) => cmd.command === queryLevelCommand);
 
-    if (queryCommand && queryCommand !== selectedCommand?.command) {
-      if (selectedCommandFromQuery) {
-        setSelectedCommand(selectedCommandFromQuery);
-      }
-    }
-  }, [queryCommand, queryUser, selectedCommand?.command, selectedCommandFromQuery, selectedUser]);
+  const [selectedLevelCommand, setSelectedLevelCommand] = useState<{ label: string; command: string; confirm?: boolean } | null>(selectedLevelCommandFromQuery || null);
+
+  const { level: levelPreview } = useLevelBySlug(selectedLevel?.slug);
 
   useEffect(() => {
-    const newUrl = `${window.location.pathname}?queryLevel=${selectedLevel?._id}&queryUser=${selectedUser?.name}&queryCommand=${selectedCommand?.command}`;
+    const newUrl = `${window.location.pathname}?queryLevel=${selectedLevel?._id}&queryLevelCommand=${selectedLevelCommand?.command}&queryUser=${selectedUser?.name}&queryUserCommand=${selectedUserCommand?.command}`;
 
     const currentFullURL = `${window.location.pathname}${window.location.search}`;
 
     if (currentFullURL !== newUrl) {
       Router.push(newUrl);
     }
-  }, [selectedUser, selectedCommand, selectedLevel?._id]);
+  }, [selectedUser, selectedUserCommand, selectedLevel?._id, selectedLevelCommand?.command]);
 
-  async function runCommand() {
-    if (selectedCommand?.confirm && !window.confirm('Are you sure you want to proceed?')) return;
+  async function runCommandUser() {
+    if (selectedUserCommand?.confirm && !window.confirm('Are you sure you want to proceed?')) return;
 
     setRunningCommand(true);
     toast.dismiss();
@@ -93,7 +90,7 @@ export default function AdminPage({ queryUser, queryLevel, queryCommand }: {quer
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        command: selectedCommand?.command,
+        command: selectedUserCommand?.command,
         targetId: selectedUser?._id,
       }),
     });
@@ -108,14 +105,44 @@ export default function AdminPage({ queryUser, queryLevel, queryCommand }: {quer
     }
   }
 
-  function display(title: string, obj: User) {
+  async function runCommandLevel() {
+    if (selectedLevelCommand?.confirm && !window.confirm('Are you sure you want to proceed?')) return;
+
+    setRunningCommand(true);
+    toast.dismiss();
+    toast.loading('Running command...');
+    const resp = await fetch('/api/admin', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        command: selectedLevelCommand?.command,
+        targetId: selectedLevel?._id,
+      }),
+    });
+
+    setRunningCommand(false);
+    const json = await resp.json();
+
+    if (json.error) {
+      toast.error(json.error);
+    } else {
+      toast.success('Command ran successfully');
+    }
+
+    Router.reload();
+  }
+
+  function display(title: string, obj: any) {
     return (
       <div>
         <h1 className='text-2xl font-bold mb-4'>{title}</h1>
         {obj && (
           <div className='grid grid-cols-4 gap-4'>
             {Object.keys(obj).map((value) => {
-              const key = value as keyof User;
+              const key = value;
               const str = obj[key]?.toString() ?? '';
 
               return (
@@ -146,9 +173,14 @@ export default function AdminPage({ queryUser, queryLevel, queryCommand }: {quer
 
   return (
     <Page title='Admin Page'>
+
       <div className='p-2'>
-        <h1 className='flex flex-col items-center justify-center text-2xl'>Admin Page</h1>
-        <div className='flex flex-col items-center justify-center p-2 gap-2'>
+        <h1 className='flex flex-col items-center justify-center text-3xl p-3'>Admin Page</h1>
+        <h2 className='flex flex-col items-center justify-center text-2xl'>
+            User
+        </h2>
+        <div className='flex flex-row items-center justify-center p-2 gap-2'>
+
           <p className='text-xl'>Run command on user:</p>
           <MultiSelectUser key={'search-' + selectedUser?._id} defaultValue={selectedUser} onSelect={(selected: User) => {
             setSelectedUser(selected);
@@ -156,7 +188,7 @@ export default function AdminPage({ queryUser, queryLevel, queryCommand }: {quer
           <Menu as='div' className='relative inline-block text-left'>
             <div>
               <Menu.Button className='border border-gray-300 bg-gray rounded-md shadow-sm px-4 py-2 text-sm flex flex-row items-center justify-center gap-2'>
-                {selectedCommand?.label || 'Select Command'}
+                {selectedUserCommand?.label || 'Select Command'}
               </Menu.Button>
             </div>
             <Menu.Items className='origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5'>
@@ -165,7 +197,7 @@ export default function AdminPage({ queryUser, queryLevel, queryCommand }: {quer
                   {({ active }) => (
                     <a
                       onClick={() => {
-                        setSelectedCommand(cmd);
+                        setSelectedUserCommand(cmd);
                       }}
                       className={`${active ? 'bg-blue-600 text-white' : 'text-gray-900'} block px-4 py-2 text-sm`}
                     >
@@ -179,20 +211,26 @@ export default function AdminPage({ queryUser, queryLevel, queryCommand }: {quer
           <button
             className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${runningCommand ? 'bg-gray-500 cursor-not-allowed' : ''}`}
             disabled={runningCommand}
-            onClick={runCommand}
+            onClick={runCommandUser}
           >
             Run
           </button>
         </div>
         <div className='flex flex-row items-center justify-center p-2 gap-2'>
+          <FormattedUser id='admin' user={selectedUser} />
+        </div>
+        <div className='flex flex-row items-center justify-center p-2 gap-2'>
           {selectedUser && (
             <div className='flex flex-col gap-2'>
-              <FormattedUser id='admin' user={selectedUser} />
+
               {display('User', selectedUser)}
             </div>
           )}
         </div>
-        <div className='flex flex-col items-center justify-center p-2 gap-2'>
+
+        <h2 className='flex flex-col items-center justify-center text-2xl'>
+          Level</h2>
+        <div className='flex flex-row items-center justify-center p-2 gap-2'>
           <p className='text-xl'>Run command on level:</p>
           <MultiSelectLevel key={'search-' + selectedLevel?._id} defaultValue={selectedLevel} onSelect={(selected: Level) => {
             setSelectedLevel(selected);
@@ -200,16 +238,16 @@ export default function AdminPage({ queryUser, queryLevel, queryCommand }: {quer
           <Menu as='div' className='relative inline-block text-left'>
             <div>
               <Menu.Button className='border border-gray-300 bg-gray rounded-md shadow-sm px-4 py-2 text-sm flex flex-row items-center justify-center gap-2'>
-                {selectedCommand?.label || 'Select Command'}
+                {selectedLevelCommand?.label || 'Select Command'}
               </Menu.Button>
             </div>
             <Menu.Items className='origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5'>
-              {commandsUser.map((cmd) => (
+              {commandsLevel.map((cmd) => (
                 <Menu.Item key={cmd.command}>
                   {({ active }) => (
                     <a
                       onClick={() => {
-                        setSelectedCommand(cmd);
+                        setSelectedLevelCommand(cmd);
                       }}
                       className={`${active ? 'bg-blue-600 text-white' : 'text-gray-900'} block px-4 py-2 text-sm`}
                     >
@@ -223,16 +261,21 @@ export default function AdminPage({ queryUser, queryLevel, queryCommand }: {quer
           <button
             className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${runningCommand ? 'bg-gray-500 cursor-not-allowed' : ''}`}
             disabled={runningCommand}
-            onClick={runCommand}
+            onClick={runCommandLevel}
           >
             Run
           </button>
+
+        </div>
+
+        <div className='flex flex-col items-center justify-center p-2 gap-2'>
+          <RecommendedLevel id='level' title='' level={levelPreview} />
         </div>
         <div className='flex flex-row items-center justify-center p-2 gap-2'>
-          {selectedUser && (
+          {selectedLevel && (
             <div className='flex flex-col gap-2'>
-              <FormattedUser id='admin' user={selectedUser} />
-              {display('User', selectedUser)}
+
+              {display('Level', selectedLevel)}
             </div>
           )}
         </div>

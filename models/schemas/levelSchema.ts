@@ -39,6 +39,10 @@ const LevelSchema = new mongoose.Schema<Level>(
       type: Number,
       default: 0,
     },
+    calc_playattempts_just_beaten_count_p95: {
+      type: Number,
+      default: 0,
+    },
     calc_playattempts_unique_users: {
       type: [mongoose.Schema.Types.ObjectId],
       default: [],
@@ -131,6 +135,7 @@ LevelSchema.index({ leastMoves: 1 });
 LevelSchema.index({ calc_difficulty_estimate: 1 });
 LevelSchema.index({ calc_playattempts_duration_sum: 1 });
 LevelSchema.index({ calc_playattempts_duration_sum_p95: 1 });
+LevelSchema.index({ calc_playattempts_just_beaten_count_p95: 1 });
 LevelSchema.index({ calc_playattempts_just_beaten_count: 1 });
 LevelSchema.index({ calc_playattempts_unique_users: 1 });
 LevelSchema.index({ calc_reviews_count: 1 });
@@ -205,119 +210,122 @@ async function calcStats(lvl: Level) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {}) {
-  const countJustBeaten = await PlayAttemptModel.countDocuments({
-    levelId: levelId,
-    attemptContext: AttemptContext.JUST_BEATEN,
-  });
-
   // sumDuration is all of the sum(endTime-startTime) within the playAttempts
-  const sumDuration = await PlayAttemptModel.aggregate([
-    {
-      $match: {
-        levelId: levelId,
-        attemptContext: { $ne: AttemptContext.BEATEN },
-      }
-    },
-    {
-      $group: {
-        _id: null,
-        sumDuration: {
-          $sum: {
-            $subtract: ['$endTime', '$startTime']
+  const [countJustBeaten, sumDuration, sumDurationP95, uniqueUsersList] = await Promise.all([
+    PlayAttemptModel.countDocuments({
+      levelId: levelId,
+      attemptContext: AttemptContext.JUST_BEATEN,
+    }),
+    PlayAttemptModel.aggregate([
+      {
+        $match: {
+          levelId: levelId,
+          attemptContext: { $ne: AttemptContext.BEATEN },
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          sumDuration: {
+            $sum: {
+              $subtract: ['$endTime', '$startTime']
+            }
           }
         }
       }
-    }
-  ], options);
-
-  const sumDurationP95 = await PlayAttemptModel.aggregate([
-    {
-      $match: {
-        levelId: levelId,
-        attemptContext: { $ne: AttemptContext.BEATEN }
-      }
-    },
-    {
-      $project: {
-        duration: {
-          $subtract: ['$endTime', '$startTime']
+    ], options),
+    PlayAttemptModel.aggregate([
+      {
+        $match: {
+          levelId: levelId,
+          attemptContext: { $ne: AttemptContext.BEATEN }
         }
-      }
-    },
-    { $sort: { duration: 1 } },
-    {
-      $group: {
-        _id: null,
-        durations: { $push: '$duration' }
-      }
-    },
-    {
-      $project: {
-        p95: {
-          $arrayElemAt: [
-            '$durations',
-            {
-              $floor: {
-                $multiply: [
-                  { $divide: [{ $subtract: [{ $size: '$durations' }, 1] }, 1] },
-                  0.95
-                ]
-              }
+      },
+      {
+        $project: {
+          duration: {
+            $subtract: ['$endTime', '$startTime']
+          }
+        }
+      },
+      { $sort: { duration: 1 } },
+      {
+        $group: {
+          _id: null,
+          durations: { $push: '$duration' },
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $project: {
+          lowerIndex: { $ceil: { $multiply: ['$count', 0.025] } },
+          upperIndex: { $floor: { $multiply: ['$count', 0.975] } },
+          durations: 1,
+          count: 1
+        }
+      },
+      {
+        $project: {
+          countExcluded: { $subtract: ['$count', { $subtract: ['$upperIndex', '$lowerIndex'] }] },
+          sumExcluded: {
+            $reduce: {
+              input: { $slice: ['$durations', '$lowerIndex', { $subtract: ['$upperIndex', '$lowerIndex'] }] },
+              initialValue: 0,
+              in: { $add: ['$$value', '$$this'] }
             }
-          ]
+          }
         }
       }
-    }
-  ]);
-
-  // get array of unique userIds from playattempt calc_playattempts_unique_users
-  const uniqueUsersList = await PlayAttemptModel.aggregate([
-    {
-      $match: {
-        $or: [
-          {
-            $and: [
-              {
-                $expr: {
-                  $gt: [
-                    {
-                      $subtract: ['$endTime', '$startTime']
-                    },
-                    0
-                  ]
+    ]),
+    PlayAttemptModel.aggregate([
+      {
+        $match: {
+          $or: [
+            {
+              $and: [
+                {
+                  $expr: {
+                    $gt: [
+                      {
+                        $subtract: ['$endTime', '$startTime']
+                      },
+                      0
+                    ]
+                  }
+                },
+                {
+                  attemptContext: AttemptContext.UNBEATEN,
                 }
-              },
-              {
-                attemptContext: AttemptContext.UNBEATEN,
-              }
-            ],
-          },
-          {
-            attemptContext: AttemptContext.JUST_BEATEN,
-          },
-        ],
-        levelId: levelId,
-      },
-    },
-    {
-      $group: {
-        _id: null,
-        userId: {
-          $addToSet: '$userId',
+              ],
+            },
+            {
+              attemptContext: AttemptContext.JUST_BEATEN,
+            },
+          ],
+          levelId: levelId,
         },
-      }
-    },
-    {
-      $unwind: {
-        path: '$userId',
-        preserveNullAndEmptyArrays: true,
       },
-    },
+      {
+        $group: {
+          _id: null,
+          userId: {
+            $addToSet: '$userId',
+          },
+        }
+      },
+      {
+        $unwind: {
+          path: '$userId',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+    ])
   ]);
 
   const update = {
     calc_playattempts_duration_sum: sumDuration[0]?.sumDuration ?? 0,
-    calc_playattempts_duration_sum_p95: sumDurationP95[0]?.p95 ?? 0,
+    calc_playattempts_duration_sum_p95: sumDurationP95[0]?.sumExcluded ?? 0,
+    calc_playattempts_just_beaten_count_p95: sumDurationP95[0]?.countExcluded ?? 0,
     calc_playattempts_just_beaten_count: countJustBeaten,
     calc_playattempts_unique_users: uniqueUsersList.map(u => u?.userId.toString()),
   } as Partial<Level>;
