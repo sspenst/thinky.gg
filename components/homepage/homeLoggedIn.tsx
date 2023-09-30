@@ -72,7 +72,7 @@ export default function HomeLoggedIn({
           id='campaign'
           title={
             <Link className='font-bold hover:underline' href='/play'>
-              Continue Campaign
+              Pathology Official Campaign
             </Link>
           }
           tooltip='Click here to go to the chapter select screen, or continue with the chapter button below!'
