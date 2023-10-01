@@ -5,6 +5,7 @@ import { EnrichedCollection } from '../../models/db/collection';
 import { EnrichedLevel } from '../../models/db/level';
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
+import FilterButton from '../buttons/filterButton';
 import SelectCard from '../cards/selectCard';
 
 function getCompleteIcon(complete: boolean) {
@@ -56,12 +57,18 @@ export default function FormattedCampaign({
   title,
   totalLevels,
 }: FormattedCampaignProps) {
+  const [filter, setFilter] = React.useState<string>('SHOW_ALL');
+
   const getLevelOptions = useCallback((enrichedCollection: EnrichedCollection) => {
     const levelOptions: JSX.Element[] = [];
     let disabled = false;
     let i = 0;
 
     for (const level of enrichedCollection.levels as EnrichedLevel[]) {
+      if (filter === 'HIDE_COMPLETED' && level.userMoves === level.leastMoves) {
+        continue;
+      }
+
       levelOptions.push(
         <div className='flex flex-col w-60' key={`collection-${level._id.toString()}`}>
           <div className='flex items-center justify-center' id={'level-selectcard-' + i++}>
@@ -94,7 +101,7 @@ export default function FormattedCampaign({
     }
 
     return levelOptions;
-  }, [levelHrefQuery]);
+  }, [filter, levelHrefQuery]);
 
   const getOptions = useCallback(() => {
     const options: JSX.Element[] = [];
@@ -205,6 +212,9 @@ export default function FormattedCampaign({
       }
     </div>
     <div>
+      <div className='text-center mb-3'>
+        <FilterButton first last element={<span className='text-lg'>{filter === 'HIDE_COMPLETED' ? 'Showing Incomplete' : 'Showing All'}</span>} value='HideCompleted' selected = {filter === 'HIDE_COMPLETED'} onClick = {() => setFilter(filter === 'HIDE_COMPLETED' ? 'SHOW_ALL' : 'HIDE_COMPLETED')} />
+      </div>
       {getOptions()}
     </div>
   </>);
