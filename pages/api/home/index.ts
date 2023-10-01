@@ -62,7 +62,6 @@ async function getRecentAverageDifficulty(reqUser: User, numResults = 1) {
 async function getRecommendedLevel(reqUser: User) {
   const avgDifficulty = await getRecentAverageDifficulty(reqUser, 10);
   const recentPlayAttempts = await getPlayAttempts(reqUser, {}, 10);
-
   const uniqueLevelIdsFromRecentAttempts = new Set(recentPlayAttempts.map(playAttempt => playAttempt.levelId._id.toString()));
 
   const query = {
