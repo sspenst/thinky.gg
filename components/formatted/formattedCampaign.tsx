@@ -65,7 +65,7 @@ export default function FormattedCampaign({
     let i = 0;
 
     for (const level of enrichedCollection.levels as EnrichedLevel[]) {
-      if (filter === 'HIDE_COMPLETED' && level.userMoves === level.leastMoves) {
+      if (filter === 'HIDE_SOLVED' && level.userMoves === level.leastMoves) {
         continue;
       }
 
@@ -213,7 +213,14 @@ export default function FormattedCampaign({
     </div>
     <div>
       <div className='text-center mb-3'>
-        <FilterButton first last element={<span className='text-lg'>{filter === 'HIDE_COMPLETED' ? 'Showing Incomplete' : 'Showing All'}</span>} value='HideCompleted' selected = {filter === 'HIDE_COMPLETED'} onClick = {() => setFilter(filter === 'HIDE_COMPLETED' ? 'SHOW_ALL' : 'HIDE_COMPLETED')} />
+        <FilterButton
+          element={<span className='text-base'>{filter === 'HIDE_SOLVED' ? 'Show All' : 'Hide Solved'}</span>}
+          first
+          last
+          onClick={() => setFilter(filter === 'HIDE_SOLVED' ? 'SHOW_ALL' : 'HIDE_SOLVED')}
+          selected={filter === 'HIDE_SOLVED'}
+          value={filter}
+        />
       </div>
       {getOptions()}
     </div>
