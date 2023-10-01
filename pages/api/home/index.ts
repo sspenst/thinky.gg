@@ -61,16 +61,13 @@ async function getRecentAverageDifficulty(reqUser: User, numResults = 1) {
 
 async function getRecommendedLevel(reqUser: User) {
   const avgDifficulty = await getRecentAverageDifficulty(reqUser, 10);
-  const levelsPlayedHour = await getPlayAttempts(reqUser, {
-    // query where datetime is greater than 1 hour ago so we don't recommend levels they have recently tried
-    datetime: new Date(Date.now() - 1 * 60 * 60 * 1000)
-  });
+  const recentPlayAttempts = await getPlayAttempts(reqUser, {}, 10);
 
-  const uniqueLevelIdsFromPastHour = new Set(levelsPlayedHour.map(playAttempt => playAttempt.levelId._id.toString()));
+  const uniqueLevelIdsFromRecentAttempts = new Set(recentPlayAttempts.map(playAttempt => playAttempt.levelId._id.toString()));
 
   const query = {
     disableCount: 'true',
-    excludeLevelIds: [...uniqueLevelIdsFromPastHour].join(','),
+    excludeLevelIds: [...uniqueLevelIdsFromRecentAttempts].join(','),
     minSteps: '7',
     maxSteps: '2500',
     minDifficulty: String(avgDifficulty * 0.9), // 10% below average of last 10
@@ -90,7 +87,7 @@ async function getRecommendedLevel(reqUser: User) {
     // try a broader query without min and max difficulty for those rare users that have beaten so many levels to not have any recommended one
     const query = {
       disableCount: 'true',
-      excludeLevelIds: [...uniqueLevelIdsFromPastHour].join(','),
+      excludeLevelIds: [...uniqueLevelIdsFromRecentAttempts].join(','),
       minSteps: '7',
       maxSteps: '2500',
       minRating: '0.55',
