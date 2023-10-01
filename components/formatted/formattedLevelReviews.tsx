@@ -57,7 +57,7 @@ export default function FormattedLevelReviews({ inModal, hideReviews: hideOtherR
       <div className='font-medium text-lg'>
         {levelContext.reviews.length == 0 ?
           <>No reviews yet!</> :
-          <>{levelContext.reviews.length} review{levelContext.reviews.length !== 1 && 's'}:</>
+          <>{levelContext.reviews.length} review{levelContext.reviews.length !== 1 && 's'}</>
         }
       </div>
       <ReviewForm inModal={inModal} key={`user-review-${userReview?._id.toString()}`} userReview={userReview} />
