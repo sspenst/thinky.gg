@@ -7,6 +7,7 @@ import { EnrichedLevel } from '../../models/db/level';
 import FormattedUser from '../formatted/formattedUser';
 import CheckpointsModal from '../modal/checkpointsModal';
 import LevelInfoModal from '../modal/levelInfoModal';
+import StyledTooltip from '../page/styledTooltip';
 import Controls from './controls';
 import Grid from './grid';
 import Solved from './info/solved';
@@ -99,11 +100,13 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, hi
         <div className='gap-2 mx-3 z-10 transition-opacity flex'>
           {!disableCheckpoints && !fullScreen ?
             <>
-              <button id='checkpointBtn' onClick={() => setIsCheckpointOpen(!isCheckpointOpen)}>
+              <button data-tooltip-content={'View Your Checkpoints'} data-tooltip-id='checkpoint-tooltip'
+                id='checkpointBtn' onClick={() => setIsCheckpointOpen(!isCheckpointOpen)}>
                 <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
                   <path strokeLinecap='round' strokeLinejoin='round' d='M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5' />
                 </svg>
               </button>
+              <StyledTooltip id='checkpoint-tooltip' />
               <CheckpointsModal
                 closeModal={() => setIsCheckpointOpen(false)}
                 isOpen={isCheckpointOpen}
