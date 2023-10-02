@@ -5,11 +5,41 @@ import Level, { EnrichedLevel } from '@root/models/db/level';
 import User from '@root/models/db/user';
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
+import {
+  EmailIcon,
+  EmailShareButton,
+  FacebookIcon,
+  FacebookMessengerIcon,
+  FacebookShareButton,
+  HatenaIcon,
+  InstapaperIcon,
+  LineIcon,
+  LinkedinIcon,
+  LivejournalIcon,
+  MailruIcon,
+  OKIcon,
+  PinterestIcon,
+  PocketIcon,
+  RedditIcon,
+  RedditShareButton,
+  TelegramIcon,
+  TelegramShareButton,
+  TumblrIcon,
+  TwitterIcon,
+  TwitterShareButton,
+  ViberIcon,
+  VKIcon,
+  WeiboIcon,
+  WhatsappIcon,
+  WorkplaceIcon
+} from 'react-share';
 import Card from '../cards/card';
 import ChapterSelectCard from '../cards/chapterSelectCard';
+import { getDifficultyFromValue } from '../formatted/formattedDifficulty';
 import FormattedLevelReviews from '../formatted/formattedLevelReviews';
 import RecommendedLevel from '../homepage/recommendedLevel';
 import LoadingSpinner from '../page/loadingSpinner';
+import ShareBar from '../social/shareBar';
 import Modal from '.';
 
 interface PostGameModalProps {
@@ -74,6 +104,9 @@ export default function PostGameModal({ chapter, closeModal, collection, isOpen,
   }, []);
 
   const hrefOverride = nextLevel ? `/level/${nextLevel.slug}?${queryParams}` : undefined;
+  const url = `https://pathology.gg/level/${level.slug}`;
+
+  const quote = 'Just completed Pathology.gg puzzle "' + level.name + '" (Difficulty: ' + getDifficultyFromValue(level.calc_difficulty_estimate).name + ')';
 
   return (
     <Modal
@@ -87,10 +120,11 @@ export default function PostGameModal({ chapter, closeModal, collection, isOpen,
           <h4 className='text-md'>
             You completed {level.name}!
           </h4>
+          <ShareBar url={url} quote={quote} />
         </div>
       }
     >
-      <div className='flex flex-col gap-4 justify-center items-center'>
+      <div className='flex flex-col gap-2 justify-center items-center'>
         {!reqUser ?
           <div className='text-center'>
             <Link href='/signup' className='underline font-bold'>Sign up</Link> (or use a <Link href='/play-as-guest' className='underline font-bold'>Guest Account</Link>) to save your progress and get access to more features.

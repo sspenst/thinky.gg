@@ -44,6 +44,7 @@
     "react-hot-toast": "^2.4.1",
     "react-joyride": "^2.5.5",
     "react-select": "^5.7.5",
+    "react-share": "^4.4.1",
     "react-simple-star-rating": "^5.1.7",
     "react-textarea-autosize": "^8.5.3",
     "react-tooltip": "^5.21.4",
