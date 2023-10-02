@@ -110,6 +110,11 @@ export default function ReviewForm({ inModal, review }: ReviewFormProps) {
           size={20}
           transition
         />
+        {rating !== 0 &&
+          <button className='italic underline text-sm' onClick={() => setRating(0)}>
+            Reset
+          </button>
+        }
       </div>
       <TextareaAutosize
         className={classNames(
