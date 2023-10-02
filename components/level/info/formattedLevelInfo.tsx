@@ -8,7 +8,6 @@ import toast from 'react-hot-toast';
 import Dimensions from '../../../constants/dimensions';
 import { AppContext } from '../../../contexts/appContext';
 import { LevelContext } from '../../../contexts/levelContext';
-import isCurator from '../../../helpers/isCurator';
 import { EnrichedLevel } from '../../../models/db/level';
 import SelectOptionStats from '../../../models/selectOptionStats';
 import formattedAuthorNote from '../../formatted/formattedAuthorNote';
@@ -28,16 +27,15 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
   const levelContext = useContext(LevelContext);
   const { user, userConfig } = useContext(AppContext);
 
-  const canEdit = level.userId._id === user?._id || isCurator(user);
   const maxCollapsedAuthorNote = 100;
   const stat = new SelectOptionStats(level.leastMoves, level.userMoves);
 
   return (<>
     <div className='mb-4 flex flex-col gap-4'>
       <div className='flex flex-col gap-1'>
-        <div className='flex justify-between gap-2 w-full items-center'>
+        <div className='flex justify-between w-full items-start'>
           <div className='font-bold text-2xl'>{level.name}</div>
-          {canEdit && <LevelDropdown level={level} />}
+          {user && <LevelDropdown level={level} />}
         </div>
         <div className='flex gap-2 items-center'>
           <FormattedUser id='author' size={Dimensions.AvatarSizeSmall} user={level.userId} />

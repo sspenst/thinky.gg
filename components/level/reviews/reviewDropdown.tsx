@@ -2,6 +2,8 @@ import { Menu, Transition } from '@headlessui/react';
 import { AppContext } from '@root/contexts/appContext';
 import { LevelContext } from '@root/contexts/levelContext';
 import { PageContext } from '@root/contexts/pageContext';
+import isCurator from '@root/helpers/isCurator';
+import classNames from 'classnames';
 import React, { Fragment, useContext, useEffect, useState } from 'react';
 import DeleteReviewModal from '../../modal/deleteReviewModal';
 
@@ -16,14 +18,21 @@ export default function ReviewDropdown({ onEditClick, userId }: ReviewDropdownPr
   const { setPreventKeyDownEvent } = useContext(PageContext);
   const { user } = useContext(AppContext);
 
+  const canEdit = userId === user?._id.toString() || isCurator(user);
+  const isNotAuthor = user?._id.toString() !== userId;
+
   useEffect(() => {
     setPreventKeyDownEvent(isDeleteReviewOpen);
   }, [isDeleteReviewOpen, setPreventKeyDownEvent]);
 
+  if (!canEdit) {
+    return null;
+  }
+
   return (<>
     <Menu as='div' className='relative'>
       <Menu.Button className='flex items-center' id='dropdownMenuBtn' aria-label='dropdown menu'>
-        <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke={user?._id.toString() === userId ? 'currentColor' : 'red'} className='w-6 h-6 hover:opacity-100 opacity-50'>
+        <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6 hover:opacity-100 opacity-50'>
           <path strokeLinecap='round' strokeLinejoin='round' d='M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z' />
         </svg>
       </Menu.Button>
@@ -45,7 +54,7 @@ export default function ReviewDropdown({ onEditClick, userId }: ReviewDropdownPr
             <Menu.Item>
               {({ active }) => (
                 <div
-                  className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3'
+                  className={classNames('flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3', { 'text-red-500': isNotAuthor })}
                   onClick={() => onEditClick()}
                   style={{
                     backgroundColor: active ? 'var(--bg-color-3)' : undefined,
@@ -61,7 +70,7 @@ export default function ReviewDropdown({ onEditClick, userId }: ReviewDropdownPr
             <Menu.Item>
               {({ active }) => (
                 <div
-                  className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3'
+                  className={classNames('flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3', { 'text-red-500': isNotAuthor })}
                   onClick={() => setIsDeleteReviewOpen(true)}
                   style={{
                     backgroundColor: active ? 'var(--bg-color-3)' : undefined,
