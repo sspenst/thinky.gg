@@ -9,6 +9,7 @@ import Card from '../cards/card';
 import ChapterSelectCard from '../cards/chapterSelectCard';
 import FormattedLevelReviews from '../formatted/formattedLevelReviews';
 import RecommendedLevel from '../homepage/recommendedLevel';
+import LoadingSpinner from '../page/loadingSpinner';
 import Modal from '.';
 
 interface PostGameModalProps {
@@ -59,7 +60,7 @@ export default function PostGameModal({ chapter, closeModal, collection, isOpen,
     }
   }
 
-  const { data } = useHomePageData([HomepageDataType.RecommendedLevel], nextLevel !== undefined);
+  const { data, isLoading } = useHomePageData([HomepageDataType.RecommendedLevel], !isOpen || nextLevel !== undefined);
 
   const recommendedLevel = data && data[HomepageDataType.RecommendedLevel];
   const [queryParams, setQueryParams] = useState({});
@@ -109,13 +110,13 @@ export default function PostGameModal({ chapter, closeModal, collection, isOpen,
                 </div>
               </Card>
               :
-              <RecommendedLevel
+              (isLoading ? <LoadingSpinner /> : <RecommendedLevel
                 hrefOverride={hrefOverride}
                 id='next-level'
                 level={nextLevel ?? recommendedLevel}
                 onClick={closeModal}
                 title={nextLevel ? 'Next Level' : 'Try this next!'}
-              />
+              />)
             }
           </>
         }
