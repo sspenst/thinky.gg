@@ -1,4 +1,5 @@
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
+import isCurator from '@root/helpers/isCurator';
 import isFullAccount from '@root/helpers/isFullAccount';
 import { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
@@ -9,7 +10,6 @@ import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import { clearNotifications, createNewReviewOnYourLevelNotification } from '../../../helpers/notificationHelper';
-import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import Review from '../../../models/db/review';
@@ -62,6 +62,7 @@ export default withAuth({
     body: {
       score: ValidNumber(true, 0, 5, 0.5),
       text: ValidType('string', false),
+      userId: ValidObjectId(true),
     },
     query: {
       id: ValidObjectId(),
@@ -69,7 +70,8 @@ export default withAuth({
   },
   DELETE: {
     query: {
-      id: ValidObjectId(),
+      id: ValidObjectId(true),
+      userId: ValidObjectId(true),
     },
   },
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
@@ -83,7 +85,6 @@ export default withAuth({
     try {
       const { id } = req.query;
       const { score, text }: { score: number, text?: string } = req.body;
-
       const trimmedText = text?.trim();
 
       if (score === 0 && (!trimmedText || trimmedText.length === 0)) {
@@ -91,8 +92,6 @@ export default withAuth({
           error: 'Missing required parameters',
         });
       }
-
-      await dbConnect();
 
       const levels = await LevelModel.aggregate<Level>([
         {
@@ -197,12 +196,18 @@ export default withAuth({
     }
 
     const level = levels[0];
-    const { score, text } = req.body;
+    const { score, text, userId } = req.body;
     const trimmedText = text?.trim();
 
     if (score === 0 && (!trimmedText || trimmedText.length === 0)) {
       return res.status(400).json({
         error: 'Missing required parameters',
+      });
+    }
+
+    if (!isCurator(req.user) && userId !== req.userId) {
+      return res.status(403).json({
+        error: 'Not authorized to edit this review',
       });
     }
 
@@ -228,7 +233,7 @@ export default withAuth({
     try {
       const review = await ReviewModel.findOneAndUpdate<Review>({
         levelId: id,
-        userId: req.userId,
+        userId: userId,
       }, update, { runValidators: true });
 
       if (!review) {
@@ -237,13 +242,18 @@ export default withAuth({
         });
       }
 
-      await Promise.all([
-        queueRefreshAchievements(req.user._id, [AchievementCategory.REVIEWER]),
+      const promises = [
+        queueRefreshAchievements(userId, [AchievementCategory.REVIEWER]),
         queueRefreshAchievements(level.userId._id, [AchievementCategory.REVIEWER]),
-        generateDiscordWebhook(review.ts, level, req, score, trimmedText, ts),
         queueRefreshIndexCalcs(new Types.ObjectId(id?.toString())),
-        createNewReviewOnYourLevelNotification(level.userId, req.userId, level._id, String(score), !!trimmedText),
-      ]);
+        createNewReviewOnYourLevelNotification(level.userId, userId, level._id, String(score), !!trimmedText),
+      ];
+
+      if (userId === req.userId) {
+        promises.push(generateDiscordWebhook(review.ts, level, req, score, trimmedText, ts));
+      }
+
+      await promises;
 
       return res.status(200).json(review);
     } catch (err) {
@@ -254,9 +264,8 @@ export default withAuth({
       });
     }
   } else if (req.method === 'DELETE') {
-    const { id } = req.query;
+    const { id, userId } = req.query as { id: string, userId: string };
 
-    await dbConnect();
     // delete all notifications around this type
     const level = await LevelModel.findById(id);
 
@@ -266,17 +275,23 @@ export default withAuth({
       });
     }
 
+    if (!isCurator(req.user) && userId !== req.userId) {
+      return res.status(403).json({
+        error: 'Not authorized to edit this review',
+      });
+    }
+
     try {
       await ReviewModel.deleteOne({
         levelId: id,
-        userId: req.userId,
+        userId: userId,
       });
 
       await Promise.all([
-        queueRefreshAchievements(req.user._id, [AchievementCategory.REVIEWER]),
+        queueRefreshAchievements(userId, [AchievementCategory.REVIEWER]),
         queueRefreshAchievements(level.userId._id, [AchievementCategory.REVIEWER]),
         queueRefreshIndexCalcs(new Types.ObjectId(id?.toString())),
-        clearNotifications(level.userId._id, req.userId, level._id, NotificationType.NEW_REVIEW_ON_YOUR_LEVEL),
+        clearNotifications(level.userId._id, userId, level._id, NotificationType.NEW_REVIEW_ON_YOUR_LEVEL),
       ]);
 
       return res.status(200).json({ success: true });

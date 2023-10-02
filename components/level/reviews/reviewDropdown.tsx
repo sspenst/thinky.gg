@@ -6,9 +6,10 @@ import DeleteReviewModal from '../../modal/deleteReviewModal';
 
 interface ReviewDropdownProps {
   onEditClick: () => void;
+  userId: string;
 }
 
-export default function ReviewDropdown({ onEditClick }: ReviewDropdownProps) {
+export default function ReviewDropdown({ onEditClick, userId }: ReviewDropdownProps) {
   const [isDeleteReviewOpen, setIsDeleteReviewOpen] = useState(false);
   const levelContext = useContext(LevelContext);
   const { setPreventKeyDownEvent } = useContext(PageContext);
@@ -18,7 +19,7 @@ export default function ReviewDropdown({ onEditClick }: ReviewDropdownProps) {
   }, [isDeleteReviewOpen, setPreventKeyDownEvent]);
 
   return (<>
-    <Menu as='div' className='relative z-10'>
+    <Menu as='div' className='relative'>
       <Menu.Button id='dropdownMenuBtn' aria-label='dropdown menu'>
         <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6 hover:opacity-100 opacity-50'>
           <path strokeLinecap='round' strokeLinejoin='round' d='M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z' />
@@ -33,11 +34,10 @@ export default function ReviewDropdown({ onEditClick }: ReviewDropdownProps) {
         leaveFrom='transform opacity-100 scale-100'
         leaveTo='transform opacity-0 scale-95'
       >
-        <Menu.Items className='absolute right-0 m-1 w-fit origin-top-right rounded-[10px] shadow-lg border' style={{
+        <Menu.Items className='absolute right-0 m-1 w-fit origin-top-right rounded-[10px] shadow-lg border z-20' style={{
           backgroundColor: 'var(--bg-color-2)',
           borderColor: 'var(--bg-color-4)',
           color: 'var(--color)',
-          // top: Dimensions.MenuHeight,
         }}>
           <div className='px-1 py-1'>
             <Menu.Item>
@@ -82,6 +82,7 @@ export default function ReviewDropdown({ onEditClick }: ReviewDropdownProps) {
         levelContext?.getReviews();
       }}
       isOpen={isDeleteReviewOpen}
+      userId={userId}
     />
   </>);
 }
