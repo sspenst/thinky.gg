@@ -277,7 +277,7 @@ export default withAuth({
 
     if (!isCurator(req.user) && userId !== req.userId) {
       return res.status(403).json({
-        error: 'Not authorized to edit this review',
+        error: 'Not authorized to delete this review',
       });
     }
 
