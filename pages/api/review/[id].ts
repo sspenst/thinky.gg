@@ -232,8 +232,8 @@ export default withAuth({
 
     try {
       const review = await ReviewModel.findOneAndUpdate<Review>({
-        levelId: id,
-        userId: userId,
+        levelId: new Types.ObjectId(id as string),
+        userId: new Types.ObjectId(userId),
       }, update, { runValidators: true });
 
       if (!review) {
@@ -253,7 +253,7 @@ export default withAuth({
         promises.push(generateDiscordWebhook(review.ts, level, req, score, trimmedText, ts));
       }
 
-      await promises;
+      await Promise.all(promises);
 
       return res.status(200).json(review);
     } catch (err) {
@@ -283,8 +283,8 @@ export default withAuth({
 
     try {
       await ReviewModel.deleteOne({
-        levelId: id,
-        userId: userId,
+        levelId: new Types.ObjectId(id as string),
+        userId: new Types.ObjectId(userId),
       });
 
       await Promise.all([
