@@ -40,12 +40,12 @@ export default function FormattedLevelReviews({ inModal, hideReviews: hideOtherR
 
   return (
     <div className='flex flex-col gap-3'>
-      <div className='font-medium text-lg'>
+      {hideOtherReviews ? null : (<div className='font-medium text-lg'>
         {levelContext.reviews.length == 0 ?
           <>No reviews yet!</> :
           <>{levelContext.reviews.length} review{levelContext.reviews.length !== 1 && 's'}</>
         }
-      </div>
+      </div>)}
       <ReviewForm inModal={inModal} key={`user-review-${userReview?._id.toString()}`} review={userReview} />
       {hideReviews === undefined ? null : hideReviews ?
         <div className='flex justify-center'>
