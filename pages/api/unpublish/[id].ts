@@ -49,7 +49,7 @@ export default withAuth({ POST: {
       ).sort({ moves: 1, ts: -1 });
 
       // update calc_records if the record was set by a different user
-      if (record && record.userId.toString() !== req.userId) {
+      if (record && record.userId.toString() !== level.userId.toString()) {
         // NB: await to avoid multiple user updates in parallel
         await UserModel.updateOne({ _id: record.userId }, { $inc: { calc_records: -1 } }, { session: session });
       }
@@ -81,7 +81,7 @@ export default withAuth({ POST: {
       levelClone.leastMoves = 0;
 
       // first add the new level id to all relevant collections
-      await CollectionModel.updateMany({ levels: id, userId: { '$eq': req.userId } }, { $addToSet: { levels: levelClone._id } }, { session: session });
+      await CollectionModel.updateMany({ levels: id, userId: { '$eq': level.userId } }, { $addToSet: { levels: levelClone._id } }, { session: session });
 
       await Promise.all([
         ImageModel.deleteOne({ documentId: id }, { session: session }),
@@ -119,7 +119,7 @@ export default withAuth({ POST: {
       await Promise.all([
         queueRefreshIndexCalcs(levelClone._id, { session: session }),
         queueCalcPlayAttempts(levelClone._id, { session: session }),
-        queueCalcCreatorCounts(req.user._id, { session: session }),
+        queueCalcCreatorCounts(level.userId, { session: session }),
         queueDiscordWebhook(Discord.LevelsId, `**${req.user.name}** unpublished a level: ${level.name}`, { session: session }),
         ...matchesToRebroadcast.map(match => requestBroadcastMatch(match.matchId)),
       ]);
