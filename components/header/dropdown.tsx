@@ -4,38 +4,22 @@ import isPro from '@root/helpers/isPro';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { Fragment, useContext, useEffect, useState } from 'react';
+import React, { Fragment, useContext, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import Dimensions from '../../constants/dimensions';
 import { AppContext } from '../../contexts/appContext';
-import { LevelContext } from '../../contexts/levelContext';
 import { PageContext } from '../../contexts/pageContext';
 import getProfileSlug from '../../helpers/getProfileSlug';
-import EditLevelModal from '../modal/editLevelModal';
 import ThemeModal from '../modal/themeModal';
 import ProfileAvatar from '../profile/profileAvatar';
 import DismissToast from '../toasts/dismissToast';
 
-const enum Modal {
-  AddLevelToCollection,
-  Theme,
-}
-
 export default function Dropdown() {
   const { forceUpdate, mutateUser, user, userLoading } = useContext(AppContext);
-  const levelContext = useContext(LevelContext);
-  const [openModal, setOpenModal] = useState<Modal | undefined>();
+  const [isThemeOpen, setIsThemeOpen] = useState(false);
   const router = useRouter();
   const { setPreventKeyDownEvent } = useContext(PageContext);
   const { setShouldAttemptAuth } = useContext(AppContext);
-
-  useEffect(() => {
-    setPreventKeyDownEvent(openModal !== undefined);
-  }, [openModal, setPreventKeyDownEvent]);
-
-  function closeModal() {
-    setOpenModal(undefined);
-  }
 
   function logOutToast() {
     toast.dismiss();
@@ -98,29 +82,14 @@ export default function Dropdown() {
           top: Dimensions.MenuHeight,
         }}>
           <div className='px-1 py-1'>
-            {user && levelContext &&
-              <Menu.Item>
-                {({ active }) => (
-                  <div
-                    className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3'
-                    onClick={() => setOpenModal(Modal.AddLevelToCollection)}
-                    style={{
-                      backgroundColor: active ? 'var(--bg-color-3)' : undefined,
-                    }}
-                  >
-                    <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' height='16' width='16'>
-                      <path strokeLinecap='round' strokeLinejoin='round' d='M12 4.5v15m7.5-7.5h-15' />
-                    </svg>
-                    {levelContext.level.userId._id === user._id || levelContext.level.userId === user._id ? 'Edit Level' : 'Add to...'}
-                  </div>
-                )}
-              </Menu.Item>
-            }
             <Menu.Item>
               {({ active }) => (
                 <div
                   className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3'
-                  onClick={() => setOpenModal(Modal.Theme)}
+                  onClick={() => {
+                    setIsThemeOpen(true);
+                    setPreventKeyDownEvent(true);
+                  }}
                   style={{
                     backgroundColor: active ? 'var(--bg-color-3)' : undefined,
                   }}
@@ -207,13 +176,12 @@ export default function Dropdown() {
         </Menu.Items>
       </Transition>
     </Menu>
-    {levelContext &&
-      <EditLevelModal
-        closeModal={() => closeModal()}
-        isOpen={openModal === Modal.AddLevelToCollection}
-        level={levelContext.level}
-      />
-    }
-    <ThemeModal closeModal={() => closeModal()} isOpen={openModal === Modal.Theme} />
+    <ThemeModal
+      closeModal={() => {
+        setIsThemeOpen(false);
+        setPreventKeyDownEvent(false);
+      }}
+      isOpen={isThemeOpen}
+    />
   </>);
 }

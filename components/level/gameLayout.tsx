@@ -122,10 +122,8 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, hi
           <div className='grow'>
             <Controls controls={controls} />
           </div>
-          {!hideSidebar && <>
+          {!hideSidebar &&
             <button
-              data-tooltip-content='Full screen'
-              data-tooltip-id='fullscreen-tooltip'
               id='fullscreenBtn'
               onClick={() => {
                 const el = document.getElementById('game-layout');
@@ -154,8 +152,7 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, hi
                 </svg>
               }
             </button>
-            <StyledTooltip id='fullscreen-tooltip' />
-          </>}
+          }
         </div>
       </div>
       {!hideSidebar && !fullScreen && <Sidebar level={level} />}
