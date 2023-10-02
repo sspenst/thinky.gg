@@ -70,7 +70,7 @@ interface FormattedReviewProps {
   level?: EnrichedLevel;
   onEditClick?: () => void;
   review: ReviewWithStats;
-  user: User;
+  user: User | undefined;
 }
 
 export default function FormattedReview({ hideBorder, level, onEditClick, review, user }: FormattedReviewProps) {
@@ -88,9 +88,9 @@ export default function FormattedReview({ hideBorder, level, onEditClick, review
               <FormattedUser id={level ? `review-${level._id.toString()}` : 'review'} user={user} />
               <FormattedDate ts={review.ts} />
             </div>
-            {onEditClick && <ReviewDropdown onEditClick={onEditClick} userId={user._id.toString()} />}
+            {onEditClick && user && <ReviewDropdown onEditClick={onEditClick} userId={user._id.toString()} />}
           </div>
-          {level && <FormattedLevelLink id={`review-${user._id.toString()}`} level={level} />}
+          {level && <FormattedLevelLink id={`review-${user?._id.toString() ?? 'deleted'}`} level={level} />}
         </div>
         <span className='flex items-center'>
           {review.score ? <Stars stars={review.score} /> : null}
@@ -102,7 +102,7 @@ export default function FormattedReview({ hideBorder, level, onEditClick, review
                 `Solved ${moment(new Date(review.stat.ts * 1000)).fromNow()}` :
                 `Completed in ${review.stat.moves} steps ${moment(new Date(review.stat.ts * 1000)).fromNow()}`
               }
-              data-tooltip-id={`review-stat-${user._id.toString()}`}
+              data-tooltip-id={`review-stat-${user?._id.toString() ?? 'deleted'}`}
             >
               <span className='font-bold' style={{
                 color: review.stat.complete ? 'var(--color-complete)' : 'var(--color-incomplete)',
@@ -112,7 +112,7 @@ export default function FormattedReview({ hideBorder, level, onEditClick, review
               </span>
               {review.stat.complete && <Solved className='-mx-2' />}
             </div>
-            <StyledTooltip id={`review-stat-${user._id.toString()}`} />
+            <StyledTooltip id={`review-stat-${user?._id.toString() ?? 'deleted'}`} />
           </>}
         </span>
         <span className='whitespace-pre-wrap'>{review.text}</span>
