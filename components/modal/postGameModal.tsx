@@ -77,7 +77,6 @@ export default function PostGameModal({ chapter, closeModal, collection, isOpen,
 
   const hrefOverride = nextLevel ? `/level/${nextLevel.slug}?${queryParams}` : undefined;
   const url = `https://pathology.gg/level/${level.slug}`;
-
   const quote = 'Just completed Pathology.gg puzzle "' + level.name + '" (Difficulty: ' + getDifficultyFromValue(level.calc_difficulty_estimate).name + ')';
 
   return (
