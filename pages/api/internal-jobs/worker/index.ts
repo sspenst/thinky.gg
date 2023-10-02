@@ -61,7 +61,7 @@ export async function queuePushNotification(notificationId: Types.ObjectId, opti
   ]);
 }
 
-export async function queueRefreshAchievements(userId: Types.ObjectId, categories: AchievementCategory[], options?: QueryOptions) {
+export async function queueRefreshAchievements(userId: string | Types.ObjectId, categories: AchievementCategory[], options?: QueryOptions) {
   await queue(
     userId.toString() + '-refresh-achievements-' + new Types.ObjectId().toString(),
     QueueMessageType.REFRESH_ACHIEVEMENTS,

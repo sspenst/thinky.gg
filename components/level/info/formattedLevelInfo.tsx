@@ -1,7 +1,7 @@
 import { Tab } from '@headlessui/react';
 import FormattedDate from '@root/components/formatted/formattedDate';
-import FormattedLevelReviews from '@root/components/formatted/formattedLevelReviews';
 import Solved from '@root/components/level/info/solved';
+import FormattedLevelReviews from '@root/components/level/reviews/formattedLevelReviews';
 import Image from 'next/image';
 import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
