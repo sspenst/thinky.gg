@@ -19,7 +19,7 @@ interface ShareBarProps {
 }
 
 const ShareBar: FC<ShareBarProps> = ({ platforms = ['Generic', 'Copy', 'Facebook', 'Linkedin', 'Twitter', 'Reddit'], url, quote, size = 32 }) => {
-  const copyToClipboard = (e: any) => {
+  const copyToClipboard = (e: React.MouseEvent) => {
     navigator.clipboard.writeText(url);
     toast.success('Copied to clipboard!');
     e.preventDefault();
