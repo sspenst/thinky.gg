@@ -42,7 +42,7 @@ export default function DeleteReviewModal({ closeModal, isOpen, userId }: Delete
       title={'Delete Review'}
     >
       <div style={{ textAlign: 'center' }}>
-        {'Are you sure you want to delete your review?'}
+        {'Are you sure you want to delete this review?'}
       </div>
     </Modal>
   );
