@@ -7,8 +7,8 @@ import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import Card from '../cards/card';
 import ChapterSelectCard from '../cards/chapterSelectCard';
-import FormattedLevelReviews from '../formatted/formattedLevelReviews';
 import RecommendedLevel from '../homepage/recommendedLevel';
+import FormattedLevelReviews from '../level/reviews/formattedLevelReviews';
 import Modal from '.';
 
 interface PostGameModalProps {

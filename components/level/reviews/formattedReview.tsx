@@ -3,16 +3,16 @@ import isCurator from '@root/helpers/isCurator';
 import classNames from 'classnames';
 import moment from 'moment';
 import React, { useContext } from 'react';
-import { EnrichedLevel } from '../../models/db/level';
-import { ReviewWithStats } from '../../models/db/review';
-import User from '../../models/db/user';
-import { FolderDivider } from '../header/directory';
-import Solved from '../level/info/solved';
-import ReviewDropdown from '../level/reviews/reviewDropdown';
-import StyledTooltip from '../page/styledTooltip';
-import FormattedDate from './formattedDate';
-import FormattedLevelLink from './formattedLevelLink';
-import FormattedUser from './formattedUser';
+import { EnrichedLevel } from '../../../models/db/level';
+import { ReviewWithStats } from '../../../models/db/review';
+import User from '../../../models/db/user';
+import FormattedDate from '../../formatted/formattedDate';
+import FormattedLevelLink from '../../formatted/formattedLevelLink';
+import FormattedUser from '../../formatted/formattedUser';
+import { FolderDivider } from '../../header/directory';
+import StyledTooltip from '../../page/styledTooltip';
+import Solved from '../info/solved';
+import ReviewDropdown from './reviewDropdown';
 
 interface StarProps {
   empty: boolean;

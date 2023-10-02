@@ -3,14 +3,14 @@ import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Rating } from 'react-simple-star-rating';
 import TextareaAutosize from 'react-textarea-autosize';
-import Theme from '../../constants/theme';
-import { AppContext } from '../../contexts/appContext';
-import { LevelContext } from '../../contexts/levelContext';
-import { PageContext } from '../../contexts/pageContext';
-import { ReviewWithStats } from '../../models/db/review';
-import FormattedReview, { Star } from '../formatted/formattedReview';
-import ProfileAvatar from '../profile/profileAvatar';
-import isNotFullAccountToast from '../toasts/isNotFullAccountToast';
+import Theme from '../../../constants/theme';
+import { AppContext } from '../../../contexts/appContext';
+import { LevelContext } from '../../../contexts/levelContext';
+import { PageContext } from '../../../contexts/pageContext';
+import { ReviewWithStats } from '../../../models/db/review';
+import ProfileAvatar from '../../profile/profileAvatar';
+import isNotFullAccountToast from '../../toasts/isNotFullAccountToast';
+import FormattedReview, { Star } from './formattedReview';
 
 interface ReviewFormProps {
   inModal?: boolean;

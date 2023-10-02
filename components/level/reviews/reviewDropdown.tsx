@@ -1,4 +1,5 @@
 import { Menu, Transition } from '@headlessui/react';
+import { AppContext } from '@root/contexts/appContext';
 import { LevelContext } from '@root/contexts/levelContext';
 import { PageContext } from '@root/contexts/pageContext';
 import React, { Fragment, useContext, useEffect, useState } from 'react';
@@ -13,6 +14,7 @@ export default function ReviewDropdown({ onEditClick, userId }: ReviewDropdownPr
   const [isDeleteReviewOpen, setIsDeleteReviewOpen] = useState(false);
   const levelContext = useContext(LevelContext);
   const { setPreventKeyDownEvent } = useContext(PageContext);
+  const { user } = useContext(AppContext);
 
   useEffect(() => {
     setPreventKeyDownEvent(isDeleteReviewOpen);
@@ -21,7 +23,7 @@ export default function ReviewDropdown({ onEditClick, userId }: ReviewDropdownPr
   return (<>
     <Menu as='div' className='relative'>
       <Menu.Button id='dropdownMenuBtn' aria-label='dropdown menu'>
-        <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6 hover:opacity-100 opacity-50'>
+        <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke={user?._id.toString() === userId ? 'currentColor' : 'red'} className='w-6 h-6 hover:opacity-100 opacity-50'>
           <path strokeLinecap='round' strokeLinejoin='round' d='M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z' />
         </svg>
       </Menu.Button>
