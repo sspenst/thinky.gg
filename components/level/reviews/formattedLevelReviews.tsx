@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { AppContext } from '../../contexts/appContext';
-import { LevelContext } from '../../contexts/levelContext';
-import ReviewForm from '../forms/reviewForm';
+import { AppContext } from '../../../contexts/appContext';
+import { LevelContext } from '../../../contexts/levelContext';
+import ReviewForm from './reviewForm';
 
 interface FormattedLevelReviewsProps {
   hideReviews?: boolean;
