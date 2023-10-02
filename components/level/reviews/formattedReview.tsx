@@ -1,16 +1,18 @@
+import { AppContext } from '@root/contexts/appContext';
+import isCurator from '@root/helpers/isCurator';
 import classNames from 'classnames';
 import moment from 'moment';
-import React from 'react';
-import { EnrichedLevel } from '../../models/db/level';
-import { ReviewWithStats } from '../../models/db/review';
-import User from '../../models/db/user';
-import { FolderDivider } from '../header/directory';
-import Solved from '../level/info/solved';
-import ReviewDropdown from '../level/reviews/reviewDropdown';
-import StyledTooltip from '../page/styledTooltip';
-import FormattedDate from './formattedDate';
-import FormattedLevelLink from './formattedLevelLink';
-import FormattedUser from './formattedUser';
+import React, { useContext } from 'react';
+import { EnrichedLevel } from '../../../models/db/level';
+import { ReviewWithStats } from '../../../models/db/review';
+import User from '../../../models/db/user';
+import FormattedDate from '../../formatted/formattedDate';
+import FormattedLevelLink from '../../formatted/formattedLevelLink';
+import FormattedUser from '../../formatted/formattedUser';
+import { FolderDivider } from '../../header/directory';
+import StyledTooltip from '../../page/styledTooltip';
+import Solved from '../info/solved';
+import ReviewDropdown from './reviewDropdown';
 
 interface StarProps {
   empty: boolean;
@@ -74,6 +76,9 @@ interface FormattedReviewProps {
 }
 
 export default function FormattedReview({ hideBorder, level, onEditClick, review, user }: FormattedReviewProps) {
+  const { user: reqUser } = useContext(AppContext);
+  const canEdit = user._id === reqUser?._id || isCurator(reqUser);
+
   return (
     <div className='flex align-center justify-center text-left break-words'>
       <div
@@ -88,7 +93,7 @@ export default function FormattedReview({ hideBorder, level, onEditClick, review
               <FormattedUser id={level ? `review-${level._id.toString()}` : 'review'} user={user} />
               <FormattedDate ts={review.ts} />
             </div>
-            {onEditClick && <ReviewDropdown onEditClick={onEditClick} />}
+            {onEditClick && canEdit && <ReviewDropdown onEditClick={onEditClick} userId={user._id.toString()} />}
           </div>
           {level && <FormattedLevelLink id={`review-${user._id.toString()}`} level={level} />}
         </div>
