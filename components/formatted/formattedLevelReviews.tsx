@@ -2,7 +2,6 @@ import React, { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../../contexts/appContext';
 import { LevelContext } from '../../contexts/levelContext';
 import ReviewForm from '../forms/reviewForm';
-import FormattedReview from './formattedReview';
 
 interface FormattedLevelReviewsProps {
   hideReviews?: boolean;
@@ -34,20 +33,7 @@ export default function FormattedLevelReviews({ inModal, hideReviews: hideOtherR
       if (hideOtherReviews) { continue; }
 
       reviewDivs.push(
-        <div key={`review-${review._id.toString()}-line`}>
-          <FormattedReview
-            hideBorder={true}
-            review={review}
-            user={review.userId}
-          />
-          <div
-            className='mt-3 opacity-30'
-            style={{
-              backgroundColor: 'var(--bg-color-4)',
-              height: 1,
-            }}
-          />
-        </div>
+        <ReviewForm inModal={inModal} key={`review-${review._id.toString()}`} review={review} />
       );
     }
   }
@@ -60,7 +46,7 @@ export default function FormattedLevelReviews({ inModal, hideReviews: hideOtherR
           <>{levelContext.reviews.length} review{levelContext.reviews.length !== 1 && 's'}</>
         }
       </div>
-      <ReviewForm inModal={inModal} key={`user-review-${userReview?._id.toString()}`} userReview={userReview} />
+      <ReviewForm inModal={inModal} key={`user-review-${userReview?._id.toString()}`} review={userReview} />
       {hideReviews === undefined ? null : hideReviews ?
         <div className='flex justify-center'>
           <button className='font-medium px-2 py-1 bg-neutral-200 hover:bg-white transition text-black rounded-lg border border-neutral-400 mt-2' onClick={() => setHideReviews(false)}>
