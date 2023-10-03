@@ -9,6 +9,7 @@ import React from 'react';
 import FormattedAchievement from '../formatted/formattedAchievement';
 
 export function ProfileAchievments({ achievements }: { achievements: Achievement[] }) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function getAchievementsOfCategory(rule: any) {
     return Object.keys(rule).map(achievementType => {
       const achievement = achievements.find(achievement => achievement.type === achievementType);
