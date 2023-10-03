@@ -242,16 +242,23 @@ export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {
       },
       {
         $project: {
-          duration: {
-            $subtract: ['$endTime', '$startTime']
-          }
+          userId: 1,
+          duration: { $subtract: ['$endTime', '$startTime'] }
         }
       },
-      { $sort: { duration: 1 } },
+      {
+        $group: {
+          _id: '$userId',
+          userTotalDuration: { $sum: '$duration' }
+        }
+      },
+      {
+        $sort: { userTotalDuration: 1 }
+      },
       {
         $group: {
           _id: null,
-          durations: { $push: '$duration' },
+          userDurations: { $push: '$userTotalDuration' },
           count: { $sum: 1 }
         }
       },
@@ -259,18 +266,24 @@ export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {
         $project: {
           lowerIndex: { $ceil: { $multiply: ['$count', 0.025] } },
           upperIndex: { $floor: { $multiply: ['$count', 0.975] } },
-          durations: 1,
+          userDurations: 1,
           count: 1
         }
       },
       {
         $project: {
-          countExcluded: { $subtract: ['$count', { $subtract: ['$upperIndex', '$lowerIndex'] }] },
+          countExcluded: '$count',
           sumExcluded: {
-            $reduce: {
-              input: { $slice: ['$durations', '$lowerIndex', { $subtract: ['$upperIndex', '$lowerIndex'] }] },
-              initialValue: 0,
-              in: { $add: ['$$value', '$$this'] }
+            $cond: {
+              if: { $gt: [{ $subtract: ['$upperIndex', '$lowerIndex'] }, 0] },
+              then: {
+                $reduce: {
+                  input: { $slice: ['$userDurations', '$lowerIndex', { $subtract: ['$upperIndex', '$lowerIndex'] }] },
+                  initialValue: 0,
+                  in: { $add: ['$$value', '$$this'] }
+                }
+              },
+              else: 0
             }
           }
         }
