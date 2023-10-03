@@ -1,16 +1,13 @@
 import TestId from '@root/constants/testId';
-import { LEVEL_DEFAULT_PROJECTION } from '@root/models/schemas/levelSchema';
 import { PipelineStage, Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Image from 'next/image';
 import React, { useCallback } from 'react';
 import SelectCard from '../../components/cards/selectCard';
 import Page from '../../components/page/page';
-import { enrichCampaign, getEnrichLevelsPipelineSteps } from '../../helpers/enrich';
-import { logger } from '../../helpers/logger';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
-import Campaign, { EnrichedCampaign } from '../../models/db/campaign';
+import { EnrichedCampaign } from '../../models/db/campaign';
 import { CampaignModel, CollectionModel, LevelModel, StatModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
@@ -49,9 +46,7 @@ const campaignInfos: CampaignInfo[] = process.env.NODE_ENV !== 'test' ? [
     image: '/pathos.png',
     year: 2017,
   },
-] : [
-  { id: TestId.CAMPAIGN_OFFICIAL } as CampaignInfo
-];
+] : [{ id: TestId.CAMPAIGN_OFFICIAL } as CampaignInfo];
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
@@ -59,7 +54,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
 
-  // aggegate version
   const campaignsAgg = await CampaignModel.aggregate([
     {
       $match: {
@@ -179,7 +173,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     },
     {
       $unset: 'collections.levels'
-
     },
     {
       $project: {
@@ -190,9 +183,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         levelCount: 1,
         userSolvedCount: 1
       }
-    }
-    // now we need to sum all of the stats.complete from the collections.levels.stats
-
+    },
   ] as PipelineStage[]);
 
   return {
@@ -255,19 +246,17 @@ export default function Campaigns({ enrichedCampaigns }: CampaignsProps) {
 
   return (
     <Page title={'Campaigns'}>
-      <>
-        <div className='text-center p-4'>
-          <h1 className='text-2xl pb-2'>
-            Campaigns
-          </h1>
-          <div className='italic'>
-            Created by the Pathology community.
-          </div>
-          <div className='flex flex-wrap justify-center pt-4'>
-            {getCampaigns()}
-          </div>
+      <div className='text-center p-4'>
+        <h1 className='text-2xl pb-2'>
+          Campaigns
+        </h1>
+        <div className='italic'>
+          Created by the Pathology community.
         </div>
-      </>
+        <div className='flex flex-wrap justify-center pt-4'>
+          {getCampaigns()}
+        </div>
+      </div>
     </Page>
   );
 }

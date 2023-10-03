@@ -1,11 +1,15 @@
+import cleanUser from '@root/lib/cleanUser';
+import { LEVEL_DEFAULT_PROJECTION } from '@root/models/schemas/levelSchema';
+import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
+import { PipelineStage, Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidObjectId } from '../../../helpers/apiWrapper';
-import { enrichLevels } from '../../../helpers/enrich';
+import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
 import User from '../../../models/db/user';
-import { CollectionModel } from '../../../models/mongoose';
+import { CollectionModel, LevelModel, StatModel, UserModel } from '../../../models/mongoose';
 
 export default apiWrapper({
   GET: {
@@ -18,7 +22,11 @@ export default apiWrapper({
   await dbConnect();
   const token = req.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, req) : null;
-  const collection = await getCollectionById(id as string, reqUser);
+  const collection = await getCollection( {
+    matchQuery: { $match: { _id: new Types.ObjectId(id as string) } },
+    reqUser,
+    populateLevels: true,
+  });
 
   if (!collection) {
     return res.status(404).json({
@@ -29,23 +37,180 @@ export default apiWrapper({
   return res.status(200).json(collection);
 });
 
-export async function getCollectionById(id: string, reqUser: User | null) {
-  const collection = await CollectionModel.findById<Collection>(id)
-    .populate({
-      path: 'levels',
-      match: { isDraft: false },
-      populate: { path: 'userId', model: 'User', select: 'name' },
-    })
-    .populate('userId', 'name');
+interface GetCollectionProps {
+  matchQuery: PipelineStage,
+  reqUser: User | null,
+  includeDraft?: boolean,
+  populateLevels?: boolean,
+}
 
-  if (!collection) {
+export async function getCollection(props: GetCollectionProps): Promise<Collection | null> {
+  const collections = await getCollections(props);
+
+  if (collections.length === 0) {
     return null;
   }
 
-  const enrichedCollectionLevels = await enrichLevels(collection.levels, reqUser);
-  const newCollection = JSON.parse(JSON.stringify(collection));
+  return collections[0] as Collection;
+}
 
-  newCollection.levels = enrichedCollectionLevels;
+export async function getCollections({ matchQuery, reqUser, includeDraft, populateLevels }: GetCollectionProps): Promise<Collection[]> {
+  const collectionAgg = await CollectionModel.aggregate(([
+    {
+      ...matchQuery,
+    },
+    {
+      // populate user for collection
+      $lookup: {
+        from: UserModel.collection.name,
+        localField: 'userId',
+        foreignField: '_id',
+        as: 'userId',
+        pipeline: [
+          { $project: USER_DEFAULT_PROJECTION },
+        ]
+      },
+    },
+    {
+      $unwind: {
+        path: '$userId',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $addFields: {
+        'levelsWithSort': {
+          $map: {
+            input: '$levels',
+            as: 'item',
+            in: {
+              _id: '$$item', // making levels an array of objects with _id
+            }
+          }
+        }
+      }
+    },
+    {
+      $lookup: {
+        from: LevelModel.collection.name,
+        localField: 'levelsWithSort._id',
+        foreignField: '_id',
+        let: { 'orderedIds': '$levelsWithSort._id' },
+        as: 'levels',
+        pipeline: [
+          {
+            $match: {
+              ...(!includeDraft ? {
+                isDraft: {
+                  $ne: true
+                }
+              } : undefined),
+              isDeleted: {
+                $ne: true
+              }
+            },
+          },
+          {
+            $addFields: {
+              sort: {
+                $indexOfArray: [ '$$orderedIds', '$_id' ]
+              }
+            }
+          },
+          {
+            $sort: {
+              sort: 1
+            }
+          },
+          {
+            $project: {
+              leastMoves: 1,
+              ...(includeDraft ? {
+                isDraft: 1
+              } : {}),
+              ...(populateLevels ? {
+                ...LEVEL_DEFAULT_PROJECTION
+              } : {})
+            },
+          },
+          ...(populateLevels ? getEnrichLevelsPipelineSteps(reqUser, '_id', '') : [{
+            $lookup: {
+              from: StatModel.collection.name,
+              localField: '_id',
+              foreignField: 'levelId',
+              as: 'stats',
+              pipeline: [
+                {
+                  $match: {
+                    userId: reqUser?._id,
+                    complete: true
+                  },
+                },
+                {
+                  $project: {
+                    _id: 0,
+                    // project complete to 1 if it exists, otherwise 0
+                    complete: {
+                      $cond: {
+                        if: { $eq: ['$complete', true] },
+                        then: 1,
+                        else: 0
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+          }]),
+          {
+            $unwind: {
+              path: '$stats',
+              preserveNullAndEmptyArrays: true
+            }
+          },
+          {
+            // populate user
+            $lookup: {
+              from: UserModel.collection.name,
+              localField: 'userId',
+              foreignField: '_id',
+              as: 'userId',
+              pipeline: [
+                { $project: USER_DEFAULT_PROJECTION },
+              ]
+            },
+          },
+          {
+            $unwind: {
+              path: '$userId',
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $unset: 'levelsWithSort'
+    },
+    {
+      $addFields: {
+        levelCount: {
+          $size: '$levels'
+        },
+        userSolvedCount: {
+          $sum: '$levels.stats.complete'
+        }
+      }
+    },
+    ...(!populateLevels ? [{ $unset: 'levels' }] : []),
+  ] as PipelineStage[]));
 
-  return newCollection;
+  cleanUser(collectionAgg[0]?.userId);
+  (collectionAgg[0] as Collection)?.levels?.map(level => {
+    cleanUser(level.userId);
+
+    return level;
+  });
+
+  return collectionAgg;
 }

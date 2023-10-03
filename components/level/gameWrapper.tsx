@@ -1,15 +1,13 @@
-import Link from 'next/link';
-import React, { useCallback } from 'react';
-import toast from 'react-hot-toast';
-import { throttle } from 'throttle-debounce';
+import { PageContext } from '@root/contexts/pageContext';
+import React, { useContext, useEffect, useState } from 'react';
 import Collection from '../../models/db/collection';
 import { EnrichedLevel } from '../../models/db/level';
 import User from '../../models/db/user';
-import DismissToast from '../toasts/dismissToast';
-import styles from './Controls.module.css';
+import PostGameModal from '../modal/postGameModal';
 import Game from './game';
 
 interface GameWrapperProps {
+  chapter?: string;
   collection: Collection | undefined;
   level: EnrichedLevel;
   onNext: () => void;
@@ -17,63 +15,35 @@ interface GameWrapperProps {
   user: User | null;
 }
 
-export default function GameWrapper({ collection, level, onNext, onPrev, user }: GameWrapperProps) {
-  const signUpToast = throttle(2500, () => {
-    toast.dismiss();
-    toast.success(
-      <div className='flex'>
-        <div>
-          <h1 className='text-center text-2xl'>Good job!</h1>
-          <h2 className='text-center text-sm'>But your progress isn&apos;t saved...</h2>
-          <div className='text-center'>
-            <Link href='/signup' className='underline font-bold'>Sign up</Link> (free) to save your progress and get access to more features.
+export default function GameWrapper({ chapter, collection, level, onNext, onPrev, user }: GameWrapperProps) {
+  const [postGameModalOpen, setShowPostGameModalOpen] = useState(false);
+  const { setPreventKeyDownEvent } = useContext(PageContext);
 
-          </div>
-          <div className='text-center'>
-            Or use <Link href='/play-as-guest' className='underline font-bold'>Guest Account</Link>.
-
-          </div>
-        </div>
-        <DismissToast />
-      </div>
-      ,
-      {
-        position: 'bottom-center',
-        duration: 10000,
-        icon: '🎉',
-      });
-  });
-
-  const addNextButtonHighlight = useCallback(() => {
-    // find <button> with id 'btn-next'
-    const nextButton = document.getElementById('btn-next') as HTMLButtonElement;
-
-    // add css style to have it blink
-    nextButton?.classList.add(styles['highlight-once']);
-    setTimeout(() => {
-      nextButton?.classList.remove(styles['highlight-once']);
-    }, 1300);
-  }, []);
+  useEffect(() => {
+    setPreventKeyDownEvent(postGameModalOpen);
+  }, [postGameModalOpen, setPreventKeyDownEvent]);
 
   return (
-    <Game
-      allowFreeUndo={true}
-      disablePlayAttempts={!user}
-      disableStats={!user}
-      enableSessionCheckpoint={true}
-      key={`game-${level._id.toString()}`}
-      level={level}
-      onSolve={() => {
-        if (!user) {
-          signUpToast();
-        }
-
-        if (collection) {
-          addNextButtonHighlight();
-        }
-      }}
-      onNext={collection ? onNext : undefined}
-      onPrev={collection ? onPrev : undefined}
-    />
+    <>
+      <Game
+        allowFreeUndo={true}
+        disablePlayAttempts={!user}
+        disableStats={!user}
+        enableSessionCheckpoint={true}
+        key={`game-${level._id.toString()}`}
+        level={level}
+        onNext={collection ? onNext : undefined}
+        onPrev={collection ? onPrev : undefined}
+        onSolve={() => setTimeout(() => setShowPostGameModalOpen(true), 200)}
+      />
+      <PostGameModal
+        chapter={chapter}
+        closeModal={() => setShowPostGameModalOpen(false)}
+        collection={collection}
+        isOpen={postGameModalOpen}
+        level={level}
+        reqUser={user}
+      />
+    </>
   );
 }

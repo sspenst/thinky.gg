@@ -18,8 +18,8 @@ import Card from '../cards/card';
 import ChapterSelectCard from '../cards/chapterSelectCard';
 import LevelSelect from '../cards/levelSelect';
 import LoadingCard from '../cards/loadingCard';
-import FormattedReview from '../formatted/formattedReview';
 import FormattedUser from '../formatted/formattedUser';
+import FormattedReview from '../level/reviews/formattedReview';
 import LoadingSpinner from '../page/loadingSpinner';
 import MultiSelectUser from '../page/multiSelectUser';
 import RecommendedLevel from './recommendedLevel';
@@ -68,17 +68,9 @@ export default function HomeLoggedIn({
     }
     <div className='flex flex-col gap-4 m-4 items-center'>
       <div className='flex flex-col md:flex-row justify-center items-center flex-wrap gap-4 max-w-full'>
-        <Card
-          id='campaign'
-          title={
-            <Link className='font-bold hover:underline' href='/play'>
-              Continue Campaign
-            </Link>
-          }
-          tooltip='Click here to go to the chapter select screen, or continue with the chapter button below!'
-        >
+        <Card id='campaign' title='Pathology Official Campaign'>
           <div className='p-3'>
-            <ChapterSelectCard chapter={user.chapterUnlocked ?? 1} />
+            <ChapterSelectCard chapter={user.chapterUnlocked ?? 1} href='/play' />
           </div>
         </Card>
         <div className='flex flex-col items-center md:items-start gap-2 max-w-full'>
