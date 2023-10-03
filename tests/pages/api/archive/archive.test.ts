@@ -29,7 +29,7 @@ beforeAll(async () => {
   [userACollection, userBCollection, userALevel1] = await Promise.all([
     initCollection(TestId.USER, 'user A collection'),
     initCollection(TestId.USER_B, 'user B collection'),
-    initLevel(TestId.USER, 'user A level 1')
+    initLevel(TestId.USER, 'user A level 1'),
   ]);
 });
 enableFetchMocks();
@@ -50,7 +50,6 @@ describe('Testing archive', () => {
           query: {
             id: userALevel1._id,
           },
-
           headers: {
             'content-type': 'application/json',
           },
@@ -82,7 +81,6 @@ describe('Testing archive', () => {
           query: {
             id: userALevel1._id,
           },
-
           headers: {
             'content-type': 'application/json',
           },
@@ -97,7 +95,6 @@ describe('Testing archive', () => {
         expect(response.error).toBe('Internal server error');
         expect(res.status).toBe(500);
       },
-
     });
   });
   test('Archiving one of the levels should remove it from all collections', async () => {
@@ -111,7 +108,6 @@ describe('Testing archive', () => {
           query: {
             id: userALevel1._id,
           },
-
           headers: {
             'content-type': 'application/json',
           },
@@ -131,6 +127,7 @@ describe('Testing archive', () => {
         const user = await UserModel.findById(TestId.USER);
 
         expect(user?.calc_levels_created_count).toEqual(2);
+        expect(user?.calc_records).toBe(1);
 
         const level = await LevelModel.findOne({ _id: userALevel1._id });
 
@@ -168,7 +165,6 @@ describe('Testing archive', () => {
           query: {
             id: new Types.ObjectId(),
           },
-
           headers: {
             'content-type': 'application/json',
           },
@@ -183,7 +179,6 @@ describe('Testing archive', () => {
         expect(response.error).toBe('Level not found');
         expect(res.status).toBe(404);
       },
-
     });
   });
   test('Archiving a level that does not belong to you should fail', async () => {
@@ -197,7 +192,6 @@ describe('Testing archive', () => {
           query: {
             id: TestId.LEVEL_3,
           },
-
           headers: {
             'content-type': 'application/json',
           },
@@ -212,7 +206,6 @@ describe('Testing archive', () => {
         expect(response.error).toBe('Not authorized to delete this Level');
         expect(res.status).toBe(401);
       },
-
     });
   });
 });
