@@ -1,3 +1,4 @@
+import Record from '@root/models/db/record';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
@@ -10,7 +11,7 @@ import isCurator from '../../../helpers/isCurator';
 import { logger } from '../../../helpers/logger';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
-import { LevelModel } from '../../../models/mongoose';
+import { LevelModel, RecordModel, UserModel } from '../../../models/mongoose';
 import { queueCalcCreatorCounts } from '../internal-jobs/worker';
 
 export default withAuth({ POST: {
@@ -39,8 +40,24 @@ export default withAuth({ POST: {
 
   try {
     await session.withTransaction(async () => {
-      // level is over 24hrs old, move to archive
-      const slug = await generateLevelSlug('archive', level.name, level._id.toString(), { session: session });
+      const [record, slug] = await Promise.all([
+        RecordModel.findOne<Record>({ levelId: level._id }, {}, { session: session }).sort({ ts: -1 }),
+        generateLevelSlug('archive', level.name, level._id.toString(), { session: session }),
+      ]);
+
+      if (!record) {
+        throw new Error(`Record not found for level ${level._id}`);
+      }
+
+      await Promise.all([
+        LevelModel.findOneAndUpdate({ _id: id }, { $set: {
+          archivedBy: level.userId,
+          archivedTs: ts,
+          slug: slug,
+          userId: new Types.ObjectId(TestId.ARCHIVE),
+        } }, { new: true, session: session }),
+        UserModel.updateOne({ _id: record.userId }, { $inc: { calc_records: -1 } }, { session: session }),
+      ]);
 
       newLevel = await LevelModel.findOneAndUpdate({ _id: id }, { $set: {
         archivedBy: level.userId,
