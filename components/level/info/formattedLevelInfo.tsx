@@ -1,23 +1,19 @@
 import { Tab } from '@headlessui/react';
 import FormattedDate from '@root/components/formatted/formattedDate';
-import FormattedLevelReviews from '@root/components/formatted/formattedLevelReviews';
 import Solved from '@root/components/level/info/solved';
+import FormattedLevelReviews from '@root/components/level/reviews/formattedLevelReviews';
 import Image from 'next/image';
 import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
 import Dimensions from '../../../constants/dimensions';
 import { AppContext } from '../../../contexts/appContext';
 import { LevelContext } from '../../../contexts/levelContext';
-import { PageContext } from '../../../contexts/pageContext';
-import isCurator from '../../../helpers/isCurator';
 import { EnrichedLevel } from '../../../models/db/level';
 import SelectOptionStats from '../../../models/selectOptionStats';
 import formattedAuthorNote from '../../formatted/formattedAuthorNote';
 import FormattedDifficulty from '../../formatted/formattedDifficulty';
 import FormattedUser from '../../formatted/formattedUser';
-import ArchiveLevelModal from '../../modal/archiveLevelModal';
-import EditLevelModal from '../../modal/editLevelModal';
-import UnpublishLevelModal from '../../modal/unpublishLevelModal';
+import LevelDropdown from './levelDropdown';
 import LevelInfoCompletions from './levelInfoCompletions';
 import LevelInfoPlayTime from './levelInfoPlayTime';
 import LevelInfoRecords from './levelInfoRecords';
@@ -28,11 +24,7 @@ interface FormattedLevelInfoProps {
 
 export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
   const [collapsedAuthorNote, setCollapsedAuthorNote] = useState(true);
-  const [isArchiveLevelOpen, setIsArchiveLevelOpen] = useState(false);
-  const [isEditLevelOpen, setIsEditLevelOpen] = useState(false);
-  const [isUnpublishLevelOpen, setIsUnpublishLevelOpen] = useState(false);
   const levelContext = useContext(LevelContext);
-  const { setPreventKeyDownEvent } = useContext(PageContext);
   const { user, userConfig } = useContext(AppContext);
 
   const maxCollapsedAuthorNote = 100;
@@ -41,7 +33,10 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
   return (<>
     <div className='mb-4 flex flex-col gap-4'>
       <div className='flex flex-col gap-1'>
-        <div className='font-bold text-2xl'>{level.name}</div>
+        <div className='flex justify-between w-full items-start'>
+          <div className='font-bold text-2xl'>{level.name}</div>
+          {user && <LevelDropdown level={level} />}
+        </div>
         <div className='flex gap-2 items-center'>
           <FormattedUser id='author' size={Dimensions.AvatarSizeSmall} user={level.userId} />
           <FormattedDate ts={level.ts} />
@@ -101,6 +96,14 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
           </div>
         </>
       }
+      {/* Archived by */}
+      {level.archivedTs && <>
+        <div className='flex flex-row gap-2 items-center'>
+          <span className='font-medium whitespace-nowrap'>Archived by:</span>
+          <FormattedUser id='archived-by' size={Dimensions.AvatarSizeSmall} user={level.archivedBy} />
+          <FormattedDate ts={level.archivedTs} />
+        </div>
+      </>}
       {/* Least steps history */}
       <div className='flex flex-col gap-2'>
         <Tab.Group>
@@ -148,86 +151,8 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
         </Tab.Group>
       </div>
     </div>
-    {/* Archived by */}
-    {level.archivedTs && <>
-      <div className='m-3' style={{
-        backgroundColor: 'var(--bg-color-4)',
-        height: 1,
-      }} />
-      <div className='flex flex-row gap-2 items-center'>
-        <span className='font-bold whitespace-nowrap'>Archived by:</span>
-        <FormattedUser id='archived-by' size={Dimensions.AvatarSizeSmall} user={level.archivedBy} />
-        <FormattedDate ts={level.archivedTs} />
-      </div>
-    </>}
-    {/* Creator buttons */}
-    {(userConfig?.userId === level.userId?._id || isCurator(user)) && <>
-      <div className='m-3' style={{
-        backgroundColor: 'var(--bg-color-4)',
-        height: 1,
-      }} />
-      {userConfig?.userId !== level.userId?._id &&
-        <div className='flex justify-center text-red-500 font-semibold mb-1'>
-          Curator Controls:
-        </div>
-      }
-      <div className='flex flex-row flex-wrap gap-x-4 gap-y-2 items-center justify-center'>
-        <button
-          className='italic underline'
-          onClick={() => {
-            setIsEditLevelOpen(true);
-            setPreventKeyDownEvent(true);
-          }}
-        >
-          Edit
-        </button>
-        <button
-          className='italic underline'
-          onClick={() => {
-            setIsArchiveLevelOpen(true);
-            setPreventKeyDownEvent(true);
-          }}
-        >
-          Archive
-        </button>
-        <button
-          className='italic underline'
-          onClick={() => {
-            setIsUnpublishLevelOpen(true);
-            setPreventKeyDownEvent(true);
-          }}
-        >
-          Unpublish
-        </button>
-      </div>
-      <EditLevelModal
-        closeModal={() => {
-          setIsEditLevelOpen(false);
-          setPreventKeyDownEvent(false);
-          levelContext?.mutateLevel();
-        }}
-        isOpen={isEditLevelOpen}
-        level={level}
-      />
-      <ArchiveLevelModal
-        closeModal={() => {
-          setIsArchiveLevelOpen(false);
-          setPreventKeyDownEvent(false);
-        }}
-        isOpen={isArchiveLevelOpen}
-        level={level}
-      />
-      <UnpublishLevelModal
-        closeModal={() => {
-          setIsUnpublishLevelOpen(false);
-          setPreventKeyDownEvent(false);
-        }}
-        isOpen={isUnpublishLevelOpen}
-        level={level}
-      />
-    </>}
     {/* Reviews */}
-    <div className='m-3' style={{
+    <div className='m-3 opacity-30' style={{
       backgroundColor: 'var(--bg-color-4)',
       height: 1,
     }} />

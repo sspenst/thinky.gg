@@ -196,7 +196,6 @@ export async function getMatch(matchId: string, reqUser?: User) {
  * @param minDifficultyIndex
  * @param maxDifficultyIndex Pass the same value as min to make it a single difficulty
  * @param levelCount
- * @param excludeLevelIds
  * @returns
  */
 export async function generateLevels(

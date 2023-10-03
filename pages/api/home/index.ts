@@ -12,6 +12,7 @@ import { getLatestReviews } from '../latest-reviews';
 import { getLevelOfDay } from '../level-of-day';
 import { getLastLevelPlayed } from '../play-attempt';
 import { doQuery } from '../search';
+import { getPlayAttempts } from '../user/play-history';
 
 async function getTopLevelsThisMonth(reqUser: User) {
   const query = {
@@ -60,15 +61,18 @@ async function getRecentAverageDifficulty(reqUser: User, numResults = 1) {
 
 async function getRecommendedLevel(reqUser: User) {
   const avgDifficulty = await getRecentAverageDifficulty(reqUser, 10);
+  const recentPlayAttempts = await getPlayAttempts(reqUser, {}, 10);
+  const uniqueLevelIdsFromRecentAttempts = new Set(recentPlayAttempts.map(playAttempt => playAttempt.levelId._id.toString()));
 
   const query = {
     disableCount: 'true',
+    excludeLevelIds: [...uniqueLevelIdsFromRecentAttempts].join(','),
     minSteps: '7',
     maxSteps: '2500',
     minDifficulty: String(avgDifficulty * 0.9), // 10% below average of last 10
     minRating: '0.55',
     maxRating: '1',
-    numResults: '10', // randomly select one of these
+    numResults: '20', // randomly select one of these
     sortBy: 'calcDifficultyEstimate',
     sortDir: 'asc',
     statFilter: StatFilter.HideWon,
@@ -82,6 +86,7 @@ async function getRecommendedLevel(reqUser: User) {
     // try a broader query without min and max difficulty for those rare users that have beaten so many levels to not have any recommended one
     const query = {
       disableCount: 'true',
+      excludeLevelIds: [...uniqueLevelIdsFromRecentAttempts].join(','),
       minSteps: '7',
       maxSteps: '2500',
       minRating: '0.55',

@@ -15,8 +15,8 @@ import User from '../../models/db/user';
 import FormattedCollectionLink from '../formatted/formattedCollectedLink';
 import FormattedDate from '../formatted/formattedDate';
 import FormattedLevelLink from '../formatted/formattedLevelLink';
-import { Stars } from '../formatted/formattedReview';
 import FormattedUser from '../formatted/formattedUser';
+import { Stars } from '../level/reviews/formattedReview';
 
 interface NotificationMessageProps {
   notification: Notification;
