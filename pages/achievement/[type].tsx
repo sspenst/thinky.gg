@@ -5,7 +5,6 @@ import Page from '@root/components/page/page';
 import DataTable from '@root/components/tables/dataTable';
 import AchievementType from '@root/constants/achievements/achievementType';
 import Dimensions from '@root/constants/dimensions';
-import Role from '@root/constants/role';
 import cleanUser from '@root/lib/cleanUser';
 import dbConnect from '@root/lib/dbConnect';
 import { getUserFromToken } from '@root/lib/withAuth';
@@ -27,16 +26,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  /* todo : should this be pro ?
-  if (!reqUser.roles.includes(Role.PRO)) {
-    return {
-      redirect: {
-        destination: '/settings/proaccount',
-        permanent: false,
-      },
-    };
-  }
-*/
   const { type } = context.query;
   const [myAchievement, achievements] = await Promise.all([
     AchievementModel.findOne({ userId: reqUser._id, type: type as string }),
@@ -46,8 +35,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       { $limit: 1000 },
       { $lookup: { from: UserModel.collection.name, localField: 'userId', foreignField: '_id', as: 'userId' } },
       { $unwind: { path: '$userId' } },
-    ]
-    )
+    ]),
   ]);
 
   for (const achievement of achievements) {
@@ -70,7 +58,7 @@ export default function AchievementPage({ type, myAchievement, achievements }: {
   return (
     <Page title='Viewing Achievement'>
       <div className='flex flex-col items-center justify-center w-full p-3'>
-        <FormattedAchievement unlocked={true} achievementType={type} createdAt={myAchievement?.createdAt} />
+        <FormattedAchievement achievementType={type} createdAt={myAchievement?.createdAt} unlocked={true} />
         <DataTable
           onSort={() => {}}
           sortBy='createdAt'
@@ -78,10 +66,8 @@ export default function AchievementPage({ type, myAchievement, achievements }: {
           onChangePage={(page: number) => {
             setPage(page);
           }}
-
           page={page}
           totalItems={achievements.length}
-
           columns={[
             {
               id: 'user',
@@ -101,6 +87,6 @@ export default function AchievementPage({ type, myAchievement, achievements }: {
           noDataComponent={<div className='text-gray-500 dark:text-gray-400'>No users to show</div>}
         />
       </div>
-
-    </Page>);
+    </Page>
+  );
 }

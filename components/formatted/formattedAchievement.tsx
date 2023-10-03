@@ -1,14 +1,12 @@
 import { AchievementRulesCombined } from '@root/constants/achievements/achievementInfo';
 import AchievementType from '@root/constants/achievements/achievementType';
 import classNames from 'classnames';
-import { ObjectId } from 'mongoose';
-import { useRouter } from 'next/router';
+import Link from 'next/link';
 import React from 'react';
 import StyledTooltip from '../page/styledTooltip';
 import FormattedDate from './formattedDate';
 
 interface FormattedAchievementProps {
-
   achievementType: AchievementType;
   createdAt?: Date;
   unlocked?: boolean;
@@ -17,15 +15,11 @@ interface FormattedAchievementProps {
 export default function FormattedAchievement({ achievementType, createdAt, unlocked }: FormattedAchievementProps) {
   const locked = !createdAt && !unlocked;
   const achievement = AchievementRulesCombined[achievementType];
-  const router = useRouter();
 
   return (
-    <div
-
-      onClick={() => {
-        router.push(`/achievement/${achievementType}`);
-      }}
-      className={classNames('cursor-pointer flex gap-4 items-center rounded-xl', { 'opacity-30': locked })}
+    <Link
+      className={classNames('flex gap-4 items-center rounded-xl', { 'opacity-30': locked })}
+      href={`/achievement/${achievementType}`}
       style={{
         borderColor: 'var(--bg-color-4)',
       }}
@@ -43,6 +37,6 @@ export default function FormattedAchievement({ achievementType, createdAt, unloc
         {achievement.tooltip && <StyledTooltip id={`achievement-description-${achievementType}`} />}
         {!locked && <FormattedDate className='w-fit' date={createdAt} />}
       </div>
-    </div>
+    </Link>
   );
 }
