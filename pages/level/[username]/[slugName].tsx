@@ -200,6 +200,11 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
         title={`${level.name} - Pathology`}
         description={authorNote}
         canonical={ogFullUrl}
+        twitter={{
+          cardType: 'summary_large_image',
+          handle: '@pathologygame',
+          site: 'https://pathology.gg',
+        }}
         openGraph={{
           title: `${level.name} - Pathology`,
           description: authorNote,
