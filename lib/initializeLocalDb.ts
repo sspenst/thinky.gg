@@ -1,4 +1,3 @@
-import User from '@root/models/db/user';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
 import { PASSWORD_SALTROUNDS } from '@root/models/schemas/userSchema';
 import bcrypt from 'bcryptjs';
@@ -340,18 +339,11 @@ export default async function initializeLocalDb() {
   await Promise.all(promises);
 }
 
-// TODO: this should really have the same logic as api/publish so tests are consistent with real use cases
 export async function initLevel(userId: string, name: string, obj: Partial<Level> = {}, createReviews = true) {
   const ts = TimerUtil.getTs();
   const id = new Types.ObjectId();
-  const user = await UserModel.findById<User>(userId, 'name');
-
-  if (!user) {
-    throw new Error(`user ${userId} not found`);
-  }
-
+  const user = await UserModel.findById(userId, 'name');
   const slug = await generateLevelSlug(user.name, name);
-  const leastMoves = 20;
 
   // based on name length create that many reviews
   const lvl = await LevelModel.create({
@@ -360,31 +352,13 @@ export async function initLevel(userId: string, name: string, obj: Partial<Level
     data: '40000\n12000\n05000\n67890\nABCD3',
     height: 5,
     isDraft: false,
-    leastMoves: leastMoves,
+    leastMoves: 20,
     name: name,
     slug: slug,
     ts: ts - name.length * 300,
-    userId: user._id,
+    userId: userId,
     width: 5,
     ...obj }) as Level;
-
-  await RecordModel.create({
-    _id: new Types.ObjectId(),
-    levelId: id,
-    moves: leastMoves,
-    ts: ts,
-    userId: user._id,
-  });
-
-  // await StatModel.create({
-  //   _id: new Types.ObjectId(),
-  //   attempts: 1,
-  //   complete: true,
-  //   levelId: id,
-  //   moves: leastMoves,
-  //   ts: ts,
-  //   userId: user._id,
-  // });
 
   if (createReviews) {
     const revs = [];
