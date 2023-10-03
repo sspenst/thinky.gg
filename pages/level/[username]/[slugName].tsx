@@ -203,7 +203,7 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
         twitter={{
           cardType: 'summary_large_image',
           handle: '@pathologygame',
-          site: 'https://pathology.gg',
+          site: '@pathologygame',
         }}
         openGraph={{
           title: `${level.name} - Pathology`,
