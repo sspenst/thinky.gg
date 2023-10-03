@@ -186,7 +186,7 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
 
   // subtitle is only useful when a level is within a collection created by a different user
   const showSubtitle = collection && (collection.userId._id !== level.userId._id);
-  const ogImageUrl = `/api/level/image/${level._id.toString()}.png${ts ? `?ts=${ts}` : ''}`;
+  const ogImageUrl = `https://pathology.gg/api/level/image/${level._id.toString()}.png${ts ? `?ts=${ts}` : ''}`;
   const ogUrl = `/level/${level.slug}`;
   const ogFullUrl = `https://pathology.gg${ogUrl}`;
   const authorNote = level.authorNote ? level.authorNote : `${level.name} by ${level.userId.name}`;
@@ -200,11 +200,6 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
         title={`${level.name} - Pathology`}
         description={authorNote}
         canonical={ogFullUrl}
-        twitter={{
-          cardType: 'summary_large_image',
-          handle: '@pathologygame',
-          site: '@pathologygame',
-        }}
         openGraph={{
           title: `${level.name} - Pathology`,
           description: authorNote,
