@@ -816,9 +816,10 @@ describe('Testing stats api', () => {
   });
   test('calcDifficultyEstimate', async () => {
     const level = await initLevel(TestId.USER, 'calcDifficultyEstimate', {}, false);
+    const toInsert = [];
 
     for (let i = 0; i < 9; i++) {
-      await PlayAttemptModel.create({
+      toInsert.push({
         _id: new Types.ObjectId(),
         // half beaten
         attemptContext: i % 2 === 0 ? AttemptContext.JUST_BEATEN : AttemptContext.UNBEATEN,
@@ -829,6 +830,8 @@ describe('Testing stats api', () => {
         userId: new Types.ObjectId(),
       });
     }
+
+    await PlayAttemptModel.insertMany(toInsert);
 
     await queueCalcPlayAttempts(level._id);
     await processQueueMessages();
@@ -844,6 +847,7 @@ describe('Testing stats api', () => {
     const unbeatenUserId = new Types.ObjectId();
 
     // create a playattempt for the 10th unique user
+
     await PlayAttemptModel.create({
       _id: new Types.ObjectId(),
       attemptContext: AttemptContext.UNBEATEN,
@@ -864,6 +868,29 @@ describe('Testing stats api', () => {
       ts: 0,
     });
 
+    const unbeatenUserId2 = new Types.ObjectId();
+
+    // create a playattempt for the 11th unique user But make it have 0 play time so it shouldn't affect calculations
+    await PlayAttemptModel.create({
+      _id: new Types.ObjectId(),
+      attemptContext: AttemptContext.UNBEATEN,
+      endTime: 0,
+      levelId: level._id,
+      startTime: 0,
+      updateCount: 0,
+      userId: unbeatenUserId,
+    });
+    await UserModel.create({
+      _id: unbeatenUserId2,
+      calc_records: 0,
+      email: 'unbeaten2@gmail.com',
+      last_visited_at: 0,
+      name: 'unbeaten2',
+      password: 'unbeaten',
+      score: 0,
+      ts: 0,
+    });
+
     await queueCalcPlayAttempts(level._id);
     await processQueueMessages();
 
@@ -871,9 +898,32 @@ describe('Testing stats api', () => {
 
     expect(levelUpdated2).toBeDefined();
     expect(levelUpdated2?.calc_difficulty_estimate).toBeCloseTo(29.2 * 1.47629);
+
+    /**
+     * User 1 has 10
+     * User 2 has 11
+     * User 3 has 12
+     * User 4 has 13
+     * User 5 has 14
+     * User 6 has 15
+     * User 7 has 16
+     * User 8 has 17
+     * User 9 has 18
+     * User 10 (created above manually): 20
+     * Sum = 146
+     */
     expect(levelUpdated2?.calc_playattempts_duration_sum).toBe(146);
     expect(levelUpdated2?.calc_playattempts_just_beaten_count).toBe(5);
+
     expect(levelUpdated2?.calc_playattempts_unique_users?.length).toBe(10);
+
+    /** Take away top 2.5% and bottom 2.5% for p95
+      * User 1 and User 10 are the outliers (10 and 20)
+      * 146 - 10 - 20 = 116
+      */
+
+    expect(levelUpdated2?.calc_playattempts_just_beaten_count_p95).toBe(8); // removing user 1 and 10
+    expect(levelUpdated2?.calc_playattempts_duration_sum_p95).toBe(116);
 
     jest.spyOn(TimerUtil, 'getTs').mockReturnValue(30);
     await testApiHandler({

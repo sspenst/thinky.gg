@@ -237,7 +237,16 @@ export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {
       {
         $match: {
           levelId: levelId,
-          attemptContext: { $ne: AttemptContext.BEATEN }
+          attemptContext: { $ne: AttemptContext.BEATEN },
+          // where endTime and startTime are not equal
+          $expr: {
+            $gt: [
+              {
+                $subtract: ['$endTime', '$startTime']
+              },
+              0
+            ]
+          }
         }
       },
       {
@@ -272,7 +281,7 @@ export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {
       },
       {
         $project: {
-          countExcluded: '$count',
+          countExcluded: { $subtract: ['$count', { $add: ['$lowerIndex', { $subtract: ['$count', '$upperIndex'] }] }] },
           sumExcluded: {
             $cond: {
               if: { $gt: [{ $subtract: ['$upperIndex', '$lowerIndex'] }, 0] },
