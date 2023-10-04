@@ -53,15 +53,7 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, hi
     <div className='flex flex-row h-full w-full' id='game-layout' style={{
       backgroundColor: 'var(--bg-color)',
     }}>
-      <div className='grow flex flex-col max-w-full'
-        style={{
-        // don't allow this div to be selectable
-          userSelect: 'none',
-          // seriously don't allow
-          WebkitUserSelect: 'none',
-
-        }}
-      >
+      <div className='grow flex flex-col max-w-full select-none'>
         {!matchId && level.userId && !fullScreen && <>
           <div className='flex items-center justify-center py-1 px-2 gap-1 block xl:hidden'>
             <button
