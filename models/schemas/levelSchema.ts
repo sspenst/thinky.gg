@@ -11,7 +11,6 @@ export const LEVEL_SEARCH_DEFAULT_PROJECTION = { _id: 1, ts: 1, name: 1, slug: 1
 
 const LevelSchema = new mongoose.Schema<Level>(
   {
-
     archivedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -114,7 +113,7 @@ const LevelSchema = new mongoose.Schema<Level>(
       locale: 'en_US',
       strength: 2,
     },
-  }
+  },
 );
 
 LevelSchema.index({ slug: 1 }, { name: 'slug_index', unique: true });
