@@ -1,9 +1,7 @@
-import classNames from 'classnames';
 import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Rating } from 'react-simple-star-rating';
 import TextareaAutosize from 'react-textarea-autosize';
-import Theme from '../../../constants/theme';
 import { AppContext } from '../../../contexts/appContext';
 import { LevelContext } from '../../../contexts/levelContext';
 import { PageContext } from '../../../contexts/pageContext';
@@ -24,7 +22,7 @@ export default function ReviewForm({ inModal, review }: ReviewFormProps) {
   const [rating, setRating] = useState(review?.score || 0);
   const [reviewBody, setReviewBody] = useState(review?.text || '');
   const { setPreventKeyDownEvent } = useContext(PageContext);
-  const { theme, user: reqUser } = useContext(AppContext);
+  const { user: reqUser } = useContext(AppContext);
 
   function onUpdateReview() {
     setIsUpdating(true);
@@ -118,10 +116,7 @@ export default function ReviewForm({ inModal, review }: ReviewFormProps) {
         }
       </div>
       <TextareaAutosize
-        className={classNames(
-          'bg-inherit block py-1 -mt-2 w-full border-b border-neutral-500 disabled:text-neutral-500 transition resize-none placeholder:text-neutral-500 focus:outline-0 rounded-none',
-          theme === Theme.Light ? 'focus:border-black' : 'focus:border-white',
-        )}
+        className='bg-inherit block py-1 -mt-2 w-full border-b border-neutral-500 disabled:text-neutral-500 transition resize-none placeholder:text-neutral-500 focus:outline-0 rounded-none focus:border-black focus:dark:border-white'
         disabled={isUpdating}
         onBlur={() => {
           // only prevent keydown when entering review from the sidebar
