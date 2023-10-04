@@ -4,6 +4,7 @@ import { directionsToGameState, isValidDirections } from '@root/helpers/checkpoi
 import { areEqualGameStates, cloneGameState, GameState, initGameState, makeMove, undo } from '@root/helpers/gameStateHelpers';
 import isPro from '@root/helpers/isPro';
 import useCheckpoints, { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
+import useDeviceCheck, { ScreenSize } from '@root/hooks/useDeviceCheck';
 import { Types } from 'mongoose';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -654,17 +655,41 @@ export default function Game({
   }, [handleBlurEvent, handleKeyDownEvent, handleKeyUpEvent, handleTouchMoveEvent, handleTouchStartEvent, handleTouchEndEvent]);
 
   const [controls, setControls] = useState<Control[]>([]);
+  const { screenSize } = useDeviceCheck();
+  const isMobile = screenSize < ScreenSize.XL;
 
   useEffect(() => {
     const _controls: Control[] = [];
+    const iconWidthHeight = 28;
 
     if (onPrev) {
-      _controls.push(new Control('btn-prev', () => onPrev(), <><span className='underline'>P</span>rev Level</>));
+      const leftArrow = <svg xmlns='http://www.w3.org/2000/svg' width={iconWidthHeight} height={iconWidthHeight} fill='currentColor' className='bi bi-arrow-left' viewBox='0 0 16 16'>
+        <path fillRule='evenodd' d='M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z' />
+      </svg>;
+      const prevTxt = isMobile ? leftArrow : <><span className='underline'>P</span>rev Level</>;
+
+      _controls.push(new Control('btn-prev', () => onPrev(), prevTxt ));
     }
 
+    const restartIcon = (<svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+      <path strokeLinecap='round' strokeLinejoin='round' d='M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99' />
+    </svg>);
+    const restartTxt = isMobile ? restartIcon : <><span className='underline'>R</span>estart</>;
+
+    const undoIcon = (<svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+      <path strokeLinecap='round' strokeLinejoin='round' d='M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3' />
+    </svg>);
+    const undoTxt = isMobile ? undoIcon : <div className='select-none'><span className='underline'>U</span>ndo</div>;
+
+    const redoIcon = (<svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+      <path strokeLinecap='round' strokeLinejoin='round' d='M15 15l6-6m0 0l-6-6m6 6H9a6 6 0 000 12h3' />
+    </svg>);
+
+    const redoTxt = isMobile ? redoIcon : <div className='select-none'>Redo (<span className='underline'>Y</span>)</div>;
+
     _controls.push(
-      new Control('btn-restart', () => handleKeyDown('KeyR'), <><span className='underline'>R</span>estart</>),
-      new Control('btn-undo', () => handleKeyDown('Backspace'), <><span className='underline'>U</span>ndo</>, false, false, () => {
+      new Control('btn-restart', () => handleKeyDown('KeyR'), restartTxt),
+      new Control('btn-undo', () => handleKeyDown('Backspace'), <div className='select-none'>{undoTxt}</div>, false, false, () => {
         handleKeyDown('Backspace');
 
         return true;
@@ -672,9 +697,9 @@ export default function Game({
       new Control(
         'btn-redo',
         () => handleKeyDown('KeyY'),
-        <span className='flex gap-2 justify-center'>
-          <Image alt='pro' src='/pro.svg' width='16' height='16' />
-          {'Redo'}
+        <span className='flex gap-2 justify-center select-none'>
+          {!pro && <Image className='select-none pointer-events-none z-0' alt='pro' src='/pro.svg' width='16' height='16' />}
+          {redoTxt}
         </span>,
         gameState.redoStack.length === 0,
         false,
@@ -687,7 +712,12 @@ export default function Game({
     );
 
     if (onNext) {
-      _controls.push(new Control('btn-next', () => onNext(), <><span className='underline'>N</span>ext Level</>));
+      const rightArrow = <span className='truncate'><svg xmlns='http://www.w3.org/2000/svg' width={iconWidthHeight} height={iconWidthHeight} fill='currentColor' className='bi bi-arrow-right' viewBox='0 0 16 16'>
+        <path fillRule='evenodd' d='M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z' />
+      </svg></span>;
+      const nextTxt = isMobile ? rightArrow : <><span className='underline'>N</span>ext Level</>;
+
+      _controls.push(new Control('btn-next', () => onNext(), nextTxt));
     }
 
     if (extraControls) {
@@ -695,7 +725,7 @@ export default function Game({
     } else {
       setControls(_controls);
     }
-  }, [extraControls, gameState.redoStack.length, handleKeyDown, onNext, onPrev, pro, setControls]);
+  }, [extraControls, gameState.redoStack.length, handleKeyDown, isMobile, onNext, onPrev, pro, setControls]);
 
   function onCellClick(x: number, y: number) {
     if (isSwiping.current) {
