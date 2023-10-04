@@ -1,5 +1,5 @@
 import { PageContext } from '@root/contexts/pageContext';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import Collection from '../../models/db/collection';
 import { EnrichedLevel } from '../../models/db/level';
 import User from '../../models/db/user';
@@ -19,10 +19,6 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
   const [postGameModalOpen, setShowPostGameModalOpen] = useState(false);
   const { setPreventKeyDownEvent } = useContext(PageContext);
 
-  useEffect(() => {
-    setPreventKeyDownEvent(postGameModalOpen);
-  }, [postGameModalOpen, setPreventKeyDownEvent]);
-
   return (
     <>
       <Game
@@ -34,11 +30,17 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
         level={level}
         onNext={collection ? onNext : undefined}
         onPrev={collection ? onPrev : undefined}
-        onSolve={() => setTimeout(() => setShowPostGameModalOpen(true), 200)}
+        onSolve={() => setTimeout(() => {
+          setShowPostGameModalOpen(true);
+          setPreventKeyDownEvent(true);
+        }, 200)}
       />
       <PostGameModal
         chapter={chapter}
-        closeModal={() => setShowPostGameModalOpen(false)}
+        closeModal={() => {
+          setShowPostGameModalOpen(false);
+          setPreventKeyDownEvent(false);
+        }}
         collection={collection}
         isOpen={postGameModalOpen}
         level={level}

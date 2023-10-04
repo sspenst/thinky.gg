@@ -74,6 +74,7 @@ export default function ReviewForm({ inModal, review }: ReviewFormProps) {
       <>
         <FormattedReview
           hideBorder={true}
+          inModal={inModal}
           key={'user-formatted-review'}
           onEditClick={() => setIsEditing(true)}
           review={review}
