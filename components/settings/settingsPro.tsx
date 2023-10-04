@@ -5,7 +5,6 @@ import moment from 'moment';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useContext, useEffect, useState } from 'react';
-import Theme from '../../constants/theme';
 import { AppContext } from '../../contexts/appContext';
 import useSWRHelper from '../../hooks/useSWRHelper';
 import { SubscriptionData } from '../../pages/api/subscription';
@@ -40,7 +39,7 @@ interface SettingsProProps {
 }
 
 export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLink, stripePaymentYearlyLink }: SettingsProProps) {
-  const { mutateUser, theme, user, userLoading } = useContext(AppContext);
+  const { mutateUser, user, userLoading } = useContext(AppContext);
   const [plan, setPlan] = useState('year');
   const [shouldContinouslyFetch, setShouldContinouslyFetch] = useState(false);
   const { data: subscriptionData } = useSWRHelper<SubscriptionData>('/api/subscription');
@@ -69,12 +68,6 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
     );
   }
 
-  const buttonClassNames = classNames('py-2.5 px-3.5 mt-2 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm whitespace-nowrap',
-    theme === Theme.Light ?
-      'bg-green-100 hover:bg-gray-50 border-gray-300 text-gray-700' :
-      'bg-gray-800 hover:bg-slate-600 border-gray-700 text-gray-300'
-  );
-
   return (
     <div className='flex flex-col justify-center items-center gap-4'>
       <div className='flex gap-4'>
@@ -101,7 +94,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                   </span>
                   :
                   <a
-                    className={buttonClassNames}
+                    className='py-2.5 px-3.5 mt-2 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm whitespace-nowrap bg-green-100 dark:bg-gray-800 hover:bg-gray-50 hover:dark:bg-slate-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300'
                     href={stripeCustomerPortalLink || ''}
                     rel='noreferrer'
                     target='_blank'

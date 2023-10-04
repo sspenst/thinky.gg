@@ -7,6 +7,7 @@ import { Rubik, Teko } from 'next/font/google';
 import Head from 'next/head';
 import Router, { useRouter } from 'next/router';
 import { DefaultSeo } from 'next-seo';
+import { ThemeProvider } from 'next-themes';
 import nProgress from 'nprogress';
 import React, { useEffect, useState } from 'react';
 import CookieConsent from 'react-cookie-consent';
@@ -305,13 +306,11 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   const isEU = Intl.DateTimeFormat().resolvedOptions().timeZone.startsWith('Europe');
 
   return (
-    <>
-
+    <ThemeProvider attribute='class'>
       <Head>
         <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' />
         <meta name='apple-itunes-app' content='app-id=1668925562, app-argument=pathology.gg' />
       </Head>
-
       <DefaultSeo
         defaultTitle='Pathology - Shortest Path Puzzle Game'
         description='The goal of the puzzle game Pathology is simple. Get to the exit in the least number of moves.'
@@ -366,6 +365,6 @@ export default function MyApp({ Component, pageProps }: AppProps) {
           </div>
         </AppContext.Provider>
       </GrowthBookProvider>
-    </>
+    </ThemeProvider>
   );
 }
