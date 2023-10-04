@@ -20,12 +20,16 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
     for (const className of document.body.classList.values()) {
       if (className.startsWith('theme-')) {
         setTheme(className);
-        setAppTheme(className === Theme.Light ? 'light' : 'dark');
 
         return;
       }
     }
-  }, [isOpen, setAppTheme, setTheme]);
+  }, [isOpen, setTheme]);
+
+  // maintain accurate app theme for tailwind dark mode classes
+  useEffect(() => {
+    setAppTheme(theme === Theme.Light ? 'light' : 'dark');
+  }, [setAppTheme, theme]);
 
   function onChange(e: React.ChangeEvent<HTMLInputElement>) {
     const newTheme = e.currentTarget.value;
@@ -36,7 +40,6 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
 
     document.body.classList.add(newTheme);
     setTheme(newTheme);
-    setAppTheme(newTheme === Theme.Light ? 'light' : 'dark');
   }
 
   function putTheme() {

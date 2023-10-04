@@ -7,7 +7,7 @@ import { Rubik, Teko } from 'next/font/google';
 import Head from 'next/head';
 import Router, { useRouter } from 'next/router';
 import { DefaultSeo } from 'next-seo';
-import { ThemeProvider, useTheme } from 'next-themes';
+import { ThemeProvider } from 'next-themes';
 import nProgress from 'nprogress';
 import React, { useEffect, useState } from 'react';
 import CookieConsent from 'react-cookie-consent';
@@ -75,7 +75,6 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   const [sounds, setSounds] = useState<{ [key: string]: HTMLAudioElement }>({});
   const [theme, setTheme] = useState<string>();
   const { matches, privateAndInvitedMatches } = multiplayerSocket;
-  const { setTheme: setAppTheme } = useTheme();
 
   useEffect(() => {
     // preload sounds
@@ -202,7 +201,6 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       document.body.classList.remove(Theme.Modern);
       document.body.classList.add(user.config.theme);
       setTheme(user.config.theme);
-      setAppTheme(user.config.theme === Theme.Light ? 'light' : 'dark');
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.config]);
