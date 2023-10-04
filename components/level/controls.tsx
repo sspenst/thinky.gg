@@ -59,11 +59,11 @@ export default function Controls({ controls }: ControlsProps) {
   const mouseDownStartTs = useRef(0);
 
   return (
-    <div className='select-none flex z-10 min-h-[36px] sm:min-h-[44px] text-xs sm:text-base pb-1'>
+    <div className='select-none flex justify-evenly z-10 min-h-[36px] sm:min-h-[44px] text-xs sm:text-base'>
       {controls.map((control) => (
         <button
           className={classNames(
-            'p-1 flex flex-grow justify-center items-center rounded-lg duration-300 hover:duration-100 ease select-none touch-none m-0.5',
+            'p-1 flex w-full justify-center items-center rounded-lg duration-300 hover:duration-100 ease select-none touch-none m-0.5',
             { 'pointer-events-none': control.disabled },
             control.blue ? 'bg-blue-500 text-gray-300 hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition' : control.disabled ? null : styles.control,
           )}
