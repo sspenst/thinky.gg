@@ -135,6 +135,7 @@ export default function AdminPage({ queryUser, queryLevel, queryUserCommand, que
     Router.reload();
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function display(title: string, obj: any) {
     return (
       <div>

@@ -4,14 +4,16 @@
 // import tsconfig-paths
 
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
+import Level from '@root/models/db/level';
 import PlayAttempt from '@root/models/db/playAttempt';
+import Record from '@root/models/db/record';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
 import { queueRefreshAchievements } from '@root/pages/api/internal-jobs/worker';
 import cliProgress from 'cli-progress';
 import dotenv from 'dotenv';
 import dbConnect from '../../lib/dbConnect';
 import User from '../../models/db/user';
-import { LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, PlayAttemptModel, StatModel, UserModel } from '../../models/mongoose';
+import { LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../models/mongoose';
 import { MultiplayerMatchType } from '../../models/MultiplayerEnums';
 import { calcPlayAttempts, refreshIndexCalcs } from '../../models/schemas/levelSchema';
 import { calcCreatorCounts } from '../../models/schemas/userSchema';
@@ -163,6 +165,63 @@ async function integrityCheckUsersScore() {
   console.log('All done');
 }
 
+async function integrityCheckRecords() {
+  const allLevels = await LevelModel.countDocuments({ isDeleted: { $ne: true }, isDraft: false });
+  const recordCounts: { [userId: string]: number } = {};
+  let i = 0;
+
+  progressBar.start(allLevels, 0);
+
+  for await (const level of LevelModel.find<Level>({ isDeleted: { $ne: true }, isDraft: false })) {
+    // find the latest record
+    const record = await RecordModel.findOne<Record>({ levelId: level._id }).sort({ ts: -1 });
+
+    if (!record) {
+      console.warn(`\nNo record found for level ${level.slug}`);
+      continue;
+    }
+
+    const levelUserId = (level.archivedBy ?? level.userId).toString();
+    const recordUserId = record.userId.toString();
+
+    // record was not set by the original author, we have found a valid record
+    if (recordUserId !== levelUserId) {
+      if (recordUserId in recordCounts) {
+        recordCounts[recordUserId] += 1;
+      } else {
+        recordCounts[recordUserId] = 1;
+      }
+    }
+
+    i++;
+    progressBar.update(i);
+  }
+
+  progressBar.stop();
+  console.log('Collected record counts');
+
+  const allUsers = await UserModel.countDocuments();
+
+  i = 0;
+  progressBar.start(allUsers, 0);
+
+  for await (const user of UserModel.find<User>()) {
+    const userId = user._id.toString();
+    const records = (userId in recordCounts) ? recordCounts[userId] : 0;
+
+    if (user.calc_records !== records) {
+      console.warn(`\nUser ${user.name} score changed from ${user.calc_records} to ${records}`);
+      await UserModel.updateOne({ _id: user._id }, { $set: { calc_records: records } });
+    }
+
+    i++;
+    progressBar.update(i);
+  }
+
+  progressBar.stop();
+  console.log('All done');
+}
+
 async function integrityCheckAcheivements() {
   console.log('Querying all users into memory...');
   const users = await UserModel.find<User>({}, '_id name score', { lean: false, sort: { score: -1 } });
@@ -256,6 +315,7 @@ async function init() {
   const runMultiplayerProfiles = args.includes('--multiplayer');
   const runAchievements = args.includes('--achievements');
   const runPlayAttempts = args.includes('--playattempts');
+  const runRecords = args.includes('--records');
 
   // chunks and chunk-index are used to split up the work into chunks
   const chunks = parseInt(args.find((x: string) => x.startsWith('--chunks='))?.split('=')[1] || '1');
@@ -271,6 +331,10 @@ async function init() {
 
   if (runUsers) {
     await integrityCheckUsersScore();
+  }
+
+  if (runRecords) {
+    await integrityCheckRecords();
   }
 
   if (runMultiplayerProfiles) {
