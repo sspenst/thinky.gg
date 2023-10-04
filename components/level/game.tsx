@@ -4,7 +4,7 @@ import { directionsToGameState, isValidDirections } from '@root/helpers/checkpoi
 import { areEqualGameStates, cloneGameState, GameState, initGameState, makeMove, undo } from '@root/helpers/gameStateHelpers';
 import isPro from '@root/helpers/isPro';
 import useCheckpoints, { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
-import useDeviceCheck from '@root/hooks/useDeviceCheck';
+import useDeviceCheck, { ScreenSize } from '@root/hooks/useDeviceCheck';
 import { Types } from 'mongoose';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -655,9 +655,8 @@ export default function Game({
   }, [handleBlurEvent, handleKeyDownEvent, handleKeyUpEvent, handleTouchMoveEvent, handleTouchStartEvent, handleTouchEndEvent]);
 
   const [controls, setControls] = useState<Control[]>([]);
-  const { screen } = useDeviceCheck();
-
-  const isMobile = screen === 'sm' || screen === 'xs';
+  const { screenSize } = useDeviceCheck();
+  const isMobile = screenSize < ScreenSize.XL;
 
   useEffect(() => {
     const _controls: Control[] = [];
@@ -682,19 +681,18 @@ export default function Game({
       <path fillRule='evenodd' d='M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z' />
       <path d='M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z' />
     </svg>);
-    const undoTxt = isMobile ? undoIcon : <div style={{ userSelect: 'none', WebkitUserSelect: 'none' }}><span className='underline'>U</span>ndo</div>;
+    const undoTxt = isMobile ? undoIcon : <div className='select-none'><span className='underline'>U</span>ndo</div>;
 
     const redoIcon = (<svg xmlns='http://www.w3.org/2000/svg' width={iconWidthHeight} height={iconWidthHeight} fill='currentColor' className='bi bi-arrow-clockwise' viewBox='0 0 16 16'>
       <path fillRule='evenodd' d='M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z' />
       <path d='M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z' />
     </svg>);
 
-    const redoTxt = isMobile ? redoIcon : <div style={{ userSelect: 'none', WebkitUserSelect: 'none' }}>(<span className='underline'>Y</span>) Redo</div>;
+    const redoTxt = isMobile ? redoIcon : <div className='select-none'>Redo (<span className='underline'>Y</span>)</div>;
 
     _controls.push(
-
       new Control('btn-restart', () => handleKeyDown('KeyR'), restartTxt),
-      new Control('btn-undo', () => handleKeyDown('Backspace'), <div style={{ userSelect: 'none', WebkitUserSelect: 'none' }}>{undoTxt}</div>, false, false, () => {
+      new Control('btn-undo', () => handleKeyDown('Backspace'), <div className='select-none'>{undoTxt}</div>, false, false, () => {
         handleKeyDown('Backspace');
 
         return true;
@@ -702,19 +700,8 @@ export default function Game({
       new Control(
         'btn-redo',
         () => handleKeyDown('KeyY'),
-        <span className='flex  justify-center'
-          style={{
-          // make unselectable
-            userSelect: 'none',
-            WebkitUserSelect: 'none',
-          }}
-        >
-          { !isPro(user) && <Image style={{
-            userSelect: 'none',
-            WebkitUserSelect: 'none',
-            pointerEvents: 'none',
-            zIndex: 0
-          }} alt='pro' src='/pro.svg' width='16' height='16' /> }
+        <span className='flex gap-2 justify-center select-none'>
+          {!pro && <Image className='select-none pointer-events-none z-0' alt='pro' src='/pro.svg' width='16' height='16' />}
           {redoTxt}
         </span>,
         gameState.redoStack.length === 0,
@@ -741,7 +728,7 @@ export default function Game({
     } else {
       setControls(_controls);
     }
-  }, [extraControls, gameState.redoStack.length, handleKeyDown, isMobile, onNext, onPrev, pro, setControls, user]);
+  }, [extraControls, gameState.redoStack.length, handleKeyDown, isMobile, onNext, onPrev, pro, setControls]);
 
   function onCellClick(x: number, y: number) {
     if (isSwiping.current) {
