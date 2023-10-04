@@ -4,15 +4,16 @@ import { LevelContext } from '@root/contexts/levelContext';
 import { PageContext } from '@root/contexts/pageContext';
 import isCurator from '@root/helpers/isCurator';
 import classNames from 'classnames';
-import React, { Fragment, useContext, useEffect, useState } from 'react';
+import React, { Fragment, useContext, useState } from 'react';
 import DeleteReviewModal from '../../modal/deleteReviewModal';
 
 interface ReviewDropdownProps {
+  inModal?: boolean;
   onEditClick: () => void;
   userId: string;
 }
 
-export default function ReviewDropdown({ onEditClick, userId }: ReviewDropdownProps) {
+export default function ReviewDropdown({ inModal, onEditClick, userId }: ReviewDropdownProps) {
   const [isDeleteReviewOpen, setIsDeleteReviewOpen] = useState(false);
   const levelContext = useContext(LevelContext);
   const { setPreventKeyDownEvent } = useContext(PageContext);
@@ -20,10 +21,6 @@ export default function ReviewDropdown({ onEditClick, userId }: ReviewDropdownPr
 
   const canEdit = userId === user?._id.toString() || isCurator(user);
   const isNotAuthor = user?._id.toString() !== userId;
-
-  useEffect(() => {
-    setPreventKeyDownEvent(isDeleteReviewOpen);
-  }, [isDeleteReviewOpen, setPreventKeyDownEvent]);
 
   if (!canEdit) {
     return null;
@@ -71,7 +68,13 @@ export default function ReviewDropdown({ onEditClick, userId }: ReviewDropdownPr
               {({ active }) => (
                 <div
                   className={classNames('flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3', { 'text-red-500': isNotAuthor })}
-                  onClick={() => setIsDeleteReviewOpen(true)}
+                  onClick={() => {
+                    setIsDeleteReviewOpen(true);
+
+                    if (!inModal) {
+                      setPreventKeyDownEvent(true);
+                    }
+                  }}
                   style={{
                     backgroundColor: active ? 'var(--bg-color-3)' : undefined,
                   }}
@@ -91,6 +94,10 @@ export default function ReviewDropdown({ onEditClick, userId }: ReviewDropdownPr
       closeModal={() => {
         setIsDeleteReviewOpen(false);
         levelContext?.getReviews();
+
+        if (!inModal) {
+          setPreventKeyDownEvent(false);
+        }
       }}
       isOpen={isDeleteReviewOpen}
       userId={userId}

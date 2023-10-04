@@ -45,10 +45,6 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, hi
     setShowHeader(!fullScreen);
   }, [fullScreen, setShowHeader]);
 
-  useEffect(() => {
-    setPreventKeyDownEvent(isCheckpointOpen || isLevelInfoOpen);
-  }, [isCheckpointOpen, isLevelInfoOpen, setPreventKeyDownEvent]);
-
   return (
     <div className='flex flex-row h-full w-full' id='game-layout' style={{
       backgroundColor: 'var(--bg-color)',
@@ -58,7 +54,10 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, hi
           <div className='flex items-center justify-center py-1 px-2 gap-1 block xl:hidden'>
             <button
               className='flex gap-2 items-center truncate'
-              onClick={() => setIsLevelInfoOpen(true)}
+              onClick={() => {
+                setIsLevelInfoOpen(true);
+                setPreventKeyDownEvent(true);
+              }}
               style={{
                 color: level.userMoves ? (level.userMoves === level.leastMoves ? 'var(--color-complete)' : 'var(--color-incomplete)') : 'var(--color)',
               }}
@@ -82,7 +81,10 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, hi
             </div>
           </div>
           <LevelInfoModal
-            closeModal={() => setIsLevelInfoOpen(false)}
+            closeModal={() => {
+              setIsLevelInfoOpen(false);
+              setPreventKeyDownEvent(false);
+            }}
             isOpen={isLevelInfoOpen}
             level={level}
           />
@@ -104,7 +106,10 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, hi
                 data-tooltip-content='Checkpoints'
                 data-tooltip-id='checkpoint-tooltip'
                 id='checkpointBtn'
-                onClick={() => setIsCheckpointOpen(!isCheckpointOpen)}
+                onClick={() => {
+                  setIsCheckpointOpen(!isCheckpointOpen);
+                  setPreventKeyDownEvent(true);
+                }}
               >
                 <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
                   <path strokeLinecap='round' strokeLinejoin='round' d='M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5' />
@@ -112,7 +117,10 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, hi
               </button>
               <StyledTooltip id='checkpoint-tooltip' />
               <CheckpointsModal
-                closeModal={() => setIsCheckpointOpen(false)}
+                closeModal={() => {
+                  setIsCheckpointOpen(false);
+                  setPreventKeyDownEvent(true);
+                }}
                 isOpen={isCheckpointOpen}
               />
             </>

@@ -67,13 +67,14 @@ export function Stars({ stars }: StarsProps) {
 
 interface FormattedReviewProps {
   hideBorder?: boolean;
+  inModal?: boolean;
   level?: EnrichedLevel;
   onEditClick?: () => void;
   review: ReviewWithStats;
   user: User | undefined;
 }
 
-export default function FormattedReview({ hideBorder, level, onEditClick, review, user }: FormattedReviewProps) {
+export default function FormattedReview({ hideBorder, inModal, level, onEditClick, review, user }: FormattedReviewProps) {
   return (
     <div className='flex align-center justify-center text-left break-words'>
       <div
@@ -88,7 +89,13 @@ export default function FormattedReview({ hideBorder, level, onEditClick, review
               <FormattedUser id={level ? `review-${level._id.toString()}` : 'review'} user={user} />
               <FormattedDate ts={review.ts} />
             </div>
-            {onEditClick && user && <ReviewDropdown onEditClick={onEditClick} userId={user._id.toString()} />}
+            {onEditClick && user && (
+              <ReviewDropdown
+                inModal={inModal}
+                onEditClick={onEditClick}
+                userId={user._id.toString()}
+              />
+            )}
           </div>
           {level && <FormattedLevelLink id={`review-${user?._id.toString() ?? 'deleted'}`} level={level} />}
         </div>
