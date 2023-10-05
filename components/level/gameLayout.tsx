@@ -119,7 +119,7 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, hi
               <CheckpointsModal
                 closeModal={() => {
                   setIsCheckpointOpen(false);
-                  setPreventKeyDownEvent(true);
+                  setPreventKeyDownEvent(false);
                 }}
                 isOpen={isCheckpointOpen}
               />
