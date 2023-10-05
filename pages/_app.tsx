@@ -63,6 +63,7 @@ function updateGrowthBookURL() {
 export default function MyApp({ Component, pageProps }: AppProps) {
   const forceUpdate = useForceUpdate();
   const { isLoading, mutateUser, user } = useUser();
+  const [mounted, setMounted] = useState(false);
   const [multiplayerSocket, setMultiplayerSocket] = useState<MultiplayerSocket>({
     connectedPlayers: [],
     connectedPlayersCount: 0,
@@ -191,6 +192,10 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     };
   }, [user?._id]);
 
+  // TODO: we want to do this in the thememodal
+  // save theme in local storage
+  // if theme is in local storage use it, otherwise use theme modern
+  // when do we save to user config? or use the userconfig theme value? maybe just do per device
   useEffect(() => {
     if (!user?.config) {
       return;
@@ -198,12 +203,16 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
     if (Object.values(Theme).includes(user.config.theme as Theme) && theme !== user.config.theme) {
       // need to remove the default theme so we can add the userConfig theme
-      document.body.classList.remove(Theme.Modern);
-      document.body.classList.add(user.config.theme);
+      // document.body.classList.remove(Theme.Modern);
+      // document.body.classList.add(user.config.theme);
       setTheme(user.config.theme);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.config]);
+
+  useEffect(() => {
+
+  }, [theme]);
 
   useEffect(() => {
     for (const match of matches) {
@@ -305,8 +314,16 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
   const isEU = Intl.DateTimeFormat().resolvedOptions().timeZone.startsWith('Europe');
 
+  // useEffect(() => {
+  //   setMounted(true);
+  // }, []);
+
+  // if (!mounted) {
+  //   return null;
+  // }
+
   return (
-    <ThemeProvider attribute='class'>
+    <ThemeProvider themes={['theme-modern', 'theme-light', 'theme-dark']} attribute='class'>
       <Head>
         <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' />
         <meta name='apple-itunes-app' content='app-id=1668925562, app-argument=pathology.gg' />
