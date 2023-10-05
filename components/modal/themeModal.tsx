@@ -16,29 +16,34 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
   const { mutateUser, setTheme, theme } = useContext(AppContext);
   const { setTheme: setAppTheme } = useTheme();
 
-  useEffect(() => {
-    for (const className of document.body.classList.values()) {
-      if (className.startsWith('theme-')) {
-        setTheme(className);
+  // useEffect(() => {
+  //   for (const className of document.body.classList.values()) {
+  //     if (className.startsWith('theme-')) {
+  //       setTheme(className);
 
-        return;
-      }
-    }
-  }, [isOpen, setTheme]);
+  //       return;
+  //     }
+  //   }
+  // }, [isOpen, setTheme]);
 
   // maintain accurate app theme for tailwind dark mode classes
   useEffect(() => {
-    setAppTheme(theme === Theme.Light ? 'light' : 'dark');
+    console.log(theme);
+
+    if (theme) {
+      setAppTheme(theme);
+    }
+    // setAppTheme(theme === Theme.Light ? 'light' : 'dark');
   }, [setAppTheme, theme]);
 
   function onChange(e: React.ChangeEvent<HTMLInputElement>) {
     const newTheme = e.currentTarget.value;
 
-    if (theme !== undefined) {
-      document.body.classList.remove(theme);
-    }
+    // if (theme !== undefined) {
+    //   document.body.classList.remove(theme);
+    // }
 
-    document.body.classList.add(newTheme);
+    // document.body.classList.add(newTheme);
     setTheme(newTheme);
   }
 
