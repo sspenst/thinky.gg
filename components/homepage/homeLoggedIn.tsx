@@ -301,7 +301,14 @@ export default function HomeLoggedIn({
           }
         </div>
       </div>
-      <iframe id='discordSection' className='p-4' src='https://discord.com/widget?id=971585343956590623&theme=dark' width='640' height='640' sandbox='allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts' />
+      <iframe
+        className='p-4'
+        height='640'
+        id='discordSection'
+        sandbox='allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts'
+        src='https://discordapp.com/widget?id=971585343956590623&theme=dark'
+        width='640'
+      />
     </div>
   </>);
 }
