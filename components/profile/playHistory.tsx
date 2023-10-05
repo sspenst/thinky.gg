@@ -83,7 +83,7 @@ export default function PlayHistory() {
       <div className='flex flex-col items-start gap-1'>
         <label className='font-semibold'>Go to Date and Time</label>
         <input
-          className='p-2 border rounded text-black'
+          className='p-2 border rounded'
           min='2020-01-01T00:00'
           max={moment().format('YYYY-MM-DDTHH:mm')}
           onBlur={() => {

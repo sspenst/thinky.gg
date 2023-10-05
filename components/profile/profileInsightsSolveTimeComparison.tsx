@@ -88,7 +88,7 @@ export default function ProfileInsightsSolveTimeComparison({ user }: { user: Use
         <div className='flex gap-2'>
           <label htmlFor='score-percentile'>Percentile</label>
           {/* dropdown for 0.1% , 1%, 5%, 10% */}
-          <select id='score-percentile' value={percentile} onChange={(e) => setPercentile(parseFloat(e.target.value))} className='border border-gray-300 rounded-md text-black'>
+          <select id='score-percentile' value={percentile} onChange={(e) => setPercentile(parseFloat(e.target.value))} className='border border-gray-300 rounded-md'>
             <option value={0.001}>0.1%</option>
             <option value={0.01}>1%</option>
             <option value={0.05}>5%</option>

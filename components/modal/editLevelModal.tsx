@@ -160,7 +160,7 @@ export default function EditLevelModal({ closeModal, isOpen, level }: EditLevelM
         {isUsersLevel && <>
           <label className='font-semibold' htmlFor='name'>Name:</label>
           <input
-            className='p-1 rounded-md text-black border'
+            className='p-1 rounded-md border'
             name='name'
             onChange={e => setName(e.target.value)}
             placeholder={'Edit name...'}
@@ -170,7 +170,7 @@ export default function EditLevelModal({ closeModal, isOpen, level }: EditLevelM
           />
           <label className='font-semibold' htmlFor='authorNote'>Author Note:</label>
           <textarea
-            className='p-1 rounded-md text-black border'
+            className='p-1 rounded-md border'
             name='authorNote'
             onChange={e => setAuthorNote(e.target.value)}
             placeholder={'Edit optional author note...'}
