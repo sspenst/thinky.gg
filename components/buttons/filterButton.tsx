@@ -23,10 +23,10 @@ export default function FilterButton({ element, first, last, onClick, proRequire
   return (
     <button
       className={classNames(
-        'px-3 py-2.5 text-white font-medium text-xs leading-tight hover:bg-yellow-700 active:bg-yellow-800 transition duration-150 ease-in-out',
+        'px-3 py-2.5 font-medium text-xs leading-tight active:bg-yellow-800 transition duration-150 ease-in-out',
         first ? 'rounded-tl-lg rounded-bl-lg' : undefined,
         last ? 'rounded-tr-lg rounded-br-lg' : undefined,
-        selected ? (transparent ? 'opacity-30' : 'bg-yellow-800') : 'bg-gray-600',
+        selected ? (transparent ? 'opacity-30' : 'bg-yellow-800') : 'bg-green-100 hover:bg-yellow-700 dark:bg-gray-600 hover:dark:bg-yellow-700',
         proDisabled ? 'cursor-not-allowed' : undefined,
       )}
       onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
