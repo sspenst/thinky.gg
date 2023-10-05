@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { useRouter } from 'next/router';
 import React from 'react';
 import LinkInfo from '../formatted/linkInfo';
 
@@ -22,8 +22,8 @@ interface DirectoryProps {
 }
 
 export default function Directory({ folders, subtitle, title }: DirectoryProps) {
+  const router = useRouter();
   const folderLinks = [];
-  let escHref = undefined;
 
   if (folders) {
     for (let i = 0; i < folders.length; i++) {
@@ -34,21 +34,17 @@ export default function Directory({ folders, subtitle, title }: DirectoryProps) 
         </div>
       );
     }
-
-    escHref = folders[folders.length - 1].href;
   }
 
   return (<>
+    {/* back button on mobile */}
     <div className='flex gap-2 items-center xl:hidden'>
-      {/* collapsed directory displays an escape link if applicable, otherwise nothing */}
-      {escHref &&
-        <>
-          <FolderDivider />
-          <Link className='underline' href={escHref}>
-            Esc
-          </Link>
-        </>
-      }
+      <FolderDivider />
+      <button onClick={router.back}>
+        <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={2} stroke='currentColor' className='w-6 h-6'>
+          <path strokeLinecap='round' strokeLinejoin='round' d='M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18' />
+        </svg>
+      </button>
     </div>
     <div className='gap-2 items-center hidden xl:flex truncate'>
       {folderLinks}

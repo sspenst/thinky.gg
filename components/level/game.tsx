@@ -660,11 +660,10 @@ export default function Game({
 
   useEffect(() => {
     const _controls: Control[] = [];
-    const iconWidthHeight = 28;
 
     if (onPrev) {
-      const leftArrow = <svg xmlns='http://www.w3.org/2000/svg' width={iconWidthHeight} height={iconWidthHeight} fill='currentColor' className='bi bi-arrow-left' viewBox='0 0 16 16'>
-        <path fillRule='evenodd' d='M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z' />
+      const leftArrow = <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+        <path strokeLinecap='round' strokeLinejoin='round' d='M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18' />
       </svg>;
       const prevTxt = isMobile ? leftArrow : <><span className='underline'>P</span>rev Level</>;
 
@@ -712,8 +711,8 @@ export default function Game({
     );
 
     if (onNext) {
-      const rightArrow = <span className='truncate'><svg xmlns='http://www.w3.org/2000/svg' width={iconWidthHeight} height={iconWidthHeight} fill='currentColor' className='bi bi-arrow-right' viewBox='0 0 16 16'>
-        <path fillRule='evenodd' d='M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z' />
+      const rightArrow = <span className='truncate'><svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+        <path strokeLinecap='round' strokeLinejoin='round' d='M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3' />
       </svg></span>;
       const nextTxt = isMobile ? rightArrow : <><span className='underline'>N</span>ext Level</>;
 

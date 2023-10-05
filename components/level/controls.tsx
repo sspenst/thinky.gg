@@ -59,7 +59,7 @@ export default function Controls({ controls }: ControlsProps) {
   const mouseDownStartTs = useRef(0);
 
   return (
-    <div className='select-none flex justify-evenly z-10 min-h-[36px] sm:min-h-[44px] text-xs sm:text-base'>
+    <div className='select-none flex justify-evenly z-10 min-h-[44px] text-xs sm:text-base'>
       {controls.map((control) => (
         <button
           className={classNames(
