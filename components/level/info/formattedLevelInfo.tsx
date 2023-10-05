@@ -4,10 +4,8 @@ import Solved from '@root/components/level/info/solved';
 import FormattedLevelReviews from '@root/components/level/reviews/formattedLevelReviews';
 import Image from 'next/image';
 import React, { useContext, useState } from 'react';
-import toast from 'react-hot-toast';
 import Dimensions from '../../../constants/dimensions';
 import { AppContext } from '../../../contexts/appContext';
-import { LevelContext } from '../../../contexts/levelContext';
 import { EnrichedLevel } from '../../../models/db/level';
 import SelectOptionStats from '../../../models/selectOptionStats';
 import formattedAuthorNote from '../../formatted/formattedAuthorNote';
@@ -24,8 +22,7 @@ interface FormattedLevelInfoProps {
 
 export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
   const [collapsedAuthorNote, setCollapsedAuthorNote] = useState(true);
-  const levelContext = useContext(LevelContext);
-  const { user, userConfig } = useContext(AppContext);
+  const { userConfig } = useContext(AppContext);
 
   const maxCollapsedAuthorNote = 100;
   const stat = new SelectOptionStats(level.leastMoves, level.userMoves);
@@ -35,25 +32,14 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
       <div className='flex flex-col gap-1'>
         <div className='flex justify-between w-full items-start'>
           <div className='font-bold text-2xl'>{level.name}</div>
-          {user && <LevelDropdown level={level} />}
+          <LevelDropdown level={level} />
         </div>
         <div className='flex gap-2 items-center'>
           <FormattedUser id='author' size={Dimensions.AvatarSizeSmall} user={level.userId} />
           <FormattedDate ts={level.ts} />
         </div>
-        <div className='text-sm flex gap-2 items-center'>
+        <div className='text-sm flex pt-0.5'>
           <FormattedDifficulty difficultyEstimate={level.calc_difficulty_estimate} id={level._id.toString()} uniqueUsers={level.calc_playattempts_unique_users_count} />
-          {!levelContext?.inCampaign &&
-            <button
-              className='italic underline'
-              onClick={() => {
-                navigator.clipboard.writeText(level.data);
-                toast.success('Copied to clipboard');
-              }}
-            >
-              Copy level data
-            </button>
-          }
         </div>
       </div>
       {/* User's stats on this level */}
