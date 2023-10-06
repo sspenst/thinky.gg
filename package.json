@@ -33,7 +33,7 @@
     "nextjs-google-analytics": "^2.3.3",
     "nodemailer": "^6.9.5",
     "nprogress": "^0.2.0",
-    "pureimage": "^0.4.9",
+    "pureimage": "^0.4.10",
     "react": "^18.2.0",
     "react-cookie-consent": "^8.0.1",
     "react-data-table-component-sspenst": "^1.0.0",
