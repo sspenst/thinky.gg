@@ -31,7 +31,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
     <div className='mb-4 flex flex-col gap-4'>
       <div className='flex flex-col gap-1'>
         <div className='flex justify-between w-full items-start gap-2'>
-          <div className='font-bold text-2xl truncate'>{level.name}</div>
+          <div className='font-bold text-2xl overflow-hidden break-words'>{level.name}</div>
           <LevelDropdown level={level} />
         </div>
         <div className='flex gap-2 items-center'>
