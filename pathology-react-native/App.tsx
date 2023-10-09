@@ -4,25 +4,17 @@ import { registerRootComponent } from 'expo';
 import * as Device from 'expo-device';
 import * as Linking from 'expo-linking';
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  AppState,
-  BackHandler,
-  Platform,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { AppState, BackHandler, Platform, SafeAreaView } from 'react-native';
 import WebView from 'react-native-webview';
 
 // same interface as /helpers/getMobileNotification.ts
 interface MobileNotification {
-  badgeCount: number;
+  badgeCount?: number;
   body: string;
   imageUrl?: string;
-  latestUnreadTs: number;
+  latestUnreadTs?: number;
   notificationId?: string;
+  title: string;
   url: string;
 }
 
@@ -116,7 +108,7 @@ async function onRemoteMessage(message: FirebaseMessagingTypes.RemoteMessage) {
 
   // create a notification, link to pathology.gg/notifications
   await notifee.displayNotification({
-    title: 'Pathology',
+    title: mobileNotification.title,
     body: mobileNotification.body,
     data: {
       url: mobileNotification.url,
@@ -292,57 +284,21 @@ function App() {
             unregisterDeviceToken();
           }
         }}
-        originWhitelist={['https://pathology.gg*', 'https://discord.com*']}
+        originWhitelist={[
+          'https://pathology.gg*',
+          'https://discord.com*',
+          'https://www.google.com/recaptcha/*',
+          'https://www.gstatic.com/recaptcha/*',
+        ]}
         pullToRefreshEnabled={true}
         ref={webViewRef}
         sharedCookiesEnabled={true}
         source={{ uri: webViewUrl }}
         startInLoadingState={true}
       />
-      <View style={{
-        alignItems: 'center',
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-      }}>
-        <TouchableOpacity onPress={() => {
-          if (webViewRef.current) {
-            webViewRef.current.goBack();
-          }
-        }}>
-          <Text style={styles.button}>
-            &#8592;
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => {
-          if (webViewRef.current) {
-            webViewRef.current.reload();
-          }
-        }}>
-          <Text style={styles.button}>
-            &#8635;
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => {
-          if (webViewRef.current) {
-            webViewRef.current.goForward();
-          }
-        }}>
-          <Text style={styles.button}>
-            &#8594;
-          </Text>
-        </TouchableOpacity>
-      </View>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  button: {
-    color: 'white',
-    fontSize: 32,
-    textAlign: 'center',
-  }
-});
 
 console.log('Registering root component');
 registerRootComponent(App);
