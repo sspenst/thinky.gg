@@ -105,7 +105,7 @@ export default function Dropdown() {
               {!isPro(user) &&
                 <Menu.Item>
                   {({ active }) => (
-                    <Link href='/settings/proaccount' passHref>
+                    <Link href='/settings/pro' passHref>
                       <div
                         className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3'
                         style={{

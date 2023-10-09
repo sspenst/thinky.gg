@@ -122,7 +122,7 @@ export default function HomeLoggedIn({
             <Link className='font-bold hover:underline' href='/play-history'>
               Last Played
             </Link>
-            <Link href='/settings/proaccount' passHref>
+            <Link href='/settings/pro' passHref>
               <Image alt='pro' src='/pro.svg' width={16} height={16} style={{ minWidth: 16, minHeight: 16 }} />
             </Link>
           </div>
