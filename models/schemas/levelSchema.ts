@@ -190,18 +190,18 @@ async function calcStats(lvl: Level) {
 
   const q = await StatModel.aggregate(aggs);
 
-  const players_beaten = q.length;
+  const solves = q.length;
 
   return {
-    calc_stats_players_beaten: players_beaten
+    calc_stats_players_beaten: solves
   };
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {}) {
-  const countJustBeaten = await PlayAttemptModel.countDocuments({
+  const countJustSolved = await PlayAttemptModel.countDocuments({
     levelId: levelId,
-    attemptContext: AttemptContext.JUST_BEATEN,
+    attemptContext: AttemptContext.JUST_SOLVED,
   });
 
   // sumDuration is all of the sum(endTime-startTime) within the playAttempts
@@ -209,7 +209,7 @@ export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {
     {
       $match: {
         levelId: levelId,
-        attemptContext: { $ne: AttemptContext.BEATEN },
+        attemptContext: { $ne: AttemptContext.SOLVED },
       }
     },
     {
@@ -242,12 +242,12 @@ export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {
                 }
               },
               {
-                attemptContext: AttemptContext.UNBEATEN,
+                attemptContext: AttemptContext.UNSOLVED,
               }
             ],
           },
           {
-            attemptContext: AttemptContext.JUST_BEATEN,
+            attemptContext: AttemptContext.JUST_SOLVED,
           },
         ],
         levelId: levelId,
@@ -271,7 +271,7 @@ export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {
 
   const update = {
     calc_playattempts_duration_sum: sumDuration[0]?.sumDuration ?? 0,
-    calc_playattempts_just_beaten_count: countJustBeaten,
+    calc_playattempts_just_beaten_count: countJustSolved,
     calc_playattempts_unique_users: uniqueUsersList.map(u => u?.userId.toString()),
   } as Partial<Level>;
 

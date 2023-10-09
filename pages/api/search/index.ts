@@ -213,7 +213,7 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
       searchObj['calc_reviews_score_avg'] = { $gte: 0 };
     } else if (query.sortBy === 'total_reviews') {
       sortObj.push(['calc_reviews_count', sortDirection]);
-    } else if (query.sortBy === 'playersBeaten') {
+    } else if (query.sortBy === 'solves') {
       sortObj.push(['calc_stats_players_beaten', sortDirection]);
     } else if (query.sortBy === 'calcDifficultyEstimate') {
       if (query.difficultyFilter === 'Pending') {

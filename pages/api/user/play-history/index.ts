@@ -28,7 +28,7 @@ export async function getPlayAttempts(reqUser: User, params: GetPlayAttemptsPara
         userId: reqUser._id,
         ...(cursor && { _id: { $lt: cursor } }),
         ...(datetimeInSeconds && { endTime: { $lte: datetimeInSeconds } }),
-        ...(filterSolved && { attemptContext: AttemptContext.JUST_BEATEN }),
+        ...(filterSolved && { attemptContext: AttemptContext.JUST_SOLVED }),
       },
     },
     {
@@ -44,7 +44,7 @@ export async function getPlayAttempts(reqUser: User, params: GetPlayAttemptsPara
     {
       $sort: {
         endTime: -1,
-        // NB: if end time is identical, we want to get the highest attempt context (JUST_BEATEN over UNBEATEN)
+        // NB: if end time is identical, we want to get the highest attempt context (JUST_SOLVED over UNSOLVED)
         attemptContext: -1,
       },
     },

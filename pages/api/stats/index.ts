@@ -9,7 +9,7 @@ import { ValidArray, ValidObjectId, ValidType } from '../../../helpers/apiWrappe
 import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
-import { createNewRecordOnALevelYouBeatNotifications } from '../../../helpers/notificationHelper';
+import { createNewRecordOnALevelYouSolvedNotifications } from '../../../helpers/notificationHelper';
 import validateSolution, { randomRotateLevelDataViaMatchHash } from '../../../helpers/validateSolution';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level, { EnrichedLevel } from '../../../models/db/level';
@@ -196,7 +196,7 @@ export default withAuth({
                 { $inc: { score: -1 } },
                 { session: session },
               ),
-              createNewRecordOnALevelYouBeatNotifications(statUserIds, req.userId, level._id, moves.toString(), { session: session })
+              createNewRecordOnALevelYouSolvedNotifications(statUserIds, req.userId, level._id, moves.toString(), { session: session })
             ]);
           }
 
@@ -205,7 +205,7 @@ export default withAuth({
             {
               $match: {
                 levelId: level._id,
-                attemptContext: AttemptContext.BEATEN,
+                attemptContext: AttemptContext.SOLVED,
               }
             },
             {
@@ -222,10 +222,10 @@ export default withAuth({
 
           incPlayattemptsDurationSum += sumDuration[0]?.sumDuration ?? 0;
 
-          // reset all playattempts to unbeaten
+          // reset all playattempts to unsolved
           await Promise.all([PlayAttemptModel.updateMany(
             { levelId: level._id },
-            { $set: { attemptContext: AttemptContext.UNBEATEN } },
+            { $set: { attemptContext: AttemptContext.UNSOLVED } },
             { session: session },
           ),
           queueDiscordWebhook(Discord.LevelsId, `**${req.user.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`, { session: session })
@@ -239,7 +239,7 @@ export default withAuth({
           userId: req.user._id,
         }, {
           $set: {
-            attemptContext: AttemptContext.JUST_BEATEN,
+            attemptContext: AttemptContext.JUST_SOLVED,
             endTime: ts,
           },
           $inc: { updateCount: 1 }
@@ -249,7 +249,7 @@ export default withAuth({
           session: session,
           sort: {
             endTime: -1,
-            // NB: if end time is identical, we want to get the highest attempt context (JUST_BEATEN over UNBEATEN)
+            // NB: if end time is identical, we want to get the highest attempt context (JUST_SOLVED over UNSOLVED)
             attemptContext: -1,
           },
         });
@@ -258,7 +258,7 @@ export default withAuth({
           // create one if it did not exist... rare but possible
           await PlayAttemptModel.create([{
             _id: new Types.ObjectId(),
-            attemptContext: AttemptContext.JUST_BEATEN,
+            attemptContext: AttemptContext.JUST_SOLVED,
             startTime: ts,
             endTime: ts,
             updateCount: 0,

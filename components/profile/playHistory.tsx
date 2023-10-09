@@ -204,7 +204,7 @@ export default function PlayHistory() {
                     <span className='px-3 py-1'>
                       {moment.unix(playAttempt.startTime).local().format('h:mma')}
                       <br />
-                      Played for {moment.duration(playAttempt.endTime - playAttempt.startTime, 'seconds').humanize()} {playAttempt.attemptContext === AttemptContext.JUST_BEATEN && 'and solved'}
+                      Played for {moment.duration(playAttempt.endTime - playAttempt.startTime, 'seconds').humanize()} {playAttempt.attemptContext === AttemptContext.JUST_SOLVED && 'and solved'}
                     </span>
                   </div>
                 </div>

@@ -391,7 +391,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       sortable: true,
     },
     {
-      id: 'playersBeaten',
+      id: 'solves',
       name: 'Solves',
       selector: (row: EnrichedLevel) => row.calc_stats_players_beaten || 0,
       sortable: true,

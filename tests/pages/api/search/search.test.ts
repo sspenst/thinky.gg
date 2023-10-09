@@ -128,7 +128,7 @@ const sortProperties = [
     isInverted: false,
   },
   {
-    sortBy: 'playersBeaten',
+    sortBy: 'solves',
     property: 'calc_stats_players_beaten',
     isInverted: false,
   },
