@@ -94,7 +94,7 @@ export default function getMobileNotification(notification: Notification) {
 
     return mobileNotification;
 
-  case NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT:
+  case NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_SOLVED:
     mobileNotification.title = 'Pathology - New Record';
     mobileNotification.body = `${notification.source.name} set a new record: ${targetAsLevel.name} - ${notification.message} moves`;
     mobileNotification.imageUrl = `${host}/api/level/image/${targetAsLevel._id}.png`;

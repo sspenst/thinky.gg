@@ -244,7 +244,7 @@ async function integrityCheckAcheivements() {
 
 async function integrityCheckPlayAttempts() {
   let prevPlayAttempt: PlayAttempt | null = null;
-  let trackJustBeaten = false;
+  let trackJustSolved = false;
 
   // stream with async interator, sorted using the existing index
   for await (const playAttempt of PlayAttemptModel.find<PlayAttempt>({}, {}, { lean: true, sort: { levelId: 1, userId: 1, endTime: -1, attemptContext: -1 } })) {
@@ -259,34 +259,34 @@ async function integrityCheckPlayAttempts() {
         console.warn(`[${playAttempt._id.toString()}, ${playAttempt.levelId.toString()}, ${playAttempt.userId.toString()}] attemptContext out of order`);
       }
 
-      if (playAttempt.attemptContext === AttemptContext.UNBEATEN && prevPlayAttempt.attemptContext === AttemptContext.BEATEN) {
+      if (playAttempt.attemptContext === AttemptContext.UNSOLVED && prevPlayAttempt.attemptContext === AttemptContext.SOLVED) {
         if (playAttempt.startTime === playAttempt.endTime) {
-          // sometimes this is a bug where an author has UNBEATEN on their own level - safe to delete either way
+          // sometimes this is a bug where an author has UNSOLVED on their own level - safe to delete either way
           await PlayAttemptModel.deleteOne({ _id: playAttempt._id });
-          console.log(`[${playAttempt._id.toString()}, ${playAttempt.levelId.toString()}, ${playAttempt.userId.toString()}] DELETED - missing AttemptContext.JUST_BEATEN`);
+          console.log(`[${playAttempt._id.toString()}, ${playAttempt.levelId.toString()}, ${playAttempt.userId.toString()}] DELETED - missing AttemptContext.JUST_SOLVED`);
           continue;
         } else {
           // otherwise attempt to correct the data
-          await PlayAttemptModel.findByIdAndUpdate(playAttempt._id, { $set: { attemptContext: AttemptContext.JUST_BEATEN } });
-          playAttempt.attemptContext = AttemptContext.JUST_BEATEN;
+          await PlayAttemptModel.findByIdAndUpdate(playAttempt._id, { $set: { attemptContext: AttemptContext.JUST_SOLVED } });
+          playAttempt.attemptContext = AttemptContext.JUST_SOLVED;
 
-          console.log(`[${playAttempt._id.toString()}, ${playAttempt.levelId.toString()}, ${playAttempt.userId.toString()}] UPDATED - AttemptContext.JUST_BEATEN`);
+          console.log(`[${playAttempt._id.toString()}, ${playAttempt.levelId.toString()}, ${playAttempt.userId.toString()}] UPDATED - AttemptContext.JUST_SOLVED`);
         }
       }
 
-      if (playAttempt.attemptContext === AttemptContext.JUST_BEATEN) {
-        if (trackJustBeaten) {
-          await PlayAttemptModel.findByIdAndUpdate(playAttempt._id, { $set: { attemptContext: AttemptContext.UNBEATEN } });
-          playAttempt.attemptContext = AttemptContext.UNBEATEN;
+      if (playAttempt.attemptContext === AttemptContext.JUST_SOLVED) {
+        if (trackJustSolved) {
+          await PlayAttemptModel.findByIdAndUpdate(playAttempt._id, { $set: { attemptContext: AttemptContext.UNSOLVED } });
+          playAttempt.attemptContext = AttemptContext.UNSOLVED;
 
-          console.log(`[${playAttempt._id.toString()}, ${playAttempt.levelId.toString()}, ${playAttempt.userId.toString()}] UPDATED - multiple AttemptContext.JUST_BEATEN`);
+          console.log(`[${playAttempt._id.toString()}, ${playAttempt.levelId.toString()}, ${playAttempt.userId.toString()}] UPDATED - multiple AttemptContext.JUST_SOLVED`);
         } else {
-          trackJustBeaten = true;
+          trackJustSolved = true;
         }
       }
 
       if (playAttempt.endTime > prevPlayAttempt.startTime) {
-        if (playAttempt.startTime >= prevPlayAttempt.startTime && playAttempt.attemptContext !== AttemptContext.JUST_BEATEN) {
+        if (playAttempt.startTime >= prevPlayAttempt.startTime && playAttempt.attemptContext !== AttemptContext.JUST_SOLVED) {
           await PlayAttemptModel.deleteOne({ _id: playAttempt._id });
           console.log(`[${playAttempt._id.toString()}, ${playAttempt.levelId.toString()}, ${playAttempt.userId.toString()}] DELETED - time range overlapping`);
           continue;
@@ -296,13 +296,13 @@ async function integrityCheckPlayAttempts() {
       }
     } else {
       // reset tracking variable
-      trackJustBeaten = false;
+      trackJustSolved = false;
     }
 
     prevPlayAttempt = playAttempt;
   }
 
-  // NB: not worth comparing all the playattempt JUST_BEATEN against all completed stats, since playattempts are not guaranteed to be complete (data is missing from before playattempts were collected and so there are many special cases)
+  // NB: not worth comparing all the playattempt JUST_SOLVED against all completed stats, since playattempts are not guaranteed to be complete (data is missing from before playattempts were collected and so there are many special cases)
 
   console.log('integrityCheckPlayAttempts done');
 }

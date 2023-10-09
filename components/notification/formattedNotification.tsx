@@ -72,7 +72,7 @@ function NotificationIcon({ notification }: { notification: Notification }) {
 
 function NotificationMessage({ notification, onMarkAsRead }: NotificationMessageProps) {
   switch (notification.type) {
-  case NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT:
+  case NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_SOLVED:
     return (<>
       {'set a new record: '}
       <FormattedLevelLink
