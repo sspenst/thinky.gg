@@ -173,7 +173,7 @@ for (let i = 0; i < sortProperties.length; i++) {
 
 testRuns = testRuns.concat([
   {
-    query: `?statFilter=${StatFilter.HideWon}`,
+    query: `?statFilter=${StatFilter.HideSolved}`,
     test: async (response: any) => {
       expect(response.totalRows).toBe(17);
       expect(response.levels.length).toBe(17);
@@ -214,7 +214,7 @@ testRuns = testRuns.concat([
     }
   },
   {
-    query: `?statFilter=${StatFilter.ShowInProgress}`,
+    query: `?statFilter=${StatFilter.InProgress}`,
     test: async (response: any) => {
       expect(response.totalRows).toBe(3);
       expect(response.levels.length).toBe(3);

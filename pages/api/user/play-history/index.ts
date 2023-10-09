@@ -12,12 +12,12 @@ import { PipelineStage, Types } from 'mongoose';
 interface GetPlayAttemptsParams {
   cursor?: Types.ObjectId;
   datetime?: Date;
-  filterWon?: boolean;
+  filterSolved?: boolean;
   minDurationMinutes?: number;
 }
 
 export async function getPlayAttempts(reqUser: User, params: GetPlayAttemptsParams, limit = 10) {
-  const { cursor, datetime, filterWon, minDurationMinutes } = params;
+  const { cursor, datetime, filterSolved, minDurationMinutes } = params;
   const datetimeInSeconds = datetime ? Math.floor(datetime.getTime() / 1000) : undefined;
   const minDurationInSeconds = minDurationMinutes ? minDurationMinutes * 60 : undefined;
 
@@ -28,7 +28,7 @@ export async function getPlayAttempts(reqUser: User, params: GetPlayAttemptsPara
         userId: reqUser._id,
         ...(cursor && { _id: { $lt: cursor } }),
         ...(datetimeInSeconds && { endTime: { $lte: datetimeInSeconds } }),
-        ...(filterWon && { attemptContext: AttemptContext.JUST_BEATEN }),
+        ...(filterSolved && { attemptContext: AttemptContext.JUST_BEATEN }),
       },
     },
     {
@@ -94,7 +94,7 @@ export default withAuth({
     query: {
       cursor: ValidObjectId(false),
       datetime: ValidDate(false),
-      filterWon: ValidEnum(['true', 'false'], false),
+      filterSolved: ValidEnum(['true', 'false'], false),
       minDurationMinutes: ValidNumber(false, 0, 60 * 24),
     }
   }
@@ -105,12 +105,12 @@ export default withAuth({
     });
   }
 
-  const { cursor, datetime, filterWon, minDurationMinutes } = req.query;
+  const { cursor, datetime, filterSolved, minDurationMinutes } = req.query;
 
   const playAttempts = await getPlayAttempts(req.user, {
     cursor: new Types.ObjectId(cursor as string),
     datetime: datetime ? new Date(datetime as string) : undefined,
-    filterWon: filterWon === 'true',
+    filterSolved: filterSolved === 'true',
     minDurationMinutes: minDurationMinutes ? parseInt(minDurationMinutes as string) : undefined,
   });
 

@@ -29,20 +29,20 @@ export default function SelectFilter({
               element='Hide Solved'
               first={true}
               onClick={onFilterClick}
-              selected={filter === StatFilter.HideWon}
-              value={StatFilter.HideWon}
+              selected={filter === StatFilter.HideSolved}
+              value={StatFilter.HideSolved}
             />
             <FilterButton
               element='Solved'
               onClick={onFilterClick}
-              selected={filter === StatFilter.ShowWon}
-              value={StatFilter.ShowWon}
+              selected={filter === StatFilter.Solved}
+              value={StatFilter.Solved}
             />
             <FilterButton
               element='In Progress'
               last={true} onClick={onFilterClick}
-              selected={filter === StatFilter.ShowInProgress}
-              value={StatFilter.ShowInProgress}
+              selected={filter === StatFilter.InProgress}
+              value={StatFilter.InProgress}
             />
           </div>
         }

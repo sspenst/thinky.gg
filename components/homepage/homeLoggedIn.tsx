@@ -241,7 +241,7 @@ export default function HomeLoggedIn({
               pathname: '/search',
               query: {
                 sortBy: 'ts',
-                statFilter: StatFilter.HideWon,
+                statFilter: StatFilter.HideSolved,
                 timeRange: TimeRange[TimeRange.All],
               },
             }}
