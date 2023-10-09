@@ -344,7 +344,7 @@ export default function Game({
       if (!pro) {
         toast.dismiss();
         toast.error(
-          <div>Upgrade to <Link href='/settings/proaccount' className='text-blue-500'>Pathology Pro</Link> to unlock checkpoints!</div>,
+          <div>Upgrade to <Link href='/settings/pro' className='text-blue-500'>Pathology Pro</Link> to unlock checkpoints!</div>,
           {
             duration: 5000,
             icon: <Image alt='pro' src='/pro.svg' width='16' height='16' />,
@@ -425,7 +425,7 @@ export default function Game({
       if (redo && !pro) {
         toast.dismiss();
         toast.error(
-          <div>Upgrade to <Link href='/settings/proaccount' className='text-blue-500'>Pathology Pro</Link> to unlock redo!</div>,
+          <div>Upgrade to <Link href='/settings/pro' className='text-blue-500'>Pathology Pro</Link> to unlock redo!</div>,
           {
             duration: 5000,
             icon: <Image alt='pro' src='/pro.svg' width='16' height='16' />,

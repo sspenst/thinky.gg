@@ -640,7 +640,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
         />
       </div>
       <div className='flex justify-center items-center gap-2'>
-        <Link href='/settings/proaccount' passHref>
+        <Link href='/settings/pro' passHref>
           <Image alt='pro' src='/pro.svg' width='20' height='20' />
         </Link>
         <div className='flex flex-col items-center justify-center w-fit border p-2 rounded-md gap-2 border-cyan-200'>
