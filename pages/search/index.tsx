@@ -183,13 +183,13 @@ interface StatFilterMenuProps {
 function StatFilterMenu({ onStatFilterClick, query }: StatFilterMenuProps) {
   const statFilterStrings = {
     [StatFilter.All]: 'All Levels',
-    [StatFilter.HideWon]: 'Hide Solved',
-    [StatFilter.ShowWon]: 'Solved',
+    [StatFilter.HideSolved]: 'Hide Solved',
+    [StatFilter.Solved]: 'Solved',
   } as Record<string, string>;
 
   if (query.sortBy !== 'completed') {
-    statFilterStrings[StatFilter.ShowInProgress] = 'In Progress';
-    statFilterStrings[StatFilter.ShowUnattempted] = 'Unattempted';
+    statFilterStrings[StatFilter.InProgress] = 'In Progress';
+    statFilterStrings[StatFilter.Unattempted] = 'Unattempted';
   }
 
   return (
@@ -392,7 +392,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
     },
     {
       id: 'playersBeaten',
-      name: 'Users Won',
+      name: 'Solves',
       selector: (row: EnrichedLevel) => row.calc_stats_players_beaten || 0,
       sortable: true,
       style: {
@@ -835,7 +835,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
             }
 
             // move off of invalid stat filter option when sorting by completed
-            if (columnId === 'completed' && (query.statFilter === StatFilter.ShowInProgress || query.statFilter === StatFilter.ShowUnattempted)) {
+            if (columnId === 'completed' && (query.statFilter === StatFilter.InProgress || query.statFilter === StatFilter.Unattempted)) {
               update.statFilter = StatFilter.All;
             }
 

@@ -75,7 +75,7 @@ async function getRecommendedLevel(reqUser: User) {
     numResults: '20', // randomly select one of these
     sortBy: 'calcDifficultyEstimate',
     sortDir: 'asc',
-    statFilter: StatFilter.HideWon,
+    statFilter: StatFilter.HideSolved,
     timeRange: TimeRange[TimeRange.All],
   } as SearchQuery;
 
@@ -94,7 +94,7 @@ async function getRecommendedLevel(reqUser: User) {
       numResults: '10', // randomly select one of these
       sortBy: 'calcDifficultyEstimate',
       sortDir: 'asc',
-      statFilter: StatFilter.HideWon,
+      statFilter: StatFilter.HideSolved,
       timeRange: TimeRange[TimeRange.All],
     } as SearchQuery;
 

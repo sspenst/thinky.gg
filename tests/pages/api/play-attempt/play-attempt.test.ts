@@ -214,7 +214,7 @@ const tests = [
       expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.UNBEATEN);
       expect(playAttemptDocs[1].userId._id.toString()).toBe(TestId.USER);
       expect(lvl.calc_playattempts_unique_users).toStrictEqual([new Types.ObjectId(TestId.USER), new Types.ObjectId(TestId.USER_B)]);
-      expect(lvl.calc_playattempts_just_beaten_count).toBe(1); // other person won
+      expect(lvl.calc_playattempts_just_beaten_count).toBe(1); // other person solved
     }
   },
   {
