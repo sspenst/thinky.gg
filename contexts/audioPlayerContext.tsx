@@ -1,7 +1,7 @@
-import { SongMetaData } from '@root/components/audioPlayer/audioPlayer';
+import { SongMetaData } from '@root/components/header/audioPlayer';
 import React, { createContext, useEffect, useState } from 'react';
 
-export interface AudioPlayerState {
+export interface AudioPlayerContextInterface {
   audioActive?: HTMLAudioElement;
   audioAmbient?: HTMLAudioElement;
   audioContext?: AudioContext;
@@ -23,7 +23,7 @@ export interface AudioPlayerState {
   toggleVersion?: (command: 'hot'|'cool'|'switch') => void;
 }
 
-export const AudioPlayerContext = createContext<AudioPlayerState>({
+export const AudioPlayerContext = createContext<AudioPlayerContextInterface>({
   audioActive: undefined,
   audioAmbient: undefined,
   audioContext: undefined,
