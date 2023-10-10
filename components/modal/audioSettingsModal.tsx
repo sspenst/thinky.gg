@@ -1,7 +1,7 @@
 import { AudioPlayerContext } from '@root/contexts/audioPlayerContext';
 import Link from 'next/link';
 import React, { useContext } from 'react';
-import AudioPlayer from '../audioPlayer/audioPlayer';
+import AudioPlayer from '../header/audioPlayer';
 import Modal from '.';
 
 interface AudioSettingsModal {
@@ -22,7 +22,6 @@ export default function AudioSettingsModal({ closeModal, isOpen }: AudioSettings
   return (
     <Modal title='Audio Settings' isOpen={isOpen} closeModal={closeModal}>
       <div className='flex flex-col gap-2'>
-
         <div className='flex flex-row gap-2'>
           <div className='flex flex-row gap-2'>
             <div>Dynamic Music</div>
@@ -35,7 +34,6 @@ export default function AudioSettingsModal({ closeModal, isOpen }: AudioSettings
             <span className='text-xs'>For example, if you are in a puzzle, the music will be more ambient ❄️.<br />After solving, the music will transition to a more energetic 🔥 version.</span>
           </div>
         </div>
-
         <div className='flex flex-row gap-2'>
           <div>Music Volume</div>
           <div>

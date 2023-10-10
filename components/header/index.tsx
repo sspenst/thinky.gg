@@ -3,11 +3,10 @@ import Link from 'next/link';
 import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { AppContext } from '../../contexts/appContext';
-import { AudioPlayerHeader } from '../audioPlayer/audioPlayerHeader';
 import LinkInfo from '../formatted/linkInfo';
 import Directory from './directory';
 import Dropdown from './dropdown';
-import UserInfo from './userInfo';
+import HeaderControls from './headerControls';
 
 interface HeaderProps {
   folders?: LinkInfo[];
@@ -49,8 +48,7 @@ export default function Header({
         <Directory folders={folders} subtitle={subtitle} title={title} />
       </div>
       <div className='flex gap-4 items-center z-20'>
-        <AudioPlayerHeader />
-        <UserInfo />
+        <HeaderControls />
         <Dropdown />
       </div>
     </header>

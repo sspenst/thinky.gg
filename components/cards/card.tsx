@@ -2,7 +2,7 @@ import React from 'react';
 import StyledTooltip from '../page/styledTooltip';
 
 interface CardProps {
-  children: JSX.Element;
+  children: React.ReactNode;
   id: string;
   title: JSX.Element | string;
   tooltip?: string;

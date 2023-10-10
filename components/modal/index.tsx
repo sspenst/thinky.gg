@@ -26,7 +26,7 @@ function ModalButton({ disabled, onClick, text }: ModalButtonProps) {
 }
 
 interface ModalProps {
-  children: JSX.Element;
+  children: React.ReactNode;
   closeModal: () => void;
   disabled?: boolean;
   isOpen: boolean;

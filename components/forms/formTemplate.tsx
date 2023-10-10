@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface FormTemplateProps {
-  children: JSX.Element;
+  children: React.ReactNode;
   style?: React.CSSProperties;
 }
 
