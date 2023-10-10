@@ -1,7 +1,6 @@
 import Direction, { directionToVector } from '@root/constants/direction';
 import TileType from '@root/constants/tileType';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
-import MultiplayerMatch from '@root/models/db/multiplayerMatch';
 import Level from '../models/db/level';
 import Position from '../models/position';
 import { flipLevelX, flipLevelY, rotateLevelCCW, rotateLevelCW } from './transformLevel';
