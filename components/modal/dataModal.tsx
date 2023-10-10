@@ -117,7 +117,7 @@ export default function DataModal({ closeModal, historyPush, isOpen, level, setI
             fontFamily: 'monospace',
             fontSize: '0.9rem',
           }}
-          className='p-1 rounded-md text-black border'
+          className='p-1 rounded-md border'
           name='data'
           onChange={onDataChange}
           required

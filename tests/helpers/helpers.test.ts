@@ -134,12 +134,12 @@ describe('helpers/*.ts', () => {
 
     expect(options.length).toBe(5);
 
-    options = statFilterOptions(selectOptions, StatFilter.HideWon, '');
+    options = statFilterOptions(selectOptions, StatFilter.HideSolved, '');
 
     expect(options.length).toBe(3);
     expect(options[0].text).toBe('in progress');
 
-    options = statFilterOptions(selectOptions, StatFilter.ShowInProgress, '');
+    options = statFilterOptions(selectOptions, StatFilter.InProgress, '');
 
     expect(options.length).toBe(1);
     expect(options[0].text).toBe('in progress');

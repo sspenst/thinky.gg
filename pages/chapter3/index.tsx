@@ -58,7 +58,27 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     // TODO: unlock achievement here for completing chapter 2
   }
 
-  return await getCampaignProps(reqUser, 'chapter3');
+  const { props } = await getCampaignProps(reqUser, 'chapter3');
+
+  if (!props) {
+    return {
+      redirect: {
+        destination: '/play',
+        permanent: false,
+      },
+    };
+  }
+
+  if (chapterUnlocked === 3) {
+    const isChapter3Complete = props.totalLevels - props.solvedLevels <= 0;
+    // TODO: unlock achievement here for completing chapter 2
+
+    if (isChapter3Complete) {
+      await UserModel.updateOne({ _id: reqUser._id }, { $set: { chapterUnlocked: 4 } });
+    }
+  }
+
+  return { props: props };
 }
 
 /* istanbul ignore next */

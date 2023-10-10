@@ -17,7 +17,7 @@ import clearTokenCookie from '../../../lib/clearTokenCookie';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
-import { CollectionModel, CommentModel, GraphModel, KeyValueModel, LevelModel, MultiplayerProfileModel, NotificationModel, UserConfigModel, UserModel } from '../../../models/mongoose';
+import { AchievementModel, CollectionModel, CommentModel, GraphModel, KeyValueModel, LevelModel, MultiplayerProfileModel, NotificationModel, UserConfigModel, UserModel } from '../../../models/mongoose';
 import { getSubscription } from '../subscription';
 import { getUserConfig } from '../user-config';
 
@@ -197,6 +197,7 @@ export default withAuth({
         }
 
         await Promise.all([
+          AchievementModel.deleteMany({ userId: req.userId }),
           GraphModel.deleteMany({ $or: [{ source: req.userId }, { target: req.userId }] }, { session: session }),
           // delete in keyvaluemodel where key contains userId
           KeyValueModel.deleteMany({ key: { $regex: `.*${req.userId}.*` } }, { session: session }),

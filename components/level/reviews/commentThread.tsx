@@ -3,7 +3,6 @@ import { Types } from 'mongoose';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { KeyedMutator } from 'swr';
-import Theme from '../../../constants/theme';
 import { AppContext } from '../../../contexts/appContext';
 import { COMMENT_QUERY_LIMIT } from '../../../models/CommentEnums';
 import { EnrichedComment } from '../../../models/db/comment';
@@ -29,7 +28,7 @@ export default function CommentThread({ className, comment, mutateComments, onSe
   const [text, setText] = useState('');
   const [totalRows, setTotalRows] = useState(comment.totalReplies || 0);
   const [page, setPage] = useState(0);
-  const { theme, user } = useContext(AppContext);
+  const { user } = useContext(AppContext);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -210,12 +209,7 @@ export default function CommentThread({ className, comment, mutateComments, onSe
         :
         <div className='flex flex-col gap-2'>
           <textarea
-            className={classNames(
-              'block p-1 w-full rounded-lg border disabled:opacity-25',
-              theme === Theme.Light ?
-                'bg-gray-100 focus:ring-blue-500 focus:border-blue-500 border-gray-300' :
-                'bg-gray-700 border-gray-600 placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500'
-            )}
+            className='block p-1 w-full rounded-lg border disabled:opacity-25 focus:ring-blue-500 focus:border-blue-500 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600'
             disabled={isUpdating}
             onChange={(e) => setText(e.currentTarget.value)}
             placeholder='Reply...'

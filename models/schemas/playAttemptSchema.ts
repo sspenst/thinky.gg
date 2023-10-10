@@ -2,9 +2,9 @@ import mongoose from 'mongoose';
 import PlayAttempt from '../db/playAttempt';
 
 export enum AttemptContext {
-  UNBEATEN = 0,
-  JUST_BEATEN = 1,
-  BEATEN = 2,
+  UNSOLVED = 0,
+  JUST_SOLVED = 1,
+  SOLVED = 2,
 }
 
 const PlayAttemptSchema = new mongoose.Schema<PlayAttempt>({

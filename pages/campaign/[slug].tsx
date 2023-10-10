@@ -1,3 +1,4 @@
+import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback } from 'react';
@@ -5,7 +6,6 @@ import Select from '../../components/cards/select';
 import formattedAuthorNote from '../../components/formatted/formattedAuthorNote';
 import LinkInfo from '../../components/formatted/linkInfo';
 import Page from '../../components/page/page';
-import { enrichCollection } from '../../helpers/enrich';
 import { logger } from '../../helpers/logger';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
@@ -14,6 +14,7 @@ import { EnrichedCollection } from '../../models/db/collection';
 import { CampaignModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
+import { getCollections } from '../api/collection-by-id/[id]';
 
 interface CampaignUrlQueryParams extends ParsedUrlQuery {
   slug: string;
@@ -51,16 +52,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
-  const campaign = await CampaignModel.findOne<Campaign>({ slug: slug })
-    .populate({
-      path: 'collections',
-      populate: {
-        match: { isDraft: false },
-        path: 'levels',
-        select: '_id leastMoves',
-      },
-      select: '_id levels name slug',
-    }).sort({ name: 1 });
+  const campaign = await CampaignModel.findOne<Campaign>({ slug: slug });
 
   if (!campaign) {
     logger.error('CampaignModel.find returned null in pages/campaign');
@@ -70,7 +62,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  const enrichedCollections = await Promise.all(campaign.collections.map(collection => enrichCollection(collection, reqUser)));
+  const enrichedCollections = await getCollections(
+    {
+      matchQuery: { $match: { _id: { $in: campaign.collections.map(collection => new Types.ObjectId(collection._id)) } } },
+      reqUser: reqUser,
+    },
+  );
 
   return {
     props: {

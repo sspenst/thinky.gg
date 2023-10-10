@@ -475,17 +475,22 @@ export default function Match() {
               </div>
             )}
             {match.state === MultiplayerMatchState.ACTIVE && match.timeUntilStart > 0 && user && !(match.markedReady as Types.ObjectId[]).includes(user._id) && (
-              <button className='px-4 py-2 text-lg font-bold text-white bg-blue-500 rounded-md hover:bg-blue-600' onClick={(e: React.MouseEvent) => {
-              // gray out this button and prevent click
-                const targetButton = e.currentTarget as HTMLButtonElement;
+              <div className='flex flex-col gap-1 justify-center items-center mt-4'>
+                <svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' className='animate-bounce bi bi-arrow-down-circle-fill' viewBox='0 0 16 16'>
+                  <path d='M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v5.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V4.5z' />
+                </svg>
+                <button className='animate-pulse px-4 py-2 text-lg font-bold text-white bg-green-500 rounded-md hover:bg-green-600' onClick={(e: React.MouseEvent) => {
+                  // gray out this button and prevent click
+                  const targetButton = e.currentTarget as HTMLButtonElement;
 
-                targetButton.disabled = true;
-                targetButton.classList.add('opacity-50');
-                // change the text to marking
-                targetButton.innerText = 'Marking...';
+                  targetButton.disabled = true;
+                  targetButton.classList.add('opacity-50');
+                  // change the text to marking
+                  targetButton.innerText = 'Marking...';
 
-                fetchMarkReady();
-              }}>Mark Ready</button>
+                  fetchMarkReady();
+                }}>Mark Ready</button>
+              </div>
             )}
             <div className='pt-1 px-1 max-w-full'>
               <MatchStatus

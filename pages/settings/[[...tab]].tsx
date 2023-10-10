@@ -20,7 +20,7 @@ enum SettingsTab {
   Account = 'account',
   Danger = 'danger',
   General = 'general',
-  Pro = 'proaccount',
+  Pro = 'pro',
   Notifications = 'notifications',
 }
 

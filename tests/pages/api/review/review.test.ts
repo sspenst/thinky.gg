@@ -1,5 +1,4 @@
 import AchievementType from '@root/constants/achievements/achievementType';
-import { QueueMessageState, QueueMessageType } from '@root/models/schemas/queueMessageSchema';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -9,7 +8,7 @@ import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { AchievementModel, LevelModel, QueueMessageModel, ReviewModel } from '../../../../models/mongoose';
+import { AchievementModel, LevelModel, ReviewModel } from '../../../../models/mongoose';
 import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
 import reviewLevelHandler, { getScoreEmojis } from '../../../../pages/api/review/[id]';
 
@@ -400,6 +399,7 @@ describe('Reviewing levels should work correctly', () => {
           body: {
             text: 't'.repeat(100),
             score: 3.5,
+            userId: TestId.USER,
           },
           headers: {
             'content-type': 'application/json',
@@ -482,8 +482,7 @@ describe('Reviewing levels should work correctly', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(ReviewModel, 'findOneAndUpdate').mockImplementation(() => {
       throw new Error('Test DB error');
-    }
-    );
+    });
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -498,6 +497,7 @@ describe('Reviewing levels should work correctly', () => {
           body: {
             text: 'bad game',
             score: 2,
+            userId: TestId.USER,
           },
           headers: {
             'content-type': 'application/json',
@@ -534,7 +534,8 @@ describe('Reviewing levels should work correctly', () => {
           },
           body: {
             score: 5,
-            text: 'bad game'
+            text: 'bad game',
+            userId: TestId.USER,
           },
           headers: {
             'content-type': 'application/json',
@@ -566,7 +567,6 @@ describe('Reviewing levels should work correctly', () => {
       },
     });
   });
-
   test('Testing editing review score and text', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -580,7 +580,8 @@ describe('Reviewing levels should work correctly', () => {
           },
           body: {
             score: 5,
-            text: 'bad game'
+            text: 'bad game',
+            userId: TestId.USER,
           },
           headers: {
             'content-type': 'application/json',
@@ -625,6 +626,7 @@ describe('Reviewing levels should work correctly', () => {
           },
           body: {
             score: 3.3,
+            userId: TestId.USER,
           },
           headers: {
             'content-type': 'application/json',
@@ -659,6 +661,7 @@ describe('Reviewing levels should work correctly', () => {
           },
           body: {
             score: 5,
+            userId: TestId.USER,
           },
           headers: {
             'content-type': 'application/json',
@@ -702,6 +705,7 @@ describe('Reviewing levels should work correctly', () => {
             score: 0,
             text: '',
             // missing score
+            userId: TestId.USER,
           },
           headers: {
             'content-type': 'application/json',
@@ -722,13 +726,118 @@ describe('Reviewing levels should work correctly', () => {
       },
     });
   });
+  test('Testing editing review without userId', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: TestId.LEVEL_2,
+          },
+          body: {
+            score: 5,
+            text: 'bad game',
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await reviewLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(res.status).toBe(400);
+        expect(response.error).toBe('Invalid body.userId');
+      },
+    });
+  });
+  test('PUT review by a different user', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_B),
+          },
+          query: {
+            id: TestId.LEVEL_2,
+          },
+          body: {
+            score: 5,
+            text: 'bad game',
+            userId: TestId.USER,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await reviewLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(res.status).toBe(403);
+        expect(response.error).toBe('Not authorized to edit this review');
+      },
+    });
+  });
+  test('PUT review by a curator', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_C),
+          },
+          query: {
+            id: TestId.LEVEL_2,
+          },
+          body: {
+            score: 0.5,
+            text: 'curator was here',
+            userId: TestId.USER,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await reviewLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+        const processQueueRes = await processQueueMessages();
+
+        expect(processQueueRes).toBe('Processed 5 messages with no errors');
+
+        expect(response.error).toBeUndefined();
+        expect(response.levelId.toString()).toBe(TestId.LEVEL_2);
+        expect(res.status).toBe(200);
+
+        const review = await ReviewModel.findById(review_id);
+
+        expect(review).toBeDefined();
+        expect(review.text).toBe('curator was here');
+        expect(review.score).toBe(0.5);
+        expect(review.levelId._id.toString()).toBe(TestId.LEVEL_2);
+      },
+    });
+  });
   test('Testing deleting review when DB errors out', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     jest.spyOn(ReviewModel, 'deleteOne').mockImplementation(() => {
       throw new Error('Test DB error');
-    }
-    );
+    });
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -739,8 +848,8 @@ describe('Reviewing levels should work correctly', () => {
           },
           query: {
             id: TestId.LEVEL_2,
+            userId: TestId.USER,
           },
-
           headers: {
             'content-type': 'application/json',
           },
@@ -770,8 +879,8 @@ describe('Reviewing levels should work correctly', () => {
           },
           query: {
             id: new Types.ObjectId(),
+            userId: TestId.USER,
           },
-
           headers: {
             'content-type': 'application/json',
           },
@@ -798,8 +907,71 @@ describe('Reviewing levels should work correctly', () => {
           },
           query: {
             id: TestId.LEVEL_2,
+            userId: TestId.USER,
           },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
 
+        await reviewLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+        const processQueueRes = await processQueueMessages();
+
+        expect(processQueueRes).toBe('Processed 3 messages with no errors');
+        expect(response.error).toBeUndefined();
+        expect(response.success).toBe(true);
+        expect(res.status).toBe(200);
+        const lvl = await LevelModel.findById(TestId.LEVEL_2);
+
+        expect(lvl.calc_reviews_count).toBe(0);
+        expect(lvl.calc_reviews_score_laplace.toFixed(2)).toBe('0.67'); // default
+      },
+    });
+  });
+  test('DELETE review by a different user', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'DELETE',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_B),
+          },
+          query: {
+            id: TestId.LEVEL_2,
+            userId: TestId.USER,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await reviewLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Not authorized to delete this review');
+        expect(res.status).toBe(403);
+      },
+    });
+  });
+  test('DELETE review by a curator', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'DELETE',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_C),
+          },
+          query: {
+            id: TestId.LEVEL_2,
+            userId: TestId.USER,
+          },
           headers: {
             'content-type': 'application/json',
           },

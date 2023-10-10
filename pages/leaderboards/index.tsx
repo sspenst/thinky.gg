@@ -21,8 +21,8 @@ async function getDifficultyLeaderboard(index: DIFFICULTY_INDEX) {
         }
       }
     },
-    // now get players that have beaten these levels by checking stats where completed is true
-    // and then group by user and count the number of levels they've beaten
+    // now get players that have solved these levels by checking stats where completed is true
+    // and then group by user and count the number of levels they've solved
     {
       $lookup: {
         from: StatModel.collection.name,

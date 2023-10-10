@@ -46,7 +46,7 @@ export interface ProStatsCommunityStepData {
 
 interface LevelContextInterface {
   getReviews: () => void;
-  inCampaign: boolean; // true means you are playing an unbeaten level in the campaign
+  inCampaign: boolean; // true means you are playing an unsolved level in the campaign
   level: EnrichedLevel;
   mutateLevel: () => void;
   mutateProStatsLevel: KeyedMutator<ProStatsLevel>;

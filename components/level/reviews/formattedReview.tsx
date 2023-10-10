@@ -1,16 +1,16 @@
 import classNames from 'classnames';
 import moment from 'moment';
 import React from 'react';
-import { EnrichedLevel } from '../../models/db/level';
-import { ReviewWithStats } from '../../models/db/review';
-import User from '../../models/db/user';
-import { FolderDivider } from '../header/directory';
-import Solved from '../level/info/solved';
-import ReviewDropdown from '../level/reviews/reviewDropdown';
-import StyledTooltip from '../page/styledTooltip';
-import FormattedDate from './formattedDate';
-import FormattedLevelLink from './formattedLevelLink';
-import FormattedUser from './formattedUser';
+import { EnrichedLevel } from '../../../models/db/level';
+import { ReviewWithStats } from '../../../models/db/review';
+import User from '../../../models/db/user';
+import FormattedDate from '../../formatted/formattedDate';
+import FormattedLevelLink from '../../formatted/formattedLevelLink';
+import FormattedUser from '../../formatted/formattedUser';
+import { FolderDivider } from '../../header/directory';
+import StyledTooltip from '../../page/styledTooltip';
+import Solved from '../info/solved';
+import ReviewDropdown from './reviewDropdown';
 
 interface StarProps {
   empty: boolean;
@@ -67,13 +67,14 @@ export function Stars({ stars }: StarsProps) {
 
 interface FormattedReviewProps {
   hideBorder?: boolean;
+  inModal?: boolean;
   level?: EnrichedLevel;
   onEditClick?: () => void;
   review: ReviewWithStats;
-  user: User;
+  user: User | undefined;
 }
 
-export default function FormattedReview({ hideBorder, level, onEditClick, review, user }: FormattedReviewProps) {
+export default function FormattedReview({ hideBorder, inModal, level, onEditClick, review, user }: FormattedReviewProps) {
   return (
     <div className='flex align-center justify-center text-left break-words'>
       <div
@@ -88,9 +89,15 @@ export default function FormattedReview({ hideBorder, level, onEditClick, review
               <FormattedUser id={level ? `review-${level._id.toString()}` : 'review'} user={user} />
               <FormattedDate ts={review.ts} />
             </div>
-            {onEditClick && <ReviewDropdown onEditClick={onEditClick} />}
+            {onEditClick && user && (
+              <ReviewDropdown
+                inModal={inModal}
+                onEditClick={onEditClick}
+                userId={user._id.toString()}
+              />
+            )}
           </div>
-          {level && <FormattedLevelLink id={`review-${user._id.toString()}`} level={level} />}
+          {level && <FormattedLevelLink id={`review-${user?._id.toString() ?? 'deleted'}`} level={level} />}
         </div>
         <span className='flex items-center'>
           {review.score ? <Stars stars={review.score} /> : null}
@@ -102,7 +109,7 @@ export default function FormattedReview({ hideBorder, level, onEditClick, review
                 `Solved ${moment(new Date(review.stat.ts * 1000)).fromNow()}` :
                 `Completed in ${review.stat.moves} steps ${moment(new Date(review.stat.ts * 1000)).fromNow()}`
               }
-              data-tooltip-id={`review-stat-${user._id.toString()}`}
+              data-tooltip-id={`review-stat-${user?._id.toString() ?? 'deleted'}`}
             >
               <span className='font-bold' style={{
                 color: review.stat.complete ? 'var(--color-complete)' : 'var(--color-incomplete)',
@@ -112,7 +119,7 @@ export default function FormattedReview({ hideBorder, level, onEditClick, review
               </span>
               {review.stat.complete && <Solved className='-mx-2' />}
             </div>
-            <StyledTooltip id={`review-stat-${user._id.toString()}`} />
+            <StyledTooltip id={`review-stat-${user?._id.toString() ?? 'deleted'}`} />
           </>}
         </span>
         <span className='whitespace-pre-wrap'>{review.text}</span>

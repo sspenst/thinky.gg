@@ -93,13 +93,13 @@ async function getCommunityPlayAttemptsData(levelId: string, userId: string) {
       $match: {
         levelId: new mongoose.Types.ObjectId(levelId as string),
         userId: { $ne: new mongoose.Types.ObjectId(userId) },
-        attemptContext: AttemptContext.JUST_BEATEN,
+        attemptContext: AttemptContext.JUST_SOLVED,
       },
     },
     {
       $group: {
         _id: null,
-        players_with_beaten_playattempt: { $push: '$userId' },
+        players_with_just_solved_playattempt: { $push: '$userId' },
       },
     },
     {
@@ -107,15 +107,15 @@ async function getCommunityPlayAttemptsData(levelId: string, userId: string) {
         from: PlayAttemptModel.collection.name,
         let: {
           levelId: new mongoose.Types.ObjectId(levelId as string),
-          players_with_beaten_playattempt: '$players_with_beaten_playattempt' },
+          players_with_just_solved_playattempt: '$players_with_just_solved_playattempt' },
         pipeline: [
           {
             $match: {
               $expr: {
                 $and: [
                   { $eq: ['$levelId', '$$levelId'] },
-                  // check where user is in players_with_beaten_playattempt
-                  { $in: ['$userId', '$$players_with_beaten_playattempt'] },
+                  // check where user is in players_with_just_solved_playattempt
+                  { $in: ['$userId', '$$players_with_just_solved_playattempt'] },
                   { $ne: ['$startTime', '$endTime'] },
 
                 ],
@@ -124,7 +124,7 @@ async function getCommunityPlayAttemptsData(levelId: string, userId: string) {
           },
           {
             $match: {
-              attemptContext: { $in: [AttemptContext.JUST_BEATEN, AttemptContext.UNBEATEN] },
+              attemptContext: { $in: [AttemptContext.JUST_SOLVED, AttemptContext.UNSOLVED] },
             },
           },
           {
@@ -155,7 +155,7 @@ async function getCommunityPlayAttemptsData(levelId: string, userId: string) {
     {
       $project: {
         _id: 0,
-        count: { $size: '$players_with_beaten_playattempt' },
+        count: { $size: '$players_with_just_solved_playattempt' },
         sum: '$otherplayattempts.sumDuration',
 
       },
@@ -171,7 +171,7 @@ async function getPlayAttemptsOverTime(levelId: string, userId: string) {
       $match: {
         levelId: new mongoose.Types.ObjectId(levelId),
         userId: new mongoose.Types.ObjectId(userId),
-        attemptContext: { $in: [AttemptContext.JUST_BEATEN, AttemptContext.UNBEATEN] },
+        attemptContext: { $in: [AttemptContext.JUST_SOLVED, AttemptContext.UNSOLVED] },
       }
     },
     {

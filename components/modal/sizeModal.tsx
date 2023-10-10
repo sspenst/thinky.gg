@@ -104,7 +104,7 @@ export default function SizeModal({ closeModal, historyPush, isOpen, level, setI
         <div className='flex flex-row gap-2 items-center w-full'>
           <label className='font-semibold' htmlFor='width'>Width</label>
           <input
-            className='p-1 rounded-md text-black border w-20'
+            className='p-1 rounded-md border w-20'
             name='width'
             onChange={onWidthChange}
             pattern='[0-9]*'
@@ -116,7 +116,7 @@ export default function SizeModal({ closeModal, historyPush, isOpen, level, setI
         <div className='flex flex-row gap-2 items-center w-full'>
           <label className='font-semibold' htmlFor='height'>Height</label>
           <input
-            className='p-1 rounded-md text-black border w-20'
+            className='p-1 rounded-md border w-20'
             name='height'
             onChange={onHeightChange}
             pattern='[0-9]*'

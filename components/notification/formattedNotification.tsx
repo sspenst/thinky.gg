@@ -15,8 +15,8 @@ import User from '../../models/db/user';
 import FormattedCollectionLink from '../formatted/formattedCollectedLink';
 import FormattedDate from '../formatted/formattedDate';
 import FormattedLevelLink from '../formatted/formattedLevelLink';
-import { Stars } from '../formatted/formattedReview';
 import FormattedUser from '../formatted/formattedUser';
+import { Stars } from '../level/reviews/formattedReview';
 
 interface NotificationMessageProps {
   notification: Notification;
@@ -72,7 +72,7 @@ function NotificationIcon({ notification }: { notification: Notification }) {
 
 function NotificationMessage({ notification, onMarkAsRead }: NotificationMessageProps) {
   switch (notification.type) {
-  case NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT:
+  case NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_SOLVED:
     return (<>
       {'set a new record: '}
       <FormattedLevelLink

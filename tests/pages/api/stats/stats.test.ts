@@ -493,7 +493,7 @@ describe('Testing stats api', () => {
         const lvl = await LevelModel.findById(TestId.LEVEL);
 
         expect(lvl.leastMoves).toBe(12);
-        expect(lvl.calc_stats_players_beaten).toBe(1); // still hasn't won since 14 steps > minimum
+        expect(lvl.calc_stats_players_beaten).toBe(1); // still hasn't solved since 14 steps > minimum
 
         const b = await UserModel.findById(TestId.USER_B);
 
@@ -531,7 +531,7 @@ describe('Testing stats api', () => {
         const lvl = await LevelModel.findById(TestId.LEVEL);
 
         expect(lvl.leastMoves).toBe(12);
-        expect(lvl.calc_stats_players_beaten).toBe(1); // still hasn't won since 14 steps > minimum
+        expect(lvl.calc_stats_players_beaten).toBe(1); // still hasn't solved since 14 steps > minimum
 
         const stat = await StatModel.findOne({ userId: TestId.USER_B, levelId: TestId.LEVEL });
 

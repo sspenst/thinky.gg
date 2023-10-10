@@ -48,7 +48,7 @@ export default function ForgotPasswordForm() {
           <label className='block text-sm font-bold mb-2' htmlFor='email'>
             Send a password reset email
           </label>
-          <input required onChange={e => setEmail(e.target.value)} value={email} className='shadow appearance-none border rounded w-full py-2 px-3 mb-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='email' type='email' placeholder='Email' />
+          <input required onChange={e => setEmail(e.target.value)} value={email} className='shadow appearance-none border rounded w-full py-2 px-3 mb-3 leading-tight focus:outline-none focus:shadow-outline' id='email' type='email' placeholder='Email' />
         </div>
         <div className='text-red-500 text-xs italic mb-4'>
           {errorMessage}

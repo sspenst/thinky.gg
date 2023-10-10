@@ -36,7 +36,6 @@ export interface HomepageDataProps {
   latestReviews?: Review[];
   levelOfDay?: EnrichedLevel;
   recommendedLevel?: EnrichedLevel;
-  recommendedUnattemptedLevel?: EnrichedLevel;
   topLevelsThisMonth?: EnrichedLevel[];
 }
 
@@ -63,7 +62,6 @@ export default function Home({ user }: HomeProps) {
   const [loadLatestReviews, setLoadLatestReviews] = useState(false);
   const [loadLevelOfDay, setLoadLevelOfDay] = useState(false);
   const [loadRecommendedLevel, setLoadRecommendedLevel] = useState(false);
-  const [loadRecommendedUnattemptedLevel, setLoadRecommendedUnattemptedLevel] = useState(false);
   const [loadTopLevelsThisMonth, setLoadTopLevelsThisMonth] = useState(false);
 
   useEffect(() => {
@@ -82,10 +80,6 @@ export default function Home({ user }: HomeProps) {
 
       if (isVisibleInDom('recommended-level')) {
         setLoadRecommendedLevel(true);
-      }
-
-      if (isVisibleInDom('recommended-unattempted-level')) {
-        setLoadRecommendedUnattemptedLevel(true);
       }
 
       if (isVisibleInDom('top-levels-of-month')) {
@@ -115,7 +109,6 @@ export default function Home({ user }: HomeProps) {
         key.includes(HomepageDataType.LatestReviews) ||
         key.includes(HomepageDataType.LevelOfDay) ||
         key.includes(HomepageDataType.RecommendedLevel) ||
-        key.includes(HomepageDataType.RecommendedUnattemptedLevel) ||
         key.includes(HomepageDataType.TopLevelsThisMonth)
       ) {
         cache.delete(key);
@@ -129,7 +122,6 @@ export default function Home({ user }: HomeProps) {
     loadLatestReviews ? [HomepageDataType.LatestReviews] : [],
     loadLevelOfDay ? [HomepageDataType.LevelOfDay] : [],
     loadRecommendedLevel ? [HomepageDataType.RecommendedLevel] : [],
-    loadRecommendedUnattemptedLevel ? [HomepageDataType.RecommendedUnattemptedLevel] : [],
     loadTopLevelsThisMonth ? [HomepageDataType.TopLevelsThisMonth] : [],
   ];
 
@@ -140,7 +132,6 @@ export default function Home({ user }: HomeProps) {
     ...useHomePageData(chunks[3]).data,
     ...useHomePageData(chunks[4]).data,
     ...useHomePageData(chunks[5]).data,
-    ...useHomePageData(chunks[6]).data,
   } as HomepageDataProps;
 
   const lastLevelPlayed = dataMerge[HomepageDataType.LastLevelPlayed];
@@ -148,7 +139,6 @@ export default function Home({ user }: HomeProps) {
   const latestReviews = dataMerge[HomepageDataType.LatestReviews];
   const levelOfDay = dataMerge[HomepageDataType.LevelOfDay];
   const recommendedLevel = dataMerge[HomepageDataType.RecommendedLevel];
-  const recommendedUnattemptedLevel = dataMerge[HomepageDataType.RecommendedUnattemptedLevel];
   const topLevelsThisMonth = dataMerge[HomepageDataType.TopLevelsThisMonth];
 
   return (
@@ -159,7 +149,6 @@ export default function Home({ user }: HomeProps) {
         latestReviews={latestReviews}
         levelOfDay={levelOfDay}
         recommendedLevel={recommendedLevel}
-        recommendedUnattemptedLevel={recommendedUnattemptedLevel}
         topLevelsThisMonth={topLevelsThisMonth}
         user={user}
       />

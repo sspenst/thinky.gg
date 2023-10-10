@@ -133,25 +133,25 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
           <label className='block text-sm font-bold mb-2 ' htmlFor='username'>
             Username
           </label>
-          <input required onChange={e => setUsername(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='username' type='text' placeholder='Username' />
+          <input required onChange={e => setUsername(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline' id='username' type='text' placeholder='Username' />
         </div>
         <div>
           <label className='block text-sm font-bold mb-2' htmlFor='email'>
             Email
           </label>
-          <input required onChange={e => setEmail(e.target.value)} value={email} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='email' type='email' placeholder='Email' />
+          <input required onChange={e => setEmail(e.target.value)} value={email} className='shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline' id='email' type='email' placeholder='Email' />
         </div>
         <div>
           <label className='block text-sm font-bold mb-2' htmlFor='password'>
             Password
           </label>
-          <input onChange={e => setPassword(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='password' type='password' placeholder='******************' />
+          <input onChange={e => setPassword(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline' id='password' type='password' placeholder='******************' />
         </div>
         <div>
           <label className='block text-sm font-bold mb-2' htmlFor='password2'>
             Re-enter password
           </label>
-          <input onChange={e => setPassword2(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='password2' type='password' placeholder='******************' />
+          <input onChange={e => setPassword2(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline' id='password2' type='password' placeholder='******************' />
         </div>
         <div className='w-full pt-2'>
           {recaptchaPublicKey && (

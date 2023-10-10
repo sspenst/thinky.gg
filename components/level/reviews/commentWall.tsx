@@ -1,8 +1,6 @@
-import classNames from 'classnames';
 import { Types } from 'mongoose';
 import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import Theme from '../../../constants/theme';
 import { AppContext } from '../../../contexts/appContext';
 import useComments from '../../../hooks/useComments';
 import { COMMENT_QUERY_LIMIT } from '../../../models/CommentEnums';
@@ -20,8 +18,8 @@ export default function CommentWall({ userId }: CommentWallProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [page, setPage] = useState(0);
   const [text, setText] = useState('');
-  const { theme, user } = useContext(AppContext);
   const [totalRows, setTotalRows] = useState(0);
+  const { user } = useContext(AppContext);
 
   useEffect(() => {
     if (commentQuery) {
@@ -101,12 +99,7 @@ export default function CommentWall({ userId }: CommentWallProps) {
       {user &&
         <div className='flex flex-col gap-2'>
           <textarea
-            className={classNames(
-              'block p-1 w-full rounded-lg border disabled:opacity-25',
-              theme === Theme.Light ?
-                'bg-gray-100 focus:ring-blue-500 focus:border-blue-500 border-gray-300' :
-                'bg-gray-700 border-gray-600 placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500'
-            )}
+            className='block p-1 w-full rounded-lg border disabled:opacity-25 focus:ring-blue-500 focus:border-blue-500 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600'
             disabled={isUpdating}
             onChange={(e) => setText(e.currentTarget.value)}
             placeholder='Add a comment...'

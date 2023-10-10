@@ -60,7 +60,7 @@ export default function SettingsGeneral({ user }: SettingsGeneralProps) {
           About me
         </label>
         <textarea
-          className={'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'}
+          className='shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline'
           id='bio'
           name='bio'
           onChange={e => setBio(e.target.value)}

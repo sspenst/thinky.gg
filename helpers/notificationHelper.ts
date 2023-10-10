@@ -186,7 +186,7 @@ export async function createNewLevelNotifications(userIdWhoCreatedLevel: Types.O
   return nm;
 }
 
-export async function createNewRecordOnALevelYouBeatNotifications(userIds: string[] | Types.ObjectId[], userIdWhoSetNewRecord: string | Types.ObjectId, targetLevelId: string | Types.ObjectId, message?: string, options?: SaveOptions) {
+export async function createNewRecordOnALevelYouSolvedNotifications(userIds: string[] | Types.ObjectId[], userIdWhoSetNewRecord: string | Types.ObjectId, targetLevelId: string | Types.ObjectId, message?: string, options?: SaveOptions) {
   const ids: Types.ObjectId[] = [];
   const createRecords = userIds.map(userId => {
     const id = new Types.ObjectId();
@@ -200,7 +200,7 @@ export async function createNewRecordOnALevelYouBeatNotifications(userIds: strin
       sourceModel: 'User',
       target: targetLevelId,
       targetModel: 'Level',
-      type: NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT,
+      type: NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_SOLVED,
       userId: userId,
     };
   });

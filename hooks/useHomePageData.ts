@@ -7,20 +7,24 @@ export enum HomepageDataType {
   LatestReviews = 'latestReviews',
   LevelOfDay = 'levelOfDay',
   RecommendedLevel = 'recommendedLevel',
-  RecommendedUnattemptedLevel = 'recommendedUnattemptedLevel',
   TopLevelsThisMonth = 'topLevelsThisMonth'
 }
 
-export default function useHomePageData(types: HomepageDataType[] = []) {
+export default function useHomePageData(types: HomepageDataType[] = [], disable = false) {
   // convert to query string where each key is the type and the value is 1
   const qstring = types.map(type => `${type}=1`).join('&');
-  const { data, error, isLoading, mutate } = useSWRHelper<HomepageDataProps>('/api/home?' + qstring, {}, {
-    revalidateIfStale: true,
-    revalidateOnFocus: false,
-    keepPreviousData: false,
-    fallback: {},
-    fallbackData: {},
-  });
+  const { data, error, isLoading, mutate } = useSWRHelper<HomepageDataProps>(
+    '/api/home?' + qstring,
+    {},
+    {
+      revalidateIfStale: true,
+      revalidateOnFocus: false,
+      keepPreviousData: false,
+      fallback: {},
+      fallbackData: {},
+    },
+    disable,
+  );
 
   return {
     data: data,

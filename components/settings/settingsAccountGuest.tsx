@@ -57,7 +57,7 @@ export default function SettingsAccountGuest() {
     });
   }
 
-  const inputClass = 'shadow appearance-none border mb-2 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline';
+  const inputClass = 'shadow appearance-none border mb-2 rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline';
 
   return (
     <div className='flex flex-col gap-4 items-center'>

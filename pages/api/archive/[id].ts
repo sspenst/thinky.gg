@@ -43,7 +43,7 @@ export default withAuth({ POST: {
       const slug = await generateLevelSlug('archive', level.name, level._id.toString(), { session: session });
 
       newLevel = await LevelModel.findOneAndUpdate({ _id: id }, { $set: {
-        archivedBy: req.userId,
+        archivedBy: level.userId,
         archivedTs: ts,
         slug: slug,
         userId: new Types.ObjectId(TestId.ARCHIVE),
@@ -51,7 +51,7 @@ export default withAuth({ POST: {
 
       await Promise.all([
         queueCalcCreatorCounts(new Types.ObjectId(TestId.ARCHIVE), { session: session }),
-        queueCalcCreatorCounts(req.user._id, { session: session }),
+        queueCalcCreatorCounts(level.userId, { session: session }),
         queueDiscordWebhook(Discord.LevelsId, `**${req.user.name}** archived a level: [${level.name}](${req.headers.origin}/level/${slug}?ts=${ts})`, { session: session }),
       ]);
     });

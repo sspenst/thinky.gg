@@ -1,40 +1,28 @@
-import classNames from 'classnames';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Rating } from 'react-simple-star-rating';
 import TextareaAutosize from 'react-textarea-autosize';
-import Theme from '../../constants/theme';
-import { AppContext } from '../../contexts/appContext';
-import { LevelContext } from '../../contexts/levelContext';
-import { PageContext } from '../../contexts/pageContext';
-import Review from '../../models/db/review';
-import FormattedReview, { Star } from '../formatted/formattedReview';
-import DeleteReviewModal from '../modal/deleteReviewModal';
-import ProfileAvatar from '../profile/profileAvatar';
-import isNotFullAccountToast from '../toasts/isNotFullAccountToast';
+import { AppContext } from '../../../contexts/appContext';
+import { LevelContext } from '../../../contexts/levelContext';
+import { PageContext } from '../../../contexts/pageContext';
+import { ReviewWithStats } from '../../../models/db/review';
+import ProfileAvatar from '../../profile/profileAvatar';
+import isNotFullAccountToast from '../../toasts/isNotFullAccountToast';
+import FormattedReview, { Star } from './formattedReview';
 
 interface ReviewFormProps {
   inModal?: boolean;
-  userReview?: Review;
+  review?: ReviewWithStats;
 }
 
-export default function ReviewForm({ inModal, userReview }: ReviewFormProps) {
-  const [isDeleteReviewOpen, setIsDeleteReviewOpen] = useState(false);
+export default function ReviewForm({ inModal, review }: ReviewFormProps) {
+  const [isEditing, setIsEditing] = useState(!review);
   const [isUpdating, setIsUpdating] = useState(false);
   const levelContext = useContext(LevelContext);
-  const [rating, setRating] = useState(userReview?.score || 0);
-  const [reviewBody, setReviewBody] = useState(userReview?.text || '');
+  const [rating, setRating] = useState(review?.score || 0);
+  const [reviewBody, setReviewBody] = useState(review?.text || '');
   const { setPreventKeyDownEvent } = useContext(PageContext);
-  const [showUserReview, setShowUserReview] = useState(!!userReview);
-  const { theme, user } = useContext(AppContext);
-
-  // only prevent keydown when the delete modal is the first modal open
-  // (not opened from within the review modal)
-  useEffect(() => {
-    if (!inModal) {
-      setPreventKeyDownEvent(isDeleteReviewOpen);
-    }
-  }, [inModal, isDeleteReviewOpen, setPreventKeyDownEvent]);
+  const { user: reqUser } = useContext(AppContext);
 
   function onUpdateReview() {
     setIsUpdating(true);
@@ -43,14 +31,15 @@ export default function ReviewForm({ inModal, userReview }: ReviewFormProps) {
     toast.loading('Saving...');
 
     fetch('/api/review/' + levelContext?.level._id, {
-      method: userReview ? 'PUT' : 'POST',
+      method: review ? 'PUT' : 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         score: rating,
         text: reviewBody,
-      })
+        userId: review?.userId._id.toString(),
+      }),
     }).then(res => {
       if (res.status === 401) {
         isNotFullAccountToast('Reviewing');
@@ -61,7 +50,7 @@ export default function ReviewForm({ inModal, userReview }: ReviewFormProps) {
         toast.success('Saved');
 
         levelContext?.getReviews();
-        setShowUserReview(true);
+        setIsEditing(false);
       }
     }).catch(async err => {
       console.error(err);
@@ -72,19 +61,22 @@ export default function ReviewForm({ inModal, userReview }: ReviewFormProps) {
     });
   }
 
+  const user = review?.userId ?? reqUser;
+
   if (!user) {
     return null;
   }
 
-  if (showUserReview && userReview) {
+  if (!isEditing && review) {
     return (
       <>
         <FormattedReview
           hideBorder={true}
+          inModal={inModal}
           key={'user-formatted-review'}
-          onEditClick={() => setShowUserReview(false)}
-          review={userReview}
-          user={userReview.userId}
+          onEditClick={() => setIsEditing(true)}
+          review={review}
+          user={user}
         />
         <div
           className='opacity-30'
@@ -92,13 +84,6 @@ export default function ReviewForm({ inModal, userReview }: ReviewFormProps) {
             backgroundColor: 'var(--bg-color-4)',
             height: 1,
           }}
-        />
-        <DeleteReviewModal
-          closeModal={() => {
-            setIsDeleteReviewOpen(false);
-            levelContext?.getReviews();
-          }}
-          isOpen={isDeleteReviewOpen}
         />
       </>
     );
@@ -108,7 +93,7 @@ export default function ReviewForm({ inModal, userReview }: ReviewFormProps) {
     <div className='block w-full reviewsSection flex flex-col gap-2 mb-2' style={{
       borderColor: 'var(--bg-color-4)',
     }}>
-      <h2 className='font-bold'>{`${userReview ? 'Edit' : 'Add a'} review`}</h2>
+      <h2 className='font-bold'>{`${review ? 'Edit' : 'Add a'} review`}</h2>
       <div className='flex items-center gap-2'>
         <ProfileAvatar user={user} />
         <Rating
@@ -124,12 +109,14 @@ export default function ReviewForm({ inModal, userReview }: ReviewFormProps) {
           size={20}
           transition
         />
+        {rating !== 0 &&
+          <button className='italic underline text-sm' onClick={() => setRating(0)}>
+            Reset
+          </button>
+        }
       </div>
       <TextareaAutosize
-        className={classNames(
-          'bg-inherit block py-1 -mt-2 w-full border-b border-neutral-500 disabled:text-neutral-500 transition resize-none placeholder:text-neutral-500 focus:outline-0 rounded-none',
-          theme === Theme.Light ? 'focus:border-black' : 'focus:border-white',
-        )}
+        className='bg-inherit block py-1 -mt-2 w-full border-b border-neutral-500 disabled:text-neutral-500 transition resize-none placeholder:text-neutral-500 focus:outline-0 rounded-none focus:border-black focus:dark:border-white'
         disabled={isUpdating}
         onBlur={() => {
           // only prevent keydown when entering review from the sidebar
@@ -159,9 +146,9 @@ export default function ReviewForm({ inModal, userReview }: ReviewFormProps) {
             disabled={isUpdating || (rating === 0 && reviewBody.length === 0)}
             onClick={() => {
               // restore the pre-edit user review if available, otherwise reset
-              setShowUserReview(!!userReview);
-              setRating(userReview?.score || 0);
-              setReviewBody(userReview?.text || '');
+              setIsEditing(!review);
+              setRating(review?.score || 0);
+              setReviewBody(review?.text || '');
             }}>
             Cancel
           </button>

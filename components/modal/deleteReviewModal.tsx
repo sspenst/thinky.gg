@@ -6,16 +6,17 @@ import Modal from '.';
 interface DeleteReviewModalProps {
   closeModal: () => void;
   isOpen: boolean;
+  userId: string;
 }
 
-export default function DeleteReviewModal({ closeModal, isOpen }: DeleteReviewModalProps) {
+export default function DeleteReviewModal({ closeModal, isOpen, userId }: DeleteReviewModalProps) {
   const levelContext = useContext(LevelContext);
 
   function onConfirm() {
     toast.dismiss();
     toast.loading('Deleting review...');
 
-    fetch(`/api/review/${levelContext?.level._id}`, {
+    fetch(`/api/review/${levelContext?.level._id}?userId=${userId}`, {
       method: 'DELETE',
       credentials: 'include',
     }).then(res => {
@@ -26,10 +27,10 @@ export default function DeleteReviewModal({ closeModal, isOpen }: DeleteReviewMo
       } else {
         throw res.text();
       }
-    }).catch(err => {
+    }).catch(async err => {
       console.error(err);
       toast.dismiss();
-      toast.error('Error deleting review');
+      toast.error(JSON.parse(await err)?.error || 'Error deleting review');
     });
   }
 
@@ -41,7 +42,7 @@ export default function DeleteReviewModal({ closeModal, isOpen }: DeleteReviewMo
       title={'Delete Review'}
     >
       <div style={{ textAlign: 'center' }}>
-        {'Are you sure you want to delete your review?'}
+        {'Are you sure you want to delete this review?'}
       </div>
     </Modal>
   );

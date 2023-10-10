@@ -32,7 +32,7 @@ interface ModalProps {
   isOpen: boolean;
   onConfirm?: () => void;
   onSubmit?: () => void;
-  title: string;
+  title: string | JSX.Element;
 }
 
 export default function Modal({
@@ -94,7 +94,7 @@ export default function Modal({
                 </button>
               </div>
               <Dialog.Title
-                as='h3'
+                as='div'
                 className='text-lg font-bold leading-6'
                 style={{
                   textAlign: 'center',

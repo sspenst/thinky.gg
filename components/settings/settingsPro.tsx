@@ -5,7 +5,6 @@ import moment from 'moment';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useContext, useEffect, useState } from 'react';
-import Theme from '../../constants/theme';
 import { AppContext } from '../../contexts/appContext';
 import useSWRHelper from '../../hooks/useSWRHelper';
 import { SubscriptionData } from '../../pages/api/subscription';
@@ -40,7 +39,7 @@ interface SettingsProProps {
 }
 
 export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLink, stripePaymentYearlyLink }: SettingsProProps) {
-  const { mutateUser, theme, user, userLoading } = useContext(AppContext);
+  const { mutateUser, user, userLoading } = useContext(AppContext);
   const [plan, setPlan] = useState('year');
   const [shouldContinouslyFetch, setShouldContinouslyFetch] = useState(false);
   const { data: subscriptionData } = useSWRHelper<SubscriptionData>('/api/subscription');
@@ -69,12 +68,6 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
     );
   }
 
-  const buttonClassNames = classNames('py-2.5 px-3.5 mt-2 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm whitespace-nowrap',
-    theme === Theme.Light ?
-      'bg-green-100 hover:bg-gray-50 border-gray-300 text-gray-700' :
-      'bg-gray-800 hover:bg-slate-600 border-gray-700 text-gray-300'
-  );
-
   return (
     <div className='flex flex-col justify-center items-center gap-4'>
       <div className='flex gap-4'>
@@ -101,7 +94,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                   </span>
                   :
                   <a
-                    className={buttonClassNames}
+                    className='py-2.5 px-3.5 mt-2 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm whitespace-nowrap bg-green-100 dark:bg-gray-800 hover:bg-gray-50 hover:dark:bg-slate-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300'
                     href={stripeCustomerPortalLink || ''}
                     rel='noreferrer'
                     target='_blank'
@@ -164,6 +157,15 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
             title='Advanced Search Filters'
           />
           <ProFeature
+            description='Details on levels solved per user and per creator'
+            icon={
+              <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='rgb(234 179 8)' className='w-6 h-6'>
+                <path strokeLinecap='round' strokeLinejoin='round' d='M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18' />
+              </svg>
+            }
+            title='User Insights'
+          />
+          <ProFeature
             description='View your play history'
             icon={
               <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='currentColor' className='bi bi-clock-history w-6 h-6' viewBox='0 0 16 16'>
@@ -172,15 +174,6 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                 <path d='M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5z' />
               </svg>}
             title='Play History'
-          />
-          <ProFeature
-            description='Details on levels solved per user and per creator'
-            icon={
-              <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='rgb(234 179 8)' className='w-6 h-6'>
-                <path strokeLinecap='round' strokeLinejoin='round' d='M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18' />
-              </svg>
-            }
-            title='User Insights'
           />
         </div>
       </div>

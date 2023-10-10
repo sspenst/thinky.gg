@@ -10,13 +10,12 @@ interface LevelSelectProps {
 }
 
 export default function LevelSelect({ levels }: LevelSelectProps) {
-  if (levels.length === 0 ) {
+  if (levels.length === 0) {
     return (
-      <div className='flex flex-wrap justify-center'>
-        <div className='flex flex-col justify-center items-center text-xs italic'>
-            No results
-        </div>
-      </div>);
+      <div className='text-center italic p-3'>
+        No levels found
+      </div>
+    );
   }
 
   return (

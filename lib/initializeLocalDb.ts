@@ -261,7 +261,7 @@ export default async function initializeLocalDb() {
   promises.push(PlayAttemptModel.insertMany([
     {
       _id: new Types.ObjectId(),
-      attemptContext: AttemptContext.UNBEATEN,
+      attemptContext: AttemptContext.UNSOLVED,
       endTime: 200,
       isDeleted: true,
       levelId: new Types.ObjectId(TestId.LEVEL_DELETED),

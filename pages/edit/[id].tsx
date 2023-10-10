@@ -32,7 +32,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   if (!level) {
     return {
-      notFound: true,
+      redirect: {
+        destination: '/home',
+        permanent: false,
+      },
     };
   }
 
