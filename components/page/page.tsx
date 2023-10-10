@@ -30,8 +30,6 @@ export default function Page({
   const [preventKeyDownEvent, setPreventKeyDownEvent] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
 
-  const [showAudioSettings, setShowAudioSettings] = useState(false);
-
   useEffect(() => {
     if (isFullScreen) {
       document.body.classList.add('touch-pinch-zoom');
@@ -50,11 +48,7 @@ export default function Page({
       setShowHeader: setShowHeader,
       setPreventKeyDownEvent: setPreventKeyDownEvent,
       showHeader: showHeader,
-      showAudioSettings: false,
-      setShowAudioSettings: setShowAudioSettings,
-
     }}>
-
       <div className={classNames('flex flex-col', { 'fixed inset-0 overflow-hidden': isFullScreen })}>
         {showHeader &&
           <Header
@@ -67,7 +61,6 @@ export default function Page({
           height: showHeader ? `calc(100% - ${Dimensions.MenuHeight}px)` : '100%',
         }}>
           {children}
-
         </main>
       </div>
       {!isFullScreen && !hideFooter && <Footer />}
