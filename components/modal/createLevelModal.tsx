@@ -127,7 +127,7 @@ export default function CreateLevelModal({ closeModal, isOpen, level }: CreateLe
       <div className='flex flex-col gap-2 w-112 max-w-full'>
         <label className='font-semibold' htmlFor='name'>Name:</label>
         <input
-          className='p-1 rounded-md text-black border'
+          className='p-1 rounded-md border'
           name='name'
           onChange={e => setName(e.target.value)}
           placeholder={'Add name...'}
@@ -137,7 +137,7 @@ export default function CreateLevelModal({ closeModal, isOpen, level }: CreateLe
         />
         <label className='font-semibold' htmlFor='authorNote'>Author Note:</label>
         <textarea
-          className='p-1 rounded-md text-black border'
+          className='p-1 rounded-md border'
           name='authorNote'
           onChange={e => setAuthorNote(e.target.value)}
           placeholder={'Add optional author note...'}

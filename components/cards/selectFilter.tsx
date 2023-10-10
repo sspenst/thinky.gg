@@ -26,30 +26,28 @@ export default function SelectFilter({
         {user &&
           <div className='flex'>
             <FilterButton
-              element={<>{'Hide Won'}</>}
+              element='Hide Solved'
               first={true}
               onClick={onFilterClick}
-              selected={filter === StatFilter.HideWon}
-              value={StatFilter.HideWon}
+              selected={filter === StatFilter.HideSolved}
+              value={StatFilter.HideSolved}
             />
             <FilterButton
-              element={<>{'Show Won'}</>}
+              element='Solved'
               onClick={onFilterClick}
-              proRequired={true}
-              selected={filter === StatFilter.ShowWon}
-              value={StatFilter.ShowWon}
+              selected={filter === StatFilter.Solved}
+              value={StatFilter.Solved}
             />
             <FilterButton
-              element={<>{'Show In Progress'}</>}
+              element='In Progress'
               last={true} onClick={onFilterClick}
-              proRequired={true}
-              selected={filter === StatFilter.ShowInProgress}
-              value={StatFilter.ShowInProgress}
+              selected={filter === StatFilter.InProgress}
+              value={StatFilter.InProgress}
             />
           </div>
         }
         <div className='p-2'>
-          <input key={'search_levels'} id='search-levels' type='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={placeholder} onChange={e => setSearchText(e.target.value)} value={searchText} />
+          <input key={'search_levels'} id='search-levels' type='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={placeholder} onChange={e => setSearchText(e.target.value)} value={searchText} />
         </div>
       </div>
     </div>

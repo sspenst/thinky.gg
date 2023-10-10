@@ -11,6 +11,7 @@ import { getUsersWithMultiplayerProfile } from '@root/helpers/getUsersWithMultip
 import useSWRHelper from '@root/hooks/useSWRHelper';
 import Graph from '@root/models/db/graph';
 import { MultiplayerMatchState } from '@root/models/MultiplayerEnums';
+import { getCollections } from '@root/pages/api/collection-by-id/[id]';
 import classNames from 'classnames';
 import { debounce } from 'debounce';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
@@ -23,8 +24,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import FollowButton from '../../../../components/buttons/followButton';
 import Select from '../../../../components/cards/select';
 import SelectFilter from '../../../../components/cards/selectFilter';
-import FormattedReview from '../../../../components/formatted/formattedReview';
 import CommentWall from '../../../../components/level/reviews/commentWall';
+import FormattedReview from '../../../../components/level/reviews/formattedReview';
 import AddCollectionModal from '../../../../components/modal/addCollectionModal';
 import MultiSelectUser from '../../../../components/page/multiSelectUser';
 import Page from '../../../../components/page/page';
@@ -34,7 +35,6 @@ import ProfileInsights from '../../../../components/profile/profileInsights';
 import Dimensions from '../../../../constants/dimensions';
 import GraphType from '../../../../constants/graphType';
 import TimeRange from '../../../../constants/timeRange';
-import { enrichCollection } from '../../../../helpers/enrich';
 import statFilterOptions from '../../../../helpers/filterSelectOptions';
 import getProfileSlug from '../../../../helpers/getProfileSlug';
 import { getReviewsByUserId, getReviewsByUserIdCount } from '../../../../helpers/getReviewsByUserId';
@@ -43,7 +43,7 @@ import naturalSort from '../../../../helpers/naturalSort';
 import cleanUser from '../../../../lib/cleanUser';
 import { getUserFromToken } from '../../../../lib/withAuth';
 import Achievement from '../../../../models/db/achievement';
-import Collection, { EnrichedCollection } from '../../../../models/db/collection';
+import { EnrichedCollection } from '../../../../models/db/collection';
 import { EnrichedLevel } from '../../../../models/db/level';
 import Review from '../../../../models/db/review';
 import User from '../../../../models/db/user';
@@ -146,13 +146,24 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   if (profileTab === ProfileTab.Profile) {
     if (reqUser && reqUser._id.toString() === userId) {
-      const followingGraph = await GraphModel.find({
-        source: reqUser._id,
-        type: GraphType.FOLLOW,
-      }, 'target targetModel createdAt').populate('target', 'name avatarUpdatedAt last_visited_at hideStatus').exec() as Graph[];
-
-      /* istanbul ignore next */
-      const reqUserFollowing = followingGraph.map((f) => {
+      // make a aggregation version of the same query above
+      const followingAgg = await GraphModel.aggregate([
+        { $match: { source: reqUser._id, type: GraphType.FOLLOW } },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'target',
+            foreignField: '_id',
+            as: 'target',
+            pipeline: [
+              { $project: { name: 1, avatarUpdatedAt: 1, last_visited_at: 1, hideStatus: 1 } },
+            ],
+          },
+        },
+        { $unwind: '$target' },
+        { $sort: { createdAt: -1 } },
+      ]).exec() as Graph[];
+      const reqUserFollowing = followingAgg.map((f) => {
         cleanUser(f.target as User);
 
         return f;
@@ -163,16 +174,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   if (profileTab === ProfileTab.Collections) {
-    const collections = await CollectionModel.find<Collection>({ userId: user._id }, 'levels name slug')
-      .populate({
-        path: 'levels',
-        select: '_id leastMoves',
-        match: { isDraft: false },
-      })
-      .sort({ name: 1 });
-    const enrichedCollections = await Promise.all(collections.map(collection => enrichCollection(collection, reqUser)));
+    const collectionsAgg = await getCollections({
+      matchQuery: { $match: { userId: user._id } },
+      reqUser,
+    });
 
-    profilePageProps.enrichedCollections = JSON.parse(JSON.stringify(enrichedCollections));
+    profilePageProps.enrichedCollections = JSON.parse(JSON.stringify(collectionsAgg));
   }
 
   if (profileTab === ProfileTab.Levels) {
@@ -369,7 +376,7 @@ export default function ProfilePage({
         </div>
         <div className='flex gap-2 items-center justify-center'>
           <h2 className='text-3xl font-bold truncate'>{user.name}</h2>
-          <RoleIcons size={24} user={user} />
+          <RoleIcons id='profile' size={24} user={user} />
         </div>
         {user.bio && <p className='text-center italic text-sm break-words mt-2'>{user.bio}</p>}
         {reqUser && reqUserIsFollowing !== undefined && reqUser._id.toString() !== user._id.toString() && (

@@ -27,7 +27,7 @@ export async function getLastLevelPlayed(user: User) {
 export default withAuth({
   GET: {
     query: {
-      context: ValidEnum(['recent_unbeaten']),
+      context: ValidEnum(['recent_unsolved']),
     },
   },
   POST: {
@@ -66,7 +66,7 @@ export default withAuth({
             session: session,
             $sort: {
               endTime: -1,
-              // NB: if end time is identical, we want to get the highest attempt context (JUST_BEATEN over UNBEATEN)
+              // NB: if end time is identical, we want to get the highest attempt context (JUST_SOLVED over UNSOLVED)
               attemptContext: -1,
             },
           },
@@ -98,7 +98,7 @@ export default withAuth({
           // create the user's first playattempt for this level and return
           const resp = await PlayAttemptModel.create([{
             _id: new Types.ObjectId(),
-            attemptContext: level.userId.toString() === req.userId ? AttemptContext.BEATEN : AttemptContext.UNBEATEN,
+            attemptContext: level.userId.toString() === req.userId ? AttemptContext.SOLVED : AttemptContext.UNSOLVED,
             endTime: now,
             levelId: levelObjectId,
             startTime: now,
@@ -112,7 +112,7 @@ export default withAuth({
           return;
         }
 
-        if (latestPlayAttempt.endTime > (now - 3 * 60) && latestPlayAttempt.attemptContext !== AttemptContext.JUST_BEATEN) {
+        if (latestPlayAttempt.endTime > (now - 3 * 60) && latestPlayAttempt.attemptContext !== AttemptContext.JUST_SOLVED) {
           // extend recent playattempts
           await PlayAttemptModel.updateOne(
             { _id: latestPlayAttempt._id },
@@ -124,7 +124,7 @@ export default withAuth({
           );
 
           // increment the level's calc_playattempts_duration_sum
-          if (latestPlayAttempt.attemptContext === AttemptContext.UNBEATEN) {
+          if (latestPlayAttempt.attemptContext === AttemptContext.UNSOLVED) {
             const newPlayDuration = now - latestPlayAttempt.endTime;
 
             const updatedLevel = await LevelModel.findByIdAndUpdate<EnrichedLevel>(levelObjectId, {
@@ -169,7 +169,7 @@ export default withAuth({
 
         const resp = await PlayAttemptModel.create([{
           _id: new Types.ObjectId(),
-          attemptContext: latestPlayAttempt.attemptContext === AttemptContext.UNBEATEN ? AttemptContext.UNBEATEN : AttemptContext.BEATEN,
+          attemptContext: latestPlayAttempt.attemptContext === AttemptContext.UNSOLVED ? AttemptContext.UNSOLVED : AttemptContext.SOLVED,
           endTime: now,
           levelId: levelObjectId,
           startTime: now,

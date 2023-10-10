@@ -6,14 +6,6 @@
   background-color: var(--bg-color-3);
 }
 
-.highlight-once {
-  -webkit-animation: glowing 1300ms forwards;
-  -moz-animation: glowing 1300ms forwards;
-  -ms-animation: glowing 1300ms forwards;
-  -o-animation: glowing 1300ms forwards;
-  animation: glowing 1300ms forwards;
-}
-
 .highlight-red {
   -webkit-animation: glowing-red 2s infinite;
   -moz-animation: glowing-red 2s infinite;

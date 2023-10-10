@@ -60,7 +60,7 @@ const tests = [
     tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
       expect(lvl.calc_playattempts_duration_sum).toBe(4 * MINUTE);
       expect(playAttemptDocs.length).toBe(1);
-      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.UNBEATEN);
+      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(playAttemptDocs[0].updateCount).toBe(3);
       expect(lvl.calc_playattempts_unique_users).toStrictEqual([new Types.ObjectId(TestId.USER)]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(0);
@@ -77,9 +77,9 @@ const tests = [
     tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
       expect(lvl.calc_playattempts_duration_sum).toBe(2 * MINUTE);
       expect(playAttemptDocs.length).toBe(2);
-      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.UNBEATEN);
+      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(playAttemptDocs[0].updateCount).toBe(0);
-      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.UNBEATEN);
+      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(playAttemptDocs[1].updateCount).toBe(1);
     }
   },
@@ -93,7 +93,7 @@ const tests = [
       expect(lvl.calc_playattempts_duration_sum).toBe(0);
       expect(lvl.calc_playattempts_unique_users).toStrictEqual([]);
       expect(playAttemptDocs.length).toBe(1);
-      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.UNBEATEN);
+      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(playAttemptDocs[0].updateCount).toBe(0);
     }
   },
@@ -108,7 +108,7 @@ const tests = [
     ],
     tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
       expect(playAttemptDocs.length).toBe(1);
-      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.UNBEATEN);
+      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(playAttemptDocs[0].updateCount).toBe(3);
       expect(lvl.calc_playattempts_duration_sum).toBe(3 * MINUTE);
       expect(lvl.calc_playattempts_unique_users).toStrictEqual([new Types.ObjectId(TestId.USER)]);
@@ -141,15 +141,15 @@ const tests = [
 
       expect(playAttemptDocs.length).toBe(5);
       expect(playAttemptDocs[0].updateCount).toBe(2);
-      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.BEATEN);
+      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.SOLVED);
       expect(playAttemptDocs[1].updateCount).toBe(1);
-      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.BEATEN);
+      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.SOLVED);
       expect(playAttemptDocs[2].updateCount).toBe(3);
-      expect(playAttemptDocs[2].attemptContext).toBe(AttemptContext.JUST_BEATEN);
+      expect(playAttemptDocs[2].attemptContext).toBe(AttemptContext.JUST_SOLVED);
       expect(playAttemptDocs[3].updateCount).toBe(2);
-      expect(playAttemptDocs[3].attemptContext).toBe(AttemptContext.UNBEATEN);
+      expect(playAttemptDocs[3].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(playAttemptDocs[4].updateCount).toBe(2);
-      expect(playAttemptDocs[4].attemptContext).toBe(AttemptContext.UNBEATEN);
+      expect(playAttemptDocs[4].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(lvl.calc_playattempts_unique_users).toStrictEqual([new Types.ObjectId(TestId.USER)]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
     }
@@ -167,9 +167,9 @@ const tests = [
       expect(lvl.calc_playattempts_duration_sum).toBe(1 * MINUTE );
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
       expect(playAttemptDocs.length).toBe(2);
-      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.BEATEN);
+      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.SOLVED);
       expect(playAttemptDocs[0].updateCount).toBe(0);
-      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.JUST_BEATEN);
+      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.JUST_SOLVED);
       expect(playAttemptDocs[1].updateCount).toBe(2);
     }
   },
@@ -189,11 +189,11 @@ const tests = [
       expect(lvl.calc_playattempts_duration_sum).toBe(2 * MINUTE);
       expect(playAttemptDocs.length).toBe(3);
       expect(playAttemptDocs[0].updateCount).toBe(1);
-      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.BEATEN);
+      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.SOLVED);
       expect(playAttemptDocs[1].updateCount).toBe(1);
-      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.BEATEN);
+      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.SOLVED);
       expect(playAttemptDocs[2].updateCount).toBe(2);
-      expect(playAttemptDocs[2].attemptContext).toBe(AttemptContext.JUST_BEATEN);
+      expect(playAttemptDocs[2].attemptContext).toBe(AttemptContext.JUST_SOLVED);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
     }
   },
@@ -208,13 +208,13 @@ const tests = [
     tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level,) => {
       expect(playAttemptDocs.length).toBe(2);
       expect(playAttemptDocs[0].updateCount).toBe(0);
-      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_BEATEN);
+      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_SOLVED);
       expect(playAttemptDocs[0].userId._id.toString()).toBe(TestId.USER_B);
       expect(playAttemptDocs[1].updateCount).toBe(1);
-      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.UNBEATEN);
+      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(playAttemptDocs[1].userId._id.toString()).toBe(TestId.USER);
       expect(lvl.calc_playattempts_unique_users).toStrictEqual([new Types.ObjectId(TestId.USER), new Types.ObjectId(TestId.USER_B)]);
-      expect(lvl.calc_playattempts_just_beaten_count).toBe(1); // other person won
+      expect(lvl.calc_playattempts_just_beaten_count).toBe(1); // other person solved
     }
   },
   {
@@ -230,10 +230,10 @@ const tests = [
     tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
       expect(playAttemptDocs.length).toBe(2);
       expect(playAttemptDocs[0].updateCount).toBe(0);
-      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_BEATEN);
+      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_SOLVED);
       expect(playAttemptDocs[0].userId.toString()).toBe(TestId.USER_B);
       expect(playAttemptDocs[1].updateCount).toBe(3);
-      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.JUST_BEATEN);
+      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.JUST_SOLVED);
       expect(playAttemptDocs[1].userId.toString()).toBe(TestId.USER);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(2);
     }
@@ -265,13 +265,13 @@ const tests = [
     ],
     tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
       expect(playAttemptDocs.length).toBe(7);
-      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.BEATEN);
-      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.JUST_BEATEN);
-      expect(playAttemptDocs[2].attemptContext).toBe(AttemptContext.UNBEATEN);
-      expect(playAttemptDocs[3].attemptContext).toBe(AttemptContext.JUST_BEATEN);
-      expect(playAttemptDocs[4].attemptContext).toBe(AttemptContext.UNBEATEN);
-      expect(playAttemptDocs[5].attemptContext).toBe(AttemptContext.UNBEATEN);
-      expect(playAttemptDocs[6].attemptContext).toBe(AttemptContext.UNBEATEN);
+      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.SOLVED);
+      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.JUST_SOLVED);
+      expect(playAttemptDocs[2].attemptContext).toBe(AttemptContext.UNSOLVED);
+      expect(playAttemptDocs[3].attemptContext).toBe(AttemptContext.JUST_SOLVED);
+      expect(playAttemptDocs[4].attemptContext).toBe(AttemptContext.UNSOLVED);
+      expect(playAttemptDocs[5].attemptContext).toBe(AttemptContext.UNSOLVED);
+      expect(playAttemptDocs[6].attemptContext).toBe(AttemptContext.UNSOLVED);
 
       expect(playAttemptDocs[0].endTime).toBe(345 * MINUTE);
       expect(playAttemptDocs[0].startTime).toBe(345 * MINUTE);
@@ -297,7 +297,7 @@ const tests = [
       expect(lvl.calc_playattempts_duration_sum).toBe(13.5 * MINUTE); // see comments above on how this is calculated
       expect(lvl.calc_playattempts_unique_users).toHaveLength(2);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(2);
-      expect(lvl.calc_playattempts_just_beaten_count).toBe(2); // both of us beat it
+      expect(lvl.calc_playattempts_just_beaten_count).toBe(2); // both of us solved it
     }
   },
   {
@@ -308,7 +308,7 @@ const tests = [
     ],
     tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
       expect(playAttemptDocs.length).toBe(1);
-      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_BEATEN);
+      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_SOLVED);
       expect(playAttemptDocs[0].startTime).toBe(0.1 * MINUTE);
       expect(playAttemptDocs[0].endTime).toBe(0.1 * MINUTE);
       expect(lvl.calc_playattempts_duration_sum).toBe(0);
@@ -324,10 +324,10 @@ const tests = [
     ],
     tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
       expect(playAttemptDocs.length).toBe(2);
-      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.BEATEN);
+      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.SOLVED);
       expect(playAttemptDocs[0].startTime).toBe(MINUTE);
       expect(playAttemptDocs[0].endTime).toBe(MINUTE);
-      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.JUST_BEATEN);
+      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.JUST_SOLVED);
       expect(playAttemptDocs[1].startTime).toBe(MINUTE);
       expect(playAttemptDocs[1].endTime).toBe(MINUTE);
       expect(lvl.calc_playattempts_duration_sum).toBe(0);
@@ -347,7 +347,7 @@ const tests = [
       ['win_8', 60 * MINUTE, 'created']
     ],
     tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
-      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_BEATEN);
+      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_SOLVED);
       expect(playAttemptDocs.length).toBe(2);
 
       expect(playAttemptDocs[0].startTime).toBe(3600);
@@ -378,9 +378,9 @@ const tests = [
 
       expect(playAttemptDocs.length).toBe(2);
       expect(playAttemptDocs[0].updateCount).toBe(1);
-      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.BEATEN);
+      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.SOLVED);
       expect(playAttemptDocs[1].updateCount).toBe(2);
-      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.BEATEN);
+      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.SOLVED);
     }
   },
   {
@@ -402,11 +402,11 @@ const tests = [
 
       expect(playAttemptDocs.length).toBe(3);
       expect(playAttemptDocs[0].updateCount).toBe(1);
-      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.BEATEN);
+      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.SOLVED);
       expect(playAttemptDocs[1].updateCount).toBe(2);
-      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.JUST_BEATEN);
+      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.JUST_SOLVED);
       expect(playAttemptDocs[2].updateCount).toBe(2);
-      expect(playAttemptDocs[2].attemptContext).toBe(AttemptContext.UNBEATEN);
+      expect(playAttemptDocs[2].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(lvl.calc_playattempts_unique_users).toStrictEqual([new Types.ObjectId(TestId.USER)]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
     }
@@ -432,11 +432,11 @@ const tests = [
 
       expect(playAttemptDocs.length).toBe(3);
       expect(playAttemptDocs[0].updateCount).toBe(2);
-      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_BEATEN);
+      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_SOLVED);
       expect(playAttemptDocs[1].updateCount).toBe(2);
-      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.UNBEATEN);
+      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(playAttemptDocs[2].updateCount).toBe(2);
-      expect(playAttemptDocs[2].attemptContext).toBe(AttemptContext.UNBEATEN);
+      expect(playAttemptDocs[2].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(lvl.calc_playattempts_unique_users).toStrictEqual([new Types.ObjectId(TestId.USER)]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
     }
@@ -462,9 +462,9 @@ const tests = [
 
       expect(playAttemptDocs.length).toBe(2);
       expect(playAttemptDocs[0].updateCount).toBe(4);
-      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_BEATEN);
+      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_SOLVED);
       expect(playAttemptDocs[1].updateCount).toBe(2);
-      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.UNBEATEN);
+      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(lvl.calc_playattempts_unique_users).toStrictEqual([new Types.ObjectId(TestId.USER)]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
     }
@@ -486,7 +486,7 @@ const tests = [
 
       expect(playAttemptDocs.length).toBe(1);
       expect(playAttemptDocs[0].updateCount).toBe(5);
-      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_BEATEN);
+      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_SOLVED);
       expect(lvl.calc_playattempts_unique_users).toStrictEqual([new Types.ObjectId(TestId.USER)]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
     }
@@ -820,8 +820,8 @@ describe('Testing stats api', () => {
     for (let i = 0; i < 9; i++) {
       await PlayAttemptModel.create({
         _id: new Types.ObjectId(),
-        // half beaten
-        attemptContext: i % 2 === 0 ? AttemptContext.JUST_BEATEN : AttemptContext.UNBEATEN,
+        // half solved
+        attemptContext: i % 2 === 0 ? AttemptContext.JUST_SOLVED : AttemptContext.UNSOLVED,
         endTime: i + 10,
         levelId: level._id,
         startTime: 0,
@@ -841,25 +841,25 @@ describe('Testing stats api', () => {
     expect(levelUpdated?.calc_playattempts_just_beaten_count).toBe(5);
     expect(levelUpdated?.calc_playattempts_unique_users?.length).toBe(9);
 
-    const unbeatenUserId = new Types.ObjectId();
+    const unsolvedUserId = new Types.ObjectId();
 
     // create a playattempt for the 10th unique user
     await PlayAttemptModel.create({
       _id: new Types.ObjectId(),
-      attemptContext: AttemptContext.UNBEATEN,
+      attemptContext: AttemptContext.UNSOLVED,
       endTime: 20,
       levelId: level._id,
       startTime: 0,
       updateCount: 0,
-      userId: unbeatenUserId,
+      userId: unsolvedUserId,
     });
     await UserModel.create({
-      _id: unbeatenUserId,
+      _id: unsolvedUserId,
       calc_records: 0,
-      email: 'unbeaten@gmail.com',
+      email: 'unsolved@gmail.com',
       last_visited_at: 0,
-      name: 'unbeaten',
-      password: 'unbeaten',
+      name: 'unsolved',
+      password: 'unsolved',
       score: 0,
       ts: 0,
     });
@@ -881,7 +881,7 @@ describe('Testing stats api', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(unbeatenUserId.toString()),
+            token: getTokenCookieValue(unsolvedUserId.toString()),
           },
           body: {
             levelId: level._id
@@ -916,7 +916,7 @@ describe('Testing stats api', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(unbeatenUserId.toString()),
+            token: getTokenCookieValue(unsolvedUserId.toString()),
           },
           body: {
             levelId: level._id,
@@ -965,10 +965,10 @@ describe('Testing stats api', () => {
     expect(levelUpdated4?.calc_playattempts_just_beaten_count).toBe(6);
     expect(levelUpdated4?.calc_playattempts_unique_users?.length).toBe(10);
   });
-  // 1. no recent unbeaten
+  // 1. no recent unsolved
   // 2. play
-  // 3. get recent unbeaten
-  test('GET recent_unbeaten', async () => {
+  // 3. get recent unsolved
+  test('GET recent_unsolved', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -977,7 +977,7 @@ describe('Testing stats api', () => {
             token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            context: 'recent_unbeaten',
+            context: 'recent_unsolved',
           },
           headers: {
             'content-type': 'application/json',
@@ -1054,7 +1054,7 @@ describe('Testing stats api', () => {
             token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            context: 'recent_unbeaten',
+            context: 'recent_unsolved',
           },
           headers: {
             'content-type': 'application/json',
@@ -1107,7 +1107,7 @@ describe('Testing stats api', () => {
     const playAttemptId1 = new Types.ObjectId();
     const playAttempt1 = {
       _id: playAttemptId1,
-      attemptContext: AttemptContext.UNBEATEN,
+      attemptContext: AttemptContext.UNSOLVED,
       endTime: 10,
       levelId: new Types.ObjectId(TestId.LEVEL),
       startTime: 1,
@@ -1117,7 +1117,7 @@ describe('Testing stats api', () => {
     const playAttemptId2 = new Types.ObjectId();
     const playAttempt2 = {
       _id: playAttemptId2,
-      attemptContext: AttemptContext.UNBEATEN,
+      attemptContext: AttemptContext.UNSOLVED,
       endTime: 30,
       levelId: new Types.ObjectId(TestId.LEVEL),
       startTime: 21,
@@ -1127,7 +1127,7 @@ describe('Testing stats api', () => {
     const playAttemptId3 = new Types.ObjectId();
     const playAttempt3 = {
       _id: playAttemptId3,
-      attemptContext: AttemptContext.UNBEATEN,
+      attemptContext: AttemptContext.UNSOLVED,
       endTime: 20,
       levelId: new Types.ObjectId(TestId.LEVEL),
       startTime: 11,

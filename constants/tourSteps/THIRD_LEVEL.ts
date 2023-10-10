@@ -4,6 +4,6 @@ export const TOUR_STEPS_THIRD_LEVEL: Step[] = [
   {
     disableBeacon: true,
     target: '.reviewsSection',
-    content: 'Did you enjoy this level? After beating it, leave a review here. Reviewing a level gives feedback to the author and improves our level recommendations.'
+    content: 'Did you enjoy this level? After solving it, leave a review here. Reviewing a level gives feedback to the author and improves our level recommendations.'
   },
 ];

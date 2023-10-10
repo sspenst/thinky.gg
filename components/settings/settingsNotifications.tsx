@@ -65,7 +65,7 @@ export default function SettingsNotifications() {
     [NotificationType.NEW_FOLLOWER]: 'New follower',
     [NotificationType.NEW_LEVEL]: 'New level from someone you follow',
     [NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION]: 'Someone adds your level to a collection',
-    [NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT]: 'New record on a level you previously beat',
+    [NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_SOLVED]: 'New record on a level you previously solved',
     [NotificationType.NEW_REVIEW_ON_YOUR_LEVEL]: 'New review on one of your levels',
     [NotificationType.NEW_WALL_POST]: 'New profile comment',
     [NotificationType.NEW_WALL_REPLY]: 'New reply to profile comment',

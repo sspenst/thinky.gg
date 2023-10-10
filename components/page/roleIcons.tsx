@@ -6,13 +6,15 @@ import Role from '../../constants/role';
 import StyledTooltip from './styledTooltip';
 
 interface RoleIconProps {
+  id: string;
   role: Role;
   size?: number;
 }
 
-export function RoleIcon({ role, size = 16 }: RoleIconProps) {
+export function RoleIcon({ id, role, size = 18 }: RoleIconProps) {
   let icon = null;
   let tooltip = '';
+  const tooltipId = `role-icon-tooltip-${id}-${role}`;
 
   switch (role) {
   case (Role.ADMIN):
@@ -33,23 +35,24 @@ export function RoleIcon({ role, size = 16 }: RoleIconProps) {
     return null;
   } else {
     return (
-      <Link href='/settings/proaccount'>
-        <span data-tooltip-id={`tooltip-${role}`} data-tooltip-content={tooltip}>
+      <Link href='/settings/pro'>
+        <span data-tooltip-id={tooltipId} data-tooltip-content={tooltip}>
           {icon}
         </span>
-        <StyledTooltip id={`tooltip-${role}`} />
+        <StyledTooltip id={tooltipId} />
       </Link>
     );
   }
 }
 
 interface RoleIconsProps {
+  id: string;
   size?: number;
   user: User;
 }
 
-export default function RoleIcons({ size, user }: RoleIconsProps) {
+export default function RoleIcons({ id, size, user }: RoleIconsProps) {
   return (<>
-    {user.roles?.map(role => <RoleIcon key={`${user._id.toString()}-${role.toString()}`} role={role} size={size} />)}
+    {user.roles?.map(role => <RoleIcon id={id} key={`role-icon-${user._id.toString()}-${role.toString()}`} role={role} size={size} />)}
   </>);
 }

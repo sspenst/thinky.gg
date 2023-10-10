@@ -38,7 +38,7 @@ export default function PlayHistoryPage({ reqUser }: PlayHistoryPageProps): JSX.
         <PlayHistory />
         :
         <div className='text-center text-lg break-words p-3'>
-          Get <Link href='/settings/proaccount' className='text-blue-500 hover:text-blue-300 transition'>
+          Get <Link href='/settings/pro' className='text-blue-500 hover:text-blue-300 transition'>
             Pathology Pro
           </Link> to view your play history.
         </div>

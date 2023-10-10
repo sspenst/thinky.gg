@@ -3,6 +3,10 @@ module.exports = {
     './components/**/*.{js,jsx,ts,tsx}',
     './pages/**/*.{js,jsx,ts,tsx}',
   ],
+  darkMode: 'class',
+  plugins: [
+    require('@headlessui/tailwindcss')
+  ],
   theme: {
     extend: {
       flexBasis: {
@@ -15,7 +19,4 @@ module.exports = {
       },
     },
   },
-  plugins: [
-    require('@headlessui/tailwindcss')
-  ],
 };

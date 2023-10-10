@@ -94,20 +94,25 @@ export default function LevelInfoCompletions() {
 
       completionDivs.push(
         <div
-          className='flex gap-2 items-center'
-          key={`completion-${completion.moves}-${j}`}
+          className='flex items-center'
+          key={`completion-${completion.moves}-${j}-1`}
         >
           <span
-            className='font-bold w-11 text-right'
+            className='font-bold w-full text-right'
             data-tooltip-content={`${completion.count} user${completion.count === 1 ? '' : 's'} at ${completion.moves} step${completion.moves === 1 ? '' : 's'}`}
             data-tooltip-id='steps'
-            style={{
-              minWidth: 44,
-            }}
           >
             {j === 0 ? completion.moves : null}
           </span>
           <StyledTooltip id='steps' />
+        </div>
+      );
+
+      completionDivs.push(
+        <div
+          className='flex gap-2 items-center truncate'
+          key={`completion-${completion.moves}-${j}-2`}
+        >
           <FormattedUser id='completion' size={Dimensions.AvatarSizeSmall} user={userAndStatTs.user} />
           <FormattedDate ts={userAndStatTs.statTs} />
         </div>
@@ -115,12 +120,13 @@ export default function LevelInfoCompletions() {
     }
 
     if (completion.users.length < completion.count) {
+      completionDivs.push(<span className='font-bold w-full text-right' key={`completion-${completion.moves}-others-1`} />);
+
       completionDivs.push(
         <div
           className='flex gap-2 items-center'
-          key={`completion-${completion.moves}-others`}
+          key={`completion-${completion.moves}-others-2`}
         >
-          <span className='font-bold w-11 text-right' />
           <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1} stroke='currentColor' className='w-7 h-7'>
             <path strokeLinecap='round' strokeLinejoin='round' d='M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z' />
           </svg>
@@ -136,9 +142,9 @@ export default function LevelInfoCompletions() {
     <div className='flex flex-col gap-2'>
       {!isPro(user) &&
         <div className='flex gap-3 items-center'>
-          <RoleIcon role={Role.PRO} size={20} />
+          <RoleIcon id='level-info-completions' role={Role.PRO} size={20} />
           <div>
-            Get <Link href='/settings/proaccount' className='text-blue-300'>
+            Get <Link href='/settings/pro' className='text-blue-300'>
               Pathology Pro
             </Link> to see all completions for this level.
           </div>
@@ -175,7 +181,11 @@ export default function LevelInfoCompletions() {
         }
         <Tab.Panels>
           <Tab.Panel tabIndex={-1}>
-            {completionDivs}
+            <div className='grid gap-x-2 pl-1' style={{
+              gridTemplateColumns: 'min-content 1fr',
+            }}>
+              {completionDivs}
+            </div>
           </Tab.Panel>
           <Tab.Panel tabIndex={-1}>
             <ResponsiveContainer width='100%' height={300}>

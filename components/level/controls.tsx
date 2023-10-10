@@ -59,16 +59,20 @@ export default function Controls({ controls }: ControlsProps) {
   const mouseDownStartTs = useRef(0);
 
   return (
-    <div className='select-none flex justify-center z-10 h-9 sm:h-11 text-xs sm:text-base pb-1'>
+    <div className='select-none flex justify-evenly z-10 min-h-[44px] text-xs sm:text-base'>
       {controls.map((control) => (
         <button
-          id={control.id}
           className={classNames(
-            'rounded-lg duration-300 hover:duration-100 ease m-1 basis-22',
+            'p-1 flex w-full justify-center items-center rounded-lg duration-300 hover:duration-100 ease select-none touch-none m-0.5',
             { 'pointer-events-none': control.disabled },
             control.blue ? 'bg-blue-500 text-gray-300 hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition' : control.disabled ? null : styles.control,
           )}
+          id={control.id}
           key={`control-${control.id}`}
+          onClick={(e: React.MouseEvent) => {
+            control.action();
+            e.stopPropagation();
+          }}
           onMouseDown={(e: React.MouseEvent) => {
             if (Date.now() - mouseDownStartTs.current < 500) {
               return;
@@ -83,29 +87,26 @@ export default function Controls({ controls }: ControlsProps) {
             }
 
             e.stopPropagation();
-          }
-          }
-          onMouseOut={onMouseUp}
-          onTouchCancel={onMouseUp}
-          onTouchMove={(e: React.TouchEvent<HTMLButtonElement>) => {
-            // check if isTouchEventWithElement
-
-            if (isTouchEventWithElement(e.nativeEvent)) {
-              return;
-            }
-
-            onMouseUp();
           }}
+          onMouseOut={(e: React.MouseEvent) => { e.stopPropagation(); }}
           onMouseUp={(e: React.MouseEvent) => {
             if (useTouch.current) { return; }
 
             onMouseUp();
             e.stopPropagation();
-          }
-          }
-          onClick={(e: React.MouseEvent) => {
-            control.action();
+          }}
+          onTouchEnd={(e: React.TouchEvent<HTMLButtonElement>) => {
+            onMouseUp();
             e.stopPropagation();
+          }}
+          onTouchMove={(e: React.TouchEvent<HTMLButtonElement>) => {
+            // check if isTouchEventWithElement
+            if (isTouchEventWithElement(e.nativeEvent)) {
+              return;
+            }
+
+            e.stopPropagation();
+            e.preventDefault();
           }}
           onTouchStart={(e: React.TouchEvent<HTMLButtonElement>) => {
             if (Date.now() - mouseDownStartTs.current < 500) {
@@ -123,22 +124,12 @@ export default function Controls({ controls }: ControlsProps) {
             onMouseDown(control);
 
             e.stopPropagation();
-          }
-          }
-          onTouchEnd={(e: React.TouchEvent<HTMLButtonElement>) => {
-            onMouseUp();
-            e.stopPropagation();
+            e.preventDefault();
           }}
           style={{
             color: control.disabled ? 'var(--bg-color-4)' : 'var(--color)',
-            margin: 2,
-            touchAction: 'none',
-            userSelect: 'none',
-            WebkitUserSelect: 'none',
-            MozUserSelect: 'none',
-            msUserSelect: 'none',
-
-          }}>
+          }}
+        >
           {control.element}
         </button>
       ))}

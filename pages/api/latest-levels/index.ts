@@ -31,7 +31,7 @@ export async function getLatestLevels(reqUser: User | null = null) {
     numResults: '15',
     sortBy: 'ts',
     sortDir: 'desc',
-    statFilter: StatFilter.HideWon,
+    statFilter: StatFilter.HideSolved,
     timeRange: TimeRange[TimeRange.All],
   }, reqUser, {
     ...LEVEL_SEARCH_DEFAULT_PROJECTION,

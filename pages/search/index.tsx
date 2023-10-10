@@ -38,6 +38,7 @@ export interface SearchQuery extends ParsedUrlQuery {
   blockFilter?: string;
   difficultyFilter?: string;
   disableCount?: string;
+  excludeLevelIds?: string;
   maxDifficulty?: string;
   maxDimension1?: string;
   maxDimension2?: string;
@@ -182,13 +183,13 @@ interface StatFilterMenuProps {
 function StatFilterMenu({ onStatFilterClick, query }: StatFilterMenuProps) {
   const statFilterStrings = {
     [StatFilter.All]: 'All Levels',
-    [StatFilter.HideWon]: 'Hide Solved',
-    [StatFilter.ShowWon]: 'Solved',
+    [StatFilter.HideSolved]: 'Hide Solved',
+    [StatFilter.Solved]: 'Solved',
   } as Record<string, string>;
 
   if (query.sortBy !== 'completed') {
-    statFilterStrings[StatFilter.ShowInProgress] = 'In Progress';
-    statFilterStrings[StatFilter.ShowUnattempted] = 'Unattempted';
+    statFilterStrings[StatFilter.InProgress] = 'In Progress';
+    statFilterStrings[StatFilter.Unattempted] = 'Unattempted';
   }
 
   return (
@@ -390,8 +391,8 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       sortable: true,
     },
     {
-      id: 'playersBeaten',
-      name: 'Users Won',
+      id: 'solves',
+      name: 'Solves',
       selector: (row: EnrichedLevel) => row.calc_stats_players_beaten || 0,
       sortable: true,
       style: {
@@ -639,7 +640,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
         />
       </div>
       <div className='flex justify-center items-center gap-2'>
-        <Link href='/settings/proaccount' passHref>
+        <Link href='/settings/pro' passHref>
           <Image alt='pro' src='/pro.svg' width='20' height='20' />
         </Link>
         <div className='flex flex-col items-center justify-center w-fit border p-2 rounded-md gap-2 border-cyan-200'>
@@ -834,7 +835,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
             }
 
             // move off of invalid stat filter option when sorting by completed
-            if (columnId === 'completed' && (query.statFilter === StatFilter.ShowInProgress || query.statFilter === StatFilter.ShowUnattempted)) {
+            if (columnId === 'completed' && (query.statFilter === StatFilter.InProgress || query.statFilter === StatFilter.Unattempted)) {
               update.statFilter = StatFilter.All;
             }
 
