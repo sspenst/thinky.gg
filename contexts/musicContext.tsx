@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useEffect, useRef, useState } from 'react';
 
-export interface AudioPlayerContextInterface {
+export interface MusicContextInterface {
   dynamicMusic: boolean;
   isHot: boolean;
   isPlaying: boolean;
@@ -14,7 +14,7 @@ export interface AudioPlayerContextInterface {
   volume: number;
 }
 
-export const AudioPlayerContext = createContext<AudioPlayerContextInterface>({
+export const MusicContext = createContext<MusicContextInterface>({
   dynamicMusic: false,
   isHot: false,
   isPlaying: false,
@@ -102,7 +102,7 @@ const songs = [
   // Add more songs here
 ] as InitialSongMetadata[];
 
-export default function AudioPlayerContextProvider({ children }: { children: React.ReactNode }) {
+export default function MusicContextProvider({ children }: { children: React.ReactNode }) {
   const [dynamicMusic, setDynamicMusic] = useState(true);
   const [isHot, setIsHot] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -128,7 +128,6 @@ export default function AudioPlayerContextProvider({ children }: { children: Rea
 
     // NB: add songs.length to account for negative offset
     songIndex.current = (songIndex.current + offset + songs.length) % songs.length;
-    localStorage.setItem('audio.songIndex', songIndex.current.toString());
 
     const song = songs[songIndex.current];
     const active = new Audio(song.active);
@@ -180,7 +179,7 @@ export default function AudioPlayerContextProvider({ children }: { children: Rea
   }, [dynamicMusic, isHot, isPlaying, songMetadata, volume]);
 
   return (
-    <AudioPlayerContext.Provider value={{
+    <MusicContext.Provider value={{
       dynamicMusic: dynamicMusic,
       isHot: isHot,
       isPlaying: isPlaying,
@@ -193,6 +192,6 @@ export default function AudioPlayerContextProvider({ children }: { children: Rea
       volume: volume,
     }}>
       {children}
-    </AudioPlayerContext.Provider>
+    </MusicContext.Provider>
   );
 }

@@ -1,4 +1,4 @@
-import { AudioPlayerContext } from '@root/contexts/audioPlayerContext';
+import { MusicContext } from '@root/contexts/musicContext';
 import { PageContext } from '@root/contexts/pageContext';
 import React, { useContext, useState } from 'react';
 import Collection from '../../models/db/collection';
@@ -17,7 +17,7 @@ interface GameWrapperProps {
 }
 
 export default function GameWrapper({ chapter, collection, level, onNext, onPrev, user }: GameWrapperProps) {
-  const { dynamicMusic, setIsHot } = useContext(AudioPlayerContext);
+  const { dynamicMusic, setIsHot } = useContext(MusicContext);
   const [postGameModalOpen, setShowPostGameModalOpen] = useState(false);
   const { setPreventKeyDownEvent } = useContext(PageContext);
 

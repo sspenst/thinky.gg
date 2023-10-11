@@ -95,7 +95,7 @@ export default function Modal({
               </div>
               <Dialog.Title
                 as='div'
-                className='text-lg font-bold leading-6'
+                className='text-xl font-bold leading-6'
                 style={{
                   textAlign: 'center',
                 }}
