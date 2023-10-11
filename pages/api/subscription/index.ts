@@ -1,7 +1,10 @@
 import { logger } from '@root/helpers/logger';
+import cleanUser from '@root/lib/cleanUser';
+import User from '@root/models/db/user';
+import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import Stripe from 'stripe';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import { UserConfigModel } from '../../../models/mongoose';
+import { UserConfigModel, UserModel } from '../../../models/mongoose';
 
 const STRIPE_SECRET = process.env.STRIPE_SECRET as string;
 
@@ -18,6 +21,7 @@ export interface SubscriptionData {
   planName: string;
   status: Stripe.Subscription.Status;
   subscriptionId: string;
+  giftToUser?: User
 }
 
 export async function getSubscriptions(req: NextApiRequestWithAuth): Promise<[number, { error: string } | SubscriptionData[]]> {
@@ -47,6 +51,17 @@ export async function getSubscriptions(req: NextApiRequestWithAuth): Promise<[nu
 
     const paymentMethod = await stripe.paymentMethods.retrieve(subscription.default_payment_method as string);
 
+    // if subscription has metadata... it is a gift and we should query the gift id
+    let giftToUser = undefined;
+
+    if (subscription.metadata?.giftToId) {
+      giftToUser = await UserModel.findById(subscription.metadata?.giftToId, USER_DEFAULT_PROJECTION, { lean: true });
+    }
+
+    if (giftToUser) {
+      cleanUser(giftToUser);
+    }
+
     subscriptionData.push({
       paymentMethod: paymentMethod,
       cancel_at_period_end: subscription.cancel_at_period_end,
@@ -57,6 +72,7 @@ export async function getSubscriptions(req: NextApiRequestWithAuth): Promise<[nu
       planName: planName,
       status: subscription.status,
       subscriptionId: subscription.id,
+      giftToUser: giftToUser,
     });
   }
 

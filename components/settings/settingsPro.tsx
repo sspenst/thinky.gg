@@ -48,7 +48,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
   const { mutateUser, user, userLoading } = useContext(AppContext);
   const [plan, setPlan] = useState('year');
   const [shouldContinouslyFetch, setShouldContinouslyFetch] = useState(false);
-  const { data: subscriptions } = useSWRHelper<SubscriptionData[]>('/api/subscription');
+  const { data: subscriptions, mutate: refreshGifts } = useSWRHelper<SubscriptionData[]>('/api/subscription');
   const { data: giftsReceived } = useSWRHelper<SubscriptionGiftData[]>('/api/subscription/gift');
 
   useEffect(() => {
@@ -135,7 +135,10 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                 className='bg-green-300 hover:bg-green-500 text-black font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline cursor-pointer w-full text-center disabled:opacity-50 disabled:cursor-not-allowed'
                 disabled={!giftUserSelected || !giftUserPaymentMethod}
                 onClick={() => {
-                // ?client_reference_id=${user?._id + '-' + giftUserSelected?._id}&prefilled_email=${user?.email}`}
+                  if (!confirm('Are you sure you want to gift Pro to ' + giftUserSelected?.name + '? You will be billed immediately for a subscription for ' + giftQuantity + ' months.')) {
+                    return;
+                  }
+
                   toast.dismiss();
                   toast.loading('Gifting Pro...');
                   fetch('/api/subscription/gift', {
@@ -149,18 +152,22 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                     headers: {
                       'Content-Type': 'application/json',
                     },
-                  }).then((res) => {
+                  }).then(async (res) => {
                     if (res.status === 200) {
                       toast.success('Successfully gifted Pro!');
+                      refreshGifts();
                     } else {
-                      toast.error('Error gifting Pro.');
+                      console.error(res);
+                      const resp = await res.json();
+
+                      toast.error(resp.error, { duration: 3000 });
                     }
                   });
                 }
                 }
 
               >
-              Gift Pro
+                <div className='flex flex-col'><span>Gift Pro</span><span className='text-xs'>($3 per month)</span></div>
               </button>
 
             </div>
@@ -174,11 +181,10 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
             <div key={subscriptionData.subscriptionId} className={classNames(
               'border rounded-md w-fit px-3 py-2',
             )}>
-              <div className='font-bold'>Gifted Subscription:</div>
+              <div className='font-bold'>Received Gifted Pro:</div>
               <div className='text-sm'>
-                <div>From: <FormattedUser id={'subscription-' + subscriptionData.subscriptionId} user={subscriptionData.giftFromUser} /></div>
+                <div className='flex flex-row gap-1 items-center'>Gifted From: <FormattedUser id={'subscription-' + subscriptionData.subscriptionId} user={subscriptionData.giftFromUser} /></div>
                 {subscriptionData.current_period_end && (<div>Current period end date: {moment(new Date(subscriptionData.current_period_end * 1000)).format('MMMM Do, YYYY')}</div>)}
-                <p className='mt-4 text-xs'>For any questions please contact <Link className='text-blue-300' href='mailto:help@pathology.gg'>help@pathology.gg</Link>.</p>
               </div>
             </div>
 
@@ -203,9 +209,13 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
               'border rounded-md w-fit px-3 py-2',
               subscriptionData.cancel_at_period_end ? 'border-red-300' : 'border-green-300',
             )}>
-              <div className='font-bold'>Subscription Details:</div>
+              <div className='font-bold'>{subscriptionData.planName}</div>
               <div className='text-sm text-left'>
-                <div>Name: {subscriptionData.planName}</div>
+                {subscriptionData.giftToUser && (
+                  <div className='flex flex-row gap-1 items-center'>
+                    Gifted to: <FormattedUser id={'subscription-' + subscriptionData.subscriptionId} user={subscriptionData.giftToUser} /></div>
+                )}
+
                 <div>Status: <span className='font-bold'>{subscriptionData.cancel_at ? 'Ends ' + moment(new Date(subscriptionData.cancel_at * 1000)).format('MMMM Do, YYYY') : 'Active'}</span></div>
                 <div>Card Used: {subscriptionData.paymentMethod?.card?.brand} ending in {subscriptionData.paymentMethod?.card?.last4}</div>
                 {!subscriptionData.cancel_at && subscriptionData.current_period_end && (<div>Renews: {moment(new Date(subscriptionData.current_period_end * 1000)).format('MMMM Do, YYYY')}</div>)}
@@ -214,13 +224,14 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                 Subscription will cancel at period end
               </span>
                 }
-                <p className='mt-4 text-xs'>For any questions please contact <Link className='text-blue-300' href='mailto:help@pathology.gg'>help@pathology.gg</Link>.</p>
+
               </div>
             </div>
 
           )}
         </div>
       )}
+      <div><p className='text-xs'>For questions please contact <Link className='text-blue-300' href='mailto:help@pathology.gg'>help@pathology.gg</Link>.</p></div>
       <div className='flex flex-col items-center justify-center gap-4'>
         {!userLoading && !isPro(user) && <>
           <div className='flex flex-col gap-3 w-fit items-center mt-3'>
