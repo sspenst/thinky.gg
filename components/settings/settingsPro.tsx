@@ -136,7 +136,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                 className='bg-green-300 hover:bg-green-500 text-black font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline cursor-pointer w-full text-center disabled:opacity-50 disabled:cursor-not-allowed'
                 disabled={!giftUserSelected || !giftUserPaymentMethod}
                 onClick={() => {
-                  if (!confirm('Are you sure you want to gift Pro to ' + giftUserSelected?.name + '? You will be billed immediately for a subscription for ' + giftQuantity + ' months.')) {
+                  if (!confirm('Are you sure you want to gift Pro to ' + giftUserSelected?.name + '? You will be billed monthly for ' + giftQuantity + ' months.')) {
                     return;
                   }
 
