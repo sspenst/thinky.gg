@@ -1,4 +1,3 @@
-import { SongMetaData } from '@root/components/header/audioPlayer';
 import React, { createContext, useEffect, useState } from 'react';
 
 export interface AudioPlayerContextInterface {
@@ -6,7 +5,6 @@ export interface AudioPlayerContextInterface {
   audioAmbient?: HTMLAudioElement;
   audioContext?: AudioContext;
   currentSongIndex: number;
-  currentMetaData: SongMetaData;
   dynamicMusic: boolean;
   isHot: boolean;
   isPlaying: boolean;
@@ -15,7 +13,6 @@ export interface AudioPlayerContextInterface {
   setAudioAmbient: (audioAmbient: HTMLAudioElement) => void;
   setAudioContext: (audioContext: AudioContext) => void;
   setCurrentSongIndex: (index: number) => void;
-  setCurrentMetaData: (metaData: SongMetaData) => void;
   setDynamicMusic: (dynamicMusic: boolean) => void;
   setIsHot: (isHot: boolean) => void;
   setIsPlaying: (isPlaying: boolean) => void;
@@ -28,7 +25,6 @@ export const AudioPlayerContext = createContext<AudioPlayerContextInterface>({
   audioAmbient: undefined,
   audioContext: undefined,
   currentSongIndex: 0,
-  currentMetaData: { title: '', artist: '', active: '', ambient: '', website: '' },
   dynamicMusic: false,
   isHot: false,
   isPlaying: false,
@@ -37,7 +33,6 @@ export const AudioPlayerContext = createContext<AudioPlayerContextInterface>({
   setAudioAmbient: (audioAmbient: HTMLAudioElement) => {},
   setAudioContext: (audioContext: AudioContext) => {},
   setCurrentSongIndex: (index: number) => {},
-  setCurrentMetaData: (metaData: SongMetaData) => {},
   setDynamicMusic: (dynamicMusic: boolean) => {},
   setIsHot: (isHot: boolean) => {},
   setIsPlaying: (isPlaying: boolean) => {},
@@ -49,7 +44,6 @@ export function AudioPlayerContextProvider({ children }: { children: React.React
   const [audioAmbient, setAudioAmbient] = useState<HTMLAudioElement>();
   const [audioContext, setAudioContext] = useState<AudioContext>();
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
-  const [currentMetaData, setCurrentMetaData] = useState<SongMetaData>({ title: '', artist: '', active: '', ambient: '', website: '' });
   const [dynamicMusic, setDynamicMusic] = useState(true);
   const [isHot, setIsHot] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -82,13 +76,11 @@ export function AudioPlayerContextProvider({ children }: { children: React.React
       audioAmbient: audioAmbient,
       audioContext: audioContext,
       currentSongIndex: currentSongIndex,
-      currentMetaData: currentMetaData,
       dynamicMusic: dynamicMusic,
       isHot: isHot,
       isPlaying: isPlaying,
       maxVolume: maxVolume,
       setCurrentSongIndex: setCurrentSongIndex,
-      setCurrentMetaData: setCurrentMetaData,
       setDynamicMusic: setDynamicMusic,
       setIsHot: setIsHot,
       setIsPlaying: setIsPlaying,

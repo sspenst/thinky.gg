@@ -1,23 +1,22 @@
 import { AudioPlayerContext } from '@root/contexts/audioPlayerContext';
-import Link from 'next/link';
 import React, { useContext } from 'react';
 import AudioPlayer from '../header/audioPlayer';
 import Modal from '.';
 
 interface AudioSettingsModal {
-    closeModal: () => void;
-    isOpen: boolean;
-  }
+  closeModal: () => void;
+  isOpen: boolean;
+}
 
 // Define component props
 interface AudioSettingsModalProps {
-    closeModal: () => void;
-    isOpen: boolean;
+  closeModal: () => void;
+  isOpen: boolean;
 }
 
 // Define component
 export default function AudioSettingsModal({ closeModal, isOpen }: AudioSettingsModalProps) {
-  const { audioContext, audioActive, audioAmbient, currentMetaData, isHot, dynamicMusic, setDynamicMusic, maxVolume, setMaxVolume } = useContext(AudioPlayerContext);
+  const { audioContext, audioActive, audioAmbient, isHot, dynamicMusic, setDynamicMusic, maxVolume, setMaxVolume } = useContext(AudioPlayerContext);
 
   return (
     <Modal title='Audio Settings' isOpen={isOpen} closeModal={closeModal}>
@@ -53,15 +52,7 @@ export default function AudioSettingsModal({ closeModal, isOpen }: AudioSettings
             } />
           </div>
         </div>
-        <div className='flex flex-col gap-2 items-center justify-center'>
-          <AudioPlayer hideSettingsButton={true} />
-          <span>Artist:&nbsp;
-            <Link className='underline font-bold'
-              href={currentMetaData.website}>{currentMetaData.artist}
-            </Link>
-          </span>
-          <span className='text-xs'>Currently playing {isHot ? 'energetic 🔥' : 'ambient ❄️'} version.</span>
-        </div>
+        <AudioPlayer />
       </div>
     </Modal>
   );
