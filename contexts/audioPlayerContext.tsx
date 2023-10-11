@@ -106,35 +106,16 @@ export default function AudioPlayerContextProvider({ children }: { children: Rea
   const [dynamicMusic, setDynamicMusic] = useState(true);
   const [isHot, setIsHot] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const loadedMetadata = useRef(false);
+  const loadedAudio = useRef(false);
   const songIndex = useRef(0);
   const [songMetadata, setSongMetdata] = useState<SongMetadata>();
   const [volume, setVolume] = useState(1);
 
   useEffect(() => {
-    const LS_dynamicMusic = localStorage.getItem('audio.dynamicMusic');
-    const LS_isHot = localStorage.getItem('audio.isHot');
-    const LS_songIndex = localStorage.getItem('audio.songIndex');
-    const LS_volume = localStorage.getItem('audio.volume');
-
-    LS_isHot && setIsHot(LS_isHot === 'true');
-    LS_dynamicMusic && setDynamicMusic(LS_dynamicMusic === 'true');
-    LS_volume && setVolume(parseFloat(LS_volume));
-
-    if (LS_songIndex) {
-      songIndex.current = parseInt(LS_songIndex);
-    }
-
     // initialize the starting song
     seek(songIndex.current);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    localStorage.setItem('audio.dynamicMusic', dynamicMusic.toString());
-    localStorage.setItem('audio.isHot', isHot.toString());
-    localStorage.setItem('audio.volume', volume.toString());
-  }, [dynamicMusic, isHot, volume]);
 
   const seek = useCallback((offset: number) => {
     // ensure any playing song is paused
@@ -153,24 +134,20 @@ export default function AudioPlayerContextProvider({ children }: { children: Rea
     const active = new Audio(song.active);
     const ambient = new Audio(song.ambient);
 
-    active.volume = isHot ? volume : 0;
-    ambient.volume = isHot ? 0 : volume;
-    active.currentTime = 0;
-    ambient.currentTime = 0;
-    loadedMetadata.current = false;
+    active.preload = 'auto';
+    ambient.preload = 'auto';
+    loadedAudio.current = false;
 
-    const onLoadedMetadata = () => {
+    const onCanplaythrough = () => {
       // NB: first song that loads will stop here, second song will play both at once
-      if (!loadedMetadata.current) {
-        loadedMetadata.current = true;
+      if (!loadedAudio.current) {
+        loadedAudio.current = true;
 
         return;
       }
 
       active.volume = isHot ? volume : 0;
       ambient.volume = isHot ? 0 : volume;
-      active.currentTime = 0;
-      ambient.currentTime = 0;
 
       if (isPlaying) {
         active.play();
@@ -178,8 +155,8 @@ export default function AudioPlayerContextProvider({ children }: { children: Rea
       }
     };
 
-    ambient.addEventListener('loadedmetadata', onLoadedMetadata);
-    active.addEventListener('loadedmetadata', onLoadedMetadata);
+    ambient.addEventListener('canplaythrough', onCanplaythrough);
+    active.addEventListener('canplaythrough', onCanplaythrough);
 
     const next = () => {
       // TODO: should this stay hot until you enter a new level page?

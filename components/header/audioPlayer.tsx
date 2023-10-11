@@ -1,5 +1,4 @@
 import { AudioPlayerContext } from '@root/contexts/audioPlayerContext';
-import usePrevious from '@root/hooks/usePrevious';
 import React, { useCallback, useContext, useRef, useState } from 'react';
 
 export default function AudioPlayer() {
@@ -29,19 +28,9 @@ export default function AudioPlayer() {
     }
   };
 
-  const intervalRef = useRef<null | NodeJS.Timeout>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const previousValues = usePrevious({ volume });
-
-  const toggleVersion = useCallback((type: 'hot' | 'cool' | 'switch' = 'switch') => {
-    if (type === 'hot' && isHot) {
-      return;
-    }
-
-    if (type === 'cool' && !isHot) {
-      return;
-    }
-
+  const toggleVersion = useCallback(() => {
     if (intervalRef.current) {
       return;
     }
@@ -50,51 +39,14 @@ export default function AudioPlayer() {
 
     setIsHot(newIsHot);
 
-    // Clear any existing intervals
-    if (previousValues?.volume !== volume) {
-      if (songMetadata) {
-        songMetadata.active.volume = !newIsHot ? 0 : volume;
-        songMetadata.ambient.volume = !newIsHot ? volume : 0;
-
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-        }
-      }
-
-      return;
-    }
-
-    if (intervalRef.current) {
-      return;
-    }
-
     if (!songMetadata) {
       return;
-    }
-
-    // NB: need to do this to avoid a small audio skip
-    if (newIsHot) {
-      songMetadata.active.currentTime = songMetadata.ambient.currentTime;
-    } else {
-      songMetadata.ambient.currentTime = songMetadata.active.currentTime;
     }
 
     const duration = 1; // crossfade duration in seconds
     const step = 0.01; // step size
     const startActiveVol = songMetadata.active.volume;
     const startAmbientVol = songMetadata.ambient.volume;
-
-    if (startActiveVol >= volume && newIsHot) {
-      songMetadata.active.volume = volume;
-      songMetadata.ambient.volume = 0;
-
-      return;
-    } else if (startAmbientVol >= volume && !newIsHot) {
-      songMetadata.active.volume = 0;
-      songMetadata.ambient.volume = volume;
-
-      return;
-    }
 
     let progress = 0;
 
@@ -123,7 +75,7 @@ export default function AudioPlayer() {
         intervalRef.current = null;
       }
     }, step * 1000);
-  }, [isHot, previousValues?.volume, setIsHot, songMetadata, volume]);
+  }, [isHot, setIsHot, songMetadata, volume]);
 
   if (!songMetadata) {
     return null;
