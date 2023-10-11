@@ -2,7 +2,7 @@
 import '../styles/global.css';
 import 'react-tooltip/dist/react-tooltip.css';
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react';
-import AudioPlayerContextProvider from '@root/contexts/audioPlayerContext';
+import MusicContextProvider from '@root/contexts/musicContext';
 import type { AppProps } from 'next/app';
 import { Rubik, Teko } from 'next/font/google';
 import Head from 'next/head';
@@ -362,9 +362,9 @@ export default function MyApp({ Component, pageProps }: AppProps) {
             color: 'var(--color)',
           }}>
             <Toaster toastOptions={{ duration: 1500 }} />
-            <AudioPlayerContextProvider>
+            <MusicContextProvider>
               <Component {...pageProps} />
-            </AudioPlayerContextProvider>
+            </MusicContextProvider>
           </div>
         </AppContext.Provider>
       </GrowthBookProvider>
