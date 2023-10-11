@@ -64,12 +64,66 @@ async function subscriptionDeleted(userToDowngrade: User) {
   }
 }
 
+async function checkoutSessionGift(fromUser: User, giftTo: User, subscription: Stripe.Subscription): Promise<string | undefined> {
+  let error: string | undefined;
+
+  if (isPro(giftTo)) {
+    // TODO: create a coupon and apply it to the existing subscription..
+    // https://stripe.com/docs/api/coupons/create
+    error = `${giftTo.name} is already a pro subscriber. Error applying gift. Please contact support.`;
+  }
+
+  if (!error) {
+    const session = await mongoose.startSession();
+
+    try {
+      await session.withTransaction(async () => {
+        await Promise.all([
+          UserModel.findByIdAndUpdate(
+            giftTo._id,
+            {
+              $addToSet: {
+                roles: Role.PRO
+              }
+            },
+            {
+              session: session
+            },
+          ),
+          UserConfigModel.findOneAndUpdate(
+            {
+              userId: giftTo._id
+            },
+            {
+              // add to set gift subscriptions
+              $addToSet: {
+                giftSubscriptions: subscription.id
+              },
+            },
+            {
+              session: session
+            },
+          ),
+          queueDiscordWebhook(Discord.DevPriv, `💸 [${fromUser.name}](https://pathology.gg/profile/${fromUser.name}) just gifted to ${giftTo.name}`)
+        ]);
+      });
+      session.endSession();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      logger.error(err);
+      session.endSession();
+      error = err?.message;
+    }
+  }
+
+  return error;
+}
+
 async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.Checkout.Session): Promise<string | undefined> {
   logger.info(`checkoutSessionComplete - ${userToUpgrade.name} (${userToUpgrade._id.toString()})`);
 
   const customerId = properties.customer;
 
-  // otherwise... let's upgrade the user?
   let error: string | undefined;
 
   // if the user is already a pro subscriber, we don't want to do anything
@@ -196,11 +250,16 @@ export default apiWrapper({
   const customerId = dataObject?.customer;
   const client_reference_id = dataObject?.client_reference_id;
 
-  logger.info(`customerId: ${customerId}`);
-  logger.info(`client_reference_id: ${client_reference_id}`);
-
   // the case we want to handle first is the one that will be triggered when a new subscription is created
   if (event.type === 'checkout.session.completed') {
+    logger.info('checkout.session.completed starts');
+    logger.info(`customerId: ${customerId}`);
+    logger.info(`client_reference_id: ${client_reference_id}`);
+
+    const metadata = dataObject?.metadata;
+
+    logger.info(`metadata: ${JSON.stringify(metadata)}`);
+
     // we want to get the subscription id from the event
     if (!client_reference_id || !mongoose.Types.ObjectId.isValid(client_reference_id)) {
       error = 'No client reference id (or is not valid object id)';
@@ -212,6 +271,22 @@ export default apiWrapper({
         error = `User with id ${client_reference_id} does not exist`;
       } else {
         error = await checkoutSessionComplete(userTarget, event.data.object as Stripe.Checkout.Session);
+
+        if (!error) {
+          // cancel any gift subscriptions for this user
+          const subscriptions = await stripe.subscriptions.search({
+            query: `metadata["giftToId"]:"${userTarget._id.toString()}"`,
+            limit: 100
+          });
+
+          // cancel all these subscriptions
+          for (const subscription of subscriptions.data) {
+            await stripe.subscriptions.update(subscription.id, {
+              cancel_at_period_end: true,
+            });
+          }
+          // TODO: hypothetically i guess there could be a race condition where someone gifts someone right when they subscribe themselves... but for now let's just ignore that...
+        }
       }
     }
   } else if (event.type === 'customer.subscription.deleted' || event.type === 'invoice.payment_failed') {
@@ -247,6 +322,24 @@ export default apiWrapper({
       } else {
         error = await subscriptionDeleted(userConfigAgg[0].userId as User);
       }
+    }
+  } else if (event.type === 'customer.subscription.created') {
+    // get metadata for the subscription
+    const subscription = dataObject as Stripe.Subscription;
+    const metadata = subscription.metadata;
+
+    if (metadata.giftToId) {
+      // this is a gift subscription
+      const [giftToId, giftFromId] = await Promise.all([
+        UserModel.findById(metadata.giftToId),
+        UserModel.findById(metadata.giftFromId),
+      ]);
+
+      error = await checkoutSessionGift(
+        giftFromId,
+        giftToId,
+        subscription
+      );
     }
   } else if (event.type === 'payment_intent.succeeded') {
     error = await splitPaymentIntent(dataObject.id);
