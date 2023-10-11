@@ -1,6 +1,6 @@
 import { AudioPlayerContext } from '@root/contexts/audioPlayerContext';
 import usePrevious from '@root/hooks/usePrevious';
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useRef, useState } from 'react';
 
 export default function AudioPlayer() {
   const {
@@ -31,6 +31,8 @@ export default function AudioPlayer() {
 
   const intervalRef = useRef<null | NodeJS.Timeout>(null);
 
+  const previousValues = usePrevious({ volume });
+
   const toggleVersion = useCallback((type: 'hot' | 'cool' | 'switch' = 'switch') => {
     if (type === 'hot' && isHot) {
       return;
@@ -44,17 +46,15 @@ export default function AudioPlayer() {
       return;
     }
 
-    setIsHot(h => !h);
-  }, [isHot, setIsHot]);
+    const newIsHot = !isHot;
 
-  const previousValues = usePrevious({ volume });
+    setIsHot(newIsHot);
 
-  useEffect(() => {
     // Clear any existing intervals
     if (previousValues?.volume !== volume) {
       if (songMetadata) {
-        songMetadata.active.volume = !isHot ? 0 : volume;
-        songMetadata.ambient.volume = !isHot ? volume : 0;
+        songMetadata.active.volume = !newIsHot ? 0 : volume;
+        songMetadata.ambient.volume = !newIsHot ? volume : 0;
 
         if (intervalRef.current) {
           clearInterval(intervalRef.current);
@@ -72,19 +72,24 @@ export default function AudioPlayer() {
       return;
     }
 
-    songMetadata.active.currentTime = songMetadata.ambient.currentTime;
+    // NB: need to do this to avoid a small audio skip
+    if (newIsHot) {
+      songMetadata.active.currentTime = songMetadata.ambient.currentTime;
+    } else {
+      songMetadata.ambient.currentTime = songMetadata.active.currentTime;
+    }
 
     const duration = 1; // crossfade duration in seconds
     const step = 0.01; // step size
     const startActiveVol = songMetadata.active.volume;
     const startAmbientVol = songMetadata.ambient.volume;
 
-    if (startActiveVol >= volume && isHot) {
+    if (startActiveVol >= volume && newIsHot) {
       songMetadata.active.volume = volume;
       songMetadata.ambient.volume = 0;
 
       return;
-    } else if (startAmbientVol >= volume && !isHot) {
+    } else if (startAmbientVol >= volume && !newIsHot) {
       songMetadata.active.volume = 0;
       songMetadata.ambient.volume = volume;
 
@@ -96,7 +101,7 @@ export default function AudioPlayer() {
     intervalRef.current = setInterval(() => {
       progress += step / duration;
 
-      if (!isHot) {
+      if (!newIsHot) {
         // Crossfade to ambient version
 
         songMetadata.active.volume = Math.max(0, startActiveVol * (1 - progress));
@@ -113,12 +118,12 @@ export default function AudioPlayer() {
       if (progress >= 1) {
         clearInterval(intervalRef.current!);
         // set volumes to exact values
-        songMetadata.active.volume = !isHot ? 0 : volume;
-        songMetadata.ambient.volume = !isHot ? volume : 0;
+        songMetadata.active.volume = !newIsHot ? 0 : volume;
+        songMetadata.ambient.volume = !newIsHot ? volume : 0;
         intervalRef.current = null;
       }
     }, step * 1000);
-  }, [isHot, previousValues?.volume, songMetadata, volume]);
+  }, [isHot, previousValues?.volume, setIsHot, songMetadata, volume]);
 
   if (!songMetadata) {
     return null;
@@ -145,7 +150,7 @@ export default function AudioPlayer() {
       >
         <button
           className='px-3 py-1 rounded-l audio-bar-button'
-          onClick={() => seek(1)}
+          onClick={() => seek(-1)}
         >
           ⏮
         </button>
@@ -158,7 +163,7 @@ export default function AudioPlayer() {
         </button>
         <button
           className='px-3 py-1 audio-bar-button'
-          onClick={() => seek(-1)}
+          onClick={() => seek(1)}
         >
           ⏭
         </button>
