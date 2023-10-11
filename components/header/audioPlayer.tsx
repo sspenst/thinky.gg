@@ -1,14 +1,16 @@
 import { AudioPlayerContext } from '@root/contexts/audioPlayerContext';
 import usePrevious from '@root/hooks/usePrevious';
+import Link from 'next/link';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 export interface SongMetaData {
-  title: string;
   active: string;
   ambient: string;
   artist: string;
+  title: string;
   website: string;
 }
+
 const songs = [
   /*{
     title: 'Test',
@@ -65,22 +67,21 @@ const songs = [
     active: '/sounds/music/07.mp3',
     artist: 'Tim Halbert',
     website: 'https://www.timhalbert.com/',
-  }
+  },
   // Add more songs here
 ] as SongMetaData[];
 
-function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideTitle, hideSettingsButton, onSettingsClick }: {
-  hideHotColdButton?: boolean;
-  hidePlayButton?: boolean;
-  hideSeekButtons?: boolean;
-  hideTitle?: boolean;
-  hideSettingsButton?: boolean;
-  onSettingsClick?: () => void;
-}) {
+export default function AudioPlayer() {
   const {
-    currentSongIndex, setCurrentSongIndex, isHot, setIsHot, currentMetaData: currentMetaData, setCurrentMetaData, isPlaying,
-    setIsPlaying, audioContext, setAudioContext, audioActive, setAudioActive, audioAmbient, setAudioAmbient,
-    dynamicMusic, maxVolume } = useContext(AudioPlayerContext);
+    audioActive, setAudioActive,
+    audioAmbient, setAudioAmbient,
+    audioContext, setAudioContext,
+    currentSongIndex, setCurrentSongIndex,
+    dynamicMusic,
+    isHot, setIsHot,
+    isPlaying, setIsPlaying,
+    maxVolume,
+  } = useContext(AudioPlayerContext);
 
   const [crossfadeProgress, setCrossfadeProgress] = useState(1);
 
@@ -103,8 +104,6 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
 
     setAudioActive(activeAudio);
     setAudioAmbient(ambientAudio);
-    // Listen for metadata loading for active audio
-    setCurrentMetaData(songs[index]);
 
     activeAudio.volume = isHot ? maxVolume : 0;
     ambientAudio.volume = isHot ? 0 : maxVolume;
@@ -180,7 +179,7 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
       }
       );
     };
-  }, [isPlaying, setCurrentSongIndex, setAudioActive, setAudioAmbient, setCurrentMetaData, isHot, maxVolume, audioActive, audioAmbient, dynamicMusic, setIsHot]);
+  }, [isPlaying, setCurrentSongIndex, setAudioActive, setAudioAmbient, isHot, maxVolume, audioActive, audioAmbient, dynamicMusic, setIsHot]);
 
   const handleUserGesture = useCallback(async () => {
     if (!audioContext) {
@@ -333,78 +332,76 @@ function AudioPlayer({ hideHotColdButton, hidePlayButton, hideSeekButtons, hideT
     }, step * 1000);
   }, [isHot, audioActive, audioAmbient, audioContext, maxVolume, previousValues?.maxVolume]);
 
+  const songMetaData = songs.at(currentSongIndex);
+
+  if (!songMetaData) {
+    return null;
+  }
+
   return (
-    <div className=' p-2 rounded-lg flex justify-between items-center'
-      style={{
-        backgroundColor: 'var(--bg-color-3)',
-      }}>
-      <div className='md:flex flex-row items-center hidden'>
-        { !hideSeekButtons && (
+    <div className='flex flex-col gap-2 items-center justify-center'>
+      <div
+        className='p-2 rounded-lg flex justify-between items-center'
+        style={{
+          backgroundColor: 'var(--bg-color-3)',
+        }}
+      >
+        <div className='md:flex flex-row items-center hidden'>
           <button
             className='px-3 py-1 rounded audio-bar-button'
-            style={{ color: 'var(--color)' }}
             onClick={() => {
               seek((currentSongIndex - 1 + songs.length) % songs.length);
-            }
-            }>
-        ⏮
+            }}
+            style={{ color: 'var(--color)' }}
+          >
+          ⏮
           </button>
-        )}
-        { !hideTitle && currentMetaData?.title && (<div className='px-3 py-1 rounded overflow-hidden truncate'
-          style={{ backgroundColor: 'var(--bg-color-2)', color: 'var(--color)' }}
-        >
-          {currentMetaData.title }
-        </div>
-        )}
-
-        { !hideSeekButtons && (
+          <div
+            className='px-3 py-1 rounded overflow-hidden truncate'
+            style={{
+              backgroundColor: 'var(--bg-color-2)',
+              color: 'var(--color)',
+            }}
+          >
+            {songMetaData.title}
+          </div>
           <button
             className='px-3 py-1 rounded audio-bar-button'
-            style={{ color: 'var(--color)' }}
             onClick={() => {
               seek((currentSongIndex + 1) % songs.length);
-            }
-            }>
-
-        ⏭
+            }}
+            style={{ color: 'var(--color)' }}
+          >
+          ⏭
           </button>
-        )}
-      </div>
-      { !hidePlayButton && (
-        <button id='btn-audio-player-play'
+        </div>
+        <button
+          className='px-3 py-1 rounded audio-bar-button'
+          id='btn-audio-player-play'
           onClick={togglePlay}
           style={{ color: 'var(--color)' }}
-          className='px-3 py-1 rounded audio-bar-button'
         >
           {isPlaying ? '❚❚' : '▶'}
         </button>
-      )}
-      { !hideHotColdButton &&
-      <button id='btn-audio-player-version'
-        onClick={() => {toggleVersion();}}
-        style={{
-          backgroundColor: intervalRef.current !== null ? 'var(--bg-color-4)' : 'var(--bg-color-2)',
-          // based on crossfadeProgress, we can animate the background color
-          backgroundImage: `linear-gradient(to bottom, var(--bg-color-2) ${crossfadeProgress * 100}%, var(--bg-color-4) ${crossfadeProgress * 100}%)`,
-          color: 'var(--color)' }}
-        className='px-3 py-1 rounded'
-      >
-        {isHot ? '🔥' : '❄️'}
-      </button>
-      }
-      { !hideSettingsButton &&
-      <button
-        style={{ color: 'var(--color)' }}
-        className='px-3 py-1 rounded audio-bar-button'
-        onClick={() => {
-          onSettingsClick && onSettingsClick();
-        }}
-      >
-        ⚙️ {/* Settings icon */}
-      </button>
-      }
+        <button
+          className='px-3 py-1 rounded'
+          id='btn-audio-player-version'
+          onClick={() => {console.log('hello'); toggleVersion();}}
+          style={{
+            backgroundColor: intervalRef.current !== null ? 'var(--bg-color-4)' : 'var(--bg-color-2)',
+            // based on crossfadeProgress, we can animate the background color
+            backgroundImage: `linear-gradient(to bottom, var(--bg-color-2) ${crossfadeProgress * 100}%, var(--bg-color-4) ${crossfadeProgress * 100}%)`,
+            color: 'var(--color)' }}
+        >
+          {isHot ? '🔥' : '❄️'}
+        </button>
+      </div>
+      <span>Artist:&nbsp;
+        <Link className='underline font-bold'
+          href={songMetaData.website}>{songMetaData.artist}
+        </Link>
+      </span>
+      <span className='text-xs'>Currently playing {isHot ? 'energetic 🔥' : 'ambient ❄️'} version.</span>
     </div>
   );
 }
-
-export default AudioPlayer;
