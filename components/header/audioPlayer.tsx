@@ -1,6 +1,5 @@
 import { AudioPlayerContext } from '@root/contexts/audioPlayerContext';
 import usePrevious from '@root/hooks/usePrevious';
-import Link from 'next/link';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 export interface SongMetaData {
@@ -75,7 +74,6 @@ export default function AudioPlayer() {
   const {
     audioActive, setAudioActive,
     audioAmbient, setAudioAmbient,
-    audioContext, setAudioContext,
     currentSongIndex, setCurrentSongIndex,
     dynamicMusic,
     isHot, setIsHot,
@@ -181,64 +179,18 @@ export default function AudioPlayer() {
     };
   }, [isPlaying, setCurrentSongIndex, setAudioActive, setAudioAmbient, isHot, maxVolume, audioActive, audioAmbient, dynamicMusic, setIsHot]);
 
-  const handleUserGesture = useCallback(async () => {
-    if (!audioContext) {
-      const context = new AudioContext();
-
-      setAudioContext(context);
-      seek(currentSongIndex);
-    }
-
-    if (audioContext?.state === 'suspended') {
-      await audioContext.resume();
-    }
-
-    if (isPlaying && audioActive && audioAmbient) {
-      seek(currentSongIndex);
-      // make sure they are playing at exact same time
-      audioActive.currentTime = audioAmbient.currentTime;
-
-      if (isHot) {
-        audioActive.volume = maxVolume;
-        audioAmbient.volume = 0;
-      } else {
-        audioActive.volume = 0;
-        audioAmbient.volume = maxVolume;
-      }
-    } else {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-
-      audioActive?.pause();
-      audioAmbient?.pause();
-    }
-  }, [audioContext, isPlaying, audioActive, audioAmbient, setAudioContext, seek, currentSongIndex, isHot, maxVolume]);
-
-  useEffect(() => {
-    if (!audioContext) {
-      document.addEventListener('click', handleUserGesture);
-    }
-
-    return () => {
-      document.removeEventListener('click', handleUserGesture);
-    };
-  }, [audioContext, handleUserGesture]);
-
   const togglePlay = () => {
     setIsPlaying(!isPlaying);
 
-    if (audioContext) {
-      if (isPlaying) {
-        audioActive?.pause();
-        audioAmbient?.pause();
-      } else {
-        audioActive?.play();
-        audioAmbient?.play();
-      }
+    if (isPlaying) {
+      audioActive?.pause();
+      audioAmbient?.pause();
+    } else {
+      audioActive?.play();
+      audioAmbient?.play();
     }
   };
+
   const intervalRef = useRef<null | NodeJS.Timeout>(null);
 
   const toggleVersion = useCallback((type: 'hot' | 'cool' | 'switch' = 'switch') => {
@@ -254,10 +206,10 @@ export default function AudioPlayer() {
       return;
     }
 
-    if (audioContext && audioActive && audioAmbient) {
+    if (audioActive && audioAmbient) {
       setIsHot(!isHot);
     }
-  }, [isHot, audioContext, audioActive, audioAmbient, setIsHot]);
+  }, [audioActive, audioAmbient, isHot, setIsHot]);
 
   const previousValues = usePrevious({ maxVolume });
 
@@ -280,7 +232,7 @@ export default function AudioPlayer() {
       return;
     }
 
-    if (!(audioContext && audioActive && audioAmbient)) {
+    if (!(audioActive && audioAmbient)) {
       return;
     }
 
@@ -330,7 +282,7 @@ export default function AudioPlayer() {
         intervalRef.current = null;
       }
     }, step * 1000);
-  }, [isHot, audioActive, audioAmbient, audioContext, maxVolume, previousValues?.maxVolume]);
+  }, [audioActive, audioAmbient, isHot, maxVolume, previousValues?.maxVolume]);
 
   const songMetaData = songs.at(currentSongIndex);
 
@@ -339,44 +291,41 @@ export default function AudioPlayer() {
   }
 
   return (
-    <div className='flex flex-col gap-2 items-center justify-center'>
+    <div className='flex flex-col gap-2 w-fit items-center justify-center'>
+      <div
+        className='px-3 py-1 rounded overflow-hidden truncate flex flex-col items-center'
+        style={{
+          backgroundColor: 'var(--bg-color-2)',
+          color: 'var(--color)',
+        }}
+      >
+        <span className='font-bold'>{songMetaData.title}</span>
+        <a
+          className='hover:underline italic w-fit'
+          href={songMetaData.website}
+          rel='noreferrer'
+          target='_blank'
+        >
+          {songMetaData.artist}
+        </a>
+      </div>
       <div
         className='p-2 rounded-lg flex justify-between items-center'
         style={{
           backgroundColor: 'var(--bg-color-3)',
         }}
       >
-        <div className='md:flex flex-row items-center hidden'>
-          <button
-            className='px-3 py-1 rounded audio-bar-button'
-            onClick={() => {
-              seek((currentSongIndex - 1 + songs.length) % songs.length);
-            }}
-            style={{ color: 'var(--color)' }}
-          >
-          ⏮
-          </button>
-          <div
-            className='px-3 py-1 rounded overflow-hidden truncate'
-            style={{
-              backgroundColor: 'var(--bg-color-2)',
-              color: 'var(--color)',
-            }}
-          >
-            {songMetaData.title}
-          </div>
-          <button
-            className='px-3 py-1 rounded audio-bar-button'
-            onClick={() => {
-              seek((currentSongIndex + 1) % songs.length);
-            }}
-            style={{ color: 'var(--color)' }}
-          >
-          ⏭
-          </button>
-        </div>
         <button
-          className='px-3 py-1 rounded audio-bar-button'
+          className='px-3 py-1 rounded-l audio-bar-button'
+          onClick={() => {
+            seek((currentSongIndex - 1 + songs.length) % songs.length);
+          }}
+          style={{ color: 'var(--color)' }}
+        >
+        ⏮
+        </button>
+        <button
+          className='px-3 py-1 audio-bar-button'
           id='btn-audio-player-play'
           onClick={togglePlay}
           style={{ color: 'var(--color)' }}
@@ -384,11 +333,19 @@ export default function AudioPlayer() {
           {isPlaying ? '❚❚' : '▶'}
         </button>
         <button
-          className='px-3 py-1 rounded'
+          className='px-3 py-1 audio-bar-button'
+          onClick={() => {
+            seek((currentSongIndex + 1) % songs.length);
+          }}
+          style={{ color: 'var(--color)' }}
+        >
+        ⏭
+        </button>
+        <button
+          className='px-3 py-1 rounded-r'
           id='btn-audio-player-version'
-          onClick={() => {console.log('hello'); toggleVersion();}}
+          onClick={() => {toggleVersion();}}
           style={{
-            backgroundColor: intervalRef.current !== null ? 'var(--bg-color-4)' : 'var(--bg-color-2)',
             // based on crossfadeProgress, we can animate the background color
             backgroundImage: `linear-gradient(to bottom, var(--bg-color-2) ${crossfadeProgress * 100}%, var(--bg-color-4) ${crossfadeProgress * 100}%)`,
             color: 'var(--color)' }}
@@ -396,12 +353,6 @@ export default function AudioPlayer() {
           {isHot ? '🔥' : '❄️'}
         </button>
       </div>
-      <span>Artist:&nbsp;
-        <Link className='underline font-bold'
-          href={songMetaData.website}>{songMetaData.artist}
-        </Link>
-      </span>
-      <span className='text-xs'>Currently playing {isHot ? 'energetic 🔥' : 'ambient ❄️'} version.</span>
     </div>
   );
 }
