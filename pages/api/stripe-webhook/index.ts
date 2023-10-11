@@ -325,7 +325,23 @@ export default apiWrapper({
           logger.info(`${event.type} - UserConfig with customer id ${customerId} does not exist`);
         }
       } else {
-        error = await subscriptionDeleted(userConfigAgg[0].userId as User, event.data.object as Stripe.Subscription);
+        // we need to check if this is a gift subscription so we can downgrade the appropriate user
+        const subscription = dataObject as Stripe.Subscription;
+
+        if (subscription.metadata?.giftToId) {
+          // this is a gift subscription
+          const giftToId = subscription.metadata.giftToId;
+          const giftToUser = await UserModel.findById(giftToId);
+
+          if (giftToUser) {
+            error = await subscriptionDeleted(giftToUser, subscription);
+          } else {
+            error = `giftToUser with id ${giftToId} does not exist`;
+          }
+        } else {
+          // looks like a regular downgrade subscription of pro
+          error = await subscriptionDeleted(userConfigAgg[0].userId as User, subscription);
+        }
       }
     }
   } else if (event.type === 'customer.subscription.created') {
