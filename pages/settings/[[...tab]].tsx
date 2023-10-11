@@ -93,7 +93,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       stripeCustomerPortalLink: process.env.STRIPE_CUSTOMER_PORTAL,
       stripePaymentLink: process.env.STRIPE_PAYMENT_LINK,
       stripePaymentYearlyLink: process.env.STRIPE_PAYMENT_LINK_YEARLY,
-      stripePaymentLinkGift: process.env.STRIPE_PAYMENT_LINK_GIFT,
       user: JSON.parse(JSON.stringify(reqUser)),
       userConfig: JSON.parse(JSON.stringify(userConfig)),
     },
