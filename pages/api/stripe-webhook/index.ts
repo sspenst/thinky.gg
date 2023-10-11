@@ -20,7 +20,7 @@ export const config = {
   },
 };
 
-async function subscriptionDeleted(userToDowngrade: User) {
+async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.Subscription): Promise<string | undefined> {
   logger.info(`subscriptionDeleted - ${userToDowngrade.name} (${userToDowngrade._id.toString()})`);
 
   // we want to downgrade the user
@@ -45,7 +45,12 @@ async function subscriptionDeleted(userToDowngrade: User) {
             userId: userToDowngrade._id
           },
           {
-            stripeCustomerId: null
+            stripeCustomerId: null,
+
+            $pull: {
+              giftSubscriptions: subscription.id
+            },
+
           },
           {
             session: session
@@ -320,7 +325,7 @@ export default apiWrapper({
           logger.info(`${event.type} - UserConfig with customer id ${customerId} does not exist`);
         }
       } else {
-        error = await subscriptionDeleted(userConfigAgg[0].userId as User);
+        error = await subscriptionDeleted(userConfigAgg[0].userId as User, event.data.object as Stripe.Subscription);
       }
     }
   } else if (event.type === 'customer.subscription.created') {

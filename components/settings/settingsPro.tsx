@@ -104,6 +104,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
       {paymentMethodOptions}
     </select>
   );
+  const hasAPaymentMethod = paymentMethods && paymentMethods?.length > 0;
 
   return (
     <div className='flex flex-col justify-center items-center gap-4'>
@@ -116,7 +117,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
           <div>
             You have Pathology Pro! Thank you for your support!
           </div>
-          { paymentMethods && paymentMethods?.length > 0 && (
+          { hasAPaymentMethod && (
             <div className='flex flex-col md:flex-row gap-2'>
               <MultiSelectUser placeholder='Gift Pro to a user' onSelect={setGiftUserSelected} />
               <div className='flex flex-col gap-1'>{ paymentMethodsDropdown}
@@ -167,53 +168,59 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
         </div>
 
       }
-      <div className='flex flex-row gap-4 text-center justify-center items-center'>
-        {giftsReceived?.map((subscriptionData) =>
-          <div key={subscriptionData.subscriptionId} className={classNames(
-            'border rounded-md w-fit px-3 py-2',
-          )}>
-            <div className='font-bold'>Gifted Subscription:</div>
-            <div className='text-sm'>
-              <div>From: <FormattedUser id={'subscription-' + subscriptionData.subscriptionId} user={subscriptionData.giftFromUser} /></div>
-              {subscriptionData.current_period_end && (<div>Current period end date: {moment(new Date(subscriptionData.current_period_end * 1000)).format('MMMM Do, YYYY')}</div>)}
-              <p className='mt-4 text-xs'>For any questions please contact <Link className='text-blue-300' href='mailto:help@pathology.gg'>help@pathology.gg</Link>.</p>
+      {giftsReceived && giftsReceived.length > 0 && (
+        <div className='flex flex-row gap-4 text-center justify-center items-center'>
+          {giftsReceived?.map((subscriptionData) =>
+            <div key={subscriptionData.subscriptionId} className={classNames(
+              'border rounded-md w-fit px-3 py-2',
+            )}>
+              <div className='font-bold'>Gifted Subscription:</div>
+              <div className='text-sm'>
+                <div>From: <FormattedUser id={'subscription-' + subscriptionData.subscriptionId} user={subscriptionData.giftFromUser} /></div>
+                {subscriptionData.current_period_end && (<div>Current period end date: {moment(new Date(subscriptionData.current_period_end * 1000)).format('MMMM Do, YYYY')}</div>)}
+                <p className='mt-4 text-xs'>For any questions please contact <Link className='text-blue-300' href='mailto:help@pathology.gg'>help@pathology.gg</Link>.</p>
+              </div>
             </div>
-          </div>
 
-        )}
-      </div>
-      <Link
-        className='py-2.5 px-3.5 mt-2 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm whitespace-nowrap bg-green-100 dark:bg-gray-800 hover:bg-gray-50 hover:dark:bg-slate-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300'
-        href={stripeCustomerPortalLink || ''}
-        rel='noreferrer'
-        target='_blank'
-      >
+          )}
+        </div>
+      )}
+      { hasAPaymentMethod && (
+        <Link
+          className='py-2.5 px-3.5 mt-2 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm whitespace-nowrap bg-green-100 dark:bg-gray-800 hover:bg-gray-50 hover:dark:bg-slate-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300'
+          href={stripeCustomerPortalLink || ''}
+          rel='noreferrer'
+          target='_blank'
+        >
                 Manage Billing
-      </Link>
-      <div className='flex flex-row gap-4 text-center justify-center items-center'>
+        </Link>
+      )}
+      { subscriptions && subscriptions.length > 0 && (
+        <div className='flex flex-row gap-4 text-center justify-center items-center'>
 
-        {subscriptions?.map((subscriptionData) =>
-          <div key={subscriptionData.subscriptionId} className={classNames(
-            'border rounded-md w-fit px-3 py-2',
-            subscriptionData.cancel_at_period_end ? 'border-red-300' : 'border-green-300',
-          )}>
-            <div className='font-bold'>Subscription Details:</div>
-            <div className='text-sm text-left'>
-              <div>Name: {subscriptionData.planName}</div>
-              <div>Status: <span className='font-bold'>{subscriptionData.cancel_at ? 'Ends ' + moment(new Date(subscriptionData.cancel_at * 1000)).format('MMMM Do, YYYY') : 'Active'}</span></div>
-              <div>Card Used: {subscriptionData.paymentMethod?.card?.brand} ending in {subscriptionData.paymentMethod?.card?.last4}</div>
-              {!subscriptionData.cancel_at && subscriptionData.current_period_end && (<div>Renews: {moment(new Date(subscriptionData.current_period_end * 1000)).format('MMMM Do, YYYY')}</div>)}
-              {subscriptionData.cancel_at_period_end &&
+          {subscriptions?.map((subscriptionData) =>
+            <div key={subscriptionData.subscriptionId} className={classNames(
+              'border rounded-md w-fit px-3 py-2',
+              subscriptionData.cancel_at_period_end ? 'border-red-300' : 'border-green-300',
+            )}>
+              <div className='font-bold'>Subscription Details:</div>
+              <div className='text-sm text-left'>
+                <div>Name: {subscriptionData.planName}</div>
+                <div>Status: <span className='font-bold'>{subscriptionData.cancel_at ? 'Ends ' + moment(new Date(subscriptionData.cancel_at * 1000)).format('MMMM Do, YYYY') : 'Active'}</span></div>
+                <div>Card Used: {subscriptionData.paymentMethod?.card?.brand} ending in {subscriptionData.paymentMethod?.card?.last4}</div>
+                {!subscriptionData.cancel_at && subscriptionData.current_period_end && (<div>Renews: {moment(new Date(subscriptionData.current_period_end * 1000)).format('MMMM Do, YYYY')}</div>)}
+                {subscriptionData.cancel_at_period_end &&
               <span className='font-bold'>
                 Subscription will cancel at period end
               </span>
-              }
-              <p className='mt-4 text-xs'>For any questions please contact <Link className='text-blue-300' href='mailto:help@pathology.gg'>help@pathology.gg</Link>.</p>
+                }
+                <p className='mt-4 text-xs'>For any questions please contact <Link className='text-blue-300' href='mailto:help@pathology.gg'>help@pathology.gg</Link>.</p>
+              </div>
             </div>
-          </div>
 
-        )}
-      </div>
+          )}
+        </div>
+      )}
       <div className='flex flex-col items-center justify-center gap-4'>
         {!userLoading && !isPro(user) && <>
           <div className='flex flex-col gap-3 w-fit items-center mt-3'>
