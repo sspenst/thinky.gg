@@ -1,4 +1,5 @@
 import { ValidEnum, ValidNumber, ValidObjectId, ValidType } from '@root/helpers/apiWrapper';
+import isPro from '@root/helpers/isPro';
 import User from '@root/models/db/user';
 import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import Stripe from 'stripe';
@@ -68,6 +69,25 @@ export default withAuth({
     );
   } else if (req.method === 'POST') {
     const { type, giftTo, quantity, paymentMethodId } = req.body as { type: 'gift_monthly', giftTo: string, quantity: number, paymentMethodId: string };
+
+    // make sure this user is on Pro
+    if (!isPro(req.user)) {
+      return res.status(400).json({ error: 'You must be a Pro user to gift a subscription.' });
+    }
+
+    if (req.userId === giftTo) {
+      return res.status(400).json({ error: 'You cannot gift a subscription to yourself.' });
+    }
+
+    const userToGift = await UserModel.findById(giftTo, USER_DEFAULT_PROJECTION, { lean: true });
+
+    if (!userToGift) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    if (isPro(userToGift)) {
+      return res.status(400).json({ error: 'You cannot gift a subscription to ' + userToGift.name + ' because they are already on Pro.' });
+    }
 
     const paymentPriceIdTable = {
       gift_monthly: 'price_1NzVzVCFMgRTdOcaHxG7tPgy',
