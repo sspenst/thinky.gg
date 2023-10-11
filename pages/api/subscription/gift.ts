@@ -91,7 +91,7 @@ export default withAuth({
     }
 
     const paymentPriceIdTable = {
-      gift_monthly: 'price_1NzVzVCFMgRTdOcaHxG7tPgy',
+      gift_monthly: process.env.STRIPE_GIFT_MONTHLY_PRICE_ID
 
     };
 
