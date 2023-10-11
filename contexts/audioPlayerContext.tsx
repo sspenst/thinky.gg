@@ -3,7 +3,6 @@ import React, { createContext, useEffect, useState } from 'react';
 export interface AudioPlayerContextInterface {
   audioActive?: HTMLAudioElement;
   audioAmbient?: HTMLAudioElement;
-  audioContext?: AudioContext;
   currentSongIndex: number;
   dynamicMusic: boolean;
   isHot: boolean;
@@ -11,7 +10,6 @@ export interface AudioPlayerContextInterface {
   maxVolume: number;
   setAudioActive: (audioActive: HTMLAudioElement) => void;
   setAudioAmbient: (audioAmbient: HTMLAudioElement) => void;
-  setAudioContext: (audioContext: AudioContext) => void;
   setCurrentSongIndex: (index: number) => void;
   setDynamicMusic: (dynamicMusic: boolean) => void;
   setIsHot: (isHot: boolean) => void;
@@ -23,7 +21,6 @@ export interface AudioPlayerContextInterface {
 export const AudioPlayerContext = createContext<AudioPlayerContextInterface>({
   audioActive: undefined,
   audioAmbient: undefined,
-  audioContext: undefined,
   currentSongIndex: 0,
   dynamicMusic: false,
   isHot: false,
@@ -31,7 +28,6 @@ export const AudioPlayerContext = createContext<AudioPlayerContextInterface>({
   maxVolume: 0,
   setAudioActive: (audioActive: HTMLAudioElement) => {},
   setAudioAmbient: (audioAmbient: HTMLAudioElement) => {},
-  setAudioContext: (audioContext: AudioContext) => {},
   setCurrentSongIndex: (index: number) => {},
   setDynamicMusic: (dynamicMusic: boolean) => {},
   setIsHot: (isHot: boolean) => {},
@@ -42,7 +38,6 @@ export const AudioPlayerContext = createContext<AudioPlayerContextInterface>({
 export function AudioPlayerContextProvider({ children }: { children: React.ReactNode }) {
   const [audioActive, setAudioActive] = useState<HTMLAudioElement>();
   const [audioAmbient, setAudioAmbient] = useState<HTMLAudioElement>();
-  const [audioContext, setAudioContext] = useState<AudioContext>();
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
   const [dynamicMusic, setDynamicMusic] = useState(true);
   const [isHot, setIsHot] = useState(false);
@@ -74,7 +69,6 @@ export function AudioPlayerContextProvider({ children }: { children: React.React
     <AudioPlayerContext.Provider value={{
       audioActive: audioActive,
       audioAmbient: audioAmbient,
-      audioContext: audioContext,
       currentSongIndex: currentSongIndex,
       dynamicMusic: dynamicMusic,
       isHot: isHot,
@@ -86,7 +80,6 @@ export function AudioPlayerContextProvider({ children }: { children: React.React
       setIsPlaying: setIsPlaying,
       setAudioActive: setAudioActive,
       setAudioAmbient: setAudioAmbient,
-      setAudioContext: setAudioContext,
       setMaxVolume: setMaxVolume,
     }}>
       {children}
