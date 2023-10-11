@@ -145,7 +145,8 @@ export default function AudioPlayerContextProvider({ children }: { children: Rea
       songMetadata.ambient.remove();
     }
 
-    songIndex.current = (songIndex.current + offset) % songs.length;
+    // NB: add songs.length to account for negative offset
+    songIndex.current = (songIndex.current + offset + songs.length) % songs.length;
     localStorage.setItem('audio.songIndex', songIndex.current.toString());
 
     const song = songs[songIndex.current];
