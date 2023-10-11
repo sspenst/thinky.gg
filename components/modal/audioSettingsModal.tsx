@@ -14,7 +14,12 @@ interface AudioSettingsModalProps {
 }
 
 export default function AudioSettingsModal({ closeModal, isOpen }: AudioSettingsModalProps) {
-  const { audioActive, audioAmbient, isHot, dynamicMusic, setDynamicMusic, maxVolume, setMaxVolume } = useContext(AudioPlayerContext);
+  const {
+    dynamicMusic, setDynamicMusic,
+    isHot,
+    songMetadata,
+    volume, setVolume,
+  } = useContext(AudioPlayerContext);
 
   return (
     <Modal closeModal={closeModal} isOpen={isOpen} title='Music'>
@@ -28,21 +33,21 @@ export default function AudioSettingsModal({ closeModal, isOpen }: AudioSettings
             max='1'
             min='0'
             onChange={(e) => {
-              if (audioActive && audioAmbient) {
-                if (isHot) {
-                  audioActive.volume = maxVolume;
-                  audioAmbient.volume = 0;
-                } else {
-                  audioAmbient.volume = maxVolume;
-                  audioActive.volume = 0;
-                }
+              const newVolume = parseFloat(e.target.value);
 
-                setMaxVolume(parseFloat(e.target.value));
+              setVolume(newVolume);
+
+              if (songMetadata) {
+                if (isHot) {
+                  songMetadata.active.volume = newVolume;
+                } else {
+                  songMetadata.ambient.volume = newVolume;
+                }
               }
             }}
             step='0.01'
             type='range'
-            value={maxVolume}
+            value={volume}
           />
         </div>
         <div className='flex flex-col gap-2 items-center'>
@@ -50,7 +55,7 @@ export default function AudioSettingsModal({ closeModal, isOpen }: AudioSettings
             <label className='font-medium' htmlFor='dynamic-music'>
               Dynamic Music
             </label>
-            <input id='dynamic-music' type='checkbox' checked={dynamicMusic} onChange={() => setDynamicMusic(!dynamicMusic)} />
+            <input id='dynamic-music' type='checkbox' checked={dynamicMusic} onChange={() => setDynamicMusic(d => !d)} />
           </div>
           <div className='flex flex-col word-wrap gap-2 text-sm'>
             <span>Changes the music depending on what is happening in the game.</span>

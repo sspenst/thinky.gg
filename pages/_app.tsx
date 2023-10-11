@@ -2,7 +2,7 @@
 import '../styles/global.css';
 import 'react-tooltip/dist/react-tooltip.css';
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react';
-import { AudioPlayerContextProvider } from '@root/contexts/audioPlayerContext';
+import AudioPlayerContextProvider from '@root/contexts/audioPlayerContext';
 import type { AppProps } from 'next/app';
 import { Rubik, Teko } from 'next/font/google';
 import Head from 'next/head';
