@@ -38,8 +38,9 @@ export default withAuth({
     // query stripe for any subscription with giftToId === req.userId
     // return the list of subscriptions
 
+    // filter for active
     const subscriptions = await stripe.subscriptions.search({
-      query: `metadata["giftToId"]:"${req.userId}"`,
+      query: `metadata["giftToId"]:"${req.userId}" AND status:"active"`,
       limit: 100
     });
 
@@ -118,7 +119,8 @@ export default withAuth({
         customer: customerId,
         cancel_at: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30 * quantity,
         items: [
-          { price: price, quantity: quantity },
+          // quantity needs to be ONE here so we are only billed for one subscription. the cancel_at is where the length of the subscription is set
+          { price: price, quantity: 1 },
         ],
         default_payment_method: paymentMethodId,
         metadata: {

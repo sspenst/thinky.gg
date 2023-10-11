@@ -12,6 +12,7 @@ import { AppContext } from '../../contexts/appContext';
 import useSWRHelper from '../../hooks/useSWRHelper';
 import { SubscriptionData } from '../../pages/api/subscription';
 import FormattedUser from '../formatted/formattedUser';
+import LoadingSpinner from '../page/loadingSpinner';
 import MultiSelectUser from '../page/multiSelectUser';
 
 interface ProFeatureProps {
@@ -48,8 +49,8 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
   const { mutateUser, user, userLoading } = useContext(AppContext);
   const [plan, setPlan] = useState('year');
   const [shouldContinouslyFetch, setShouldContinouslyFetch] = useState(false);
-  const { data: subscriptions, mutate: refreshGifts } = useSWRHelper<SubscriptionData[]>('/api/subscription');
-  const { data: giftsReceived } = useSWRHelper<SubscriptionGiftData[]>('/api/subscription/gift');
+  const { data: subscriptions, isLoading: subscriptionsLoading, mutate: refreshGifts } = useSWRHelper<SubscriptionData[]>('/api/subscription');
+  const { data: giftsReceived, isLoading: giftsLoading } = useSWRHelper<SubscriptionGiftData[]>('/api/subscription/gift');
 
   useEffect(() => {
     const confirmQueryString = window.location.search.includes('confirm=1');
@@ -191,6 +192,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
           )}
         </div>
       )}
+      { giftsLoading ? <LoadingSpinner /> : null}
       { hasAPaymentMethod && (
         <Link
           className='py-2.5 px-3.5 mt-2 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm whitespace-nowrap bg-green-100 dark:bg-gray-800 hover:bg-gray-50 hover:dark:bg-slate-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300'
@@ -231,6 +233,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
           )}
         </div>
       )}
+      { subscriptionsLoading ? <LoadingSpinner /> : null}
       <div><p className='text-xs'>For questions please contact <Link className='text-blue-300' href='mailto:help@pathology.gg'>help@pathology.gg</Link>.</p></div>
       <div className='flex flex-col items-center justify-center gap-4'>
         {!userLoading && !isPro(user) && <>
