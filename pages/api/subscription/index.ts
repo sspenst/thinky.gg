@@ -9,17 +9,20 @@ export const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET as string
 export const stripe = new Stripe(STRIPE_SECRET, { apiVersion: '2022-11-15' });
 
 export interface SubscriptionData {
+  paymentMethod: Stripe.PaymentMethod;
   cancel_at_period_end: boolean;
   current_period_end: number;
+  cancel_at: number | null;
   current_period_start: number;
   plan: Stripe.Plan;
+  planName: string;
   status: Stripe.Subscription.Status;
   subscriptionId: string;
 }
 
-export async function getSubscription(req: NextApiRequestWithAuth): Promise<[number, { error: string } | SubscriptionData]> {
+export async function getSubscriptions(req: NextApiRequestWithAuth): Promise<[number, { error: string } | SubscriptionData[]]> {
   const userId = req.userId;
-  const userConfig = await UserConfigModel.findOne({ userId: userId }, { stripeCustomerId: 1 });
+  const userConfig = await UserConfigModel.findOne({ userId: userId }, { stripeCustomerId: 1 }, { lean: true });
 
   if (!userConfig?.stripeCustomerId) {
     return [404, { error: 'No subscription found for this user.' }];
@@ -35,26 +38,35 @@ export async function getSubscription(req: NextApiRequestWithAuth): Promise<[num
     return [500, { error: 'Stripe error looking up subscriptions.' }];
   }
 
-  const subscription = subscriptions?.data[0];
+  const subscriptionData: SubscriptionData[] = [];
 
-  if (!subscription) {
-    return [404, { error: 'Unknown stripe subscription.' }];
+  for (const subscription of subscriptions.data) {
+    const plan = await stripe.plans.retrieve(subscription.items.data[0].plan.id);
+    const product = await stripe.products.retrieve(plan.product as string);
+    const planName = product.name;
+
+    const paymentMethod = await stripe.paymentMethods.retrieve(subscription.default_payment_method as string);
+
+    subscriptionData.push({
+      paymentMethod: paymentMethod,
+      cancel_at_period_end: subscription.cancel_at_period_end,
+      current_period_end: subscription.current_period_end,
+      cancel_at: subscription.cancel_at,
+      current_period_start: subscription.current_period_start,
+      plan: plan,
+      planName: planName,
+      status: subscription.status,
+      subscriptionId: subscription.id,
+    });
   }
 
-  return [200, {
-    cancel_at_period_end: subscription.cancel_at_period_end,
-    current_period_end: subscription.current_period_end,
-    current_period_start: subscription.current_period_start,
-    plan: subscription.items.data[0].plan,
-    status: subscription.status,
-    subscriptionId: subscription.id,
-  }];
+  return [200, subscriptionData];
 }
 
 // TODO: can delete this
 export async function cancelSubscription(req: NextApiRequestWithAuth): Promise<[number, { error: string } | { message: string }]> {
   const userId = req.userId;
-  const userConfig = await UserConfigModel.findOne({ userId: userId }, { stripeCustomerId: 1 });
+  const userConfig = await UserConfigModel.findOne({ userId: userId }, { stripeCustomerId: 1 }, { lean: true });
 
   if (!userConfig?.stripeCustomerId) {
     return [404, { error: 'No subscription found for this user.' }];
@@ -102,7 +114,9 @@ export async function cancelSubscription(req: NextApiRequestWithAuth): Promise<[
 export default withAuth({
   GET: {},
 }, async (req, res) => {
-  const [code, data] = await getSubscription(req);
+  if (req.method === 'GET') {
+    const [code, data] = await getSubscriptions(req);
 
-  return res.status(code).json(data);
+    return res.status(code).json(data);
+  }
 });
