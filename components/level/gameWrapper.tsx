@@ -1,6 +1,6 @@
 import { MusicContext } from '@root/contexts/musicContext';
 import { PageContext } from '@root/contexts/pageContext';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import Collection from '../../models/db/collection';
 import { EnrichedLevel } from '../../models/db/level';
 import User from '../../models/db/user';
@@ -17,9 +17,17 @@ interface GameWrapperProps {
 }
 
 export default function GameWrapper({ chapter, collection, level, onNext, onPrev, user }: GameWrapperProps) {
-  const { dynamicMusic, setIsHot } = useContext(MusicContext);
+  const { dynamicMusic, toggleVersion } = useContext(MusicContext);
   const [postGameModalOpen, setShowPostGameModalOpen] = useState(false);
   const { setPreventKeyDownEvent } = useContext(PageContext);
+
+  useEffect(() => {
+    if (dynamicMusic) {
+      toggleVersion('cold');
+    }
+  // reset to cold when arriving on a new level
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [level._id]);
 
   return (
     <>
@@ -34,7 +42,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
         onPrev={collection ? onPrev : undefined}
         onSolve={() => {
           if (dynamicMusic) {
-            setIsHot(true);
+            toggleVersion('hot');
           }
 
           setTimeout(() => {
