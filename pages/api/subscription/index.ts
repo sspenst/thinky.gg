@@ -28,23 +28,34 @@ export async function getSubscriptions(req: NextApiRequestWithAuth): Promise<[nu
   const userId = req.userId;
   const userConfig = await UserConfigModel.findOne({ userId: userId }, { stripeCustomerId: 1 }, { lean: true });
 
-  if (!userConfig?.stripeCustomerId) {
-    return [404, { error: 'No subscription found for this user.' }];
-  }
-
-  let subscriptions: Stripe.Response<Stripe.ApiList<Stripe.Subscription>>;
+  let subscriptionsNormal: Stripe.Response<Stripe.ApiList<Stripe.Subscription>> | undefined;
+  let subscriptionsGifts: Stripe.Response<Stripe.ApiSearchResult<Stripe.Subscription>>;
 
   try {
-    subscriptions = await stripe.subscriptions.list({ customer: userConfig.stripeCustomerId });
+    [subscriptionsNormal, subscriptionsGifts] = await Promise.all([
+      userConfig?.stripeCustomerId ? stripe.subscriptions.list({ customer: userConfig.stripeCustomerId }) : undefined,
+      stripe.subscriptions.search({
+      // (giftFromId is req.userId OR customerId is userConfig.stripeCustomerId) AND status is active
+        query: `metadata["giftFromId"]:"${req.userId}" AND status:"active"`,
+        limit: 100
+      })]);
   } catch (e) {
     logger.error(e);
 
     return [500, { error: 'Stripe error looking up subscriptions.' }];
   }
 
+  const subscriptionsConcat = subscriptionsGifts.data.concat(subscriptionsNormal?.data || []);
+  // dedupe based on subscription id
+  const subscriptions = subscriptionsConcat.filter((subscription, index, self) =>
+    index === self.findIndex((t) => (
+      t.id === subscription.id
+    ))
+  );
+
   const subscriptionData: SubscriptionData[] = [];
 
-  for (const subscription of subscriptions.data) {
+  for (const subscription of subscriptions) {
     const plan = await stripe.plans.retrieve(subscription.items.data[0].plan.id);
     const product = await stripe.products.retrieve(plan.product as string);
     const planName = product.name;

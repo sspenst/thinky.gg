@@ -279,13 +279,17 @@ export default apiWrapper({
         error = `User with id ${client_reference_id} does not exist`;
       } else {
         error = await checkoutSessionComplete(userTarget, event.data.object as Stripe.Checkout.Session);
+        console.log('error from checkoutSessionComplete: ', error);
 
         if (!error) {
           // cancel any gift subscriptions for this user
+          console.log('cancelling gift subscriptions from this user');
           const subscriptions = await stripe.subscriptions.search({
-            query: `metadata["giftToId"]:"${userTarget._id.toString()}"`,
+            query: `metadata["giftFromId"]:"${userTarget._id.toString()}"`,
             limit: 100
           });
+
+          console.log('found subscriptions: ', subscriptions.data);
 
           // cancel all these subscriptions
           for (const subscription of subscriptions.data) {
@@ -298,7 +302,19 @@ export default apiWrapper({
       }
     }
   } else if (event.type === 'customer.subscription.deleted' || event.type === 'invoice.payment_failed') {
-    if (!customerId) {
+    const subscription = dataObject as Stripe.Subscription;
+
+    if (subscription.metadata?.giftToId) {
+      // this is a gift subscription
+      const giftToId = subscription.metadata.giftToId;
+      const giftToUser = await UserModel.findById(giftToId);
+
+      if (giftToUser) {
+        error = await subscriptionDeleted(giftToUser, subscription);
+      } else {
+        error = `giftToUser with id ${giftToId} does not exist`;
+      }
+    } else if (!customerId) {
       error = 'No customerId';
     } else {
       const userConfigAgg = await UserConfigModel.aggregate<UserConfig>([
@@ -329,22 +345,9 @@ export default apiWrapper({
         }
       } else {
         // we need to check if this is a gift subscription so we can downgrade the appropriate user
-        const subscription = dataObject as Stripe.Subscription;
 
-        if (subscription.metadata?.giftToId) {
-          // this is a gift subscription
-          const giftToId = subscription.metadata.giftToId;
-          const giftToUser = await UserModel.findById(giftToId);
-
-          if (giftToUser) {
-            error = await subscriptionDeleted(giftToUser, subscription);
-          } else {
-            error = `giftToUser with id ${giftToId} does not exist`;
-          }
-        } else {
-          // looks like a regular downgrade subscription of pro
-          error = await subscriptionDeleted(userConfigAgg[0].userId as User, subscription);
-        }
+        // looks like a regular downgrade subscription of pro
+        error = await subscriptionDeleted(userConfigAgg[0].userId as User, subscription);
       }
     }
   } else if (event.type === 'customer.subscription.created') {
