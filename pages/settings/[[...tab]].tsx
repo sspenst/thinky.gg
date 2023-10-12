@@ -103,6 +103,7 @@ interface SettingsProps {
   stripeCustomerPortalLink: string;
   stripePaymentLink: string;
   stripePaymentYearlyLink: string;
+  stripePaymentLinkGift: string;
   user: User;
   userConfig: UserConfig | null;
 }
@@ -112,6 +113,7 @@ export default function Settings({
   stripeCustomerPortalLink,
   stripePaymentLink,
   stripePaymentYearlyLink,
+  stripePaymentLinkGift,
   user,
   userConfig,
 }: SettingsProps) {
@@ -135,7 +137,7 @@ export default function Settings({
     case SettingsTab.Account:
       return !isGuest(user) ? <SettingsAccount user={user} userConfig={userConfig} /> : <SettingsAccountGuest />;
     case SettingsTab.Pro:
-      return <SettingsPro stripeCustomerPortalLink={stripeCustomerPortalLink} stripePaymentLink={stripePaymentLink} stripePaymentYearlyLink={stripePaymentYearlyLink} />;
+      return <SettingsPro stripeCustomerPortalLink={stripeCustomerPortalLink} stripePaymentLink={stripePaymentLink} stripePaymentYearlyLink={stripePaymentYearlyLink} stripePaymentLinkGift={stripePaymentLinkGift} />;
     case SettingsTab.Danger:
       return <SettingsDanger />;
     case SettingsTab.Notifications:

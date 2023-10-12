@@ -17,6 +17,27 @@ import userHandle from '../../../../pages/api/user/index';
 beforeAll(async () => {
   await dbConnect();
 });
+
+jest.mock('stripe', () => {
+  return jest.fn().mockImplementation(() => {
+    return {
+      plans: {
+        retrieve: jest.fn(),
+      },
+      products: {
+        retrieve: jest.fn(),
+      },
+      paymentMethods: {
+        retrieve: jest.fn(),
+      },
+      subscriptions: {
+        list: jest.fn().mockReturnValue({ data: [] }),
+        update: jest.fn(),
+        search: jest.fn().mockReturnValue({ data: [] }),
+      },
+    };
+  });
+});
 afterEach(() => {
   jest.restoreAllMocks();
 });

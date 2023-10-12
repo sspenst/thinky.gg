@@ -30,6 +30,33 @@ export async function createNewWallPostNotification(type: NotificationType.NEW_W
   return notification;
 }
 
+export async function createNewProUserNotification(userId: string | Types.ObjectId, fromUser?: string | Types.ObjectId, message?: string) {
+  const notification = await NotificationModel.findOneAndUpdate({
+    source: fromUser || userId,
+    sourceModel: 'User',
+    target: userId,
+    targetModel: 'User',
+    type: NotificationType.UPGRADED_TO_PRO,
+    // TODO: probably should check for createdAt < 1 day here...
+  }, {
+    source: fromUser || userId,
+    sourceModel: 'User',
+    target: userId,
+    targetModel: 'User',
+    message: message,
+    type: NotificationType.UPGRADED_TO_PRO,
+    userId: userId,
+    read: false,
+  }, {
+    upsert: true,
+    new: true,
+  });
+
+  await queuePushNotification(notification._id);
+
+  return notification;
+}
+
 export async function createNewFollowerNotification(follower: string | Types.ObjectId, following: string | Types.ObjectId) {
   const notification = await NotificationModel.findOneAndUpdate({
     source: follower,

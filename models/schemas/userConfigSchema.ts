@@ -50,6 +50,12 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       required: false,
       select: false,
     },
+    giftSubscriptions: {
+      type: [String],
+      required: false,
+      select: false,
+      default: [],
+    },
     theme: {
       type: String,
       required: true,

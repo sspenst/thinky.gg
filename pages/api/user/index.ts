@@ -5,7 +5,6 @@ import UserConfig from '@root/models/db/userConfig';
 import bcrypt from 'bcryptjs';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
-import Stripe from 'stripe';
 import TestId from '../../../constants/testId';
 import { ValidType } from '../../../helpers/apiWrapper';
 import { enrichReqUser } from '../../../helpers/enrich';
@@ -18,7 +17,7 @@ import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import { AchievementModel, CollectionModel, CommentModel, GraphModel, KeyValueModel, LevelModel, MultiplayerProfileModel, NotificationModel, UserConfigModel, UserModel } from '../../../models/mongoose';
-import { getSubscription } from '../subscription';
+import { getSubscriptions, SubscriptionData } from '../subscription';
 import { getUserConfig } from '../user-config';
 
 export default withAuth({
@@ -163,13 +162,13 @@ export default withAuth({
     return res.status(200).json({ updated: true });
   } else if (req.method === 'DELETE') {
     // check if there is an active subscription
-    const [code, data] = await getSubscription(req);
+    const [code, data] = await getSubscriptions(req);
 
     if (code === 200) {
-      const subscription = (data as Partial<Stripe.Subscription>);
-
-      if (subscription.status === 'active' && subscription.cancel_at_period_end === false) {
-        return res.status(400).json({ error: 'You must cancel your subscription before deleting your account.' });
+      for (const subscription of data as SubscriptionData[]) {
+        if (subscription.status === 'active' && subscription.cancel_at_period_end === false) {
+          return res.status(400).json({ error: 'You must cancel all subscriptions before deleting your account. Contact help@pathology.gg if you are still experiencing issues' });
+        }
       }
     }
 
