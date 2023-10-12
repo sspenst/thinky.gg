@@ -10,7 +10,6 @@ import ChapterSelectCard from '../cards/chapterSelectCard';
 import { getDifficultyFromValue } from '../formatted/formattedDifficulty';
 import RecommendedLevel from '../homepage/recommendedLevel';
 import FormattedLevelReviews from '../level/reviews/formattedLevelReviews';
-import LoadingSpinner from '../page/loadingSpinner';
 import ShareBar from '../social/shareBar';
 import Modal from '.';
 
@@ -39,9 +38,17 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
     }
   }
 
-  const { data, isLoading } = useHomePageData([HomepageDataType.RecommendedLevel], !isOpen || nextLevel !== undefined);
-  const recommendedLevel = data && data[HomepageDataType.RecommendedLevel];
+  const { data } = useHomePageData([HomepageDataType.RecommendedLevel], !isOpen || nextLevel !== undefined);
   const [queryParams, setQueryParams] = useState({});
+  const [recommendedLevel, setRecommendedLevel] = useState<EnrichedLevel>();
+
+  useEffect(() => {
+    const newRecommendedLevel = data && data[HomepageDataType.RecommendedLevel];
+
+    if (newRecommendedLevel) {
+      setRecommendedLevel(newRecommendedLevel);
+    }
+  }, [data]);
 
   // NB: this useEffect only runs when entering the level page
   // (moving between levels within a collection does not remount this component)
@@ -51,9 +58,41 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
     setQueryParams(new URLSearchParams(window.location.search));
   }, []);
 
-  const hrefOverride = nextLevel ? `/level/${nextLevel.slug}?${queryParams}` : undefined;
   const url = `https://pathology.gg/level/${level.slug}`;
   const quote = 'Just completed Pathology.gg puzzle "' + level.name + '" (Difficulty: ' + getDifficultyFromValue(level.calc_difficulty_estimate).name + ')';
+
+  function nextActionCard() {
+    if (nextLevel) {
+      return (
+        <RecommendedLevel
+          hrefOverride={`/level/${nextLevel.slug}?${queryParams}`}
+          id='next-level'
+          level={nextLevel}
+          onClick={closeModal}
+          title='Next Level'
+        />
+      );
+    }
+
+    if (chapter && !isNaN(Number(chapter))) {
+      return (
+        <Card id='campaign' title='Head back to the campaign!'>
+          <div className='p-3'>
+            <ChapterSelectCard chapter={Number(chapter)} />
+          </div>
+        </Card>
+      );
+    }
+
+    return (
+      <RecommendedLevel
+        id='next-level'
+        level={recommendedLevel}
+        onClick={closeModal}
+        title='Try this next!'
+      />
+    );
+  }
 
   return (
     <Modal
@@ -84,21 +123,7 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
                 {level.name} is the last level in <Link className='font-bold hover:underline' href={`/collection/${collection.slug}`}>{collection.name}</Link>.
               </div>
             }
-            {chapter && !isNaN(Number(chapter)) ?
-              <Card id='campaign' title='Head back to the campaign!'>
-                <div className='p-3'>
-                  <ChapterSelectCard chapter={Number(chapter)} />
-                </div>
-              </Card>
-              :
-              (isLoading ? <LoadingSpinner /> : <RecommendedLevel
-                hrefOverride={hrefOverride}
-                id='next-level'
-                level={nextLevel ?? recommendedLevel}
-                onClick={closeModal}
-                title={nextLevel ? 'Next Level' : 'Try this next!'}
-              />)
-            }
+            {nextActionCard()}
           </>
         }
         <div className='flex items-center gap-1'>
