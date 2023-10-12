@@ -1,5 +1,5 @@
 import { MusicContext } from '@root/contexts/musicContext';
-import React, { useCallback, useContext, useRef, useState } from 'react';
+import React, { useContext } from 'react';
 import Modal from '.';
 
 interface MusicModal {
@@ -14,15 +14,15 @@ interface MusicModalProps {
 
 export default function MusicModal({ closeModal, isOpen }: MusicModalProps) {
   const {
+    crossfadeProgress,
     dynamicMusic, setDynamicMusic,
-    isHot, setIsHot,
+    isHot,
     isPlaying, setIsPlaying,
     seek,
     songMetadata,
+    toggleVersion,
     volume, setVolume,
   } = useContext(MusicContext);
-
-  const [crossfadeProgress, setCrossfadeProgress] = useState(1);
 
   const togglePlay = () => {
     setIsPlaying(p => !p);
@@ -40,54 +40,19 @@ export default function MusicModal({ closeModal, isOpen }: MusicModalProps) {
     }
   };
 
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const onVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newVolume = parseFloat(e.target.value);
 
-  const toggleVersion = useCallback(() => {
-    if (intervalRef.current) {
-      return;
-    }
+    setVolume(newVolume);
 
-    const newIsHot = !isHot;
-
-    setIsHot(newIsHot);
-
-    if (!songMetadata) {
-      return;
-    }
-
-    const duration = 1; // crossfade duration in seconds
-    const step = 0.01; // step size
-    const startActiveVol = songMetadata.active.volume;
-    const startAmbientVol = songMetadata.ambient.volume;
-
-    let progress = 0;
-
-    intervalRef.current = setInterval(() => {
-      progress += step / duration;
-
-      if (!newIsHot) {
-        // Crossfade to ambient version
-
-        songMetadata.active.volume = Math.max(0, startActiveVol * (1 - progress));
-        songMetadata.ambient.volume = Math.min(volume, startAmbientVol + (1 - startAmbientVol) * progress);
+    if (songMetadata) {
+      if (isHot) {
+        songMetadata.active.volume = newVolume;
       } else {
-        // Crossfade to active version
-
-        songMetadata.active.volume = Math.min(volume, startActiveVol + (1 - startActiveVol) * progress);
-        songMetadata.ambient.volume = Math.max(0, startAmbientVol * (1 - progress));
+        songMetadata.ambient.volume = newVolume;
       }
-
-      setCrossfadeProgress(progress);
-
-      if (progress >= 1) {
-        clearInterval(intervalRef.current!);
-        // set volumes to exact values
-        songMetadata.active.volume = !newIsHot ? 0 : volume;
-        songMetadata.ambient.volume = !newIsHot ? volume : 0;
-        intervalRef.current = null;
-      }
-    }, step * 1000);
-  }, [isHot, setIsHot, songMetadata, volume]);
+    }
+  };
 
   if (!songMetadata) {
     return null;
@@ -151,19 +116,7 @@ export default function MusicModal({ closeModal, isOpen }: MusicModalProps) {
           <input
             max='1'
             min='0'
-            onChange={(e) => {
-              const newVolume = parseFloat(e.target.value);
-
-              setVolume(newVolume);
-
-              if (songMetadata) {
-                if (isHot) {
-                  songMetadata.active.volume = newVolume;
-                } else {
-                  songMetadata.ambient.volume = newVolume;
-                }
-              }
-            }}
+            onChange={onVolumeChange}
             step='0.01'
             type='range'
             value={volume}
