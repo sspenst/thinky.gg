@@ -18,39 +18,16 @@ interface PostGameModalProps {
   chapter?: string;
   closeModal: () => void;
   collection?: Collection;
+  dontShowPostGameModal: boolean;
   isOpen: boolean;
   level: Level;
   reqUser: User | null;
+  setDontShowPostGameModal: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export default function PostGameModal({ chapter, closeModal, collection, isOpen, level, reqUser }: PostGameModalProps) {
+export default function PostGameModal({ chapter, closeModal, collection, dontShowPostGameModal, isOpen, level, reqUser, setDontShowPostGameModal }: PostGameModalProps) {
   let nextLevel: EnrichedLevel | undefined = undefined;
   let lastLevelInCollection = false;
-  const [dontShowModalAgain, setDontShowModalAgain] = useState(false);
-
-  useEffect(() => {
-    if (dontShowModalAgain) {
-      localStorage.setItem('dontShowPostGameModal', 'true');
-      // expire 24h from now
-      localStorage.setItem('dontShowPostGameModalExpire', (new Date(Date.now() + 24 * 60 * 60 * 1000)).toISOString());
-    }
-  }, [dontShowModalAgain]);
-  useEffect(() => {
-    const storedPref = localStorage.getItem('dontShowPostGameModal');
-    const storedPrefExpire = localStorage.getItem('dontShowPostGameModalExpire');
-
-    // check if expired...
-    if (storedPrefExpire && new Date(storedPrefExpire) < new Date()) {
-      localStorage.removeItem('dontShowPostGameModal');
-      localStorage.removeItem('dontShowPostGameModalExpire');
-
-      return;
-    }
-
-    if (storedPref === 'true') {
-      closeModal();
-    }
-  }, [closeModal]);
 
   if (collection && collection.levels) {
     const levelIndex = collection.levels.findIndex((l) => l._id === level._id);
@@ -63,7 +40,6 @@ export default function PostGameModal({ chapter, closeModal, collection, isOpen,
   }
 
   const { data, isLoading } = useHomePageData([HomepageDataType.RecommendedLevel], !isOpen || nextLevel !== undefined);
-
   const recommendedLevel = data && data[HomepageDataType.RecommendedLevel];
   const [queryParams, setQueryParams] = useState({});
 
@@ -128,8 +104,19 @@ export default function PostGameModal({ chapter, closeModal, collection, isOpen,
         <div className='flex items-center gap-1'>
           <input
             type='checkbox'
-            checked={dontShowModalAgain}
-            onChange={(e) => setDontShowModalAgain(e.target.checked)}
+            checked={dontShowPostGameModal}
+            onChange={(e) => {
+              setDontShowPostGameModal(e.target.checked);
+
+              if (e.target.checked) {
+                localStorage.setItem('dontShowPostGameModal', 'true');
+                // expire 24h from now
+                localStorage.setItem('dontShowPostGameModalExpire', (new Date(Date.now() + 24 * 60 * 60 * 1000)).toISOString());
+              } else {
+                localStorage.removeItem('dontShowPostGameModal');
+                localStorage.removeItem('dontShowPostGameModalExpire');
+              }
+            }}
           />
           <label>Don&apos;t show this popup for 24h</label>
         </div>
