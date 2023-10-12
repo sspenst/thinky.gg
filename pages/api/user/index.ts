@@ -5,7 +5,6 @@ import UserConfig from '@root/models/db/userConfig';
 import bcrypt from 'bcryptjs';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
-import Stripe from 'stripe';
 import TestId from '../../../constants/testId';
 import { ValidType } from '../../../helpers/apiWrapper';
 import { enrichReqUser } from '../../../helpers/enrich';

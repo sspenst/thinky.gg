@@ -6,11 +6,7 @@ import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import Stripe from 'stripe';
 import withAuth from '../../../lib/withAuth';
 import { UserConfigModel, UserModel } from '../../../models/mongoose';
-
-const STRIPE_SECRET = process.env.STRIPE_SECRET as string;
-
-export const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET as string;
-export const stripe = new Stripe(STRIPE_SECRET, { apiVersion: '2022-11-15' });
+import { stripe } from '.';
 
 export interface SubscriptionGiftData {
     subscriptionId: string;
