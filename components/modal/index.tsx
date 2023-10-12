@@ -81,13 +81,7 @@ export default function Modal({
                 color: 'var(--color)',
               }}
             >
-              <Dialog.Title
-                as='div'
-                className='flex gap-4'
-                style={{
-                  textAlign: 'center',
-                }}
-              >
+              <Dialog.Title as='div' className='flex gap-4 text-center'>
                 <span className='w-6' />
                 <span className='grow text-xl font-bold truncate'>{title}</span>
                 <button className='hover:text-gray-500 transition' onClick={closeModal} tabIndex={-1}>
