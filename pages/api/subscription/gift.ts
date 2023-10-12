@@ -1,5 +1,6 @@
 import { ValidEnum, ValidNumber, ValidObjectId, ValidType } from '@root/helpers/apiWrapper';
 import isPro from '@root/helpers/isPro';
+import { logger } from '@root/helpers/logger';
 import User from '@root/models/db/user';
 import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import Stripe from 'stripe';
@@ -140,7 +141,7 @@ export default withAuth({
       });
     } catch (error) {
       // Log the error and respond with a generic message
-      console.log('>>>>>', error);
+      logger.error(error);
       res.status(500).json({ error: 'Internal Server Error' });
     }
   }

@@ -279,17 +279,14 @@ export default apiWrapper({
         error = `User with id ${client_reference_id} does not exist`;
       } else {
         error = await checkoutSessionComplete(userTarget, event.data.object as Stripe.Checkout.Session);
-        console.log('error from checkoutSessionComplete: ', error);
 
         if (!error) {
           // cancel any gift subscriptions for this user
-          console.log('cancelling gift subscriptions from this user');
+
           const subscriptions = await stripe.subscriptions.search({
             query: `metadata["giftFromId"]:"${userTarget._id.toString()}"`,
             limit: 100
           });
-
-          console.log('found subscriptions: ', subscriptions.data);
 
           // cancel all these subscriptions
           for (const subscription of subscriptions.data) {
