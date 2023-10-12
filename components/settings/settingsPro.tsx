@@ -42,7 +42,6 @@ interface SettingsProProps {
   stripeCustomerPortalLink: string;
   stripePaymentLink: string;
   stripePaymentYearlyLink: string;
-  stripePaymentLinkGift: string;
 }
 
 export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLink, stripePaymentYearlyLink }: SettingsProProps) {
@@ -118,7 +117,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
           <div>
             You have Pathology Pro! Thank you for your support!
           </div>
-          { hasAPaymentMethod && (
+          {hasAPaymentMethod && (
             <div className='flex flex-col md:flex-row gap-2'>
               <MultiSelectUser placeholder='Gift Pro to a user' onSelect={setGiftUserSelected} />
               <div className='flex flex-col gap-1'>{ paymentMethodsDropdown}
@@ -166,15 +165,12 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                   });
                 }
                 }
-
               >
                 <div className='flex flex-col'><span>Gift Pro</span><span className='text-xs'>($3 per month)</span></div>
               </button>
-
             </div>
           )}
         </div>
-
       }
       {giftsReceived && giftsReceived.length > 0 && (
         <div className='flex flex-row gap-4 text-center justify-center items-center'>
@@ -187,27 +183,24 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                 <div className='flex flex-row gap-1 items-center'>Gifted From: <FormattedUser id={'subscription-' + subscriptionData.subscriptionId} user={subscriptionData.giftFromUser} /></div>
                 <div>Status: <span className='font-bold'>{subscriptionData.cancel_at ? 'Ends ' + moment(new Date(subscriptionData.cancel_at * 1000)).format('MMMM Do, YYYY') : 'Active'}</span></div>
                 {!subscriptionData.cancel_at && subscriptionData.current_period_end && (<div>Renews: {moment(new Date(subscriptionData.current_period_end * 1000)).format('MMMM Do, YYYY')}</div>)}
-
               </div>
             </div>
-
           )}
         </div>
       )}
-      { giftsLoading ? <LoadingSpinner /> : null}
-      { hasAPaymentMethod && (
+      {giftsLoading ? <LoadingSpinner /> : null}
+      {hasAPaymentMethod && (
         <Link
           className='py-2.5 px-3.5 mt-2 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm whitespace-nowrap bg-green-100 dark:bg-gray-800 hover:bg-gray-50 hover:dark:bg-slate-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300'
           href={stripeCustomerPortalLink || ''}
           rel='noreferrer'
           target='_blank'
         >
-                Manage Billing
+          Manage Billing
         </Link>
       )}
-      { subscriptions && subscriptions.length > 0 && (
+      {subscriptions && subscriptions.length > 0 && (
         <div className='flex flex-row gap-4 text-center justify-center items-center'>
-
           {subscriptions?.map((subscriptionData) =>
             <div key={subscriptionData.subscriptionId} className={classNames(
               'border rounded-md w-fit px-3 py-2',
@@ -222,24 +215,19 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                 {!subscriptionData.cancel_at_period_end && subscriptionData.current_period_end && (<div>Renews: <span className='font-bold'>{moment(new Date(subscriptionData.current_period_end * 1000)).format('MMMM Do, YYYY')}</span></div>)}
                 <div>Status: <span className='font-bold'>{subscriptionData.cancel_at ? 'Ends ' + moment(new Date(subscriptionData.cancel_at * 1000)).format('MMMM Do, YYYY') : 'Active'}</span></div>
                 <div>Card Used: {subscriptionData.paymentMethod?.card?.brand} ending in {subscriptionData.paymentMethod?.card?.last4}</div>
-
                 {subscriptionData.cancel_at_period_end &&
-              <span className='font-bold'>
-                Subscription will cancel at period end
-              </span>
+                  <span className='font-bold'>
+                    Subscription will cancel at period end
+                  </span>
                 }
-
               </div>
             </div>
-
           )}
         </div>
       )}
-      { subscriptionsLoading ? <LoadingSpinner /> : null}
+      {subscriptionsLoading ? <LoadingSpinner /> : null}
       <div><p className='text-xs'>For questions please contact <Link className='text-blue-300' href='mailto:help@pathology.gg'>help@pathology.gg</Link>.</p></div>
-
       {!userLoading && !isPro(user) && <div className='flex flex-col items-center justify-center gap-4'>
-
         <div className='flex flex-col gap-3 w-fit items-center mt-3'>
           <RadioGroup value={plan} onChange={setPlan} className='flex flex-wrap justify-center gap-3'>
             <RadioGroup.Option value='year'>
@@ -279,14 +267,13 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
               )}
             </RadioGroup.Option>
           </RadioGroup>
-
           <Link
             className='bg-green-300 hover:bg-green-500 text-black font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline cursor-pointer w-full text-center'
             href={`${plan === 'year' ? stripePaymentYearlyLink : stripePaymentLink}?client_reference_id=${user?._id}&prefilled_email=${user?.email}`}
             rel='noreferrer'
             target='_blank'
           >
-              Subscribe
+            Subscribe
           </Link>
         </div>
         <p className='text-xs text-center'>
@@ -295,14 +282,12 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
           </a>.<br />Subscriptions auto-renew until canceled, as described in the Terms.
         </p>
       </div>}
-
       <div className='flex flex-col xl:flex-row items-center gap-4 justify-center'>
         <div className='p-2'>
           <video autoPlay loop muted playsInline className='rounded-xl'>
             <source src='https://i.imgur.com/HzFhvYY.mp4' type='video/mp4' />
           </video>
         </div>
-
         <div className='flex flex-col items-left gap-4'>
           <ProFeature
             description='Displayed next to your username across the site'
@@ -367,7 +352,6 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
           <span className='text-sm ml-12'><Link className='underline' href={'https://github.com/sspenst/pathology/wiki/Pathology-Pro-Features'}>View full list</Link> of Pro Features</span>
         </div>
       </div>
-
     </div>
   );
 }
