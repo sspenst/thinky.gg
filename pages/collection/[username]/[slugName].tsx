@@ -146,11 +146,7 @@ export default function CollectionPage({ collection }: CollectionProps) {
           </div>
         </div>
         {!collection.authorNote ? null :
-          <div className='p-2'
-            style={{
-              textAlign: 'center',
-            }}
-          >
+          <div className='p-2 text-center'>
             {formattedAuthorNote(collection.authorNote)}
           </div>
         }
