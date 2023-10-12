@@ -30,6 +30,28 @@ export async function createNewWallPostNotification(type: NotificationType.NEW_W
   return notification;
 }
 
+export async function createNewProUserNotification(userId: string | Types.ObjectId, fromUser?: string | Types.ObjectId, message?: string) {
+  const id = new Types.ObjectId();
+
+  const [notification] = await Promise.all([
+    NotificationModel.create([{
+      _id: id,
+      createdAt: new Date(),
+      message: message,
+      source: fromUser || userId,
+      sourceModel: 'User',
+      target: userId,
+      targetModel: 'User',
+      type: NotificationType.UPGRADED_TO_PRO,
+      userId: userId,
+      read: false,
+    }]),
+    queuePushNotification(id),
+  ]);
+
+  return notification;
+}
+
 export async function createNewFollowerNotification(follower: string | Types.ObjectId, following: string | Types.ObjectId) {
   const notification = await NotificationModel.findOneAndUpdate({
     source: follower,

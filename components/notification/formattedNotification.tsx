@@ -61,6 +61,12 @@ function NotificationIcon({ notification }: { notification: Notification }) {
   }
 
     break;
+
+  case NotificationType.UPGRADED_TO_PRO: {
+    icon = <Image alt='logo' src='/pro.svg' width='24' height='24' className='h-6 w-6' />;
+  }
+
+    break;
   }
 
   if (!icon) {
@@ -152,6 +158,15 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
     </>);
   }
 
+  case NotificationType.UPGRADED_TO_PRO: {
+    const isGift = notification.source !== notification.target;
+
+    return (<>
+      {isGift ? 'You received a gift of Pro!' : 'You have been upgraded to Pro!'}
+      <Link href='/settings/pro' className='underline' onClick={onMarkAsRead}>Check it out!</Link>
+    </>);
+  }
+
   default:
     return null;
   }
@@ -164,6 +179,8 @@ interface FormattedNotificationProps {
 }
 
 export default function FormattedNotification({ close, notification, onMarkAsRead }: FormattedNotificationProps) {
+  const notificationIcon = <NotificationIcon notification={notification} />;
+
   return (
     <div
       className='p-3 border rounded shadow flex flex-cols-2 justify-between gap-2 items-center'
@@ -173,7 +190,7 @@ export default function FormattedNotification({ close, notification, onMarkAsRea
       }}
     >
       <div className='flex flex-col gap-1 truncate'>
-        {notification.sourceModel === 'User' ?
+        {notification.sourceModel === 'User' && notificationIcon === null ?
           <FormattedUser
             id={`notification-${notification._id.toString()}`}
             onClick={() => {
@@ -188,7 +205,7 @@ export default function FormattedNotification({ close, notification, onMarkAsRea
           />
           :
           <div className='flex items-center gap-2 truncate'>
-            <NotificationIcon notification={notification} />
+            {notificationIcon}
             <span className='font-bold'>Pathology</span>
           </div>
         }

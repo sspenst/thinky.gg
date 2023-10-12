@@ -1,6 +1,7 @@
 import Discord from '@root/constants/discord';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import isPro from '@root/helpers/isPro';
+import { createNewProUserNotification } from '@root/helpers/notificationHelper';
 import dbConnect from '@root/lib/dbConnect';
 import UserConfig from '@root/models/db/userConfig';
 import { buffer } from 'micro';
@@ -56,7 +57,7 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
             session: session
           },
         ),
-        queueDiscordWebhook(Discord.DevPriv, `🥹 [${userToDowngrade.name}](https://pathology.gg/profile/${userToDowngrade.name}) just unsubscribed.`),
+        queueDiscordWebhook(Discord.DevPriv, `🥹 [${userToDowngrade.name}](https://pathology.gg/profile/${userToDowngrade.name}) was just unsubscribed.`),
       ]);
     });
     session.endSession();
@@ -109,6 +110,7 @@ async function checkoutSessionGift(fromUser: User, giftTo: User, subscription: S
               session: session
             },
           ),
+          createNewProUserNotification(giftTo._id, fromUser._id),
           queueDiscordWebhook(Discord.DevPriv, `💸 [${fromUser.name}](https://pathology.gg/profile/${fromUser.name}) just gifted to ${giftTo.name}`)
         ]);
       });
@@ -167,6 +169,7 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
               session: session
             },
           ),
+          createNewProUserNotification(userToUpgrade._id),
           queueDiscordWebhook(Discord.DevPriv, `💸 [${userToUpgrade.name}](https://pathology.gg/profile/${userToUpgrade.name}) just subscribed!`),
         ]);
       });
