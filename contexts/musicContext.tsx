@@ -199,9 +199,9 @@ export default function MusicContextProvider({ children }: { children: React.Rea
       return;
     }
 
-    const newIsHot = !isHot;
+    const transitionToActive = !isHot;
 
-    setIsHot(newIsHot);
+    setIsHot(transitionToActive);
 
     if (!songMetadata) {
       return;
@@ -211,20 +211,17 @@ export default function MusicContextProvider({ children }: { children: React.Rea
     const step = 0.01; // step size
     const startActiveVol = songMetadata.active.volume;
     const startAmbientVol = songMetadata.ambient.volume;
-
     let progress = 0;
 
     intervalRef.current = setInterval(() => {
       progress += step / duration;
 
-      if (!newIsHot) {
+      if (!transitionToActive) {
         // Crossfade to ambient version
-
         songMetadata.active.volume = Math.max(0, startActiveVol * (1 - progress));
         songMetadata.ambient.volume = Math.min(volume, startAmbientVol + (1 - startAmbientVol) * progress);
       } else {
         // Crossfade to active version
-
         songMetadata.active.volume = Math.min(volume, startActiveVol + (1 - startActiveVol) * progress);
         songMetadata.ambient.volume = Math.max(0, startAmbientVol * (1 - progress));
       }
@@ -234,8 +231,8 @@ export default function MusicContextProvider({ children }: { children: React.Rea
       if (progress >= 1) {
         clearInterval(intervalRef.current!);
         // set volumes to exact values
-        songMetadata.active.volume = !newIsHot ? 0 : volume;
-        songMetadata.ambient.volume = !newIsHot ? volume : 0;
+        songMetadata.active.volume = !transitionToActive ? 0 : volume;
+        songMetadata.ambient.volume = !transitionToActive ? volume : 0;
         intervalRef.current = null;
       }
     }, step * 1000);
