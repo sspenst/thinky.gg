@@ -7,6 +7,7 @@ enum NotificationType {
   NEW_RECORD_ON_A_LEVEL_YOU_SOLVED = 'NEW_RECORD_ON_A_LEVEL_YOU_BEAT',
   NEW_WALL_POST = 'NEW_WALL_POST',
   NEW_WALL_REPLY = 'NEW_WALL_REPLY',
+  UPGRADED_TO_PRO = 'UPGRADED_TO_PRO',
 }
 
 export default NotificationType;

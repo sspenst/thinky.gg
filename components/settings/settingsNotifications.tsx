@@ -69,6 +69,7 @@ export default function SettingsNotifications() {
     [NotificationType.NEW_REVIEW_ON_YOUR_LEVEL]: 'New review on one of your levels',
     [NotificationType.NEW_WALL_POST]: 'New profile comment',
     [NotificationType.NEW_WALL_REPLY]: 'New reply to profile comment',
+    [NotificationType.UPGRADED_TO_PRO]: 'Upgraded to Pro',
   };
 
   const emailNotifs = userConfig?.emailNotificationsList || [];
