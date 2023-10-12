@@ -25,11 +25,10 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
   logger.info(`subscriptionDeleted - ${userToDowngrade.name} (${userToDowngrade._id.toString()})`);
 
   const session = await mongoose.startSession();
-  const giftFromId = subscription.metadata.giftFromId;
 
   try {
     await session.withTransaction(async () => {
-      await Promise.all([
+      const promises = [
         UserModel.findByIdAndUpdate(
           userToDowngrade._id,
           {
@@ -53,8 +52,15 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
             session: session
           },
         ),
+        queueDiscordWebhook(Discord.DevPriv, `🥹 [${userToDowngrade.name}](https://pathology.gg/profile/${userToDowngrade.name}) was just unsubscribed.`),
+      ];
+
+      // NB: metadata should normally be defined but it isn't mocked in the tests
+      const giftFromId = subscription.metadata?.giftFromId;
+
+      if (giftFromId) {
         // pull the gift subscription id if it was gifted
-        ...(!giftFromId ? [] : [
+        promises.push(
           UserConfigModel.findOneAndUpdate(
             {
               userId: new Types.ObjectId(giftFromId),
@@ -67,10 +73,11 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
             {
               session: session
             },
-          ),
-        ]),
-        queueDiscordWebhook(Discord.DevPriv, `🥹 [${userToDowngrade.name}](https://pathology.gg/profile/${userToDowngrade.name}) was just unsubscribed.`),
-      ]);
+          )
+        );
+      }
+
+      await Promise.all(promises);
     });
     session.endSession();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
