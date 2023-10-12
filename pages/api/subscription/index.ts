@@ -12,16 +12,16 @@ export const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET as string
 export const stripe = new Stripe(STRIPE_SECRET, { apiVersion: '2022-11-15' });
 
 export interface SubscriptionData {
-  paymentMethod: Stripe.PaymentMethod;
+  cancel_at: number | null;
   cancel_at_period_end: boolean;
   current_period_end: number;
-  cancel_at: number | null;
   current_period_start: number;
+  giftToUser?: User;
+  paymentMethod: Stripe.PaymentMethod;
   plan: Stripe.Plan;
   planName: string;
   status: Stripe.Subscription.Status;
   subscriptionId: string;
-  giftToUser?: User
 }
 
 export async function getSubscriptions(req: NextApiRequestWithAuth): Promise<[number, { error: string } | SubscriptionData[]]> {

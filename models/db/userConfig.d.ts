@@ -10,11 +10,11 @@ interface UserConfig {
   emailConfirmed: boolean;
   emailDigest: EmailDigestSettingTypes;
   emailNotificationsList: NotificationType[];
+  giftSubscriptions: string[];
   mobileDeviceTokens: string[];
   pushNotificationsList: NotificationType[];
   showPlayStats: boolean;
   stripeCustomerId: string;
-  giftSubscriptions: string[];
   theme: string;
   toursCompleted: TourType[];
   tutorialCompletedAt: number; // represents the timestamp they completed the tutorial

@@ -47,11 +47,9 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
           },
           {
             stripeCustomerId: null,
-
             $pull: {
-              giftSubscriptions: subscription.id
+              giftSubscriptions: subscription.id,
             },
-
           },
           {
             session: session
@@ -84,6 +82,8 @@ async function checkoutSessionGift(fromUser: User, giftTo: User, subscription: S
 
     try {
       await session.withTransaction(async () => {
+        const proMonths = Number(subscription.metadata?.quantity) ?? 0;
+
         await Promise.all([
           UserModel.findByIdAndUpdate(
             giftTo._id,
@@ -111,7 +111,7 @@ async function checkoutSessionGift(fromUser: User, giftTo: User, subscription: S
             },
           ),
           createNewProUserNotification(giftTo._id, fromUser._id),
-          queueDiscordWebhook(Discord.DevPriv, `💸 [${fromUser.name}](https://pathology.gg/profile/${fromUser.name}) just gifted to ${giftTo.name}`)
+          queueDiscordWebhook(Discord.DevPriv, `💸 [${fromUser.name}](https://pathology.gg/profile/${fromUser.name}) just gifted ${proMonths} month${proMonths === 1 ? '' : 's'} of Pro to [${giftTo.name}](https://pathology.gg/profile/${giftTo.name})`)
         ]);
       });
       session.endSession();
@@ -344,7 +344,6 @@ export default apiWrapper({
         }
       } else {
         // we need to check if this is a gift subscription so we can downgrade the appropriate user
-
         // looks like a regular downgrade subscription of pro
         error = await subscriptionDeleted(userConfigAgg[0].userId as User, subscription);
       }
@@ -356,9 +355,9 @@ export default apiWrapper({
 
     if (metadata.giftToId) {
       // this is a gift subscription
-      const [giftToId, giftFromId] = await Promise.all([
-        UserModel.findById(metadata.giftToId),
+      const [giftFromId, giftToId] = await Promise.all([
         UserModel.findById(metadata.giftFromId),
+        UserModel.findById(metadata.giftToId),
       ]);
 
       error = await checkoutSessionGift(
