@@ -10,7 +10,6 @@ import ChapterSelectCard from '../cards/chapterSelectCard';
 import { getDifficultyFromValue } from '../formatted/formattedDifficulty';
 import RecommendedLevel from '../homepage/recommendedLevel';
 import FormattedLevelReviews from '../level/reviews/formattedLevelReviews';
-import LoadingSpinner from '../page/loadingSpinner';
 import ShareBar from '../social/shareBar';
 import Modal from '.';
 
@@ -18,39 +17,16 @@ interface PostGameModalProps {
   chapter?: string;
   closeModal: () => void;
   collection?: Collection;
+  dontShowPostGameModal: boolean;
   isOpen: boolean;
   level: Level;
   reqUser: User | null;
+  setDontShowPostGameModal: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export default function PostGameModal({ chapter, closeModal, collection, isOpen, level, reqUser }: PostGameModalProps) {
+export default function PostGameModal({ chapter, closeModal, collection, dontShowPostGameModal, isOpen, level, reqUser, setDontShowPostGameModal }: PostGameModalProps) {
   let nextLevel: EnrichedLevel | undefined = undefined;
   let lastLevelInCollection = false;
-  const [dontShowModalAgain, setDontShowModalAgain] = useState(false);
-
-  useEffect(() => {
-    if (dontShowModalAgain) {
-      localStorage.setItem('dontShowPostGameModal', 'true');
-      // expire 24h from now
-      localStorage.setItem('dontShowPostGameModalExpire', (new Date(Date.now() + 24 * 60 * 60 * 1000)).toISOString());
-    }
-  }, [dontShowModalAgain]);
-  useEffect(() => {
-    const storedPref = localStorage.getItem('dontShowPostGameModal');
-    const storedPrefExpire = localStorage.getItem('dontShowPostGameModalExpire');
-
-    // check if expired...
-    if (storedPrefExpire && new Date(storedPrefExpire) < new Date()) {
-      localStorage.removeItem('dontShowPostGameModal');
-      localStorage.removeItem('dontShowPostGameModalExpire');
-
-      return;
-    }
-
-    if (storedPref === 'true') {
-      closeModal();
-    }
-  }, [closeModal]);
 
   if (collection && collection.levels) {
     const levelIndex = collection.levels.findIndex((l) => l._id === level._id);
@@ -62,10 +38,17 @@ export default function PostGameModal({ chapter, closeModal, collection, isOpen,
     }
   }
 
-  const { data, isLoading } = useHomePageData([HomepageDataType.RecommendedLevel], !isOpen || nextLevel !== undefined);
-
-  const recommendedLevel = data && data[HomepageDataType.RecommendedLevel];
+  const { data } = useHomePageData([HomepageDataType.RecommendedLevel], !isOpen || nextLevel !== undefined);
   const [queryParams, setQueryParams] = useState({});
+  const [recommendedLevel, setRecommendedLevel] = useState<EnrichedLevel>();
+
+  useEffect(() => {
+    const newRecommendedLevel = data && data[HomepageDataType.RecommendedLevel];
+
+    if (newRecommendedLevel) {
+      setRecommendedLevel(newRecommendedLevel);
+    }
+  }, [data]);
 
   // NB: this useEffect only runs when entering the level page
   // (moving between levels within a collection does not remount this component)
@@ -75,9 +58,41 @@ export default function PostGameModal({ chapter, closeModal, collection, isOpen,
     setQueryParams(new URLSearchParams(window.location.search));
   }, []);
 
-  const hrefOverride = nextLevel ? `/level/${nextLevel.slug}?${queryParams}` : undefined;
   const url = `https://pathology.gg/level/${level.slug}`;
   const quote = 'Just completed Pathology.gg puzzle "' + level.name + '" (Difficulty: ' + getDifficultyFromValue(level.calc_difficulty_estimate).name + ')';
+
+  function nextActionCard() {
+    if (nextLevel) {
+      return (
+        <RecommendedLevel
+          hrefOverride={`/level/${nextLevel.slug}?${queryParams}`}
+          id='next-level'
+          level={nextLevel}
+          onClick={closeModal}
+          title='Next Level'
+        />
+      );
+    }
+
+    if (chapter && !isNaN(Number(chapter))) {
+      return (
+        <Card id='campaign' title='Head back to the campaign!'>
+          <div className='p-3'>
+            <ChapterSelectCard chapter={Number(chapter)} />
+          </div>
+        </Card>
+      );
+    }
+
+    return (
+      <RecommendedLevel
+        id='next-level'
+        level={recommendedLevel}
+        onClick={closeModal}
+        title='Try this next!'
+      />
+    );
+  }
 
   return (
     <Modal
@@ -108,28 +123,25 @@ export default function PostGameModal({ chapter, closeModal, collection, isOpen,
                 {level.name} is the last level in <Link className='font-bold hover:underline' href={`/collection/${collection.slug}`}>{collection.name}</Link>.
               </div>
             }
-            {chapter && !isNaN(Number(chapter)) ?
-              <Card id='campaign' title='Head back to the campaign!'>
-                <div className='p-3'>
-                  <ChapterSelectCard chapter={Number(chapter)} />
-                </div>
-              </Card>
-              :
-              (isLoading ? <LoadingSpinner /> : <RecommendedLevel
-                hrefOverride={hrefOverride}
-                id='next-level'
-                level={nextLevel ?? recommendedLevel}
-                onClick={closeModal}
-                title={nextLevel ? 'Next Level' : 'Try this next!'}
-              />)
-            }
+            {nextActionCard()}
           </>
         }
         <div className='flex items-center gap-1'>
           <input
             type='checkbox'
-            checked={dontShowModalAgain}
-            onChange={(e) => setDontShowModalAgain(e.target.checked)}
+            checked={dontShowPostGameModal}
+            onChange={(e) => {
+              setDontShowPostGameModal(e.target.checked);
+
+              if (e.target.checked) {
+                localStorage.setItem('dontShowPostGameModal', 'true');
+                // expire 24h from now
+                localStorage.setItem('dontShowPostGameModalExpire', (new Date(Date.now() + 24 * 60 * 60 * 1000)).toISOString());
+              } else {
+                localStorage.removeItem('dontShowPostGameModal');
+                localStorage.removeItem('dontShowPostGameModalExpire');
+              }
+            }}
           />
           <label>Don&apos;t show this popup for 24h</label>
         </div>

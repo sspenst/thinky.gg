@@ -51,6 +51,8 @@ export default function LevelInfoPlayTime() {
     return <div className='text-sm'>No play time data available.</div>;
   }
 
+  const total = (proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime] as DateAndSum[]).reduce((a, b) => a + b.sum, 0);
+
   return (
     <div className='flex flex-col gap-2'>
       <Tab.Group>
@@ -96,7 +98,7 @@ export default function LevelInfoPlayTime() {
                 })
               }
               <div className='w-full justify-end flex items-center font-bold'>Total</div>
-              <div className='text-left flex items-center font-bold'>{getTimePlayedStr((proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime] as DateAndSum[]).reduce((a, b) => a + b.sum, 0))}</div>
+              <div className={classNames('text-left flex items-center', { 'font-bold': total })}>{total === 0 ? 'No play time recorded' : getTimePlayedStr(total)}</div>
               {proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData] && (proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData] as CountAndSum).count >= 1 && (<>
                 <div
                   className='w-20 w-full justify-end flex items-center font-medium underline decoration-dashed cursor-help'
