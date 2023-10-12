@@ -5,7 +5,7 @@ import { createNewProUserNotification } from '@root/helpers/notificationHelper';
 import dbConnect from '@root/lib/dbConnect';
 import UserConfig from '@root/models/db/userConfig';
 import { buffer } from 'micro';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
 import Role from '../../../constants/role';
@@ -24,8 +24,8 @@ export const config = {
 async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.Subscription): Promise<string | undefined> {
   logger.info(`subscriptionDeleted - ${userToDowngrade.name} (${userToDowngrade._id.toString()})`);
 
-  // we want to downgrade the user
   const session = await mongoose.startSession();
+  const giftFromId = subscription.metadata.giftFromId;
 
   try {
     await session.withTransaction(async () => {
@@ -41,20 +41,34 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
             session: session
           },
         ),
+        // NB: gift recipients do not have a stripe customer id
         UserConfigModel.findOneAndUpdate(
           {
-            userId: userToDowngrade._id
+            userId: userToDowngrade._id,
           },
           {
             stripeCustomerId: null,
-            $pull: {
-              giftSubscriptions: subscription.id,
-            },
           },
           {
             session: session
           },
         ),
+        // pull the gift subscription id if it was gifted
+        ...(!giftFromId ? [] : [
+          UserConfigModel.findOneAndUpdate(
+            {
+              userId: new Types.ObjectId(giftFromId),
+            },
+            {
+              $pull: {
+                giftSubscriptions: subscription.id,
+              },
+            },
+            {
+              session: session
+            },
+          ),
+        ]),
         queueDiscordWebhook(Discord.DevPriv, `🥹 [${userToDowngrade.name}](https://pathology.gg/profile/${userToDowngrade.name}) was just unsubscribed.`),
       ]);
     });
@@ -68,13 +82,13 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
   }
 }
 
-async function checkoutSessionGift(fromUser: User, giftTo: User, subscription: Stripe.Subscription): Promise<string | undefined> {
+async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscription: Stripe.Subscription): Promise<string | undefined> {
   let error: string | undefined;
 
-  if (isPro(giftTo)) {
+  if (isPro(giftToUser)) {
     // TODO: create a coupon and apply it to the existing subscription..
     // https://stripe.com/docs/api/coupons/create
-    error = `${giftTo.name} is already a pro subscriber. Error applying gift. Please contact support.`;
+    error = `${giftToUser.name} is already a pro subscriber. Error applying gift. Please contact support.`;
   }
 
   if (!error) {
@@ -86,7 +100,7 @@ async function checkoutSessionGift(fromUser: User, giftTo: User, subscription: S
 
         await Promise.all([
           UserModel.findByIdAndUpdate(
-            giftTo._id,
+            giftToUser._id,
             {
               $addToSet: {
                 roles: Role.PRO
@@ -98,20 +112,20 @@ async function checkoutSessionGift(fromUser: User, giftTo: User, subscription: S
           ),
           UserConfigModel.findOneAndUpdate(
             {
-              userId: giftTo._id
+              userId: giftFromUser._id,
             },
             {
               // add to set gift subscriptions
               $addToSet: {
-                giftSubscriptions: subscription.id
+                giftSubscriptions: subscription.id,
               },
             },
             {
               session: session
             },
           ),
-          createNewProUserNotification(giftTo._id, fromUser._id),
-          queueDiscordWebhook(Discord.DevPriv, `💸 [${fromUser.name}](https://pathology.gg/profile/${fromUser.name}) just gifted ${proMonths} month${proMonths === 1 ? '' : 's'} of Pro to [${giftTo.name}](https://pathology.gg/profile/${giftTo.name})`)
+          createNewProUserNotification(giftToUser._id, giftFromUser._id),
+          queueDiscordWebhook(Discord.DevPriv, `💸 [${giftFromUser.name}](https://pathology.gg/profile/${giftFromUser.name}) just gifted ${proMonths} month${proMonths === 1 ? '' : 's'} of Pro to [${giftToUser.name}](https://pathology.gg/profile/${giftToUser.name})`)
         ]);
       });
       session.endSession();
@@ -305,13 +319,12 @@ export default apiWrapper({
 
     if (subscription.metadata?.giftToId) {
       // this is a gift subscription
-      const giftToId = subscription.metadata.giftToId;
-      const giftToUser = await UserModel.findById(giftToId);
+      const giftToUser = await UserModel.findById(subscription.metadata.giftToId);
 
       if (giftToUser) {
         error = await subscriptionDeleted(giftToUser, subscription);
       } else {
-        error = `giftToUser with id ${giftToId} does not exist`;
+        error = `giftToUser with id ${subscription.metadata.giftToId} does not exist`;
       }
     } else if (!customerId) {
       error = 'No customerId';
@@ -355,14 +368,14 @@ export default apiWrapper({
 
     if (metadata.giftToId) {
       // this is a gift subscription
-      const [giftFromId, giftToId] = await Promise.all([
+      const [giftFromUser, giftToUser] = await Promise.all([
         UserModel.findById(metadata.giftFromId),
         UserModel.findById(metadata.giftToId),
       ]);
 
       error = await checkoutSessionGift(
-        giftFromId,
-        giftToId,
+        giftFromUser,
+        giftToUser,
         subscription
       );
     }
