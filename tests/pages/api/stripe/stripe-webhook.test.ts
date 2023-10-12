@@ -30,10 +30,10 @@ const DefaultReq = {
     'content-type': 'application/json',
   },
 };
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+const stripe = new Stripe('', {
   apiVersion: '2022-11-15',
 });
-const stripe_secret = process.env.STRIPE_WEBHOOK_SECRET || 'whsec_123';
+const stripe_secret = process.env.NODE_ENV !== 'test' ? process.env.STRIPE_WEBHOOK_SECRET : 'whsec_test_secret';
 
 function createMockStripeEvent(type: string, data = {}) {
   return {
