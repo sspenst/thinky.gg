@@ -138,13 +138,10 @@ export default function MusicContextProvider({ children }: { children: React.Rea
       }
     };
 
-    const next = () => seek(1);
-
     // ensure existing song is cleaned up
     if (songMetadata) {
       songMetadata.active.pause();
       songMetadata.active.removeEventListener('canplaythrough', onCanplaythrough);
-      songMetadata.active.removeEventListener('ended', next);
       songMetadata.active.remove();
 
       songMetadata.ambient.pause();
@@ -164,7 +161,6 @@ export default function MusicContextProvider({ children }: { children: React.Rea
     loadedAudioIndex.current = -1;
 
     // both tracks are playing at the same time so only need to check if one has ended
-    active.addEventListener('ended', next);
     active.addEventListener('canplaythrough', onCanplaythrough);
     ambient.addEventListener('canplaythrough', onCanplaythrough);
 
@@ -176,6 +172,19 @@ export default function MusicContextProvider({ children }: { children: React.Rea
       website: song.website,
     });
   }, [isHot, isPlaying, songMetadata, volume]);
+
+  // NB: separate useEffect for next because seek needs to be called outside of the seek function
+  useEffect(() => {
+    const next = () => seek(1);
+
+    if (!songMetadata) {
+      return;
+    }
+
+    songMetadata.active.addEventListener('ended', next);
+
+    return () => songMetadata.active.removeEventListener('ended', next);
+  }, [seek, songMetadata]);
 
   const toggleVersion = useCallback((command: 'hot' | 'cold' | 'switch' = 'switch') => {
     if (command === 'hot' && isHot) {
