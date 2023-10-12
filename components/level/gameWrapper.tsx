@@ -23,11 +23,6 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
   const { setPreventKeyDownEvent } = useContext(PageContext);
 
   useEffect(() => {
-    // reset to cold when arriving on a new level
-    if (dynamicMusic) {
-      toggleVersion('cold');
-    }
-
     const storedPref = localStorage.getItem('dontShowPostGameModal');
     const storedPrefExpire = localStorage.getItem('dontShowPostGameModalExpire');
 

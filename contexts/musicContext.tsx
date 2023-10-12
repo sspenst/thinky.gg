@@ -120,7 +120,7 @@ export default function MusicContextProvider({ children }: { children: React.Rea
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const seek = useCallback((offset: number) => {
+  const seek = useCallback((offset: number, isActive = isHot) => {
     const onCanplaythrough = () => {
       // NB: first song that loads will stop here, second song will play both at once
       if (loadedAudioIndex.current !== songIndex.current) {
@@ -129,8 +129,8 @@ export default function MusicContextProvider({ children }: { children: React.Rea
         return;
       }
 
-      active.volume = isHot ? volume : 0;
-      ambient.volume = isHot ? 0 : volume;
+      active.volume = isActive ? volume : 0;
+      ambient.volume = isActive ? 0 : volume;
 
       if (isPlaying) {
         active.play();
@@ -175,7 +175,13 @@ export default function MusicContextProvider({ children }: { children: React.Rea
 
   // NB: separate useEffect for next because seek needs to be called outside of the seek function
   useEffect(() => {
-    const next = () => seek(1);
+    const next = () => {
+      if (dynamicMusic) {
+        seek(1, false);
+      } else {
+        seek(1);
+      }
+    };
 
     if (!songMetadata) {
       return;
@@ -184,7 +190,7 @@ export default function MusicContextProvider({ children }: { children: React.Rea
     songMetadata.active.addEventListener('ended', next);
 
     return () => songMetadata.active.removeEventListener('ended', next);
-  }, [seek, songMetadata]);
+  }, [dynamicMusic, seek, songMetadata]);
 
   const toggleVersion = useCallback((command: 'hot' | 'cold' | 'switch' = 'switch') => {
     if (command === 'hot' && isHot) {
