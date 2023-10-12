@@ -289,10 +289,12 @@ export default apiWrapper({
           });
 
           // cancel all these subscriptions
-          for (const subscription of subscriptions.data) {
-            await stripe.subscriptions.update(subscription.id, {
-              cancel_at_period_end: true,
-            });
+          if (subscriptions && subscriptions.data) {
+            for (const subscription of subscriptions.data) {
+              await stripe.subscriptions.update(subscription.id, {
+                cancel_at_period_end: true,
+              });
+            }
           }
           // TODO: hypothetically i guess there could be a race condition where someone gifts someone right when they subscribe themselves... but for now let's just ignore that...
         }

@@ -200,6 +200,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
     });
   });
   test('some valid user subscribes', async () => {
+    jest.spyOn(stripeReal.subscriptions, 'search').mockResolvedValue({ data: [], } as any);
     await runStripeWebhookTest({
       eventType: 'checkout.session.completed',
       payloadData: {
@@ -246,6 +247,9 @@ describe('pages/api/stripe-webhook/index.ts', () => {
     });
   });
   test('resubscribe', async () => {
+    // mock out stripe subscriptions.search
+
+    jest.spyOn(stripeReal.subscriptions, 'search').mockResolvedValue({ data: [], } as any);
     await runStripeWebhookTest({
       eventType: 'checkout.session.completed',
       payloadData: {
