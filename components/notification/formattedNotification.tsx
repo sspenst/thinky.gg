@@ -156,7 +156,7 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
     const isGift = notification.source !== notification.target;
 
     return (<>
-      <Image alt='logo' src='/pro.svg' width='24' height='24' className='h-6 w-6' />
+      <Image alt='logo' src='/pro.svg' width='24' height='24' className='h-4 w-4' />
       {isGift ? 'You received a gift of Pro!' : 'You have been upgraded to Pro!'}
       <Link href='/settings/pro' className='underline' onClick={onMarkAsRead}>Check it out!</Link>
     </>);
@@ -174,8 +174,6 @@ interface FormattedNotificationProps {
 }
 
 export default function FormattedNotification({ close, notification, onMarkAsRead }: FormattedNotificationProps) {
-  const notificationIcon = <NotificationIcon notification={notification} />;
-
   return (
     <div
       className='p-3 border rounded shadow flex flex-cols-2 justify-between gap-2 items-center'
@@ -200,7 +198,7 @@ export default function FormattedNotification({ close, notification, onMarkAsRea
           />
           :
           <div className='flex items-center gap-2 truncate'>
-            {notificationIcon}
+            <NotificationIcon notification={notification} />
             <span className='font-bold'>Pathology</span>
           </div>
         }

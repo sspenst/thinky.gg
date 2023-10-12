@@ -9,17 +9,18 @@ import { UserConfigModel, UserModel } from '../../../models/mongoose';
 import { stripe } from '.';
 
 export interface SubscriptionGiftData {
-    subscriptionId: string;
-    planName: string;
-    giftFromUser: User;
-    metadata: any,
-
-    current_period_end: number;
-    current_period_start: number;
-    cancel_at: number;
-    cancel_at_period_end: boolean;
-    status: Stripe.Subscription.Status;
+  cancel_at: number;
+  cancel_at_period_end: boolean;
+  current_period_end: number;
+  current_period_start: number;
+  giftFromUser: User;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  metadata: any;
+  planName: string;
+  status: Stripe.Subscription.Status;
+  subscriptionId: string;
 }
+
 export default withAuth({
   GET: {
 
