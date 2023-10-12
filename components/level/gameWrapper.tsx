@@ -1,5 +1,5 @@
 import { PageContext } from '@root/contexts/pageContext';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import Collection from '../../models/db/collection';
 import { EnrichedLevel } from '../../models/db/level';
 import User from '../../models/db/user';
@@ -16,8 +16,25 @@ interface GameWrapperProps {
 }
 
 export default function GameWrapper({ chapter, collection, level, onNext, onPrev, user }: GameWrapperProps) {
+  const [dontShowPostGameModal, setDontShowPostGameModal] = useState(false);
   const [postGameModalOpen, setShowPostGameModalOpen] = useState(false);
   const { setPreventKeyDownEvent } = useContext(PageContext);
+
+  useEffect(() => {
+    const storedPref = localStorage.getItem('dontShowPostGameModal');
+    const storedPrefExpire = localStorage.getItem('dontShowPostGameModalExpire');
+
+    if (storedPrefExpire && new Date(storedPrefExpire) < new Date()) {
+      localStorage.removeItem('dontShowPostGameModal');
+      localStorage.removeItem('dontShowPostGameModalExpire');
+
+      return;
+    }
+
+    if (storedPref === 'true') {
+      setDontShowPostGameModal(true);
+    }
+  }, [level._id]);
 
   return (
     <>
@@ -30,10 +47,14 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
         level={level}
         onNext={collection ? onNext : undefined}
         onPrev={collection ? onPrev : undefined}
-        onSolve={() => setTimeout(() => {
-          setShowPostGameModalOpen(true);
-          setPreventKeyDownEvent(true);
-        }, 200)}
+        onSolve={() => {
+          if (!dontShowPostGameModal) {
+            setTimeout(() => {
+              setShowPostGameModalOpen(true);
+              setPreventKeyDownEvent(true);
+            }, 200);
+          }
+        }}
       />
       <PostGameModal
         chapter={chapter}
@@ -42,9 +63,11 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
           setPreventKeyDownEvent(false);
         }}
         collection={collection}
+        dontShowPostGameModal={dontShowPostGameModal}
         isOpen={postGameModalOpen}
         level={level}
         reqUser={user}
+        setDontShowPostGameModal={setDontShowPostGameModal}
       />
     </>
   );
