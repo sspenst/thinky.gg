@@ -18,14 +18,29 @@ interface GameWrapperProps {
 
 export default function GameWrapper({ chapter, collection, level, onNext, onPrev, user }: GameWrapperProps) {
   const { dynamicMusic, toggleVersion } = useContext(MusicContext);
+  const [dontShowPostGameModal, setDontShowPostGameModal] = useState(false);
   const [postGameModalOpen, setShowPostGameModalOpen] = useState(false);
   const { setPreventKeyDownEvent } = useContext(PageContext);
 
   useEffect(() => {
+    // reset to cold when arriving on a new level
     if (dynamicMusic) {
       toggleVersion('cold');
     }
-  // reset to cold when arriving on a new level
+
+    const storedPref = localStorage.getItem('dontShowPostGameModal');
+    const storedPrefExpire = localStorage.getItem('dontShowPostGameModalExpire');
+
+    if (storedPrefExpire && new Date(storedPrefExpire) < new Date()) {
+      localStorage.removeItem('dontShowPostGameModal');
+      localStorage.removeItem('dontShowPostGameModalExpire');
+
+      return;
+    }
+
+    if (storedPref === 'true') {
+      setDontShowPostGameModal(true);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [level._id]);
 
@@ -45,10 +60,12 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
             toggleVersion('hot');
           }
 
-          setTimeout(() => {
-            setShowPostGameModalOpen(true);
-            setPreventKeyDownEvent(true);
-          }, 200);
+          if (!dontShowPostGameModal) {
+            setTimeout(() => {
+              setShowPostGameModalOpen(true);
+              setPreventKeyDownEvent(true);
+            }, 200);
+          }
         }}
       />
       <PostGameModal
@@ -58,9 +75,11 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
           setPreventKeyDownEvent(false);
         }}
         collection={collection}
+        dontShowPostGameModal={dontShowPostGameModal}
         isOpen={postGameModalOpen}
         level={level}
         reqUser={user}
+        setDontShowPostGameModal={setDontShowPostGameModal}
       />
     </>
   );

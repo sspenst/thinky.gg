@@ -73,7 +73,7 @@ export default function Modal({
             leaveTo='opacity-0 scale-95'
           >
             <Dialog.Panel
-              className={classNames('w-full max-w-fit px-6 py-4 my-8 overflow-hidden text-left align-middle transition-all transform shadow-xl rounded-xl', rubik.className)}
+              className={classNames('w-full max-w-fit py-3 px-4 my-8 overflow-hidden text-left align-middle transition-all transform shadow-xl rounded-xl flex flex-col gap-4', rubik.className)}
               style={{
                 backgroundColor: 'var(--bg-color-2)',
                 border: '1px solid',
@@ -81,36 +81,19 @@ export default function Modal({
                 color: 'var(--color)',
               }}
             >
-              <div className='absolute top-1 right-1'>
-                <button
-                  className='inline-flex justify-center px-2 py-1 text-sm font-medium  border border-transparent rounded'
-                  onClick={closeModal}
-                  tabIndex={-1}
-                  type='button'
-                >
-                  <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-x-circle-fill' viewBox='0 0 16 16'>
-                    <path d='M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z' />
+              <Dialog.Title as='div' className='flex gap-4 text-center'>
+                <span className='w-6' />
+                <span className='grow text-xl font-bold truncate'>{title}</span>
+                <button className='hover:text-gray-500 transition' onClick={closeModal} tabIndex={-1}>
+                  <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+                    <path strokeLinecap='round' strokeLinejoin='round' d='M6 18L18 6M6 6l12 12' />
                   </svg>
                 </button>
-              </div>
-              <Dialog.Title
-                as='div'
-                className='text-xl font-bold leading-6'
-                style={{
-                  textAlign: 'center',
-                }}
-              >
-                {title}
               </Dialog.Title>
-              <div className='mt-4'>
+              <div className='px-2'>
                 {children}
               </div>
-              <div
-                className='mt-4'
-                style={{
-                  textAlign: 'center',
-                }}
-              >
+              <div className='text-center'>
                 {onConfirm ?
                   <>
                     <ModalButton disabled={disabled} onClick={onConfirm} text={'OK'} />

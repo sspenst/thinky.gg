@@ -105,11 +105,7 @@ export default function CampaignPage({ campaign, enrichedCollections }: Campaign
           {campaign.name}
         </h1>
         {!campaign.authorNote ? null :
-          <div className='p-2'
-            style={{
-              textAlign: 'center',
-            }}
-          >
+          <div className='p-2 text-center'>
             {formattedAuthorNote(campaign.authorNote)}
           </div>
         }

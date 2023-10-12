@@ -271,11 +271,7 @@ export default function HomeLoggedIn({
       </div>
       <div id='latest-reviews' className='w-full md:w-1/2 pt-4'>
         <h2 className='font-bold text-xl text-center'>Latest Reviews:</h2>
-        <div
-          style={{
-            textAlign: 'center',
-          }}
-        >
+        <div className='text-center'>
           {latestReviews === undefined ?
             <div className='flex justify-center p-4'><LoadingSpinner /></div>
             :
