@@ -16,9 +16,11 @@ export interface SubscriptionGiftData {
     planName: string;
     giftFromUser: User;
     metadata: any,
+
     current_period_end: number;
     current_period_start: number;
     cancel_at: number;
+    cancel_at_period_end: boolean;
     status: Stripe.Subscription.Status;
 }
 export default withAuth({
@@ -61,6 +63,7 @@ export default withAuth({
         current_period_start: subscription.current_period_start,
         status: subscription.status,
         cancel_at: subscription.cancel_at,
+        cancel_at_period_end: subscription.cancel_at_period_end,
       } as SubscriptionGiftData
       );
     }
