@@ -7,6 +7,7 @@ import { GameState } from '@root/helpers/gameStateHelpers';
 import classNames from 'classnames';
 import { Types } from 'mongoose';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { AppContext } from '../../contexts/appContext';
 import { TimerUtil } from '../../helpers/getTs';
@@ -61,6 +62,7 @@ export default function Tutorial() {
     } as Level;
   }
 
+  const router = useRouter();
   const globalTimeout = useRef<NodeJS.Timeout | null>(null);
   const [isNextButtonDisabled, setIsNextButtonDisabled] = useState(false);
   const [isPrevButtonDisabled, setIsPrevButtonDisabled] = useState(false);
@@ -662,16 +664,22 @@ export default function Tutorial() {
     controls.push(isLoggedIn ?
       new Control(
         'control-campaign',
-        () => {return;},
-        <Link href='/play'>Campaign</Link>,
+        () => {
+          router.push('/play');
+        },
+        <>Campaign</>,
         false,
         true,
       )
       :
       new Control(
         'control-sign-up',
-        () => {return;},
-        <Link href='/signup'>Sign up</Link>,
+        () => {
+          router.push('/signup');
+
+          return;
+        },
+        <>Sign up</>,
         false,
         true,
       )
