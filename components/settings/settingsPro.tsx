@@ -70,15 +70,6 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
   const [giftUserSelected, setGiftUserSelected] = useState<User>();
   const [giftUserPaymentMethod, setGiftUserPaymentMethod] = useState<string>();
   const [giftQuantity, setGiftQuantity] = useState<number>(1);
-
-  if (!stripePaymentLink) {
-    return (
-      <div className='text-center'>
-        Error loading Pathology Pro page.
-      </div>
-    );
-  }
-
   const paymentMethods = subscriptions?.map((subscriptionData) => subscriptionData.paymentMethod);
   const seenIds = new Set();
   const paymentMethodOptions = paymentMethods?.map((paymentMethod) => {
@@ -94,16 +85,22 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
   });
 
   const paymentMethodsDropdown = (
-    <select className='border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent' name='paymentMethod' id='paymentMethod'
+    <select
+      className='border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent p-1 w-fit'
+      id='paymentMethod'
+      name='paymentMethod'
       onChange={(e) => {
         setGiftUserPaymentMethod(e.target.value);
-      }
-      }
+      }}
+      style={{
+        borderColor: 'var(--bg-color-4)',
+      }}
     >
       <option value=''>Select a payment method</option>
       {paymentMethodOptions}
     </select>
   );
+
   const hasAPaymentMethod = paymentMethods && paymentMethods?.length > 0;
 
   return (
@@ -118,24 +115,36 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
             You have Pathology Pro! Thank you for your support!
           </div>
           {hasAPaymentMethod && (
-            <div className='flex flex-col md:flex-row gap-2'>
-              <MultiSelectUser placeholder='Gift Pro to a user' onSelect={setGiftUserSelected} />
-              <div className='flex flex-col gap-1'>{ paymentMethodsDropdown}
-                { /* now ask a number select for number of months to gift */ }
-                <div className='flex flex-row gap-2'>
-                  <label htmlFor='months'>No. Months</label>
-                  <input onChange={() => {
-                    const val = Number((document.getElementById('months') as HTMLInputElement).value);
+            <div className='flex flex-col sm:flex-row gap-4 items-center'>
+              <div className='flex flex-col items-center gap-2'>
+                <MultiSelectUser placeholder='Gift Pro to a user' onSelect={setGiftUserSelected} />
+                {paymentMethodsDropdown}
+                <div className='flex gap-2 items-center'>
+                  <label className='font-medium' htmlFor='months'>Months</label>
+                  <input
+                    className='text-center justify-center items-center h-6 w-10 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent'
+                    id='months'
+                    max={24}
+                    min={1}
+                    name='months'
+                    onChange={() => {
+                      const val = Number((document.getElementById('months') as HTMLInputElement).value);
 
-                    setGiftQuantity(Math.min(Math.max(val, 1), 24));
-                  }} max={24} min={1} className='text-center justify-center items-center h-6 w-10 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent' type='number' name='months' id='months' value={giftQuantity} />
+                      setGiftQuantity(Math.min(Math.max(val, 1), 24));
+                    }}
+                    style={{
+                      borderColor: 'var(--bg-color-4)',
+                    }}
+                    type='number'
+                    value={giftQuantity}
+                  />
                 </div>
               </div>
               <button
-                className='bg-green-300 hover:bg-green-500 text-black font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline cursor-pointer w-full text-center disabled:opacity-50 disabled:cursor-not-allowed'
+                className='bg-green-300 hover:bg-green-500 text-black font-bold py-2 px-4 rounded-2xl focus:outline-none focus:shadow-outline cursor-pointer w-fit h-fit text-center disabled:opacity-50 disabled:cursor-not-allowed'
                 disabled={!giftUserSelected || !giftUserPaymentMethod}
                 onClick={() => {
-                  if (!confirm('Are you sure you want to gift Pro to ' + giftUserSelected?.name + '? You will be billed monthly for ' + giftQuantity + ' months.')) {
+                  if (!confirm(`Are you sure you want to gift Pro to ${giftUserSelected?.name}? You will be billed monthly for ${giftQuantity} month${giftQuantity === 1 ? '' : 's'}.`)) {
                     return;
                   }
 
@@ -166,21 +175,24 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                 }
                 }
               >
-                <div className='flex flex-col'><span>Gift Pro</span><span className='text-xs'>($3 per month)</span></div>
+                <div className='flex flex-col'>
+                  <span className='text-lg'>Gift Pro</span>
+                  <span className='text-sm'>$3.00 USD / month</span>
+                </div>
               </button>
             </div>
           )}
         </div>
       }
       {giftsReceived && giftsReceived.length > 0 && (
-        <div className='flex flex-row gap-4 text-center justify-center items-center'>
+        <div className='flex gap-4 text-center justify-center items-center'>
           {giftsReceived?.map((subscriptionData) =>
             <div key={subscriptionData.subscriptionId} className={classNames(
               'border rounded-md w-fit px-3 py-2',
             )}>
               <div className='font-bold'>Received Gifted Pro:</div>
               <div className='text-sm text-left'>
-                <div className='flex flex-row gap-1 items-center'>Gifted From: <FormattedUser id={'subscription-' + subscriptionData.subscriptionId} user={subscriptionData.giftFromUser} /></div>
+                <div className='flex gap-1 items-center'>Gifted From: <FormattedUser id={'subscription-' + subscriptionData.subscriptionId} user={subscriptionData.giftFromUser} /></div>
                 <div>Status: <span className='font-bold'>{subscriptionData.cancel_at ? 'Ends ' + moment(new Date(subscriptionData.cancel_at * 1000)).format('MMMM Do, YYYY') : 'Active'}</span></div>
                 {!subscriptionData.cancel_at && subscriptionData.current_period_end && (<div>Renews: {moment(new Date(subscriptionData.current_period_end * 1000)).format('MMMM Do, YYYY')}</div>)}
               </div>
@@ -200,7 +212,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
         </Link>
       )}
       {subscriptions && subscriptions.length > 0 && (
-        <div className='flex flex-row gap-4 text-center justify-center items-center'>
+        <div className='flex gap-4 text-center justify-center items-center'>
           {subscriptions?.map((subscriptionData) =>
             <div key={subscriptionData.subscriptionId} className={classNames(
               'border rounded-md w-fit px-3 py-2',
@@ -209,7 +221,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
               <div className='font-bold'>{subscriptionData.planName}</div>
               <div className='text-sm text-left'>
                 {subscriptionData.giftToUser && (
-                  <div className='flex flex-row gap-1 items-center'>
+                  <div className='flex gap-1 items-center'>
                     Gifted to: <FormattedUser id={'subscription-' + subscriptionData.subscriptionId} user={subscriptionData.giftToUser} /></div>
                 )}
                 {!subscriptionData.cancel_at_period_end && subscriptionData.current_period_end && (<div>Renews: <span className='font-bold'>{moment(new Date(subscriptionData.current_period_end * 1000)).format('MMMM Do, YYYY')}</span></div>)}
@@ -227,61 +239,63 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
       )}
       {subscriptionsLoading ? <LoadingSpinner /> : null}
       <div><p className='text-xs'>For questions please contact <Link className='text-blue-300' href='mailto:help@pathology.gg'>help@pathology.gg</Link>.</p></div>
-      {!userLoading && !isPro(user) && <div className='flex flex-col items-center justify-center gap-4'>
-        <div className='flex flex-col gap-3 w-fit items-center mt-3'>
-          <RadioGroup value={plan} onChange={setPlan} className='flex flex-wrap justify-center gap-3'>
-            <RadioGroup.Option value='year'>
-              {({ checked }) => (
-                <div className={classNames(
-                  'flex flex-col border-2 text-sm py-2 px-4 rounded-xl cursor-pointer gap-0.5 subscription-plan-button transition',
-                  { 'border-green-300': checked },
-                )} style={{
-                  borderColor: !checked ? 'var(--bg-color)' : '',
-                  color: 'var(--color-gray)',
-                }}>
-                  <div className='flex gap-2 items-center'>
-                    <span>Annual Plan</span>
-                    <span className='text-xs rounded-md px-1' style={{
-                      backgroundColor: 'var(--bg-color)',
-                      color: 'rgb(134 239 172)',
-                    }}>SAVE 25%</span>
+      {!userLoading && !isPro(user) &&
+        <div className='flex flex-col items-center justify-center gap-4'>
+          <div className='flex flex-col gap-3 w-fit items-center mt-3'>
+            <RadioGroup value={plan} onChange={setPlan} className='flex flex-wrap justify-center gap-3'>
+              <RadioGroup.Option value='year'>
+                {({ checked }) => (
+                  <div className={classNames(
+                    'flex flex-col border-2 text-sm py-2 px-4 rounded-xl cursor-pointer gap-0.5 subscription-plan-button transition',
+                    { 'border-green-300': checked },
+                  )} style={{
+                    borderColor: !checked ? 'var(--bg-color)' : '',
+                    color: 'var(--color-gray)',
+                  }}>
+                    <div className='flex gap-2 items-center'>
+                      <span>Annual Plan</span>
+                      <span className='text-xs rounded-md px-1' style={{
+                        backgroundColor: 'var(--bg-color)',
+                        color: 'rgb(134 239 172)',
+                      }}>SAVE 25%</span>
+                    </div>
+                    <span className='font-bold text-lg' style={{ color: 'var(--color)' }}>$2.25 USD / month</span>
+                    <span className='text-xs'>$27 per year billed annually</span>
                   </div>
-                  <span className='font-bold text-lg' style={{ color: 'var(--color)' }}>$2.25 USD / month</span>
-                  <span className='text-xs'>$27 per year billed annually</span>
-                </div>
-              )}
-            </RadioGroup.Option>
-            <RadioGroup.Option value='month'>
-              {({ checked }) => (
-                <div className={classNames(
-                  'flex flex-col border-2 text-sm py-2 px-4 rounded-xl cursor-pointer gap-0.5 subscription-plan-button transition',
-                  { 'border-green-300': checked },
-                )} style={{
-                  borderColor: !checked ? 'var(--bg-color)' : '',
-                  color: 'var(--color-gray)',
-                }}>
-                  <span>Monthly Plan</span>
-                  <span className='font-bold text-lg' style={{ color: 'var(--color)' }}>$3.00 USD / month</span>
-                  <span className='text-xs'>$36 per year billed monthly</span>
-                </div>
-              )}
-            </RadioGroup.Option>
-          </RadioGroup>
-          <Link
-            className='bg-green-300 hover:bg-green-500 text-black font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline cursor-pointer w-full text-center'
-            href={`${plan === 'year' ? stripePaymentYearlyLink : stripePaymentLink}?client_reference_id=${user?._id}&prefilled_email=${user?.email}`}
-            rel='noreferrer'
-            target='_blank'
-          >
-            Subscribe
-          </Link>
+                )}
+              </RadioGroup.Option>
+              <RadioGroup.Option value='month'>
+                {({ checked }) => (
+                  <div className={classNames(
+                    'flex flex-col border-2 text-sm py-2 px-4 rounded-xl cursor-pointer gap-0.5 subscription-plan-button transition',
+                    { 'border-green-300': checked },
+                  )} style={{
+                    borderColor: !checked ? 'var(--bg-color)' : '',
+                    color: 'var(--color-gray)',
+                  }}>
+                    <span>Monthly Plan</span>
+                    <span className='font-bold text-lg' style={{ color: 'var(--color)' }}>$3.00 USD / month</span>
+                    <span className='text-xs'>$36 per year billed monthly</span>
+                  </div>
+                )}
+              </RadioGroup.Option>
+            </RadioGroup>
+            <Link
+              className='bg-green-300 hover:bg-green-500 text-black font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline cursor-pointer w-full text-center'
+              href={`${plan === 'year' ? stripePaymentYearlyLink : stripePaymentLink}?client_reference_id=${user?._id}&prefilled_email=${user?.email}`}
+              rel='noreferrer'
+              target='_blank'
+            >
+              Subscribe
+            </Link>
+          </div>
+          <p className='text-xs text-center'>
+              By clicking Subscribe, you agree to our <a className='text-blue-300' href='https://docs.google.com/document/d/e/2PACX-1vR4E-RcuIpXSrRtR3T3y9begevVF_yq7idcWWx1A-I9w_VRcHhPTkW1A7DeUx2pGOcyuKifEad3Qokn/pub' rel='noreferrer' target='_blank'>
+                Terms of Service
+            </a>.<br />Subscriptions auto-renew until canceled, as described in the Terms.
+          </p>
         </div>
-        <p className='text-xs text-center'>
-            By clicking Subscribe, you agree to our <a className='text-blue-300' href='https://docs.google.com/document/d/e/2PACX-1vR4E-RcuIpXSrRtR3T3y9begevVF_yq7idcWWx1A-I9w_VRcHhPTkW1A7DeUx2pGOcyuKifEad3Qokn/pub' rel='noreferrer' target='_blank'>
-              Terms of Service
-          </a>.<br />Subscriptions auto-renew until canceled, as described in the Terms.
-        </p>
-      </div>}
+      }
       <div className='flex flex-col xl:flex-row items-center gap-4 justify-center'>
         <div className='p-2'>
           <video autoPlay loop muted playsInline className='rounded-xl'>
