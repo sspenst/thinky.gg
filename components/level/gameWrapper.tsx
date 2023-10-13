@@ -20,6 +20,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
   const { dynamicMusic, toggleVersion } = useContext(MusicContext);
   const [dontShowPostGameModal, setDontShowPostGameModal] = useState(false);
   const [postGameModalOpen, setShowPostGameModalOpen] = useState(false);
+  const [mutePostGameModalForThisLevel, setMutePostGameModalForThisLevel] = useState(false);
   const { setPreventKeyDownEvent } = useContext(PageContext);
 
   useEffect(() => {
@@ -39,6 +40,11 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [level._id]);
 
+  useEffect(() => {
+    console.log('Change level id');
+    setMutePostGameModalForThisLevel(false);
+  }, [level._id]);
+
   return (
     <>
       <Game
@@ -55,9 +61,10 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
             toggleVersion('hot');
           }
 
-          if (!dontShowPostGameModal) {
+          if (!dontShowPostGameModal && !mutePostGameModalForThisLevel) {
             setTimeout(() => {
               setShowPostGameModalOpen(true);
+              setMutePostGameModalForThisLevel(true);
               setPreventKeyDownEvent(true);
             }, 200);
           }

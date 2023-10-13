@@ -152,6 +152,16 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
     </>);
   }
 
+  case NotificationType.UPGRADED_TO_PRO: {
+    const isGift = notification.source !== notification.target;
+
+    return (<>
+      <Image alt='logo' src='/pro.svg' width='24' height='24' className='h-4 w-4' />
+      {isGift ? 'You received a gift of Pro!' : 'You have been upgraded to Pro!'}
+      <Link href='/settings/pro' className='underline' onClick={onMarkAsRead}>Check it out!</Link>
+    </>);
+  }
+
   default:
     return null;
   }

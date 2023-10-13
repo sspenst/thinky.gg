@@ -10,6 +10,7 @@ interface UserConfig {
   emailConfirmed: boolean;
   emailDigest: EmailDigestSettingTypes;
   emailNotificationsList: NotificationType[];
+  giftSubscriptions: string[]; // gift subscriptions this user has given out
   mobileDeviceTokens: string[];
   pushNotificationsList: NotificationType[];
   showPlayStats: boolean;

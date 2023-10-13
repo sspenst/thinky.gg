@@ -13,6 +13,7 @@ env:
   NEW_RELIC_APP_NAME: dummy
   INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST: cocomelon
   SITEMAP_PRIV_KEY: sitto
+  STRIPE_SECRET: fake-stripe-secret
 
 jobs:
   setup:

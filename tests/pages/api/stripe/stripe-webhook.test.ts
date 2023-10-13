@@ -30,10 +30,10 @@ const DefaultReq = {
     'content-type': 'application/json',
   },
 };
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+const stripe = new Stripe('', {
   apiVersion: '2022-11-15',
 });
-const stripe_secret = process.env.STRIPE_WEBHOOK_SECRET || 'whsec_123';
+const stripe_secret = process.env.NODE_ENV !== 'test' ? process.env.STRIPE_WEBHOOK_SECRET : 'whsec_test_secret';
 
 function createMockStripeEvent(type: string, data = {}) {
   return {
@@ -200,6 +200,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
     });
   });
   test('some valid user subscribes', async () => {
+    jest.spyOn(stripeReal.subscriptions, 'search').mockResolvedValue({ data: [], } as any);
     await runStripeWebhookTest({
       eventType: 'checkout.session.completed',
       payloadData: {
@@ -246,6 +247,9 @@ describe('pages/api/stripe-webhook/index.ts', () => {
     });
   });
   test('resubscribe', async () => {
+    // mock out stripe subscriptions.search
+
+    jest.spyOn(stripeReal.subscriptions, 'search').mockResolvedValue({ data: [], } as any);
     await runStripeWebhookTest({
       eventType: 'checkout.session.completed',
       payloadData: {
