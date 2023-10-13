@@ -7,7 +7,6 @@ import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Review from '../../../../models/db/review';
-import { ReviewModel } from '../../../../models/mongoose';
 import reviewsLevelHandler from '../../../../pages/api/reviews/[id]';
 
 afterEach(() => {

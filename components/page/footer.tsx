@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface ExternalLinkProps {
-  children: JSX.Element | string;
+  children: React.ReactNode;
   href: string;
 }
 
