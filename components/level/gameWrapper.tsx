@@ -33,6 +33,8 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
 
     if (storedPref === 'true') {
       setDontShowPostGameModal(true);
+    } else {
+      setDontShowPostGameModal(false);
     }
   }, [level._id]);
 
@@ -51,6 +53,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
           if (!dontShowPostGameModal) {
             setTimeout(() => {
               setShowPostGameModalOpen(true);
+              setDontShowPostGameModal(true);
               setPreventKeyDownEvent(true);
             }, 200);
           }
