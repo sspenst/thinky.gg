@@ -18,6 +18,7 @@ interface GameWrapperProps {
 export default function GameWrapper({ chapter, collection, level, onNext, onPrev, user }: GameWrapperProps) {
   const [dontShowPostGameModal, setDontShowPostGameModal] = useState(false);
   const [postGameModalOpen, setShowPostGameModalOpen] = useState(false);
+  const [mutePostGameModalForThisLevel, setMutePostGameModalForThisLevel] = useState(false);
   const { setPreventKeyDownEvent } = useContext(PageContext);
 
   useEffect(() => {
@@ -33,9 +34,12 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
 
     if (storedPref === 'true') {
       setDontShowPostGameModal(true);
-    } else {
-      setDontShowPostGameModal(false);
     }
+  }, [level._id]);
+
+  useEffect(() => {
+    console.log('Change level id');
+    setMutePostGameModalForThisLevel(false);
   }, [level._id]);
 
   return (
@@ -50,10 +54,10 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
         onNext={collection ? onNext : undefined}
         onPrev={collection ? onPrev : undefined}
         onSolve={() => {
-          if (!dontShowPostGameModal) {
+          if (!dontShowPostGameModal && !mutePostGameModalForThisLevel) {
             setTimeout(() => {
               setShowPostGameModalOpen(true);
-              setDontShowPostGameModal(true);
+              setMutePostGameModalForThisLevel(true);
               setPreventKeyDownEvent(true);
             }, 200);
           }
