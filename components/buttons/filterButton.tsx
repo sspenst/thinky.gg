@@ -39,7 +39,7 @@ export default function FilterButton({ element, first, last, onClick, proRequire
               Requires <Link href='/settings/pro' className='text-blue-500'>Pathology Pro</Link>
             </div>,
             {
-              duration: 5000,
+              duration: 3000,
               icon: '🔒',
             }
           );
