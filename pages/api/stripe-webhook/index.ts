@@ -1,10 +1,11 @@
 import Discord from '@root/constants/discord';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import isPro from '@root/helpers/isPro';
+import { createNewProUserNotification } from '@root/helpers/notificationHelper';
 import dbConnect from '@root/lib/dbConnect';
 import UserConfig from '@root/models/db/userConfig';
 import { buffer } from 'micro';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
 import Role from '../../../constants/role';
@@ -20,15 +21,14 @@ export const config = {
   },
 };
 
-async function subscriptionDeleted(userToDowngrade: User) {
+async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.Subscription): Promise<string | undefined> {
   logger.info(`subscriptionDeleted - ${userToDowngrade.name} (${userToDowngrade._id.toString()})`);
 
-  // we want to downgrade the user
   const session = await mongoose.startSession();
 
   try {
     await session.withTransaction(async () => {
-      await Promise.all([
+      const promises = [
         UserModel.findByIdAndUpdate(
           userToDowngrade._id,
           {
@@ -40,19 +40,44 @@ async function subscriptionDeleted(userToDowngrade: User) {
             session: session
           },
         ),
+        // NB: gift recipients do not have a stripe customer id
         UserConfigModel.findOneAndUpdate(
           {
-            userId: userToDowngrade._id
+            userId: userToDowngrade._id,
           },
           {
-            stripeCustomerId: null
+            stripeCustomerId: null,
           },
           {
             session: session
           },
         ),
-        queueDiscordWebhook(Discord.DevPriv, `🥹 [${userToDowngrade.name}](https://pathology.gg/profile/${userToDowngrade.name}) just unsubscribed.`),
-      ]);
+        queueDiscordWebhook(Discord.DevPriv, `🥹 [${userToDowngrade.name}](https://pathology.gg/profile/${userToDowngrade.name}) was just unsubscribed.`),
+      ];
+
+      // NB: metadata should normally be defined but it isn't mocked in the tests
+      const giftFromId = subscription.metadata?.giftFromId;
+
+      if (giftFromId) {
+        // pull the gift subscription id if it was gifted
+        promises.push(
+          UserConfigModel.findOneAndUpdate(
+            {
+              userId: new Types.ObjectId(giftFromId),
+            },
+            {
+              $pull: {
+                giftSubscriptions: subscription.id,
+              },
+            },
+            {
+              session: session
+            },
+          )
+        );
+      }
+
+      await Promise.all(promises);
     });
     session.endSession();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -64,12 +89,69 @@ async function subscriptionDeleted(userToDowngrade: User) {
   }
 }
 
+async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscription: Stripe.Subscription): Promise<string | undefined> {
+  let error: string | undefined;
+
+  if (isPro(giftToUser)) {
+    // TODO: create a coupon and apply it to the existing subscription..
+    // https://stripe.com/docs/api/coupons/create
+    error = `${giftToUser.name} is already a pro subscriber. Error applying gift. Please contact support.`;
+  }
+
+  if (!error) {
+    const session = await mongoose.startSession();
+
+    try {
+      await session.withTransaction(async () => {
+        const proMonths = Number(subscription.metadata?.quantity) ?? 0;
+
+        await Promise.all([
+          UserModel.findByIdAndUpdate(
+            giftToUser._id,
+            {
+              $addToSet: {
+                roles: Role.PRO
+              }
+            },
+            {
+              session: session
+            },
+          ),
+          UserConfigModel.findOneAndUpdate(
+            {
+              userId: giftFromUser._id,
+            },
+            {
+              // add to set gift subscriptions
+              $addToSet: {
+                giftSubscriptions: subscription.id,
+              },
+            },
+            {
+              session: session
+            },
+          ),
+          createNewProUserNotification(giftToUser._id, giftFromUser._id),
+          queueDiscordWebhook(Discord.DevPriv, `💸 [${giftFromUser.name}](https://pathology.gg/profile/${giftFromUser.name}) just gifted ${proMonths} month${proMonths === 1 ? '' : 's'} of Pro to [${giftToUser.name}](https://pathology.gg/profile/${giftToUser.name})`)
+        ]);
+      });
+      session.endSession();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      logger.error(err);
+      session.endSession();
+      error = err?.message;
+    }
+  }
+
+  return error;
+}
+
 async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.Checkout.Session): Promise<string | undefined> {
   logger.info(`checkoutSessionComplete - ${userToUpgrade.name} (${userToUpgrade._id.toString()})`);
 
   const customerId = properties.customer;
 
-  // otherwise... let's upgrade the user?
   let error: string | undefined;
 
   // if the user is already a pro subscriber, we don't want to do anything
@@ -108,6 +190,7 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
               session: session
             },
           ),
+          createNewProUserNotification(userToUpgrade._id),
           queueDiscordWebhook(Discord.DevPriv, `💸 [${userToUpgrade.name}](https://pathology.gg/profile/${userToUpgrade.name}) just subscribed!`),
         ]);
       });
@@ -196,11 +279,16 @@ export default apiWrapper({
   const customerId = dataObject?.customer;
   const client_reference_id = dataObject?.client_reference_id;
 
-  logger.info(`customerId: ${customerId}`);
-  logger.info(`client_reference_id: ${client_reference_id}`);
-
   // the case we want to handle first is the one that will be triggered when a new subscription is created
   if (event.type === 'checkout.session.completed') {
+    logger.info('checkout.session.completed starts');
+    logger.info(`customerId: ${customerId}`);
+    logger.info(`client_reference_id: ${client_reference_id}`);
+
+    const metadata = dataObject?.metadata;
+
+    logger.info(`metadata: ${JSON.stringify(metadata)}`);
+
     // we want to get the subscription id from the event
     if (!client_reference_id || !mongoose.Types.ObjectId.isValid(client_reference_id)) {
       error = 'No client reference id (or is not valid object id)';
@@ -212,10 +300,40 @@ export default apiWrapper({
         error = `User with id ${client_reference_id} does not exist`;
       } else {
         error = await checkoutSessionComplete(userTarget, event.data.object as Stripe.Checkout.Session);
+
+        if (!error) {
+          // cancel any gift subscriptions for this user
+
+          const subscriptions = await stripe.subscriptions.search({
+            query: `metadata["giftFromId"]:"${userTarget._id.toString()}"`,
+            limit: 100
+          });
+
+          // cancel all these subscriptions
+          if (subscriptions && subscriptions.data) {
+            for (const subscription of subscriptions.data) {
+              await stripe.subscriptions.update(subscription.id, {
+                cancel_at_period_end: true,
+              });
+            }
+          }
+          // TODO: hypothetically i guess there could be a race condition where someone gifts someone right when they subscribe themselves... but for now let's just ignore that...
+        }
       }
     }
   } else if (event.type === 'customer.subscription.deleted' || event.type === 'invoice.payment_failed') {
-    if (!customerId) {
+    const subscription = dataObject as Stripe.Subscription;
+
+    if (subscription.metadata?.giftToId) {
+      // this is a gift subscription
+      const giftToUser = await UserModel.findById(subscription.metadata.giftToId);
+
+      if (giftToUser) {
+        error = await subscriptionDeleted(giftToUser, subscription);
+      } else {
+        error = `giftToUser with id ${subscription.metadata.giftToId} does not exist`;
+      }
+    } else if (!customerId) {
       error = 'No customerId';
     } else {
       const userConfigAgg = await UserConfigModel.aggregate<UserConfig>([
@@ -245,8 +363,28 @@ export default apiWrapper({
           logger.info(`${event.type} - UserConfig with customer id ${customerId} does not exist`);
         }
       } else {
-        error = await subscriptionDeleted(userConfigAgg[0].userId as User);
+        // we need to check if this is a gift subscription so we can downgrade the appropriate user
+        // looks like a regular downgrade subscription of pro
+        error = await subscriptionDeleted(userConfigAgg[0].userId as User, subscription);
       }
+    }
+  } else if (event.type === 'customer.subscription.created') {
+    // get metadata for the subscription
+    const subscription = dataObject as Stripe.Subscription;
+    const metadata = subscription.metadata;
+
+    if (metadata.giftToId) {
+      // this is a gift subscription
+      const [giftFromUser, giftToUser] = await Promise.all([
+        UserModel.findById(metadata.giftFromId),
+        UserModel.findById(metadata.giftToId),
+      ]);
+
+      error = await checkoutSessionGift(
+        giftFromUser,
+        giftToUser,
+        subscription
+      );
     }
   } else if (event.type === 'payment_intent.succeeded') {
     error = await splitPaymentIntent(dataObject.id);

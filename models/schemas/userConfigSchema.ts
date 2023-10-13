@@ -29,6 +29,12 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       required: false,
       default: [],
     },
+    giftSubscriptions: {
+      type: [String],
+      required: false,
+      select: false,
+      default: [],
+    },
     mobileDeviceTokens: {
       type: [String],
       required: false,

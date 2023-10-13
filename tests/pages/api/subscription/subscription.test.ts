@@ -13,14 +13,23 @@ import mockSubscription from './mockSubscription';
 jest.mock('stripe', () => {
   return jest.fn().mockImplementation(() => {
     return {
+      plans: {
+        retrieve: jest.fn(),
+      },
+      products: {
+        retrieve: jest.fn(),
+      },
+      paymentMethods: {
+        retrieve: jest.fn(),
+      },
       subscriptions: {
         list: jest.fn(),
         update: jest.fn(),
+        search: jest.fn(),
       },
     };
   });
 });
-
 beforeAll(async () => {
   await dbConnect();
 });
@@ -30,7 +39,19 @@ afterAll(async() => {
 enableFetchMocks();
 
 describe('api/subscription', () => {
-  test('no subscription should return 404', async () => {
+  test('subscription should return value', async () => {
+    (stripe.subscriptions.list as jest.Mock).mockResolvedValue({
+      data: [mockSubscription],
+    });
+    (stripe.subscriptions.search as jest.Mock).mockResolvedValue({
+      data: [mockSubscription],
+    });
+    (stripe.plans.retrieve as jest.Mock).mockResolvedValue({
+      product: 'test',
+    });
+    (stripe.products.retrieve as jest.Mock).mockResolvedValue({
+      name: 'test product',
+    });
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -49,39 +70,14 @@ describe('api/subscription', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(res.status).toBe(404);
+        expect(res.status).toBe(200);
 
-        expect(response.error).toBe('No subscription found for this user.');
+        expect(response).toHaveLength(1);
+        expect(response[0].subscriptionId).toBe(mockSubscription.id);
       },
     });
   });
-  test('if user has a subscription customer id that no longer is valid on stripe', async () => {
-    await UserConfigModel.updateOne({ userId: TestId.USER }, { stripeCustomerId: mockSubscription.customer });
 
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'GET',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER)
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(res.status).toBe(404);
-
-        expect(response.error).toBe('Unknown stripe subscription.');
-      },
-    });
-  });
   test('test stripe library throwing error', async () => {
     await UserConfigModel.updateOne({ userId: TestId.USER }, { stripeCustomerId: mockSubscription.customer });
     (stripe.subscriptions.list as jest.Mock).mockImplementationOnce(() => {
@@ -109,45 +105,6 @@ describe('api/subscription', () => {
         expect(res.status).toBe(500);
 
         expect(response.error).toBe('Stripe error looking up subscriptions.');
-      },
-    });
-  });
-  test('If user has a valid subscription', async () => {
-    await UserConfigModel.updateOne({ userId: TestId.USER }, { stripeCustomerId: 'valid' });
-
-    // Inside your test
-    (stripe.subscriptions.list as jest.Mock).mockResolvedValue({
-      data: [mockSubscription],
-    });
-
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'GET',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER)
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(res.status).toBe(200);
-        expect(response).toEqual({
-          subscriptionId: mockSubscription.id,
-          plan: mockSubscription.items.data[0].plan,
-          current_period_start: mockSubscription.current_period_start,
-          current_period_end: mockSubscription.current_period_end,
-          cancel_at_period_end: mockSubscription.cancel_at_period_end,
-          status: mockSubscription.status,
-        });
-        // finish this test
       },
     });
   });

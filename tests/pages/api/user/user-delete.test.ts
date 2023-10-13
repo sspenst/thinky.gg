@@ -13,9 +13,19 @@ import mockSubscription from '../subscription/mockSubscription';
 jest.mock('stripe', () => {
   return jest.fn().mockImplementation(() => {
     return {
+      plans: {
+        retrieve: jest.fn(),
+      },
+      products: {
+        retrieve: jest.fn(),
+      },
+      paymentMethods: {
+        retrieve: jest.fn(),
+      },
       subscriptions: {
         list: jest.fn(),
         update: jest.fn(),
+        search: jest.fn(),
       },
     };
   });
@@ -36,6 +46,16 @@ describe('pages/api/collection/index.ts', () => {
     (stripe.subscriptions.list as jest.Mock).mockResolvedValue({
       data: [mockSubscription],
     });
+    (stripe.subscriptions.search as jest.Mock).mockResolvedValue({
+      data: [mockSubscription],
+    });
+    (stripe.plans.retrieve as jest.Mock).mockResolvedValue({
+      product: 'test',
+    });
+    (stripe.products.retrieve as jest.Mock).mockResolvedValue({
+      name: 'test product',
+    });
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -54,7 +74,7 @@ describe('pages/api/collection/index.ts', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('You must cancel your subscription before deleting your account.');
+        expect(response.error).toBe('You must cancel all subscriptions before deleting your account. Contact help@pathology.gg if you are still experiencing issues');
         expect(res.status).toBe(400);
       },
     });
