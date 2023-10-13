@@ -445,7 +445,7 @@ export default function ProfilePage({
           />
         }
         {reqUser?._id === user._id &&
-          <div className='text-center '>
+          <div className='text-center'>
             <button
               className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer'
               onClick={() => {
@@ -472,7 +472,7 @@ export default function ProfilePage({
       </div>
     ),
     [ProfileTab.Levels]: (
-      <div className='flex flex-col gap-2 justify-center'>
+      <div className='flex flex-col gap-2 items-center'>
         <SelectFilter
           filter={showLevelFilter}
           onFilterClick={onFilterLevelClick}
@@ -483,14 +483,20 @@ export default function ProfilePage({
             setSearchLevelTextDebounce(searchText);
           }}
         />
-        <div className='flex justify-center'>
+        {reqUser?._id === user._id &&
           <Link
-            className='underline'
-            href={'/search?timeRange=All&searchAuthor=' + user.name}
+            className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer block w-fit'
+            href='/new'
           >
-            Advanced search
+            New Level
           </Link>
-        </div>
+        }
+        <Link
+          className='underline'
+          href={'/search?timeRange=All&searchAuthor=' + user.name}
+        >
+          Advanced search
+        </Link>
         <Select options={getLevelOptions()} />
         {totalRows !== undefined && totalRows > 20 &&
           <div className='flex justify-center flex-row'>
@@ -644,7 +650,7 @@ export default function ProfilePage({
             href={`/profile/${user.name}`}
           >
             <div className='flex flex-row items-center gap-2'>
-              <ProfileAvatar size={20} user={user} />
+              <ProfileAvatar size={24} user={user} />
               <span>Profile</span>
             </div>
           </Link>
@@ -676,21 +682,21 @@ export default function ProfilePage({
             </div>
           </Link>
           <Link
-            className={getTabClassNames(ProfileTab.Multiplayer)}
-            href={`/profile/${user.name}/${ProfileTab.Multiplayer}`}
-          >
-            <div className='flex flex-row items-center gap-2'>
-              <span>🎮</span>
-              <span>Multiplayer ({multiplayerCount})</span>
-            </div>
-          </Link>
-          <Link
             className={getTabClassNames(ProfileTab.Collections)}
             href={`/profile/${user.name}/${ProfileTab.Collections}`}
           >
             <div className='flex flex-row items-center gap-2'>
               <span>📚</span>
               <span>Collections ({collectionsCount})</span>
+            </div>
+          </Link>
+          <Link
+            className={getTabClassNames(ProfileTab.Multiplayer)}
+            href={`/profile/${user.name}/${ProfileTab.Multiplayer}`}
+          >
+            <div className='flex flex-row items-center gap-2'>
+              <span>🎮</span>
+              <span>Multiplayer ({multiplayerCount})</span>
             </div>
           </Link>
           <Link

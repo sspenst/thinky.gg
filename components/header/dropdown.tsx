@@ -121,6 +121,23 @@ export default function Dropdown() {
               }
               <Menu.Item>
                 {({ active }) => (
+                  <Link href='/create' passHref>
+                    <div
+                      className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3'
+                      style={{
+                        backgroundColor: active ? 'var(--bg-color-3)' : undefined,
+                      }}
+                    >
+                      <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='2 2 20 20' strokeWidth={1.5} stroke='currentColor' className='w-4 h-4'>
+                        <path strokeLinecap='round' strokeLinejoin='round' d='M12 4.5v15m7.5-7.5h-15' />
+                      </svg>
+                      Create
+                    </div>
+                  </Link>
+                )}
+              </Menu.Item>
+              <Menu.Item>
+                {({ active }) => (
                   <Link href={getProfileSlug(user)} passHref>
                     <div
                       className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3'

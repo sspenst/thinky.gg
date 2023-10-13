@@ -346,7 +346,7 @@ export default function Game({
         toast.error(
           <div>Upgrade to <Link href='/settings/pro' className='text-blue-500'>Pathology Pro</Link> to unlock checkpoints!</div>,
           {
-            duration: 5000,
+            duration: 3000,
             icon: <Image alt='pro' src='/pro.svg' width='16' height='16' />,
           }
         );
@@ -427,7 +427,7 @@ export default function Game({
         toast.error(
           <div>Upgrade to <Link href='/settings/pro' className='text-blue-500'>Pathology Pro</Link> to unlock redo!</div>,
           {
-            duration: 5000,
+            duration: 3000,
             icon: <Image alt='pro' src='/pro.svg' width='16' height='16' />,
           }
         );
@@ -665,7 +665,7 @@ export default function Game({
       const leftArrow = <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
         <path strokeLinecap='round' strokeLinejoin='round' d='M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18' />
       </svg>;
-      const prevTxt = isMobile ? leftArrow : <><span className='underline'>P</span>rev Level</>;
+      const prevTxt = isMobile ? leftArrow : <div><span className='underline'>P</span>rev Level</div>;
 
       _controls.push(new Control('btn-prev', () => onPrev(), prevTxt ));
     }
@@ -673,22 +673,22 @@ export default function Game({
     const restartIcon = (<svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
       <path strokeLinecap='round' strokeLinejoin='round' d='M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99' />
     </svg>);
-    const restartTxt = isMobile ? restartIcon : <><span className='underline'>R</span>estart</>;
+    const restartTxt = isMobile ? restartIcon : <div><span className='underline'>R</span>estart</div>;
 
     const undoIcon = (<svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
       <path strokeLinecap='round' strokeLinejoin='round' d='M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3' />
     </svg>);
-    const undoTxt = isMobile ? undoIcon : <div className='select-none'><span className='underline'>U</span>ndo</div>;
+    const undoTxt = isMobile ? undoIcon : <div><span className='underline'>U</span>ndo</div>;
 
     const redoIcon = (<svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
       <path strokeLinecap='round' strokeLinejoin='round' d='M15 15l6-6m0 0l-6-6m6 6H9a6 6 0 000 12h3' />
     </svg>);
 
-    const redoTxt = isMobile ? redoIcon : <div className='select-none'>Redo (<span className='underline'>Y</span>)</div>;
+    const redoTxt = isMobile ? redoIcon : <div>Redo (<span className='underline'>Y</span>)</div>;
 
     _controls.push(
       new Control('btn-restart', () => handleKeyDown('KeyR'), restartTxt),
-      new Control('btn-undo', () => handleKeyDown('Backspace'), <div className='select-none'>{undoTxt}</div>, false, false, () => {
+      new Control('btn-undo', () => handleKeyDown('Backspace'), undoTxt, false, false, () => {
         handleKeyDown('Backspace');
 
         return true;
@@ -697,7 +697,7 @@ export default function Game({
         'btn-redo',
         () => handleKeyDown('KeyY'),
         <span className='flex gap-2 justify-center select-none'>
-          {!pro && <Image className='select-none pointer-events-none z-0' alt='pro' src='/pro.svg' width='16' height='16' />}
+          {!pro && <Image className='pointer-events-none z-0' alt='pro' src='/pro.svg' width='16' height='16' />}
           {redoTxt}
         </span>,
         gameState.redoStack.length === 0,
@@ -714,7 +714,7 @@ export default function Game({
       const rightArrow = <span className='truncate'><svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
         <path strokeLinecap='round' strokeLinejoin='round' d='M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3' />
       </svg></span>;
-      const nextTxt = isMobile ? rightArrow : <><span className='underline'>N</span>ext Level</>;
+      const nextTxt = isMobile ? rightArrow : <div><span className='underline'>N</span>ext Level</div>;
 
       _controls.push(new Control('btn-next', () => onNext(), nextTxt));
     }
