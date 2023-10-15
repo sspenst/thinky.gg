@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -5,7 +6,7 @@ import TestId from '../../../../constants/testId';
 import { TimerUtil } from '../../../../helpers/getTs';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
-import { GameId, NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { LevelModel } from '../../../../models/mongoose';
 import updateCollectionHandler from '../../../../pages/api/collection/[id]';
 import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';

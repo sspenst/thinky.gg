@@ -1,4 +1,4 @@
-import { GameId } from '@root/lib/withAuth';
+import { GameId } from '@root/constants/GameId';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext } from 'next';
 import { Logger } from 'winston';
