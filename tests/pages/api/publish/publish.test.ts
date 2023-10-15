@@ -1,6 +1,7 @@
 import TestId from '@root/constants/testId';
 import { TimerUtil } from '@root/helpers/getTs';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
+import { GameId } from '@root/lib/withAuth';
 import { LevelModel } from '@root/models/mongoose';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';
@@ -31,6 +32,7 @@ describe('publishLevelHandler', () => {
 
     await LevelModel.create({
       authorNote: 'YOOOOO',
+      gameId: GameId.PATHOLOGY,
       data: '4100B0\n120000\n050000\n678900\nABCD30',
       height: 5,
       isDraft: false,
@@ -66,6 +68,7 @@ describe('publishLevelHandler', () => {
     MockDate.set(Date.now() + 65000);
     await LevelModel.create({
       authorNote: 'YOOOOO',
+      gameId: GameId.PATHOLOGY,
       data: '4200B0\n120000\n050000\n678900\nABCD30',
       height: 5,
       isDraft: false,
@@ -80,6 +83,7 @@ describe('publishLevelHandler', () => {
     MockDate.set(Date.now() + 65000);
     await LevelModel.create({
       authorNote: 'YOOOOO',
+      gameId: GameId.PATHOLOGY,
       data: '4300B0\n120000\n050000\n678900\nABCD30',
       height: 5,
       isDraft: false,
@@ -94,6 +98,7 @@ describe('publishLevelHandler', () => {
     MockDate.set(Date.now() + 65000);
     await LevelModel.create({
       authorNote: 'YOOOOO',
+      gameId: GameId.PATHOLOGY,
       data: '4400B0\n120000\n050000\n678900\nABCD30',
       height: 5,
       isDraft: false,
@@ -108,6 +113,7 @@ describe('publishLevelHandler', () => {
     MockDate.set(Date.now() + 65000);
     await LevelModel.create({
       authorNote: 'YOOOOO',
+      gameId: GameId.PATHOLOGY,
       data: '4500B0\n120000\n050000\n678900\nABCD30',
       height: 5,
       isDraft: false,
@@ -144,6 +150,7 @@ describe('publishLevelHandler', () => {
     MockDate.set(Date.now() + 65000);
     await LevelModel.create({
       authorNote: 'YOOOOO',
+      gameId: GameId.PATHOLOGY,
       data: '4210B0\n120000\n050000\n678900\nABCD30',
       height: 5,
       isDraft: false,
@@ -158,6 +165,7 @@ describe('publishLevelHandler', () => {
     MockDate.set(Date.now() + 65000);
     await LevelModel.create({
       authorNote: 'YOOOOO',
+      gameId: GameId.PATHOLOGY,
       data: '4320B0\n120000\n050000\n678900\nABCD30',
       height: 5,
       isDraft: false,
@@ -172,6 +180,7 @@ describe('publishLevelHandler', () => {
     MockDate.set(Date.now() + 65000);
     await LevelModel.create({
       authorNote: 'YOOOOO',
+      gameId: GameId.PATHOLOGY,
       data: '4430B0\n120000\n050000\n678900\nABCD30',
       height: 5,
       isDraft: false,
@@ -186,6 +195,7 @@ describe('publishLevelHandler', () => {
     MockDate.set(Date.now() + 65000);
     await LevelModel.create({
       authorNote: 'YOOOOO',
+      gameId: GameId.PATHOLOGY,
       data: '4550B0\n120000\n050000\n678900\nABCD30',
       height: 5,
       isDraft: false,

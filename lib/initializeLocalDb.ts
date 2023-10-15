@@ -10,6 +10,7 @@ import { TimerUtil } from '../helpers/getTs';
 import Collection from '../models/db/collection';
 import Level from '../models/db/level';
 import { CampaignModel, CollectionModel, LevelModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserConfigModel, UserModel } from '../models/mongoose';
+import { GameId } from './withAuth';
 
 export default async function initializeLocalDb() {
   const ts = TimerUtil.getTs() - 60;
@@ -348,6 +349,7 @@ export async function initLevel(userId: string, name: string, obj: Partial<Level
   // based on name length create that many reviews
   const lvl = await LevelModel.create({
     _id: id,
+    gameId: GameId.PATHOLOGY,
     authorNote: 'test level ' + name + ' author note',
     data: '40000\n12000\n05000\n67890\nABCD3',
     height: 5,
@@ -366,6 +368,7 @@ export async function initLevel(userId: string, name: string, obj: Partial<Level
     for (let i = 0; i < name.length; i++) {
       revs.push({
         _id: new Types.ObjectId(),
+        gameId: GameId.PATHOLOGY,
         levelId: id,
         score: (3903 * i * i + 33 * i) % 5 + 1,
         text: 'Game is OK',
@@ -384,6 +387,7 @@ export async function initCollection(userId: string, name: string, obj: Partial<
   const id = new Types.ObjectId();
   const collection = await CollectionModel.create({
     _id: id,
+    gameId: GameId.PATHOLOGY,
     authorNote: 'test collection ' + name + ' author note',
     name: name,
     userId: userId,

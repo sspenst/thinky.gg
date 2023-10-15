@@ -7,7 +7,7 @@ import { TimerUtil } from '../../../../helpers/getTs';
 import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
-import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import { GameId, NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { LevelModel } from '../../../../models/mongoose';
 import latestLevelsHandler from '../../../../pages/api/latest-levels/index';
 
@@ -78,9 +78,12 @@ describe('Testing latest levels api', () => {
     });
   });
   test('Should always be limited to 15 levels and should only return non-drafts', async () => {
+    const promises = [];
+
     for (let i = 0; i < 30; i++) {
-      await LevelModel.create({
+      promises.push(LevelModel.create({
         _id: new Types.ObjectId(),
+        gameId: GameId.PATHOLOGY,
         authorNote: 'level ' + i + ' author note',
         data: '40000\n12000\n05000\n67890\nABCD3',
         height: 5,
@@ -91,9 +94,10 @@ describe('Testing latest levels api', () => {
         ts: TimerUtil.getTs(),
         userId: TestId.USER,
         width: 5,
-      });
+      }));
     }
 
+    await Promise.all(promises);
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

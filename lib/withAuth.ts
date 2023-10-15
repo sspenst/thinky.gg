@@ -11,17 +11,23 @@ import dbConnect from './dbConnect';
 import getTokenCookie from './getTokenCookie';
 import isLocal from './isLocal';
 
-enum GameType {
+export enum GameType {
   SHORTEST_PATH = 'SHORTEST_PATH',
 
 }
 interface Game {
+  id: GameId;
   displayName: string;
   type: GameType;
 }
 
-export const Games: Record<string, Game> = {
-  'pathology': {
+export enum GameId {
+  PATHOLOGY = 'pathology',
+}
+
+export const Games: Record<GameId, Game> = {
+  [GameId.PATHOLOGY]: {
+    id: GameId.PATHOLOGY,
     displayName: 'Pathology',
     type: GameType.SHORTEST_PATH,
   }
@@ -30,7 +36,7 @@ export const Games: Record<string, Game> = {
 export type NextApiRequestWithAuth = NextApiRequest & {
   user: User;
   userId: string;
-  game: string;
+  gameId: GameId;
 };
 
 export async function getUserFromToken(
@@ -129,7 +135,7 @@ export default function withAuth(
 
       res.setHeader('Set-Cookie', refreshCookie);
 
-      const subdomain = req.headers.referer?.split('://')[1].split('.')[0];
+      const subdomain = req.headers?.referer?.split('://')[1].split('.')[0];
 
       /*if (!subdomain || !Games[subdomain]) {
         return res.status(401).json({
@@ -137,7 +143,7 @@ export default function withAuth(
         });
       }*/
 
-      req.game = subdomain || 'default';
+      req.gameId = Games[subdomain as GameId]?.id || GameId.PATHOLOGY;
       req.user = reqUser;
       req.userId = reqUser._id.toString();
 

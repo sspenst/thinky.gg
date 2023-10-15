@@ -8,7 +8,7 @@ import { TimerUtil } from '../../../../helpers/getTs';
 import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
-import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import { GameId, NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Level from '../../../../models/db/level';
 import { LevelModel, RecordModel, UserModel } from '../../../../models/mongoose';
 import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
@@ -593,6 +593,7 @@ describe('pages/api/level/index.ts', () => {
   test('Deleting a level before unpublishing should not work', async () => {
     await LevelModel.create({
       _id: test_level_id,
+      gameId: GameId.PATHOLOGY,
       authorNote: 'test level X author note',
       data: '40000\n12000\n05000\n67890\nABCD3',
       height: 5,
@@ -716,6 +717,7 @@ describe('pages/api/level/index.ts', () => {
 
     await LevelModel.create({
       _id: test_level_id_delete,
+      GameId: GameId.PATHOLOGY,
       authorNote: 'test level X author note',
       data: '40000\n12000\n05000\n67890\nABCD3',
       height: 5,
