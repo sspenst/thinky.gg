@@ -4,7 +4,7 @@ import { ValidObjectIdArray, ValidType } from '../../../helpers/apiWrapper';
 import { generateLevelSlug } from '../../../helpers/generateSlug';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
-import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import withAuth, { GameId, NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { CollectionModel, LevelModel } from '../../../models/mongoose';
 
 export default withAuth({ POST: {
@@ -28,6 +28,7 @@ export default withAuth({ POST: {
       await Promise.all([
         LevelModel.create([{
           _id: levelId,
+          gameId: req.gameId,
           authorNote: authorNote?.trim(),
           data: data,
           height: rows.length,
@@ -41,6 +42,7 @@ export default withAuth({ POST: {
         }], { session: session }),
         CollectionModel.updateMany({
           _id: { $in: collectionIds },
+          gameId: req.gameId,
           userId: req.userId,
         }, {
           $addToSet: {

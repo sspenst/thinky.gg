@@ -7,7 +7,7 @@ import { TimerUtil } from '../../../../helpers/getTs';
 import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
-import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import { GameId, NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { LevelModel, ReviewModel } from '../../../../models/mongoose';
 import latestReviewsHandler from '../../../../pages/api/latest-reviews/index';
 
@@ -83,6 +83,7 @@ describe('Testing latest reviews api', () => {
 
       await LevelModel.create({
         _id: levelId,
+        gameId: GameId.PATHOLOGY,
         leastMoves: i + 1,
         data: '40000\n12000\n05000\n67890\nABCD3',
         height: 5,

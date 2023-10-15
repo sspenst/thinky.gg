@@ -5,7 +5,7 @@ import TestId from '../../../../constants/testId';
 import { TimerUtil } from '../../../../helpers/getTs';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
-import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import { GameId, NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { LevelModel } from '../../../../models/mongoose';
 import updateCollectionHandler from '../../../../pages/api/collection/[id]';
 import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
@@ -33,6 +33,7 @@ describe('Testing updating collection data', () => {
       levels[i] = new Types.ObjectId();
       promises.push( LevelModel.create({
         _id: levels[i],
+        gameId: GameId.PATHOLOGY,
         authorNote: 'test level 1 author note',
         data: '40010\n12000\n05000\n67890\nABCD3',
         height: 5,
