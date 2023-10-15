@@ -22,6 +22,11 @@ const PlayAttemptSchema = new mongoose.Schema<PlayAttempt>({
     type: Number,
     required: true,
   },
+  gameId: {
+    type: String,
+    required: false,
+  },
+
   isDeleted: {
     type: Boolean,
   },

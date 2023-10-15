@@ -35,6 +35,10 @@ const MultiplayerMatchSchema = new mongoose.Schema<MultiplayerMatch>(
     endTime: {
       type: Date,
     },
+    gameId: {
+      type: String,
+      required: false,
+    },
     levels: [
       {
         type: mongoose.Schema.Types.ObjectId,

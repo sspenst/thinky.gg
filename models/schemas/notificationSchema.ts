@@ -13,6 +13,10 @@ const NotificationSchema = new mongoose.Schema<Notification>({
     required: true,
     default: false,
   },
+  gameId: {
+    type: String,
+    required: false,
+  },
   source: {
     type: mongoose.Schema.Types.ObjectId,
     refPath: 'sourceModel',

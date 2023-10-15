@@ -15,6 +15,7 @@ interface Level {
   calc_reviews_score_laplace: number;
   calc_stats_players_beaten: number;
   data: string;
+  gameId?: string;
   height: number;
   isDeleted: boolean;
   isDraft: boolean;

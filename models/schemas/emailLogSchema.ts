@@ -15,6 +15,10 @@ const EmailLogSchema = new mongoose.Schema<EmailLog>(
       type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
+    gameId: {
+      type: String,
+      required: false,
+    },
     error: {
       type: String,
       required: false,

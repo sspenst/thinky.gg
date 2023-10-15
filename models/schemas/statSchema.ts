@@ -14,6 +14,9 @@ const StatSchema = new mongoose.Schema<Stat>({
     type: Boolean,
     required: true,
   },
+  gameId: {
+    type: String
+  },
   isDeleted: {
     type: Boolean,
   },

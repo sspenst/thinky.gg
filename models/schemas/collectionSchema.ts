@@ -10,6 +10,10 @@ const CollectionSchema = new mongoose.Schema<Collection>({
     type: String,
     maxlength: 1024 * 5, // 5 kb limit seems reasonable
   },
+  gameId: {
+    type: String,
+    required: false,
+  },
   isThemed: {
     type: Boolean,
     default: false,

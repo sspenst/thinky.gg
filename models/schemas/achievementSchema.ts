@@ -12,6 +12,10 @@ const AchievementSchema = new mongoose.Schema<Achievement>({
     enum: AchievementType,
     required: true,
   },
+  gameId: {
+    type: String,
+    required: false,
+  },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
