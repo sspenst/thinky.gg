@@ -1,10 +1,11 @@
+import { GameId } from '@root/constants/GameId';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidObjectIdArray, ValidType } from '../../../helpers/apiWrapper';
 import { generateLevelSlug } from '../../../helpers/generateSlug';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
-import withAuth, { GameId, NextApiRequestWithAuth } from '../../../lib/withAuth';
+import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { CollectionModel, LevelModel } from '../../../models/mongoose';
 
 export default withAuth({ POST: {

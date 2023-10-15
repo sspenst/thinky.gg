@@ -2,6 +2,7 @@ import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
 import { PASSWORD_SALTROUNDS } from '@root/models/schemas/userSchema';
 import bcrypt from 'bcryptjs';
 import { Types } from 'mongoose';
+import { GameId } from '../constants/GameId';
 import Role from '../constants/role';
 import TestId from '../constants/testId';
 import Theme from '../constants/theme';
@@ -10,7 +11,6 @@ import { TimerUtil } from '../helpers/getTs';
 import Collection from '../models/db/collection';
 import Level from '../models/db/level';
 import { CampaignModel, CollectionModel, LevelModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserConfigModel, UserModel } from '../models/mongoose';
-import { GameId } from './withAuth';
 
 export default async function initializeLocalDb() {
   const ts = TimerUtil.getTs() - 60;

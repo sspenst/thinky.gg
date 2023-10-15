@@ -1,7 +1,7 @@
+import { GameId } from '@root/constants/GameId';
 import TestId from '@root/constants/testId';
 import { TimerUtil } from '@root/helpers/getTs';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
-import { GameId } from '@root/lib/withAuth';
 import { LevelModel } from '@root/models/mongoose';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';

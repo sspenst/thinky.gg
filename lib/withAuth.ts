@@ -2,6 +2,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 // https://github.com/newrelic/node-newrelic/issues/956#issuecomment-962729137
 import type { NextApiRequest, NextApiResponse } from 'next';
 import requestIp from 'request-ip';
+import { GameId } from '../constants/GameId';
 import { parseReq, ReqValidator } from '../helpers/apiWrapper';
 import { TimerUtil } from '../helpers/getTs';
 import { logger } from '../helpers/logger';
@@ -19,10 +20,6 @@ interface Game {
   id: GameId;
   displayName: string;
   type: GameType;
-}
-
-export enum GameId {
-  PATHOLOGY = 'pathology',
 }
 
 export const Games: Record<GameId, Game> = {
