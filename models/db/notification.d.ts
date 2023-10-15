@@ -8,6 +8,7 @@ interface Notification {
   _id: Types.ObjectId;
   createdAt: Date;
   message?: string;
+  gameId?: string;
   read: boolean;
   source: User | Achievement | null;
   sourceModel: string;

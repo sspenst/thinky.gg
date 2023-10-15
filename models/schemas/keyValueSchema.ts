@@ -15,6 +15,10 @@ const KeyValueSchema = new mongoose.Schema<KeyValue>(
       minlength: 1,
       maxlength: 50,
     },
+    gameId: {
+      type: String,
+      required: false,
+    },
   },
   {
     timestamps: true,

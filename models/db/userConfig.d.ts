@@ -6,6 +6,7 @@ import User from './user';
 
 interface UserConfig {
   _id: Types.ObjectId;
+  gameId?: string;
   emailConfirmationToken: string;
   emailConfirmed: boolean;
   emailDigest: EmailDigestSettingTypes;
