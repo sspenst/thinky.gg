@@ -42,7 +42,6 @@ export default withAuth({ POST: {
         }], { session: session }),
         CollectionModel.updateMany({
           _id: { $in: collectionIds },
-          gameId: req.gameId,
           userId: req.userId,
         }, {
           $addToSet: {

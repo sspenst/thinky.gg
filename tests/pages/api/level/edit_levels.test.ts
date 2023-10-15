@@ -690,7 +690,6 @@ describe('Editing levels should work correctly', () => {
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
-
         const response_ids = response.levels.map((level: Level) => level._id);
 
         expect(response.levels[0].userId.name).toBe('test');
