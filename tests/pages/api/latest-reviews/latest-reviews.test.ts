@@ -97,6 +97,7 @@ describe('Testing latest reviews api', () => {
 
       await ReviewModel.create({
         _id: new Types.ObjectId(),
+        gameId: GameId.PATHOLOGY,
         levelId: levelId,
         score: 5,
         text: 'My review ' + i,
@@ -200,6 +201,7 @@ describe('Testing latest reviews api', () => {
   test('Should not return reviews without text', async () => {
     await ReviewModel.create({
       _id: new Types.ObjectId(),
+      gameId: GameId.PATHOLOGY,
       levelId: new Types.ObjectId(),
       score: 1,
       ts: TimerUtil.getTs(),
