@@ -91,7 +91,7 @@ describe('Testing latest levels api', () => {
         leastMoves: 20,
         name: 'level ' + i,
         slug: 'test/level-' + i,
-        ts: TimerUtil.getTs(),
+        ts: TimerUtil.getTs() + i,
         userId: TestId.USER,
         width: 5,
       }));
