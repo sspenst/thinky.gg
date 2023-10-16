@@ -152,7 +152,7 @@ describe('pages/api/collection/index.ts', () => {
     });
   });
 
-  test('Doing a POST but slash in name should fail', async () => {
+  test('Doing a POST to update level name but invalid characters in name should strip in slug', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -162,7 +162,7 @@ describe('pages/api/collection/index.ts', () => {
             token: getTokenCookieValue(TestId.USER),
           },
           body: {
-            name: '/test/collections',
+            name: '/blah/collections@',
           },
           headers: {
             'content-type': 'application/json',
@@ -175,7 +175,7 @@ describe('pages/api/collection/index.ts', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.slug).toBe('test/a-test-collection-blah');
+        expect(response.slug).toBe('test/blahcollections');
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
       },

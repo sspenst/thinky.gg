@@ -108,7 +108,12 @@ export default withAuth({
     }
 
     // /^[-a-zA-Z0-9_]+$/.test(v);
-    const trimmedName = name?.trim().replace(/[^a-zA-Z0-9_]/g, '');
+    const trimmedName = name?.trim();
+    const nameValid = /^[a-zA-Z0-9_]+$/.test(trimmedName);
+
+    if (name !== undefined && !nameValid) {
+      return res.status(400).json({ error: 'Username can only contain letters, numbers, and underscores' });
+    }
 
     if (name !== undefined && trimmedName.length === 0) {
       return res.status(400).json({ error: 'Username cannot be empty' });
