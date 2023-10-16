@@ -1,4 +1,5 @@
 import Direction from '@root/constants/direction';
+import { GameId } from '@root/constants/GameId';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -822,6 +823,7 @@ describe('Testing stats api', () => {
         _id: new Types.ObjectId(),
         // half solved
         attemptContext: i % 2 === 0 ? AttemptContext.JUST_SOLVED : AttemptContext.UNSOLVED,
+        gameId: GameId.PATHOLOGY,
         endTime: i + 10,
         levelId: level._id,
         startTime: 0,
@@ -847,6 +849,7 @@ describe('Testing stats api', () => {
     await PlayAttemptModel.create({
       _id: new Types.ObjectId(),
       attemptContext: AttemptContext.UNSOLVED,
+      gameId: GameId.PATHOLOGY,
       endTime: 20,
       levelId: level._id,
       startTime: 0,
@@ -1119,6 +1122,7 @@ describe('Testing stats api', () => {
       _id: playAttemptId2,
       attemptContext: AttemptContext.UNSOLVED,
       endTime: 30,
+      gameId: GameId.PATHOLOGY,
       levelId: new Types.ObjectId(TestId.LEVEL),
       startTime: 21,
       userId: new Types.ObjectId(TestId.USER),
@@ -1129,6 +1133,7 @@ describe('Testing stats api', () => {
       _id: playAttemptId3,
       attemptContext: AttemptContext.UNSOLVED,
       endTime: 20,
+      gameId: GameId.PATHOLOGY,
       levelId: new Types.ObjectId(TestId.LEVEL),
       startTime: 11,
       userId: new Types.ObjectId(TestId.USER),
