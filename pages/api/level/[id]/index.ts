@@ -70,8 +70,9 @@ export default withAuth({
 
     const { id } = req.query;
     const { authorNote, collectionIds, name } = req.body;
+    const trimmedName = name?.trim();
 
-    if (!collectionIds || !name) {
+    if (!collectionIds || !trimmedName) {
       return res.status(400).json({
         error: 'Missing required fields',
       });
@@ -137,7 +138,7 @@ export default withAuth({
       try {
         await session.withTransaction(async () => {
           const trimmedAuthorNote = authorNote?.trim() ?? '';
-          const trimmedName = name.trim();
+
           const slug = await generateLevelSlug(level.slug.split('/')[0], trimmedName, id as string, { session: session });
 
           await LevelModel.updateOne({
