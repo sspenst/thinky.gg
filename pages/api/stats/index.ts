@@ -51,7 +51,8 @@ export default withAuth({
 
     try {
       await session.withTransaction(async () => {
-        const level = await LevelModel.findOne<Level>({ _id: levelId, isDeleted: { $ne: true } }, {}, { lean: true, session: session });
+        // Todo: only select needed fields here to minimize data transfer
+        const level = await LevelModel.findOne<Level>({ _id: levelId, isDeleted: { $ne: true } }, {}, { lean: true, session: session }) as EnrichedLevel;
 
         if (!level) {
           resTrack.status = 404;
@@ -259,6 +260,7 @@ export default withAuth({
           await PlayAttemptModel.create([{
             _id: new Types.ObjectId(),
             attemptContext: AttemptContext.JUST_SOLVED,
+            gameId: level.gameId,
             startTime: ts,
             endTime: ts,
             updateCount: 0,
