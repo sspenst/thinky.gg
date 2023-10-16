@@ -127,6 +127,40 @@ describe('Testing a valid user', () => {
       },
     });
   });
+  test('Changing username to words should error gracefully', async () => {
+    // mock date
+    const fiveMinFromNow = new Date().getTime() + 5 * 60 * 1000;
+
+    MockDate.set(fiveMinFromNow);
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          userId: TestId.USER,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            name: 'hi mom ',
+            email: '   test1234@test.com    ',
+            currentPassword: 'test1234',
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await modifyUserHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Username can only contain letters, numbers, and underscores');
+        expect(res.status).toBe(400);
+      },
+    });
+  });
   test('Changing username to blank username should error gracefully', async () => {
     // mock date
     const fiveMinFromNow = new Date().getTime() + 5 * 60 * 1000;
@@ -156,7 +190,7 @@ describe('Testing a valid user', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Username cannot be empty');
+        expect(response.error).toBe('Username can only contain letters, numbers, and underscores');
         expect(res.status).toBe(400);
       },
     });
@@ -190,7 +224,7 @@ describe('Testing a valid user', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Username cannot be empty');
+        expect(response.error).toBe('Username can only contain letters, numbers, and underscores');
         expect(res.status).toBe(400);
       },
     });
