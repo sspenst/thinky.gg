@@ -287,6 +287,10 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
           ],
         },
       },
+      {
+        $unset: 'calc_playattempts_unique_users',
+
+      }
     );
   } else {
     statLookupAndMatchStage = [{ $unwind: '$_id' }];
