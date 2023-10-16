@@ -1,6 +1,7 @@
 import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
 import isGuest from '@root/helpers/isGuest';
 import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmationEmail';
+import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
 import bcrypt from 'bcryptjs';
 import mongoose, { Types } from 'mongoose';
@@ -86,17 +87,45 @@ export default withAuth({
     }
 
     if (email !== undefined) {
-      setObj['email'] = email.trim();
+      const emailTrimmed = email.trim();
+
+      if (emailTrimmed.length === 0) {
+        return res.status(400).json({ error: 'Email cannot be empty' });
+      }
+
+      if (emailTrimmed !== req.user.email) {
+        setObj['email'] = emailTrimmed;
+        const userWithEmail = await UserModel.findOne<User>({ email: email.trim() }, '_id', { lean: true });
+
+        if (userWithEmail) {
+          return res.status(400).json({ error: 'Email already taken' });
+        }
+      }
     }
 
     if (bio !== undefined) {
       setObj['bio'] = bio.trim();
     }
 
+    // /^[-a-zA-Z0-9_]+$/.test(v);
     const trimmedName = name?.trim();
+    const nameValid = /^[a-zA-Z0-9_]+$/.test(trimmedName);
 
-    if (trimmedName) {
+    if (name !== undefined && !nameValid) {
+      return res.status(400).json({ error: 'Username can only contain letters, numbers, and underscores' });
+    }
+
+    if (name !== undefined && trimmedName.length === 0) {
+      return res.status(400).json({ error: 'Username cannot be empty' });
+    }
+
+    if (trimmedName && trimmedName !== req.user.name ) {
       setObj['name'] = trimmedName;
+      const userWithUsername = await UserModel.findOne<User>({ name: trimmedName }, '_id', { lean: true });
+
+      if (userWithUsername) {
+        return res.status(400).json({ error: 'Username already taken' });
+      }
     }
 
     try {
