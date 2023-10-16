@@ -167,6 +167,7 @@ export default withAuth({
 
           await RecordModel.create([{
             _id: new Types.ObjectId(),
+            gameId: level.gameId,
             levelId: level._id,
             moves: moves,
             ts: ts,
