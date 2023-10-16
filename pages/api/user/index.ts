@@ -107,7 +107,8 @@ export default withAuth({
       setObj['bio'] = bio.trim();
     }
 
-    const trimmedName = name?.trim();
+    // /^[-a-zA-Z0-9_]+$/.test(v);
+    const trimmedName = name?.trim().replace(/[^a-zA-Z0-9_]/g, '');
 
     if (name !== undefined && trimmedName.length === 0) {
       return res.status(400).json({ error: 'Username cannot be empty' });

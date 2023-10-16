@@ -152,6 +152,36 @@ describe('pages/api/collection/index.ts', () => {
     });
   });
 
+  test('Doing a POST but slash in name should fail', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          userId: TestId.USER,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            name: '/test/collections',
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await createCollectionHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.slug).toBe('test/a-test-collection-blah');
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+      },
+    });
+  });
+
   test('Doing a POST but invalid/missing fields should fail', async () => {
     await testApiHandler({
       handler: async (_, res) => {
