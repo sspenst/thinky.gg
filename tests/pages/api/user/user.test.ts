@@ -161,6 +161,40 @@ describe('Testing a valid user', () => {
       },
     });
   });
+  test('Changing email to blank username should error gracefully', async () => {
+    // mock date
+    const fiveMinFromNow = new Date().getTime() + 5 * 60 * 1000;
+
+    MockDate.set(fiveMinFromNow);
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          userId: TestId.USER,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            name: ' eofwe ',
+            email: '       ',
+            currentPassword: 'test1234',
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await modifyUserHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Email cannot be empty');
+        expect(res.status).toBe(400);
+      },
+    });
+  });
   test('Changing username to existing username should error gracefully', async () => {
     // mock date
     const fiveMinFromNow = new Date().getTime() + 5 * 60 * 1000;
