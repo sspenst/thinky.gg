@@ -89,7 +89,7 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, hi
             level={level}
           />
         </>}
-        <Grid
+        {/* <Grid
           gameState={gameState}
           id={level._id.toString()}
           leastMoves={level.leastMoves}
@@ -98,7 +98,7 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, hi
               onCellClick(x, y);
             }
           }}
-        />
+        /> */}
         <div className='gap-2 mx-3 z-20 transition-opacity flex'>
           {!disableCheckpoints && !fullScreen ?
             <>
