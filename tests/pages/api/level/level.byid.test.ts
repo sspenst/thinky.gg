@@ -716,28 +716,31 @@ describe('pages/api/level/index.ts', () => {
   test('Deleting a level after someone has set a new record', async () => {
     let test_level_id_delete = new Types.ObjectId();
 
-    await LevelModel.create({
-      _id: test_level_id_delete,
-      GameId: GameId.PATHOLOGY,
-      authorNote: 'test level X author note',
-      data: '40000\n12000\n05000\n67890\nABCD3',
-      height: 5,
-      isDraft: false,
-      leastMoves: 20,
-      name: 'test level 3',
-      slug: 'test/test-level-3',
-      ts: TimerUtil.getTs(),
-      userId: TestId.USER,
-      width: 5,
-    });
+    await Promise.all([
+      LevelModel.create({
+        _id: test_level_id_delete,
+        GameId: GameId.PATHOLOGY,
+        authorNote: 'test level X author note',
+        data: '40000\n12000\n05000\n67890\nABCD3',
+        height: 5,
+        isDraft: false,
+        leastMoves: 20,
+        name: 'test level 3',
+        slug: 'test/test-level-3',
+        ts: TimerUtil.getTs(),
+        userId: TestId.USER,
+        width: 5,
+      }),
 
-    await RecordModel.create({
-      _id: new Types.ObjectId(),
-      levelId: test_level_id_delete,
-      moves: 20,
-      ts: TimerUtil.getTs(),
-      userId: TestId.USER,
-    });
+      RecordModel.create({
+        _id: new Types.ObjectId(),
+        gameId: GameId.PATHOLOGY,
+        levelId: test_level_id_delete,
+        moves: 20,
+        ts: TimerUtil.getTs(),
+        userId: TestId.USER,
+      })
+    ]);
 
     // set a new record by USER_B
     await testApiHandler({

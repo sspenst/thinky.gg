@@ -142,6 +142,7 @@ export default withAuth({ POST: {
         }, { session: session, new: true }),
         RecordModel.create([{
           _id: new Types.ObjectId(),
+          gameId: level.gameId,
           levelId: level._id,
           moves: level.leastMoves,
           ts: ts,
