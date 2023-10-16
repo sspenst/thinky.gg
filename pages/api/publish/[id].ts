@@ -151,6 +151,7 @@ export default withAuth({ POST: {
           _id: new Types.ObjectId(),
           attempts: 1,
           complete: true,
+          gameId: level.gameId,
           levelId: level._id,
           moves: level.leastMoves,
           ts: ts,
