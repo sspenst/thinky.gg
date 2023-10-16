@@ -40,7 +40,7 @@ export default function Directory({ folders, subtitle, title }: DirectoryProps) 
     {/* back button on mobile */}
     <div className='flex gap-2 items-center xl:hidden'>
       <FolderDivider />
-      <button className='mr-1' onClick={router.back}>
+      <button onClick={router.back}>
         <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={2} stroke='currentColor' className='w-6 h-6'>
           <path strokeLinecap='round' strokeLinejoin='round' d='M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18' />
         </svg>
