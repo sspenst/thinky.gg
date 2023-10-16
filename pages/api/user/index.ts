@@ -1,6 +1,7 @@
 import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
 import isGuest from '@root/helpers/isGuest';
 import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmationEmail';
+import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
 import bcrypt from 'bcryptjs';
 import mongoose, { Types } from 'mongoose';
@@ -86,7 +87,20 @@ export default withAuth({
     }
 
     if (email !== undefined) {
-      setObj['email'] = email.trim();
+      const emailTrimmed = email.trim();
+
+      if (emailTrimmed.length === 0) {
+        return res.status(400).json({ error: 'Email cannot be empty' });
+      }
+
+      if (emailTrimmed !== req.user.email) {
+        setObj['email'] = emailTrimmed;
+        const userWithEmail = await UserModel.findOne<User>({ email: email.trim() }, '_id', { lean: true });
+
+        if (userWithEmail) {
+          return res.status(400).json({ error: 'Email already taken' });
+        }
+      }
     }
 
     if (bio !== undefined) {
@@ -95,8 +109,17 @@ export default withAuth({
 
     const trimmedName = name?.trim();
 
-    if (trimmedName) {
+    if (name !== undefined && trimmedName.length === 0) {
+      return res.status(400).json({ error: 'Username cannot be empty' });
+    }
+
+    if (trimmedName && trimmedName !== req.user.name ) {
       setObj['name'] = trimmedName;
+      const userWithUsername = await UserModel.findOne<User>({ name: trimmedName }, '_id', { lean: true });
+
+      if (userWithUsername) {
+        return res.status(400).json({ error: 'Username already taken' });
+      }
     }
 
     try {
