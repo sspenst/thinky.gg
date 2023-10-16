@@ -111,6 +111,7 @@ export default withAuth({
             _id: new Types.ObjectId(),
             attempts: 1,
             complete: complete,
+            gameId: level.gameId,
             levelId: level._id,
             moves: moves,
             ts: ts,
