@@ -53,7 +53,7 @@ export default function Notifications() {
         leaveTo='transform opacity-0 scale-95'
       >
         <Menu.Items
-          className={'absolute right-0 m-1 w-96 max-w-fit z-10 origin-top-right rounded-md shadow-lg border overflow-y-scroll'}
+          className='absolute right-0 m-1 w-96 max-w-fit z-10 origin-top-right rounded-md shadow-lg border overflow-y-auto'
           style={{
             backgroundColor: 'var(--bg-color-2)',
             borderColor: 'var(--bg-color-4)',
