@@ -1,6 +1,7 @@
-import { MULTIPLAYER_INITIAL_ELO } from '@root/helpers/multiplayerHelperFunctions';
 import mongoose from 'mongoose';
 import MultiplayerProfile from '../db/multiplayerProfile';
+
+export const MULTIPLAYER_INITIAL_ELO = 1000;
 
 const MultiplayerProfileSchema = new mongoose.Schema<MultiplayerProfile>(
   {

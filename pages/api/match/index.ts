@@ -2,12 +2,13 @@ import { AchievementCategory } from '@root/constants/achievements/achievementInf
 import Discord from '@root/constants/discord';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import MultiplayerProfile from '@root/models/db/multiplayerProfile';
+import { MULTIPLAYER_INITIAL_ELO } from '@root/models/schemas/multiplayerProfileSchema';
 import mongoose, { PipelineStage, Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { ValidEnum, ValidType } from '../../../helpers/apiWrapper';
 import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
 import { logger } from '../../../helpers/logger';
-import { getRatingFromProfile, isProvisional, MULTIPLAYER_INITIAL_ELO, multiplayerMatchTypeToText } from '../../../helpers/multiplayerHelperFunctions';
+import { getRatingFromProfile, isProvisional, multiplayerMatchTypeToText } from '../../../helpers/multiplayerHelperFunctions';
 import { requestBroadcastMatches, requestClearBroadcastMatchSchedule } from '../../../lib/appSocketToClient';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
