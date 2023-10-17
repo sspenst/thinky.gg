@@ -36,11 +36,13 @@ interface BaseSongMetadata {
 interface InitialSongMetadata extends BaseSongMetadata {
   active: string;
   ambient: string;
+  thud: string;
 }
 
 interface SongMetadata extends BaseSongMetadata {
   active: HTMLAudioElement;
   ambient: HTMLAudioElement;
+  thud: HTMLAudioElement;
 }
 
 const songs = [
@@ -48,6 +50,7 @@ const songs = [
     active: '/sounds/music/01.mp3',
     ambient: '/sounds/music/01_ambient.mp3',
     artist: 'Tim Halbert',
+    thud: '/sounds/music/01,10.ogg',
     title: 'Pink and Orange',
     website: 'https://www.timhalbert.com/',
   },
@@ -55,6 +58,7 @@ const songs = [
     active: '/sounds/music/07.mp3',
     ambient: '/sounds/music/07_ambient.mp3',
     artist: 'Tim Halbert',
+    thud: '/sounds/music/04,07.ogg',
     title: 'Binary Shapes',
     website: 'https://www.timhalbert.com/',
   },
@@ -122,10 +126,10 @@ export default function MusicContextProvider({ children }: { children: React.Rea
 
   const seek = useCallback((offset: number, isActive = isHot) => {
     const onCanplaythrough = () => {
-      // NB: first song that loads will stop here, second song will play both at once
-      if (loadedAudioIndex.current !== songIndex.current) {
-        loadedAudioIndex.current = songIndex.current;
+      loadedAudioIndex.current++;
 
+      // need to load active, ambient, and thud before continuing
+      if (loadedAudioIndex.current !== 3) {
         return;
       }
 
@@ -147,27 +151,37 @@ export default function MusicContextProvider({ children }: { children: React.Rea
       songMetadata.ambient.pause();
       songMetadata.ambient.removeEventListener('canplaythrough', onCanplaythrough);
       songMetadata.ambient.remove();
+
+      songMetadata.thud.pause();
+      songMetadata.thud.removeEventListener('canplaythrough', onCanplaythrough);
+      songMetadata.thud.remove();
     }
 
     // NB: add songs.length to account for negative offset
     songIndex.current = (songIndex.current + offset + songs.length) % songs.length;
 
     const song = songs[songIndex.current];
+
     const active = new Audio(song.active);
     const ambient = new Audio(song.ambient);
+    const thud = new Audio(song.thud);
 
     active.preload = 'auto';
     ambient.preload = 'auto';
-    loadedAudioIndex.current = -1;
+    thud.preload = 'auto';
+
+    loadedAudioIndex.current = 0;
 
     // both tracks are playing at the same time so only need to check if one has ended
     active.addEventListener('canplaythrough', onCanplaythrough);
     ambient.addEventListener('canplaythrough', onCanplaythrough);
+    thud.addEventListener('canplaythrough', onCanplaythrough);
 
     setSongMetdata({
       active: active,
       ambient: ambient,
       artist: song.artist,
+      thud: thud,
       title: song.title,
       website: song.website,
     });
@@ -211,6 +225,12 @@ export default function MusicContextProvider({ children }: { children: React.Rea
 
     if (!songMetadata) {
       return;
+    }
+
+    // play thud sound when changing to active
+    if (transitionToActive) {
+      songMetadata.thud.currentTime = 0;
+      songMetadata.thud.play();
     }
 
     const duration = 1; // crossfade duration in seconds
