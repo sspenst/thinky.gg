@@ -189,15 +189,18 @@ export default function ProfileInsightsSolveTimeComparison({ user }: { user: Use
             }
             wrapperStyle={{ outline: 'none' }}
           />
-          <Scatter name={user.name} data={data} key='scatterchart'
-            // make the cursor a hand
+          <Scatter
             cursor='pointer'
+            data={data}
+            key='scatterchart'
+            name={user.name}
             onClick={(e) => {
               router.push('/level/' + e.slug);
             }}
             // conditional color red if diff is negative, green if positive
-            shape={({ cx, cy, diff, ...rest }) => {
-              const percent = Math.min(Math.max(Math.log(diff) / 2, -1), 1);
+            shape={({ cx, cy, ...rest }) => {
+              const difficultyLevelComparison = rest.payload as DifficultyLevelComparison | undefined;
+              const percent = Math.min(Math.max(Math.log(difficultyLevelComparison?.diff ?? 1) / 2, -1), 1);
               const fill = dotColor(percent);
 
               return (
