@@ -65,20 +65,18 @@ export default function PublishLevelModal({ closeModal, isOpen, level }: Publish
       onConfirm={onConfirm}
       title={'Publish Level'}
     >
-      <>
-        <div className='break-words'>
-          <span className='font-bold'>Name:</span> {level.name}
-          <br />
-          <span className='font-bold'>Moves:</span> {level.leastMoves}
-          {!level.authorNote ? null :
-            <div className='mt-4'>
-              <span className='font-bold'>Author Note:</span>
-              <br />
-              {formattedAuthorNote(level.authorNote)}
-            </div>
-          }
-        </div>
-      </>
+      <div className='break-words'>
+        <span className='font-bold'>Name:</span> {level.name}
+        <br />
+        <span className='font-bold'>Moves:</span> {level.leastMoves}
+        {!level.authorNote ? null :
+          <div className='mt-4'>
+            <span className='font-bold'>Author Note:</span>
+            <br />
+            {formattedAuthorNote(level.authorNote)}
+          </div>
+        }
+      </div>
     </Modal>
   );
 }

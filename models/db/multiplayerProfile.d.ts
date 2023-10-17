@@ -1,4 +1,5 @@
 interface MultiplayerProfile {
+  _id: Types.ObjectId;
   calcRushBulletCount: number;
   calcRushBlitzCount: number;
   calcRushRapidCount: number;

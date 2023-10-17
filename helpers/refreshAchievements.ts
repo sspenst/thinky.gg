@@ -5,6 +5,8 @@ import { createNewAchievement } from '@root/helpers/notificationHelper';
 import { getDifficultyRollingSum } from '@root/helpers/playerRankHelper';
 import Achievement from '@root/models/db/achievement';
 import Level from '@root/models/db/level';
+import MultiplayerMatch from '@root/models/db/multiplayerMatch';
+import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import Review from '@root/models/db/review';
 import User from '@root/models/db/user';
 import { AchievementModel, LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, ReviewModel, UserModel } from '@root/models/mongoose';
@@ -12,31 +14,29 @@ import { Types } from 'mongoose';
 
 const AchievementCategoryFetch = {
   [AchievementCategory.USER]: async (userId: Types.ObjectId) => {
-    const user = await UserModel.findById<User>(userId, {}, { lean: true });
+    const user = await UserModel.findById(userId).lean<User>();
 
     return { user: user };
   },
   [AchievementCategory.REVIEWER]: async (userId: Types.ObjectId) => {
-    const reviewsCreated = await ReviewModel.find<Review>({ userId: userId, isDeleted: { $ne: true } }, {}, { lean: true });
+    const reviewsCreated = await ReviewModel.find({ userId: userId, isDeleted: { $ne: true } }).lean<Review[]>();
 
     return { reviewsCreated: reviewsCreated };
   },
   [AchievementCategory.MULTIPLAYER]: async (userId: Types.ObjectId) => {
     const [userMatches, multiplayerProfile] = await Promise.all(
       [
-        MultiplayerMatchModel.find({ players: userId, rated: true }, { players: 1, winners: 1, createdAt: 1, createdBy: 1 }, { lean: true }),
-        MultiplayerProfileModel.findOne({ userId: userId }, {}, { lean: true })
+        MultiplayerMatchModel.find({ players: userId, rated: true }, { players: 1, winners: 1, createdAt: 1, createdBy: 1 }).lean<MultiplayerMatch[]>(),
+        MultiplayerProfileModel.findOne({ userId: userId }).lean<MultiplayerProfile>(),
       ]
     );
 
     return { userMatches: userMatches, multiplayerProfile: multiplayerProfile };
   },
   [AchievementCategory.CREATOR]: async (userId: Types.ObjectId) => {
-    const userCreatedLevels = await LevelModel.find<Level>(
-      {
-        userId: userId, isDraft: false, isDeleted: { $ne: true },
-      }, { score: 1, authorNote: 1, leastMoves: 1, ts: 1, calc_reviews_score_laplace: 1, calc_playattempts_just_beaten_count: 1, calc_playattempts_unique_users: 1, calc_reviews_count: 1 },
-      { lean: true });
+    const userCreatedLevels = await LevelModel.find(
+      { userId: userId, isDraft: false, isDeleted: { $ne: true } },
+      { score: 1, authorNote: 1, leastMoves: 1, ts: 1, calc_reviews_score_laplace: 1, calc_playattempts_just_beaten_count: 1, calc_playattempts_unique_users: 1, calc_reviews_count: 1 }).lean<Level[]>();
 
     return { levelsCreated: userCreatedLevels };
   },
@@ -64,7 +64,7 @@ export async function refreshAchievements(userId: Types.ObjectId, categories: Ac
 
   const [neededDataArray, allAchievements] = await Promise.all([
     Promise.all(fetchPromises),
-    AchievementModel.find<Achievement>({ userId: userId }, { type: 1, }, { lean: true }),
+    AchievementModel.find({ userId: userId }, { type: 1, }).lean<Achievement[]>(),
   ]);
   // neededDataArray is an array of objects with unique keys. Let's combine into one big object
   const neededData = neededDataArray.reduce((acc, cur) => ({ ...acc, ...cur }), {});

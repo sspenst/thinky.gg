@@ -2,6 +2,7 @@ import { ValidEnum, ValidNumber, ValidObjectId, ValidType } from '@root/helpers/
 import isPro from '@root/helpers/isPro';
 import { logger } from '@root/helpers/logger';
 import User from '@root/models/db/user';
+import UserConfig from '@root/models/db/userConfig';
 import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import Stripe from 'stripe';
 import withAuth from '../../../lib/withAuth';
@@ -50,7 +51,7 @@ export default withAuth({
       const plan = await stripe.plans.retrieve(subscription.items.data[0].plan.id);
       const product = await stripe.products.retrieve(plan.product as string);
       const planName = product.name;
-      const giftFromUser = await UserModel.findById(subscription.metadata.giftFromId, USER_DEFAULT_PROJECTION, { lean: true });
+      const giftFromUser = await UserModel.findById(subscription.metadata.giftFromId, USER_DEFAULT_PROJECTION).lean<User>();
 
       subscriptionData.push( {
         subscriptionId: subscription.id,
@@ -81,7 +82,7 @@ export default withAuth({
       return res.status(400).json({ error: 'You cannot gift a subscription to yourself.' });
     }
 
-    const userToGift = await UserModel.findById(giftTo, USER_DEFAULT_PROJECTION, { lean: true });
+    const userToGift = await UserModel.findById(giftTo, USER_DEFAULT_PROJECTION).lean<User>();
 
     if (!userToGift) {
       return res.status(404).json({ error: 'User not found.' });
@@ -103,7 +104,7 @@ export default withAuth({
 
       const price = paymentPriceIdTable[type];
       // check if customer id exists for this req.user
-      const userConfig = await UserConfigModel.findOne({ userId: req.userId }, { stripeCustomerId: 1 }, { lean: true });
+      const userConfig = await UserConfigModel.findOne({ userId: req.userId }, { stripeCustomerId: 1 }).lean<UserConfig>();
       const customerId = userConfig?.stripeCustomerId;
 
       if (!customerId) {

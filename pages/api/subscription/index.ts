@@ -1,6 +1,7 @@
 import { logger } from '@root/helpers/logger';
 import cleanUser from '@root/lib/cleanUser';
 import User from '@root/models/db/user';
+import UserConfig from '@root/models/db/userConfig';
 import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import Stripe from 'stripe';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
@@ -16,7 +17,7 @@ export interface SubscriptionData {
   cancel_at_period_end: boolean;
   current_period_end: number;
   current_period_start: number;
-  giftToUser?: User;
+  giftToUser?: User | null;
   paymentMethod: Stripe.PaymentMethod;
   plan: Stripe.Plan;
   planName: string;
@@ -26,7 +27,7 @@ export interface SubscriptionData {
 
 export async function getSubscriptions(req: NextApiRequestWithAuth): Promise<[number, { error: string } | SubscriptionData[]]> {
   const userId = req.userId;
-  const userConfig = await UserConfigModel.findOne({ userId: userId }, { stripeCustomerId: 1 }, { lean: true });
+  const userConfig = await UserConfigModel.findOne({ userId: userId }, { stripeCustomerId: 1 }).lean<UserConfig>();
 
   let subscriptionsNormal: Stripe.Response<Stripe.ApiList<Stripe.Subscription>> | undefined;
   let subscriptionsGifts: Stripe.Response<Stripe.ApiSearchResult<Stripe.Subscription>>;
@@ -66,7 +67,7 @@ export async function getSubscriptions(req: NextApiRequestWithAuth): Promise<[nu
     let giftToUser = undefined;
 
     if (subscription.metadata?.giftToId) {
-      giftToUser = await UserModel.findById(subscription.metadata?.giftToId, USER_DEFAULT_PROJECTION, { lean: true });
+      giftToUser = await UserModel.findById(subscription.metadata?.giftToId, USER_DEFAULT_PROJECTION).lean<User>();
     }
 
     if (giftToUser) {
@@ -93,7 +94,7 @@ export async function getSubscriptions(req: NextApiRequestWithAuth): Promise<[nu
 // TODO: can delete this
 export async function cancelSubscription(req: NextApiRequestWithAuth): Promise<[number, { error: string } | { message: string }]> {
   const userId = req.userId;
-  const userConfig = await UserConfigModel.findOne({ userId: userId }, { stripeCustomerId: 1 }, { lean: true });
+  const userConfig = await UserConfigModel.findOne({ userId: userId }, { stripeCustomerId: 1 }).lean<UserConfig>();
 
   if (!userConfig?.stripeCustomerId) {
     return [404, { error: 'No subscription found for this user.' }];

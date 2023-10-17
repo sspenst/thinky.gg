@@ -182,9 +182,8 @@ export async function createNewLevelNotifications(userIdWhoCreatedLevel: Types.O
     targetModel: 'User',
     type: GraphType.FOLLOW,
   }, 'source', {
-    lean: true,
     ...options,
-  });
+  }).lean();
 
   const ids: Types.ObjectId[] = [];
   const createRecords = usersThatFollow.map(user => {
