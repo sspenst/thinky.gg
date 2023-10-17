@@ -42,11 +42,11 @@ export default withAuth({ POST: {
 
   try {
     await session.withTransaction(async () => {
-      const record = await RecordModel.findOne<Record>(
+      const record = await RecordModel.findOne(
         { levelId: id },
         { userId: 1 },
-        { lean: true, session: session },
-      ).sort({ moves: 1, ts: -1 });
+        { session: session },
+      ).sort({ moves: 1, ts: -1 }).lean<Record>();
 
       // update calc_records if the record was set by a different user
       if (record && record.userId.toString() !== level.userId.toString()) {
@@ -55,18 +55,17 @@ export default withAuth({ POST: {
       }
 
       const [levelClone, matchesToRebroadcast, stats] = await Promise.all([
-        LevelModel.findOne<Level>({ _id: id, isDeleted: { $ne: true }, isDraft: false }, {}, { session: session, lean: true }),
-        MultiplayerMatchModel.find<MultiplayerMatch>({
+        LevelModel.findOne({ _id: id, isDeleted: { $ne: true }, isDraft: false }, {}, { session: session }).lean<Level>(),
+        MultiplayerMatchModel.find({
           state: MultiplayerMatchState.ACTIVE,
           levels: id,
         }, {
           _id: 1,
           matchId: 1
         }, {
-          lean: true,
           session: session,
-        }),
-        StatModel.find<Stat>({ levelId: id, complete: true }, 'userId', { lean: true, session: session }),
+        }).lean<MultiplayerMatch[]>(),
+        StatModel.find({ levelId: id, complete: true }, 'userId', { session: session }).lean<Stat[]>(),
       ]);
 
       const userIds = stats.map(stat => stat.userId);

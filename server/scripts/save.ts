@@ -5,6 +5,7 @@
 
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import Level from '@root/models/db/level';
+import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import PlayAttempt from '@root/models/db/playAttempt';
 import Record from '@root/models/db/record';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
@@ -26,7 +27,7 @@ console.log('env vars are ', dotenv.config().parsed);
 const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
 
 async function integrityCheckLevels(chunks = 1, chunkIndex = 0) {
-  const allLevels = await LevelModel.find({ isDeleted: { $ne: true }, isDraft: false }, '_id', { lean: false, sort: { ts: -1 } });
+  const allLevels = await LevelModel.find({ isDeleted: { $ne: true }, isDraft: false }, '_id', { sort: { ts: -1 } });
 
   const chunk = Math.floor(allLevels.length / chunks);
   const start = chunk * chunkIndex;
@@ -108,7 +109,7 @@ async function integrityCheckLevels(chunks = 1, chunkIndex = 0) {
 
 async function integrityCheckMultiplayerProfiles() {
   console.log('Querying all users into memory...');
-  const multiplayerProfiles = await MultiplayerProfileModel.find({}, {}, { lean: true }).populate('userId', 'name');
+  const multiplayerProfiles = await MultiplayerProfileModel.find().populate('userId', 'name').lean<MultiplayerProfile[]>();
 
   for (const type of Object.keys(MultiplayerMatchType)) {
     for (const profile of multiplayerProfiles) {
@@ -136,7 +137,7 @@ async function integrityCheckUsersScore() {
 
   // now update all user's  based on their play attempt count
   console.log('Querying all users into memory...');
-  const allUsers = await UserModel.find<User>({}, '_id name score', { lean: false, sort: { last_visited_at: -1 } });
+  const allUsers = await UserModel.find<User>({}, '_id name score', { sort: { last_visited_at: -1 } });
   let i = 0;
 
   progressBar.start(allUsers.length, 0);
@@ -224,7 +225,7 @@ async function integrityCheckRecords() {
 
 async function integrityCheckAcheivements() {
   console.log('Querying all users into memory...');
-  const users = await UserModel.find<User>({}, '_id name score', { lean: false, sort: { score: -1 } });
+  const users = await UserModel.find<User>({}, '_id name score', { sort: { score: -1 } });
 
   // looping through all users
 
@@ -247,7 +248,7 @@ async function integrityCheckPlayAttempts() {
   let trackJustSolved = false;
 
   // stream with async interator, sorted using the existing index
-  for await (const playAttempt of PlayAttemptModel.find<PlayAttempt>({}, {}, { lean: true, sort: { levelId: 1, userId: 1, endTime: -1, attemptContext: -1 } })) {
+  for await (const playAttempt of PlayAttemptModel.find({}, {}, { sort: { levelId: 1, userId: 1, endTime: -1, attemptContext: -1 } }).lean<PlayAttempt[]>()) {
     if (playAttempt.startTime > playAttempt.endTime) {
       console.warn(`[${playAttempt._id.toString()}, ${playAttempt.levelId.toString()}, ${playAttempt.userId.toString()}] startTime greater than endTime`);
       continue;

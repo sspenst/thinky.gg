@@ -15,9 +15,6 @@ function ModalButton({ disabled, onClick, text }: ModalButtonProps) {
       className={classNames('inline-flex justify-center px-4 py-2 text-sm font-medium border border-transparent rounded-md bg-button')}
       disabled={disabled}
       onClick={onClick}
-      style={{
-        marginRight: 10,
-      }}
       type='button'
     >
       {text}
@@ -90,10 +87,8 @@ export default function Modal({
                   </svg>
                 </button>
               </Dialog.Title>
-              <div className='px-2'>
-                {children}
-              </div>
-              <div className='text-center'>
+              {children}
+              <div className='flex justify-center gap-2 flex-wrap'>
                 {onConfirm ?
                   <>
                     <ModalButton disabled={disabled} onClick={onConfirm} text={'OK'} />

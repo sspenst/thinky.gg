@@ -16,7 +16,9 @@ export default function LevelInfoModal({ closeModal, isOpen, level }: LevelInfoM
       isOpen={isOpen}
       title={'Level Info'}
     >
-      <FormattedLevelInfo level={level} />
+      <div>
+        <FormattedLevelInfo level={level} />
+      </div>
     </Modal>
   );
 }

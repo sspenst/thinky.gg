@@ -70,8 +70,9 @@ export default withAuth({
 
     const { id } = req.query;
     const { authorNote, collectionIds, name } = req.body;
+    const trimmedName = name?.trim();
 
-    if (!collectionIds || !name) {
+    if (!collectionIds || !trimmedName) {
       return res.status(400).json({
         error: 'Missing required fields',
       });
@@ -119,9 +120,7 @@ export default withAuth({
           levels: id,
         }, {
           _id: 1,
-        }, {
-          lean: true,
-        });
+        }).lean<Collection[]>();
         const alreadyInIds = alreadyIn.map((c: Collection) => c._id.toString());
         const notIn = collectionIds.filter((c: string) => !alreadyInIds.includes(c));
 
@@ -137,7 +136,7 @@ export default withAuth({
       try {
         await session.withTransaction(async () => {
           const trimmedAuthorNote = authorNote?.trim() ?? '';
-          const trimmedName = name.trim();
+
           const slug = await generateLevelSlug(level.slug.split('/')[0], trimmedName, id as string, { session: session });
 
           await LevelModel.updateOne({
@@ -173,7 +172,7 @@ export default withAuth({
     return res.status(200).json(level);
   } else if (req.method === 'DELETE') {
     const { id } = req.query;
-    const level = await LevelModel.findOne<Level>({ _id: id, isDeleted: { $ne: true } }, {}, { lean: true });
+    const level = await LevelModel.findOne({ _id: id, isDeleted: { $ne: true } }).lean<Level>();
 
     if (!level) {
       return res.status(404).json({

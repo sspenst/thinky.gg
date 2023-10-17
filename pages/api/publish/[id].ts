@@ -64,7 +64,7 @@ export default withAuth({ POST: {
   const level = await LevelModel.findOne<Level>({
     _id: id,
     userId: req.userId,
-  }, {}, { lean: true });
+  }).lean<Level>();
 
   if (!level) {
     return res.status(404).json({
@@ -131,9 +131,9 @@ export default withAuth({ POST: {
   try {
     await session.withTransaction(async () => {
       const [user, updatedLevel] = await Promise.all([
-        UserModel.findOneAndUpdate<User>({ _id: req.userId }, {
+        UserModel.findOneAndUpdate({ _id: req.userId }, {
           $inc: { score: 1 },
-        }, { lean: true, session: session }),
+        }, { session: session }).lean<User>(),
         LevelModel.findOneAndUpdate<Level>({ _id: id, isDraft: true }, {
           $set: {
             isDraft: false,

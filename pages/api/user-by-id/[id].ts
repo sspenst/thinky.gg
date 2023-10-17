@@ -27,7 +27,7 @@ export async function getUserById(id: string | string[] | undefined) {
   await dbConnect();
 
   try {
-    const user = await UserModel.findById<User>(id, { '__v': 0 }, { lean: true });
+    const user = await UserModel.findById(id, { '__v': 0 }).lean<User>();
 
     if (user) {
       cleanUser(user);

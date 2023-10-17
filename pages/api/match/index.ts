@@ -1,6 +1,8 @@
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import Discord from '@root/constants/discord';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
+import MultiplayerProfile from '@root/models/db/multiplayerProfile';
+import { MULTIPLAYER_INITIAL_ELO } from '@root/models/schemas/multiplayerProfileSchema';
 import mongoose, { PipelineStage, Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { ValidEnum, ValidType } from '../../../helpers/apiWrapper';
@@ -12,17 +14,9 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
 import User from '../../../models/db/user';
 import { LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, UserModel } from '../../../models/mongoose';
-import {
-  MatchAction,
-  MultiplayerMatchState,
-  MultiplayerMatchType,
-} from '../../../models/MultiplayerEnums';
+import { MatchAction, MultiplayerMatchState, MultiplayerMatchType } from '../../../models/MultiplayerEnums';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
-import {
-  computeMatchScoreTable,
-  enrichMultiplayerMatch,
-  generateMatchLog,
-} from '../../../models/schemas/multiplayerMatchSchema';
+import { computeMatchScoreTable, enrichMultiplayerMatch, generateMatchLog } from '../../../models/schemas/multiplayerMatchSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 import { queueRefreshAchievements } from '../internal-jobs/worker';
 import { abortMatch } from './[matchId]';
@@ -48,11 +42,7 @@ export async function checkForFinishedMatches() {
         $lte: new Date(),
       },
     },
-    {},
-    {
-      lean: true,
-    }
-  );
+  ).lean<MultiplayerMatch[]>();
 
   for (const match of matches) {
     await finishMatch(match);
@@ -116,42 +106,55 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
   // TODO: there is a miniscule chance that someone deletes their user account between the time the match ends and the time we update the winner and loser
 
   const session = await mongoose.startSession();
+  let newFinishedMatch: MultiplayerMatch | null = null;
 
   try {
     await session.withTransaction(async () => {
-      const [userWinner, userLoser] = await Promise.all([MultiplayerProfileModel.findOneAndUpdate(
-        {
-          userId: winnerId,
-        },
-        {
-        },
-        {
-          lean: true,
-          upsert: true, // create the user if they don't exist
-          new: true,
-          session: session,
-        }
-      ),
-      await MultiplayerProfileModel.findOneAndUpdate(
-        {
-          userId: loserId,
-        },
-        {
-        },
-        {
-          lean: true,
-          upsert: true, // create the user if they don't exist
-          new: true,
-          session: session,
-        }
-      )]);
+      const [userWinner, userLoser] = await Promise.all([
+        MultiplayerProfileModel.findOneAndUpdate(
+          {
+            userId: winnerId,
+          },
+          {},
+          {
+            upsert: true, // create the user if they don't exist
+            new: true,
+            session: session,
+          }
+        ).lean<MultiplayerProfile>(),
+        await MultiplayerProfileModel.findOneAndUpdate(
+          {
+            userId: loserId,
+          },
+          {},
+          {
+            upsert: true, // create the user if they don't exist
+            new: true,
+            session: session,
+          }
+        ).lean<MultiplayerProfile>(),
+      ]);
+
+      if (!userWinner) {
+        throw new Error(`userWinner ${winnerId} not found`);
+      }
+
+      if (!userLoser) {
+        throw new Error(`userLoser ${loserId} not found`);
+      }
 
       // update elo...
 
-      const winnerProvisional = isProvisional(userWinner);
-      const loserProvisional = isProvisional(userLoser);
+      const winnerProvisional = isProvisional(finishedMatch.type, userWinner);
+      const loserProvisional = isProvisional(finishedMatch.type, userLoser);
 
-      let [eloChangeWinner, eloChangeLoser] = calculateEloChange(getRatingFromProfile(userWinner, finishedMatch.type) || 1000, getRatingFromProfile(userLoser, finishedMatch.type) || 1000, winnerProvisional, loserProvisional, tie ? 0.5 : 1);
+      let [eloChangeWinner, eloChangeLoser] = calculateEloChange(
+        getRatingFromProfile(userWinner, finishedMatch.type) || MULTIPLAYER_INITIAL_ELO,
+        getRatingFromProfile(userLoser, finishedMatch.type) || MULTIPLAYER_INITIAL_ELO,
+        winnerProvisional,
+        loserProvisional,
+        tie ? 0.5 : 1,
+      );
 
       if (finishedMatch.rated) {
         const ratingField = 'rating' + finishedMatch.type;
@@ -199,7 +202,7 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
         }
       } : {};
 
-      [finishedMatch, ] = await Promise.all([
+      [newFinishedMatch, ] = await Promise.all([
         MultiplayerMatchModel.findOneAndUpdate(
           {
             matchId: finishedMatch.matchId,
@@ -211,8 +214,8 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
             endTime: Date.now(),
             $push: {
               matchLog: generateMatchLog(MatchAction.GAME_RECAP, {
-                eloWinner: getRatingFromProfile(userWinner, finishedMatch.type) || 1000,
-                eloLoser: getRatingFromProfile(userLoser, finishedMatch.type) || 1000,
+                eloWinner: getRatingFromProfile(userWinner, finishedMatch.type) || MULTIPLAYER_INITIAL_ELO,
+                eloLoser: getRatingFromProfile(userLoser, finishedMatch.type) || MULTIPLAYER_INITIAL_ELO,
                 eloChangeWinner: eloChangeWinner,
                 eloChangeLoser: eloChangeLoser,
                 winnerProvisional: winnerProvisional,
@@ -224,15 +227,14 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
           },
           {
             new: true,
-            lean: true,
             session: session,
           }
-        ),
+        ).lean<MultiplayerMatch>(),
         queueRefreshAchievements(new Types.ObjectId(winnerId), [AchievementCategory.MULTIPLAYER]),
         queueRefreshAchievements(new Types.ObjectId(loserId), [AchievementCategory.MULTIPLAYER]),
       ]);
 
-      if (!finishedMatch) {
+      if (!newFinishedMatch) {
         throw new Error('Failed to finish match');
       }
     });
@@ -241,7 +243,7 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
     session.endSession();
   }
 
-  return finishedMatch;
+  return newFinishedMatch as MultiplayerMatch | null;
 }
 
 export async function checkForUnreadyAboutToStartMatch(matchId: string) {
@@ -255,8 +257,7 @@ export async function checkForUnreadyAboutToStartMatch(matchId: string) {
       }
     },
     'createdBy players markedReady',
-    { lean: true }
-  ) as MultiplayerMatch | null;
+  ).lean<MultiplayerMatch>();
 
   if (!finishedMatch) {
     return null;
@@ -278,9 +279,7 @@ export async function checkForFinishedMatch(matchId: string) {
       },
       state: MultiplayerMatchState.ACTIVE,
     },
-    {},
-    { lean: true }
-  ) as MultiplayerMatch | null;
+  ).lean<MultiplayerMatch>();
 
   if (!finishedMatch) {
     return null;
@@ -302,9 +301,7 @@ async function createMatch(req: NextApiRequestWithAuth) {
         $in: [MultiplayerMatchState.ACTIVE, MultiplayerMatchState.OPEN],
       },
     },
-    {},
-    { lean: true }
-  );
+  ).lean<MultiplayerMatch>();
 
   if (involvedMatch) {
     return null;

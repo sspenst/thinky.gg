@@ -9,7 +9,7 @@ interface SidebarProps {
 export default function Sidebar({ level }: SidebarProps) {
   return (
     <div
-      className='border-l p-4 break-words hidden xl:block z-10 h-full w-100 overflow-y-scroll'
+      className='border-l p-4 break-words hidden xl:block z-10 h-full w-100 overflow-y-auto'
       style={{
         borderColor: 'var(--bg-color-4)',
       }}

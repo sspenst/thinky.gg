@@ -1,3 +1,4 @@
+import KeyValue from '@root/models/db/keyValue';
 import { Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper from '../../../helpers/apiWrapper';
@@ -23,13 +24,14 @@ export async function getLevelOfDay(reqUser?: User | null) {
   await dbConnect();
 
   const key = getLevelOfDayKVKey();
-  const levelKV = await KeyValueModel.findOne({ key: key }, {}, { lean: true });
+  const levelKV = await KeyValueModel.findOne({ key: key }).lean<KeyValue>();
 
   if (levelKV) {
     const levelAgg = await LevelModel.aggregate([
       {
         $match: {
-          _id: new Types.ObjectId(levelKV.value),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          _id: new Types.ObjectId(levelKV.value as any),
         }
       },
       {
@@ -70,7 +72,7 @@ export async function getLevelOfDay(reqUser?: User | null) {
     }
   }
 
-  const previouslySelected = await KeyValueModel.findOne({ key: KV_LEVEL_OF_DAY_LIST }, {}, { lean: true });
+  const previouslySelected = await KeyValueModel.findOne({ key: KV_LEVEL_OF_DAY_LIST }).lean<KeyValue>();
   // generate a new level based on criteria...
   const MIN_STEPS = 12;
   const MAX_STEPS = 100;
@@ -96,13 +98,12 @@ export async function getLevelOfDay(reqUser?: User | null) {
       $nin: previouslySelected?.value || [],
     },
   }, '_id name slug width height data leastMoves calc_difficulty_estimate', {
-    lean: true,
     // sort by calculated difficulty estimate and then by id
     sort: {
       calc_difficulty_estimate: 1,
       _id: 1,
     },
-  });
+  }).lean<Level[]>();
 
   let genLevel = levels[0];
 
@@ -137,7 +138,8 @@ export async function getLevelOfDay(reqUser?: User | null) {
 
   try {
     await session.withTransaction(async () => {
-      previouslySelected?.value?.push(genLevel._id);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (previouslySelected?.value as any)?.push(genLevel._id);
       await KeyValueModel.updateOne({ key: 'level-of-day-list' }, {
         $set: {
           value: previouslySelected?.value || [genLevel._id],
