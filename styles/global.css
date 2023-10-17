@@ -308,7 +308,7 @@ body {
   background-color: var(--bg-color-2);
 }
 
-.audio-bar-button:hover {
+.audio-bar-button:enabled:hover {
   background-color: var(--bg-color-4);
 }
 

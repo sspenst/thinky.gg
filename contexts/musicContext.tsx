@@ -1,10 +1,10 @@
 import React, { createContext, useCallback, useEffect, useRef, useState } from 'react';
 
 export interface MusicContextInterface {
-  crossfadeProgress: number;
   dynamicMusic: boolean;
   isHot: boolean;
   isPlaying: boolean;
+  isToggling: boolean;
   seek: (offset: number) => void;
   setDynamicMusic: React.Dispatch<React.SetStateAction<boolean>>;
   setIsPlaying: React.Dispatch<React.SetStateAction<boolean>>;
@@ -15,10 +15,10 @@ export interface MusicContextInterface {
 }
 
 export const MusicContext = createContext<MusicContextInterface>({
-  crossfadeProgress: 1,
   dynamicMusic: false,
   isHot: false,
   isPlaying: false,
+  isToggling: false,
   seek: () => {},
   setDynamicMusic: () => {},
   setIsPlaying: () => {},
@@ -108,11 +108,11 @@ const songs = [
 ] as InitialSongMetadata[];
 
 export default function MusicContextProvider({ children }: { children: React.ReactNode }) {
-  const [crossfadeProgress, setCrossfadeProgress] = useState(1);
   const [dynamicMusic, setDynamicMusic] = useState(true);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const [isHot, setIsHot] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isToggling, setIsToggling] = useState(false);
   const loadedAudioIndex = useRef(-1);
   const songIndex = useRef(0);
   const [songMetadata, setSongMetdata] = useState<SongMetadata>();
@@ -227,10 +227,17 @@ export default function MusicContextProvider({ children }: { children: React.Rea
       return;
     }
 
+    setIsToggling(true);
+
     // play thud sound when changing to active
     if (transitionToActive) {
+      songMetadata.active.currentTime = songMetadata.ambient.currentTime;
+      songMetadata.active.play();
       songMetadata.thud.currentTime = 0;
       songMetadata.thud.play();
+    } else {
+      songMetadata.ambient.currentTime = songMetadata.active.currentTime;
+      songMetadata.ambient.play();
     }
 
     const duration = 1; // crossfade duration in seconds
@@ -252,24 +259,30 @@ export default function MusicContextProvider({ children }: { children: React.Rea
         songMetadata.ambient.volume = Math.max(0, startAmbientVol * (1 - progress));
       }
 
-      setCrossfadeProgress(progress);
-
       if (progress >= 1) {
         clearInterval(intervalRef.current!);
         // set volumes to exact values
         songMetadata.active.volume = !transitionToActive ? 0 : volume;
         songMetadata.ambient.volume = !transitionToActive ? volume : 0;
+
+        if (transitionToActive) {
+          songMetadata.ambient.pause();
+        } else {
+          songMetadata.active.pause();
+        }
+
         intervalRef.current = null;
+        setIsToggling(false);
       }
     }, step * 1000);
   }, [isHot, setIsHot, songMetadata, volume]);
 
   return (
     <MusicContext.Provider value={{
-      crossfadeProgress: crossfadeProgress,
       dynamicMusic: dynamicMusic,
       isHot: isHot,
       isPlaying: isPlaying,
+      isToggling: isToggling,
       seek: seek,
       setDynamicMusic: setDynamicMusic,
       setIsPlaying: setIsPlaying,
