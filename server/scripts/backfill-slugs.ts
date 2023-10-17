@@ -1,5 +1,6 @@
 // run with ts-node --files server/scripts/backfill-slugs.ts
 // import dotenv
+import Collection from '@root/models/db/collection';
 import cliProgress from 'cli-progress';
 import dotenv from 'dotenv';
 import { generateCollectionSlug } from '../../helpers/generateSlug';
@@ -16,7 +17,7 @@ const URL_HOST = args[0] || 'http://localhost:3000';
 async function startBackfillCollectionSlugs() {
   await dbConnect();
   // select all collections with no slugs
-  const collections = await CollectionModel.find({ slug: { $exists: false } }, { _id: 1, name: 1, userId: 1 }, { lean: true }).populate('userId', 'name');
+  const collections = await CollectionModel.find({ slug: { $exists: false } }, { _id: 1, name: 1, userId: 1 }).populate('userId', 'name').lean<Collection[]>();
 
   // loop through all the collections and generate a slug
   progressBar.start(collections.length, 0);
@@ -43,7 +44,7 @@ async function startBackfillCollectionSlugs() {
 
   console.log('Starting smoke test');
 
-  const allCollections = await CollectionModel.find({}, 'slug name', { lean: true });
+  const allCollections = await CollectionModel.find({}, 'slug name').lean<Collection[]>();
 
   progressBar.start(allCollections.length, 0);
   let error = false;

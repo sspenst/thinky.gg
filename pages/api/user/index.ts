@@ -1,6 +1,7 @@
 import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
 import isGuest from '@root/helpers/isGuest';
 import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmationEmail';
+import Collection from '@root/models/db/collection';
 import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
 import bcrypt from 'bcryptjs';
@@ -66,7 +67,7 @@ export default withAuth({
     } = req.body;
 
     if (password) {
-      const user = await UserModel.findById(req.userId, '+password', { lean: false });
+      const user = await UserModel.findById(req.userId, '+password');
 
       if (!(await bcrypt.compare(currentPassword, user.password))) {
         return res.status(401).json({
@@ -95,7 +96,7 @@ export default withAuth({
 
       if (emailTrimmed !== req.user.email) {
         setObj['email'] = emailTrimmed;
-        const userWithEmail = await UserModel.findOne<User>({ email: email.trim() }, '_id', { lean: true });
+        const userWithEmail = await UserModel.findOne({ email: email.trim() }, '_id').lean<User>();
 
         if (userWithEmail) {
           return res.status(400).json({ error: 'Email already taken' });
@@ -121,7 +122,7 @@ export default withAuth({
 
     if (trimmedName && trimmedName !== req.user.name ) {
       setObj['name'] = trimmedName;
-      const userWithUsername = await UserModel.findOne<User>({ name: trimmedName }, '_id', { lean: true });
+      const userWithUsername = await UserModel.findOne({ name: trimmedName }, '_id').lean<User>();
 
       if (userWithUsername) {
         return res.status(400).json({ error: 'Username already taken' });
@@ -156,10 +157,10 @@ export default withAuth({
 
       try {
         await session.withTransaction(async () => {
-          const levels = await LevelModel.find<Level>({
+          const levels = await LevelModel.find({
             isDeleted: { $ne: true },
             userId: req.userId,
-          }, '_id name', { lean: true, session: session });
+          }, '_id name', { session: session }).lean<Level[]>();
 
           for (const level of levels) {
             const slug = await generateLevelSlug(trimmedName, level.name, level._id.toString(), { session: session });
@@ -170,7 +171,7 @@ export default withAuth({
           // Do the same for collections
           const collections = await CollectionModel.find({
             userId: req.userId,
-          }, '_id name', { lean: true, session: session });
+          }, '_id name', { session: session }).lean<Collection[]>();
 
           for (const collection of collections) {
             const slug = await generateCollectionSlug(trimmedName, collection.name, collection._id.toString(), { session: session });
@@ -211,7 +212,7 @@ export default withAuth({
           isDeleted: { $ne: true },
           isDraft: false,
           userId: req.userId,
-        }, '_id name', { lean: true, session: session });
+        }, '_id name', { session: session }).lean<Level[]>();
 
         for (const level of levels) {
           const slug = await generateLevelSlug('archive', level.name, level._id.toString(), { session: session });

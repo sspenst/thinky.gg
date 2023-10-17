@@ -16,7 +16,7 @@ export default apiWrapper({ POST: {
   await dbConnect();
 
   const { password, token, userId } = req.body;
-  const user = await UserModel.findById(new Types.ObjectId(userId), '_id ts name password', { lean: false });
+  const user = await UserModel.findById(new Types.ObjectId(userId), '_id ts name password');
 
   if (!user) {
     return res.status(400).json({

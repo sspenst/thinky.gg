@@ -55,8 +55,7 @@ export default withAuth({
 
     const updateResult = await GraphModel.updateOne(query, query, {
       upsert: true,
-      lean: true,
-    });
+    }).lean();
 
     if (updateResult.upsertedCount === 1) {
       await createNewFollowerNotification(req.userId, id as string);
