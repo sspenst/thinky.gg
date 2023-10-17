@@ -265,10 +265,9 @@ export async function processQueueMessages() {
         isProcessing: false,
       }, {}, {
         session: session,
-        lean: true,
         limit: 10,
         sort: { priority: -1, createdAt: 1 },
-      });
+      }).lean<QueueMessage[]>();
 
       if (queueMessages.length === 0) {
         found = false;
@@ -287,7 +286,7 @@ export async function processQueueMessages() {
         $inc: {
           processingAttempts: 1,
         },
-      }, { session: session, lean: true });
+      }, { session: session }).lean();
 
       // manually update queueMessages so we don't have to query again
       queueMessages.forEach(message => {

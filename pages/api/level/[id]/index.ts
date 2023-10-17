@@ -120,9 +120,7 @@ export default withAuth({
           levels: id,
         }, {
           _id: 1,
-        }, {
-          lean: true,
-        });
+        }).lean<Collection[]>();
         const alreadyInIds = alreadyIn.map((c: Collection) => c._id.toString());
         const notIn = collectionIds.filter((c: string) => !alreadyInIds.includes(c));
 
@@ -174,7 +172,7 @@ export default withAuth({
     return res.status(200).json(level);
   } else if (req.method === 'DELETE') {
     const { id } = req.query;
-    const level = await LevelModel.findOne<Level>({ _id: id, isDeleted: { $ne: true } }, {}, { lean: true });
+    const level = await LevelModel.findOne({ _id: id, isDeleted: { $ne: true } }).lean<Level>();
 
     if (!level) {
       return res.status(404).json({

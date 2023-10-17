@@ -1,6 +1,7 @@
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import Direction from '@root/constants/direction';
 import getDifficultyEstimate from '@root/helpers/getDifficultyEstimate';
+import PlayAttempt from '@root/models/db/playAttempt';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
@@ -30,7 +31,8 @@ export default withAuth({
   },
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
-    const stats = await StatModel.find<Stat>({ userId: new Types.ObjectId(req.userId), isDeleted: { $ne: true } }, {}, { lean: true });
+    // Todo: only select needed fields here to minimize data transfer
+    const stats = await StatModel.find({ userId: new Types.ObjectId(req.userId), isDeleted: { $ne: true } }).lean<Stat[]>();
 
     return res.status(200).json(stats);
   } else if (req.method === 'PUT') {
@@ -51,8 +53,7 @@ export default withAuth({
 
     try {
       await session.withTransaction(async () => {
-        // Todo: only select needed fields here to minimize data transfer
-        const level = await LevelModel.findOne<Level>({ _id: levelId, isDeleted: { $ne: true } }, {}, { lean: true, session: session }) as EnrichedLevel;
+        const level = await LevelModel.findOne({ _id: levelId, isDeleted: { $ne: true } }, {}, { session: session }).lean<Level>();
 
         if (!level) {
           resTrack.status = 404;
@@ -96,7 +97,7 @@ export default withAuth({
           await matchMarkCompleteLevel(req.user._id, matchId, level._id);
         }
 
-        const stat = await StatModel.findOne<Stat>({ levelId: level._id, userId: req.user._id }, {}, { lean: true, session: session });
+        const stat = await StatModel.findOne({ levelId: level._id, userId: req.user._id }, {}, { session: session }).lean<Stat>();
 
         // level was previously solved and no personal best was set, only need to $inc attempts and return
         if (stat && moves >= stat.moves) {
@@ -175,14 +176,13 @@ export default withAuth({
           }], { session: session });
 
           // find the stats and users that that need to be updated
-          const stats = await StatModel.find<Stat>({
+          const stats = await StatModel.find({
             complete: true,
             levelId: level._id,
             userId: { $ne: req.userId },
           }, 'userId', {
-            lean: true,
             session: session,
-          });
+          }).lean<Stat[]>();
 
           // update all stats/users that had the record on this level
           if (stats.length > 0) {
@@ -248,14 +248,13 @@ export default withAuth({
           $inc: { updateCount: 1 }
         }, {
           new: false,
-          lean: true,
           session: session,
           sort: {
             endTime: -1,
             // NB: if end time is identical, we want to get the highest attempt context (JUST_SOLVED over UNSOLVED)
             attemptContext: -1,
           },
-        });
+        }).lean<PlayAttempt>();
 
         if (!found) {
           // create one if it did not exist... rare but possible
@@ -292,16 +291,15 @@ export default withAuth({
           levelUpdate['$inc']['calc_playattempts_just_beaten_count'] = 1;
         }
 
-        const enrichedLevel = await LevelModel.findByIdAndUpdate<EnrichedLevel>(level._id, levelUpdate, {
+        const enrichedLevel = await LevelModel.findByIdAndUpdate(level._id, levelUpdate, {
           new: true,
-          lean: true,
           projection: {
             calc_playattempts_duration_sum: 1,
             calc_playattempts_just_beaten_count: 1,
             calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' },
           },
           session: session,
-        });
+        }).lean<EnrichedLevel>();
 
         // should be impossible, but need this check for typescript to be happy
         if (!enrichedLevel) {

@@ -64,7 +64,7 @@ export default apiWrapper({ GET: {
 
   try {
     await session.withTransaction(async () => {
-      const levelImage = await ImageModel.findOne<Image>({ documentId: levelId }, {}, { lean: false, session: session });
+      const levelImage = await ImageModel.findOne<Image>({ documentId: levelId }, {}, { session: session });
 
       if (levelImage) {
         pngData = levelImage.image;
