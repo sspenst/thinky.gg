@@ -14,10 +14,10 @@ interface MusicModalProps {
 
 export default function MusicModal({ closeModal, isOpen }: MusicModalProps) {
   const {
-    crossfadeProgress,
     dynamicMusic, setDynamicMusic,
     isHot,
     isPlaying, setIsPlaying,
+    isToggling,
     seek,
     songMetadata,
     toggleVersion,
@@ -98,15 +98,12 @@ export default function MusicModal({ closeModal, isOpen }: MusicModalProps) {
             ⏭
           </button>
           <button
-            className='px-3 py-1 rounded-r'
+            className='px-3 py-1 rounded-r audio-bar-button'
+            disabled={isToggling}
             id='btn-audio-player-version'
             onClick={() => toggleVersion()}
-            style={{
-              // based on crossfadeProgress, we can animate the background color
-              backgroundImage: `linear-gradient(to bottom, var(--bg-color-2) ${crossfadeProgress * 100}%, var(--bg-color-4) ${crossfadeProgress * 100}%)`,
-            }}
           >
-            {isHot ? '🔥' : '❄️'}
+            {isToggling ? '⏳' : isHot ? '🔥' : '❄️'}
           </button>
         </div>
         <div className='flex gap-2 items-center'>
