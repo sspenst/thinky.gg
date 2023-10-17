@@ -34,9 +34,12 @@ interface BaseSongMetadata {
 }
 
 interface InitialSongMetadata extends BaseSongMetadata {
-  active: string;
-  ambient: string;
-  thud: string;
+  activeMp3: string;
+  activeOgg: string;
+  ambientMp3: string;
+  ambientOgg: string;
+  thudMp3: string;
+  thudOgg: string;
 }
 
 interface SongMetadata extends BaseSongMetadata {
@@ -46,65 +49,29 @@ interface SongMetadata extends BaseSongMetadata {
 }
 
 const songs = [
+  // TODO: add all songs
   {
-    active: '/sounds/music/01.mp3',
-    ambient: '/sounds/music/01_ambient.mp3',
+    activeMp3: '/sounds/music/01.mp3',
+    activeOgg: '/sounds/music/01,10.ogg',
+    ambientMp3: '/sounds/music/01_ambient.mp3',
+    ambientOgg: '/sounds/music/01,10.ogg',
     artist: 'Tim Halbert',
-    thud: '/sounds/music/01,10.ogg',
+    thudMp3: '/sounds/music/01.mp3',
+    thudOgg: '/sounds/music/01,10.ogg',
     title: 'Pink and Orange',
     website: 'https://www.timhalbert.com/',
   },
   {
-    active: '/sounds/music/07.mp3',
-    ambient: '/sounds/music/07_ambient.mp3',
+    activeMp3: '/sounds/music/07.mp3',
+    activeOgg: '/sounds/music/04,07.ogg',
+    ambientMp3: '/sounds/music/07_ambient.mp3',
+    ambientOgg: '/sounds/music/04,07.ogg',
     artist: 'Tim Halbert',
-    thud: '/sounds/music/04,07.ogg',
+    thudMp3: '/sounds/music/07.mp3',
+    thudOgg: '/sounds/music/04,07.ogg',
     title: 'Binary Shapes',
     website: 'https://www.timhalbert.com/',
   },
-  /*{
-    title: 'Test',
-    active: '/sounds/music/test1high.mp3',
-    ambient: '/sounds/music/test1.mp3',
-    artist: 'Danny',
-    website: 'k2xl.com'
-  },*/
-  // {
-  //   title: 'No Chance in Hell',
-  //   ambient: '/sounds/music/No Chance in Hell Ambient 2023-09-10.mp3',
-  //   active: '/sounds/music/02 No Chance in Hell 2023-09-10.mp3',
-  //   artist: 'Tim Halbert',
-  //   website: 'https://www.timhalbert.com/',
-  // },
-  // {
-  //   title: 'Automation',
-  //   active: '/sounds/music/04 Automaton 2023-09-10.mp3',
-  //   ambient: '/sounds/music/Automaton Ambient 2023-09-10.mp3',
-  //   artist: 'Tim Halbert',
-  //   website: 'https://www.timhalbert.com/',
-  // },
-  // {
-  //   title: 'Treason',
-  //   ambient: '/sounds/music/Treason Ambient 2023-09-10.mp3',
-  //   active: '/sounds/music/05 Treason 2023-09-10.mp3',
-  //   artist: 'Tim Halbert',
-  //   website: 'https://www.timhalbert.com/',
-  // },
-  // {
-  //   title: 'Insecticide',
-  //   ambient: '/sounds/music/Insecticide Ambient 2023-09-20.mp3',
-  //   active: '/sounds/music/06 Insecticide 2023-08-22.mp3',
-  //   artist: 'Tim Halbert',
-  //   website: 'https://www.timhalbert.com/',
-  // },
-  // {
-  //   title: 'Flatlander',
-  //   ambient: '/sounds/music/Flatlander Ambient 2023-09-20.mp3',
-  //   active: '/sounds/music/09 Flatlander 2023-08-24.mp3',
-  //   artist: 'Tim Halbert',
-  //   website: 'https://www.timhalbert.com/',
-  // },
-  // Add more songs here
 ] as InitialSongMetadata[];
 
 export default function MusicContextProvider({ children }: { children: React.ReactNode }) {
@@ -162,9 +129,19 @@ export default function MusicContextProvider({ children }: { children: React.Rea
 
     const song = songs[songIndex.current];
 
-    const active = new Audio(song.active);
-    const ambient = new Audio(song.ambient);
-    const thud = new Audio(song.thud);
+    const active = new Audio();
+    const ambient = new Audio();
+    const thud = new Audio();
+
+    if (active.canPlayType('audio/ogg') !== '') {
+      active.src = song.activeOgg;
+      ambient.src = song.ambientOgg;
+      thud.src = song.thudOgg;
+    } else {
+      active.src = song.activeMp3;
+      ambient.src = song.ambientMp3;
+      thud.src = song.thudMp3;
+    }
 
     active.preload = 'auto';
     ambient.preload = 'auto';
@@ -223,7 +200,7 @@ export default function MusicContextProvider({ children }: { children: React.Rea
 
     setIsHot(transitionToActive);
 
-    if (!songMetadata) {
+    if (!songMetadata || !isPlaying) {
       return;
     }
 
@@ -275,7 +252,7 @@ export default function MusicContextProvider({ children }: { children: React.Rea
         setIsToggling(false);
       }
     }, step * 1000);
-  }, [isHot, setIsHot, songMetadata, volume]);
+  }, [isHot, isPlaying, setIsHot, songMetadata, volume]);
 
   return (
     <MusicContext.Provider value={{
