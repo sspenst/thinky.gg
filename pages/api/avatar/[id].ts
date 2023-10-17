@@ -1,3 +1,4 @@
+import Image from '@root/models/db/image';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidObjectIdPNG } from '../../../helpers/apiWrapper';
 import dbConnect from '../../../lib/dbConnect';
@@ -24,7 +25,7 @@ export default apiWrapper({ GET: {
     });
   }
 
-  const image = await ImageModel.findOne({ documentId: userId }, {}, { lean: false });
+  const image = await ImageModel.findOne<Image>({ documentId: userId });
 
   if (image) {
     res.setHeader('Content-Type', 'image/png');

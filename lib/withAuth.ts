@@ -70,8 +70,8 @@ export async function getUserFromToken(
       }),
       ...ipData,
     },
-    { lean: true, new: true, projection: '+email +bio' },
-  );
+    { new: true, projection: '+email +bio' },
+  ).lean<User>();
 
   if (user && !isLocal()) {
     newrelic.addCustomAttribute && newrelic.addCustomAttribute('userName', user.name);

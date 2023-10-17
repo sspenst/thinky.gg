@@ -50,7 +50,7 @@ export default withAuth({
 
     try {
       await session.withTransaction(async () => {
-        const latestPlayAttempt = await PlayAttemptModel.findOne<PlayAttempt>(
+        const latestPlayAttempt = await PlayAttemptModel.findOne(
           {
             isDeleted: { $ne: true },
             levelId: levelObjectId,
@@ -62,7 +62,6 @@ export default withAuth({
             endTime: 1,
           },
           {
-            lean: true,
             session: session,
             $sort: {
               endTime: -1,
@@ -70,11 +69,11 @@ export default withAuth({
               attemptContext: -1,
             },
           },
-        );
+        ).lean<PlayAttempt>();
 
         if (!latestPlayAttempt) {
           // there is no playattempt yet, so need to check if the level exists before continuing
-          const level = await LevelModel.findOne<EnrichedLevel>(
+          const level = await LevelModel.findOne(
             {
               _id: levelObjectId,
               isDeleted: { $ne: true },
@@ -84,10 +83,9 @@ export default withAuth({
               userId: 1,
             },
             {
-              lean: true,
               session: session,
             },
-          );
+          ).lean<EnrichedLevel>();
 
           if (!level) {
             resTrack.status = 404;
@@ -127,7 +125,7 @@ export default withAuth({
           if (latestPlayAttempt.attemptContext === AttemptContext.UNSOLVED) {
             const newPlayDuration = now - latestPlayAttempt.endTime;
 
-            const updatedLevel = await LevelModel.findByIdAndUpdate<EnrichedLevel>(levelObjectId, {
+            const updatedLevel = await LevelModel.findByIdAndUpdate(levelObjectId, {
               $inc: {
                 calc_playattempts_duration_sum: newPlayDuration,
               },
@@ -136,14 +134,13 @@ export default withAuth({
               },
             }, {
               new: true,
-              lean: true,
               projection: {
                 calc_playattempts_duration_sum: 1,
                 calc_playattempts_just_beaten_count: 1,
                 calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' },
               },
               session: session,
-            });
+            }).lean<EnrichedLevel>();
 
             if (!updatedLevel) {
               resTrack.status = 404;
@@ -156,9 +153,8 @@ export default withAuth({
                 calc_difficulty_estimate: getDifficultyEstimate(updatedLevel, updatedLevel.calc_playattempts_unique_users_count ?? 0),
               },
             }, {
-              lean: true,
               session: session,
-            });
+            }).lean();
           }
 
           resTrack.status = 200;
