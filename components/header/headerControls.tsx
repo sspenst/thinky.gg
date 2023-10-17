@@ -5,6 +5,7 @@ import MusicModal from '../modal/musicModal';
 import StyledTooltip from '../page/styledTooltip';
 import MusicIcon from './musicIcon';
 import Notifications from './notifications';
+import { MusicContext } from '@root/contexts/musicContext';
 
 /**
  * If logged in:
@@ -85,6 +86,7 @@ function UserHeaderControls() {
 
 export default function HeaderControls() {
   const [isMusicModalOpen, setIsMusicModalOpen] = useState(false);
+  const { seek, songMetadata } = useContext(MusicContext);
 
   return (<>
     <UserHeaderControls />
@@ -93,7 +95,13 @@ export default function HeaderControls() {
         <path strokeLinecap='round' strokeLinejoin='round' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
       </svg>
     </Link>
-    <button className='hidden sm:block hover:opacity-70' onClick={() => setIsMusicModalOpen(true)}>
+    <button className='hidden sm:block hover:opacity-70' onClick={() => {
+      setIsMusicModalOpen(true);
+
+      if (!songMetadata) {
+        seek(0);
+      }
+    }}>
       <MusicIcon />
     </button>
     <MusicModal

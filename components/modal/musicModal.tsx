@@ -14,6 +14,7 @@ interface MusicModalProps {
 
 export default function MusicModal({ closeModal, isOpen }: MusicModalProps) {
   const {
+    audioContext,
     crossfadeProgress,
     dynamicMusic, setDynamicMusic,
     isHot,
@@ -25,19 +26,27 @@ export default function MusicModal({ closeModal, isOpen }: MusicModalProps) {
   } = useContext(MusicContext);
 
   const togglePlay = () => {
-    setIsPlaying(p => !p);
-
     if (!songMetadata) {
       return;
     }
 
+    console.log(isPlaying);
+
     if (isPlaying) {
-      songMetadata.active.pause();
-      songMetadata.ambient.pause();
+      // songMetadata.active.pause();
+      // songMetadata.ambient.pause();
+      audioContext.suspend();
+      // songMetadata.active.stop();
+      // songMetadata.ambient.stop();
     } else {
-      songMetadata.active.play();
-      songMetadata.ambient.play();
+      // songMetadata.active.play();
+      // songMetadata.ambient.play();
+      audioContext.resume();
+      // songMetadata.active.start();
+      // songMetadata.ambient.start();
     }
+
+    setIsPlaying(p => !p);
   };
 
   const onVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,11 +55,11 @@ export default function MusicModal({ closeModal, isOpen }: MusicModalProps) {
     setVolume(newVolume);
 
     if (songMetadata) {
-      if (isHot) {
-        songMetadata.active.volume = newVolume;
-      } else {
-        songMetadata.ambient.volume = newVolume;
-      }
+      // if (isHot) {
+      //   songMetadata.active.volume = newVolume;
+      // } else {
+      //   songMetadata.ambient.volume = newVolume;
+      // }
     }
   };
 

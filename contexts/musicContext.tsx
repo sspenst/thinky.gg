@@ -1,11 +1,12 @@
 import React, { createContext, useCallback, useEffect, useRef, useState } from 'react';
 
 export interface MusicContextInterface {
+  audioContext: AudioContext;
   crossfadeProgress: number;
   dynamicMusic: boolean;
   isHot: boolean;
   isPlaying: boolean;
-  seek: (offset: number) => void;
+  seek: (offset: number, isActive: boolean) => void;
   setDynamicMusic: React.Dispatch<React.SetStateAction<boolean>>;
   setIsPlaying: React.Dispatch<React.SetStateAction<boolean>>;
   setVolume: React.Dispatch<React.SetStateAction<number>>;
@@ -15,6 +16,7 @@ export interface MusicContextInterface {
 }
 
 export const MusicContext = createContext<MusicContextInterface>({
+  audioContext: {} as AudioContext,
   crossfadeProgress: 1,
   dynamicMusic: false,
   isHot: false,
@@ -39,8 +41,10 @@ interface InitialSongMetadata extends BaseSongMetadata {
 }
 
 interface SongMetadata extends BaseSongMetadata {
-  active: HTMLAudioElement;
-  ambient: HTMLAudioElement;
+  // active: HTMLAudioElement;
+  // ambient: HTMLAudioElement;
+  active: AudioBufferSourceNode;
+  ambient: AudioBufferSourceNode;
 }
 
 const songs = [
@@ -104,6 +108,7 @@ const songs = [
 ] as InitialSongMetadata[];
 
 export default function MusicContextProvider({ children }: { children: React.ReactNode }) {
+  const [audioContext, setAudioContext] = useState<AudioContext>();
   const [crossfadeProgress, setCrossfadeProgress] = useState(1);
   const [dynamicMusic, setDynamicMusic] = useState(true);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -114,63 +119,124 @@ export default function MusicContextProvider({ children }: { children: React.Rea
   const [songMetadata, setSongMetdata] = useState<SongMetadata>();
   const [volume, setVolume] = useState(1);
 
-  useEffect(() => {
-    // initialize the starting song
-    seek(songIndex.current);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // useEffect(() => {
+  //   // initialize the starting song
+  //   seek(songIndex.current);
+  // // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
 
   const seek = useCallback((offset: number, isActive = isHot) => {
-    const onCanplaythrough = () => {
-      // NB: first song that loads will stop here, second song will play both at once
-      if (loadedAudioIndex.current !== songIndex.current) {
-        loadedAudioIndex.current = songIndex.current;
+    // const onCanplaythrough = () => {
+    //   // NB: first song that loads will stop here, second song will play both at once
+    //   if (loadedAudioIndex.current !== songIndex.current) {
+    //     loadedAudioIndex.current = songIndex.current;
 
-        return;
-      }
+    //     return;
+    //   }
 
-      active.volume = isActive ? volume : 0;
-      ambient.volume = isActive ? 0 : volume;
+    //   active.volume = isActive ? volume : 0;
+    //   ambient.volume = isActive ? 0 : volume;
 
-      if (isPlaying) {
-        active.play();
-        ambient.play();
-      }
-    };
+    //   if (isPlaying) {
+    //     active.play();
+    //     ambient.play();
+    //   }
+    // };
 
     // ensure existing song is cleaned up
     if (songMetadata) {
-      songMetadata.active.pause();
-      songMetadata.active.removeEventListener('canplaythrough', onCanplaythrough);
-      songMetadata.active.remove();
+      // songMetadata.active.pause();
+      // songMetadata.active.removeEventListener('canplaythrough', onCanplaythrough);
+      // songMetadata.active.remove();
 
-      songMetadata.ambient.pause();
-      songMetadata.ambient.removeEventListener('canplaythrough', onCanplaythrough);
-      songMetadata.ambient.remove();
+      // songMetadata.ambient.pause();
+      // songMetadata.ambient.removeEventListener('canplaythrough', onCanplaythrough);
+      // songMetadata.ambient.remove();
+
+      songMetadata.active.stop();
+      songMetadata.active.disconnect();
+      // songMetadata.active = null;
+      songMetadata.ambient.stop();
+      songMetadata.ambient.disconnect();
     }
 
     // NB: add songs.length to account for negative offset
     songIndex.current = (songIndex.current + offset + songs.length) % songs.length;
 
     const song = songs[songIndex.current];
-    const active = new Audio(song.active);
-    const ambient = new Audio(song.ambient);
 
-    active.preload = 'auto';
-    ambient.preload = 'auto';
-    loadedAudioIndex.current = -1;
+    let audioCtx = audioContext;
 
-    // both tracks are playing at the same time so only need to check if one has ended
-    active.addEventListener('canplaythrough', onCanplaythrough);
-    ambient.addEventListener('canplaythrough', onCanplaythrough);
+    // WEB AUDIO API
+    if (!audioCtx) {
+      audioCtx = new window.AudioContext();
+      setAudioContext(audioCtx);
+    }
 
-    setSongMetdata({
-      active: active,
-      ambient: ambient,
-      artist: song.artist,
-      title: song.title,
-      website: song.website,
-    });
+    async function loadAudioFile(url: string) {
+      if (!audioCtx) {
+        return null;
+      }
+
+      const response = await fetch(url);
+      const arrayBuffer = await response.arrayBuffer();
+
+      return await audioCtx.decodeAudioData(arrayBuffer);
+    }
+
+    Promise.all([loadAudioFile(song.active), loadAudioFile(song.ambient)])
+      .then(([audioBuffer1, audioBuffer2]) => {
+        if (!audioCtx) {
+          return;
+        }
+
+        // Create buffer sources
+        const source1 = audioCtx.createBufferSource();
+
+        source1.buffer = audioBuffer1;
+        source1.connect(audioCtx.destination);
+
+        const source2 = audioCtx.createBufferSource();
+
+        source2.buffer = audioBuffer2;
+        source2.connect(audioCtx.destination);
+
+        // Start both sources at the same time
+        if (isPlaying) {
+          source1.start(0);
+          source2.start(0);
+        }
+
+        setSongMetdata({
+          active: source1,
+          ambient: source2,
+          artist: song.artist,
+          title: song.title,
+          website: song.website,
+        });
+      })
+      .catch(error => {
+        console.error('Error loading audio files:', error);
+      });
+
+    // const active = new Audio(song.active);
+    // const ambient = new Audio(song.ambient);
+
+    // active.preload = 'auto';
+    // ambient.preload = 'auto';
+    // loadedAudioIndex.current = -1;
+
+    // // both tracks are playing at the same time so only need to check if one has ended
+    // active.addEventListener('canplaythrough', onCanplaythrough);
+    // ambient.addEventListener('canplaythrough', onCanplaythrough);
+
+    // setSongMetdata({
+    //   active: active,
+    //   ambient: ambient,
+    //   artist: song.artist,
+    //   title: song.title,
+    //   website: song.website,
+    // });
   }, [isHot, isPlaying, songMetadata, volume]);
 
   // NB: separate useEffect for next because seek needs to be called outside of the seek function
@@ -215,8 +281,8 @@ export default function MusicContextProvider({ children }: { children: React.Rea
 
     const duration = 1; // crossfade duration in seconds
     const step = 0.01; // step size
-    const startActiveVol = songMetadata.active.volume;
-    const startAmbientVol = songMetadata.ambient.volume;
+    // const startActiveVol = songMetadata.active.volume;
+    // const startAmbientVol = songMetadata.ambient.volume;
     let progress = 0;
 
     intervalRef.current = setInterval(() => {
@@ -224,12 +290,12 @@ export default function MusicContextProvider({ children }: { children: React.Rea
 
       if (!transitionToActive) {
         // Crossfade to ambient version
-        songMetadata.active.volume = Math.max(0, startActiveVol * (1 - progress));
-        songMetadata.ambient.volume = Math.min(volume, startAmbientVol + (1 - startAmbientVol) * progress);
+        // songMetadata.active.volume = Math.max(0, startActiveVol * (1 - progress));
+        // songMetadata.ambient.volume = Math.min(volume, startAmbientVol + (1 - startAmbientVol) * progress);
       } else {
         // Crossfade to active version
-        songMetadata.active.volume = Math.min(volume, startActiveVol + (1 - startActiveVol) * progress);
-        songMetadata.ambient.volume = Math.max(0, startAmbientVol * (1 - progress));
+        // songMetadata.active.volume = Math.min(volume, startActiveVol + (1 - startActiveVol) * progress);
+        // songMetadata.ambient.volume = Math.max(0, startAmbientVol * (1 - progress));
       }
 
       setCrossfadeProgress(progress);
@@ -237,8 +303,8 @@ export default function MusicContextProvider({ children }: { children: React.Rea
       if (progress >= 1) {
         clearInterval(intervalRef.current!);
         // set volumes to exact values
-        songMetadata.active.volume = !transitionToActive ? 0 : volume;
-        songMetadata.ambient.volume = !transitionToActive ? volume : 0;
+        // songMetadata.active.volume = !transitionToActive ? 0 : volume;
+        // songMetadata.ambient.volume = !transitionToActive ? volume : 0;
         intervalRef.current = null;
       }
     }, step * 1000);
@@ -246,6 +312,7 @@ export default function MusicContextProvider({ children }: { children: React.Rea
 
   return (
     <MusicContext.Provider value={{
+      audioContext: audioContext,
       crossfadeProgress: crossfadeProgress,
       dynamicMusic: dynamicMusic,
       isHot: isHot,
