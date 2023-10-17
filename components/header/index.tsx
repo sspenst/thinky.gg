@@ -6,7 +6,7 @@ import { AppContext } from '../../contexts/appContext';
 import LinkInfo from '../formatted/linkInfo';
 import Directory from './directory';
 import Dropdown from './dropdown';
-import UserInfo from './userInfo';
+import HeaderControls from './headerControls';
 
 interface HeaderProps {
   folders?: LinkInfo[];
@@ -48,7 +48,7 @@ export default function Header({
         <Directory folders={folders} subtitle={subtitle} title={title} />
       </div>
       <div className='flex gap-4 items-center z-20'>
-        <UserInfo />
+        <HeaderControls />
         <Dropdown />
       </div>
     </header>

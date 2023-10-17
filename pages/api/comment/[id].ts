@@ -171,12 +171,10 @@ export default withAuth({
       }
     } else if (targetModel === 'Comment') {
       const [parentComment, everyoneInThread] = await Promise.all([
-        CommentModel.findOne<Comment>({
+        CommentModel.findOne({
           _id: target,
           deletedAt: null,
-        }, {}, {
-          lean: true
-        }),
+        }).lean<Comment>(),
         CommentModel.aggregate([
           {
             $match: {
@@ -261,15 +259,11 @@ async function softDeleteComment(commentId: Types.ObjectId, reqUser: User): Prom
       CommentModel.findOne({
         _id: comment.target,
         deletedAt: null
-      }, {}, {
-        lean: true
-      }),
+      }).lean<Comment>(),
       CommentModel.find({
         target: comment._id,
         deletedAt: null
-      }, {}, {
-        lean: true
-      })
+      }).lean<Comment[]>(),
     ]);
 
   const promises = [];

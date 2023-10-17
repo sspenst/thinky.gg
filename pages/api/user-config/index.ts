@@ -9,7 +9,7 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { UserConfigModel } from '../../../models/mongoose';
 
 export async function getUserConfig(userId: Types.ObjectId) {
-  let userConfig = await UserConfigModel.findOne<UserConfig>({ userId: userId }, { '__v': 0 }, { lean: true });
+  let userConfig = await UserConfigModel.findOne({ userId: userId }, { '__v': 0 }).lean<UserConfig>();
 
   if (!userConfig) {
     userConfig = await UserConfigModel.create({

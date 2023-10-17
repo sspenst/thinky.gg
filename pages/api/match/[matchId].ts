@@ -65,11 +65,11 @@ export async function quitMatch(matchId: string, userId: Types.ObjectId) {
       },
       state: MultiplayerMatchState.ABORTED,
     },
-    { new: true, lean: true, populate: ['players', 'winners', 'levels'] }
-  );
+    { new: true, populate: ['players', 'winners', 'levels'] }
+  ).lean<MultiplayerMatch>();
 
   if (!updatedMatch) {
-    updatedMatch = await MultiplayerMatchModel.findOne({ matchId: matchId, players: userId, state: MultiplayerMatchState.ACTIVE }, {}, { lean: true });
+    updatedMatch = await MultiplayerMatchModel.findOne({ matchId: matchId, players: userId, state: MultiplayerMatchState.ACTIVE }).lean<MultiplayerMatch>();
 
     if (!updatedMatch) {
       logger.error('Could not find match ' + matchId);
@@ -333,16 +333,14 @@ export default withAuth(
         return res.status(200).json({ success: true });
       } else if (action === MatchAction.JOIN) {
         // joining this match... Should also start the match!
-        const involvedMatch = await MultiplayerMatchModel.findOne<MultiplayerMatch>(
+        const involvedMatch = await MultiplayerMatchModel.findOne(
           {
             players: req.user._id,
             state: {
               $in: [MultiplayerMatchState.ACTIVE, MultiplayerMatchState.OPEN],
             },
           },
-          {},
-          { lean: true }
-        );
+        ).lean<MultiplayerMatch>();
 
         if (involvedMatch && involvedMatch.matchId !== matchId) {
           // if reqUser is involved in their own match (still OPEN), then we
@@ -364,7 +362,7 @@ export default withAuth(
           matchId: matchId,
         }) as MultiplayerMatch;
 
-        const updatedMatch = await MultiplayerMatchModel.findOneAndUpdate<MultiplayerMatch>(
+        const updatedMatch = await MultiplayerMatchModel.findOneAndUpdate(
           {
             matchId: matchId,
             state: MultiplayerMatchState.OPEN,
@@ -383,8 +381,8 @@ export default withAuth(
             endTime: Date.now() + 15000 + MultiplayerMatchTypeDurationMap[match.type as MultiplayerMatchType], // end 3 minute after start
             state: MultiplayerMatchState.ACTIVE,
           },
-          { new: true, lean: true, populate: ['players', 'winners', 'levels'] }
-        );
+          { new: true, populate: ['players', 'winners', 'levels'] }
+        ).lean<MultiplayerMatch>();
 
         if (!updatedMatch) {
           res

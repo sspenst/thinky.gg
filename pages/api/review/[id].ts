@@ -129,7 +129,7 @@ export default withAuth({
       const existing = await ReviewModel.findOne({
         userId: req.userId,
         levelId: level._id,
-      }, {}, { lean: true });
+      }).lean<Review>();
 
       if (existing) {
         return res.status(400).json({

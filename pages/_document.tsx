@@ -1,4 +1,5 @@
 /* istanbul ignore file */
+import User from '@root/models/db/user';
 import { Types } from 'mongoose';
 import Document, { DocumentContext, DocumentInitialProps, Head, Html, Main, NextScript } from 'next/document';
 import React from 'react';
@@ -55,7 +56,7 @@ if (process.env.OFFLINE_BUILD !== 'true') {
 
   logger.warn('[Run ID ' + containerRunInstanceId + '] Starting... Trying to connect to DB');
   dbConnect().then(async () => { // Hopefully this works... and prevents the big spike in performance on every deploy...
-    await UserModel.findOne({}, { _id: 1 }, { lean: true });
+    await UserModel.findOne({}, { _id: 1 }).lean<User>();
 
     logger.warn('[Run ID ' + containerRunInstanceId + '] Connected to database and ran a sample query in ' + (Date.now() - benchmark_start) + 'ms');
   });

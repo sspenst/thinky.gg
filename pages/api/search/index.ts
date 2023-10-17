@@ -137,11 +137,10 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
   if (query.searchAuthor && query.searchAuthor.length > 0) {
     const searchAuthorStr = cleanInput(query.searchAuthor);
 
-    searchAuthor = await UserModel.findOne<User>(
+    searchAuthor = await UserModel.findOne(
       { 'name': searchAuthorStr },
       'name hideStatus last_visited_at avatarUpdatedAt',
-      { lean: true }
-    );
+    ).lean<User>();
 
     cleanUser(searchAuthor);
 

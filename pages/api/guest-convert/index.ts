@@ -35,7 +35,7 @@ export default withAuth({
     password,
   } = req.body;
 
-  const user = await UserModel.findById(req.userId, '+password', { lean: false });
+  const user = await UserModel.findById(req.userId, '+password');
   const trimmedName = name.trim();
 
   user.email = email.trim();

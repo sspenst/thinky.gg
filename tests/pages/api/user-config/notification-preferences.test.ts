@@ -78,7 +78,7 @@ describe('account settings notification preferences', () => {
         expect(response.updated).toBe(true);
 
         // check the db
-        const config = await UserConfigModel.findOne<UserConfig>({ userId: TestId.USER }, {}, { lean: true }) as UserConfig;
+        const config = await UserConfigModel.findOne({ userId: TestId.USER }).lean<UserConfig>() as UserConfig;
 
         expect(config.pushNotificationsList).toEqual(pushNotificationList);
         expect(config.emailNotificationsList).toEqual(emailNotificationList);

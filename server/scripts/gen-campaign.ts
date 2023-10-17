@@ -49,9 +49,9 @@ async function genCampaign() {
           '$calc_playattempts_duration_sum', '$calc_stats_players_beaten'
         ]
       },
-    }, { lean: true, sort: {
+    }, { sort: {
       'totaltime_div_ppl_beat': -1 // for some reason this isnt working
-    } });
+    } }).lean();
   const endTime = Date.now();
   const timeTaken = endTime - startTime;
 

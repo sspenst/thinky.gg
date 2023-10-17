@@ -1,12 +1,14 @@
 import getEmailBody from '@root/helpers/getEmailBody';
 import getMobileNotification from '@root/helpers/getMobileNotification';
 import Notification from '@root/models/db/notification';
+import User from '@root/models/db/user';
+import UserConfig from '@root/models/db/userConfig';
 import { EmailLogModel, UserConfigModel, UserModel } from '@root/models/mongoose';
 import { Types } from 'mongoose';
 import { sendMail } from '../email-digest';
 
 export async function sendEmailNotification(notification: Notification) {
-  const userConfig = await UserConfigModel.findOne({ userId: notification.userId }, { emailNotificationsList: 1 }, { lean: true });
+  const userConfig = await UserConfigModel.findOne({ userId: notification.userId }, { emailNotificationsList: 1 }).lean<UserConfig>();
   const validTypes = userConfig?.emailNotificationsList || [];
 
   if (validTypes.includes(notification.type)) {
@@ -16,7 +18,7 @@ export async function sendEmailNotification(notification: Notification) {
     }).sort({ createdAt: -1 });
 
     const lastSentTime = lastSent ? new Date(lastSent.createdAt).getTime() : 0;
-    const lastLoggedInTimeQuery = await UserModel.findOne({ _id: notification.userId }, { last_visited_at: 1 }, { lean: true });
+    const lastLoggedInTimeQuery = await UserModel.findOne({ _id: notification.userId }, { last_visited_at: 1 }).lean<User>();
     const lastLoggedInTime = lastLoggedInTimeQuery?.last_visited_at ? new Date(1000 * lastLoggedInTimeQuery.last_visited_at).getTime() : 0;
 
     // check if it has been less than 24 hours since last email
