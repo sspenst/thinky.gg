@@ -1,10 +1,9 @@
-import { MusicContext } from '@root/contexts/musicContext';
-import classNames from 'classnames';
 import Link from 'next/link';
 import React, { useContext, useState } from 'react';
 import { AppContext } from '../../contexts/appContext';
 import MusicModal from '../modal/musicModal';
 import StyledTooltip from '../page/styledTooltip';
+import MusicIcon from './musicIcon';
 import Notifications from './notifications';
 
 /**
@@ -86,7 +85,6 @@ function UserHeaderControls() {
 
 export default function HeaderControls() {
   const [isMusicModalOpen, setIsMusicModalOpen] = useState(false);
-  const { isHot, isPlaying } = useContext(MusicContext);
 
   return (<>
     <UserHeaderControls />
@@ -95,10 +93,8 @@ export default function HeaderControls() {
         <path strokeLinecap='round' strokeLinejoin='round' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
       </svg>
     </Link>
-    <button className={classNames('hover:opacity-70', { 'animate-pulse': isPlaying }, isPlaying && (isHot ? 'text-orange-400' : 'text-blue-400'))} onClick={() => setIsMusicModalOpen(true)}>
-      <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
-        <path strokeLinecap='round' strokeLinejoin='round' d='M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 01-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z' />
-      </svg>
+    <button className='hidden sm:block hover:opacity-70' onClick={() => setIsMusicModalOpen(true)}>
+      <MusicIcon />
     </button>
     <MusicModal
       closeModal={() => setIsMusicModalOpen(false)}

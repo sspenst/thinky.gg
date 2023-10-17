@@ -37,7 +37,6 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
     if (storedPref === 'true') {
       setDontShowPostGameModal(true);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [level._id]);
 
   useEffect(() => {
