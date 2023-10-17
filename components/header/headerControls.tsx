@@ -76,9 +76,9 @@ function UserHeaderControls() {
             }
           </div>
         </div>
-        <StyledTooltip id='connected-players-count' />
       </Link>
     }
+    <StyledTooltip id='connected-players-count' />
     <Notifications />
   </>);
 }
