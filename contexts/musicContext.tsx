@@ -36,31 +36,31 @@ interface BaseSongMetadata {
 }
 
 interface InitialSongMetadata extends BaseSongMetadata {
-  active: string;
   ambient: string;
+  original: string;
   thud: string;
 }
 
 interface SongMetadata extends BaseSongMetadata {
-  active: HTMLAudioElement;
   ambient: HTMLAudioElement;
+  original: HTMLAudioElement;
   thud: HTMLAudioElement;
 }
 
 const songs = [
   // TODO: add all songs
   {
-    active: '/sounds/music/01,10.ogg',
     ambient: '/sounds/music/01,10.ogg',
     artist: 'Tim Halbert',
+    original: '/sounds/music/01,10.ogg',
     thud: '/sounds/music/01,10.ogg',
     title: 'Pink and Orange',
     website: 'https://www.timhalbert.com/',
   },
   {
-    active: '/sounds/music/04,07.ogg',
     ambient: '/sounds/music/04,07.ogg',
     artist: 'Tim Halbert',
+    original: '/sounds/music/04,07.ogg',
     thud: '/sounds/music/04,07.ogg',
     title: 'Binary Shapes',
     website: 'https://www.timhalbert.com/',
@@ -93,29 +93,29 @@ export default function MusicContextProvider({ children }: { children: React.Rea
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const seek = useCallback((offset: number, isActive = isHot) => {
+  const seek = useCallback((offset: number, playOriginal = isHot) => {
     const onCanplaythrough = () => {
       loadedAudioIndex.current++;
 
-      // need to load active, ambient, and thud before continuing
+      // need to load ambient, original, and thud before continuing
       if (loadedAudioIndex.current !== 3) {
         return;
       }
 
-      active.volume = isActive ? volume : 0;
-      ambient.volume = isActive ? 0 : volume;
+      original.volume = playOriginal ? volume : 0;
+      ambient.volume = playOriginal ? 0 : volume;
 
       if (isPlaying) {
-        active.play();
+        original.play();
         ambient.play();
       }
     };
 
     // ensure existing song is cleaned up
     if (songMetadata) {
-      songMetadata.active.pause();
-      songMetadata.active.removeEventListener('canplaythrough', onCanplaythrough);
-      songMetadata.active.remove();
+      songMetadata.original.pause();
+      songMetadata.original.removeEventListener('canplaythrough', onCanplaythrough);
+      songMetadata.original.remove();
 
       songMetadata.ambient.pause();
       songMetadata.ambient.removeEventListener('canplaythrough', onCanplaythrough);
@@ -131,23 +131,23 @@ export default function MusicContextProvider({ children }: { children: React.Rea
 
     const song = songs[songIndex.current];
 
-    const active = new Audio(song.active);
     const ambient = new Audio(song.ambient);
+    const original = new Audio(song.original);
     const thud = new Audio(song.thud);
 
-    active.preload = 'auto';
     ambient.preload = 'auto';
+    original.preload = 'auto';
     thud.preload = 'auto';
 
     loadedAudioIndex.current = 0;
 
     // both tracks are playing at the same time so only need to check if one has ended
-    active.addEventListener('canplaythrough', onCanplaythrough);
     ambient.addEventListener('canplaythrough', onCanplaythrough);
+    original.addEventListener('canplaythrough', onCanplaythrough);
     thud.addEventListener('canplaythrough', onCanplaythrough);
 
     setSongMetdata({
-      active: active,
+      original: original,
       ambient: ambient,
       artist: song.artist,
       thud: thud,
@@ -170,9 +170,9 @@ export default function MusicContextProvider({ children }: { children: React.Rea
       }
     };
 
-    songMetadata.active.addEventListener('ended', next);
+    songMetadata.original.addEventListener('ended', next);
 
-    return () => songMetadata.active.removeEventListener('ended', next);
+    return () => songMetadata.original.removeEventListener('ended', next);
   }, [dynamicMusic, seek, songMetadata]);
 
   const toggleVersion = useCallback((command: 'hot' | 'cold' | 'switch' = 'switch') => {
@@ -188,9 +188,9 @@ export default function MusicContextProvider({ children }: { children: React.Rea
       return;
     }
 
-    const transitionToActive = !isHot;
+    const transitionToOriginal = !isHot;
 
-    setIsHot(transitionToActive);
+    setIsHot(transitionToOriginal);
 
     if (!songMetadata || !isPlaying) {
       return;
@@ -198,46 +198,46 @@ export default function MusicContextProvider({ children }: { children: React.Rea
 
     setIsToggling(true);
 
-    // play thud sound when changing to active
-    if (transitionToActive) {
-      songMetadata.active.currentTime = songMetadata.ambient.currentTime;
-      songMetadata.active.play();
+    // play thud sound when changing to original
+    if (transitionToOriginal) {
+      songMetadata.original.currentTime = songMetadata.ambient.currentTime;
+      songMetadata.original.play();
       songMetadata.thud.currentTime = 0;
       songMetadata.thud.play();
     } else {
-      songMetadata.ambient.currentTime = songMetadata.active.currentTime;
+      songMetadata.ambient.currentTime = songMetadata.original.currentTime;
       songMetadata.ambient.play();
     }
 
     const duration = 1000; // crossfade duration in ms
     const interval = 100; // interval in ms
-    const startActiveVol = songMetadata.active.volume;
+    const startOriginalVol = songMetadata.original.volume;
     const startAmbientVol = songMetadata.ambient.volume;
     let progress = 0;
 
     intervalRef.current = setInterval(() => {
       progress += interval / duration;
 
-      if (!transitionToActive) {
+      if (!transitionToOriginal) {
         // Crossfade to ambient version
-        songMetadata.active.volume = Math.max(0, startActiveVol * (1 - progress));
+        songMetadata.original.volume = Math.max(0, startOriginalVol * (1 - progress));
         songMetadata.ambient.volume = Math.min(volume, startAmbientVol + (1 - startAmbientVol) * progress);
       } else {
-        // Crossfade to active version
-        songMetadata.active.volume = Math.min(volume, startActiveVol + (1 - startActiveVol) * progress);
+        // Crossfade to original version
+        songMetadata.original.volume = Math.min(volume, startOriginalVol + (1 - startOriginalVol) * progress);
         songMetadata.ambient.volume = Math.max(0, startAmbientVol * (1 - progress));
       }
 
       if (progress >= 1) {
         clearInterval(intervalRef.current!);
         // set volumes to exact values
-        songMetadata.active.volume = !transitionToActive ? 0 : volume;
-        songMetadata.ambient.volume = !transitionToActive ? volume : 0;
+        songMetadata.original.volume = !transitionToOriginal ? 0 : volume;
+        songMetadata.ambient.volume = !transitionToOriginal ? volume : 0;
 
-        if (transitionToActive) {
+        if (transitionToOriginal) {
           songMetadata.ambient.pause();
         } else {
-          songMetadata.active.pause();
+          songMetadata.original.pause();
         }
 
         intervalRef.current = null;
