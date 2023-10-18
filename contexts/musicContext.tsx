@@ -217,14 +217,14 @@ export default function MusicContextProvider({ children }: { children: React.Rea
       songMetadata.ambient.play();
     }
 
-    const duration = 1; // crossfade duration in seconds
-    const step = 0.01; // step size
+    const duration = 1000; // crossfade duration in ms
+    const interval = 100; // interval in ms
     const startActiveVol = songMetadata.active.volume;
     const startAmbientVol = songMetadata.ambient.volume;
     let progress = 0;
 
     intervalRef.current = setInterval(() => {
-      progress += step / duration;
+      progress += interval / duration;
 
       if (!transitionToActive) {
         // Crossfade to ambient version
@@ -251,7 +251,7 @@ export default function MusicContextProvider({ children }: { children: React.Rea
         intervalRef.current = null;
         setIsToggling(false);
       }
-    }, step * 1000);
+    }, interval);
   }, [isHot, isPlaying, setIsHot, songMetadata, volume]);
 
   return (
