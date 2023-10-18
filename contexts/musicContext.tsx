@@ -36,12 +36,9 @@ interface BaseSongMetadata {
 }
 
 interface InitialSongMetadata extends BaseSongMetadata {
-  activeMp3: string;
-  activeOgg: string;
-  ambientMp3: string;
-  ambientOgg: string;
-  thudMp3: string;
-  thudOgg: string;
+  active: string;
+  ambient: string;
+  thud: string;
 }
 
 interface SongMetadata extends BaseSongMetadata {
@@ -53,24 +50,18 @@ interface SongMetadata extends BaseSongMetadata {
 const songs = [
   // TODO: add all songs
   {
-    activeMp3: '/sounds/music/01.mp3',
-    activeOgg: '/sounds/music/01,10.ogg',
-    ambientMp3: '/sounds/music/01_ambient.mp3',
-    ambientOgg: '/sounds/music/01,10.ogg',
+    active: '/sounds/music/01,10.ogg',
+    ambient: '/sounds/music/01,10.ogg',
     artist: 'Tim Halbert',
-    thudMp3: '/sounds/music/01.mp3',
-    thudOgg: '/sounds/music/01,10.ogg',
+    thud: '/sounds/music/01,10.ogg',
     title: 'Pink and Orange',
     website: 'https://www.timhalbert.com/',
   },
   {
-    activeMp3: '/sounds/music/07.mp3',
-    activeOgg: '/sounds/music/04,07.ogg',
-    ambientMp3: '/sounds/music/07_ambient.mp3',
-    ambientOgg: '/sounds/music/04,07.ogg',
+    active: '/sounds/music/04,07.ogg',
+    ambient: '/sounds/music/04,07.ogg',
     artist: 'Tim Halbert',
-    thudMp3: '/sounds/music/07.mp3',
-    thudOgg: '/sounds/music/04,07.ogg',
+    thud: '/sounds/music/04,07.ogg',
     title: 'Binary Shapes',
     website: 'https://www.timhalbert.com/',
   },
@@ -140,19 +131,9 @@ export default function MusicContextProvider({ children }: { children: React.Rea
 
     const song = songs[songIndex.current];
 
-    const active = new Audio();
-    const ambient = new Audio();
-    const thud = new Audio();
-
-    if (active.canPlayType('audio/ogg') !== '') {
-      active.src = song.activeOgg;
-      ambient.src = song.ambientOgg;
-      thud.src = song.thudOgg;
-    } else {
-      active.src = song.activeMp3;
-      ambient.src = song.ambientMp3;
-      thud.src = song.thudMp3;
-    }
+    const active = new Audio(song.active);
+    const ambient = new Audio(song.ambient);
+    const thud = new Audio(song.thud);
 
     active.preload = 'auto';
     ambient.preload = 'auto';
