@@ -442,7 +442,11 @@ export default function Game({
         return prevGameState;
       }
 
-      if (!makeMove(newGameState, direction, allowFreeUndo)) {
+      const changed = makeMove(newGameState, direction, allowFreeUndo);
+
+      console.log(changed);
+
+      if (changed.length === 0) {
         return prevGameState;
       }
 

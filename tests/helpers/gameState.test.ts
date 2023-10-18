@@ -10,14 +10,14 @@ describe('helpers/gameStateHelpers.ts', () => {
     expect(areEqualGameStates(gameState, initialGameState)).toBeTruthy();
 
     // nothing to undo
-    expect(undo(gameState)).toBeFalsy();
+    expect(undo(gameState)).toHaveLength(0);
 
     // move out of bounds
-    expect(makeMove(gameState, Direction.LEFT, true)).toBeFalsy();
+    expect(makeMove(gameState, Direction.LEFT, true)).toHaveLength(0);
 
     // move into a wall
     gameState = cloneGameState(initialGameState);
-    expect(makeMove(gameState, Direction.DOWN)).toBeFalsy();
+    expect(makeMove(gameState, Direction.DOWN)).toHaveLength(0);
 
     // make a valid move
     gameState = cloneGameState(initialGameState);
@@ -58,7 +58,7 @@ describe('helpers/gameStateHelpers.ts', () => {
     // push block into a wall
     const gameState2 = cloneGameState(gameState);
 
-    expect(makeMove(gameState2, Direction.RIGHT)).toBeFalsy();
+    expect(makeMove(gameState2, Direction.RIGHT)).toHaveLength(0);
 
     // no free undo after pushing a block
     expect(makeMove(gameState, Direction.LEFT, true)).toBeTruthy();
@@ -80,7 +80,7 @@ describe('helpers/gameStateHelpers.ts', () => {
     expect(gameState.moves.length).toBe(10);
 
     // try to move off the exit
-    expect(makeMove(gameState, Direction.RIGHT)).toBeFalsy();
+    expect(makeMove(gameState, Direction.RIGHT)).toHaveLength(0);
 
     const matchGameState: MatchGameState = { ...gameState, leastMoves: 10 };
 

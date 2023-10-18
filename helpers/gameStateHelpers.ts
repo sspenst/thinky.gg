@@ -239,14 +239,15 @@ function checkForFreeUndo(gameState: GameState, direction: Direction): boolean {
 
 /**
  * update a gameState in-place with a new move
- * @returns if the move was valid
+ * @returns array of positions that were updated
  */
-export function makeMove(gameState: GameState, direction: Direction, allowFreeUndo = false): boolean {
+export function makeMove(gameState: GameState, direction: Direction, allowFreeUndo = false): Position[] {
+  const changed = [];
   const posTileState = gameState.board[gameState.pos.y][gameState.pos.x];
 
   // lock movement once you reach the finish
   if (posTileState.tileType === TileType.End) {
-    return false;
+    return [];
   }
 
   // before making a move, check if undo is a better choice
@@ -265,7 +266,7 @@ export function makeMove(gameState: GameState, direction: Direction, allowFreeUn
   const newPos = gameState.pos.add(directionToVector(direction));
 
   if (!isPlayerPositionValid(gameState.board, newPos)) {
-    return false;
+    return [];
   }
 
   const newPosTileState = gameState.board[newPos.y][newPos.x];
@@ -279,7 +280,7 @@ export function makeMove(gameState: GameState, direction: Direction, allowFreeUn
     // if the block is not allowed to move this direction or the new position is invalid
     if (!TileTypeHelper.canMoveInDirection(block.tileType, direction) ||
       !isBlockPositionValid(gameState.board, newBlockPos)) {
-      return false;
+      return [];
     }
 
     // track block id that was pushed
@@ -289,6 +290,8 @@ export function makeMove(gameState: GameState, direction: Direction, allowFreeUn
     newPosTileState.block = undefined;
 
     const newBlockPosTileState = gameState.board[newBlockPos.y][newBlockPos.x];
+
+    changed.push(newBlockPos);
 
     // update block state
     if (newBlockPosTileState.tileType === TileType.Hole) {
@@ -302,24 +305,27 @@ export function makeMove(gameState: GameState, direction: Direction, allowFreeUn
   gameState.moves.push(move);
   gameState.pos = newPos;
 
+  changed.push(newPos);
+
   // clear the redo stack if this direction doesn't match
   if (direction !== gameState.redoStack.pop()) {
     gameState.redoStack = [];
   }
 
-  return true;
+  return changed;
 }
 
 /**
  * undo the latest move from a gameState in-place
- * @returns if the undo was successful
+ * @returns array of positions that were updated
  */
-export function undo(gameState: GameState): boolean {
+export function undo(gameState: GameState): Position[] {
+  const changed = [];
   const prevMove = gameState.moves.pop();
 
   // nothing to undo
   if (!prevMove) {
-    return false;
+    return [];
   }
 
   const posTileState = gameState.board[gameState.pos.y][gameState.pos.x];
@@ -337,6 +343,8 @@ export function undo(gameState: GameState): boolean {
     const blockPos = gameState.pos.add(directionToVector(prevMove.direction));
     const blockPosTileState = gameState.board[blockPos.y][blockPos.x];
 
+    changed.push(blockPos);
+
     if (blockPosTileState.block?.id === prevMove.blockId) {
       // restore previous block position
       posTileState.block = blockPosTileState.block;
@@ -348,13 +356,14 @@ export function undo(gameState: GameState): boolean {
       blockPosTileState.tileType = TileType.Hole;
     } else {
       // should not happen unless gameState is manually altered
-      return false;
+      return [];
     }
   }
 
   // restore previous position
   gameState.pos = gameState.pos.sub(directionToVector(prevMove.direction));
+  changed.push(gameState.pos);
   gameState.redoStack.push(prevMove.direction);
 
-  return true;
+  return changed;
 }
