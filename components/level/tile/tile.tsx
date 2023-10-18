@@ -1,6 +1,7 @@
 import Theme from '@root/constants/theme';
 import { AppContext } from '@root/contexts/appContext';
 import { GridContext } from '@root/contexts/gridContext';
+import useDeviceCheck from '@root/hooks/useDeviceCheck';
 import Position from '@root/models/position';
 import classNames from 'classnames';
 import React, { useContext, useMemo, useState } from 'react';
@@ -81,6 +82,9 @@ export default function Tile({
     );
   }, [atEnd, inHole, text, tileType]);
 
+  const { isFirefox } = useDeviceCheck();
+  const adjustment = isFirefox ? Math.random() / 1000 : 0;
+
   return (
     <div
       className={classNames(`absolute tile-type-${tileType}`, className)}
@@ -92,8 +96,9 @@ export default function Tile({
         height: classic ? tileSize : innerTileSize,
         left: tileSize * initPos.x + (classic ? 0 : borderWidth),
         top: tileSize * initPos.y + (classic ? 0 : borderWidth),
-        transform: `translate(${(pos.x - initPos.x) * tileSize}px, ${(pos.y - initPos.y) * tileSize}px)`,
-        transition: 'transform 0.1s',
+        transform: `translate(${(pos.x - initPos.x + adjustment) * tileSize}px, ${(pos.y - initPos.y + adjustment) * tileSize}px)`,
+        // add support for safari
+        transition: 'transform 3.1s',
         width: classic ? tileSize : innerTileSize,
       }}
     >
