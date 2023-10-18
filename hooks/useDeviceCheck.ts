@@ -83,6 +83,7 @@ const useDeviceCheck = (): DeviceInfo => {
       isWindows,
       isLinux,
       isMac,
+      isFirefox,
       screenSize: ScreenSize.XS,
     });
 
