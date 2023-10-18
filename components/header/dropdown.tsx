@@ -1,4 +1,5 @@
 import { Menu, Transition } from '@headlessui/react';
+import { MusicContext } from '@root/contexts/musicContext';
 import isGuest from '@root/helpers/isGuest';
 import isPro from '@root/helpers/isPro';
 import Image from 'next/image';
@@ -18,12 +19,12 @@ import DismissToast from '../toasts/dismissToast';
 import MusicIcon from './musicIcon';
 
 export default function Dropdown() {
-  const { forceUpdate, mutateUser, user, userLoading } = useContext(AppContext);
+  const { forceUpdate, mutateUser, setShouldAttemptAuth, user, userLoading } = useContext(AppContext);
   const [isMusicModalOpen, setIsMusicModalOpen] = useState(false);
+  const { isMusicSupported } = useContext(MusicContext);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const router = useRouter();
   const { setPreventKeyDownEvent } = useContext(PageContext);
-  const { setShouldAttemptAuth } = useContext(AppContext);
 
   function logOutToast() {
     toast.dismiss();
@@ -206,25 +207,27 @@ export default function Dropdown() {
                 </div>
               )}
             </Menu.Item>
-            <div className='block sm:hidden'>
-              <Menu.Item>
-                {({ active }) => (
-                  <div
-                    className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3'
-                    onClick={() => {
-                      setIsMusicModalOpen(true);
-                      setPreventKeyDownEvent(true);
-                    }}
-                    style={{
-                      backgroundColor: active ? 'var(--bg-color-3)' : undefined,
-                    }}
-                  >
-                    <MusicIcon />
-                    Music
-                  </div>
-                )}
-              </Menu.Item>
-            </div>
+            {isMusicSupported &&
+              <div className='block sm:hidden'>
+                <Menu.Item>
+                  {({ active }) => (
+                    <div
+                      className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3'
+                      onClick={() => {
+                        setIsMusicModalOpen(true);
+                        setPreventKeyDownEvent(true);
+                      }}
+                      style={{
+                        backgroundColor: active ? 'var(--bg-color-3)' : undefined,
+                      }}
+                    >
+                      <MusicIcon />
+                      Music
+                    </div>
+                  )}
+                </Menu.Item>
+              </div>
+            }
             {isLoggedIn && <>
               <Menu.Item>
                 {({ active }) => (
@@ -279,12 +282,14 @@ export default function Dropdown() {
       }}
       isOpen={isThemeOpen}
     />
-    <MusicModal
-      closeModal={() => {
-        setIsMusicModalOpen(false);
-        setPreventKeyDownEvent(false);
-      }}
-      isOpen={isMusicModalOpen}
-    />
+    {isMusicSupported &&
+      <MusicModal
+        closeModal={() => {
+          setIsMusicModalOpen(false);
+          setPreventKeyDownEvent(false);
+        }}
+        isOpen={isMusicModalOpen}
+      />
+    }
   </>);
 }
