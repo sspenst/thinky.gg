@@ -83,6 +83,7 @@ export default function Tile({
   }, [atEnd, inHole, text, tileType]);
 
   const { isFirefox } = useDeviceCheck();
+  // https://bugzilla.mozilla.org/show_bug.cgi?id=1859660
   const adjustment = isFirefox ? Math.random() / 1000 : 0;
 
   return (
