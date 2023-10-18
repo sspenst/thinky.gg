@@ -98,7 +98,7 @@ export default function Tile({
         top: tileSize * initPos.y + (classic ? 0 : borderWidth),
         transform: `translate(${(pos.x - initPos.x + adjustment) * tileSize}px, ${(pos.y - initPos.y + adjustment) * tileSize}px)`,
         // add support for safari
-        transition: 'transform 3.1s',
+        transition: 'transform 0.1s',
         width: classic ? tileSize : innerTileSize,
       }}
     >
