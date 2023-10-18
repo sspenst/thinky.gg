@@ -3,6 +3,7 @@ import React, { createContext, useCallback, useEffect, useRef, useState } from '
 export interface MusicContextInterface {
   dynamicMusic: boolean;
   isHot: boolean;
+  isMusicSupported: boolean;
   isPlaying: boolean;
   isToggling: boolean;
   seek: (offset: number) => void;
@@ -17,6 +18,7 @@ export interface MusicContextInterface {
 export const MusicContext = createContext<MusicContextInterface>({
   dynamicMusic: false,
   isHot: false,
+  isMusicSupported: false,
   isPlaying: false,
   isToggling: false,
   seek: () => {},
@@ -78,6 +80,7 @@ export default function MusicContextProvider({ children }: { children: React.Rea
   const [dynamicMusic, setDynamicMusic] = useState(true);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const [isHot, setIsHot] = useState(false);
+  const [isMusicSupported, setIsMusicSupported] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
   const loadedAudioIndex = useRef(-1);
@@ -86,8 +89,16 @@ export default function MusicContextProvider({ children }: { children: React.Rea
   const [volume, setVolume] = useState(1);
 
   useEffect(() => {
-    // initialize the starting song
-    seek(songIndex.current);
+    const audio = new Audio();
+    const canPlayOgg = audio.canPlayType('audio/ogg') !== '';
+
+    setIsMusicSupported(canPlayOgg);
+    audio.remove();
+
+    if (canPlayOgg) {
+      // initialize the starting song
+      seek(songIndex.current);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -166,6 +177,10 @@ export default function MusicContextProvider({ children }: { children: React.Rea
 
   // NB: separate useEffect for next because seek needs to be called outside of the seek function
   useEffect(() => {
+    if (!songMetadata) {
+      return;
+    }
+
     const next = () => {
       if (dynamicMusic) {
         seek(1, false);
@@ -173,10 +188,6 @@ export default function MusicContextProvider({ children }: { children: React.Rea
         seek(1);
       }
     };
-
-    if (!songMetadata) {
-      return;
-    }
 
     songMetadata.active.addEventListener('ended', next);
 
@@ -258,6 +269,7 @@ export default function MusicContextProvider({ children }: { children: React.Rea
     <MusicContext.Provider value={{
       dynamicMusic: dynamicMusic,
       isHot: isHot,
+      isMusicSupported: isMusicSupported,
       isPlaying: isPlaying,
       isToggling: isToggling,
       seek: seek,

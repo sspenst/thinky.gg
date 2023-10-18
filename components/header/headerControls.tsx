@@ -1,3 +1,4 @@
+import { MusicContext } from '@root/contexts/musicContext';
 import Link from 'next/link';
 import React, { useContext, useState } from 'react';
 import { AppContext } from '../../contexts/appContext';
@@ -85,6 +86,7 @@ function UserHeaderControls() {
 
 export default function HeaderControls() {
   const [isMusicModalOpen, setIsMusicModalOpen] = useState(false);
+  const { isMusicSupported } = useContext(MusicContext);
 
   return (<>
     <UserHeaderControls />
@@ -93,12 +95,14 @@ export default function HeaderControls() {
         <path strokeLinecap='round' strokeLinejoin='round' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
       </svg>
     </Link>
-    <button className='hidden sm:block hover:opacity-70' onClick={() => setIsMusicModalOpen(true)}>
-      <MusicIcon />
-    </button>
-    <MusicModal
-      closeModal={() => setIsMusicModalOpen(false)}
-      isOpen={isMusicModalOpen}
-    />
+    {isMusicSupported && <>
+      <button className='hidden sm:block hover:opacity-70' onClick={() => setIsMusicModalOpen(true)}>
+        <MusicIcon />
+      </button>
+      <MusicModal
+        closeModal={() => setIsMusicModalOpen(false)}
+        isOpen={isMusicModalOpen}
+      />
+    </>}
   </>);
 }
