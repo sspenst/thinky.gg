@@ -155,6 +155,8 @@ export default function Grid({ cellClassName, gameState, id, leastMoves, onCellC
       const shadowBlur = borderWidth;
       const shadowColor = colorBlockBorder;
 
+      const adjust = classic ? 1 : 0;
+
       // Draw grid squares
       for (let y = 0; y < gameState.board.length; y++) {
         for (let x = 0; x < gameState.board[y].length; x++) {
@@ -174,9 +176,9 @@ export default function Grid({ cellClassName, gameState, id, leastMoves, onCellC
             colorLevelGridUsed : colorLevelGridText;
 
           ctx.shadowColor = shadowColor;
-          ctx.shadowBlur = shadowBlur;
-          ctx.shadowOffsetX = shadowOffsetX;
-          ctx.shadowOffsetY = shadowOffsetY;
+          ctx.shadowBlur = !classic ? shadowBlur : 0;
+          ctx.shadowOffsetX = !classic ? shadowOffsetX : 0;
+          ctx.shadowOffsetY = !classic ? shadowOffsetY : 0;
 
           ctx.font = fontSize + 'px ' + (!classic ? rubik.style.fontFamily : teko.style.fontFamily);
           ctx.fillStyle = text === undefined ? colorLevelGrid : colorLevelGridUsed; // Set text color
@@ -191,7 +193,7 @@ export default function Grid({ cellClassName, gameState, id, leastMoves, onCellC
 
           if (text !== undefined) {
             // Todo: the y position seems a bit off...
-            ctx.fillText(text.toString(), (x + 0.5) * tileSize, (y + 0.52) * tileSize);
+            ctx.fillText(text.toString(), (x + 0.5) * tileSize, (y + 0.5) * tileSize);
           }
         }
       }
@@ -200,17 +202,19 @@ export default function Grid({ cellClassName, gameState, id, leastMoves, onCellC
       ctx.strokeStyle = colorBlockBorder;
 
       // now draw the grid lines
+
       for (let i = 0; i <= width; i++) {
         ctx.beginPath();
-        ctx.moveTo(i * tileSize, 0);
-        ctx.lineTo(i * tileSize, height * tileSize);
+
+        ctx.moveTo(i * tileSize - adjust, 0);
+        ctx.lineTo(i * tileSize - adjust, height * tileSize);
         ctx.stroke();
       }
 
       for (let i = 0; i <= height; i++) {
         ctx.beginPath();
-        ctx.moveTo(0, i * tileSize);
-        ctx.lineTo(width * tileSize, i * tileSize);
+        ctx.moveTo(0, i * tileSize + adjust);
+        ctx.lineTo(width * tileSize, i * tileSize + adjust);
         ctx.stroke();
       }
     };
