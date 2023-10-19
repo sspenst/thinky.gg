@@ -1,7 +1,10 @@
+import { MusicContext } from '@root/contexts/musicContext';
 import Link from 'next/link';
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { AppContext } from '../../contexts/appContext';
+import MusicModal from '../modal/musicModal';
 import StyledTooltip from '../page/styledTooltip';
+import MusicIcon from './musicIcon';
 import Notifications from './notifications';
 
 /**
@@ -82,6 +85,9 @@ function UserHeaderControls() {
 }
 
 export default function HeaderControls() {
+  const [isMusicModalOpen, setIsMusicModalOpen] = useState(false);
+  const { isMusicSupported } = useContext(MusicContext);
+
   return (<>
     <UserHeaderControls />
     <Link id='searchBtn' aria-label='search' className='hidden sm:block hover:opacity-70' href={'/search'} passHref prefetch={false}>
@@ -89,5 +95,14 @@ export default function HeaderControls() {
         <path strokeLinecap='round' strokeLinejoin='round' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
       </svg>
     </Link>
+    {isMusicSupported && <>
+      <button className='hidden sm:block hover:opacity-70' onClick={() => setIsMusicModalOpen(true)}>
+        <MusicIcon />
+      </button>
+      <MusicModal
+        closeModal={() => setIsMusicModalOpen(false)}
+        isOpen={isMusicModalOpen}
+      />
+    </>}
   </>);
 }
