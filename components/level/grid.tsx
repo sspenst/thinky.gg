@@ -56,7 +56,7 @@ export default function Grid({ cellClassName, gameState, id, leastMoves, onCellC
     };
   }, [gridId, height, width]);
 
-  const tiles = [];
+  const tiles: any = [];
   const blocks: { [id: number]: JSX.Element } = {};
 
   for (let y = 0; y < gameState.board.length; y++) {
@@ -68,16 +68,18 @@ export default function Grid({ cellClassName, gameState, id, leastMoves, onCellC
           tileState.text.length === 0 ? undefined :
             tileState.text[tileState.text.length - 1];
 
-      tiles.push(
-        <Tile
-          className={cellClassName ? cellClassName(x, y) : undefined}
-          handleClick={onCellClick ? (rightClick: boolean) => onCellClick(x, y, rightClick) : undefined}
-          key={`tile-${y}-${x}`}
-          pos={new Position(x, y)}
-          text={text}
-          tileType={tileType}
-        />
-      );
+      if (tileType !== TileType.Default) {
+        tiles.push(
+          <Tile
+            className={cellClassName ? cellClassName(x, y) : undefined}
+            handleClick={onCellClick ? (rightClick: boolean) => onCellClick(x, y, rightClick) : undefined}
+            key={`tile-${y}-${x}`}
+            pos={new Position(x, y)}
+            text={text}
+            tileType={tileType}
+          />
+        );
+      }
 
       if (tileState.block) {
         blocks[tileState.block.id] = (
@@ -104,6 +106,73 @@ export default function Grid({ cellClassName, gameState, id, leastMoves, onCellC
     }
   }
 
+  useEffect(() => {
+    const drawGrid = () => {
+      const canvas = document.getElementById('gridcanvas') as HTMLCanvasElement;
+
+      if (!canvas) return;
+
+      const ctx = canvas.getContext('2d');
+
+      if (!ctx) return;
+
+      // Set the canvas dimensions
+      canvas.width = tileSize * width;
+      canvas.height = tileSize * height;
+      const style = getComputedStyle(document.documentElement);
+      // Todo: access the color from another div we want to match
+
+      const gridLineColor = style.getPropertyValue('--level-grid').trim();
+      const textColor = style.getPropertyValue('--text-color').trim();
+      const bgColor = style.getPropertyValue('--bg-color').trim();
+
+      console.log(gridLineColor);
+      // Set the grid line style
+      ctx.strokeStyle = gridLineColor;
+      ctx.fillStyle = bgColor;
+      ctx.lineWidth = 1; // Set grid line width
+
+      // Draw vertical grid lines
+      for (let x = 0; x <= width; x++) {
+        ctx.beginPath();
+        ctx.moveTo(x * tileSize, 0);
+        ctx.lineTo(x * tileSize, canvas.height);
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      // Draw horizontal grid lines
+      for (let y = 0; y <= height; y++) {
+        ctx.beginPath();
+        ctx.moveTo(0, y * tileSize);
+        ctx.lineTo(canvas.width, y * tileSize);
+        ctx.stroke();
+      }
+
+      ctx.font = '12px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#aaa'; // Set text color
+
+      for (let y = 0; y < gameState.board.length; y++) {
+        for (let x = 0; x < gameState.board[y].length; x++) {
+          const tileState = gameState.board[y][x];
+          const tileType = tileState.tileType;
+          const text = tileType === TileType.Start ? '0' :
+            tileType === TileType.End ? leastMoves.toString() :
+              tileState.text.length === 0 ? undefined :
+                tileState.text[tileState.text.length - 1];
+
+          if (text !== undefined) {
+            ctx.fillText(text.toString(), (x + 0.5) * tileSize, (y + 0.5) * tileSize);
+          }
+        }
+      }
+    };
+
+    drawGrid();
+  }, [tileSize, width, height, gameState.board, leastMoves]);
+
   return (
     <div className={classNames('grow flex items-center justify-center overflow-hidden', { [teko.className]: classic })} id={gridId}>
       {tileSize !== 0 &&
@@ -113,6 +182,8 @@ export default function Grid({ cellClassName, gameState, id, leastMoves, onCellC
           leastMoves: leastMoves,
           tileSize: tileSize,
         }}>
+          <canvas id='gridcanvas' />
+
           <div
             className='absolute overflow-hidden'
             style={{
