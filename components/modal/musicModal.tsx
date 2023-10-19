@@ -34,6 +34,7 @@ export default function MusicModal({ closeModal, isOpen }: MusicModalProps) {
     if (isPlaying) {
       songMetadata.original.pause();
       songMetadata.ambient.pause();
+      songMetadata.thud.pause();
     } else {
       songMetadata.original.play();
       songMetadata.ambient.play();
@@ -48,9 +49,13 @@ export default function MusicModal({ closeModal, isOpen }: MusicModalProps) {
     if (songMetadata) {
       if (isHot) {
         songMetadata.original.volume = newVolume;
+        songMetadata.ambient.volume = 0;
       } else {
         songMetadata.ambient.volume = newVolume;
+        songMetadata.original.volume = 0;
       }
+
+      songMetadata.thud.volume = newVolume;
     }
   };
 
