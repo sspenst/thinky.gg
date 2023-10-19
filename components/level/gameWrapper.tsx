@@ -1,3 +1,4 @@
+import { MusicContext } from '@root/contexts/musicContext';
 import { PageContext } from '@root/contexts/pageContext';
 import React, { useContext, useEffect, useState } from 'react';
 import Collection from '../../models/db/collection';
@@ -16,6 +17,7 @@ interface GameWrapperProps {
 }
 
 export default function GameWrapper({ chapter, collection, level, onNext, onPrev, user }: GameWrapperProps) {
+  const { dynamicMusic, isMusicSupported, toggleVersion } = useContext(MusicContext);
   const [dontShowPostGameModal, setDontShowPostGameModal] = useState(false);
   const [postGameModalOpen, setShowPostGameModalOpen] = useState(false);
   const [mutePostGameModalForThisLevel, setMutePostGameModalForThisLevel] = useState(false);
@@ -54,6 +56,10 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
         onNext={collection ? onNext : undefined}
         onPrev={collection ? onPrev : undefined}
         onSolve={() => {
+          if (isMusicSupported && dynamicMusic) {
+            toggleVersion('hot');
+          }
+
           if (!dontShowPostGameModal && !mutePostGameModalForThisLevel) {
             setTimeout(() => {
               setShowPostGameModalOpen(true);
