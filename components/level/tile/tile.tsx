@@ -1,7 +1,6 @@
 import Theme from '@root/constants/theme';
 import { AppContext } from '@root/contexts/appContext';
 import { GridContext } from '@root/contexts/gridContext';
-import useDeviceCheck from '@root/hooks/useDeviceCheck';
 import Position from '@root/models/position';
 import classNames from 'classnames';
 import { gsap } from 'gsap';
@@ -83,22 +82,18 @@ export default function Tile({
     );
   }, [atEnd, inHole, text, tileType]);
 
-  const { isFirefox } = useDeviceCheck();
-  // https://bugzilla.mozilla.org/show_bug.cgi?id=1859660
-  const adjustment = isFirefox ? Math.random() / 1000 : 0;
-
   const tileRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (tileRef.current) {
       gsap.to(tileRef.current.style, {
         duration: .1, // duration in seconds, equivalent to 0.1s in your CSS transition
-        transform: `translate(${(pos.x - initPos.x + adjustment) * tileSize}px, ${(pos.y - initPos.y + adjustment) * tileSize}px)`,
+        transform: `translate(${(pos.x - initPos.x ) * tileSize}px, ${(pos.y - initPos.y ) * tileSize}px)`,
         // don't cancel the animation on subsequent renders
         overwrite: 'auto',
       });
     }
-  }, [pos, initPos, adjustment, tileSize]);
+  }, [pos, initPos, tileSize]);
 
   return (
     <div
