@@ -313,8 +313,6 @@ export default function Game({
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const saveSessionToSessionStorage = useCallback(debounce(100, (gs: GameState) => {
-    console.log('Saving!');
-
     if (typeof window.sessionStorage === 'undefined') {
       return;
     }
