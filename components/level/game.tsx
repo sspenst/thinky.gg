@@ -11,7 +11,7 @@ import Link from 'next/link';
 import NProgress from 'nprogress';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
-import { throttle } from 'throttle-debounce';
+import { debounce, throttle } from 'throttle-debounce';
 import TileType from '../../constants/tileType';
 import { AppContext } from '../../contexts/appContext';
 import { LevelContext } from '../../contexts/levelContext';
@@ -311,6 +311,19 @@ export default function Game({
     }
   }, [checkpoints, gameState, level.data]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const saveSessionToSessionStorage = useCallback(debounce(100, (gs: GameState) => {
+    console.log('Saving!');
+
+    if (typeof window.sessionStorage === 'undefined') {
+      return;
+    }
+
+    window.sessionStorage.setItem('sessionCheckpoint', JSON.stringify({
+      _id: level._id,
+      directions: gs.moves.map(move => move.direction),
+    } as SessionCheckpoint));
+  }), [level._id]);
   const handleKeyDown = useCallback((code: string) => {
     if (code === 'KeyN') {
       if (onNext) {
@@ -373,10 +386,7 @@ export default function Game({
       function onSuccessfulMove(gameState: GameState) {
         // keep track of gameState in session storage
         if (enableSessionCheckpoint && typeof window.sessionStorage !== 'undefined') {
-          window.sessionStorage.setItem('sessionCheckpoint', JSON.stringify({
-            _id: level._id,
-            directions: gameState.moves.map(move => move.direction),
-          } as SessionCheckpoint));
+          saveSessionToSessionStorage(gameState);
         }
 
         if (onMove) {
