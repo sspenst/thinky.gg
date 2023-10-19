@@ -468,7 +468,7 @@ export default function Game({
 
       return onSuccessfulMove(newGameState);
     });
-  }, [allowFreeUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, level._id, level.data, level.leastMoves, loadCheckpoint, onMove, onNext, onPrev, onSolve, pro, saveCheckpoint, trackStats]);
+  }, [allowFreeUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, level._id, level.data, level.leastMoves, loadCheckpoint, onMove, onNext, onPrev, onSolve, pro, saveCheckpoint, saveSessionToSessionStorage, trackStats]);
 
   useEffect(() => {
     if (disableCheckpoints || !pro || !checkpoints) {
