@@ -4,7 +4,8 @@ import { GridContext } from '@root/contexts/gridContext';
 import useDeviceCheck from '@root/hooks/useDeviceCheck';
 import Position from '@root/models/position';
 import classNames from 'classnames';
-import React, { useContext, useMemo, useState } from 'react';
+import { gsap } from 'gsap';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import TileType from '../../../constants/tileType';
 import Block from './block';
 import Player from './player';
@@ -86,8 +87,22 @@ export default function Tile({
   // https://bugzilla.mozilla.org/show_bug.cgi?id=1859660
   const adjustment = isFirefox ? Math.random() / 1000 : 0;
 
+  const tileRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (tileRef.current) {
+      gsap.to(tileRef.current.style, {
+        duration: .1, // duration in seconds, equivalent to 0.1s in your CSS transition
+        transform: `translate(${(pos.x - initPos.x + adjustment) * tileSize}px, ${(pos.y - initPos.y + adjustment) * tileSize}px)`,
+        // don't cancel the animation on subsequent renders
+        overwrite: 'auto',
+      });
+    }
+  }, [pos, initPos, adjustment, tileSize]);
+
   return (
     <div
+      ref={tileRef}
       className={classNames(`absolute tile-type-${tileType}`, className)}
       onClick={onClick}
       onContextMenu={onClick}
@@ -97,9 +112,9 @@ export default function Tile({
         height: classic ? tileSize : innerTileSize,
         left: tileSize * initPos.x + (classic ? 0 : borderWidth),
         top: tileSize * initPos.y + (classic ? 0 : borderWidth),
-        transform: `translate(${(pos.x - initPos.x + adjustment) * tileSize}px, ${(pos.y - initPos.y + adjustment) * tileSize}px)`,
+        //  transform: `translate(${(pos.x - initPos.x + adjustment) * tileSize}px, ${(pos.y - initPos.y + adjustment) * tileSize}px)`,
         // add support for safari
-        transition: 'transform 0.1s',
+        //  transition: 'transform 0.1s',
         width: classic ? tileSize : innerTileSize,
       }}
     >
