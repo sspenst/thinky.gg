@@ -95,6 +95,19 @@ export default function Tile({
     }
   }, [pos, initPos, tileSize]);
 
+  const tileRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (tileRef.current) {
+      gsap.to(tileRef.current.style, {
+        duration: .1, // duration in seconds, equivalent to 0.1s in your CSS transition
+        transform: `translate(${(pos.x - initPos.x + adjustment) * tileSize}px, ${(pos.y - initPos.y + adjustment) * tileSize}px)`,
+        // don't cancel the animation on subsequent renders
+        overwrite: 'auto',
+      });
+    }
+  }, [pos, initPos, adjustment, tileSize]);
+
   return (
     <div
       ref={tileRef}
