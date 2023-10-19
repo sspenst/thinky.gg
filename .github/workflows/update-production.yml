@@ -11,6 +11,11 @@ on:
         options:
         - update
         - revert
+      desired_sha:
+        description: "[Optional] Target Short SHA"
+        required: false
+        default: ''
+        type: string
       deployment_description:
         description: "A brief description of what changed in this deployment"
         required: false
@@ -53,5 +58,10 @@ jobs:
           SSH_USER: ${{ secrets.SERVER_SSH_USER }}
           SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
 
-      - name: Update Environments with New Containers
+      - name: Update Environments with New Containers - Default
+        if: github.event.inputs.desired_sha == ''
         run: ssh ${{ matrix.server }} 'bash /opt/pathology/scripts/update-Environments.sh -e prod -a ${{ inputs.action }} -c "${{ inputs.deployment_description }}"'
+
+      - name: Update Environments with New Containers - With SHA
+        if: github.event.inputs.desired_sha != ''
+        run: ssh ${{ matrix.server }} 'bash /opt/pathology/scripts/update-Environments.sh -e prod -a ${{ inputs.action }} -c "${{ inputs.deployment_description }}" -v "${{ inputs.desired_sha }}"'
