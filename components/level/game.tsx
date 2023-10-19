@@ -322,6 +322,7 @@ export default function Game({
       directions: gs.moves.map(move => move.direction),
     } as SessionCheckpoint));
   }), [level._id]);
+
   const handleKeyDown = useCallback((code: string) => {
     if (code === 'KeyN') {
       if (onNext) {
