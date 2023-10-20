@@ -3,7 +3,7 @@ import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback } from 'react';
 import Select from '../../components/cards/select';
-import formattedAuthorNote from '../../components/formatted/formattedAuthorNote';
+import FormattedAuthorNote from '../../components/formatted/formattedAuthorNote';
 import LinkInfo from '../../components/formatted/linkInfo';
 import Page from '../../components/page/page';
 import { logger } from '../../helpers/logger';
@@ -106,7 +106,7 @@ export default function CampaignPage({ campaign, enrichedCollections }: Campaign
         </h1>
         {!campaign.authorNote ? null :
           <div className='p-2 text-center'>
-            {formattedAuthorNote(campaign.authorNote)}
+            <FormattedAuthorNote authorNote={campaign.authorNote} />
           </div>
         }
         <Select options={getOptions()} prefetch={false} />

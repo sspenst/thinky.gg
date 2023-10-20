@@ -20,6 +20,7 @@ type DeviceInfo = {
   isMobile: boolean;
   isAndroid: boolean;
   isIOS: boolean;
+  isFirefox: boolean;
   isWindows: boolean;
   isLinux: boolean;
   isMac: boolean;
@@ -31,6 +32,7 @@ const useDeviceCheck = (): DeviceInfo => {
     isMobile: false,
     isAndroid: false,
     isIOS: false,
+    isFirefox: false,
     isWindows: false,
     isLinux: false,
     isMac: false,
@@ -72,6 +74,7 @@ const useDeviceCheck = (): DeviceInfo => {
     const isWindows = /windows/i.test(userAgent);
     const isLinux = /linux/i.test(userAgent);
     const isMac = /mac/i.test(userAgent);
+    const isFirefox = /firefox/i.test(userAgent);
 
     setDeviceInfo({
       isMobile,
@@ -80,6 +83,7 @@ const useDeviceCheck = (): DeviceInfo => {
       isWindows,
       isLinux,
       isMac,
+      isFirefox,
       screenSize: ScreenSize.XS,
     });
 

@@ -1,3 +1,4 @@
+import { MusicContext } from '@root/contexts/musicContext';
 import { PageContext } from '@root/contexts/pageContext';
 import React, { useContext, useEffect, useState } from 'react';
 import Collection from '../../models/db/collection';
@@ -5,6 +6,7 @@ import { EnrichedLevel } from '../../models/db/level';
 import User from '../../models/db/user';
 import PostGameModal from '../modal/postGameModal';
 import Game from './game';
+import Sidebar from './sidebar';
 
 interface GameWrapperProps {
   chapter?: string;
@@ -16,6 +18,7 @@ interface GameWrapperProps {
 }
 
 export default function GameWrapper({ chapter, collection, level, onNext, onPrev, user }: GameWrapperProps) {
+  const { dynamicMusic, isMusicSupported, toggleVersion } = useContext(MusicContext);
   const [dontShowPostGameModal, setDontShowPostGameModal] = useState(false);
   const [postGameModalOpen, setShowPostGameModalOpen] = useState(false);
   const [mutePostGameModalForThisLevel, setMutePostGameModalForThisLevel] = useState(false);
@@ -43,7 +46,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
   }, [level._id]);
 
   return (
-    <>
+    <div className='flex h-full'>
       <Game
         allowFreeUndo={true}
         disablePlayAttempts={!user}
@@ -54,6 +57,10 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
         onNext={collection ? onNext : undefined}
         onPrev={collection ? onPrev : undefined}
         onSolve={() => {
+          if (isMusicSupported && dynamicMusic) {
+            toggleVersion('hot');
+          }
+
           if (!dontShowPostGameModal && !mutePostGameModalForThisLevel) {
             setTimeout(() => {
               setShowPostGameModalOpen(true);
@@ -63,6 +70,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
           }
         }}
       />
+      <Sidebar level={level} />
       <PostGameModal
         chapter={chapter}
         closeModal={() => {
@@ -76,6 +84,6 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
         reqUser={user}
         setDontShowPostGameModal={setDontShowPostGameModal}
       />
-    </>
+    </div>
   );
 }
