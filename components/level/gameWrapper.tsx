@@ -5,7 +5,7 @@ import Collection from '../../models/db/collection';
 import { EnrichedLevel } from '../../models/db/level';
 import User from '../../models/db/user';
 import PostGameModal from '../modal/postGameModal';
-import Game from './game';
+import GameLayout from './gameLayout';
 import Sidebar from './sidebar';
 
 interface GameWrapperProps {
@@ -47,7 +47,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
 
   return (
     <div className='flex h-full'>
-      <Game
+      <GameLayout
         allowFreeUndo={true}
         disablePlayAttempts={!user}
         disableStats={!user}
