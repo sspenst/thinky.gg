@@ -1,3 +1,4 @@
+import GameLayout from '@root/components/level/gameLayout';
 import Grid from '@root/components/level/grid';
 import MatchResults from '@root/components/multiplayer/matchResults';
 import { MatchGameState } from '@root/helpers/gameStateHelpers';
@@ -12,7 +13,6 @@ import { toast } from 'react-hot-toast';
 import { io } from 'socket.io-client';
 import SelectCard from '../../../components/cards/selectCard';
 import FormattedUser from '../../../components/formatted/formattedUser';
-import Game from '../../../components/level/game';
 import MatchChart from '../../../components/multiplayer/matchChart';
 import MatchStatus from '../../../components/multiplayer/matchStatus';
 import Page from '../../../components/page/page';
@@ -503,7 +503,7 @@ export default function Match() {
             </div>
             {activeLevel && (
               <div className='grow h-full w-full' key={'div-' + activeLevel._id.toString()}>
-                <Game
+                <GameLayout
                   allowFreeUndo={true}
                   disableCheckpoints={true}
                   enableSessionCheckpoint={false}

@@ -17,7 +17,7 @@ import Position from '../../models/position';
 import BasicLayout from '../level/basicLayout';
 import Controls from '../level/controls';
 import styles from '../level/Controls.module.css';
-import Game from '../level/game';
+import GameLayout from '../level/gameLayout';
 import Page from '../page/page';
 import DismissToast from '../toasts/dismissToast';
 
@@ -711,7 +711,7 @@ export default function Tutorial() {
         )}
         {tutorialStep.gameGrid && tutorialStep.level && (
           <div id='game-div-parent' key={'div-' + tutorialStep.key} className={classNames('grow', tutorialStep.gameClasses)}>
-            <Game
+            <GameLayout
               disableCheckpoints={true}
               disablePlayAttempts={true}
               disableStats={true}

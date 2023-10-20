@@ -1,11 +1,11 @@
 /* istanbul ignore file */
 
+import GameLayout from '@root/components/level/gameLayout';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import React from 'react';
 import LinkInfo from '../../components/formatted/linkInfo';
-import Game from '../../components/level/game';
 import Page from '../../components/page/page';
 import cleanUser from '../../lib/cleanUser';
 import { getUserFromToken } from '../../lib/withAuth';
@@ -92,7 +92,7 @@ export default function Test({ level }: TestProps) {
       isFullScreen={true}
       title='Test'
     >
-      <Game
+      <GameLayout
         allowFreeUndo={true}
         disablePlayAttempts={true}
         level={level}

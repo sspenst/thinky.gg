@@ -8,6 +8,7 @@ import isPro from '@root/helpers/isPro';
 import { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import Link from 'next/link';
 import React, { useContext, useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import Modal from '.';
 
 interface CheckpointButtonProps {
@@ -39,7 +40,7 @@ interface CheckpointModalItemProps {
 
 function CheckpointModalItem({ checkpoint, closeModal, index }: CheckpointModalItemProps) {
   const [backgroundImage, setBackgroundImage] = useState<string>();
-  const { deleteCheckpoint, level, loadCheckpoint, saveCheckpoint } = useContext(GameContext);
+  const { level, mutateCheckpoints } = useContext(GameContext);
 
   useEffect(() => {
     if (!checkpoint) {
@@ -79,6 +80,18 @@ function CheckpointModalItem({ checkpoint, closeModal, index }: CheckpointModalI
     setBackgroundImage(getPngDataClient(joinedData));
   }, [checkpoint, level.data]);
 
+  function getKeyCodeFromIndex(index: number) {
+    if (index < 0 || index > BEST_CHECKPOINT_INDEX) {
+      return '';
+    }
+
+    if (index === BEST_CHECKPOINT_INDEX) {
+      return 'KeyB';
+    } else {
+      return `Digit${index}`;
+    }
+  }
+
   return (
     <div className='flex flex-col gap-2 w-80 max-w-full items-center'>
       <div>
@@ -101,7 +114,8 @@ function CheckpointModalItem({ checkpoint, closeModal, index }: CheckpointModalI
         {checkpoint &&
           <CheckpointButton
             onClick={() => {
-              loadCheckpoint(index);
+              // TODO: this doesn't work because of preventKeyDownEvent
+              document.dispatchEvent(new KeyboardEvent('keydown', { 'code': getKeyCodeFromIndex(index) }));
               closeModal();
             }}
             shortcut={index === BEST_CHECKPOINT_INDEX ? 'B' : String(index)}
@@ -110,14 +124,43 @@ function CheckpointModalItem({ checkpoint, closeModal, index }: CheckpointModalI
         }
         {index !== BEST_CHECKPOINT_INDEX &&
           <CheckpointButton
-            onClick={() => saveCheckpoint(index)}
+            onClick={() => {
+              // TODO: this doesn't work because of preventKeyDownEvent
+              document.dispatchEvent(new KeyboardEvent('keydown', { 'code': 'ShiftLeft' }));
+              document.dispatchEvent(new KeyboardEvent('keydown', { 'code': getKeyCodeFromIndex(index) }));
+              document.dispatchEvent(new KeyboardEvent('keyup', { 'code': 'ShiftLeft' }));
+            }}
             shortcut={`SHIFT ${String(index)}`}
             text='Save'
           />
         }
         {index !== BEST_CHECKPOINT_INDEX && checkpoint &&
           <CheckpointButton
-            onClick={() => deleteCheckpoint(index)}
+            onClick={() => {
+              if (index !== BEST_CHECKPOINT_INDEX) {
+                toast.dismiss();
+                toast.loading(`Deleting checkpoint ${index}...`);
+              }
+
+              fetch(`/api/level/${level._id}/checkpoints?index=${index}`, {
+                method: 'DELETE',
+              }).then(async res => {
+                if (res.status === 200) {
+                  if (index !== BEST_CHECKPOINT_INDEX) {
+                    toast.dismiss();
+                    toast.success(`Deleted checkpoint ${index}`);
+                  }
+
+                  mutateCheckpoints();
+                } else {
+                  throw res.text();
+                }
+              }).catch(async err => {
+                console.error(err);
+                toast.dismiss();
+                toast.error(JSON.parse(await err)?.error || 'Error deleting checkpoint');
+              });
+            }}
             text='Delete'
           />
         }
