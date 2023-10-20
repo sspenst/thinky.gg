@@ -11,7 +11,7 @@ import Link from 'next/link';
 import NProgress from 'nprogress';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
-import { throttle } from 'throttle-debounce';
+import { debounce, throttle } from 'throttle-debounce';
 import TileType from '../../constants/tileType';
 import { AppContext } from '../../contexts/appContext';
 import { LevelContext } from '../../contexts/levelContext';
@@ -32,7 +32,6 @@ interface GameProps {
   disableStats?: boolean;
   enableSessionCheckpoint?: boolean;
   extraControls?: Control[];
-  hideSidebar?: boolean;
   level: Level;
   matchId?: string;
   onMove?: (gameState: GameState) => void;
@@ -49,7 +48,6 @@ export default function Game({
   disableStats,
   enableSessionCheckpoint,
   extraControls,
-  hideSidebar,
   level,
   matchId,
   onMove,
@@ -311,6 +309,18 @@ export default function Game({
     }
   }, [checkpoints, gameState, level.data]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const saveSessionToSessionStorage = useCallback(debounce(100, (gs: GameState) => {
+    if (typeof window.sessionStorage === 'undefined') {
+      return;
+    }
+
+    window.sessionStorage.setItem('sessionCheckpoint', JSON.stringify({
+      _id: level._id,
+      directions: gs.moves.map(move => move.direction),
+    } as SessionCheckpoint));
+  }), [level._id]);
+
   const handleKeyDown = useCallback((code: string) => {
     if (code === 'KeyN') {
       if (onNext) {
@@ -373,10 +383,7 @@ export default function Game({
       function onSuccessfulMove(gameState: GameState) {
         // keep track of gameState in session storage
         if (enableSessionCheckpoint && typeof window.sessionStorage !== 'undefined') {
-          window.sessionStorage.setItem('sessionCheckpoint', JSON.stringify({
-            _id: level._id,
-            directions: gameState.moves.map(move => move.direction),
-          } as SessionCheckpoint));
+          saveSessionToSessionStorage(gameState);
         }
 
         if (onMove) {
@@ -460,7 +467,7 @@ export default function Game({
 
       return onSuccessfulMove(newGameState);
     });
-  }, [allowFreeUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, level._id, level.data, level.leastMoves, loadCheckpoint, onMove, onNext, onPrev, onSolve, pro, saveCheckpoint, trackStats]);
+  }, [allowFreeUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, level._id, level.data, level.leastMoves, loadCheckpoint, onMove, onNext, onPrev, onSolve, pro, saveCheckpoint, saveSessionToSessionStorage, trackStats]);
 
   useEffect(() => {
     if (disableCheckpoints || !pro || !checkpoints) {
@@ -752,7 +759,6 @@ export default function Game({
         controls={controls}
         disableCheckpoints={disableCheckpoints}
         gameState={gameState}
-        hideSidebar={hideSidebar}
         level={level}
         matchId={matchId}
         onCellClick={(x, y) => onCellClick(x, y)}
