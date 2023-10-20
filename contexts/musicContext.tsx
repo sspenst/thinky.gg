@@ -140,7 +140,7 @@ export default function MusicContextProvider({ children }: { children: React.Rea
   const loadedAudioIndex = useRef(-1);
   const songIndex = useRef(0);
   const [songMetadata, setSongMetdata] = useState<SongMetadata>();
-  const [volume, setVolume] = useState(1);
+  const [volume, setVolume] = useState(0.66);
 
   useEffect(() => {
     const audio = new Audio();
