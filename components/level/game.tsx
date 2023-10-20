@@ -32,7 +32,6 @@ interface GameProps {
   disableStats?: boolean;
   enableSessionCheckpoint?: boolean;
   extraControls?: Control[];
-  hideSidebar?: boolean;
   level: Level;
   matchId?: string;
   onMove?: (gameState: GameState) => void;
@@ -49,7 +48,6 @@ export default function Game({
   disableStats,
   enableSessionCheckpoint,
   extraControls,
-  hideSidebar,
   level,
   matchId,
   onMove,
@@ -761,7 +759,6 @@ export default function Game({
         controls={controls}
         disableCheckpoints={disableCheckpoints}
         gameState={gameState}
-        hideSidebar={hideSidebar}
         level={level}
         matchId={matchId}
         onCellClick={(x, y) => onCellClick(x, y)}

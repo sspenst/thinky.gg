@@ -716,7 +716,6 @@ export default function Tutorial() {
               disablePlayAttempts={true}
               disableStats={true}
               extraControls={controls}
-              hideSidebar={true}
               key={tutorialStep.key}
               level={tutorialStep.level}
               onMove={(gameState: GameState) => {
