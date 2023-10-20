@@ -4,6 +4,6 @@ interface ObjectWithName {
 
 export default function naturalSort(objects: ObjectWithName[]) {
   return objects.sort((a, b) => {
-    return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
+    return a.name?.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
   });
 }

@@ -3,6 +3,9 @@ import '../styles/global.css';
 import 'react-tooltip/dist/react-tooltip.css';
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react';
 import MusicContextProvider from '@root/contexts/musicContext';
+import useSWRHelper from '@root/hooks/useSWRHelper';
+import Collection from '@root/models/db/collection';
+import { Types } from 'mongoose';
 import type { AppProps } from 'next/app';
 import { Rubik, Teko } from 'next/font/google';
 import Head from 'next/head';
@@ -71,6 +74,9 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     privateAndInvitedMatches: [],
     socket: undefined,
   });
+
+  const { data: myPlaylist, mutate: mutateMyPlaylist } = useSWRHelper<Collection>('/api/playlist');
+
   const router = useRouter();
   const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);
   const [sounds, setSounds] = useState<{ [key: string]: HTMLAudioElement }>({});
@@ -348,6 +354,8 @@ export default function MyApp({ Component, pageProps }: AppProps) {
           forceUpdate: forceUpdate,
           multiplayerSocket: multiplayerSocket,
           mutateUser: mutateUser,
+          myPlaylist: myPlaylist,
+          mutateMyPlaylist: mutateMyPlaylist,
           setShouldAttemptAuth: setShouldAttemptAuth,
           setTheme: setTheme,
           shouldAttemptAuth: shouldAttemptAuth,

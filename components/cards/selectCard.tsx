@@ -1,6 +1,7 @@
+import { AppContext } from '@root/contexts/appContext';
 import classNames from 'classnames';
 import Link from 'next/link';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Dimensions from '../../constants/dimensions';
 import getPngDataClient from '../../helpers/getPngDataClient';
@@ -14,7 +15,68 @@ interface SelectCardProps {
 }
 
 export default function SelectCard({ option, prefetch }: SelectCardProps) {
+  const { myPlaylist, mutateMyPlaylist } = useContext(AppContext);
   const [backgroundImage, setBackgroundImage] = useState<string>();
+  let addToPlaylistBtn;
+
+  if (option.level) {
+    const playlistButtonVerb = myPlaylist?.levels.find(l => l.toString() === option.id.toString()) ? '-' : '+';
+
+    addToPlaylistBtn = option.level &&
+    (<button
+      className={classNames(
+        'text-md border border-1 absolute bottom-2 m-0 px-1.5 left-2 rounded-lg  bg-gray-800 hover:bg-gray-400',
+        styles['add-button'],
+      )}
+      onClick={async() => {
+        toast.dismiss();
+        // add background message
+        toast.loading('Adding to playlist...', {
+          position: 'bottom-center',
+        });
+        const res = await fetch('/api/playlist/', {
+          method: playlistButtonVerb === '+' ? 'POST' : 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            id: option.id,
+          }),
+        });
+
+        toast.dismiss();
+
+        if (res.ok) {
+          const message = <div className='flex flex-col text-center'> <span className='text-lg'>{playlistButtonVerb === '+' ? 'Added to ' : 'Removed from'} your playlist!</span> <Link className='text-sm underline' href={'/playlist'}>View Playlist</Link> </div>;
+
+          toast.success(message, {
+            duration: 5000,
+            position: 'bottom-center',
+          });
+          mutateMyPlaylist();
+        } else {
+          let resp;
+
+          try {
+            resp = await res.json();
+          } catch (e) {
+            console.error(e);
+          }
+
+          toast.error(resp?.error || 'Could not update playlist', {
+            duration: 5000,
+            position: 'bottom-center',
+          });
+        }
+      }}
+      style={{
+        color: 'var(--bg-color-1)',
+      }}
+    >
+      {playlistButtonVerb}
+    </button>
+    );
+  }
 
   useEffect(() => {
     if (option.level) {
@@ -90,58 +152,9 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
             <SelectCardContent option={option} />
           </button>
         }
-        <button
-          className={classNames(
-            'text-md border border-1 absolute bottom-2 m-0 px-1.5 left-2 rounded-lg  bg-gray-800 hover:bg-gray-400',
-            styles['add-button'],
-          )}
-          onClick={async() => {
-            toast.dismiss();
-            // add background message
-            toast.loading('Adding to playlist...', {
-              position: 'bottom-center',
-            });
-            const res = await fetch('/api/playlist/', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                id: option.id,
-              }),
-            });
-
-            toast.dismiss();
-
-            if (res.ok) {
-              const message = <div className='flex flex-col text-center'> <span className='text-lg'>Added to your playlist!</span> <Link className='text-sm underline' href={'/playlist'}>View Playlist</Link> </div>;
-
-              toast.success(message, {
-                duration: 5000,
-                position: 'bottom-center',
-              });
-            } else {
-              let resp;
-
-              try {
-                resp = await res.json();
-              } catch (e) {
-                console.error(e);
-              }
-
-              toast.error(resp?.error || 'Could not add to playlist', {
-                duration: 5000,
-                position: 'bottom-center',
-              });
-            }
-          }}
-          style={{
-            color: 'var(--bg-color-1)',
-          }}
-        >
-            +
-        </button>
+        {addToPlaylistBtn}
       </div>
+
     </div>
   );
 }
