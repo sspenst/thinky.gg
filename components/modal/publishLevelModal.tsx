@@ -3,7 +3,7 @@ import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
 import { AppContext } from '../../contexts/appContext';
 import Level from '../../models/db/level';
-import formattedAuthorNote from '../formatted/formattedAuthorNote';
+import FormattedAuthorNote from '../formatted/formattedAuthorNote';
 import isNotFullAccountToast from '../toasts/isNotFullAccountToast';
 import Modal from '.';
 
@@ -73,7 +73,7 @@ export default function PublishLevelModal({ closeModal, isOpen, level }: Publish
           <div className='mt-4'>
             <span className='font-bold'>Author Note:</span>
             <br />
-            {formattedAuthorNote(level.authorNote)}
+            <FormattedAuthorNote authorNote={level.authorNote} />
           </div>
         }
       </div>
