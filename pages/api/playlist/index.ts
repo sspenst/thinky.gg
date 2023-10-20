@@ -40,7 +40,7 @@ export default withAuth(
     }
 
     if (req.method === 'DELETE') {
-      await CollectionModel.findOneAndUpdate(
+      await CollectionModel.updateOne(
         {
           userId: req.user._id,
           type: CollectionType.Playlist,
