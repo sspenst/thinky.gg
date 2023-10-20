@@ -8,7 +8,7 @@ import Dimensions from '../../../constants/dimensions';
 import { AppContext } from '../../../contexts/appContext';
 import { EnrichedLevel } from '../../../models/db/level';
 import SelectOptionStats from '../../../models/selectOptionStats';
-import formattedAuthorNote from '../../formatted/formattedAuthorNote';
+import FormattedAuthorNote from '../../formatted/formattedAuthorNote';
 import FormattedDifficulty from '../../formatted/formattedDifficulty';
 import FormattedUser from '../../formatted/formattedUser';
 import LevelDropdown from './levelDropdown';
@@ -51,7 +51,7 @@ function AuthorNote({ authorNote }: AuthorNoteProps) {
 
   return (
     <div className='flex flex-col'>
-      {formattedAuthorNote(canCollapse && isCollapsed ? `${truncatedNote}...` : authorNote)}
+      <FormattedAuthorNote authorNote={(canCollapse && isCollapsed ? `${truncatedNote}...` : authorNote)} />
       {canCollapse &&
         <button
           className='italic underline w-fit mt-1 text-sm'

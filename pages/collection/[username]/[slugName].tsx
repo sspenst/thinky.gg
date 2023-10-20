@@ -8,7 +8,7 @@ import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useContext, useState } from 'react';
 import Select from '../../../components/cards/select';
 import SelectFilter from '../../../components/cards/selectFilter';
-import formattedAuthorNote from '../../../components/formatted/formattedAuthorNote';
+import FormattedAuthorNote from '../../../components/formatted/formattedAuthorNote';
 import LinkInfo from '../../../components/formatted/linkInfo';
 import AddCollectionModal from '../../../components/modal/addCollectionModal';
 import DeleteCollectionModal from '../../../components/modal/deleteCollectionModal';
@@ -147,7 +147,7 @@ export default function CollectionPage({ collection }: CollectionProps) {
         </div>
         {!collection.authorNote ? null :
           <div className='p-2 text-center'>
-            {formattedAuthorNote(collection.authorNote)}
+            <FormattedAuthorNote authorNote={collection.authorNote} />
           </div>
         }
         {user?._id === collection.userId._id &&
