@@ -1,9 +1,12 @@
-import { ValidObjectId } from '@root/helpers/apiWrapper';
+import { ValidEnum, ValidObjectId } from '@root/helpers/apiWrapper';
+import { getEnrichLevelsPipelineSteps } from '@root/helpers/enrich';
 import { generateCollectionSlug } from '@root/helpers/generateSlug';
 import withAuth, { NextApiRequestWithAuth } from '@root/lib/withAuth';
 import { CollectionType } from '@root/models/CollectionEnums';
 import Collection from '@root/models/db/collection';
-import { CollectionModel, LevelModel } from '@root/models/mongoose';
+import { CollectionModel, LevelModel, UserModel } from '@root/models/mongoose';
+import { LEVEL_DEFAULT_PROJECTION } from '@root/models/schemas/levelSchema';
+import { PipelineStage } from 'mongoose';
 import { NextApiResponse } from 'next';
 
 export const MAX_LEVELS_IN_PLAYLIST = 500;
@@ -16,6 +19,9 @@ export default withAuth(
 
     },
     GET: {
+      query: {
+        populate: ValidEnum(['true', 'false'], false),
+      }
     },
     DELETE: {
       body: {
@@ -23,23 +29,56 @@ export default withAuth(
       },
     },
   }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-    const { id } = req.body;
-
     if (req.method === 'GET') {
+      const { populate } = req.query;
+      const populateStage = populate === 'true' ? [{
+        $lookup: {
+          from: LevelModel.collection.name,
+          localField: 'levels',
+          foreignField: '_id',
+          as: 'levels',
+          pipeline: [
+            {
+              $project: LEVEL_DEFAULT_PROJECTION
+            },
+            {
+              $lookup: {
+                from: UserModel.collection.name,
+                localField: 'userId',
+                foreignField: '_id',
+                as: 'userId',
+                pipeline: [{
+                  $project: {
+                    name: 1
+                  }
+                }]
+              }
+            },
+            ...getEnrichLevelsPipelineSteps(req.user, '_id', '') as PipelineStage.Lookup[],
+          ],
+        }
+      }] : [];
       // grab the playlist
-      const playlist = await CollectionModel.findOne({
-        userId: req.user._id,
-        type: CollectionType.Playlist,
-      }, {
-        levels: 1,
-      }, {
-        lean: true,
-      }) as Collection;
+      const playlist = await CollectionModel.aggregate([
+        {
+          $match: {
+            userId: req.user._id,
+            type: CollectionType.Playlist,
+          }
+        },
+        ...(populateStage as PipelineStage[]),
+      ]) as Collection[];
 
-      return res.status(200).json(playlist);
+      if (playlist.length === 0) {
+        return res.status(200).json([]);
+      }
+
+      return res.status(200).json(playlist[0]);
     }
 
     if (req.method === 'DELETE') {
+      const { id } = req.body;
+
       await CollectionModel.updateOne(
         {
           userId: req.user._id,
@@ -60,6 +99,8 @@ export default withAuth(
     }
 
     if (req.method === 'POST') {
+      const { id } = req.body;
+
       const level = await LevelModel.findOne({
         _id: id,
         isDraft: false,
