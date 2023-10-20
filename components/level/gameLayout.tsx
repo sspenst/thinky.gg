@@ -16,7 +16,6 @@ import LevelInfoModal from '../modal/levelInfoModal';
 import StyledTooltip from '../page/styledTooltip';
 import Controls from './controls';
 import Game from './game';
-import Solved from './info/solved';
 
 interface GameLayoutProps {
   allowFreeUndo?: boolean;
@@ -157,27 +156,17 @@ export default function GameLayout({
         {!matchId && level.userId && !fullScreen && <>
           <div className='flex items-center justify-center py-1 px-2 gap-1 block xl:hidden'>
             <button
-              className='flex gap-2 items-center truncate'
+              data-tooltip-content='Checkpoints'
+              data-tooltip-id='checkpoint-tooltip'
+              id='checkpointBtn'
               onClick={() => {
-                setIsLevelInfoOpen(true);
+                setIsCheckpointOpen(!isCheckpointOpen);
                 setPreventKeyDownEvent(true);
               }}
-              style={{
-                color: level.userMoves ? (level.userMoves === level.leastMoves ? 'var(--color-complete)' : 'var(--color-incomplete)') : 'var(--color)',
-              }}
             >
-              <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' width='16' height='16' style={{
-                minWidth: 16,
-                minHeight: 16,
-              }}>
-                <path strokeLinecap='round' strokeLinejoin='round' d='M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12' />
+              <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+                <path strokeLinecap='round' strokeLinejoin='round' d='M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5' />
               </svg>
-              <h1
-                className='whitespace-nowrap font-bold underline truncate'
-              >
-                {level.name}
-              </h1>
-              {level.userMoves === level.leastMoves && <Solved className='-ml-2' />}
             </button>
             by
             <div style={{ minWidth: 100 }}>
@@ -233,7 +222,9 @@ export default function GameLayout({
               />
             </>
             :
-            <div className='w-6' />
+            <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+              <path strokeLinecap='round' strokeLinejoin='round' d='M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15' />
+            </svg>
           }
           <div className='grow'>
             <Controls controls={controls} />
