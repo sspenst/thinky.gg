@@ -6,6 +6,7 @@ import { EnrichedLevel } from '../../models/db/level';
 import User from '../../models/db/user';
 import PostGameModal from '../modal/postGameModal';
 import Game from './game';
+import Sidebar from './sidebar';
 
 interface GameWrapperProps {
   chapter?: string;
@@ -45,7 +46,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
   }, [level._id]);
 
   return (
-    <>
+    <div className='flex h-full'>
       <Game
         allowFreeUndo={true}
         disablePlayAttempts={!user}
@@ -69,6 +70,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
           }
         }}
       />
+      <Sidebar level={level} />
       <PostGameModal
         chapter={chapter}
         closeModal={() => {
@@ -82,6 +84,6 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
         reqUser={user}
         setDontShowPostGameModal={setDontShowPostGameModal}
       />
-    </>
+    </div>
   );
 }

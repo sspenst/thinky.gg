@@ -95,7 +95,6 @@ export default function Test({ level }: TestProps) {
       <Game
         allowFreeUndo={true}
         disablePlayAttempts={true}
-        hideSidebar={true}
         level={level}
         onStatsSuccess={() => router.replace(router.asPath)}
       />

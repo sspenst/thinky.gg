@@ -508,7 +508,6 @@ export default function Match() {
                   disableCheckpoints={true}
                   enableSessionCheckpoint={false}
                   extraControls={[skipControl(usedSkip)]}
-                  hideSidebar={true}
                   key={'game-' + activeLevel._id.toString()}
                   level={activeLevel}
                   matchId={match.matchId}
