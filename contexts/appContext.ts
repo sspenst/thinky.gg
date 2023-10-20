@@ -1,3 +1,5 @@
+import Collection from '@root/models/db/collection';
+import { Types } from 'mongoose';
 import { createContext } from 'react';
 import { KeyedMutator } from 'swr';
 import { ReqUser } from '../models/db/user';
@@ -8,6 +10,8 @@ interface AppContextInterface {
   forceUpdate: () => void;
   multiplayerSocket: MultiplayerSocket;
   mutateUser: KeyedMutator<ReqUser>;
+  mutateMyPlaylist: () => void;
+  myPlaylist?: Collection;
   setShouldAttemptAuth: React.Dispatch<React.SetStateAction<boolean>>;
   setTheme: React.Dispatch<React.SetStateAction<string | undefined>>;
   shouldAttemptAuth: boolean;
@@ -28,6 +32,8 @@ export const AppContext = createContext<AppContextInterface>({
     socket: undefined,
   },
   mutateUser: {} as KeyedMutator<ReqUser>,
+  mutateMyPlaylist: () => { return; },
+  myPlaylist: undefined,
   setShouldAttemptAuth: () => { return; },
   setTheme: () => { return; },
   shouldAttemptAuth: true,
