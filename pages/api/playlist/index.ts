@@ -46,7 +46,6 @@ export default withAuth(
           type: CollectionType.Playlist,
         },
         {
-          // add to set the id of the level to add to the playlist
           $pull: {
             levels: id,
           },
