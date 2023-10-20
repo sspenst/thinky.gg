@@ -16,15 +16,60 @@ import LevelInfoCompletions from './levelInfoCompletions';
 import LevelInfoPlayTime from './levelInfoPlayTime';
 import LevelInfoRecords from './levelInfoRecords';
 
+interface AuthorNoteProps {
+  authorNote: string;
+}
+
+function AuthorNote({ authorNote }: AuthorNoteProps) {
+  const [isCollapsed, setIsCollapsed] = useState(true);
+  const maxCollapsedAuthorNote = 150;
+
+  // NB: some characters take more than one character in a string array, such as "𝙮"
+  // this function handles truncating these characters safely
+  function truncateString(text: string, maxLength: number) {
+    if (text.length <= maxLength) {
+      return text;
+    }
+
+    let truncatedText = '';
+    let currentLength = 0;
+
+    for (const char of text) {
+      if (currentLength + char.length <= maxLength) {
+        truncatedText += char;
+        currentLength += char.length;
+      } else {
+        break;
+      }
+    }
+
+    return truncatedText;
+  }
+
+  const truncatedNote = truncateString(authorNote, maxCollapsedAuthorNote);
+  const canCollapse = truncatedNote.length < authorNote.length;
+
+  return (
+    <div className='flex flex-col'>
+      {formattedAuthorNote(canCollapse && isCollapsed ? `${truncatedNote}...` : authorNote)}
+      {canCollapse &&
+        <button
+          className='italic underline w-fit mt-1 text-sm'
+          onClick={() => setIsCollapsed(c => !c)}
+        >
+          {`Show ${isCollapsed ? 'more' : 'less'}`}
+        </button>
+      }
+    </div>
+  );
+}
+
 interface FormattedLevelInfoProps {
   level: EnrichedLevel;
 }
 
 export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
-  const [collapsedAuthorNote, setCollapsedAuthorNote] = useState(true);
   const { userConfig } = useContext(AppContext);
-
-  const maxCollapsedAuthorNote = 100;
   const stat = new SelectOptionStats(level.leastMoves, level.userMoves);
 
   return (<>
@@ -69,21 +114,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
         </div>
       )}
       {/* Author note */}
-      {!level.authorNote ? null :
-        <>
-          <div className='flex flex-col'>
-            {formattedAuthorNote(level.authorNote.length > maxCollapsedAuthorNote && collapsedAuthorNote ? `${level.authorNote.slice(0, maxCollapsedAuthorNote)}...` : level.authorNote)}
-            {level.authorNote.length <= maxCollapsedAuthorNote ? null :
-              <button
-                className='italic underline w-fit mt-1 text-sm'
-                onClick={() => setCollapsedAuthorNote(c => !c)}
-              >
-                {`Show ${collapsedAuthorNote ? 'more' : 'less'}`}
-              </button>
-            }
-          </div>
-        </>
-      }
+      {level.authorNote && <AuthorNote authorNote={level.authorNote} />}
       {/* Archived by */}
       {level.archivedTs && <>
         <div className='flex flex-row gap-2 items-center'>
