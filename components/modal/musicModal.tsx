@@ -46,9 +46,6 @@ export default function MusicModal({ closeModal, isOpen }: MusicModalProps) {
 
     setVolume(newVolume);
 
-    // Update volume in local storage
-    localStorage.setItem('musicVolume', newVolume.toString());
-
     if (songMetadata) {
       if (isHot) {
         songMetadata.original.volume = newVolume;
