@@ -22,6 +22,8 @@ import Record from '../../../models/db/record';
 import Review from '../../../models/db/review';
 import User from '../../../models/db/user';
 import { getLevelByUrlPath } from '../../api/level-by-slug/[username]/[slugName]';
+import useSWR from 'swr';
+import useSWRHelper from '@root/hooks/useSWRHelper';
 
 export interface LevelUrlQueryParams extends ParsedUrlQuery {
   cid?: string;
@@ -113,51 +115,11 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
     router.push(url);
   };
 
-  const [records, setRecords] = useState<Record[]>();
+  const {data:records, isLoading:recordsLoading} = useSWRHelper<Record[]>(`/api/records/${level._id}`);
 
-  const getRecords = useCallback(() => {
-    fetch(`/api/records/${level._id}`, {
-      method: 'GET',
-    }).then(async res => {
-      if (res.status === 200) {
-        setRecords(await res.json());
-      } else {
-        throw res.text();
-      }
-    }).catch(err => {
-      console.error(err);
-      toast.dismiss();
-      toast.error('Error fetching records');
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [level._id, level.leastMoves]);
 
-  useEffect(() => {
-    getRecords();
-  }, [getRecords]);
+  const {mutate:mutateReviews,data:reviews, isLoading:reviewsLoading} = useSWRHelper<Review[]>(`/api/reviews/${level._id}`)
 
-  const [reviews, setReviews] = useState<Review[]>();
-
-  const getReviews = useCallback(() => {
-    fetch(`/api/reviews/${level._id}`, {
-      method: 'GET',
-    }).then(async res => {
-      if (res.status === 200) {
-        setReviews(await res.json());
-      } else {
-        throw res.text();
-      }
-    }).catch(err => {
-      console.error(err);
-      toast.dismiss();
-      toast.error('Error fetching reviews');
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [level._id, level.calc_reviews_count]);
-
-  useEffect(() => {
-    getReviews();
-  }, [getReviews]);
 
   const folders: LinkInfo[] = [];
 
@@ -217,7 +179,7 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
         }}
       />
       <LevelContext.Provider value={{
-        getReviews: getReviews,
+        getReviews:mutateReviews,
         inCampaign: !!chapter && level.userMoves !== level.leastMoves,
         level: level,
         mutateLevel: mutateLevel,
