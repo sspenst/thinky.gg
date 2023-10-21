@@ -138,6 +138,7 @@ export default function MusicContextProvider({ children }: { children: React.Rea
   const [isPlaying, setIsPlaying] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
   const loadedAudioIndex = useRef(-1);
+  const [mounted, setMounted] = useState(false);
   const songIndex = useRef(0);
   const [songMetadata, setSongMetdata] = useState<SongMetadata>();
   const [volume, setVolume] = useState(0.66);
@@ -149,37 +150,45 @@ export default function MusicContextProvider({ children }: { children: React.Rea
     setIsMusicSupported(canPlayOgg);
     audio.remove();
 
-    // get from localstorage the current song index and the current volume
-    const lsSongIndex = localStorage.getItem('songIndex');
-    const lsVolume = localStorage.getItem('musicVolume');
-    const dynamicMusic = localStorage.getItem('dynamicMusic');
+    if (!canPlayOgg) {
+      return;
+    }
 
-    if (lsSongIndex !== null) {
-      songIndex.current = parseInt(lsSongIndex);
+    const lsDynamic = localStorage.getItem('musicDynamic');
+    const lsHot = localStorage.getItem('musicHot');
+    const lsIndex = localStorage.getItem('musicIndex');
+    const lsVolume = localStorage.getItem('musicVolume');
+
+    if (lsDynamic !== null) {
+      setDynamicMusic(lsDynamic === 'true');
+    }
+
+    if (lsHot !== null) {
+      setIsHot(lsHot === 'true');
+    }
+
+    if (lsIndex !== null) {
+      songIndex.current = parseInt(lsIndex);
     }
 
     if (lsVolume !== null) {
       setVolume(parseFloat(lsVolume));
     }
 
-    if (dynamicMusic !== null) {
-      setDynamicMusic(dynamicMusic === 'true');
-    }
-
-    if (canPlayOgg) {
-      // initialize the starting song
-      seek(0);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    setMounted(true);
   }, []);
 
-  // use effect rather than on handlers so we catch if volume is changed from any component
+  useEffect(() => {
+    localStorage.setItem('musicDynamic', dynamicMusic.toString());
+  }, [dynamicMusic]);
+
+  useEffect(() => {
+    localStorage.setItem('musicHot', isHot.toString());
+  }, [isHot]);
+
   useEffect(() => {
     localStorage.setItem('musicVolume', volume.toString());
   }, [volume]);
-  useEffect(() => {
-    localStorage.setItem('dynamicMusic', dynamicMusic.toString());
-  }, [dynamicMusic, volume]);
 
   const seek = useCallback((offset: number, playOriginal = isHot) => {
     const onCanplaythrough = () => {
@@ -192,6 +201,7 @@ export default function MusicContextProvider({ children }: { children: React.Rea
 
       original.volume = playOriginal ? volume : 0;
       ambient.volume = playOriginal ? 0 : volume;
+      thud.volume = volume;
 
       if (isPlaying) {
         original.play();
@@ -216,7 +226,7 @@ export default function MusicContextProvider({ children }: { children: React.Rea
 
     // NB: add songs.length to account for negative offset
     songIndex.current = (songIndex.current + offset + songs.length) % songs.length;
-    localStorage.setItem('songIndex', songIndex.current.toString());
+    localStorage.setItem('musicIndex', songIndex.current.toString());
     const song = songs[songIndex.current];
 
     const ambient = new Audio(song.ambient);
@@ -243,6 +253,14 @@ export default function MusicContextProvider({ children }: { children: React.Rea
       website: song.website,
     });
   }, [isHot, isPlaying, songMetadata, volume]);
+
+  // after loading data from localStorage we can initialize the starting song
+  useEffect(() => {
+    if (mounted) {
+      seek(0);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mounted]);
 
   // NB: separate useEffect for next because seek needs to be called outside of the seek function
   useEffect(() => {
