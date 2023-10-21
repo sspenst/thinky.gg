@@ -8,6 +8,7 @@ import getPngDataClient from '../../helpers/getPngDataClient';
 import SelectOption from '../../models/selectOption';
 import styles from './SelectCard.module.css';
 import SelectCardContent from './selectCardContent';
+import StyledTooltip from '../page/styledTooltip';
 
 interface SelectCardProps {
   option: SelectOption;
@@ -23,7 +24,12 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
     const playlistButtonVerb = myPlaylist?.levels.find(l => l.toString() === option.id.toString()) ? '-' : '+';
 
     addToPlaylistBtn = option.level &&
-    (<button
+    (
+    <>
+    <button
+      data-tooltip-id='playlist-btn-tooltip'
+      data-tooltip-delay-show={600}
+      data-tooltip-content={playlistButtonVerb === '+' ? 'Add to playlist' : 'Remove from playlist'}
       className={classNames(
         'text-md border border-1 absolute bottom-2 m-0 px-1.5 left-2 rounded-lg  bg-gray-800 hover:bg-gray-400',
         styles['add-button'],
@@ -75,6 +81,8 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
     >
       {playlistButtonVerb}
     </button>
+    <StyledTooltip id='playlist-btn-tooltip' />
+    </>
     );
   }
 
