@@ -75,7 +75,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     socket: undefined,
   });
 
-  const { data: myPlaylist, mutate: mutateMyPlaylist } = useSWRHelper<Collection>('/api/playlist');
+  const { data: myPlayLater, mutate: mutateMyPlayLater } = useSWRHelper<Collection>('/api/PlayLater');
 
   const router = useRouter();
   const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);
@@ -354,8 +354,8 @@ export default function MyApp({ Component, pageProps }: AppProps) {
           forceUpdate: forceUpdate,
           multiplayerSocket: multiplayerSocket,
           mutateUser: mutateUser,
-          myPlaylist: myPlaylist,
-          mutateMyPlaylist: mutateMyPlaylist,
+          myPlayLater: myPlayLater,
+          mutateMyPlayLater: mutateMyPlayLater,
           setShouldAttemptAuth: setShouldAttemptAuth,
           setTheme: setTheme,
           shouldAttemptAuth: shouldAttemptAuth,

@@ -16,20 +16,20 @@ interface SelectCardProps {
 }
 
 export default function SelectCard({ option, prefetch }: SelectCardProps) {
-  const { myPlaylist, mutateMyPlaylist } = useContext(AppContext);
+  const { myPlayLater, mutateMyPlayLater } = useContext(AppContext);
   const [backgroundImage, setBackgroundImage] = useState<string>();
-  let addToPlaylistBtn;
+  let addToPlayLaterBtn;
 
   if (option.level) {
-    const playlistButtonVerb = myPlaylist?.levels.find(l => l.toString() === option.id.toString()) ? '-' : '+';
+    const PlayLaterButtonVerb = myPlayLater?.levels.find(l => l.toString() === option.id.toString()) ? '-' : '+';
 
-    addToPlaylistBtn = option.level &&
+    addToPlayLaterBtn = option.level &&
     (
     <>
     <button
-      data-tooltip-id='playlist-btn-tooltip'
+      data-tooltip-id={'PlayLater-btn-tooltip-'+option.id}
       data-tooltip-delay-show={600}
-      data-tooltip-content={playlistButtonVerb === '+' ? 'Add to playlist' : 'Remove from playlist'}
+      data-tooltip-content={PlayLaterButtonVerb === '+' ? 'Add to PlayLater' : 'Remove from PlayLater'}
       className={classNames(
         'text-md border border-1 absolute bottom-2 m-0 px-1.5 left-2 rounded-lg  bg-gray-800 hover:bg-gray-400',
         styles['add-button'],
@@ -37,11 +37,11 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
       onClick={async() => {
         toast.dismiss();
         // add background message
-        toast.loading('Adding to playlist...', {
+        toast.loading('Adding to PlayLater...', {
           position: 'bottom-center',
         });
-        const res = await fetch('/api/playlist/', {
-          method: playlistButtonVerb === '+' ? 'POST' : 'DELETE',
+        const res = await fetch('/api/PlayLater/', {
+          method: PlayLaterButtonVerb === '+' ? 'POST' : 'DELETE',
           headers: {
             'Content-Type': 'application/json',
           },
@@ -53,13 +53,13 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
         toast.dismiss();
 
         if (res.ok) {
-          const message = <div className='flex flex-col text-center'> <span className='text-lg'>{playlistButtonVerb === '+' ? 'Added to ' : 'Removed from'} your playlist!</span> <Link className='text-sm underline' href={'/playlist'}>View Playlist</Link> </div>;
+          const message = <div className='flex flex-col text-center'> <span className='text-lg'>{PlayLaterButtonVerb === '+' ? 'Added to ' : 'Removed from'} your PlayLater!</span> <Link className='text-sm underline' href={'/collection/k2xl/PlayLater'}>View PlayLater</Link> </div>;
 
           toast.success(message, {
             duration: 5000,
             position: 'bottom-center',
           });
-          mutateMyPlaylist();
+          mutateMyPlayLater();
         } else {
           let resp;
 
@@ -69,7 +69,7 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
             console.error(e);
           }
 
-          toast.error(resp?.error || 'Could not update playlist', {
+          toast.error(resp?.error || 'Could not update PlayLater', {
             duration: 5000,
             position: 'bottom-center',
           });
@@ -79,9 +79,9 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
         color: 'var(--bg-color-1)',
       }}
     >
-      {playlistButtonVerb}
+      {PlayLaterButtonVerb}
     </button>
-    <StyledTooltip id='playlist-btn-tooltip' />
+    <StyledTooltip id={'PlayLater-btn-tooltip-'+option.id} />
     </>
     );
   }
@@ -160,7 +160,7 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
             <SelectCardContent option={option} />
           </button>
         }
-        {addToPlaylistBtn}
+        {addToPlayLaterBtn}
       </div>
 
     </div>

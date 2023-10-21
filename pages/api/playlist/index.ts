@@ -9,7 +9,7 @@ import { LEVEL_DEFAULT_PROJECTION } from '@root/models/schemas/levelSchema';
 import { PipelineStage } from 'mongoose';
 import { NextApiResponse } from 'next';
 
-export const MAX_LEVELS_IN_PLAYLIST = 500;
+export const MAX_LEVELS_IN_PlayLater = 500;
 export default withAuth(
   {
     POST: {
@@ -58,22 +58,22 @@ export default withAuth(
           ],
         }
       }] : [];
-      // grab the playlist
-      const playlist = await CollectionModel.aggregate([
+      // grab the PlayLater
+      const PlayLater = await CollectionModel.aggregate([
         {
           $match: {
             userId: req.user._id,
-            type: CollectionType.Playlist,
+            type: CollectionType.PlayLater,
           }
         },
         ...(populateStage as PipelineStage[]),
       ]) as Collection[];
 
-      if (playlist.length === 0) {
+      if (PlayLater.length === 0) {
         return res.status(200).json([]);
       }
 
-      return res.status(200).json(playlist[0]);
+      return res.status(200).json(PlayLater[0]);
     }
 
     if (req.method === 'DELETE') {
@@ -82,7 +82,7 @@ export default withAuth(
       await CollectionModel.updateOne(
         {
           userId: req.user._id,
-          type: CollectionType.Playlist,
+          type: CollectionType.PlayLater,
         },
         {
           $pull: {
@@ -115,39 +115,39 @@ export default withAuth(
         return res.status(404).json({ error: 'Level not found.' });
       }
 
-      // grab the playlist
-      const playlist = await CollectionModel.findOne({
+      // grab the PlayLater
+      const PlayLater = await CollectionModel.findOne({
         userId: req.user._id,
-        type: CollectionType.Playlist,
+        type: CollectionType.PlayLater,
       }, {
         levels: 1,
       }, {
         lean: true,
       }) as Collection;
 
-      if (playlist) {
-        if (playlist.levels.length > MAX_LEVELS_IN_PLAYLIST) {
-          return res.status(400).json({ error: `You can only have ${MAX_LEVELS_IN_PLAYLIST} levels in your playlist. Please remove some levels and try again.` });
+      if (PlayLater) {
+        if (PlayLater.levels.length > MAX_LEVELS_IN_PlayLater) {
+          return res.status(400).json({ error: `You can only have ${MAX_LEVELS_IN_PlayLater} levels in your PlayLater. Please remove some levels and try again.` });
         }
 
-        if (playlist.levels.find((level) => level.toString() === id)) {
-          return res.status(400).json({ error: 'This level is already in your playlist.' });
+        if (PlayLater.levels.find((level) => level.toString() === id)) {
+          return res.status(400).json({ error: 'This level is already in your PlayLater.' });
         }
       }
 
       await CollectionModel.findOneAndUpdate(
         {
           userId: req.user._id,
-          type: CollectionType.Playlist,
+          type: CollectionType.PlayLater,
         },
         {
-          // add to set the id of the level to add to the playlist
-          name: !playlist?.name ? 'Playlist' : undefined,
+          // add to set the id of the level to add to the PlayLater
+          name: !PlayLater?.name ? 'Play Later' : undefined,
           $addToSet: {
             levels: id,
           },
-          slug: !playlist?.slug ? req.user.name + '/playlist' : undefined,
-          type: !playlist?.type ? CollectionType.Playlist : undefined,
+          slug: !PlayLater?.slug ? req.user.name + '/play-later' : undefined,
+          type: !PlayLater?.type ? CollectionType.PlayLater : undefined,
         },
         {
           new: true,

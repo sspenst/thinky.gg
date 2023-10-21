@@ -1,4 +1,4 @@
 export enum CollectionType {
-    Playlist = 'playlist',
+    PlayLater = 'PlayLater',
     Regular = 'regular',
   }

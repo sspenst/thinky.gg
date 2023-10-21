@@ -10,8 +10,8 @@ interface AppContextInterface {
   forceUpdate: () => void;
   multiplayerSocket: MultiplayerSocket;
   mutateUser: KeyedMutator<ReqUser>;
-  mutateMyPlaylist: () => void;
-  myPlaylist?: Collection;
+  mutateMyPlayLater: () => void;
+  myPlayLater?: Collection;
   setShouldAttemptAuth: React.Dispatch<React.SetStateAction<boolean>>;
   setTheme: React.Dispatch<React.SetStateAction<string | undefined>>;
   shouldAttemptAuth: boolean;
@@ -32,8 +32,8 @@ export const AppContext = createContext<AppContextInterface>({
     socket: undefined,
   },
   mutateUser: {} as KeyedMutator<ReqUser>,
-  mutateMyPlaylist: () => { return; },
-  myPlaylist: undefined,
+  mutateMyPlayLater: () => { return; },
+  myPlayLater: undefined,
   setShouldAttemptAuth: () => { return; },
   setTheme: () => { return; },
   shouldAttemptAuth: true,
