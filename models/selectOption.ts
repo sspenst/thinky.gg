@@ -13,6 +13,8 @@ interface SelectOption {
   stats?: SelectOptionStats | undefined;
   text: string | JSX.Element;
   width?: number;
+  hideAddToPlayLaterButton?: boolean;
+  customStyle?: React.CSSProperties;
 }
 
 export default SelectOption;

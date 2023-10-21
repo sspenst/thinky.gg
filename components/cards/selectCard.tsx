@@ -20,8 +20,8 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
   const [backgroundImage, setBackgroundImage] = useState<string>();
   let addToPlayLaterBtn;
 
-  if (option.level) {
-    const PlayLaterButtonVerb = myPlayLater?.levels.find(l => l.toString() === option.id.toString()) ? '-' : '+';
+  if (option.level && !option.hideAddToPlayLaterButton) {
+    const PlayLaterButtonVerb = myPlayLater?.levels?.find(l => l.toString() === option.id.toString()) ? '-' : '+';
 
     addToPlayLaterBtn = option.level &&
     (
@@ -29,7 +29,7 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
     <button
       data-tooltip-id={'PlayLater-btn-tooltip-'+option.id}
       data-tooltip-delay-show={600}
-      data-tooltip-content={PlayLaterButtonVerb === '+' ? 'Add to PlayLater' : 'Remove from PlayLater'}
+      data-tooltip-content={PlayLaterButtonVerb === '+' ? 'Add to Play Later' : 'Remove from Play Later'}
       className={classNames(
         'text-md border border-1 absolute bottom-2 m-0 px-1.5 left-2 rounded-lg  bg-gray-800 hover:bg-gray-400',
         styles['add-button'],
@@ -98,6 +98,7 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
   return (
     <div
       className='p-3 overflow-hidden relative inline-block align-middle'
+      style={option.customStyle}
       key={`select-card-${option.id}`}
     >
 
