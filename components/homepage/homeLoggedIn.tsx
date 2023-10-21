@@ -2,6 +2,7 @@ import PagePath from '@root/constants/pagePath';
 import StatFilter from '@root/constants/statFilter';
 import getProfileSlug from '@root/helpers/getProfileSlug';
 import isGuest from '@root/helpers/isGuest';
+import isPro from '@root/helpers/isPro';
 import classNames from 'classnames';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -97,6 +98,12 @@ export default function HomeLoggedIn({
               </svg>
               <span className='text-lg font-bold'>Create</span>
             </Link>
+            {!isPro(user) &&
+              <Link href='/settings/pro' passHref className={buttonClassNames + ' bg-green-500 dark:bg-green-800'}>
+                <span className='text-base font-semibold'>Go Pro!</span>
+                <Image alt='pro' src='/pro.svg' width={16} height={16} style={{ minWidth: 16, minHeight: 16 }} />
+              </Link>
+            }
           </div>
         </div>
       </div>
@@ -131,7 +138,7 @@ export default function HomeLoggedIn({
       />
     </div>
     <div className='flex justify-center m-6'>
-      <div className='max-w-xs space-y-2 md:space-y-0 md:space-x-4 flex flex-col md:flex-row rounded-md justify-center'>
+      <div className='gap-x-4 gap-y-2 flex flex-wrap flex-col md:flex-row justify-center'>
         <Link passHref href='/tutorial' className={buttonClassNames}>
           <svg xmlns='http://www.w3.org/2000/svg' className='h-6 w-6' fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={1}>
             <path d='M12 14l9-5-9-5-9 5 9 5z' />

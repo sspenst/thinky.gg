@@ -41,7 +41,6 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
   }, [level._id]);
 
   useEffect(() => {
-    console.log('Change level id');
     setMutePostGameModalForThisLevel(false);
   }, [level._id]);
 
