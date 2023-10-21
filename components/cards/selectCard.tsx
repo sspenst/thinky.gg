@@ -40,7 +40,7 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
         toast.loading('Adding to PlayLater...', {
           position: 'bottom-center',
         });
-        const res = await fetch('/api/PlayLater/', {
+        const res = await fetch('/api/play-later/', {
           method: PlayLaterButtonVerb === '+' ? 'POST' : 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -53,7 +53,7 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
         toast.dismiss();
 
         if (res.ok) {
-          const message = <div className='flex flex-col text-center'> <span className='text-lg'>{PlayLaterButtonVerb === '+' ? 'Added to ' : 'Removed from'} your PlayLater!</span> <Link className='text-sm underline' href={'/collection/k2xl/PlayLater'}>View PlayLater</Link> </div>;
+          const message = <div className='flex flex-col text-center'> <span className='text-lg'>{PlayLaterButtonVerb === '+' ? 'Added to ' : 'Removed from'} your Play Later collection!</span> <Link className='text-sm underline' href={'/collection/k2xl/PlayLater'}>View Play Later</Link> </div>;
 
           toast.success(message, {
             duration: 5000,
@@ -69,7 +69,7 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
             console.error(e);
           }
 
-          toast.error(resp?.error || 'Could not update PlayLater', {
+          toast.error(resp?.error || 'Could not update Play Later', {
             duration: 5000,
             position: 'bottom-center',
           });
