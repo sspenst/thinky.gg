@@ -98,6 +98,12 @@ export default function HomeLoggedIn({
               </svg>
               <span className='text-lg font-bold'>Create</span>
             </Link>
+            {!isPro(user) &&
+              <Link href='/settings/pro' passHref className={buttonClassNames + ' bg-green-500 dark:bg-green-800'}>
+                <span className='text-base font-semibold'>Go Pro!</span>
+                <Image alt='pro' src='/pro.svg' width={16} height={16} style={{ minWidth: 16, minHeight: 16 }} />
+              </Link>
+            }
           </div>
         </div>
       </div>
@@ -132,14 +138,7 @@ export default function HomeLoggedIn({
       />
     </div>
     <div className='flex justify-center m-6'>
-      <div className='max-w-xs space-y-2 md:space-y-0 md:space-x-4 flex flex-col md:flex-row rounded-md justify-center'>
-        { !isPro(user) && (
-          <Link href='/settings/pro' passHref className={buttonClassNames + ' bg-blue-200 dark:bg-green-800'}>
-          Go Pro!
-            <Image alt='pro' src='/pro.svg' width={16} height={16} style={{ minWidth: 16, minHeight: 16 }} />
-          </Link>
-        )
-        }
+      <div className='gap-x-4 gap-y-2 flex flex-wrap flex-col md:flex-row justify-center'>
         <Link passHref href='/tutorial' className={buttonClassNames}>
           <svg xmlns='http://www.w3.org/2000/svg' className='h-6 w-6' fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={1}>
             <path d='M12 14l9-5-9-5-9 5 9 5z' />
@@ -173,7 +172,6 @@ export default function HomeLoggedIn({
     <div className='flex items-center justify-center'>
       <div className='flex flex-col'>
         <div className='flex items-center'>
-
           <form action='/search'>
             <input type='hidden' name='timeRange' value='All' />
             <input onChange={e => setSearch(e.target.value)} id='search' type='search' name='search' className='form-control relative flex-auto min-w-0 block w-52 px-2.5 py-1.5 h-10 text-base font-normal text-gray-700 placeholder:text-gray-400 bg-white bg-clip-padding border border-solid border-gray-300 rounded-md rounded-r-none rounded-b-none transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' placeholder='Search levels...' aria-label='Search' aria-describedby='button-addon2' />
