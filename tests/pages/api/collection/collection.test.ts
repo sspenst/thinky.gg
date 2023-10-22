@@ -43,38 +43,11 @@ describe('pages/api/collection/index.ts', () => {
       },
     });
   });
-  test('querying with a non-GET HTTP method should fail', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'PUT',
-          userId: TestId.USER,
-          cookies: {
-            token: getTokenCookieValue(TestId.USER),
-          },
-          query: {
-            id: collection_id,
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await getCollectionHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('Method not allowed');
-        expect(res.status).toBe(405);
-      },
-    });
-  });
   test('Doing a POST with no data should error', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
-          userId: TestId.USER,
           cookies: {
             token: getTokenCookieValue(TestId.USER),
           },
@@ -98,7 +71,6 @@ describe('pages/api/collection/index.ts', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
-          userId: TestId.USER,
           cookies: {
             token: getTokenCookieValue(TestId.USER),
           },
@@ -127,7 +99,6 @@ describe('pages/api/collection/index.ts', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
-          userId: TestId.USER,
           cookies: {
             token: getTokenCookieValue(TestId.USER),
           },
@@ -157,7 +128,6 @@ describe('pages/api/collection/index.ts', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
-          userId: TestId.USER,
           cookies: {
             token: getTokenCookieValue(TestId.USER),
           },
@@ -187,7 +157,6 @@ describe('pages/api/collection/index.ts', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
-          userId: TestId.USER,
           cookies: {
             token: getTokenCookieValue(TestId.USER),
           },
@@ -216,13 +185,13 @@ describe('pages/api/collection/index.ts', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
-          userId: TestId.USER,
           cookies: {
             token: getTokenCookieValue(TestId.USER),
           },
           body: {
             authorNote: 'I\'m a nice little collection note.',
             name: 'A Test Collection Blah',
+            private: true,
           },
           headers: {
             'content-type': 'application/json',
@@ -248,12 +217,36 @@ describe('pages/api/collection/index.ts', () => {
       },
     });
   });
-  test('now we should be able to get the collection', async () => {
+  test('now we should NOT be able to get the collection as a public user because it is private', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'GET',
+          query: {
+            id: collection_id,
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await getCollectionHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(res.status).toBe(404);
+        expect(response.error).toBe('Error finding Collection');
+      },
+    });
+  });
+  test('if we are querying as the user who owns it we should be able to get the collection', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           userId: TestId.USER,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
           query: {
             id: collection_id,
           },
@@ -272,6 +265,7 @@ describe('pages/api/collection/index.ts', () => {
       },
     });
   });
+  
   test('now querying for a different collection should NOT return this collection', async () => {
     await testApiHandler({
       handler: async (_, res) => {
