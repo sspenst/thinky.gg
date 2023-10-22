@@ -11,6 +11,7 @@ import { LevelContext } from '@root/contexts/levelContext';
 import SelectOption from '@root/models/selectOption';
 import SelectCard from '../cards/selectCard';
 import useDeviceCheck, { ScreenSize } from '@root/hooks/useDeviceCheck';
+import Link from 'next/link';
 
 interface GameWrapperProps {
   chapter?: string;
@@ -75,7 +76,10 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
       />
       
       {screenSize >= ScreenSize.MD && collection?.levels && (
-        <div className='flex flex-col overflow-y-scroll'>
+        <div className='flex flex-col overflow-y-scroll p-3'>
+          <h2 className='text-xl font-bold text-center hover:underline'>
+            <Link href={'/collection/'+collection.slug}>{collection.name}</Link>
+          </h2>
         {
         collection.levels.map((levelInCollection, i) => {
 
