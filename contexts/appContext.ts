@@ -11,7 +11,7 @@ interface AppContextInterface {
   multiplayerSocket: MultiplayerSocket;
   mutateUser: KeyedMutator<ReqUser>;
   mutateMyPlayLater: () => void;
-  myPlayLater?: Collection;
+  myPlayLater?: { [key: string]: boolean };
   setShouldAttemptAuth: React.Dispatch<React.SetStateAction<boolean>>;
   setTheme: React.Dispatch<React.SetStateAction<string | undefined>>;
   shouldAttemptAuth: boolean;

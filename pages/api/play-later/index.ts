@@ -27,8 +27,6 @@ export default withAuth(
     },
   }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
     if (req.method === 'GET') {
-      const { populate } = req.query;
-     
       // grab the PlayLater
       const PlayLater = await CollectionModel.aggregate([
         {
@@ -42,8 +40,15 @@ export default withAuth(
       if (PlayLater.length === 0) {
         return res.status(200).json([]);
       }
-
-      return res.status(200).json(PlayLater[0]);
+      // return PlayLater[0] as a Map<string, boolean>
+      // where the key is the level id and the value is true
+      console.log(PlayLater[0].levels)
+      const map:{ [key: string]: boolean } = (PlayLater[0].levels).reduce((acc, item) => {
+        console.log("> ", item._id.toString())
+        acc[item._id.toString()] = true;
+        return acc;
+      }, {} as { [key: string]: boolean });
+      return res.status(200).json(map);
     }
 
     if (req.method === 'DELETE') {
