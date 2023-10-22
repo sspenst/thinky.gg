@@ -97,11 +97,11 @@ export default withAuth(
 
       if (PlayLater) {
         if (PlayLater.levels.length > MAX_LEVELS_IN_PlayLater) {
-          return res.status(400).json({ error: `You can only have ${MAX_LEVELS_IN_PlayLater} levels in your PlayLater. Please remove some levels and try again.` });
+          return res.status(400).json({ error: `You can only have ${MAX_LEVELS_IN_PlayLater} levels in your Play Later. Please remove some levels and try again.` });
         }
 
         if (PlayLater.levels.find((level) => level.toString() === id)) {
-          return res.status(400).json({ error: 'This level is already in your PlayLater.' });
+          return res.status(400).json({ error: 'This level is already in your Play Later.' });
         }
       }
 
