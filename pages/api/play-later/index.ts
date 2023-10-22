@@ -42,9 +42,8 @@ export default withAuth(
       }
       // return PlayLater[0] as a Map<string, boolean>
       // where the key is the level id and the value is true
-      console.log(PlayLater[0].levels)
+      
       const map:{ [key: string]: boolean } = (PlayLater[0].levels).reduce((acc, item) => {
-        console.log("> ", item._id.toString())
         acc[item._id.toString()] = true;
         return acc;
       }, {} as { [key: string]: boolean });
