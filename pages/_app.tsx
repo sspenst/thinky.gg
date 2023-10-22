@@ -75,7 +75,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     socket: undefined,
   });
 
-  const { data: myPlayLater, mutate: mutateMyPlayLater } = useSWRHelper<Collection>('/api/play-later');
+  const { data: myPlayLater, mutate: mutateMyPlayLater } = useSWRHelper<{ [key: string]: boolean }>('/api/play-later');
 
   const router = useRouter();
   const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);

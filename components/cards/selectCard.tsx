@@ -21,7 +21,7 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
   let addToPlayLaterBtn;
 
   if (option.level && !option.hideAddToPlayLaterButton) {
-    const PlayLaterButtonVerb = myPlayLater?.levels?.find(l => l.toString() === option.id.toString()) ? '-' : '+';
+    const PlayLaterButtonVerb = myPlayLater && myPlayLater[option.level._id.toString()] ? '-' : '+';
 
     addToPlayLaterBtn = option.level &&
     (
@@ -53,11 +53,12 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
         toast.dismiss();
 
         if (res.ok) {
-          const message = <div className='flex flex-col text-center'> <span className='text-lg'>{PlayLaterButtonVerb === '+' ? 'Added to ' : 'Removed from'} your Play Later collection!</span> <Link className='text-sm underline' href={'/collection/k2xl/play-later'}>View Play Later</Link> </div>;
+          const message = <div className='flex flex-col text-center w-max'> <span className='text-md'>{PlayLaterButtonVerb === '+' ? 'Added to ' : 'Removed from'} your Play Later collection!</span> <Link className='text-sm underline' href={'/collection/k2xl/play-later'}>View Play Later</Link> </div>;
 
           toast.success(message, {
             duration: 5000,
             position: 'bottom-center',
+            icon: PlayLaterButtonVerb === '+' ? '➖' : '➕',
           });
           mutateMyPlayLater();
         } else {
