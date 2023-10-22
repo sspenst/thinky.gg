@@ -11,9 +11,9 @@ import { CollectionModel } from '../../../models/mongoose';
 export default withAuth({
   POST: {
     body: {
-      name: ValidType('string', true),
       authorNote: ValidType('string', false),
-      private: ValidType('boolean', false),
+      isPrivate: ValidType('boolean', false),
+      name: ValidType('string', true),
     }
   } }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (!(await isFullAccount(req.user))) {
@@ -25,22 +25,25 @@ export default withAuth({
   const session = await mongoose.startSession();
   let collection: Collection | null = null;
   let errorCode = 500, errorMessage = 'Error creating collection';
+
   try {
     await session.withTransaction(async () => {
-      const { authorNote, name, private:privateFlag } = req.body;
+      const { authorNote, isPrivate, name } = req.body;
       const trimmedName = name.trim();
       const slug = await generateCollectionSlug(req.user.name, trimmedName, undefined, { session: session });
-      if (slug == req.user.name+'/play-later') {
+
+      if (slug == req.user.name + '/play-later') {
         errorCode = 400;
         errorMessage = 'This uses a reserved word (play later) which is a reserved word. Please use another name for this collection.';
         throw new Error(errorMessage); // can't just return res.status because we're in a transaction and will get a warning about headers being sent twice
       }
+
       collection = (await CollectionModel.create([{
         _id: new Types.ObjectId(),
         authorNote: authorNote?.trim(),
+        isPrivate: !!isPrivate,
         name: trimmedName,
         slug: slug,
-        private: privateFlag,
         userId: req.userId,
       }], { session: session }))[0];
     });
@@ -49,7 +52,8 @@ export default withAuth({
   } catch (err) /* istanbul ignore next */ {
     session.endSession();
     logger.error(err);
-    return res.status(errorCode).json({ error:errorMessage });
+
+    return res.status(errorCode).json({ error: errorMessage });
   }
 
   return res.status(200).json(collection);

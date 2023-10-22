@@ -10,6 +10,7 @@ import { getCollection } from '../collection-by-id/[id]';
 
 type UpdateLevelParams = {
   authorNote?: string,
+  isPrivate?: boolean,
   levels?: (string | Types.ObjectId)[],
   name?: string,
   private?: boolean,
@@ -29,6 +30,7 @@ export default withAuth({
     },
     body: {
       authorNote: ValidType('string', false),
+      isPrivate: ValidType('boolean', false),
       levels: ValidObjectIdArray(false),
       name: ValidType('string', false),
       privateFlag: ValidType('boolean', false), // naming is privateFlag instead of private because private is a reserved word
@@ -45,12 +47,11 @@ export default withAuth({
 
     const collection = await getCollection({
       matchQuery: {
-        $match: {
-          _id: new Types.ObjectId(id as string),
-          userId: req.user._id,
-        }
-      }, reqUser: req.user,
-      includeDraft: true
+        _id: new Types.ObjectId(id as string),
+        userId: req.user._id,
+      },
+      reqUser: req.user,
+      includeDraft: true,
     });
     
     if (!collection) {
@@ -62,9 +63,9 @@ export default withAuth({
     return res.status(200).json(collection);
   } else if (req.method === 'PUT') {
     const { id } = req.query;
-    const { authorNote, name, levels, private:privateFlag } = req.body as UpdateLevelParams; // privateFlag instead of private because private is a reserved word
+    const { authorNote, isPrivate, name, levels } = req.body as UpdateLevelParams;
 
-    if (!authorNote && !name && !levels) {
+    if (!authorNote && isPrivate === undefined && !name && !levels) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
@@ -76,8 +77,16 @@ export default withAuth({
       await session.withTransaction(async () => {
         const setObj: UpdateLevelParams = {};
 
-        if (authorNote) {
+        if (authorNote !== undefined) {
           setObj.authorNote = authorNote.trim();
+        }
+
+        if (isPrivate !== undefined) {
+          setObj.isPrivate = isPrivate;
+        }
+
+        if (levels) {
+          setObj.levels = (levels as string[]).map(i => new Types.ObjectId(i));
         }
 
         if (name) {
@@ -85,18 +94,12 @@ export default withAuth({
 
           setObj.name = trimmedName;
           setObj.slug = await generateCollectionSlug(req.user.name, trimmedName, id as string, { session: session });
-          if (setObj.slug == req.user.name+'/play-later') {
+
+          if (setObj.slug == req.user.name + '/play-later') {
             errorCode = 400;
             errorMessage = 'This uses a reserved word (play later) which is a reserved word. Please use another name for this collection.';
-            throw new Error(errorMessage);  // can't just return res.status because we're in a transaction and will get a warning about headers being sent twice
+            throw new Error(errorMessage); // can't just return res.status because we're in a transaction and will get a warning about headers being sent twice
           }
-        }
-
-        if (levels) {
-          setObj.levels = (levels as string[]).map(i => new Types.ObjectId(i));
-        }
-        if (privateFlag !== undefined) {
-          setObj.private = privateFlag;
         }
 
         collection = await CollectionModel.findOneAndUpdate({
