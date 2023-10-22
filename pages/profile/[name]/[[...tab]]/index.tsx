@@ -101,6 +101,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   cleanUser(user);
 
   const userId = user._id.toString();
+  const viewingOwnProfile = reqUser?._id.toString() === userId;
 
   const [
     achievements,
@@ -116,7 +117,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   ] = await Promise.all([
     profileTab === ProfileTab.Achievements ? AchievementModel.find<Achievement>({ userId: userId }) : [] as Achievement[],
     AchievementModel.countDocuments({ userId: userId }),
-    CollectionModel.countDocuments({ userId: userId }),
+    CollectionModel.countDocuments({
+      userId: userId,
+      ...(!viewingOwnProfile && { isPrivate: { $ne: true } }),
+    }),
     getFollowData(user._id.toString(), reqUser),
     LevelModel.countDocuments({ isDeleted: { $ne: true }, isDraft: false, userId: userId }),
     MultiplayerMatchModel.countDocuments({ players: userId, state: MultiplayerMatchState.FINISHED, rated: true }),
@@ -175,7 +179,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   if (profileTab === ProfileTab.Collections) {
     const collectionsAgg = await getCollections({
-      matchQuery: { $match: { userId: user._id } },
+      matchQuery: {
+        $match: {
+          userId: user._id,
+          ...(!viewingOwnProfile && { isPrivate: { $ne: true } }),
+        },
+      },
       reqUser,
     });
 
@@ -299,6 +308,7 @@ export default function ProfilePage({
     // sort collections by name but use a natural sort
     const sortedEnrichedCollections = naturalSort(enrichedCollections) as EnrichedCollection[];
 
+    // TODO: private/public ux if they are your own collections
     return sortedEnrichedCollections.map(enrichedCollection => {
       return {
         href: `/collection/${enrichedCollection.slug}`,

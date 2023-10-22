@@ -29,7 +29,7 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
     if (!name || name.length === 0) {
       toast.dismiss();
       toast.error('Error: Name is required', {
-        duration: 3000
+        duration: 3000,
       });
 
       return;
@@ -97,6 +97,17 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
           type='text'
           value={name}
         />
+        <div className='flex items-center gap-2'>
+          <label htmlFor='privateCollection' className='font-semibold'>
+            Private:
+          </label>
+          <input
+            checked={isPrivate}
+            id='privateCollection'
+            onChange={() => setIsPrivate(p => !p)}
+            type='checkbox'
+          />
+        </div>
         <label className='font-semibold' htmlFor='authorNote'>Author Note:</label>
         <textarea
           className='p-1 rounded-md border'
@@ -106,17 +117,6 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
           rows={4}
           value={authorNote}
         />
-        <div className='flex items-center gap-2'>
-          <input
-            checked={isPrivate}
-            id='private_collection'
-            onChange={() => setIsPrivate(p => !p)}
-            type='checkbox'
-          />
-          <label htmlFor='private_collection' className='font-semibold'>
-            Private
-          </label>
-        </div>
       </div>
     </Modal>
   );

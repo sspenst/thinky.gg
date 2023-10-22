@@ -22,13 +22,13 @@ export default apiWrapper({
   await dbConnect();
   const token = req.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, req) : null;
-  const collection = await getCollection( {
+  const collection = await getCollection({
     matchQuery: { $match: { _id: new Types.ObjectId(id as string) } },
     reqUser,
     populateLevels: true,
   });
 
-  if (!collection) {
+  if (!collection || (collection.isPrivate && collection.userId._id.toString() !== reqUser?._id.toString())) {
     return res.status(404).json({
       error: 'Error finding Collection',
     });
@@ -205,6 +205,9 @@ export async function getCollections({ matchQuery, reqUser, includeDraft, popula
     ...(!populateLevels ? [{ $unset: 'levels' }] : []),
   ] as PipelineStage[]));
 
+  // TODO: if collection is private and reqUser !== collection userId, remove here
+
+  // TODO: clean all users?
   cleanUser(collectionAgg[0]?.userId);
   (collectionAgg[0] as Collection)?.levels?.map(level => {
     cleanUser(level.userId);
