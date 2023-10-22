@@ -83,6 +83,10 @@ export default withAuth({
 
           setObj.name = trimmedName;
           setObj.slug = await generateCollectionSlug(req.user.name, trimmedName, id as string, { session: session });
+          
+          if (setObj.slug == req.user.name+'/play-later') {
+            return res.status(400).json({ error: 'This uses a reserved word (play later) which is a reserved word. Please use another name for this collection.' });
+          }
         }
 
         if (levels) {

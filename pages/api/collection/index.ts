@@ -29,7 +29,9 @@ export default withAuth({
       const { authorNote, name } = req.body;
       const trimmedName = name.trim();
       const slug = await generateCollectionSlug(req.user.name, trimmedName, undefined, { session: session });
-
+      if (slug == req.user.name+'/play-later') {
+        return res.status(400).json({ error: 'This uses a reserved word (play later) which is a reserved word. Please use another name for this collection.' });
+      }
       collection = (await CollectionModel.create([{
         _id: new Types.ObjectId(),
         authorNote: authorNote?.trim(),

@@ -102,6 +102,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const userId = user._id.toString();
 
+  const viewingOwnProfile = reqUser && reqUser._id.toString() === userId;
   const [
     achievements,
     achievementsCount,
@@ -116,7 +117,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   ] = await Promise.all([
     profileTab === ProfileTab.Achievements ? AchievementModel.find<Achievement>({ userId: userId }) : [] as Achievement[],
     AchievementModel.countDocuments({ userId: userId }),
-    CollectionModel.countDocuments({ userId: userId }),
+    CollectionModel.countDocuments(
+      { 
+       userId: userId, 
+       ...(!viewingOwnProfile && {private: {$ne: true}})
+      }
+        ),
     getFollowData(user._id.toString(), reqUser),
     LevelModel.countDocuments({ isDeleted: { $ne: true }, isDraft: false, userId: userId }),
     MultiplayerMatchModel.countDocuments({ players: userId, state: MultiplayerMatchState.FINISHED, rated: true }),
@@ -175,7 +181,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   if (profileTab === ProfileTab.Collections) {
     const collectionsAgg = await getCollections({
-      matchQuery: { $match: { userId: user._id } },
+      matchQuery: { $match: { 
+        userId: user._id ,
+        ...(!viewingOwnProfile && {private: {$ne: true}})
+      } },
       reqUser,
     });
 
@@ -304,7 +313,7 @@ export default function ProfilePage({
         href: `/collection/${enrichedCollection.slug}`,
         id: enrichedCollection._id.toString(),
         stats: new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userSolvedCount),
-        text: enrichedCollection.name,
+        text: <div className='flex flex-col'><span>{enrichedCollection.name}</span>{enrichedCollection.private ? <span className='text-xs italic'>private</span> : null}</div>,
       } as SelectOption;
     });
   }, [enrichedCollections]);
@@ -313,6 +322,7 @@ export default function ProfilePage({
     return statFilterOptions(getCollectionOptions(), showCollectionFilter, collectionFilterText);
   }, [collectionFilterText, getCollectionOptions, showCollectionFilter]);
 
+  const collectionsAsOptions = getFilteredCollectionOptions();
   const getLevelOptions = useCallback(() => {
     if (!user || !enrichedLevels) {
       return [];
@@ -435,11 +445,11 @@ export default function ProfilePage({
     [ProfileTab.Multiplayer]: <ProfileMultiplayer user={user} />,
     [ProfileTab.Collections]: (
       <div className='flex flex-col gap-2 justify-center'>
-        {getCollectionOptions().length > 0 &&
+        {collectionsAsOptions.length > 0 &&
           <SelectFilter
             filter={showCollectionFilter}
             onFilterClick={onFilterCollectionClick}
-            placeholder={`Search ${getFilteredCollectionOptions().length} collection${getFilteredCollectionOptions().length !== 1 ? 's' : ''}...`}
+            placeholder={`Search ${collectionsAsOptions.length} collection${collectionsAsOptions.length !== 1 ? 's' : ''}...`}
             searchText={collectionFilterText}
             setSearchText={setCollectionFilterText}
           />
@@ -462,12 +472,12 @@ export default function ProfilePage({
           }}
           isOpen={isAddCollectionOpen}
         />
-        {getFilteredCollectionOptions().length === 0 ?
+        {collectionsAsOptions.length === 0 ?
           <div className='p-3 justify-center flex'>
             No collections!
           </div>
           :
-          <Select options={getFilteredCollectionOptions()} />
+          <Select options={collectionsAsOptions} />
         }
       </div>
     ),
