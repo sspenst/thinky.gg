@@ -52,13 +52,13 @@ export default withAuth({
       }, reqUser: req.user,
       includeDraft: true
     });
-
+    
     if (!collection) {
       return res.status(404).json({
         error: 'Error finding Collection',
       });
     }
-
+      
     return res.status(200).json(collection);
   } else if (req.method === 'PUT') {
     const { id } = req.query;
