@@ -10,6 +10,7 @@ import { getCollection } from '../collection-by-id/[id]';
 
 type UpdateLevelParams = {
   authorNote?: string,
+  isPrivate?: boolean,
   levels?: (string | Types.ObjectId)[],
   name?: string,
   slug?: string,
@@ -27,6 +28,7 @@ export default withAuth({
     },
     body: {
       authorNote: ValidType('string', false),
+      isPrivate: ValidType('boolean', false),
       levels: ValidObjectIdArray(false),
       name: ValidType('string', false),
     },
@@ -42,12 +44,11 @@ export default withAuth({
 
     const collection = await getCollection({
       matchQuery: {
-        $match: {
-          _id: new Types.ObjectId(id as string),
-          userId: req.user._id,
-        }
-      }, reqUser: req.user,
-      includeDraft: true
+        _id: new Types.ObjectId(id as string),
+        userId: req.user._id,
+      },
+      reqUser: req.user,
+      includeDraft: true,
     });
 
     if (!collection) {
@@ -59,12 +60,10 @@ export default withAuth({
     return res.status(200).json(collection);
   } else if (req.method === 'PUT') {
     const { id } = req.query;
-    const { authorNote, name, levels } = req.body as UpdateLevelParams;
+    const { authorNote, isPrivate, name, levels } = req.body as UpdateLevelParams;
 
-    if (!authorNote && !name && !levels) {
-      res.status(400).json({ error: 'Missing required fields' });
-
-      return;
+    if (!authorNote && isPrivate === undefined && !name && !levels) {
+      return res.status(400).json({ error: 'Missing required fields' });
     }
 
     const session = await mongoose.startSession();
@@ -74,8 +73,16 @@ export default withAuth({
       await session.withTransaction(async () => {
         const setObj: UpdateLevelParams = {};
 
-        if (authorNote) {
+        if (authorNote !== undefined) {
           setObj.authorNote = authorNote.trim();
+        }
+
+        if (isPrivate !== undefined) {
+          setObj.isPrivate = isPrivate;
+        }
+
+        if (levels) {
+          setObj.levels = (levels as string[]).map(i => new Types.ObjectId(i));
         }
 
         if (name) {
@@ -83,10 +90,6 @@ export default withAuth({
 
           setObj.name = trimmedName;
           setObj.slug = await generateCollectionSlug(req.user.name, trimmedName, id as string, { session: session });
-        }
-
-        if (levels) {
-          setObj.levels = (levels as string[]).map(i => new Types.ObjectId(i));
         }
 
         collection = await CollectionModel.findOneAndUpdate({
