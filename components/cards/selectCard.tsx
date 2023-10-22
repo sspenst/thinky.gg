@@ -53,7 +53,7 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
         toast.dismiss();
 
         if (res.ok) {
-          const message = <div className='flex flex-col text-center'> <span className='text-lg'>{PlayLaterButtonVerb === '+' ? 'Added to ' : 'Removed from'} your Play Later collection!</span> <Link className='text-sm underline' href={'/collection/k2xl/PlayLater'}>View Play Later</Link> </div>;
+          const message = <div className='flex flex-col text-center'> <span className='text-lg'>{PlayLaterButtonVerb === '+' ? 'Added to ' : 'Removed from'} your Play Later collection!</span> <Link className='text-sm underline' href={'/collection/k2xl/play-later'}>View Play Later</Link> </div>;
 
           toast.success(message, {
             duration: 5000,
