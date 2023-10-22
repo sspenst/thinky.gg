@@ -13,12 +13,16 @@ interface AddCollectionModalProps {
 
 export default function AddCollectionModal({ closeModal, collection, isOpen }: AddCollectionModalProps) {
   const [authorNote, setAuthorNote] = useState<string>();
+  const [isPrivate, setIsPrivate] = useState(false);
   const [name, setName] = useState<string>();
   const router = useRouter();
 
   useEffect(() => {
-    setAuthorNote(collection?.authorNote);
-    setName(collection?.name);
+    if (collection) {
+      setAuthorNote(collection.authorNote);
+      setIsPrivate(!!collection.isPrivate);
+      setName(collection.name);
+    }
   }, [collection]);
 
   function onSubmit() {
@@ -47,6 +51,7 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
       method: collection ? 'PUT' : 'POST',
       body: JSON.stringify({
         authorNote: authorNote,
+        isPrivate: isPrivate,
         name: name,
       }),
       credentials: 'include',
@@ -101,6 +106,17 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
           rows={4}
           value={authorNote}
         />
+        <div className='flex items-center gap-2'>
+          <input
+            checked={isPrivate}
+            id='private_collection'
+            onChange={() => setIsPrivate(p => !p)}
+            type='checkbox'
+          />
+          <label htmlFor='private_collection' className='font-semibold'>
+            Private
+          </label>
+        </div>
       </div>
     </Modal>
   );
