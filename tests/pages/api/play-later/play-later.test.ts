@@ -3,14 +3,14 @@ import { logger } from '@root/helpers/logger';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { getTokenCookieValue } from '@root/lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '@root/lib/withAuth';
+import { CollectionType } from '@root/models/CollectionEnums';
+import { CollectionModel } from '@root/models/mongoose';
 import { enableFetchMocks } from 'jest-fetch-mock';
+import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import handler from '../../../../pages/api/play-later/index';
-import { CollectionModel } from '@root/models/mongoose';
-import { CollectionType } from '@root/models/CollectionEnums';
-import Collection from '@root/models/db/collection';
-import { Types } from 'mongoose';
+import { initLevel } from '@root/lib/initializeLocalDb';
 beforeAll(async () => {
   await dbConnect();
 });
@@ -138,6 +138,66 @@ describe('api/play-later', () => {
       },
     });
   });
+  let newLevelId: string;
+  test('POST another level should be OK', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    const newLevel = await initLevel(TestId.USER, "name0");
+    newLevelId = newLevel._id.toString();
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+          body: {
+            id: newLevel._id.toString(),
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+        expect(res.status).toBe(200);
+        
+      },
+    });
+  });
+  test('POST another level to trigger the MAX_LEVELS_IN_PLAYLIST hit', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    const newLevel = await initLevel(TestId.USER, "name");
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+          body: {
+            id: newLevel._id.toString(),
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+        expect(res.status).toBe(400);
+        expect(response.error).toBe(
+          'You can only have 2 levels in your Play Later. Please remove some levels and try again.'
+        );
+      },
+    });
+  });
   test('GET playlist should return only ids', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -167,6 +227,7 @@ describe('api/play-later', () => {
 
         expect(responseAsMap).toStrictEqual({
           [TestId.LEVEL]: true,
+          [newLevelId]: true,
         });
       },
     });
@@ -201,7 +262,7 @@ describe('api/play-later', () => {
       },
     });
   });
-  test('GET playlist should after removing should return empty', async () => {
+  test('GET playlist should after removing should show correct', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -228,7 +289,9 @@ describe('api/play-later', () => {
         expect(response.error).toBe(undefined);
         const responseAsMap = response as Map<string, boolean>;
 
-        expect(responseAsMap).toStrictEqual({});
+        expect(responseAsMap).toStrictEqual({
+            [newLevelId]: true,
+        });
       },
     });
   });
