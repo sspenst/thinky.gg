@@ -75,7 +75,7 @@ export default withAuth({
       await session.withTransaction(async () => {
         const setObj: UpdateLevelParams = {};
 
-        if (authorNote) {
+        if (authorNote !== undefined) {
           setObj.authorNote = authorNote.trim();
         }
 
