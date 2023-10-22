@@ -44,10 +44,8 @@ export default withAuth({
 
     const collection = await getCollection({
       matchQuery: {
-        $match: {
-          _id: new Types.ObjectId(id as string),
-          userId: req.user._id,
-        }
+        _id: new Types.ObjectId(id as string),
+        userId: req.user._id,
       },
       reqUser: req.user,
       includeDraft: true,
