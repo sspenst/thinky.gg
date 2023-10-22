@@ -151,7 +151,8 @@ describe('Testing updating collection data', () => {
           body: {
             levels: levels.map(levelId => levelId.toString()),
             authorNote: 'added 100 levels',
-            name: 'the big collection'
+            name: 'the big collection',
+            isPrivate: true,
           },
           headers: {
             'content-type': 'application/json',
@@ -167,6 +168,7 @@ describe('Testing updating collection data', () => {
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
 
+        expect(response.isPrivate).toBeTruthy();
         expect(response.levels).toBeDefined();
         expect(response.levels.length).toBe(numLevels);
       },
