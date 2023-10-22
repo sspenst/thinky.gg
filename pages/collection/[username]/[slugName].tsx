@@ -16,7 +16,6 @@ import Page from '../../../components/page/page';
 import Dimensions from '../../../constants/dimensions';
 import { AppContext } from '../../../contexts/appContext';
 import statFilterOptions from '../../../helpers/filterSelectOptions';
-import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
 import { EnrichedCollection } from '../../../models/db/collection';
@@ -55,15 +54,13 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
 
-  const collectionAgg = await getCollection({
+  const collection = await getCollection({
     matchQuery: { $match: { slug: username + '/' + slugName } },
     reqUser,
     populateLevels: true,
   });
 
-  if (!collectionAgg) {
-    logger.error('CollectionModel.find returned null in pages/collection');
-
+  if (!collection || (collection.isPrivate && collection.userId._id.toString() !== reqUser?._id.toString())) {
     return {
       notFound: true,
     };
@@ -71,7 +68,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
-      collection: JSON.parse(JSON.stringify(collectionAgg)),
+      collection: JSON.parse(JSON.stringify(collection)),
     } as CollectionProps
   };
 }
@@ -118,6 +115,8 @@ export default function CollectionPage({ collection }: CollectionProps) {
 
     setStatFilter(statFilter === value ? StatFilter.All : value);
   };
+
+  // TODO: ux if this collection is private or public
 
   return (<>
     <NextSeo
