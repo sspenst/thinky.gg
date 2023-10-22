@@ -10,6 +10,7 @@ import handler from '../../../../pages/api/play-later/index';
 import { CollectionModel } from '@root/models/mongoose';
 import { CollectionType } from '@root/models/CollectionEnums';
 import Collection from '@root/models/db/collection';
+import { Types } from 'mongoose';
 beforeAll(async () => {
   await dbConnect();
 });
@@ -103,6 +104,36 @@ describe('api/play-later', () => {
         expect(res.status).toBe(400);
         expect(response.error).toBe(
           'This level is already in your Play Later.'
+        );
+      },
+    });
+  });
+  test('POST an invalid level', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+          body: {
+            id: new Types.ObjectId().toString(),
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+        expect(res.status).toBe(404);
+        expect(response.error).toBe(
+          'Level not found.'
         );
       },
     });
