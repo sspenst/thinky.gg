@@ -13,6 +13,7 @@ export default withAuth({
     body: {
       name: ValidType('string', true),
       authorNote: ValidType('string', false),
+      private: ValidType('boolean', false),
     }
   } }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (!(await isFullAccount(req.user))) {
@@ -26,7 +27,7 @@ export default withAuth({
 
   try {
     await session.withTransaction(async () => {
-      const { authorNote, name } = req.body;
+      const { authorNote, name, private:privateFlag } = req.body;
       const trimmedName = name.trim();
       const slug = await generateCollectionSlug(req.user.name, trimmedName, undefined, { session: session });
       if (slug == req.user.name+'/play-later') {
@@ -37,6 +38,7 @@ export default withAuth({
         authorNote: authorNote?.trim(),
         name: trimmedName,
         slug: slug,
+        private: privateFlag,
         userId: req.userId,
       }], { session: session }))[0];
     });
