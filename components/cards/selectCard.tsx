@@ -58,7 +58,7 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
           toast.success(message, {
             duration: 5000,
             position: 'bottom-center',
-            icon: PlayLaterButtonVerb === '+' ? '➖' : '➕',
+            icon: PlayLaterButtonVerb === '+' ? '➕' : '➖',
           });
           mutateMyPlayLater();
         } else {
