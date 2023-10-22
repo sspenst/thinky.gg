@@ -123,6 +123,34 @@ describe('pages/api/collection/index.ts', () => {
     });
   });
 
+  test('Doing a POST but naming to a reserved slug should fail', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            name: 'Play  &$$#$ Later',
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await createCollectionHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('This uses a reserved word (play later) which is a reserved word. Please use another name for this collection.');
+        expect(res.status).toBe(400);
+      },
+    });
+  });
+
   test('Doing a POST to update level name but invalid characters in name should strip in slug', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -289,7 +317,7 @@ describe('pages/api/collection/index.ts', () => {
       },
     });
   });
-  test('Create 18 collections with same name in DB, so that we can test to make sure the server will not crash. The 19th should crash however.', async () => {
+  test('Create 3 collections with same name in DB, so that we can test to make sure the server will not crash. The 19th should crash however.', async () => {
     for (let i = 0; i < 2; i++) {
       // expect no exceptions
       const promise = initCollection(TestId.USER, 'Sample');
