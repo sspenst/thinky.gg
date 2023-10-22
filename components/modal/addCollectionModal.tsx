@@ -11,21 +11,27 @@ interface AddCollectionModalProps {
   isOpen: boolean;
 }
 
-export default function AddCollectionModal({ closeModal, collection, isOpen }: AddCollectionModalProps) {
+export default function AddCollectionModal({
+  closeModal,
+  collection,
+  isOpen,
+}: AddCollectionModalProps) {
   const [authorNote, setAuthorNote] = useState<string>();
   const [name, setName] = useState<string>();
+  const [privateCollection, setPrivateCollection] = useState<boolean>(false);
   const router = useRouter();
 
   useEffect(() => {
     setAuthorNote(collection?.authorNote);
     setName(collection?.name);
+    setPrivateCollection(collection?.private ?? false);
   }, [collection]);
 
   function onSubmit() {
     if (!name || name.length === 0) {
       toast.dismiss();
       toast.error('Error: Name is required', {
-        duration: 3000
+        duration: 3000,
       });
 
       return;
@@ -41,37 +47,45 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
     }
 
     toast.dismiss();
-    toast.loading(collection ? 'Updating collection...' : 'Adding collection...');
+    toast.loading(
+      collection ? 'Updating collection...' : 'Adding collection...'
+    );
 
-    fetch(collection ? `/api/collection/${collection._id}` : '/api/collection', {
-      method: collection ? 'PUT' : 'POST',
-      body: JSON.stringify({
-        authorNote: authorNote,
-        name: name,
-      }),
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json'
+    fetch(
+      collection ? `/api/collection/${collection._id}` : '/api/collection',
+      {
+        method: collection ? 'PUT' : 'POST',
+        body: JSON.stringify({
+          authorNote: authorNote,
+          name: name,
+          private: privateCollection,
+        }),
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       }
-    }).then(async res => {
-      if (res.status === 401) {
-        isNotFullAccountToast('Creating a collection');
-      } else if (res.status === 200) {
+    )
+      .then(async (res) => {
+        if (res.status === 401) {
+          isNotFullAccountToast('Creating a collection');
+        } else if (res.status === 200) {
+          toast.dismiss();
+          toast.success(collection ? 'Updated' : 'Added');
+          closeModal();
+
+          const newCollection = await res.json();
+
+          router.replace(`/collection/${newCollection.slug}`);
+        } else {
+          throw res.text();
+        }
+      })
+      .catch(async (err) => {
+        console.error(err);
         toast.dismiss();
-        toast.success(collection ? 'Updated' : 'Added');
-        closeModal();
-
-        const newCollection = await res.json();
-
-        router.replace(`/collection/${newCollection.slug}`);
-      } else {
-        throw res.text();
-      }
-    }).catch(async err => {
-      console.error(err);
-      toast.dismiss();
-      toast.error(JSON.parse(await err)?.error);
-    });
+        toast.error(JSON.parse(await err)?.error);
+      });
   }
 
   return (
@@ -81,26 +95,48 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
       onSubmit={onSubmit}
       title={`${collection ? 'Edit' : 'New'} Collection`}
     >
-      <div className='flex flex-col gap-2 w-112 max-w-full'>
-        <label className='font-semibold' htmlFor='name'>Name:</label>
-        <input
-          className='p-1 rounded-md border'
-          name='name'
-          onChange={e => setName(e.target.value)}
-          placeholder={`${collection ? 'Edit' : 'Add'} name...`}
-          required
-          type='text'
-          value={name}
-        />
-        <label className='font-semibold' htmlFor='authorNote'>Author Note:</label>
-        <textarea
-          className='p-1 rounded-md border'
-          name='authorNote'
-          onChange={e => setAuthorNote(e.target.value)}
-          placeholder={`${collection ? 'Edit' : 'Add'} author note...`}
-          rows={4}
-          value={authorNote}
-        />
+      <div className="flex flex-col gap-2 w-112 max-w-full">
+        <div className="flex flex-row gap-1 items-center">
+          <label className="font-semibold" htmlFor="name">
+            Name:
+          </label>
+          <input
+            className="p-1 rounded-md border"
+            name="name"
+            onChange={(e) => setName(e.target.value)}
+            placeholder={`${collection ? 'Edit' : 'Add'} name...`}
+            required
+            type="text"
+            value={name}
+          />
+        </div>
+        <div className="flex flex-row gap-1 items-center">
+          <label className="font-semibold" htmlFor="private">
+            Private:
+          </label>
+          <input
+            checked={privateCollection}
+            className="p-1 rounded-md border"
+            name="private"
+            onChange={() => {
+              setPrivateCollection(!privateCollection);
+            }}
+            type="checkbox"
+          />
+        </div>
+        <div className="flex flex-col gap-1 ">
+          <label className="font-semibold" htmlFor="authorNote">
+            Author Note:
+          </label>
+          <textarea
+            className="p-1 rounded-md border"
+            name="authorNote"
+            onChange={(e) => setAuthorNote(e.target.value)}
+            placeholder={`${collection ? 'Edit' : 'Add'} author note...`}
+            rows={4}
+            value={authorNote}
+          />
+        </div>
       </div>
     </Modal>
   );
