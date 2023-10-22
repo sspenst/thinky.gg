@@ -12,7 +12,9 @@ type UpdateLevelParams = {
   authorNote?: string,
   levels?: (string | Types.ObjectId)[],
   name?: string,
+  private?: boolean,
   slug?: string,
+  
 }
 
 export default withAuth({
@@ -29,6 +31,7 @@ export default withAuth({
       authorNote: ValidType('string', false),
       levels: ValidObjectIdArray(false),
       name: ValidType('string', false),
+      privateFlag: ValidType('boolean', false), // naming is privateFlag instead of private because private is a reserved word
     },
   },
   DELETE: {
@@ -59,7 +62,7 @@ export default withAuth({
     return res.status(200).json(collection);
   } else if (req.method === 'PUT') {
     const { id } = req.query;
-    const { authorNote, name, levels } = req.body as UpdateLevelParams;
+    const { authorNote, name, levels, private:privateFlag } = req.body as UpdateLevelParams; // privateFlag instead of private because private is a reserved word
 
     if (!authorNote && !name && !levels) {
       res.status(400).json({ error: 'Missing required fields' });
@@ -91,6 +94,9 @@ export default withAuth({
 
         if (levels) {
           setObj.levels = (levels as string[]).map(i => new Types.ObjectId(i));
+        }
+        if (privateFlag !== undefined) {
+          setObj.private = privateFlag;
         }
 
         collection = await CollectionModel.findOneAndUpdate({
