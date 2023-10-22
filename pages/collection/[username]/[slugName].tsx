@@ -60,7 +60,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     populateLevels: true,
   });
 
-  if (!collection || (collection.isPrivate && collection.userId._id.toString() !== reqUser?._id.toString())) {
+  if (!collection) {
     return {
       notFound: true,
     };

@@ -28,7 +28,7 @@ export default apiWrapper({
     populateLevels: true,
   });
 
-  if (!collection || (collection.isPrivate && collection.userId._id.toString() !== reqUser?._id.toString())) {
+  if (!collection) {
     return res.status(404).json({
       error: 'Error finding Collection',
     });
@@ -45,6 +45,10 @@ interface GetCollectionProps {
   populateLevels?: boolean,
 }
 
+/**
+ * Query for a collection with optionally populated levels and stats.
+ * Private collections are filtered out unless they were created by the reqUser.
+ */
 export async function getCollection(props: GetCollectionProps): Promise<Collection | null> {
   const collections = await getCollections(props);
 
@@ -55,6 +59,10 @@ export async function getCollection(props: GetCollectionProps): Promise<Collecti
   return collections[0] as Collection;
 }
 
+/**
+ * Query collections with optionally populated levels and stats.
+ * Private collections are filtered out unless they were created by the reqUser.
+ */
 export async function getCollections({ matchQuery, reqUser, includeDraft, populateLevels }: GetCollectionProps): Promise<Collection[]> {
   const collectionAgg = await CollectionModel.aggregate<Collection>(([
     {
