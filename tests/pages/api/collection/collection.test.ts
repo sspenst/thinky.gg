@@ -124,6 +124,7 @@ describe('pages/api/collection/index.ts', () => {
   });
 
   test('Doing a POST but naming to a reserved slug should fail', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -170,9 +171,10 @@ describe('pages/api/collection/index.ts', () => {
         await createCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
+        
         const res = await fetch();
+        
         const response = await res.json();
-
         expect(response.slug).toBe('test/blahcollections');
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
@@ -181,6 +183,7 @@ describe('pages/api/collection/index.ts', () => {
   });
 
   test('Doing a POST but invalid/missing fields should fail', async () => {
+    
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -246,6 +249,7 @@ describe('pages/api/collection/index.ts', () => {
     });
   });
   test('now we should NOT be able to get the collection as a public user because it is private', async () => {
+    
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
