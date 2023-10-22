@@ -9,7 +9,7 @@ import { LEVEL_DEFAULT_PROJECTION } from '@root/models/schemas/levelSchema';
 import { PipelineStage } from 'mongoose';
 import { NextApiResponse } from 'next';
 
-export const MAX_LEVELS_IN_PlayLater = 500;
+export const MAX_LEVELS_IN_PLAY_LATER = process.env.NODE_ENV !== 'test' ? 500 : 2;
 export default withAuth(
   {
     POST: {
@@ -100,8 +100,8 @@ export default withAuth(
       }) as Collection;
 
       if (PlayLater) {
-        if (PlayLater.levels.length > MAX_LEVELS_IN_PlayLater) {
-          return res.status(400).json({ error: `You can only have ${MAX_LEVELS_IN_PlayLater} levels in your Play Later. Please remove some levels and try again.` });
+        if (PlayLater.levels.length >= MAX_LEVELS_IN_PLAY_LATER) {
+          return res.status(400).json({ error: `You can only have ${MAX_LEVELS_IN_PLAY_LATER} levels in your Play Later. Please remove some levels and try again.` });
         }
 
         if (PlayLater.levels.find((level) => level.toString() === id)) {
