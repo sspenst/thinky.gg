@@ -51,7 +51,7 @@ export default withAuth({
       includeDraft: true,
     });
 
-    if (!collection || (collection.isPrivate && collection.userId.toString() !== req.userId)) {
+    if (!collection) {
       return res.status(404).json({
         error: 'Error finding Collection',
       });
