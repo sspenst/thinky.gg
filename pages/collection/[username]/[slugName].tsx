@@ -55,7 +55,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
 
   const collection = await getCollection({
-    matchQuery: { $match: { slug: username + '/' + slugName } },
+    matchQuery: { slug: username + '/' + slugName },
     reqUser,
     populateLevels: true,
   });

@@ -179,12 +179,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   if (profileTab === ProfileTab.Collections) {
     const collectionsAgg = await getCollections({
-      matchQuery: {
-        $match: {
-          userId: user._id,
-          ...(!viewingOwnProfile && { isPrivate: { $ne: true } }),
-        },
-      },
+      matchQuery: { userId: user._id },
       reqUser,
     });
 

@@ -1,7 +1,7 @@
 import cleanUser from '@root/lib/cleanUser';
 import { LEVEL_DEFAULT_PROJECTION } from '@root/models/schemas/levelSchema';
 import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
-import { PipelineStage, Types } from 'mongoose';
+import { FilterQuery, PipelineStage, Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidObjectId } from '../../../helpers/apiWrapper';
 import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
@@ -23,7 +23,7 @@ export default apiWrapper({
   const token = req.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, req) : null;
   const collection = await getCollection({
-    matchQuery: { $match: { _id: new Types.ObjectId(id as string) } },
+    matchQuery: { _id: new Types.ObjectId(id as string) },
     reqUser,
     populateLevels: true,
   });
@@ -38,7 +38,8 @@ export default apiWrapper({
 });
 
 interface GetCollectionProps {
-  matchQuery: PipelineStage,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  matchQuery: FilterQuery<any>,
   reqUser: User | null,
   includeDraft?: boolean,
   populateLevels?: boolean,
@@ -55,9 +56,21 @@ export async function getCollection(props: GetCollectionProps): Promise<Collecti
 }
 
 export async function getCollections({ matchQuery, reqUser, includeDraft, populateLevels }: GetCollectionProps): Promise<Collection[]> {
-  const collectionAgg = await CollectionModel.aggregate(([
+  const collectionAgg = await CollectionModel.aggregate<Collection>(([
     {
-      ...matchQuery,
+      $match: {
+        // filter out private collections unless the userId matches reqUser
+        $or: [
+          { isPrivate: { $ne: true } },
+          {
+            $and: [
+              { isPrivate: true },
+              { userId: reqUser?._id }
+            ]
+          }
+        ],
+        ...matchQuery,
+      }
     },
     {
       // populate user for collection
@@ -205,14 +218,9 @@ export async function getCollections({ matchQuery, reqUser, includeDraft, popula
     ...(!populateLevels ? [{ $unset: 'levels' }] : []),
   ] as PipelineStage[]));
 
-  // TODO: if collection is private and reqUser !== collection userId, remove here
-
-  // TODO: clean all users?
-  cleanUser(collectionAgg[0]?.userId);
-  (collectionAgg[0] as Collection)?.levels?.map(level => {
-    cleanUser(level.userId);
-
-    return level;
+  collectionAgg.forEach(collection => {
+    cleanUser(collection.userId);
+    collection.levels?.forEach(level => cleanUser(level.userId));
   });
 
   return collectionAgg;
