@@ -13,19 +13,23 @@ interface AddCollectionModalProps {
 
 export default function AddCollectionModal({ closeModal, collection, isOpen }: AddCollectionModalProps) {
   const [authorNote, setAuthorNote] = useState<string>();
+  const [isPrivate, setIsPrivate] = useState(false);
   const [name, setName] = useState<string>();
   const router = useRouter();
 
   useEffect(() => {
-    setAuthorNote(collection?.authorNote);
-    setName(collection?.name);
+    if (collection) {
+      setAuthorNote(collection.authorNote);
+      setIsPrivate(!!collection.isPrivate);
+      setName(collection.name);
+    }
   }, [collection]);
 
   function onSubmit() {
     if (!name || name.length === 0) {
       toast.dismiss();
       toast.error('Error: Name is required', {
-        duration: 3000
+        duration: 3000,
       });
 
       return;
@@ -47,6 +51,7 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
       method: collection ? 'PUT' : 'POST',
       body: JSON.stringify({
         authorNote: authorNote,
+        isPrivate: isPrivate,
         name: name,
       }),
       credentials: 'include',
@@ -92,6 +97,17 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
           type='text'
           value={name}
         />
+        <div className='flex items-center gap-2'>
+          <label htmlFor='privateCollection' className='font-semibold'>
+            Private:
+          </label>
+          <input
+            checked={isPrivate}
+            id='privateCollection'
+            onChange={() => setIsPrivate(p => !p)}
+            type='checkbox'
+          />
+        </div>
         <label className='font-semibold' htmlFor='authorNote'>Author Note:</label>
         <textarea
           className='p-1 rounded-md border'
