@@ -66,7 +66,7 @@ export default function GameWrapper({
       // scroll the collection list to the current level
       const anchorId = level._id.toString() + '-collection-list';
       const anchor = document.getElementById(anchorId);
-      console.log('>', anchor);
+
       if (anchor) {
         anchor.scrollIntoView({
           behavior: 'smooth',
@@ -104,56 +104,57 @@ export default function GameWrapper({
 
       {screenSize >= ScreenSize.MD && collection?.levels && (
         <div className="flex flex-row">
-          <div
-            id="collection-list"
-            className={
-              'flex flex-col overflow-y-scroll pt-3 ' +
-              (collectionViewHidden ? 'hidden' : '')
-            }
-            style={{
-              direction: 'rtl', // makes the scrollbar appear on the left
-            }}
-          >
-            <h2 className="text-xl font-bold text-center hover:underline">
+          <div className="flex flex-col gap-2">
+            <h2 className="text-xl font-bold text-center hover:underline pt-3">
               <Link href={'/collection/' + collection.slug}>
                 {collection.name}
               </Link>
             </h2>
-            {collection.levels.map((levelInCollection, i) => {
-              let customStyle = {};
-              if (level._id.toString() === levelInCollection._id.toString()) {
-                customStyle = {
-                  border: '2px solid var(--color)',
-                  borderRadius: '4px',
-                  padding: '4px',
-                  margin: '4px',
-                  backgroundColor: 'var(--bg-color-2)',
-                  boxShadow: '0 0 0 2px var(--color)',
-                };
+            <div
+              id="collection-list"
+              className={
+                'flex flex-col overflow-y-scroll ' +
+                (collectionViewHidden ? 'hidden' : '')
               }
-              const anchorId =
-                levelInCollection._id.toString() + '-collection-list';
-              return (
-                <div key={anchorId} id={anchorId}>
-                  <SelectCard
-                    option={{
-                      id: levelInCollection._id.toString(),
-                      level: levelInCollection,
-                      text: levelInCollection.name,
-                      hideAddToPlayLaterButton: true,
-                      customStyle: customStyle,
-                      href:
-                        '/level/' +
-                        levelInCollection.slug +
-                        '?cid=' +
-                        collection._id.toString(),
-                    }}
-                  />
-                </div>
-              );
-            })}
+              style={{
+                direction: 'rtl', // makes the scrollbar appear on the left
+              }}
+            >
+              {collection.levels.map((levelInCollection, i) => {
+                let customStyle = {};
+                if (level._id.toString() === levelInCollection._id.toString()) {
+                  customStyle = {
+                    border: '2px solid var(--color)',
+                    borderRadius: '4px',
+                    padding: '4px',
+                    margin: '4px',
+                    backgroundColor: 'var(--bg-color-2)',
+                    boxShadow: '0 0 0 2px var(--color)',
+                  };
+                }
+                const anchorId =
+                  levelInCollection._id.toString() + '-collection-list';
+                return (
+                  <div key={anchorId} id={anchorId}>
+                    <SelectCard
+                      option={{
+                        id: levelInCollection._id.toString(),
+                        level: levelInCollection,
+                        text: levelInCollection.name,
+                        hideAddToPlayLaterButton: true,
+                        customStyle: customStyle,
+                        href:
+                          '/level/' +
+                          levelInCollection.slug +
+                          '?cid=' +
+                          collection._id.toString(),
+                      }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
           </div>
-
           <div
             className="flex items-center justify-center h-full cursor-pointer"
             onClick={() => setCollectionViewHidden(!collectionViewHidden)}
