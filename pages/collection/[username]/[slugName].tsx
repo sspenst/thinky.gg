@@ -56,7 +56,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
 
   const collectionAgg = await getCollection({
-    matchQuery: { $match: { slug: username + '/' + slugName } },
+    matchQuery: {
+       $match: { 
+        slug: username + '/' + slugName ,
+      } 
+    },
+
     reqUser,
     populateLevels: true,
   });
@@ -64,6 +69,13 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   if (!collectionAgg) {
     logger.error('CollectionModel.find returned null in pages/collection');
 
+    return {
+      notFound: true,
+    };
+  }
+  const viewingOwnCollection = reqUser?._id.toString() === collectionAgg.userId._id.toString();
+
+  if (collectionAgg.private && !viewingOwnCollection) {
     return {
       notFound: true,
     };
