@@ -91,7 +91,10 @@ export default function GameWrapper({
       {screenSize >= ScreenSize.MD && collection?.levels && (
         <div className="flex flex-row">
           {!collectionViewHidden && (
-            <div className="flex flex-col overflow-y-scroll pt-3">
+            <div className="flex flex-col overflow-y-scroll pt-3"
+            style={{
+              direction: 'rtl', // makes the scrollbar appear on the left
+            }}>
               <h2 className="text-xl font-bold text-center hover:underline">
                 <Link href={'/collection/' + collection.slug}>
                   {collection.name}
