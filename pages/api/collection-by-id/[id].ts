@@ -36,7 +36,7 @@ export default apiWrapper({
 
   const doIOwnCollection = collection && collection.userId._id.toString() === reqUser?._id.toString();
     
-  if (collection?.private && !doIOwnCollection) {
+  if (collection?.isPrivate && !doIOwnCollection) {
     return res.status(404).json({
       error: 'Error finding Collection',
     });
