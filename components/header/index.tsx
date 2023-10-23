@@ -41,7 +41,7 @@ export default function Header({
     >
       <div className='flex truncate'>
         <div className='cursor-default items-center flex pr-2'>
-          <Link className={'font-bold text-3xl'} href={!userLoading && !user ? '/' : '/home'}>
+          <Link id='logo_btn' className={'font-bold text-3xl'} href={!userLoading && !user ? '/' : '/home'}>
             <Image alt='logo' src='/logo.svg' width='24' height='24' className='h-6 w-6' style={{ minWidth: 24, minHeight: 24 }} />
           </Link>
         </div>

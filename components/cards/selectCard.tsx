@@ -48,7 +48,7 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
         {option.href ?
           <Link
             className={classNames(
-              'border-2 rounded-md items-center flex justify-center text-center',
+              'border-2 rounded-md items-center flex justify-center text-center level-card-link',
               !option.disabled ? styles['card-border'] : undefined,
               { 'text-xl': !option.stats },
             )}
