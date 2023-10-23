@@ -137,7 +137,6 @@ export default function MusicContextProvider({ children }: { children: React.Rea
   const [isMusicSupported, setIsMusicSupported] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
-  const loadedAudioIndex = useRef(-1);
   const [mounted, setMounted] = useState(false);
   const songIndex = useRef(0);
   const [songMetadata, setSongMetdata] = useState<SongMetadata>();
@@ -191,68 +190,69 @@ export default function MusicContextProvider({ children }: { children: React.Rea
   }, [volume]);
 
   const seek = useCallback((offset: number, playOriginal = isHot) => {
-    const onCanplaythrough = () => {
-      loadedAudioIndex.current++;
+    const loadAudioFiles = async () => {
+      // NB: add songs.length to account for negative offset
+      const newSongIndex = (songIndex.current + offset + songs.length) % songs.length;
 
-      // need to load ambient, original, and thud before continuing
-      if (loadedAudioIndex.current !== 3) {
-        return;
-      }
+      songIndex.current = newSongIndex;
+      localStorage.setItem('musicIndex', newSongIndex.toString());
 
-      original.volume = playOriginal ? volume : 0;
-      ambient.volume = playOriginal ? 0 : volume;
-      thud.volume = volume;
+      const song = songs[newSongIndex];
+      const ambient = new Audio(song.ambient);
+      const original = new Audio(song.original);
+      const thud = new Audio(song.thud);
 
-      if (isPlaying) {
-        original.play();
-        ambient.play();
-      }
+      ambient.preload = 'auto';
+      original.preload = 'auto';
+      thud.preload = 'auto';
+
+      // wait for all 3 audios to load
+      await Promise.all([
+        new Promise(resolve => ambient.addEventListener('canplaythrough', resolve, { once: true })),
+        new Promise(resolve => original.addEventListener('canplaythrough', resolve, { once: true })),
+        new Promise(resolve => thud.addEventListener('canplaythrough', resolve, { once: true }))
+      ]);
+
+      const newSongMetadata: SongMetadata = {
+        original: original,
+        ambient: ambient,
+        artist: song.artist,
+        thud: thud,
+        title: song.title,
+        website: song.website,
+      };
+
+      return newSongMetadata;
     };
 
-    // ensure existing song is cleaned up
-    if (songMetadata) {
-      songMetadata.original.pause();
-      songMetadata.original.removeEventListener('canplaythrough', onCanplaythrough);
-      songMetadata.original.remove();
+    // call the async load function and set the state after all audio files are loaded
+    loadAudioFiles().then(newSongMetadata => {
+      setSongMetdata(prevSongMetadata => {
+        // ensure existing song is cleaned up
+        if (prevSongMetadata) {
+          prevSongMetadata.original.pause();
+          prevSongMetadata.original.remove();
 
-      songMetadata.ambient.pause();
-      songMetadata.ambient.removeEventListener('canplaythrough', onCanplaythrough);
-      songMetadata.ambient.remove();
+          prevSongMetadata.ambient.pause();
+          prevSongMetadata.ambient.remove();
 
-      songMetadata.thud.pause();
-      songMetadata.thud.removeEventListener('canplaythrough', onCanplaythrough);
-      songMetadata.thud.remove();
-    }
+          prevSongMetadata.thud.pause();
+          prevSongMetadata.thud.remove();
+        }
 
-    // NB: add songs.length to account for negative offset
-    songIndex.current = (songIndex.current + offset + songs.length) % songs.length;
-    localStorage.setItem('musicIndex', songIndex.current.toString());
-    const song = songs[songIndex.current];
+        newSongMetadata.original.volume = playOriginal ? volume : 0;
+        newSongMetadata.ambient.volume = playOriginal ? 0 : volume;
+        newSongMetadata.thud.volume = volume;
 
-    const ambient = new Audio(song.ambient);
-    const original = new Audio(song.original);
-    const thud = new Audio(song.thud);
+        if (isPlaying) {
+          newSongMetadata.original.play();
+          newSongMetadata.ambient.play();
+        }
 
-    ambient.preload = 'auto';
-    original.preload = 'auto';
-    thud.preload = 'auto';
-
-    loadedAudioIndex.current = 0;
-
-    // both tracks are playing at the same time so only need to check if one has ended
-    ambient.addEventListener('canplaythrough', onCanplaythrough);
-    original.addEventListener('canplaythrough', onCanplaythrough);
-    thud.addEventListener('canplaythrough', onCanplaythrough);
-
-    setSongMetdata({
-      original: original,
-      ambient: ambient,
-      artist: song.artist,
-      thud: thud,
-      title: song.title,
-      website: song.website,
+        return newSongMetadata;
+      });
     });
-  }, [isHot, isPlaying, songMetadata, volume]);
+  }, [isHot, isPlaying, volume]);
 
   // after loading data from localStorage we can initialize the starting song
   useEffect(() => {
