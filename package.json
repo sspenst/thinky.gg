@@ -66,7 +66,12 @@
     "lint": "next lint",
     "test": "node --expose-gc ./node_modules/.bin/jest  --no-compilation-cache --collectCoverage=false --maxWorkers=100%",
     "init_test": "jest --init",
-    "compile_jobs": "tsc --isolatedModules --esModuleInterop --jsx react --outDir ./server/jobs/output/ server/jobs/email-digest.tsx"
+    "compile_jobs": "tsc --isolatedModules --esModuleInterop --jsx react --outDir ./server/jobs/output/ server/jobs/email-digest.tsx",
+    "cypress:open": "cypress open",
+    "e2e": "start-server-and-test dev http://localhost:3000 \"cypress open --e2e\"",
+    "e2e:headless": "start-server-and-test dev http://localhost:3000 \"cypress run --e2e\"",
+    "component": "cypress open --component",
+    "component:headless": "cypress run --component"
   },
   "eslintConfig": {
     "extends": [
@@ -119,6 +124,7 @@
     "babel-jest": "^29.7.0",
     "classnames": "^2.3.2",
     "cli-progress": "^3.12.0",
+    "cypress": "^13.3.2",
     "eslint": "^8.51.0",
     "eslint-config-next": "^13.5.5",
     "eslint-plugin-react": "^7.33.2",
@@ -133,6 +139,7 @@
     "next-test-api-route-handler": "^3.1.9",
     "postcss": "^8.4.30",
     "react-test-renderer": "^18.2.0",
+    "start-server-and-test": "^2.0.1",
     "tailwindcss": "^3.3.3",
     "ts-jest": "^29.1.1",
     "ts-node": "^10.9.1",
