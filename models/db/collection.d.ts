@@ -12,7 +12,6 @@ interface Collection {
   name: string;
   slug: string;
   tags?: string[];
-  private: boolean;
   type?: CollectionType;
   updatedAt: Date;
   userId: Types.ObjectId & User;

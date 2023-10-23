@@ -29,10 +29,7 @@ const CollectionSchema = new mongoose.Schema<Collection>({
     maxlength: 50,
     required: true,
   },
-  private: {
-    type: Boolean,
-    default: false,
-  },
+  
   slug: {
     type: String,
     required: true,
