@@ -122,7 +122,7 @@ export default withAuth(
           },
           slug: !PlayLater?.slug ? req.user.name + '/play-later' : undefined,
           type: !PlayLater?.type ? CollectionType.PlayLater : undefined,
-          isPrivate: !PlayLater?.isPrivate ? true : undefined,
+          isPrivate: !PlayLater ? true : undefined, // Allow users to make their Play Later public if they want
         },
         {
           new: true,

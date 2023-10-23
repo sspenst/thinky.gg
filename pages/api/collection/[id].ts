@@ -7,6 +7,7 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
 import { CollectionModel } from '../../../models/mongoose';
 import { getCollection } from '../collection-by-id/[id]';
+import { CollectionType } from '@root/models/CollectionEnums';
 
 type UpdateLevelParams = {
   authorNote?: string,
@@ -75,6 +76,18 @@ export default withAuth({
 
     try {
       await session.withTransaction(async () => {
+
+        const collectionCurrent = await CollectionModel.findById(id, {userId:1, type:1}, { session: session });
+        if (!collectionCurrent) {
+          errorCode = 404;
+          errorMessage = 'Collection not found';
+          throw new Error(errorMessage); // can't just return res.status because we're in a transaction and will get a warning about headers being sent twice
+        }
+        if (collectionCurrent.userId.toString() !== req.userId) {
+          errorCode = 401;
+          errorMessage = 'Not authorized to update this Collection';
+          throw new Error(errorMessage); // can't just return res.status because we're in a transaction and will get a warning about headers being sent twice
+        }
         const setObj: UpdateLevelParams = {};
 
         if (authorNote !== undefined) {
@@ -88,10 +101,8 @@ export default withAuth({
         if (levels) {
           setObj.levels = (levels as string[]).map(i => new Types.ObjectId(i));
         }
-
-        if (name) {
-          const trimmedName = name.trim();
-
+        const trimmedName = name?.trim();
+        if (trimmedName && collectionCurrent.type !== CollectionType.PlayLater) {
           setObj.name = trimmedName;
           setObj.slug = await generateCollectionSlug(req.user.name, trimmedName, id as string, { session: session });
 
@@ -120,10 +131,6 @@ export default withAuth({
       session.endSession();
 
       return res.status(errorCode).json({ error: errorMessage });
-    }
-
-    if (!collection) {
-      return res.status(401).json({ error: 'User is not authorized to perform this action' });
     }
 
     return res.status(200).json(collection);
