@@ -6,6 +6,9 @@ import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { CollectionModel } from '../../../../models/mongoose';
 import collectionHandler from '../../../../pages/api/collection/[id]';
+import { log } from 'console';
+import { logger } from '@root/helpers/logger';
+import { Logger } from 'winston';
 
 afterAll(async() => {
   await dbDisconnect();
@@ -62,6 +65,7 @@ describe('pages/api/collection/[id].ts', () => {
     });
   });
   test('PUT other user\'s collection should 401', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger))
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

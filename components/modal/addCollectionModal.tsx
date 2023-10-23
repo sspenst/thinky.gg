@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import Collection from '../../models/db/collection';
 import isNotFullAccountToast from '../toasts/isNotFullAccountToast';
 import Modal from '.';
+import { CollectionType } from '@root/models/CollectionEnums';
 
 interface AddCollectionModalProps {
   closeModal: () => void;
@@ -97,6 +98,7 @@ export default function AddCollectionModal({
         <input
           className='p-1 rounded-md border'
           name='name'
+          disabled={collection?.type === CollectionType.PlayLater}
           onChange={e => setName(e.target.value)}
           placeholder={`${collection ? 'Edit' : 'Add'} name...`}
           required
