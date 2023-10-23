@@ -317,8 +317,8 @@ describe('pages/api/collection/index.ts', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(res.status).toBe(404);
-        expect(response.error).toBe('Error finding Collection');
+        expect(res.status).toBe(200);
+        expect(response._id).toBe(collection_id);
       },
     });
   });
