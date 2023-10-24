@@ -70,7 +70,7 @@ export default function Modal({
             leaveTo='opacity-0 scale-95'
           >
             <Dialog.Panel
-              className={classNames('w-full max-w-fit py-3 px-4 my-8 overflow-hidden text-left align-middle transition-all transform shadow-xl rounded-xl flex flex-col gap-4', rubik.className)}
+              className={classNames('w-full max-w-fit py-3 px-4 my-8 text-left align-middle transition-all transform shadow-xl rounded-xl flex flex-col gap-4', rubik.className)}
               style={{
                 backgroundColor: 'var(--bg-color-2)',
                 border: '1px solid',
