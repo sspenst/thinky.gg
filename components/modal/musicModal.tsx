@@ -1,5 +1,7 @@
-import { MusicContext } from '@root/contexts/musicContext';
-import React, { useContext } from 'react';
+import { Menu, Transition } from '@headlessui/react';
+import { MusicContext, songs } from '@root/contexts/musicContext';
+import classNames from 'classnames';
+import React, { Fragment, useContext } from 'react';
 import Modal from '.';
 
 interface MusicModal {
@@ -17,8 +19,10 @@ export default function MusicModal({ closeModal, isOpen }: MusicModalProps) {
     dynamicMusic, setDynamicMusic,
     isHot,
     isPlaying, setIsPlaying,
+    isSeeking,
     isToggling,
     seek,
+    seekByIndex,
     songMetadata,
     toggleVersion,
     volume, setVolume,
@@ -66,38 +70,93 @@ export default function MusicModal({ closeModal, isOpen }: MusicModalProps) {
   return (
     <Modal closeModal={closeModal} isOpen={isOpen} title='Music'>
       <div className='flex flex-col gap-4 items-center'>
-        <div className='flex flex-col'>
-          <span className='font-bold'>{songMetadata.title}</span>
-          <a
-            className='hover:underline italic w-fit'
-            href={songMetadata.website}
-            rel='noreferrer'
-            target='_blank'
+        <a
+          className='hover:underline italic w-fit'
+          href={songMetadata.website}
+          rel='noreferrer'
+          target='_blank'
+        >
+          {songMetadata.artist}
+        </a>
+        <Menu as='div' className='relative inline-block text-left z-30'>
+          <Menu.Button id='dropdownMenuBtn' aria-label='dropdown menu'>
+            <div className='flex items-center gap-2 hover-bg-3 px-3 py-1 rounded-md'>
+              <div className={classNames(
+                'font-bold',
+                { 'animate-pulse': isPlaying },
+                isPlaying && (isHot ? 'text-orange-400' : 'text-blue-400'),
+              )}>
+                {songMetadata.title}
+              </div>
+              <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-3 h-3'>
+                <path strokeLinecap='round' strokeLinejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5' />
+              </svg>
+            </div>
+          </Menu.Button>
+          <Transition
+            as={Fragment}
+            enter='transition ease-out duration-100'
+            enterFrom='transform opacity-0 scale-95'
+            enterTo='transform opacity-100 scale-100'
+            leave='transition ease-in duration-75'
+            leaveFrom='transform opacity-100 scale-100'
+            leaveTo='transform opacity-0 scale-95'
           >
-            {songMetadata.artist}
-          </a>
-        </div>
+            <Menu.Items className='absolute m-1 origin-top-right rounded-[10px] shadow-lg border overflow-y-auto overflow-x-hidden' style={{
+              backgroundColor: 'var(--bg-color-2)',
+              borderColor: 'var(--bg-color-4)',
+              color: 'var(--color)',
+            }}>
+              <div className='px-1 py-1'>
+                {songs.map((song, index) => {
+                  const isSongPlaying = song.title === songMetadata.title && isPlaying;
+
+                  return (
+                    <Menu.Item key={`song-select-menu-${song.title}`}>
+                      {() => (
+                        <button
+                          className={classNames(
+                            'hover-bg-3 px-3 py-1 rounded-md w-44',
+                            { 'animate-pulse': isSongPlaying },
+                            isSongPlaying && (isHot ? 'text-orange-400' : 'text-blue-400'),
+                          )}
+                          key={`song-select-${song.title}`}
+                          onClick={() => seekByIndex(index)}
+                        >
+                          {song.title}
+                        </button>
+                      )}
+                    </Menu.Item>
+                  );
+                })}
+              </div>
+            </Menu.Items>
+          </Transition>
+        </Menu>
         <div
-          className='p-2 rounded-lg flex justify-between items-center w-fit'
+          className='p-1 rounded-lg flex justify-between items-center w-fit'
           style={{
             backgroundColor: 'var(--bg-color-3)',
           }}
         >
           <button
-            className='px-3 py-1 rounded-l audio-bar-button'
+            className='px-3 py-1 rounded-l audio-bar-button disabled:opacity-50'
+            disabled={isSeeking}
             onClick={() => seek(-1)}
           >
             ⏮
           </button>
           <button
-            className='px-3 py-1 audio-bar-button'
+            className='px-3 py-1 audio-bar-button disabled:opacity-50'
+            disabled={isSeeking}
             id='btn-audio-player-play'
             onClick={togglePlay}
           >
             {isPlaying ? '❚❚' : '▶'}
           </button>
           <button
-            className='px-3 py-1 audio-bar-button'
+            className='px-3 py-1 audio-bar-button disabled:opacity-50'
+            disabled={isSeeking}
             onClick={() => seek(1)}
           >
             ⏭
