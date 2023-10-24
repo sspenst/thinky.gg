@@ -7,6 +7,7 @@ export interface MusicContextInterface {
   isPlaying: boolean;
   isToggling: boolean;
   seek: (offset: number) => void;
+  seekByIndex: (index: number) => void;
   setDynamicMusic: React.Dispatch<React.SetStateAction<boolean>>;
   setIsPlaying: React.Dispatch<React.SetStateAction<boolean>>;
   setVolume: React.Dispatch<React.SetStateAction<number>>;
@@ -22,6 +23,7 @@ export const MusicContext = createContext<MusicContextInterface>({
   isPlaying: false,
   isToggling: false,
   seek: () => {},
+  seekByIndex: () => {},
   setDynamicMusic: () => {},
   setIsPlaying: () => {},
   setVolume: () => {},
@@ -138,7 +140,7 @@ export default function MusicContextProvider({ children }: { children: React.Rea
   const [isPlaying, setIsPlaying] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const songIndex = useRef(0);
+  const [songIndex, setSongIndex] = useState(0);
   const [songMetadata, setSongMetdata] = useState<SongMetadata>();
   const [volume, setVolume] = useState(0.66);
 
@@ -167,7 +169,7 @@ export default function MusicContextProvider({ children }: { children: React.Rea
     }
 
     if (lsIndex !== null) {
-      songIndex.current = parseInt(lsIndex);
+      setSongIndex(parseInt(lsIndex));
     }
 
     if (lsVolume !== null) {
@@ -186,18 +188,23 @@ export default function MusicContextProvider({ children }: { children: React.Rea
   }, [isHot]);
 
   useEffect(() => {
+    localStorage.setItem('musicIndex', songIndex.toString());
+  }, [songIndex]);
+
+  useEffect(() => {
     localStorage.setItem('musicVolume', volume.toString());
   }, [volume]);
 
-  const seek = useCallback((offset: number, playOriginal = isHot) => {
+  const seekByIndex = useCallback((index: number, playOriginal = isHot) => {
+    // must be a valid index
+    if (index < 0 || index >= songs.length) {
+      return;
+    }
+
     const loadAudioFiles = async () => {
-      // NB: add songs.length to account for negative offset
-      const newSongIndex = (songIndex.current + offset + songs.length) % songs.length;
+      setSongIndex(index);
 
-      songIndex.current = newSongIndex;
-      localStorage.setItem('musicIndex', newSongIndex.toString());
-
-      const song = songs[newSongIndex];
+      const song = songs[index];
       const ambient = new Audio(song.ambient);
       const original = new Audio(song.original);
       const thud = new Audio(song.thud);
@@ -216,9 +223,9 @@ export default function MusicContextProvider({ children }: { children: React.Rea
       ]);
 
       const newSongMetadata: SongMetadata = {
-        original: original,
         ambient: ambient,
         artist: song.artist,
+        original: original,
         thud: thud,
         title: song.title,
         website: song.website,
@@ -256,10 +263,23 @@ export default function MusicContextProvider({ children }: { children: React.Rea
     });
   }, [isHot, isPlaying, volume]);
 
+  const seek = useCallback((offset: number, playOriginal = isHot) => {
+    // add songs.length to account for negative offset
+    const positiveOffset = offset + songs.length;
+
+    if (positiveOffset < 0) {
+      return;
+    }
+
+    const newSongIndex = (songIndex + positiveOffset) % songs.length;
+
+    seekByIndex(newSongIndex, playOriginal);
+  }, [isHot, seekByIndex, songIndex]);
+
   // after loading data from localStorage we can initialize the starting song
   useEffect(() => {
     if (mounted) {
-      seek(0);
+      seekByIndex(songIndex);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mounted]);
@@ -362,6 +382,7 @@ export default function MusicContextProvider({ children }: { children: React.Rea
       isPlaying: isPlaying,
       isToggling: isToggling,
       seek: seek,
+      seekByIndex: seekByIndex,
       setDynamicMusic: setDynamicMusic,
       setIsPlaying: setIsPlaying,
       setVolume: setVolume,
