@@ -150,7 +150,7 @@ export default function MusicContextProvider({ children }: { children: React.Rea
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const [isDynamic, setIsDynamic] = useState(true);
   // dynamic audio uses 3 ogg audio layers
-  // non-dynamic uses only mp3 originals
+  // non-dynamic only uses mp3 originals (safari/ios)
   const [isDynamicSupported, setIsDynamicSupported] = useState(false);
   const [isHot, setIsHot] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -165,6 +165,7 @@ export default function MusicContextProvider({ children }: { children: React.Rea
     const audio = new Audio();
     const canPlayOgg = audio.canPlayType('audio/ogg') !== '';
 
+    setIsDynamicSupported(canPlayOgg);
     audio.remove();
 
     const lsDynamic = localStorage.getItem('musicDynamic');
@@ -183,7 +184,6 @@ export default function MusicContextProvider({ children }: { children: React.Rea
     }
 
     setIsDynamic(dynamic);
-    setIsDynamicSupported(canPlayOgg);
 
     let hot = false;
 
@@ -233,6 +233,23 @@ export default function MusicContextProvider({ children }: { children: React.Rea
     setIsSeeking(true);
 
     const loadAudioFiles = async () => {
+      function canPlayThrough(audio: HTMLAudioElement) {
+        return new Promise(resolve => {
+          function handleCanPlayThrough() {
+            audio.removeEventListener('error', handleError);
+            resolve(true);
+          }
+
+          function handleError() {
+            audio.removeEventListener('canplaythrough', handleCanPlayThrough);
+            resolve(false);
+          }
+
+          audio.addEventListener('canplaythrough', handleCanPlayThrough, { once: true });
+          audio.addEventListener('error', handleError, { once: true });
+        });
+      }
+
       setSongIndex(index);
 
       const song = songs[index];
@@ -255,25 +272,34 @@ export default function MusicContextProvider({ children }: { children: React.Rea
         original.load();
         thud.load();
 
-        // wait for all 3 audios to load
-        await Promise.all([
-          new Promise(resolve => ambient.addEventListener('canplaythrough', resolve, { once: true })),
-          new Promise(resolve => original.addEventListener('canplaythrough', resolve, { once: true })),
-          new Promise(resolve => thud.addEventListener('canplaythrough', resolve, { once: true }))
+        const [canPlayAmbient, canPlayOriginal, canPlayThud] = await Promise.all([
+          canPlayThrough(ambient),
+          canPlayThrough(original),
+          canPlayThrough(thud),
         ]);
 
-        newSongMetadata.ambient = ambient;
-        newSongMetadata.original = original;
-        newSongMetadata.thud = thud;
+        if (canPlayAmbient) {
+          newSongMetadata.ambient = ambient;
+        }
+
+        if (canPlayOriginal) {
+          newSongMetadata.original = original;
+        }
+
+        if (canPlayThud) {
+          newSongMetadata.thud = thud;
+        }
       } else {
         const originalMp3 = new Audio(song.originalMp3);
 
         originalMp3.preload = 'auto';
         originalMp3.load();
 
-        await new Promise(resolve => originalMp3.addEventListener('canplaythrough', resolve, { once: true }));
+        const canPlayOriginalMp3 = await canPlayThrough(originalMp3);
 
-        newSongMetadata.originalMp3 = originalMp3;
+        if (canPlayOriginalMp3) {
+          newSongMetadata.originalMp3 = originalMp3;
+        }
       }
 
       return newSongMetadata;
