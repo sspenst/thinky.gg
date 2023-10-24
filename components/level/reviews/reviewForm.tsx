@@ -89,7 +89,8 @@ export default function ReviewForm({ inModal, review }: ReviewFormProps) {
     );
   }
 
-  const isOwnLevel = levelContext?.level.userId._id.toString() === user._id.toString();
+  const authorId = levelContext?.level.archivedBy?.toString() ?? levelContext?.level.userId._id.toString();
+  const isOwnLevel = authorId === user._id.toString();
 
   return (
     <div className='block w-full reviewsSection flex flex-col gap-2 mb-2' style={{
