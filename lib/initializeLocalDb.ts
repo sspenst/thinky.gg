@@ -1,3 +1,4 @@
+import { EmailDigestSettingTypes } from '@root/constants/emailDigest';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
 import { PASSWORD_SALTROUNDS } from '@root/models/schemas/userSchema';
 import bcrypt from 'bcryptjs';
@@ -48,7 +49,6 @@ export default async function initializeLocalDb() {
       score: 1,
       ts: ts,
     },
-
     {
       _id: new Types.ObjectId(TestId.USER_D),
       calc_records: 1,
@@ -68,7 +68,17 @@ export default async function initializeLocalDb() {
       score: 0,
       roles: [Role.GUEST],
       ts: ts,
-    }
+    },
+    {
+      _id: new Types.ObjectId(TestId.USER_PRO),
+      calc_records: 1,
+      email: 'pro@pro.com',
+      name: 'Pro',
+      password: await bcrypt.hash('pro', PASSWORD_SALTROUNDS),
+      roles: [Role.PRO],
+      score: 0,
+      ts: ts,
+    },
   ],
   { ordered: false }
   ));
@@ -80,7 +90,6 @@ export default async function initializeLocalDb() {
         theme: Theme.Modern,
         userId: new Types.ObjectId(TestId.USER),
         emailConfirmed: true,
-
       },
       {
         _id: new Types.ObjectId(),
@@ -93,7 +102,14 @@ export default async function initializeLocalDb() {
         theme: Theme.Modern,
         userId: new Types.ObjectId(TestId.USER_GUEST),
         emailConfirmed: false,
-      }
+      },
+      {
+        _id: new Types.ObjectId(),
+        theme: Theme.Modern,
+        userId: new Types.ObjectId(TestId.USER_PRO),
+        emailConfirmed: true,
+        emailDigest: EmailDigestSettingTypes.NONE,
+      },
     ], { ordered: false }
   ));
 

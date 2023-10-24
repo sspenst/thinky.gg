@@ -21,7 +21,7 @@ describe('pages/users page', () => {
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
     expect(ret.props.searchQuery).toStrictEqual(DEFAULT_QUERY);
-    expect(ret.props.totalRows).toBe(4);
+    expect(ret.props.totalRows).toBe(5);
     expect(ret.props.users[0]._id).toBe(TestId.USER);
     expect(ret.props.users[0].reviewCount).toBeUndefined();
   }

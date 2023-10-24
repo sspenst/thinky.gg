@@ -12,8 +12,6 @@ import { AchievementModel, LevelModel, ReviewModel } from '../../../../models/mo
 import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
 import reviewLevelHandler, { getScoreEmojis } from '../../../../pages/api/review/[id]';
 
-let review_id: string;
-
 beforeAll(async () => {
   await dbConnect();
 });
@@ -462,7 +460,6 @@ describe('Reviewing levels should work correctly', () => {
         expect(response.score).toBe(3.5);
         expect(response.text).toBe('t'.repeat(500));
         expect(response.levelId).toBe(TestId.LEVEL_2);
-        review_id = response._id.toString();
         expect(res.status).toBe(200);
 
         lvl = await LevelModel.findById(TestId.LEVEL_2);
@@ -505,7 +502,11 @@ describe('Reviewing levels should work correctly', () => {
 
         expect(response.error).toBe('Error updating review');
         expect(res.status).toBe(500);
-        const review = await ReviewModel.findById(review_id);
+
+        const review = await ReviewModel.findOne({
+          levelId: new Types.ObjectId(TestId.LEVEL_2),
+          userId: new Types.ObjectId(TestId.USER_B),
+        });
 
         expect(review).toBeDefined();
         expect(review.text).toBe('t'.repeat(500)); // should not have changed
@@ -544,10 +545,12 @@ describe('Reviewing levels should work correctly', () => {
 
         expect(processQueueRes).toBe('Processed 2 messages with no errors');
         expect(response.error).toBe('Level not found');
-
         expect(res.status).toBe(404);
 
-        const review = await ReviewModel.findById(review_id);
+        const review = await ReviewModel.findOne({
+          levelId: new Types.ObjectId(TestId.LEVEL_2),
+          userId: new Types.ObjectId(TestId.USER_B),
+        });
 
         expect(review).toBeDefined();
         expect(review.text).toBe('t'.repeat(500)); // should not have changed
