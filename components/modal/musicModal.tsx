@@ -19,6 +19,7 @@ export default function MusicModal({ closeModal, isOpen }: MusicModalProps) {
     dynamicMusic, setDynamicMusic,
     isHot,
     isPlaying, setIsPlaying,
+    isSeeking,
     isToggling,
     seek,
     seekByIndex,
@@ -77,7 +78,7 @@ export default function MusicModal({ closeModal, isOpen }: MusicModalProps) {
         >
           {songMetadata.artist}
         </a>
-        <Menu as='div' className='relative inline-block text-left'>
+        <Menu as='div' className='relative inline-block text-left z-30'>
           <Menu.Button id='dropdownMenuBtn' aria-label='dropdown menu'>
             <div className='flex items-center gap-2 hover-bg-3 px-3 py-1 rounded-md'>
               <div className={classNames(
@@ -139,20 +140,23 @@ export default function MusicModal({ closeModal, isOpen }: MusicModalProps) {
           }}
         >
           <button
-            className='px-3 py-1 rounded-l audio-bar-button'
+            className='px-3 py-1 rounded-l audio-bar-button disabled:opacity-50'
+            disabled={isSeeking}
             onClick={() => seek(-1)}
           >
             ⏮
           </button>
           <button
-            className='px-3 py-1 audio-bar-button'
+            className='px-3 py-1 audio-bar-button disabled:opacity-50'
+            disabled={isSeeking}
             id='btn-audio-player-play'
             onClick={togglePlay}
           >
             {isPlaying ? '❚❚' : '▶'}
           </button>
           <button
-            className='px-3 py-1 audio-bar-button'
+            className='px-3 py-1 audio-bar-button disabled:opacity-50'
+            disabled={isSeeking}
             onClick={() => seek(1)}
           >
             ⏭

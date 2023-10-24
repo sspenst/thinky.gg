@@ -5,6 +5,7 @@ export interface MusicContextInterface {
   isHot: boolean;
   isMusicSupported: boolean;
   isPlaying: boolean;
+  isSeeking: boolean;
   isToggling: boolean;
   seek: (offset: number) => void;
   seekByIndex: (index: number) => void;
@@ -21,6 +22,7 @@ export const MusicContext = createContext<MusicContextInterface>({
   isHot: false,
   isMusicSupported: false,
   isPlaying: false,
+  isSeeking: false,
   isToggling: false,
   seek: () => {},
   seekByIndex: () => {},
@@ -138,6 +140,7 @@ export default function MusicContextProvider({ children }: { children: React.Rea
   const [isHot, setIsHot] = useState(false);
   const [isMusicSupported, setIsMusicSupported] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isSeeking, setIsSeeking] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [songIndex, setSongIndex] = useState(0);
@@ -198,8 +201,10 @@ export default function MusicContextProvider({ children }: { children: React.Rea
   const seekByIndex = useCallback((index: number, playOriginal = isHot) => {
     // must be a valid index
     if (index < 0 || index >= songs.length) {
-      return;
+      index = 0;
     }
+
+    setIsSeeking(true);
 
     const loadAudioFiles = async () => {
       setSongIndex(index);
@@ -212,8 +217,6 @@ export default function MusicContextProvider({ children }: { children: React.Rea
       ambient.preload = 'auto';
       original.preload = 'auto';
       thud.preload = 'auto';
-
-      // TODO: handle missing audio
 
       // wait for all 3 audios to load
       await Promise.all([
@@ -258,6 +261,8 @@ export default function MusicContextProvider({ children }: { children: React.Rea
           newSongMetadata.ambient.play();
         }
 
+        setIsSeeking(false);
+
         return newSongMetadata;
       });
     });
@@ -265,10 +270,10 @@ export default function MusicContextProvider({ children }: { children: React.Rea
 
   const seek = useCallback((offset: number, playOriginal = isHot) => {
     // add songs.length to account for negative offset
-    const positiveOffset = offset + songs.length;
+    let positiveOffset = offset + songs.length;
 
     if (positiveOffset < 0) {
-      return;
+      positiveOffset = 0;
     }
 
     const newSongIndex = (songIndex + positiveOffset) % songs.length;
@@ -380,6 +385,7 @@ export default function MusicContextProvider({ children }: { children: React.Rea
       isHot: isHot,
       isMusicSupported: isMusicSupported,
       isPlaying: isPlaying,
+      isSeeking: isSeeking,
       isToggling: isToggling,
       seek: seek,
       seekByIndex: seekByIndex,
