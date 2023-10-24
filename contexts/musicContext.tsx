@@ -47,7 +47,7 @@ interface SongMetadata extends BaseSongMetadata {
   thud: HTMLAudioElement;
 }
 
-const songs = [
+export const songs = [
   {
     ambient: '/sounds/music/ambient/01.ogg',
     artist: 'Tim Halbert',
@@ -205,6 +205,8 @@ export default function MusicContextProvider({ children }: { children: React.Rea
       ambient.preload = 'auto';
       original.preload = 'auto';
       thud.preload = 'auto';
+
+      // TODO: handle missing audio
 
       // wait for all 3 audios to load
       await Promise.all([
