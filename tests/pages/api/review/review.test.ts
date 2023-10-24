@@ -34,7 +34,7 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PATCH',
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           body: {
 
@@ -61,7 +61,7 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           body: {
 
@@ -88,7 +88,7 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
             id: TestId.LEVEL_2,
@@ -119,7 +119,7 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
             id: TestId.LEVEL_3,
@@ -151,7 +151,7 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
             id: TestId.LEVEL_2,
@@ -194,7 +194,7 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
             id: TestId.LEVEL_2,
@@ -215,7 +215,7 @@ describe('Reviewing levels should work correctly', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Error creating review');
+        expect(response.error).toBe('Test DB error');
         expect(res.status).toBe(500);
       },
     });
@@ -226,7 +226,7 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
             id: TestId.LEVEL,
@@ -257,7 +257,7 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
             id: TestId.LEVEL_2,
@@ -288,7 +288,7 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
             id: TestId.LEVEL_2,
@@ -322,7 +322,7 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
             id: TestId.LEVEL_2,
@@ -357,7 +357,7 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
             id: TestId.LEVEL_2,
@@ -381,7 +381,7 @@ describe('Reviewing levels should work correctly', () => {
         const response = await res.json();
 
         expect(res.status).toBe(500);
-        expect(response.error).toBe('Error creating review');
+        expect((response.error as string).startsWith('Review validation failed: text')).toBeTruthy();
       },
     });
   });
@@ -391,7 +391,7 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
             id: TestId.LEVEL_2,
@@ -399,7 +399,7 @@ describe('Reviewing levels should work correctly', () => {
           body: {
             text: 't'.repeat(100),
             score: 3.5,
-            userId: TestId.USER,
+            userId: TestId.USER_B,
           },
           headers: {
             'content-type': 'application/json',
@@ -426,7 +426,7 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
             id: TestId.LEVEL_2,
@@ -450,8 +450,10 @@ describe('Reviewing levels should work correctly', () => {
         const response = await res.json();
         const processQueueRes = await processQueueMessages();
 
+        expect(processQueueRes).toBe('Processed 5 messages with no errors');
+
         // query for achievements
-        const achievements = await AchievementModel.find({ userId: TestId.USER });
+        const achievements = await AchievementModel.find({ userId: TestId.USER_B });
 
         expect(achievements.length).toBe(1);
         expect(achievements[0].type).toBe(AchievementType.REVIEWED_1_LEVEL);
@@ -462,15 +464,6 @@ describe('Reviewing levels should work correctly', () => {
         expect(response.levelId).toBe(TestId.LEVEL_2);
         review_id = response._id.toString();
         expect(res.status).toBe(200);
-        const review = await ReviewModel.findById(review_id);
-
-        expect(review).toBeDefined();
-
-        expect(review.text).toBe('t'.repeat(500));
-        expect(review.score).toBe(3.5);
-        expect(review.levelId._id.toString()).toBe(TestId.LEVEL_2);
-
-        expect(processQueueRes).toBe('Processed 5 messages with no errors');
 
         lvl = await LevelModel.findById(TestId.LEVEL_2);
         expect(lvl.calc_reviews_score_laplace.toFixed(2)).toBe('0.66');
@@ -489,7 +482,7 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
             id: TestId.LEVEL_2,
@@ -497,7 +490,7 @@ describe('Reviewing levels should work correctly', () => {
           body: {
             text: 'bad game',
             score: 2,
-            userId: TestId.USER,
+            userId: TestId.USER_B,
           },
           headers: {
             'content-type': 'application/json',
@@ -527,7 +520,7 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
             id: new Types.ObjectId(),
@@ -535,7 +528,7 @@ describe('Reviewing levels should work correctly', () => {
           body: {
             score: 5,
             text: 'bad game',
-            userId: TestId.USER,
+            userId: TestId.USER_B,
           },
           headers: {
             'content-type': 'application/json',
@@ -573,7 +566,7 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
             id: TestId.LEVEL_2,
@@ -581,7 +574,7 @@ describe('Reviewing levels should work correctly', () => {
           body: {
             score: 5,
             text: 'bad game',
-            userId: TestId.USER,
+            userId: TestId.USER_B,
           },
           headers: {
             'content-type': 'application/json',
@@ -598,14 +591,10 @@ describe('Reviewing levels should work correctly', () => {
         expect(processQueueRes).toBe('Processed 5 messages with no errors');
         expect(response.error).toBeUndefined();
         expect(response.levelId.toString()).toBe(TestId.LEVEL_2);
+        expect(response.text).toBe('bad game');
+        expect(response.score).toBe(5);
         expect(res.status).toBe(200);
 
-        const review = await ReviewModel.findById(review_id);
-
-        expect(review).toBeDefined();
-        expect(review.text).toBe('bad game');
-        expect(review.score).toBe(5);
-        expect(review.levelId._id.toString()).toBe(TestId.LEVEL_2);
         const lvl = await LevelModel.findById(TestId.LEVEL_2);
 
         expect(lvl.calc_reviews_count).toBe(1);
@@ -619,14 +608,14 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
             id: TestId.LEVEL_2,
           },
           body: {
             score: 3.3,
-            userId: TestId.USER,
+            userId: TestId.USER_B,
           },
           headers: {
             'content-type': 'application/json',
@@ -641,9 +630,7 @@ describe('Reviewing levels should work correctly', () => {
         const processQueueRes = await processQueueMessages();
 
         expect(processQueueRes).toBe('NONE');
-
         expect(response.error).toBe('Invalid body.score');
-
         expect(res.status).toBe(400);
       },
     });
@@ -654,14 +641,14 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
             id: TestId.LEVEL_2,
           },
           body: {
             score: 5,
-            userId: TestId.USER,
+            userId: TestId.USER_B,
           },
           headers: {
             'content-type': 'application/json',
@@ -679,14 +666,9 @@ describe('Reviewing levels should work correctly', () => {
 
         expect(response.error).toBeUndefined();
         expect(response.levelId.toString()).toBe(TestId.LEVEL_2);
+        expect(response.text).toBeUndefined();
+        expect(response.score).toBe(5);
         expect(res.status).toBe(200);
-
-        const review = await ReviewModel.findById(review_id);
-
-        expect(review).toBeDefined();
-        expect(review.text).toBeUndefined();
-        expect(review.score).toBe(5);
-        expect(review.levelId._id.toString()).toBe(TestId.LEVEL_2);
       },
     });
   });
@@ -696,7 +678,7 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
             id: TestId.LEVEL_3,
@@ -705,7 +687,7 @@ describe('Reviewing levels should work correctly', () => {
             score: 0,
             text: '',
             // missing score
-            userId: TestId.USER,
+            userId: TestId.USER_B,
           },
           headers: {
             'content-type': 'application/json',
@@ -720,7 +702,6 @@ describe('Reviewing levels should work correctly', () => {
         const processQueueRes = await processQueueMessages();
 
         expect(processQueueRes).toBe('NONE');
-
         expect(response.error).toBe('Missing required parameters');
         expect(res.status).toBe(400);
       },
@@ -732,7 +713,7 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
             id: TestId.LEVEL_2,
@@ -763,7 +744,7 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(TestId.USER_B),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
             id: TestId.LEVEL_2,
@@ -771,7 +752,7 @@ describe('Reviewing levels should work correctly', () => {
           body: {
             score: 5,
             text: 'bad game',
-            userId: TestId.USER,
+            userId: TestId.USER_B,
           },
           headers: {
             'content-type': 'application/json',
@@ -803,7 +784,7 @@ describe('Reviewing levels should work correctly', () => {
           body: {
             score: 0.5,
             text: 'curator was here',
-            userId: TestId.USER,
+            userId: TestId.USER_B,
           },
           headers: {
             'content-type': 'application/json',
@@ -821,14 +802,9 @@ describe('Reviewing levels should work correctly', () => {
 
         expect(response.error).toBeUndefined();
         expect(response.levelId.toString()).toBe(TestId.LEVEL_2);
+        expect(response.text).toBe('curator was here');
+        expect(response.score).toBe(0.5);
         expect(res.status).toBe(200);
-
-        const review = await ReviewModel.findById(review_id);
-
-        expect(review).toBeDefined();
-        expect(review.text).toBe('curator was here');
-        expect(review.score).toBe(0.5);
-        expect(review.levelId._id.toString()).toBe(TestId.LEVEL_2);
       },
     });
   });
@@ -844,11 +820,11 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
             id: TestId.LEVEL_2,
-            userId: TestId.USER,
+            userId: TestId.USER_B,
           },
           headers: {
             'content-type': 'application/json',
@@ -875,11 +851,11 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
             id: new Types.ObjectId(),
-            userId: TestId.USER,
+            userId: TestId.USER_B,
           },
           headers: {
             'content-type': 'application/json',
@@ -903,11 +879,11 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
             id: TestId.LEVEL_2,
-            userId: TestId.USER,
+            userId: TestId.USER_B,
           },
           headers: {
             'content-type': 'application/json',
@@ -938,11 +914,11 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           cookies: {
-            token: getTokenCookieValue(TestId.USER_B),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
             id: TestId.LEVEL_2,
-            userId: TestId.USER,
+            userId: TestId.USER_B,
           },
           headers: {
             'content-type': 'application/json',
@@ -970,7 +946,7 @@ describe('Reviewing levels should work correctly', () => {
           },
           query: {
             id: TestId.LEVEL_2,
-            userId: TestId.USER,
+            userId: TestId.USER_B,
           },
           headers: {
             'content-type': 'application/json',
@@ -998,5 +974,78 @@ describe('Reviewing levels should work correctly', () => {
   test('getScoreEmojis', async () => {
     expect(getScoreEmojis(0)).toBe('');
     expect(getScoreEmojis(1.5)).toBe('<:fullstar:1045889520001892402><:halfstar:1045889518701654046>');
+  });
+  test('POST own level should remove score', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: TestId.LEVEL_2,
+          },
+          body: {
+            text: 'hi',
+            score: 3.5,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await reviewLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        await processQueueMessages();
+
+        expect(response.error).toBeUndefined();
+        expect(response.score).toBe(0);
+        expect(response.text).toBe('hi');
+        expect(response.levelId).toBe(TestId.LEVEL_2);
+        expect(res.status).toBe(200);
+      },
+    });
+  });
+  test('PUT own level should remove score', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: TestId.LEVEL_2,
+          },
+          body: {
+            text: 'hi\nEDIT: bye',
+            score: 3.5,
+            userId: TestId.USER,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await reviewLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        await processQueueMessages();
+
+        expect(response.error).toBeUndefined();
+        expect(response.score).toBe(0);
+        expect(response.text).toBe('hi\nEDIT: bye');
+        expect(response.levelId).toBe(TestId.LEVEL_2);
+        expect(res.status).toBe(200);
+      },
+    });
   });
 });

@@ -89,6 +89,8 @@ export default function ReviewForm({ inModal, review }: ReviewFormProps) {
     );
   }
 
+  const isOwnLevel = levelContext?.level.userId._id.toString() === user._id.toString();
+
   return (
     <div className='block w-full reviewsSection flex flex-col gap-2 mb-2' style={{
       borderColor: 'var(--bg-color-4)',
@@ -96,19 +98,21 @@ export default function ReviewForm({ inModal, review }: ReviewFormProps) {
       <h2 className='font-bold'>{`${review ? 'Edit' : 'Add a'} review`}</h2>
       <div className='flex items-center gap-2'>
         <ProfileAvatar user={user} />
-        <Rating
-          allowFraction={true}
-          allowHover={true}
-          // account for 4px of whitespace at the top of this component
-          className='pb-1'
-          emptyIcon={<Star empty={true} half={false} />}
-          fillColor={'rgb(250, 204, 21)'}
-          fillIcon={<Star empty={false} half={false} />}
-          initialValue={rating}
-          onClick={(value: number) => setRating(value)}
-          size={20}
-          transition
-        />
+        {!isOwnLevel &&
+          <Rating
+            allowFraction={true}
+            allowHover={true}
+            // account for 4px of whitespace at the top of this component
+            className='pb-1'
+            emptyIcon={<Star empty={true} half={false} />}
+            fillColor={'rgb(250, 204, 21)'}
+            fillIcon={<Star empty={false} half={false} />}
+            initialValue={rating}
+            onClick={(value: number) => setRating(value)}
+            size={20}
+            transition
+          />
+        }
         {rating !== 0 &&
           <button className='italic underline text-sm' onClick={() => setRating(0)}>
             Reset

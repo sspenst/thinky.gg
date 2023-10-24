@@ -282,7 +282,7 @@ export default async function initializeLocalDb() {
         score: 5,
         text: 'My best creation. I can\'t really imagine anything better.',
         ts: ts,
-        userId: new Types.ObjectId(TestId.USER),
+        userId: new Types.ObjectId(TestId.USER_B),
       },
       {
         _id: new Types.ObjectId(TestId.REVIEW),
@@ -290,7 +290,7 @@ export default async function initializeLocalDb() {
         score: 5,
         text: 'My best creation. I can\'t really imagine anything better.',
         ts: ts,
-        userId: new Types.ObjectId(TestId.USER),
+        userId: new Types.ObjectId(TestId.USER_B),
       }
     ],
     { ordered: false }

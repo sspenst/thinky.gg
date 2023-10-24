@@ -23,7 +23,7 @@ describe('pages/users page', () => {
     expect(ret.props.searchQuery).toStrictEqual(DEFAULT_QUERY);
     expect(ret.props.totalRows).toBe(4);
     expect(ret.props.users[0]._id).toBe(TestId.USER);
-    expect(ret.props.users[0].reviewCount).toBe(1);
+    expect(ret.props.users[0].reviewCount).toBeUndefined();
   }
   );
   test('getServerSideProps get null from users', async () => {
