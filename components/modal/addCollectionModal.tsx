@@ -1,5 +1,9 @@
+import { AppContext } from '@root/contexts/appContext';
+import isPro from '@root/helpers/isPro';
+import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Collection from '../../models/db/collection';
 import isNotFullAccountToast from '../toasts/isNotFullAccountToast';
@@ -16,6 +20,7 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
   const [isPrivate, setIsPrivate] = useState(false);
   const [name, setName] = useState<string>();
   const router = useRouter();
+  const { user } = useContext(AppContext);
 
   useEffect(() => {
     if (collection) {
@@ -98,11 +103,17 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
           value={name}
         />
         <div className='flex items-center gap-2'>
+          {!isPro(user) &&
+            <Link href='/settings/pro'>
+              <Image alt='pro' src='/pro.svg' width={16} height={16} style={{ minWidth: 16, minHeight: 16 }} />
+            </Link>
+          }
           <label htmlFor='privateCollection' className='font-semibold'>
             Private:
           </label>
           <input
             checked={isPrivate}
+            disabled={!isPro(user)}
             id='privateCollection'
             onChange={() => setIsPrivate(p => !p)}
             type='checkbox'
