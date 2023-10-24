@@ -21,6 +21,7 @@ export default function MusicModal({ closeModal, isOpen }: MusicModalProps) {
     isPlaying, setIsPlaying,
     isToggling,
     seek,
+    seekByIndex,
     songMetadata,
     toggleVersion,
     volume, setVolume,
@@ -106,7 +107,7 @@ export default function MusicModal({ closeModal, isOpen }: MusicModalProps) {
               color: 'var(--color)',
             }}>
               <div className='px-1 py-1'>
-                {songs.map(song => {
+                {songs.map((song, index) => {
                   const isSongPlaying = song.title === songMetadata.title && isPlaying;
 
                   return (
@@ -119,9 +120,7 @@ export default function MusicModal({ closeModal, isOpen }: MusicModalProps) {
                             isSongPlaying && (isHot ? 'text-orange-400' : 'text-blue-400'),
                           )}
                           key={`song-select-${song.title}`}
-                          onClick={() => {
-                            // TODO: seek to this index
-                          }}
+                          onClick={() => seekByIndex(index)}
                         >
                           {song.title}
                         </button>
