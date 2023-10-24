@@ -116,8 +116,10 @@ export default withAuth({
     const level = levels[0];
     const { score, text }: { score: number, text?: string } = req.body;
     const trimmedText = text?.trim();
+
     // cannot give a rating to your own level
-    const setScore = level.userId._id.toString() === req.userId ? 0 : score;
+    const authorId = level.archivedBy?.toString() ?? level.userId._id.toString();
+    const setScore = authorId === req.userId ? 0 : score;
 
     if (setScore === 0 && (!trimmedText || trimmedText.length === 0)) {
       return res.status(400).json({
@@ -191,8 +193,10 @@ export default withAuth({
     const level = levels[0];
     const { score, text, userId } = req.body;
     const trimmedText = text?.trim();
+
     // cannot give a rating to your own level
-    const setScore = level.userId._id.toString() === req.userId ? 0 : score;
+    const authorId = level.archivedBy?.toString() ?? level.userId._id.toString();
+    const setScore = authorId === req.userId ? 0 : score;
 
     if (setScore === 0 && (!trimmedText || trimmedText.length === 0)) {
       return res.status(400).json({
