@@ -49,7 +49,6 @@ describe('pages/api/collection/index.ts', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
-          userId: TestId.USER,
           cookies: {
             token: getTokenCookieValue(TestId.USER),
           },
@@ -74,7 +73,6 @@ describe('pages/api/collection/index.ts', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
-          userId: TestId.USER,
           cookies: {
             token: getTokenCookieValue(TestId.USER),
           },
@@ -98,7 +96,6 @@ describe('pages/api/collection/index.ts', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
-          userId: TestId.USER,
           cookies: {
             token: getTokenCookieValue(TestId.USER),
           },
@@ -127,7 +124,6 @@ describe('pages/api/collection/index.ts', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
-          userId: TestId.USER,
           cookies: {
             token: getTokenCookieValue(TestId.USER),
           },
@@ -145,6 +141,7 @@ describe('pages/api/collection/index.ts', () => {
         const res = await fetch();
         const response = await res.json();
 
+        expect(response.isPrivate).toBeFalsy();
         expect(response.slug).toBe('test/a-test-collection-blah');
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
@@ -157,7 +154,6 @@ describe('pages/api/collection/index.ts', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
-          userId: TestId.USER,
           cookies: {
             token: getTokenCookieValue(TestId.USER),
           },
@@ -187,7 +183,6 @@ describe('pages/api/collection/index.ts', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
-          userId: TestId.USER,
           cookies: {
             token: getTokenCookieValue(TestId.USER),
           },
@@ -216,13 +211,13 @@ describe('pages/api/collection/index.ts', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
-          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_PRO),
           },
           body: {
-            authorNote: 'I\'m a nice little collection note.',
-            name: 'A Test Collection Blah',
+            authorNote: 'private collection author note',
+            isPrivate: true,
+            name: 'Private',
           },
           headers: {
             'content-type': 'application/json',
@@ -237,23 +232,22 @@ describe('pages/api/collection/index.ts', () => {
 
         expect(response.error).toBeUndefined();
         expect(response.success).toBeUndefined();
-        expect(response.slug).toBe('test/a-test-collection-blah-2');
+        expect(response.slug).toBe('pro/private');
         collection_id = response._id;
         expect(res.status).toBe(200);
 
-        const first = await CollectionModel.findOne({ slug: 'test/a-test-collection-blah' });
+        const first = await CollectionModel.findOne({ slug: 'pro/private' });
 
         expect(first).toBeDefined();
         expect(first._id).not.toBe(collection_id);
       },
     });
   });
-  test('now we should be able to get the collection', async () => {
+  test('now we should NOT be able to get the collection as a public user because it is private', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
-          userId: TestId.USER,
           query: {
             id: collection_id,
           },
@@ -265,8 +259,32 @@ describe('pages/api/collection/index.ts', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.authorNote).toBe('I\'m a nice little collection note.');
-        expect(response.name).toBe('A Test Collection Blah');
+        expect(res.status).toBe(404);
+        expect(response.error).toBe('Error finding Collection');
+      },
+    });
+  });
+  test('if we are querying as the user who owns it we should be able to get the collection', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'GET',
+          query: {
+            id: collection_id,
+          },
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_PRO),
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await getCollectionHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.authorNote).toBe('private collection author note');
+        expect(response.name).toBe('Private');
         expect(response._id).toBe(collection_id);
         expect(res.status).toBe(200);
       },
@@ -277,7 +295,6 @@ describe('pages/api/collection/index.ts', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
-          userId: TestId.USER,
           cookies: {
             token: getTokenCookieValue(TestId.USER),
           },
@@ -295,7 +312,7 @@ describe('pages/api/collection/index.ts', () => {
       },
     });
   });
-  test('Create 18 collections with same name in DB, so that we can test to make sure the server will not crash. The 19th should crash however.', async () => {
+  test('Create 3 collections with same name in DB, so that we can test to make sure the server will not crash. The 19th should crash however.', async () => {
     for (let i = 0; i < 2; i++) {
       // expect no exceptions
       const promise = initCollection(TestId.USER, 'Sample');

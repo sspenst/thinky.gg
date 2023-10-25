@@ -1,3 +1,4 @@
+import isPro from '@root/helpers/isPro';
 import { logger } from '@root/helpers/logger';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
@@ -10,6 +11,7 @@ import { getCollection } from '../collection-by-id/[id]';
 
 type UpdateLevelParams = {
   authorNote?: string,
+  isPrivate?: boolean,
   levels?: (string | Types.ObjectId)[],
   name?: string,
   slug?: string,
@@ -27,6 +29,7 @@ export default withAuth({
     },
     body: {
       authorNote: ValidType('string', false),
+      isPrivate: ValidType('boolean', false),
       levels: ValidObjectIdArray(false),
       name: ValidType('string', false),
     },
@@ -42,12 +45,11 @@ export default withAuth({
 
     const collection = await getCollection({
       matchQuery: {
-        $match: {
-          _id: new Types.ObjectId(id as string),
-          userId: req.user._id,
-        }
-      }, reqUser: req.user,
-      includeDraft: true
+        _id: new Types.ObjectId(id as string),
+        userId: req.user._id,
+      },
+      reqUser: req.user,
+      includeDraft: true,
     });
 
     if (!collection) {
@@ -59,12 +61,11 @@ export default withAuth({
     return res.status(200).json(collection);
   } else if (req.method === 'PUT') {
     const { id } = req.query;
-    const { authorNote, name, levels } = req.body as UpdateLevelParams;
+    const { authorNote, isPrivate, name, levels } = req.body as UpdateLevelParams;
+    const setIsPrivate = isPro(req.user) ? !!isPrivate : false;
 
     if (!authorNote && !name && !levels) {
-      res.status(400).json({ error: 'Missing required fields' });
-
-      return;
+      return res.status(400).json({ error: 'Missing required fields' });
     }
 
     const session = await mongoose.startSession();
@@ -72,10 +73,16 @@ export default withAuth({
 
     try {
       await session.withTransaction(async () => {
-        const setObj: UpdateLevelParams = {};
+        const setObj: UpdateLevelParams = {
+          isPrivate: setIsPrivate,
+        };
 
-        if (authorNote) {
+        if (authorNote !== undefined) {
           setObj.authorNote = authorNote.trim();
+        }
+
+        if (levels) {
+          setObj.levels = (levels as string[]).map(i => new Types.ObjectId(i));
         }
 
         if (name) {
@@ -83,10 +90,6 @@ export default withAuth({
 
           setObj.name = trimmedName;
           setObj.slug = await generateCollectionSlug(req.user.name, trimmedName, id as string, { session: session });
-        }
-
-        if (levels) {
-          setObj.levels = (levels as string[]).map(i => new Types.ObjectId(i));
         }
 
         collection = await CollectionModel.findOneAndUpdate({

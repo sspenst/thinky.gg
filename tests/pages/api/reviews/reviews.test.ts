@@ -163,7 +163,7 @@ describe('pages/api/reviews', () => {
         const rev = response[0] as Review;
 
         expect(rev.levelId).toBe(TestId.LEVEL);
-        expect(rev.userId._id.toString()).toBe(TestId.USER);
+        expect(rev.userId._id.toString()).toBe(TestId.USER_B);
         expect(rev.score).toBe(5);
         expect(rev.text).toBe('My best creation. I can\'t really imagine anything better.');
         expect(rev.ts).toBeGreaterThan(0);

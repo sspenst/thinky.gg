@@ -148,7 +148,9 @@ export default function withAuth(
 
       if (validate !== null) {
         return Promise.resolve(
-          res.status(validate.statusCode).json({ error: validate.error })
+          res.status(validate.statusCode).json({
+            error: validate.error,
+          })
         );
       }
 
@@ -156,7 +158,9 @@ export default function withAuth(
       return handler(req, res).catch((error: Error) => {
         logger.error('API Handler Error Caught', error);
 
-        return res.status(500).send(error.message || error);
+        return res.status(500).json({
+          error: error.message || error,
+        });
       });
     } catch (err) {
       logger.error(err);
