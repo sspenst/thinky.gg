@@ -6,6 +6,7 @@ interface Collection {
   _id: Types.ObjectId;
   authorNote?: string;
   createdAt: Date;
+  isPrivate?: boolean;
   gameId?: string;
   levels: Types.Array<Types.ObjectId & Level> | EnrichedLevel[];
   levelsPopulated?: Types.Array<Types.ObjectId & Level> | EnrichedLevel[]; // virtual

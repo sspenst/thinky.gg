@@ -1,5 +1,9 @@
+import { AppContext } from '@root/contexts/appContext';
+import isPro from '@root/helpers/isPro';
+import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Collection from '../../models/db/collection';
 import isNotFullAccountToast from '../toasts/isNotFullAccountToast';
@@ -13,19 +17,24 @@ interface AddCollectionModalProps {
 
 export default function AddCollectionModal({ closeModal, collection, isOpen }: AddCollectionModalProps) {
   const [authorNote, setAuthorNote] = useState<string>();
+  const [isPrivate, setIsPrivate] = useState(false);
   const [name, setName] = useState<string>();
   const router = useRouter();
+  const { user } = useContext(AppContext);
 
   useEffect(() => {
-    setAuthorNote(collection?.authorNote);
-    setName(collection?.name);
+    if (collection) {
+      setAuthorNote(collection.authorNote);
+      setIsPrivate(!!collection.isPrivate);
+      setName(collection.name);
+    }
   }, [collection]);
 
   function onSubmit() {
     if (!name || name.length === 0) {
       toast.dismiss();
       toast.error('Error: Name is required', {
-        duration: 3000
+        duration: 3000,
       });
 
       return;
@@ -47,6 +56,7 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
       method: collection ? 'PUT' : 'POST',
       body: JSON.stringify({
         authorNote: authorNote,
+        isPrivate: isPrivate,
         name: name,
       }),
       credentials: 'include',
@@ -92,6 +102,23 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
           type='text'
           value={name}
         />
+        <div className='flex items-center gap-2'>
+          {!isPro(user) &&
+            <Link href='/settings/pro'>
+              <Image alt='pro' src='/pro.svg' width={16} height={16} style={{ minWidth: 16, minHeight: 16 }} />
+            </Link>
+          }
+          <label htmlFor='privateCollection' className='font-semibold'>
+            Private:
+          </label>
+          <input
+            checked={isPrivate}
+            disabled={!isPro(user)}
+            id='privateCollection'
+            onChange={() => setIsPrivate(p => !p)}
+            type='checkbox'
+          />
+        </div>
         <label className='font-semibold' htmlFor='authorNote'>Author Note:</label>
         <textarea
           className='p-1 rounded-md border'

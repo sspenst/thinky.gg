@@ -89,7 +89,26 @@ export default withAuth({
     }
 
     if (collectionIds) {
-      const promises: Promise<unknown>[] = [
+      const promises: Promise<unknown>[] = [];
+
+      // if it's not your own level, notify others that the level has been added to your collection
+      if (level.userId.toString() !== req.userId) {
+        // find public collections that are newly added due to this request
+        const notifyCollections = await CollectionModel.find<Collection>({
+          _id: { $in: collectionIds },
+          isPrivate: { $ne: true },
+          levels: { $nin: id },
+          userId: req.userId,
+        }, {
+          _id: 1,
+        }).lean<Collection[]>();
+
+        const notifyCollectionIds = notifyCollections.map(c => c._id.toString());
+
+        promises.push(createNewLevelAddedToCollectionNotification(req.user, level, notifyCollectionIds));
+      }
+
+      promises.push(
         CollectionModel.updateMany({
           _id: { $in: collectionIds },
           userId: req.userId,
@@ -107,25 +126,8 @@ export default withAuth({
             levels: id,
           },
         }),
-        queueRefreshIndexCalcs(new Types.ObjectId(id as string))
-      ];
-
-      // if it's not your own level, notify others that the level has been added to your collection
-      if (level.userId.toString() !== req.userId) {
-        const alreadyIn = await CollectionModel.find({
-          _id: {
-            $in: collectionIds,
-          },
-          userId: req.userId,
-          levels: id,
-        }, {
-          _id: 1,
-        }).lean<Collection[]>();
-        const alreadyInIds = alreadyIn.map((c: Collection) => c._id.toString());
-        const notIn = collectionIds.filter((c: string) => !alreadyInIds.includes(c));
-
-        promises.push(createNewLevelAddedToCollectionNotification(req.user, level, notIn));
-      }
+        queueRefreshIndexCalcs(new Types.ObjectId(id as string)),
+      );
 
       await Promise.all(promises);
     }

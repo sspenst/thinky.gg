@@ -64,7 +64,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const enrichedCollections = await getCollections(
     {
-      matchQuery: { $match: { _id: { $in: campaign.collections.map(collection => new Types.ObjectId(collection._id)) } } },
+      matchQuery: { _id: { $in: campaign.collections.map(collection => new Types.ObjectId(collection._id)) } },
       reqUser: reqUser,
     },
   );

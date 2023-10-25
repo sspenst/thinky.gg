@@ -1,4 +1,5 @@
 import isFullAccount from '@root/helpers/isFullAccount';
+import isPro from '@root/helpers/isPro';
 import Collection from '@root/models/db/collection';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
@@ -11,8 +12,9 @@ import { CollectionModel } from '../../../models/mongoose';
 export default withAuth({
   POST: {
     body: {
-      name: ValidType('string', true),
       authorNote: ValidType('string', false),
+      isPrivate: ValidType('boolean', false),
+      name: ValidType('string', true),
     }
   } }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (!(await isFullAccount(req.user))) {
@@ -26,14 +28,16 @@ export default withAuth({
 
   try {
     await session.withTransaction(async () => {
-      const { authorNote, name } = req.body;
+      const { authorNote, isPrivate, name } = req.body;
       const trimmedName = name.trim();
       const slug = await generateCollectionSlug(req.user.name, trimmedName, undefined, { session: session });
+      const setIsPrivate = isPro(req.user) ? !!isPrivate : false;
 
       collection = (await CollectionModel.create([{
         _id: new Types.ObjectId(),
         authorNote: authorNote?.trim(),
         gameId: req.gameId,
+        isPrivate: setIsPrivate,
         name: trimmedName,
         slug: slug,
         userId: req.userId,

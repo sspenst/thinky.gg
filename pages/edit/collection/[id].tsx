@@ -32,10 +32,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const collection = await getCollection(
     {
       matchQuery: {
-        $match: {
-          _id: new Types.ObjectId(id as string),
-          userId: reqUser._id,
-        }
+        _id: new Types.ObjectId(id as string),
+        userId: reqUser._id,
       },
       reqUser,
       populateLevels: true,
