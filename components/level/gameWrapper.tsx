@@ -1,17 +1,17 @@
+import { LevelContext } from '@root/contexts/levelContext';
 import { MusicContext } from '@root/contexts/musicContext';
 import { PageContext } from '@root/contexts/pageContext';
+import useDeviceCheck, { ScreenSize } from '@root/hooks/useDeviceCheck';
+import SelectOption from '@root/models/selectOption';
+import Link from 'next/link';
 import React, { useContext, useEffect, useState } from 'react';
 import Collection from '../../models/db/collection';
 import { EnrichedLevel } from '../../models/db/level';
 import User from '../../models/db/user';
+import SelectCard from '../cards/selectCard';
 import PostGameModal from '../modal/postGameModal';
 import Game from './game';
 import Sidebar from './sidebar';
-import { LevelContext } from '@root/contexts/levelContext';
-import SelectOption from '@root/models/selectOption';
-import SelectCard from '../cards/selectCard';
-import useDeviceCheck, { ScreenSize } from '@root/hooks/useDeviceCheck';
-import Link from 'next/link';
 
 interface GameWrapperProps {
   chapter?: string;
@@ -22,16 +22,8 @@ interface GameWrapperProps {
   user: User | null;
 }
 
-export default function GameWrapper({
-  chapter,
-  collection,
-  level,
-  onNext,
-  onPrev,
-  user,
-}: GameWrapperProps) {
-  const { dynamicMusic, isMusicSupported, toggleVersion } =
-    useContext(MusicContext);
+export default function GameWrapper({ chapter, collection, level, onNext, onPrev, user }: GameWrapperProps) {
+  const { isDynamic, isDynamicSupported, toggleVersion } = useContext(MusicContext);
   const [dontShowPostGameModal, setDontShowPostGameModal] = useState(false);
   const [postGameModalOpen, setShowPostGameModalOpen] = useState(false);
   const [mutePostGameModalForThisLevel, setMutePostGameModalForThisLevel] =
@@ -40,6 +32,7 @@ export default function GameWrapper({
   const { screenSize } = useDeviceCheck();
   const [collectionViewHidden, setCollectionViewHidden] =
     useState<boolean>(false);
+
   useEffect(() => {
     const storedPref = localStorage.getItem('dontShowPostGameModal');
     const storedPrefExpire = localStorage.getItem(
@@ -66,7 +59,7 @@ export default function GameWrapper({
       // scroll the collection list to the current level
       const anchorId = level._id.toString() + '-collection-list';
       const anchor = document.getElementById(anchorId);
-      
+
       if (anchor) {
         anchor.scrollIntoView({
           behavior: 'smooth',
@@ -76,8 +69,9 @@ export default function GameWrapper({
       }
     }
   }, [level._id, collection]);
+
   return (
-    <div className="flex h-full">
+    <div className='flex h-full'>
       <Game
         allowFreeUndo={true}
         disablePlayAttempts={!user}
@@ -88,7 +82,7 @@ export default function GameWrapper({
         onNext={collection ? onNext : undefined}
         onPrev={collection ? onPrev : undefined}
         onSolve={() => {
-          if (isMusicSupported && dynamicMusic) {
+          if (isDynamicSupported && isDynamic) {
             toggleVersion('hot');
           }
 
@@ -103,89 +97,92 @@ export default function GameWrapper({
       />
 
       {screenSize >= ScreenSize.MD && collection?.levels && (
-        <div className="flex flex-row">
-          <div className={'flex flex-col gap-2 '+(collectionViewHidden ? 'hidden' : '')}>
-          <h2 className="text-xl font-bold text-center hover:underline pt-3">
+        <div className='flex flex-row'>
+          <div className={'flex flex-col gap-2 ' + (collectionViewHidden ? 'hidden' : '')}>
+            <h2 className='text-xl font-bold text-center hover:underline pt-3'>
               <Link href={'/collection/' + collection.slug}>
                 {collection.name}
               </Link>
             </h2>
-          <div
-            id="collection-list"
-            className={
-              'flex flex-col overflow-y-scroll ' 
-              
-            }
-            style={{
-              direction: 'rtl', // makes the scrollbar appear on the left
-            }}
-          >
-        
-            {collection.levels.map((levelInCollection, i) => {
-              let customStyle = {};
-              if (level._id.toString() === levelInCollection._id.toString()) {
-                customStyle = {
-                  border: '2px solid var(--color)',
-                  borderRadius: '4px',
-                  padding: '4px',
-                  margin: '4px',
-                  backgroundColor: 'var(--bg-color-2)',
-                  boxShadow: '0 0 0 2px var(--color)',
-                };
+            <div
+              id='collection-list'
+              className={
+                'flex flex-col overflow-y-scroll '
+
               }
-              const anchorId =
+              style={{
+                direction: 'rtl', // makes the scrollbar appear on the left
+              }}
+            >
+
+              {collection.levels.map((levelInCollection, i) => {
+                let customStyle = {};
+
+                if (level._id.toString() === levelInCollection._id.toString()) {
+                  customStyle = {
+                    border: '2px solid var(--color)',
+                    borderRadius: '4px',
+                    padding: '4px',
+                    margin: '4px',
+                    backgroundColor: 'var(--bg-color-2)',
+                    boxShadow: '0 0 0 2px var(--color)',
+                  };
+                }
+
+                const anchorId =
                 levelInCollection._id.toString() + '-collection-list';
-              return (
-                <div key={anchorId} id={anchorId}>
-                  <SelectCard
-                    option={{
-                      id: levelInCollection._id.toString(),
-                      level: levelInCollection,
-                      text: levelInCollection.name,
-                      hideAddToPlayLaterButton: true,
-                      customStyle: customStyle,
-                      href:
+
+                return (
+                  <div key={anchorId} id={anchorId}>
+                    <SelectCard
+                      option={{
+                        id: levelInCollection._id.toString(),
+                        level: levelInCollection,
+                        text: levelInCollection.name,
+                        hideAddToPlayLaterButton: true,
+                        customStyle: customStyle,
+                        href:
                         '/level/' +
                         levelInCollection.slug +
                         '?cid=' +
                         collection._id.toString(),
-                    }}
-                  />
-                </div>
-              );
-            })}
+                      }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
           <div
-            className="flex items-center justify-center h-full cursor-pointer"
+            className='flex items-center justify-center h-full cursor-pointer'
             onClick={() => setCollectionViewHidden(!collectionViewHidden)}
           >
             {collectionViewHidden ? (
               <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                fill="currentColor"
-                className="bi bi-arrow-bar-left"
-                viewBox="0 0 16 16"
+                xmlns='http://www.w3.org/2000/svg'
+                width='16'
+                height='16'
+                fill='currentColor'
+                className='bi bi-arrow-bar-left'
+                viewBox='0 0 16 16'
               >
                 <path
-                  fillRule="evenodd"
-                  d="M12.5 15a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5ZM10 8a.5.5 0 0 1-.5.5H3.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L3.707 7.5H9.5a.5.5 0 0 1 .5.5Z"
+                  fillRule='evenodd'
+                  d='M12.5 15a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5ZM10 8a.5.5 0 0 1-.5.5H3.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L3.707 7.5H9.5a.5.5 0 0 1 .5.5Z'
                 />
               </svg>
             ) : (
               <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                fill="currentColor"
-                className="bi bi-arrow-bar-right"
-                viewBox="0 0 16 16"
+                xmlns='http://www.w3.org/2000/svg'
+                width='16'
+                height='16'
+                fill='currentColor'
+                className='bi bi-arrow-bar-right'
+                viewBox='0 0 16 16'
               >
                 <path
-                  fillRule="evenodd"
-                  d="M6 8a.5.5 0 0 0 .5.5h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L12.293 7.5H6.5A.5.5 0 0 0 6 8Zm-2.5 7a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5Z"
+                  fillRule='evenodd'
+                  d='M6 8a.5.5 0 0 0 .5.5h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L12.293 7.5H6.5A.5.5 0 0 0 6 8Zm-2.5 7a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5Z'
                 />
               </svg>
             )}
