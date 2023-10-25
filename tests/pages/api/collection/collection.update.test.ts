@@ -150,6 +150,7 @@ describe('Testing updating collection data', () => {
             levels: levels.map(levelId => levelId.toString()),
             authorNote: 'added 100 levels',
             name: 'the big collection',
+            // should not work for non-pro user
             isPrivate: true,
           },
           headers: {
@@ -166,7 +167,7 @@ describe('Testing updating collection data', () => {
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
 
-        expect(response.isPrivate).toBeTruthy();
+        expect(response.isPrivate).toBeFalsy();
         expect(response.levels).toBeDefined();
         expect(response.levels.length).toBe(numLevels);
       },

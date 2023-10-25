@@ -1,4 +1,5 @@
 import isFullAccount from '@root/helpers/isFullAccount';
+import isPro from '@root/helpers/isPro';
 import Collection from '@root/models/db/collection';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
@@ -30,11 +31,12 @@ export default withAuth({
       const { authorNote, isPrivate, name } = req.body;
       const trimmedName = name.trim();
       const slug = await generateCollectionSlug(req.user.name, trimmedName, undefined, { session: session });
+      const setIsPrivate = isPro(req.user) ? !!isPrivate : false;
 
       collection = (await CollectionModel.create([{
         _id: new Types.ObjectId(),
         authorNote: authorNote?.trim(),
-        isPrivate: !!isPrivate,
+        isPrivate: setIsPrivate,
         name: trimmedName,
         slug: slug,
         userId: req.userId,

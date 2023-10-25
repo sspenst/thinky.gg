@@ -212,12 +212,12 @@ describe('pages/api/collection/index.ts', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_PRO),
           },
           body: {
-            authorNote: 'I\'m a nice little collection note.',
+            authorNote: 'private collection author note',
             isPrivate: true,
-            name: 'A Test Collection Blah',
+            name: 'Private',
           },
           headers: {
             'content-type': 'application/json',
@@ -232,11 +232,11 @@ describe('pages/api/collection/index.ts', () => {
 
         expect(response.error).toBeUndefined();
         expect(response.success).toBeUndefined();
-        expect(response.slug).toBe('test/a-test-collection-blah-2');
+        expect(response.slug).toBe('pro/private');
         collection_id = response._id;
         expect(res.status).toBe(200);
 
-        const first = await CollectionModel.findOne({ slug: 'test/a-test-collection-blah' });
+        const first = await CollectionModel.findOne({ slug: 'pro/private' });
 
         expect(first).toBeDefined();
         expect(first._id).not.toBe(collection_id);
@@ -273,7 +273,7 @@ describe('pages/api/collection/index.ts', () => {
             id: collection_id,
           },
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_PRO),
           },
         } as unknown as NextApiRequestWithAuth;
 
@@ -283,8 +283,8 @@ describe('pages/api/collection/index.ts', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.authorNote).toBe('I\'m a nice little collection note.');
-        expect(response.name).toBe('A Test Collection Blah');
+        expect(response.authorNote).toBe('private collection author note');
+        expect(response.name).toBe('Private');
         expect(response._id).toBe(collection_id);
         expect(res.status).toBe(200);
       },

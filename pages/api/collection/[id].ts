@@ -1,3 +1,4 @@
+import isPro from '@root/helpers/isPro';
 import { logger } from '@root/helpers/logger';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
@@ -61,8 +62,9 @@ export default withAuth({
   } else if (req.method === 'PUT') {
     const { id } = req.query;
     const { authorNote, isPrivate, name, levels } = req.body as UpdateLevelParams;
+    const setIsPrivate = isPro(req.user) ? !!isPrivate : false;
 
-    if (!authorNote && isPrivate === undefined && !name && !levels) {
+    if (!authorNote && !name && !levels) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
@@ -71,14 +73,12 @@ export default withAuth({
 
     try {
       await session.withTransaction(async () => {
-        const setObj: UpdateLevelParams = {};
+        const setObj: UpdateLevelParams = {
+          isPrivate: setIsPrivate,
+        };
 
         if (authorNote !== undefined) {
           setObj.authorNote = authorNote.trim();
-        }
-
-        if (isPrivate !== undefined) {
-          setObj.isPrivate = isPrivate;
         }
 
         if (levels) {

@@ -500,6 +500,18 @@ body {
   background-color: var(--bg-color-3);
 }
 
+.hover-bg-2:hover {
+  background-color: var(--bg-color-2);
+}
+
+.hover-bg-3:hover {
+  background-color: var(--bg-color-3);
+}
+
+.hover-bg-4:hover {
+  background-color: var(--bg-color-4);
+}
+
 .gray {
   color: var(--color-gray);
 }

@@ -18,7 +18,7 @@ interface GameWrapperProps {
 }
 
 export default function GameWrapper({ chapter, collection, level, onNext, onPrev, user }: GameWrapperProps) {
-  const { dynamicMusic, isMusicSupported, toggleVersion } = useContext(MusicContext);
+  const { isDynamic, isDynamicSupported, toggleVersion } = useContext(MusicContext);
   const [dontShowPostGameModal, setDontShowPostGameModal] = useState(false);
   const [postGameModalOpen, setShowPostGameModalOpen] = useState(false);
   const [mutePostGameModalForThisLevel, setMutePostGameModalForThisLevel] = useState(false);
@@ -56,7 +56,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
         onNext={collection ? onNext : undefined}
         onPrev={collection ? onPrev : undefined}
         onSolve={() => {
-          if (isMusicSupported && dynamicMusic) {
+          if (isDynamicSupported && isDynamic) {
             toggleVersion('hot');
           }
 
