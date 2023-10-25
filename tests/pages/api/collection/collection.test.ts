@@ -197,10 +197,10 @@ describe('pages/api/collection/index.ts', () => {
         await createCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
-        
         const res = await fetch();
-        
+
         const response = await res.json();
+
         expect(response.slug).toBe('test/blahcollections');
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
@@ -209,7 +209,6 @@ describe('pages/api/collection/index.ts', () => {
   });
 
   test('Doing a POST but invalid/missing fields should fail', async () => {
-    
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -243,13 +242,12 @@ describe('pages/api/collection/index.ts', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_PRO),
           },
           body: {
-            authorNote: 'I\'m a nice little collection note.',
+            authorNote: 'private collection author note',
             isPrivate: true,
-            name: 'A Test Collection Blah',
-            private: true,
+            name: 'Private',
           },
           headers: {
             'content-type': 'application/json',
@@ -264,11 +262,11 @@ describe('pages/api/collection/index.ts', () => {
 
         expect(response.error).toBeUndefined();
         expect(response.success).toBeUndefined();
-        expect(response.slug).toBe('test/a-test-collection-blah-2');
+        expect(response.slug).toBe('pro/private');
         collection_id = response._id;
         expect(res.status).toBe(200);
 
-        const first = await CollectionModel.findOne({ slug: 'test/a-test-collection-blah' });
+        const first = await CollectionModel.findOne({ slug: 'pro/private' });
 
         expect(first).toBeDefined();
         expect(first._id).not.toBe(collection_id);
@@ -276,7 +274,6 @@ describe('pages/api/collection/index.ts', () => {
     });
   });
   test('now we should NOT be able to get the collection as a public user because it is private', async () => {
-    
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -297,7 +294,7 @@ describe('pages/api/collection/index.ts', () => {
       },
     });
   });
-  test('if we are querying as the user who owns it we should be able to get the collection', async () => {
+  test('if we are querying as the user who doesnt own it we should NOT be able to get the collection', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -317,6 +314,32 @@ describe('pages/api/collection/index.ts', () => {
         const res = await fetch();
         const response = await res.json();
 
+        expect(response.error).toBe('Error finding Collection');
+        expect(res.status).toBe(404);
+      },
+    });
+  });
+  test('if we are querying as the user who owns it we should be able to get the collection', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'GET',
+          userId: TestId.USER,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_PRO),
+          },
+          query: {
+            id: collection_id,
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await getCollectionHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
         expect(response._id).toBe(collection_id);
       },
@@ -331,7 +354,7 @@ describe('pages/api/collection/index.ts', () => {
             id: collection_id,
           },
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_PRO),
           },
         } as unknown as NextApiRequestWithAuth;
 
@@ -341,14 +364,14 @@ describe('pages/api/collection/index.ts', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.authorNote).toBe('I\'m a nice little collection note.');
-        expect(response.name).toBe('A Test Collection Blah');
+        expect(response.authorNote).toBe('private collection author note');
+        expect(response.name).toBe('Private');
         expect(response._id).toBe(collection_id);
         expect(res.status).toBe(200);
       },
     });
   });
-  
+
   test('now querying for a different collection should NOT return this collection', async () => {
     await testApiHandler({
       handler: async (_, res) => {
