@@ -8,6 +8,39 @@ import Achievement from '../models/db/achievement';
 import { AchievementModel, GraphModel, NotificationModel } from '../models/mongoose';
 import { queuePushNotification } from '../pages/api/internal-jobs/worker';
 
+export async function createNewAdminMessageNotification(userId: string | Types.ObjectId, sourceUserId: string | Types.ObjectId, targetUserId: string | Types.ObjectId, message: string) {
+  JSON.stringify({
+    // TODO: href
+    href: '',
+    message: message,
+  });
+
+  const notification = await NotificationModel.findOneAndUpdate({
+    source: sourceUserId,
+    sourceModel: 'User',
+    target: targetUserId,
+    type: NotificationType.ADMIN_MESSAGE,
+    userId: userId,
+  }, {
+    message: message,
+    // TODO: what source for Pathology?
+    source: sourceUserId,
+    sourceModel: 'User',
+    // TODO: what is target again?
+    target: targetUserId,
+    targetModel: 'User',
+    type: NotificationType.ADMIN_MESSAGE,
+    userId: userId,
+  }, {
+    upsert: true,
+    new: true,
+  });
+
+  await queuePushNotification(notification._id);
+
+  return notification;
+}
+
 export async function createNewWallPostNotification(type: NotificationType.NEW_WALL_POST |NotificationType.NEW_WALL_REPLY, userId: string | Types.ObjectId, sourceUserId: string | Types.ObjectId, targetUserId: string | Types.ObjectId, message: string) {
   const id = new Types.ObjectId();
 

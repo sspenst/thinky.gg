@@ -55,8 +55,22 @@ export default function getMobileNotification(notification: Notification) {
   mobileNotification.notificationId = notification._id.toString();
 
   switch (notification.type) {
+  case NotificationType.ADMIN_MESSAGE: {
+    mobileNotification.title = 'Pathology';
+
+    if (notification.source) {
+      mobileNotification.body = `${notification.message}`;
+      mobileNotification.url = `${host}/profile/${user.name}/achievements`;
+    } else {
+      mobileNotification.body = 'Unknown achievement';
+      mobileNotification.url = `${host}/profile/${user.name}/achievements`;
+    }
+
+    return mobileNotification;
+  }
+
   case NotificationType.NEW_ACHIEVEMENT: {
-    mobileNotification.title = 'Pathology - New Achievement!';
+    mobileNotification.title = 'Pathology - New Achievement';
     const meta = AchievementRulesCombined[notification.source.type];
 
     if (notification.source) {

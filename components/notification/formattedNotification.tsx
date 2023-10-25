@@ -72,6 +72,13 @@ function NotificationIcon({ notification }: { notification: Notification }) {
 
 function NotificationMessage({ notification, onMarkAsRead }: NotificationMessageProps) {
   switch (notification.type) {
+  case NotificationType.ADMIN_MESSAGE:
+    return (<>
+      {/* TODO: option to show more in case the message is super long */}
+      {/* TODO: how can we embed links here? */}
+      {notification.message}
+    </>);
+
   case NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_SOLVED:
     return (<>
       {'set a new record: '}

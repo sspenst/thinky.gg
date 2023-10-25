@@ -16,6 +16,7 @@ import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Router from 'next/router';
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import TextareaAutosize from 'react-textarea-autosize';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
@@ -42,6 +43,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 export default function AdminPage({ queryUser, queryLevel, queryUserCommand, queryLevelCommand }: {queryUser: User | undefined; queryLevel: Level, queryUserCommand: string | null, queryLevelCommand: string | null}) {
+  const [emailBody, setEmailBody] = useState('');
   const [selectedUser, setSelectedUser] = useState(queryUser);
   const [selectedLevel, setSelectedLevel] = useState(queryLevel); // TODO: [refactor] [minor
   const [runningCommand, setRunningCommand] = useState(false);
@@ -280,8 +282,21 @@ export default function AdminPage({ queryUser, queryLevel, queryUserCommand, que
             </div>
           )}
         </div>
-      </div>
 
+        <div className='flex flex-col gap-2 items-center'>
+          <h2 className='text-2xl'>
+            Notification + Email
+          </h2>
+          <TextareaAutosize
+            className='bg-inherit block py-1 -mt-2 w-96 max-w-full border-b border-neutral-500 disabled:text-neutral-500 transition resize-none placeholder:text-neutral-500 focus:outline-0 rounded-none focus:border-black focus:dark:border-white'
+            onChange={(e) => setEmailBody(e.currentTarget.value)}
+            placeholder='Message...'
+            value={emailBody}
+          />
+          {/* TODO: select roles to receive the notification */}
+          {/* TODO: call createNewAdminMessageNotification */}
+        </div>
+      </div>
     </Page>
   );
 }
