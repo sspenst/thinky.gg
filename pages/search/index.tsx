@@ -371,7 +371,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
             name: 'Search Query', slug: '../search/',
             levels: data, _id: new Types.ObjectId(),
             createdAt: ts, updatedAt: ts,
-            userId: { _id: new Types.ObjectId(), name: 'Search' } as Types.ObjectId & User,
+            userId: { _id: new Types.ObjectId(), name: undefined as any } as Types.ObjectId & User,
             isPrivate: true };
 
           /* TODO: maybe save to cloud instead of session storage? */

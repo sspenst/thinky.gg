@@ -147,7 +147,7 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
     // if a collection id was passed to the page we can show more directory info
     const user = collection.userId;
 
-    if (user) {
+    if (user && user.name) {
       folders.push(new LinkInfo(user.name, `/profile/${user.name}/collections`));
     }
 
