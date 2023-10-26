@@ -25,7 +25,9 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
   if (option.level && !option.hideAddToPlayLaterButton && user && isPro(user) && myPlayLater) {
     addToPlayLaterBtn = option.level &&
     (
-      <PlayLaterToggleButton level={option.level} className='absolute bottom-2 left-2' />
+      <div className='absolute bottom-2 left-2'>
+        <PlayLaterToggleButton level={option.level} />
+      </div>
 
     );
   }
