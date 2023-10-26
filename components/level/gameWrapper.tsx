@@ -2,7 +2,8 @@ import { LevelContext } from '@root/contexts/levelContext';
 import { MusicContext } from '@root/contexts/musicContext';
 import { PageContext } from '@root/contexts/pageContext';
 import useDeviceCheck, { ScreenSize } from '@root/hooks/useDeviceCheck';
-import SelectOption from '@root/models/selectOption';
+import { CollectionType } from '@root/models/CollectionEnums';
+import SelectOptionStats from '@root/models/selectOptionStats';
 import Link from 'next/link';
 import React, { useContext, useEffect, useState } from 'react';
 import Collection from '../../models/db/collection';
@@ -139,7 +140,8 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
                         id: levelInCollection._id.toString(),
                         level: levelInCollection,
                         text: levelInCollection.name,
-                        hideAddToPlayLaterButton: true,
+                        stats: new SelectOptionStats(level.leastMoves, level.userMoves),
+                        hideAddToPlayLaterButton: collection.type !== CollectionType.PlayLater,
                         customStyle: customStyle,
                         href:
                         '/level/' +
