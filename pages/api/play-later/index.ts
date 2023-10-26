@@ -1,12 +1,9 @@
-import { ValidEnum, ValidObjectId } from '@root/helpers/apiWrapper';
-import { getEnrichLevelsPipelineSteps } from '@root/helpers/enrich';
-import { generateCollectionSlug } from '@root/helpers/generateSlug';
+import { ValidObjectId } from '@root/helpers/apiWrapper';
+import isPro from '@root/helpers/isPro';
 import withAuth, { NextApiRequestWithAuth } from '@root/lib/withAuth';
 import { CollectionType } from '@root/models/CollectionEnums';
 import Collection from '@root/models/db/collection';
-import { CollectionModel, LevelModel, UserModel } from '@root/models/mongoose';
-import { LEVEL_DEFAULT_PROJECTION } from '@root/models/schemas/levelSchema';
-import { PipelineStage } from 'mongoose';
+import { CollectionModel, LevelModel } from '@root/models/mongoose';
 import { NextApiResponse } from 'next';
 
 export const MAX_LEVELS_IN_PLAY_LATER = process.env.NODE_ENV !== 'test' ? 500 : 2;
@@ -26,6 +23,10 @@ export default withAuth(
       },
     },
   }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+    if (!isPro(req.user)) {
+      return res.status(401).json({ error: 'You must be a Pro user to use this feature.' });
+    }
+
     if (req.method === 'GET') {
       // grab the PlayLater
       const PlayLater = await CollectionModel.aggregate([
@@ -42,11 +43,13 @@ export default withAuth(
       }
       // return PlayLater[0] as a Map<string, boolean>
       // where the key is the level id and the value is true
-      
-      const map:{ [key: string]: boolean } = (PlayLater[0].levels).reduce((acc, item) => {
+
+      const map: { [key: string]: boolean } = (PlayLater[0].levels).reduce((acc, item) => {
         acc[item._id.toString()] = true;
+
         return acc;
       }, {} as { [key: string]: boolean });
+
       return res.status(200).json(map);
     }
 
