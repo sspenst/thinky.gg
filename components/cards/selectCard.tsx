@@ -1,6 +1,5 @@
 import { AppContext } from '@root/contexts/appContext';
 import isPro from '@root/helpers/isPro';
-import user from '@root/pages/api/user';
 import classNames from 'classnames';
 import Link from 'next/link';
 import React, { useContext, useEffect, useState } from 'react';
