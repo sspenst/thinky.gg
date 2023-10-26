@@ -56,14 +56,12 @@ export default function getMobileNotification(notification: Notification) {
 
   switch (notification.type) {
   case NotificationType.ADMIN_MESSAGE: {
-    mobileNotification.title = 'Pathology';
+    if (notification.message) {
+      const payload = JSON.parse(notification.message);
 
-    if (notification.source) {
-      mobileNotification.body = `${notification.message}`;
-      mobileNotification.url = `${host}/profile/${user.name}/achievements`;
-    } else {
-      mobileNotification.body = 'Unknown achievement';
-      mobileNotification.url = `${host}/profile/${user.name}/achievements`;
+      mobileNotification.title = 'Pathology';
+      mobileNotification.body = `${payload.message}`;
+      mobileNotification.url = `${host}${payload.href}`;
     }
 
     return mobileNotification;

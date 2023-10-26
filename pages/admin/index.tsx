@@ -1,4 +1,4 @@
-import { Menu } from '@headlessui/react';
+import { Menu, Transition } from '@headlessui/react';
 import FormattedUser from '@root/components/formatted/formattedUser';
 import RecommendedLevel from '@root/components/homepage/recommendedLevel';
 import MultiSelectLevel from '@root/components/page/multiSelectLevel';
@@ -14,7 +14,7 @@ import { LevelModel, UserModel } from '@root/models/mongoose';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Router from 'next/router';
-import React, { useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import TextareaAutosize from 'react-textarea-autosize';
 
@@ -43,7 +43,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 export default function AdminPage({ queryUser, queryLevel, queryUserCommand, queryLevelCommand }: {queryUser: User | undefined; queryLevel: Level, queryUserCommand: string | null, queryLevelCommand: string | null}) {
-  const [emailBody, setEmailBody] = useState('');
+  const [adminMessage, setAdminMessage] = useState('');
+  const [adminMessageRole, setAdminMessageRole] = useState<Role | null>();
   const [selectedUser, setSelectedUser] = useState(queryUser);
   const [selectedLevel, setSelectedLevel] = useState(queryLevel); // TODO: [refactor] [minor
   const [runningCommand, setRunningCommand] = useState(false);
@@ -176,14 +177,12 @@ export default function AdminPage({ queryUser, queryLevel, queryUserCommand, que
 
   return (
     <Page title='Admin Page'>
-
       <div className='p-2'>
         <h1 className='flex flex-col items-center justify-center text-3xl p-3'>Admin Page</h1>
         <h2 className='flex flex-col items-center justify-center text-2xl'>
             User
         </h2>
         <div className='flex flex-row items-center justify-center p-2 gap-2'>
-
           <p className='text-xl'>Run command on user:</p>
           <MultiSelectUser key={'search-' + selectedUser?._id} defaultValue={selectedUser} onSelect={(selected: User) => {
             setSelectedUser(selected);
@@ -219,18 +218,18 @@ export default function AdminPage({ queryUser, queryLevel, queryUserCommand, que
             Run
           </button>
         </div>
-        <div className='flex flex-row items-center justify-center p-2 gap-2'>
-          <FormattedUser id='admin' user={selectedUser} />
-        </div>
-        <div className='flex flex-row items-center justify-center p-2 gap-2'>
-          {selectedUser && (
-            <div className='flex flex-col gap-2'>
-
-              {display('User', selectedUser)}
+        {selectedUser &&
+          <div className='flex flex-col items-center justify-center p-2 gap-2'>
+            <FormattedUser id='admin' user={selectedUser} />
+            <div className='flex flex-row items-center justify-center p-2 gap-2'>
+              {selectedUser && (
+                <div className='flex flex-col gap-2'>
+                  {display('User', selectedUser)}
+                </div>
+              )}
             </div>
-          )}
-        </div>
-
+          </div>
+        }
         <h2 className='flex flex-col items-center justify-center text-2xl'>
           Level</h2>
         <div className='flex flex-row items-center justify-center p-2 gap-2'>
@@ -268,33 +267,95 @@ export default function AdminPage({ queryUser, queryLevel, queryUserCommand, que
           >
             Run
           </button>
-
         </div>
-
-        <div className='flex flex-col items-center justify-center p-2 gap-2'>
-          <RecommendedLevel id='level' title='' level={levelPreview} />
-        </div>
+        {levelPreview &&
+          <div className='flex flex-col items-center justify-center p-2 gap-2'>
+            <RecommendedLevel id='level' title='' level={levelPreview} />
+          </div>
+        }
         <div className='flex flex-row items-center justify-center p-2 gap-2'>
           {selectedLevel && (
             <div className='flex flex-col gap-2'>
-
               {display('Level', selectedLevel)}
             </div>
           )}
         </div>
-
         <div className='flex flex-col gap-2 items-center'>
           <h2 className='text-2xl'>
-            Notification + Email
+            Send Admin Message
           </h2>
           <TextareaAutosize
             className='bg-inherit block py-1 -mt-2 w-96 max-w-full border-b border-neutral-500 disabled:text-neutral-500 transition resize-none placeholder:text-neutral-500 focus:outline-0 rounded-none focus:border-black focus:dark:border-white'
-            onChange={(e) => setEmailBody(e.currentTarget.value)}
-            placeholder='Message...'
-            value={emailBody}
+            onChange={(e) => setAdminMessage(e.currentTarget.value)}
+            placeholder='Admin message...'
+            value={adminMessage}
           />
-          {/* TODO: select roles to receive the notification */}
-          {/* TODO: call createNewAdminMessageNotification */}
+          <div className='flex gap-2 items-center'>
+            <span>Send to:</span>
+            <Menu as='div' className='relative inline-block text-left'>
+              <Menu.Button
+                aria-expanded='true'
+                aria-haspopup='true'
+                className='flex items-center w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-medium text-black gap-1 h-8 shadow-md border hover:opacity-70'
+                id='menu-button'
+                style={{
+                  borderColor: 'var(--bg-color-3)',
+                }}
+              >
+                {adminMessageRole ?? 'All'}
+              </Menu.Button>
+              <Transition
+                as={Fragment}
+                enter='transition ease-out duration-100'
+                enterFrom='transform opacity-0 scale-95'
+                enterTo='transform opacity-100 scale-100'
+                leave='transition ease-in duration-75'
+                leaveFrom='transform opacity-100 scale-100'
+                leaveTo='transform opacity-0 scale-95'
+              >
+                <Menu.Items className='absolute right-0 z-10 mt-1 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none' style={{
+                  borderColor: 'var(--bg-color)',
+                }}>
+                  <div>
+                    {Object.values(Role).map(role => (
+                      <Menu.Item key={`role-${role}`}>
+                        {({ active }) => (
+                          <button
+                            className='text-black block p-1 text-sm w-28 flex items-center gap-1 justify-center'
+                            onClick={() => setAdminMessageRole(role)}
+                            role='menuitem'
+                            style= {{
+                              backgroundColor: active ? 'rgb(200, 200, 200)' : '',
+                            }}
+                          >
+                            {role}
+                          </button>
+                        )}
+                      </Menu.Item>
+                    ))}
+                    <Menu.Item key='role-all'>
+                      {({ active }) => (
+                        <button
+                          className='text-black block p-1 text-sm w-28 flex items-center gap-1 justify-center'
+                          onClick={() => setAdminMessageRole(null)}
+                          role='menuitem'
+                          style= {{
+                            backgroundColor: active ? 'rgb(200, 200, 200)' : '',
+                          }}
+                        >
+                          All
+                        </button>
+                      )}
+                    </Menu.Item>
+                  </div>
+                </Menu.Items>
+              </Transition>
+            </Menu>
+          </div>
+          {/* TODO: onclick, call api/admin, which then calls createNewAdminMessageNotification on all applicable users with role */}
+          <button>
+            Send
+          </button>
         </div>
       </div>
     </Page>

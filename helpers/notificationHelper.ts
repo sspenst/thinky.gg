@@ -8,37 +8,30 @@ import Achievement from '../models/db/achievement';
 import { AchievementModel, GraphModel, NotificationModel } from '../models/mongoose';
 import { queuePushNotification } from '../pages/api/internal-jobs/worker';
 
-export async function createNewAdminMessageNotification(userId: string | Types.ObjectId, sourceUserId: string | Types.ObjectId, targetUserId: string | Types.ObjectId, message: string) {
-  JSON.stringify({
-    // TODO: href
-    href: '',
+export async function createNewAdminMessageNotification(
+  userId: string | Types.ObjectId,
+  message: string,
+  href: string,
+) {
+  const payload = JSON.stringify({
+    href: href,
     message: message,
   });
 
-  const notification = await NotificationModel.findOneAndUpdate({
-    source: sourceUserId,
-    sourceModel: 'User',
-    target: targetUserId,
-    type: NotificationType.ADMIN_MESSAGE,
-    userId: userId,
-  }, {
-    message: message,
-    // TODO: what source for Pathology?
-    source: sourceUserId,
-    sourceModel: 'User',
-    // TODO: what is target again?
-    target: targetUserId,
-    targetModel: 'User',
-    type: NotificationType.ADMIN_MESSAGE,
-    userId: userId,
-  }, {
-    upsert: true,
-    new: true,
-  });
+  const id = new Types.ObjectId();
 
-  await queuePushNotification(notification._id);
+  const [notification] = await Promise.all([
+    NotificationModel.create([{
+      _id: id,
+      message: payload,
+      type: NotificationType.ADMIN_MESSAGE,
+      userId: userId,
+      read: false,
+    }]),
+    queuePushNotification(id),
+  ]);
 
-  return notification;
+  return notification[0];
 }
 
 export async function createNewWallPostNotification(type: NotificationType.NEW_WALL_POST |NotificationType.NEW_WALL_REPLY, userId: string | Types.ObjectId, sourceUserId: string | Types.ObjectId, targetUserId: string | Types.ObjectId, message: string) {
