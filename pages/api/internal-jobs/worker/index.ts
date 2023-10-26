@@ -171,17 +171,8 @@ async function processQueueMessage(queueMessage: QueueMessage) {
         } else {
           const whereSend = queueMessage.type === QueueMessageType.PUSH_NOTIFICATION ? sendPushNotification : sendEmailNotification;
 
-          let disallowedEmail = !userConfig.emailNotificationsList.includes(notification.type);
-
-          if (userConfig.disallowedEmailNotifications !== undefined) {
-            disallowedEmail = userConfig.disallowedEmailNotifications.includes(notification.type);
-          }
-
-          let disallowedPush = !userConfig.pushNotificationsList.includes(notification.type);
-
-          if (userConfig.disallowedPushNotifications !== undefined) {
-            disallowedPush = userConfig.disallowedPushNotifications.includes(notification.type);
-          }
+          const disallowedEmail = userConfig.disallowedEmailNotifications.includes(notification.type);
+          const disallowedPush = userConfig.disallowedPushNotifications.includes(notification.type);
 
           if (whereSend === sendEmailNotification && disallowedEmail) {
             log = `Notification ${notificationId} not sent: ${notification.type} not allowed by user (email)`;

@@ -72,16 +72,12 @@ export default function SettingsNotifications() {
     [NotificationType.UPGRADED_TO_PRO]: 'Upgraded to Pro',
   };
 
-  let disallowedEmailNotifications = allNotifs.filter(notif => !userConfig?.emailNotificationsList?.includes(notif));
-  let disallowedPushNotifications = allNotifs.filter(notif => !userConfig?.pushNotificationsList?.includes(notif));
-
-  if (userConfig?.disallowedEmailNotifications !== undefined) {
-    disallowedEmailNotifications = userConfig.disallowedEmailNotifications;
+  if (!userConfig) {
+    return null;
   }
 
-  if (userConfig?.disallowedPushNotifications !== undefined) {
-    disallowedPushNotifications = userConfig.disallowedPushNotifications;
-  }
+  const disallowedEmailNotifications = userConfig.disallowedEmailNotifications;
+  const disallowedPushNotifications = userConfig.disallowedPushNotifications;
 
   // Create a formatted list of all notification types with two checkboxes... one for email and one for mobile push notifications.
   const updateNotifs = (notif: NotificationType, type: 'email' | 'push') => {
