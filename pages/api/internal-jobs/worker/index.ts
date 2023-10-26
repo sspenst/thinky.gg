@@ -163,21 +163,30 @@ async function processQueueMessage(queueMessage: QueueMessage) {
         log = `Notification ${notificationId} not sent: not found`;
       } else {
         const notification = notificationAgg[0];
-
-        const whereSend = queueMessage.type === QueueMessageType.PUSH_NOTIFICATION ? sendPushNotification : sendEmailNotification;
-        const userConfig = await UserConfigModel.findOne({ userId: notification.userId._id }) as UserConfig;
+        const userConfig = await UserConfigModel.findOne<UserConfig>({ userId: notification.userId._id });
 
         if (userConfig === null) {
           log = `Notification ${notificationId} not sent: user config not found`;
           error = true;
         } else {
-          const allowedEmail = userConfig.emailNotificationsList.includes(notification.type);
-          const allowedPush = userConfig.pushNotificationsList.includes(notification.type);
+          const whereSend = queueMessage.type === QueueMessageType.PUSH_NOTIFICATION ? sendPushNotification : sendEmailNotification;
 
-          if (whereSend === sendEmailNotification && !allowedEmail) {
-            log = `Notification ${notificationId} not sent: ` + notification.type + ' not allowed by user (email)';
-          } else if (whereSend === sendPushNotification && !allowedPush) {
-            log = `Notification ${notificationId} not sent: ` + notification.type + ' not allowed by user (push)';
+          let disallowedEmail = !userConfig.emailNotificationsList.includes(notification.type);
+
+          if (userConfig.disallowedEmailNotifications !== undefined) {
+            disallowedEmail = userConfig.disallowedEmailNotifications.includes(notification.type);
+          }
+
+          let disallowedPush = !userConfig.pushNotificationsList.includes(notification.type);
+
+          if (userConfig.disallowedPushNotifications !== undefined) {
+            disallowedPush = userConfig.disallowedPushNotifications.includes(notification.type);
+          }
+
+          if (whereSend === sendEmailNotification && disallowedEmail) {
+            log = `Notification ${notificationId} not sent: ${notification.type} not allowed by user (email)`;
+          } else if (whereSend === sendPushNotification && disallowedPush) {
+            log = `Notification ${notificationId} not sent: ${notification.type} not allowed by user (push)`;
           } else {
             log = await whereSend(notification);
           }

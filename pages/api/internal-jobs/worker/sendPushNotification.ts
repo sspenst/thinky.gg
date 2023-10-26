@@ -4,7 +4,15 @@ import Notification from '@root/models/db/notification';
 import { DeviceModel } from '@root/models/mongoose';
 import admin from 'firebase-admin';
 
+/**
+ * Send a mobile push notification
+ * NB: assumes the user's push notification settings have already been checked
+ */
 export async function sendPushNotification(notification: Notification) {
+  if (process.env.NODE_ENV === 'test') {
+    return 'push notification not sent [test]';
+  }
+
   if (!process.env.FIREBASE_CLIENT_EMAIL || !process.env.FIREBASE_PRIVATE_KEY || !process.env.FIREBASE_PROJECT_ID) {
     return 'push not sent. Firebase environment variables not set';
   }

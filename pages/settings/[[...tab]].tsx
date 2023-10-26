@@ -85,7 +85,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   let userConfig: UserConfig | null = null;
 
   if (tab === SettingsTab.Account || tab === SettingsTab.Notifications) {
-    userConfig = await getUserConfig(reqUser._id);
+    userConfig = await getUserConfig(reqUser);
   }
 
   return {
