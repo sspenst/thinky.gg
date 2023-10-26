@@ -43,8 +43,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 export default function AdminPage({ queryUser, queryLevel, queryUserCommand, queryLevelCommand }: {queryUser: User | undefined; queryLevel: Level, queryUserCommand: string | null, queryLevelCommand: string | null}) {
+  const [adminHref, setAdminHref] = useState('');
   const [adminMessage, setAdminMessage] = useState('');
-  const [adminMessageRole, setAdminMessageRole] = useState<Role | null>();
+  const [adminMessageRole, setAdminMessageRole] = useState<Role | null>(Role.ADMIN);
   const [selectedUser, setSelectedUser] = useState(queryUser);
   const [selectedLevel, setSelectedLevel] = useState(queryLevel); // TODO: [refactor] [minor
   const [runningCommand, setRunningCommand] = useState(false);
@@ -101,6 +102,8 @@ export default function AdminPage({ queryUser, queryLevel, queryUserCommand, que
     setRunningCommand(false);
     const json = await resp.json();
 
+    toast.dismiss();
+
     if (json.error) {
       toast.error(json.error);
     } else {
@@ -129,6 +132,8 @@ export default function AdminPage({ queryUser, queryLevel, queryUserCommand, que
     setRunningCommand(false);
     const json = await resp.json();
 
+    toast.dismiss();
+
     if (json.error) {
       toast.error(json.error);
     } else {
@@ -136,6 +141,43 @@ export default function AdminPage({ queryUser, queryLevel, queryUserCommand, que
     }
 
     Router.reload();
+  }
+
+  async function runCommandAdmin() {
+    if (selectedUserCommand?.confirm && !window.confirm('Are you sure you want to proceed?')) return;
+
+    setRunningCommand(true);
+    toast.dismiss();
+    toast.loading('Running command...');
+
+    const payload = JSON.stringify({
+      href: adminHref,
+      message: adminMessage,
+    });
+
+    const resp = await fetch('/api/admin', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        command: 'sendAdminMessage',
+        role: adminMessageRole,
+        payload: payload,
+      }),
+    });
+
+    setRunningCommand(false);
+    const json = await resp.json();
+
+    toast.dismiss();
+
+    if (json.error) {
+      toast.error(json.error);
+    } else {
+      toast.success('Command ran successfully');
+    }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -290,19 +332,28 @@ export default function AdminPage({ queryUser, queryLevel, queryUserCommand, que
             placeholder='Admin message...'
             value={adminMessage}
           />
+          <TextareaAutosize
+            className='bg-inherit block py-1 -mt-2 w-96 max-w-full border-b border-neutral-500 disabled:text-neutral-500 transition resize-none placeholder:text-neutral-500 focus:outline-0 rounded-none focus:border-black focus:dark:border-white'
+            onChange={(e) => setAdminHref(e.currentTarget.value)}
+            placeholder='Href...'
+            value={adminHref}
+          />
           <div className='flex gap-2 items-center'>
-            <span>Send to:</span>
+            <span>To:</span>
             <Menu as='div' className='relative inline-block text-left'>
               <Menu.Button
                 aria-expanded='true'
                 aria-haspopup='true'
-                className='flex items-center w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-medium text-black gap-1 h-8 shadow-md border hover:opacity-70'
+                className='flex items-center w-full justify-center rounded-md bg-white pl-2 p-1 text-sm font-medium text-black gap-1 h-8 shadow-md border hover:opacity-70'
                 id='menu-button'
                 style={{
                   borderColor: 'var(--bg-color-3)',
                 }}
               >
                 {adminMessageRole ?? 'All'}
+                <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
+                  <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
+                </svg>
               </Menu.Button>
               <Transition
                 as={Fragment}
@@ -353,8 +404,12 @@ export default function AdminPage({ queryUser, queryLevel, queryUserCommand, que
             </Menu>
           </div>
           {/* TODO: onclick, call api/admin, which then calls createNewAdminMessageNotification on all applicable users with role */}
-          <button>
-            Send
+          <button
+            className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${runningCommand ? 'bg-gray-500 cursor-not-allowed' : ''}`}
+            disabled={runningCommand}
+            onClick={runCommandAdmin}
+          >
+            Run
           </button>
         </div>
       </div>

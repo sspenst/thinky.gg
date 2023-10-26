@@ -80,7 +80,7 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
     const payload = JSON.parse(notification.message);
 
     return (
-      <Link href={payload.href}>
+      <Link className='hover:underline' href={payload.href} onClick={onMarkAsRead}>
         {payload.message}
       </Link>
     );
