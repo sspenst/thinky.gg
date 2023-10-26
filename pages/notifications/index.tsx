@@ -72,9 +72,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 interface NotificationProps {
-    notifications: Notification[];
-    searchQuery: SearchQuery;
-    totalRows: number;
+  notifications: Notification[];
+  searchQuery: SearchQuery;
+  totalRows: number;
 }
 
 /* istanbul ignore next */

@@ -61,6 +61,7 @@ export default function SettingsNotifications() {
   const allNotifs = Object.values(NotificationType);
 
   const notifLabels = {
+    [NotificationType.ADMIN_MESSAGE]: 'Admin message',
     [NotificationType.NEW_ACHIEVEMENT]: 'New achievement',
     [NotificationType.NEW_FOLLOWER]: 'New follower',
     [NotificationType.NEW_LEVEL]: 'New level from someone you follow',

@@ -61,6 +61,32 @@ export async function queuePushNotification(notificationId: Types.ObjectId, opti
   ]);
 }
 
+export async function bulkQueuePushNotification(notificationIds: Types.ObjectId[], options?: QueryOptions) {
+  const queueMessages = [];
+
+  for (const notificationId of notificationIds) {
+    const message = JSON.stringify({ notificationId: notificationId.toString() });
+
+    queueMessages.push({
+      _id: new Types.ObjectId(),
+      dedupeKey: `push-${notificationId}`,
+      message: message,
+      state: QueueMessageState.PENDING,
+      type: QueueMessageType.PUSH_NOTIFICATION,
+    });
+
+    queueMessages.push({
+      _id: new Types.ObjectId(),
+      dedupeKey: `email-${notificationId}`,
+      message: message,
+      state: QueueMessageState.PENDING,
+      type: QueueMessageType.EMAIL_NOTIFICATION,
+    });
+  }
+
+  await QueueMessageModel.create(queueMessages, options);
+}
+
 export async function queueRefreshAchievements(userId: string | Types.ObjectId, categories: AchievementCategory[], options?: QueryOptions) {
   await queue(
     userId.toString() + '-refresh-achievements-' + new Types.ObjectId().toString(),

@@ -16,21 +16,21 @@ const NotificationSchema = new mongoose.Schema<Notification>({
   source: {
     type: mongoose.Schema.Types.ObjectId,
     refPath: 'sourceModel',
-    required: true,
+    required: false,
   },
   sourceModel: {
     type: String,
-    required: true,
+    required: false,
     enum: ['User', 'Level', 'Achievement'],
   },
   target: {
     type: mongoose.Schema.Types.ObjectId,
     refPath: 'targetModel',
-    required: true,
+    required: false,
   },
   targetModel: {
     type: String,
-    required: true,
+    required: false,
     enum: ['User', 'Level', 'Collection'],
   },
   type: {

@@ -21,10 +21,17 @@ export function getNewUserConfig(roles: Role[], tutorialCompletedAt: number, use
   }
 
   const emailConfirmationToken = getEmailConfirmationToken();
+  const disallowedEmailNotifications = [
+    NotificationType.NEW_FOLLOWER,
+    NotificationType.NEW_LEVEL,
+    NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION,
+    NotificationType.NEW_REVIEW_ON_YOUR_LEVEL,
+    NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_SOLVED,
+  ];
 
   return {
     _id: new Types.ObjectId(),
-    disallowedEmailNotifications: Object.values(NotificationType).filter((type) => type !== NotificationType.NEW_WALL_POST && type !== NotificationType.NEW_WALL_REPLY && type !== NotificationType.NEW_ACHIEVEMENT),
+    disallowedEmailNotifications: disallowedEmailNotifications,
     disallowedPushNotifications: [],
     emailConfirmed: false,
     emailConfirmationToken: emailConfirmationToken,

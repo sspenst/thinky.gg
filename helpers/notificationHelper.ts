@@ -6,7 +6,30 @@ import GraphType from '../constants/graphType';
 import NotificationType from '../constants/notificationType';
 import Achievement from '../models/db/achievement';
 import { AchievementModel, GraphModel, NotificationModel } from '../models/mongoose';
-import { queuePushNotification } from '../pages/api/internal-jobs/worker';
+import { bulkQueuePushNotification, queuePushNotification } from '../pages/api/internal-jobs/worker';
+
+export async function createNewAdminMessageNotifications(userIds: Types.ObjectId[], payload: string) {
+  const notificationIds = [];
+  const notifications = [];
+
+  for (const userId of userIds) {
+    const notificationId = new Types.ObjectId();
+
+    notificationIds.push(notificationId);
+    notifications.push({
+      _id: notificationId,
+      message: payload,
+      type: NotificationType.ADMIN_MESSAGE,
+      userId: userId,
+      read: false,
+    });
+  }
+
+  await NotificationModel.create(notifications);
+  await bulkQueuePushNotification(notificationIds);
+
+  return notifications;
+}
 
 export async function createNewWallPostNotification(type: NotificationType.NEW_WALL_POST |NotificationType.NEW_WALL_REPLY, userId: string | Types.ObjectId, sourceUserId: string | Types.ObjectId, targetUserId: string | Types.ObjectId, message: string) {
   const id = new Types.ObjectId();
