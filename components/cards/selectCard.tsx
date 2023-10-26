@@ -3,11 +3,9 @@ import isPro from '@root/helpers/isPro';
 import classNames from 'classnames';
 import Link from 'next/link';
 import React, { useContext, useEffect, useState } from 'react';
-import toast from 'react-hot-toast';
 import Dimensions from '../../constants/dimensions';
 import getPngDataClient from '../../helpers/getPngDataClient';
 import SelectOption from '../../models/selectOption';
-import StyledTooltip from '../page/styledTooltip';
 import { PlayLaterToggleButton } from './playLaterToggleButton';
 import styles from './SelectCard.module.css';
 import SelectCardContent from './selectCardContent';
@@ -18,7 +16,7 @@ interface SelectCardProps {
 }
 
 export default function SelectCard({ option, prefetch }: SelectCardProps) {
-  const { user, myPlayLater, mutateMyPlayLater } = useContext(AppContext);
+  const { user, myPlayLater } = useContext(AppContext);
   const [backgroundImage, setBackgroundImage] = useState<string>();
   let addToPlayLaterBtn;
 

@@ -22,6 +22,7 @@ export default apiWrapper({
   await dbConnect();
   const token = req.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, req) : null;
+
   const collection = await getCollection({
     matchQuery: { _id: new Types.ObjectId(id as string) },
     reqUser,
@@ -35,7 +36,7 @@ export default apiWrapper({
   }
 
   const doIOwnCollection = collection && collection.userId._id.toString() === reqUser?._id.toString();
-    
+
   if (collection?.isPrivate && !doIOwnCollection) {
     return res.status(404).json({
       error: 'Error finding Collection',
