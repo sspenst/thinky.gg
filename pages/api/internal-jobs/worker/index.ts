@@ -1,7 +1,7 @@
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
 import UserConfig from '@root/models/db/userConfig';
-import mongoose, { QueryOptions, Types } from 'mongoose';
+import mongoose, { ClientSession, QueryOptions, Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
 import { getEnrichNotificationPipelineStages } from '../../../../helpers/enrich';
@@ -61,7 +61,7 @@ export async function queuePushNotification(notificationId: Types.ObjectId, opti
   ]);
 }
 
-export async function bulkQueuePushNotification(notificationIds: Types.ObjectId[], options?: QueryOptions) {
+export async function bulkQueuePushNotification(notificationIds: Types.ObjectId[], session: ClientSession) {
   const queueMessages = [];
 
   for (const notificationId of notificationIds) {
@@ -84,7 +84,7 @@ export async function bulkQueuePushNotification(notificationIds: Types.ObjectId[
     });
   }
 
-  await QueueMessageModel.create(queueMessages, options);
+  await QueueMessageModel.insertMany(queueMessages, { session: session });
 }
 
 export async function queueRefreshAchievements(userId: string | Types.ObjectId, categories: AchievementCategory[], options?: QueryOptions) {
