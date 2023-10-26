@@ -2,6 +2,7 @@ import TestId from '@root/constants/testId';
 import { logger } from '@root/helpers/logger';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { getTokenCookieValue } from '@root/lib/getTokenCookie';
+import { initLevel } from '@root/lib/initializeLocalDb';
 import { NextApiRequestWithAuth } from '@root/lib/withAuth';
 import { CollectionType } from '@root/models/CollectionEnums';
 import { CollectionModel } from '@root/models/mongoose';
@@ -10,7 +11,7 @@ import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import handler from '../../../../pages/api/play-later/index';
-import { initLevel } from '@root/lib/initializeLocalDb';
+
 beforeAll(async () => {
   await dbConnect();
 });
@@ -23,7 +24,7 @@ afterAll(async () => {
 enableFetchMocks();
 
 describe('api/play-later', () => {
-  test("GET when it doesn't exist", async () => {
+  test('GET with non pro user', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -41,6 +42,31 @@ describe('api/play-later', () => {
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
+        expect(res.status).toBe(401);
+        expect(response.error).toBe('You must be a Pro user to use this feature.');
+      },
+    });
+  });
+  test('GET when it doesn\'t exist', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'GET',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_PRO),
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
         expect(res.status).toBe(200);
         expect(response.error).toBe(undefined);
 
@@ -56,7 +82,7 @@ describe('api/play-later', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_PRO),
           },
           headers: {
             'content-type': 'application/json',
@@ -71,6 +97,7 @@ describe('api/play-later', () => {
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(res.status).toBe(200);
         expect(response.error).toBe(undefined);
 
@@ -86,7 +113,7 @@ describe('api/play-later', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_PRO),
           },
           headers: {
             'content-type': 'application/json',
@@ -101,6 +128,7 @@ describe('api/play-later', () => {
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(res.status).toBe(400);
         expect(response.error).toBe(
           'This level is already in your Play Later.'
@@ -116,7 +144,7 @@ describe('api/play-later', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_PRO),
           },
           headers: {
             'content-type': 'application/json',
@@ -131,6 +159,7 @@ describe('api/play-later', () => {
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(res.status).toBe(404);
         expect(response.error).toBe(
           'Level not found.'
@@ -139,16 +168,18 @@ describe('api/play-later', () => {
     });
   });
   let newLevelId: string;
+
   test('POST another level should be OK', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    const newLevel = await initLevel(TestId.USER, "name0");
+    const newLevel = await initLevel(TestId.USER, 'name0');
+
     newLevelId = newLevel._id.toString();
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_PRO),
           },
           headers: {
             'content-type': 'application/json',
@@ -163,20 +194,22 @@ describe('api/play-later', () => {
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(res.status).toBe(200);
-        
+        expect(response.success).toBe(true);
       },
     });
   });
   test('POST another level to trigger the MAX_LEVELS_IN_PLAYLIST hit', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    const newLevel = await initLevel(TestId.USER, "name");
+    const newLevel = await initLevel(TestId.USER, 'name');
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_PRO),
           },
           headers: {
             'content-type': 'application/json',
@@ -191,6 +224,7 @@ describe('api/play-later', () => {
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(res.status).toBe(400);
         expect(response.error).toBe(
           'You can only have 2 levels in your Play Later. Please remove some levels and try again.'
@@ -204,7 +238,7 @@ describe('api/play-later', () => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_PRO),
           },
           headers: {
             'content-type': 'application/json',
@@ -214,13 +248,9 @@ describe('api/play-later', () => {
         await handler(req, res);
       },
       test: async ({ fetch }) => {
-        const col = await CollectionModel.findOne({
-          userId: TestId.USER,
-          type: CollectionType.PlayLater,
-        });
-
         const res = await fetch();
         const response = await res.json();
+
         expect(res.status).toBe(200);
         expect(response.error).toBe(undefined);
         const responseAsMap = response as Map<string, boolean>;
@@ -240,7 +270,7 @@ describe('api/play-later', () => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_PRO),
           },
           headers: {
             'content-type': 'application/json',
@@ -255,6 +285,7 @@ describe('api/play-later', () => {
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(res.status).toBe(200);
         expect(response.error).toBe(undefined);
 
@@ -268,7 +299,7 @@ describe('api/play-later', () => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
-            token: getTokenCookieValue(TestId.USER),
+            token: getTokenCookieValue(TestId.USER_PRO),
           },
           headers: {
             'content-type': 'application/json',
@@ -278,19 +309,15 @@ describe('api/play-later', () => {
         await handler(req, res);
       },
       test: async ({ fetch }) => {
-        const col = await CollectionModel.findOne({
-          userId: TestId.USER,
-          type: CollectionType.PlayLater,
-        });
-
         const res = await fetch();
         const response = await res.json();
+
         expect(res.status).toBe(200);
         expect(response.error).toBe(undefined);
         const responseAsMap = response as Map<string, boolean>;
 
         expect(responseAsMap).toStrictEqual({
-            [newLevelId]: true,
+          [newLevelId]: true,
         });
       },
     });
