@@ -1,13 +1,17 @@
 /* istanbul ignore file */
 
 import PagePath from '@root/constants/pagePath';
+import { AppContext } from '@root/contexts/appContext';
+import useSWRHelper from '@root/hooks/useSWRHelper';
 import { useTour } from '@root/hooks/useTour';
+import Collection from '@root/models/db/collection';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import useSWR from 'swr';
 import LinkInfo from '../../../components/formatted/linkInfo';
 import GameWrapper from '../../../components/level/gameWrapper';
 import Page from '../../../components/page/page';
@@ -22,8 +26,6 @@ import Record from '../../../models/db/record';
 import Review from '../../../models/db/review';
 import User from '../../../models/db/user';
 import { getLevelByUrlPath } from '../../api/level-by-slug/[username]/[slugName]';
-import useSWR from 'swr';
-import useSWRHelper from '@root/hooks/useSWRHelper';
 
 export interface LevelUrlQueryParams extends ParsedUrlQuery {
   cid?: string;
@@ -59,10 +61,20 @@ interface LevelProps {
 
 export default function LevelPage({ _level, reqUser }: LevelProps) {
   const [level, setLevel] = useState(_level);
+  const { tempCollection } = useContext(AppContext);
   const { mutateProStatsLevel, proStatsLevel } = useProStatsLevel(level);
   const router = useRouter();
   const { chapter, cid, slugName, ts, username } = router.query as LevelUrlQueryParams;
-  const { collection } = useCollectionById(cid);
+  const { collection: loadedCollection } = useCollectionById(cid);
+  const [collection, setCollection] = useState<Collection>();
+
+  useEffect(() => {
+    if (!loadedCollection && tempCollection) {
+      setCollection(tempCollection);
+    } else {
+      setCollection(loadedCollection);
+    }
+  }, [loadedCollection, tempCollection]);
 
   // handle pressing "Next level"
   useEffect(() => {
@@ -115,11 +127,9 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
     router.push(url);
   };
 
-  const {data:records, isLoading:recordsLoading} = useSWRHelper<Record[]>(`/api/records/${level._id}`);
+  const { data: records, isLoading: recordsLoading } = useSWRHelper<Record[]>(`/api/records/${level._id}`);
 
-
-  const {mutate:mutateReviews,data:reviews, isLoading:reviewsLoading} = useSWRHelper<Review[]>(`/api/reviews/${level._id}`)
-
+  const { mutate: mutateReviews, data: reviews, isLoading: reviewsLoading } = useSWRHelper<Review[]>(`/api/reviews/${level._id}`);
 
   const folders: LinkInfo[] = [];
 
@@ -179,7 +189,7 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
         }}
       />
       <LevelContext.Provider value={{
-        getReviews:mutateReviews,
+        getReviews: mutateReviews,
         inCampaign: !!chapter && level.userMoves !== level.leastMoves,
         level: level,
         mutateLevel: mutateLevel,

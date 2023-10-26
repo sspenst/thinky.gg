@@ -82,6 +82,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   const [sounds, setSounds] = useState<{ [key: string]: HTMLAudioElement }>({});
   const [theme, setTheme] = useState<string>();
   const { matches, privateAndInvitedMatches } = multiplayerSocket;
+  const [tempCollection, setTempCollection] = useState<Collection>();
 
   useEffect(() => {
     // preload sounds
@@ -358,8 +359,10 @@ export default function MyApp({ Component, pageProps }: AppProps) {
           mutateMyPlayLater: mutateMyPlayLater,
           setShouldAttemptAuth: setShouldAttemptAuth,
           setTheme: setTheme,
+          setTempCollection: setTempCollection,
           shouldAttemptAuth: shouldAttemptAuth,
           sounds: sounds,
+          tempCollection,
           theme: theme,
           user: user,
           userConfig: user?.config,

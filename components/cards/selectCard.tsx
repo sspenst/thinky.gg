@@ -31,7 +31,7 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
   }
 
   useEffect(() => {
-    if (option.level) {
+    if (option.level && option.level.data) {
       setBackgroundImage(getPngDataClient(option.level.data));
     }
   }, [option.level]);
