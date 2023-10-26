@@ -103,6 +103,16 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     if (shouldAttemptAuthStorage) {
       setShouldAttemptAuth(shouldAttemptAuthStorage === 'true');
     }
+
+    const collectionTemp = window.sessionStorage.getItem('tempCollection');
+
+    if (collectionTemp) {
+      try {
+        setTempCollection(JSON.parse(collectionTemp));
+      } catch (e) {
+        console.error('error parsing tempCollection', e);
+      }
+    }
   }, []);
 
   useEffect(() => {
