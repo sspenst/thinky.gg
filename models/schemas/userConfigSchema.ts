@@ -10,6 +10,16 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
+    disallowedEmailNotifications: {
+      type: [{ type: String, enum: NotificationType }],
+      required: false,
+      default: [],
+    },
+    disallowedPushNotifications: {
+      type: [{ type: String, enum: NotificationType }],
+      required: false,
+      default: [],
+    },
     emailConfirmationToken: {
       type: String,
       select: false,
