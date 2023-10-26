@@ -313,8 +313,8 @@ describe('pages/api/signup', () => {
           NotificationType.NEW_FOLLOWER,
           NotificationType.NEW_LEVEL,
           NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION,
-          NotificationType.NEW_REVIEW_ON_YOUR_LEVEL,
           NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_SOLVED,
+          NotificationType.NEW_REVIEW_ON_YOUR_LEVEL,
         ];
 
         expect(config.disallowedEmailNotifications.sort()).toStrictEqual(disallowedEmailNotifications);
