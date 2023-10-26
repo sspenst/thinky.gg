@@ -253,7 +253,7 @@ export default function AdminPage({ queryUser, queryLevel, queryUserCommand, que
             </Menu.Items>
           </Menu>
           <button
-            className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${runningCommand ? 'bg-gray-500 cursor-not-allowed' : ''}`}
+            className={`bg-blue-500 hover:enabled:bg-blue-700 text-white font-bold py-2 px-4 rounded ${runningCommand ? 'bg-gray-500 cursor-not-allowed' : ''}`}
             disabled={runningCommand}
             onClick={runCommandUser}
           >
@@ -303,7 +303,7 @@ export default function AdminPage({ queryUser, queryLevel, queryUserCommand, que
             </Menu.Items>
           </Menu>
           <button
-            className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${runningCommand ? 'bg-gray-500 cursor-not-allowed' : ''}`}
+            className={`bg-blue-500 hover:enabled:bg-blue-700 text-white font-bold py-2 px-4 rounded ${runningCommand ? 'bg-gray-500 cursor-not-allowed' : ''}`}
             disabled={runningCommand}
             onClick={runCommandLevel}
           >
@@ -405,7 +405,7 @@ export default function AdminPage({ queryUser, queryLevel, queryUserCommand, que
           </div>
           {/* TODO: onclick, call api/admin, which then calls createNewAdminMessageNotification on all applicable users with role */}
           <button
-            className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${runningCommand ? 'bg-gray-500 cursor-not-allowed' : ''}`}
+            className={`bg-blue-500 hover:enabled:bg-blue-700 text-white font-bold py-2 px-4 rounded ${runningCommand ? 'bg-gray-500 cursor-not-allowed' : ''}`}
             disabled={runningCommand}
             onClick={runCommandAdmin}
           >
