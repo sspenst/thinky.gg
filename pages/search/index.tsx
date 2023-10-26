@@ -6,9 +6,11 @@ import DataTable, { TableColumn } from '@root/components/tables/dataTable';
 import Dimensions from '@root/constants/dimensions';
 import StatFilter from '@root/constants/statFilter';
 import { AppContext } from '@root/contexts/appContext';
+import { TimerUtil } from '@root/helpers/getTs';
 import isPro from '@root/helpers/isPro';
 import classNames from 'classnames';
 import { debounce } from 'debounce';
+import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -256,7 +258,7 @@ interface SearchProps {
 
 /* istanbul ignore next */
 export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQuery, totalRows }: SearchProps) {
-  const { myPlayLater } = useContext(AppContext);
+  const { myPlayLater, setTempCollection } = useContext(AppContext);
   const [data, setData] = useState<EnrichedLevel[]>(enrichedLevels);
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState(searchQuery);
@@ -362,7 +364,19 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       id: 'name',
       name: 'Name',
       grow: 2,
-      selector: (row: EnrichedLevel) => <FormattedLevelLink id='search' level={row} />,
+      selector: (row: EnrichedLevel) => {
+        return <FormattedLevelLink onClick={() => {
+          const ts = new Date();
+          const collectionTemp = {
+            name: 'Search Query', slug: '../search/',
+            levels: data, _id: new Types.ObjectId(),
+            createdAt: ts, updatedAt: ts,
+            userId: { _id: new Types.ObjectId(), name: 'Search' } as Types.ObjectId & User,
+            isPrivate: true };
+
+          setTempCollection(collectionTemp);
+        }} id='search' level={row} />;
+      },
       sortable: true,
       style: {
         minWidth: '150px',
