@@ -324,8 +324,9 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       selector: (row: EnrichedLevel) => (
         <div className='flex gap-3 truncate'>
           { isPro(reqUser) && myPlayLater && (
-            <PlayLaterToggleButton level={row} className='flex items-center justify-center' />
-
+            <div className='flex items-center justify-center' >
+              <PlayLaterToggleButton level={row} />
+            </div>
           )}
           <button
             onClick={() => {
