@@ -2,12 +2,13 @@ import { AchievementCategory } from '@root/constants/achievements/achievementInf
 import NotificationType from '@root/constants/notificationType';
 import Role from '@root/constants/role';
 import { ValidEnum, ValidObjectId, ValidType } from '@root/helpers/apiWrapper';
+import { logger } from '@root/helpers/logger';
 import { createNewAdminMessageNotifications } from '@root/helpers/notificationHelper';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
 import withAuth, { NextApiRequestWithAuth } from '@root/lib/withAuth';
 import { AchievementModel, NotificationModel, UserModel } from '@root/models/mongoose';
 import { calcPlayAttempts, refreshIndexCalcs } from '@root/models/schemas/levelSchema';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { processQueueMessages } from '../internal-jobs/worker';
 
@@ -63,15 +64,28 @@ export default withAuth({ POST: {
       break;
 
     case AdminCommand.sendAdminMessage: {
-      const userIdsAgg = await UserModel.aggregate([
-        ...(role ? [{ $match: { roles: role } }] : []),
-        { $project: { _id: 1 } },
-        { $group: { _id: null, userIds: { $push: '$_id' } } },
-      ]);
+      const session = await mongoose.startSession();
 
-      const userIds = userIdsAgg[0].userIds as Types.ObjectId[];
+      try {
+        await session.withTransaction(async () => {
+          const userIdsAgg = await UserModel.aggregate([
+            ...(role ? [{ $match: { roles: role } }] : []),
+            { $project: { _id: 1 } },
+            { $group: { _id: null, userIds: { $push: '$_id' } } },
+          ], { session: session });
 
-      await createNewAdminMessageNotifications(userIds, payload);
+          const userIds = userIdsAgg[0].userIds as Types.ObjectId[];
+
+          await createNewAdminMessageNotifications(userIds, payload, session);
+        });
+
+        session.endSession();
+      } catch (err) {
+        logger.error(err);
+        session.endSession();
+
+        return res.status(500).json({ error: 'Error sending admin message' });
+      }
 
       break;
     }

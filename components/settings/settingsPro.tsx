@@ -109,6 +109,13 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
         <Image alt='pro' src='/pro.svg' width='24' height='24' />
         <h2 className='font-bold text-2xl'>Pathology Pro</h2>
       </div>
+      <div className='rounded-md px-4 py-2 bg-yellow-200 text-black text-sm'>
+        <span><span className='font-bold'>Update: </span>On December 1, 2023, the pricing of Pathology Pro will be updated as follows:</span>
+        <ul className=''>
+          <li>Monthly: $5 USD per month</li>
+          <li>Yearly: $4 USD per month ($48 USD per year billed annually)</li>
+        </ul>
+      </div>
       {isPro(user) &&
         <div className='flex flex-col gap-4 text-center justify-center items-center'>
           <div>

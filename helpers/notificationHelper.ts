@@ -1,6 +1,6 @@
 import Level from '@root/models/db/level';
 import User from '@root/models/db/user';
-import { QueryOptions, SaveOptions, Types } from 'mongoose';
+import { ClientSession, QueryOptions, SaveOptions, Types } from 'mongoose';
 import AchievementType from '../constants/achievements/achievementType';
 import GraphType from '../constants/graphType';
 import NotificationType from '../constants/notificationType';
@@ -8,7 +8,7 @@ import Achievement from '../models/db/achievement';
 import { AchievementModel, GraphModel, NotificationModel } from '../models/mongoose';
 import { bulkQueuePushNotification, queuePushNotification } from '../pages/api/internal-jobs/worker';
 
-export async function createNewAdminMessageNotifications(userIds: Types.ObjectId[], payload: string) {
+export async function createNewAdminMessageNotifications(userIds: Types.ObjectId[], payload: string, session: ClientSession) {
   const notificationIds = [];
   const notifications = [];
 
@@ -25,8 +25,8 @@ export async function createNewAdminMessageNotifications(userIds: Types.ObjectId
     });
   }
 
-  await NotificationModel.create(notifications);
-  await bulkQueuePushNotification(notificationIds);
+  await NotificationModel.insertMany(notifications, { session: session });
+  await bulkQueuePushNotification(notificationIds, session);
 
   return notifications;
 }

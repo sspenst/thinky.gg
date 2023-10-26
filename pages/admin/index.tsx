@@ -335,7 +335,7 @@ export default function AdminPage({ queryUser, queryLevel, queryUserCommand, que
           <TextareaAutosize
             className='bg-inherit block py-1 -mt-2 w-96 max-w-full border-b border-neutral-500 disabled:text-neutral-500 transition resize-none placeholder:text-neutral-500 focus:outline-0 rounded-none focus:border-black focus:dark:border-white'
             onChange={(e) => setAdminHref(e.currentTarget.value)}
-            placeholder='Href...'
+            placeholder='Href (eg: "/settings/pro")...'
             value={adminHref}
           />
           <div className='flex gap-2 items-center'>
@@ -403,7 +403,6 @@ export default function AdminPage({ queryUser, queryLevel, queryUserCommand, que
               </Transition>
             </Menu>
           </div>
-          {/* TODO: onclick, call api/admin, which then calls createNewAdminMessageNotification on all applicable users with role */}
           <button
             className={`bg-blue-500 hover:enabled:bg-blue-700 text-white font-bold py-2 px-4 rounded ${runningCommand ? 'bg-gray-500 cursor-not-allowed' : ''}`}
             disabled={runningCommand}
