@@ -1,9 +1,11 @@
 import { Menu, Transition } from '@headlessui/react';
+import { PlayLaterToggleButton } from '@root/components/cards/playLaterToggleButton';
 import FormattedDate from '@root/components/formatted/formattedDate';
 import FormattedUser from '@root/components/formatted/formattedUser';
 import DataTable, { TableColumn } from '@root/components/tables/dataTable';
 import Dimensions from '@root/constants/dimensions';
 import StatFilter from '@root/constants/statFilter';
+import { AppContext } from '@root/contexts/appContext';
 import isPro from '@root/helpers/isPro';
 import classNames from 'classnames';
 import { debounce } from 'debounce';
@@ -14,7 +16,7 @@ import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
 import nProgress from 'nprogress';
 import { ParsedUrlQuery, ParsedUrlQueryInput } from 'querystring';
-import React, { Fragment, useCallback, useEffect, useState } from 'react';
+import React, { Fragment, useCallback, useContext, useEffect, useState } from 'react';
 import FilterButton from '../../components/buttons/filterButton';
 import FormattedDifficulty, { difficultyList, getDifficultyColor } from '../../components/formatted/formattedDifficulty';
 import FormattedLevelLink from '../../components/formatted/formattedLevelLink';
@@ -254,6 +256,7 @@ interface SearchProps {
 
 /* istanbul ignore next */
 export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQuery, totalRows }: SearchProps) {
+  const { myPlayLater } = useContext(AppContext);
   const [data, setData] = useState<EnrichedLevel[]>(enrichedLevels);
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState(searchQuery);
@@ -320,6 +323,10 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       name: 'Author',
       selector: (row: EnrichedLevel) => (
         <div className='flex gap-3 truncate'>
+          { isPro(reqUser) && myPlayLater && (
+            <PlayLaterToggleButton level={row} className='flex items-center justify-center' />
+
+          )}
           <button
             onClick={() => {
               if (query.searchAuthor === row.userId.name) {

@@ -4,8 +4,6 @@ import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { getTokenCookieValue } from '@root/lib/getTokenCookie';
 import { initLevel } from '@root/lib/initializeLocalDb';
 import { NextApiRequestWithAuth } from '@root/lib/withAuth';
-import { CollectionType } from '@root/models/CollectionEnums';
-import { CollectionModel } from '@root/models/mongoose';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
