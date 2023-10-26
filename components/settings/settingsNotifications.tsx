@@ -73,12 +73,16 @@ export default function SettingsNotifications() {
     [NotificationType.UPGRADED_TO_PRO]: 'Upgraded to Pro',
   };
 
-  const emailNotifs = userConfig?.emailNotificationsList || [];
-  const pushNotifs = userConfig?.pushNotificationsList || [];
-  // Create a formatted list of all notification types with two checkboxes... one for email and one for mobile push notifications.
+  if (!userConfig) {
+    return null;
+  }
 
+  const disallowedEmailNotifications = userConfig.disallowedEmailNotifications;
+  const disallowedPushNotifications = userConfig.disallowedPushNotifications;
+
+  // Create a formatted list of all notification types with two checkboxes... one for email and one for mobile push notifications.
   const updateNotifs = (notif: NotificationType, type: 'email' | 'push') => {
-    const notifList = type === 'email' ? emailNotifs : pushNotifs;
+    const notifList = type === 'email' ? disallowedEmailNotifications : disallowedPushNotifications;
     const notifIndex = notifList.indexOf(notif);
 
     if (notifIndex === -1) {
@@ -89,8 +93,8 @@ export default function SettingsNotifications() {
 
     updateUserConfig(
       JSON.stringify({
-        emailNotificationsList: emailNotifs,
-        pushNotificationsList: pushNotifs,
+        disallowedEmailNotifications: disallowedEmailNotifications,
+        disallowedPushNotifications: disallowedPushNotifications,
       }),
       'notification settings',
     );
@@ -108,22 +112,21 @@ export default function SettingsNotifications() {
                   Email
                 </label>
                 <input
-                  checked={emailNotifs.length === allNotifs.length}
+                  checked={disallowedEmailNotifications.length === 0}
                   id='toggleAllEmailNotifs'
                   name='toggleAllEmailNotifs'
-
                   onChange={() => {
-                    if (emailNotifs.length === allNotifs.length) {
+                    if (disallowedEmailNotifications.length !== 0) {
                       updateUserConfig(
                         JSON.stringify({
-                          emailNotificationsList: [],
+                          disallowedEmailNotifications: [],
                         }),
                         'notification settings',
                       );
                     } else {
                       updateUserConfig(
                         JSON.stringify({
-                          emailNotificationsList: allNotifs,
+                          disallowedEmailNotifications: allNotifs,
                         }),
                         'notification settings',
                       );
@@ -139,21 +142,21 @@ export default function SettingsNotifications() {
                   Push
                 </label>
                 <input
-                  checked={pushNotifs.length === allNotifs.length}
+                  checked={disallowedPushNotifications.length === 0}
                   id='toggleAllPushNotifs'
                   name='toggleAllPushNotifs'
                   onChange={() => {
-                    if (pushNotifs.length === allNotifs.length) {
+                    if (disallowedPushNotifications.length !== 0) {
                       updateUserConfig(
                         JSON.stringify({
-                          pushNotificationsList: [],
+                          disallowedPushNotifications: [],
                         }),
                         'notification settings',
                       );
                     } else {
                       updateUserConfig(
                         JSON.stringify({
-                          pushNotificationsList: allNotifs,
+                          disallowedPushNotifications: allNotifs,
                         }),
                         'notification settings',
                       );
@@ -178,7 +181,7 @@ export default function SettingsNotifications() {
                 </td>
                 <td className='px-4 py-2 text-center'>
                   <input
-                    checked={emailNotifs.includes(notif)}
+                    checked={!disallowedEmailNotifications.includes(notif)}
                     id={notif + '-email'}
                     name={notif}
                     onChange={() => updateNotifs(notif, 'email')}
@@ -187,7 +190,7 @@ export default function SettingsNotifications() {
                 </td>
                 <td className='px-4 py-2 text-center'>
                   <input
-                    checked={pushNotifs.includes(notif)}
+                    checked={!disallowedPushNotifications.includes(notif)}
                     id={notif + '-push'}
                     name={notif}
                     onChange={() => updateNotifs(notif, 'push')}

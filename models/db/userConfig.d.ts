@@ -6,13 +6,13 @@ import User from './user';
 
 interface UserConfig {
   _id: Types.ObjectId;
+  disallowedEmailNotifications: NotificationType[];
+  disallowedPushNotifications: NotificationType[];
   emailConfirmationToken: string;
   emailConfirmed: boolean;
   emailDigest: EmailDigestSettingTypes;
-  emailNotificationsList: NotificationType[];
   giftSubscriptions: string[]; // gift subscriptions this user has given out
   mobileDeviceTokens: string[];
-  pushNotificationsList: NotificationType[];
   showPlayStats: boolean;
   stripeCustomerId: string;
   theme: string;
