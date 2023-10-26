@@ -308,7 +308,16 @@ describe('pages/api/signup', () => {
         const config = await UserConfigModel.findOne({ userId: db._id }) as UserConfig;
 
         expect(config).toBeDefined();
-        expect(config.disallowedEmailNotifications.sort()).toStrictEqual(Object.values(NotificationType).filter((type) => type !== NotificationType.NEW_WALL_POST && type !== NotificationType.NEW_WALL_REPLY && type !== NotificationType.NEW_ACHIEVEMENT).sort());
+
+        const disallowedEmailNotifications = [
+          NotificationType.NEW_FOLLOWER,
+          NotificationType.NEW_LEVEL,
+          NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION,
+          NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_SOLVED,
+          NotificationType.NEW_REVIEW_ON_YOUR_LEVEL,
+        ];
+
+        expect(config.disallowedEmailNotifications.sort()).toStrictEqual(disallowedEmailNotifications);
         expect(config.disallowedPushNotifications).toStrictEqual([]);
       },
     });
