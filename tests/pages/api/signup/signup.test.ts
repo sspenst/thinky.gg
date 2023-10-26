@@ -308,8 +308,8 @@ describe('pages/api/signup', () => {
         const config = await UserConfigModel.findOne({ userId: db._id }) as UserConfig;
 
         expect(config).toBeDefined();
-        expect(config.emailNotificationsList.sort()).toStrictEqual([NotificationType.NEW_ACHIEVEMENT, NotificationType.NEW_WALL_POST, NotificationType.NEW_WALL_REPLY]);
-        expect(config.pushNotificationsList.sort()).toStrictEqual(Object.values(NotificationType).sort());
+        expect(config.disallowedEmailNotifications.sort()).toStrictEqual(Object.values(NotificationType).filter((type) => type !== NotificationType.NEW_WALL_POST && type !== NotificationType.NEW_WALL_REPLY && type !== NotificationType.NEW_ACHIEVEMENT).sort());
+        expect(config.disallowedPushNotifications).toStrictEqual([]);
       },
     });
   });

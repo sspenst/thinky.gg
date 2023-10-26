@@ -6,6 +6,8 @@ import User from './user';
 
 interface UserConfig {
   _id: Types.ObjectId;
+  disallowedEmailNotifications: NotificationType[];
+  disallowedPushNotifications: NotificationType[];
   emailConfirmationToken: string;
   emailConfirmed: boolean;
   emailDigest: EmailDigestSettingTypes;
