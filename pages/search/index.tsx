@@ -374,6 +374,11 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
             userId: { _id: new Types.ObjectId(), name: 'Search' } as Types.ObjectId & User,
             isPrivate: true };
 
+          /* TODO: maybe save to cloud instead of session storage? */
+          const collectionTempString = JSON.stringify(collectionTemp);
+
+          sessionStorage.setItem('tempCollection', collectionTempString);
+
           setTempCollection(collectionTemp);
         }} id='search' level={row} />;
       },

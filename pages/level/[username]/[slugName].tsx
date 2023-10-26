@@ -69,12 +69,13 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
   const [collection, setCollection] = useState<Collection>();
 
   useEffect(() => {
-    if (!loadedCollection && tempCollection) {
-      setCollection(tempCollection);
-    } else {
-      setCollection(loadedCollection);
+    const collectionToTry = (!loadedCollection && tempCollection) ? tempCollection : loadedCollection;
+    const levelInCollection = collectionToTry?.levels.find((l) => l._id === level._id);
+
+    if (collectionToTry && levelInCollection) {
+      setCollection(collectionToTry);
     }
-  }, [loadedCollection, tempCollection]);
+  }, [level._id, loadedCollection, tempCollection]);
 
   // handle pressing "Next level"
   useEffect(() => {
