@@ -524,15 +524,15 @@ body {
   background-color: var(--bg-color-4);
 }
 
-.border-2 {
+.border-color-2 {
   border-color: var(--bg-color-2);
 }
 
-.border-3 {
+.border-color-3 {
   border-color: var(--bg-color-3);
 }
 
-.border-4 {
+.border-color-4 {
   border-color: var(--bg-color-4);
 }
 
