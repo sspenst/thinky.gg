@@ -228,7 +228,7 @@ export default withAuth({
             { $set: { attemptContext: AttemptContext.UNSOLVED } },
             { session: session },
           ),
-          queueDiscordWebhook(Discord.LevelsId, `**${req.user.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`, { session: session })
+          queueDiscordWebhook(Discord.Levels, `**${req.user.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`, { session: session })
           ]);
         }
 
