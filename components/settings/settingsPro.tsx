@@ -104,7 +104,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
   const hasAPaymentMethod = paymentMethods && paymentMethods?.length > 0;
 
   return (
-    <div className='flex flex-col justify-center items-center gap-4'>
+    <div className='flex flex-col justify-center items-center gap-6'>
       <div className='flex gap-4'>
         <Image alt='pro' src='/pro.svg' width='24' height='24' />
         <h2 className='font-bold text-2xl'>Pathology Pro</h2>
