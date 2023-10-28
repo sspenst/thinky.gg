@@ -11,7 +11,6 @@ import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import useSWR from 'swr';
 import LinkInfo from '../../../components/formatted/linkInfo';
 import GameWrapper from '../../../components/level/gameWrapper';
 import Page from '../../../components/page/page';

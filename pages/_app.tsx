@@ -5,7 +5,6 @@ import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react';
 import MusicContextProvider from '@root/contexts/musicContext';
 import useSWRHelper from '@root/hooks/useSWRHelper';
 import Collection from '@root/models/db/collection';
-import { Types } from 'mongoose';
 import type { AppProps } from 'next/app';
 import { Rubik, Teko } from 'next/font/google';
 import Head from 'next/head';

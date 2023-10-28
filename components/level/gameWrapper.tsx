@@ -1,4 +1,3 @@
-import { LevelContext } from '@root/contexts/levelContext';
 import { MusicContext } from '@root/contexts/musicContext';
 import { PageContext } from '@root/contexts/pageContext';
 import useDeviceCheck, { ScreenSize } from '@root/hooks/useDeviceCheck';
@@ -116,7 +115,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
               }}
             >
 
-              {collection.levels.map((levelInCollection, i) => {
+              {collection.levels.map((levelInCollection) => {
                 let customStyle = {};
 
                 if (level._id.toString() === levelInCollection._id.toString()) {
