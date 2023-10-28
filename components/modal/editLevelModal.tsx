@@ -11,12 +11,14 @@ import Level from '../../models/db/level';
 import Modal from '.';
 
 interface EditLevelModalProps {
+  addOnlyMode?: boolean;
+  redirectToLevelAfterEdit?: boolean;
   closeModal: () => void;
   isOpen: boolean;
   level: Level;
 }
 
-export default function EditLevelModal({ closeModal, isOpen, level }: EditLevelModalProps) {
+export default function EditLevelModal({ addOnlyMode, closeModal, isOpen, level, redirectToLevelAfterEdit }: EditLevelModalProps) {
   const [authorNote, setAuthorNote] = useState<string>('');
   const [collections, setCollections] = useState<Collection[]>();
   const [collectionIds, setCollectionIds] = useState<string[]>([]);
@@ -110,7 +112,7 @@ export default function EditLevelModal({ closeModal, isOpen, level }: EditLevelM
 
         const newLevel = await res.json();
 
-        if (newLevel) {
+        if (newLevel && redirectToLevelAfterEdit) {
           if (!newLevel.isDraft) {
             router.replace(`/level/${newLevel.slug}`);
           } else {
@@ -146,7 +148,7 @@ export default function EditLevelModal({ closeModal, isOpen, level }: EditLevelM
     });
   }
 
-  const isUsersLevel = level.userId?._id === user?._id || level.userId === user?._id || isCurator(user);
+  const isUsersLevel = !addOnlyMode && ( level.userId?._id === user?._id || level.userId === user?._id || isCurator(user));
 
   return (
     <Modal
