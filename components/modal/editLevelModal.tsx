@@ -185,8 +185,9 @@ export default function EditLevelModal({ addOnlyMode, closeModal, isOpen, level,
           :
           collections.length === 0 ?
             <>
-              <span>You do not have any collections.</span>
-              {user && <Link href={`/profile/${user.name}/collections`} className='underline'>Create a collection</Link>}
+              <span className='text-center text-xl'>You do not have any collections.</span>
+              <span className='text-center text-sm'><span className='font-bold'>Collections</span> are lists of levels. They are a great way to organize and share level series, favorites, or to the group levels that you have created,.</span>
+              {user && <Link href={`/profile/${user.name}/collections` } className='text-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer'>Create your first collection</Link>}
             </>
             :
             <>
