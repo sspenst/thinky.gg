@@ -140,7 +140,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
                         id: levelInCollection._id.toString(),
                         level: levelInCollection,
                         text: levelInCollection.name,
-                        stats: new SelectOptionStats(level.leastMoves, level.userMoves),
+                        stats: new SelectOptionStats(levelInCollection.leastMoves, (levelInCollection as EnrichedLevel)?.userMoves),
                         hideAddToPlayLaterButton: collection.type !== CollectionType.PlayLater,
                         customStyle: customStyle,
                         href:
