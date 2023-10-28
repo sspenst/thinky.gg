@@ -45,7 +45,7 @@ function generateDiscordWebhook(
   const contentCleaned = slicedText.replace(/\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*/g, '[link]');
   const discordTxt = `${score ? getScoreEmojis(score) + ' - ' : ''}**${req.user?.name}** wrote a review for ${level.userId.name}'s [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}):\n${contentCleaned}`;
 
-  return queueDiscordWebhook(Discord.NotifsId, discordTxt);
+  return queueDiscordWebhook(Discord.Notifs, discordTxt);
 }
 
 export default withAuth({

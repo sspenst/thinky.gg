@@ -1,11 +1,11 @@
 import { EmailDigestSettingTypes } from '@root/constants/emailDigest';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
 import { PASSWORD_SALTROUNDS } from '@root/models/schemas/userSchema';
+import { getNewUserConfig } from '@root/pages/api/user-config';
 import bcrypt from 'bcryptjs';
 import { Types } from 'mongoose';
 import Role from '../constants/role';
 import TestId from '../constants/testId';
-import Theme from '../constants/theme';
 import { generateCollectionSlug, generateLevelSlug } from '../helpers/generateSlug';
 import { TimerUtil } from '../helpers/getTs';
 import Collection from '../models/db/collection';
@@ -83,35 +83,12 @@ export default async function initializeLocalDb() {
   { ordered: false }
   ));
 
-  promises.push(UserConfigModel.insertMany(
-    [
-      {
-        _id: new Types.ObjectId(),
-        theme: Theme.Modern,
-        userId: new Types.ObjectId(TestId.USER),
-        emailConfirmed: true,
-      },
-      {
-        _id: new Types.ObjectId(),
-        theme: Theme.Modern,
-        userId: new Types.ObjectId(TestId.USER_B),
-        emailConfirmed: true,
-      },
-      {
-        _id: new Types.ObjectId(),
-        theme: Theme.Modern,
-        userId: new Types.ObjectId(TestId.USER_GUEST),
-        emailConfirmed: false,
-      },
-      {
-        _id: new Types.ObjectId(),
-        theme: Theme.Modern,
-        userId: new Types.ObjectId(TestId.USER_PRO),
-        emailConfirmed: true,
-        emailDigest: EmailDigestSettingTypes.NONE,
-      },
-    ], { ordered: false }
-  ));
+  promises.push(UserConfigModel.insertMany([
+    getNewUserConfig([], 0, new Types.ObjectId(TestId.USER), { emailConfirmed: true }),
+    getNewUserConfig([], 0, new Types.ObjectId(TestId.USER_B), { emailConfirmed: true }),
+    getNewUserConfig([Role.GUEST], 0, new Types.ObjectId(TestId.USER_GUEST)),
+    getNewUserConfig([Role.PRO], 0, new Types.ObjectId(TestId.USER_PRO), { emailConfirmed: true, emailDigest: EmailDigestSettingTypes.NONE }),
+  ], { ordered: false }));
 
   // LEVEL
   promises.push(LevelModel.insertMany(

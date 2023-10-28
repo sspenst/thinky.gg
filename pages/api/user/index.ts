@@ -41,7 +41,7 @@ export default withAuth({
     const [enrichedUser, multiplayerProfile, userConfig] = await Promise.all([
       enrichReqUser(req.user),
       MultiplayerProfileModel.findOne({ 'userId': req.user._id }),
-      getUserConfig(req.user._id),
+      getUserConfig(req.user),
     ]);
 
     cleanUser(enrichedUser);

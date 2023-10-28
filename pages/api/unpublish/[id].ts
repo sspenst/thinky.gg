@@ -119,7 +119,7 @@ export default withAuth({ POST: {
         queueRefreshIndexCalcs(levelClone._id, { session: session }),
         queueCalcPlayAttempts(levelClone._id, { session: session }),
         queueCalcCreatorCounts(level.userId, { session: session }),
-        queueDiscordWebhook(Discord.LevelsId, `**${req.user.name}** unpublished a level: ${level.name}`, { session: session }),
+        queueDiscordWebhook(Discord.Levels, `**${req.user.name}** unpublished a level: ${level.name}`, { session: session }),
         ...matchesToRebroadcast.map(match => requestBroadcastMatch(match.matchId)),
       ]);
     });

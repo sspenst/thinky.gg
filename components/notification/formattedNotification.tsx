@@ -72,6 +72,20 @@ function NotificationIcon({ notification }: { notification: Notification }) {
 
 function NotificationMessage({ notification, onMarkAsRead }: NotificationMessageProps) {
   switch (notification.type) {
+  case NotificationType.ADMIN_MESSAGE: {
+    if (!notification.message) {
+      return null;
+    }
+
+    const payload = JSON.parse(notification.message);
+
+    return (
+      <Link className='hover:underline' href={payload.href} onClick={onMarkAsRead}>
+        {payload.message}
+      </Link>
+    );
+  }
+
   case NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_SOLVED:
     return (<>
       {'set a new record: '}

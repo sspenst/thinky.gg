@@ -10,6 +10,16 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
+    disallowedEmailNotifications: {
+      type: [{ type: String, enum: NotificationType }],
+      required: true,
+      default: [],
+    },
+    disallowedPushNotifications: {
+      type: [{ type: String, enum: NotificationType }],
+      required: true,
+      default: [],
+    },
     emailConfirmationToken: {
       type: String,
       select: false,
@@ -24,11 +34,6 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       enum: EmailDigestSettingTypes,
       default: EmailDigestSettingTypes.DAILY,
     },
-    emailNotificationsList: {
-      type: [{ type: String, enum: NotificationType }],
-      required: false,
-      default: [],
-    },
     giftSubscriptions: {
       type: [String],
       required: false,
@@ -41,11 +46,6 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       select: false,
       default: [],
       maxlength: 100, // max 100 devices @TODO: should probably 'rotate' this list and remove oldest device tokens on push of new one
-    },
-    pushNotificationsList: {
-      type: [{ type: String, enum: NotificationType }],
-      required: false,
-      default: [],
     },
     showPlayStats: {
       type: Boolean,

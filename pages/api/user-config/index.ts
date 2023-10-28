@@ -1,5 +1,10 @@
+import { EmailDigestSettingTypes } from '@root/constants/emailDigest';
+import NotificationType from '@root/constants/notificationType';
+import Role from '@root/constants/role';
+import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
 import isGuest from '@root/helpers/isGuest';
 import { logger } from '@root/helpers/logger';
+import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
 import { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
@@ -8,15 +13,41 @@ import { ValidArray, ValidNumber, ValidType } from '../../../helpers/apiWrapper'
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { UserConfigModel } from '../../../models/mongoose';
 
-export async function getUserConfig(userId: Types.ObjectId) {
-  let userConfig = await UserConfigModel.findOne({ userId: userId }, { '__v': 0 }).lean<UserConfig>();
+export function getNewUserConfig(roles: Role[], tutorialCompletedAt: number, userId: Types.ObjectId, params?: Partial<UserConfig>) {
+  let emailDigest = EmailDigestSettingTypes.DAILY;
+
+  if (roles.includes(Role.GUEST)) {
+    emailDigest = EmailDigestSettingTypes.NONE;
+  }
+
+  const emailConfirmationToken = getEmailConfirmationToken();
+  const disallowedEmailNotifications = [
+    NotificationType.NEW_FOLLOWER,
+    NotificationType.NEW_LEVEL,
+    NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION,
+    NotificationType.NEW_REVIEW_ON_YOUR_LEVEL,
+    NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_SOLVED,
+  ];
+
+  return {
+    _id: new Types.ObjectId(),
+    disallowedEmailNotifications: disallowedEmailNotifications,
+    disallowedPushNotifications: [],
+    emailConfirmed: false,
+    emailConfirmationToken: emailConfirmationToken,
+    emailDigest: emailDigest,
+    theme: Theme.Modern,
+    tutorialCompletedAt: tutorialCompletedAt,
+    userId: userId,
+    ...params,
+  } as Partial<UserConfig>;
+}
+
+export async function getUserConfig(user: User) {
+  let userConfig = await UserConfigModel.findOne({ userId: user._id }, { '__v': 0 }).lean<UserConfig>();
 
   if (!userConfig) {
-    userConfig = await UserConfigModel.create({
-      _id: new Types.ObjectId(),
-      theme: Theme.Modern,
-      userId: userId,
-    });
+    userConfig = await UserConfigModel.create(getNewUserConfig(user.roles, 0, user._id));
   }
 
   return userConfig;
@@ -28,9 +59,9 @@ export default withAuth({
   PUT: {
     body: {
       deviceToken: ValidType('string', false),
+      disallowedEmailNotifications: ValidArray(false),
+      disallowedPushNotifications: ValidArray(false),
       emailDigest: ValidType('string', false),
-      emailNotificationsList: ValidArray(false),
-      pushNotificationsList: ValidArray(false),
       showPlayStats: ValidType('boolean', false),
       theme: ValidType('string', false),
       tutorialCompletedAt: ValidNumber(false),
@@ -39,15 +70,15 @@ export default withAuth({
   },
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
-    const userConfig = await getUserConfig(req.user._id);
+    const userConfig = await getUserConfig(req.user);
 
     return res.status(200).json(userConfig);
   } else if (req.method === 'PUT') {
     const {
       deviceToken,
+      disallowedEmailNotifications,
+      disallowedPushNotifications,
       emailDigest,
-      emailNotificationsList,
-      pushNotificationsList,
       showPlayStats,
       theme,
       toursCompleted,
@@ -82,12 +113,12 @@ export default withAuth({
       setObj['toursCompleted'] = toursCompleted;
     }
 
-    if (emailNotificationsList) {
-      setObj['emailNotificationsList'] = emailNotificationsList;
+    if (disallowedEmailNotifications !== undefined) {
+      setObj['disallowedEmailNotifications'] = disallowedEmailNotifications;
     }
 
-    if (pushNotificationsList) {
-      setObj['pushNotificationsList'] = pushNotificationsList;
+    if (disallowedPushNotifications !== undefined) {
+      setObj['disallowedPushNotifications'] = disallowedPushNotifications;
     }
 
     // check if setObj is blank

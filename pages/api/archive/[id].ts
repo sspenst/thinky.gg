@@ -52,7 +52,7 @@ export default withAuth({ POST: {
       await Promise.all([
         queueCalcCreatorCounts(new Types.ObjectId(TestId.ARCHIVE), { session: session }),
         queueCalcCreatorCounts(level.userId, { session: session }),
-        queueDiscordWebhook(Discord.LevelsId, `**${req.user.name}** archived a level: [${level.name}](${req.headers.origin}/level/${slug}?ts=${ts})`, { session: session }),
+        queueDiscordWebhook(Discord.Levels, `**${req.user.name}** archived a level: [${level.name}](${req.headers.origin}/level/${slug}?ts=${ts})`, { session: session }),
       ]);
     });
 

@@ -9,8 +9,10 @@ interface Notification {
   createdAt: Date;
   message?: string;
   read: boolean;
+  // the object that initiates the notification
   source: User | Achievement | null;
   sourceModel: string;
+  // the object that the notification is about
   target: User | EnrichedLevel | Collection;
   targetModel: string;
   type: NotificationType;
