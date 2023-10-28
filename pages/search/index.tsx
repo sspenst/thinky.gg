@@ -366,9 +366,12 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       grow: 2,
       selector: (row: EnrichedLevel) => {
         return <FormattedLevelLink onClick={() => {
+          // get query string from current query
+
+          const queryString = Object.keys(query).map(key => key + '=' + query[key]).join('&');
           const ts = new Date();
           const collectionTemp = {
-            name: 'Search Query', slug: '../search/',
+            name: 'Search Query', slug: '../search/?' + queryString,
             levels: data, _id: new Types.ObjectId(),
             createdAt: ts, updatedAt: ts,
             userId: { _id: new Types.ObjectId(), name: undefined as any } as Types.ObjectId & User,
