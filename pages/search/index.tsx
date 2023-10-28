@@ -8,6 +8,7 @@ import StatFilter from '@root/constants/statFilter';
 import { AppContext } from '@root/contexts/appContext';
 import { TimerUtil } from '@root/helpers/getTs';
 import isPro from '@root/helpers/isPro';
+import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '@root/models/schemas/levelSchema';
 import classNames from 'classnames';
 import { debounce } from 'debounce';
 import { Types } from 'mongoose';
@@ -96,7 +97,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }
   }
 
-  const query = await doQuery(searchQuery, reqUser);
+  const query = await doQuery(searchQuery, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, ...{ width: 1, data: 1, height: 1 } });
 
   if (!query) {
     throw new Error('Error querying Levels');
