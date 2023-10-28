@@ -8,7 +8,7 @@ import StyledTooltip from '../page/styledTooltip';
 import styles from './SelectCard.module.css';
 
 export function PlayLaterToggleButton({ level }: {level: EnrichedLevel}) {
-  const { myPlayLater, mutateMyPlayLater } = useContext(AppContext);
+  const { user, myPlayLater, mutateMyPlayLater } = useContext(AppContext);
   const PlayLaterButtonVerb = myPlayLater && myPlayLater[level._id.toString()] ? '-' : '+';
 
   return <>
@@ -40,10 +40,10 @@ export function PlayLaterToggleButton({ level }: {level: EnrichedLevel}) {
 
         toast.dismiss();
 
-        if (res.ok) {
+        if (res.ok && user) {
           const message = (<div className='flex flex-col text-center w-max'>
             <span className='text-md'>{PlayLaterButtonVerb === '+' ? 'Added to ' : 'Removed from'} your Play Later collection!</span>
-            <Link className='text-sm underline' href={'/collection/k2xl/play-later'}>View Play Later</Link> </div>
+            <Link className='text-sm underline' href={'/collection/' + user.name + '/play-later'}>View Play Later</Link> </div>
           );
 
           toast.success(message, {
