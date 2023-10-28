@@ -315,6 +315,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       level={level}
     />
     <EditLevelModal
+      redirectToLevelAfterEdit={true}
       closeModal={() => setIsEditLevelOpen(false)}
       isOpen={isEditLevelModalOpen}
       level={level}
