@@ -1,5 +1,4 @@
 import Collection from '@root/models/db/collection';
-import { Types } from 'mongoose';
 import { createContext } from 'react';
 import { KeyedMutator } from 'swr';
 import { ReqUser } from '../models/db/user';
