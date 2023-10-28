@@ -512,6 +512,30 @@ body {
   background-color: var(--bg-color-4);
 }
 
+.bg-2 {
+  background-color: var(--bg-color-2);
+}
+
+.bg-3 {
+  background-color: var(--bg-color-3);
+}
+
+.bg-4 {
+  background-color: var(--bg-color-4);
+}
+
+.border-color-2 {
+  border-color: var(--bg-color-2);
+}
+
+.border-color-3 {
+  border-color: var(--bg-color-3);
+}
+
+.border-color-4 {
+  border-color: var(--bg-color-4);
+}
+
 .gray {
   color: var(--color-gray);
 }

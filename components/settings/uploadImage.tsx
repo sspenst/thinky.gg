@@ -1,3 +1,4 @@
+import { ImageTools } from '@root/helpers/imageTools';
 import User from '@root/models/db/user';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
@@ -12,7 +13,7 @@ interface UploadImageProps {
 
 export default function UploadImage({ user }: UploadImageProps) {
   const router = useRouter();
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [selectedImage, setSelectedImage] = useState<File | Blob | null>(null);
 
   function saveAvatar() {
     if (!selectedImage) {
@@ -65,44 +66,16 @@ export default function UploadImage({ user }: UploadImageProps) {
             return;
           }
 
-          if (files[0].size > 2 * 1024 * 1024) {
-            toast.error('Image size must be less than 2MB');
-
-            return;
-          }
-
-          // NB: image file must successfully load into an <img> for it to be saveable
-          const img = document.createElement('img');
-
-          img.onload = function () {
-            if (img.width > 1024 || img.height > 1024) {
-              toast.error('Image must not be larger than 1024x1024');
-
-              return;
-            }
-
-            setSelectedImage(files[0]);
-          };
-
-          img.onerror = function() {
-            toast.error('Error loading image file');
-          };
-
-          const reader = new FileReader();
-
-          reader.onloadend = function (e) {
-            img.src = e.target?.result as string;
-          };
-
-          reader.readAsDataURL(files[0]);
+          ImageTools.resize(
+            files[0],
+            { width: Dimensions.AvatarSizeLarge, height: Dimensions.AvatarSizeLarge },
+            (file) => setSelectedImage(file),
+          );
         }
       }}
     />
     <div className='flex flex-col items-center gap-4'>
-      <label className='block font-bold' htmlFor='avatar'>
-        Avatar
-      </label>
-      <div>
+      <div className='flex flex-col items-center gap-2'>
         {!selectedImage ?
           <ProfileAvatar hideStatusCircle={true} size={Dimensions.AvatarSizeLarge} user={user} />
           :
@@ -116,18 +89,18 @@ export default function UploadImage({ user }: UploadImageProps) {
               <Image
                 alt='Avatar'
                 fill={true}
+                objectFit='cover'
                 src={URL.createObjectURL(selectedImage)}
               />
             </div>
-            <button className='italic underline block' onClick={() => saveAvatar()}>Save</button>
-            <button className='italic underline block' onClick={() => setSelectedImage(null)}>Remove</button>
+            <button className='italic hover:underline block' onClick={() => saveAvatar()}>Save</button>
+            <button className='italic hover:underline block' onClick={() => setSelectedImage(null)}>Remove</button>
           </>
         }
       </div>
-      <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer' onClick={() => document.getElementById('avatarFile')?.click()}>
+      <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline cursor-pointer' onClick={() => document.getElementById('avatarFile')?.click()}>
         Upload
       </button>
-      <div className='text-xs'>Limits: 1024x1024, 2MB</div>
     </div>
   </>);
 }

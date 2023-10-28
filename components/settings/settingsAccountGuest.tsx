@@ -57,7 +57,7 @@ export default function SettingsAccountGuest() {
     });
   }
 
-  const inputClass = 'shadow appearance-none border mb-2 rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline';
+  const inputClass = 'shadow appearance-none border border-color-4 mb-2 rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline';
 
   return (
     <div className='flex flex-col gap-4 items-center'>
@@ -67,7 +67,7 @@ export default function SettingsAccountGuest() {
       <span>
         Convert to a regular account by filling out the following:
       </span>
-      <div className='flex flex-col gap-2 w-72 max-w-full'>
+      <div className='flex flex-col w-72 max-w-full'>
         <input className={inputClass} placeholder='Username' type='text' required onChange={(e) => { setUsername(e.target.value); }} />
         <input className={inputClass} placeholder='Email' type='email' required onChange={(e) => { setEmail(e.target.value);}} />
         <input className={inputClass} placeholder='Password' type='password' required onChange={(e) => { setPassword(e.target.value); }} />

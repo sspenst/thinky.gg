@@ -55,8 +55,20 @@ export default function getMobileNotification(notification: Notification) {
   mobileNotification.notificationId = notification._id.toString();
 
   switch (notification.type) {
+  case NotificationType.ADMIN_MESSAGE: {
+    if (notification.message) {
+      const payload = JSON.parse(notification.message);
+
+      mobileNotification.title = 'Pathology';
+      mobileNotification.body = `${payload.message}`;
+      mobileNotification.url = `${host}${payload.href}`;
+    }
+
+    return mobileNotification;
+  }
+
   case NotificationType.NEW_ACHIEVEMENT: {
-    mobileNotification.title = 'Pathology - New Achievement!';
+    mobileNotification.title = 'Pathology - New Achievement';
     const meta = AchievementRulesCombined[notification.source.type];
 
     if (notification.source) {
