@@ -18,7 +18,7 @@ import DismissToast from '../toasts/dismissToast';
 import MusicIcon from './musicIcon';
 
 export default function Dropdown() {
-  const { forceUpdate, mutateUser, setShouldAttemptAuth, user, userLoading } = useContext(AppContext);
+  const { forceUpdate, mutateUser, myPlayLater, setShouldAttemptAuth, user, userLoading } = useContext(AppContext);
   const [isMusicModalOpen, setIsMusicModalOpen] = useState(false);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const router = useRouter();
@@ -147,7 +147,12 @@ export default function Dropdown() {
             {isLoggedIn && <>
               <Menu.Item>
                 {({ active }) => (
-                  <Link href={'/collection/' + user.name + '/play-later'} passHref>
+                  <Link onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                    if (!myPlayLater || Object.keys(myPlayLater).length === 0) {
+                      toast.error('Add a level to your Play Later collection first!');
+                      e.preventDefault();
+                    }
+                  }} href={'/collection/' + user.name + '/play-later'} passHref>
                     <div
                       className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3'
                       style={{
