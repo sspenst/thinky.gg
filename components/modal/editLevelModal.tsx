@@ -1,3 +1,5 @@
+import { bringToTop } from '@root/helpers/bringToTop';
+import { CollectionType } from '@root/models/CollectionEnums';
 import { Types } from 'mongoose';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -8,6 +10,7 @@ import isCurator from '../../helpers/isCurator';
 import naturalSort from '../../helpers/naturalSort';
 import Collection from '../../models/db/collection';
 import Level from '../../models/db/level';
+import StyledTooltip from '../page/styledTooltip';
 import Modal from '.';
 
 interface EditLevelModalProps {
@@ -25,7 +28,7 @@ export default function EditLevelModal({ addOnlyMode, closeModal, isOpen, level,
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [name, setName] = useState<string>('');
   const router = useRouter();
-  const { shouldAttemptAuth, user } = useContext(AppContext);
+  const { shouldAttemptAuth, user, mutateMyPlayLater } = useContext(AppContext);
 
   const getCollections = useCallback(() => {
     if (isOpen && shouldAttemptAuth) {
@@ -108,6 +111,7 @@ export default function EditLevelModal({ addOnlyMode, closeModal, isOpen, level,
       if (res.status === 200) {
         toast.dismiss();
         toast.success('Updated');
+        mutateMyPlayLater();
         closeModal();
 
         const newLevel = await res.json();
@@ -193,7 +197,7 @@ export default function EditLevelModal({ addOnlyMode, closeModal, isOpen, level,
             <>
               <span className='font-bold'>Collections:</span>
               <div>
-                {(naturalSort(collections) as Collection[]).map(collection => {
+                {bringToTop(naturalSort(collections) as Collection[], { type: CollectionType.PlayLater }).map(collection => {
                   const collectionId = collection._id.toString();
 
                   return (
@@ -206,6 +210,13 @@ export default function EditLevelModal({ addOnlyMode, closeModal, isOpen, level,
                         value={collectionId}
                       />
                       <span className='truncate'>{collection.name}</span>
+                      {collection.isPrivate &&
+                          <div data-tooltip-offset={0} data-tooltip-content={'Private'} data-tooltip-id={'private-tooltip-' + collectionId}><svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+                            <path strokeLinecap='round' strokeLinejoin='round' d='M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z' />
+                          </svg>
+                          <StyledTooltip id={'private-tooltip-' + collectionId} />
+                          </div>
+                      }
                     </div>
                   );
                 })}
