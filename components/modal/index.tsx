@@ -29,7 +29,7 @@ interface ModalProps {
   isOpen: boolean;
   onConfirm?: () => void;
   onSubmit?: () => void;
-  title: string | JSX.Element;
+  title?: string | JSX.Element;
 }
 
 export default function Modal({
@@ -78,7 +78,7 @@ export default function Modal({
                 color: 'var(--color)',
               }}
             >
-              <Dialog.Title as='div' className='flex gap-4 text-center'>
+              {title && <Dialog.Title as='div' className='flex gap-4 text-center'>
                 <span className='w-6' />
                 <span className='grow text-xl font-bold truncate'>{title}</span>
                 <button className='hover:opacity-100 opacity-50' onClick={closeModal} tabIndex={-1}>
@@ -86,7 +86,7 @@ export default function Modal({
                     <path strokeLinecap='round' strokeLinejoin='round' d='M6 18L18 6M6 6l12 12' />
                   </svg>
                 </button>
-              </Dialog.Title>
+              </Dialog.Title> }
               {children}
               <div className='flex justify-center gap-2 flex-wrap'>
                 {onConfirm ?
