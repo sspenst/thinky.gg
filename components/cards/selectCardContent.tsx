@@ -37,7 +37,7 @@ export default function SelectCardContent({ option }: SelectCardContentProps) {
       </div>
     </div>
     {option.stats?.isSolved() &&
-      <div className='absolute bottom-0 right-0'>
+      <div className='absolute top-0 right-0'>
         <Solved />
       </div>
     }
