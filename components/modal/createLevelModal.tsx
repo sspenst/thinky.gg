@@ -1,3 +1,5 @@
+import { bringToTop } from '@root/helpers/bringToTop';
+import { CollectionType } from '@root/models/CollectionEnums';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
@@ -156,7 +158,7 @@ export default function CreateLevelModal({ closeModal, isOpen, level }: CreateLe
             <>
               <span className='font-bold'>Collections:</span>
               <div>
-                {(naturalSort(collections) as Collection[]).map(collection => {
+                {bringToTop(naturalSort(collections) as Collection[], { type: CollectionType.PlayLater }).map(collection => {
                   const collectionId = collection._id.toString();
 
                   return (

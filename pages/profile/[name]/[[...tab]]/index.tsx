@@ -7,8 +7,10 @@ import PlayerRank from '@root/components/profile/playerRank';
 import { ProfileAchievments } from '@root/components/profile/profileAchievements';
 import ProfileMultiplayer from '@root/components/profile/profileMultiplayer';
 import StatFilter from '@root/constants/statFilter';
+import { bringToTop } from '@root/helpers/bringToTop';
 import { getUsersWithMultiplayerProfile } from '@root/helpers/getUsersWithMultiplayerProfile';
 import useSWRHelper from '@root/hooks/useSWRHelper';
+import { CollectionType } from '@root/models/CollectionEnums';
 import Graph from '@root/models/db/graph';
 import { MultiplayerMatchState } from '@root/models/MultiplayerEnums';
 import { getCollections } from '@root/pages/api/collection-by-id/[id]';
@@ -302,7 +304,7 @@ export default function ProfilePage({
     }
 
     // sort collections by name but use a natural sort
-    const sortedEnrichedCollections = naturalSort(enrichedCollections) as EnrichedCollection[];
+    const sortedEnrichedCollections = bringToTop(naturalSort(enrichedCollections) as EnrichedCollection[], { type: CollectionType.PlayLater });
 
     return sortedEnrichedCollections.map(enrichedCollection => {
       return {
