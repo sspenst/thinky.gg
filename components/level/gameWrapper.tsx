@@ -71,7 +71,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
             inline: 'nearest',
           });
         }
-      }, 300);
+      }, 300); // delay 300ms to allow the collection list to render in the modal view
     }
   }, [level._id, collection, showCollectionViewModal]);
 
