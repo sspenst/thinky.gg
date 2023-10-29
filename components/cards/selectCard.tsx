@@ -19,24 +19,27 @@ interface SelectCardProps {
 export default function SelectCard({ option, prefetch }: SelectCardProps) {
   const { user, myPlayLater } = useContext(AppContext);
   const [backgroundImage, setBackgroundImage] = useState<string>();
-  let addToPlayLaterBtn;
+  const addToPlayLaterBtn = [];
   const [openEditLevelModal, setOpenEditLevelModal] = useState(false);
 
   if (option.level && !option.hideAddToPlayLaterButton && user && isPro(user) && myPlayLater) {
-    addToPlayLaterBtn = option.level &&
-    (
-      <>
-        <div className='absolute bottom-2 left-2'>
-          <PlayLaterToggleButton level={option.level} />
-        </div>
-        <button className='p-1 rounded-lg absolute bottom-2 right-2 pointer hover:bg-gray-400'
-          onClick={() => setOpenEditLevelModal(true)}
-        >
-          <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-three-dots-vertical' viewBox='0 0 16 16'>
-            <path d='M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z' />
-          </svg>
-        </button>
-      </>
+    addToPlayLaterBtn.push(
+
+      <div className='absolute bottom-2 left-2'>
+        <PlayLaterToggleButton level={option.level} />
+      </div>
+
+    );
+  }
+
+  if (user) {
+    addToPlayLaterBtn.push(<button className='p-1 rounded-lg absolute bottom-2 right-2 pointer hover:bg-gray-400'
+      onClick={() => setOpenEditLevelModal(true)}
+    >
+      <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-three-dots-vertical' viewBox='0 0 16 16'>
+        <path d='M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z' />
+      </svg>
+    </button>
     );
   }
 
