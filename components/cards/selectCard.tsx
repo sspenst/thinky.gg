@@ -32,7 +32,7 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
     );
   }
 
-  if (user) {
+  if (user && option.level) {
     addToPlayLaterBtn.push(<button className='p-1 rounded-lg absolute bottom-2 right-2 pointer hover:bg-gray-400'
       onClick={() => setOpenEditLevelModal(true)}
     >

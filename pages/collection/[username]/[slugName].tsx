@@ -60,6 +60,15 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     populateLevels: true,
   });
 
+  if (!collection && reqUser?.name === username && slugName === 'play-later') {
+    return {
+      redirect: {
+        destination: '/profile/' + reqUser.name + '/collections',
+        permanent: false,
+      },
+    };
+  }
+
   if (!collection) {
     return {
       notFound: true,
