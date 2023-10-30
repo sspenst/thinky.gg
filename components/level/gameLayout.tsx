@@ -1,8 +1,6 @@
-import { LevelContext } from '@root/contexts/levelContext';
+/* istanbul ignore file */
 import { PageContext } from '@root/contexts/pageContext';
 import { GameState } from '@root/helpers/gameStateHelpers';
-import useDeviceCheck, { ScreenSize } from '@root/hooks/useDeviceCheck';
-import collection from '@root/pages/api/collection';
 import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import Control from '../../models/control';

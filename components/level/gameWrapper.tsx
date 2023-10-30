@@ -1,4 +1,4 @@
-import { Dialog } from '@headlessui/react';
+/* istanbul ignore file */
 import { MusicContext } from '@root/contexts/musicContext';
 import { PageContext } from '@root/contexts/pageContext';
 import useDeviceCheck, { ScreenSize } from '@root/hooks/useDeviceCheck';
@@ -71,9 +71,9 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
             inline: 'nearest',
           });
         }
-      }, 300); // delay 300ms to allow the collection list to render in the modal view
+      }, screenSize <= ScreenSize.MD ? 300 : 0); // delay 300ms to allow the collection list to render in the modal view
     }
-  }, [level._id, collection, showCollectionViewModal]);
+  }, [level._id, collection, showCollectionViewModal, screenSize]);
 
   const collectionLevelList = collection && (<><h2 className='text-xl font-bold text-center hover:underline pt-3'>
     <Link href={'/collection/' + collection.slug}>

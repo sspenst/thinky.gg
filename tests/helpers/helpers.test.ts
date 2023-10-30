@@ -1,4 +1,5 @@
 import StatFilter from '@root/constants/statFilter';
+import { bringToTop } from '@root/helpers/bringToTop';
 import { Types } from 'mongoose';
 import TestId from '../../constants/testId';
 import statFilterOptions from '../../helpers/filterSelectOptions';
@@ -85,7 +86,7 @@ describe('helpers/*.ts', () => {
         name: '1. a',
       },
       {
-       blah: '2. b',
+        blah: '2. b',
       },
       {
         name: '10. c',
@@ -95,12 +96,11 @@ describe('helpers/*.ts', () => {
       },
     ];
     const sorted2 = naturalSort(objWithoutName as { name: string }[]);
+
     expect(sorted2[0].name).toBe('1. a');
     expect(sorted2[1].name).toBe('3. d');
     expect(sorted2[2].name).toBe('10. c');
-    expect(sorted2[3]).toStrictEqual({blah: '2. b'});
-
-
+    expect(sorted2[3]).toStrictEqual({ blah: '2. b' });
   });
   test('getProfileSlug', async () => {
     const user = await UserModel.findById(TestId.USER);
@@ -188,6 +188,30 @@ describe('helpers/*.ts', () => {
     level.calc_playattempts_duration_sum = 0;
 
     expect(getDifficultyEstimate(level, 10)).toBe(0);
+  });
+  test('bringToTop', () => {
+    // bring to top should be used to bring an object to the top of the list
+    const objects = [
+      {
+        name: 'test',
+      },
+      {
+        name: 'test2',
+      },
+      {
+        name: 'test3',
+      },
+    ];
+
+    const criteria = {
+      name: 'test3',
+    };
+
+    const result = bringToTop(objects, criteria);
+
+    expect(result[0].name).toBe('test3');
+    expect(result[1].name).toBe('test2');
+    expect(result[2].name).toBe('test');
   });
 });
 

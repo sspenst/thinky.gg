@@ -1,5 +1,4 @@
 /* istanbul ignore file */
-
 import PagePath from '@root/constants/pagePath';
 import { AppContext } from '@root/contexts/appContext';
 import useSWRHelper from '@root/hooks/useSWRHelper';
