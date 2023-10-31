@@ -1,7 +1,6 @@
 /* istanbul ignore file */
 import PagePath from '@root/constants/pagePath';
 import { AppContext } from '@root/contexts/appContext';
-import useSWRHelper from '@root/hooks/useSWRHelper';
 import { useTour } from '@root/hooks/useTour';
 import Collection from '@root/models/db/collection';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
@@ -37,6 +36,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
   const level = await getLevelByUrlPath(username, slugName, reqUser);
+
+  // TODO: get cid collection in server side props
 
   if (!level) {
     return {
@@ -126,9 +127,51 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
     router.push(url);
   };
 
-  const { data: records, isLoading: recordsLoading } = useSWRHelper<Record[]>(`/api/records/${level._id}`);
+  const [records, setRecords] = useState<Record[]>();
 
-  const { mutate: mutateReviews, data: reviews, isLoading: reviewsLoading } = useSWRHelper<Review[]>(`/api/reviews/${level._id}`);
+  const getRecords = useCallback(() => {
+    fetch(`/api/records/${level._id}`, {
+      method: 'GET',
+    }).then(async res => {
+      if (res.status === 200) {
+        setRecords(await res.json());
+      } else {
+        throw res.text();
+      }
+    }).catch(err => {
+      console.error(err);
+      toast.dismiss();
+      toast.error('Error fetching records');
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [level._id, level.leastMoves]);
+
+  useEffect(() => {
+    getRecords();
+  }, [getRecords]);
+
+  const [reviews, setReviews] = useState<Review[]>();
+
+  const getReviews = useCallback(() => {
+    fetch(`/api/reviews/${level._id}`, {
+      method: 'GET',
+    }).then(async res => {
+      if (res.status === 200) {
+        setReviews(await res.json());
+      } else {
+        throw res.text();
+      }
+    }).catch(err => {
+      console.error(err);
+      toast.dismiss();
+      toast.error('Error fetching reviews');
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [level._id, level.calc_reviews_count]);
+
+  useEffect(() => {
+    getReviews();
+  }, [getReviews]);
 
   const folders: LinkInfo[] = [];
 
@@ -145,7 +188,7 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
     // if a collection id was passed to the page we can show more directory info
     const user = collection.userId;
 
-    if (user && user.name) {
+    if (user) {
       folders.push(new LinkInfo(user.name, `/profile/${user.name}/collections`));
     }
 
@@ -161,7 +204,6 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
   const ogUrl = `https://pathology.gg/level/${level.slug}`;
   const ogFullUrl = `https://pathology.gg${ogUrl}`;
   const authorNote = level.authorNote ? level.authorNote : `${level.name} by ${level.userId.name}`;
-
   const tour = useTour(PagePath.LEVEL, undefined, true);
 
   return (
@@ -188,7 +230,7 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
         }}
       />
       <LevelContext.Provider value={{
-        getReviews: mutateReviews,
+        getReviews: getReviews,
         inCampaign: !!chapter && level.userMoves !== level.leastMoves,
         level: level,
         mutateLevel: mutateLevel,

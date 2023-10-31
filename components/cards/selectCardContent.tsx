@@ -12,7 +12,7 @@ interface SelectCardContentProps {
 export default function SelectCardContent({ option }: SelectCardContentProps) {
   return (<>
     <div
-      className='font-bold break-words p-2'
+      className='font-bold break-words p-2 max-w-full'
       style={{
         width: option.width ?? Dimensions.OptionWidth,
       }}
