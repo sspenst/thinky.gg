@@ -2,7 +2,7 @@ import { multiplayerMatchTypeToText } from '@root/helpers/multiplayerHelperFunct
 import React from 'react';
 import { toast } from 'react-hot-toast';
 import Select from 'react-select';
-import { MultiplayerMatchType } from '../../models/MultiplayerEnums';
+import { MultiplayerMatchType } from '../../models/constants/multiplayer';
 import Modal from '.';
 
 interface CreateMatchModalProps {

@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { CollectionType } from '../CollectionEnums';
+import { CollectionType } from '../constants/collection';
 import Collection from '../db/collection';
 
 const CollectionSchema = new mongoose.Schema<Collection>({
@@ -29,7 +29,6 @@ const CollectionSchema = new mongoose.Schema<Collection>({
     maxlength: 50,
     required: true,
   },
-  
   slug: {
     type: String,
     required: true,

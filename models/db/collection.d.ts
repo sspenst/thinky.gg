@@ -1,4 +1,5 @@
 import { Types } from 'mongoose';
+import { CollectionType } from '../constants/collection';
 import Level, { EnrichedLevel } from './level';
 import User from './user';
 

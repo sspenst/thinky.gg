@@ -1,6 +1,6 @@
 import FormattedUser from '@root/components/formatted/formattedUser';
 import StatFilter from '@root/constants/statFilter';
-import { CollectionType } from '@root/models/CollectionEnums';
+import { CollectionType } from '@root/models/constants/collection';
 import { getCollection } from '@root/pages/api/collection-by-id/[id]';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';

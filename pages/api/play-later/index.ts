@@ -1,7 +1,7 @@
 import { ValidObjectId } from '@root/helpers/apiWrapper';
 import isPro from '@root/helpers/isPro';
 import withAuth, { NextApiRequestWithAuth } from '@root/lib/withAuth';
-import { CollectionType } from '@root/models/CollectionEnums';
+import { CollectionType } from '@root/models/constants/collection';
 import Collection from '@root/models/db/collection';
 import { CollectionModel, LevelModel } from '@root/models/mongoose';
 import { NextApiResponse } from 'next';

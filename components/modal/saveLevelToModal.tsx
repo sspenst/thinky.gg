@@ -1,5 +1,5 @@
 import { bringToTop } from '@root/helpers/bringToTop';
-import { CollectionType } from '@root/models/CollectionEnums';
+import { CollectionType } from '@root/models/constants/collection';
 import Link from 'next/link';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';

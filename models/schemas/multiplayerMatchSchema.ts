@@ -1,9 +1,6 @@
 import { randomRotateLevelDataViaMatchHash } from '@root/helpers/validateSolution';
 import mongoose, { ObjectId } from 'mongoose';
 import cleanUser from '../../lib/cleanUser';
-import Level from '../db/level';
-import MultiplayerMatch from '../db/multiplayerMatch';
-import User from '../db/user';
 import {
   MatchAction,
   MatchLog,
@@ -13,7 +10,10 @@ import {
   MatchLogGeneric,
   MultiplayerMatchState,
   MultiplayerMatchType,
-} from '../MultiplayerEnums';
+} from '../constants/multiplayer';
+import Level from '../db/level';
+import MultiplayerMatch from '../db/multiplayerMatch';
+import User from '../db/user';
 
 export const SKIP_MATCH_LEVEL_ID = '000000000000000000000000';
 

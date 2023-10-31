@@ -1,5 +1,5 @@
+import { MultiplayerMatchType } from '../models/constants/multiplayer';
 import MultiplayerProfile from '../models/db/multiplayerProfile';
-import { MultiplayerMatchType } from '../models/MultiplayerEnums';
 
 export const MUTLIPLAYER_PROVISIONAL_GAME_LIMIT = 5;
 
