@@ -92,6 +92,34 @@ describe('pages/api/save-level-to/[id].ts', () => {
       },
     });
   });
+  test('PUT bad level id', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          userId: TestId.USER,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: TestId.COLLECTION,
+          },
+          body: {
+            collectionIds: [TestId.LEVEL],
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await saveLevelToHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Level not found');
+        expect(res.status).toBe(400);
+      },
+    });
+  });
   test('PUT bad collection id', async () => {
     await testApiHandler({
       handler: async (_, res) => {

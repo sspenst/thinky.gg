@@ -128,7 +128,7 @@ export default function SaveLevelToModal({ closeModal, isOpen, level }: SaveLeve
               })}
             </div>
         }
-        <Link href={`/profile/${user.name}/collections`} className='font-medium hover:underline w-fit'>Create a collection</Link>
+        <Link href={`/profile/${user.name}/collections`} className='italic hover:underline w-fit'>+ Create a collection</Link>
       </div>
     </Modal>
   );
