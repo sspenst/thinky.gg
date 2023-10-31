@@ -38,6 +38,7 @@ export default withAuth({
         containsLevel: 1,
         isPrivate: 1,
         name: 1,
+        type: 1,
       },
     },
   ]);
