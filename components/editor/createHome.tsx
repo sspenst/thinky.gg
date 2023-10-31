@@ -117,7 +117,6 @@ export default function CreateHome({ levels, user }: CreatePageProps) {
           level={levelToModify}
         />
         <EditLevelModal
-          redirectToLevelAfterEdit={true}
           closeModal={() => setIsEditLevelOpen(false)}
           isOpen={isEditLevelOpen}
           level={levelToModify}

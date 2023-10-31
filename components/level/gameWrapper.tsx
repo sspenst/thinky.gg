@@ -1,10 +1,10 @@
-/* istanbul ignore file */
 import Dimensions from '@root/constants/dimensions';
 import { MusicContext } from '@root/contexts/musicContext';
 import { PageContext } from '@root/contexts/pageContext';
 import useDeviceCheck, { ScreenSize } from '@root/hooks/useDeviceCheck';
 import { CollectionType } from '@root/models/CollectionEnums';
 import SelectOptionStats from '@root/models/selectOptionStats';
+import classNames from 'classnames';
 import Link from 'next/link';
 import React, { useContext, useEffect, useState } from 'react';
 import Collection from '../../models/db/collection';
@@ -76,22 +76,13 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
     }
   }, [level._id, collection, showCollectionViewModal, screenSize]);
 
-  const collectionLevelList = collection && (<><h2 className='text-xl font-bold text-center hover:underline pt-3'>
-    <Link href={'/collection/' + collection.slug}>
+  const collectionLevelTitle = collection && (
+    <Link className='text-xl font-bold text-center hover:underline w-fit' href={'/collection/' + collection.slug}>
       {collection.name}
     </Link>
-  </h2>
-  <div
-    id='collection-list'
-    className={
-      'flex flex-col overflow-y-scroll '
+  );
 
-    }
-    style={{
-      direction: 'rtl', // makes the scrollbar appear on the left
-    }}
-  >
-
+  const collectionLevelList = collection && (<>
     {collection.levels.map((levelInCollection) => {
       let customStyle = {};
 
@@ -106,8 +97,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
         };
       }
 
-      const anchorId =
-    levelInCollection._id.toString() + '-collection-list';
+      const anchorId = levelInCollection._id.toString() + '-collection-list';
 
       return (
         <div key={anchorId} id={anchorId}>
@@ -131,11 +121,11 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
         </div>
       );
     })}
-  </div></>);
+  </>);
 
   return (
     <div className='flex h-full'>
-      { (screenSize < ScreenSize.MD) && collection && (
+      {screenSize < ScreenSize.XL && collection && (
         <button className='absolute right-0 pt-1 pr-1' onClick={() => {
           setShowCollectionViewModal(true);
           setPreventKeyDownEvent(true);
@@ -169,57 +159,60 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
           }
         }}
       />
-
-      {screenSize >= ScreenSize.MD && collection?.levels && (
-        <div className='flex flex-row'>
-          <div className={'flex flex-col gap-2 ' + (collectionViewHidden ? 'hidden' : '')}>
-            {collectionLevelList}
+      {screenSize >= ScreenSize.XL && <>
+        {collection && (
+          <div className='flex border-l border-color-4'>
+            <div className={classNames('flex flex-col items-center gap-2 overflow-y-auto p-2', collectionViewHidden && 'hidden')}>
+              {collectionLevelTitle}
+              {collectionLevelList}
+            </div>
+            <div
+              className='flex items-center justify-center h-full cursor-pointer'
+              onClick={() => setCollectionViewHidden(!collectionViewHidden)}
+            >
+              {collectionViewHidden ? (
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  width='16'
+                  height='16'
+                  fill='currentColor'
+                  className='bi bi-arrow-bar-left'
+                  viewBox='0 0 16 16'
+                >
+                  <path
+                    fillRule='evenodd'
+                    d='M12.5 15a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5ZM10 8a.5.5 0 0 1-.5.5H3.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L3.707 7.5H9.5a.5.5 0 0 1 .5.5Z'
+                  />
+                </svg>
+              ) : (
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  width='16'
+                  height='16'
+                  fill='currentColor'
+                  className='bi bi-arrow-bar-right'
+                  viewBox='0 0 16 16'
+                >
+                  <path
+                    fillRule='evenodd'
+                    d='M6 8a.5.5 0 0 0 .5.5h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L12.293 7.5H6.5A.5.5 0 0 0 6 8Zm-2.5 7a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5Z'
+                  />
+                </svg>
+              )}
+            </div>
           </div>
-          <div
-            className='flex items-center justify-center h-full cursor-pointer'
-            onClick={() => setCollectionViewHidden(!collectionViewHidden)}
-          >
-            {collectionViewHidden ? (
-              <svg
-                xmlns='http://www.w3.org/2000/svg'
-                width='16'
-                height='16'
-                fill='currentColor'
-                className='bi bi-arrow-bar-left'
-                viewBox='0 0 16 16'
-              >
-                <path
-                  fillRule='evenodd'
-                  d='M12.5 15a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5ZM10 8a.5.5 0 0 1-.5.5H3.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L3.707 7.5H9.5a.5.5 0 0 1 .5.5Z'
-                />
-              </svg>
-            ) : (
-              <svg
-                xmlns='http://www.w3.org/2000/svg'
-                width='16'
-                height='16'
-                fill='currentColor'
-                className='bi bi-arrow-bar-right'
-                viewBox='0 0 16 16'
-              >
-                <path
-                  fillRule='evenodd'
-                  d='M6 8a.5.5 0 0 0 .5.5h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L12.293 7.5H6.5A.5.5 0 0 0 6 8Zm-2.5 7a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5Z'
-                />
-              </svg>
-            )}
-          </div>
-        </div>
-      )}
-      <Sidebar level={level} />
-      <Modal isOpen={showCollectionViewModal} closeModal={() => {
-        setShowCollectionViewModal(false);
-        setPreventKeyDownEvent(false);
-      }
-      }>
-
+        )}
+        <Sidebar level={level} />
+      </>}
+      <Modal
+        isOpen={showCollectionViewModal}
+        closeModal={() => {
+          setShowCollectionViewModal(false);
+          setPreventKeyDownEvent(false);
+        }}
+        title={collectionLevelTitle}
+      >
         {collectionLevelList}
-
       </Modal>
       <PostGameModal
         chapter={chapter}

@@ -6,7 +6,7 @@ import React, { useContext } from 'react';
 import { toast } from 'react-hot-toast';
 
 interface FilterButtonProps {
-  element: JSX.Element | string;
+  element: React.ReactNode;
   first?: boolean;
   last?: boolean;
   onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;

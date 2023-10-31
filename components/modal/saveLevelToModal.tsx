@@ -109,40 +109,43 @@ export default function SaveLevelToModal({ closeModal, isOpen, level }: SaveLeve
           <div>Loading...</div>
           :
           collections.length === 0 ?
-            <>
-              <span className='text-center text-xl'>You do not have any collections.</span>
-              <span className='text-center text-sm'><span className='font-bold'>Collections</span> are lists of levels. They are a great way to organize and share level series, favorites, or to the group levels that you have created,.</span>
-              {user && <Link href={`/profile/${user.name}/collections` } className='text-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer'>Create your first collection</Link>}
-            </>
-            :
-            <div className='flex flex-col gap-1'>
-              {collections.map(collection => {
-                const collectionId = collection._id.toString();
-                const key = `collection-${collectionId}`;
-
-                return (
-                  <div className='flex flex-row gap-2' key={key}>
-                    <input
-                      checked={collection.containsLevel}
-                      id={key}
-                      onChange={onCollectionIdChange}
-                      type='checkbox'
-                      value={collectionId}
-                    />
-                    <label className='truncate' htmlFor={key}>{collection.name}</label>
-                    {collection.isPrivate &&
-                      <div data-tooltip-offset={0} data-tooltip-content={'Private'} data-tooltip-id={'private-tooltip-' + collectionId}><svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
-                        <path strokeLinecap='round' strokeLinejoin='round' d='M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z' />
-                      </svg>
-                      <StyledTooltip id={'private-tooltip-' + collectionId} />
-                      </div>
-                    }
-                  </div>
-                );
-              })}
+            <div className='flex flex-col items-center gap-3'>
+              <span className='text-center text-xl'>You don&apos;t have any collections!</span>
+              <span className='text-center'><span className='font-bold'>Collections</span> are sets of levels. They are a great way to organize and share level series, favorites, or group your levels.</span>
+              {user && <Link href={`/profile/${user.name}/collections` } className='text-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer w-fit'>Create your first collection</Link>}
             </div>
+            :
+            <>
+              <div className='flex flex-col gap-1'>
+                {collections.map(collection => {
+                  const collectionId = collection._id.toString();
+                  const key = `collection-${collectionId}`;
+
+                  return (
+                    <div className='flex flex-row gap-2' key={key}>
+                      <input
+                        checked={collection.containsLevel}
+                        id={key}
+                        onChange={onCollectionIdChange}
+                        type='checkbox'
+                        value={collectionId}
+                      />
+                      <label className='truncate' htmlFor={key}>{collection.name}</label>
+                      {collection.isPrivate &&
+                        <div data-tooltip-content={'Private'} data-tooltip-id={key}>
+                          <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
+                            <path strokeLinecap='round' strokeLinejoin='round' d='M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z' />
+                          </svg>
+                          <StyledTooltip id={key} />
+                        </div>
+                      }
+                    </div>
+                  );
+                })}
+              </div>
+              <Link href={`/profile/${user.name}/collections`} className='italic hover:underline w-fit'>+ Create a collection</Link>
+            </>
         }
-        <Link href={`/profile/${user.name}/collections`} className='italic hover:underline w-fit'>+ Create a collection</Link>
       </div>
     </Modal>
   );

@@ -23,7 +23,7 @@ enum SettingsTab {
 interface TabProps {
   activeTab: string;
   className?: string;
-  label: string | JSX.Element;
+  label: React.ReactNode;
   value: string;
 }
 

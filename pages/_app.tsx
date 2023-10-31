@@ -74,7 +74,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     socket: undefined,
   });
 
-  const { data: myPlayLater, mutate: mutateMyPlayLater } = useSWRHelper<{ [key: string]: boolean }>('/api/play-later');
+  const { data: playLater, mutate: mutatePlayLater } = useSWRHelper<{ [key: string]: boolean }>('/api/play-later');
 
   const router = useRouter();
   const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);
@@ -363,9 +363,9 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         <AppContext.Provider value={{
           forceUpdate: forceUpdate,
           multiplayerSocket: multiplayerSocket,
+          mutatePlayLater: mutatePlayLater,
           mutateUser: mutateUser,
-          myPlayLater: myPlayLater,
-          mutateMyPlayLater: mutateMyPlayLater,
+          playLater: playLater,
           setShouldAttemptAuth: setShouldAttemptAuth,
           setTheme: setTheme,
           setTempCollection: setTempCollection,

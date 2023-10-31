@@ -184,7 +184,6 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
     }
     {canEdit && <>
       <EditLevelModal
-        redirectToLevelAfterEdit={true}
         closeModal={() => {
           setIsEditLevelOpen(false);
           setPreventKeyDownEvent(false);

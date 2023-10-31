@@ -153,7 +153,7 @@ export default function FormattedDifficulty({ difficultyEstimate, id, uniqueUser
   return (
     <div className='flex justify-center difficultyText'>
       <div data-tooltip-id={`difficulty-${id}`} data-tooltip-content={tooltip}>
-        <span className='text-md pr-1'>{difficulty.emoji}</span>
+        <span className='pr-1'>{difficulty.emoji}</span>
         <span className='italic pr-1' style={{
           color: color,
           textShadow: '1px 1px black',

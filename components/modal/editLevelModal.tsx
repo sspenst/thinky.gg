@@ -2,18 +2,15 @@ import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Level from '../../models/db/level';
-import StyledTooltip from '../page/styledTooltip';
 import Modal from '.';
 
 interface EditLevelModalProps {
-  addOnlyMode?: boolean;
-  redirectToLevelAfterEdit?: boolean;
   closeModal: () => void;
   isOpen: boolean;
   level: Level;
 }
 
-export default function EditLevelModal({ addOnlyMode, closeModal, isOpen, level, redirectToLevelAfterEdit }: EditLevelModalProps) {
+export default function EditLevelModal({ closeModal, isOpen, level }: EditLevelModalProps) {
   const [authorNote, setAuthorNote] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [name, setName] = useState<string>('');
@@ -61,12 +58,11 @@ export default function EditLevelModal({ addOnlyMode, closeModal, isOpen, level,
       if (res.status === 200) {
         toast.dismiss();
         toast.success('Updated');
-        mutateMyPlayLater();
         closeModal();
 
         const newLevel = await res.json();
 
-        if (newLevel && redirectToLevelAfterEdit) {
+        if (newLevel) {
           if (!newLevel.isDraft) {
             router.replace(`/level/${newLevel.slug}`);
           } else {

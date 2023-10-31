@@ -1,5 +1,6 @@
 import FormattedUser from '@root/components/formatted/formattedUser';
 import StatFilter from '@root/constants/statFilter';
+import { CollectionType } from '@root/models/CollectionEnums';
 import { getCollection } from '@root/pages/api/collection-by-id/[id]';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
@@ -175,7 +176,7 @@ export default function CollectionPage({ collection }: CollectionProps) {
             <FormattedAuthorNote authorNote={collection.authorNote} />
           </div>
         }
-        {user?._id === collection.userId._id &&
+        {user?._id === collection.userId._id && collection.type !== CollectionType.PlayLater &&
           <div className='flex flex-row gap-4 justify-center'>
             <button
               className='italic underline'
