@@ -1,4 +1,3 @@
-/* istanbul ignore file */
 import { PageContext } from '@root/contexts/pageContext';
 import { GameState } from '@root/helpers/gameStateHelpers';
 import React, { useContext, useEffect, useState } from 'react';
@@ -48,11 +47,8 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
     <div className='grow flex flex-col max-w-full select-none h-full' id='game-layout' style={{
       backgroundColor: 'var(--bg-color)',
     }}>
-
-      {!matchId && level.userId && !fullScreen && <div>
-
+      {!matchId && level.userId && !fullScreen && <>
         <div className='flex items-center justify-center py-1 px-2 gap-1 block xl:hidden'>
-
           <button
             className='flex gap-2 items-center truncate'
             onClick={() => {
@@ -80,9 +76,7 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
           <div style={{ minWidth: 100 }}>
             <FormattedUser id='level-title' size={Dimensions.AvatarSizeSmall} user={level.userId} />
           </div>
-
         </div>
-
         <LevelInfoModal
           closeModal={() => {
             setIsLevelInfoOpen(false);
@@ -91,7 +85,7 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
           isOpen={isLevelInfoOpen}
           level={level}
         />
-      </div>}
+      </>}
       <Grid
         gameState={gameState}
         id={level._id.toString()}

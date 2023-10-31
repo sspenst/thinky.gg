@@ -11,7 +11,7 @@ interface SelectOption {
   level?: EnrichedLevel | undefined;
   onClick?: () => void;
   stats?: SelectOptionStats | undefined;
-  text: string | JSX.Element;
+  text: React.ReactNode;
   width?: number;
   hideAddToPlayLaterButton?: boolean;
   customStyle?: React.CSSProperties;

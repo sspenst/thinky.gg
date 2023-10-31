@@ -539,3 +539,11 @@ body {
 .gray {
   color: var(--color-gray);
 }
+
+.select-card-button {
+  display: none;
+}
+
+.select-card:hover .select-card-button {
+  display: block;
+}

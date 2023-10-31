@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * bring to top should be used to bring an object to the top of the list
   * @param objects the list of objects to be sorted

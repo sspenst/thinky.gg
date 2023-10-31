@@ -2,13 +2,14 @@ import { AppContext } from '@root/contexts/appContext';
 import isPro from '@root/helpers/isPro';
 import { EnrichedLevel } from '@root/models/db/level';
 import Link from 'next/link';
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
 import StyledTooltip from '../page/styledTooltip';
 
 export function PlayLaterToggleButton({ level }: {level: EnrichedLevel}) {
-  const { myPlayLater, mutateMyPlayLater, user } = useContext(AppContext);
-  const isInPlayLater = !!(myPlayLater && myPlayLater[level._id.toString()]);
+  const { mutatePlayLater, playLater, user } = useContext(AppContext);
+  const isInPlayLater = !!(playLater && playLater[level._id.toString()]);
+  const [isLoading, setIsLoading] = useState(false);
 
   if (!user || !isPro(user)) {
     return null;
@@ -16,17 +17,17 @@ export function PlayLaterToggleButton({ level }: {level: EnrichedLevel}) {
 
   return <>
     <button
-      className='hover-bg-4 rounded-full'
       data-tooltip-content={isInPlayLater ? 'Remove from Play Later' : 'Add to Play Later'}
-      data-tooltip-delay-show={600}
       data-tooltip-id={'play-later-btn-tooltip-' + level._id.toString()}
+      disabled={isLoading}
       onClick={async (e) => {
         e.preventDefault();
-
+        setIsLoading(true);
         toast.dismiss();
-        toast.loading(`${isInPlayLater ? 'Remvoing from' : 'Adding to'} to PlayLater...`, {
+        toast.loading(isInPlayLater ? 'Removing...' : 'Adding...', {
           position: 'bottom-center',
         });
+
         const res = await fetch('/api/play-later/', {
           method: isInPlayLater ? 'DELETE' : 'POST',
           headers: {
@@ -40,9 +41,10 @@ export function PlayLaterToggleButton({ level }: {level: EnrichedLevel}) {
         toast.dismiss();
 
         if (res.ok) {
-          const message = (<div className='flex flex-col text-center w-max'>
-            <span className='text-md'>{isInPlayLater ? 'Removed from' : 'Added to'} your Play Later collection!</span>
-            <Link className='text-sm underline' href={'/collection/' + user.name + '/play-later'}>View Play Later</Link> </div>
+          const message = (
+            <div className='flex flex-col items-center w-max'>
+              <span>{isInPlayLater ? 'Removed from' : 'Added to'} <Link className='underline' href={`/collection/${user.name}/play-later`}>Play Later</Link></span>
+            </div>
           );
 
           toast.success(message, {
@@ -50,7 +52,7 @@ export function PlayLaterToggleButton({ level }: {level: EnrichedLevel}) {
             position: 'bottom-center',
             icon: isInPlayLater ? '➖' : '➕',
           });
-          mutateMyPlayLater();
+          mutatePlayLater();
         } else {
           let resp;
 
@@ -65,6 +67,8 @@ export function PlayLaterToggleButton({ level }: {level: EnrichedLevel}) {
             position: 'bottom-center',
           });
         }
+
+        setIsLoading(false);
       }}
       style={{
         color: 'var(--color)',

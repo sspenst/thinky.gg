@@ -8,7 +8,6 @@ import toast from 'react-hot-toast';
 import Collection from '../../models/db/collection';
 import isNotFullAccountToast from '../toasts/isNotFullAccountToast';
 import Modal from '.';
-import { CollectionType } from '@root/models/CollectionEnums';
 
 interface AddCollectionModalProps {
   closeModal: () => void;
@@ -16,11 +15,7 @@ interface AddCollectionModalProps {
   isOpen: boolean;
 }
 
-export default function AddCollectionModal({
-  closeModal,
-  collection,
-  isOpen,
-}: AddCollectionModalProps) {
+export default function AddCollectionModal({ closeModal, collection, isOpen }: AddCollectionModalProps) {
   const [authorNote, setAuthorNote] = useState<string>();
   const [isPrivate, setIsPrivate] = useState(false);
   const [name, setName] = useState<string>();
@@ -55,9 +50,7 @@ export default function AddCollectionModal({
     }
 
     toast.dismiss();
-    toast.loading(
-      collection ? 'Updating collection...' : 'Adding collection...'
-    );
+    toast.loading(collection ? 'Updating collection...' : 'Adding collection...');
 
     fetch(collection ? `/api/collection/${collection._id}` : '/api/collection', {
       method: collection ? 'PUT' : 'POST',
@@ -70,7 +63,7 @@ export default function AddCollectionModal({
       headers: {
         'Content-Type': 'application/json'
       }
-    }).then(async (res) => {
+    }).then(async res => {
       if (res.status === 401) {
         isNotFullAccountToast('Creating a collection');
       } else if (res.status === 200) {
@@ -80,11 +73,15 @@ export default function AddCollectionModal({
 
         const newCollection = await res.json();
 
-        router.replace(`/collection/${newCollection.slug}`);
+        if (collection) {
+          router.replace(`/collection/${newCollection.slug}`);
+        } else {
+          router.push(`/collection/${newCollection.slug}`);
+        }
       } else {
         throw res.text();
       }
-    }).catch(async (err) => {
+    }).catch(async err => {
       console.error(err);
       toast.dismiss();
       toast.error(JSON.parse(await err)?.error);
@@ -103,7 +100,6 @@ export default function AddCollectionModal({
         <input
           className='p-1 rounded-md border border-color-4'
           name='name'
-          disabled={collection?.type === CollectionType.PlayLater}
           onChange={e => setName(e.target.value)}
           placeholder={`${collection ? 'Edit' : 'Add'} name...`}
           required
@@ -121,7 +117,6 @@ export default function AddCollectionModal({
           </label>
           <input
             checked={isPrivate}
-            disabled={!isPro(user)}
             id='privateCollection'
             onChange={() => setIsPrivate(p => !p)}
             type='checkbox'

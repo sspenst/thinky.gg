@@ -259,9 +259,9 @@ interface SearchProps {
 
 /* istanbul ignore next */
 export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQuery, totalRows }: SearchProps) {
-  const { myPlayLater, setTempCollection } = useContext(AppContext);
   const [data, setData] = useState<EnrichedLevel[]>(enrichedLevels);
   const [loading, setLoading] = useState(false);
+  const { playLater, setTempCollection } = useContext(AppContext);
   const [query, setQuery] = useState(searchQuery);
   const router = useRouter();
 
@@ -326,7 +326,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       name: 'Author',
       selector: (row: EnrichedLevel) => (
         <div className='flex gap-3 truncate'>
-          { isPro(reqUser) && myPlayLater && (
+          {isPro(reqUser) && playLater && (
             <div className='flex items-center justify-center' >
               <PlayLaterToggleButton level={row} />
             </div>

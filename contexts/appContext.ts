@@ -8,9 +8,9 @@ import { MultiplayerSocket } from '../pages/_app';
 interface AppContextInterface {
   forceUpdate: () => void;
   multiplayerSocket: MultiplayerSocket;
+  mutatePlayLater: () => void;
   mutateUser: KeyedMutator<ReqUser>;
-  mutateMyPlayLater: () => void;
-  myPlayLater?: { [key: string]: boolean };
+  playLater?: { [key: string]: boolean };
   setShouldAttemptAuth: React.Dispatch<React.SetStateAction<boolean>>;
   setTheme: React.Dispatch<React.SetStateAction<string | undefined>>;
   shouldAttemptAuth: boolean;
@@ -32,9 +32,9 @@ export const AppContext = createContext<AppContextInterface>({
     privateAndInvitedMatches: [],
     socket: undefined,
   },
+  mutatePlayLater: () => { return; },
   mutateUser: {} as KeyedMutator<ReqUser>,
-  mutateMyPlayLater: () => { return; },
-  myPlayLater: undefined,
+  playLater: undefined,
   setShouldAttemptAuth: () => { return; },
   setTheme: () => { return; },
   shouldAttemptAuth: true,
