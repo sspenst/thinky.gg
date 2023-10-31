@@ -7,10 +7,8 @@ import PlayerRank from '@root/components/profile/playerRank';
 import { ProfileAchievments } from '@root/components/profile/profileAchievements';
 import ProfileMultiplayer from '@root/components/profile/profileMultiplayer';
 import StatFilter from '@root/constants/statFilter';
-import { bringToTop } from '@root/helpers/bringToTop';
 import { getUsersWithMultiplayerProfile } from '@root/helpers/getUsersWithMultiplayerProfile';
 import useSWRHelper from '@root/hooks/useSWRHelper';
-import { CollectionType } from '@root/models/constants/collection';
 import { MultiplayerMatchState } from '@root/models/constants/multiplayer';
 import Graph from '@root/models/db/graph';
 import { getCollections } from '@root/pages/api/collection-by-id/[id]';
@@ -41,7 +39,7 @@ import statFilterOptions from '../../../../helpers/filterSelectOptions';
 import getProfileSlug from '../../../../helpers/getProfileSlug';
 import { getReviewsByUserId, getReviewsByUserIdCount } from '../../../../helpers/getReviewsByUserId';
 import { getReviewsForUserId, getReviewsForUserIdCount } from '../../../../helpers/getReviewsForUserId';
-import naturalSort from '../../../../helpers/naturalSort';
+import naturalSort, { playLaterCompareFn } from '../../../../helpers/naturalSort';
 import cleanUser from '../../../../lib/cleanUser';
 import { getUserFromToken } from '../../../../lib/withAuth';
 import Achievement from '../../../../models/db/achievement';
@@ -303,8 +301,7 @@ export default function ProfilePage({
       return [];
     }
 
-    // sort collections by name but use a natural sort
-    const sortedEnrichedCollections = bringToTop(naturalSort(enrichedCollections) as EnrichedCollection[], { type: CollectionType.PlayLater });
+    const sortedEnrichedCollections = naturalSort(enrichedCollections, playLaterCompareFn);
 
     return sortedEnrichedCollections.map(enrichedCollection => {
       return {
