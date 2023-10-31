@@ -1,5 +1,4 @@
 import StatFilter from '@root/constants/statFilter';
-import { bringToTop } from '@root/helpers/bringToTop';
 import { Types } from 'mongoose';
 import TestId from '../../constants/testId';
 import statFilterOptions from '../../helpers/filterSelectOptions';
@@ -188,30 +187,6 @@ describe('helpers/*.ts', () => {
     level.calc_playattempts_duration_sum = 0;
 
     expect(getDifficultyEstimate(level, 10)).toBe(0);
-  });
-  test('bringToTop', () => {
-    // bring to top should be used to bring an object to the top of the list
-    const objects = [
-      {
-        name: 'test',
-      },
-      {
-        name: 'test2',
-      },
-      {
-        name: 'test3',
-      },
-    ];
-
-    const criteria = {
-      name: 'test3',
-    };
-
-    const result = bringToTop(objects, criteria);
-
-    expect(result[0].name).toBe('test3');
-    expect(result[1].name).toBe('test2');
-    expect(result[2].name).toBe('test');
   });
 });
 

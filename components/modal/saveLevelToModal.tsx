@@ -1,10 +1,8 @@
-import { bringToTop } from '@root/helpers/bringToTop';
-import { CollectionType } from '@root/models/constants/collection';
 import Link from 'next/link';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { AppContext } from '../../contexts/appContext';
-import naturalSort from '../../helpers/naturalSort';
+import naturalSort, { playLaterCompareFn } from '../../helpers/naturalSort';
 import { CollectionWithLevel } from '../../models/db/collection';
 import Level from '../../models/db/level';
 import StyledTooltip from '../page/styledTooltip';
@@ -27,7 +25,7 @@ export default function SaveLevelToModal({ closeModal, isOpen, level }: SaveLeve
         method: 'GET',
       }).then(async res => {
         if (res.status === 200) {
-          const collectionsWithLevel = bringToTop(naturalSort(await res.json()), { type: CollectionType.PlayLater }) as CollectionWithLevel[];
+          const collectionsWithLevel = naturalSort(await res.json() as CollectionWithLevel[], playLaterCompareFn);
 
           setCollections(collectionsWithLevel);
         } else {
