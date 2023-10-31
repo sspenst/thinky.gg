@@ -32,11 +32,10 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
 
   return (
     <div
-      className='p-3 overflow-hidden relative inline-block align-middle select-card'
+      className='p-3 overflow-hidden relative inline-block align-middle select-card max-w-full'
       key={`select-card-${option.id}`}
-      style={option.customStyle}
     >
-      <div className='wrapper rounded-md overflow-hidden relative'
+      <div className='wrapper rounded-md overflow-hidden relative max-w-full'
         style={{
           height: option.height ?? Dimensions.OptionHeight,
           width: option.width ?? Dimensions.OptionWidth,
@@ -55,7 +54,7 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
         {option.href ?
           <Link
             className={classNames(
-              'border-2 rounded-md items-center flex justify-center text-center',
+              'border-2 rounded-md items-center flex justify-center text-center max-w-full',
               !option.disabled ? styles['card-border'] : undefined,
               { 'text-xl': !option.stats },
             )}

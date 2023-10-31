@@ -5,6 +5,7 @@ interface SelectOption {
   author?: string | undefined;
   disabled?: boolean;
   height?: number;
+  hideAddToPlayLaterButton?: boolean;
   hideDifficulty?: boolean;
   href?: string;
   id: string;
@@ -13,8 +14,6 @@ interface SelectOption {
   stats?: SelectOptionStats | undefined;
   text: React.ReactNode;
   width?: number;
-  hideAddToPlayLaterButton?: boolean;
-  customStyle?: React.CSSProperties;
 }
 
 export default SelectOption;

@@ -41,9 +41,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
 
   useEffect(() => {
     const storedPref = localStorage.getItem('dontShowPostGameModal');
-    const storedPrefExpire = localStorage.getItem(
-      'dontShowPostGameModalExpire'
-    );
+    const storedPrefExpire = localStorage.getItem('dontShowPostGameModalExpire');
 
     if (storedPrefExpire && new Date(storedPrefExpire) < new Date()) {
       localStorage.removeItem('dontShowPostGameModal');
@@ -62,22 +60,26 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
   }, [level._id]);
 
   useEffect(() => {
-    if (collection || showCollectionViewModal) {
-      // scroll the collection list to the current level
-      setTimeout(() => {
-        const anchorId = level._id.toString() + '-collection-list';
-        const anchor = document.getElementById(anchorId);
-
-        if (anchor) {
-          anchor.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
-            inline: 'nearest',
-          });
-        }
-      }, screenSize <= ScreenSize.MD ? 300 : 0); // delay 300ms to allow the collection list to render in the modal view
+    if (!collection) {
+      return;
     }
-  }, [level._id, collection, showCollectionViewModal, screenSize]);
+
+    // scroll the collection list to the current level
+    setTimeout(() => {
+      const anchorId = level._id.toString() + '-collection-list';
+      const anchor = document.getElementById(anchorId);
+
+      if (anchor) {
+        anchor.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+          inline: 'nearest',
+        });
+      }
+    }, showCollectionViewModal ? 300 : 0); // delay 300ms to allow the collection list to render in the modal view
+  // NB: only want to scroll on page load or when the collection view modal is opened
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [level._id, showCollectionViewModal]);
 
   const collectionLevelTitle = collection && (
     <Link className='text-xl font-bold hover:underline w-fit' href={'/collection/' + collection.slug}>
@@ -87,38 +89,21 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
 
   const collectionLevelList = collection && (<>
     {collection.levels.map((levelInCollection) => {
-      let customStyle = {};
-
-      if (level._id.toString() === levelInCollection._id.toString()) {
-        customStyle = {
-          border: '2px solid var(--color)',
-          borderRadius: '4px',
-          padding: '4px',
-          margin: '4px',
-          backgroundColor: 'var(--bg-color-2)',
-          boxShadow: '0 0 0 2px var(--color)',
-        };
-      }
-
+      const isCurrentLevel = level._id.toString() === levelInCollection._id.toString();
       const anchorId = levelInCollection._id.toString() + '-collection-list';
 
       return (
-        <div key={anchorId} id={anchorId}>
+        <div className={classNames({ 'bg-3': isCurrentLevel })} id={anchorId} key={anchorId}>
           <SelectCard
             option={{
               author: levelInCollection.userId?.name,
               height: Dimensions.OptionHeightLarge,
+              hideAddToPlayLaterButton: collection.type !== CollectionType.PlayLater,
+              href: `/level/${levelInCollection.slug}?cid=${collection._id.toString()}`,
               id: levelInCollection._id.toString(),
               level: levelInCollection,
               text: levelInCollection.name,
               stats: new SelectOptionStats(levelInCollection.leastMoves, (levelInCollection as EnrichedLevel)?.userMoves),
-              hideAddToPlayLaterButton: collection.type !== CollectionType.PlayLater,
-              customStyle: customStyle,
-              href:
-            '/level/' +
-            levelInCollection.slug +
-            '?cid=' +
-            collection._id.toString(),
             }}
           />
         </div>
@@ -129,9 +114,9 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
   return (
     <div className='flex h-full'>
       <div className='flex flex-col grow max-w-full'>
-        {screenSize < ScreenSize.XL &&
+        {screenSize && screenSize < ScreenSize.XL &&
           <div className='flex items-center justify-center py-1 px-2 gap-1'>
-            {collection &&
+            {collection && <>
               <button className='mr-1' onClick={() => {
                 setShowCollectionViewModal(true);
                 setPreventKeyDownEvent(true);
@@ -140,7 +125,17 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
                   <path strokeLinecap='round' strokeLinejoin='round' d='M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z' />
                 </svg>
               </button>
-            }
+              <Modal
+                isOpen={showCollectionViewModal}
+                closeModal={() => {
+                  setShowCollectionViewModal(false);
+                  setPreventKeyDownEvent(false);
+                }}
+                title={collectionLevelTitle}
+              >
+                {collectionLevelList}
+              </Modal>
+            </>}
             <button
               className='flex gap-2 items-center truncate'
               onClick={() => {
@@ -237,16 +232,6 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
           </div>
         </div>
       </>}
-      <Modal
-        isOpen={showCollectionViewModal}
-        closeModal={() => {
-          setShowCollectionViewModal(false);
-          setPreventKeyDownEvent(false);
-        }}
-        title={collectionLevelTitle}
-      >
-        {collectionLevelList}
-      </Modal>
       <PostGameModal
         chapter={chapter}
         closeModal={() => {
