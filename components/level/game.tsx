@@ -760,7 +760,6 @@ export default function Game({
         disableCheckpoints={disableCheckpoints}
         gameState={gameState}
         level={level}
-        matchId={matchId}
         onCellClick={(x, y) => onCellClick(x, y)}
       />
     </GameContext.Provider>
