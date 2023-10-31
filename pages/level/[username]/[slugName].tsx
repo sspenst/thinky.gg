@@ -204,16 +204,14 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
           subtitleHref={showSubtitle ? getProfileSlug(level.userId) : undefined}
           title={level.name ?? 'Loading...'}
         >
-          {level.isDraft ? <></> :
-            <GameWrapper
-              chapter={chapter as string | undefined}
-              collection={collection}
-              level={level}
-              onNext={() => changeLevel(true)}
-              onPrev={() => changeLevel(false)}
-              user={reqUser}
-            />
-          }
+          <GameWrapper
+            chapter={chapter as string | undefined}
+            collection={collection}
+            level={level}
+            onNext={() => changeLevel(true)}
+            onPrev={() => changeLevel(false)}
+            user={reqUser}
+          />
         </Page>
       </LevelContext.Provider>
     </>

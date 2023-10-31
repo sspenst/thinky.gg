@@ -92,12 +92,17 @@ export default function Test({ level }: TestProps) {
       isFullScreen={true}
       title='Test'
     >
-      <Game
-        allowFreeUndo={true}
-        disablePlayAttempts={true}
-        level={level}
-        onStatsSuccess={() => router.replace(router.asPath)}
-      />
+      <div className='flex flex-col h-full max-w-full'>
+        <h2 className='whitespace-nowrap font-bold truncate text-center p-1'>
+          {level.name}
+        </h2>
+        <Game
+          allowFreeUndo={true}
+          disablePlayAttempts={true}
+          level={level}
+          onStatsSuccess={() => router.replace(router.asPath)}
+        />
+      </div>
     </Page>
   );
 }
