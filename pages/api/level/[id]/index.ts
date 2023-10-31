@@ -1,18 +1,14 @@
 import { logger } from '@root/helpers/logger';
-import { createNewLevelAddedToCollectionNotification } from '@root/helpers/notificationHelper';
-import Collection from '@root/models/db/collection';
-import mongoose, { Types } from 'mongoose';
+import mongoose from 'mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidObjectId } from '../../../../helpers/apiWrapper';
 import { enrichLevels } from '../../../../helpers/enrich';
 import { generateLevelSlug } from '../../../../helpers/generateSlug';
 import isCurator from '../../../../helpers/isCurator';
 import cleanUser from '../../../../lib/cleanUser';
-import dbConnect from '../../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Level from '../../../../models/db/level';
 import { CollectionModel, LevelModel } from '../../../../models/mongoose';
-import { queueRefreshIndexCalcs } from '../../internal-jobs/worker';
 
 export default withAuth({
   GET: {
@@ -35,8 +31,6 @@ export default withAuth({
   // for published levels, use the level-by-slug API
   if (req.method === 'GET') {
     const { id } = req.query;
-
-    await dbConnect();
 
     const level = await LevelModel.findOne({
       _id: id,
@@ -69,16 +63,14 @@ export default withAuth({
     }
 
     const { id } = req.query;
-    const { authorNote, collectionIds, name } = req.body;
+    const { authorNote, name } = req.body;
     const trimmedName = name?.trim();
 
-    if (!collectionIds || !trimmedName) {
+    if (!trimmedName) {
       return res.status(400).json({
         error: 'Missing required fields',
       });
     }
-
-    await dbConnect();
 
     const level = await LevelModel.findById<Level>(id);
 
@@ -86,50 +78,6 @@ export default withAuth({
       return res.status(400).json({
         error: 'Level not found',
       });
-    }
-
-    if (collectionIds) {
-      const promises: Promise<unknown>[] = [];
-
-      // if it's not your own level, notify others that the level has been added to your collection
-      if (level.userId.toString() !== req.userId) {
-        // find public collections that are newly added due to this request
-        const notifyCollections = await CollectionModel.find<Collection>({
-          _id: { $in: collectionIds },
-          isPrivate: { $ne: true },
-          levels: { $nin: id },
-          userId: req.userId,
-        }, {
-          _id: 1,
-        }).lean<Collection[]>();
-
-        const notifyCollectionIds = notifyCollections.map(c => c._id.toString());
-
-        promises.push(createNewLevelAddedToCollectionNotification(req.user, level, notifyCollectionIds));
-      }
-
-      promises.push(
-        CollectionModel.updateMany({
-          _id: { $in: collectionIds },
-          userId: req.userId,
-        }, {
-          $addToSet: {
-            levels: id,
-          },
-        }),
-        CollectionModel.updateMany({
-          _id: { $nin: collectionIds },
-          levels: id,
-          userId: req.userId,
-        }, {
-          $pull: {
-            levels: id,
-          },
-        }),
-        queueRefreshIndexCalcs(new Types.ObjectId(id as string)),
-      );
-
-      await Promise.all(promises);
     }
 
     if (isCurator(req.user) || req.userId === level.userId.toString()) {

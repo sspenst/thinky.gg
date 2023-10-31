@@ -28,4 +28,8 @@ export interface EnrichedCollection extends Collection {
   userSolvedCount: number;
 }
 
+export interface CollectionWithLevel extends Collection {
+  containsLevel: boolean;
+}
+
 export default Collection;

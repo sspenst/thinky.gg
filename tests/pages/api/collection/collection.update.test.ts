@@ -1,6 +1,8 @@
+import { logger } from '@root/helpers/logger';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import { TimerUtil } from '../../../../helpers/getTs';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
@@ -9,9 +11,7 @@ import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { LevelModel } from '../../../../models/mongoose';
 import updateCollectionHandler from '../../../../pages/api/collection/[id]';
 import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
-import updateLevelHandler from '../../../../pages/api/level/[id]';
-import { Logger } from 'winston';
-import { logger } from '@root/helpers/logger';
+import saveLevelToHandler from '../../../../pages/api/save-level-to/[id]';
 
 afterAll(async() => {
   await dbDisconnect();
@@ -237,8 +237,6 @@ describe('Testing updating collection data', () => {
 
         expect(response.error).toBe('This uses a reserved word (play later) which is a reserved word. Please use another name for this collection.');
         expect(res.status).toBe(400);
-
-        
       },
     });
   });
@@ -268,11 +266,8 @@ describe('Testing updating collection data', () => {
       },
       test: async ({ fetch }) => {
         const res = await fetch();
-        const response = await res.json();
 
         expect(res.status).toBe(200);
-
-        
       },
     });
   });
@@ -361,8 +356,6 @@ describe('Testing updating collection data', () => {
             id: toRemove.toString(),
           },
           body: {
-            name: 'removed level',
-            authorNote: 'removed level note',
             collectionIds: [],
           },
           headers: {
@@ -370,7 +363,7 @@ describe('Testing updating collection data', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await updateLevelHandler(req, res);
+        await saveLevelToHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
