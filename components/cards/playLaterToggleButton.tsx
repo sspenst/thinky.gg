@@ -1,36 +1,34 @@
 import { AppContext } from '@root/contexts/appContext';
+import isPro from '@root/helpers/isPro';
 import { EnrichedLevel } from '@root/models/db/level';
-import classNames from 'classnames';
 import Link from 'next/link';
 import React, { useContext } from 'react';
 import toast from 'react-hot-toast';
 import StyledTooltip from '../page/styledTooltip';
-import styles from './SelectCard.module.css';
 
 export function PlayLaterToggleButton({ level }: {level: EnrichedLevel}) {
-  const { user, myPlayLater, mutateMyPlayLater } = useContext(AppContext);
+  const { myPlayLater, mutateMyPlayLater, user } = useContext(AppContext);
+  const isInPlayLater = !!(myPlayLater && myPlayLater[level._id.toString()]);
 
-  const PlayLaterButtonVerb = myPlayLater && myPlayLater[level._id.toString()] ? '-' : '+';
+  if (!user || !isPro(user)) {
+    return null;
+  }
 
   return <>
     <button
-      data-tooltip-id={'PlayLater-btn-tooltip-' + level._id.toString()}
+      className='hover-bg-4 rounded-full'
+      data-tooltip-content={isInPlayLater ? 'Remove from Play Later' : 'Add to Play Later'}
       data-tooltip-delay-show={600}
-      data-tooltip-content={PlayLaterButtonVerb === '+' ? 'Add to Play Later' : 'Remove from Play Later'}
-      className={classNames(
-        'text-md border border-1 m-0 px-1.5',
-        'rounded-lg w-6  bg-gray-800 hover:bg-gray-400',
-        styles['add-button'],
+      data-tooltip-id={'play-later-btn-tooltip-' + level._id.toString()}
+      onClick={async (e) => {
+        e.preventDefault();
 
-      )}
-      onClick={async() => {
         toast.dismiss();
-        // add background message
-        toast.loading('Adding to PlayLater...', {
+        toast.loading(`${isInPlayLater ? 'Remvoing from' : 'Adding to'} to PlayLater...`, {
           position: 'bottom-center',
         });
         const res = await fetch('/api/play-later/', {
-          method: PlayLaterButtonVerb === '+' ? 'POST' : 'DELETE',
+          method: isInPlayLater ? 'DELETE' : 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
@@ -41,16 +39,16 @@ export function PlayLaterToggleButton({ level }: {level: EnrichedLevel}) {
 
         toast.dismiss();
 
-        if (res.ok && user) {
+        if (res.ok) {
           const message = (<div className='flex flex-col text-center w-max'>
-            <span className='text-md'>{PlayLaterButtonVerb === '+' ? 'Added to ' : 'Removed from'} your Play Later collection!</span>
+            <span className='text-md'>{isInPlayLater ? 'Removed from' : 'Added to'} your Play Later collection!</span>
             <Link className='text-sm underline' href={'/collection/' + user.name + '/play-later'}>View Play Later</Link> </div>
           );
 
           toast.success(message, {
             duration: 5000,
             position: 'bottom-center',
-            icon: PlayLaterButtonVerb === '+' ? '➕' : '➖',
+            icon: isInPlayLater ? '➖' : '➕',
           });
           mutateMyPlayLater();
         } else {
@@ -69,12 +67,19 @@ export function PlayLaterToggleButton({ level }: {level: EnrichedLevel}) {
         }
       }}
       style={{
-        color: 'var(--bg-color-1)',
-        fontWeight: 'bold',
+        color: 'var(--color)',
       }}
     >
-      {PlayLaterButtonVerb}
+      {isInPlayLater ?
+        <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+          <path strokeLinecap='round' strokeLinejoin='round' d='M19.5 12h-15' />
+        </svg>
+        :
+        <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+          <path strokeLinecap='round' strokeLinejoin='round' d='M12 4.5v15m7.5-7.5h-15' />
+        </svg>
+      }
     </button>
-    <StyledTooltip id={'PlayLater-btn-tooltip-' + level._id.toString()} />
+    <StyledTooltip id={'play-later-btn-tooltip-' + level._id.toString()} />
   </>;
 }

@@ -17,34 +17,12 @@ interface SelectCardProps {
 }
 
 export default function SelectCard({ option, prefetch }: SelectCardProps) {
-  const { user, myPlayLater } = useContext(AppContext);
   const [backgroundImage, setBackgroundImage] = useState<string>();
-  const addToPlayLaterBtn = [];
-  const [openEditLevelModal, setOpenEditLevelModal] = useState(false);
-
-  if (option.level && !option.hideAddToPlayLaterButton && user && isPro(user) && myPlayLater) {
-    addToPlayLaterBtn.push(
-
-      <div className='absolute bottom-2 left-2'>
-        <PlayLaterToggleButton level={option.level} />
-      </div>
-
-    );
-  }
-
-  if (user && option.level) {
-    addToPlayLaterBtn.push(<button className='p-1 rounded-lg absolute bottom-2 right-2 pointer hover:bg-gray-400'
-      onClick={() => setOpenEditLevelModal(true)}
-    >
-      <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-three-dots-vertical' viewBox='0 0 16 16'>
-        <path d='M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z' />
-      </svg>
-    </button>
-    );
-  }
+  const [isEditLevelModalOpen, setIsEditLevelModalOpen] = useState(false);
+  const { myPlayLater, user } = useContext(AppContext);
 
   useEffect(() => {
-    if (option.level && option.level.data) {
+    if (option.level) {
       setBackgroundImage(getPngDataClient(option.level.data));
     }
   }, [option.level]);
@@ -58,16 +36,12 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
       style={option.customStyle}
       key={`select-card-${option.id}`}
     >
-      {option.level && <EditLevelModal addOnlyMode={true} redirectToLevelAfterEdit={false} isOpen={openEditLevelModal} level={option.level} closeModal={() => setOpenEditLevelModal(false)} />}
-
       <div className='wrapper rounded-md overflow-hidden relative'
         style={{
           height: option.height ?? Dimensions.OptionHeight,
           width: option.width ?? Dimensions.OptionWidth,
         }}
       >
-
-        { /** in the bottom right corner add a plus icon emoji button */}
         <div
           className='absolute background rounded-md bg-cover bg-center'
           style={{
@@ -119,9 +93,20 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
             <SelectCardContent option={option} />
           </button>
         }
-        {addToPlayLaterBtn}
+        {option.level && !option.hideAddToPlayLaterButton && isPro(user) && myPlayLater &&
+          <div className='absolute bottom-2 left-2 h-6'>
+            <PlayLaterToggleButton level={option.level} />
+          </div>
+        }
+        {option.level && user && <>
+          <button className='absolute bottom-2 right-2 rounded-full hover-bg-4' onClick={() => setIsEditLevelModalOpen(true)}>
+            <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6' style={{ minWidth: 24, minHeight: 24 }}>
+              <path strokeLinecap='round' strokeLinejoin='round' d='M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z' />
+            </svg>
+          </button>
+          <EditLevelModal addOnlyMode={true} redirectToLevelAfterEdit={false} isOpen={isEditLevelModalOpen} level={option.level} closeModal={() => setIsEditLevelModalOpen(false)} />
+        </>}
       </div>
-
     </div>
   );
 }
