@@ -14,7 +14,7 @@ import SelectCard from '../cards/selectCard';
 import Modal from '../modal';
 import PostGameModal from '../modal/postGameModal';
 import Game from './game';
-import Sidebar from './sidebar';
+import FormattedLevelInfo from './info/formattedLevelInfo';
 
 interface GameWrapperProps {
   chapter?: string;
@@ -26,16 +26,14 @@ interface GameWrapperProps {
 }
 
 export default function GameWrapper({ chapter, collection, level, onNext, onPrev, user }: GameWrapperProps) {
-  const { isDynamic, isDynamicSupported, toggleVersion } = useContext(MusicContext);
+  const [collectionViewHidden, setCollectionViewHidden] = useState(false);
   const [dontShowPostGameModal, setDontShowPostGameModal] = useState(false);
+  const { isDynamic, isDynamicSupported, toggleVersion } = useContext(MusicContext);
+  const [mutePostGameModalForThisLevel, setMutePostGameModalForThisLevel] = useState(false);
   const [postGameModalOpen, setShowPostGameModalOpen] = useState(false);
-  const [mutePostGameModalForThisLevel, setMutePostGameModalForThisLevel] =
-    useState(false);
   const { setPreventKeyDownEvent } = useContext(PageContext);
   const { screenSize } = useDeviceCheck();
   const [showCollectionViewModal, setShowCollectionViewModal] = useState(false);
-  const [collectionViewHidden, setCollectionViewHidden] =
-    useState<boolean>(false);
 
   useEffect(() => {
     const storedPref = localStorage.getItem('dontShowPostGameModal');
@@ -58,6 +56,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
   useEffect(() => {
     setMutePostGameModalForThisLevel(false);
   }, [level._id]);
+
   useEffect(() => {
     if (collection || showCollectionViewModal) {
       // scroll the collection list to the current level
@@ -77,7 +76,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
   }, [level._id, collection, showCollectionViewModal, screenSize]);
 
   const collectionLevelTitle = collection && (
-    <Link className='text-xl font-bold text-center hover:underline w-fit' href={'/collection/' + collection.slug}>
+    <Link className='text-xl font-bold hover:underline w-fit' href={'/collection/' + collection.slug}>
       {collection.name}
     </Link>
   );
@@ -160,49 +159,39 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
         }}
       />
       {screenSize >= ScreenSize.XL && <>
-        {collection && (
-          <div className='flex border-l border-color-4'>
-            <div className={classNames('flex flex-col items-center gap-2 overflow-y-auto p-2', collectionViewHidden && 'hidden')}>
+        {collection && !collectionViewHidden &&
+          <div className={classNames('flex flex-col items-center gap-2 overflow-y-auto px-4 py-3 border-l border-color-4', collectionViewHidden && 'hidden')}>
+            <div className='flex justify-between w-56 gap-2 items-center'>
               {collectionLevelTitle}
-              {collectionLevelList}
-            </div>
-            <div
-              className='flex items-center justify-center h-full cursor-pointer'
-              onClick={() => setCollectionViewHidden(!collectionViewHidden)}
-            >
-              {collectionViewHidden ? (
-                <svg
-                  xmlns='http://www.w3.org/2000/svg'
-                  width='16'
-                  height='16'
-                  fill='currentColor'
-                  className='bi bi-arrow-bar-left'
-                  viewBox='0 0 16 16'
-                >
-                  <path
-                    fillRule='evenodd'
-                    d='M12.5 15a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5ZM10 8a.5.5 0 0 1-.5.5H3.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L3.707 7.5H9.5a.5.5 0 0 1 .5.5Z'
-                  />
+              <button onClick={() => setCollectionViewHidden(!collectionViewHidden)}>
+                <svg className='w-5 h-5 hover:opacity-100 opacity-50' fill='currentColor' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'>
+                  <path fillRule='evenodd' d='M6 8a.5.5 0 0 0 .5.5h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L12.293 7.5H6.5A.5.5 0 0 0 6 8Zm-2.5 7a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5Z' />
                 </svg>
-              ) : (
-                <svg
-                  xmlns='http://www.w3.org/2000/svg'
-                  width='16'
-                  height='16'
-                  fill='currentColor'
-                  className='bi bi-arrow-bar-right'
-                  viewBox='0 0 16 16'
-                >
-                  <path
-                    fillRule='evenodd'
-                    d='M6 8a.5.5 0 0 0 .5.5h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L12.293 7.5H6.5A.5.5 0 0 0 6 8Zm-2.5 7a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5Z'
-                  />
-                </svg>
-              )}
+              </button>
             </div>
+            {collectionLevelList}
           </div>
-        )}
-        <Sidebar level={level} />
+        }
+        <div className='border-l border-color-4 break-words z-10 h-full w-100 overflow-y-auto'>
+          {collection && collectionViewHidden &&
+            <button
+              className='flex items-center gap-4 w-full border-b border-color-4 hover-bg-3 transition px-4 py-3'
+              onClick={() => {
+                if (setCollectionViewHidden) {
+                  setCollectionViewHidden(!collectionViewHidden);
+                }
+              }}
+            >
+              <svg className='w-5 h-5 hover:opacity-100 opacity-50' fill='currentColor' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg' style={{ minWidth: 20, minHeight: 20 }}>
+                <path fillRule='evenodd' d='M12.5 15a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5ZM10 8a.5.5 0 0 1-.5.5H3.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L3.707 7.5H9.5a.5.5 0 0 1 .5.5Z' />
+              </svg>
+              <span className='text-left'>Expand <span className='font-bold'>{collection.name}</span> collection</span>
+            </button>
+          }
+          <div className='px-4 py-3'>
+            <FormattedLevelInfo level={level} />
+          </div>
+        </div>
       </>}
       <Modal
         isOpen={showCollectionViewModal}
