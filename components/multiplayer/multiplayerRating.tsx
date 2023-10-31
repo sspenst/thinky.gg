@@ -1,7 +1,7 @@
 import React from 'react';
 import { getMatchCountFromProfile, getMatchTypeNameFromMatchType, getRatingFromProfile, isProvisional, MUTLIPLAYER_PROVISIONAL_GAME_LIMIT } from '../../helpers/multiplayerHelperFunctions';
+import { MultiplayerMatchType } from '../../models/constants/multiplayer';
 import MultiplayerProfile from '../../models/db/multiplayerProfile';
-import { MultiplayerMatchType } from '../../models/MultiplayerEnums';
 import StyledTooltip from '../page/styledTooltip';
 import { MultiplayerRecord } from '../profile/profileMultiplayer';
 

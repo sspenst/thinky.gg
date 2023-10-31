@@ -1,6 +1,6 @@
 import isPro from '@root/helpers/isPro';
 import { logger } from '@root/helpers/logger';
-import { CollectionType } from '@root/models/CollectionEnums';
+import { CollectionType } from '@root/models/constants/collection';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidObjectId, ValidObjectIdArray, ValidType } from '../../../helpers/apiWrapper';

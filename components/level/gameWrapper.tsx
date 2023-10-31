@@ -2,7 +2,7 @@ import Dimensions from '@root/constants/dimensions';
 import { MusicContext } from '@root/contexts/musicContext';
 import { PageContext } from '@root/contexts/pageContext';
 import useDeviceCheck, { ScreenSize } from '@root/hooks/useDeviceCheck';
-import { CollectionType } from '@root/models/CollectionEnums';
+import { CollectionType } from '@root/models/constants/collection';
 import SelectOptionStats from '@root/models/selectOptionStats';
 import classNames from 'classnames';
 import Link from 'next/link';

@@ -1,7 +1,7 @@
 import useSWRHelper from '@root/hooks/useSWRHelper';
+import { MultiplayerMatchType } from '@root/models/constants/multiplayer';
 import MultiplayerMatch from '@root/models/db/multiplayerMatch';
 import User, { UserWithMultiplayerProfile } from '@root/models/db/user';
-import { MultiplayerMatchType } from '@root/models/MultiplayerEnums';
 import Link from 'next/link';
 import React, { useState } from 'react';
 import FilterButton from '../buttons/filterButton';
