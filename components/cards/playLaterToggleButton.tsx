@@ -15,6 +15,61 @@ export function PlayLaterToggleButton({ level }: {level: EnrichedLevel}) {
     return null;
   }
 
+  const boldedLevelName = <span className='font-bold'>{level.name}</span>;
+  const fetchFunc = async (remove: boolean) => {
+    setIsLoading(true);
+    toast.dismiss();
+    toast.loading(remove ? 'Removing...' : 'Adding...', {
+      position: 'bottom-center',
+    });
+
+    const res = await fetch('/api/play-later/', {
+      method: remove ? 'DELETE' : 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id: level._id.toString(),
+      }),
+    });
+
+    toast.dismiss();
+
+    if (res.ok) {
+      const message = (
+        <div className='flex flex-col items-center w-max'>
+          <span>{remove ? ['Removed ', boldedLevelName, ' from'] : ['Added ', boldedLevelName, ' to']} <Link className='underline' href={`/collection/${user.name}/play-later`}>Play Later</Link></span>
+          <button className='text-sm underline' onClick={() => {
+            toast.dismiss();
+            fetchFunc(!remove);
+          }}>Undo</button>
+        </div>
+      );
+
+      toast.success(message, {
+        duration: 5000,
+        position: 'bottom-center',
+        icon: remove ? '➖' : '➕',
+      });
+      mutatePlayLater();
+    } else {
+      let resp;
+
+      try {
+        resp = await res.json();
+      } catch (e) {
+        console.error(e);
+      }
+
+      toast.error(resp?.error || 'Could not update Play Later', {
+        duration: 5000,
+        position: 'bottom-center',
+      });
+    }
+
+    setIsLoading(false);
+  };
+
   return <>
     <button
       data-tooltip-content={isInPlayLater ? 'Remove from Play Later' : 'Add to Play Later'}
@@ -22,53 +77,7 @@ export function PlayLaterToggleButton({ level }: {level: EnrichedLevel}) {
       disabled={isLoading}
       onClick={async (e) => {
         e.preventDefault();
-        setIsLoading(true);
-        toast.dismiss();
-        toast.loading(isInPlayLater ? 'Removing...' : 'Adding...', {
-          position: 'bottom-center',
-        });
-
-        const res = await fetch('/api/play-later/', {
-          method: isInPlayLater ? 'DELETE' : 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            id: level._id.toString(),
-          }),
-        });
-
-        toast.dismiss();
-
-        if (res.ok) {
-          const message = (
-            <div className='flex flex-col items-center w-max'>
-              <span>{isInPlayLater ? 'Removed from' : 'Added to'} <Link className='underline' href={`/collection/${user.name}/play-later`}>Play Later</Link></span>
-            </div>
-          );
-
-          toast.success(message, {
-            duration: 5000,
-            position: 'bottom-center',
-            icon: isInPlayLater ? '➖' : '➕',
-          });
-          mutatePlayLater();
-        } else {
-          let resp;
-
-          try {
-            resp = await res.json();
-          } catch (e) {
-            console.error(e);
-          }
-
-          toast.error(resp?.error || 'Could not update Play Later', {
-            duration: 5000,
-            position: 'bottom-center',
-          });
-        }
-
-        setIsLoading(false);
+        fetchFunc(isInPlayLater);
       }}
       style={{
         color: 'var(--color)',
