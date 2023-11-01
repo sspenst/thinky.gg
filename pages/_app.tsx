@@ -79,9 +79,9 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);
   const [sounds, setSounds] = useState<{ [key: string]: HTMLAudioElement }>({});
+  const [tempCollection, setTempCollection] = useState<Collection>();
   const [theme, setTheme] = useState<string>();
   const { matches, privateAndInvitedMatches } = multiplayerSocket;
-  const [tempCollection, setTempCollection] = useState<Collection>();
 
   useEffect(() => {
     // preload sounds
@@ -103,11 +103,11 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       setShouldAttemptAuth(shouldAttemptAuthStorage === 'true');
     }
 
-    const collectionTemp = window.sessionStorage.getItem('tempCollection');
+    const tempCollectionStorage = window.sessionStorage.getItem('tempCollection');
 
-    if (collectionTemp) {
+    if (tempCollectionStorage) {
       try {
-        setTempCollection(JSON.parse(collectionTemp));
+        setTempCollection(JSON.parse(tempCollectionStorage));
       } catch (e) {
         console.error('error parsing tempCollection', e);
       }
@@ -367,8 +367,8 @@ export default function MyApp({ Component, pageProps }: AppProps) {
           mutateUser: mutateUser,
           playLater: playLater,
           setShouldAttemptAuth: setShouldAttemptAuth,
-          setTheme: setTheme,
           setTempCollection: setTempCollection,
+          setTheme: setTheme,
           shouldAttemptAuth: shouldAttemptAuth,
           sounds: sounds,
           tempCollection,

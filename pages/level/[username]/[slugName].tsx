@@ -72,9 +72,9 @@ interface LevelProps {
 export default function LevelPage({ _collection, _level, reqUser }: LevelProps) {
   const [collection, setCollection] = useState<Collection | null>(_collection);
   const [level, setLevel] = useState(_level);
-  const { tempCollection } = useContext(AppContext);
   const { mutateProStatsLevel, proStatsLevel } = useProStatsLevel(level);
   const router = useRouter();
+  const { tempCollection } = useContext(AppContext);
   const { chapter, cid, slugName, ts, username } = router.query as LevelUrlQueryParams;
 
   const mutateCollection = useCallback(() => {
@@ -98,17 +98,10 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
   }, [cid]);
 
   useEffect(() => {
-    if (tempCollection) {
+    if (!_collection && tempCollection && tempCollection.levels.find(l => l._id === level._id)) {
       setCollection(tempCollection);
     }
-
-    // const collectionToTry = (!loadedCollection && tempCollection) ? tempCollection : loadedCollection;
-    // const levelInCollection = collectionToTry?.levels.find((l) => l._id === level._id);
-
-    // if (collectionToTry && levelInCollection) {
-    //   setCollection(collectionToTry);
-    // }
-  }, [level._id, tempCollection]);
+  }, [_collection, level._id, tempCollection]);
 
   // handle pressing "Next level"
   useEffect(() => {
