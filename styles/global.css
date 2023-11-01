@@ -540,10 +540,12 @@ body {
   color: var(--color-gray);
 }
 
-.select-card-button {
-  display: none;
-}
-
-.select-card:hover .select-card-button {
-  display: block;
-}
+@media (min-width: 768px) {
+  .select-card-button {
+    display: none;
+  }
+ 
+  .select-card:hover .select-card-button {
+    display: block;
+  }
+ }
