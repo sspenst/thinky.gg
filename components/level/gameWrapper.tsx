@@ -1,6 +1,7 @@
 import Dimensions from '@root/constants/dimensions';
 import { MusicContext } from '@root/contexts/musicContext';
 import { PageContext } from '@root/contexts/pageContext';
+import useDeviceCheck, { ScreenSize } from '@root/hooks/useDeviceCheck';
 import { CollectionType } from '@root/models/constants/collection';
 import SelectOptionStats from '@root/models/selectOptionStats';
 import classNames from 'classnames';
@@ -36,6 +37,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
   const [postGameModalOpen, setShowPostGameModalOpen] = useState(false);
   const { setPreventKeyDownEvent } = useContext(PageContext);
   const [showCollectionViewModal, setShowCollectionViewModal] = useState(false);
+  const { screenSize } = useDeviceCheck();
 
   useEffect(() => {
     const storedPref = localStorage.getItem('dontShowPostGameModal');
@@ -194,7 +196,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
           }}
         />
       </div>
-      {collection && !collectionViewHidden &&
+      {collection && !collectionViewHidden && screenSize > ScreenSize.MD &&
         <div className={classNames('hidden xl:flex flex-col items-center overflow-y-auto border-l border-color-4 ', collectionViewHidden && 'hidden')}>
           <div className='flex justify-between w-56 gap-2 items-center px-4 py-3'>
             {collectionLevelTitle}
