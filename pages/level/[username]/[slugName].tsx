@@ -70,7 +70,9 @@ interface LevelProps {
 }
 
 export default function LevelPage({ _collection, _level, reqUser }: LevelProps) {
+  // TODO: Can we use useSWRHelper for this?
   const [collection, setCollection] = useState<Collection | null>(_collection);
+  const [isCollectionLoading, setIsCollectionLoading] = useState(true);
   const [level, setLevel] = useState(_level);
   const { mutateProStatsLevel, proStatsLevel } = useProStatsLevel(level);
   const router = useRouter();
@@ -82,15 +84,19 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
       return;
     }
 
+    setIsCollectionLoading(true);
     fetch(`/api/collection-by-id/${cid}`, {
       method: 'GET',
     }).then(async res => {
+      setIsCollectionLoading(false);
+
       if (res.status === 200) {
         setCollection(await res.json());
       } else {
         throw res.text();
       }
     }).catch(err => {
+      setIsCollectionLoading(true);
       console.error(err);
       toast.dismiss();
       toast.error('Error fetching collection');
@@ -277,6 +283,7 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
           <GameWrapper
             chapter={chapter as string | undefined}
             collection={collection}
+            isCollectionLoading= {isCollectionLoading}
             level={level}
             onNext={() => changeLevel(true)}
             onPrev={() => changeLevel(false)}
