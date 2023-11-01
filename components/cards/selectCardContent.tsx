@@ -33,7 +33,7 @@ export default function SelectCardContent({ option }: SelectCardContentProps) {
             />
           </div>
         }
-        {option.stats && <div className='pt-1 italic'>{option.stats.getText()}</div>}
+        {!option.hideStats && option.stats && <div className='pt-1 italic'>{option.stats.getText()}</div>}
       </div>
     </div>
     {option.stats?.isSolved() &&

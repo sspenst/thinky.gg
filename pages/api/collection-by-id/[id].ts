@@ -5,7 +5,6 @@ import { FilterQuery, PipelineStage, Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidObjectId } from '../../../helpers/apiWrapper';
 import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
-import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
 import User from '../../../models/db/user';
@@ -18,11 +17,8 @@ export default apiWrapper({
     }
   } }, async (req: NextApiRequest, res: NextApiResponse) => {
   const { id } = req.query;
-
-  await dbConnect();
   const token = req.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, req) : null;
-
   const collection = await getCollection({
     matchQuery: { _id: new Types.ObjectId(id as string) },
     reqUser,
@@ -30,14 +26,6 @@ export default apiWrapper({
   });
 
   if (!collection) {
-    return res.status(404).json({
-      error: 'Error finding Collection',
-    });
-  }
-
-  const doIOwnCollection = collection && collection.userId._id.toString() === reqUser?._id.toString();
-
-  if (collection?.isPrivate && !doIOwnCollection) {
     return res.status(404).json({
       error: 'Error finding Collection',
     });
