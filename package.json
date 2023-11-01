@@ -47,7 +47,7 @@
     "react-share": "^4.4.1",
     "react-simple-star-rating": "^5.1.7",
     "react-textarea-autosize": "^8.5.3",
-    "react-tooltip": "^5.21.5",
+    "react-tooltip": "^5.21.6",
     "recharts": "^2.9.0",
     "request-ip": "^3.3.0",
     "sharp": "^0.32.6",
