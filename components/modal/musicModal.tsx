@@ -84,6 +84,7 @@ export default function MusicModal({ closeModal, isOpen }: MusicModalProps) {
       songMetadata.originalMp3.volume = newVolume;
     }
   };
+
   const { deviceInfo } = useContext(AppContext);
   const isIOS = deviceInfo.isIOS;
 
