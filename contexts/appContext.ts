@@ -34,7 +34,7 @@ export const AppContext = createContext<AppContextInterface>({
     isWindows: false,
     isLinux: false,
     isMac: false,
-    screenSize: ScreenSize.NONE,
+    screenSize: ScreenSize.SM,
   },
   forceUpdate: () => { return; },
   multiplayerSocket: {

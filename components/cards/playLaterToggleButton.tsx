@@ -39,10 +39,7 @@ export function PlayLaterToggleButton({ level }: {level: EnrichedLevel}) {
       const message = (
         <div className='flex flex-col items-center w-max'>
           <span>{remove ? ['Removed ', boldedLevelName, ' from'] : ['Added ', boldedLevelName, ' to']} <Link className='underline' href={`/collection/${user.name}/play-later`}>Play Later</Link></span>
-          <button className='text-sm underline' onClick={() => {
-            toast.dismiss();
-            fetchFunc(!remove);
-          }}>Undo</button>
+          <button className='text-sm underline' onClick={() => fetchFunc(!remove)}>Undo</button>
         </div>
       );
 
@@ -70,10 +67,12 @@ export function PlayLaterToggleButton({ level }: {level: EnrichedLevel}) {
     setIsLoading(false);
   };
 
+  const id = `play-later-btn-tooltip-${level._id.toString()}`;
+
   return <>
     <button
       data-tooltip-content={isInPlayLater ? 'Remove from Play Later' : 'Add to Play Later'}
-      data-tooltip-id={'play-later-btn-tooltip-' + level._id.toString()}
+      data-tooltip-id={id}
       disabled={isLoading}
       onClick={async (e) => {
         e.preventDefault();
@@ -93,6 +92,6 @@ export function PlayLaterToggleButton({ level }: {level: EnrichedLevel}) {
         </svg>
       }
     </button>
-    <StyledTooltip id={'play-later-btn-tooltip-' + level._id.toString()} />
+    <StyledTooltip id={id} />
   </>;
 }

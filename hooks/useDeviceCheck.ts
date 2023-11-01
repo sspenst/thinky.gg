@@ -8,7 +8,6 @@ interface CustomWindow extends Window {
 declare let window: CustomWindow;
 
 export enum ScreenSize {
-  NONE,
   XS,
   SM,
   MD,
@@ -40,7 +39,7 @@ const useDeviceCheck = (initialUserAgentString: string): DeviceInfo => {
     isWindows: initialUserAgentString ? /windows/i.test(initialUserAgentString) : false,
     isLinux: initialUserAgentString ? /linux/i.test(initialUserAgentString) : false,
     isMac: initialUserAgentString ? /mac/i.test(initialUserAgentString) : false,
-    screenSize: (initialAndroid || initialiOS) ? ScreenSize.SM : ScreenSize.NONE, // set a smart default for mobile
+    screenSize: (initialMobile || initialAndroid || initialiOS) ? ScreenSize.SM : ScreenSize.XL, // set a smart default for mobile
   });
 
   const updateScreenSize = () => {

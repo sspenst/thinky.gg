@@ -57,7 +57,7 @@ export default function Game({
   onStatsSuccess,
 }: GameProps) {
   const levelContext = useContext(LevelContext);
-  const { mutateUser, shouldAttemptAuth, user, deviceInfo } = useContext(AppContext);
+  const { deviceInfo, mutateUser, shouldAttemptAuth, user } = useContext(AppContext);
   const { preventKeyDownEvent } = useContext(PageContext);
 
   const mutateCollection = levelContext?.mutateCollection;
