@@ -1,7 +1,8 @@
 import Dimensions from '@root/constants/dimensions';
+import { AppContext } from '@root/contexts/appContext';
 import { MusicContext } from '@root/contexts/musicContext';
 import { PageContext } from '@root/contexts/pageContext';
-import useDeviceCheck, { ScreenSize } from '@root/hooks/useDeviceCheck';
+import { ScreenSize } from '@root/hooks/useDeviceCheck';
 import { CollectionType } from '@root/models/constants/collection';
 import SelectOptionStats from '@root/models/selectOptionStats';
 import classNames from 'classnames';
@@ -37,7 +38,8 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
   const [postGameModalOpen, setShowPostGameModalOpen] = useState(false);
   const { setPreventKeyDownEvent } = useContext(PageContext);
   const [showCollectionViewModal, setShowCollectionViewModal] = useState(false);
-  const { screenSize } = useDeviceCheck();
+  const { deviceInfo } = useContext(AppContext);
+  const screenSize = deviceInfo.screenSize;
 
   useEffect(() => {
     const storedPref = localStorage.getItem('dontShowPostGameModal');

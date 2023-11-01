@@ -1,6 +1,6 @@
 import { Menu, Transition } from '@headlessui/react';
+import { AppContext } from '@root/contexts/appContext';
 import { MusicContext, songs } from '@root/contexts/musicContext';
-import useDeviceCheck from '@root/hooks/useDeviceCheck';
 import classNames from 'classnames';
 import React, { Fragment, useContext } from 'react';
 import Modal from '.';
@@ -84,8 +84,8 @@ export default function MusicModal({ closeModal, isOpen }: MusicModalProps) {
       songMetadata.originalMp3.volume = newVolume;
     }
   };
-
-  const { isIOS } = useDeviceCheck();
+  const { deviceInfo } = useContext(AppContext);
+  const isIOS = deviceInfo.isIOS;
 
   return (
     <Modal closeModal={closeModal} isOpen={isOpen} title='Music'>
