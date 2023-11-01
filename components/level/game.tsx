@@ -4,7 +4,7 @@ import { directionsToGameState, isValidDirections } from '@root/helpers/checkpoi
 import { areEqualGameStates, cloneGameState, GameState, initGameState, makeMove, undo } from '@root/helpers/gameStateHelpers';
 import isPro from '@root/helpers/isPro';
 import useCheckpoints, { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
-import useDeviceCheck, { ScreenSize } from '@root/hooks/useDeviceCheck';
+import { ScreenSize } from '@root/hooks/useDeviceCheck';
 import { Types } from 'mongoose';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -57,7 +57,7 @@ export default function Game({
   onStatsSuccess,
 }: GameProps) {
   const levelContext = useContext(LevelContext);
-  const { mutateUser, shouldAttemptAuth, user } = useContext(AppContext);
+  const { mutateUser, shouldAttemptAuth, user, deviceInfo } = useContext(AppContext);
   const { preventKeyDownEvent } = useContext(PageContext);
 
   const mutateCollection = levelContext?.mutateCollection;
@@ -668,7 +668,7 @@ export default function Game({
   }, [handleBlurEvent, handleKeyDownEvent, handleKeyUpEvent, handleTouchMoveEvent, handleTouchStartEvent, handleTouchEndEvent]);
 
   const [controls, setControls] = useState<Control[]>([]);
-  const { screenSize } = useDeviceCheck();
+  const screenSize = deviceInfo.screenSize;
   const isMobile = screenSize < ScreenSize.XL;
 
   useEffect(() => {

@@ -3,8 +3,10 @@ import '../styles/global.css';
 import 'react-tooltip/dist/react-tooltip.css';
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react';
 import MusicContextProvider from '@root/contexts/musicContext';
+import useDeviceCheck from '@root/hooks/useDeviceCheck';
 import useSWRHelper from '@root/hooks/useSWRHelper';
 import Collection from '@root/models/db/collection';
+import { NextPageContext } from 'next';
 import type { AppProps } from 'next/app';
 import { Rubik, Teko } from 'next/font/google';
 import Head from 'next/head';
@@ -63,7 +65,19 @@ function updateGrowthBookURL() {
   growthbook.setURL(window.location.href);
 }
 
-export default function MyApp({ Component, pageProps }: AppProps) {
+MyApp.getInitialProps = async ({ ctx }: { ctx: NextPageContext }) => {
+  let userAgent;
+
+  if (ctx.req) {
+    userAgent = ctx.req.headers['user-agent'];
+  } else {
+    userAgent = navigator.userAgent;
+  }
+
+  return { userAgent };
+};
+
+export default function MyApp({ Component, pageProps, userAgent }: AppProps & { userAgent: string }) {
   const forceUpdate = useForceUpdate();
   const { isLoading, mutateUser, user } = useUser();
   const [multiplayerSocket, setMultiplayerSocket] = useState<MultiplayerSocket>({
@@ -80,6 +94,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);
   const [sounds, setSounds] = useState<{ [key: string]: HTMLAudioElement }>({});
   const [tempCollection, setTempCollection] = useState<Collection>();
+  const deviceInfo = useDeviceCheck(userAgent);
   const [theme, setTheme] = useState<string>();
   const { matches, privateAndInvitedMatches } = multiplayerSocket;
 
@@ -361,6 +376,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       )}
       <GrowthBookProvider growthbook={growthbook}>
         <AppContext.Provider value={{
+          deviceInfo: deviceInfo,
           forceUpdate: forceUpdate,
           multiplayerSocket: multiplayerSocket,
           mutatePlayLater: mutatePlayLater,

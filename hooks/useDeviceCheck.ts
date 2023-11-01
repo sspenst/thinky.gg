@@ -17,7 +17,7 @@ export enum ScreenSize {
   '2XL',
 }
 
-type DeviceInfo = {
+export type DeviceInfo = {
   isMobile: boolean;
   isAndroid: boolean;
   isIOS: boolean;
@@ -28,16 +28,19 @@ type DeviceInfo = {
   screenSize: ScreenSize;
 };
 
-const useDeviceCheck = (): DeviceInfo => {
+const useDeviceCheck = (initialUserAgentString: string): DeviceInfo => {
+  const initialMobile = initialUserAgentString ? /mobile/i.test(initialUserAgentString) : false;
+  const initialAndroid = initialUserAgentString ? /android/i.test(initialUserAgentString) : false;
+  const initialiOS = initialUserAgentString ? /iPad|iPhone|iPod/.test(initialUserAgentString) : false;
   const [deviceInfo, setDeviceInfo] = useState<DeviceInfo>({
-    isMobile: false,
-    isAndroid: false,
-    isIOS: false,
-    isFirefox: false,
-    isWindows: false,
-    isLinux: false,
-    isMac: false,
-    screenSize: ScreenSize.NONE,
+    isMobile: initialMobile,
+    isAndroid: initialAndroid,
+    isIOS: initialiOS,
+    isFirefox: initialUserAgentString ? /firefox/i.test(initialUserAgentString) : false,
+    isWindows: initialUserAgentString ? /windows/i.test(initialUserAgentString) : false,
+    isLinux: initialUserAgentString ? /linux/i.test(initialUserAgentString) : false,
+    isMac: initialUserAgentString ? /mac/i.test(initialUserAgentString) : false,
+    screenSize: (initialAndroid || initialiOS) ? ScreenSize.SM : ScreenSize.NONE, // set a smart default for mobile
   });
 
   const updateScreenSize = () => {

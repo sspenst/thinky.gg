@@ -1,3 +1,4 @@
+import { DeviceInfo, ScreenSize } from '@root/hooks/useDeviceCheck';
 import Collection from '@root/models/db/collection';
 import { createContext } from 'react';
 import { KeyedMutator } from 'swr';
@@ -6,6 +7,7 @@ import UserConfig from '../models/db/userConfig';
 import { MultiplayerSocket } from '../pages/_app';
 
 interface AppContextInterface {
+  deviceInfo: DeviceInfo;
   forceUpdate: () => void;
   multiplayerSocket: MultiplayerSocket;
   mutatePlayLater: () => void;
@@ -24,6 +26,16 @@ interface AppContextInterface {
 }
 
 export const AppContext = createContext<AppContextInterface>({
+  deviceInfo: {
+    isMobile: false,
+    isAndroid: false,
+    isIOS: false,
+    isFirefox: false,
+    isWindows: false,
+    isLinux: false,
+    isMac: false,
+    screenSize: ScreenSize.NONE,
+  },
   forceUpdate: () => { return; },
   multiplayerSocket: {
     connectedPlayers: [],
