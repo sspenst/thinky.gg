@@ -23,13 +23,14 @@ import Solved from './info/solved';
 interface GameWrapperProps {
   chapter?: string;
   collection: Collection | null;
+  isCollectionLoading: boolean;
   level: EnrichedLevel;
   onNext: () => void;
   onPrev: () => void;
   user: User | null;
 }
 
-export default function GameWrapper({ chapter, collection, level, onNext, onPrev, user }: GameWrapperProps) {
+export default function GameWrapper({ chapter, collection, isCollectionLoading, level, onNext, onPrev, user }: GameWrapperProps) {
   const [collectionViewHidden, setCollectionViewHidden] = useState(false);
   const [dontShowPostGameModal, setDontShowPostGameModal] = useState(false);
   const { isDynamic, isDynamicSupported, toggleVersion } = useContext(MusicContext);
@@ -198,7 +199,8 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
           }}
         />
       </div>
-      {collection && !collectionViewHidden && screenSize > ScreenSize.MD &&
+      {(collection || isCollectionLoading) && !collectionViewHidden && screenSize > ScreenSize.MD &&
+
         <div className={classNames('hidden xl:flex flex-col items-center overflow-y-auto border-l border-color-4 ', collectionViewHidden && 'hidden')}>
           <div className='flex justify-between w-56 gap-2 items-center px-4 py-3'>
             {collectionLevelTitle}
