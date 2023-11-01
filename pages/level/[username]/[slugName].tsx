@@ -37,7 +37,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
   const level = await getLevelByUrlPath(username, slugName, reqUser);
-  const cid = context.query.cid as string | undefined;
+  const cid = context.query?.cid as string | undefined;
   let collection: Collection | null = null;
 
   if (cid) {
