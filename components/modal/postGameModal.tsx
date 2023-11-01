@@ -16,7 +16,7 @@ import Modal from '.';
 interface PostGameModalProps {
   chapter?: string;
   closeModal: () => void;
-  collection?: Collection;
+  collection?: Collection | null;
   dontShowPostGameModal: boolean;
   isOpen: boolean;
   level: Level;

@@ -7,6 +7,7 @@ interface SelectOption {
   height?: number;
   hideAddToPlayLaterButton?: boolean;
   hideDifficulty?: boolean;
+  hideStats?: boolean;
   href?: string;
   id: string;
   level?: EnrichedLevel | undefined;

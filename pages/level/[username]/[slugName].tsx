@@ -3,6 +3,8 @@ import PagePath from '@root/constants/pagePath';
 import { AppContext } from '@root/contexts/appContext';
 import { useTour } from '@root/hooks/useTour';
 import Collection from '@root/models/db/collection';
+import { getCollection } from '@root/pages/api/collection-by-id/[id]';
+import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
@@ -15,7 +17,6 @@ import Page from '../../../components/page/page';
 import Dimensions from '../../../constants/dimensions';
 import { LevelContext } from '../../../contexts/levelContext';
 import getProfileSlug from '../../../helpers/getProfileSlug';
-import useCollectionById from '../../../hooks/useCollectionById';
 import useProStatsLevel from '../../../hooks/useProStatsLevel';
 import { getUserFromToken } from '../../../lib/withAuth';
 import { EnrichedLevel } from '../../../models/db/level';
@@ -36,8 +37,16 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
   const level = await getLevelByUrlPath(username, slugName, reqUser);
+  const cid = context.query.cid as string | undefined;
+  let collection: Collection | null = null;
 
-  // TODO: get cid collection in server side props
+  if (cid) {
+    collection = await getCollection({
+      matchQuery: { _id: new Types.ObjectId(cid) },
+      reqUser,
+      populateLevels: true,
+    });
+  }
 
   if (!level) {
     return {
@@ -47,6 +56,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
+      _collection: JSON.parse(JSON.stringify(collection)),
       _level: JSON.parse(JSON.stringify(level)),
       reqUser: JSON.parse(JSON.stringify(reqUser)),
     } as LevelProps,
@@ -55,26 +65,50 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
 interface LevelProps {
   _level: EnrichedLevel;
+  _collection: Collection | null;
   reqUser: User | null;
 }
 
-export default function LevelPage({ _level, reqUser }: LevelProps) {
+export default function LevelPage({ _collection, _level, reqUser }: LevelProps) {
+  const [collection, setCollection] = useState<Collection | null>(_collection);
   const [level, setLevel] = useState(_level);
   const { tempCollection } = useContext(AppContext);
   const { mutateProStatsLevel, proStatsLevel } = useProStatsLevel(level);
   const router = useRouter();
   const { chapter, cid, slugName, ts, username } = router.query as LevelUrlQueryParams;
-  const { collection: loadedCollection } = useCollectionById(cid);
-  const [collection, setCollection] = useState<Collection>();
+
+  const mutateCollection = useCallback(() => {
+    if (!cid) {
+      return;
+    }
+
+    fetch(`/api/collection-by-id/${cid}`, {
+      method: 'GET',
+    }).then(async res => {
+      if (res.status === 200) {
+        setCollection(await res.json());
+      } else {
+        throw res.text();
+      }
+    }).catch(err => {
+      console.error(err);
+      toast.dismiss();
+      toast.error('Error fetching collection');
+    });
+  }, [cid]);
 
   useEffect(() => {
-    const collectionToTry = (!loadedCollection && tempCollection) ? tempCollection : loadedCollection;
-    const levelInCollection = collectionToTry?.levels.find((l) => l._id === level._id);
-
-    if (collectionToTry && levelInCollection) {
-      setCollection(collectionToTry);
+    if (tempCollection) {
+      setCollection(tempCollection);
     }
-  }, [level._id, loadedCollection, tempCollection]);
+
+    // const collectionToTry = (!loadedCollection && tempCollection) ? tempCollection : loadedCollection;
+    // const levelInCollection = collectionToTry?.levels.find((l) => l._id === level._id);
+
+    // if (collectionToTry && levelInCollection) {
+    //   setCollection(collectionToTry);
+    // }
+  }, [level._id, tempCollection]);
 
   // handle pressing "Next level"
   useEffect(() => {
@@ -233,6 +267,7 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
         getReviews: getReviews,
         inCampaign: !!chapter && level.userMoves !== level.leastMoves,
         level: level,
+        mutateCollection: mutateCollection,
         mutateLevel: mutateLevel,
         mutateProStatsLevel: mutateProStatsLevel,
         proStatsLevel: proStatsLevel,

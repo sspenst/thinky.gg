@@ -59,6 +59,8 @@ export default function Game({
   const levelContext = useContext(LevelContext);
   const { mutateUser, shouldAttemptAuth, user } = useContext(AppContext);
   const { preventKeyDownEvent } = useContext(PageContext);
+
+  const mutateCollection = levelContext?.mutateCollection;
   const mutateLevel = levelContext?.mutateLevel;
   const mutateProStatsLevel = levelContext?.mutateProStatsLevel;
 
@@ -144,6 +146,10 @@ export default function Game({
       if (res.status === 200) {
         mutateUser();
 
+        if (mutateCollection) {
+          mutateCollection();
+        }
+
         if (mutateLevel) {
           mutateLevel();
         }
@@ -179,7 +185,7 @@ export default function Game({
     }).finally(() => {
       NProgress.done();
     });
-  }, [disableStats, matchId, mutateLevel, mutateProStatsLevel, mutateUser, onStatsSuccess]);
+  }, [disableStats, matchId, mutateCollection, mutateLevel, mutateProStatsLevel, mutateUser, onStatsSuccess]);
 
   const saveCheckpoint = useCallback((index: number) => {
     if (index !== BEST_CHECKPOINT_INDEX) {

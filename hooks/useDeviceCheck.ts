@@ -8,7 +8,7 @@ interface CustomWindow extends Window {
 declare let window: CustomWindow;
 
 export enum ScreenSize {
-  None,
+  NONE,
   XS,
   SM,
   MD,
@@ -37,7 +37,7 @@ const useDeviceCheck = (): DeviceInfo => {
     isWindows: false,
     isLinux: false,
     isMac: false,
-    screenSize: ScreenSize.None,
+    screenSize: ScreenSize.NONE,
   });
 
   const updateScreenSize = () => {
