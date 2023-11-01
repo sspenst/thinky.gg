@@ -12,11 +12,11 @@ interface AppContextInterface {
   mutateUser: KeyedMutator<ReqUser>;
   playLater?: { [key: string]: boolean };
   setShouldAttemptAuth: React.Dispatch<React.SetStateAction<boolean>>;
+  setTempCollection: React.Dispatch<React.SetStateAction<Collection | undefined>>;
   setTheme: React.Dispatch<React.SetStateAction<string | undefined>>;
   shouldAttemptAuth: boolean;
   sounds: { [key: string]: HTMLAudioElement };
   tempCollection?: Collection;
-  setTempCollection: React.Dispatch<React.SetStateAction<Collection | undefined>>;
   theme: string | undefined;
   user?: ReqUser;
   userConfig?: UserConfig;
@@ -36,11 +36,11 @@ export const AppContext = createContext<AppContextInterface>({
   mutateUser: {} as KeyedMutator<ReqUser>,
   playLater: undefined,
   setShouldAttemptAuth: () => { return; },
+  setTempCollection: () => { return; },
   setTheme: () => { return; },
   shouldAttemptAuth: true,
   sounds: {},
-  theme: undefined,
   tempCollection: undefined,
-  setTempCollection: () => { return; },
+  theme: undefined,
   userLoading: true,
 });

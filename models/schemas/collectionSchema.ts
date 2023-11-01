@@ -40,7 +40,6 @@ const CollectionSchema = new mongoose.Schema<Collection>({
   type: {
     type: String,
     enum: CollectionType,
-    required: true,
     default: CollectionType.Regular,
   },
   unlockPercent: {
