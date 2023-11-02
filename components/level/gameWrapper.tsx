@@ -90,7 +90,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
         });
       }
     // delay 300ms to allow the collection list to render in the modal view
-    }, deviceInfo.screenSize < ScreenSize.MD ? 300 : 0);
+    }, deviceInfo.screenSize <= ScreenSize.LG ? 300 : 0);
   }
 
   function getCollectionTitle() {
