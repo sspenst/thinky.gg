@@ -7,6 +7,8 @@ import Dimensions from '@root/constants/dimensions';
 import StatFilter from '@root/constants/statFilter';
 import { AppContext } from '@root/contexts/appContext';
 import isPro from '@root/helpers/isPro';
+import { CollectionType } from '@root/models/constants/collection';
+import Collection, { EnrichedCollection } from '@root/models/db/collection';
 import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '@root/models/schemas/levelSchema';
 import classNames from 'classnames';
 import { debounce } from 'debounce';
@@ -380,7 +382,8 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
             slug: `../search${queryString ? `?${queryString}` : ''}`,
             updatedAt: ts,
             userId: { _id: new Types.ObjectId() } as Types.ObjectId & User,
-          };
+            type: CollectionType.InMemory
+          } as EnrichedCollection;
 
           sessionStorage.setItem('tempCollection', JSON.stringify(collectionTemp));
           setTempCollection(collectionTemp);

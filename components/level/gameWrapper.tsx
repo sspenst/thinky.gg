@@ -2,10 +2,11 @@ import Dimensions from '@root/constants/dimensions';
 import { AppContext } from '@root/contexts/appContext';
 import { MusicContext } from '@root/contexts/musicContext';
 import { PageContext } from '@root/contexts/pageContext';
+import { CollectionType } from '@root/models/constants/collection';
 import SelectOptionStats from '@root/models/selectOptionStats';
 import classNames from 'classnames';
 import Link from 'next/link';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import Collection from '../../models/db/collection';
 import { EnrichedLevel } from '../../models/db/level';
 import User from '../../models/db/user';
@@ -105,7 +106,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
     );
   }
 
-  function getCollectionLevelList(id: string) {
+  const getCollectionLevelList = useCallback((id: string) => {
     if (!collection) {
       return null;
     }
@@ -120,7 +121,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
             <SelectCard option={{
               author: levelInCollection.userId?.name,
               hideDifficulty: true,
-              hideStats: true,
+              hideStats: false,
               href: `/level/${levelInCollection.slug}?cid=${collection._id.toString()}`,
               id: levelInCollection._id.toString(),
               level: levelInCollection,
@@ -132,7 +133,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
         );
       })}
     </>);
-  }
+  }, [collection, level._id]);
 
   return (
     <div className='flex h-full'>
@@ -208,6 +209,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
           level={level}
           onNext={collection ? onNext : undefined}
           onPrev={collection ? onPrev : undefined}
+
           onSolve={() => {
             if (isDynamicSupported && isDynamic) {
               toggleVersion('hot');
@@ -221,6 +223,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
               }, 200);
             }
           }}
+
         />
       </div>
       {collection && !collectionViewHidden &&

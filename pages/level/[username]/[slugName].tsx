@@ -2,7 +2,8 @@
 import PagePath from '@root/constants/pagePath';
 import { AppContext } from '@root/contexts/appContext';
 import { useTour } from '@root/hooks/useTour';
-import Collection from '@root/models/db/collection';
+import { CollectionType } from '@root/models/constants/collection';
+import Collection, { EnrichedCollection } from '@root/models/db/collection';
 import { getCollection } from '@root/pages/api/collection-by-id/[id]';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
@@ -74,11 +75,33 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
   const [level, setLevel] = useState(_level);
   const { mutateProStatsLevel, proStatsLevel } = useProStatsLevel(level);
   const router = useRouter();
-  const { tempCollection } = useContext(AppContext);
+  const { tempCollection, setTempCollection } = useContext(AppContext);
   const { chapter, cid, slugName, ts, username } = router.query as LevelUrlQueryParams;
 
-  const mutateCollection = useCallback(() => {
-    if (!cid) {
+  const mutateCollection = useCallback(async () => {
+    if (!cid || collection?.type === CollectionType.InMemory) {
+      // let's redo the search query
+      const searchQuery = collection?.slug;
+      const url = '/api/' + searchQuery?.replace('../', '');
+      const ts = new Date();
+
+      const res = await fetch(url);
+      const resp = await res.json();
+      const collectionTemp = {
+        createdAt: ts,
+        isPrivate: true,
+        levels: resp.levels, _id: new Types.ObjectId(),
+        name: 'Search',
+        slug: searchQuery,
+        updatedAt: ts,
+        userId: { _id: new Types.ObjectId() } as Types.ObjectId & User,
+        type: CollectionType.InMemory
+      } as EnrichedCollection;
+
+      sessionStorage.setItem('tempCollection', JSON.stringify(collectionTemp));
+      setCollection(collectionTemp);
+      setTempCollection(collectionTemp);
+
       return;
     }
 
@@ -95,13 +118,13 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
       toast.dismiss();
       toast.error('Error fetching collection');
     });
-  }, [cid]);
+  }, [cid, collection?.type]);
 
   useEffect(() => {
     if (!_collection && tempCollection && tempCollection.levels.find(l => l._id === level._id)) {
       setCollection(tempCollection);
     }
-  }, [_collection, level._id, tempCollection]);
+  }, [_collection, level._id, setTempCollection, tempCollection]);
 
   // handle pressing "Next level"
   useEffect(() => {
