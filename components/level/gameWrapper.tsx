@@ -1,4 +1,5 @@
 import Dimensions from '@root/constants/dimensions';
+import { AppContext } from '@root/contexts/appContext';
 import { MusicContext } from '@root/contexts/musicContext';
 import { PageContext } from '@root/contexts/pageContext';
 import SelectOptionStats from '@root/models/selectOptionStats';
@@ -34,6 +35,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
   const [mutePostGameModalForThisLevel, setMutePostGameModalForThisLevel] = useState(false);
   const [postGameModalOpen, setShowPostGameModalOpen] = useState(false);
   const { setPreventKeyDownEvent } = useContext(PageContext);
+  const { deviceInfo } = useContext(AppContext);
   const [showCollectionViewModal, setShowCollectionViewModal] = useState(false);
 
   useEffect(() => {
@@ -86,7 +88,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
         });
       }
     // delay 300ms to allow the collection list to render in the modal view
-    }, 150);
+    }, deviceInfo.isMobile ? 300 : 0);
   }
 
   function getCollectionTitle() {
