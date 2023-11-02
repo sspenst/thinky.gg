@@ -1,5 +1,6 @@
 import isPro from '@root/helpers/isPro';
 import { logger } from '@root/helpers/logger';
+import { CollectionType } from '@root/models/constants/collection';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidObjectId, ValidObjectIdArray, ValidType } from '../../../helpers/apiWrapper';
@@ -70,9 +71,30 @@ export default withAuth({
 
     const session = await mongoose.startSession();
     let collection: Collection | null = null;
+    let errorCode = 500, errorMessage = 'Error updating collection';
 
     try {
       await session.withTransaction(async () => {
+        const collectionCurrent = await CollectionModel.findById(id, { userId: 1, type: 1 }, { session: session });
+
+        if (!collectionCurrent) {
+          errorCode = 404;
+          errorMessage = 'Collection not found';
+          throw new Error(errorMessage);
+        }
+
+        if (collectionCurrent.userId.toString() !== req.userId) {
+          errorCode = 401;
+          errorMessage = 'Not authorized to update this Collection';
+          throw new Error(errorMessage);
+        }
+
+        if (collectionCurrent.type === CollectionType.PlayLater) {
+          errorCode = 400;
+          errorMessage = 'Cannot update Play Later collection';
+          throw new Error(errorMessage);
+        }
+
         const setObj: UpdateLevelParams = {
           isPrivate: setIsPrivate,
         };
@@ -90,6 +112,12 @@ export default withAuth({
 
           setObj.name = trimmedName;
           setObj.slug = await generateCollectionSlug(req.user.name, trimmedName, id as string, { session: session });
+
+          if (setObj.slug.endsWith('/play-later')) {
+            errorCode = 400;
+            errorMessage = 'This uses a reserved word (play later). Please use another name for this collection.';
+            throw new Error(errorMessage);
+          }
         }
 
         collection = await CollectionModel.findOneAndUpdate({
@@ -109,11 +137,7 @@ export default withAuth({
       logger.error(err);
       session.endSession();
 
-      return res.status(500).json({ error: 'Error creating collection' });
-    }
-
-    if (!collection) {
-      return res.status(401).json({ error: 'User is not authorized to perform this action' });
+      return res.status(errorCode).json({ error: errorMessage });
     }
 
     return res.status(200).json(collection);

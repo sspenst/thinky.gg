@@ -36,7 +36,9 @@ export default withAuth({
       $project: {
         _id: 1,
         containsLevel: 1,
+        isPrivate: 1,
         name: 1,
+        type: 1,
       },
     },
   ]);

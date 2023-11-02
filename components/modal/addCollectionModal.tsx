@@ -73,7 +73,11 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
 
         const newCollection = await res.json();
 
-        router.replace(`/collection/${newCollection.slug}`);
+        if (collection) {
+          router.replace(`/collection/${newCollection.slug}`);
+        } else {
+          router.push(`/collection/${newCollection.slug}`);
+        }
       } else {
         throw res.text();
       }
@@ -113,7 +117,6 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
           </label>
           <input
             checked={isPrivate}
-            disabled={!isPro(user)}
             id='privateCollection'
             onChange={() => setIsPrivate(p => !p)}
             type='checkbox'

@@ -3,6 +3,9 @@ import '../styles/global.css';
 import 'react-tooltip/dist/react-tooltip.css';
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react';
 import MusicContextProvider from '@root/contexts/musicContext';
+import useDeviceCheck from '@root/hooks/useDeviceCheck';
+import Collection from '@root/models/db/collection';
+import { NextPageContext } from 'next';
 import type { AppProps } from 'next/app';
 import { Rubik, Teko } from 'next/font/google';
 import Head from 'next/head';
@@ -10,7 +13,7 @@ import Router, { useRouter } from 'next/router';
 import { DefaultSeo } from 'next-seo';
 import { ThemeProvider } from 'next-themes';
 import nProgress from 'nprogress';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import CookieConsent from 'react-cookie-consent';
 import TagManager, { TagManagerArgs } from 'react-gtm-module';
 import { Toaster } from 'react-hot-toast';
@@ -19,9 +22,9 @@ import { io, Socket } from 'socket.io-client';
 import Theme from '../constants/theme';
 import { AppContext } from '../contexts/appContext';
 import useUser from '../hooks/useUser';
+import { MultiplayerMatchState } from '../models/constants/multiplayer';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
 import User, { UserWithMultiplayerProfile } from '../models/db/user';
-import { MultiplayerMatchState } from '../models/MultiplayerEnums';
 
 export const rubik = Rubik({ display: 'swap', subsets: ['latin'] });
 export const teko = Teko({ display: 'swap', subsets: ['latin'], weight: '500' });
@@ -61,7 +64,20 @@ function updateGrowthBookURL() {
   growthbook.setURL(window.location.href);
 }
 
-export default function MyApp({ Component, pageProps }: AppProps) {
+MyApp.getInitialProps = async ({ ctx }: { ctx: NextPageContext }) => {
+  let userAgent;
+
+  if (ctx.req) {
+    userAgent = ctx.req.headers['user-agent'];
+  } else {
+    userAgent = navigator.userAgent;
+  }
+
+  return { userAgent };
+};
+
+export default function MyApp({ Component, pageProps, userAgent }: AppProps & { userAgent: string }) {
+  const deviceInfo = useDeviceCheck(userAgent);
   const forceUpdate = useForceUpdate();
   const { isLoading, mutateUser, user } = useUser();
   const [multiplayerSocket, setMultiplayerSocket] = useState<MultiplayerSocket>({
@@ -71,21 +87,41 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     privateAndInvitedMatches: [],
     socket: undefined,
   });
+  const [playLater, setPlayLater] = useState<{ [key: string]: boolean }>();
   const router = useRouter();
   const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);
   const [sounds, setSounds] = useState<{ [key: string]: HTMLAudioElement }>({});
+  const [tempCollection, setTempCollection] = useState<Collection>();
   const [theme, setTheme] = useState<string>();
   const { matches, privateAndInvitedMatches } = multiplayerSocket;
 
+  const mutatePlayLater = useCallback(() => {
+    fetch('/api/play-later', {
+      method: 'GET',
+    }).then(async res => {
+      if (res.status === 200) {
+        setPlayLater(await res.json());
+      } else {
+        throw res.text();
+      }
+    }).catch(err => {
+      console.error(err);
+    });
+  }, []);
+
   useEffect(() => {
-    // preload sounds
+    mutatePlayLater();
+  }, [mutatePlayLater]);
+
+  // preload sounds
+  useEffect(() => {
     setSounds({
       'start': new Audio('/sounds/start.wav'),
       'warning': new Audio('/sounds/warning.wav'),
     });
   }, []);
 
-  // initialize shouldAttemptAuth if it exists in sessionStorage
+  // initialize sessionStorage values
   useEffect(() => {
     if (typeof window.sessionStorage === 'undefined') {
       return;
@@ -95,6 +131,16 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
     if (shouldAttemptAuthStorage) {
       setShouldAttemptAuth(shouldAttemptAuthStorage === 'true');
+    }
+
+    const tempCollectionStorage = window.sessionStorage.getItem('tempCollection');
+
+    if (tempCollectionStorage) {
+      try {
+        setTempCollection(JSON.parse(tempCollectionStorage));
+      } catch (e) {
+        console.error('error parsing tempCollection', e);
+      }
     }
   }, []);
 
@@ -345,13 +391,18 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       )}
       <GrowthBookProvider growthbook={growthbook}>
         <AppContext.Provider value={{
+          deviceInfo: deviceInfo,
           forceUpdate: forceUpdate,
           multiplayerSocket: multiplayerSocket,
+          mutatePlayLater: mutatePlayLater,
           mutateUser: mutateUser,
+          playLater: playLater,
           setShouldAttemptAuth: setShouldAttemptAuth,
+          setTempCollection: setTempCollection,
           setTheme: setTheme,
           shouldAttemptAuth: shouldAttemptAuth,
           sounds: sounds,
+          tempCollection,
           theme: theme,
           user: user,
           userConfig: user?.config,

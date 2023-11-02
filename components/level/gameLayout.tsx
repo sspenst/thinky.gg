@@ -1,30 +1,24 @@
 import { PageContext } from '@root/contexts/pageContext';
 import { GameState } from '@root/helpers/gameStateHelpers';
 import React, { useContext, useEffect, useState } from 'react';
-import Dimensions from '../../constants/dimensions';
 import Control from '../../models/control';
 import { EnrichedLevel } from '../../models/db/level';
-import FormattedUser from '../formatted/formattedUser';
 import CheckpointsModal from '../modal/checkpointsModal';
-import LevelInfoModal from '../modal/levelInfoModal';
 import StyledTooltip from '../page/styledTooltip';
 import Controls from './controls';
 import Grid from './grid';
-import Solved from './info/solved';
 
 interface GameLayoutProps {
   controls: Control[];
   disableCheckpoints?: boolean;
   gameState: GameState;
   level: EnrichedLevel;
-  matchId?: string;
   onCellClick: (x: number, y: number) => void;
 }
 
-export default function GameLayout({ controls, disableCheckpoints, gameState, level, matchId, onCellClick }: GameLayoutProps) {
+export default function GameLayout({ controls, disableCheckpoints, gameState, level, onCellClick }: GameLayoutProps) {
   const [fullScreen, setFullScreen] = useState(false);
   const [isCheckpointOpen, setIsCheckpointOpen] = useState(false);
-  const [isLevelInfoOpen, setIsLevelInfoOpen] = useState(false);
   const { setPreventKeyDownEvent, setShowHeader } = useContext(PageContext);
 
   useEffect(() => {
@@ -47,45 +41,6 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
     <div className='grow flex flex-col max-w-full select-none h-full' id='game-layout' style={{
       backgroundColor: 'var(--bg-color)',
     }}>
-      {!matchId && level.userId && !fullScreen && <>
-        <div className='flex items-center justify-center py-1 px-2 gap-1 block xl:hidden'>
-          <button
-            className='flex gap-2 items-center truncate'
-            onClick={() => {
-              setIsLevelInfoOpen(true);
-              setPreventKeyDownEvent(true);
-            }}
-            style={{
-              color: level.userMoves ? (level.userMoves === level.leastMoves ? 'var(--color-complete)' : 'var(--color-incomplete)') : 'var(--color)',
-            }}
-          >
-            <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' width='16' height='16' style={{
-              minWidth: 16,
-              minHeight: 16,
-            }}>
-              <path strokeLinecap='round' strokeLinejoin='round' d='M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12' />
-            </svg>
-            <h1
-              className='whitespace-nowrap font-bold underline truncate'
-            >
-              {level.name}
-            </h1>
-            {level.userMoves === level.leastMoves && <Solved className='-ml-2' />}
-          </button>
-          by
-          <div style={{ minWidth: 100 }}>
-            <FormattedUser id='level-title' size={Dimensions.AvatarSizeSmall} user={level.userId} />
-          </div>
-        </div>
-        <LevelInfoModal
-          closeModal={() => {
-            setIsLevelInfoOpen(false);
-            setPreventKeyDownEvent(false);
-          }}
-          isOpen={isLevelInfoOpen}
-          level={level}
-        />
-      </>}
       <Grid
         gameState={gameState}
         id={level._id.toString()}

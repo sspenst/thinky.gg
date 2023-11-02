@@ -532,7 +532,7 @@ export default function Tutorial() {
               }}>
                 Now <Link href='/signup' className='font-bold text-blue-500 hover:text-blue-400'>sign up</Link> for free to explore the world of Pathology!
               </div>
-              <div className='text-md fadeIn' style={{
+              <div className='fadeIn' style={{
                 pointerEvents: 'all',
                 animationDelay: '2.5s'
               }}>

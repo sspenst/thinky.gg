@@ -1,12 +1,15 @@
 /* istanbul ignore file */
-
 import PagePath from '@root/constants/pagePath';
+import { AppContext } from '@root/contexts/appContext';
 import { useTour } from '@root/hooks/useTour';
+import Collection from '@root/models/db/collection';
+import { getCollection } from '@root/pages/api/collection-by-id/[id]';
+import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import LinkInfo from '../../../components/formatted/linkInfo';
 import GameWrapper from '../../../components/level/gameWrapper';
@@ -14,7 +17,6 @@ import Page from '../../../components/page/page';
 import Dimensions from '../../../constants/dimensions';
 import { LevelContext } from '../../../contexts/levelContext';
 import getProfileSlug from '../../../helpers/getProfileSlug';
-import useCollectionById from '../../../hooks/useCollectionById';
 import useProStatsLevel from '../../../hooks/useProStatsLevel';
 import { getUserFromToken } from '../../../lib/withAuth';
 import { EnrichedLevel } from '../../../models/db/level';
@@ -35,6 +37,16 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
   const level = await getLevelByUrlPath(username, slugName, reqUser);
+  const cid = context.query?.cid as string | undefined;
+  let collection: Collection | null = null;
+
+  if (cid) {
+    collection = await getCollection({
+      matchQuery: { _id: new Types.ObjectId(cid) },
+      reqUser,
+      populateLevels: true,
+    });
+  }
 
   if (!level) {
     return {
@@ -44,6 +56,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
+      _collection: JSON.parse(JSON.stringify(collection)),
       _level: JSON.parse(JSON.stringify(level)),
       reqUser: JSON.parse(JSON.stringify(reqUser)),
     } as LevelProps,
@@ -51,16 +64,44 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 interface LevelProps {
+  _collection: Collection | null;
   _level: EnrichedLevel;
   reqUser: User | null;
 }
 
-export default function LevelPage({ _level, reqUser }: LevelProps) {
+export default function LevelPage({ _collection, _level, reqUser }: LevelProps) {
+  const [collection, setCollection] = useState<Collection | null>(_collection);
   const [level, setLevel] = useState(_level);
   const { mutateProStatsLevel, proStatsLevel } = useProStatsLevel(level);
   const router = useRouter();
+  const { tempCollection } = useContext(AppContext);
   const { chapter, cid, slugName, ts, username } = router.query as LevelUrlQueryParams;
-  const { collection } = useCollectionById(cid);
+
+  const mutateCollection = useCallback(() => {
+    if (!cid) {
+      return;
+    }
+
+    fetch(`/api/collection-by-id/${cid}`, {
+      method: 'GET',
+    }).then(async res => {
+      if (res.status === 200) {
+        setCollection(await res.json());
+      } else {
+        throw res.text();
+      }
+    }).catch(err => {
+      console.error(err);
+      toast.dismiss();
+      toast.error('Error fetching collection');
+    });
+  }, [cid]);
+
+  useEffect(() => {
+    if (!_collection && tempCollection && tempCollection.levels.find(l => l._id === level._id)) {
+      setCollection(tempCollection);
+    }
+  }, [_collection, level._id, tempCollection]);
 
   // handle pressing "Next level"
   useEffect(() => {
@@ -174,7 +215,8 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
     // if a collection id was passed to the page we can show more directory info
     const user = collection.userId;
 
-    if (user) {
+    // TODO: this is a hack to handle tempCollection
+    if (user?.name !== undefined) {
       folders.push(new LinkInfo(user.name, `/profile/${user.name}/collections`));
     }
 
@@ -190,7 +232,6 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
   const ogUrl = `https://pathology.gg/level/${level.slug}`;
   const ogFullUrl = `https://pathology.gg${ogUrl}`;
   const authorNote = level.authorNote ? level.authorNote : `${level.name} by ${level.userId.name}`;
-
   const tour = useTour(PagePath.LEVEL, undefined, true);
 
   return (
@@ -220,6 +261,7 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
         getReviews: getReviews,
         inCampaign: !!chapter && level.userMoves !== level.leastMoves,
         level: level,
+        mutateCollection: mutateCollection,
         mutateLevel: mutateLevel,
         mutateProStatsLevel: mutateProStatsLevel,
         proStatsLevel: proStatsLevel,
@@ -233,16 +275,14 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
           subtitleHref={showSubtitle ? getProfileSlug(level.userId) : undefined}
           title={level.name ?? 'Loading...'}
         >
-          {level.isDraft ? <></> :
-            <GameWrapper
-              chapter={chapter as string | undefined}
-              collection={collection}
-              level={level}
-              onNext={() => changeLevel(true)}
-              onPrev={() => changeLevel(false)}
-              user={reqUser}
-            />
-          }
+          <GameWrapper
+            chapter={chapter as string | undefined}
+            collection={collection}
+            level={level}
+            onNext={() => changeLevel(true)}
+            onPrev={() => changeLevel(false)}
+            user={reqUser}
+          />
         </Page>
       </LevelContext.Provider>
     </>

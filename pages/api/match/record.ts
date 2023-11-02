@@ -1,8 +1,8 @@
 import { MultiplayerRecord, MultiplayerRecords } from '@root/components/profile/profileMultiplayer';
 import { ValidObjectId } from '@root/helpers/apiWrapper';
 import withAuth, { NextApiRequestWithAuth } from '@root/lib/withAuth';
+import { MultiplayerMatchState, MultiplayerMatchType } from '@root/models/constants/multiplayer';
 import { MultiplayerMatchModel } from '@root/models/mongoose';
-import { MultiplayerMatchState, MultiplayerMatchType } from '@root/models/MultiplayerEnums';
 import { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 

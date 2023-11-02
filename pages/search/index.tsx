@@ -1,12 +1,16 @@
 import { Menu, Transition } from '@headlessui/react';
+import { PlayLaterToggleButton } from '@root/components/cards/playLaterToggleButton';
 import FormattedDate from '@root/components/formatted/formattedDate';
 import FormattedUser from '@root/components/formatted/formattedUser';
 import DataTable, { TableColumn } from '@root/components/tables/dataTable';
 import Dimensions from '@root/constants/dimensions';
 import StatFilter from '@root/constants/statFilter';
+import { AppContext } from '@root/contexts/appContext';
 import isPro from '@root/helpers/isPro';
+import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '@root/models/schemas/levelSchema';
 import classNames from 'classnames';
 import { debounce } from 'debounce';
+import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -14,7 +18,7 @@ import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
 import nProgress from 'nprogress';
 import { ParsedUrlQuery, ParsedUrlQueryInput } from 'querystring';
-import React, { Fragment, useCallback, useEffect, useState } from 'react';
+import React, { Fragment, useCallback, useContext, useEffect, useState } from 'react';
 import FilterButton from '../../components/buttons/filterButton';
 import FormattedDifficulty, { difficultyList, getDifficultyColor } from '../../components/formatted/formattedDifficulty';
 import FormattedLevelLink from '../../components/formatted/formattedLevelLink';
@@ -92,7 +96,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }
   }
 
-  const query = await doQuery(searchQuery, reqUser);
+  const query = await doQuery(searchQuery, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, ...{ width: 1, data: 1, height: 1 } });
 
   if (!query) {
     throw new Error('Error querying Levels');
@@ -258,6 +262,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState(searchQuery);
   const router = useRouter();
+  const { setTempCollection } = useContext(AppContext);
 
   useEffect(() => {
     setData(enrichedLevels);
@@ -268,13 +273,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
     setQuery(searchQuery);
   }, [searchQuery]);
 
-  const fetchLevels = useCallback((query: SearchQuery) => {
-    // TODO: check if query is identical, in which case do nothing
-
-    nProgress.start();
-    setQuery(query);
-    setLoading(true);
-
+  function getParsedUrlQuery(query: SearchQuery) {
     // only add non-default query params for a clean URL
     const q: ParsedUrlQueryInput = {};
 
@@ -284,8 +283,18 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       }
     }
 
+    return q;
+  }
+
+  const fetchLevels = useCallback((query: SearchQuery) => {
+    // TODO: check if query is identical, in which case do nothing
+
+    nProgress.start();
+    setQuery(query);
+    setLoading(true);
+
     router.push({
-      query: q,
+      query: getParsedUrlQuery(query),
     });
   }, [router]);
 
@@ -320,6 +329,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       name: 'Author',
       selector: (row: EnrichedLevel) => (
         <div className='flex gap-3 truncate'>
+          <PlayLaterToggleButton level={row} />
           <button
             onClick={() => {
               if (query.searchAuthor === row.userId.name) {
@@ -354,7 +364,28 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       id: 'name',
       name: 'Name',
       grow: 2,
-      selector: (row: EnrichedLevel) => <FormattedLevelLink id='search' level={row} />,
+      selector: (row: EnrichedLevel) => {
+        return <FormattedLevelLink onClick={() => {
+          const q = getParsedUrlQuery(query);
+          const queryString = Object.keys(q).map(key => key + '=' + query[key]).join('&');
+          const ts = new Date();
+
+          // TODO: temp collection is a hack (doesn't represent a real collection so there are other UX problems)
+          // should make a new collection class to be used on the level page (with an href property, isInMemory, etc.)
+          const collectionTemp = {
+            createdAt: ts,
+            isPrivate: true,
+            levels: data, _id: new Types.ObjectId(),
+            name: 'Search',
+            slug: `../search${queryString ? `?${queryString}` : ''}`,
+            updatedAt: ts,
+            userId: { _id: new Types.ObjectId() } as Types.ObjectId & User,
+          };
+
+          sessionStorage.setItem('tempCollection', JSON.stringify(collectionTemp));
+          setTempCollection(collectionTemp);
+        }} id='search' level={row} />;
+      },
       sortable: true,
       style: {
         minWidth: '150px',

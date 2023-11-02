@@ -2,10 +2,10 @@ import classNames from 'classnames';
 import moment from 'moment';
 import React from 'react';
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { MatchAction, MatchLogDataLevelComplete, MatchLogDataUserLeveId, MultiplayerMatchTypeDurationMap } from '../../models/constants/multiplayer';
 import Level from '../../models/db/level';
 import MultiplayerMatch from '../../models/db/multiplayerMatch';
 import { UserWithMultiplayerProfile } from '../../models/db/user';
-import { MatchAction, MatchLogDataLevelComplete, MatchLogDataUserLeveId, MultiplayerMatchTypeDurationMap } from '../../models/MultiplayerEnums';
 
 interface MatchChartProps {
   match: MultiplayerMatch;

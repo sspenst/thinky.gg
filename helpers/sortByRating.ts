@@ -1,5 +1,5 @@
+import { MultiplayerMatchType } from '../models/constants/multiplayer';
 import { UserWithMultiplayerProfile } from '../models/db/user';
-import { MultiplayerMatchType } from '../models/MultiplayerEnums';
 import { getRatingFromProfile, isProvisional } from './multiplayerHelperFunctions';
 
 export default function sortByRating(a: UserWithMultiplayerProfile, b: UserWithMultiplayerProfile, type: MultiplayerMatchType) {

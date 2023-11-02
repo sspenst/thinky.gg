@@ -1,6 +1,8 @@
+import { logger } from '@root/helpers/logger';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import { TimerUtil } from '../../../../helpers/getTs';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
@@ -201,6 +203,71 @@ describe('Testing updating collection data', () => {
         for (let i = 0; i < numLevels; i++) {
           expect(response.levels[i]._id).toBe(levels[i].toString());
         }
+      },
+    });
+  });
+  test('try to change the name to a reserved slug', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as unknown as Logger));
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          userId: TestId.USER,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: TestId.COLLECTION, // shouldn't exist
+          },
+          body: {
+            levels: levels.map(levelId => levelId.toString()),
+            authorNote: 'added 100 levels',
+            name: 'play ^later'
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await updateCollectionHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('This uses a reserved word (play later). Please use another name for this collection.');
+        expect(res.status).toBe(400);
+      },
+    });
+  });
+  test('try to change to private', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          userId: TestId.USER,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: TestId.COLLECTION, // shouldn't exist
+          },
+          body: {
+            levels: levels.map(levelId => levelId.toString()),
+            authorNote: 'added 100 levels',
+            private: true
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await updateCollectionHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+
+        expect(res.status).toBe(200);
       },
     });
   });

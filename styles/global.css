@@ -512,6 +512,10 @@ body {
   background-color: var(--bg-color-4);
 }
 
+.bg-1 {
+  background-color: var(--bg-color);
+}
+
 .bg-2 {
   background-color: var(--bg-color-2);
 }
@@ -538,4 +542,18 @@ body {
 
 .gray {
   color: var(--color-gray);
+}
+
+/**
+ * ScreenSize.XL is when the desktop view displays on the level page
+ * assume anything under this could be a mobile device
+ */
+@media (min-width: 1280px) {
+  .select-card-button {
+    display: none;
+  }
+
+  .select-card:hover .select-card-button {
+    display: block;
+  }
 }

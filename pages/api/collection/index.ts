@@ -25,6 +25,7 @@ export default withAuth({
 
   const session = await mongoose.startSession();
   let collection: Collection | null = null;
+  let errorCode = 500, errorMessage = 'Error creating collection';
 
   try {
     await session.withTransaction(async () => {
@@ -32,6 +33,12 @@ export default withAuth({
       const trimmedName = name.trim();
       const slug = await generateCollectionSlug(req.user.name, trimmedName, undefined, { session: session });
       const setIsPrivate = isPro(req.user) ? !!isPrivate : false;
+
+      if (slug.endsWith('/play-later')) {
+        errorCode = 400;
+        errorMessage = 'This uses a reserved word (play later). Please use another name for this collection.';
+        throw new Error(errorMessage); // can't just return res.status because we're in a transaction and will get a warning about headers being sent twice
+      }
 
       collection = (await CollectionModel.create([{
         _id: new Types.ObjectId(),
@@ -45,10 +52,10 @@ export default withAuth({
 
     session.endSession();
   } catch (err) /* istanbul ignore next */ {
-    logger.error(err);
     session.endSession();
+    logger.error(err);
 
-    return res.status(500).json({ error: 'Error creating collection' });
+    return res.status(errorCode).json({ error: errorMessage });
   }
 
   return res.status(200).json(collection);

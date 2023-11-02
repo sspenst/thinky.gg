@@ -4,7 +4,7 @@ import { directionsToGameState, isValidDirections } from '@root/helpers/checkpoi
 import { areEqualGameStates, cloneGameState, GameState, initGameState, makeMove, undo } from '@root/helpers/gameStateHelpers';
 import isPro from '@root/helpers/isPro';
 import useCheckpoints, { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
-import useDeviceCheck, { ScreenSize } from '@root/hooks/useDeviceCheck';
+import { ScreenSize } from '@root/hooks/useDeviceCheck';
 import { Types } from 'mongoose';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -57,8 +57,10 @@ export default function Game({
   onStatsSuccess,
 }: GameProps) {
   const levelContext = useContext(LevelContext);
-  const { mutateUser, shouldAttemptAuth, user } = useContext(AppContext);
+  const { deviceInfo, mutateUser, shouldAttemptAuth, user } = useContext(AppContext);
   const { preventKeyDownEvent } = useContext(PageContext);
+
+  const mutateCollection = levelContext?.mutateCollection;
   const mutateLevel = levelContext?.mutateLevel;
   const mutateProStatsLevel = levelContext?.mutateProStatsLevel;
 
@@ -144,6 +146,10 @@ export default function Game({
       if (res.status === 200) {
         mutateUser();
 
+        if (mutateCollection) {
+          mutateCollection();
+        }
+
         if (mutateLevel) {
           mutateLevel();
         }
@@ -179,7 +185,7 @@ export default function Game({
     }).finally(() => {
       NProgress.done();
     });
-  }, [disableStats, matchId, mutateLevel, mutateProStatsLevel, mutateUser, onStatsSuccess]);
+  }, [disableStats, matchId, mutateCollection, mutateLevel, mutateProStatsLevel, mutateUser, onStatsSuccess]);
 
   const saveCheckpoint = useCallback((index: number) => {
     if (index !== BEST_CHECKPOINT_INDEX) {
@@ -662,7 +668,7 @@ export default function Game({
   }, [handleBlurEvent, handleKeyDownEvent, handleKeyUpEvent, handleTouchMoveEvent, handleTouchStartEvent, handleTouchEndEvent]);
 
   const [controls, setControls] = useState<Control[]>([]);
-  const { screenSize } = useDeviceCheck();
+  const screenSize = deviceInfo.screenSize;
   const isMobile = screenSize < ScreenSize.XL;
 
   useEffect(() => {
@@ -760,7 +766,6 @@ export default function Game({
         disableCheckpoints={disableCheckpoints}
         gameState={gameState}
         level={level}
-        matchId={matchId}
         onCellClick={(x, y) => onCellClick(x, y)}
       />
     </GameContext.Provider>

@@ -16,10 +16,10 @@ import { DATA_TABLE_CUSTOM_STYLES } from '../../helpers/dataTableCustomStyles';
 import { TimerUtil } from '../../helpers/getTs';
 import { logger } from '../../helpers/logger';
 import dbConnect from '../../lib/dbConnect';
+import { MultiplayerMatchType } from '../../models/constants/multiplayer';
 import MultiplayerProfile from '../../models/db/multiplayerProfile';
 import User from '../../models/db/user';
 import { GraphModel, MultiplayerProfileModel, ReviewModel, UserModel } from '../../models/mongoose';
-import { MultiplayerMatchType } from '../../models/MultiplayerEnums';
 import { cleanInput } from '../api/search';
 
 const PAGINATION_PER_PAGE = 40;
