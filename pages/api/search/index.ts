@@ -492,7 +492,7 @@ export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiR
   await dbConnect();
   const token = req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, req) : null;
-  const query = await doQuery(req.query as SearchQuery, reqUser);
+  const query = await doQuery(req.query as SearchQuery, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, ...{ data: 1, width: 1, height: 1 } });
 
   if (!query) {
     return res.status(500).json({
