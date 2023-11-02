@@ -8,6 +8,7 @@ import { CollectionModel, LevelModel } from '@root/models/mongoose';
 import { NextApiResponse } from 'next';
 
 export const MAX_LEVELS_IN_PLAY_LATER = process.env.NODE_ENV !== 'test' ? 500 : 2;
+
 export default withAuth(
   {
     GET: {},
@@ -77,6 +78,7 @@ export default withAuth(
       return res.status(200).json({ success: true });
     }
 
+    // TODO: should use save-level-to/[id].ts instead of this endpoint
     if (req.method === 'POST') {
       const { id } = req.body;
 
@@ -99,20 +101,19 @@ export default withAuth(
         return res.status(404).json({ error: 'Level not found.' });
       }
 
-      // grab the PlayLater
-      const PlayLater = await CollectionModel.findOne({
+      const playLater = await CollectionModel.findOne({
         userId: req.user._id,
         type: CollectionType.PlayLater,
       }, {
         levels: 1,
       }).lean<Collection>();
 
-      if (PlayLater) {
-        if (PlayLater.levels.length >= MAX_LEVELS_IN_PLAY_LATER) {
+      if (playLater) {
+        if (playLater.levels.length >= MAX_LEVELS_IN_PLAY_LATER) {
           return res.status(400).json({ error: `You can only have ${MAX_LEVELS_IN_PLAY_LATER} levels in your Play Later. Please remove some levels and try again.` });
         }
 
-        if (PlayLater.levels.find((level) => level.toString() === id)) {
+        if (playLater.levels.find((level) => level.toString() === id)) {
           return res.status(400).json({ error: 'This level is already in your Play Later.' });
         }
       }
@@ -124,13 +125,13 @@ export default withAuth(
         },
         {
           // add to set the id of the level to add to the PlayLater
-          name: !PlayLater?.name ? 'Play Later' : undefined,
+          name: !playLater?.name ? 'Play Later' : undefined,
           $addToSet: {
             levels: id,
           },
-          slug: !PlayLater?.slug ? req.user.name + '/play-later' : undefined,
-          type: !PlayLater?.type ? CollectionType.PlayLater : undefined,
-          isPrivate: !PlayLater ? true : undefined, // Allow users to make their Play Later public if they want
+          slug: !playLater?.slug ? req.user.name + '/play-later' : undefined,
+          type: !playLater?.type ? CollectionType.PlayLater : undefined,
+          isPrivate: !playLater ? true : undefined, // Allow users to make their Play Later public if they want
         },
         {
           new: true,

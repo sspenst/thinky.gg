@@ -15,9 +15,7 @@ type UpdateLevelParams = {
   isPrivate?: boolean,
   levels?: (string | Types.ObjectId)[],
   name?: string,
-  private?: boolean,
   slug?: string,
-
 }
 
 export default withAuth({
@@ -35,7 +33,6 @@ export default withAuth({
       isPrivate: ValidType('boolean', false),
       levels: ValidObjectIdArray(false),
       name: ValidType('string', false),
-      privateFlag: ValidType('boolean', false), // naming is privateFlag instead of private because private is a reserved word
     },
   },
   DELETE: {
@@ -83,13 +80,19 @@ export default withAuth({
         if (!collectionCurrent) {
           errorCode = 404;
           errorMessage = 'Collection not found';
-          throw new Error(errorMessage); // can't just return res.status because we're in a transaction and will get a warning about headers being sent twice
+          throw new Error(errorMessage);
         }
 
         if (collectionCurrent.userId.toString() !== req.userId) {
           errorCode = 401;
           errorMessage = 'Not authorized to update this Collection';
-          throw new Error(errorMessage); // can't just return res.status because we're in a transaction and will get a warning about headers being sent twice
+          throw new Error(errorMessage);
+        }
+
+        if (collectionCurrent.type === CollectionType.PlayLater) {
+          errorCode = 400;
+          errorMessage = 'Cannot update Play Later collection';
+          throw new Error(errorMessage);
         }
 
         const setObj: UpdateLevelParams = {
@@ -104,16 +107,16 @@ export default withAuth({
           setObj.levels = (levels as string[]).map(i => new Types.ObjectId(i));
         }
 
-        const trimmedName = name?.trim();
+        if (name) {
+          const trimmedName = name.trim();
 
-        if (trimmedName && collectionCurrent.type !== CollectionType.PlayLater) {
           setObj.name = trimmedName;
           setObj.slug = await generateCollectionSlug(req.user.name, trimmedName, id as string, { session: session });
 
-          if (setObj.slug == req.user.name + '/play-later') {
+          if (setObj.slug.endsWith('/play-later')) {
             errorCode = 400;
-            errorMessage = 'This uses a reserved word (play later) which is a reserved word. Please use another name for this collection.';
-            throw new Error(errorMessage); // can't just return res.status because we're in a transaction and will get a warning about headers being sent twice
+            errorMessage = 'This uses a reserved word (play later). Please use another name for this collection.';
+            throw new Error(errorMessage);
           }
         }
 

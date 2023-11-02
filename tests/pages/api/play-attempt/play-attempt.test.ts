@@ -112,7 +112,7 @@ const tests = [
   },
   {
     levelId: TestId.LEVEL_4,
-    name: "don't play",
+    name: 'don\'t play',
     list: [['play', 0, 'created']],
     tests: async (
       playAttemptDocs: PlayAttempt[],
@@ -805,6 +805,7 @@ describe('Testing stats api', () => {
           { new: true }
         ),
       ]);
+
       await t.tests(allAttempts, allStats, lvlBeforeResync);
 
       const resetArr = {
@@ -910,6 +911,7 @@ describe('Testing stats api', () => {
       false
     );
     const promises = [];
+
     for (let i = 0; i < 9; i++) {
       promises.push(
         PlayAttemptModel.create({
@@ -925,6 +927,7 @@ describe('Testing stats api', () => {
         })
       );
     }
+
     promises.push(queueCalcPlayAttempts(level._id));
     await Promise.all(promises);
 
