@@ -18,7 +18,20 @@ export default withAuth({
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   const { id } = req.query;
   const { collectionIds } = req.body;
-  const level = await LevelModel.findById<Level>(id);
+  const level = await LevelModel.findOne<Level>({
+    _id: id,
+    isDeleted: { $ne: true },
+    // filter out draft levels unless the userId matches req.user._id
+    $or: [
+      { isDraft: false },
+      {
+        $and: [
+          { isDraft: true },
+          { userId: req.user._id },
+        ]
+      }
+    ],
+  });
 
   if (!level) {
     return res.status(400).json({

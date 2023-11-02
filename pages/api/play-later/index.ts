@@ -3,6 +3,7 @@ import isPro from '@root/helpers/isPro';
 import withAuth, { NextApiRequestWithAuth } from '@root/lib/withAuth';
 import { CollectionType } from '@root/models/constants/collection';
 import Collection from '@root/models/db/collection';
+import Level from '@root/models/db/level';
 import { CollectionModel, LevelModel } from '@root/models/mongoose';
 import { NextApiResponse } from 'next';
 
@@ -14,7 +15,6 @@ export default withAuth(
       body: {
         id: ValidObjectId(),
       },
-
     },
     DELETE: {
       body: {
@@ -27,23 +27,26 @@ export default withAuth(
     }
 
     if (req.method === 'GET') {
-      // grab the PlayLater
-      const PlayLater = await CollectionModel.aggregate([
+      const playLater = await CollectionModel.aggregate([
         {
           $match: {
             userId: req.user._id,
             type: CollectionType.PlayLater,
           }
         },
+        {
+          $project: {
+            levels: 1,
+          },
+        },
       ]) as Collection[];
 
-      if (PlayLater.length === 0) {
+      if (playLater.length === 0) {
         return res.status(200).json([]);
       }
-      // return PlayLater[0] as a Map<string, boolean>
-      // where the key is the level id and the value is true
 
-      const map: { [key: string]: boolean } = (PlayLater[0].levels).reduce((acc, item) => {
+      // map so we can quickly we can quickly check if a level is in playLater
+      const map: { [key: string]: boolean } = (playLater[0].levels).reduce((acc, item) => {
         acc[item._id.toString()] = true;
 
         return acc;
@@ -79,13 +82,18 @@ export default withAuth(
 
       const level = await LevelModel.findOne({
         _id: id,
-        isDraft: false,
         isDeleted: { $ne: true },
-      }, {
-        _id: 1,
-      }, {
-        lean: true,
-      });
+        // filter out draft levels unless the userId matches req.user._id
+        $or: [
+          { isDraft: false },
+          {
+            $and: [
+              { isDraft: true },
+              { userId: req.user._id },
+            ]
+          }
+        ],
+      }, { _id: 1 }).lean<Level>();
 
       if (!level) {
         return res.status(404).json({ error: 'Level not found.' });
@@ -97,9 +105,7 @@ export default withAuth(
         type: CollectionType.PlayLater,
       }, {
         levels: 1,
-      }, {
-        lean: true,
-      }) as Collection;
+      }).lean<Collection>();
 
       if (PlayLater) {
         if (PlayLater.levels.length >= MAX_LEVELS_IN_PLAY_LATER) {

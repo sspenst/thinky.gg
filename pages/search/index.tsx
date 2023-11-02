@@ -369,6 +369,9 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
           const q = getParsedUrlQuery(query);
           const queryString = Object.keys(q).map(key => key + '=' + query[key]).join('&');
           const ts = new Date();
+
+          // TODO: temp collection is a hack (doesn't represent a real collection so there are other UX problems)
+          // should make a new collection class to be used on the level page (with an href property, isInMemory, etc.)
           const collectionTemp = {
             createdAt: ts,
             isPrivate: true,
@@ -376,10 +379,9 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
             name: 'Search',
             slug: `../search${queryString ? `?${queryString}` : ''}`,
             updatedAt: ts,
-            userId: { _id: new Types.ObjectId(), name: 'Search' } as Types.ObjectId & User,
+            userId: { _id: new Types.ObjectId() } as Types.ObjectId & User,
           };
 
-          /* TODO: maybe save to cloud instead of session storage? */
           sessionStorage.setItem('tempCollection', JSON.stringify(collectionTemp));
           setTempCollection(collectionTemp);
         }} id='search' level={row} />;

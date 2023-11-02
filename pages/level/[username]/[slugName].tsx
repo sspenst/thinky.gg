@@ -64,13 +64,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 interface LevelProps {
-  _level: EnrichedLevel;
   _collection: Collection | null;
+  _level: EnrichedLevel;
   reqUser: User | null;
 }
 
 export default function LevelPage({ _collection, _level, reqUser }: LevelProps) {
-  // TODO: Can we use useSWRHelper for this?
   const [collection, setCollection] = useState<Collection | null>(_collection);
   const [level, setLevel] = useState(_level);
   const { mutateProStatsLevel, proStatsLevel } = useProStatsLevel(level);
@@ -216,7 +215,8 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
     // if a collection id was passed to the page we can show more directory info
     const user = collection.userId;
 
-    if (user) {
+    // TODO: this is a hack to handle tempCollection
+    if (user?.name !== undefined) {
       folders.push(new LinkInfo(user.name, `/profile/${user.name}/collections`));
     }
 
