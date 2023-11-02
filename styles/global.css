@@ -512,6 +512,10 @@ body {
   background-color: var(--bg-color-4);
 }
 
+.bg-1 {
+  background-color: var(--bg-color);
+}
+
 .bg-2 {
   background-color: var(--bg-color-2);
 }

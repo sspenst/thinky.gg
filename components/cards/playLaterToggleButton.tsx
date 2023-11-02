@@ -6,12 +6,17 @@ import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
 import StyledTooltip from '../page/styledTooltip';
 
-export function PlayLaterToggleButton({ level }: {level: EnrichedLevel}) {
+interface PlayLaterToggleButtonProps {
+  className?: string;
+  level: EnrichedLevel;
+}
+
+export function PlayLaterToggleButton({ className, level }: PlayLaterToggleButtonProps) {
   const { mutatePlayLater, playLater, user } = useContext(AppContext);
   const isInPlayLater = !!(playLater && playLater[level._id.toString()]);
   const [isLoading, setIsLoading] = useState(false);
 
-  if (!user || !isPro(user)) {
+  if (!user || !isPro(user) || !playLater) {
     return null;
   }
 
@@ -71,6 +76,7 @@ export function PlayLaterToggleButton({ level }: {level: EnrichedLevel}) {
 
   return <>
     <button
+      className={className}
       data-tooltip-content={isInPlayLater ? 'Remove from Play Later' : 'Add to Play Later'}
       data-tooltip-id={id}
       disabled={isLoading}

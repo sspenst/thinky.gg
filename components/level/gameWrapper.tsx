@@ -53,6 +53,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
     }
 
     setMutePostGameModalForThisLevel(false);
+    setShowCollectionViewModal(false);
   }, [level._id]);
 
   // scroll to the collection level on level change
@@ -71,8 +72,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
         inline: 'nearest',
       });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [level._id]);
+  }, [collection, level._id]);
 
   function scrollModalToCollectionLevel() {
     setTimeout(() => {
@@ -90,11 +90,19 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
     }, 150);
   }
 
-  const collectionLevelTitle = collection && (
-    <Link className='text-xl font-bold hover:underline w-fit' href={'/collection/' + collection.slug}>
-      {collection.name}
-    </Link>
-  );
+  function getCollectionTitle() {
+    if (!collection) {
+      return null;
+    }
+
+    const href = chapter ? `/chapter${chapter}` : `/collection/${collection.slug}`;
+
+    return (
+      <Link className='text-xl font-bold hover:underline w-fit' href={href}>
+        {collection.name}
+      </Link>
+    );
+  }
 
   function getCollectionLevelList(id: string) {
     if (!collection) {
@@ -107,7 +115,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
         const anchorId = `collection-level-${id}-${levelInCollection._id.toString()}`;
 
         return (
-          <div className={classNames({ 'bg-3': isCurrentLevel })} id={anchorId} key={anchorId}>
+          <div className={classNames({ 'bg-3': isCurrentLevel }, { 'rounded-xl': id === 'modal' })} id={anchorId} key={anchorId}>
             <SelectCard option={{
               author: levelInCollection.userId?.name,
               hideAddToPlayLaterButton: collection.type !== CollectionType.PlayLater,
@@ -118,6 +126,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
               level: levelInCollection,
               text: levelInCollection.name,
               stats: new SelectOptionStats(levelInCollection.leastMoves, (levelInCollection as EnrichedLevel)?.userMoves),
+              width: 216,
             }} />
           </div>
         );
@@ -145,7 +154,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
                 setShowCollectionViewModal(false);
                 setPreventKeyDownEvent(false);
               }}
-              title={collectionLevelTitle}
+              title={getCollectionTitle()}
             >
               <div className='flex flex-col'>
                 {getCollectionLevelList('modal')}
@@ -213,16 +222,18 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
         />
       </div>
       {collection && !collectionViewHidden &&
-        <div className={classNames('hidden xl:flex flex-col items-center overflow-y-auto border-l border-color-4 ', collectionViewHidden && 'hidden')}>
-          <div className='flex justify-between w-56 gap-2 items-center px-4 py-3'>
-            {collectionLevelTitle}
+        <div className='hidden xl:flex flex-col items-center border-l border-color-4 w-60'>
+          <div className='flex justify-between w-full gap-2 items-center px-4 py-3 border-b border-color-4'>
+            {getCollectionTitle()}
             <button onClick={() => setCollectionViewHidden(!collectionViewHidden)}>
               <svg className='w-5 h-5 hover:opacity-100 opacity-50' fill='currentColor' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg' style={{ minWidth: 20, minHeight: 20 }}>
                 <path fillRule='evenodd' d='M6 8a.5.5 0 0 0 .5.5h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L12.293 7.5H6.5A.5.5 0 0 0 6 8Zm-2.5 7a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5Z' />
               </svg>
             </button>
           </div>
-          {getCollectionLevelList('sidebar')}
+          <div className='overflow-y-auto max-w-full'>
+            {getCollectionLevelList('sidebar')}
+          </div>
         </div>
       }
       <div className='hidden xl:block border-l border-color-4 break-words z-10 h-full w-100 overflow-y-auto'>

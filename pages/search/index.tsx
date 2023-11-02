@@ -6,7 +6,6 @@ import DataTable, { TableColumn } from '@root/components/tables/dataTable';
 import Dimensions from '@root/constants/dimensions';
 import StatFilter from '@root/constants/statFilter';
 import { AppContext } from '@root/contexts/appContext';
-import { TimerUtil } from '@root/helpers/getTs';
 import isPro from '@root/helpers/isPro';
 import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '@root/models/schemas/levelSchema';
 import classNames from 'classnames';
@@ -261,9 +260,9 @@ interface SearchProps {
 export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQuery, totalRows }: SearchProps) {
   const [data, setData] = useState<EnrichedLevel[]>(enrichedLevels);
   const [loading, setLoading] = useState(false);
-  const { playLater, setTempCollection } = useContext(AppContext);
   const [query, setQuery] = useState(searchQuery);
   const router = useRouter();
+  const { setTempCollection } = useContext(AppContext);
 
   useEffect(() => {
     setData(enrichedLevels);
@@ -274,13 +273,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
     setQuery(searchQuery);
   }, [searchQuery]);
 
-  const fetchLevels = useCallback((query: SearchQuery) => {
-    // TODO: check if query is identical, in which case do nothing
-
-    nProgress.start();
-    setQuery(query);
-    setLoading(true);
-
+  function getParsedUrlQuery(query: SearchQuery) {
     // only add non-default query params for a clean URL
     const q: ParsedUrlQueryInput = {};
 
@@ -290,8 +283,18 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       }
     }
 
+    return q;
+  }
+
+  const fetchLevels = useCallback((query: SearchQuery) => {
+    // TODO: check if query is identical, in which case do nothing
+
+    nProgress.start();
+    setQuery(query);
+    setLoading(true);
+
     router.push({
-      query: q,
+      query: getParsedUrlQuery(query),
     });
   }, [router]);
 
@@ -326,11 +329,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       name: 'Author',
       selector: (row: EnrichedLevel) => (
         <div className='flex gap-3 truncate'>
-          {isPro(reqUser) && playLater && (
-            <div className='flex items-center justify-center' >
-              <PlayLaterToggleButton level={row} />
-            </div>
-          )}
+          <PlayLaterToggleButton level={row} />
           <button
             onClick={() => {
               if (query.searchAuthor === row.userId.name) {
@@ -367,15 +366,18 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       grow: 2,
       selector: (row: EnrichedLevel) => {
         return <FormattedLevelLink onClick={() => {
-          // get query string from current query
-          const queryString = Object.keys(query).map(key => key + '=' + query[key]).join('&');
+          const q = getParsedUrlQuery(query);
+          const queryString = Object.keys(q).map(key => key + '=' + query[key]).join('&');
           const ts = new Date();
           const collectionTemp = {
-            name: 'Search Query', slug: '../search/?' + queryString,
+            createdAt: ts,
+            isPrivate: true,
             levels: data, _id: new Types.ObjectId(),
-            createdAt: ts, updatedAt: ts,
-            userId: { _id: new Types.ObjectId(), name: 'Search' as any } as Types.ObjectId & User,
-            isPrivate: true };
+            name: 'Search',
+            slug: `../search${queryString ? `?${queryString}` : ''}`,
+            updatedAt: ts,
+            userId: { _id: new Types.ObjectId(), name: 'Search' } as Types.ObjectId & User,
+          };
 
           /* TODO: maybe save to cloud instead of session storage? */
           sessionStorage.setItem('tempCollection', JSON.stringify(collectionTemp));

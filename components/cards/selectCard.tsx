@@ -1,5 +1,4 @@
 import { AppContext } from '@root/contexts/appContext';
-import isPro from '@root/helpers/isPro';
 import classNames from 'classnames';
 import Link from 'next/link';
 import React, { useContext, useEffect, useState } from 'react';
@@ -19,7 +18,7 @@ interface SelectCardProps {
 export default function SelectCard({ option, prefetch }: SelectCardProps) {
   const [backgroundImage, setBackgroundImage] = useState<string>();
   const [isSaveLevelToModalOpen, setIsSaveLevelToModalOpen] = useState(false);
-  const { playLater, user } = useContext(AppContext);
+  const { user } = useContext(AppContext);
 
   useEffect(() => {
     if (option.level) {
@@ -92,10 +91,8 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
             <SelectCardContent option={option} />
           </button>
         }
-        {option.level && !option.hideAddToPlayLaterButton && isPro(user) && playLater &&
-          <div className='absolute bottom-2 left-2 h-6 select-card-button'>
-            <PlayLaterToggleButton level={option.level} />
-          </div>
+        {option.level && !option.hideAddToPlayLaterButton &&
+          <PlayLaterToggleButton className='absolute bottom-2 left-2 h-6 select-card-button' level={option.level} />
         }
         {option.level && user && <>
           <button className='absolute bottom-2 right-2 select-card-button' onClick={() => setIsSaveLevelToModalOpen(true)}>
