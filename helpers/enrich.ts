@@ -1,3 +1,4 @@
+import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import { PipelineStage } from 'mongoose';
 import cleanUser from '../lib/cleanUser';
 import Campaign, { EnrichedCampaign } from '../models/db/campaign';
@@ -365,6 +366,30 @@ export async function enrichReqUser(reqUser: User, filters?: any): Promise<ReqUs
   enrichedReqUser.notifications = notificationAgg;
 
   return enrichedReqUser;
+}
+
+export function getEnrichUserIdPipelineSteps(userIdField = 'userId', outputToField = 'userId') {
+  const pipeline: PipelineStage[] = [
+    {
+      $lookup: {
+        from: UserModel.collection.name,
+        localField: userIdField,
+        foreignField: '_id',
+        as: outputToField,
+        pipeline: [
+          { $project: { ...USER_DEFAULT_PROJECTION } },
+        ]
+      },
+    },
+    {
+      $unwind: {
+        path: '$' + outputToField,
+        preserveNullAndEmptyArrays: true,
+      }
+    }
+  ];
+
+  return pipeline;
 }
 
 /**

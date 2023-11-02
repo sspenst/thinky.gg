@@ -79,29 +79,45 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
   const { chapter, cid, slugName, ts, username } = router.query as LevelUrlQueryParams;
 
   const mutateCollection = useCallback(async () => {
-    if (!cid || collection?.type === CollectionType.InMemory) {
+    if (collection?.type === CollectionType.InMemory) {
       // let's redo the search query
       const searchQuery = collection?.slug;
-      const url = '/api/' + searchQuery?.replace('../', '');
+      const url = '/api/levels';
       const ts = new Date();
 
-      const res = await fetch(url);
-      const resp = await res.json();
-      const collectionTemp = {
-        createdAt: ts,
-        isPrivate: true,
-        levels: resp.levels, _id: new Types.ObjectId(),
-        name: 'Search',
-        slug: searchQuery,
-        updatedAt: ts,
-        userId: { _id: new Types.ObjectId() } as Types.ObjectId & User,
-        type: CollectionType.InMemory
-      } as EnrichedCollection;
+      console.log({ ids: collection?.levels.map(l => l._id.toString()) });
+      const res = await fetch(url, {
+        body: JSON.stringify({
+          ids: collection?.levels.map(l => l._id.toString())
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        method: 'POST',
+      });
 
-      sessionStorage.setItem('tempCollection', JSON.stringify(collectionTemp));
-      setCollection(collectionTemp);
-      setTempCollection(collectionTemp);
+      if (res.ok) {
+        const resp = await res.json();
+        const collectionTemp = {
+          createdAt: ts,
+          isPrivate: true,
+          levels: resp, _id: new Types.ObjectId(),
+          name: 'Search',
+          slug: searchQuery,
+          updatedAt: ts,
+          userId: { _id: new Types.ObjectId() } as Types.ObjectId & User,
+          type: CollectionType.InMemory
+        } as EnrichedCollection;
 
+        sessionStorage.setItem('tempCollection', JSON.stringify(collectionTemp));
+        setCollection(collectionTemp);
+        setTempCollection(collectionTemp);
+      }
+
+      return;
+    }
+
+    if (!cid) {
       return;
     }
 

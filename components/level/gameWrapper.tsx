@@ -115,6 +115,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
       {collection.levels.map((levelInCollection) => {
         const isCurrentLevel = level._id.toString() === levelInCollection._id.toString();
         const anchorId = `collection-level-${id}-${levelInCollection._id.toString()}`;
+        const href = '/level/' + levelInCollection.slug + (collection.type !== CollectionType.InMemory ? '?cid=' + collection._id.toString() : '');
 
         return (
           <div className={classNames({ 'bg-3': isCurrentLevel }, { 'rounded-xl': id === 'modal' })} id={anchorId} key={anchorId}>
@@ -122,7 +123,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
               author: levelInCollection.userId?.name,
               hideDifficulty: true,
               hideStats: false,
-              href: `/level/${levelInCollection.slug}?cid=${collection._id.toString()}`,
+              href: href,
               id: levelInCollection._id.toString(),
               level: levelInCollection,
               text: levelInCollection.name,
