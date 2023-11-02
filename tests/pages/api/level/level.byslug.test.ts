@@ -149,7 +149,7 @@ describe('Testing slugs for levels', () => {
       },
     });
   });
-  test('Adding a level to your collection should create a notification', async () => {
+  test('Adding a draft level to your collection should 404', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -175,15 +175,46 @@ describe('Testing slugs for levels', () => {
         const res = await fetch();
         const response = await res.json();
 
+        expect(response.error).toBe('Level not found');
+        expect(res.status).toBe(404);
+      },
+    });
+  });
+  test('Adding a level to your collection should create a notification', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          userId: TestId.USER,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            collectionIds: [TestId.COLLECTION],
+          },
+          query: {
+            id: TestId.LEVEL_4,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await saveLevelToHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
 
         const notifs = await NotificationModel.find({ type: NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION });
 
         expect(notifs.length).toBe(1);
-        expect(notifs[0].userId.toString()).toBe(TestId.USER);
-        expect(notifs[0].source?._id.toString()).toBe(level_id_1);
-        expect(notifs[0].target?._id.toString()).toBe(TestId.COLLECTION_B);
+        expect(notifs[0].userId.toString()).toBe(TestId.USER_B);
+        expect(notifs[0].source?._id.toString()).toBe(TestId.LEVEL_4);
+        expect(notifs[0].target?._id.toString()).toBe(TestId.COLLECTION);
       },
     });
   });

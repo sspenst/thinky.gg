@@ -34,9 +34,9 @@ export default withAuth({
       const slug = await generateCollectionSlug(req.user.name, trimmedName, undefined, { session: session });
       const setIsPrivate = isPro(req.user) ? !!isPrivate : false;
 
-      if (slug == req.user.name + '/play-later') {
+      if (slug.endsWith('/play-later')) {
         errorCode = 400;
-        errorMessage = 'This uses a reserved word (play later) which is a reserved word. Please use another name for this collection.';
+        errorMessage = 'This uses a reserved word (play later). Please use another name for this collection.';
         throw new Error(errorMessage); // can't just return res.status because we're in a transaction and will get a warning about headers being sent twice
       }
 

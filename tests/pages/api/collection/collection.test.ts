@@ -172,7 +172,7 @@ describe('pages/api/collection/index.ts', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('This uses a reserved word (play later) which is a reserved word. Please use another name for this collection.');
+        expect(response.error).toBe('This uses a reserved word (play later). Please use another name for this collection.');
         expect(res.status).toBe(400);
       },
     });
