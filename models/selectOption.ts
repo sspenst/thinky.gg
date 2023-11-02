@@ -5,7 +5,6 @@ interface SelectOption {
   author?: string | undefined;
   disabled?: boolean;
   height?: number;
-  hideAddToPlayLaterButton?: boolean;
   hideDifficulty?: boolean;
   hideStats?: boolean;
   href?: string;

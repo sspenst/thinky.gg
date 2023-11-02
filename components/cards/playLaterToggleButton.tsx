@@ -42,7 +42,7 @@ export function PlayLaterToggleButton({ className, level }: PlayLaterToggleButto
 
     if (res.ok) {
       const message = (
-        <div className='flex flex-col items-center w-max'>
+        <div className='flex flex-col items-center w-92 max-w-full text-center'>
           <span>{remove ? ['Removed ', boldedLevelName, ' from'] : ['Added ', boldedLevelName, ' to']} <Link className='underline' href={`/collection/${user.name}/play-later`}>Play Later</Link></span>
           <button className='text-sm underline' onClick={() => fetchFunc(!remove)}>Undo</button>
         </div>

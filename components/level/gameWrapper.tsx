@@ -1,7 +1,6 @@
 import Dimensions from '@root/constants/dimensions';
 import { MusicContext } from '@root/contexts/musicContext';
 import { PageContext } from '@root/contexts/pageContext';
-import { CollectionType } from '@root/models/constants/collection';
 import SelectOptionStats from '@root/models/selectOptionStats';
 import classNames from 'classnames';
 import Link from 'next/link';
@@ -98,7 +97,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
     const href = chapter ? `/chapter${chapter}` : `/collection/${collection.slug}`;
 
     return (
-      <Link className='text-xl font-bold hover:underline w-fit' href={href}>
+      <Link className='text-xl font-bold hover:underline overflow-hidden break-words' href={href}>
         {collection.name}
       </Link>
     );
@@ -118,7 +117,6 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
           <div className={classNames({ 'bg-3': isCurrentLevel }, { 'rounded-xl': id === 'modal' })} id={anchorId} key={anchorId}>
             <SelectCard option={{
               author: levelInCollection.userId?.name,
-              hideAddToPlayLaterButton: collection.type !== CollectionType.PlayLater,
               hideDifficulty: true,
               hideStats: true,
               href: `/level/${levelInCollection.slug}?cid=${collection._id.toString()}`,
@@ -156,8 +154,10 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
               }}
               title={getCollectionTitle()}
             >
-              <div className='flex flex-col'>
-                {getCollectionLevelList('modal')}
+              <div className='flex justify-center'>
+                <div className='flex flex-col w-fit items-center'>
+                  {getCollectionLevelList('modal')}
+                </div>
               </div>
             </Modal>
           </>}
@@ -249,7 +249,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
             <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6' style={{ minWidth: 24, minHeight: 24 }}>
               <path strokeLinecap='round' strokeLinejoin='round' d='M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z' />
             </svg>
-            <span className='font-bold text-left'>{collection.name}</span>
+            <span className='font-bold text-left whitespace-pre-wrap truncate'>{collection.name}</span>
           </button>
         }
         <div className='px-4 py-3'>

@@ -4,7 +4,6 @@ import 'react-tooltip/dist/react-tooltip.css';
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react';
 import MusicContextProvider from '@root/contexts/musicContext';
 import useDeviceCheck from '@root/hooks/useDeviceCheck';
-import useSWRHelper from '@root/hooks/useSWRHelper';
 import Collection from '@root/models/db/collection';
 import { NextPageContext } from 'next';
 import type { AppProps } from 'next/app';
@@ -14,7 +13,7 @@ import Router, { useRouter } from 'next/router';
 import { DefaultSeo } from 'next-seo';
 import { ThemeProvider } from 'next-themes';
 import nProgress from 'nprogress';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import CookieConsent from 'react-cookie-consent';
 import TagManager, { TagManagerArgs } from 'react-gtm-module';
 import { Toaster } from 'react-hot-toast';
@@ -78,7 +77,7 @@ MyApp.getInitialProps = async ({ ctx }: { ctx: NextPageContext }) => {
 };
 
 export default function MyApp({ Component, pageProps, userAgent }: AppProps & { userAgent: string }) {
-  const { data: playLater, mutate: mutatePlayLater } = useSWRHelper<{ [key: string]: boolean }>('/api/play-later');
+  const deviceInfo = useDeviceCheck(userAgent);
   const forceUpdate = useForceUpdate();
   const { isLoading, mutateUser, user } = useUser();
   const [multiplayerSocket, setMultiplayerSocket] = useState<MultiplayerSocket>({
@@ -88,23 +87,41 @@ export default function MyApp({ Component, pageProps, userAgent }: AppProps & { 
     privateAndInvitedMatches: [],
     socket: undefined,
   });
+  const [playLater, setPlayLater] = useState<{ [key: string]: boolean }>();
   const router = useRouter();
   const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);
   const [sounds, setSounds] = useState<{ [key: string]: HTMLAudioElement }>({});
   const [tempCollection, setTempCollection] = useState<Collection>();
-  const deviceInfo = useDeviceCheck(userAgent);
   const [theme, setTheme] = useState<string>();
   const { matches, privateAndInvitedMatches } = multiplayerSocket;
 
+  const mutatePlayLater = useCallback(() => {
+    fetch('/api/play-later', {
+      method: 'GET',
+    }).then(async res => {
+      if (res.status === 200) {
+        setPlayLater(await res.json());
+      } else {
+        throw res.text();
+      }
+    }).catch(err => {
+      console.error(err);
+    });
+  }, []);
+
   useEffect(() => {
-    // preload sounds
+    mutatePlayLater();
+  }, [mutatePlayLater]);
+
+  // preload sounds
+  useEffect(() => {
     setSounds({
       'start': new Audio('/sounds/start.wav'),
       'warning': new Audio('/sounds/warning.wav'),
     });
   }, []);
 
-  // initialize shouldAttemptAuth if it exists in sessionStorage
+  // initialize sessionStorage values
   useEffect(() => {
     if (typeof window.sessionStorage === 'undefined') {
       return;
