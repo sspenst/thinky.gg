@@ -9,8 +9,8 @@ import ProfileMultiplayer from '@root/components/profile/profileMultiplayer';
 import StatFilter from '@root/constants/statFilter';
 import { getUsersWithMultiplayerProfile } from '@root/helpers/getUsersWithMultiplayerProfile';
 import useSWRHelper from '@root/hooks/useSWRHelper';
+import { MultiplayerMatchState } from '@root/models/constants/multiplayer';
 import Graph from '@root/models/db/graph';
-import { MultiplayerMatchState } from '@root/models/MultiplayerEnums';
 import { getCollections } from '@root/pages/api/collection-by-id/[id]';
 import classNames from 'classnames';
 import { debounce } from 'debounce';
@@ -39,7 +39,7 @@ import statFilterOptions from '../../../../helpers/filterSelectOptions';
 import getProfileSlug from '../../../../helpers/getProfileSlug';
 import { getReviewsByUserId, getReviewsByUserIdCount } from '../../../../helpers/getReviewsByUserId';
 import { getReviewsForUserId, getReviewsForUserIdCount } from '../../../../helpers/getReviewsForUserId';
-import naturalSort from '../../../../helpers/naturalSort';
+import naturalSort, { playLaterCompareFn } from '../../../../helpers/naturalSort';
 import cleanUser from '../../../../lib/cleanUser';
 import { getUserFromToken } from '../../../../lib/withAuth';
 import Achievement from '../../../../models/db/achievement';
@@ -301,8 +301,7 @@ export default function ProfilePage({
       return [];
     }
 
-    // sort collections by name but use a natural sort
-    const sortedEnrichedCollections = naturalSort(enrichedCollections) as EnrichedCollection[];
+    const sortedEnrichedCollections = naturalSort(enrichedCollections, playLaterCompareFn);
 
     return sortedEnrichedCollections.map(enrichedCollection => {
       return {
@@ -339,6 +338,7 @@ export default function ProfilePage({
     return statFilterOptions(getCollectionOptions(), showCollectionFilter, collectionFilterText);
   }, [collectionFilterText, getCollectionOptions, showCollectionFilter]);
 
+  const collectionsAsOptions = getFilteredCollectionOptions();
   const getLevelOptions = useCallback(() => {
     if (!user || !enrichedLevels) {
       return [];
@@ -461,11 +461,11 @@ export default function ProfilePage({
     [ProfileTab.Multiplayer]: <ProfileMultiplayer user={user} />,
     [ProfileTab.Collections]: (
       <div className='flex flex-col gap-2 justify-center'>
-        {getCollectionOptions().length > 0 &&
+        {collectionsAsOptions.length > 0 &&
           <SelectFilter
             filter={showCollectionFilter}
             onFilterClick={onFilterCollectionClick}
-            placeholder={`Search ${getFilteredCollectionOptions().length} collection${getFilteredCollectionOptions().length !== 1 ? 's' : ''}...`}
+            placeholder={`Search ${collectionsAsOptions.length} collection${collectionsAsOptions.length !== 1 ? 's' : ''}...`}
             searchText={collectionFilterText}
             setSearchText={setCollectionFilterText}
           />
@@ -488,12 +488,12 @@ export default function ProfilePage({
           }}
           isOpen={isAddCollectionOpen}
         />
-        {getFilteredCollectionOptions().length === 0 ?
+        {collectionsAsOptions.length === 0 ?
           <div className='p-3 justify-center flex'>
             No collections!
           </div>
           :
-          <Select options={getFilteredCollectionOptions()} />
+          <Select options={collectionsAsOptions} />
         }
       </div>
     ),

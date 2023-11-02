@@ -29,7 +29,7 @@ interface ModalProps {
   isOpen: boolean;
   onConfirm?: () => void;
   onSubmit?: () => void;
-  title: string | JSX.Element;
+  title: React.ReactNode;
 }
 
 export default function Modal({

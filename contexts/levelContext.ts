@@ -48,6 +48,7 @@ interface LevelContextInterface {
   getReviews: () => void;
   inCampaign: boolean; // true means you are playing an unsolved level in the campaign
   level: EnrichedLevel;
+  mutateCollection: () => void;
   mutateLevel: () => void;
   mutateProStatsLevel: KeyedMutator<ProStatsLevel>;
   records: Record[] | undefined;

@@ -12,7 +12,7 @@ interface RecommendedLevelProps {
   id: string;
   level?: EnrichedLevel | null;
   onClick?: (option: SelectOption) => void;
-  title: JSX.Element | string;
+  title: React.ReactNode;
   tooltip?: string;
 }
 

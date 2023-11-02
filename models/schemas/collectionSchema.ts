@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { CollectionType } from '../constants/collection';
 import Collection from '../db/collection';
 
 const CollectionSchema = new mongoose.Schema<Collection>({
@@ -35,6 +36,11 @@ const CollectionSchema = new mongoose.Schema<Collection>({
   tags: {
     type: [String],
     default: [],
+  },
+  type: {
+    type: String,
+    enum: CollectionType,
+    default: CollectionType.Regular,
   },
   unlockPercent: {
     type: Number,

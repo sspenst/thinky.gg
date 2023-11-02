@@ -149,6 +149,35 @@ describe('pages/api/collection/index.ts', () => {
     });
   });
 
+  test('Doing a POST but naming to a reserved slug should fail', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            name: 'Play  &$$#$ Later',
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await createCollectionHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('This uses a reserved word (play later). Please use another name for this collection.');
+        expect(res.status).toBe(400);
+      },
+    });
+  });
+
   test('Doing a POST to update level name but invalid characters in name should strip in slug', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -169,6 +198,7 @@ describe('pages/api/collection/index.ts', () => {
       },
       test: async ({ fetch }) => {
         const res = await fetch();
+
         const response = await res.json();
 
         expect(response.slug).toBe('test/blahcollections');
@@ -264,6 +294,57 @@ describe('pages/api/collection/index.ts', () => {
       },
     });
   });
+  test('if we are querying as the user who doesnt own it we should NOT be able to get the collection', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'GET',
+          userId: TestId.USER,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: collection_id,
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await getCollectionHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Error finding Collection');
+        expect(res.status).toBe(404);
+      },
+    });
+  });
+  test('if we are querying as the user who owns it we should be able to get the collection', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'GET',
+          userId: TestId.USER,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_PRO),
+          },
+          query: {
+            id: collection_id,
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await getCollectionHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+        expect(response._id).toBe(collection_id);
+      },
+    });
+  });
   test('if we are querying as the user who owns it we should be able to get the collection', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -290,6 +371,7 @@ describe('pages/api/collection/index.ts', () => {
       },
     });
   });
+
   test('now querying for a different collection should NOT return this collection', async () => {
     await testApiHandler({
       handler: async (_, res) => {

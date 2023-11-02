@@ -116,7 +116,7 @@ describe('pages/api/save-level-to/[id].ts', () => {
         const response = await res.json();
 
         expect(response.error).toBe('Level not found');
-        expect(res.status).toBe(400);
+        expect(res.status).toBe(404);
       },
     });
   });

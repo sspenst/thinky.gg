@@ -3,8 +3,8 @@ import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
+import { MultiplayerMatchType } from '../../../../models/constants/multiplayer';
 import MultiplayerMatch from '../../../../models/db/multiplayerMatch';
-import { MultiplayerMatchType } from '../../../../models/MultiplayerEnums';
 import handler from '../../../../pages/api/match/index';
 
 beforeAll(async () => {

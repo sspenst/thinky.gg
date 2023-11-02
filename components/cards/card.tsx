@@ -4,7 +4,7 @@ import StyledTooltip from '../page/styledTooltip';
 interface CardProps {
   children: React.ReactNode;
   id: string;
-  title: JSX.Element | string;
+  title: React.ReactNode;
   tooltip?: string;
 }
 
