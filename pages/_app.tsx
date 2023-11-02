@@ -78,6 +78,7 @@ MyApp.getInitialProps = async ({ ctx }: { ctx: NextPageContext }) => {
 };
 
 export default function MyApp({ Component, pageProps, userAgent }: AppProps & { userAgent: string }) {
+  const { data: playLater, mutate: mutatePlayLater } = useSWRHelper<{ [key: string]: boolean }>('/api/play-later');
   const forceUpdate = useForceUpdate();
   const { isLoading, mutateUser, user } = useUser();
   const [multiplayerSocket, setMultiplayerSocket] = useState<MultiplayerSocket>({
@@ -87,9 +88,6 @@ export default function MyApp({ Component, pageProps, userAgent }: AppProps & { 
     privateAndInvitedMatches: [],
     socket: undefined,
   });
-
-  const { data: playLater, mutate: mutatePlayLater } = useSWRHelper<{ [key: string]: boolean }>('/api/play-later');
-
   const router = useRouter();
   const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);
   const [sounds, setSounds] = useState<{ [key: string]: HTMLAudioElement }>({});

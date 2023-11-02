@@ -9,13 +9,12 @@ import { NextApiResponse } from 'next';
 export const MAX_LEVELS_IN_PLAY_LATER = process.env.NODE_ENV !== 'test' ? 500 : 2;
 export default withAuth(
   {
+    GET: {},
     POST: {
       body: {
         id: ValidObjectId(),
       },
 
-    },
-    GET: {
     },
     DELETE: {
       body: {
