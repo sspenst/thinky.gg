@@ -2,6 +2,7 @@ import Dimensions from '@root/constants/dimensions';
 import { AppContext } from '@root/contexts/appContext';
 import { MusicContext } from '@root/contexts/musicContext';
 import { PageContext } from '@root/contexts/pageContext';
+import { ScreenSize } from '@root/hooks/useDeviceCheck';
 import { CollectionType } from '@root/models/constants/collection';
 import SelectOptionStats from '@root/models/selectOptionStats';
 import classNames from 'classnames';
@@ -89,7 +90,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
         });
       }
     // delay 300ms to allow the collection list to render in the modal view
-    }, deviceInfo.isMobile ? 300 : 0);
+    }, deviceInfo.screenSize < ScreenSize.MD ? 300 : 0);
   }
 
   function getCollectionTitle() {
