@@ -1,5 +1,6 @@
 import { getEnrichLevelsPipelineSteps, getEnrichUserIdPipelineSteps } from '@root/helpers/enrich';
 import cleanUser from '@root/lib/cleanUser';
+import { EnrichedLevel } from '@root/models/db/level';
 import { LevelModel } from '@root/models/mongoose';
 import { LEVEL_DEFAULT_PROJECTION } from '@root/models/schemas/levelSchema';
 import { PipelineStage, Types } from 'mongoose';
@@ -49,7 +50,7 @@ export default withAuth({
     levelMap.set(level._id.toString(), level);
   });
 
-  const sortedLevels = [];
+  const sortedLevels: EnrichedLevel[] = [];
 
   ids.forEach((id: string) => {
     const level = levelMap.get(id);
@@ -60,5 +61,5 @@ export default withAuth({
     }
   });
 
-  return res.status(200).json(levels);
+  return res.status(200).json(sortedLevels);
 });
