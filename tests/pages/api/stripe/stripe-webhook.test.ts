@@ -200,6 +200,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
     });
   });
   test('some valid user subscribes', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(stripeReal.subscriptions, 'search').mockResolvedValue({ data: [], } as any);
     await runStripeWebhookTest({
       eventType: 'checkout.session.completed',
@@ -215,6 +216,17 @@ describe('pages/api/stripe-webhook/index.ts', () => {
       },
     });
   });
+  test('customer.subscription.deleted with undefined customerId', async () => {
+    await runStripeWebhookTest({
+      eventType: 'customer.subscription.deleted',
+      payloadData: {
+        id: 'cs_test_123',
+        customer: undefined,
+      },
+      expectedError: 'No customerId',
+      expectedStatus: 400,
+    });
+  });
   test('some valid but unknown user unsubscribes', async () => {
     const fakeCustomerId = 'fake_object_id_123';
 
@@ -224,11 +236,8 @@ describe('pages/api/stripe-webhook/index.ts', () => {
         id: 'cs_test_123',
         customer: fakeCustomerId,
       },
-      expectedError: 'customer.subscription.deleted - UserConfig with customer id ' + fakeCustomerId + ' does not exist',
+      expectedError: 'UserConfig with customer id ' + fakeCustomerId + ' does not exist',
       expectedStatus: 400,
-      additionalAssertions: async () => {
-        //
-      },
     });
   });
   test('some valid unsubscribes', async () => {
@@ -247,8 +256,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
     });
   });
   test('resubscribe', async () => {
-    // mock out stripe subscriptions.search
-
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(stripeReal.subscriptions, 'search').mockResolvedValue({ data: [], } as any);
     await runStripeWebhookTest({
       eventType: 'checkout.session.completed',
@@ -279,41 +287,24 @@ describe('pages/api/stripe-webhook/index.ts', () => {
       },
     });
   });
-  test('invoice payment with anempty customerid', async () => {
-    const fakeCustomerId = undefined;
-
+  test('invoice.payment_failed should always return 200', async () => {
+    // NOTE: failed payments will not remove your pro subscription
+    // stripe has retry logic when a payment fails and if all retries fail,
+    // stripe will cancel the subscription with the customer.subscription.deleted event
+    // https://dashboard.stripe.com/revenue_recovery/retries
     await runStripeWebhookTest({
       eventType: 'invoice.payment_failed',
       payloadData: {
         id: 'cs_test_123',
-        customer: fakeCustomerId,
-      },
-      expectedError: 'No customerId',
-      expectedStatus: 400,
-      additionalAssertions: async () => {
-        //
-      },
-    });
-  });
-  test('invoice payment for an unknown customerid', async () => {
-    const fakeCustomerId = 'fake_customer_id';
-
-    await runStripeWebhookTest({
-      eventType: 'invoice.payment_failed',
-      payloadData: {
-        id: 'cs_test_123',
-        customer: fakeCustomerId,
+        customer: undefined,
       },
       expectedError: undefined,
       expectedStatus: 200,
-      additionalAssertions: async () => {
-        //
-      },
     });
   });
-  test('invoice payment failed but db error should cause user to stay on pro plan', async () => {
+  test('customer.subscription.deleted but db error should cause user to stay on pro plan', async () => {
     await runStripeWebhookTest({
-      eventType: 'invoice.payment_failed',
+      eventType: 'customer.subscription.deleted',
       payloadData: {
         id: 'invoice_test_123',
         customer: 'customer_id_123',
@@ -326,10 +317,9 @@ describe('pages/api/stripe-webhook/index.ts', () => {
       mockDbError: true,
     });
   });
-
-  test('invoice payment failed', async () => {
+  test('customer.subscription.deleted successfully', async () => {
     await runStripeWebhookTest({
-      eventType: 'invoice.payment_failed',
+      eventType: 'customer.subscription.deleted',
       payloadData: {
         id: 'invoice_test_123',
         customer: 'customer_id_123',
@@ -341,7 +331,6 @@ describe('pages/api/stripe-webhook/index.ts', () => {
       },
     });
   });
-
   test('resubscribe but this time mock an error in the db for one of the calls', async () => {
     await runStripeWebhookTest({
       eventType: 'checkout.session.completed',

@@ -321,7 +321,7 @@ export default apiWrapper({
         }
       }
     }
-  } else if (event.type === 'customer.subscription.deleted' || event.type === 'invoice.payment_failed') {
+  } else if (event.type === 'customer.subscription.deleted') {
     const subscription = dataObject as Stripe.Subscription;
 
     if (subscription.metadata?.giftToId) {
@@ -354,14 +354,8 @@ export default apiWrapper({
       ]);
 
       if (userConfigAgg.length === 0) {
-        if (event.type === 'customer.subscription.deleted') {
-          // there must be a matching userconfig in this case, so we need to return an error here
-          error = `${event.type} - UserConfig with customer id ${customerId} does not exist`;
-        } else {
-          // failed payments without a userconfig imply the user's payment has failed before subscribing
-          // this is a valid case and should not cause an error
-          logger.info(`${event.type} - UserConfig with customer id ${customerId} does not exist`);
-        }
+        // there must be a matching userconfig in this case, so we need to return an error here
+        error = `UserConfig with customer id ${customerId} does not exist`;
       } else {
         // we need to check if this is a gift subscription so we can downgrade the appropriate user
         // looks like a regular downgrade subscription of pro
