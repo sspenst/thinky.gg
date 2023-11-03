@@ -79,16 +79,19 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
   const { chapter, cid, slugName, ts, username } = router.query as LevelUrlQueryParams;
 
   const mutateCollection = useCallback(async () => {
-    if (collection?.type === CollectionType.InMemory) {
+    if (!collection) {
+      return;
+    }
+
+    if (collection.type === CollectionType.InMemory) {
       // let's redo the search query
-      const searchQuery = collection?.slug;
+      const searchQuery = collection.slug;
       const url = '/api/levels';
       const ts = new Date();
 
-      console.log({ ids: collection?.levels.map(l => l._id.toString()) });
       const res = await fetch(url, {
         body: JSON.stringify({
-          ids: collection?.levels.map(l => l._id.toString())
+          ids: collection.levels.map(l => l._id.toString())
         }),
         headers: {
           'Content-Type': 'application/json',
@@ -104,9 +107,9 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
           levels: resp, _id: new Types.ObjectId(),
           name: 'Search',
           slug: searchQuery,
+          type: CollectionType.InMemory,
           updatedAt: ts,
           userId: { _id: new Types.ObjectId() } as Types.ObjectId & User,
-          type: CollectionType.InMemory
         } as EnrichedCollection;
 
         sessionStorage.setItem('tempCollection', JSON.stringify(collectionTemp));
@@ -134,7 +137,7 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
       toast.dismiss();
       toast.error('Error fetching collection');
     });
-  }, [cid, collection?.type]);
+  }, [cid, collection, setTempCollection]);
 
   useEffect(() => {
     if (!_collection && tempCollection && tempCollection.levels.find(l => l._id === level._id)) {

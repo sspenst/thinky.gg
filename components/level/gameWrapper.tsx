@@ -1,8 +1,6 @@
 import Dimensions from '@root/constants/dimensions';
-import { AppContext } from '@root/contexts/appContext';
 import { MusicContext } from '@root/contexts/musicContext';
 import { PageContext } from '@root/contexts/pageContext';
-import { ScreenSize } from '@root/hooks/useDeviceCheck';
 import { CollectionType } from '@root/models/constants/collection';
 import SelectOptionStats from '@root/models/selectOptionStats';
 import classNames from 'classnames';
@@ -37,7 +35,6 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
   const [mutePostGameModalForThisLevel, setMutePostGameModalForThisLevel] = useState(false);
   const [postGameModalOpen, setShowPostGameModalOpen] = useState(false);
   const { setPreventKeyDownEvent } = useContext(PageContext);
-  const { deviceInfo } = useContext(AppContext);
   const [showCollectionViewModal, setShowCollectionViewModal] = useState(false);
 
   useEffect(() => {
@@ -90,7 +87,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
         });
       }
     // delay 300ms to allow the collection list to render in the modal view
-    }, deviceInfo.screenSize <= ScreenSize.LG ? 300 : 0);
+    }, 300);
   }
 
   function getCollectionTitle() {
@@ -211,7 +208,6 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
           level={level}
           onNext={collection ? onNext : undefined}
           onPrev={collection ? onPrev : undefined}
-
           onSolve={() => {
             if (isDynamicSupported && isDynamic) {
               toggleVersion('hot');
@@ -225,7 +221,6 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
               }, 200);
             }
           }}
-
         />
       </div>
       {collection && !collectionViewHidden &&
