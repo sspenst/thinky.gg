@@ -22,13 +22,16 @@ export interface SubscriptionGiftData {
   subscriptionId: string;
 }
 
-export default withAuth({
-  GET: {
+enum GiftType {
+  Monthly = 'gift_monthly',
+  Yearly = 'gift_yearly',
+}
 
-  },
+export default withAuth({
+  GET: {},
   POST: {
     body: {
-      type: ValidEnum(['gift_monthly'], true),
+      type: ValidEnum(Object.values(GiftType), true),
       quantity: ValidNumber(true, 1, 24, 1),
       giftTo: ValidObjectId(true),
       paymentMethodId: ValidType('string', true),
@@ -71,7 +74,7 @@ export default withAuth({
       subscriptionData
     );
   } else if (req.method === 'POST') {
-    const { type, giftTo, quantity, paymentMethodId } = req.body as { type: 'gift_monthly', giftTo: string, quantity: number, paymentMethodId: string };
+    const { type, giftTo, quantity, paymentMethodId } = req.body as { type: GiftType, giftTo: string, quantity: number, paymentMethodId: string };
 
     // make sure this user is on Pro
     if (!isPro(req.user)) {
@@ -93,16 +96,13 @@ export default withAuth({
     }
 
     const paymentPriceIdTable = {
-      gift_monthly: process.env.STRIPE_GIFT_MONTHLY_PRICE_ID
-
+      [GiftType.Monthly]: process.env.STRIPE_GIFT_MONTHLY_PRICE_ID,
+      [GiftType.Yearly]: process.env.STRIPE_GIFT_YEARLY_PRICE_ID,
     };
 
     try {
-      // Create a new PaymentIntent object
-
-      // fetch the price id from stripe based on the name
-
       const price = paymentPriceIdTable[type];
+
       // check if customer id exists for this req.user
       const userConfig = await UserConfigModel.findOne({ userId: req.userId }, { stripeCustomerId: 1 }).lean<UserConfig>();
       const customerId = userConfig?.stripeCustomerId;
@@ -117,9 +117,14 @@ export default withAuth({
         return res.status(404).json({ error: 'No customer found for this user.' });
       }
 
+      const giftLengthTable = {
+        [GiftType.Monthly]: 60 * 60 * 24 * 30 * quantity,
+        [GiftType.Yearly]: 60 * 60 * 24 * 365 * quantity,
+      };
+
       const subscription = await stripe.subscriptions.create({
         customer: customerId,
-        cancel_at: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30 * quantity,
+        cancel_at: Math.floor(Date.now() / 1000) + giftLengthTable[type],
         items: [
           // quantity needs to be ONE here so we are only billed for one subscription. the cancel_at is where the length of the subscription is set
           { price: price, quantity: 1 },
