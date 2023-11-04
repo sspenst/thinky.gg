@@ -14,6 +14,7 @@ import { logger } from '../../../helpers/logger';
 import User from '../../../models/db/user';
 import { StripeEventModel, UserConfigModel, UserModel } from '../../../models/mongoose';
 import { stripe, STRIPE_WEBHOOK_SECRET } from '../subscription';
+import { GiftType } from '../subscription/gift';
 
 export const config = {
   api: {
@@ -103,7 +104,8 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
 
     try {
       await session.withTransaction(async () => {
-        const proMonths = Number(subscription.metadata?.quantity) ?? 0;
+        const quantity = Number(subscription.metadata?.quantity) ?? 0;
+        const type = subscription.metadata?.type as GiftType;
 
         await Promise.all([
           UserModel.findByIdAndUpdate(
@@ -132,7 +134,7 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
             },
           ),
           createNewProUserNotification(giftToUser._id, giftFromUser._id),
-          queueDiscordWebhook(Discord.DevPriv, `💸 [${giftFromUser.name}](https://pathology.gg/profile/${giftFromUser.name}) just gifted ${proMonths} month${proMonths === 1 ? '' : 's'} of Pro to [${giftToUser.name}](https://pathology.gg/profile/${giftToUser.name})`)
+          queueDiscordWebhook(Discord.DevPriv, `💸 [${giftFromUser.name}](https://pathology.gg/profile/${giftFromUser.name}) just gifted ${quantity} ${type === GiftType.Yearly ? 'year' : 'month'}${quantity === 1 ? '' : 's'} of Pro to [${giftToUser.name}](https://pathology.gg/profile/${giftToUser.name})`)
         ]);
       });
       session.endSession();
