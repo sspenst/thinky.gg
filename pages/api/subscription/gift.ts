@@ -22,7 +22,7 @@ export interface SubscriptionGiftData {
   subscriptionId: string;
 }
 
-enum GiftType {
+export enum GiftType {
   Monthly = 'gift_monthly',
   Yearly = 'gift_yearly',
 }
