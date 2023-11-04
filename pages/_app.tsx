@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import 'react-tooltip/dist/react-tooltip.css';
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react';
+import { Portal } from '@headlessui/react';
 import MusicContextProvider from '@root/contexts/musicContext';
 import useDeviceCheck from '@root/hooks/useDeviceCheck';
 import Collection from '@root/models/db/collection';
@@ -412,7 +413,9 @@ export default function MyApp({ Component, pageProps, userAgent }: AppProps & { 
             backgroundColor: 'var(--bg-color)',
             color: 'var(--color)',
           }}>
-            <Toaster toastOptions={{ duration: 1500 }} />
+            <Portal>
+              <Toaster toastOptions={{ duration: 1500 }} />
+            </Portal>
             <MusicContextProvider>
               <Component {...pageProps} />
             </MusicContextProvider>
