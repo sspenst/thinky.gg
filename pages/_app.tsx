@@ -308,7 +308,7 @@ export default function MyApp({ Component, pageProps, userAgent }: AppProps & { 
     if (user?._id) {
       taskManagerArgs.dataLayer = {
         'event': 'userId_set',
-        'userId': user?._id.toString()
+        'user_id': user?._id.toString()
       };
     }
 
