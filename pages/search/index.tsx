@@ -331,7 +331,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       name: 'Author',
       selector: (row: EnrichedLevel) => (
         <div className='flex gap-3 truncate'>
-          <PlayLaterToggleButton level={row} />
+          <PlayLaterToggleButton id={row._id.toString()} level={row} />
           <button
             onClick={() => {
               if (query.searchAuthor === row.userId.name) {
