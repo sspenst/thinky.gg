@@ -317,7 +317,14 @@ export default function MyApp({ Component, pageProps, userAgent }: AppProps & { 
   // }, [GA_ClientID, user?._id]);
 
   useEffect(() => {
-    const handleRouteChange = () => {
+    const handleRouteChange = (url: string) => {
+      const isLevelPage = url.startsWith('/level/');
+
+      // clear tempCollection when we navigate away from a level (temporary workaround)
+      if (!isLevelPage) {
+        setTempCollection(undefined);
+      }
+
       updateGrowthBookURL();
       nProgress.done();
     };

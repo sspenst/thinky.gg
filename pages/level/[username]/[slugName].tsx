@@ -140,6 +140,8 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
   }, [cid, collection, setTempCollection]);
 
   useEffect(() => {
+    // TODO: this is not the correct way to handle displaying tempCollection
+    // technically tempCollection should be cleared or updated when the user navigates from a non-level page to a level page
     if (!_collection && tempCollection && tempCollection.levels.find(l => l._id === level._id)) {
       setCollection(tempCollection);
     }
@@ -182,13 +184,21 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
         if (levelIndex + 1 < collection.levels.length) {
           const nextLevel = collection.levels[levelIndex + 1];
 
-          url = `/level/${nextLevel.slug}?cid=${collection._id}${chapter ? `&chapter=${chapter}` : ''}`;
+          if (collection.type === CollectionType.InMemory) {
+            url = `/level/${nextLevel.slug}`;
+          } else {
+            url = `/level/${nextLevel.slug}?cid=${collection._id}${chapter ? `&chapter=${chapter}` : ''}`;
+          }
         }
       } else {
         if (levelIndex - 1 >= 0) {
           const prevLevel = collection.levels[levelIndex - 1];
 
-          url = `/level/${prevLevel.slug}?cid=${collection._id}${chapter ? `&chapter=${chapter}` : ''}`;
+          if (collection.type === CollectionType.InMemory) {
+            url = `/level/${prevLevel.slug}`;
+          } else {
+            url = `/level/${prevLevel.slug}?cid=${collection._id}${chapter ? `&chapter=${chapter}` : ''}`;
+          }
         }
       }
     }
