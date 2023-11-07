@@ -24,7 +24,7 @@
     "micro": "^10.0.1",
     "module-alias": "^2.2.3",
     "moment": "^2.29.4",
-    "mongoose": "^7.6.2",
+    "mongoose": "^7.6.3",
     "newrelic": "^11.2.1",
     "next": "^13.5.5",
     "next-seo": "^6.1.0",
