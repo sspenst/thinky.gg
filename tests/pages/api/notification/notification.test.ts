@@ -94,10 +94,14 @@ describe('Notifications', () => {
     const n1: Notification[] = await createNewRecordOnALevelYouSolvedNotifications([TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah') as Notification[];
 
     MockDate.set(Date.now() + ONE_DAY);
-    const n2: Notification = await createNewReviewOnYourLevelNotification(TestId.USER, TestId.USER_B, TestId.LEVEL, '4') as Notification;
+    const n2 = await createNewReviewOnYourLevelNotification(TestId.USER, TestId.USER_B, TestId.LEVEL, '4') as Notification;
 
     expect(new Date(n1[0].updatedAt).getTime()).toBeLessThan(new Date(n2.updatedAt).getTime());
 
+    // reviewing your own level should be null
+    const nullNotif = await createNewReviewOnYourLevelNotification(TestId.USER_B, TestId.USER_B, TestId.LEVEL, '4');
+
+    expect(nullNotif).toBeNull();
     expect(await NotificationModel.find({})).toHaveLength(2);
     // Now get the current user and check notifications
 
