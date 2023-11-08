@@ -1,4 +1,5 @@
 import Level from '@root/models/db/level';
+import Notification from '@root/models/db/notification';
 import User from '@root/models/db/user';
 import { ClientSession, QueryOptions, SaveOptions, Types } from 'mongoose';
 import AchievementType from '../constants/achievements/achievementType';
@@ -105,9 +106,14 @@ export async function createNewFollowerNotification(follower: string | Types.Obj
 }
 
 export async function createNewReviewOnYourLevelNotification(levelUserId: string | Types.ObjectId, sourceUserId: string | Types.ObjectId, targetLevelId: string | Types.ObjectId, score: string, hasText?: boolean) {
+  // should not create a notification if the user is reviewing their own level
+  if (sourceUserId.toString() === levelUserId.toString()) {
+    return null;
+  }
+
   const message = `${String(score)},${String(!!hasText)}`;
 
-  const notification = await NotificationModel.findOneAndUpdate({
+  const notification = await NotificationModel.findOneAndUpdate<Notification>({
     source: sourceUserId,
     sourceModel: 'User',
     target: targetLevelId,

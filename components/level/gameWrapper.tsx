@@ -132,8 +132,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
           <div className={classNames({ 'bg-3': isCurrentLevel }, { 'rounded-xl': id === 'modal' })} id={anchorId} key={anchorId}>
             <SelectCard option={{
               author: levelInCollection.userId?.name,
-              hideDifficulty: true,
-              hideStats: false,
+              height: Dimensions.OptionHeightMedium,
               href: href,
               id: `${id}-${levelInCollection._id.toString()}`,
               level: levelInCollection,

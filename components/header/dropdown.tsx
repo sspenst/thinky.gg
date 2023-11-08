@@ -169,7 +169,7 @@ export default function Dropdown() {
                       href={`/collection/${user.name}/play-later`}
                       onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
                         if (!playLater || Object.keys(playLater).length === 0) {
-                          toast.success('Add a level to your Play Later collection first!', { icon: '⚠️', duration: 3000 });
+                          toast.success('Add a level to your Play Later collection first!', { icon: '➕', duration: 3000 });
                           e.preventDefault();
                         }
                       }}
