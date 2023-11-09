@@ -5,7 +5,7 @@ import { AppContext } from '@root/contexts/appContext';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import ReactJoyride, { CallBackProps, Step } from 'react-joyride';
+import ReactJoyride, { CallBackProps, Step, Styles, StylesOptions } from 'react-joyride';
 import { TOUR_STEPS_CHAPTER_1 } from '../constants/tourSteps/CHAPTER_1';
 import { TOUR_STEPS_FIRST_LEVEL } from '../constants/tourSteps/FIRST_LEVEL';
 import { TOUR_STEPS_HOME_PAGE } from '../constants/tourSteps/HOME_PAGE';
@@ -154,7 +154,7 @@ export function useTour(page: PagePath, cb?: (data: CallBackProps) => void, disa
             primaryColor: '#5c6bc0',
             textColor: 'var(--color)',
             zIndex: 10000,
-          },
+          } as StylesOptions,
           spotlight: {
             borderRadius: '8px',
           },
@@ -175,7 +175,7 @@ export function useTour(page: PagePath, cb?: (data: CallBackProps) => void, disa
             marginLeft: '8px',
             fontWeight: 'bold',
           },
-        }}
+        } as Styles}
       />
     );
   }, [cb, disableScrolling, page, putFinishedTour, run, userConfig]);

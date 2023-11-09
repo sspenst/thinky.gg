@@ -198,15 +198,13 @@ export default function ProfileInsightsSolveTimeComparison({ user }: { user: Use
               router.push('/level/' + e.slug);
             }}
             // conditional color red if diff is negative, green if positive
-            shape={({ cx, cy, ...rest }) => {
+            shape={({ ...rest }) => {
               const difficultyLevelComparison = rest.payload as DifficultyLevelComparison | undefined;
               const percent = Math.min(Math.max(Math.log(difficultyLevelComparison?.diff ?? 1) / 2, -1), 1);
               const fill = dotColor(percent);
 
               return (
                 <Symbols
-                  cx={cx}
-                  cy={cy}
                   type='circle'
                   fill={fill}
                   {...rest}
