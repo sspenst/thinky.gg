@@ -543,7 +543,7 @@ describe('Reviewing levels should work correctly', () => {
         const response = await res.json();
         const processQueueRes = await processQueueMessages();
 
-        expect(processQueueRes).toBe('Processed 2 messages with no errors');
+        expect(processQueueRes).toBe('Processed 4 messages with no errors');
         expect(response.error).toBe('Level not found');
         expect(res.status).toBe(404);
 
