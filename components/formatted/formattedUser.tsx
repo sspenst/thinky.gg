@@ -15,6 +15,7 @@ import FormattedDate from './formattedDate';
 
 interface FormattedUserProps {
   className?: string;
+  hideAvatar?: boolean;
   // NB: this id should not contain the user id
   id: string;
   noLinks?: boolean;
@@ -26,7 +27,7 @@ interface FormattedUserProps {
 
 const cache = {} as { [key: string]: any };
 
-export default function FormattedUser({ className, id, noLinks, noTooltip, onClick, size = Dimensions.AvatarSize, user }: FormattedUserProps) {
+export default function FormattedUser({ className, hideAvatar, id, noLinks, noTooltip, onClick, size = Dimensions.AvatarSize, user }: FormattedUserProps) {
   const [showTooltip, setShowTooltip] = useState(false);
   const [userExtendedData, setUserExtendedData] = useState<any>();
   const setTimer = useRef<NodeJS.Timeout>();
@@ -65,7 +66,7 @@ export default function FormattedUser({ className, id, noLinks, noTooltip, onCli
 
   return (<>
     <div
-      className={classNames('flex items-center gap-2 truncate w-fit max-w-full', className)}
+      className={classNames('flex items-center gap-2 truncate w-fit max-w-full font-bold', className)}
       onMouseOut={() => {
         if (setTimer.current) {
           clearTimeout(setTimer.current);
@@ -113,16 +114,18 @@ export default function FormattedUser({ className, id, noLinks, noTooltip, onCli
       >
         {noLinks ?
           <>
-            <ProfileAvatar size={size} user={user} />
+            {!hideAvatar && <ProfileAvatar size={size} user={user} />}
             <span className='truncate'>{user.name}</span>
           </>
           :
           <>
-            <Link href={getProfileSlug(user)} passHref>
-              <ProfileAvatar size={size} user={user} />
-            </Link>
+            {!hideAvatar &&
+              <Link href={getProfileSlug(user)} passHref>
+                <ProfileAvatar size={size} user={user} />
+              </Link>
+            }
             <Link
-              className='font-bold hover:underline truncate'
+              className='hover:underline truncate'
               href={getProfileSlug(user)}
               onClick={onClick}
               passHref
