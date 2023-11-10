@@ -8,6 +8,7 @@ interface User {
   _id: Types.ObjectId;
   avatarUpdatedAt?: number;
   bio?: string;
+  calcRankedSolves: number;
   calc_levels_created_count: number;
   calc_records: number;
   chapterUnlocked?: number; // chapter unlocked in the campaign

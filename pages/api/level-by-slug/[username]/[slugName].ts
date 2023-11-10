@@ -90,6 +90,7 @@ export async function getLevelByUrlPath(username: string, slugName: string, reqU
             authorNote: 1,
             calc_difficulty_estimate: 1,
             calc_playattempts_just_beaten_count: 1,
+            isRanked: 1,
             ts: 1,
           }
         },

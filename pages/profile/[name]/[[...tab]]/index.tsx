@@ -429,6 +429,8 @@ export default function ProfilePage({
                 levelsSolvedByDifficulty ? <PlayerRank levelsSolvedByDifficulty={levelsSolvedByDifficulty} user={user} /> : '...'
               }
             </h2>
+            {/* TODO: h2?? */}
+            <h2><span className='font-bold'>Ranked Solves:</span> {user.calcRankedSolves}</h2>
             <h2><span className='font-bold'>Levels Solved:</span> {user.score}</h2>
             <h2><span className='font-bold'>Levels Created:</span> {user.calc_levels_created_count}</h2>
             {!user.hideStatus && <>

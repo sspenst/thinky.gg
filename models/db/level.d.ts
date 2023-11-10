@@ -18,6 +18,7 @@ interface Level {
   height: number;
   isDeleted: boolean;
   isDraft: boolean;
+  isRanked: boolean;
   leastMoves: number;
   name: string;
   slug: string;

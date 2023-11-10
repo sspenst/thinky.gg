@@ -364,6 +364,13 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
       selector: row => <FormattedUser id='users' size={Dimensions.AvatarSizeSmall} user={row} />,
       sortable: true,
     },
+    // TODO: default sort by this property
+    {
+      id: 'calcRankedSolves',
+      name: 'Ranked Solves',
+      selector: row => row.calcRankedSolves,
+      sortable: true,
+    },
     {
       id: 'score',
       name: 'Solves',
