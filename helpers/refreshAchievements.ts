@@ -11,6 +11,7 @@ import Review from '@root/models/db/review';
 import User from '@root/models/db/user';
 import { AchievementModel, LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, ReviewModel, UserModel } from '@root/models/mongoose';
 import { Types } from 'mongoose';
+import { getRecordsByUserId } from './getRecordsByUserId';
 
 const AchievementCategoryFetch = {
   [AchievementCategory.USER]: async (userId: Types.ObjectId) => {
@@ -41,10 +42,13 @@ const AchievementCategoryFetch = {
     return { levelsCreated: userCreatedLevels };
   },
   [AchievementCategory.SKILL]: async (userId: Types.ObjectId) => {
-    const levelsSolvedByDifficulty = await getSolvesByDifficultyTable(userId);
+    const [levelsSolvedByDifficulty, records] = await Promise.all([
+      getSolvesByDifficultyTable(userId),
+      getRecordsByUserId(userId),
+    ]);
     const rollingLevelSolvesSum = getDifficultyRollingSum(levelsSolvedByDifficulty);
 
-    return { rollingLevelSolvesSum: rollingLevelSolvesSum };
+    return { rollingLevelSolvesSum: rollingLevelSolvesSum, records: records };
   },
 };
 

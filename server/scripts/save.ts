@@ -222,6 +222,8 @@ async function integrityCheckUsersScore() {
 }
 
 async function integrityCheckRecords() {
+  console.log('Integrity Check Records');
+  console.log('Querying all levels\' records into memory...');
   const allLevels = await LevelModel.countDocuments({ isDeleted: { $ne: true }, isDraft: false });
   const recordCounts: { [userId: string]: number } = {};
   let i = 0;
