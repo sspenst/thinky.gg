@@ -30,6 +30,7 @@ export default withAuth({ POST: {
         data: data,
         height: rows.length,
         isDraft: true,
+        isRanked: false,
         leastMoves: 0,
         name: trimmedName,
         slug: slug,

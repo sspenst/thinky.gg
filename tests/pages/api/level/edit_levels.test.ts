@@ -716,6 +716,7 @@ describe('Editing levels should work correctly', () => {
         const level = await LevelModel.findById(level_id_1) as Level;
 
         expect(level.isDraft).toBe(false);
+        expect(level.isRanked).toBe(false);
         expect(level.calc_difficulty_estimate).toBe(-1);
         expect(level.calc_playattempts_duration_sum).toBe(0);
         expect(level.calc_stats_players_beaten).toBe(1);
