@@ -2,6 +2,7 @@ import { AchievementCategory } from '@root/constants/achievements/achievementInf
 import Direction from '@root/constants/direction';
 import getDifficultyEstimate from '@root/helpers/getDifficultyEstimate';
 import PlayAttempt from '@root/models/db/playAttempt';
+import User from '@root/models/db/user';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
@@ -136,8 +137,14 @@ export default withAuth({
 
         // if the level was previously incomplete, increment score
         if (!stat?.complete) {
+          const userInc: mongoose.AnyKeys<User> = { score: 1 };
+
+          if (level.isRanked) {
+            userInc.calcRankedSolves = 1;
+          }
+
           await Promise.all([
-            UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }, { session: session }),
+            UserModel.updateOne({ _id: req.userId }, { $inc: userInc }, { session: session }),
             queueRefreshAchievements(req.user._id, [AchievementCategory.SKILL, AchievementCategory.USER], { session: session })
           ]);
         }
@@ -181,6 +188,12 @@ export default withAuth({
             session: session,
           }).lean<Stat[]>();
 
+          const userInc: mongoose.AnyKeys<User> = { score: -1 };
+
+          if (level.isRanked) {
+            userInc.calcRankedSolves = -1;
+          }
+
           // update all stats/users that had the record on this level
           if (stats.length > 0) {
             const statUserIds = stats.map(s => s.userId);
@@ -193,7 +206,7 @@ export default withAuth({
               ),
               UserModel.updateMany(
                 { _id: { $in: statUserIds } },
-                { $inc: { score: -1 } },
+                { $inc: userInc },
                 { session: session },
               ),
               createNewRecordOnALevelYouSolvedNotifications(statUserIds, req.userId, level._id, moves.toString(), { session: session })
