@@ -143,6 +143,7 @@ export async function getCollections({ matchQuery, reqUser, includeDraft, popula
           {
             $project: {
               leastMoves: 1,
+              isRanked: 1,
               ...(includeDraft ? {
                 isDraft: 1
               } : {}),
