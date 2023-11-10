@@ -46,7 +46,7 @@ export default function SelectCard2({ option }: SelectCard2Props) {
     >
       <div
         className={classNames(
-          'border border-color-3 background rounded-md bg-cover bg-center w-full',
+          'border border-color-3 background rounded-md bg-cover bg-center w-full relative overflow-hidden',
           { 'text-xl': !option.stats },
         )}
         style={{
@@ -58,7 +58,13 @@ export default function SelectCard2({ option }: SelectCard2Props) {
           // height: (option.width ?? Dimensions.OptionWidth) * 21 / 40,
           // width: option.width ?? Dimensions.OptionWidth,
         }}
-      />
+      >
+        {!option.hideStats && option.stats &&
+          <div className='text-xs absolute bottom-0 right-0 px-1 bg-black'>
+            {option.stats.getText()}
+          </div>
+        }
+      </div>
       <div className='flex gap-3'>
         <Link className='h-fit' href={getProfileSlug(user)} passHref>
           <ProfileAvatar user={user} />
@@ -72,7 +78,7 @@ export default function SelectCard2({ option }: SelectCard2Props) {
             {option.level?.name}
           </span>
           <FormattedUser className='font-medium text-sm gray' hideAvatar id='author' size={Dimensions.AvatarSizeSmall} user={user} />
-          {!option.hideStats && option.stats && <div className='italic text-xs'>{option.stats.getText()} steps</div>}
+          {/* {!option.hideStats && option.stats && <div className='italic text-xs'>{option.stats.getText()} steps</div>} */}
           <div className='flex text-xs items-center gap-1 pt-0.5'>
             <FormattedDifficulty
               difficultyEstimate={option.level.calc_difficulty_estimate}
