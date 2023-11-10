@@ -71,7 +71,6 @@ export default withAuth({ POST: {
 
           const newIsRanked = !level.isRanked;
 
-          // set this value in level
           await LevelModel.updateOne({ _id: levelId }, { isRanked: newIsRanked }, { session: session });
 
           const stats = await StatModel.find({ levelId: levelId, complete: true }, 'userId', { session: session });
