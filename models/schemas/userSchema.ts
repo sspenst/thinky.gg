@@ -27,6 +27,11 @@ const UserSchema = new mongoose.Schema<User>({
     maxlength: 256,
     select: false
   },
+  calcRankedSolves: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
   calc_levels_created_count: {
     type: Number,
     default: 0,
@@ -101,6 +106,7 @@ const UserSchema = new mongoose.Schema<User>({
   },
 });
 
+UserSchema.index({ calcRankedSolves: -1 });
 UserSchema.index({ score: -1 });
 UserSchema.index({ name: 1 }, { unique: true });
 UserSchema.index({ email: 1 }, { unique: true });

@@ -4,10 +4,10 @@ import Level from '../db/level';
 import { LevelModel, PlayAttemptModel, ReviewModel, StatModel } from '../mongoose';
 import { AttemptContext } from './playAttemptSchema';
 
-export const LEVEL_DEFAULT_PROJECTION = { _id: 1, name: 1, slug: 1, width: 1, height: 1, data: 1, leastMoves: 1, calc_difficulty_estimate: 1, userId: 1, calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' }, };
+export const LEVEL_DEFAULT_PROJECTION = { _id: 1, name: 1, slug: 1, width: 1, height: 1, data: 1, leastMoves: 1, calc_difficulty_estimate: 1, userId: 1, calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' }, isRanked: 1 };
 
 // adds ts,calc_reviews_score_laplace and users solved
-export const LEVEL_SEARCH_DEFAULT_PROJECTION = { _id: 1, ts: 1, name: 1, slug: 1, /*width: 1, height: 1, data: 1,*/ leastMoves: 1, calc_difficulty_estimate: 1, userId: 1, calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' }, calc_reviews_score_laplace: 1, calc_stats_players_beaten: 1, calc_reviews_count: 1 };
+export const LEVEL_SEARCH_DEFAULT_PROJECTION = { _id: 1, ts: 1, name: 1, slug: 1, /*width: 1, height: 1, data: 1,*/ leastMoves: 1, calc_difficulty_estimate: 1, userId: 1, calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' }, calc_reviews_score_laplace: 1, calc_stats_players_beaten: 1, calc_reviews_count: 1, isRanked: 1 };
 
 const LevelSchema = new mongoose.Schema<Level>(
   {
@@ -126,6 +126,7 @@ LevelSchema.index({ name: 1 });
 LevelSchema.index({ userId: 1, name: 1 });
 LevelSchema.index({ ts: -1 });
 LevelSchema.index({ isDraft: 1 });
+LevelSchema.index({ isRanked: 1 });
 LevelSchema.index({ leastMoves: 1 });
 LevelSchema.index({ calc_difficulty_estimate: 1 });
 LevelSchema.index({ calc_playattempts_duration_sum: 1 });
