@@ -49,7 +49,7 @@ export const DEFAULT_QUERY = {
   search: '',
   showOnline: 'false',
   showUnregistered: 'false',
-  sortBy: 'score',
+  sortBy: 'calcRankedSolves',
   sortDir: 'desc',
 } as UserSearchQuery;
 
@@ -194,6 +194,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         $project: {
           _id: 1,
           avatarUpdatedAt: 1,
+          calcRankedSolves: 1,
           calc_levels_created_count: 1,
           calc_records: 1,
           followerCount: '$followers.count',
@@ -364,7 +365,6 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
       selector: row => <FormattedUser id='users' size={Dimensions.AvatarSizeSmall} user={row} />,
       sortable: true,
     },
-    // TODO: default sort by this property
     {
       id: 'calcRankedSolves',
       name: 'Ranked Solves',

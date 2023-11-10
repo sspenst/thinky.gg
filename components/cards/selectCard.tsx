@@ -93,6 +93,17 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
             <SelectCardContent option={option} />
           </button>
         }
+        {option.level?.isRanked && <>
+          <Link
+            className='absolute top-0.5 left-0.5 text-yellow-500 p-1'
+            data-tooltip-content='Ranked Level'
+            data-tooltip-id={`ranked-tooltip-${option.id}`}
+            href='/ranked'
+          >
+            🏅
+          </Link>
+          <StyledTooltip id={`ranked-tooltip-${option.id}`} />
+        </>}
         {option.level && user && <>
           <PlayLaterToggleButton className='absolute bottom-2 left-2 h-6 select-card-button' id={option.id} level={option.level} />
           <button
