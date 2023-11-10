@@ -2,6 +2,7 @@ import { Menu, Transition } from '@headlessui/react';
 import { PlayLaterToggleButton } from '@root/components/cards/playLaterToggleButton';
 import FormattedDate from '@root/components/formatted/formattedDate';
 import FormattedUser from '@root/components/formatted/formattedUser';
+import StyledTooltip from '@root/components/page/styledTooltip';
 import DataTable, { TableColumn } from '@root/components/tables/dataTable';
 import Dimensions from '@root/constants/dimensions';
 import StatFilter from '@root/constants/statFilter';
@@ -331,15 +332,19 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       name: 'Name',
       grow: 2,
       selector: (row: EnrichedLevel) => (
-
         <div className='flex items-center gap-3 truncate'>
           <PlayLaterToggleButton id={row._id.toString()} level={row} />
-          <div className='text-yellow-500 w-5'>
-            {row.isRanked &&
-              <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={2} stroke='currentColor' className='w-5 h-5'>
-                <path strokeLinecap='round' strokeLinejoin='round' d='M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z' />
-              </svg>
-            }
+          <div className='text-yellow-500 w-4 text-base'>
+            {row.isRanked && <>
+              <Link
+                data-tooltip-content='This level contributes to your leaderboard ranking!'
+                data-tooltip-id={`ranked-tooltip-${row._id.toString()}`}
+                href='/ranked'
+              >
+              🏅
+              </Link>
+              <StyledTooltip id={`ranked-tooltip-${row._id.toString()}`} />
+            </>}
           </div>
           <FormattedLevelLink onClick={() => {
             const q = getParsedUrlQuery(query);

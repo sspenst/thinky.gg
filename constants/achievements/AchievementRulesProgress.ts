@@ -33,7 +33,7 @@ const AchievementRulesProgress: { [achievementType: string]: IAchievementInfoUse
   },
   [AchievementType.SOLVED_LEVELS_1000]: {
     name: 'Experienced',
-    emoji: '🏅',
+    emoji: '🎖️',
     description: 'Solved 1000 levels',
     unlocked: ({ user }) => user.score >= 1000,
   },
