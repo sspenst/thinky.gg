@@ -22,8 +22,7 @@ import { calcCreatorCounts } from '../../models/schemas/userSchema';
 'use strict';
 
 dotenv.config();
-
-console.log('env vars are ', dotenv.config().parsed);
+console.log('loaded env vars');
 const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
 
 async function integrityCheckLevels(chunks = 1, chunkIndex = 0) {
@@ -126,6 +125,62 @@ async function integrityCheckMultiplayerProfiles() {
   }
 
   console.log('All done');
+}
+
+async function integrityCheckRankedScore() {
+  console.log('collecting stats...');
+
+  // find all ranked levels, then all complete stats for those levels, then group by userId
+  const stats = await LevelModel.aggregate([
+    { $match: { isRanked: true } },
+    {
+      $lookup: {
+        from: 'stats',
+        localField: '_id',
+        foreignField: 'levelId',
+        as: 'stats',
+      },
+    },
+    { $unwind: '$stats' },
+    { $replaceRoot: { newRoot: '$stats' } },
+    { $match: { complete: true, isDeleted: { $ne: true } } },
+    { $group: { _id: '$userId', count: { $sum: 1 } } },
+  ]);
+
+  // convert stats to a dictionary
+  const rankedSolvesTable: { [userId: string]: number } = {};
+
+  for (const stat of stats) {
+    rankedSolvesTable[stat._id.toString()] = stat.count;
+  }
+
+  console.log('querying all users into memory...');
+  const allUsers = await UserModel.find<User>().sort({ last_visited_at: -1 });
+
+  progressBar.start(allUsers.length, 0);
+
+  for (const user of allUsers) {
+    const calcRankedSolves = rankedSolvesTable[user._id.toString()] ?? 0;
+
+    await UserModel.updateOne({ _id: user._id }, { $set: { calcRankedSolves: calcRankedSolves } });
+
+    // const userBefore = await UserModel.findOneAndUpdate({ _id: user._id }, { $set: { calcRankedSolves: calcRankedSolves } }, { new: false });
+
+    // const userAfter = await UserModel.findById(user._id);
+
+    // if (user.score !== calcRankedSolves) {
+    //   console.warn(`\nUser ${user.name} score changed from ${userBefore.score} to ${calcRankedSolves}`);
+    // }
+
+    // if (userAfter.calc_levels_created_count !== userBefore.calc_levels_created_count) {
+    //   console.warn(`\nUser ${user.name} calc_levels_created_count changed from ${userBefore.calc_levels_created_count} to ${userAfter.calc_levels_created_count}`);
+    // }
+
+    progressBar.increment();
+  }
+
+  progressBar.stop();
+  console.log('done');
 }
 
 async function integrityCheckUsersScore() {
@@ -312,6 +367,7 @@ async function integrityCheckPlayAttempts() {
 async function init() {
   const args = process.argv.slice(2);
   const runLevels = args.includes('--levels');
+  const runRanked = args.includes('--ranked');
   const runUsers = args.includes('--users');
   const runMultiplayerProfiles = args.includes('--multiplayer');
   const runAchievements = args.includes('--achievements');
@@ -322,12 +378,16 @@ async function init() {
   const chunks = parseInt(args.find((x: string) => x.startsWith('--chunks='))?.split('=')[1] || '1');
   const chunkIndex = parseInt(args.find((x: string) => x.startsWith('--chunk-index='))?.split('=')[1] || '0');
 
-  console.log('Connecting to db...');
+  console.log('connecting to db...');
   await dbConnect();
   console.log('connected');
 
   if (runLevels) {
     await integrityCheckLevels(chunks, chunkIndex);
+  }
+
+  if (runRanked) {
+    await integrityCheckRankedScore();
   }
 
   if (runUsers) {

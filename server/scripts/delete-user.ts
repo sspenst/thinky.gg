@@ -25,6 +25,7 @@ dotenv.config();
 console.log('loaded env vars');
 const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
 
+// TODO: need to update this script if a user is being deleted that has published a ranked level
 async function unpublishLevel(level: Level) {
   const record = await RecordModel.findOne(
     { levelId: level._id },

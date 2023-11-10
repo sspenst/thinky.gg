@@ -37,6 +37,12 @@ export default withAuth({ POST: {
     });
   }
 
+  if (level.isRanked) {
+    return res.status(403).json({
+      error: 'Cannot unpublish ranked levels',
+    });
+  }
+
   const session = await mongoose.startSession();
   let newLevelId;
 
