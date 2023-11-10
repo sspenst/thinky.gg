@@ -78,6 +78,10 @@ const LevelSchema = new mongoose.Schema<Level>(
       type: Boolean,
       required: true,
     },
+    isRanked: {
+      type: Boolean,
+      required: true,
+    },
     leastMoves: {
       type: Number,
       required: true,

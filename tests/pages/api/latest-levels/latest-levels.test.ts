@@ -85,6 +85,7 @@ describe('Testing latest levels api', () => {
         data: '40000\n12000\n05000\n67890\nABCD3',
         height: 5,
         isDraft: i % 10 === 0,
+        isRanked: false,
         leastMoves: 20,
         name: 'level ' + i,
         slug: 'test/level-' + i,
