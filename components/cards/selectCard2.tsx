@@ -38,17 +38,17 @@ export default function SelectCard2({ option }: SelectCard2Props) {
   const user = option.level.userId;
 
   return (
-    <div className='p-1 rounded-lg select-card flex flex-col gap-2 w-80 max-w-full hover-bg-2 transition' style={{
-      width: 240,
-    }}>
-      <Link
+    <Link
+      className='p-1 pb-2 rounded-lg select-card flex flex-col gap-2 w-60 max-w-full hover-bg-2 transition h-fit'
+      href={(option.disabled) ? '' : option.href ?? ''}
+      onClick={option.onClick}
+      passHref
+    >
+      <div
         className={classNames(
-          'border border-color-2 background rounded-md bg-cover bg-center w-full',
+          'border border-color-3 background rounded-md bg-cover bg-center w-full',
           { 'text-xl': !option.stats },
         )}
-        href={(option.disabled) ? '' : option.href ?? ''}
-        onClick={option.onClick}
-        passHref
         style={{
           aspectRatio: '40 / 21',
           backgroundImage: backgroundImage ? 'url("' + backgroundImage + '")' : 'none',
@@ -60,21 +60,18 @@ export default function SelectCard2({ option }: SelectCard2Props) {
         }}
       />
       <div className='flex gap-3'>
-        <Link href={getProfileSlug(user)} passHref>
+        <Link className='h-fit' href={getProfileSlug(user)} passHref>
           <ProfileAvatar user={user} />
         </Link>
-        <div className='flex flex-col gap-0.5'>
-          <span className='font-bold'>
+        <div className='flex flex-col gap-0.5 overflow-hidden'>
+          <span className='font-bold overflow-hidden' style={{
+            display: '-webkit-box',
+            WebkitBoxOrient: 'vertical',
+            WebkitLineClamp: 2,
+          }}>
             {option.level?.name}
           </span>
-          <Link
-            className='font-medium text-sm hover:underline truncate gray'
-            href={getProfileSlug(user)}
-            // onClick={onClick}
-            passHref
-          >
-            {user.name}
-          </Link>
+          <FormattedUser className='font-medium text-sm gray' hideAvatar id='author' size={Dimensions.AvatarSizeSmall} user={user} />
           {!option.hideStats && option.stats && <div className='italic text-xs'>{option.stats.getText()} steps</div>}
           <div className='flex text-xs items-center gap-1 pt-0.5'>
             <FormattedDifficulty
@@ -88,6 +85,6 @@ export default function SelectCard2({ option }: SelectCard2Props) {
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
