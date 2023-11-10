@@ -4,6 +4,7 @@ import RecommendedLevel from '@root/components/homepage/recommendedLevel';
 import MultiSelectLevel from '@root/components/page/multiSelectLevel';
 import MultiSelectUser from '@root/components/page/multiSelectUser';
 import Page from '@root/components/page/page';
+import AdminCommand from '@root/constants/adminCommand';
 import Role from '@root/constants/role';
 import useLevelBySlug from '@root/hooks/useLevelBySlug';
 import dbConnect from '@root/lib/dbConnect';
@@ -46,20 +47,19 @@ export default function AdminPage({ queryUser, queryLevel, queryUserCommand, que
   const [adminHref, setAdminHref] = useState('');
   const [adminMessage, setAdminMessage] = useState('');
   const [adminMessageRole, setAdminMessageRole] = useState<Role | null>(Role.ADMIN);
-  const [selectedUser, setSelectedUser] = useState(queryUser);
-  const [selectedLevel, setSelectedLevel] = useState(queryLevel); // TODO: [refactor] [minor
   const [runningCommand, setRunningCommand] = useState(false);
+  const [selectedLevel, setSelectedLevel] = useState(queryLevel); // TODO: [refactor] [minor
+  const [selectedUser, setSelectedUser] = useState(queryUser);
 
   const commandsUser = [
-    { label: 'Refresh Achievements', command: 'refreshAchievements' },
-    { label: 'Delete Achievements', command: 'deleteAchievements', confirm: true },
-
-    // Add more commands here
+    { label: 'Refresh Achievements', command: AdminCommand.RefreshAchievements },
+    { label: 'Delete Achievements', command: AdminCommand.DeleteAchievements, confirm: true },
   ];
 
   const commandsLevel = [
-    { label: 'Refresh Play Attempts', command: 'calcPlayAttempts' },
-    { label: 'Refresh Index Calculations', command: 'refreshIndexCalcs' },
+    { label: 'Refresh Play Attempts', command: AdminCommand.RefreshPlayAttempts },
+    { label: 'Refresh Index Calculations', command: AdminCommand.RefreshIndexCalcs },
+    { label: 'Switch isRanked', command: AdminCommand.SwitchIsRanked },
   ];
   const selectedUserCommandFromQuery = commandsUser.find((cmd) => cmd.command === queryUserCommand);
 
@@ -162,7 +162,7 @@ export default function AdminPage({ queryUser, queryLevel, queryUserCommand, que
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        command: 'sendAdminMessage',
+        command: AdminCommand.SendAdminMessage,
         role: adminMessageRole,
         payload: payload,
       }),
@@ -205,7 +205,7 @@ export default function AdminPage({ queryUser, queryLevel, queryUserCommand, que
                         (e.target as HTMLInputElement).select();
                         navigator.clipboard.writeText(str);
                       }}
-                      className='text-black p-1 rounded-md w-full'
+                      className='p-1 rounded-md w-full'
                     />
                   </div>
                 </div>
@@ -220,9 +220,9 @@ export default function AdminPage({ queryUser, queryLevel, queryUserCommand, que
   return (
     <Page title='Admin Page'>
       <div className='p-2'>
-        <h1 className='flex flex-col items-center justify-center text-3xl p-3'>Admin Page</h1>
-        <h2 className='flex flex-col items-center justify-center text-2xl'>
-            User
+        <h1 className='flex flex-col items-center justify-center text-3xl font-semibold p-3'>Admin Page</h1>
+        <h2 className='flex flex-col items-center justify-center text-2xl font-medium'>
+          User
         </h2>
         <div className='flex flex-row items-center justify-center p-2 gap-2'>
           <p className='text-xl'>Run command on user:</p>
@@ -235,18 +235,16 @@ export default function AdminPage({ queryUser, queryLevel, queryUserCommand, que
                 {selectedUserCommand?.label || 'Select Command'}
               </Menu.Button>
             </div>
-            <Menu.Items className='origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5'>
+            <Menu.Items className='origin-top-right absolute right-0 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10'>
               {commandsUser.map((cmd) => (
                 <Menu.Item key={cmd.command}>
                   {({ active }) => (
-                    <a
-                      onClick={() => {
-                        setSelectedUserCommand(cmd);
-                      }}
-                      className={`${active ? 'bg-blue-600 text-white' : 'text-gray-900'} block px-4 py-2 text-sm`}
+                    <button
+                      className={`${active ? 'bg-blue-600 text-white rounded-md' : 'text-gray-900'} block px-4 py-2 text-sm w-full`}
+                      onClick={() => setSelectedUserCommand(cmd)}
                     >
                       {cmd.label}
-                    </a>
+                    </button>
                   )}
                 </Menu.Item>
               ))}
@@ -272,8 +270,9 @@ export default function AdminPage({ queryUser, queryLevel, queryUserCommand, que
             </div>
           </div>
         }
-        <h2 className='flex flex-col items-center justify-center text-2xl'>
-          Level</h2>
+        <h2 className='flex flex-col items-center justify-center text-2xl font-medium'>
+          Level
+        </h2>
         <div className='flex flex-row items-center justify-center p-2 gap-2'>
           <p className='text-xl'>Run command on level:</p>
           <MultiSelectLevel key={'search-' + selectedLevel?._id} defaultValue={selectedLevel} onSelect={(selected: Level) => {
@@ -285,18 +284,16 @@ export default function AdminPage({ queryUser, queryLevel, queryUserCommand, que
                 {selectedLevelCommand?.label || 'Select Command'}
               </Menu.Button>
             </div>
-            <Menu.Items className='origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5'>
+            <Menu.Items className='origin-top-right absolute right-0 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10'>
               {commandsLevel.map((cmd) => (
                 <Menu.Item key={cmd.command}>
                   {({ active }) => (
-                    <a
-                      onClick={() => {
-                        setSelectedLevelCommand(cmd);
-                      }}
-                      className={`${active ? 'bg-blue-600 text-white' : 'text-gray-900'} block px-4 py-2 text-sm`}
+                    <button
+                      className={`${active ? 'bg-blue-600 text-white rounded-md' : 'text-gray-900'} block px-4 py-2 text-sm w-full`}
+                      onClick={() => setSelectedLevelCommand(cmd)}
                     >
                       {cmd.label}
-                    </a>
+                    </button>
                   )}
                 </Menu.Item>
               ))}
@@ -323,7 +320,7 @@ export default function AdminPage({ queryUser, queryLevel, queryUserCommand, que
           )}
         </div>
         <div className='flex flex-col gap-2 items-center'>
-          <h2 className='text-2xl'>
+          <h2 className='text-2xl font-medium'>
             Send Admin Message
           </h2>
           <TextareaAutosize

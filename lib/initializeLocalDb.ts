@@ -79,6 +79,16 @@ export default async function initializeLocalDb() {
       score: 0,
       ts: ts,
     },
+    {
+      _id: new Types.ObjectId(TestId.USER_ADMIN),
+      calc_records: 1,
+      email: 'admin@admin.com',
+      name: 'Admin',
+      password: await bcrypt.hash('admin', PASSWORD_SALTROUNDS),
+      roles: [Role.ADMIN],
+      score: 0,
+      ts: ts,
+    },
   ],
   { ordered: false }
   ));
