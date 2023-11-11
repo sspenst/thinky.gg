@@ -86,14 +86,11 @@ AchievementRulesSkill[AchievementType.RECORD_AFTER_1_YEAR] = {
   discordNotification: true,
   secret: true,
   unlocked: ({ records }) => {
-    console.log('Total records', records.length);
-
     for (const record of records) {
       const delta = record.records[0]?.ts - record?.ts;
-      //const deltaYears = delta / 31536000;
+      const deltaYears = delta / 31536000;
 
-      /** TODO: should something like  https://pathology.gg/level/visd/the-fall since there is only 1 record and it was "~2 years" after level creation  */
-      if (record.records.length > 1 && delta > 31536000) { // 1 year in seconds
+      if (deltaYears > 1) {
         return true;
       }
     }
