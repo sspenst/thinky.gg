@@ -95,15 +95,16 @@ export default function Dropdown() {
           <div className='px-1 py-1'>
             {isLoggedIn &&
               <div className='block sm:hidden'>
-                <div
-                  className='px-3 py-1 text-center'
-                  data-tooltip-content='Levels Solved'
-                  data-tooltip-id='levels-solved-dropdown'
+                <Link
+                  className='px-3 py-1 flex justify-center'
+                  data-tooltip-content='Ranked Solves'
+                  data-tooltip-id='ranked-solves-dropdown'
+                  href='/ranked'
                   id='levelsSolvedBtn'
                 >
-                  <span className='font-bold'>{user.score}</span>
-                  <StyledTooltip id='levels-solved-dropdown' />
-                </div>
+                  <span className='font-bold'>{user.calcRankedSolves}</span>
+                  <StyledTooltip id='ranked-solves-dropdown' />
+                </Link>
                 <Divider />
               </div>
             }

@@ -4,6 +4,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { AppContext } from '../../contexts/appContext';
 import LinkInfo from '../formatted/linkInfo';
+import StyledTooltip from '../page/styledTooltip';
 import Directory from './directory';
 import Dropdown from './dropdown';
 import HeaderControls from './headerControls';
@@ -49,7 +50,24 @@ export default function Header({
       </div>
       <div className='flex gap-4 items-center z-20'>
         <HeaderControls />
-        <Dropdown />
+        {user && <div className='hidden sm:block h-6 w-px bg-neutral-500' />}
+        <div className='flex gap-3 items-center'>
+          {user && <>
+            <Link
+              className='hidden sm:block'
+              data-tooltip-content='Ranked Solves'
+              data-tooltip-id='ranked-solves-header'
+              href='/ranked'
+              id='levelsSolvedBtn'
+            >
+              <div className='flex flex-col gap-1'>
+                <span className='font-bold leading-none'>{user.calcRankedSolves}</span>
+              </div>
+              <StyledTooltip id='ranked-solves-header' />
+            </Link>
+          </>}
+          <Dropdown />
+        </div>
       </div>
     </header>
   );

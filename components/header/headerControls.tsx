@@ -42,15 +42,6 @@ function UserHeaderControls() {
   }
 
   return (<>
-    <div
-      className='hidden sm:block'
-      data-tooltip-content='Levels Solved'
-      data-tooltip-id='levels-solved-header'
-      id='levelsSolvedBtn'
-    >
-      <span className='font-bold'>{user.score}</span>
-      <StyledTooltip id='levels-solved-header' />
-    </div>
     {socket?.connected && connectedPlayersCount > 0 &&
       <Link className='hover:opacity-70' id='multiplayerBtn' aria-label={`multiplayer - ${connectedPlayersCount} online`} href='/multiplayer' passHref>
         <div className='flex items-start -mr-1' data-tooltip-id='connected-players-count' data-tooltip-content={`${connectedPlayersCount} player${connectedPlayersCount !== 1 ? 's' : ''} online${matches.length > 0 ? `, ${matches.length} current multiplayer match${matches.length === 1 ? '' : 'es'}` : ''}`}>
