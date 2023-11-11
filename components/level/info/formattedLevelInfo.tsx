@@ -102,7 +102,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
           <LevelDropdown level={level} />
           {level.isRanked && <>
             <Link
-              className='font-normal'
+              className='font-normal text-xl'
               data-tooltip-content='This level contributes to your leaderboard ranking!'
               data-tooltip-id='ranked-tooltip'
               href='/ranked'

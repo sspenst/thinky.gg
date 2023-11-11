@@ -132,6 +132,10 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
     };
   }
 
+  if (query.isRanked === 'true') {
+    searchObj['isRanked'] = true;
+  }
+
   let searchAuthor: User | null = null;
 
   if (query.searchAuthor && query.searchAuthor.length > 0) {
