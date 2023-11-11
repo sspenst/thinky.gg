@@ -83,6 +83,7 @@ AchievementRulesSkill[AchievementType.RECORD_AFTER_1_YEAR] = {
   description: 'Discovered Record On Level After 1 Year of Level Creation',
   emoji: '🏜',
   name: 'Buried Treasure',
+  discordNotification: true,
   secret: true,
   unlocked: ({ records }) => {
     console.log('Total records', records.length);
