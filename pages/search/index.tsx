@@ -422,7 +422,6 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
         />
       ),
       sortable: true,
-      allowOverflow: true,
       style: {
         fontSize: '13px',
         minWidth: '150px',
