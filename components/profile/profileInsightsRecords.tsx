@@ -1,3 +1,4 @@
+import moment from 'moment';
 import React, { useContext } from 'react';
 import DataTable from 'react-data-table-component-sspenst';
 import Dimensions from '../../constants/dimensions';
@@ -7,44 +8,42 @@ import useProStatsUser, { ProStatsUserType } from '../../hooks/useProStatsUser';
 import User from '../../models/db/user';
 import FormattedDate from '../formatted/formattedDate';
 import FormattedLevelLink from '../formatted/formattedLevelLink';
-import FormattedUser from '../formatted/formattedUser';
 
-export default function ProfileInsightsLevelPlayLog({ user }: {user: User}) {
-  const { proStatsUser } = useProStatsUser(user, ProStatsUserType.PlayLogForUserCreatedLevels);
+export default function ProfileInsightsRecords({ user }: {user: User}) {
+  const { proStatsUser } = useProStatsUser(user, ProStatsUserType.Records);
   const { user: reqUser } = useContext(AppContext);
 
-  if (!proStatsUser || !proStatsUser[ProStatsUserType.PlayLogForUserCreatedLevels]) {
+  console.log(proStatsUser);
+
+  if (!proStatsUser || !proStatsUser[ProStatsUserType.Records]) {
     return <span>Loading...</span>;
   }
 
-  return (<div className='flex flex-col gap-1'>
-    <h2 className='text-xl font-bold break-words max-w-full'>Play Log for {user.name}&apos;s Levels</h2>
+  return (<>
+    <h2 className='text-xl font-bold break-words max-w-full'>Level Records by {user.name}</h2>
     <div className='w-full max-w-lg'>
       <DataTable
         columns={[
           {
-            name: 'User',
-            cell: (row, index) => <FormattedUser id={`play-log-${index}`} size={Dimensions.AvatarSizeSmall} user={row.user} />,
-            grow: 2,
-          },
-          {
             name: 'Level',
-            cell: (row, index) => <FormattedLevelLink id={`play-log-${index}`} level={row.levelId} />,
+            sortable: true,
+            selector: (row) => row.name,
+            cell: (row, index) => <FormattedLevelLink id={`play-log-${index}`} level={row} />,
             grow: 2,
           },
+
           {
-            name: 'When',
-            cell: (row) => <FormattedDate ts={row.statTs} />,
+            grow: 3,
+            name: 'Time Between Level Creation and Record',
+            sortable: true,
+            cell: (row) => moment.duration(((row.records[0].ts - row.ts) * 1000) || 0).humanize(),
+            selector: (row) => (row.records[0].ts - row.ts),
+
           },
         ]}
-        conditionalRowStyles={[{
-          when: row => row.user?._id === reqUser?._id,
-          style: {
-            backgroundColor: 'var(--bg-color-4)',
-          },
-        }]}
+
         customStyles={DATA_TABLE_CUSTOM_STYLES}
-        data={proStatsUser[ProStatsUserType.PlayLogForUserCreatedLevels]}
+        data={proStatsUser[ProStatsUserType.Records]}
         dense
         noDataComponent={
           <div className='p-3'>
@@ -58,5 +57,5 @@ export default function ProfileInsightsLevelPlayLog({ user }: {user: User}) {
         striped
       />
     </div>
-  </div>);
+  </>);
 }

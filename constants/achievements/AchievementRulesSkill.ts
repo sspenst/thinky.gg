@@ -92,6 +92,7 @@ AchievementRulesSkill[AchievementType.RECORD_AFTER_1_YEAR] = {
       const delta = record.records[0]?.ts - record?.ts;
       //const deltaYears = delta / 31536000;
 
+      /** TODO: should something like  https://pathology.gg/level/visd/the-fall since there is only 1 record and it was "~2 years" after level creation  */
       if (record.records.length > 1 && delta > 31536000) { // 1 year in seconds
         return true;
       }

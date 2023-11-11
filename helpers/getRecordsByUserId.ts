@@ -1,16 +1,20 @@
 import Record from '@root/models/db/record';
-import { Types } from 'mongoose';
+import User from '@root/models/db/user';
+import { PipelineStage, Types } from 'mongoose';
 import dbConnect from '../lib/dbConnect';
 import Level from '../models/db/level';
 import Review from '../models/db/review';
 import { LevelModel, RecordModel, ReviewModel } from '../models/mongoose';
+import { getEnrichLevelsPipelineSteps } from './enrich';
 import { logger } from './logger';
 
 export interface LevelWithRecordHistory extends Level {
     records: Record[];
 }
 
-export async function getRecordsByUserId(userId: Types.ObjectId): Promise<LevelWithRecordHistory[]> {
+export async function getRecordsByUserId(userId: Types.ObjectId, reqUser?: User): Promise<LevelWithRecordHistory[]> {
+  const lookupPipelineUser = reqUser ? getEnrichLevelsPipelineSteps(reqUser, '_id', '') : [];
+
   const records = await RecordModel.aggregate([
     {
       $match: {
@@ -47,15 +51,21 @@ export async function getRecordsByUserId(userId: Types.ObjectId): Promise<LevelW
             $match: {
               userId: { $ne: userId },
               isDeleted: { $ne: true },
+              archivedBy: { $ne: userId },
               isDraft: false,
             },
           },
+          ...lookupPipelineUser as PipelineStage[],
           {
             $project: {
               name: 1,
               _id: 1,
               leastMoves: 1,
-              ts: 1
+              slug: 1,
+              ts: 1,
+              userAttempts: 1,
+              userMoves: 1,
+              userTs: 1
             }
           },
           {
@@ -78,7 +88,7 @@ export async function getRecordsByUserId(userId: Types.ObjectId): Promise<LevelW
                 },
               ],
             },
-          }
+          },
         ],
       }
     },
@@ -102,7 +112,7 @@ export async function getRecordsByUserId(userId: Types.ObjectId): Promise<LevelW
       },
     },
 
-  ]);
+  ] as PipelineStage[]);
 
   return records;
 }
