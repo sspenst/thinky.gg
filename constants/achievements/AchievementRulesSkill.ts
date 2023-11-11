@@ -90,7 +90,7 @@ AchievementRulesSkill[AchievementType.RECORD_AFTER_1_YEAR] = {
       const delta = record.records[0]?.ts - record?.ts;
       const deltaYears = delta / 31536000;
 
-      if (deltaYears > 1) {
+      if (record.records.length > 1 && deltaYears > 1) {
         return true;
       }
     }
