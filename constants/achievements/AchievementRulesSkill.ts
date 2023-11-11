@@ -81,8 +81,9 @@ skillRequirements.forEach(req => {
 
 AchievementRulesSkill[AchievementType.RECORD_AFTER_1_YEAR] = {
   description: 'Discovered Record On Level After 1 Year of Level Creation',
-  emoji: '🕰',
-  name: 'Legendary Hunter',
+  emoji: '🏜',
+  name: 'Buried Treasure',
+  secret: true,
   unlocked: ({ records }) => {
     console.log('Total records', records.length);
 
