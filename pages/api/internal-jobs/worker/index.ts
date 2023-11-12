@@ -291,7 +291,7 @@ export async function processQueueMessages() {
         isProcessing: false,
       }, {}, {
         session: session,
-        limit: 10,
+        limit: 20,
         sort: { priority: -1, createdAt: 1 },
       }).lean<QueueMessage[]>();
 
