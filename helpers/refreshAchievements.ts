@@ -98,7 +98,7 @@ export async function refreshAchievements(userId: Types.ObjectId, categories: Ac
           const userName = user?.name;
           const userHref = 'https://pathology.gg/profile/' + userName;
           const userLinkDiscord = `[${userName}](${userHref})`;
-          const achievementHref = 'https://pathology.gg/achievements/' + achievementType;
+          const achievementHref = 'https://pathology.gg/achievement/' + achievementType;
           const achievementLinkDiscord = `[${achievementInfo.name}](${achievementHref})`;
           // message should also include emoji
           const message = `${userLinkDiscord} just unlocked the ${achievementLinkDiscord} ${achievementInfo.emoji} achievement!`;
