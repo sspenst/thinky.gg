@@ -26,9 +26,9 @@ export default function ProfileInsights({ reqUser, user }: ProfileInsightsProps)
 
   return (
     <div className='flex flex-col gap-4 text-center justify-center items-center w-full'>
-      <ProfileInsightsRecords user={user} />
       <ProfileInsightsScoreChart user={user} />
-      <div className='flex flex-row gap-3'>
+      <ProfileInsightsRecords user={user} />
+      <div className='flex flex-col md:flex-row gap-3'>
         <ProfileInsightsLevelPlayLog user={user} />
         <ProfileInsightsMostSolves user={user} />
       </div>

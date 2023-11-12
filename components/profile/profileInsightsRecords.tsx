@@ -1,8 +1,6 @@
 import moment from 'moment';
-import React, { useContext } from 'react';
+import React from 'react';
 import DataTable from 'react-data-table-component-sspenst';
-import Dimensions from '../../constants/dimensions';
-import { AppContext } from '../../contexts/appContext';
 import { DATA_TABLE_CUSTOM_STYLES } from '../../helpers/dataTableCustomStyles';
 import useProStatsUser, { ProStatsUserType } from '../../hooks/useProStatsUser';
 import User from '../../models/db/user';
@@ -11,9 +9,6 @@ import FormattedLevelLink from '../formatted/formattedLevelLink';
 
 export default function ProfileInsightsRecords({ user }: {user: User}) {
   const { proStatsUser } = useProStatsUser(user, ProStatsUserType.Records);
-  const { user: reqUser } = useContext(AppContext);
-
-  console.log(proStatsUser);
 
   if (!proStatsUser || !proStatsUser[ProStatsUserType.Records]) {
     return <span>Loading...</span>;
@@ -23,6 +18,8 @@ export default function ProfileInsightsRecords({ user }: {user: User}) {
     <h2 className='text-xl font-bold break-words max-w-full'>Level Records by {user.name}</h2>
     <div className='w-full max-w-lg'>
       <DataTable
+        defaultSortFieldId={'date'}
+        defaultSortAsc={false}
         columns={[
           {
             name: 'Level',
@@ -33,11 +30,26 @@ export default function ProfileInsightsRecords({ user }: {user: User}) {
           },
 
           {
-            grow: 3,
-            name: 'Time Between Level Creation and Record',
+            id: 'date',
+            grow: 2,
+            name: 'Achieved',
             sortable: true,
-            cell: (row) => moment.duration(((row.records[0].ts - row.ts) * 1000) || 0).humanize(),
-            selector: (row) => (row.records[0].ts - row.ts),
+            cell: (row) => <FormattedDate ts={row.records[0].ts} />,
+            selector: (row) => (row.records[0].ts),
+
+          },
+          {
+            grow: 3,
+            name: 'Discovered Time Delta',
+            sortable: true,
+            cell: (row) => row.records[0].ts > row.ts ? moment.duration(((row.records[0].ts - row.ts) * 1000)).humanize() : 'N/A',
+
+            sortFunction: (a, b) => {
+              const aDelta = a.records[0].ts - a.ts;
+              const bDelta = b.records[0].ts - b.ts;
+
+              return aDelta - bDelta;
+            }
 
           },
         ]}
