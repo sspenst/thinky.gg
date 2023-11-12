@@ -120,7 +120,7 @@ describe('account settings notification preferences', () => {
     expect(originalSendEmail.sendEmailNotification).toHaveBeenCalledTimes(1); // important
     expect(originalSendPush.sendPushNotification).toHaveBeenCalledTimes(0); // important!
   });
-  test('create a new achievement notification', async () => {
+  test('create a new follow notification', async () => {
     // spy on sendMailRefMock.ref
 
     const originalSendEmail = jest.requireActual('@root/pages/api/internal-jobs/worker/sendEmailNotification');

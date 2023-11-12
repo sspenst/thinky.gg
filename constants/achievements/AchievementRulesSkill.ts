@@ -1,9 +1,10 @@
 import { DIFFICULTY_INDEX, difficultyList } from '@root/components/formatted/formattedDifficulty';
+import { LevelWithRecordHistory } from '@root/helpers/getRecordsByUserId';
 import { IAchievementInfo } from './achievementInfo';
 import AchievementType from './achievementType';
 
 interface IAchievementInfoSkill extends IAchievementInfo {
-  unlocked: ({ rollingLevelSolvesSum }: {rollingLevelSolvesSum: number[]}) => boolean;
+  unlocked: ({ rollingLevelSolvesSum }: {rollingLevelSolvesSum: number[], records: LevelWithRecordHistory[]}) => boolean;
 }
 
 interface SkillRequirement {
@@ -77,5 +78,25 @@ skillRequirements.forEach(req => {
     unlocked: ({ rollingLevelSolvesSum }) => rollingLevelSolvesSum[req.difficultyIndex] >= req.levels,
   };
 });
+
+AchievementRulesSkill[AchievementType.RECORD_AFTER_1_YEAR] = {
+  description: 'Discovered Record On Level After 1 Year of Level Creation',
+  emoji: '🏜',
+  name: 'Buried Treasure',
+  discordNotification: true,
+  secret: true,
+  unlocked: ({ records }) => {
+    for (const record of records) {
+      const delta = record.records[0]?.ts - record?.ts;
+      const deltaYears = delta / 31536000;
+
+      if (record.records.length > 1 && deltaYears > 1) {
+        return true;
+      }
+    }
+
+    return false;
+  },
+};
 
 export default AchievementRulesSkill;

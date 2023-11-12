@@ -1,6 +1,7 @@
 import { getEnrichLevelsPipelineSteps } from '@root/helpers/enrich';
+import { getRecordsByUserId } from '@root/helpers/getRecordsByUserId';
 import User from '@root/models/db/user';
-import mongoose, { PipelineStage } from 'mongoose';
+import mongoose, { PipelineStage, Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { ValidEnum } from '../../../../../helpers/apiWrapper';
 import { DIFFICULTY_LOGISTIC_K, DIFFICULTY_LOGISTIC_M, DIFFICULTY_LOGISTIC_T } from '../../../../../helpers/getDifficultyEstimate';
@@ -479,7 +480,7 @@ export default withAuth({
   }
 
   const { id: userId, type } = req.query as { id: string, type: string };
-  let scoreHistory, difficultyLevelsComparisons, mostSolvesForUserLevels, playLogForUserCreatedLevels;
+  let scoreHistory, difficultyLevelsComparisons, mostSolvesForUserLevels, playLogForUserCreatedLevels, records;
 
   if (type === ProStatsUserType.DifficultyLevelsComparisons) {
     if (userId !== req.user._id.toString()) {
@@ -495,6 +496,8 @@ export default withAuth({
     mostSolvesForUserLevels = await getMostSolvesForUserLevels(userId);
   } else if (type === ProStatsUserType.PlayLogForUserCreatedLevels) {
     playLogForUserCreatedLevels = await getPlayLogForUsersCreatedLevels(req.user, userId);
+  } else if (type === ProStatsUserType.Records) {
+    records = await getRecordsByUserId(new Types.ObjectId(userId), req.user);
   }
 
   return res.status(200).json({
@@ -502,5 +505,6 @@ export default withAuth({
     [ProStatsUserType.DifficultyLevelsComparisons]: difficultyLevelsComparisons,
     [ProStatsUserType.MostSolvesForUserLevels]: mostSolvesForUserLevels,
     [ProStatsUserType.PlayLogForUserCreatedLevels]: playLogForUserCreatedLevels,
+    [ProStatsUserType.Records]: records,
   });
 });

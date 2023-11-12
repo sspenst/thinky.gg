@@ -9,6 +9,8 @@ export interface IAchievementInfo {
   emoji?: string;
   name: string;
   tooltip?: string;
+  secret?: boolean,
+  discordNotification?: boolean,
 }
 
 export enum AchievementCategory {

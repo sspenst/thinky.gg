@@ -167,4 +167,25 @@ describe('api/user/[id]/prostats/[type]', () => {
       }
     });
   });
+  test('should be able to get Records with Pro', async () => {
+    await UserModel.findByIdAndUpdate(TestId.USER_B, {
+      $addToSet: {
+        roles: Role.PRO
+      }
+    });
+
+    await query({
+      userId: TestId.USER_B,
+      type: ProStatsUserType.Records,
+      expectedStatus: 200,
+      additionalAssertions: async response => {
+        expect(response[ProStatsUserType.ScoreHistory]).toBeUndefined();
+        expect(response[ProStatsUserType.MostSolvesForUserLevels]).toBeUndefined();
+        expect(response[ProStatsUserType.DifficultyLevelsComparisons]).toBeUndefined();
+        expect(response[ProStatsUserType.PlayLogForUserCreatedLevels]).toBeUndefined();
+        expect(response[ProStatsUserType.Records]).toBeDefined();
+        expect(response[ProStatsUserType.Records].length).toBe(1);
+      }
+    });
+  });
 });

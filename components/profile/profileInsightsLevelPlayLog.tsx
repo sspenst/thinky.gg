@@ -17,7 +17,7 @@ export default function ProfileInsightsLevelPlayLog({ user }: {user: User}) {
     return <span>Loading...</span>;
   }
 
-  return (<>
+  return (<div className='flex flex-col gap-1'>
     <h2 className='text-xl font-bold break-words max-w-full'>Play Log for {user.name}&apos;s Levels</h2>
     <div className='w-full max-w-lg'>
       <DataTable
@@ -58,5 +58,5 @@ export default function ProfileInsightsLevelPlayLog({ user }: {user: User}) {
         striped
       />
     </div>
-  </>);
+  </div>);
 }
