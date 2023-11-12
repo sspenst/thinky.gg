@@ -18,6 +18,7 @@ import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker
 import modifyLevelHandler from '../../../../pages/api/level/[id]';
 import createLevelHandler from '../../../../pages/api/level/index';
 import publishLevelHandler from '../../../../pages/api/publish/[id]';
+import saveLevelToHandler from '../../../../pages/api/save-level-to/[id]';
 import statsHandler from '../../../../pages/api/stats/index';
 
 let level_id_1: string;
@@ -47,7 +48,6 @@ describe('Editing levels should work correctly', () => {
           body: {
             authorNote: 'I\'m a nice little note.',
             name: 'test level 1',
-            collectionIds: [TestId.COLLECTION],
             data: '4000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000003',
           },
           headers: {
@@ -67,6 +67,35 @@ describe('Editing levels should work correctly', () => {
         expect(res.status).toBe(200);
       },
     });
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: level_id_1.toString(),
+          },
+          body: {
+            collectionIds: [TestId.COLLECTION],
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await saveLevelToHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+        expect(response._id).toBe(level_id_1.toString());
+      },
+    });
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -78,7 +107,6 @@ describe('Editing levels should work correctly', () => {
           body: {
             authorNote: 'I\'m a mean little note.',
             name: 'A Second Test Level',
-            collectionIds: [TestId.COLLECTION],
             data: '4000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000003',
           },
           headers: {
@@ -97,6 +125,35 @@ describe('Editing levels should work correctly', () => {
         expect(res.status).toBe(200);
       },
     });
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: level_id_2.toString(),
+          },
+          body: {
+            collectionIds: [TestId.COLLECTION],
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await saveLevelToHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+        expect(response._id).toBe(level_id_2.toString());
+      },
+    });
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -108,7 +165,6 @@ describe('Editing levels should work correctly', () => {
           body: {
             authorNote: 'I\'m a DRAFT buddy.',
             name: 'A Third Test Level (Draft)',
-            collectionIds: [TestId.COLLECTION],
             data: '4000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000003',
           },
           headers: {
@@ -125,6 +181,35 @@ describe('Editing levels should work correctly', () => {
         expect(response.success).toBe(true);
         level_id_3 = response._id;
         expect(res.status).toBe(200);
+      },
+    });
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: level_id_3.toString(),
+          },
+          body: {
+            collectionIds: [TestId.COLLECTION],
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await saveLevelToHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+        expect(response._id).toBe(level_id_3.toString());
       },
     });
   });
@@ -604,6 +689,7 @@ describe('Editing levels should work correctly', () => {
         const level = await LevelModel.findById(level_id_1) as Level;
 
         expect(level.isDraft).toBe(false);
+        expect(level.isRanked).toBe(false);
         expect(level.calc_difficulty_estimate).toBe(-1);
         expect(level.calc_playattempts_duration_sum).toBe(0);
         expect(level.calc_stats_players_beaten).toBe(1);

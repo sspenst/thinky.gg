@@ -6,8 +6,8 @@ import StyledTooltip from '../page/styledTooltip';
 export default function HomeDefault() {
   return (
     <>
-      <div className='md:flex content-center my-6 mx-auto px-6 max-w-screen-2xl'>
-        <div className='flex-auto md:w-64 p-3'>
+      <div className='flex flex-col items-center m-6 gap-8'>
+        <div className='max-w-screen-md p-3'>
           <span className='font-bold text-4xl'>The goal of Pathology is simple</span>
           <div className='text-xl py-3'>Get to the exit in the <span className='font-bold italic'>least number of moves</span></div>
           <div className='p-3'>Sounds easy right? Yet, this game is one of the most mind-bending puzzle games you will find. Different blocks stand in your way to the exit, and your job is to figure out the optimal route.</div>
@@ -20,7 +20,7 @@ export default function HomeDefault() {
           <div>Pathology is a sokoban game that was originally created in <span className='italic' data-tooltip-id='psychopath-year' data-tooltip-content='Originally named Psychopath'>2005</span>. While a simple concept, the game can become incredibly challenging and will put your brain to the test.</div>
           <StyledTooltip id='psychopath-year' />
         </div>
-        <div className='flex-auto md:w-32 p-3'>
+        <div className='max-w-screen-md p-3'>
           <span className='font-bold text-4xl'>An active community</span>
           <div className='p-3'>has helped build <span className='italic'>thousands</span> of levels over multiple decades. A level and collection editor allows you to build your own challenging levels for the world of Pathology players.</div>
           <div className='p-3 w-full'>

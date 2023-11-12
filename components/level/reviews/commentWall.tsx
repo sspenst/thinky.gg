@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { AppContext } from '../../../contexts/appContext';
 import useComments from '../../../hooks/useComments';
-import { COMMENT_QUERY_LIMIT } from '../../../models/CommentEnums';
+import { COMMENT_QUERY_LIMIT } from '../../../models/constants/comment';
 import { EnrichedComment } from '../../../models/db/comment';
 import isNotFullAccountToast from '../../toasts/isNotFullAccountToast';
 import CommentThread from './commentThread';

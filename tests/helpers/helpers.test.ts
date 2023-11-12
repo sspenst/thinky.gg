@@ -79,6 +79,27 @@ describe('helpers/*.ts', () => {
     expect(sorted[1].name).toBe('2. b');
     expect(sorted[2].name).toBe('3. d');
     expect(sorted[3].name).toBe('10. c');
+
+    const objWithoutName = [
+      {
+        name: '1. a',
+      },
+      {
+        blah: '2. b',
+      },
+      {
+        name: '10. c',
+      },
+      {
+        name: '3. d',
+      },
+    ];
+    const sorted2 = naturalSort(objWithoutName as { name: string }[]);
+
+    expect(sorted2[0].name).toBe('1. a');
+    expect(sorted2[1].name).toBe('3. d');
+    expect(sorted2[2].name).toBe('10. c');
+    expect(sorted2[3]).toStrictEqual({ blah: '2. b' });
   });
   test('getProfileSlug', async () => {
     const user = await UserModel.findById(TestId.USER);

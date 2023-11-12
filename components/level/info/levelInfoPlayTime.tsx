@@ -1,4 +1,5 @@
 import { Tab } from '@headlessui/react';
+import LoadingSpinner from '@root/components/page/loadingSpinner';
 import { RoleIcon } from '@root/components/page/roleIcons';
 import StyledTooltip from '@root/components/page/styledTooltip';
 import Role from '@root/constants/role';
@@ -47,7 +48,11 @@ export default function LevelInfoPlayTime() {
     );
   }
 
-  if (!proStatsLevel || !proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime]) {
+  if (!proStatsLevel) {
+    return <LoadingSpinner />;
+  }
+
+  if (!proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime]) {
     return <div className='text-sm'>No play time data available.</div>;
   }
 

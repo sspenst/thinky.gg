@@ -1,12 +1,12 @@
 import { EmailDigestSettingTypes } from '@root/constants/emailDigest';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
 import { PASSWORD_SALTROUNDS } from '@root/models/schemas/userSchema';
+import { getNewUserConfig } from '@root/pages/api/user-config';
 import bcrypt from 'bcryptjs';
 import { Types } from 'mongoose';
 import { GameId } from '../constants/GameId';
 import Role from '../constants/role';
 import TestId from '../constants/testId';
-import Theme from '../constants/theme';
 import { generateCollectionSlug, generateLevelSlug } from '../helpers/generateSlug';
 import { TimerUtil } from '../helpers/getTs';
 import Collection from '../models/db/collection';
@@ -80,39 +80,26 @@ export default async function initializeLocalDb() {
       score: 0,
       ts: ts,
     },
+    {
+      _id: new Types.ObjectId(TestId.USER_ADMIN),
+      calc_records: 1,
+      email: 'admin@admin.com',
+      name: 'Admin',
+      password: await bcrypt.hash('admin', PASSWORD_SALTROUNDS),
+      roles: [Role.ADMIN],
+      score: 0,
+      ts: ts,
+    },
   ],
   { ordered: false }
   ));
 
-  promises.push(UserConfigModel.insertMany(
-    [
-      {
-        _id: new Types.ObjectId(),
-        theme: Theme.Modern,
-        userId: new Types.ObjectId(TestId.USER),
-        emailConfirmed: true,
-      },
-      {
-        _id: new Types.ObjectId(),
-        theme: Theme.Modern,
-        userId: new Types.ObjectId(TestId.USER_B),
-        emailConfirmed: true,
-      },
-      {
-        _id: new Types.ObjectId(),
-        theme: Theme.Modern,
-        userId: new Types.ObjectId(TestId.USER_GUEST),
-        emailConfirmed: false,
-      },
-      {
-        _id: new Types.ObjectId(),
-        theme: Theme.Modern,
-        userId: new Types.ObjectId(TestId.USER_PRO),
-        emailConfirmed: true,
-        emailDigest: EmailDigestSettingTypes.NONE,
-      },
-    ], { ordered: false }
-  ));
+  promises.push(UserConfigModel.insertMany([
+    getNewUserConfig([], 0, new Types.ObjectId(TestId.USER), { emailConfirmed: true }),
+    getNewUserConfig([], 0, new Types.ObjectId(TestId.USER_B), { emailConfirmed: true }),
+    getNewUserConfig([Role.GUEST], 0, new Types.ObjectId(TestId.USER_GUEST)),
+    getNewUserConfig([Role.PRO], 0, new Types.ObjectId(TestId.USER_PRO), { emailConfirmed: true, emailDigest: EmailDigestSettingTypes.NONE }),
+  ], { ordered: false }));
 
   // LEVEL
   promises.push(LevelModel.insertMany(
@@ -123,6 +110,7 @@ export default async function initializeLocalDb() {
         data: '4000B0\n120000\n050000\n678900\nABCD30',
         height: 5,
         isDraft: false,
+        isRanked: false,
         leastMoves: 20,
         name: 'test level 1',
         slug: 'test/test-level-1',
@@ -135,6 +123,7 @@ export default async function initializeLocalDb() {
         data: '40000\n12000\n05000\n67890\nABC03',
         height: 5,
         isDraft: true,
+        isRanked: false,
         leastMoves: 20,
         name: 'test level 2',
         slug: 'test/test-level-2',
@@ -147,6 +136,7 @@ export default async function initializeLocalDb() {
         data: '40\n03',
         height: 2,
         isDraft: false,
+        isRanked: false,
         leastMoves: 80,
         name: 'x',
         slug: 'test/x',
@@ -159,6 +149,7 @@ export default async function initializeLocalDb() {
         data: '40000\n02000\n05000\n67890\nABCD3',
         height: 5,
         isDraft: false,
+        isRanked: false,
         leastMoves: 20,
         name: 'y',
         slug: 'bbb/y',
@@ -173,6 +164,7 @@ export default async function initializeLocalDb() {
         height: 5,
         isDeleted: true,
         isDraft: false,
+        isRanked: false,
         leastMoves: 20,
         name: 'test level deleted',
         slug: TestId.LEVEL_DELETED,
@@ -201,7 +193,7 @@ export default async function initializeLocalDb() {
       },
       {
         _id: new Types.ObjectId(),
-        levelId: new Types.ObjectId(TestId.LEVEL_4),
+        levelId: new Types.ObjectId(TestId.LEVEL_3),
         moves: 20,
         ts: ts,
         userId: new Types.ObjectId(TestId.USER_B),
@@ -370,6 +362,7 @@ export async function initLevel(userId: string, name: string, obj: Partial<Level
     data: '40000\n12000\n05000\n67890\nABCD3',
     height: 5,
     isDraft: false,
+    isRanked: false,
     leastMoves: 20,
     name: name,
     slug: slug,

@@ -14,6 +14,7 @@ import { logger } from '../../../helpers/logger';
 import User from '../../../models/db/user';
 import { StripeEventModel, UserConfigModel, UserModel } from '../../../models/mongoose';
 import { stripe, STRIPE_WEBHOOK_SECRET } from '../subscription';
+import { GiftType } from '../subscription/gift';
 
 export const config = {
   api: {
@@ -103,7 +104,8 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
 
     try {
       await session.withTransaction(async () => {
-        const proMonths = Number(subscription.metadata?.quantity) ?? 0;
+        const quantity = Number(subscription.metadata?.quantity) ?? 0;
+        const type = subscription.metadata?.type as GiftType;
 
         await Promise.all([
           UserModel.findByIdAndUpdate(
@@ -132,7 +134,7 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
             },
           ),
           createNewProUserNotification(giftToUser._id, giftFromUser._id),
-          queueDiscordWebhook(Discord.DevPriv, `💸 [${giftFromUser.name}](https://pathology.gg/profile/${giftFromUser.name}) just gifted ${proMonths} month${proMonths === 1 ? '' : 's'} of Pro to [${giftToUser.name}](https://pathology.gg/profile/${giftToUser.name})`)
+          queueDiscordWebhook(Discord.DevPriv, `💸 [${giftFromUser.name}](https://pathology.gg/profile/${giftFromUser.name}) just gifted ${quantity} ${type === GiftType.Yearly ? 'year' : 'month'}${quantity === 1 ? '' : 's'} of Pro to [${giftToUser.name}](https://pathology.gg/profile/${giftToUser.name})`)
         ]);
       });
       session.endSession();
@@ -321,7 +323,7 @@ export default apiWrapper({
         }
       }
     }
-  } else if (event.type === 'customer.subscription.deleted' || event.type === 'invoice.payment_failed') {
+  } else if (event.type === 'customer.subscription.deleted') {
     const subscription = dataObject as Stripe.Subscription;
 
     if (subscription.metadata?.giftToId) {
@@ -354,14 +356,8 @@ export default apiWrapper({
       ]);
 
       if (userConfigAgg.length === 0) {
-        if (event.type === 'customer.subscription.deleted') {
-          // there must be a matching userconfig in this case, so we need to return an error here
-          error = `${event.type} - UserConfig with customer id ${customerId} does not exist`;
-        } else {
-          // failed payments without a userconfig imply the user's payment has failed before subscribing
-          // this is a valid case and should not cause an error
-          logger.info(`${event.type} - UserConfig with customer id ${customerId} does not exist`);
-        }
+        // there must be a matching userconfig in this case, so we need to return an error here
+        error = `UserConfig with customer id ${customerId} does not exist`;
       } else {
         // we need to check if this is a gift subscription so we can downgrade the appropriate user
         // looks like a regular downgrade subscription of pro

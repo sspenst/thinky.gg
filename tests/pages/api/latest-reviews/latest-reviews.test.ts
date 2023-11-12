@@ -89,6 +89,7 @@ describe('Testing latest reviews api', () => {
         data: '40000\n12000\n05000\n67890\nABCD3',
         height: 5,
         isDraft: false,
+        isRanked: false,
         name: `review-level-${i}`,
         slug: `test/review-level-${i}`,
         ts: TimerUtil.getTs(),

@@ -67,9 +67,10 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
     }
   }, [mutateUser, shouldContinouslyFetch]);
 
+  const [giftInterval, setGiftInterval] = useState<string>('month');
+  const [giftQuantity, setGiftQuantity] = useState<number>(1);
   const [giftUserSelected, setGiftUserSelected] = useState<User>();
   const [giftUserPaymentMethod, setGiftUserPaymentMethod] = useState<string>();
-  const [giftQuantity, setGiftQuantity] = useState<number>(1);
   const paymentMethods = subscriptions?.map((subscriptionData) => subscriptionData.paymentMethod);
   const seenIds = new Set();
   const paymentMethodOptions = paymentMethods?.map((paymentMethod) => {
@@ -104,10 +105,17 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
   const hasAPaymentMethod = paymentMethods && paymentMethods?.length > 0;
 
   return (
-    <div className='flex flex-col justify-center items-center gap-4'>
+    <div className='flex flex-col justify-center items-center gap-6'>
       <div className='flex gap-4'>
         <Image alt='pro' src='/pro.svg' width='24' height='24' />
         <h2 className='font-bold text-2xl'>Pathology Pro</h2>
+      </div>
+      <div className='rounded-md px-4 py-2 bg-yellow-200 text-black text-sm'>
+        <span><span className='font-bold'>Update: </span>On December 1, 2023, the pricing of Pathology Pro will be updated as follows:</span>
+        <ul className=''>
+          <li>Monthly: $5 USD per month</li>
+          <li>Yearly: $4 USD per month ($48 USD per year billed annually)</li>
+        </ul>
       </div>
       {isPro(user) &&
         <div className='flex flex-col gap-4 text-center justify-center items-center'>
@@ -120,21 +128,32 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                 <MultiSelectUser placeholder='Gift Pro to a user' onSelect={setGiftUserSelected} />
                 {paymentMethodsDropdown}
                 <div className='flex gap-2 items-center'>
-                  <label className='font-medium' htmlFor='months'>Months</label>
-                  <input
-                    className='text-center justify-center items-center h-6 w-10 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent'
-                    id='months'
-                    max={24}
-                    min={1}
-                    name='months'
-                    onChange={() => {
-                      const val = Number((document.getElementById('months') as HTMLInputElement).value);
-
-                      setGiftQuantity(Math.min(Math.max(val, 1), 24));
+                  <select
+                    className='border border-color-4 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent p-1 w-fit'
+                    id='paymentMethod'
+                    name='paymentMethod'
+                    onChange={(e) => {
+                      setGiftInterval(e.target.value);
                     }}
                     style={{
                       borderColor: 'var(--bg-color-4)',
                     }}
+                  >
+                    <option value={'month'}>Months</option>
+                    <option value={'year'}>Years</option>
+                  </select>
+                  <input
+                    className='text-center justify-center items-center h-6 w-10 border border-color-4 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent'
+                    id='quantity'
+                    max={24}
+                    min={1}
+                    name='quantity'
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+
+                      setGiftQuantity(Math.min(Math.max(val, 1), 24));
+                    }}
+                    step='1'
                     type='number'
                     value={giftQuantity}
                   />
@@ -144,16 +163,19 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                 className='bg-green-300 hover:bg-green-500 text-black font-bold py-2 px-4 rounded-2xl focus:outline-none focus:shadow-outline cursor-pointer w-fit h-fit text-center disabled:opacity-50 disabled:cursor-not-allowed'
                 disabled={!giftUserSelected || !giftUserPaymentMethod}
                 onClick={() => {
-                  if (!confirm(`Are you sure you want to gift Pro to ${giftUserSelected?.name}? You will be billed monthly for ${giftQuantity} month${giftQuantity === 1 ? '' : 's'}.`)) {
+                  if (!confirm(`Are you sure you want to gift Pro to ${giftUserSelected?.name}? You will be billed ${giftInterval}ly for ${giftQuantity} ${giftInterval}${giftQuantity === 1 ? '' : 's'}.`)) {
                     return;
                   }
 
                   toast.dismiss();
                   toast.loading('Gifting Pro...');
+
+                  const type = giftInterval === 'month' ? 'gift_monthly' : 'gift_yearly';
+
                   fetch('/api/subscription/gift', {
                     method: 'POST',
                     body: JSON.stringify({
-                      type: 'gift_monthly',
+                      type: type,
                       quantity: giftQuantity,
                       paymentMethodId: giftUserPaymentMethod,
                       giftTo: giftUserSelected?._id,
@@ -177,7 +199,11 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
               >
                 <div className='flex flex-col'>
                   <span className='text-lg'>Gift Pro</span>
-                  <span className='text-sm'>$3.00 USD / month</span>
+                  {giftInterval === 'month' ?
+                    <span className='text-sm'>$3.00 USD / month</span>
+                    :
+                    <span className='text-sm'>$27.00 USD / year</span>
+                  }
                 </div>
               </button>
             </div>
@@ -185,7 +211,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
         </div>
       }
       {giftsReceived && giftsReceived.length > 0 && (
-        <div className='flex gap-4 text-center justify-center items-center'>
+        <div className='flex flex-wrap gap-4 text-center justify-center items-center'>
           {giftsReceived?.map((subscriptionData) =>
             <div key={subscriptionData.subscriptionId} className={classNames(
               'border rounded-md w-fit px-3 py-2',
@@ -212,7 +238,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
         </Link>
       )}
       {subscriptions && subscriptions.length > 0 && (
-        <div className='flex gap-4 text-center justify-center items-center'>
+        <div className='flex flex-wrap gap-4 text-center justify-center items-center'>
           {subscriptions?.map((subscriptionData) =>
             <div key={subscriptionData.subscriptionId} className={classNames(
               'border rounded-md w-fit px-3 py-2',

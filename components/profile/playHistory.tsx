@@ -114,7 +114,7 @@ export default function PlayHistory() {
         )}
       </div>
       <div className='flex flex-col items-start gap-1'>
-        <label className='text-md font-semibold truncate'>Minimum Duration</label>
+        <label className='font-semibold truncate'>Minimum Duration</label>
         <div className='flex items-center gap-2'>
           <input
             className='cursor-pointer'
@@ -135,7 +135,7 @@ export default function PlayHistory() {
         </div>
       </div>
       <div className='flex items-center gap-2'>
-        <label className='text-md font-semibold truncate' htmlFor='solvedOnly'>Solved Only</label>
+        <label className='font-semibold truncate' htmlFor='solvedOnly'>Solved Only</label>
         <input
           checked={filterSolved}
           id='solvedOnly'

@@ -73,7 +73,11 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
 
         const newCollection = await res.json();
 
-        router.replace(`/collection/${newCollection.slug}`);
+        if (collection) {
+          router.replace(`/collection/${newCollection.slug}`);
+        } else {
+          router.push(`/collection/${newCollection.slug}`);
+        }
       } else {
         throw res.text();
       }
@@ -94,7 +98,7 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
       <div className='flex flex-col gap-2 w-112 max-w-full'>
         <label className='font-semibold' htmlFor='name'>Name:</label>
         <input
-          className='p-1 rounded-md border'
+          className='p-1 rounded-md border border-color-4'
           name='name'
           onChange={e => setName(e.target.value)}
           placeholder={`${collection ? 'Edit' : 'Add'} name...`}
@@ -113,7 +117,6 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
           </label>
           <input
             checked={isPrivate}
-            disabled={!isPro(user)}
             id='privateCollection'
             onChange={() => setIsPrivate(p => !p)}
             type='checkbox'
@@ -121,7 +124,7 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
         </div>
         <label className='font-semibold' htmlFor='authorNote'>Author Note:</label>
         <textarea
-          className='p-1 rounded-md border'
+          className='p-1 rounded-md border border-color-4'
           name='authorNote'
           onChange={e => setAuthorNote(e.target.value)}
           placeholder={`${collection ? 'Edit' : 'Add'} author note...`}

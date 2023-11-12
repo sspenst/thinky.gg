@@ -1,3 +1,4 @@
+import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import { PipelineStage } from 'mongoose';
 import cleanUser from '../lib/cleanUser';
 import Campaign, { EnrichedCampaign } from '../models/db/campaign';
@@ -88,7 +89,7 @@ export async function enrichNotifications(notifications: Notification[], reqUser
     }
 
     // now strip out all the fields we don't need
-    const targetFields = NotificationModelMapping[notification.targetModel];
+    const targetFields = NotificationModelMapping[notification.targetModel] ?? [];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const target = notification.target as Record<string, any>;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -109,7 +110,7 @@ export async function enrichNotifications(notifications: Notification[], reqUser
       cleanUser(notification.target as User);
     }
 
-    const sourceFields = NotificationModelMapping[notification.sourceModel];
+    const sourceFields = NotificationModelMapping[notification.sourceModel] ?? [];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const source = notification.source as Record<string, any>;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -365,6 +366,30 @@ export async function enrichReqUser(reqUser: User, filters?: any): Promise<ReqUs
   enrichedReqUser.notifications = notificationAgg;
 
   return enrichedReqUser;
+}
+
+export function getEnrichUserIdPipelineSteps(userIdField = 'userId', outputToField = 'userId') {
+  const pipeline: PipelineStage[] = [
+    {
+      $lookup: {
+        from: UserModel.collection.name,
+        localField: userIdField,
+        foreignField: '_id',
+        as: outputToField,
+        pipeline: [
+          { $project: { ...USER_DEFAULT_PROJECTION } },
+        ]
+      },
+    },
+    {
+      $unwind: {
+        path: '$' + outputToField,
+        preserveNullAndEmptyArrays: true,
+      }
+    }
+  ];
+
+  return pipeline;
 }
 
 /**

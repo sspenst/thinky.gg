@@ -45,7 +45,7 @@ function generateDiscordWebhook(
   const contentCleaned = slicedText.replace(/\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*/g, '[link]');
   const discordTxt = `${score ? getScoreEmojis(score) + ' - ' : ''}**${req.user?.name}** wrote a review for ${level.userId.name}'s [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}):\n${contentCleaned}`;
 
-  return queueDiscordWebhook(Discord.NotifsId, discordTxt);
+  return queueDiscordWebhook(Discord.Notifs, discordTxt);
 }
 
 export default withAuth({
@@ -153,7 +153,7 @@ export default withAuth({
 
     await Promise.all([
       queueRefreshAchievements(req.user._id, [AchievementCategory.REVIEWER]),
-      queueRefreshAchievements(level.userId._id, [AchievementCategory.REVIEWER]),
+      queueRefreshAchievements(level.userId._id, [AchievementCategory.CREATOR]),
       generateDiscordWebhook(undefined, level, req, setScore, trimmedText, ts),
       queueRefreshIndexCalcs(new Types.ObjectId(id?.toString())),
       createNewReviewOnYourLevelNotification(level.userId._id, req.userId, level._id, String(setScore), !!trimmedText),
@@ -244,7 +244,7 @@ export default withAuth({
 
       const promises = [
         queueRefreshAchievements(userId, [AchievementCategory.REVIEWER]),
-        queueRefreshAchievements(level.userId._id, [AchievementCategory.REVIEWER]),
+        queueRefreshAchievements(level.userId._id, [AchievementCategory.CREATOR]),
         queueRefreshIndexCalcs(new Types.ObjectId(id?.toString())),
         createNewReviewOnYourLevelNotification(level.userId, userId, level._id, String(setScore), !!trimmedText),
       ];
@@ -289,7 +289,7 @@ export default withAuth({
 
       await Promise.all([
         queueRefreshAchievements(userId, [AchievementCategory.REVIEWER]),
-        queueRefreshAchievements(level.userId._id, [AchievementCategory.REVIEWER]),
+        queueRefreshAchievements(level.userId._id, [AchievementCategory.CREATOR]),
         queueRefreshIndexCalcs(new Types.ObjectId(id?.toString())),
         clearNotifications(level.userId._id, userId, level._id, NotificationType.NEW_REVIEW_ON_YOUR_LEVEL),
       ]);

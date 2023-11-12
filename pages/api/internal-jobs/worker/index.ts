@@ -1,7 +1,7 @@
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
 import UserConfig from '@root/models/db/userConfig';
-import mongoose, { QueryOptions, Types } from 'mongoose';
+import mongoose, { ClientSession, QueryOptions, Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
 import { getEnrichNotificationPipelineStages } from '../../../../helpers/enrich';
@@ -59,6 +59,32 @@ export async function queuePushNotification(notificationId: Types.ObjectId, opti
       options,
     )
   ]);
+}
+
+export async function bulkQueuePushNotification(notificationIds: Types.ObjectId[], session: ClientSession) {
+  const queueMessages = [];
+
+  for (const notificationId of notificationIds) {
+    const message = JSON.stringify({ notificationId: notificationId.toString() });
+
+    queueMessages.push({
+      _id: new Types.ObjectId(),
+      dedupeKey: `push-${notificationId}`,
+      message: message,
+      state: QueueMessageState.PENDING,
+      type: QueueMessageType.PUSH_NOTIFICATION,
+    });
+
+    queueMessages.push({
+      _id: new Types.ObjectId(),
+      dedupeKey: `email-${notificationId}`,
+      message: message,
+      state: QueueMessageState.PENDING,
+      type: QueueMessageType.EMAIL_NOTIFICATION,
+    });
+  }
+
+  await QueueMessageModel.insertMany(queueMessages, { session: session });
 }
 
 export async function queueRefreshAchievements(userId: string | Types.ObjectId, categories: AchievementCategory[], options?: QueryOptions) {
@@ -163,21 +189,21 @@ async function processQueueMessage(queueMessage: QueueMessage) {
         log = `Notification ${notificationId} not sent: not found`;
       } else {
         const notification = notificationAgg[0];
-
-        const whereSend = queueMessage.type === QueueMessageType.PUSH_NOTIFICATION ? sendPushNotification : sendEmailNotification;
-        const userConfig = await UserConfigModel.findOne({ userId: notification.userId._id }) as UserConfig;
+        const userConfig = await UserConfigModel.findOne<UserConfig>({ userId: notification.userId._id });
 
         if (userConfig === null) {
           log = `Notification ${notificationId} not sent: user config not found`;
           error = true;
         } else {
-          const allowedEmail = userConfig.emailNotificationsList.includes(notification.type);
-          const allowedPush = userConfig.pushNotificationsList.includes(notification.type);
+          const whereSend = queueMessage.type === QueueMessageType.PUSH_NOTIFICATION ? sendPushNotification : sendEmailNotification;
 
-          if (whereSend === sendEmailNotification && !allowedEmail) {
-            log = `Notification ${notificationId} not sent: ` + notification.type + ' not allowed by user (email)';
-          } else if (whereSend === sendPushNotification && !allowedPush) {
-            log = `Notification ${notificationId} not sent: ` + notification.type + ' not allowed by user (push)';
+          const disallowedEmail = userConfig.disallowedEmailNotifications.includes(notification.type);
+          const disallowedPush = userConfig.disallowedPushNotifications.includes(notification.type);
+
+          if (whereSend === sendEmailNotification && disallowedEmail) {
+            log = `Notification ${notificationId} not sent: ${notification.type} not allowed by user (email)`;
+          } else if (whereSend === sendPushNotification && disallowedPush) {
+            log = `Notification ${notificationId} not sent: ${notification.type} not allowed by user (push)`;
           } else {
             log = await whereSend(notification);
           }
@@ -265,7 +291,7 @@ export async function processQueueMessages() {
         isProcessing: false,
       }, {}, {
         session: session,
-        limit: 10,
+        limit: 20,
         sort: { priority: -1, createdAt: 1 },
       }).lean<QueueMessage[]>();
 

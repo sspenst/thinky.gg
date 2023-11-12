@@ -15,6 +15,7 @@ import { LevelModel, RecordModel, UserModel } from '../../../../models/mongoose'
 import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
 import modifyLevelHandler from '../../../../pages/api/level/[id]';
 import createLevelHandler from '../../../../pages/api/level/index';
+import saveLevelToHandler from '../../../../pages/api/save-level-to/[id]';
 import statsHandler from '../../../../pages/api/stats/index';
 import unpublishLevelHandler from '../../../../pages/api/unpublish/[id]';
 
@@ -118,7 +119,7 @@ describe('pages/api/level/index.ts', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Invalid body.collectionIds, body.data');
+        expect(response.error).toBe('Invalid body.data');
         expect(res.status).toBe(400);
       },
     });
@@ -140,7 +141,6 @@ describe('pages/api/level/index.ts', () => {
           body: {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
-            collectionIds: [TestId.COLLECTION],
             data: '4000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000003',
           },
           headers: {
@@ -171,7 +171,6 @@ describe('pages/api/level/index.ts', () => {
           body: {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
-            collectionIds: [TestId.COLLECTION],
             data: '4000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000003',
           },
           headers: {
@@ -193,6 +192,35 @@ describe('pages/api/level/index.ts', () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: level_id_1.toString(),
+          },
+          body: {
+            collectionIds: [TestId.COLLECTION],
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await saveLevelToHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+        expect(response._id).toBe(level_id_1.toString());
+      },
+    });
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
           method: 'POST',
           userId: TestId.USER,
           cookies: {
@@ -200,7 +228,6 @@ describe('pages/api/level/index.ts', () => {
           },
           body: {
             name: 'A Second Test Level',
-            collectionIds: [TestId.COLLECTION],
             data: '4000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000003',
           },
           headers: {
@@ -217,6 +244,35 @@ describe('pages/api/level/index.ts', () => {
         expect(response.success).toBe(true);
         level_id_2 = response._id;
         expect(res.status).toBe(200);
+      },
+    });
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: level_id_2.toString(),
+          },
+          body: {
+            collectionIds: [TestId.COLLECTION],
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await saveLevelToHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+        expect(response._id).toBe(level_id_2.toString());
       },
     });
   });
@@ -389,7 +445,6 @@ describe('pages/api/level/index.ts', () => {
           body: {
             authorNote: 'I\'m a nice little note.',
             // missing name
-            collectionIds: [TestId.COLLECTION],
           },
           query: {
             id: level_id_1,
@@ -448,7 +503,6 @@ describe('pages/api/level/index.ts', () => {
           body: {
             authorNote: 'I\'m a changed nice little note.',
             name: 'A Change Test Level',
-            collectionIds: [TestId.COLLECTION],
           },
           query: {
             id: level_id_1,
@@ -483,7 +537,6 @@ describe('pages/api/level/index.ts', () => {
           },
           body: {
             name: 'A Change Test Level',
-            collectionIds: [TestId.COLLECTION],
           },
           query: {
             id: level_id_1,
@@ -599,6 +652,7 @@ describe('pages/api/level/index.ts', () => {
       data: '40000\n12000\n05000\n67890\nABCD3',
       height: 5,
       isDraft: false,
+      isRanked: false,
       leastMoves: 20,
       name: 'test level 3',
       slug: 'test/test-level-3',
@@ -724,6 +778,7 @@ describe('pages/api/level/index.ts', () => {
         data: '40000\n12000\n05000\n67890\nABCD3',
         height: 5,
         isDraft: false,
+        isRanked: false,
         leastMoves: 20,
         name: 'test level 3',
         slug: 'test/test-level-3',

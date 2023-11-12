@@ -6,9 +6,9 @@ import TestId from '../../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import { MatchAction, MultiplayerMatchState, MultiplayerMatchType } from '../../../../models/constants/multiplayer';
 import MultiplayerMatch from '../../../../models/db/multiplayerMatch';
 import { LevelModel, MultiplayerMatchModel, StatModel } from '../../../../models/mongoose';
-import { MatchAction, MultiplayerMatchState, MultiplayerMatchType } from '../../../../models/MultiplayerEnums';
 import handler from '../../../../pages/api/match/[matchId]';
 import handlerCreate, { checkForFinishedMatch } from '../../../../pages/api/match/index';
 import statHandler from '../../../../pages/api/stats/index';
@@ -111,7 +111,7 @@ describe('matchCreateJoinAndPlay', () => {
         expect(response.players).toHaveLength(2);
 
         for (const player of response.players) {
-          expect(Object.keys(player).sort()).toEqual(['__v', '_id', 'calc_levels_created_count', 'calc_records', 'chapterUnlocked', 'last_visited_at', 'name', 'roles', 'score', 'ts'].sort());
+          expect(Object.keys(player).sort()).toEqual(['__v', '_id', 'calcRankedSolves', 'calc_levels_created_count', 'calc_records', 'chapterUnlocked', 'last_visited_at', 'name', 'roles', 'score', 'ts'].sort());
         }
 
         expect(response.gameTable).toBeUndefined();
@@ -178,7 +178,7 @@ describe('matchCreateJoinAndPlay', () => {
         expect(response.winners).toHaveLength(0);
         expect(response.timeUntilStart).toBe(-1000);
         expect(response.levels).toHaveLength(1); // should have level for this user now
-        expect(Object.keys(response.levels[0]).sort()).toEqual(['_id', 'calc_playattempts_unique_users', 'calc_playattempts_unique_users_count', 'calc_difficulty_estimate', 'userId', 'data', 'width', 'height', 'leastMoves', 'name', 'slug'].sort());
+        expect(Object.keys(response.levels[0]).sort()).toEqual(['_id', 'calc_playattempts_unique_users', 'calc_playattempts_unique_users_count', 'calc_difficulty_estimate', 'userId', 'data', 'width', 'height', 'leastMoves', 'name', 'slug', 'isRanked'].sort());
       }
 
     });

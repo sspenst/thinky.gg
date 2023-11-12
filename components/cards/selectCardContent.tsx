@@ -12,7 +12,7 @@ interface SelectCardContentProps {
 export default function SelectCardContent({ option }: SelectCardContentProps) {
   return (<>
     <div
-      className='font-bold break-words p-2'
+      className='font-bold break-words p-2 max-w-full'
       style={{
         width: option.width ?? Dimensions.OptionWidth,
       }}
@@ -33,11 +33,11 @@ export default function SelectCardContent({ option }: SelectCardContentProps) {
             />
           </div>
         }
-        {option.stats && <div className='pt-1 italic'>{option.stats.getText()}</div>}
+        {!option.hideStats && option.stats && <div className='pt-1 italic'>{option.stats.getText()}</div>}
       </div>
     </div>
     {option.stats?.isSolved() &&
-      <div className='absolute bottom-0 right-0'>
+      <div className='absolute top-0 right-0'>
         <Solved />
       </div>
     }

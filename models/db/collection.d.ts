@@ -1,4 +1,5 @@
 import { Types } from 'mongoose';
+import { CollectionType } from '../constants/collection';
 import Level, { EnrichedLevel } from './level';
 import User from './user';
 
@@ -13,6 +14,7 @@ interface Collection {
   name: string;
   slug: string;
   tags?: string[];
+  type?: CollectionType;
   updatedAt: Date;
   userId: Types.ObjectId & User;
 
@@ -26,6 +28,10 @@ interface Collection {
 export interface EnrichedCollection extends Collection {
   levelCount: number;
   userSolvedCount: number;
+}
+
+export interface CollectionWithLevel extends Collection {
+  containsLevel: boolean;
 }
 
 export default Collection;

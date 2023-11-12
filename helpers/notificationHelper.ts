@@ -1,12 +1,36 @@
 import Level from '@root/models/db/level';
+import Notification from '@root/models/db/notification';
 import User from '@root/models/db/user';
-import { QueryOptions, SaveOptions, Types } from 'mongoose';
+import { ClientSession, QueryOptions, SaveOptions, Types } from 'mongoose';
 import AchievementType from '../constants/achievements/achievementType';
 import GraphType from '../constants/graphType';
 import NotificationType from '../constants/notificationType';
 import Achievement from '../models/db/achievement';
 import { AchievementModel, GraphModel, NotificationModel } from '../models/mongoose';
-import { queuePushNotification } from '../pages/api/internal-jobs/worker';
+import { bulkQueuePushNotification, queuePushNotification } from '../pages/api/internal-jobs/worker';
+
+export async function createNewAdminMessageNotifications(userIds: Types.ObjectId[], payload: string, session: ClientSession) {
+  const notificationIds = [];
+  const notifications = [];
+
+  for (const userId of userIds) {
+    const notificationId = new Types.ObjectId();
+
+    notificationIds.push(notificationId);
+    notifications.push({
+      _id: notificationId,
+      message: payload,
+      type: NotificationType.ADMIN_MESSAGE,
+      userId: userId,
+      read: false,
+    });
+  }
+
+  await NotificationModel.insertMany(notifications, { session: session });
+  await bulkQueuePushNotification(notificationIds, session);
+
+  return notifications;
+}
 
 export async function createNewWallPostNotification(type: NotificationType.NEW_WALL_POST |NotificationType.NEW_WALL_REPLY, userId: string | Types.ObjectId, sourceUserId: string | Types.ObjectId, targetUserId: string | Types.ObjectId, message: string) {
   const id = new Types.ObjectId();
@@ -82,9 +106,14 @@ export async function createNewFollowerNotification(follower: string | Types.Obj
 }
 
 export async function createNewReviewOnYourLevelNotification(levelUserId: string | Types.ObjectId, sourceUserId: string | Types.ObjectId, targetLevelId: string | Types.ObjectId, score: string, hasText?: boolean) {
+  // should not create a notification if the user is reviewing their own level
+  if (sourceUserId.toString() === levelUserId.toString()) {
+    return null;
+  }
+
   const message = `${String(score)},${String(!!hasText)}`;
 
-  const notification = await NotificationModel.findOneAndUpdate({
+  const notification = await NotificationModel.findOneAndUpdate<Notification>({
     source: sourceUserId,
     sourceModel: 'User',
     target: targetLevelId,

@@ -5,7 +5,7 @@ import NotificationType from '../../../constants/notificationType';
 import { ValidEnum, ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
 import { clearNotifications, createNewWallPostNotification } from '../../../helpers/notificationHelper';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import { COMMENT_QUERY_LIMIT } from '../../../models/CommentEnums';
+import { COMMENT_QUERY_LIMIT } from '../../../models/constants/comment';
 import Comment, { EnrichedComment } from '../../../models/db/comment';
 import User from '../../../models/db/user';
 import { CommentModel, UserModel } from '../../../models/mongoose';

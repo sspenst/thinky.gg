@@ -6,12 +6,13 @@ interface SelectOption {
   disabled?: boolean;
   height?: number;
   hideDifficulty?: boolean;
+  hideStats?: boolean;
   href?: string;
   id: string;
   level?: EnrichedLevel | undefined;
   onClick?: () => void;
   stats?: SelectOptionStats | undefined;
-  text: string | JSX.Element;
+  text: React.ReactNode;
   width?: number;
 }
 

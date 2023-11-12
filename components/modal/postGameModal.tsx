@@ -16,7 +16,7 @@ import Modal from '.';
 interface PostGameModalProps {
   chapter?: string;
   closeModal: () => void;
-  collection?: Collection;
+  collection?: Collection | null;
   dontShowPostGameModal: boolean;
   isOpen: boolean;
   level: Level;
@@ -65,7 +65,7 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
     if (nextLevel) {
       return (
         <RecommendedLevel
-          hrefOverride={`/level/${nextLevel.slug}?${queryParams}`}
+          hrefOverride={`/level/${nextLevel.slug}${Object.keys(queryParams).length !== 0 ? `?${queryParams}` : ''}`}
           id='next-level'
           level={nextLevel}
           onClick={closeModal}
@@ -103,7 +103,7 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
           <h3 className='text-center text-2xl p-1'>
             Congratulations!
           </h3>
-          <h4 className='text-md'>
+          <h4>
             You completed {level.name}!
           </h4>
           <ShareBar url={url} quote={quote} />

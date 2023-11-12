@@ -1,6 +1,6 @@
 import { multiplayerMatchTypeToText } from '@root/helpers/multiplayerHelperFunctions';
+import { MatchLogDataGameRecap, MultiplayerMatchState } from '@root/models/constants/multiplayer';
 import MultiplayerMatch from '@root/models/db/multiplayerMatch';
-import { MatchLogDataGameRecap, MultiplayerMatchState } from '@root/models/MultiplayerEnums';
 import Link from 'next/link';
 import React, { useEffect } from 'react';
 import FormattedDate from '../formatted/formattedDate';

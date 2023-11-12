@@ -1,6 +1,7 @@
 import { Tab } from '@headlessui/react';
 import FormattedDate from '@root/components/formatted/formattedDate';
 import FormattedUser from '@root/components/formatted/formattedUser';
+import LoadingSpinner from '@root/components/page/loadingSpinner';
 import { RoleIcon } from '@root/components/page/roleIcons';
 import StyledTooltip from '@root/components/page/styledTooltip';
 import Dimensions from '@root/constants/dimensions';
@@ -74,7 +75,11 @@ export default function LevelInfoCompletions() {
     });
   }
 
-  if (!proStatsLevel || !proStatsLevel[ProStatsLevelType.CommunityStepData] || (proStatsLevel[ProStatsLevelType.CommunityStepData] as ProStatsCommunityStepData[]).length === 0) {
+  if (!proStatsLevel) {
+    return <LoadingSpinner />;
+  }
+
+  if (!proStatsLevel[ProStatsLevelType.CommunityStepData] || (proStatsLevel[ProStatsLevelType.CommunityStepData] as ProStatsCommunityStepData[]).length === 0) {
     return <div className='text-sm'>No completion data available.</div>;
   }
 
@@ -140,16 +145,6 @@ export default function LevelInfoCompletions() {
 
   return (
     <div className='flex flex-col gap-2'>
-      {!isPro(user) &&
-        <div className='flex gap-3 items-center'>
-          <RoleIcon id='level-info-completions' role={Role.PRO} size={20} />
-          <div>
-            Get <Link href='/settings/pro' className='text-blue-300'>
-              Pathology Pro
-            </Link> to see all completions for this level.
-          </div>
-        </div>
-      }
       <Tab.Group>
         {isPro(user) &&
           <Tab.List className='flex flex-wrap gap-x-1 items-start rounded text-sm'>
@@ -237,6 +232,16 @@ export default function LevelInfoCompletions() {
           </Tab.Panel>
         </Tab.Panels>
       </Tab.Group>
+      {!isPro(user) &&
+        <div className='flex gap-3 items-center'>
+          <RoleIcon id='level-info-completions' role={Role.PRO} size={20} />
+          <div>
+            Get <Link href='/settings/pro' className='text-blue-300'>
+              Pathology Pro
+            </Link> to see all completions for this level.
+          </div>
+        </div>
+      }
     </div>
   );
 }
