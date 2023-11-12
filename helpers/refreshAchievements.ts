@@ -1,5 +1,6 @@
 import { AchievementCategory, AchievementCategoryMapping } from '@root/constants/achievements/achievementInfo';
 import AchievementType from '@root/constants/achievements/achievementType';
+import Discord from '@root/constants/discord';
 import { getSolvesByDifficultyTable } from '@root/helpers/getSolvesByDifficultyTable';
 import { createNewAchievement } from '@root/helpers/notificationHelper';
 import { getDifficultyRollingSum } from '@root/helpers/playerRankHelper';
@@ -11,6 +12,8 @@ import Review from '@root/models/db/review';
 import User from '@root/models/db/user';
 import { AchievementModel, LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, ReviewModel, UserModel } from '@root/models/mongoose';
 import { Types } from 'mongoose';
+import queueDiscordWebhook from './discordWebhook';
+import { getRecordsByUserId } from './getRecordsByUserId';
 
 const AchievementCategoryFetch = {
   [AchievementCategory.USER]: async (userId: Types.ObjectId) => {
@@ -41,10 +44,13 @@ const AchievementCategoryFetch = {
     return { levelsCreated: userCreatedLevels };
   },
   [AchievementCategory.SKILL]: async (userId: Types.ObjectId) => {
-    const levelsSolvedByDifficulty = await getSolvesByDifficultyTable(userId);
+    const [levelsSolvedByDifficulty, records] = await Promise.all([
+      getSolvesByDifficultyTable(userId),
+      getRecordsByUserId(userId),
+    ]);
     const rollingLevelSolvesSum = getDifficultyRollingSum(levelsSolvedByDifficulty);
 
-    return { rollingLevelSolvesSum: rollingLevelSolvesSum };
+    return { rollingLevelSolvesSum: rollingLevelSolvesSum, records: records };
   },
 };
 
@@ -62,7 +68,8 @@ export async function refreshAchievements(userId: Types.ObjectId, categories: Ac
     fetchPromises.push(AchievementCategoryFetch[category](userId));
   }
 
-  const [neededDataArray, allAchievements] = await Promise.all([
+  const [user, neededDataArray, allAchievements] = await Promise.all([
+    UserModel.findById(userId, { _id: 1, name: 1 }).lean<User>(), // TODO: this is a dup of query for USER achievement types and for any achievement without a discord notif... but maybe not a huge deal
     Promise.all(fetchPromises),
     AchievementModel.find({ userId: userId }, { type: 1, }).lean<Achievement[]>(),
   ]);
@@ -85,6 +92,19 @@ export async function refreshAchievements(userId: Types.ObjectId, categories: Ac
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (achievementInfo.unlocked(neededData as any)) {
         achievementsCreatedPromises.push(createNewAchievement(achievementType as AchievementType, userId, achievementsCreatedPromises.length > 0)); // for each category, only send one push notification
+
+        if (achievementInfo.discordNotification) {
+          // Should be "<User.name> just unlocked <Achievement.name> achievement!" where <User.name> is a link to the user's profile and <Achievement.name> is a link to the achievement's page
+          const userName = user?.name;
+          const userHref = 'https://pathology.gg/profile/' + userName;
+          const userLinkDiscord = `[${userName}](${userHref})`;
+          const achievementHref = 'https://pathology.gg/achievements/' + achievementType;
+          const achievementLinkDiscord = `[${achievementInfo.name}](${achievementHref})`;
+          // message should also include emoji
+          const message = `${userLinkDiscord} just unlocked the ${achievementLinkDiscord} ${achievementInfo.emoji} achievement!`;
+
+          achievementsCreatedPromises.push(queueDiscordWebhook(Discord.General, message));
+        }
       }
     }
 

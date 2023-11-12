@@ -16,7 +16,7 @@ export default function ProfileInsightsMostSolves({ user }: {user: User}) {
     return <span>Loading...</span>;
   }
 
-  return (<>
+  return (<div className='flex flex-col gap-1'>
     <h2 className='text-xl font-bold break-words max-w-full'>Most Solves of {user.name}&apos;s Levels</h2>
     <div className='w-full max-w-md'>
       <DataTable
@@ -52,5 +52,5 @@ export default function ProfileInsightsMostSolves({ user }: {user: User}) {
         striped
       />
     </div>
-  </>);
+  </div>);
 }
