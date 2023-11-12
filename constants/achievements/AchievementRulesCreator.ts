@@ -12,6 +12,7 @@ const AchievementRulesCreator: { [achievementType: string]: IAchievementInfoCrea
     emoji: '🎻',
     description: 'Created 25 acclaimed levels',
     tooltip: 'Acclaimed levels have a review score >= 91.0',
+    discordNotification: true,
     unlocked: ({ levelsCreated }) => {
       const highQualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace >= 0.91);
 
@@ -22,6 +23,7 @@ const AchievementRulesCreator: { [achievementType: string]: IAchievementInfoCrea
     name: 'Artist',
     emoji: '🎨',
     description: 'Created 10 acclaimed levels',
+    discordNotification: true,
     tooltip: 'Acclaimed levels have a review score >= 91.0',
     unlocked: ({ levelsCreated }) => {
       const highQualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace >= 0.91);
@@ -33,6 +35,7 @@ const AchievementRulesCreator: { [achievementType: string]: IAchievementInfoCrea
     name: 'Stroke of Genius',
     emoji: '🖌️',
     description: 'Created an acclaimed level',
+    discordNotification: true,
     tooltip: 'Acclaimed levels have a review score >= 91.0',
     unlocked: ({ levelsCreated }) => {
       const highQualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace >= 0.91);
@@ -45,6 +48,7 @@ const AchievementRulesCreator: { [achievementType: string]: IAchievementInfoCrea
     emoji: '🏰',
     description: 'Created 300 quality levels',
     tooltip: 'Quality levels have a review score >= 80.0',
+    discordNotification: true,
     unlocked: ({ levelsCreated }) => {
       const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace >= 0.8);
 
