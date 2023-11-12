@@ -192,7 +192,7 @@ export default async function initializeLocalDb() {
       },
       {
         _id: new Types.ObjectId(),
-        levelId: new Types.ObjectId(TestId.LEVEL_4),
+        levelId: new Types.ObjectId(TestId.LEVEL_3),
         moves: 20,
         ts: ts,
         userId: new Types.ObjectId(TestId.USER_B),
