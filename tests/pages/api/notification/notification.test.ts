@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';
 import { Types } from 'mongoose';
