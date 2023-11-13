@@ -314,6 +314,7 @@ async function createMatch(req: NextApiRequestWithAuth) {
   const match = await MultiplayerMatchModel.create({
     createdBy: reqUser._id,
     matchId: matchId,
+    gameId: req.gameId,
     matchLog: [
       generateMatchLog(MatchAction.CREATE, {
         userId: reqUser._id,
