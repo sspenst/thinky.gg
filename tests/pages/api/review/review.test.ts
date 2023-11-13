@@ -1,4 +1,5 @@
 import AchievementType from '@root/constants/achievements/achievementType';
+import { GameId } from '@root/constants/GameId';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -459,6 +460,7 @@ describe('Reviewing levels should work correctly', () => {
         expect(response.error).toBeUndefined();
         expect(response.score).toBe(3.5);
         expect(response.text).toBe('t'.repeat(500));
+        expect(response.gameId).toBe(GameId.PATHOLOGY);
         expect(response.levelId).toBe(TestId.LEVEL_2);
         expect(res.status).toBe(200);
 

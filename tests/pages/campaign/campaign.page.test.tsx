@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import { GetServerSidePropsContext } from 'next';
 import { Logger } from 'winston';
 import TestId from '../../../constants/testId';
@@ -73,6 +74,7 @@ describe('pages/campaign/[slug] page', () => {
     expect(ret.props?.campaign._id).toBe(TestId.CAMPAIGN_OFFICIAL);
     expect(ret.props?.enrichedCollections).toBeDefined();
     expect(ret.props?.enrichedCollections[0]._id).toBe(TestId.COLLECTION);
+    expect(ret.props?.enrichedCollections[0].gameId).toBe(GameId.PATHOLOGY);
   });
   test('getServerSideProps logged in and with valid params', async () => {
     // Created from initialize db file
