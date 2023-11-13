@@ -20,6 +20,10 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       required: true,
       default: [],
     },
+    gameId: {
+      type: String,
+      required: false,
+    },
     emailConfirmationToken: {
       type: String,
       select: false,

@@ -25,6 +25,10 @@ const MultiplayerProfileSchema = new mongoose.Schema<MultiplayerProfile>(
       required: true,
       default: 0,
     },
+    gameId: {
+      type: String,
+      required: false,
+    },
     ratingRushBullet: {
       type: Number,
       required: true,

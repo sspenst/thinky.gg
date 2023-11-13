@@ -32,6 +32,7 @@ export default withAuth({
   },
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
+    // Todo: only select needed fields here to minimize data transfer
     const stats = await StatModel.find({ userId: new Types.ObjectId(req.userId), isDeleted: { $ne: true } }).lean<Stat[]>();
 
     return res.status(200).json(stats);
@@ -112,6 +113,7 @@ export default withAuth({
             _id: new Types.ObjectId(),
             attempts: 1,
             complete: complete,
+            gameId: level.gameId,
             levelId: level._id,
             moves: moves,
             ts: ts,
@@ -173,6 +175,7 @@ export default withAuth({
 
           await RecordModel.create([{
             _id: new Types.ObjectId(),
+            gameId: level.gameId,
             levelId: level._id,
             moves: moves,
             ts: ts,
@@ -271,6 +274,7 @@ export default withAuth({
           await PlayAttemptModel.create([{
             _id: new Types.ObjectId(),
             attemptContext: AttemptContext.JUST_SOLVED,
+            gameId: level.gameId,
             startTime: ts,
             endTime: ts,
             updateCount: 0,

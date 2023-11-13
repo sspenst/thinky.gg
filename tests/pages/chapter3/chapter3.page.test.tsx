@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext } from 'next';
 import { Logger } from 'winston';
@@ -14,6 +15,7 @@ beforeAll(async () => {
     _id: new Types.ObjectId(),
     collections: [new Types.ObjectId(TestId.COLLECTION)],
     name: 'Chapter 1',
+    gameId: GameId.PATHOLOGY,
     slug: 'chapter3',
   });
 });

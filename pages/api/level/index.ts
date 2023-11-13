@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidType } from '../../../helpers/apiWrapper';
@@ -26,6 +27,7 @@ export default withAuth({ POST: {
 
       await LevelModel.create([{
         _id: levelId,
+        gameId: req.gameId,
         authorNote: authorNote?.trim(),
         data: data,
         height: rows.length,

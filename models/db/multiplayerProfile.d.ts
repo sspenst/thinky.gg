@@ -5,6 +5,7 @@ interface MultiplayerProfile {
   calcRushRapidCount: number;
   calcRushClassicalCount: number;
 
+  gameId?: string;
   // elo
   ratingRushBullet: number;
   ratingRushBlitz: number;

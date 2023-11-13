@@ -59,6 +59,7 @@ export default withAuth({
           {
             _id: 1,
             attemptContext: 1,
+            gameId: 1,
             endTime: 1,
           },
           {
@@ -81,6 +82,7 @@ export default withAuth({
             },
             {
               userId: 1,
+              gameId: 1
             },
             {
               session: session,
@@ -97,6 +99,7 @@ export default withAuth({
           const resp = await PlayAttemptModel.create([{
             _id: new Types.ObjectId(),
             attemptContext: level.userId.toString() === req.userId ? AttemptContext.SOLVED : AttemptContext.UNSOLVED,
+            gameId: level.gameId,
             endTime: now,
             levelId: levelObjectId,
             startTime: now,
@@ -166,6 +169,7 @@ export default withAuth({
         const resp = await PlayAttemptModel.create([{
           _id: new Types.ObjectId(),
           attemptContext: latestPlayAttempt.attemptContext === AttemptContext.UNSOLVED ? AttemptContext.UNSOLVED : AttemptContext.SOLVED,
+          gameId: latestPlayAttempt.gameId,
           endTime: now,
           levelId: levelObjectId,
           startTime: now,

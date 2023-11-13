@@ -58,6 +58,10 @@ const LevelSchema = new mongoose.Schema<Level>(
       required: false,
       default: 0
     },
+    gameId: {
+      type: String,
+      required: false,
+    },
     // https://github.com/sspenst/pathology/wiki/Level-data-format
     data: {
       type: String,

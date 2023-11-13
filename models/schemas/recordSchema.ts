@@ -9,6 +9,10 @@ const RecordSchema = new mongoose.Schema<Record>({
   isDeleted: {
     type: Boolean,
   },
+  gameId: {
+    type: String,
+    required: false,
+  },
   levelId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Level',
