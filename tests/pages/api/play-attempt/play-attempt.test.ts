@@ -615,6 +615,7 @@ const tests = [
       expect(lvl.calc_playattempts_duration_sum).toBe(50);
 
       expect(playAttemptDocs.length).toBe(1);
+      expect(playAttemptDocs[0].gameId).toBe(GameId.PATHOLOGY);
       expect(playAttemptDocs[0].updateCount).toBe(5);
       expect(playAttemptDocs[0].attemptContext).toBe(
         AttemptContext.JUST_SOLVED
