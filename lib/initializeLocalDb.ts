@@ -4,6 +4,7 @@ import { PASSWORD_SALTROUNDS } from '@root/models/schemas/userSchema';
 import { getNewUserConfig } from '@root/pages/api/user-config';
 import bcrypt from 'bcryptjs';
 import { Types } from 'mongoose';
+import { GameId } from '../constants/GameId';
 import Role from '../constants/role';
 import TestId from '../constants/testId';
 import { generateCollectionSlug, generateLevelSlug } from '../helpers/generateSlug';
@@ -356,6 +357,7 @@ export async function initLevel(userId: string, name: string, obj: Partial<Level
   // based on name length create that many reviews
   const lvl = await LevelModel.create({
     _id: id,
+    gameId: GameId.PATHOLOGY,
     authorNote: 'test level ' + name + ' author note',
     data: '40000\n12000\n05000\n67890\nABCD3',
     height: 5,
@@ -375,6 +377,7 @@ export async function initLevel(userId: string, name: string, obj: Partial<Level
     for (let i = 0; i < name.length; i++) {
       revs.push({
         _id: new Types.ObjectId(),
+        gameId: GameId.PATHOLOGY,
         levelId: id,
         score: (3903 * i * i + 33 * i) % 5 + 1,
         text: 'Game is OK',
@@ -393,6 +396,7 @@ export async function initCollection(userId: string, name: string, obj: Partial<
   const id = new Types.ObjectId();
   const collection = await CollectionModel.create({
     _id: id,
+    gameId: GameId.PATHOLOGY,
     authorNote: 'test collection ' + name + ' author note',
     name: name,
     userId: userId,

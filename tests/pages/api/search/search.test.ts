@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { GameId } from '@root/constants/GameId';
 import Role from '@root/constants/role';
 import StatFilter from '@root/constants/statFilter';
 import TileType from '@root/constants/tileType';
@@ -31,6 +32,9 @@ beforeAll(async () => {
   await dbConnect();
   const animalNames = ['cat', 'dog', 'bird', 'fish', 'lizard', 'snake', 'turtle', 'horse', 'sheep', 'cow', 'pig', 'monkey', 'deer'];
 
+  const promises = [];
+  const statsToCreate = [];
+
   for (let i = 0; i < 25; i++) {
     const usr = i % 2 === 0 ? TestId.USER_B : TestId.USER;
     let offset = 0;
@@ -47,41 +51,51 @@ beforeAll(async () => {
     }
 
     // use repeat method
-    const lvl = await initLevel(usr,
+    const id = new Types.ObjectId();
+    const leastMvs = (100 + i);
+
+    promises.push(initLevel(usr,
       animalNames[(i * i + 171) % animalNames.length] + ' ' + animalNames[i % animalNames.length],
       {
-        leastMoves: (100 + i),
+        _id: id,
+        gameId: GameId.PATHOLOGY,
+        leastMoves: leastMvs,
         ts: TimerUtil.getTs() - offset,
         calc_playattempts_unique_users: Array.from({ length: 11 }, () => {return new Types.ObjectId() as mongoose.Types.ObjectId;}),
         calc_playattempts_duration_sum: 1000,
         calc_playattempts_just_beaten_count: i,
         calc_difficulty_estimate: 1000 / i,
       }
-    );
+    ));
 
     // create a completion record for every third level
     if (i % 3 === 0) {
-      await StatModel.create({
+      statsToCreate.push({
         _id: new Types.ObjectId(),
+        gameId: GameId.PATHOLOGY,
         userId: TestId.USER,
-        levelId: lvl._id.toString(),
+        levelId: id.toString(),
         complete: true,
         attempts: 1,
-        moves: lvl.leastMoves,
-        ts: TimerUtil.getTs()
+        moves: leastMvs,
+        ts: TimerUtil.getTs() + i
       });
     } else if (i % 5 === 0 ) {
-      await StatModel.create({
+      statsToCreate.push({
         _id: new Types.ObjectId(),
+        gameId: GameId.PATHOLOGY,
         userId: TestId.USER,
-        levelId: lvl._id.toString(),
+        levelId: id.toString(),
         complete: false,
         attempts: 1,
-        moves: lvl.leastMoves + 2,
-        ts: TimerUtil.getTs()
+        moves: leastMvs + 2,
+        ts: TimerUtil.getTs() + i
       });
     }
   }
+
+  promises.push(StatModel.create(statsToCreate));
+  await Promise.all(promises);
 }, 20000);
 
 afterAll(async() => {

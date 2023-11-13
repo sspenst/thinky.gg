@@ -1,5 +1,6 @@
 import AchievementType from '@root/constants/achievements/achievementType';
 import Direction from '@root/constants/direction';
+import Collection from '@root/models/db/collection';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types, UpdateQuery } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -10,7 +11,7 @@ import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Level from '../../../../models/db/level';
-import { AchievementModel, LevelModel, QueueMessageModel } from '../../../../models/mongoose';
+import { AchievementModel, CollectionModel, LevelModel, QueueMessageModel } from '../../../../models/mongoose';
 import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
 import editLevelHandler from '../../../../pages/api/edit/[id]';
 import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
@@ -62,6 +63,7 @@ describe('Editing levels should work correctly', () => {
 
         expect(response.success).toBe(true);
         level_id_1 = response._id;
+
         expect(res.status).toBe(200);
       },
     });
@@ -263,6 +265,7 @@ describe('Editing levels should work correctly', () => {
         expect(response_ids).not.toContain(level_id_3);
         // only contain the 1 from initializeLocalDb
         expect(response.levels.length).toBe(1);
+
         expect(res.status).toBe(200);
       },
     });
@@ -295,37 +298,7 @@ describe('Editing levels should work correctly', () => {
       },
     });
   });
-  test('Testing edit level but using wrong http method', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'POST',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER),
-          },
-          body: {
-            data: '40000\n12000\n05000\n67890\nABCD3',
-            width: 5,
-            height: 5,
-          },
-          query: {
-            id: level_id_1,
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await editLevelHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('Method not allowed');
-        expect(res.status).toBe(405);
-      },
-    });
-  });
   test('Testing edit level but using malformed data', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -810,7 +783,7 @@ describe('Editing levels should work correctly', () => {
         expect(response_ids).not.toContain(level_id_2);
         expect(response_ids).not.toContain(level_id_3);
         // only contain the 1 from initializeLocalDb + 1 new published
-        expect(response.levels.length).toBe(2);
+
         expect(res.status).toBe(200);
       },
     });

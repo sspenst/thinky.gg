@@ -15,6 +15,10 @@ const CollectionSchema = new mongoose.Schema<Collection>({
     type: Boolean,
     default: false,
   },
+  gameId: {
+    type: String,
+    required: false,
+  },
   isThemed: {
     type: Boolean,
     default: false,

@@ -9,6 +9,10 @@ const ReviewSchema = new mongoose.Schema<Review>({
   isDeleted: {
     type: Boolean,
   },
+  gameId: {
+    type: String,
+    required: false,
+  },
   levelId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Level',

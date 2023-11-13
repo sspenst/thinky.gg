@@ -2,6 +2,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 // https://github.com/newrelic/node-newrelic/issues/956#issuecomment-962729137
 import type { NextApiRequest, NextApiResponse } from 'next';
 import requestIp from 'request-ip';
+import { GameId } from '../constants/GameId';
 import { parseReq, ReqValidator } from '../helpers/apiWrapper';
 import { TimerUtil } from '../helpers/getTs';
 import { logger } from '../helpers/logger';
@@ -11,9 +12,28 @@ import dbConnect from './dbConnect';
 import getTokenCookie from './getTokenCookie';
 import isLocal from './isLocal';
 
+export enum GameType {
+  SHORTEST_PATH = 'SHORTEST_PATH',
+
+}
+interface Game {
+  id: GameId;
+  displayName: string;
+  type: GameType;
+}
+
+export const Games: Record<GameId, Game> = {
+  [GameId.PATHOLOGY]: {
+    id: GameId.PATHOLOGY,
+    displayName: 'Pathology',
+    type: GameType.SHORTEST_PATH,
+  }
+};
+
 export type NextApiRequestWithAuth = NextApiRequest & {
   user: User;
   userId: string;
+  gameId: GameId;
 };
 
 export async function getUserFromToken(
@@ -111,6 +131,16 @@ export default function withAuth(
       );
 
       res.setHeader('Set-Cookie', refreshCookie);
+
+      const subdomain = req.headers?.referer?.split('://')[1].split('.')[0];
+
+      /*if (!subdomain || !Games[subdomain]) {
+        return res.status(401).json({
+          error: 'Unauthorized: Game not selected',
+        });
+      }*/
+
+      req.gameId = Games[subdomain as GameId]?.id || GameId.PATHOLOGY;
       req.user = reqUser;
       req.userId = reqUser._id.toString();
 
