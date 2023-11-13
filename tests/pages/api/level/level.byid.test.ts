@@ -524,6 +524,7 @@ describe('pages/api/level/index.ts', () => {
 
         expect(lvl.authorNote).toBe('I\'m a changed nice little note.');
         expect(lvl.name).toBe('A Change Test Level');
+        expect(lvl.gameId).toBe(GameId.PATHOLOGY);
       },
     });
   });
