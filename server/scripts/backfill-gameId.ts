@@ -4,13 +4,12 @@ import { GameId } from '@root/constants/GameId';
 import cliProgress from 'cli-progress';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import * as readline from 'readline';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 
 dotenv.config();
 
 const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
-const args = process.argv.slice(2);
-const URL_HOST = args[0] || 'http://localhost:3000';
 
 async function backfillGameId() {
   // get all collections
@@ -38,17 +37,32 @@ async function backfillGameId() {
 
   console.log('Starting backfill on ', collectionsWithGameIdField.join('\n'), ' collections');
   progressBar.start(collectionsWithGameIdField.length, 0);
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
 
   for (let i = 0; i < collectionsWithGameIdField.length; i++) {
     // update the gameId field to be the correct gameId
     const collectionName = collectionsWithGameIdField[i];
+
+    console.log('\nConfirm you want to update gameId field for collection: ', collectionName, ' (y/n): ');
+
+    if (await new Promise((resolve) => {
+      rl.question('', (answer) => {
+        resolve(answer === 'y');
+      });
+    }) === false) {
+      console.log('\nSkipping collection: ', collectionName);
+      continue;
+    }
 
     await mongoose.connection.db.collection(collectionName).updateMany({}, { $set: { gameId: GameId.PATHOLOGY } });
     progressBar.update(i);
   }
 
   progressBar.update(collectionsWithGameIdField.length);
-  console.log('Finished');
+  console.log('\nFinished');
   await dbDisconnect();
   process.exit(0);
 }
