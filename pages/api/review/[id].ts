@@ -143,7 +143,7 @@ export default withAuth({
 
     const review = await ReviewModel.create({
       _id: new Types.ObjectId(),
-      gameId: req.gameId,
+      gameId: level.gameId,
       levelId: id,
       score: setScore,
       text: !trimmedText ? undefined : trimmedText,
