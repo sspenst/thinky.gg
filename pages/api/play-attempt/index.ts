@@ -81,6 +81,7 @@ export default withAuth({
             },
             {
               userId: 1,
+              gameId: 1
             },
             {
               session: session,
