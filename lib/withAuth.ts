@@ -14,6 +14,7 @@ import isLocal from './isLocal';
 
 export enum GameType {
   SHORTEST_PATH = 'SHORTEST_PATH',
+  NONE= 'NONE',
 
 }
 interface Game {
@@ -23,11 +24,17 @@ interface Game {
 }
 
 export const Games: Record<GameId, Game> = {
+  [GameId.GLOBAL]: {
+    id: GameId.GLOBAL,
+    displayName: 'Global',
+    type: GameType.NONE,
+  },
   [GameId.PATHOLOGY]: {
     id: GameId.PATHOLOGY,
     displayName: 'Pathology',
     type: GameType.SHORTEST_PATH,
-  }
+  },
+
 };
 
 export type NextApiRequestWithAuth = NextApiRequest & {
