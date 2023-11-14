@@ -1,6 +1,7 @@
 import { AchievementCategory, AchievementCategoryMapping } from '@root/constants/achievements/achievementInfo';
 import AchievementType from '@root/constants/achievements/achievementType';
 import Discord from '@root/constants/discord';
+import { GameId } from '@root/constants/GameId';
 import { getSolvesByDifficultyTable } from '@root/helpers/getSolvesByDifficultyTable';
 import { createNewAchievement } from '@root/helpers/notificationHelper';
 import { getDifficultyRollingSum } from '@root/helpers/playerRankHelper';
@@ -59,7 +60,7 @@ const AchievementCategoryFetch = {
  * @param userId
  * @return null if user not found
  */
-export async function refreshAchievements(userId: Types.ObjectId, categories: AchievementCategory[]) {
+export async function refreshAchievements(gameId: GameId, userId: Types.ObjectId, categories: AchievementCategory[]) {
   // it is more efficient to just grab all their achievements then to loop through and query each one if they have it
 
   const fetchPromises = [];
@@ -91,7 +92,7 @@ export async function refreshAchievements(userId: Types.ObjectId, categories: Ac
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (achievementInfo.unlocked(neededData as any)) {
-        achievementsCreatedPromises.push(createNewAchievement(achievementType as AchievementType, userId, achievementsCreatedPromises.length > 0)); // for each category, only send one push notification
+        achievementsCreatedPromises.push(createNewAchievement(gameId, achievementType as AchievementType, userId, achievementsCreatedPromises.length > 0)); // for each category, only send one push notification
 
         if (achievementInfo.discordNotification) {
           // Should be "<User.name> just unlocked <Achievement.name> achievement!" where <User.name> is a link to the user's profile and <Achievement.name> is a link to the achievement's page

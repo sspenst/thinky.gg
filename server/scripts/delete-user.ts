@@ -1,6 +1,7 @@
 // ts-node -r tsconfig-paths/register --files server/scripts/delete-user.ts
 
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
+import { GameId } from '@root/constants/GameId';
 import { clearNotifications } from '@root/helpers/notificationHelper';
 import { requestBroadcastMatch } from '@root/lib/appSocketToClient';
 import { MatchAction, MatchLogGeneric, MultiplayerMatchState } from '@root/models/constants/multiplayer';
@@ -83,7 +84,7 @@ async function unpublishLevel(level: Level) {
   ]);
 }
 
-async function deleteReviews(user: User) {
+async function deleteReviews(gameId: GameId, user: User) {
   console.log(`deleting ${user.name}'s reviews...`);
 
   const creatorUserIds = new Set<Types.ObjectId>();
@@ -112,7 +113,7 @@ async function deleteReviews(user: User) {
   progressBar.stop();
 
   for (const userId of creatorUserIds) {
-    await queueRefreshAchievements(userId, [AchievementCategory.CREATOR]);
+    await queueRefreshAchievements(gameId, userId, [AchievementCategory.CREATOR]);
   }
 }
 
@@ -144,7 +145,8 @@ async function deleteUser(userName: string) {
 
   progressBar.stop();
 
-  await deleteReviews(user);
+  // TODO: loop through all the games and delete their reviews
+  await deleteReviews(GameId.PATHOLOGY, user);
 
   await Promise.all([
     AchievementModel.deleteMany({ userId: user._id }),
