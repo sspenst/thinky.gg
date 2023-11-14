@@ -24,7 +24,10 @@ async function backfillGameId() {
     // check which collections have a gameId field
     const collection = allMongoDBCollections[i];
     const collectionName = collection.name;
-    const collectionInfo = await mongoose.connection.db.collection(collectionName).findOne({ gameId: { $exists: true } });
+    const collectionInfo = await mongoose.connection.db.collection(collectionName).findOne({
+      // where gameId exists and is not the correct gameId
+      gameId: { $exists: true, $ne: GameId.PATHOLOGY }
+    });
 
     if (collectionInfo) {
       collectionsWithGameIdField.push(collectionName);
@@ -57,7 +60,10 @@ async function backfillGameId() {
       continue;
     }
 
-    await mongoose.connection.db.collection(collectionName).updateMany({}, { $set: { gameId: GameId.PATHOLOGY } });
+    await mongoose.connection.db.collection(collectionName).updateMany({
+      // where gameId is not the correct gameId
+      gameId: { $ne: GameId.PATHOLOGY }
+    }, { $set: { gameId: GameId.PATHOLOGY } });
     progressBar.update(i);
   }
 
