@@ -124,7 +124,6 @@ export async function createNewReviewOnYourLevelNotification(gameId: GameId, lev
     target: targetLevelId,
     type: NotificationType.NEW_REVIEW_ON_YOUR_LEVEL,
     userId: levelUserId,
-    gameId: gameId,
   }, {
     message: message,
     gameId: gameId,

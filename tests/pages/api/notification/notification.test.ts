@@ -103,7 +103,13 @@ describe('Notifications', () => {
     const nullNotif = await createNewReviewOnYourLevelNotification(GameId.PATHOLOGY, TestId.USER_B, TestId.USER_B, TestId.LEVEL, '4');
 
     expect(nullNotif).toBeNull();
-    expect(await NotificationModel.find({})).toHaveLength(2);
+
+    const notifs = await NotificationModel.find({});
+
+    expect(notifs).toHaveLength(2);
+    expect(notifs[0].gameId).toBe(GameId.PATHOLOGY);
+    expect(notifs[1].gameId).toBe(GameId.PATHOLOGY);
+
     // Now get the current user and check notifications
 
     await testApiHandler({
@@ -128,6 +134,7 @@ describe('Notifications', () => {
 
         expect(response.notifications).toHaveLength(2);
         notificationId = response.notifications[0]._id;
+
         expect(response.notifications[0].userId).toBe(TestId.USER);
         expect(response.notifications[0].source._id).toBe(TestId.USER_B);
         expect(response.notifications[0].source.name).toBe('BBB'); // ensure we populate this correctly
