@@ -98,7 +98,7 @@ export default withAuth({
           await matchMarkCompleteLevel(req.user._id, matchId, level._id);
         }
 
-        const stat = await StatModel.findOne({ levelId: level._id, userId: req.user._id }, {}, { session: session }).lean<Stat>();
+        const stat = await StatModel.findOne({ userId: req.user._id, levelId: level._id, }, {}, { session: session }).lean<Stat>();
 
         // level was previously solved and no personal best was set, only need to $inc attempts and return
         if (stat && moves >= stat.moves) {
@@ -184,9 +184,9 @@ export default withAuth({
 
           // find the stats and users that that need to be updated
           const stats = await StatModel.find({
-            complete: true,
-            levelId: level._id,
             userId: { $ne: req.userId },
+            levelId: level._id,
+            complete: true,
           }, 'userId', {
             session: session,
           }).lean<Stat[]>();
