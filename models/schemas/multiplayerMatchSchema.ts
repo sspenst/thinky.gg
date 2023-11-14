@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import { randomRotateLevelDataViaMatchHash } from '@root/helpers/validateSolution';
 import mongoose, { ObjectId } from 'mongoose';
 import cleanUser from '../../lib/cleanUser';
@@ -37,6 +38,7 @@ const MultiplayerMatchSchema = new mongoose.Schema<MultiplayerMatch>(
     },
     gameId: {
       type: String,
+      enum: GameId,
       required: false,
     },
     levels: [

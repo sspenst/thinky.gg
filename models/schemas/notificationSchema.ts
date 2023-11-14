@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import mongoose from 'mongoose';
 import NotificationType from '../../constants/notificationType';
 import Notification from '../db/notification';
@@ -15,6 +16,7 @@ const NotificationSchema = new mongoose.Schema<Notification>({
   },
   gameId: {
     type: String,
+    enum: GameId,
     required: false,
   },
   source: {

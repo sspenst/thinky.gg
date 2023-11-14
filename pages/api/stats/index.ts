@@ -250,9 +250,9 @@ export default withAuth({
 
         // extend the user's recent playattempt up to current ts
         const found = await PlayAttemptModel.findOneAndUpdate({
-          endTime: { $gt: ts - 3 * 60 },
           levelId: level._id,
           userId: req.user._id,
+          endTime: { $gt: ts - 3 * 60 },
         }, {
           $set: {
             attemptContext: AttemptContext.JUST_SOLVED,
