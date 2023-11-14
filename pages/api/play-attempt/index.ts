@@ -59,7 +59,6 @@ export default withAuth({
           {
             _id: 1,
             attemptContext: 1,
-            gameId: 1,
             endTime: 1,
           },
           {
@@ -82,7 +81,6 @@ export default withAuth({
             },
             {
               userId: 1,
-              gameId: 1
             },
             {
               session: session,
