@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import mongoose, { Types } from 'mongoose';
 import getDifficultyEstimate from '../../helpers/getDifficultyEstimate';
 import Level from '../db/level';
@@ -60,6 +61,7 @@ const LevelSchema = new mongoose.Schema<Level>(
     },
     gameId: {
       type: String,
+      enum: GameId,
       required: false,
     },
     // https://github.com/sspenst/pathology/wiki/Level-data-format

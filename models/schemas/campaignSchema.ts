@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import mongoose from 'mongoose';
 import Campaign from '../db/campaign';
 
@@ -16,6 +17,7 @@ const CampaignSchema = new mongoose.Schema<Campaign>({
   }],
   gameId: {
     type: String,
+    enum: GameId,
     required: false,
   },
   name: {
