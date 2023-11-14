@@ -158,8 +158,8 @@ export default withAuth({
       try {
         await session.withTransaction(async () => {
           const levels = await LevelModel.find({
-            isDeleted: { $ne: true },
             userId: req.userId,
+            isDeleted: { $ne: true },
           }, '_id name', { session: session }).lean<Level[]>();
 
           for (const level of levels) {
@@ -209,19 +209,21 @@ export default withAuth({
     try {
       await session.withTransaction(async () => {
         const levels = await LevelModel.find<Level>({
+          userId: req.userId,
           isDeleted: { $ne: true },
           isDraft: false,
-          userId: req.userId,
         }, '_id name', { session: session }).lean<Level[]>();
 
         for (const level of levels) {
           const slug = await generateLevelSlug('archive', level.name, level._id.toString(), { session: session });
 
+          // TODO: promise.all this?
           await LevelModel.updateOne({ _id: level._id }, { $set: {
+            userId: new Types.ObjectId(TestId.ARCHIVE),
             archivedBy: req.userId,
             archivedTs: ts,
             slug: slug,
-            userId: new Types.ObjectId(TestId.ARCHIVE),
+
           } }, { session: session });
         }
 
