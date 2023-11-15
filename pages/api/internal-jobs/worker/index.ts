@@ -189,7 +189,7 @@ async function processQueueMessage(queueMessage: QueueMessage) {
         log = `Notification ${notificationId} not sent: not found`;
       } else {
         const notification = notificationAgg[0];
-        const userConfig = await UserConfigModel.findOne<UserConfig>({ userId: notification.userId._id });
+        const userConfig = await UserConfigModel.findOne<UserConfig>({ userId: notification.userId._id }).lean<UserConfig>();
 
         if (userConfig === null) {
           log = `Notification ${notificationId} not sent: user config not found`;
