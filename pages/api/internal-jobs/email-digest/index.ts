@@ -41,7 +41,7 @@ const transporter = isLocal() ? nodemailer.createTransport({
   rateDelta: 10000,
 }) : nodemailer.createTransport({
   SES: { ses, aws },
-  sendingRate: 10 // max 10 messages/second
+  sendingRate: 20 // max 10 messages/second
 });
 
 export async function sendMail(batchId: Types.ObjectId, type: EmailType | NotificationType, user: User, subject: string, body: string) {
