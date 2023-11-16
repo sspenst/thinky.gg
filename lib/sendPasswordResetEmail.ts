@@ -1,4 +1,4 @@
-import getEmailBody, { getEmailBodyBasic } from '@root/helpers/getEmailBody';
+import { getEmailBodyBasic } from '@root/helpers/getEmailBody';
 import EmailLog from '@root/models/db/emailLog';
 import { EmailLogModel } from '@root/models/mongoose';
 import { Types } from 'mongoose';
