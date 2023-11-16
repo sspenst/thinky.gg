@@ -84,7 +84,7 @@ async function unpublishLevel(level: Level) {
   ]);
 }
 
-async function deleteReviews(gameId: GameId, user: User) {
+async function deleteReviews(user: User) {
   console.log(`deleting ${user.name}'s reviews...`);
 
   const creatorUserIds = new Set<Types.ObjectId>();
@@ -113,7 +113,11 @@ async function deleteReviews(gameId: GameId, user: User) {
   progressBar.stop();
 
   for (const userId of creatorUserIds) {
-    await queueRefreshAchievements(gameId, userId, [AchievementCategory.CREATOR]);
+    for (const key of Object.keys(GameId)) {
+      const gameId = GameId[key as keyof typeof GameId];
+
+      await queueRefreshAchievements(gameId as GameId, userId, [AchievementCategory.CREATOR]);
+    }
   }
 }
 
@@ -145,8 +149,7 @@ async function deleteUser(userName: string) {
 
   progressBar.stop();
 
-  // TODO: loop through all the games and delete their reviews
-  await deleteReviews(GameId.PATHOLOGY, user);
+  await deleteReviews(user);
 
   await Promise.all([
     AchievementModel.deleteMany({ userId: user._id }),
