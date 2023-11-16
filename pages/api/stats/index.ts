@@ -147,7 +147,7 @@ export default withAuth({
 
           await Promise.all([
             UserModel.updateOne({ _id: req.userId }, { $inc: userInc }, { session: session }),
-            queueRefreshAchievements(req.user._id, [AchievementCategory.SKILL, AchievementCategory.USER], { session: session })
+            queueRefreshAchievements(level.gameId, req.user._id, [AchievementCategory.SKILL, AchievementCategory.USER], { session: session })
           ]);
         }
 
@@ -173,6 +173,7 @@ export default withAuth({
             }
           }
 
+          // TODO can these two promises be combined to an promise all?
           await RecordModel.create([{
             _id: new Types.ObjectId(),
             gameId: level.gameId,
@@ -212,7 +213,8 @@ export default withAuth({
                 { $inc: userInc },
                 { session: session },
               ),
-              createNewRecordOnALevelYouSolvedNotifications(statUserIds, req.userId, level._id, moves.toString(), { session: session })
+
+              createNewRecordOnALevelYouSolvedNotifications(stats[0].gameId, statUserIds, req.userId, level._id, moves.toString(), { session: session })
             ]);
           }
 

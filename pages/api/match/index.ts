@@ -1,5 +1,6 @@
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import Discord from '@root/constants/discord';
+import { GameId } from '@root/constants/GameId';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import { MULTIPLAYER_INITIAL_ELO } from '@root/models/schemas/multiplayerProfileSchema';
@@ -230,8 +231,9 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
             session: session,
           }
         ).lean<MultiplayerMatch>(),
-        queueRefreshAchievements(new Types.ObjectId(winnerId), [AchievementCategory.MULTIPLAYER]),
-        queueRefreshAchievements(new Types.ObjectId(loserId), [AchievementCategory.MULTIPLAYER]),
+        // TODO: Dont hardcode pathology, figure out what game we are connected to
+        queueRefreshAchievements(GameId.PATHOLOGY, new Types.ObjectId(winnerId), [AchievementCategory.MULTIPLAYER]),
+        queueRefreshAchievements(GameId.PATHOLOGY, new Types.ObjectId(loserId), [AchievementCategory.MULTIPLAYER]),
       ]);
 
       if (!newFinishedMatch) {

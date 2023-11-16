@@ -41,7 +41,7 @@ export default withAuth({ POST: {
   try {
     switch (command) {
     case AdminCommand.RefreshAchievements:
-      resp = await refreshAchievements(new Types.ObjectId(targetId as string), Object.values(AchievementCategory));
+      resp = await refreshAchievements(req.gameId, new Types.ObjectId(targetId as string), Object.values(AchievementCategory));
       await processQueueMessages();
       break;
     case AdminCommand.DeleteAchievements:
@@ -103,7 +103,7 @@ export default withAuth({ POST: {
 
           const userIds = userIdsAgg[0].userIds as Types.ObjectId[];
 
-          await createNewAdminMessageNotifications(userIds, payload, session);
+          await createNewAdminMessageNotifications(req.gameId, userIds, payload, session);
         });
 
         session.endSession();

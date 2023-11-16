@@ -1,4 +1,5 @@
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
+import { GameId } from '@root/constants/GameId';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
 import UserConfig from '@root/models/db/userConfig';
 import mongoose, { ClientSession, QueryOptions, Types } from 'mongoose';
@@ -87,11 +88,11 @@ export async function bulkQueuePushNotification(notificationIds: Types.ObjectId[
   await QueueMessageModel.insertMany(queueMessages, { session: session });
 }
 
-export async function queueRefreshAchievements(userId: string | Types.ObjectId, categories: AchievementCategory[], options?: QueryOptions) {
+export async function queueRefreshAchievements(gameId: GameId, userId: string | Types.ObjectId, categories: AchievementCategory[], options?: QueryOptions) {
   await queue(
     userId.toString() + '-refresh-achievements-' + new Types.ObjectId().toString(),
     QueueMessageType.REFRESH_ACHIEVEMENTS,
-    JSON.stringify({ userId: userId.toString(), categories: categories }),
+    JSON.stringify({ gameId: gameId, userId: userId.toString(), categories: categories }),
     options,
   );
 }
@@ -230,8 +231,9 @@ async function processQueueMessage(queueMessage: QueueMessage) {
     log = `calcCreatorCounts for ${userId}`;
     await calcCreatorCounts(new Types.ObjectId(userId));
   } else if (queueMessage.type === QueueMessageType.REFRESH_ACHIEVEMENTS) {
-    const { userId, categories } = JSON.parse(queueMessage.message) as { userId: string, categories: AchievementCategory[] };
-    const achievementsEarned = await refreshAchievements(new Types.ObjectId(userId), categories);
+    const { gameId, userId, categories } = JSON.parse(queueMessage.message) as {gameId: GameId, userId: string, categories: AchievementCategory[]};
+
+    const achievementsEarned = await refreshAchievements(gameId, new Types.ObjectId(userId), categories);
 
     log = `refreshAchievements for ${userId} created ${achievementsEarned} achievements`;
   } else {

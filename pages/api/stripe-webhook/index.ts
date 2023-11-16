@@ -1,4 +1,5 @@
 import Discord from '@root/constants/discord';
+import { GameId } from '@root/constants/GameId';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import isPro from '@root/helpers/isPro';
 import { createNewProUserNotification } from '@root/helpers/notificationHelper';
@@ -133,7 +134,8 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
               session: session
             },
           ),
-          createNewProUserNotification(giftToUser._id, giftFromUser._id),
+          // TODO: Figure a way to get the game ID from the subscription object since each game should be different, but for now this is fine
+          createNewProUserNotification(GameId.GLOBAL, giftToUser._id, giftFromUser._id),
           queueDiscordWebhook(Discord.DevPriv, `💸 [${giftFromUser.name}](https://pathology.gg/profile/${giftFromUser.name}) just gifted ${quantity} ${type === GiftType.Yearly ? 'year' : 'month'}${quantity === 1 ? '' : 's'} of Pro to [${giftToUser.name}](https://pathology.gg/profile/${giftToUser.name})`)
         ]);
       });
@@ -192,7 +194,7 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
               session: session
             },
           ),
-          createNewProUserNotification(userToUpgrade._id),
+          createNewProUserNotification(GameId.GLOBAL, userToUpgrade._id),
           queueDiscordWebhook(Discord.DevPriv, `💸 [${userToUpgrade.name}](https://pathology.gg/profile/${userToUpgrade.name}) just subscribed!`),
         ]);
       });

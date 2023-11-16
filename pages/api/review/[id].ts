@@ -152,11 +152,11 @@ export default withAuth({
     });
 
     await Promise.all([
-      queueRefreshAchievements(req.user._id, [AchievementCategory.REVIEWER]),
-      queueRefreshAchievements(level.userId._id, [AchievementCategory.CREATOR]),
+      queueRefreshAchievements(level.gameId, req.user._id, [AchievementCategory.REVIEWER]),
+      queueRefreshAchievements(level.gameId, level.userId._id, [AchievementCategory.CREATOR]),
       generateDiscordWebhook(undefined, level, req, setScore, trimmedText, ts),
       queueRefreshIndexCalcs(new Types.ObjectId(id?.toString())),
-      createNewReviewOnYourLevelNotification(level.userId._id, req.userId, level._id, String(setScore), !!trimmedText),
+      createNewReviewOnYourLevelNotification(level.gameId, level.userId._id, req.userId, level._id, String(setScore), !!trimmedText),
     ]);
 
     return res.status(200).json(review);
@@ -243,10 +243,10 @@ export default withAuth({
       }
 
       const promises = [
-        queueRefreshAchievements(userId, [AchievementCategory.REVIEWER]),
-        queueRefreshAchievements(level.userId._id, [AchievementCategory.CREATOR]),
+        queueRefreshAchievements(review.gameId, userId, [AchievementCategory.REVIEWER]),
+        queueRefreshAchievements(review.gameId, level.userId._id, [AchievementCategory.CREATOR]),
         queueRefreshIndexCalcs(new Types.ObjectId(id?.toString())),
-        createNewReviewOnYourLevelNotification(level.userId, userId, level._id, String(setScore), !!trimmedText),
+        createNewReviewOnYourLevelNotification(level.gameId, level.userId, userId, level._id, String(setScore), !!trimmedText),
       ];
 
       if (userId === req.userId) {
@@ -288,8 +288,8 @@ export default withAuth({
       });
 
       await Promise.all([
-        queueRefreshAchievements(userId, [AchievementCategory.REVIEWER]),
-        queueRefreshAchievements(level.userId._id, [AchievementCategory.CREATOR]),
+        queueRefreshAchievements(level.gameId, userId, [AchievementCategory.REVIEWER]),
+        queueRefreshAchievements(level.gameId, level.userId._id, [AchievementCategory.CREATOR]),
         queueRefreshIndexCalcs(new Types.ObjectId(id?.toString())),
         clearNotifications(level.userId._id, userId, level._id, NotificationType.NEW_REVIEW_ON_YOUR_LEVEL),
       ]);

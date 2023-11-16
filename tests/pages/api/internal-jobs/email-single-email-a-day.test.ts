@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';
 import { NextApiRequest } from 'next';
@@ -86,7 +87,7 @@ describe('Email per day', () => {
 
             if (day === 7) {
               // create a notification on same day as their reactivation email... it should get skipped
-              await createNewRecordOnALevelYouSolvedNotifications([TestId.USER], TestId.USER_B, TestId.LEVEL, TestId.LEVEL);
+              await createNewRecordOnALevelYouSolvedNotifications(GameId.PATHOLOGY, [TestId.USER], TestId.USER_B, TestId.LEVEL, TestId.LEVEL);
             }
           } else if (day === 8) {
             expect(totalEmailsSent.length).toBe(9); // +1 the notification daily digest?
