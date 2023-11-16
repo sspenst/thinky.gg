@@ -1,3 +1,4 @@
+import getEmailBody, { getEmailBodyBasic } from '@root/helpers/getEmailBody';
 import EmailLog from '@root/models/db/emailLog';
 import { EmailLogModel } from '@root/models/mongoose';
 import { Types } from 'mongoose';
@@ -30,7 +31,7 @@ export default async function sendPasswordResetEmail(req: NextApiRequest, user: 
     new Types.ObjectId(),
     EmailType.EMAIL_PASSWORD_RESET,
     user,
-    `Password Reset - ${user.name}`,
-    `Click here to reset your password: ${url}`,
+    `Pathology - Password Reset - ${user.name}`,
+    getEmailBodyBasic({ user: user, title: 'Forgot Password', message: 'Someone requested a password reset for your Pathology account', linkText: 'Reset Password', linkHref: url }),
   );
 }
