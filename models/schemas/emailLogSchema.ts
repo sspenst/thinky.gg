@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
 import mongoose from 'mongoose';
 import { EmailType } from '../../constants/emailDigest';
@@ -17,6 +18,7 @@ const EmailLogSchema = new mongoose.Schema<EmailLog>(
     },
     gameId: {
       type: String,
+      enum: GameId,
       required: false,
     },
     error: {

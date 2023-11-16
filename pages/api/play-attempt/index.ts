@@ -52,9 +52,9 @@ export default withAuth({
       await session.withTransaction(async () => {
         const latestPlayAttempt = await PlayAttemptModel.findOne(
           {
-            isDeleted: { $ne: true },
             levelId: levelObjectId,
             userId: req.user._id,
+            isDeleted: { $ne: true },
           },
           {
             _id: 1,

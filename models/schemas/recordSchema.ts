@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import mongoose from 'mongoose';
 import Record from '../db/record';
 
@@ -11,6 +12,7 @@ const RecordSchema = new mongoose.Schema<Record>({
   },
   gameId: {
     type: String,
+    enum: GameId,
     required: false,
   },
   levelId: {

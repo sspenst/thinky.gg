@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
 import { TourType } from '@root/constants/tourType';
 import mongoose from 'mongoose';
@@ -22,6 +23,7 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
     },
     gameId: {
       type: String,
+      enum: GameId,
       required: false,
     },
     emailConfirmationToken: {

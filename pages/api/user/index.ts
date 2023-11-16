@@ -2,6 +2,7 @@ import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
 import isGuest from '@root/helpers/isGuest';
 import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmationEmail';
 import Collection from '@root/models/db/collection';
+import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
 import bcrypt from 'bcryptjs';
@@ -40,7 +41,7 @@ export default withAuth({
   if (req.method === 'GET') {
     const [enrichedUser, multiplayerProfile, userConfig] = await Promise.all([
       enrichReqUser(req.user),
-      MultiplayerProfileModel.findOne({ 'userId': req.user._id }),
+      MultiplayerProfileModel.findOne({ 'userId': req.user._id }).lean<MultiplayerProfile>(),
       getUserConfig(req.user),
     ]);
 
@@ -158,8 +159,8 @@ export default withAuth({
       try {
         await session.withTransaction(async () => {
           const levels = await LevelModel.find({
-            isDeleted: { $ne: true },
             userId: req.userId,
+            isDeleted: { $ne: true },
           }, '_id name', { session: session }).lean<Level[]>();
 
           for (const level of levels) {
@@ -209,19 +210,21 @@ export default withAuth({
     try {
       await session.withTransaction(async () => {
         const levels = await LevelModel.find<Level>({
+          userId: req.userId,
           isDeleted: { $ne: true },
           isDraft: false,
-          userId: req.userId,
         }, '_id name', { session: session }).lean<Level[]>();
 
         for (const level of levels) {
           const slug = await generateLevelSlug('archive', level.name, level._id.toString(), { session: session });
 
+          // TODO: promise.all this?
           await LevelModel.updateOne({ _id: level._id }, { $set: {
+            userId: new Types.ObjectId(TestId.ARCHIVE),
             archivedBy: req.userId,
             archivedTs: ts,
             slug: slug,
-            userId: new Types.ObjectId(TestId.ARCHIVE),
+
           } }, { session: session });
         }
 
