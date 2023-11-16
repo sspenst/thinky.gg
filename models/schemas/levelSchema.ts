@@ -210,8 +210,6 @@ async function calcStats(lvl: Level) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {}) {
-  // TODO - all this can be calculated in one big aggregate
-
   const bigQ = await PlayAttemptModel.aggregate([
     {
       $match: {
