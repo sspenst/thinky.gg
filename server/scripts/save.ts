@@ -4,6 +4,7 @@
 // import tsconfig-paths
 
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
+import { GameId } from '@root/constants/GameId';
 import Level from '@root/models/db/level';
 import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import PlayAttempt from '@root/models/db/playAttempt';
@@ -292,7 +293,8 @@ async function integrityCheckAcheivements() {
   progressBar.start(users.length, 0);
 
   for (const user of users) {
-    await queueRefreshAchievements(user._id, allAchievementCategories as AchievementCategory[], { session: null });
+    // TODO - loop through all games and refresh achievements for each game
+    await queueRefreshAchievements(GameId.PATHOLOGY, user._id, allAchievementCategories as AchievementCategory[], { session: null });
     progressBar.increment();
   }
 
