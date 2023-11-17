@@ -58,6 +58,7 @@ const AchievementRulesCreator: { [achievementType: string]: IAchievementInfoCrea
   [AchievementType.CREATOR_CREATED_200_LEVELS]: {
     name: 'Master Architect',
     emoji: '🏯',
+    discordNotification: true,
     description: 'Created 200 quality levels',
     tooltip: 'Quality levels have a review score >= 80.0',
     unlocked: ({ levelsCreated }) => {
@@ -69,6 +70,7 @@ const AchievementRulesCreator: { [achievementType: string]: IAchievementInfoCrea
   [AchievementType.CREATOR_CREATED_100_LEVELS]: {
     name: 'Architect',
     emoji: '🏛️',
+    discordNotification: true,
     description: 'Created 100 quality levels',
     tooltip: 'Quality levels have a review score >= 80.0',
     unlocked: ({ levelsCreated }) => {
@@ -80,6 +82,7 @@ const AchievementRulesCreator: { [achievementType: string]: IAchievementInfoCrea
   [AchievementType.CREATOR_CREATED_50_LEVELS]: {
     name: 'Engineer',
     emoji: '📐',
+    discordNotification: true,
     description: 'Created 50 quality levels',
     tooltip: 'Quality levels have a review score >= 80.0',
     unlocked: ({ levelsCreated }) => {
@@ -91,6 +94,7 @@ const AchievementRulesCreator: { [achievementType: string]: IAchievementInfoCrea
   [AchievementType.CREATOR_CREATED_25_LEVELS]: {
     name: 'Developer',
     emoji: '🏘',
+    discordNotification: true,
     description: 'Created 25 quality levels',
     tooltip: 'Quality levels have a review score >= 80.0',
     unlocked: ({ levelsCreated }) => {
@@ -102,6 +106,7 @@ const AchievementRulesCreator: { [achievementType: string]: IAchievementInfoCrea
   [AchievementType.CREATOR_CREATED_10_LEVELS]: {
     name: 'Builder',
     emoji: '🏗️',
+    discordNotification: true,
     description: 'Created 10 quality levels',
     tooltip: 'Quality levels have a review score >= 80.0',
     unlocked: ({ levelsCreated }) => {
