@@ -214,7 +214,7 @@ export default withAuth({
                 { session: session },
               ),
 
-              createNewRecordOnALevelYouSolvedNotifications(stats[0].gameId, statUserIds, req.userId, level._id, moves.toString(), { session: session })
+              createNewRecordOnALevelYouSolvedNotifications(level.gameId, statUserIds, req.userId, level._id, moves.toString(), { session: session })
             ]);
           }
 

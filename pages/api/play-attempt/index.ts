@@ -59,6 +59,7 @@ export default withAuth({
           {
             _id: 1,
             attemptContext: 1,
+            gameId: 1,
             endTime: 1,
           },
           {
