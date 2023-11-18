@@ -1,5 +1,5 @@
 import cleanUser from '@root/lib/cleanUser';
-import { LEVEL_DEFAULT_PROJECTION } from '@root/models/schemas/levelSchema';
+import { LEVEL_DEFAULT_PROJECTION, LEVEL_SEARCH_DEFAULT_PROJECTION } from '@root/models/schemas/levelSchema';
 import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import { FilterQuery, PipelineStage, Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
@@ -40,6 +40,7 @@ interface GetCollectionProps {
   reqUser: User | null,
   includeDraft?: boolean,
   populateLevels?: boolean,
+  populateAroundLevel?: Types.ObjectId | string, // target level
 }
 
 /**
@@ -60,7 +61,7 @@ export async function getCollection(props: GetCollectionProps): Promise<Collecti
  * Query collections with optionally populated levels and stats.
  * Private collections are filtered out unless they were created by the reqUser.
  */
-export async function getCollections({ matchQuery, reqUser, includeDraft, populateLevels }: GetCollectionProps): Promise<Collection[]> {
+export async function getCollections({ matchQuery, reqUser, includeDraft, populateLevels, populateAroundLevel }: GetCollectionProps): Promise<Collection[]> {
   const collectionAgg = await CollectionModel.aggregate<Collection>(([
     {
       $match: {
@@ -108,6 +109,7 @@ export async function getCollections({ matchQuery, reqUser, includeDraft, popula
         }
       }
     },
+
     {
       $lookup: {
         from: LevelModel.collection.name,
@@ -118,6 +120,7 @@ export async function getCollections({ matchQuery, reqUser, includeDraft, popula
         pipeline: [
           {
             $match: {
+              // only match levels that are in the orderedIds array
               ...(!includeDraft ? {
                 isDraft: {
                   $ne: true
@@ -140,46 +143,20 @@ export async function getCollections({ matchQuery, reqUser, includeDraft, popula
               sort: 1
             }
           },
+
           {
             $project: {
-              leastMoves: 1,
               ...(includeDraft ? {
                 isDraft: 1
               } : {}),
               ...(populateLevels ? {
                 ...LEVEL_DEFAULT_PROJECTION
-              } : {})
+              } : {
+                ...LEVEL_SEARCH_DEFAULT_PROJECTION
+              })
             },
           },
-          ...(populateLevels ? getEnrichLevelsPipelineSteps(reqUser, '_id', '') : [{
-            $lookup: {
-              from: StatModel.collection.name,
-              localField: '_id',
-              foreignField: 'levelId',
-              as: 'stats',
-              pipeline: [
-                {
-                  $match: {
-                    userId: reqUser?._id,
-                    complete: true
-                  },
-                },
-                {
-                  $project: {
-                    _id: 0,
-                    // project complete to 1 if it exists, otherwise 0
-                    complete: {
-                      $cond: {
-                        if: { $eq: ['$complete', true] },
-                        then: 1,
-                        else: 0
-                      }
-                    }
-                  }
-                }
-              ]
-            },
-          }]),
+          ...getEnrichLevelsPipelineSteps(reqUser, '_id', '') as PipelineStage[],
           {
             $unwind: {
               path: '$stats',
@@ -210,6 +187,7 @@ export async function getCollections({ matchQuery, reqUser, includeDraft, popula
     {
       $unset: 'levelsWithSort'
     },
+
     {
       $addFields: {
         levelCount: {
@@ -220,7 +198,30 @@ export async function getCollections({ matchQuery, reqUser, includeDraft, popula
         }
       }
     },
-    ...(!populateLevels ? [{ $unset: 'levels' }] : []),
+    ...populateAroundLevel ? [{
+      // slice the levels array to include 10 before and 10 after the target level.. keep in mind that there may not be 10 levels before or after
+
+      $addFields: {
+        levels: {
+          $slice: [
+            '$levels',
+            {
+              $max: [
+                {
+                  $subtract: [
+                    { $indexOfArray: ['$levels._id', populateAroundLevel] },
+                    10
+                  ]
+                },
+                0
+              ]
+            },
+            21 // 10 levels before, the target level, and 10 levels after
+          ]
+        }
+      }
+
+    }] : [],
   ] as PipelineStage[]));
 
   collectionAgg.forEach(collection => {
