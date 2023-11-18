@@ -123,7 +123,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
     }
 
     return (<>
-      {collection.levels.map((levelInCollection) => {
+      {collection.levels?.map((levelInCollection) => {
         const isCurrentLevel = level._id.toString() === levelInCollection._id.toString();
         const anchorId = `collection-level-${id}-${levelInCollection._id.toString()}`;
         const href = '/level/' + levelInCollection.slug + (collection.type !== CollectionType.InMemory ? '?cid=' + collection._id.toString() : '');
