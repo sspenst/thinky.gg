@@ -66,13 +66,13 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 interface LevelProps {
-  _collection: Collection | null;
+  _collection: EnrichedCollection | null;
   _level: EnrichedLevel;
   reqUser: User | null;
 }
 
 export default function LevelPage({ _collection, _level, reqUser }: LevelProps) {
-  const [collection, setCollection] = useState<Collection | null>(_collection);
+  const [collection, setCollection] = useState<EnrichedCollection | Collection | null>(_collection);
   const [level, setLevel] = useState(_level);
   const { mutateProStatsLevel, proStatsLevel } = useProStatsLevel(level);
   const router = useRouter();

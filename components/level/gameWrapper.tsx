@@ -6,10 +6,11 @@ import SelectOptionStats from '@root/models/selectOptionStats';
 import classNames from 'classnames';
 import Link from 'next/link';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import Collection from '../../models/db/collection';
+import Collection, { EnrichedCollection } from '../../models/db/collection';
 import { EnrichedLevel } from '../../models/db/level';
 import User from '../../models/db/user';
 import SelectCard from '../cards/selectCard';
+import CollectionScrollList from '../collection/collectionScrollList';
 import FormattedUser from '../formatted/formattedUser';
 import Modal from '../modal';
 import LevelInfoModal from '../modal/levelInfoModal';
@@ -20,7 +21,7 @@ import Solved from './info/solved';
 
 interface GameWrapperProps {
   chapter?: string;
-  collection: Collection | null;
+  collection: EnrichedCollection | Collection | null;
   level: EnrichedLevel;
   onNext: () => void;
   onPrev: () => void;
@@ -122,29 +123,8 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
       return null;
     }
 
-    return (<>
-      {collection.levels?.map((levelInCollection) => {
-        const isCurrentLevel = level._id.toString() === levelInCollection._id.toString();
-        const anchorId = `collection-level-${id}-${levelInCollection._id.toString()}`;
-        const href = '/level/' + levelInCollection.slug + (collection.type !== CollectionType.InMemory ? '?cid=' + collection._id.toString() : '');
-
-        return (
-          <div className={classNames({ 'bg-3': isCurrentLevel }, { 'rounded-xl': id === 'modal' })} id={anchorId} key={anchorId}>
-            <SelectCard option={{
-              author: levelInCollection.userId?.name,
-              height: Dimensions.OptionHeightMedium,
-              href: href,
-              id: `${id}-${levelInCollection._id.toString()}`,
-              level: levelInCollection,
-              text: levelInCollection.name,
-              stats: new SelectOptionStats(levelInCollection.leastMoves, (levelInCollection as EnrichedLevel)?.userMoves),
-              width: 216,
-            }} />
-          </div>
-        );
-      })}
-    </>);
-  }, [collection, level._id]);
+    return <CollectionScrollList targetLevel={level} collection={collection} id={id} />;
+  }, [collection, level]);
 
   return (
     <div className='flex h-full'>
@@ -245,9 +225,9 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
               </svg>
             </button>
           </div>
-          <div className='overflow-y-auto max-w-full'>
-            {getCollectionLevelList('sidebar')}
-          </div>
+
+          {getCollectionLevelList('sidebar')}
+
         </div>
       }
       <div className='hidden xl:flex flex-col border-l border-color-4 break-words z-10 h-full w-100'>
