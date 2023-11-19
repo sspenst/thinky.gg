@@ -6,7 +6,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidObjectId } from '../../../helpers/apiWrapper';
 import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
 import { getUserFromToken } from '../../../lib/withAuth';
-import Collection from '../../../models/db/collection';
+import Collection, { EnrichedCollection } from '../../../models/db/collection';
 import User from '../../../models/db/user';
 import { CollectionModel, LevelModel, StatModel, UserModel } from '../../../models/mongoose';
 
@@ -57,12 +57,14 @@ export async function getCollection(props: GetCollectionProps): Promise<Collecti
   return collections[0] as Collection;
 }
 
+// Create interface for partial collection where we have the fields targetLevelIndex and levelCount added
+
 /**
  * Query collections with optionally populated levels and stats.
  * Private collections are filtered out unless they were created by the reqUser.
  */
 export async function getCollections({ matchQuery, reqUser, includeDraft, populateLevels, populateAroundLevel }: GetCollectionProps): Promise<Collection[]> {
-  const collectionAgg = await CollectionModel.aggregate<Collection>(([
+  const collectionAgg = await CollectionModel.aggregate<EnrichedCollection>(([
     {
       $match: {
         // filter out private collections unless the userId matches reqUser
@@ -202,6 +204,9 @@ export async function getCollections({ matchQuery, reqUser, includeDraft, popula
       // slice the levels array to include 10 before and 10 after the target level.. keep in mind that there may not be 10 levels before or after
 
       $addFields: {
+        targetLevelIndex: {
+          $indexOfArray: ['$levels._id', populateAroundLevel]
+        },
         levels: {
           $slice: [
             '$levels',
@@ -216,7 +221,7 @@ export async function getCollections({ matchQuery, reqUser, includeDraft, popula
                 0
               ]
             },
-            21 // 10 levels before, the target level, and 10 levels after
+            20 // 10 levels before, the target level, and 10 levels after
           ]
         }
       }
