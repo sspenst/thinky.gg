@@ -13,16 +13,18 @@ import { CollectionModel, LevelModel, StatModel, UserModel } from '../../../mode
 export default apiWrapper({
   GET: {
     query: {
-      id: ValidObjectId(true)
+      id: ValidObjectId(true),
+      populateAroundLevel: ValidObjectId(false),
     }
   } }, async (req: NextApiRequest, res: NextApiResponse) => {
-  const { id } = req.query;
+  const { id, populateAroundLevel } = req.query;
   const token = req.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, req) : null;
   const collection = await getCollection({
     matchQuery: { _id: new Types.ObjectId(id as string) },
     reqUser,
     populateLevels: true,
+    ...(populateAroundLevel ? { populateAroundLevel: new Types.ObjectId(populateAroundLevel as string) } : {}),
   });
 
   if (!collection) {
@@ -215,13 +217,13 @@ export async function getCollections({ matchQuery, reqUser, includeDraft, popula
                 {
                   $subtract: [
                     { $indexOfArray: ['$levels._id', populateAroundLevel] },
-                    10
+                    5
                   ]
                 },
                 0
               ]
             },
-            20 // 10 levels before, the target level, and 10 levels after
+            10
           ]
         }
       }

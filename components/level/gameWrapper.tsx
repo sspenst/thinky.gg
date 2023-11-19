@@ -70,24 +70,6 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
     setShowCollectionViewModal(false);
   }, [level._id]);
 
-  // scroll to the collection level on level change
-  useEffect(() => {
-    if (!collection || isCollectionViewHidden) {
-      return;
-    }
-
-    const anchorId = `collection-level-sidebar-${level._id.toString()}`;
-    const anchor = document.getElementById(anchorId);
-
-    if (anchor) {
-      anchor.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center',
-        inline: 'nearest',
-      });
-    }
-  }, [collection, isCollectionViewHidden, level._id]);
-
   function scrollModalToCollectionLevel() {
     setTimeout(() => {
       const anchorId = `collection-level-modal-${level._id.toString()}`;
@@ -123,8 +105,8 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
       return null;
     }
 
-    return <CollectionScrollList targetLevel={level} collection={collection} id={id} />;
-  }, [collection, level]);
+    return <CollectionScrollList isHidden={isCollectionViewHidden} targetLevel={level} collection={collection} id={id} />;
+  }, [collection, isCollectionViewHidden, level]);
 
   return (
     <div className='flex h-full'>
