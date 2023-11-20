@@ -6,7 +6,7 @@ import Collection, { EnrichedCollection } from '@root/models/db/collection';
 import Level, { EnrichedLevel } from '@root/models/db/level';
 import SelectOptionStats from '@root/models/selectOptionStats';
 import classNames from 'classnames';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import SelectCard from '../cards/selectCard';
 import LoadingSpinner from '../page/loadingSpinner';
 
@@ -18,28 +18,24 @@ interface Props {
     }
 
 export default function CollectionScrollList({ collection, isHidden, id, targetLevel }: Props) {
-  const [cursor, setCursor] = useState<string>(targetLevel._id.toString());
   const [accumlatedLevels, setAccumulatedLevels] = useState<Level[]>(collection.levels);
-
+  const [noMoreAbove, setNoMoreAbove] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const fetchLevels = async (cursor: string) => {
+  const isAutoScrolling = useRef(true); // we scroll on init...
+  const fetchLevels = useCallback(async (cursor: string, direction: string) => {
     // Replace with your actual API call
     // Ensure the API supports fetching data in both directions based on the cursor
-    return await fetch('/api/collection-by-id/' + collection._id.toString() + `?populateAroundLevel=${cursor}`);
-  };
 
-  /*  const { data: collection, isLoading } = useSWRHelper<EnrichedCollection>(`/api/collection-by-id/${initCollection._id.toString()}?populateAroundLevel=` + cursor.toString(), {}, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    refreshInterval: 0
-
-  });*/
+    return await fetch('/api/collection-by-id/' + collection._id.toString() + `?populateCursor=${cursor}&populateDirection=${direction}`);
+  }, [collection._id]);
 
   // scroll to the collection level on level change
   useEffect(() => {
-    if (!collection || isHidden) {
+    if (isHidden) {
       return;
     }
+
+    isAutoScrolling.current = true;
 
     const anchorId = `collection-level-sidebar-${targetLevel._id.toString()}`;
     const anchor = document.getElementById(anchorId);
@@ -50,25 +46,53 @@ export default function CollectionScrollList({ collection, isHidden, id, targetL
         block: 'center',
         inline: 'nearest',
       });
+
+      setTimeout(() => {
+        isAutoScrolling.current = false;
+      }, 500);
     }
-  }, [collection, isHidden, targetLevel._id]);
+  }, [ isHidden, targetLevel._id]);
 
   const onScroll = useCallback(async (e: any) => {
+    if (collection.type === CollectionType.InMemory) {
+      return;
+    }
+
+    if (isAutoScrolling.current) {
+      return;
+    }
+
+    // check if scroll was triggered by the user
     const { scrollHeight, clientHeight } = e.target;
 
     const scrollPosition = e.target.scrollTop;
-
-    const reachedTop = scrollPosition <= 100;
-    const reachedBottom = scrollPosition + clientHeight >= scrollHeight - 100;
+    const thresh = 300;
+    const reachedTop = scrollPosition <= thresh;
+    const reachedBottom = scrollPosition + clientHeight >= scrollHeight - thresh;
 
     if ((reachedBottom && !isLoading) || (reachedTop && !isLoading)) {
-      setIsLoading(true);
+      const direction = reachedBottom ? 'after' : 'before';
+      const newCursor = reachedBottom ? accumlatedLevels[accumlatedLevels.length - 1]._id.toString() : accumlatedLevels[0]._id.toString();
 
-      const newColsReq = await fetchLevels(cursor);
-      const newColResp = await newColsReq.json();
-      const newLevels = newColResp.levels;
+      if (direction === 'before' && noMoreAbove
+      ||
+      (collection as EnrichedCollection).levelCount === accumlatedLevels.length
+
+      ) {
+        return;
+      }
+
+      setIsLoading(true);
+      const newColsReq = await fetchLevels(newCursor, direction);
 
       setIsLoading(false);
+      const newColResp: EnrichedCollection = await newColsReq.json();
+
+      const newLevels = newColResp.levels;
+
+      if (newLevels.length === 0) {
+        return;
+      }
 
       if (reachedBottom) {
         // Append new levels at the end
@@ -76,23 +100,26 @@ export default function CollectionScrollList({ collection, isHidden, id, targetL
           return index === self.findIndex((t) => (
             t._id.toString() === level._id.toString()
           ));
-        }
-        ));
-        setCursor(newLevels[newLevels.length - 1]._id.toString());
+        } ));
       } else {
+        // if the first level is already in the list, we have reached the top
+        if (accumlatedLevels[0]._id.toString() === newLevels[0]._id.toString()) {
+          setNoMoreAbove(true);
+
+          return;
+        }
+
         // Prepend new levels at the start
         setAccumulatedLevels(prevLevels => [...newLevels, ...prevLevels].filter((level, index, self) => {
           return index === self.findIndex((t) => (
             t._id.toString() === level._id.toString()
           ));
-        }
-        ));
-        setCursor(newLevels[0]._id.toString());
+        } ));
       }
     }
-  }, [cursor, fetchLevels, isLoading]);
+  }, [accumlatedLevels, collection, fetchLevels, isLoading, noMoreAbove]);
 
-  if (accumlatedLevels.length === 0) {
+  if (accumlatedLevels?.length === 0) {
     return <div className='flex justify-center items-center h-full'><LoadingSpinner /></div>;
   }
 
@@ -101,6 +128,7 @@ export default function CollectionScrollList({ collection, isHidden, id, targetL
       onScroll(e);
     }
     }>
+      {isLoading && <div className='justify-center items-center pt-3'><LoadingSpinner /></div>}
       {accumlatedLevels?.map((levelInCollection) => {
         const isCurrentLevel = targetLevel._id.toString() === levelInCollection._id.toString();
         const anchorId = `collection-level-${id}-${levelInCollection._id.toString()}`;
@@ -121,5 +149,6 @@ export default function CollectionScrollList({ collection, isHidden, id, targetL
           </div>
         );
       })}
+      {isLoading && <div className='justify-center items-center pb-3'><LoadingSpinner /></div>}
     </div>);
 }

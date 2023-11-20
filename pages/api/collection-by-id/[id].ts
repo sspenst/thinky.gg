@@ -3,7 +3,7 @@ import { LEVEL_DEFAULT_PROJECTION, LEVEL_SEARCH_DEFAULT_PROJECTION } from '@root
 import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import { FilterQuery, PipelineStage, Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import apiWrapper, { ValidObjectId } from '../../../helpers/apiWrapper';
+import apiWrapper, { ValidEnum, ValidObjectId } from '../../../helpers/apiWrapper';
 import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
 import { getUserFromToken } from '../../../lib/withAuth';
 import Collection, { EnrichedCollection } from '../../../models/db/collection';
@@ -14,17 +14,19 @@ export default apiWrapper({
   GET: {
     query: {
       id: ValidObjectId(true),
-      populateAroundLevel: ValidObjectId(false),
+      populateCursor: ValidObjectId(false),
+      populateDirection: ValidEnum(['before', 'after', 'around'], false),
     }
   } }, async (req: NextApiRequest, res: NextApiResponse) => {
-  const { id, populateAroundLevel } = req.query;
+  const { id, populateCursor, populateDirection } = req.query;
   const token = req.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, req) : null;
   const collection = await getCollection({
     matchQuery: { _id: new Types.ObjectId(id as string) },
     reqUser,
     populateLevels: true,
-    ...(populateAroundLevel ? { populateAroundLevel: new Types.ObjectId(populateAroundLevel as string) } : {}),
+    ...(populateCursor ? { populateLevelCursor: new Types.ObjectId(populateCursor as string) } : {}),
+    ...(populateDirection ? { populateLevelDirection: populateDirection as 'before' | 'after' | 'around' } : {}),
   });
 
   if (!collection) {
@@ -42,7 +44,8 @@ interface GetCollectionProps {
   reqUser: User | null,
   includeDraft?: boolean,
   populateLevels?: boolean,
-  populateAroundLevel?: Types.ObjectId | string, // target level
+  populateLevelCursor?: Types.ObjectId | string, // target level
+  populateLevelDirection?: 'before' | 'after' | 'around',
 }
 
 /**
@@ -65,7 +68,7 @@ export async function getCollection(props: GetCollectionProps): Promise<Collecti
  * Query collections with optionally populated levels and stats.
  * Private collections are filtered out unless they were created by the reqUser.
  */
-export async function getCollections({ matchQuery, reqUser, includeDraft, populateLevels, populateAroundLevel }: GetCollectionProps): Promise<Collection[]> {
+export async function getCollections({ matchQuery, reqUser, includeDraft, populateLevels, populateLevelCursor, populateLevelDirection }: GetCollectionProps): Promise<Collection[]> {
   const collectionAgg = await CollectionModel.aggregate<EnrichedCollection>(([
     {
       $match: {
@@ -202,29 +205,46 @@ export async function getCollections({ matchQuery, reqUser, includeDraft, popula
         }
       }
     },
-    ...populateAroundLevel ? [{
+    ...populateLevelCursor ? [{
       // slice the levels array to include 10 before and 10 after the target level.. keep in mind that there may not be 10 levels before or after
 
       $addFields: {
         targetLevelIndex: {
-          $indexOfArray: ['$levels._id', populateAroundLevel]
+          $indexOfArray: ['$levels._id', populateLevelCursor]
         },
+      },
+    }, {
+      $addFields: {
         levels: {
-          $slice: [
-            '$levels',
-            {
-              $max: [
-                {
-                  $subtract: [
-                    { $indexOfArray: ['$levels._id', populateAroundLevel] },
-                    5
-                  ]
-                },
-                0
+          $cond: {
+            if: { $eq: [populateLevelDirection, 'before'] },
+            then: {
+              $slice: [
+                '$levels',
+                { $max: [0, { $subtract: ['$targetLevelIndex', 10] }] },
+                { $min: [20, { $add: ['$targetLevelIndex', 1] }] }
               ]
             },
-            10
-          ]
+            else: {
+              $cond: {
+                if: { $eq: [populateLevelDirection, 'after'] },
+                then: {
+                  $slice: [
+                    '$levels',
+                    '$targetLevelIndex',
+                    { $min: [20, { $subtract: [{ $size: '$levels' }, '$targetLevelIndex'] }] }
+                  ]
+                },
+                else: { // 'around'
+                  $slice: [
+                    '$levels',
+                    { $max: [0, { $subtract: ['$targetLevelIndex', 10] }] },
+                    21
+                  ]
+                }
+              }
+            }
+          }
         }
       }
 

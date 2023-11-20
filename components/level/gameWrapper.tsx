@@ -130,7 +130,10 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
               }}
               title={getCollectionTitle()}
             >
-              <div className='flex justify-center'>
+              <div className='flex justify-center'
+                style={{
+                  maxHeight: 'calc(100vh - 200px)',
+                }}>
                 <div className='flex flex-col w-fit items-center'>
                   {getCollectionLevelList('modal')}
                 </div>
