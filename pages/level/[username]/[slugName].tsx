@@ -45,8 +45,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     collection = await getCollection({
       matchQuery: { _id: new Types.ObjectId(cid) },
       reqUser,
-      populateLevels: false,
-      populateAroundLevel: level?._id,
+      populateLevels: true,
+      populateLevelCursor: level?._id,
+      populateLevelDirection: 'around',
     });
   }
 
