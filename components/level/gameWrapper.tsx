@@ -5,7 +5,7 @@ import { CollectionType } from '@root/models/constants/collection';
 import SelectOptionStats from '@root/models/selectOptionStats';
 import classNames from 'classnames';
 import Link from 'next/link';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { SetStateAction, useCallback, useContext, useEffect, useState } from 'react';
 import Collection, { EnrichedCollection } from '../../models/db/collection';
 import { EnrichedLevel } from '../../models/db/level';
 import User from '../../models/db/user';

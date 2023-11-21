@@ -178,6 +178,9 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
 
     // search for index of level._id in collection.levels
     if (collection.levels) {
+      const collectionAsEnriched = collection as EnrichedCollection;
+      const totalLevels = collectionAsEnriched.levelCount;
+
       const levelIndex = collection.levels.findIndex((l) => l._id === level._id);
 
       if (next) {

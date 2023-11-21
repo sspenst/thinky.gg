@@ -20,6 +20,7 @@ interface Props {
 export default function CollectionScrollList({ collection, isHidden, id, targetLevel }: Props) {
   const [accumlatedLevels, setAccumulatedLevels] = useState<Level[]>(collection.levels);
   const [noMoreAbove, setNoMoreAbove] = useState(false);
+  const [noMoreBelow, setNoMoreBelow] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const isAutoScrolling = useRef(true); // we scroll on init...
   const fetchLevels = useCallback(async (cursor: string, direction: string) => {
@@ -53,30 +54,14 @@ export default function CollectionScrollList({ collection, isHidden, id, targetL
     }
   }, [ isHidden, targetLevel._id]);
 
-  const onScroll = useCallback(async (e: any) => {
-    if (collection.type === CollectionType.InMemory) {
-      return;
-    }
-
-    if (isAutoScrolling.current) {
-      return;
-    }
-
-    // check if scroll was triggered by the user
-    const { scrollHeight, clientHeight } = e.target;
-
-    const scrollPosition = e.target.scrollTop;
-    const thresh = 300;
-    const reachedTop = scrollPosition <= thresh;
-    const reachedBottom = scrollPosition + clientHeight >= scrollHeight - thresh;
-
+  const updateList = useCallback(async (reachedBottom: boolean, reachedTop: boolean) => {
     if ((reachedBottom && !isLoading) || (reachedTop && !isLoading)) {
       const direction = reachedBottom ? 'after' : 'before';
       const newCursor = reachedBottom ? accumlatedLevels[accumlatedLevels.length - 1]._id.toString() : accumlatedLevels[0]._id.toString();
 
       if (direction === 'before' && noMoreAbove
-      ||
-      (collection as EnrichedCollection).levelCount === accumlatedLevels.length
+        ||
+        noMoreBelow && direction === 'after'
 
       ) {
         return;
@@ -95,6 +80,12 @@ export default function CollectionScrollList({ collection, isHidden, id, targetL
       }
 
       if (reachedBottom) {
+        if (accumlatedLevels[accumlatedLevels.length - 1]._id.toString() === newLevels[newLevels.length - 1]._id.toString()) {
+          setNoMoreBelow(true);
+
+          return;
+        }
+
         // Append new levels at the end
         setAccumulatedLevels(prevLevels => [...prevLevels, ...newLevels].filter((level, index, self) => {
           return index === self.findIndex((t) => (
@@ -117,7 +108,41 @@ export default function CollectionScrollList({ collection, isHidden, id, targetL
         } ));
       }
     }
-  }, [accumlatedLevels, collection, fetchLevels, isLoading, noMoreAbove]);
+  }, [accumlatedLevels, fetchLevels, isLoading, noMoreAbove, noMoreBelow]);
+
+  useEffect(() => {
+    if (collection.type === CollectionType.InMemory) {
+      return;
+    }
+
+    if (targetLevel._id.toString() === accumlatedLevels[0]._id.toString()) {
+      updateList(false, true);
+    }
+
+    if (targetLevel._id.toString() === accumlatedLevels[accumlatedLevels.length - 1]._id.toString()) {
+      updateList(true, false);
+    }
+  }, [accumlatedLevels, collection.type, targetLevel._id, updateList]);
+
+  const onScroll = useCallback(async (e: any) => {
+    if (collection.type === CollectionType.InMemory) {
+      return;
+    }
+
+    if (isAutoScrolling.current) {
+      return;
+    }
+
+    // check if scroll was triggered by the user
+    const { scrollHeight, clientHeight } = e.target;
+
+    const scrollPosition = e.target.scrollTop;
+    const thresh = 300;
+    const reachedTop = scrollPosition <= thresh || targetLevel._id.toString() === accumlatedLevels[0]._id.toString();
+    const reachedBottom = scrollPosition + clientHeight >= scrollHeight - thresh || targetLevel._id.toString() === accumlatedLevels[accumlatedLevels.length - 1]._id.toString();
+
+    updateList(reachedBottom, reachedTop);
+  }, [accumlatedLevels, collection.type, targetLevel._id, updateList]);
 
   if (accumlatedLevels?.length === 0) {
     return <div className='flex justify-center items-center h-full'><LoadingSpinner /></div>;

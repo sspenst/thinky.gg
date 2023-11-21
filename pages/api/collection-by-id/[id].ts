@@ -69,6 +69,7 @@ export async function getCollection(props: GetCollectionProps): Promise<Collecti
  * Private collections are filtered out unless they were created by the reqUser.
  */
 export async function getCollections({ matchQuery, reqUser, includeDraft, populateLevels, populateLevelCursor, populateLevelDirection }: GetCollectionProps): Promise<Collection[]> {
+  const pageSize = 3;
   const collectionAgg = await CollectionModel.aggregate<EnrichedCollection>(([
     {
       $match: {
@@ -221,8 +222,8 @@ export async function getCollections({ matchQuery, reqUser, includeDraft, popula
             then: {
               $slice: [
                 '$levels',
-                { $max: [0, { $subtract: ['$targetLevelIndex', 10] }] },
-                { $min: [20, { $add: ['$targetLevelIndex', 1] }] }
+                { $max: [0, { $subtract: ['$targetLevelIndex', pageSize] }] },
+                { $min: [pageSize + 1, { $add: ['$targetLevelIndex', 1] }] }
               ]
             },
             else: {
@@ -232,14 +233,14 @@ export async function getCollections({ matchQuery, reqUser, includeDraft, popula
                   $slice: [
                     '$levels',
                     '$targetLevelIndex',
-                    { $min: [20, { $subtract: [{ $size: '$levels' }, '$targetLevelIndex'] }] }
+                    { $min: [pageSize + 1, { $subtract: [{ $size: '$levels' }, '$targetLevelIndex'] }] }
                   ]
                 },
                 else: { // 'around'
                   $slice: [
                     '$levels',
-                    { $max: [0, { $subtract: ['$targetLevelIndex', 10] }] },
-                    21
+                    { $max: [0, { $subtract: ['$targetLevelIndex', pageSize] }] },
+                    pageSize * 2 + 1
                   ]
                 }
               }
