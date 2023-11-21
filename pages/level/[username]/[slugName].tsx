@@ -325,6 +325,7 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
           <GameWrapper
             chapter={chapter as string | undefined}
             collection={collection}
+            setCollection={setCollection}
             level={level}
             onNext={() => changeLevel(true)}
             onPrev={() => changeLevel(false)}

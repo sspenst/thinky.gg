@@ -12,12 +12,13 @@ import LoadingSpinner from '../page/loadingSpinner';
 
 interface Props {
     collection: EnrichedCollection | Collection;
+    onLevelsChange: (levels: Level[]) => void;
     id: string;
     isHidden: boolean;
     targetLevel: EnrichedLevel;
     }
 
-export default function CollectionScrollList({ collection, isHidden, id, targetLevel }: Props) {
+export default function CollectionScrollList({ collection, onLevelsChange, isHidden, id, targetLevel }: Props) {
   const [accumlatedLevels, setAccumulatedLevels] = useState<Level[]>(collection.levels);
   const [noMoreAbove, setNoMoreAbove] = useState(false);
   const [noMoreBelow, setNoMoreBelow] = useState(false);
@@ -30,6 +31,9 @@ export default function CollectionScrollList({ collection, isHidden, id, targetL
     return await fetch('/api/collection-by-id/' + collection._id.toString() + `?populateCursor=${cursor}&populateDirection=${direction}`);
   }, [collection._id]);
 
+  useEffect(() => {
+    onLevelsChange(accumlatedLevels);
+  }, [accumlatedLevels, onLevelsChange]);
   // scroll to the collection level on level change
   useEffect(() => {
     if (isHidden) {
@@ -108,7 +112,7 @@ export default function CollectionScrollList({ collection, isHidden, id, targetL
         } ));
       }
     }
-  }, [accumlatedLevels, fetchLevels, isLoading, noMoreAbove, noMoreBelow]);
+  }, [accumlatedLevels, fetchLevels, isLoading, noMoreAbove, noMoreBelow, onLevelsChange]);
 
   useEffect(() => {
     if (collection.type === CollectionType.InMemory) {

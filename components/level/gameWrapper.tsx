@@ -5,9 +5,9 @@ import { CollectionType } from '@root/models/constants/collection';
 import SelectOptionStats from '@root/models/selectOptionStats';
 import classNames from 'classnames';
 import Link from 'next/link';
-import React, { SetStateAction, useCallback, useContext, useEffect, useState } from 'react';
+import React, { Dispatch, SetStateAction, useCallback, useContext, useEffect, useState } from 'react';
 import Collection, { EnrichedCollection } from '../../models/db/collection';
-import { EnrichedLevel } from '../../models/db/level';
+import Level, { EnrichedLevel } from '../../models/db/level';
 import User from '../../models/db/user';
 import SelectCard from '../cards/selectCard';
 import CollectionScrollList from '../collection/collectionScrollList';
@@ -22,13 +22,14 @@ import Solved from './info/solved';
 interface GameWrapperProps {
   chapter?: string;
   collection: EnrichedCollection | Collection | null;
+  setCollection: Dispatch<SetStateAction<EnrichedCollection | Collection | null>>;
   level: EnrichedLevel;
   onNext: () => void;
   onPrev: () => void;
   user: User | null;
 }
 
-export default function GameWrapper({ chapter, collection, level, onNext, onPrev, user }: GameWrapperProps) {
+export default function GameWrapper({ chapter, collection, setCollection, level, onNext, onPrev, user }: GameWrapperProps) {
   const [dontShowPostGameModal, setDontShowPostGameModal] = useState(false);
   const [isCollectionViewHidden, setIsCollectionViewHidden] = useState(false);
   const { isDynamic, isDynamicSupported, toggleVersion } = useContext(MusicContext);
@@ -105,8 +106,11 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
       return null;
     }
 
-    return <CollectionScrollList isHidden={isCollectionViewHidden} targetLevel={level} collection={collection} id={id} />;
-  }, [collection, isCollectionViewHidden, level]);
+    return <CollectionScrollList onLevelsChange={ (levels: Level[]) => {
+      collection.levels = levels;
+      setCollection(collection);
+    }} isHidden={isCollectionViewHidden} targetLevel={level} collection={collection} id={id} />;
+  }, [collection, isCollectionViewHidden, level, setCollection]);
 
   return (
     <div className='flex h-full'>
