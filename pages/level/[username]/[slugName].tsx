@@ -37,19 +37,18 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { slugName, username } = context.params as LevelUrlQueryParams;
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
-  const level = await getLevelByUrlPath(username, slugName, reqUser);
-  const cid = context.query?.cid as string | undefined;
-  let collection: Collection | null = null;
 
-  if (cid) {
-    collection = await getCollection({
+  const cid = context.query?.cid as string | undefined;
+  const [level, collection] = await Promise.all([
+    getLevelByUrlPath(username, slugName, reqUser),
+    (cid) ? getCollection({
       matchQuery: { _id: new Types.ObjectId(cid) },
       reqUser,
       populateLevels: true,
-      populateLevelCursor: level?._id,
+      populateAroundSlug: username + '/' + slugName,
       populateLevelDirection: 'around',
-    });
-  }
+    }) : null,
+  ]);
 
   if (!level) {
     return {
