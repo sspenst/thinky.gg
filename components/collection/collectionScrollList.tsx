@@ -1,6 +1,4 @@
 import Dimensions from '@root/constants/dimensions';
-import useSWRHelper from '@root/hooks/useSWRHelper';
-import { initCollection } from '@root/lib/initializeLocalDb';
 import { CollectionType } from '@root/models/constants/collection';
 import Collection, { EnrichedCollection } from '@root/models/db/collection';
 import Level, { EnrichedLevel } from '@root/models/db/level';
@@ -174,7 +172,7 @@ export default function CollectionScrollList({ collection, onLoading, onLevelsCh
       }
       }>
       {isLoading && <div className='justify-center items-center pt-3'><LoadingSpinner /></div>}
-      {!isLoading && !isAutoScrolling && !noMoreAbove && <div className='flex flex-col justify-center items-center pt-3'><button className='text-sm bg-gray-600 p-1 rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75'
+      {!isLoading && !isAutoScrolling.current && !noMoreAbove && <div className='flex flex-col justify-center items-center pt-3'><button className='text-sm bg-gray-600 p-1 rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75'
         onClick={() => {
           updateList(false, true);
         }}>Load more</button></div>}
@@ -198,7 +196,7 @@ export default function CollectionScrollList({ collection, onLoading, onLevelsCh
           </div>
         );
       })}
-      {!isLoading && !isAutoScrolling && !noMoreBelow && <div className='flex flex-col justify-center items-center pb-3'><button className='text-sm bg-gray-600 p-1 rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75'
+      {!isLoading && !isAutoScrolling.current && !noMoreBelow && <div className='flex flex-col justify-center items-center pb-3'><button className='text-sm bg-gray-600 p-1 rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75'
         onClick={() => {
           updateList(true, false);
         }}>Load more</button></div>}
