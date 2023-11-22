@@ -39,6 +39,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
 
   const cid = context.query?.cid as string | undefined;
+  // TODO: technically we could get the level from the collection instead of separately querying for it
+  // If cid doesn't exist then we can just call getLevelsByUrlPath...
   const [level, collection] = await Promise.all([
     getLevelByUrlPath(username, slugName, reqUser),
     (cid) ? getCollection({
