@@ -46,6 +46,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       matchQuery: { _id: new Types.ObjectId(cid) },
       reqUser,
       populateLevels: true,
+      populateLevelCursor: level?._id,
+      populateLevelDirection: 'around',
     });
   }
 
@@ -65,13 +67,13 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 interface LevelProps {
-  _collection: Collection | null;
+  _collection: EnrichedCollection | null;
   _level: EnrichedLevel;
   reqUser: User | null;
 }
 
 export default function LevelPage({ _collection, _level, reqUser }: LevelProps) {
-  const [collection, setCollection] = useState<Collection | null>(_collection);
+  const [collection, setCollection] = useState<EnrichedCollection | Collection | null>(_collection);
   const [level, setLevel] = useState(_level);
   const { mutateProStatsLevel, proStatsLevel } = useProStatsLevel(level);
   const router = useRouter();
@@ -140,8 +142,6 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
   }, [cid, collection, setTempCollection]);
 
   useEffect(() => {
-    // TODO: this is not the correct way to handle displaying tempCollection
-    // technically tempCollection should be cleared or updated when the user navigates from a non-level page to a level page
     if (!_collection && tempCollection && tempCollection.levels.find(l => l._id === level._id)) {
       setCollection(tempCollection);
     }
@@ -184,21 +184,19 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
         if (levelIndex + 1 < collection.levels.length) {
           const nextLevel = collection.levels[levelIndex + 1];
 
-          if (collection.type === CollectionType.InMemory) {
-            url = `/level/${nextLevel.slug}`;
-          } else {
-            url = `/level/${nextLevel.slug}?cid=${collection._id}${chapter ? `&chapter=${chapter}` : ''}`;
-          }
+          url = `/level/${nextLevel.slug}?cid=${collection._id}${chapter ? `&chapter=${chapter}` : ''}`;
+        } else {
+          // if we are at the end of the collection...
+
         }
       } else {
         if (levelIndex - 1 >= 0) {
           const prevLevel = collection.levels[levelIndex - 1];
 
-          if (collection.type === CollectionType.InMemory) {
-            url = `/level/${prevLevel.slug}`;
-          } else {
-            url = `/level/${prevLevel.slug}?cid=${collection._id}${chapter ? `&chapter=${chapter}` : ''}`;
-          }
+          url = `/level/${prevLevel.slug}?cid=${collection._id}${chapter ? `&chapter=${chapter}` : ''}`;
+        } else {
+          // if we are at the start of the collection...
+
         }
       }
     }
@@ -330,6 +328,7 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
           <GameWrapper
             chapter={chapter as string | undefined}
             collection={collection}
+            setCollection={setCollection}
             level={level}
             onNext={() => changeLevel(true)}
             onPrev={() => changeLevel(false)}
