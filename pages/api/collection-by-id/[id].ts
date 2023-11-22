@@ -45,6 +45,7 @@ interface GetCollectionProps {
   includeDraft?: boolean,
   populateLevels?: boolean,
   populateLevelCursor?: Types.ObjectId | string, // target level
+  populateAroundSlug?: string, // target level
   populateLevelDirection?: 'before' | 'after' | 'around',
 }
 
@@ -68,7 +69,7 @@ export async function getCollection(props: GetCollectionProps): Promise<Collecti
  * Query collections with optionally populated levels and stats.
  * Private collections are filtered out unless they were created by the reqUser.
  */
-export async function getCollections({ matchQuery, reqUser, includeDraft, populateLevels, populateLevelCursor, populateLevelDirection }: GetCollectionProps): Promise<Collection[]> {
+export async function getCollections({ matchQuery, reqUser, includeDraft, populateLevels, populateLevelCursor, populateAroundSlug, populateLevelDirection }: GetCollectionProps): Promise<Collection[]> {
   const pageSize = 5;
   const collectionAgg = await CollectionModel.aggregate<EnrichedCollection>(([
     {
@@ -206,12 +207,17 @@ export async function getCollections({ matchQuery, reqUser, includeDraft, popula
         }
       }
     },
-    ...populateLevelCursor ? [{
+    ...populateLevelCursor || populateAroundSlug ? [{
       // slice the levels array to include 10 before and 10 after the target level.. keep in mind that there may not be 10 levels before or after
 
       $addFields: {
         targetLevelIndex: {
-          $indexOfArray: ['$levels._id', populateLevelCursor]
+          $cond: {
+            if: populateLevelCursor,
+            then: { $indexOfArray: ['$levels._id', populateLevelCursor] },
+            else: { $indexOfArray: ['$levels.slug', populateAroundSlug] },
+          }
+          //$indexOfArray: ['$levels._id', populateLevelCursor]
         },
       },
     }, {
