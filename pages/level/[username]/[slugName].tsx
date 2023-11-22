@@ -178,9 +178,6 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
 
     // search for index of level._id in collection.levels
     if (collection.levels) {
-      const collectionAsEnriched = collection as EnrichedCollection;
-      const totalLevels = collectionAsEnriched.levelCount;
-
       const levelIndex = collection.levels.findIndex((l) => l._id === level._id);
 
       if (next) {
@@ -188,12 +185,18 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
           const nextLevel = collection.levels[levelIndex + 1];
 
           url = `/level/${nextLevel.slug}?cid=${collection._id}${chapter ? `&chapter=${chapter}` : ''}`;
+        } else {
+          // if we are at the end of the collection...
+
         }
       } else {
         if (levelIndex - 1 >= 0) {
           const prevLevel = collection.levels[levelIndex - 1];
 
           url = `/level/${prevLevel.slug}?cid=${collection._id}${chapter ? `&chapter=${chapter}` : ''}`;
+        } else {
+          // if we are at the start of the collection...
+
         }
       }
     }

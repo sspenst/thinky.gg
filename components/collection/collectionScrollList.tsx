@@ -12,13 +12,14 @@ import LoadingSpinner from '../page/loadingSpinner';
 
 interface Props {
     collection: EnrichedCollection | Collection;
+    onLoading: () => void;
     onLevelsChange: (levels: Level[]) => void;
     id: string;
     isHidden: boolean;
     targetLevel: EnrichedLevel;
     }
 
-export default function CollectionScrollList({ collection, onLevelsChange, isHidden, id, targetLevel }: Props) {
+export default function CollectionScrollList({ collection, onLoading, onLevelsChange, isHidden, id, targetLevel }: Props) {
   const [accumlatedLevels, setAccumulatedLevels] = useState<Level[]>(collection.levels);
   const [noMoreAbove, setNoMoreAbove] = useState(false);
   const [noMoreBelow, setNoMoreBelow] = useState(false);
@@ -27,13 +28,9 @@ export default function CollectionScrollList({ collection, onLevelsChange, isHid
   const fetchLevels = useCallback(async (cursor: string, direction: string) => {
     // Replace with your actual API call
     // Ensure the API supports fetching data in both directions based on the cursor
-
     return await fetch('/api/collection-by-id/' + collection._id.toString() + `?populateCursor=${cursor}&populateDirection=${direction}`);
   }, [collection._id]);
 
-  useEffect(() => {
-    onLevelsChange(accumlatedLevels);
-  }, [accumlatedLevels, onLevelsChange]);
   // scroll to the collection level on level change
   useEffect(() => {
     if (isHidden) {
@@ -91,11 +88,15 @@ export default function CollectionScrollList({ collection, onLevelsChange, isHid
         }
 
         // Append new levels at the end
-        setAccumulatedLevels(prevLevels => [...prevLevels, ...newLevels].filter((level, index, self) => {
+        const newAcc = [...accumlatedLevels, ...newLevels].filter((level, index, self) => {
           return index === self.findIndex((t) => (
             t._id.toString() === level._id.toString()
           ));
-        } ));
+        }
+        );
+
+        onLevelsChange(newAcc);
+        setAccumulatedLevels(newAcc);
       } else {
         // if the first level is already in the list, we have reached the top
         if (accumlatedLevels[0]._id.toString() === newLevels[0]._id.toString()) {
@@ -105,11 +106,16 @@ export default function CollectionScrollList({ collection, onLevelsChange, isHid
         }
 
         // Prepend new levels at the start
-        setAccumulatedLevels(prevLevels => [...newLevels, ...prevLevels].filter((level, index, self) => {
+
+        const newAcc = [...newLevels, ...accumlatedLevels].filter((level, index, self) => {
           return index === self.findIndex((t) => (
             t._id.toString() === level._id.toString()
           ));
-        } ));
+        }
+        );
+
+        onLevelsChange(newAcc);
+        setAccumulatedLevels(newAcc);
       }
     }
   }, [accumlatedLevels, fetchLevels, isLoading, noMoreAbove, noMoreBelow, onLevelsChange]);
@@ -120,13 +126,22 @@ export default function CollectionScrollList({ collection, onLevelsChange, isHid
     }
 
     if (targetLevel._id.toString() === accumlatedLevels[0]._id.toString()) {
+      onLoading();
       updateList(false, true);
+
+      return;
     }
 
     if (targetLevel._id.toString() === accumlatedLevels[accumlatedLevels.length - 1]._id.toString()) {
+      onLoading();
       updateList(true, false);
+
+      return;
     }
-  }, [accumlatedLevels, collection.type, targetLevel._id, updateList]);
+
+    // TODO: Disabling lint... adding updateList to the dependency array causes a double request... Don't know how to fix this
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accumlatedLevels, collection.type, targetLevel._id]);
 
   const onScroll = useCallback(async (e: any) => {
     if (collection.type === CollectionType.InMemory) {
@@ -153,11 +168,16 @@ export default function CollectionScrollList({ collection, onLevelsChange, isHid
   }
 
   return (
-    <div className='overflow-y-auto max-w-full' onScroll={(e: any) => {
-      onScroll(e);
-    }
-    }>
+    <div className='overflow-y-auto max-w-full'
+      onScroll={(e: any) => {
+        onScroll(e);
+      }
+      }>
       {isLoading && <div className='justify-center items-center pt-3'><LoadingSpinner /></div>}
+      {!isLoading && !isAutoScrolling && !noMoreAbove && <div className='flex flex-col justify-center items-center pt-3'><button className='text-sm bg-gray-600 p-1 rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75'
+        onClick={() => {
+          updateList(false, true);
+        }}>Load more</button></div>}
       {accumlatedLevels?.map((levelInCollection) => {
         const isCurrentLevel = targetLevel._id.toString() === levelInCollection._id.toString();
         const anchorId = `collection-level-${id}-${levelInCollection._id.toString()}`;
@@ -178,6 +198,10 @@ export default function CollectionScrollList({ collection, onLevelsChange, isHid
           </div>
         );
       })}
+      {!isLoading && !isAutoScrolling && !noMoreBelow && <div className='flex flex-col justify-center items-center pb-3'><button className='text-sm bg-gray-600 p-1 rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75'
+        onClick={() => {
+          updateList(true, false);
+        }}>Load more</button></div>}
       {isLoading && <div className='justify-center items-center pb-3'><LoadingSpinner /></div>}
     </div>);
 }

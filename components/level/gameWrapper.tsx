@@ -1,15 +1,11 @@
 import Dimensions from '@root/constants/dimensions';
 import { MusicContext } from '@root/contexts/musicContext';
 import { PageContext } from '@root/contexts/pageContext';
-import { CollectionType } from '@root/models/constants/collection';
-import SelectOptionStats from '@root/models/selectOptionStats';
-import classNames from 'classnames';
 import Link from 'next/link';
 import React, { Dispatch, SetStateAction, useCallback, useContext, useEffect, useState } from 'react';
 import Collection, { EnrichedCollection } from '../../models/db/collection';
 import Level, { EnrichedLevel } from '../../models/db/level';
 import User from '../../models/db/user';
-import SelectCard from '../cards/selectCard';
 import CollectionScrollList from '../collection/collectionScrollList';
 import FormattedUser from '../formatted/formattedUser';
 import Modal from '../modal';
@@ -38,6 +34,7 @@ export default function GameWrapper({ chapter, collection, setCollection, level,
   const [postGameModalOpen, setShowPostGameModalOpen] = useState(false);
   const { setPreventKeyDownEvent } = useContext(PageContext);
   const [showCollectionViewModal, setShowCollectionViewModal] = useState(false);
+  const [disableNavigation, setDisableNavigation] = useState(false);
 
   useEffect(() => {
     const storedCollectionViewHidden = localStorage.getItem('isCollectionViewHidden');
@@ -106,8 +103,11 @@ export default function GameWrapper({ chapter, collection, setCollection, level,
       return null;
     }
 
-    return <CollectionScrollList onLevelsChange={ (levels: Level[]) => {
+    return <CollectionScrollList onLoading={() => {
+      setDisableNavigation(true);
+    }} onLevelsChange={ (levels: Level[]) => {
       collection.levels = levels;
+      setDisableNavigation(false);
       setCollection(collection);
     }} isHidden={isCollectionViewHidden} targetLevel={level} collection={collection} id={id} />;
   }, [collection, isCollectionViewHidden, level, setCollection]);
@@ -187,8 +187,20 @@ export default function GameWrapper({ chapter, collection, setCollection, level,
           enableSessionCheckpoint={true}
           key={`game-${level._id.toString()}`}
           level={level}
-          onNext={collection ? onNext : undefined}
-          onPrev={collection ? onPrev : undefined}
+          onNext={collection ? () => {
+            if (disableNavigation) {
+              return;
+            }
+
+            onNext();
+          } : undefined}
+          onPrev={collection ? () => {
+            if (disableNavigation) {
+              return;
+            }
+
+            onPrev();
+          } : undefined}
           onSolve={() => {
             if (isDynamicSupported && isDynamic) {
               toggleVersion('hot');

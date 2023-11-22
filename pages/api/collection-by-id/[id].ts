@@ -69,7 +69,7 @@ export async function getCollection(props: GetCollectionProps): Promise<Collecti
  * Private collections are filtered out unless they were created by the reqUser.
  */
 export async function getCollections({ matchQuery, reqUser, includeDraft, populateLevels, populateLevelCursor, populateLevelDirection }: GetCollectionProps): Promise<Collection[]> {
-  const pageSize = 3;
+  const pageSize = 5;
   const collectionAgg = await CollectionModel.aggregate<EnrichedCollection>(([
     {
       $match: {
