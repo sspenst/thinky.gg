@@ -95,10 +95,10 @@ export default async function initializeLocalDb() {
   ));
 
   promises.push(UserConfigModel.insertMany([
-    getNewUserConfig([], 0, new Types.ObjectId(TestId.USER), { emailConfirmed: true }),
-    getNewUserConfig([], 0, new Types.ObjectId(TestId.USER_B), { emailConfirmed: true }),
-    getNewUserConfig([Role.GUEST], 0, new Types.ObjectId(TestId.USER_GUEST)),
-    getNewUserConfig([Role.PRO], 0, new Types.ObjectId(TestId.USER_PRO), { emailConfirmed: true, emailDigest: EmailDigestSettingTypes.NONE }),
+    getNewUserConfig(GameId.PATHOLOGY, [], 0, new Types.ObjectId(TestId.USER), { emailConfirmed: true }),
+    getNewUserConfig(GameId.PATHOLOGY, [], 0, new Types.ObjectId(TestId.USER_B), { emailConfirmed: true }),
+    getNewUserConfig(GameId.PATHOLOGY, [Role.GUEST], 0, new Types.ObjectId(TestId.USER_GUEST)),
+    getNewUserConfig(GameId.PATHOLOGY, [Role.PRO], 0, new Types.ObjectId(TestId.USER_PRO), { emailConfirmed: true, emailDigest: EmailDigestSettingTypes.NONE }),
   ], { ordered: false }));
 
   // LEVEL
