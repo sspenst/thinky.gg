@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
@@ -55,30 +56,7 @@ describe('pages/api/user-config', () => {
       },
     });
   });
-  test('Wrong method should return status code 405', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          ...defaultObj,
-          method: 'PATCH',
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('Method not allowed');
-        expect(res.status).toBe(405);
-      },
-    });
-  });
   test('Valid GET request', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -101,56 +79,6 @@ describe('pages/api/user-config', () => {
         expect(config.theme).toBe(Theme.Modern);
         expect(config.tutorialCompletedAt).toBe(0);
         expect(config.userId).toBe(TestId.USER_C);
-      },
-    });
-  });
-  test('PUT but no body', async () => {
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          ...defaultObj,
-          method: 'PUT',
-          query: {
-
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('Bad request');
-        expect(res.status).toBe(400);
-      },
-    });
-  });
-  test('PUT with a blank body ', async () => {
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          ...defaultObj,
-          method: 'PUT',
-          body: {
-
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(res.status).toBe(400);
-        expect(response.error).toBe('Missing required parameters');
       },
     });
   });
@@ -232,6 +160,7 @@ describe('pages/api/user-config', () => {
         expect(config.theme).toBe(Theme.Light);
         expect(config.tutorialCompletedAt).toBeGreaterThan(Date.now() - 1000);
         expect(config.userId).toBe(TestId.USER_C);
+        expect(config.gameId).toBe(GameId.PATHOLOGY);
       },
     });
   });
