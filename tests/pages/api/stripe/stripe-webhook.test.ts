@@ -122,7 +122,7 @@ async function runStripeWebhookTest({
 async function expectUserStatus(userId: string, role: Role | null, stripeCustomerId: string | null) {
   const [user, userConfig] = await Promise.all([
     UserModel.findById(userId),
-    UserConfigModel.findOne({ userId }, { stripeCustomerId: 1 }),
+    UserConfigModel.findOne({ userId }, { stripeCustomerId: 1, gameId: 1 }),
   ]);
 
   if (role) {

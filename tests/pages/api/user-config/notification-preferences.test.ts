@@ -76,6 +76,7 @@ describe('account settings notification preferences', () => {
         // check the db
         const config = await UserConfigModel.findOne({ userId: TestId.USER }).lean<UserConfig>() as UserConfig;
 
+        expect(config.gameId).toBe(GameId.PATHOLOGY);
         expect(config.disallowedEmailNotifications).toEqual(disallowedEmailNotifications);
         expect(config.disallowedPushNotifications).toEqual(disallowedPushNotifications);
       },
