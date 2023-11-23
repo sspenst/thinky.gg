@@ -76,6 +76,7 @@ describe('pages/api/user-config', () => {
         expect(res.status).toBe(200);
         const config = response as UserConfig;
 
+        expect(config.gameId).toBe(GameId.PATHOLOGY);
         expect(config.theme).toBe(Theme.Modern);
         expect(config.tutorialCompletedAt).toBe(0);
         expect(config.userId).toBe(TestId.USER_C);
