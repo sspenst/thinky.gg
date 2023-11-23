@@ -1,12 +1,12 @@
 import KeyValue from '@root/models/db/keyValue';
 import { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
-import apiWrapper from '../../../helpers/apiWrapper';
+import apiWrapper, { NextApiRequestGuest } from '../../../helpers/apiWrapper';
 import { enrichLevels, getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
-import { getUserFromToken, NextApiRequestGuest } from '../../../lib/withAuth';
+import { getUserFromToken } from '../../../lib/withAuth';
 import Level, { EnrichedLevel } from '../../../models/db/level';
 import User from '../../../models/db/user';
 import { KeyValueModel, LevelModel, UserModel } from '../../../models/mongoose';

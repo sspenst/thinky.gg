@@ -1,14 +1,12 @@
 import { GameId } from '@root/constants/GameId';
-import { Games } from '@root/constants/Games';
 import Role from '@root/constants/role';
 import { generatePassword } from '@root/helpers/generatePassword';
 import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmationEmail';
-import { NextApiRequestGuest } from '@root/lib/withAuth';
 import UserConfig from '@root/models/db/userConfig';
 import mongoose, { QueryOptions, Types } from 'mongoose';
-import type { NextApiRequest, NextApiResponse } from 'next';
+import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
-import apiWrapper, { ValidNumber, ValidType } from '../../../helpers/apiWrapper';
+import apiWrapper, { NextApiRequestGuest, ValidNumber, ValidType } from '../../../helpers/apiWrapper';
 import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import getProfileSlug from '../../../helpers/getProfileSlug';
 import { TimerUtil } from '../../../helpers/getTs';
