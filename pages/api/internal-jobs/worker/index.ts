@@ -235,7 +235,7 @@ async function processQueueMessage(queueMessage: QueueMessage) {
 
     const achievementsEarned = await refreshAchievements(gameId, new Types.ObjectId(userId), categories);
 
-    log = `refreshAchievements for ${userId} created ${achievementsEarned} achievements`;
+    log = `refreshAchievements game ${gameId} for ${userId} created ${achievementsEarned} achievements`;
   } else {
     log = `Unknown queue message type ${queueMessage.type}`;
     error = true;
