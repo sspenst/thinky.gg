@@ -1,5 +1,6 @@
+import { GameId } from '@root/constants/GameId';
+import { NextApiRequestGuest } from '@root/helpers/apiWrapper';
 import { enableFetchMocks } from 'jest-fetch-mock';
-import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import { EmailType } from '../../../../constants/emailDigest';
@@ -58,7 +59,8 @@ describe('Email reactivation', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
+          gameId: GameId.PATHOLOGY,
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
@@ -69,7 +71,7 @@ describe('Email reactivation', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestGuest;
 
         await handler(req, res);
       },
@@ -101,7 +103,8 @@ describe('Email reactivation', () => {
     sendMailRefMock.ref = acceptMock;
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
+          gameId: GameId.PATHOLOGY,
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
@@ -112,7 +115,7 @@ describe('Email reactivation', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestGuest;
 
         await handler(req, res);
       },
@@ -139,7 +142,8 @@ describe('Email reactivation', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
+          gameId: GameId.PATHOLOGY,
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
@@ -150,7 +154,7 @@ describe('Email reactivation', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestGuest;
 
         await handler(req, res);
       },
@@ -179,7 +183,8 @@ describe('Email reactivation', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
+          gameId: GameId.PATHOLOGY,
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
@@ -190,7 +195,7 @@ describe('Email reactivation', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestGuest;
 
         await handler(req, res);
       },
