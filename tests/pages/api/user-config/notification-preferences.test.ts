@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
 import { createNewFollowerNotification, createNewReviewOnYourLevelNotification } from '@root/helpers/notificationHelper';
 import { processQueueMessages } from '@root/pages/api/internal-jobs/worker';
@@ -75,6 +76,7 @@ describe('account settings notification preferences', () => {
         // check the db
         const config = await UserConfigModel.findOne({ userId: TestId.USER }).lean<UserConfig>() as UserConfig;
 
+        expect(config.gameId).toBe(GameId.PATHOLOGY);
         expect(config.disallowedEmailNotifications).toEqual(disallowedEmailNotifications);
         expect(config.disallowedPushNotifications).toEqual(disallowedPushNotifications);
       },
@@ -92,7 +94,7 @@ describe('account settings notification preferences', () => {
     originalSendPush.sendPushNotification = jest.fn().mockImplementation(() => {
       // do nothing
     });
-    await createNewReviewOnYourLevelNotification(TestId.USER, TestId.USER_B, TestId.LEVEL, 'Sample review');
+    await createNewReviewOnYourLevelNotification(GameId.PATHOLOGY, TestId.USER, TestId.USER_B, TestId.LEVEL, 'Sample review');
 
     const queueProcessed = await processQueueMessages();
 
@@ -112,7 +114,7 @@ describe('account settings notification preferences', () => {
     originalSendPush.sendPushNotification = jest.fn().mockImplementation(() => {
       // do nothing
     });
-    await createNewFollowerNotification(TestId.USER_B, TestId.USER);
+    await createNewFollowerNotification(GameId.PATHOLOGY, TestId.USER_B, TestId.USER);
 
     const queueProcessed = await processQueueMessages();
 
@@ -132,7 +134,7 @@ describe('account settings notification preferences', () => {
     originalSendPush.sendPushNotification = jest.fn().mockImplementation(() => {
       // do nothing
     });
-    await createNewFollowerNotification(TestId.USER_B, TestId.USER_GUEST);
+    await createNewFollowerNotification(GameId.PATHOLOGY, TestId.USER_B, TestId.USER_GUEST);
 
     const queueProcessed = await processQueueMessages();
 

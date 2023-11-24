@@ -456,7 +456,7 @@ describe('Reviewing levels should work correctly', () => {
 
         expect(achievements.length).toBe(1);
         expect(achievements[0].type).toBe(AchievementType.REVIEWED_1_LEVEL);
-
+        expect(achievements[0].gameId).toBe(GameId.PATHOLOGY);
         expect(response.error).toBeUndefined();
         expect(response.score).toBe(3.5);
         expect(response.text).toBe('t'.repeat(500));

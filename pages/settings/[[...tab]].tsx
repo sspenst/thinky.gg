@@ -1,5 +1,6 @@
 import SettingsAccount from '@root/components/settings/settingsAccount';
 import SettingsNotifications from '@root/components/settings/settingsNotifications';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
 import classNames from 'classnames';
@@ -79,9 +80,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   let userConfig: UserConfig | null = null;
+  const gameId = getGameIdFromReq(context.req);
 
   if (tab === SettingsTab.Account || tab === SettingsTab.Notifications) {
-    userConfig = await getUserConfig(reqUser);
+    userConfig = await getUserConfig(gameId, reqUser);
   }
 
   return {

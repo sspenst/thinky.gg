@@ -1,7 +1,7 @@
 import KeyValue from '@root/models/db/keyValue';
 import { Types } from 'mongoose';
-import { NextApiRequest, NextApiResponse } from 'next';
-import apiWrapper from '../../../helpers/apiWrapper';
+import { NextApiResponse } from 'next';
+import apiWrapper, { NextApiRequestGuest } from '../../../helpers/apiWrapper';
 import { enrichLevels, getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
@@ -164,7 +164,7 @@ export async function getLevelOfDay(reqUser?: User | null) {
 
 export default apiWrapper({
   GET: {},
-}, async (req: NextApiRequest, res: NextApiResponse) => {
+}, async (req: NextApiRequestGuest, res: NextApiResponse) => {
   const token = req.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, req) : null;
   // Then query the database for the official level of the day collection

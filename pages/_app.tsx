@@ -177,9 +177,12 @@ export default function MyApp({ Component, pageProps, userAgent }: AppProps & { 
       return;
     }
 
+    const hasPortInUrl = window.location.port !== '';
+
     const socketConn = io('', {
       path: '/api/socket/',
       withCredentials: true,
+      autoConnect: hasPortInUrl ? false : true,
     });
 
     socketConn.on('connectedPlayers', (connectedPlayers: {

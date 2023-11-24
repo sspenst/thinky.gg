@@ -1,5 +1,6 @@
 import AchievementType from '@root/constants/achievements/achievementType';
 import Direction from '@root/constants/direction';
+import { GameId } from '@root/constants/GameId';
 import Collection from '@root/models/db/collection';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types, UpdateQuery } from 'mongoose';
@@ -680,6 +681,7 @@ describe('Editing levels should work correctly', () => {
         const achievements = await AchievementModel.find({ userId: new Types.ObjectId(TestId.USER) });
 
         expect(achievements.length).toBe(1);
+        expect(achievements[0].gameId).toBe(GameId.PATHOLOGY);
         expect(achievements[0].type).toBe(AchievementType.CREATOR_CREATED_1_LEVEL);
         // expect(achievements[1].type).toBe(AchievementType.CREATOR_CREATED_5_LEVELS); // Note that this is not earned yet, 7 levels created but they aren't quality
 

@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -73,7 +74,7 @@ describe('Email digest', () => {
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
 
-    await createNewRecordOnALevelYouSolvedNotifications([TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah');
+    await createNewRecordOnALevelYouSolvedNotifications(GameId.PATHOLOGY, [TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah');
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -117,7 +118,7 @@ describe('Email digest', () => {
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
 
-    await createNewRecordOnALevelYouSolvedNotifications([TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah');
+    await createNewRecordOnALevelYouSolvedNotifications(GameId.PATHOLOGY, [TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah');
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -162,8 +163,8 @@ describe('Email digest', () => {
 
     await dbConnect();
 
-    await createNewRecordOnALevelYouSolvedNotifications([TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah');
-    await createNewRecordOnALevelYouSolvedNotifications([TestId.USER_C], TestId.USER, TestId.LEVEL_2, 'blah2');
+    await Promise.all([createNewRecordOnALevelYouSolvedNotifications(GameId.PATHOLOGY, [TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah'),
+      createNewRecordOnALevelYouSolvedNotifications(GameId.PATHOLOGY, [TestId.USER_C], TestId.USER, TestId.LEVEL_2, 'blah2')]);
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -205,8 +206,8 @@ describe('Email digest', () => {
 
     await dbConnect();
 
-    await createNewRecordOnALevelYouSolvedNotifications([TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah');
-    await createNewRecordOnALevelYouSolvedNotifications([TestId.USER_C], TestId.USER, TestId.LEVEL_2, 'blah2');
+    await Promise.all([createNewRecordOnALevelYouSolvedNotifications(GameId.PATHOLOGY, [TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah'),
+      createNewRecordOnALevelYouSolvedNotifications(GameId.PATHOLOGY, [TestId.USER_C], TestId.USER, TestId.LEVEL_2, 'blah2')]);
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -239,9 +240,10 @@ describe('Email digest', () => {
   }, 10000);
   test('Run it again for another user who set settings to daily but has no notificaitons', async () => {
     // setup
-    await UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.DAILY }, {});
-    await EmailLogModel.deleteMany({}); // clear email logs
-    await NotificationModel.deleteMany({}); // clear notifications
+    await Promise.all([UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.DAILY }, {}),
+      EmailLogModel.deleteMany({}),
+      NotificationModel.deleteMany({})
+    ]);
     sendMailRefMock.ref = acceptMock;
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
@@ -317,9 +319,9 @@ describe('Email digest', () => {
   }, 10000);
   test('Running with a user with no userconfig', async () => {
     // delete user config
-    await UserModel.findByIdAndDelete(TestId.USER);
-    await EmailLogModel.deleteMany({ type: EmailType.EMAIL_DIGEST, userId: TestId.USER });
-    await createNewRecordOnALevelYouSolvedNotifications([TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah');
+    await Promise.all([UserModel.findByIdAndDelete(TestId.USER),
+      EmailLogModel.deleteMany({ type: EmailType.EMAIL_DIGEST, userId: TestId.USER }),
+      createNewRecordOnALevelYouSolvedNotifications(GameId.PATHOLOGY, [TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah')]);
 
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));

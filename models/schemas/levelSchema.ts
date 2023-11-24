@@ -210,80 +210,85 @@ async function calcStats(lvl: Level) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {}) {
-  const countJustSolved = await PlayAttemptModel.countDocuments({
-    levelId: levelId,
-    attemptContext: AttemptContext.JUST_SOLVED,
-  });
-
-  // sumDuration is all of the sum(endTime-startTime) within the playAttempts
-  const sumDuration = await PlayAttemptModel.aggregate([
+  const bigQ = await PlayAttemptModel.aggregate([
     {
       $match: {
         levelId: levelId,
-        attemptContext: { $ne: AttemptContext.SOLVED },
       }
     },
     {
-      $group: {
-        _id: null,
-        sumDuration: {
-          $sum: {
-            $subtract: ['$endTime', '$startTime']
-          }
-        }
+      $facet: {
+        'countJustSolved': [
+          { $match: { attemptContext: AttemptContext.JUST_SOLVED } },
+          { $count: 'total' }
+        ],
+        'sumDuration': [
+          { $match: { attemptContext: { $ne: AttemptContext.SOLVED } } },
+          { $group: { _id: null, totalDuration: { $sum: { $subtract: ['$endTime', '$startTime'] } } } }
+        ],
+        'uniqueUsersList': [
+          {
+            $match: {
+              $or: [
+                {
+                  $and: [
+                    {
+                      $expr: {
+                        $gt: [
+                          {
+                            $subtract: ['$endTime', '$startTime']
+                          },
+                          0
+                        ]
+                      }
+                    },
+                    {
+                      attemptContext: AttemptContext.UNSOLVED,
+                    }
+                  ],
+                },
+                {
+                  attemptContext: AttemptContext.JUST_SOLVED,
+                },
+              ],
+            },
+          },
+          {
+            $group: {
+              _id: null,
+              userId: {
+                $addToSet: '$userId',
+              },
+            }
+          },
+          {
+            $unwind: {
+              path: '$userId',
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+
+        ]
+      }
+    },
+    {
+      $project: {
+        countJustSolved: { $arrayElemAt: ['$countJustSolved.total', 0] },
+        sumDuration: { $arrayElemAt: ['$sumDuration.totalDuration', 0] },
+        uniqueUsersList: '$uniqueUsersList',
       }
     }
   ], options);
 
-  // get array of unique userIds from playattempt calc_playattempts_unique_users
-  const uniqueUsersList = await PlayAttemptModel.aggregate([
-    {
-      $match: {
-        $or: [
-          {
-            $and: [
-              {
-                $expr: {
-                  $gt: [
-                    {
-                      $subtract: ['$endTime', '$startTime']
-                    },
-                    0
-                  ]
-                }
-              },
-              {
-                attemptContext: AttemptContext.UNSOLVED,
-              }
-            ],
-          },
-          {
-            attemptContext: AttemptContext.JUST_SOLVED,
-          },
-        ],
-        levelId: levelId,
-      },
-    },
-    {
-      $group: {
-        _id: null,
-        userId: {
-          $addToSet: '$userId',
-        },
-      }
-    },
-    {
-      $unwind: {
-        path: '$userId',
-        preserveNullAndEmptyArrays: true,
-      },
-    },
-  ]);
+  const result = bigQ[0];
+  const countJustSolved = result?.countJustSolved ?? 0;
+  const sumDuration = result?.sumDuration ?? 0;
+  const uniqueUsersList = result?.uniqueUsersList ?? [];
 
   const update = {
-    calc_playattempts_duration_sum: sumDuration[0]?.sumDuration ?? 0,
+    calc_playattempts_duration_sum: sumDuration ?? 0,
     calc_playattempts_just_beaten_count: countJustSolved,
-    calc_playattempts_unique_users: uniqueUsersList.map(u => u?.userId.toString()),
+    calc_playattempts_unique_users: uniqueUsersList.map((u: any) => u?.userId.toString()),
   } as Partial<Level>;
 
   update.calc_difficulty_estimate = getDifficultyEstimate(update, uniqueUsersList.length);

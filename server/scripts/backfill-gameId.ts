@@ -24,21 +24,30 @@ async function backfillGameId() {
     // check which collections have a gameId field
     const collection = allMongoDBCollections[i];
     const collectionName = collection.name;
-    const collectionInfo = await mongoose.connection.db.collection(collectionName).findOne({
-      // where gameId exists and is not the correct gameId
-      gameId: { $exists: true, $ne: GameId.PATHOLOGY }
+
+    const countWithGameId = await mongoose.connection.db.collection(collectionName).countDocuments({
+      gameId: { $exists: true }
     });
 
-    if (collectionInfo) {
-      collectionsWithGameIdField.push(collectionName);
+    if (countWithGameId === 0) {
+      progressBar.update(i);
+      continue;
+    }
+
+    const countWithNullGameId = await mongoose.connection.db.collection(collectionName).countDocuments({
+      gameId: { $eq: null }
+    });
+
+    if (countWithGameId > 0 && countWithNullGameId > 0) {
+      collectionsWithGameIdField.push([collectionName, countWithNullGameId]);
     }
 
     progressBar.update(i);
   }
 
+  console.log('\nStarting backfill on ', collectionsWithGameIdField.length, ' collections');
   progressBar.update(allMongoDBCollections.length);
 
-  console.log('Starting backfill on ', collectionsWithGameIdField.join('\n'), ' collections');
   progressBar.start(collectionsWithGameIdField.length, 0);
   const rl = readline.createInterface({
     input: process.stdin,
@@ -47,9 +56,9 @@ async function backfillGameId() {
 
   for (let i = 0; i < collectionsWithGameIdField.length; i++) {
     // update the gameId field to be the correct gameId
-    const collectionName = collectionsWithGameIdField[i];
+    const [collectionName, toUpdate] = collectionsWithGameIdField[i];
 
-    console.log('\nConfirm you want to update gameId field for collection: ', collectionName, ' (y/n): ');
+    console.log('\nConfirm you want to update gameId field for collection: ', collectionName, '(' + toUpdate + ' rows) (y/n): ');
 
     if (await new Promise((resolve) => {
       rl.question('', (answer) => {
@@ -60,7 +69,7 @@ async function backfillGameId() {
       continue;
     }
 
-    await mongoose.connection.db.collection(collectionName).updateMany({
+    await mongoose.connection.db.collection(collectionName as string).updateMany({
       // where gameId is not the correct gameId
       gameId: { $ne: GameId.PATHOLOGY }
     }, { $set: { gameId: GameId.PATHOLOGY } });
