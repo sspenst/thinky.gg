@@ -1,4 +1,5 @@
 import { GameId } from '@root/constants/GameId';
+import { NextApiRequestGuest } from '@root/helpers/apiWrapper';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -42,7 +43,8 @@ describe('Email digest', () => {
   test('send with an invalid process.env var', async () => {
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
+          gameId: GameId.PATHOLOGY,
           method: 'GET',
           query: {
             secret: 'abc'
@@ -53,7 +55,7 @@ describe('Email digest', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestGuest;
 
         await handler(req, res);
       },
@@ -78,7 +80,8 @@ describe('Email digest', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
+          gameId: GameId.PATHOLOGY,
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST,
@@ -90,7 +93,7 @@ describe('Email digest', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestGuest;
 
         await handler(req, res);
       },
@@ -122,7 +125,8 @@ describe('Email digest', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
+          gameId: GameId.PATHOLOGY,
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST,
@@ -133,7 +137,7 @@ describe('Email digest', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestGuest;
 
         await handler(req, res);
       },
@@ -168,7 +172,8 @@ describe('Email digest', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
+          gameId: GameId.PATHOLOGY,
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
@@ -179,7 +184,7 @@ describe('Email digest', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestGuest;
 
         await handler(req, res);
       },
@@ -211,7 +216,8 @@ describe('Email digest', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
+          gameId: GameId.PATHOLOGY,
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
@@ -222,7 +228,7 @@ describe('Email digest', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestGuest;
 
         await handler(req, res);
       },
@@ -253,7 +259,8 @@ describe('Email digest', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
+          gameId: GameId.PATHOLOGY,
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
@@ -264,7 +271,7 @@ describe('Email digest', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestGuest;
 
         await handler(req, res);
       },
@@ -291,7 +298,8 @@ describe('Email digest', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
+          gameId: GameId.PATHOLOGY,
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
@@ -302,7 +310,7 @@ describe('Email digest', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestGuest;
 
         await handler(req, res);
       },
@@ -330,7 +338,8 @@ describe('Email digest', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
+          gameId: GameId.PATHOLOGY,
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
@@ -341,7 +350,7 @@ describe('Email digest', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestGuest;
 
         await handler(req, res);
       },

@@ -1,3 +1,5 @@
+import { GameId } from '@root/constants/GameId';
+import { NextApiRequestGuest } from '@root/helpers/apiWrapper';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';
 import { Types } from 'mongoose';
@@ -26,6 +28,7 @@ enableFetchMocks();
 
 const DefaultReq = {
   method: 'GET',
+  gameId: GameId.PATHOLOGY,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -71,9 +74,9 @@ describe('GET /api/level-of-day', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
           ...DefaultReq,
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestGuest;
 
         await handler(req, res);
       },
@@ -102,9 +105,9 @@ describe('GET /api/level-of-day', () => {
     MockDate.set(MOCK_DATE);
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
           ...DefaultReq,
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestGuest;
 
         await handler(req, res);
       },
@@ -131,12 +134,12 @@ describe('GET /api/level-of-day', () => {
     MockDate.set(MOCK_DATE);
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
           ...DefaultReq,
           cookies: {
             token: getTokenCookieValue(TestId.USER),
           }
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestGuest;
 
         await handler(req, res);
       },
@@ -175,9 +178,9 @@ describe('GET /api/level-of-day', () => {
     });
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
           ...DefaultReq,
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestGuest;
 
         await handler(req, res);
       },
@@ -212,12 +215,12 @@ describe('GET /api/level-of-day', () => {
     MockDate.set(day2);
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
           ...DefaultReq,
           cookies: {
             token: getTokenCookieValue(TestId.USER),
           }
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestGuest;
 
         await handler(req, res);
       },
@@ -254,9 +257,9 @@ describe('GET /api/level-of-day', () => {
     MockDate.set(day3);
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
           ...DefaultReq,
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestGuest;
 
         await handler(req, res);
       },
@@ -283,9 +286,9 @@ describe('GET /api/level-of-day', () => {
     });
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
           ...DefaultReq,
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestGuest;
 
         await handler(req, res);
       },
