@@ -329,14 +329,13 @@ export default withAuth({
           throw new Error('Level ' + levelId + ' not found within transaction');
         }
 
-        await Promise.all([
-          // TODO: wonder if there is a way to get calc_difficulty_estimate updated in the same query as the level update above for enrichedLevel
-          LevelModel.findByIdAndUpdate(level._id, {
-            $set: {
-              calc_difficulty_estimate: getDifficultyEstimate(enrichedLevel, enrichedLevel.calc_playattempts_unique_users_count ?? 0),
-            },
-          }, { session: session }),
-          queueRefreshIndexCalcs(level._id, { session: session })]);
+        await LevelModel.findByIdAndUpdate(level._id, {
+          $set: {
+            calc_difficulty_estimate: getDifficultyEstimate(enrichedLevel, enrichedLevel.calc_playattempts_unique_users_count ?? 0),
+          },
+        }, { session: session }),
+
+        await queueRefreshIndexCalcs(level._id, { session: session });
       });
 
       resTrack.status = 200;
