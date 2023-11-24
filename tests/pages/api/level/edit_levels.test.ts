@@ -1,7 +1,6 @@
 import AchievementType from '@root/constants/achievements/achievementType';
 import Direction from '@root/constants/direction';
 import { GameId } from '@root/constants/GameId';
-import Collection from '@root/models/db/collection';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types, UpdateQuery } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -12,7 +11,7 @@ import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Level from '../../../../models/db/level';
-import { AchievementModel, CollectionModel, LevelModel, QueueMessageModel } from '../../../../models/mongoose';
+import { AchievementModel, LevelModel, QueueMessageModel } from '../../../../models/mongoose';
 import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
 import editLevelHandler from '../../../../pages/api/edit/[id]';
 import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';

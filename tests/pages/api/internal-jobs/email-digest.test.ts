@@ -1,7 +1,6 @@
 import { GameId } from '@root/constants/GameId';
 import { NextApiRequestGuest } from '@root/helpers/apiWrapper';
 import { enableFetchMocks } from 'jest-fetch-mock';
-import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import { EmailDigestSettingTypes, EmailType } from '../../../../constants/emailDigest';

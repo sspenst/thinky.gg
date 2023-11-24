@@ -1,4 +1,3 @@
-import { GameId } from '@root/constants/GameId';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidType } from '../../../helpers/apiWrapper';
