@@ -1,3 +1,5 @@
+import { GameId } from '@root/constants/GameId';
+import { NextApiRequestGuest } from '@root/helpers/apiWrapper';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { NextApiRequest } from 'next';
@@ -27,8 +29,9 @@ describe('avatar test', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
           method: 'POST',
+          gameId: GameId.PATHOLOGY,
           headers: {
             'content-type': 'application/json',
           },
@@ -50,7 +53,8 @@ describe('avatar test', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
+          gameId: GameId.PATHOLOGY,
           method: 'GET',
           headers: {
             'content-type': 'application/json',
@@ -73,7 +77,8 @@ describe('avatar test', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
+          gameId: GameId.PATHOLOGY,
           method: 'GET',
           query: {
 
@@ -99,7 +104,8 @@ describe('avatar test', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
+          gameId: GameId.PATHOLOGY,
           method: 'GET',
           query: {
             id: 'bad id',
@@ -123,7 +129,8 @@ describe('avatar test', () => {
   test('Calling with correct http method with query but valid id but not exist should fail', async () => {
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
+          gameId: GameId.PATHOLOGY,
           method: 'GET',
           query: {
             id: new Types.ObjectId().toString(),
@@ -147,7 +154,8 @@ describe('avatar test', () => {
   test('Calling with correct http method with query but correct id should work', async () => {
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
+          gameId: GameId.PATHOLOGY,
           method: 'GET',
           query: {
             id: TestId.USER,
@@ -178,7 +186,8 @@ describe('avatar test', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
+          gameId: GameId.PATHOLOGY,
           method: 'GET',
           query: {
             id: TestId.USER,
