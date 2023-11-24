@@ -120,6 +120,9 @@ export default function CollectionScrollList({ collection, onLoading, onLevelsCh
 
   useEffect(() => {
     if (collection.type === CollectionType.InMemory) {
+      setNoMoreAbove(true);
+      setNoMoreBelow(true);
+
       return;
     }
 
