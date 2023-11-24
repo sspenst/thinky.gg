@@ -344,6 +344,7 @@ export function getEnrichNotificationPipelineStages(reqUser?: User) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function enrichReqUser(reqUser: User, filters?: any): Promise<ReqUser> {
+  const bench = Date.now();
   const enrichedReqUser: ReqUser = JSON.parse(JSON.stringify(reqUser)) as ReqUser;
 
   const notificationAgg = await NotificationModel.aggregate<Notification>([
@@ -364,6 +365,8 @@ export async function enrichReqUser(reqUser: User, filters?: any): Promise<ReqUs
   });
 
   enrichedReqUser.notifications = notificationAgg;
+
+  console.log('enrichReq time taken ', Date.now() - bench, 'ms');
 
   return enrichedReqUser;
 }

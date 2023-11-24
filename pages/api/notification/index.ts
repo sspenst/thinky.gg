@@ -1,18 +1,43 @@
+import cleanUser from '@root/lib/cleanUser';
+import Notification from '@root/models/db/notification';
+import User from '@root/models/db/user';
 import { NextApiResponse } from 'next';
 import { ValidObjectIdArray, ValidType } from '../../../helpers/apiWrapper';
-import { enrichReqUser } from '../../../helpers/enrich';
+import { enrichReqUser, getEnrichNotificationPipelineStages } from '../../../helpers/enrich';
 import { logger } from '../../../helpers/logger';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { NotificationModel } from '../../../models/mongoose';
 
 // GET api/notifications returns a mobile notification
 export default withAuth({
+  GET: {},
   PUT: {
     body: {
       ids: ValidObjectIdArray(),
       read: ValidType('boolean'),
     }
   } }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+  if (req.method === 'GET') {
+    const notificationAgg = await NotificationModel.aggregate<Notification>([
+      { $match: { userId: req.user._id } },
+      { $sort: { createdAt: -1 } },
+      { $limit: 5 },
+      ...getEnrichNotificationPipelineStages(req.user)
+    ]);
+
+    notificationAgg.forEach(notification => {
+      if (notification.sourceModel === 'User' && notification.source) {
+        cleanUser(notification.source as User);
+      }
+
+      if (notification.targetModel === 'User' && notification.target) {
+        cleanUser(notification.target as User);
+      }
+    });
+
+    return res.status(200).json(notificationAgg);
+  }
+
   if (req.method === 'PUT') {
     const { ids, read } = req.body;
 

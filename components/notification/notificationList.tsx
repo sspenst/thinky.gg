@@ -3,16 +3,18 @@ import React, { useCallback, useContext } from 'react';
 import toast from 'react-hot-toast';
 import { AppContext } from '../../contexts/appContext';
 import Notification from '../../models/db/notification';
+import LoadingSpinner from '../page/loadingSpinner';
 import FormattedNotification from './formattedNotification';
 import styles from './NotificationList.module.css';
 
 interface NotificationListProps {
   close?: () => void;
+  isLoading?: boolean;
   notifications: Notification[];
   setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>;
 }
 
-export default function NotificationList({ close, notifications, setNotifications }: NotificationListProps) {
+export default function NotificationList({ close, isLoading, notifications, setNotifications }: NotificationListProps) {
   const { mutateUser } = useContext(AppContext);
 
   const putNotification = useCallback((notifications: Notification[], read: boolean) => {
@@ -83,7 +85,7 @@ export default function NotificationList({ close, notifications, setNotification
     <div className='px-3 py-2 flex flex-col gap-2'>
       <div className='flex flex-cols-2 justify-between gap-2'>
         <h2 className='focus:outline-none text-xl font-semibold'>Notifications</h2>
-        <button
+        { !isLoading && <button
           disabled={!anyUnread}
           className={classNames(
             'focus:outline-none text-sm',
@@ -104,11 +106,18 @@ export default function NotificationList({ close, notifications, setNotification
         >
           Mark all read
         </button>
+        }
       </div>
+
       {formattedNotifications().length > 0 ?
         formattedNotifications() :
-        <p className='text-sm pt-2 justify-center flex'>No notifications!</p>
+        (!isLoading && <p className='text-sm pt-2 justify-center flex'>No notifications!</p>)
       }
+      { isLoading && (
+        <div className='flex justify-center m-2'>
+          <LoadingSpinner />
+        </div>
+      )}
     </div>
   );
 }

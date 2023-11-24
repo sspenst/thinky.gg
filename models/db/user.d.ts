@@ -24,6 +24,7 @@ interface User {
 }
 
 export interface ReqUser extends User {
+  unreadNotifCount: number;
   config: UserConfig;
   multiplayerProfile?: MultiplayerProfile;
   notifications: Notification[];

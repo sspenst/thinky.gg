@@ -39,11 +39,13 @@ export default withAuth({
   await dbConnect();
 
   if (req.method === 'GET') {
-    const [enrichedUser, multiplayerProfile, userConfig] = await Promise.all([
-      enrichReqUser(req.user),
+    const [countUnread, multiplayerProfile, userConfig] = await Promise.all([
+      //NotificationModel.countDocuments({ userId: req.user._id, read: false }).lean<number>(),
+      0,
       MultiplayerProfileModel.findOne({ 'userId': req.user._id }).lean<MultiplayerProfile>(),
       getUserConfig(req.gameId, req.user),
     ]);
+    const enrichedUser = { ...req.user, unreadNotifCount: countUnread };
 
     cleanUser(enrichedUser);
 

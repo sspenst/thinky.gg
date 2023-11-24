@@ -55,5 +55,6 @@ const NotificationSchema = new mongoose.Schema<Notification>({
 
 // add index for userId, createdAt, read
 NotificationSchema.index({ userId: 1, createdAt: -1, read: 1 });
+NotificationSchema.index({ read: 1, createdAt: -1 });
 
 export default NotificationSchema;
