@@ -166,11 +166,11 @@ export default withAuth({ POST: {
       }
 
       await Promise.all([
-        queueRefreshAchievements(req.user._id, [AchievementCategory.CREATOR], { session: session }),
+        queueRefreshAchievements(level.gameId, req.user._id, [AchievementCategory.CREATOR], { session: session }),
         queueRefreshIndexCalcs(level._id, { session: session }),
         queueCalcPlayAttempts(level._id, { session: session }),
         queueCalcCreatorCounts(req.user._id, { session: session }),
-        createNewLevelNotifications(new Types.ObjectId(req.userId), level._id, undefined, { session: session }),
+        createNewLevelNotifications(level.gameId, new Types.ObjectId(req.userId), level._id, undefined, { session: session }),
         queueDiscordWebhook(Discord.Levels, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`, { session: session }),
       ]);
     });

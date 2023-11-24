@@ -23,6 +23,7 @@ afterEach(() => {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const defaultReq: any = {
   method: 'POST',
+  gameId: GameId.PATHOLOGY,
   cookies: {
     token: getTokenCookieValue(TestId.USER),
   },

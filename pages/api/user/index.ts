@@ -2,6 +2,7 @@ import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
 import isGuest from '@root/helpers/isGuest';
 import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmationEmail';
 import Collection from '@root/models/db/collection';
+import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
 import bcrypt from 'bcryptjs';
@@ -40,8 +41,8 @@ export default withAuth({
   if (req.method === 'GET') {
     const [enrichedUser, multiplayerProfile, userConfig] = await Promise.all([
       enrichReqUser(req.user),
-      MultiplayerProfileModel.findOne({ 'userId': req.user._id }),
-      getUserConfig(req.user),
+      MultiplayerProfileModel.findOne({ 'userId': req.user._id }).lean<MultiplayerProfile>(),
+      getUserConfig(req.gameId, req.user),
     ]);
 
     cleanUser(enrichedUser);

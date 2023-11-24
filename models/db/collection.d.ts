@@ -27,6 +27,7 @@ interface Collection {
 
 export interface EnrichedCollection extends Collection {
   levelCount: number;
+  targetLevelIndex?: number,
   userSolvedCount: number;
 }
 

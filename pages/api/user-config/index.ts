@@ -1,4 +1,5 @@
 import { EmailDigestSettingTypes } from '@root/constants/emailDigest';
+import { GameId } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
 import Role from '@root/constants/role';
 import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
@@ -13,7 +14,7 @@ import { ValidArray, ValidNumber, ValidType } from '../../../helpers/apiWrapper'
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { UserConfigModel } from '../../../models/mongoose';
 
-export function getNewUserConfig(roles: Role[], tutorialCompletedAt: number, userId: Types.ObjectId, params?: Partial<UserConfig>) {
+export function getNewUserConfig(gameId: GameId, roles: Role[], tutorialCompletedAt: number, userId: Types.ObjectId, params?: Partial<UserConfig>) {
   let emailDigest = EmailDigestSettingTypes.DAILY;
 
   if (roles.includes(Role.GUEST)) {
@@ -31,6 +32,7 @@ export function getNewUserConfig(roles: Role[], tutorialCompletedAt: number, use
 
   return {
     _id: new Types.ObjectId(),
+    gameId: gameId,
     disallowedEmailNotifications: disallowedEmailNotifications,
     disallowedPushNotifications: [],
     emailConfirmed: false,
@@ -43,11 +45,11 @@ export function getNewUserConfig(roles: Role[], tutorialCompletedAt: number, use
   } as Partial<UserConfig>;
 }
 
-export async function getUserConfig(user: User) {
+export async function getUserConfig(gameId: GameId, user: User) {
   let userConfig = await UserConfigModel.findOne({ userId: user._id }, { '__v': 0 }).lean<UserConfig>();
 
   if (!userConfig) {
-    userConfig = await UserConfigModel.create(getNewUserConfig(user.roles, 0, user._id));
+    userConfig = await UserConfigModel.create(getNewUserConfig(gameId, user.roles, 0, user._id));
   }
 
   return userConfig;
@@ -70,7 +72,7 @@ export default withAuth({
   },
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
-    const userConfig = await getUserConfig(req.user);
+    const userConfig = await getUserConfig(req.gameId, req.user);
 
     return res.status(200).json(userConfig);
   } else if (req.method === 'PUT') {
