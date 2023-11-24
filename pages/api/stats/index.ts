@@ -226,25 +226,27 @@ export default withAuth({
           // keep track of all playtime after the record was set
 
           // reset all playattempts to unsolved
-          const [sumDuration] = await Promise.all([
-            await PlayAttemptModel.aggregate([
-              {
-                $match: {
-                  levelId: level._id,
-                  attemptContext: AttemptContext.SOLVED,
-                }
-              },
-              {
-                $group: {
-                  _id: null,
-                  sumDuration: {
-                    $sum: {
-                      $subtract: ['$endTime', '$startTime']
-                    }
+          const sumDuration = await PlayAttemptModel.aggregate([
+            {
+              $match: {
+                levelId: level._id,
+                attemptContext: AttemptContext.SOLVED,
+              }
+            },
+            {
+              $group: {
+                _id: null,
+                sumDuration: {
+                  $sum: {
+                    $subtract: ['$endTime', '$startTime']
                   }
                 }
               }
-            ], { session: session }),
+            }
+          ], { session: session });
+
+          await Promise.all([
+
             PlayAttemptModel.updateMany(
               { levelId: level._id },
               { $set: { attemptContext: AttemptContext.UNSOLVED } },
