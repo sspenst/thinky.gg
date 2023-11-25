@@ -54,8 +54,6 @@ let GlobalSocketIO: Server;
 async function authenticateSocket(socket: any, next: (err?: Error) => void) {
   const cookies = socket.handshake.headers.cookie;
 
-  console.log('Trying to authenticate');
-
   if (!cookies) {
     logger.error('No cookies found in socket handshake');
 
