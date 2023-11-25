@@ -19,7 +19,7 @@ beforeAll(async () => {
   const promises = [];
 
   for (let i = 0; i < 30; i++) {
-    promises.push(createNewReviewOnYourLevelNotification(GameId.PATHOLOGY, TestId.USER, TestId.USER_B, new Types.ObjectId(), 'id ' + i));
+    promises.push(createNewReviewOnYourLevelNotification(GameId.PATHOLOGY, new Types.ObjectId(TestId.USER), new Types.ObjectId(TestId.USER_B), new Types.ObjectId(), 'id ' + i));
   }
 
   await Promise.all(promises);

@@ -1,11 +1,11 @@
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import { GameId } from '@root/constants/GameId';
+import { getEnrichNotificationPipelineStages } from '@root/helpers/getEnrichNotificationPipelineStages';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
 import UserConfig from '@root/models/db/userConfig';
 import mongoose, { ClientSession, QueryOptions, Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
-import { getEnrichNotificationPipelineStages } from '../../../../helpers/enrich';
 import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
 import Notification from '../../../../models/db/notification';

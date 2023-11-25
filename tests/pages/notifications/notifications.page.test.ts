@@ -13,11 +13,11 @@ beforeAll(async () => {
 
   for (let i = 0; i < 30; i++) {
     MockDate.set(Date.now() + 1);
-    await createNewReviewOnYourLevelNotification(GameId.PATHOLOGY, TestId.USER, TestId.USER_B, new Types.ObjectId(), 'id ' + i, true);
+    await createNewReviewOnYourLevelNotification(GameId.PATHOLOGY, new Types.ObjectId(TestId.USER), new Types.ObjectId(TestId.USER_B), new Types.ObjectId(), 'id ' + i, true);
   }
 
   MockDate.set(Date.now() + 1);
-  await createNewReviewOnYourLevelNotification(GameId.PATHOLOGY, TestId.USER, TestId.USER_B, TestId.LEVEL, 'test level id');
+  await createNewReviewOnYourLevelNotification(GameId.PATHOLOGY, new Types.ObjectId(TestId.USER), new Types.ObjectId(TestId.USER_B), TestId.LEVEL, 'test level id');
 });
 afterEach(() => {
   jest.restoreAllMocks();
