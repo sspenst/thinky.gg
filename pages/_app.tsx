@@ -6,11 +6,12 @@ import { Portal } from '@headlessui/react';
 import MusicContextProvider from '@root/contexts/musicContext';
 import useDeviceCheck from '@root/hooks/useDeviceCheck';
 import Collection from '@root/models/db/collection';
+import Notification from '@root/models/db/notification';
 import { NextPageContext } from 'next';
 import type { AppProps } from 'next/app';
 import { Rubik, Teko } from 'next/font/google';
 import Head from 'next/head';
-import Router, { useRouter } from 'next/router';
+import { Router, useRouter } from 'next/router';
 import { DefaultSeo } from 'next-seo';
 import { ThemeProvider } from 'next-themes';
 import nProgress from 'nprogress';
@@ -25,7 +26,7 @@ import { AppContext } from '../contexts/appContext';
 import useUser from '../hooks/useUser';
 import { MultiplayerMatchState } from '../models/constants/multiplayer';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
-import User, { UserWithMultiplayerProfile } from '../models/db/user';
+import User, { ReqUser, UserWithMultiplayerProfile } from '../models/db/user';
 
 export const rubik = Rubik({ display: 'swap', subsets: ['latin'] });
 export const teko = Teko({ display: 'swap', subsets: ['latin'], weight: '500' });
@@ -80,7 +81,8 @@ MyApp.getInitialProps = async ({ ctx }: { ctx: NextPageContext }) => {
 export default function MyApp({ Component, pageProps, userAgent }: AppProps & { userAgent: string }) {
   const deviceInfo = useDeviceCheck(userAgent);
   const forceUpdate = useForceUpdate();
-  const { isLoading, mutateUser, user } = useUser();
+  const { user, isLoading, mutateUser } = useUser();
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [multiplayerSocket, setMultiplayerSocket] = useState<MultiplayerSocket>({
     connectedPlayers: [],
     connectedPlayersCount: 0,
@@ -185,6 +187,12 @@ export default function MyApp({ Component, pageProps, userAgent }: AppProps & { 
       autoConnect: hasPortInUrl ? false : true,
     });
 
+    socketConn.on('notifications', (notifications: Notification[]) => {
+      setNotifications(notifications);
+    });
+    socketConn.on('killSocket', () => {
+      socketConn.disconnect();
+    });
     socketConn.on('connectedPlayers', (connectedPlayers: {
       count: number;
       users: UserWithMultiplayerProfile[];
@@ -404,10 +412,12 @@ export default function MyApp({ Component, pageProps, userAgent }: AppProps & { 
         <AppContext.Provider value={{
           deviceInfo: deviceInfo,
           forceUpdate: forceUpdate,
+          notifications: notifications,
           multiplayerSocket: multiplayerSocket,
           mutatePlayLater: mutatePlayLater,
           mutateUser: mutateUser,
           playLater: playLater,
+          setNotifications: setNotifications,
           setShouldAttemptAuth: setShouldAttemptAuth,
           setTempCollection: setTempCollection,
           setTheme: setTheme,

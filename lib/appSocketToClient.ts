@@ -1,7 +1,7 @@
 import { Emitter } from '@socket.io/mongo-emitter';
 import { Mongoose, Types } from 'mongoose';
 import { logger } from '../helpers/logger';
-import { broadcastMatch, broadcastMatches, broadcastPrivateAndInvitedMatches, clearBroadcastMatchSchedule, scheduleBroadcastMatch } from '../server/socket/socketFunctions';
+import { broadcastKillSocket, broadcastMatch, broadcastMatches, broadcastNotifications, broadcastPrivateAndInvitedMatches, clearBroadcastMatchSchedule, scheduleBroadcastMatch } from '../server/socket/socketFunctions';
 
 export async function GenMongoWSEmitter(mongooseConnection: Mongoose) {
   if (global.MongoEmitter) {
@@ -62,4 +62,24 @@ export async function requestClearBroadcastMatchSchedule(matchId: string) {
   }
 
   await clearBroadcastMatchSchedule(matchId);
+}
+
+export async function requestBroadcastNotifications(userId: Types.ObjectId) {
+  if (!global.MongoEmitter) {
+    logger.warn('App Server asked itself to broadcast notifications but MongoEmitter is not created');
+
+    return;
+  }
+
+  await broadcastNotifications(global.MongoEmitter, userId);
+}
+
+export async function requestKillSocket(userId: Types.ObjectId) {
+  if (!global.MongoEmitter) {
+    logger.warn('App Server asked itself to kill socket but MongoEmitter is not created');
+
+    return;
+  }
+
+  await broadcastKillSocket(global.MongoEmitter, userId);
 }

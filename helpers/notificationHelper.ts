@@ -1,4 +1,5 @@
 import { GameId } from '@root/constants/GameId';
+import { requestBroadcastNotifications } from '@root/lib/appSocketToClient';
 import Level from '@root/models/db/level';
 import Notification from '@root/models/db/notification';
 import User from '@root/models/db/user';
@@ -30,6 +31,7 @@ export async function createNewAdminMessageNotifications(gameId: GameId, userIds
 
   await NotificationModel.insertMany(notifications, { session: session });
   await bulkQueuePushNotification(notificationIds, session);
+  await Promise.all(userIds.map(userId => requestBroadcastNotifications(userId)));
 
   return notifications;
 }
@@ -52,7 +54,10 @@ export async function createNewWallPostNotification(gameId: GameId, type: Notifi
       read: false,
     }]),
     queuePushNotification(id),
+
   ]);
+
+  await requestBroadcastNotifications(new Types.ObjectId(userId)); // needs to happen after creating the notif
 
   return notification;
 }
@@ -80,7 +85,10 @@ export async function createNewProUserNotification(gameId: GameId, userId: strin
     new: true,
   });
 
-  await queuePushNotification(notification._id);
+  await Promise.all([
+    queuePushNotification(notification._id),
+    requestBroadcastNotifications(new Types.ObjectId(userId)),
+  ]);
 
   return notification;
 }
@@ -107,10 +115,13 @@ export async function createNewFollowerNotification(gameId: GameId, follower: st
     new: true,
   });
 
-  await queuePushNotification(notification._id);
+  await Promise.all([
+    queuePushNotification(notification._id),
+    requestBroadcastNotifications(new Types.ObjectId(following)),
+  ]);
 }
 
-export async function createNewReviewOnYourLevelNotification(gameId: GameId, levelUserId: string | Types.ObjectId, sourceUserId: string | Types.ObjectId, targetLevelId: string | Types.ObjectId, score: string, hasText?: boolean) {
+export async function createNewReviewOnYourLevelNotification(gameId: GameId, levelUserId: Types.ObjectId, sourceUserId: string | Types.ObjectId, targetLevelId: string | Types.ObjectId, score: string, hasText?: boolean) {
   // should not create a notification if the user is reviewing their own level
   if (sourceUserId.toString() === levelUserId.toString()) {
     return null;
@@ -138,7 +149,10 @@ export async function createNewReviewOnYourLevelNotification(gameId: GameId, lev
     new: true,
   });
 
-  await queuePushNotification(notification._id);
+  await Promise.all([
+    queuePushNotification(notification._id),
+    requestBroadcastNotifications(levelUserId as Types.ObjectId),
+  ]);
 
   return notification;
 }
@@ -179,7 +193,10 @@ export async function createNewAchievement(gameId: GameId, achievementType: Achi
   });
 
   if (!disablePushNotification) {
-    await queuePushNotification(notification._id);
+    await Promise.all([
+      queuePushNotification(notification._id),
+      requestBroadcastNotifications(userId),
+    ]);
   }
 
   return achievement;
@@ -208,8 +225,11 @@ export async function createNewLevelAddedToCollectionNotification(gameId: GameId
 
   const [nm,] = await Promise.all([
     await NotificationModel.create(createRecords),
-    ...ids.map(id => queuePushNotification(id))
+    ...ids.map(id => queuePushNotification(id)),
+
   ]);
+
+  await requestBroadcastNotifications(new Types.ObjectId(level.userId)); // needs to happen after creating the notif
 
   return nm;
 }
@@ -245,8 +265,10 @@ export async function createNewLevelNotifications(gameId: GameId, userIdWhoCreat
   // TODO: can probably generate all the ids in the above map and then wrap in a Promise.all
   const [nm,] = await Promise.all([
     await NotificationModel.create(createRecords, options),
-    ...ids.map(id => queuePushNotification(id))
+    ...ids.map(id => queuePushNotification(id)),
   ]);
+
+  await Promise.all(usersThatFollow.map(user => requestBroadcastNotifications(user.source._id))); // needs to happen after creating the notif
 
   return nm;
 }
@@ -273,8 +295,11 @@ export async function createNewRecordOnALevelYouSolvedNotifications(gameId: Game
 
   const [nm, ] = await Promise.all([
     NotificationModel.create(createRecords, options),
-    ...ids.map(id => queuePushNotification(id))
+    ...ids.map(id => queuePushNotification(id)),
+
   ]);
+
+  await Promise.all(userIds.map(userId => requestBroadcastNotifications(new Types.ObjectId(userId)))); // needs to happen after creating the notif
 
   return nm;
 }

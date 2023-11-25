@@ -95,12 +95,12 @@ describe('Notifications', () => {
     const n1: Notification[] = await createNewRecordOnALevelYouSolvedNotifications(GameId.PATHOLOGY, [TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah') as Notification[];
 
     MockDate.set(Date.now() + ONE_DAY);
-    const n2 = await createNewReviewOnYourLevelNotification(GameId.PATHOLOGY, TestId.USER, TestId.USER_B, TestId.LEVEL, '4') as Notification;
+    const n2 = await createNewReviewOnYourLevelNotification(GameId.PATHOLOGY, new Types.ObjectId(TestId.USER), new Types.ObjectId(TestId.USER_B), TestId.LEVEL, '4') as Notification;
 
     expect(new Date(n1[0].updatedAt).getTime()).toBeLessThan(new Date(n2.updatedAt).getTime());
 
     // reviewing your own level should be null
-    const nullNotif = await createNewReviewOnYourLevelNotification(GameId.PATHOLOGY, TestId.USER_B, TestId.USER_B, TestId.LEVEL, '4');
+    const nullNotif = await createNewReviewOnYourLevelNotification(GameId.PATHOLOGY, new Types.ObjectId(TestId.USER_B), new Types.ObjectId(TestId.USER_B), TestId.LEVEL, '4');
 
     expect(nullNotif).toBeNull();
 

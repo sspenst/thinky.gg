@@ -3,6 +3,7 @@ import NotificationType from '@root/constants/notificationType';
 import { createNewFollowerNotification, createNewReviewOnYourLevelNotification } from '@root/helpers/notificationHelper';
 import { processQueueMessages } from '@root/pages/api/internal-jobs/worker';
 import { enableFetchMocks } from 'jest-fetch-mock';
+import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { EmailDigestSettingTypes } from '../../../../constants/emailDigest';
 import TestId from '../../../../constants/testId';
@@ -94,7 +95,7 @@ describe('account settings notification preferences', () => {
     originalSendPush.sendPushNotification = jest.fn().mockImplementation(() => {
       // do nothing
     });
-    await createNewReviewOnYourLevelNotification(GameId.PATHOLOGY, TestId.USER, TestId.USER_B, TestId.LEVEL, 'Sample review');
+    await createNewReviewOnYourLevelNotification(GameId.PATHOLOGY, new Types.ObjectId(TestId.USER), new Types.ObjectId(TestId.USER_B), TestId.LEVEL, 'Sample review');
 
     const queueProcessed = await processQueueMessages();
 
