@@ -203,7 +203,7 @@ export async function getCollections({ matchQuery, reqUser, includeDraft, popula
           $size: '$levels'
         },
         userSolvedCount: {
-          $sum: '$levels.stats.complete'
+          $sum: '$levels.complete'
         }
       }
     },
