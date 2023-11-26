@@ -159,7 +159,7 @@ export async function getCollections({ matchQuery, reqUser, includeDraft, popula
                 isDraft: 1
               } : {}),
               ...(populateLevels ? {
-                ...LEVEL_SEARCH_DEFAULT_PROJECTION
+                ...LEVEL_DEFAULT_PROJECTION
               } : {
                 ...LEVEL_SEARCH_DEFAULT_PROJECTION
               })
