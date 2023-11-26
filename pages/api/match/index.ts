@@ -116,18 +116,24 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
           {
             userId: winnerId,
           },
-          {},
+          {
+            userId: winnerId,
+            gameId: finishedMatch.gameId,
+          },
           {
             upsert: true, // create the user if they don't exist
             new: true,
             session: session,
           }
         ).lean<MultiplayerProfile>(),
-        await MultiplayerProfileModel.findOneAndUpdate(
+        MultiplayerProfileModel.findOneAndUpdate(
           {
             userId: loserId,
           },
-          {},
+          {
+            userId: loserId,
+            gameId: finishedMatch.gameId,
+          },
           {
             upsert: true, // create the user if they don't exist
             new: true,
