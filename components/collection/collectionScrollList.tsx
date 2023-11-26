@@ -119,6 +119,9 @@ export default function CollectionScrollList({ collection, onLoading, onLevelsCh
   }, [accumlatedLevels, fetchLevels, isLoading, noMoreAbove, noMoreBelow, onLevelsChange]);
 
   useEffect(() => {
+    setAccumulatedLevels(collection.levels);
+  }, [collection.levels]);
+  useEffect(() => {
     if (collection.type === CollectionType.InMemory) {
       setNoMoreAbove(true);
       setNoMoreBelow(true);
