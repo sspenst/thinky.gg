@@ -235,6 +235,8 @@ export function getEnrichLevelsPipelineSteps(reqUser?: User | null, levelIdField
         'userAttempts': '$stat.attempts',
         'userMoves': '$stat.moves',
         'userMovesTs': '$stat.ts',
+        // complete should be 1 if true, 0 if false
+        'complete': { $cond: [{ $eq: ['$stat.moves', '$leastMoves'] }, 1, 0] }
       }
     }
     );
@@ -248,6 +250,7 @@ export function getEnrichLevelsPipelineSteps(reqUser?: User | null, levelIdField
           'userAttempts': '$stat.attempts',
           'userMoves': '$stat.moves',
           'userMovesTs': '$stat.ts',
+          'complete': { $cond: [{ $eq: ['$stat.moves', '$leastMoves'] }, 1, 0] }
         }
       }
     });
