@@ -31,7 +31,7 @@ export default withAuth({
     await session.withTransaction(async () => {
       const { authorNote, isPrivate, name } = req.body;
       const trimmedName = name.trim();
-      const slug = await generateCollectionSlug(req.user.name, trimmedName, undefined, { session: session });
+      const slug = await generateCollectionSlug(req.gameId, req.user.name, trimmedName, undefined, { session: session });
       const setIsPrivate = isPro(req.user) ? !!isPrivate : false;
 
       if (slug.endsWith('/play-later')) {

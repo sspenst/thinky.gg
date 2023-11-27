@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import { QueryOptions } from 'mongoose';
 import Collection from '../models/db/collection';
 import Level from '../models/db/level';
@@ -7,8 +8,8 @@ async function getLevelBySlug(slug: string, options?: QueryOptions): Promise<Lev
   return await LevelModel.findOne({ slug: slug }, {}, options);
 }
 
-async function getCollectionBySlug(slug: string, options?: QueryOptions): Promise<Collection | null> {
-  return await CollectionModel.findOne({ slug: slug }, {}, options);
+async function getCollectionBySlug(gameId: GameId, slug: string, options?: QueryOptions): Promise<Collection | null> {
+  return await CollectionModel.findOne({ slug: slug, gameId: gameId }, {}, options);
 }
 
 const MAX_SLUGS_WITH_SAME_NAME = process.env.NODE_ENV === 'test' ? 4 : 20;
@@ -24,6 +25,7 @@ function slugify(str: string) {
 }
 
 export async function generateCollectionSlug(
+  gameId: GameId,
   userName: string,
   collectionName: string,
   existingCollectionId?: string,
@@ -34,7 +36,7 @@ export async function generateCollectionSlug(
   let i = 2;
 
   while (i < MAX_SLUGS_WITH_SAME_NAME) {
-    const collection = await getCollectionBySlug(slug, options);
+    const collection = await getCollectionBySlug(gameId, slug, options);
 
     if (!collection) {
       return slug;

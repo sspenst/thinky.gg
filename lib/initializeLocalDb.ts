@@ -329,7 +329,7 @@ export default async function initializeLocalDb() {
         authorNote: 'test collection author note',
         name: 'test collection',
         gameId: GameId.PATHOLOGY,
-        slug: await generateCollectionSlug('test', 'test collection'),
+        slug: await generateCollectionSlug(GameId.PATHOLOGY, 'test', 'test collection'),
         userId: new Types.ObjectId(TestId.USER),
         levels: [new Types.ObjectId(TestId.LEVEL), new Types.ObjectId(TestId.LEVEL_2)]
       },
@@ -338,7 +338,7 @@ export default async function initializeLocalDb() {
         levels: [new Types.ObjectId(TestId.LEVEL), new Types.ObjectId(TestId.LEVEL_2), new Types.ObjectId(TestId.LEVEL_3)],
         name: 'test collection 2',
         gameId: GameId.PATHOLOGY,
-        slug: await generateCollectionSlug('test', 'test collection 2'),
+        slug: await generateCollectionSlug(GameId.PATHOLOGY, 'test', 'test collection 2'),
         userId: new Types.ObjectId(TestId.USER),
       },
       {
@@ -346,7 +346,7 @@ export default async function initializeLocalDb() {
         levels: [new Types.ObjectId(TestId.LEVEL), new Types.ObjectId(TestId.LEVEL_2), new Types.ObjectId(TestId.LEVEL_3)],
         name: 'test collection 3',
         gameId: GameId.PATHOLOGY,
-        slug: await generateCollectionSlug('BBB', 'test collection 3'),
+        slug: await generateCollectionSlug(GameId.PATHOLOGY, 'BBB', 'test collection 3'),
         userId: new Types.ObjectId(TestId.USER_B),
       }
 
@@ -421,7 +421,7 @@ export async function initCollection(userId: string, name: string, obj: Partial<
     authorNote: 'test collection ' + name + ' author note',
     name: name,
     userId: userId,
-    slug: await generateCollectionSlug('test', name),
+    slug: await generateCollectionSlug(GameId.PATHOLOGY, 'test', name),
     ...obj }) as Collection;
 
   return collection;

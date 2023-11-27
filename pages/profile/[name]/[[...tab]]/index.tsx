@@ -118,10 +118,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     reviewsWrittenCount,
   ] = await Promise.all([
     profileTab === ProfileTab.Achievements ? AchievementModel.find<Achievement>({ userId: userId, gameId: gameId }) : [] as Achievement[],
-    AchievementModel.countDocuments({ userId: userId }),
+    AchievementModel.countDocuments({ userId: userId, gameId: gameId }),
     CollectionModel.countDocuments({
       userId: userId,
       ...(!viewingOwnProfile && { isPrivate: { $ne: true } }),
+      gameId: gameId,
     }),
     getFollowData(user._id.toString(), reqUser),
     LevelModel.countDocuments({ isDeleted: { $ne: true }, isDraft: false, userId: userId }),

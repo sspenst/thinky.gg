@@ -122,6 +122,7 @@ export default withAuth(
         {
           userId: req.user._id,
           type: CollectionType.PlayLater,
+          gameId: playLater?.gameId || req.gameId,
         },
         {
           // add to set the id of the level to add to the PlayLater

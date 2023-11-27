@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import { Types } from 'mongoose';
 import { CollectionType } from '../constants/collection';
 import Level, { EnrichedLevel } from './level';
@@ -8,7 +9,7 @@ interface Collection {
   authorNote?: string;
   createdAt: Date;
   isPrivate?: boolean;
-  gameId?: string;
+  gameId: GameId;
   levels: Types.Array<Types.ObjectId & Level> | EnrichedLevel[];
   levelsPopulated?: Types.Array<Types.ObjectId & Level> | EnrichedLevel[]; // virtual
   name: string;
