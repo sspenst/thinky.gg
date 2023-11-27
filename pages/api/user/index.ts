@@ -172,10 +172,11 @@ export default withAuth({
           // Do the same for collections
           const collections = await CollectionModel.find({
             userId: req.userId,
+            gameId: req.gameId,
           }, '_id name', { session: session }).lean<Collection[]>();
 
           for (const collection of collections) {
-            const slug = await generateCollectionSlug(trimmedName, collection.name, collection._id.toString(), { session: session });
+            const slug = await generateCollectionSlug(req.gameId, trimmedName, collection.name, collection._id.toString(), { session: session });
 
             await CollectionModel.updateOne({ _id: collection._id }, { $set: { slug: slug } }, { session: session });
           }

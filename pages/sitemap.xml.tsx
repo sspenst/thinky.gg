@@ -1,6 +1,7 @@
 /** Warning, when we get to a sitemap greater than 50MB we'll need to split up the sitemap
  * as of 10.24.2022 we are at around 78kb so we are good for a while
 */
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { GetServerSidePropsContext } from 'next';
 import getProfileSlug from '../helpers/getProfileSlug';
 import { logger } from '../helpers/logger';
@@ -75,10 +76,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   await dbConnect();
 
+  const gameId = getGameIdFromReq(context.req);
+
   try {
     const allUsers = await UserModel.find({}, 'name').lean<User[]>();
     const allLevels = await LevelModel.find({ isDeleted: { $ne: true }, isDraft: false }, 'slug ts').lean<Level[]>();
-    const allCollections = await CollectionModel.find({ isPrivate: { $ne: true } }, 'slug updatedAt').lean<Collection[]>();
+    const allCollections = await CollectionModel.find({ isPrivate: { $ne: true }, gameId: gameId }, 'slug updatedAt').lean<Collection[]>();
 
     const res = context.res;
     // We generate the XML sitemap with the posts data

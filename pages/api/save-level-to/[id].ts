@@ -57,6 +57,7 @@ export default withAuth({
       isPrivate: { $ne: true },
       levels: { $nin: id },
       userId: req.userId,
+      // don't need gameId because we are searching by ids
     }, {
       _id: 1,
     }).lean<Collection[]>();
