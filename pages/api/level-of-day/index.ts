@@ -97,7 +97,7 @@ export async function getLevelOfDay(reqUser?: User | null) {
     _id: {
       $nin: previouslySelected?.value || [],
     },
-  }, '_id name slug width height data leastMoves calc_difficulty_estimate', {
+  }, '_id gameId name slug width height data leastMoves calc_difficulty_estimate', {
     // sort by calculated difficulty estimate and then by id
     sort: {
       calc_difficulty_estimate: 1,
@@ -147,7 +147,10 @@ export async function getLevelOfDay(reqUser?: User | null) {
       }, { session: session, upsert: true });
 
       await KeyValueModel.updateOne({ key: key }, {
-        $set: { value: new Types.ObjectId(genLevel._id) } }, { session: session, upsert: true });
+        $set: {
+          value: new Types.ObjectId(genLevel._id),
+          gameId: genLevel.gameId,
+        } }, { session: session, upsert: true });
     });
     session.endSession();
   } catch (err) {

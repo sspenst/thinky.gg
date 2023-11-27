@@ -96,6 +96,7 @@ describe('GET /api/level-of-day', () => {
         });
 
         expect(lvlOfDay).toBeDefined();
+        expect(lvlOfDay.gameId).toBe(GameId.PATHOLOGY);
         expect(lvlOfDay?.value).toStrictEqual(new Types.ObjectId(TestId.LEVEL_3));
       },
     });
