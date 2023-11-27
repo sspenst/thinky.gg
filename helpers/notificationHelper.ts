@@ -161,6 +161,7 @@ export async function createNewAchievement(gameId: GameId, achievementType: Achi
   const achievement = await AchievementModel.findOneAndUpdate<Achievement>({
     type: achievementType,
     userId: userId,
+    gameId: gameId,
   }, {
     type: achievementType,
     userId: userId,

@@ -7,6 +7,7 @@ import PlayerRank from '@root/components/profile/playerRank';
 import { ProfileAchievments } from '@root/components/profile/profileAchievements';
 import ProfileMultiplayer from '@root/components/profile/profileMultiplayer';
 import StatFilter from '@root/constants/statFilter';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { getUsersWithMultiplayerProfile } from '@root/helpers/getUsersWithMultiplayerProfile';
 import useSWRHelper from '@root/hooks/useSWRHelper';
 import { MultiplayerMatchState } from '@root/models/constants/multiplayer';
@@ -76,6 +77,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     return { notFound: true };
   }
 
+  const gameId = getGameIdFromReq(context.req);
   const { name, tab } = context.params as ProfileParams;
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
@@ -115,7 +117,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     reviewsReceivedCount,
     reviewsWrittenCount,
   ] = await Promise.all([
-    profileTab === ProfileTab.Achievements ? AchievementModel.find<Achievement>({ userId: userId }) : [] as Achievement[],
+    profileTab === ProfileTab.Achievements ? AchievementModel.find<Achievement>({ userId: userId, gameId: gameId }) : [] as Achievement[],
     AchievementModel.countDocuments({ userId: userId }),
     CollectionModel.countDocuments({
       userId: userId,

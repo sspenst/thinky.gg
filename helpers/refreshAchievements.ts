@@ -72,7 +72,7 @@ export async function refreshAchievements(gameId: GameId, userId: Types.ObjectId
   const [user, neededDataArray, allAchievements] = await Promise.all([
     UserModel.findById(userId, { _id: 1, name: 1 }).lean<User>(), // TODO: this is a dup of query for USER achievement types and for any achievement without a discord notif... but maybe not a huge deal
     Promise.all(fetchPromises),
-    AchievementModel.find({ userId: userId }, { type: 1, }).lean<Achievement[]>(),
+    AchievementModel.find({ userId: userId, gameId: gameId }, { type: 1, }).lean<Achievement[]>(),
   ]);
   // neededDataArray is an array of objects with unique keys. Let's combine into one big object
   const neededData = neededDataArray.reduce((acc, cur) => ({ ...acc, ...cur }), {});
