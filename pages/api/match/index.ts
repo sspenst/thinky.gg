@@ -238,8 +238,8 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
           }
         ).lean<MultiplayerMatch>(),
         // TODO: Dont hardcode pathology, figure out what game we are connected to
-        queueRefreshAchievements(GameId.PATHOLOGY, new Types.ObjectId(winnerId), [AchievementCategory.MULTIPLAYER]),
-        queueRefreshAchievements(GameId.PATHOLOGY, new Types.ObjectId(loserId), [AchievementCategory.MULTIPLAYER]),
+        queueRefreshAchievements(finishedMatch.gameId, new Types.ObjectId(winnerId), [AchievementCategory.MULTIPLAYER]),
+        queueRefreshAchievements(finishedMatch.gameId, new Types.ObjectId(loserId), [AchievementCategory.MULTIPLAYER]),
       ]);
 
       if (!newFinishedMatch) {

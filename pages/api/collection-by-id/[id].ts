@@ -1,3 +1,4 @@
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import cleanUser from '@root/lib/cleanUser';
 import { LEVEL_DEFAULT_PROJECTION, LEVEL_SEARCH_DEFAULT_PROJECTION } from '@root/models/schemas/levelSchema';
 import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
@@ -20,9 +21,10 @@ export default apiWrapper({
   } }, async (req: NextApiRequest, res: NextApiResponse) => {
   const { id, populateCursor, populateDirection } = req.query;
   const token = req.cookies?.token;
+  const gameId = getGameIdFromReq(req);
   const reqUser = token ? await getUserFromToken(token, req) : null;
   const collection = await getCollection({
-    matchQuery: { _id: new Types.ObjectId(id as string) },
+    matchQuery: { _id: new Types.ObjectId(id as string), gameId: gameId },
     reqUser,
     populateLevels: true,
     ...(populateCursor ? { populateLevelCursor: new Types.ObjectId(populateCursor as string) } : {}),

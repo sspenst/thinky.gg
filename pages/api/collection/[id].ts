@@ -48,6 +48,7 @@ export default withAuth({
       matchQuery: {
         _id: new Types.ObjectId(id as string),
         userId: req.user._id,
+        gameId: req.gameId,
       },
       reqUser: req.user,
       includeDraft: true,
