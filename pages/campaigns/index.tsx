@@ -1,4 +1,5 @@
 import TestId from '@root/constants/testId';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { PipelineStage, Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Image from 'next/image';
@@ -52,6 +53,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
   const token = context.req?.cookies?.token;
+  const gameId = getGameIdFromReq(context.req);
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
 
   const campaignsAgg = await CampaignModel.aggregate([
@@ -59,7 +61,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       $match: {
         _id: {
           $in: campaignInfos.map(campaignInfo => new Types.ObjectId(campaignInfo.id))
-        }
+        },
+        gameId: gameId
       }
     },
     {

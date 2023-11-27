@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import { PipelineStage, Types } from 'mongoose';
 import cleanUser from '../lib/cleanUser';
 import Campaign from '../models/db/campaign';
@@ -17,11 +18,12 @@ export interface CampaignProps {
   totalLevels: number;
 }
 
-export default async function getCampaignProps(reqUser: User, slug: string) {
+export default async function getCampaignProps(gameId: GameId, reqUser: User, slug: string) {
   const campaignAgg = await CampaignModel.aggregate([
     {
       $match: {
         slug: slug,
+        gameId: gameId,
       },
     },
     {

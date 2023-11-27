@@ -31,6 +31,7 @@ afterAll(async () => {
 describe('pages/profile page', () => {
   test('getServerSideProps with no parameters', async () => {
     const context = {
+      // TODO: add subdomain
     };
 
     const ret = await getServerSideProps(context as GetServerSidePropsContext);

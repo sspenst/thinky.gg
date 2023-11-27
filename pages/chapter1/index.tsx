@@ -1,4 +1,5 @@
 import PagePath from '@root/constants/pagePath';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { useTour } from '@root/hooks/useTour';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
@@ -13,6 +14,7 @@ import { getUserFromToken } from '../../lib/withAuth';
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
+  const gameId = getGameIdFromReq(context.req);
 
   if (!reqUser) {
     return {
@@ -23,7 +25,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  return await getCampaignProps(reqUser, 'chapter1');
+  return await getCampaignProps(gameId, reqUser, 'chapter1');
 }
 
 /* istanbul ignore next */

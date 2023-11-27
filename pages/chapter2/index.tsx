@@ -1,3 +1,4 @@
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import React from 'react';
@@ -11,6 +12,7 @@ import { UserModel } from '../../models/mongoose';
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
+  const gameId = getGameIdFromReq(context.req);
 
   if (!reqUser) {
     return {
@@ -24,7 +26,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const chapterUnlocked = reqUser.chapterUnlocked ?? 1;
 
   if (chapterUnlocked === 1) {
-    const { props } = await getCampaignProps(reqUser, 'chapter1');
+    const { props } = await getCampaignProps(gameId, reqUser, 'chapter1');
 
     if (!props) {
       return {
@@ -51,7 +53,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     // TODO: unlock achievement here for completing chapter 1
   }
 
-  return await getCampaignProps(reqUser, 'chapter2');
+  return await getCampaignProps(gameId, reqUser, 'chapter2');
 }
 
 /* istanbul ignore next */

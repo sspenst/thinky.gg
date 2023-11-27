@@ -1,3 +1,4 @@
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { ParsedUrlQuery } from 'querystring';
@@ -51,8 +52,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   const token = context.req?.cookies?.token;
+  const gameId = getGameIdFromReq(context.req);
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
-  const campaign = await CampaignModel.findOne<Campaign>({ slug: slug });
+  const campaign = await CampaignModel.findOne<Campaign>({ slug: slug, gameId: gameId });
 
   if (!campaign) {
     logger.error('CampaignModel.find returned null in pages/campaign');
