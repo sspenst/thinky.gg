@@ -1,6 +1,7 @@
 /* istanbul ignore file */
 import PagePath from '@root/constants/pagePath';
 import { AppContext } from '@root/contexts/appContext';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { useTour } from '@root/hooks/useTour';
 import { CollectionType } from '@root/models/constants/collection';
 import Collection, { EnrichedCollection } from '@root/models/db/collection';
@@ -37,14 +38,14 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { slugName, username } = context.params as LevelUrlQueryParams;
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
-
+  const gameId = getGameIdFromReq(context.req);
   const cid = context.query?.cid as string | undefined;
   // TODO: technically we could get the level from the collection instead of separately querying for it
   // If cid doesn't exist then we can just call getLevelsByUrlPath...
   const [level, collection] = await Promise.all([
     getLevelByUrlPath(username, slugName, reqUser),
     (cid) ? getCollection({
-      matchQuery: { _id: new Types.ObjectId(cid) },
+      matchQuery: { _id: new Types.ObjectId(cid), gameId: gameId },
       reqUser,
       populateLevels: true,
       populateAroundSlug: username + '/' + slugName,

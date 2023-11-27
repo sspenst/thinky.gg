@@ -182,7 +182,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   if (profileTab === ProfileTab.Collections) {
     const collectionsAgg = await getCollections({
-      matchQuery: { userId: user._id },
+      matchQuery: { userId: user._id, gameId: gameId },
       reqUser,
     });
 

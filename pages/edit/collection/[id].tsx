@@ -1,3 +1,4 @@
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { getCollection } from '@root/pages/api/collection-by-id/[id]';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
@@ -19,6 +20,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
   const { id } = context.query;
+  const gameId = getGameIdFromReq(context.req);
 
   if (!reqUser || typeof id !== 'string') {
     return {
@@ -34,6 +36,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       matchQuery: {
         _id: new Types.ObjectId(id as string),
         userId: reqUser._id,
+        gameId: gameId
       },
       reqUser,
       populateLevels: true,
