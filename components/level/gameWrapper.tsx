@@ -104,7 +104,7 @@ export default function GameWrapper({ chapter, collection, setCollection, level,
     }
 
     return <CollectionScrollList onLoading={() => {
-      setDisableNavigation(true);
+      //setDisableNavigation(true); // TODO: re-enable this when we have a better way to handle edge case
     }} onLevelsChange={ (levels: Level[]) => {
       collection.levels = levels;
       setDisableNavigation(false);
