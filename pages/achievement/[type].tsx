@@ -5,6 +5,7 @@ import Page from '@root/components/page/page';
 import DataTable from '@root/components/tables/dataTable';
 import AchievementType from '@root/constants/achievements/achievementType';
 import Dimensions from '@root/constants/dimensions';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import cleanUser from '@root/lib/cleanUser';
 import dbConnect from '@root/lib/dbConnect';
 import { getUserFromToken } from '@root/lib/withAuth';
@@ -28,10 +29,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   const { type } = context.query;
+  const gameId = getGameIdFromReq(context.req);
   const [myAchievement, achievements] = await Promise.all([
-    AchievementModel.findOne({ userId: reqUser._id, type: type as string }),
+    AchievementModel.findOne({ userId: reqUser._id, type: type as string, gameId: gameId, }),
     AchievementModel.aggregate([
-      { $match: { type: type as string } },
+      { $match: { type: type as string, gameId: gameId, } },
       { $sort: { createdAt: -1 } },
       { $limit: 1000 },
       {
