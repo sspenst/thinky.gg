@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import KeyValue from '@root/models/db/keyValue';
 import { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
@@ -20,11 +21,11 @@ export function getLevelOfDayKVKey() {
   return KV_LEVEL_OF_DAY_KEY_PREFIX + new Date(TimerUtil.getTs() * 1000).toISOString().slice(0, 10);
 }
 
-export async function getLevelOfDay(reqUser?: User | null) {
+export async function getLevelOfDay(gameId: GameId, reqUser?: User | null) {
   await dbConnect();
 
   const key = getLevelOfDayKVKey();
-  const levelKV = await KeyValueModel.findOne({ key: key }).lean<KeyValue>();
+  const levelKV = await KeyValueModel.findOne({ key: key, gameId: gameId }).lean<KeyValue>();
 
   if (levelKV) {
     const levelAgg = await LevelModel.aggregate([
@@ -171,7 +172,7 @@ export default apiWrapper({
   const token = req.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, req) : null;
   // Then query the database for the official level of the day collection
-  const levelOfDay = await getLevelOfDay(reqUser);
+  const levelOfDay = await getLevelOfDay(req.gameId, reqUser);
 
   if (!levelOfDay) {
     return res.status(500).json({
