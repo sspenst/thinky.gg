@@ -124,7 +124,7 @@ export default withAuth({ POST: {
       await Promise.all([
         queueRefreshIndexCalcs(levelClone._id, { session: session }),
         queueCalcPlayAttempts(levelClone._id, { session: session }),
-        queueCalcCreatorCounts(level.userId, { session: session }),
+        queueCalcCreatorCounts(level.gameId, level.userId, { session: session }),
         queueDiscordWebhook(Discord.Levels, `**${req.user.name}** unpublished a level: ${level.name}`, { session: session }),
         ...matchesToRebroadcast.map(match => requestBroadcastMatch(match.matchId)),
       ]);

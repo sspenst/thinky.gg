@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import bcrypt from 'bcryptjs';
 import mongoose, { Types } from 'mongoose';
 import Role from '../../constants/role';
@@ -137,9 +138,17 @@ UserSchema.pre('save', function(next) {
   }
 });
 
-export async function calcCreatorCounts(userId: Types.ObjectId, session?: mongoose.ClientSession) {
+export async function calcCreatorCounts(gameId: GameId, userId: Types.ObjectId, session?: mongoose.ClientSession) {
   const levelsCreatedCountAgg = await LevelModel.aggregate([
-    { $match: { isDeleted: { $ne: true }, isDraft: false, userId: userId } },
+    {
+      $match:
+      {
+        isDeleted: { $ne: true },
+        isDraft: false,
+        userId: userId,
+        gameId: gameId
+      }
+    },
     { $count: 'count' },
   ], { session: session });
   const levelsCreatedCount = levelsCreatedCountAgg.length > 0 ? levelsCreatedCountAgg[0].count : 0;

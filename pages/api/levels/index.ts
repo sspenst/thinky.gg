@@ -34,7 +34,8 @@ export default withAuth({
         },
         isDeleted: {
           $ne: true
-        }
+        },
+        gameId: req.gameId,
       },
     },
 

@@ -54,7 +54,7 @@ beforeAll(async () => {
     const id = new Types.ObjectId();
     const leastMvs = (100 + i);
 
-    promises.push(initLevel(usr,
+    promises.push(initLevel(GameId.PATHOLOGY, usr,
       animalNames[(i * i + 171) % animalNames.length] + ' ' + animalNames[i % animalNames.length],
       {
         _id: id,

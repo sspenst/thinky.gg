@@ -258,7 +258,7 @@ describe('api/follow', () => {
 
     // USER is still following USER_C, so we're getting USER_C to publish a level
     const [level, ] = await Promise.all([
-      initLevel(TestId.USER_C, 'notif', {
+      initLevel(GameId.PATHOLOGY, TestId.USER_C, 'notif', {
         data: '43',
         height: 1,
         isDraft: true,

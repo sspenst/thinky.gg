@@ -4,6 +4,7 @@ import { GameId } from '@root/constants/GameId';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types, UpdateQuery } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { skip } from 'node:test';
 import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
@@ -674,6 +675,7 @@ describe('Editing levels should work correctly', () => {
         const response = await res.json();
 
         await processQueueMessages();
+
         // check queue messages for the achievement message
 
         // check to see if we earned an achievement

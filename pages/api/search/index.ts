@@ -1,5 +1,7 @@
+import { GameId } from '@root/constants/GameId';
 import StatFilter from '@root/constants/statFilter';
 import TileType from '@root/constants/tileType';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import isPro from '@root/helpers/isPro';
 import { Aggregate, FilterQuery, PipelineStage, Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
@@ -106,7 +108,7 @@ export type SearchResult = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function doQuery(query: SearchQuery, reqUser?: User | null, projection: any = LEVEL_SEARCH_DEFAULT_PROJECTION) {
+export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User | null, projection: any = LEVEL_SEARCH_DEFAULT_PROJECTION) {
   await dbConnect();
 
   // filter out pro query options from non-pro users
@@ -491,8 +493,9 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
 export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
   await dbConnect();
   const token = req?.cookies?.token;
+  const gameId = getGameIdFromReq(req);
   const reqUser = token ? await getUserFromToken(token, req) : null;
-  const query = await doQuery(req.query as SearchQuery, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, ...{ data: 1, width: 1, height: 1 } });
+  const query = await doQuery(gameId, req.query as SearchQuery, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, ...{ data: 1, width: 1, height: 1 } });
 
   if (!query) {
     return res.status(500).json({

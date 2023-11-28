@@ -161,10 +161,11 @@ export default withAuth({
           const levels = await LevelModel.find({
             userId: req.userId,
             isDeleted: { $ne: true },
+            gameId: req.gameId,
           }, '_id name', { session: session }).lean<Level[]>();
 
           for (const level of levels) {
-            const slug = await generateLevelSlug(trimmedName, level.name, level._id.toString(), { session: session });
+            const slug = await generateLevelSlug(level.gameId, trimmedName, level.name, level._id.toString(), { session: session });
 
             await LevelModel.updateOne({ _id: level._id }, { $set: { slug: slug } }, { session: session });
           }
@@ -214,10 +215,11 @@ export default withAuth({
           userId: req.userId,
           isDeleted: { $ne: true },
           isDraft: false,
+          gameId: req.gameId
         }, '_id name', { session: session }).lean<Level[]>();
 
         for (const level of levels) {
-          const slug = await generateLevelSlug('archive', level.name, level._id.toString(), { session: session });
+          const slug = await generateLevelSlug(level.gameId, 'archive', level.name, level._id.toString(), { session: session });
 
           // TODO: promise.all this?
           await LevelModel.updateOne({ _id: level._id }, { $set: {

@@ -1,5 +1,6 @@
 import { ProfileQueryType } from '@root/constants/profileQueryType';
 import apiWrapper, { ValidCommaSeparated, ValidEnum } from '@root/helpers/apiWrapper';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { getSolvesByDifficultyTable } from '@root/helpers/getSolvesByDifficultyTable';
 import { Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
@@ -13,11 +14,11 @@ export default apiWrapper({
   }
 }, async (req: NextApiRequest, res: NextApiResponse) => {
   const { id: userId, type } = req.query as { id: string, type: string };
-
+  const gameId = getGameIdFromReq(req);
   const typeArray = type.split(',');
 
   const [levelsSolvedByDifficulty, user] = await Promise.all([
-    typeArray.includes(ProfileQueryType.LevelsSolvedByDifficulty) ? getSolvesByDifficultyTable(new Types.ObjectId(userId)) : null,
+    typeArray.includes(ProfileQueryType.LevelsSolvedByDifficulty) ? getSolvesByDifficultyTable(gameId, new Types.ObjectId(userId)) : null,
     typeArray.includes(ProfileQueryType.User) ? getUserById(userId) : null,
   ]);
 

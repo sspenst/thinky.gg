@@ -521,13 +521,13 @@ describe('Testing slugs for levels', () => {
   test('Create 18 levels with same name in DB, so that we can test to make sure the server will not crash. The 19th should crash however.', async () => {
     for (let i = 1; i <= 18; i++) {
       // expect no exceptions
-      const promise = initLevel(TestId.USER, `Sample${'!'.repeat(i)}`);
+      const promise = initLevel(GameId.PATHOLOGY, TestId.USER, `Sample${'!'.repeat(i)}`);
 
       await expect(promise).resolves.toBeDefined();
     }
 
     // Now create one more, it should throw exception
-    const promise = initLevel(TestId.USER, 'Sample');
+    const promise = initLevel(GameId.PATHOLOGY, TestId.USER, 'Sample');
 
     await expect(promise).rejects.toThrow('Couldn\'t generate a unique level slug');
   }, 30000);

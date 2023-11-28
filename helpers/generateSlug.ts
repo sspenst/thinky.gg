@@ -4,7 +4,7 @@ import Collection from '../models/db/collection';
 import Level from '../models/db/level';
 import { CollectionModel, LevelModel } from '../models/mongoose';
 
-async function getLevelBySlug(slug: string, options?: QueryOptions): Promise<Level | null> {
+async function getLevelBySlug(gameId: GameId, slug: string, options?: QueryOptions): Promise<Level | null> {
   return await LevelModel.findOne({ slug: slug }, {}, options);
 }
 
@@ -54,6 +54,7 @@ export async function generateCollectionSlug(
 }
 
 export async function generateLevelSlug(
+  gameId: GameId,
   userName: string,
   levelName: string,
   existingLevelId?: string,
@@ -64,7 +65,7 @@ export async function generateLevelSlug(
   let i = 2;
 
   while (i < 20) {
-    const level = await getLevelBySlug(slug, options);
+    const level = await getLevelBySlug(gameId, slug, options);
 
     if (!level) {
       return slug;

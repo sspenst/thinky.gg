@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import dbConnect from '../lib/dbConnect';
 import Review from '../models/db/review';
 import User from '../models/db/user';
@@ -5,11 +6,11 @@ import { ReviewModel } from '../models/mongoose';
 import { enrichLevels } from './enrich';
 import { logger } from './logger';
 
-export async function getReviewsByUserId(id: string | string[] | undefined, reqUser: User | null = null, queryOptions = {}) {
+export async function getReviewsByUserId(gameId: GameId, id: string | string[] | undefined, reqUser: User | null = null, queryOptions = {}) {
   await dbConnect();
 
   try {
-    const reviews = await ReviewModel.find<Review>({ userId: id, isDeleted: { $ne: true } }, {}, queryOptions)
+    const reviews = await ReviewModel.find<Review>({ userId: id, isDeleted: { $ne: true }, gameId: gameId }, {}, queryOptions)
       .populate('levelId', 'name slug leastMoves').sort({ ts: -1 });
     const levels = reviews.map(review => review.levelId).filter(level => level);
     const enrichedLevels = await enrichLevels(levels, reqUser);
@@ -31,11 +32,11 @@ export async function getReviewsByUserId(id: string | string[] | undefined, reqU
   }
 }
 
-export async function getReviewsByUserIdCount(id: string | string[] | undefined) {
+export async function getReviewsByUserIdCount(gameId: GameId, id: string | string[] | undefined) {
   await dbConnect();
 
   try {
-    const reviews = await ReviewModel.find<Review>({ userId: id, isDeleted: { $ne: true } }).countDocuments();
+    const reviews = await ReviewModel.find<Review>({ userId: id, isDeleted: { $ne: true }, gameId: gameId }).countDocuments();
 
     return reviews;
   } catch (err) {

@@ -27,6 +27,7 @@ console.log('loaded env vars');
 const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
 
 async function integrityCheckLevels(chunks = 1, chunkIndex = 0) {
+  // TODO: should we incorporate gameId here?
   const allLevels = await LevelModel.find({ isDeleted: { $ne: true }, isDraft: false }, '_id', { sort: { ts: -1 } });
 
   const chunk = Math.floor(allLevels.length / chunks);
@@ -203,7 +204,9 @@ async function integrityCheckUsersScore() {
 
     const userBefore = await UserModel.findOneAndUpdate({ _id: user._id }, { $set: { score: scoreForThisUser } }, { new: false });
 
-    await calcCreatorCounts(user._id);
+    const gameId = GameId.PATHOLOGY; // TODO: loop through all games
+
+    await calcCreatorCounts(gameId, user._id);
     const userAfter = await UserModel.findById(user._id);
 
     if (user.score !== scoreForThisUser) {

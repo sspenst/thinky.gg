@@ -774,7 +774,7 @@ describe('pages/api/level/index.ts', () => {
     await Promise.all([
       LevelModel.create({
         _id: test_level_id_delete,
-        GameId: GameId.PATHOLOGY,
+        gameId: GameId.PATHOLOGY,
         authorNote: 'test level X author note',
         data: '40000\n12000\n05000\n67890\nABCD3',
         height: 5,

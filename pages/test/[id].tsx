@@ -1,5 +1,6 @@
 /* istanbul ignore file */
 
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
@@ -15,6 +16,7 @@ import { USER_DEFAULT_PROJECTION } from '../../models/schemas/userSchema';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
+  const gameId = getGameIdFromReq(context.req);
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
   const { id } = context.query;
 
@@ -34,6 +36,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         _id: new Types.ObjectId(id),
         isDraft: true,
         userId: reqUser._id,
+        gameId: gameId
       },
     },
     {

@@ -87,7 +87,7 @@ export default withAuth({
         await session.withTransaction(async () => {
           const trimmedAuthorNote = authorNote?.trim() ?? '';
 
-          const slug = await generateLevelSlug(level.slug.split('/')[0], trimmedName, id as string, { session: session });
+          const slug = await generateLevelSlug(level.gameId, level.slug.split('/')[0], trimmedName, id as string, { session: session });
 
           await LevelModel.updateOne({
             _id: id,

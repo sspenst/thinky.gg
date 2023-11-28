@@ -79,9 +79,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const gameId = getGameIdFromReq(context.req);
 
   try {
-    const allUsers = await UserModel.find({}, 'name').lean<User[]>();
-    const allLevels = await LevelModel.find({ isDeleted: { $ne: true }, isDraft: false }, 'slug ts').lean<Level[]>();
-    const allCollections = await CollectionModel.find({ isPrivate: { $ne: true }, gameId: gameId }, 'slug updatedAt').lean<Collection[]>();
+    const [allUsers, allLevels, allCollections] = await Promise.all([
+      UserModel.find({}, 'name').lean<User[]>(),
+      LevelModel.find({ isDeleted: { $ne: true }, isDraft: false, gameId: gameId }, 'slug ts').lean<Level[]>(),
+      CollectionModel.find({ isPrivate: { $ne: true }, gameId: gameId }, 'slug updatedAt').lean<Collection[]>()
+    ]);
 
     const res = context.res;
     // We generate the XML sitemap with the posts data

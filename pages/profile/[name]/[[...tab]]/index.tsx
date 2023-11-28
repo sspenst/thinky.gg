@@ -127,10 +127,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     getFollowData(user._id.toString(), reqUser),
     LevelModel.countDocuments({ isDeleted: { $ne: true }, isDraft: false, userId: userId }),
     MultiplayerMatchModel.countDocuments({ players: userId, state: MultiplayerMatchState.FINISHED, rated: true }),
-    profileTab === ProfileTab.ReviewsReceived ? getReviewsForUserId(userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
-    profileTab === ProfileTab.ReviewsWritten ? getReviewsByUserId(userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
-    getReviewsForUserIdCount(userId),
-    getReviewsByUserIdCount(userId),
+    profileTab === ProfileTab.ReviewsReceived ? getReviewsForUserId(gameId, userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
+    profileTab === ProfileTab.ReviewsWritten ? getReviewsByUserId(gameId, userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
+    getReviewsForUserIdCount(gameId, userId),
+    getReviewsByUserIdCount(gameId, userId),
   ]);
 
   const profilePageProps = {
@@ -204,7 +204,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
     searchQuery.searchAuthorId = user._id.toString();
 
-    const query = await doQuery(searchQuery, reqUser, {
+    const query = await doQuery(gameId, searchQuery, reqUser, {
       ...LEVEL_DEFAULT_PROJECTION,
       data: 1,
       width: 1,
