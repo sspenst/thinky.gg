@@ -137,7 +137,7 @@ export default withAuth({
     lastLevelPlayed ? getLastLevelPlayed(reqUser) : undefined,
     latestLevels ? getLatestLevels(reqUser) : undefined,
     latestReviews ? getLatestReviews(reqUser) : undefined,
-    levelOfDay ? getLevelOfDay(reqUser) : undefined,
+    levelOfDay ? getLevelOfDay(req.gameId, reqUser) : undefined,
     recommendedLevel ? getRecommendedLevel(reqUser) : undefined,
     topLevelsThisMonth ? getTopLevelsThisMonth(reqUser) : undefined,
   ]);

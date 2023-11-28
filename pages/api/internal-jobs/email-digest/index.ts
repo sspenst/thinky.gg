@@ -1,9 +1,11 @@
 import * as aws from '@aws-sdk/client-ses';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import Discord from '@root/constants/discord';
+import { GameId } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
 import Role from '@root/constants/role';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { convert } from 'html-to-text';
 import { Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
@@ -84,7 +86,7 @@ export async function sendMail(batchId: Types.ObjectId, type: EmailType | Notifi
   return err;
 }
 
-export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFar: string[], limit: number) {
+export async function sendEmailDigests(gameId: GameId, batchId: Types.ObjectId, totalEmailedSoFar: string[], limit: number) {
   const userConfigsAggQ = UserConfigModel.aggregate([{
     $match: {
       emailDigest: {
@@ -218,7 +220,7 @@ export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFa
   ]);
 
   const [levelOfDay, userConfigs] = await Promise.all([
-    getLevelOfDay(),
+    getLevelOfDay(gameId),
     userConfigsAggQ
   ]);
 
@@ -273,13 +275,14 @@ export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFa
   return { sentList, failedList };
 }
 
-export async function sendAutoUnsubscribeUsers(batchId: Types.ObjectId, limit: number) {
+export async function sendAutoUnsubscribeUsers(gameId: GameId, batchId: Types.ObjectId, limit: number) {
   /**
    * here is the rules...
    * 1. If we sent a reactivation email to someone 3 days ago and they still haven't logged on, change their email notifications settings to NONE
    * 1a. Ignore folks that have had a reactivation email sent to them in past 3 days... we should give them a chance to come back and play
    */
-  const levelOfDay = await getLevelOfDay();
+
+  const levelOfDay = await getLevelOfDay(gameId);
 
   const usersThatHaveBeenSentReactivationEmailIn3dAgoOrMore = await EmailLogModel.find({
     state: EmailState.SENT,
@@ -369,10 +372,10 @@ export async function sendAutoUnsubscribeUsers(batchId: Types.ObjectId, limit: n
   return { sentList, failedList };
 }
 
-export async function sendEmailReactivation(batchId: Types.ObjectId, limit: number) {
+export async function sendEmailReactivation(gameId: GameId, batchId: Types.ObjectId, limit: number) {
   // if they haven't been active in 7 days and they have an email address, send them an email, but only once every 90 days
   // get users that haven't been active in 7 days
-  const levelOfDay = await getLevelOfDay();
+  const levelOfDay = await getLevelOfDay(gameId);
   const usersThatHaveBeenSentReactivationInPast90d = await EmailLogModel.find({
     type: EmailType.EMAIL_7D_REACTIVATE,
     createdAt: { $gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000) },
@@ -470,6 +473,7 @@ export default apiWrapper({ GET: {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
+  const gameId = getGameIdFromReq(req);
   // default limit to 1000
   const limitNum = limit ? parseInt(limit as string) : 1000;
 
@@ -482,14 +486,14 @@ export default apiWrapper({ GET: {
 
   try {
     const [emailUnsubscribeResult, emailReactivationResult] = await Promise.all([
-      sendAutoUnsubscribeUsers(batchId, limitNum),
-      sendEmailReactivation(batchId, limitNum),
+      sendAutoUnsubscribeUsers(gameId, batchId, limitNum),
+      sendEmailReactivation(gameId, batchId, limitNum),
     ]);
 
     totalEmailedSoFar.push(...emailUnsubscribeResult.sentList);
     totalEmailedSoFar.push(...emailReactivationResult.sentList);
 
-    const emailDigestResult = await sendEmailDigests(batchId, totalEmailedSoFar, limitNum);
+    const emailDigestResult = await sendEmailDigests(gameId, batchId, totalEmailedSoFar, limitNum);
 
     totalEmailedSoFar.push(...emailDigestResult.sentList);
 

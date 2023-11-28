@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import { NextSeo } from 'next-seo';
 import React from 'react';
 import { SWRConfig } from 'swr';
@@ -14,7 +15,9 @@ export async function getStaticProps() {
   let levelOfDay: EnrichedLevel | null = null;
 
   if (process.env.OFFLINE_BUILD !== 'true') {
-    levelOfDay = await getLevelOfDay();
+    // NOTE that getStaticProps doesn't have access to req, so hardcoding for now
+    // TODO: figure out best thing to do here to avoid hardcoding
+    levelOfDay = await getLevelOfDay(GameId.PATHOLOGY);
   }
 
   return {
