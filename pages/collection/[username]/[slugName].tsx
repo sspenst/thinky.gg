@@ -110,6 +110,7 @@ export default function CollectionPage({ collection }: CollectionProps) {
         href: `/level/${level.slug}?cid=${collection._id}`,
         id: level._id.toString(),
         level: level,
+        searchLabel: level.name,
         stats: new SelectOptionStats(level.leastMoves, level.userMoves),
         text: level.name,
       } as SelectOption;
