@@ -196,6 +196,7 @@ export default function CollectionScrollList({ collection, onLoading, onLevelsCh
               id: `${id}-${levelInCollection._id.toString()}`,
               level: levelInCollection,
               text: levelInCollection.name,
+              searchLabel: levelInCollection.name,
               stats: new SelectOptionStats(levelInCollection.leastMoves, (levelInCollection as EnrichedLevel)?.userMoves),
               width: 216,
             }} />

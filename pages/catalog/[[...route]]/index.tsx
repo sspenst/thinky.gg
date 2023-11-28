@@ -102,6 +102,7 @@ export default function Catalog({ usersWithLevels }: CatalogProps) {
       options.push({
         href: `/profile/${usersWithLevels[i].name}/levels`,
         id: usersWithLevels[i]._id.toString(),
+        searchLabel: usersWithLevels[i].name,
         stats: userStats[i],
         text: usersWithLevels[i].name,
       } as SelectOption);
