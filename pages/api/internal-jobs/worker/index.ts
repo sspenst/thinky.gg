@@ -124,11 +124,11 @@ export async function queueCalcPlayAttempts(levelId: Types.ObjectId, options?: Q
   );
 }
 
-export async function queueCalcCreatorCounts(userId: Types.ObjectId, options?: QueryOptions) {
+export async function queueCalcCreatorCounts(gameId: GameId, userId: Types.ObjectId, options?: QueryOptions) {
   await queue(
     userId.toString(),
     QueueMessageType.CALC_CREATOR_COUNTS,
-    JSON.stringify({ userId: userId.toString() }),
+    JSON.stringify({ userId: userId.toString(), gameId: gameId }),
     options,
   );
 }
@@ -226,10 +226,10 @@ async function processQueueMessage(queueMessage: QueueMessage) {
     log = `calcPlayAttempts for ${levelId}`;
     await calcPlayAttempts(new Types.ObjectId(levelId));
   } else if (queueMessage.type === QueueMessageType.CALC_CREATOR_COUNTS) {
-    const { userId } = JSON.parse(queueMessage.message) as { userId: string };
+    const { userId, gameId } = JSON.parse(queueMessage.message) as { userId: string, gameId: GameId };
 
     log = `calcCreatorCounts for ${userId}`;
-    await calcCreatorCounts(new Types.ObjectId(userId));
+    await calcCreatorCounts(gameId, new Types.ObjectId(userId));
   } else if (queueMessage.type === QueueMessageType.REFRESH_ACHIEVEMENTS) {
     const { gameId, userId, categories } = JSON.parse(queueMessage.message) as {gameId: GameId, userId: string, categories: AchievementCategory[]};
 

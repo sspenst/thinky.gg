@@ -1,4 +1,5 @@
 import Discord from '@root/constants/discord';
+import { GameId } from '@root/constants/GameId';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import { multiplayerMatchTypeToText } from '@root/helpers/multiplayerHelperFunctions';
 import { Types } from 'mongoose';
@@ -199,6 +200,7 @@ export async function getMatch(matchId: string, reqUser?: User) {
  * @returns
  */
 export async function generateLevels(
+  gameId: GameId,
   minDifficultyIndex: DIFFICULTY_INDEX,
   maxDifficultyIndex: DIFFICULTY_INDEX,
   options: {
@@ -247,7 +249,8 @@ export async function generateLevels(
         },
         height: {
           $lte: MAX_HEIGHT,
-        }
+        },
+        gameId: gameId
       },
     },
     {
@@ -394,6 +397,7 @@ export default withAuth(
 
         if (updatedMatch.players.length === 2) {
           const level0s = generateLevels(
+            updatedMatch.gameId,
             DIFFICULTY_INDEX.KINDERGARTEN,
             DIFFICULTY_INDEX.ELEMENTARY,
             {
@@ -404,18 +408,21 @@ export default withAuth(
             10
           );
           const level1s = generateLevels(
+            updatedMatch.gameId,
             DIFFICULTY_INDEX.JUNIOR_HIGH,
             DIFFICULTY_INDEX.HIGH_SCHOOL,
             {},
             20
           );
           const level2s = generateLevels(
+            updatedMatch.gameId,
             DIFFICULTY_INDEX.BACHELORS,
             DIFFICULTY_INDEX.PROFESSOR,
             {},
             5
           );
           const level3s = generateLevels(
+            updatedMatch.gameId,
             DIFFICULTY_INDEX.PHD,
             DIFFICULTY_INDEX.SUPER_GRANDMASTER,
             {},

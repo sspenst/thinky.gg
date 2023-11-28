@@ -28,6 +28,8 @@ afterAll(async () => {
   await dbDisconnect();
 });
 
+const gameId = GameId.PATHOLOGY;
+
 describe('pages/profile page', () => {
   test('getServerSideProps with no parameters', async () => {
     const context = {
@@ -230,35 +232,35 @@ describe('pages/profile page', () => {
   test('getReviewsByUserId with invalid userId', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
-    const reviews = await getReviewsByUserId('invalid');
+    const reviews = await getReviewsByUserId(gameId, 'invalid');
 
     expect(reviews).toBeNull();
   });
   test('getReviewsByUserIdCount with invalid userId', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
-    const reviews = await getReviewsByUserIdCount('invalid');
+    const reviews = await getReviewsByUserIdCount(gameId, 'invalid');
 
     expect(reviews).toBeNull();
   });
   test('getReviewsForUserId with valid userId', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
-    const reviews = await getReviewsForUserId(TestId.USER, await UserModel.findById(TestId.USER_B), { skip: 0, limit: 1 });
+    const reviews = await getReviewsForUserId(gameId, TestId.USER, await UserModel.findById(TestId.USER_B), { skip: 0, limit: 1 });
 
     expect(reviews).toHaveLength(1);
   });
   test('getReviewsForUserId with invalid userId', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
-    const reviews = await getReviewsForUserId('invalid');
+    const reviews = await getReviewsForUserId(gameId, 'invalid');
 
     expect(reviews).toBeNull();
   });
   test('getReviewsForUserIdCount with invalid userId', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
-    const reviews = await getReviewsForUserIdCount('invalid');
+    const reviews = await getReviewsForUserIdCount(gameId, 'invalid');
 
     expect(reviews).toBeNull();
   });

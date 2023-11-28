@@ -369,11 +369,11 @@ export default async function initializeLocalDb() {
   await Promise.all(promises);
 }
 
-export async function initLevel(userId: string, name: string, obj: Partial<Level> = {}, createReviews = true) {
+export async function initLevel(gameId: GameId, userId: string, name: string, obj: Partial<Level> = {}, createReviews = true) {
   const ts = TimerUtil.getTs();
   const id = new Types.ObjectId();
   const user = await UserModel.findById(userId, 'name');
-  const slug = await generateLevelSlug(user.name, name);
+  const slug = await generateLevelSlug(gameId, user.name, name);
 
   // based on name length create that many reviews
   const lvl = await LevelModel.create({

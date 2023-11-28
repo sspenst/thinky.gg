@@ -1,8 +1,9 @@
 import { difficultyList } from '@root/components/formatted/formattedDifficulty';
+import { GameId } from '@root/constants/GameId';
 import { LevelModel, StatModel } from '@root/models/mongoose';
 import { SaveOptions, Types } from 'mongoose';
 
-export async function getSolvesByDifficultyTable(userId: Types.ObjectId, options: SaveOptions = {}) {
+export async function getSolvesByDifficultyTable(gameId: GameId, userId: Types.ObjectId, options: SaveOptions = {}) {
   const difficultyListValues = difficultyList.map((d) => d.value);
   const levelsSolvedByDifficultyData = await StatModel.aggregate([
     {
@@ -10,6 +11,7 @@ export async function getSolvesByDifficultyTable(userId: Types.ObjectId, options
         userId: userId,
         complete: true,
         isDeleted: { $ne: true },
+        gameId: gameId,
       },
     },
     {

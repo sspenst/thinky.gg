@@ -40,7 +40,7 @@ export default withAuth({ POST: {
   try {
     await session.withTransaction(async () => {
       // level is over 24hrs old, move to archive
-      const slug = await generateLevelSlug('archive', level.name, level._id.toString(), { session: session });
+      const slug = await generateLevelSlug(level.gameId, 'archive', level.name, level._id.toString(), { session: session });
 
       newLevel = await LevelModel.findOneAndUpdate({ _id: id }, { $set: {
         archivedBy: level.userId,
@@ -50,8 +50,8 @@ export default withAuth({ POST: {
       } }, { new: true, session: session });
 
       await Promise.all([
-        queueCalcCreatorCounts(new Types.ObjectId(TestId.ARCHIVE), { session: session }),
-        queueCalcCreatorCounts(level.userId, { session: session }),
+        queueCalcCreatorCounts(level.gameId, new Types.ObjectId(TestId.ARCHIVE), { session: session }),
+        queueCalcCreatorCounts(level.gameId, level.userId, { session: session }),
         queueDiscordWebhook(Discord.Levels, `**${req.user.name}** archived a level: [${level.name}](${req.headers.origin}/level/${slug}?ts=${ts})`, { session: session }),
       ]);
     });

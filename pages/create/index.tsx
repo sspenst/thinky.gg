@@ -1,3 +1,4 @@
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import React from 'react';
 import CreateHome from '../../components/editor/createHome';
@@ -10,6 +11,7 @@ import { LevelModel } from '../../models/mongoose';
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
+  const gameId = getGameIdFromReq(context.req);
 
   if (!reqUser) {
     return {
@@ -24,6 +26,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     isDeleted: { $ne: true },
     isDraft: true,
     userId: reqUser._id,
+    gameId: gameId
   }).sort({ name: 1 });
 
   return {

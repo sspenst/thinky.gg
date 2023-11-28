@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -29,7 +30,7 @@ beforeAll(async () => {
   [userACollection, userBCollection, userALevel1] = await Promise.all([
     initCollection(TestId.USER, 'user A collection'),
     initCollection(TestId.USER_B, 'user B collection'),
-    initLevel(TestId.USER, 'user A level 1')
+    initLevel(GameId.PATHOLOGY, TestId.USER, 'user A level 1')
   ]);
 });
 enableFetchMocks();

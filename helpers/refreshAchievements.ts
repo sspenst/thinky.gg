@@ -17,17 +17,17 @@ import queueDiscordWebhook from './discordWebhook';
 import { getRecordsByUserId } from './getRecordsByUserId';
 
 const AchievementCategoryFetch = {
-  [AchievementCategory.USER]: async (userId: Types.ObjectId) => {
+  [AchievementCategory.USER]: async (gameId: GameId, userId: Types.ObjectId) => {
     const user = await UserModel.findById(userId).lean<User>();
 
     return { user: user };
   },
-  [AchievementCategory.REVIEWER]: async (userId: Types.ObjectId) => {
+  [AchievementCategory.REVIEWER]: async (gameId: GameId, userId: Types.ObjectId) => {
     const reviewsCreated = await ReviewModel.find({ userId: userId, isDeleted: { $ne: true } }).lean<Review[]>();
 
     return { reviewsCreated: reviewsCreated };
   },
-  [AchievementCategory.MULTIPLAYER]: async (userId: Types.ObjectId) => {
+  [AchievementCategory.MULTIPLAYER]: async (gameId: GameId, userId: Types.ObjectId) => {
     const [userMatches, multiplayerProfile] = await Promise.all(
       [
         MultiplayerMatchModel.find({ players: userId, rated: true }, { players: 1, winners: 1, createdAt: 1, createdBy: 1 }).lean<MultiplayerMatch[]>(),
@@ -37,17 +37,23 @@ const AchievementCategoryFetch = {
 
     return { userMatches: userMatches, multiplayerProfile: multiplayerProfile };
   },
-  [AchievementCategory.CREATOR]: async (userId: Types.ObjectId) => {
+  [AchievementCategory.CREATOR]: async (gameId: GameId, userId: Types.ObjectId) => {
     const userCreatedLevels = await LevelModel.find(
-      { userId: userId, isDraft: false, isDeleted: { $ne: true } },
+      {
+        userId: userId,
+        isDraft: false,
+        isDeleted: { $ne: true },
+        gameId: gameId,
+
+      },
       { score: 1, authorNote: 1, leastMoves: 1, ts: 1, calc_reviews_score_laplace: 1, calc_playattempts_just_beaten_count: 1, calc_playattempts_unique_users: 1, calc_reviews_count: 1 }).lean<Level[]>();
 
     return { levelsCreated: userCreatedLevels };
   },
-  [AchievementCategory.SKILL]: async (userId: Types.ObjectId) => {
+  [AchievementCategory.SKILL]: async (gameId: GameId, userId: Types.ObjectId) => {
     const [levelsSolvedByDifficulty, records] = await Promise.all([
-      getSolvesByDifficultyTable(userId),
-      getRecordsByUserId(userId),
+      getSolvesByDifficultyTable(gameId, userId),
+      getRecordsByUserId(gameId, userId),
     ]);
     const rollingLevelSolvesSum = getDifficultyRollingSum(levelsSolvedByDifficulty);
 
@@ -66,7 +72,7 @@ export async function refreshAchievements(gameId: GameId, userId: Types.ObjectId
   const fetchPromises = [];
 
   for (const category of categories) {
-    fetchPromises.push(AchievementCategoryFetch[category](userId));
+    fetchPromises.push(AchievementCategoryFetch[category](gameId, userId));
   }
 
   const [user, neededDataArray, allAchievements] = await Promise.all([

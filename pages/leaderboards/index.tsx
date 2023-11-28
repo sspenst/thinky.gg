@@ -1,13 +1,16 @@
 import { DIFFICULTY_INDEX, getDifficultyColor, getDifficultyRangeByIndex } from '@root/components/formatted/formattedDifficulty';
 import Page from '@root/components/page/page';
 import UserAndSumTable from '@root/components/tables/userAndSumTable';
+import { GameId } from '@root/constants/GameId';
 import { UserAndSum } from '@root/contexts/levelContext';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import cleanUser from '@root/lib/cleanUser';
 import { LevelModel, StatModel, UserModel } from '@root/models/mongoose';
 import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
+import { GetServerSidePropsContext } from 'next';
 import React from 'react';
 
-async function getDifficultyLeaderboard(index: DIFFICULTY_INDEX) {
+async function getDifficultyLeaderboard(gameId: GameId, index: DIFFICULTY_INDEX) {
   const difficultyRange = getDifficultyRangeByIndex(index);
   const agg = await LevelModel.aggregate([
     {
@@ -16,9 +19,10 @@ async function getDifficultyLeaderboard(index: DIFFICULTY_INDEX) {
         isDeleted: {
           $ne: true,
         },
+        gameId: GameId,
         calc_difficulty_estimate: {
           $gte: difficultyRange[0],
-        }
+        },
       }
     },
     // now get players that have solved these levels by checking stats where completed is true
@@ -110,10 +114,11 @@ async function getDifficultyLeaderboard(index: DIFFICULTY_INDEX) {
   return agg;
 }
 
-export async function getServerSideProps() {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const gameId = getGameIdFromReq(context.req);
   const [gmLeaderboard, sgmLeaderboard] = await Promise.all([
-    getDifficultyLeaderboard(DIFFICULTY_INDEX.GRANDMASTER),
-    getDifficultyLeaderboard(DIFFICULTY_INDEX.SUPER_GRANDMASTER),
+    getDifficultyLeaderboard(gameId, DIFFICULTY_INDEX.GRANDMASTER),
+    getDifficultyLeaderboard(gameId, DIFFICULTY_INDEX.SUPER_GRANDMASTER),
   ]);
 
   return {

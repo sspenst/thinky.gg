@@ -43,7 +43,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   // TODO: technically we could get the level from the collection instead of separately querying for it
   // If cid doesn't exist then we can just call getLevelsByUrlPath...
   const [level, collection] = await Promise.all([
-    getLevelByUrlPath(username, slugName, reqUser),
+    getLevelByUrlPath(gameId, username, slugName, reqUser),
     (cid) ? getCollection({
       matchQuery: { _id: new Types.ObjectId(cid), gameId: gameId },
       reqUser,

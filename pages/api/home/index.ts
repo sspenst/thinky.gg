@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import StatFilter from '@root/constants/statFilter';
 import Level from '@root/models/db/level';
 import { LevelModel, StatModel } from '@root/models/mongoose';
@@ -14,7 +15,7 @@ import { getLastLevelPlayed } from '../play-attempt';
 import { doQuery } from '../search';
 import { getPlayAttempts } from '../user/play-history';
 
-async function getTopLevelsThisMonth(reqUser: User) {
+async function getTopLevelsThisMonth(gameId: GameId, reqUser: User) {
   const query = {
     disableCount: 'true',
     numResults: '5',
@@ -22,7 +23,7 @@ async function getTopLevelsThisMonth(reqUser: User) {
     timeRange: TimeRange[TimeRange.Month],
   } as SearchQuery;
 
-  const result = await doQuery(query, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, data: 1, height: 1, width: 1 });
+  const result = await doQuery(gameId, query, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, data: 1, height: 1, width: 1 });
 
   return result?.levels;
 }
@@ -59,7 +60,7 @@ async function getRecentAverageDifficulty(reqUser: User, numResults = 1) {
   return query.length === 0 ? 0 : query.reduce((acc, level) => acc + level.calc_difficulty_estimate, 0) / query.length;
 }
 
-async function getRecommendedLevel(reqUser: User) {
+async function getRecommendedLevel(gameId: GameId, reqUser: User) {
   const avgDifficulty = await getRecentAverageDifficulty(reqUser, 10);
   const recentPlayAttempts = await getPlayAttempts(reqUser, {}, 10);
   const uniqueLevelIdsFromRecentAttempts = new Set(recentPlayAttempts.map(playAttempt => playAttempt.levelId._id.toString()));
@@ -79,7 +80,7 @@ async function getRecommendedLevel(reqUser: User) {
     timeRange: TimeRange[TimeRange.All],
   } as SearchQuery;
 
-  const result = await doQuery(query, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, data: 1, height: 1, width: 1 });
+  const result = await doQuery(gameId, query, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, data: 1, height: 1, width: 1 });
   let levels = result?.levels;
 
   if (!levels || levels.length === 0) {
@@ -98,7 +99,7 @@ async function getRecommendedLevel(reqUser: User) {
       timeRange: TimeRange[TimeRange.All],
     } as SearchQuery;
 
-    const result = await doQuery(query, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, data: 1, height: 1, width: 1 });
+    const result = await doQuery(gameId, query, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, data: 1, height: 1, width: 1 });
 
     levels = result?.levels;
   }
@@ -135,11 +136,11 @@ export default withAuth({
     ptopLevelsThisMonth
   ] = await Promise.all([
     lastLevelPlayed ? getLastLevelPlayed(reqUser) : undefined,
-    latestLevels ? getLatestLevels(reqUser) : undefined,
+    latestLevels ? getLatestLevels(req.gameId, reqUser) : undefined,
     latestReviews ? getLatestReviews(reqUser) : undefined,
     levelOfDay ? getLevelOfDay(req.gameId, reqUser) : undefined,
-    recommendedLevel ? getRecommendedLevel(reqUser) : undefined,
-    topLevelsThisMonth ? getTopLevelsThisMonth(reqUser) : undefined,
+    recommendedLevel ? getRecommendedLevel(req.gameId, reqUser) : undefined,
+    topLevelsThisMonth ? getTopLevelsThisMonth(req.gameId, reqUser) : undefined,
   ]);
 
   return res.status(200).json({

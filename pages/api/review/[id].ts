@@ -89,6 +89,7 @@ export default withAuth({
           _id: new Types.ObjectId(id as string),
           isDeleted: { $ne: true },
           isDraft: false,
+          gameId: req.gameId,
         }
       },
       {
@@ -167,6 +168,7 @@ export default withAuth({
         $match: {
           _id: new Types.ObjectId(id as string),
           isDeleted: { $ne: true },
+          gameId: req.gameId,
         }
       },
       {

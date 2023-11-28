@@ -907,6 +907,7 @@ describe('Testing stats api', () => {
   });
   test('calcDifficultyEstimate', async () => {
     const level = await initLevel(
+      GameId.PATHOLOGY,
       TestId.USER,
       'calcDifficultyEstimate',
       {},

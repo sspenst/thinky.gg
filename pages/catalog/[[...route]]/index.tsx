@@ -2,6 +2,7 @@
 // ignoring because we will eventually deprecate this page
 /* istanbul ignore file */
 
+import { GameId } from '@root/constants/GameId';
 import StatFilter from '@root/constants/statFilter';
 import * as mongoose from 'mongoose';
 import { GetServerSidePropsContext } from 'next';
@@ -38,11 +39,13 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   if (process.env.OFFLINE_BUILD !== 'true') {
     await dbConnect();
+    // TODO: getStaticProps doesnt have access to context req... so hardcoding for now
+    const gameId = GameId.PATHOLOGY;
 
     // get all levels grouped by userId
     usersWithLevels = await LevelModel.aggregate<UserWithLevels>([
       {
-        $match: { isDeleted: { $ne: true }, isDraft: false },
+        $match: { isDeleted: { $ne: true }, isDraft: false, gameId: gameId },
       },
       {
         $group: {

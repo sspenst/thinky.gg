@@ -1,5 +1,7 @@
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
+import { GameId } from '@root/constants/GameId';
 import TileType from '@root/constants/tileType';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import isFullAccount from '@root/helpers/isFullAccount';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
@@ -16,13 +18,14 @@ import User from '../../../models/db/user';
 import { LevelModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
 import { queueCalcCreatorCounts, queueCalcPlayAttempts, queueRefreshAchievements, queueRefreshIndexCalcs } from '../internal-jobs/worker';
 
-export async function checkPublishRestrictions(userId: Types.ObjectId) {
+export async function checkPublishRestrictions(gameId: GameId, userId: Types.ObjectId) {
   // check last 24h
   const ts = TimerUtil.getTs() - 60 * 60 * 24;
   const recentPublishedLevels = await LevelModel.find<Level>({
     isDraft: false,
     ts: { $gt: ts },
     userId: userId,
+    gameId: gameId
   }).sort({ ts: -1 });
 
   if (recentPublishedLevels.length > 0) {
@@ -58,12 +61,14 @@ export default withAuth({ POST: {
   }
 
   const { id } = req.query;
+  const gameId = getGameIdFromReq(req);
 
   await dbConnect();
 
   const level = await LevelModel.findOne<Level>({
     _id: id,
     userId: req.userId,
+    // gameId: gameId
   }).lean<Level>();
 
   if (!level) {
@@ -96,10 +101,12 @@ export default withAuth({ POST: {
     });
   }
 
+  // TODO: These queries can probably be combined into one query
   if (await LevelModel.findOne({
     data: level.data,
     isDeleted: { $ne: true },
     isDraft: false,
+  //  gameId: level.gameId,
   })) {
     return res.status(400).json({
       error: 'An identical level already exists',
@@ -111,13 +118,14 @@ export default withAuth({ POST: {
     isDraft: false,
     name: level.name,
     userId: req.userId,
+    //gameId: level.gameId,
   })) {
     return res.status(400).json({
       error: 'A level with this name already exists',
     });
   }
 
-  const error = await checkPublishRestrictions(req.user._id);
+  const error = await checkPublishRestrictions(level.gameId, req.user._id);
 
   if (error) {
     return res.status(400).json({
@@ -169,7 +177,7 @@ export default withAuth({ POST: {
         queueRefreshAchievements(level.gameId, req.user._id, [AchievementCategory.CREATOR], { session: session }),
         queueRefreshIndexCalcs(level._id, { session: session }),
         queueCalcPlayAttempts(level._id, { session: session }),
-        queueCalcCreatorCounts(req.user._id, { session: session }),
+        queueCalcCreatorCounts(level.gameId, req.user._id, { session: session }),
         createNewLevelNotifications(level.gameId, new Types.ObjectId(req.userId), level._id, undefined, { session: session }),
         queueDiscordWebhook(Discord.Levels, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`, { session: session }),
       ]);

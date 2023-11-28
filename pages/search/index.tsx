@@ -6,6 +6,7 @@ import DataTable, { TableColumn } from '@root/components/tables/dataTable';
 import Dimensions from '@root/constants/dimensions';
 import StatFilter from '@root/constants/statFilter';
 import { AppContext } from '@root/contexts/appContext';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import isPro from '@root/helpers/isPro';
 import { CollectionType } from '@root/models/constants/collection';
 import { EnrichedCollection } from '@root/models/db/collection';
@@ -91,6 +92,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
   const searchQuery = { ...DefaultQuery };
+  const gameId = getGameIdFromReq(context.req);
 
   if (context.query && (Object.keys(context.query).length > 0)) {
     for (const q in context.query as SearchQuery) {
@@ -98,7 +100,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }
   }
 
-  const query = await doQuery(searchQuery, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, ...{ width: 1, data: 1, height: 1 } });
+  const query = await doQuery(gameId, searchQuery, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, ...{ width: 1, data: 1, height: 1 } });
 
   if (!query) {
     throw new Error('Error querying Levels');

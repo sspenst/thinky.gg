@@ -33,6 +33,7 @@ export async function getLevelOfDay(gameId: GameId, reqUser?: User | null) {
         $match: {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           _id: new Types.ObjectId(levelKV.value as any),
+          gameId: gameId,
         }
       },
       {
@@ -82,6 +83,7 @@ export async function getLevelOfDay(gameId: GameId, reqUser?: User | null) {
   const levels = await LevelModel.find<Level>({
     isDeleted: { $ne: true },
     isDraft: false,
+    gameId: gameId,
     leastMoves: {
       // least moves between 10 and 100
       $gte: MIN_STEPS,

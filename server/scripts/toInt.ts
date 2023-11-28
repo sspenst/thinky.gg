@@ -34,6 +34,7 @@ async function toInt() {
 
   console.log('Updated ' + updated + ' users in ' + (Date.now() - startBenchmark) + 'ms');
 
+  // TODO: should we incorporate gameId here?
   const levels = await LevelModel.find({ ts: { $exists: true } });
 
   promises = [];
