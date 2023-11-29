@@ -23,7 +23,6 @@ export function getLevelOfDayKVKey() {
 
 export async function getLevelOfDay(gameId: GameId, reqUser?: User | null) {
   await dbConnect();
-
   const key = getLevelOfDayKVKey();
   const levelKV = await KeyValueModel.findOne({ key: key, gameId: gameId }).lean<KeyValue>();
 
@@ -173,6 +172,7 @@ export default apiWrapper({
 }, async (req: NextApiRequestGuest, res: NextApiResponse) => {
   const token = req.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, req) : null;
+
   // Then query the database for the official level of the day collection
   const levelOfDay = await getLevelOfDay(req.gameId, reqUser);
 
