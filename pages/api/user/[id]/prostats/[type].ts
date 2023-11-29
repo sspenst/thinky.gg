@@ -14,7 +14,7 @@ import { LevelModel, PlayAttemptModel, StatModel, UserModel } from '../../../../
 import { AttemptContext } from '../../../../../models/schemas/playAttemptSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../../../models/schemas/userSchema';
 
-async function getDifficultyDataComparisons(userId: string) {
+async function getDifficultyDataComparisons(gameId: GameId, userId: string) {
   /** TODO: Store this in a K/V store with an expiration of like 1 day... */
   const difficultyData = await StatModel.aggregate([
     {
@@ -23,6 +23,7 @@ async function getDifficultyDataComparisons(userId: string) {
         complete: true,
         isDeleted: { $ne: true },
         ts: { $gt: Math.floor(Date.now() / 1000) - (60 * 60 * 24 * 30 * 6) },
+        gameId: gameId
       },
     },
     {
@@ -493,7 +494,7 @@ export default withAuth({
       });
     }
 
-    difficultyLevelsComparisons = await getDifficultyDataComparisons(userId);
+    difficultyLevelsComparisons = await getDifficultyDataComparisons(req.gameId, userId);
   } else if (type === ProStatsUserType.ScoreHistory) {
     scoreHistory = await getScoreHistory(req.gameId, userId);
   } else if (type === ProStatsUserType.MostSolvesForUserLevels) {

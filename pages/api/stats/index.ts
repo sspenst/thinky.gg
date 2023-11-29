@@ -33,7 +33,7 @@ export default withAuth({
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
     // Todo: only select needed fields here to minimize data transfer
-    const stats = await StatModel.find({ userId: new Types.ObjectId(req.userId), isDeleted: { $ne: true } }).lean<Stat[]>();
+    const stats = await StatModel.find({ userId: new Types.ObjectId(req.userId), isDeleted: { $ne: true }, gameId: req.gameId }).lean<Stat[]>();
 
     return res.status(200).json(stats);
   } else if (req.method === 'PUT') {

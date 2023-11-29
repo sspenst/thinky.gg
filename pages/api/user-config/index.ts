@@ -46,7 +46,7 @@ export function getNewUserConfig(gameId: GameId, roles: Role[], tutorialComplete
 }
 
 export async function getUserConfig(gameId: GameId, user: User) {
-  let userConfig = await UserConfigModel.findOne({ userId: user._id }, { '__v': 0 }).lean<UserConfig>();
+  let userConfig = await UserConfigModel.findOne({ userId: user._id, gameId: gameId }, { '__v': 0 }).lean<UserConfig>();
 
   if (!userConfig) {
     userConfig = await UserConfigModel.create(getNewUserConfig(gameId, user.roles, 0, user._id));

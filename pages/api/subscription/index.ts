@@ -27,7 +27,7 @@ export interface SubscriptionData {
 
 export async function getSubscriptions(req: NextApiRequestWithAuth): Promise<[number, { error: string } | SubscriptionData[]]> {
   const userId = req.userId;
-  const userConfig = await UserConfigModel.findOne({ userId: userId }, { stripeCustomerId: 1 }).lean<UserConfig>();
+  const userConfig = await UserConfigModel.findOne({ userId: userId, gameId: req.gameId }, { stripeCustomerId: 1 }).lean<UserConfig>();
 
   let subscriptionsNormal: Stripe.Response<Stripe.ApiList<Stripe.Subscription>> | undefined;
   let subscriptionsGifts: Stripe.Response<Stripe.ApiSearchResult<Stripe.Subscription>>;
@@ -94,6 +94,7 @@ export async function getSubscriptions(req: NextApiRequestWithAuth): Promise<[nu
 // TODO: can delete this
 export async function cancelSubscription(req: NextApiRequestWithAuth): Promise<[number, { error: string } | { message: string }]> {
   const userId = req.userId;
+  // TODO: figure out gameId
   const userConfig = await UserConfigModel.findOne({ userId: userId }, { stripeCustomerId: 1 }).lean<UserConfig>();
 
   if (!userConfig?.stripeCustomerId) {

@@ -1,4 +1,5 @@
 import Page from '@root/components/page/page';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { getUserFromToken } from '@root/lib/withAuth';
 import UserConfig from '@root/models/db/userConfig';
 import { UserConfigModel } from '@root/models/mongoose';
@@ -10,6 +11,7 @@ import { toast } from 'react-hot-toast';
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const cookieToken = context.req?.cookies?.token;
   const reqUser = cookieToken ? await getUserFromToken(cookieToken, context.req as NextApiRequest) : null;
+  const gameId = getGameIdFromReq(context.req);
   const { userId, token } = context.query;
   let emailConfirmed = false;
 
@@ -18,6 +20,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       {
         emailConfirmationToken: token,
         userId: userId,
+        gameId: gameId
       },
       {
         emailConfirmationToken: null,

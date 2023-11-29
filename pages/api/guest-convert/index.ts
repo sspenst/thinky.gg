@@ -45,7 +45,7 @@ export default withAuth({
 
   await user.save();
 
-  const userConfig = await UserConfigModel.findOneAndUpdate({ userId: req.userId }, {
+  const userConfig = await UserConfigModel.findOneAndUpdate({ userId: req.userId, gameId: req.gameId }, {
     $set: {
       emailConfirmationToken: getEmailConfirmationToken(),
       emailConfirmed: false,

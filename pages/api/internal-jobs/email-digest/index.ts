@@ -91,7 +91,8 @@ export async function sendEmailDigests(gameId: GameId, batchId: Types.ObjectId, 
     $match: {
       emailDigest: {
         $in: [EmailDigestSettingTypes.DAILY],
-      }
+      },
+      gameId: gameId,
     },
   }, {
     $lookup: {

@@ -28,9 +28,9 @@ async function getTopLevelsThisMonth(gameId: GameId, reqUser: User) {
   return result?.levels;
 }
 
-async function getRecentAverageDifficulty(reqUser: User, numResults = 1) {
+async function getRecentAverageDifficulty(gameId: GameId, reqUser: User, numResults = 1) {
   const query = await StatModel.aggregate([
-    { $match: { userId: reqUser._id, complete: true } },
+    { $match: { userId: reqUser._id, complete: true, gameId: gameId } },
     { $sort: { ts: -1 } },
     { $limit: numResults },
     {
@@ -61,7 +61,7 @@ async function getRecentAverageDifficulty(reqUser: User, numResults = 1) {
 }
 
 async function getRecommendedLevel(gameId: GameId, reqUser: User) {
-  const avgDifficulty = await getRecentAverageDifficulty(reqUser, 10);
+  const avgDifficulty = await getRecentAverageDifficulty(gameId, reqUser, 10);
   const recentPlayAttempts = await getPlayAttempts(gameId, reqUser, {}, 10);
   const uniqueLevelIdsFromRecentAttempts = new Set(recentPlayAttempts.map(playAttempt => playAttempt.levelId._id.toString()));
 
@@ -137,7 +137,7 @@ export default withAuth({
   ] = await Promise.all([
     lastLevelPlayed ? getLastLevelPlayed(req.gameId, reqUser) : undefined,
     latestLevels ? getLatestLevels(req.gameId, reqUser) : undefined,
-    latestReviews ? getLatestReviews(reqUser) : undefined,
+    latestReviews ? getLatestReviews(req.gameId, reqUser) : undefined,
     levelOfDay ? getLevelOfDay(req.gameId, reqUser) : undefined,
     recommendedLevel ? getRecommendedLevel(req.gameId, reqUser) : undefined,
     topLevelsThisMonth ? getTopLevelsThisMonth(req.gameId, reqUser) : undefined,
