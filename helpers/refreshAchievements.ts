@@ -23,7 +23,7 @@ const AchievementCategoryFetch = {
     return { user: user };
   },
   [AchievementCategory.REVIEWER]: async (gameId: GameId, userId: Types.ObjectId) => {
-    const reviewsCreated = await ReviewModel.find({ userId: userId, isDeleted: { $ne: true } }).lean<Review[]>();
+    const reviewsCreated = await ReviewModel.find({ userId: userId, isDeleted: { $ne: true }, gameId: gameId }).lean<Review[]>();
 
     return { reviewsCreated: reviewsCreated };
   },
