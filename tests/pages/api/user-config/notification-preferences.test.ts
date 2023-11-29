@@ -11,7 +11,7 @@ import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import UserConfig from '../../../../models/db/userConfig';
-import { UserConfigModel } from '../../../../models/mongoose';
+import { QueueMessageModel, UserConfigModel } from '../../../../models/mongoose';
 import handler from '../../../../pages/api/user-config/index';
 
 beforeAll(async () => {

@@ -134,7 +134,7 @@ export default withAuth({
       const newUser = await UserModel.findOneAndUpdate({ _id: req.userId }, { $set: setObj }, { runValidators: true, new: true, projection: { _id: 1, email: 1, name: 1 } });
 
       if (setObj['email']) {
-        const userConfig = await UserConfigModel.findOneAndUpdate({ userId: req.userId }, {
+        const userConfig = await UserConfigModel.findOneAndUpdate({ userId: req.userId, gameId: req.gameId }, {
           $set: {
             emailConfirmationToken: getEmailConfirmationToken(),
             emailConfirmed: false,
@@ -215,7 +215,7 @@ export default withAuth({
           userId: req.userId,
           isDeleted: { $ne: true },
           isDraft: false,
-          gameId: req.gameId
+          gameId: req.gameId,
         }, '_id name', { session: session }).lean<Level[]>();
 
         for (const level of levels) {

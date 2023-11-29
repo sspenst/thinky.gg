@@ -46,6 +46,7 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
         UserConfigModel.findOneAndUpdate(
           {
             userId: userToDowngrade._id,
+            // TODO: Get GameId
           },
           {
             stripeCustomerId: null,
@@ -66,6 +67,7 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
           UserConfigModel.findOneAndUpdate(
             {
               userId: new Types.ObjectId(giftFromId),
+              // TODO: Get GameId
             },
             {
               $pull: {
@@ -123,6 +125,7 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
           UserConfigModel.findOneAndUpdate(
             {
               userId: giftFromUser._id,
+              // TODO: Get GameId
             },
             {
               // add to set gift subscriptions
@@ -186,6 +189,7 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
           UserConfigModel.findOneAndUpdate(
             {
               userId: userToUpgrade._id
+              // TODO: Get GameId
             },
             {
               stripeCustomerId: customerId
@@ -343,6 +347,7 @@ export default apiWrapper({
       const userConfigAgg = await UserConfigModel.aggregate<UserConfig>([
         {
           $match: { stripeCustomerId: customerId },
+          // TODO: Get GameId
         },
         {
           $lookup: {

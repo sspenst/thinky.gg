@@ -129,6 +129,7 @@ export function getEnrichNotificationPipelineStages(reqUser?: Types.ObjectId) {
       $project: {
         _id: 1,
         createdAt: 1,
+        gameId: 1,
         message: 1,
         read: 1,
         sourceModel: 1,

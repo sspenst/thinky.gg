@@ -1,3 +1,5 @@
+import { GameId } from '@root/constants/GameId';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { PipelineStage } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper from '../../../helpers/apiWrapper';
@@ -14,8 +16,9 @@ import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 
 export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
   const token = req.cookies?.token;
+  const gameId = getGameIdFromReq(req);
   const reqUser = token ? await getUserFromToken(token, req) : null;
-  const reviews = await getLatestReviews(reqUser);
+  const reviews = await getLatestReviews(gameId, reqUser);
 
   if (!reviews) {
     return res.status(500).json({
@@ -26,7 +29,7 @@ export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiR
   return res.status(200).json(reviews);
 });
 
-export async function getLatestReviews(reqUser: User | null = null) {
+export async function getLatestReviews(gameId: GameId, reqUser: User | null = null) {
   await dbConnect();
   const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPipelineSteps(reqUser, '_id', '');
 
@@ -36,6 +39,7 @@ export async function getLatestReviews(reqUser: User | null = null) {
         $match: {
           isDeleted: { $ne: true },
           text: { $exists: true },
+          gameId: gameId
         }
       },
       {

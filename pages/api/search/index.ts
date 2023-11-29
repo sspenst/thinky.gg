@@ -413,6 +413,7 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
         {
           $match: {
             userId: new Types.ObjectId(userId),
+            gameId: gameId,
             ...statMatchQuery,
           }
         },
