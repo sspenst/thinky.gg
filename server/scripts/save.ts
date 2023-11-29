@@ -117,11 +117,12 @@ async function integrityCheckMultiplayerProfiles() {
       const count = await MultiplayerMatchModel.count({
         players: profile.userId,
         type: type,
+        gameId: profile.gameId,
       });
 
       if (count > 0) {
         console.log(type, profile.userId.name, count);
-        await MultiplayerProfileModel.findOneAndUpdate({ _id: profile._id }, { $set: { ['calc' + type + 'Count']: count } });
+        await MultiplayerProfileModel.findOneAndUpdate({ _id: profile._id, gameId: profile.gameId }, { $set: { ['calc' + type + 'Count']: count } });
       }
     }
   }

@@ -30,8 +30,8 @@ const AchievementCategoryFetch = {
   [AchievementCategory.MULTIPLAYER]: async (gameId: GameId, userId: Types.ObjectId) => {
     const [userMatches, multiplayerProfile] = await Promise.all(
       [
-        MultiplayerMatchModel.find({ players: userId, rated: true }, { players: 1, winners: 1, createdAt: 1, createdBy: 1 }).lean<MultiplayerMatch[]>(),
-        MultiplayerProfileModel.findOne({ userId: userId }).lean<MultiplayerProfile>(),
+        MultiplayerMatchModel.find({ players: userId, rated: true, gameId: gameId }, { players: 1, winners: 1, createdAt: 1, createdBy: 1, gameId: 1 }).lean<MultiplayerMatch[]>(),
+        MultiplayerProfileModel.findOne({ userId: userId, gameId: gameId }).lean<MultiplayerProfile>(),
       ]
     );
 

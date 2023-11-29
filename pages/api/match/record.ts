@@ -26,7 +26,8 @@ export default withAuth(
           // check if vs is set, if so check if players contains both user and vs, otherwise just check if players contains user
           players: vs ? { $all: [user._id, vs] } : user._id,
           rated: true,
-          state: MultiplayerMatchState.FINISHED
+          state: MultiplayerMatchState.FINISHED,
+          gameId: req.gameId,
         }
       },
       // we need to end with the MultiplayerRecords data format, so we need to group by user and match type
