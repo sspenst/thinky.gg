@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import { PipelineStage } from 'mongoose';
 import cleanUser from '../lib/cleanUser';
@@ -136,11 +137,11 @@ export async function enrichNotifications(notifications: Notification[], reqUser
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function enrichReqUser(reqUser: User, filters?: any): Promise<ReqUser> {
+export async function enrichReqUser(gameId: GameId, reqUser: User, filters?: any): Promise<ReqUser> {
   const enrichedReqUser: ReqUser = JSON.parse(JSON.stringify(reqUser)) as ReqUser;
 
   const notificationAgg = await NotificationModel.aggregate<Notification>([
-    { $match: { userId: reqUser._id, ...filters } },
+    { $match: { userId: reqUser._id, gameId: gameId, ...filters } },
     { $sort: { createdAt: -1 } },
     { $limit: 5 },
     ...getEnrichNotificationPipelineStages(reqUser._id)
