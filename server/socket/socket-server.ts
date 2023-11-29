@@ -1,5 +1,6 @@
 // ts-node --transpile-only --files server/socket/socket-server.ts
 import { isValidMatchGameState } from '@root/helpers/gameStateHelpers';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { createAdapter } from '@socket.io/mongo-adapter';
 import { Emitter } from '@socket.io/mongo-emitter';
 import dotenv from 'dotenv';
@@ -131,6 +132,7 @@ export default async function startSocketIOServer(server: Server) {
   GlobalSocketIO.on('connection', async socket => {
     // get cookies from socket
     const reqUser = socket.data.user;
+    const gameId = getGameIdFromReq(socket.request);
 
     socket.on('matchGameState', async (data) => {
       const userId = socket.data.userId as Types.ObjectId | undefined;
@@ -160,7 +162,7 @@ export default async function startSocketIOServer(server: Server) {
       userId: reqUser._id,
     };
     socket.join(reqUser._id.toString());
-    broadcastNotifications(mongoEmitter, reqUser._id);
+    broadcastNotifications(gameId, mongoEmitter, reqUser._id);
     // note socket on the same computer will have the same id
     const matchId = socket.handshake.query.matchId as string;
 

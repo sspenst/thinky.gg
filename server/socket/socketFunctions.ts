@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import { MatchGameState } from '@root/helpers/gameStateHelpers';
 import { getEnrichNotificationPipelineStages } from '@root/helpers/getEnrichNotificationPipelineStages';
 import { getUsersWithMultiplayerProfileFromIds } from '@root/helpers/getUsersWithMultiplayerProfile';
@@ -120,11 +121,11 @@ export async function broadcastCountOfUsersInRoom(emitter: Server, matchId: stri
   emitter?.in(matchId).emit('connectedPlayersInRoom', { users: filteredUsers.sort((a, b) => sortByRating(a, b, MultiplayerMatchType.RushBullet)).slice(0, 20), count: filteredUsers.length });
 }
 
-export async function broadcastNotifications(emitter: Emitter, userId: Types.ObjectId) {
+export async function broadcastNotifications(gameId: GameId, emitter: Emitter, userId: Types.ObjectId) {
   if (emitter) {
     // get notifications
     const notificationAgg = await NotificationModel.aggregate<Notification>([
-      { $match: { userId: userId._id, } },
+      { $match: { userId: userId._id, gameId: gameId } },
       { $sort: { createdAt: -1 } },
       { $limit: 5 },
       ...getEnrichNotificationPipelineStages(userId)

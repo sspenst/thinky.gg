@@ -38,8 +38,8 @@ export default withAuth({
       // if successful, return 200 with the user's notifications
       const [reqUser] = await Promise.all(
         [
-          enrichReqUser(req.user),
-          requestBroadcastNotifications(new Types.ObjectId(req.user._id.toString())),
+          enrichReqUser(req.gameId, req.user),
+          requestBroadcastNotifications(req.gameId, new Types.ObjectId(req.user._id.toString())),
         ]
       );
       const updatedNotifications = reqUser.notifications.map((notification) => {

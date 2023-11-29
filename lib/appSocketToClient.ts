@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import { Emitter } from '@socket.io/mongo-emitter';
 import { Mongoose, Types } from 'mongoose';
 import { logger } from '../helpers/logger';
@@ -64,14 +65,14 @@ export async function requestClearBroadcastMatchSchedule(matchId: string) {
   await clearBroadcastMatchSchedule(matchId);
 }
 
-export async function requestBroadcastNotifications(userId: Types.ObjectId) {
+export async function requestBroadcastNotifications(gameId: GameId, userId: Types.ObjectId) {
   if (!global.MongoEmitter) {
     logger.warn('App Server asked itself to broadcast notifications but MongoEmitter is not created');
 
     return;
   }
 
-  await broadcastNotifications(global.MongoEmitter, userId);
+  await broadcastNotifications(gameId, global.MongoEmitter, userId);
 }
 
 export async function requestKillSocket(userId: Types.ObjectId) {

@@ -1,3 +1,5 @@
+import { GameId } from '@root/constants/GameId';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
@@ -15,6 +17,7 @@ import { NotificationModel } from '../../models/mongoose';
 const notificationsPerPage = 20;
 
 type NotificationSearchObjProps = {
+  gameId: GameId
   userId: Types.ObjectId;
   read?: boolean;
 }
@@ -34,6 +37,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
+  const gameId = getGameIdFromReq(context.req);
 
   if (!reqUser) {
     return {
@@ -50,7 +54,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     page: typeof page !== 'string' || isNaN(parseInt(page + '')) ? DefaultQuery.page : parseInt(page),
   } as SearchQuery;
 
-  const searchObj: NotificationSearchObjProps = { userId: reqUser._id };
+  const searchObj: NotificationSearchObjProps = { userId: reqUser._id, gameId: gameId };
 
   if (searchQuery.filter === 'unread') {
     searchObj.read = false;

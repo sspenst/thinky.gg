@@ -31,7 +31,7 @@ export async function createNewAdminMessageNotifications(gameId: GameId, userIds
 
   await NotificationModel.insertMany(notifications, { session: session });
   await bulkQueuePushNotification(notificationIds, session);
-  await Promise.all(userIds.map(userId => requestBroadcastNotifications(userId)));
+  await Promise.all(userIds.map(userId => requestBroadcastNotifications(gameId, userId)));
 
   return notifications;
 }
@@ -57,7 +57,7 @@ export async function createNewWallPostNotification(gameId: GameId, type: Notifi
 
   ]);
 
-  await requestBroadcastNotifications(new Types.ObjectId(userId)); // needs to happen after creating the notif
+  await requestBroadcastNotifications(gameId, new Types.ObjectId(userId)); // needs to happen after creating the notif
 
   return notification;
 }
@@ -69,6 +69,7 @@ export async function createNewProUserNotification(gameId: GameId, userId: strin
     target: userId,
     targetModel: 'User',
     type: NotificationType.UPGRADED_TO_PRO,
+    gameId: gameId,
     // TODO: probably should check for createdAt < 1 day here...
   }, {
     gameId: gameId,
@@ -87,7 +88,7 @@ export async function createNewProUserNotification(gameId: GameId, userId: strin
 
   await Promise.all([
     queuePushNotification(notification._id),
-    requestBroadcastNotifications(new Types.ObjectId(userId)),
+    requestBroadcastNotifications(gameId, new Types.ObjectId(userId)),
   ]);
 
   return notification;
@@ -100,6 +101,7 @@ export async function createNewFollowerNotification(gameId: GameId, follower: st
     target: following,
     type: NotificationType.NEW_FOLLOWER,
     userId: following,
+    gameId: gameId,
     // TODO: probably should check for createdAt < 1 day here...
   }, {
     message: '',
@@ -117,7 +119,7 @@ export async function createNewFollowerNotification(gameId: GameId, follower: st
 
   await Promise.all([
     queuePushNotification(notification._id),
-    requestBroadcastNotifications(new Types.ObjectId(following)),
+    requestBroadcastNotifications(gameId, new Types.ObjectId(following)),
   ]);
 }
 
@@ -135,6 +137,7 @@ export async function createNewReviewOnYourLevelNotification(gameId: GameId, lev
     target: targetLevelId,
     type: NotificationType.NEW_REVIEW_ON_YOUR_LEVEL,
     userId: levelUserId,
+    gameId: gameId,
   }, {
     message: message,
     gameId: gameId,
@@ -151,7 +154,7 @@ export async function createNewReviewOnYourLevelNotification(gameId: GameId, lev
 
   await Promise.all([
     queuePushNotification(notification._id),
-    requestBroadcastNotifications(levelUserId as Types.ObjectId),
+    requestBroadcastNotifications(gameId, levelUserId as Types.ObjectId),
   ]);
 
   return notification;
@@ -179,6 +182,7 @@ export async function createNewAchievement(gameId: GameId, achievementType: Achi
     targetModel: 'User',
     type: NotificationType.NEW_ACHIEVEMENT,
     userId: userId,
+    gameId: gameId,
   }, {
     source: achievement._id,
     sourceModel: 'Achievement',
@@ -196,7 +200,7 @@ export async function createNewAchievement(gameId: GameId, achievementType: Achi
   if (!disablePushNotification) {
     await Promise.all([
       queuePushNotification(notification._id),
-      requestBroadcastNotifications(userId),
+      requestBroadcastNotifications(gameId, userId),
     ]);
   }
 
@@ -230,7 +234,7 @@ export async function createNewLevelAddedToCollectionNotification(gameId: GameId
 
   ]);
 
-  await requestBroadcastNotifications(new Types.ObjectId(level.userId)); // needs to happen after creating the notif
+  await requestBroadcastNotifications(gameId, new Types.ObjectId(level.userId)); // needs to happen after creating the notif
 
   return nm;
 }
@@ -269,7 +273,7 @@ export async function createNewLevelNotifications(gameId: GameId, userIdWhoCreat
     ...ids.map(id => queuePushNotification(id)),
   ]);
 
-  await Promise.all(usersThatFollow.map(user => requestBroadcastNotifications(user.source._id))); // needs to happen after creating the notif
+  await Promise.all(usersThatFollow.map(user => requestBroadcastNotifications(gameId, user.source._id))); // needs to happen after creating the notif
 
   return nm;
 }
@@ -300,7 +304,7 @@ export async function createNewRecordOnALevelYouSolvedNotifications(gameId: Game
 
   ]);
 
-  await Promise.all(userIds.map(userId => requestBroadcastNotifications(new Types.ObjectId(userId)))); // needs to happen after creating the notif
+  await Promise.all(userIds.map(userId => requestBroadcastNotifications(gameId, new Types.ObjectId(userId)))); // needs to happen after creating the notif
 
   return nm;
 }
