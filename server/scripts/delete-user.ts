@@ -43,6 +43,7 @@ async function unpublishLevel(level: Level) {
     MultiplayerMatchModel.find({
       state: MultiplayerMatchState.ACTIVE,
       levels: level._id,
+      gameId: level.gameId, // probably unnecessary
     }, {
       _id: 1,
       matchId: 1

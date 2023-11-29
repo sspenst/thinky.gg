@@ -116,10 +116,9 @@ export default async function startSocketIOServer(server: Server) {
 
   logger.info('Server Booted');
 
-  // TODO - need to schedule existing matches...
-
   // on connect we need to go through all the active levels and broadcast them... also scheduling messages for start and end
 
+  // TODO: May want to prevent a user to be in multiple matches across multiple games at once
   const activeMatches = await MultiplayerMatchModel.find({ state: MultiplayerMatchState.ACTIVE });
 
   activeMatches.map(async (match) => {

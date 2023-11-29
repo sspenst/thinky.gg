@@ -47,6 +47,7 @@ export async function quitMatch(matchId: string, userId: Types.ObjectId) {
     {
       matchId: matchId,
       players: userId,
+      // don't need gameId I believe in query because we query directly for matchId
       $or: [
         {
           startTime: { $gte: Date.now() },
@@ -342,6 +343,7 @@ export default withAuth(
             state: {
               $in: [MultiplayerMatchState.ACTIVE, MultiplayerMatchState.OPEN],
             },
+            gameId: req.gameId,
           },
         ).lean<MultiplayerMatch>();
 

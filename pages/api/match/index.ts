@@ -115,6 +115,7 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
         MultiplayerProfileModel.findOneAndUpdate(
           {
             userId: winnerId,
+            gameId: finishedMatch.gameId,
           },
           {
             userId: winnerId,
@@ -129,6 +130,7 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
         MultiplayerProfileModel.findOneAndUpdate(
           {
             userId: loserId,
+            gameId: finishedMatch.gameId,
           },
           {
             userId: loserId,
@@ -171,6 +173,7 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
           MultiplayerProfileModel.findOneAndUpdate(
             {
               userId: new Types.ObjectId(winnerId),
+              gameId: finishedMatch.gameId,
             },
             {
               $inc: {
@@ -186,6 +189,7 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
           MultiplayerProfileModel.findOneAndUpdate(
             {
               userId: new Types.ObjectId(loserId),
+              gameId: finishedMatch.gameId,
             },
             {
               $inc: {
@@ -308,6 +312,7 @@ async function createMatch(req: NextApiRequestWithAuth) {
       state: {
         $in: [MultiplayerMatchState.ACTIVE, MultiplayerMatchState.OPEN],
       },
+      gameId: req.gameId,
     },
   ).lean<MultiplayerMatch>();
 

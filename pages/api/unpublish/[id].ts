@@ -65,6 +65,7 @@ export default withAuth({ POST: {
         MultiplayerMatchModel.find({
           state: MultiplayerMatchState.ACTIVE,
           levels: id,
+          gameId: level.gameId,
         }, {
           _id: 1,
           matchId: 1
