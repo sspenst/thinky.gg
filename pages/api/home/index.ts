@@ -127,6 +127,7 @@ export default withAuth({
 }, async (req, res) => {
   const reqUser = req.user;
   const { lastLevelPlayed, latestLevels, latestReviews, levelOfDay, recommendedLevel, topLevelsThisMonth } = req.query;
+
   const [
     plastLevelPlayed,
     platestLevels,

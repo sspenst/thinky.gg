@@ -26,10 +26,12 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       enum: GameId,
       required: false,
     },
+    /** TODO: MOVE TO user */
     emailConfirmationToken: {
       type: String,
       select: false,
     },
+    /** TODO: MOVE TO user */
     emailConfirmed: {
       type: Boolean,
       default: false,
@@ -66,6 +68,7 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       type: String,
       required: true,
     },
+    /** TODO: MOVE TO user? */
     toursCompleted: {
       type: [{ type: String, enum: TourType }],
       required: false,
@@ -91,6 +94,6 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
   }
 );
 
-UserConfigSchema.index({ userId: 1 }, { unique: true });
+UserConfigSchema.index({ userId: 1, gameId: 1 }, { unique: true });
 
 export default UserConfigSchema;

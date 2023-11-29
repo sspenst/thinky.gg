@@ -2,7 +2,7 @@
 // ignoring because we will eventually deprecate this page
 /* istanbul ignore file */
 
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
 import StatFilter from '@root/constants/statFilter';
 import * as mongoose from 'mongoose';
 import { GetServerSidePropsContext } from 'next';
@@ -40,7 +40,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   if (process.env.OFFLINE_BUILD !== 'true') {
     await dbConnect();
     // TODO: getStaticProps doesnt have access to context req... so hardcoding for now
-    const gameId = GameId.PATHOLOGY;
+    const gameId = DEFAULT_GAME_ID;
 
     // get all levels grouped by userId
     usersWithLevels = await LevelModel.aggregate<UserWithLevels>([
