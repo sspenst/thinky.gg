@@ -424,7 +424,7 @@ const tests = [
       expect(lvl.calc_playattempts_duration_sum).toBe(0);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
 
-      const lastLevelPlayed = await getLastLevelPlayed({
+      const lastLevelPlayed = await getLastLevelPlayed(GameId.PATHOLOGY, {
         _id: new Types.ObjectId(TestId.USER),
       } as User);
 

@@ -62,7 +62,7 @@ async function getRecentAverageDifficulty(reqUser: User, numResults = 1) {
 
 async function getRecommendedLevel(gameId: GameId, reqUser: User) {
   const avgDifficulty = await getRecentAverageDifficulty(reqUser, 10);
-  const recentPlayAttempts = await getPlayAttempts(reqUser, {}, 10);
+  const recentPlayAttempts = await getPlayAttempts(gameId, reqUser, {}, 10);
   const uniqueLevelIdsFromRecentAttempts = new Set(recentPlayAttempts.map(playAttempt => playAttempt.levelId._id.toString()));
 
   const query = {
@@ -135,7 +135,7 @@ export default withAuth({
     precommendedLevel,
     ptopLevelsThisMonth
   ] = await Promise.all([
-    lastLevelPlayed ? getLastLevelPlayed(reqUser) : undefined,
+    lastLevelPlayed ? getLastLevelPlayed(req.gameId, reqUser) : undefined,
     latestLevels ? getLatestLevels(req.gameId, reqUser) : undefined,
     latestReviews ? getLatestReviews(reqUser) : undefined,
     levelOfDay ? getLevelOfDay(req.gameId, reqUser) : undefined,

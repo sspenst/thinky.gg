@@ -214,6 +214,7 @@ export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {
     {
       $match: {
         levelId: levelId,
+        // Dont need gameId since querying for id directly...
       }
     },
     {
