@@ -143,13 +143,13 @@ export async function getLevelOfDay(gameId: GameId, reqUser?: User | null) {
     await session.withTransaction(async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (previouslySelected?.value as any)?.push(genLevel._id);
-      await KeyValueModel.updateOne({ key: 'level-of-day-list' }, {
+      await KeyValueModel.updateOne({ key: 'level-of-day-list', gameId: gameId }, {
         $set: {
           value: previouslySelected?.value || [genLevel._id],
         }
       }, { session: session, upsert: true });
 
-      await KeyValueModel.updateOne({ key: key }, {
+      await KeyValueModel.updateOne({ key: key, gameId: gameId }, {
         $set: {
           value: new Types.ObjectId(genLevel._id),
           gameId: genLevel.gameId,

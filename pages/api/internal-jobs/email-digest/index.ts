@@ -357,7 +357,7 @@ export async function sendAutoUnsubscribeUsers(gameId: GameId, batchId: Types.Ob
     const sentError = await sendMail(batchId, EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE, user, subject, body);
 
     if (!sentError) {
-      await UserConfigModel.updateOne({ userId: user._id }, { emailDigest: EmailDigestSettingTypes.NONE });
+      await UserConfigModel.updateOne({ userId: user._id, gameId: gameId }, { emailDigest: EmailDigestSettingTypes.NONE });
       sentList.push(user.email);
     } else {
       failedList.push(user.email);
