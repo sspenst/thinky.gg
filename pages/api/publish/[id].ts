@@ -106,7 +106,7 @@ export default withAuth({ POST: {
     data: level.data,
     isDeleted: { $ne: true },
     isDraft: false,
-  //  gameId: level.gameId,
+    gameId: level.gameId,
   })) {
     return res.status(400).json({
       error: 'An identical level already exists',
@@ -118,7 +118,7 @@ export default withAuth({ POST: {
     isDraft: false,
     name: level.name,
     userId: req.userId,
-    //gameId: level.gameId,
+    gameId: level.gameId,
   })) {
     return res.status(400).json({
       error: 'A level with this name already exists',

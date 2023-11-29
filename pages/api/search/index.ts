@@ -123,6 +123,7 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
   const searchObj = {
     isDeleted: { $ne: true },
     isDraft: false,
+    gameId: gameId,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as FilterQuery<any>;
   const userId = reqUser?._id;

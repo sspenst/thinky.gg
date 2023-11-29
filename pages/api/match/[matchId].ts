@@ -227,6 +227,7 @@ export async function generateLevels(
       $match: {
         isDeleted: { $ne: true },
         isDraft: false,
+        gameId: gameId,
         leastMoves: {
           // least moves between 10 and 100
           $gte: MIN_STEPS,
@@ -250,7 +251,6 @@ export async function generateLevels(
         height: {
           $lte: MAX_HEIGHT,
         },
-        gameId: gameId
       },
     },
     {

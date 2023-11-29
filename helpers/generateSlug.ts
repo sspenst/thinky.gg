@@ -5,7 +5,7 @@ import Level from '../models/db/level';
 import { CollectionModel, LevelModel } from '../models/mongoose';
 
 async function getLevelBySlug(gameId: GameId, slug: string, options?: QueryOptions): Promise<Level | null> {
-  return await LevelModel.findOne({ slug: slug }, {}, options);
+  return await LevelModel.findOne({ slug: slug, gameId: gameId }, {}, options);
 }
 
 async function getCollectionBySlug(gameId: GameId, slug: string, options?: QueryOptions): Promise<Collection | null> {

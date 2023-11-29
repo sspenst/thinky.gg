@@ -168,6 +168,7 @@ export default withAuth({
         $match: {
           _id: new Types.ObjectId(id as string),
           isDeleted: { $ne: true },
+          // TODO: Do we need to filter out drafts here?
           gameId: req.gameId,
         }
       },

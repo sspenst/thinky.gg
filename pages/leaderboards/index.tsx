@@ -19,7 +19,7 @@ async function getDifficultyLeaderboard(gameId: GameId, index: DIFFICULTY_INDEX)
         isDeleted: {
           $ne: true,
         },
-        gameId: GameId,
+        gameId: gameId,
         calc_difficulty_estimate: {
           $gte: difficultyRange[0],
         },
