@@ -94,10 +94,6 @@ export async function getLatestReviews(gameId: GameId, reqUser: User | null = nu
 
     ]);
 
-    if (!reviews || reviews.length === 0) {
-      return null;
-    }
-
     return reviews.map(review => {
       cleanUser(review.userId);
 
