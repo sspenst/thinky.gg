@@ -63,6 +63,7 @@ export default withAuth(
         {
           userId: req.user._id,
           type: CollectionType.PlayLater,
+          gameId: req.gameId
         },
         {
           $pull: {

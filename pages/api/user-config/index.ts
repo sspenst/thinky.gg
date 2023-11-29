@@ -129,7 +129,7 @@ export default withAuth({
     }
 
     try {
-      const updateResult = await UserConfigModel.updateOne({ userId: req.userId }, { $set: setObj, $addToSet: { mobileDeviceTokens: deviceToken } });
+      const updateResult = await UserConfigModel.updateOne({ userId: req.userId, gameId: req.gameId }, { $set: setObj, $addToSet: { mobileDeviceTokens: deviceToken } });
 
       /* istanbul ignore next */
       if (updateResult.acknowledged === false) {
