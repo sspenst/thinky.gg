@@ -294,6 +294,7 @@ export async function sendAutoUnsubscribeUsers(gameId: GameId, batchId: Types.Ob
     LevelModel.countDocuments({
       isDeleted: { $ne: true },
       isDraft: false,
+      gameId: gameId
     }),
     LevelModel.distinct('userId'),
     UserModel.aggregate([
@@ -386,6 +387,7 @@ export async function sendEmailReactivation(gameId: GameId, batchId: Types.Objec
     LevelModel.countDocuments({
       isDeleted: { $ne: true },
       isDraft: false,
+      gameId: gameId
     }),
     LevelModel.distinct('userId'),
     UserModel.aggregate([
