@@ -1,10 +1,12 @@
 /* istanbul ignore file */
 
+import { getSolveStateFunction } from '@root/components/level/solutionStates/helpers';
+import { AppContext } from '@root/contexts/appContext';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
-import React from 'react';
+import React, { useContext } from 'react';
 import LinkInfo from '../../components/formatted/linkInfo';
 import Game from '../../components/level/game';
 import Page from '../../components/page/page';
@@ -85,6 +87,7 @@ interface TestProps {
 
 export default function Test({ level }: TestProps) {
   const router = useRouter();
+  const { game } = useContext(AppContext);
 
   return (
     <Page
@@ -103,6 +106,7 @@ export default function Test({ level }: TestProps) {
           allowFreeUndo={true}
           disablePlayAttempts={true}
           level={level}
+          isSolved={getSolveStateFunction(game)}
           onStatsSuccess={() => router.replace(router.asPath)}
         />
       </div>

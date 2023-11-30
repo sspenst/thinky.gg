@@ -80,7 +80,7 @@ MyApp.getInitialProps = async ({ ctx }: { ctx: NextPageContext }) => {
     userAgent = navigator.userAgent;
   }
 
-  return { userAgent, game: Games[gameId] || GameId.UNAVAILABLE };
+  return { userAgent, game: Games[gameId] };
 };
 
 export default function MyApp({ Component, pageProps, userAgent, game }: AppProps & { userAgent: string, game: Game }) {

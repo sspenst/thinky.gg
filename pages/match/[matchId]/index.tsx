@@ -1,4 +1,5 @@
 import Grid from '@root/components/level/grid';
+import { getSolveStateFunction } from '@root/components/level/solutionStates/helpers';
 import MatchResults from '@root/components/multiplayer/matchResults';
 import { MatchGameState } from '@root/helpers/gameStateHelpers';
 import { UserWithMultiplayerProfile } from '@root/models/db/user';
@@ -52,7 +53,7 @@ export default function Match() {
   const [activeLevel, setActiveLevel] = useState<Level | null>(null);
   const [connectedPlayersInRoom, setConnectedPlayersInRoom] = useState<{count: number, users: UserWithMultiplayerProfile[]}>();
   const [match, setMatch] = useState<MultiplayerMatch>();
-  const { multiplayerSocket, sounds, user } = useContext(AppContext);
+  const { game, multiplayerSocket, sounds, user } = useContext(AppContext);
   const readyMark = useRef(false);
   const router = useRouter();
   const startSoundPlayed = useRef(false);
@@ -504,6 +505,7 @@ export default function Match() {
             {activeLevel && (
               <div className='grow h-full w-full' key={'div-' + activeLevel._id.toString()}>
                 <Game
+
                   allowFreeUndo={true}
                   disableCheckpoints={true}
                   enableSessionCheckpoint={false}
@@ -511,6 +513,7 @@ export default function Match() {
                   key={'game-' + activeLevel._id.toString()}
                   level={activeLevel}
                   matchId={match.matchId}
+                  isSolved={getSolveStateFunction(game)}
                   onMove={(gameState) => {
                     const matchGameState: MatchGameState = { ...gameState, leastMoves: activeLevel.leastMoves };
 

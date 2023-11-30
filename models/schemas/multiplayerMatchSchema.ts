@@ -1,5 +1,5 @@
 import { GameId } from '@root/constants/GameId';
-import { randomRotateLevelDataViaMatchHash } from '@root/helpers/validateSolution';
+import { randomRotateLevelDataViaMatchHash } from '@root/helpers/randomRotateLevelDataViaMatchHash';
 import mongoose, { ObjectId } from 'mongoose';
 import cleanUser from '../../lib/cleanUser';
 import {

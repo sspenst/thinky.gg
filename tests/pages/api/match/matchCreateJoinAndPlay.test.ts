@@ -214,7 +214,7 @@ describe('matchCreateJoinAndPlay', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
-        const mock = jest.requireActual('../../../../helpers/validateSolution'); // import and retain the original functionalities
+        const mock = jest.requireActual('../../../../helpers/solutionValidators/validatePathologySolution'); // import and retain the original functionalities
 
         jest.spyOn(mock, 'default').mockImplementation(() => {
           return true;

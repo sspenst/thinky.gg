@@ -1,4 +1,5 @@
 import Dimensions from '@root/constants/dimensions';
+import { AppContext } from '@root/contexts/appContext';
 import { MusicContext } from '@root/contexts/musicContext';
 import { PageContext } from '@root/contexts/pageContext';
 import Link from 'next/link';
@@ -14,6 +15,7 @@ import PostGameModal from '../modal/postGameModal';
 import Game from './game';
 import FormattedLevelInfo from './info/formattedLevelInfo';
 import Solved from './info/solved';
+import { getSolveStateFunction } from './solutionStates/helpers';
 
 interface GameWrapperProps {
   chapter?: string;
@@ -28,6 +30,7 @@ interface GameWrapperProps {
 export default function GameWrapper({ chapter, collection, setCollection, level, onNext, onPrev, user }: GameWrapperProps) {
   const [dontShowPostGameModal, setDontShowPostGameModal] = useState(false);
   const [isCollectionViewHidden, setIsCollectionViewHidden] = useState(false);
+  const { game } = useContext(AppContext);
   const { isDynamic, isDynamicSupported, toggleVersion } = useContext(MusicContext);
   const [isLevelInfoOpen, setIsLevelInfoOpen] = useState(false);
   const [mutePostGameModalForThisLevel, setMutePostGameModalForThisLevel] = useState(false);
@@ -201,6 +204,7 @@ export default function GameWrapper({ chapter, collection, setCollection, level,
 
             onPrev();
           } : undefined}
+          isSolved={getSolveStateFunction(game)}
           onSolve={() => {
             if (isDynamicSupported && isDynamic) {
               toggleVersion('hot');
