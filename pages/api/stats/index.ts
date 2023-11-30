@@ -1,6 +1,8 @@
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import Direction from '@root/constants/direction';
+import { Games } from '@root/constants/Games';
 import getDifficultyEstimate from '@root/helpers/getDifficultyEstimate';
+import { randomRotateLevelDataViaMatchHash } from '@root/helpers/randomRotateLevelDataViaMatchHash';
 import PlayAttempt from '@root/models/db/playAttempt';
 import User from '@root/models/db/user';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
@@ -12,7 +14,6 @@ import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import { createNewRecordOnALevelYouSolvedNotifications } from '../../../helpers/notificationHelper';
-import validateSolution, { randomRotateLevelDataViaMatchHash } from '../../../helpers/validateSolution';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level, { EnrichedLevel } from '../../../models/db/level';
 import Record from '../../../models/db/record';
@@ -72,7 +73,9 @@ export default withAuth({
           randomRotateLevelDataViaMatchHash(level, matchId);
         }
 
-        if (!validateSolution(directions, level)) {
+        const validateSolutionFunction = Games[req.gameId].validateSolutionFunction;
+
+        if (!validateSolutionFunction(directions, level)) {
           resTrack.status = 400;
           resTrack.json.error = `Invalid solution provided for level ${levelId}`;
           throw new Error(resTrack.json.error);

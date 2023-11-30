@@ -32,7 +32,7 @@ interface AppContextInterface {
 }
 
 export const AppContext = createContext<AppContextInterface>({
-  game: Games[GameId.UNAVAILABLE],
+  game: Games[GameId.GLOBAL],
   deviceInfo: {
     isMobile: false,
     isAndroid: false,

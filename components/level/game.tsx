@@ -25,7 +25,7 @@ interface SessionCheckpoint {
   directions: Direction[];
 }
 
-interface GameProps {
+export interface GameProps {
   allowFreeUndo?: boolean;
   disableCheckpoints?: boolean;
   disablePlayAttempts?: boolean;
@@ -37,6 +37,7 @@ interface GameProps {
   onMove?: (gameState: GameState) => void;
   onNext?: () => void;
   onPrev?: () => void;
+  isSolved: (gameState: GameState) => boolean;
   onSolve?: () => void;
   onStatsSuccess?: () => void;
 }
@@ -53,6 +54,7 @@ export default function Game({
   onMove,
   onNext,
   onPrev,
+  isSolved,
   onSolve,
   onStatsSuccess,
 }: GameProps) {
@@ -459,7 +461,7 @@ export default function Game({
         return prevGameState;
       }
 
-      if (newGameState.board[newGameState.pos.y][newGameState.pos.x].tileType === TileType.End) {
+      if (isSolved(newGameState)) {
         if (newGameState.moves.length <= level.leastMoves && onSolve) {
           onSolve();
         }
