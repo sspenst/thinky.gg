@@ -1,4 +1,5 @@
 import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import { Games } from '@root/constants/Games';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';
 import { Types } from 'mongoose';
@@ -152,9 +153,9 @@ describe('Notifications', () => {
         const notificationSample: Notification = response.notifications[0];
         const data = getMobileNotification(DEFAULT_GAME_ID, notificationSample);
 
-        expect(data.title).toBe('Pathology - New Review');
+        expect(data.title).toBe(Games[DEFAULT_GAME_ID].displayName + ' - New Review');
         expect(data.body).toBe('BBB gave a 4 star rating on your level test level 1');
-        expect(data.url).toEqual('https://pathology.gg/level/test/test-level-1');
+        expect(data.url).toEqual('https://' + Games[DEFAULT_GAME_ID].baseUrl + '/level/test/test-level-1');
       },
     });
   });

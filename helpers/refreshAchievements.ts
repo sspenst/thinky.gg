@@ -2,6 +2,7 @@ import { AchievementCategory, AchievementCategoryMapping } from '@root/constants
 import AchievementType from '@root/constants/achievements/achievementType';
 import Discord from '@root/constants/discord';
 import { GameId } from '@root/constants/GameId';
+import { Games } from '@root/constants/Games';
 import { getSolvesByDifficultyTable } from '@root/helpers/getSolvesByDifficultyTable';
 import { createNewAchievement } from '@root/helpers/notificationHelper';
 import { getDifficultyRollingSum } from '@root/helpers/playerRankHelper';
@@ -68,7 +69,7 @@ const AchievementCategoryFetch = {
  */
 export async function refreshAchievements(gameId: GameId, userId: Types.ObjectId, categories: AchievementCategory[]) {
   // it is more efficient to just grab all their achievements then to loop through and query each one if they have it
-
+  const game = Games[gameId];
   const fetchPromises = [];
 
   for (const category of categories) {
@@ -103,9 +104,9 @@ export async function refreshAchievements(gameId: GameId, userId: Types.ObjectId
         if (achievementInfo.discordNotification) {
           // Should be "<User.name> just unlocked <Achievement.name> achievement!" where <User.name> is a link to the user's profile and <Achievement.name> is a link to the achievement's page
           const userName = user?.name;
-          const userHref = 'https://pathology.gg/profile/' + userName;
+          const userHref = 'https://' + game.baseUrl + '/profile/' + userName;
           const userLinkDiscord = `[${userName}](${userHref})`;
-          const achievementHref = 'https://pathology.gg/achievement/' + achievementType;
+          const achievementHref = 'https://' + game.baseUrl + '/achievement/' + achievementType;
           const achievementLinkDiscord = `[${achievementInfo.name}](${achievementHref})`;
           // message should also include emoji
           const message = `${userLinkDiscord} just unlocked the ${achievementLinkDiscord} ${achievementInfo.emoji} achievement!`;
