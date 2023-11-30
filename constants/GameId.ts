@@ -5,4 +5,4 @@ export enum GameId {
 
 }
 
-export const DEFAULT_GAME_ID = GameId.SOKOBAN;
+export const DEFAULT_GAME_ID = GameId.PATHOLOGY;
