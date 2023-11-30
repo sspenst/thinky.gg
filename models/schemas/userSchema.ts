@@ -28,6 +28,7 @@ const UserSchema = new mongoose.Schema<User>({
     maxlength: 256,
     select: false
   },
+  // TODO: Move ALL the calcs to userConfig
   calcRankedSolves: {
     type: Number,
     required: true,
@@ -37,6 +38,7 @@ const UserSchema = new mongoose.Schema<User>({
     type: Number,
     default: 0,
   },
+
   calc_records: {
     type: Number,
     default: 0,
