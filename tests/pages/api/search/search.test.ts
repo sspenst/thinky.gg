@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import Role from '@root/constants/role';
 import StatFilter from '@root/constants/statFilter';
 import TileType from '@root/constants/tileType';
@@ -54,11 +54,11 @@ beforeAll(async () => {
     const id = new Types.ObjectId();
     const leastMvs = (100 + i);
 
-    promises.push(initLevel(GameId.PATHOLOGY, usr,
+    promises.push(initLevel(DEFAULT_GAME_ID, usr,
       animalNames[(i * i + 171) % animalNames.length] + ' ' + animalNames[i % animalNames.length],
       {
         _id: id,
-        gameId: GameId.PATHOLOGY,
+        gameId: DEFAULT_GAME_ID,
         leastMoves: leastMvs,
         ts: TimerUtil.getTs() - offset,
         calc_playattempts_unique_users: Array.from({ length: 11 }, () => {return new Types.ObjectId() as mongoose.Types.ObjectId;}),
@@ -72,7 +72,7 @@ beforeAll(async () => {
     if (i % 3 === 0) {
       statsToCreate.push({
         _id: new Types.ObjectId(),
-        gameId: GameId.PATHOLOGY,
+        gameId: DEFAULT_GAME_ID,
         userId: TestId.USER,
         levelId: id.toString(),
         complete: true,
@@ -83,7 +83,7 @@ beforeAll(async () => {
     } else if (i % 5 === 0 ) {
       statsToCreate.push({
         _id: new Types.ObjectId(),
-        gameId: GameId.PATHOLOGY,
+        gameId: DEFAULT_GAME_ID,
         userId: TestId.USER,
         levelId: id.toString(),
         complete: false,

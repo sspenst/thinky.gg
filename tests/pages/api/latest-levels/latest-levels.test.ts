@@ -1,4 +1,4 @@
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -84,7 +84,7 @@ describe('Testing latest levels api', () => {
     for (let i = 0; i < 30; i++) {
       promises.push(LevelModel.create({
         _id: new Types.ObjectId(),
-        gameId: GameId.PATHOLOGY,
+        gameId: DEFAULT_GAME_ID,
         authorNote: 'level ' + i + ' author note',
         data: '40000\n12000\n05000\n67890\nABCD3',
         height: 5,

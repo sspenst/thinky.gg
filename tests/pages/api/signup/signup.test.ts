@@ -1,4 +1,4 @@
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
 import UserConfig from '@root/models/db/userConfig';
 import { enableFetchMocks } from 'jest-fetch-mock';
@@ -309,7 +309,7 @@ describe('pages/api/signup', () => {
         const config = await UserConfigModel.findOne({ userId: db._id }) as UserConfig;
 
         expect(config).toBeDefined();
-        expect(config.gameId).toBe(GameId.PATHOLOGY);
+        expect(config.gameId).toBe(DEFAULT_GAME_ID);
 
         const disallowedEmailNotifications = [
           NotificationType.NEW_FOLLOWER,

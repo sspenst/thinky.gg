@@ -1,5 +1,6 @@
 import { AchievementRulesCombined } from '@root/constants/achievements/achievementInfo';
-import { Game } from '@root/constants/Games';
+import { GameId } from '@root/constants/GameId';
+import { Games } from '@root/constants/Games';
 import Collection from '@root/models/db/collection';
 import NotificationType from '../constants/notificationType';
 import { EnrichedLevel } from '../models/db/level';
@@ -40,7 +41,8 @@ function getNewReviewOnYourLevelBody(message?: string) {
 }
 
 /* notification must be populated using getEnrichNotificationPipelineStages */
-export default function getMobileNotification(game: Game, notification: Notification) {
+export default function getMobileNotification(gameId: GameId, notification: Notification) {
+  const game = Games[gameId];
   const host = 'https://pathology.gg';
   const mobileNotification = {
     badgeCount: 1,

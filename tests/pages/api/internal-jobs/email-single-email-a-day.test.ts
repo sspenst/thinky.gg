@@ -1,4 +1,4 @@
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { NextApiRequestGuest } from '@root/helpers/apiWrapper';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';
@@ -29,7 +29,7 @@ jest.mock('nodemailer', () => ({
 }));
 const defaultReq: NextApiRequestGuest = {
   method: 'GET',
-  gameId: GameId.PATHOLOGY,
+  gameId: DEFAULT_GAME_ID,
   query: {
     secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
   },
@@ -88,7 +88,7 @@ describe('Email per day', () => {
 
             if (day === 7) {
               // create a notification on same day as their reactivation email... it should get skipped
-              await createNewRecordOnALevelYouSolvedNotifications(GameId.PATHOLOGY, [TestId.USER], TestId.USER_B, TestId.LEVEL, TestId.LEVEL);
+              await createNewRecordOnALevelYouSolvedNotifications(DEFAULT_GAME_ID, [TestId.USER], TestId.USER_B, TestId.LEVEL, TestId.LEVEL);
             }
           } else if (day === 8) {
             expect(totalEmailsSent.length).toBe(9); // +1 the notification daily digest?

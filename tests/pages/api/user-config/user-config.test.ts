@@ -1,4 +1,4 @@
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
@@ -76,7 +76,7 @@ describe('pages/api/user-config', () => {
         expect(res.status).toBe(200);
         const config = response as UserConfig;
 
-        expect(config.gameId).toBe(GameId.PATHOLOGY);
+        expect(config.gameId).toBe(DEFAULT_GAME_ID);
         expect(config.theme).toBe(Theme.Modern);
         expect(config.tutorialCompletedAt).toBe(0);
         expect(config.userId).toBe(TestId.USER_C);
@@ -161,7 +161,7 @@ describe('pages/api/user-config', () => {
         expect(config.theme).toBe(Theme.Light);
         expect(config.tutorialCompletedAt).toBeGreaterThan(Date.now() - 1000);
         expect(config.userId).toBe(TestId.USER_C);
-        expect(config.gameId).toBe(GameId.PATHOLOGY);
+        expect(config.gameId).toBe(DEFAULT_GAME_ID);
       },
     });
   });

@@ -1,4 +1,4 @@
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { NextApiRequestGuest } from '@root/helpers/apiWrapper';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';
@@ -27,7 +27,7 @@ enableFetchMocks();
 
 const DefaultReq = {
   method: 'GET',
-  gameId: GameId.PATHOLOGY,
+  gameId: DEFAULT_GAME_ID,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -96,7 +96,7 @@ describe('GET /api/level-of-day', () => {
         });
 
         expect(lvlOfDay).toBeDefined();
-        expect(lvlOfDay.gameId).toBe(GameId.PATHOLOGY);
+        expect(lvlOfDay.gameId).toBe(DEFAULT_GAME_ID);
         expect(lvlOfDay?.value).toStrictEqual(new Types.ObjectId(TestId.LEVEL_3));
       },
     });

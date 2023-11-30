@@ -1,4 +1,4 @@
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -32,7 +32,7 @@ describe('Testing latest reviews api', () => {
 
       promises.push(LevelModel.create({
         _id: levelId,
-        gameId: GameId.PATHOLOGY,
+        gameId: DEFAULT_GAME_ID,
         leastMoves: i + 1,
         data: '40000\n12000\n05000\n67890\nABCD3',
         height: 5,
@@ -47,7 +47,7 @@ describe('Testing latest reviews api', () => {
 
       promises.push(ReviewModel.create({
         _id: new Types.ObjectId(),
-        gameId: GameId.PATHOLOGY,
+        gameId: DEFAULT_GAME_ID,
         levelId: levelId,
         score: 5,
         text: 'My review ' + i,
@@ -152,7 +152,7 @@ describe('Testing latest reviews api', () => {
   test('Should not return reviews without text', async () => {
     await ReviewModel.create({
       _id: new Types.ObjectId(),
-      gameId: GameId.PATHOLOGY,
+      gameId: DEFAULT_GAME_ID,
       levelId: new Types.ObjectId(),
       score: 1,
       ts: TimerUtil.getTs(),

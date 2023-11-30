@@ -207,7 +207,7 @@ async function processQueueMessage(queueMessage: QueueMessage) {
           } else if (whereSend === sendPushNotification && disallowedPush) {
             log = `Notification ${notificationId} not sent: ${notification.type} not allowed by user (push)`;
           } else {
-            log = await whereSend(notification);
+            log = await whereSend(userConfig.gameId, notification);
           }
         }
       }

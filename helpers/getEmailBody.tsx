@@ -2,7 +2,6 @@
 
 import { GameId } from '@root/constants/GameId';
 import { Games } from '@root/constants/Games';
-import user from '@root/pages/api/user';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { EnrichedLevel } from '../models/db/level';

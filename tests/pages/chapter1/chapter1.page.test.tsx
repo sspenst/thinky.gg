@@ -1,4 +1,4 @@
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext } from 'next';
 import { Logger } from 'winston';
@@ -14,7 +14,7 @@ beforeAll(async () => {
   await CampaignModel.create({
     _id: new Types.ObjectId(),
     collections: [new Types.ObjectId(TestId.COLLECTION)],
-    gameId: GameId.PATHOLOGY,
+    gameId: DEFAULT_GAME_ID,
     name: 'Chapter 1',
     slug: 'chapter1',
   });

@@ -1,4 +1,4 @@
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext } from 'next';
 import { Logger } from 'winston';
@@ -12,14 +12,14 @@ import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
 import { GraphModel, UserModel } from '../../../models/mongoose';
 import * as search from '../../../pages/api/search';
-import { getServerSideProps, ProfileTab } from '../../../pages/profile/[name]/[[...tab]]/index';
+import { ProfileTab, getServerSideProps } from '../../../pages/profile/[name]/[[...tab]]/index';
 
 beforeAll(async () => {
   await dbConnect();
   const promises = [];
 
   for (let i = 0; i < 30; i++) {
-    promises.push(createNewReviewOnYourLevelNotification(GameId.PATHOLOGY, new Types.ObjectId(TestId.USER), new Types.ObjectId(TestId.USER_B), new Types.ObjectId(), 'id ' + i));
+    promises.push(createNewReviewOnYourLevelNotification(DEFAULT_GAME_ID, new Types.ObjectId(TestId.USER), new Types.ObjectId(TestId.USER_B), new Types.ObjectId(), 'id ' + i));
   }
 
   await Promise.all(promises);
@@ -28,7 +28,7 @@ afterAll(async () => {
   await dbDisconnect();
 });
 
-const gameId = GameId.PATHOLOGY;
+const gameId = DEFAULT_GAME_ID,;
 
 describe('pages/profile page', () => {
   test('getServerSideProps with no parameters', async () => {
