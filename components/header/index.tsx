@@ -51,7 +51,7 @@ export default function Header({
       <div className='flex gap-4 items-center z-20'>
         <HeaderControls />
         {user && <div className='hidden sm:block h-6 w-px bg-neutral-500' />}
-        <div className='flex gap-3 items-center'>
+        <div className='flex gap-2 items-center'>
           {user && <>
             <Link
               className='hidden sm:block'
@@ -61,7 +61,8 @@ export default function Header({
               id='levelsSolvedBtn'
             >
               <div className='flex flex-col gap-1'>
-                <span className='font-bold leading-none'>{user.calcRankedSolves}</span>
+                <span className='font-bold text-yellow-500 leading-none'>{user.calcRankedSolves} 🏅</span>
+                <span className='font-bold text-sm leading-none'>{user.score}</span>
               </div>
               <StyledTooltip id='ranked-solves-header' />
             </Link>
