@@ -1,4 +1,5 @@
 import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import { Games } from '@root/constants/Games';
 import NotificationType from '@root/constants/notificationType';
 import UserConfig from '@root/models/db/userConfig';
 import { enableFetchMocks } from 'jest-fetch-mock';
@@ -244,7 +245,7 @@ describe('pages/api/signup', () => {
         const response = await res.json();
 
         expect(res.status).toBe(400);
-        expect(response.error).toBe('We tried emailing you a reset password link. If you still have problems please contact Pathology devs via Discord.');
+        expect(response.error).toBe('We tried emailing you a reset password link. If you still have problems please contact ' + Games[DEFAULT_GAME_ID].displayName + ' devs via Discord.');
       },
     });
   });

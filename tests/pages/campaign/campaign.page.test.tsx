@@ -1,4 +1,5 @@
 import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import { Games } from '@root/constants/Games';
 import { GetServerSidePropsContext } from 'next';
 import { Logger } from 'winston';
 import TestId from '../../../constants/testId';
@@ -43,11 +44,11 @@ describe('pages/campaign/[slug] page', () => {
     expect(ret.redirect?.destination).toBe('/');
     expect(ret.redirect?.permanent).toBe(false);
   });
-  test('getServerSideProps not logged in and with pathology slug', async () => {
+  test('getServerSideProps not logged in and with game id slug', async () => {
     // Created from initialize db file
     const context = {
       params: {
-        slug: 'pathology',
+        slug: Games[DEFAULT_GAME_ID].id,
       },
     };
     const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);

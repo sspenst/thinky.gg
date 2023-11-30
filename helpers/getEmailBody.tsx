@@ -158,7 +158,7 @@ export default function getEmailBody(
                       <h1>Hi {user.name},</h1>
                       <p>{title}</p>
                       {notificationsCount > 0 && (
-                        <p>You have <a href='https://pathology.gg/notifications?source=email-digest&filter=unread' style={{
+                        <p>You have <a href={'https://' + game.baseUrl + '/notifications?source=email-digest&filter=unread'} style={{
                           color: '#4890ce',
                           textDecoration: 'none',
                         }}>{notificationsCount} unread notification{notificationsCount !== 1 ? 's' : ''}</a></p>
@@ -188,14 +188,14 @@ export default function getEmailBody(
                           <div style={{
                             textAlign: 'center',
                           }}>
-                            <a href={`https://pathology.gg/level/${levelOfDay.slug}`} style={{
+                            <a href={`https://${game.baseUrl}/level/${levelOfDay.slug}`} style={{
                               color: '#4890ce',
                               textDecoration: 'none',
                             }}>
                               {levelOfDay.name}
                             </a>
                             {' by '}
-                            <a href={`https://pathology.gg/profile/${encodeURI(levelOfDay.userId.name)}`} style={{
+                            <a href={`https://${game.baseUrl}/profile/${encodeURI(levelOfDay.userId.name)}`} style={{
                               color: '#4890ce',
                               textDecoration: 'none',
                             }}>
@@ -204,19 +204,19 @@ export default function getEmailBody(
                             <div style={{
                               padding: 20,
                             }}>
-                              <a href={`https://pathology.gg/level/${levelOfDay.slug}`} style={{
+                              <a href={`https://${game.baseUrl}/level/${levelOfDay.slug}`} style={{
                                 color: '#4890ce',
                                 textDecoration: 'none',
                               }}>
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={`https://pathology.gg/api/level/image/${levelOfDay._id}.png`} width='100%' alt={levelOfDay.name} />
+                                <img src={`https://${game.baseUrl}/api/level/image/${levelOfDay._id}.png`} width='100%' alt={levelOfDay.name} />
                               </a>
                             </div>
                           </div>
                         </div>
                       }
                       <p>
-                        Thanks for playing <a href='https://pathology.gg' style={{
+                        Thanks for playing <a href={`https://${game.baseUrl}`} style={{
                           color: '#4890ce',
                           textDecoration: 'none',
                         }}>{game.displayName}</a>!

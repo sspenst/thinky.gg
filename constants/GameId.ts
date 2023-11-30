@@ -5,4 +5,4 @@ export enum GameId {
   UNAVAILABLE = 'unavailable',
 }
 
-export const DEFAULT_GAME_ID = GameId.PATHOLOGY;
+export const DEFAULT_GAME_ID = GameId.GLOBAL;
