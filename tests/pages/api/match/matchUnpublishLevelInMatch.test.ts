@@ -1,5 +1,6 @@
 import Direction from '@root/constants/direction';
 import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import { Games } from '@root/constants/Games';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -218,11 +219,8 @@ describe('matchCreateJoinAndPlay', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
-        const mock = jest.requireActual('../../../../helpers/validateSolution'); // import and retain the original functionalities
 
-        jest.spyOn(mock, 'default').mockImplementation(() => {
-          return true;
-        });
+        Games[DEFAULT_GAME_ID].validateSolutionFunction = () => true;
         await statHandler(req, res);
       },
       test: async ({ fetch }) => {
