@@ -80,10 +80,11 @@ MyApp.getInitialProps = async ({ ctx }: { ctx: NextPageContext }) => {
     userAgent = navigator.userAgent;
   }
 
-  return { userAgent, game: Games[gameId] };
+  return { userAgent, initGame: Games[gameId] };
 };
 
-export default function MyApp({ Component, pageProps, userAgent, game }: AppProps & { userAgent: string, game: Game }) {
+export default function MyApp({ Component, pageProps, userAgent, initGame }: AppProps & { userAgent: string, initGame: Game }) {
+  const [selectedGame, setSelectedGame] = useState<Game>(initGame);
   const deviceInfo = useDeviceCheck(userAgent);
   const forceUpdate = useForceUpdate();
   const { user, isLoading, mutateUser } = useUser();
@@ -118,6 +119,13 @@ export default function MyApp({ Component, pageProps, userAgent, game }: AppProp
     });
   }, []);
 
+  useEffect(() => {
+    // get selected game from the subdomain
+    const subdomain = window.location.hostname.split('.')[0];
+    const game: Game = Games[subdomain as GameId] || initGame;
+
+    setSelectedGame(game);
+  }, [initGame]);
   useEffect(() => {
     mutatePlayLater();
   }, [mutatePlayLater]);
@@ -384,17 +392,17 @@ export default function MyApp({ Component, pageProps, userAgent, game }: AppProp
         <meta name='apple-itunes-app' content='app-id=1668925562, app-argument=pathology.gg' />
       </Head>
       <DefaultSeo
-        defaultTitle={game.displayName + ' - Shortest Path Puzzle Game'}
-        description={game.SEODescription}
-        canonical={`https://${game.baseUrl}'`}
+        defaultTitle={selectedGame.displayName + ' - Shortest Path Puzzle Game'}
+        description={selectedGame.SEODescription}
+        canonical={`https://${selectedGame.baseUrl}'`}
         openGraph={{
           type: 'website',
-          url: `https://${game.baseUrl}'`,
-          siteName: game.displayName,
+          url: `https://${selectedGame.baseUrl}'`,
+          siteName: selectedGame.displayName,
         }}
         twitter={{
           handle: '@pathologygame',
-          site: 'https://' + game.baseUrl,
+          site: 'https://' + selectedGame.baseUrl,
           cardType: 'summary_large_image'
         }}
       />
@@ -416,7 +424,7 @@ export default function MyApp({ Component, pageProps, userAgent, game }: AppProp
       )}
       <GrowthBookProvider growthbook={growthbook}>
         <AppContext.Provider value={{
-          game: game,
+          game: selectedGame,
           deviceInfo: deviceInfo,
           forceUpdate: forceUpdate,
           notifications: notifications,
