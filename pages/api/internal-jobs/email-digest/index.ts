@@ -2,6 +2,7 @@ import * as aws from '@aws-sdk/client-ses';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import Discord from '@root/constants/discord';
 import { GameId } from '@root/constants/GameId';
+import { Games } from '@root/constants/Games';
 import NotificationType from '@root/constants/notificationType';
 import Role from '@root/constants/role';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
@@ -46,14 +47,14 @@ const transporter = isLocal() ? nodemailer.createTransport({
   sendingRate: 20 // max 10 messages/second
 });
 
-export async function sendMail(batchId: Types.ObjectId, type: EmailType | NotificationType, user: User, subject: string, body: string) {
+export async function sendMail(gameId: GameId, batchId: Types.ObjectId, type: EmailType | NotificationType, user: User, subject: string, body: string) {
   /* istanbul ignore next */
   const textVersion = convert(body, {
     wordwrap: 130,
   });
-
+  const game = Games[gameId];
   const mailOptions = {
-    from: `Pathology Puzzles <${pathologyEmail}>`,
+    from: `${game.displayName} Puzzles <${pathologyEmail}>`,
     to: user.name + ' <' + user.email + '>',
     subject: subject,
     html: body,
@@ -87,6 +88,7 @@ export async function sendMail(batchId: Types.ObjectId, type: EmailType | Notifi
 }
 
 export async function sendEmailDigests(gameId: GameId, batchId: Types.ObjectId, totalEmailedSoFar: string[], limit: number) {
+  const game = Games[gameId];
   const userConfigsAggQ = UserConfigModel.aggregate([{
     $match: {
       emailDigest: {
@@ -256,9 +258,9 @@ export async function sendEmailDigests(gameId: GameId, batchId: Types.ObjectId, 
       `Level of the Day - ${todaysDatePretty}` :
       `You have ${notificationsCount} new notification${notificationsCount !== 1 ? 's' : ''}`;
 
-    const title = `Welcome to the Pathology Level of the Day for ${todaysDatePretty}.`;
+    const title = `Welcome to the ${game.displayName} Level of the Day for ${todaysDatePretty}.`;
     const body = getEmailBody(levelOfDay, notificationsCount, title, user);
-    const sentError = await sendMail(batchId, EmailType.EMAIL_DIGEST, user, subject, body);
+    const sentError = await sendMail(gameId, batchId, EmailType.EMAIL_DIGEST, user, subject, body);
 
     if (!sentError) {
       sentList.push(user.email);
@@ -346,16 +348,17 @@ export async function sendAutoUnsubscribeUsers(gameId: GameId, batchId: Types.Ob
   const failedList: string[] = [];
 
   let count = 0;
+  const game = Games[gameId];
 
   for (const user of inactive7DUsersWhoWeHaveTriedToEmail) {
     const totalLevelsSolved = user.score;
     const toSolve = (totalLevels - totalLevelsSolved);
     const subject = 'Auto unsubscribing you from our emails';
-    const title = 'It has been some time since we have seen you login to Pathology! We are going to automatically change your email settings so that you will not hear from us again. You can always change your email settings back by visiting the account settings page.';
-    const message = `You've completed ${totalLevelsSolved.toLocaleString()} levels on Pathology. There are still ${toSolve.toLocaleString()} levels for you to play by ${totalCreators.toLocaleString()} different creators. Come back and play!`;
+    const title = 'It has been some time since we have seen you login to ' + game.displayName + '! We are going to automatically change your email settings so that you will not hear from us again. You can always change your email settings back by visiting the account settings page.';
+    const message = `You've completed ${totalLevelsSolved.toLocaleString()} levels on ${game.displayName}. There are still ${toSolve.toLocaleString()} levels for you to play by ${totalCreators.toLocaleString()} different creators. Come back and play!`;
     const body = getEmailBody(levelOfDay, 0, title, user, message);
 
-    const sentError = await sendMail(batchId, EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE, user, subject, body);
+    const sentError = await sendMail(gameId, batchId, EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE, user, subject, body);
 
     if (!sentError) {
       await UserConfigModel.updateOne({ userId: user._id, gameId: gameId }, { emailDigest: EmailDigestSettingTypes.NONE });
@@ -437,16 +440,17 @@ export async function sendEmailReactivation(gameId: GameId, batchId: Types.Objec
 
   const totalCreators = totalCreatorsQuery.length;
   let count = 0;
+  const game = Games[gameId];
 
   for (const user of inactive7DUsers) {
     const totalLevelsSolved = user.score;
     const toSolve = (totalLevels - totalLevelsSolved);
-    const subject = 'New Pathology levels are waiting to be solved!';
+    const subject = 'New ' + game.displayName + ' levels are waiting to be solved!';
     const title = 'We haven\'t seen you in a bit!';
-    const message = `You've completed ${totalLevelsSolved.toLocaleString()} levels on Pathology. There are still ${toSolve.toLocaleString()} levels for you to play by ${totalCreators.toLocaleString()} different creators. Come back and play!`;
+    const message = `You've completed ${totalLevelsSolved.toLocaleString()} levels on ${game.displayName}. There are still ${toSolve.toLocaleString()} levels for you to play by ${totalCreators.toLocaleString()} different creators. Come back and play!`;
     const body = getEmailBody(levelOfDay, 0, title, user, message);
 
-    const sentError = await sendMail(batchId, EmailType.EMAIL_7D_REACTIVATE, user, subject, body);
+    const sentError = await sendMail(gameId, batchId, EmailType.EMAIL_7D_REACTIVATE, user, subject, body);
 
     if (!sentError) {
       sentList.push(user.email);

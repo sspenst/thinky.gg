@@ -79,7 +79,7 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
   const [level, setLevel] = useState(_level);
   const { mutateProStatsLevel, proStatsLevel } = useProStatsLevel(level);
   const router = useRouter();
-  const { tempCollection, setTempCollection } = useContext(AppContext);
+  const { game, tempCollection, setTempCollection } = useContext(AppContext);
   const { chapter, cid, slugName, ts, username } = router.query as LevelUrlQueryParams;
 
   const mutateCollection = useCallback(async () => {
@@ -280,9 +280,9 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
 
   // subtitle is only useful when a level is within a collection created by a different user
   const showSubtitle = collection && (collection.userId._id !== level.userId._id);
-  const ogImageUrl = `https://pathology.gg/api/level/image/${level._id.toString()}.png${ts ? `?ts=${ts}` : ''}`;
-  const ogUrl = `https://pathology.gg/level/${level.slug}`;
-  const ogFullUrl = `https://pathology.gg${ogUrl}`;
+  const ogImageUrl = `https://${game.baseUrl}/api/level/image/${level._id.toString()}.png${ts ? `?ts=${ts}` : ''}`;
+  const ogUrl = `https://${game.baseUrl}/level/${level.slug}`;
+  const ogFullUrl = `https://${game.baseUrl}${ogUrl}`;
   const authorNote = level.authorNote ? level.authorNote : `${level.name} by ${level.userId.name}`;
   const tour = useTour(PagePath.LEVEL, undefined, true);
 
@@ -290,11 +290,11 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
     <>
       {tour}
       <NextSeo
-        title={`${level.name} - Pathology`}
+        title={`${level.name} - ${game.displayName}`}
         description={authorNote}
         canonical={ogFullUrl}
         openGraph={{
-          title: `${level.name} - Pathology`,
+          title: `${level.name} - ${game.displayName}`,
           description: authorNote,
           type: 'article',
           url: ogUrl,

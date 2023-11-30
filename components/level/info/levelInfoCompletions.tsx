@@ -20,7 +20,7 @@ export default function LevelInfoCompletions() {
   const [disabled, setDisabled] = useState(false);
   const levelContext = useContext(LevelContext);
   const [proStatsLevel, setProStatsLevel] = useState(levelContext?.proStatsLevel);
-  const { user } = useContext(AppContext);
+  const { game, user } = useContext(AppContext);
 
   useEffect(() => {
     setProStatsLevel(levelContext?.proStatsLevel);
@@ -237,7 +237,7 @@ export default function LevelInfoCompletions() {
           <RoleIcon id='level-info-completions' role={Role.PRO} size={20} />
           <div>
             Get <Link href='/settings/pro' className='text-blue-300'>
-              Pathology Pro
+              {game.displayName} Pro
             </Link> to see all completions for this level.
           </div>
         </div>

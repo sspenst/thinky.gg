@@ -241,7 +241,7 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
             session: session,
           }
         ).lean<MultiplayerMatch>(),
-        // TODO: Dont hardcode pathology, figure out what game we are connected to
+
         queueRefreshAchievements(finishedMatch.gameId, new Types.ObjectId(winnerId), [AchievementCategory.MULTIPLAYER]),
         queueRefreshAchievements(finishedMatch.gameId, new Types.ObjectId(loserId), [AchievementCategory.MULTIPLAYER]),
       ]);

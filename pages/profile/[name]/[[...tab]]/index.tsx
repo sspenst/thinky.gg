@@ -7,6 +7,7 @@ import PlayerRank from '@root/components/profile/playerRank';
 import { ProfileAchievments } from '@root/components/profile/profileAchievements';
 import ProfileMultiplayer from '@root/components/profile/profileMultiplayer';
 import StatFilter from '@root/constants/statFilter';
+import { AppContext } from '@root/contexts/appContext';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { getUsersWithMultiplayerProfile } from '@root/helpers/getUsersWithMultiplayerProfile';
 import useSWRHelper from '@root/hooks/useSWRHelper';
@@ -21,7 +22,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import FollowButton from '../../../../components/buttons/followButton';
 import Select from '../../../../components/cards/select';
 import SelectFilter from '../../../../components/cards/selectFilter';
@@ -271,6 +272,7 @@ export default function ProfilePage({
   totalRows,
   user,
 }: ProfilePageProps) {
+  const { game } = useContext(AppContext);
   const [collectionFilterText, setCollectionFilterText] = useState('');
   const [followerCount, setFollowerCount] = useState<number>();
   const [isAddCollectionOpen, setIsAddCollectionOpen] = useState(false);
@@ -458,7 +460,7 @@ export default function ProfilePage({
       </>
       :
       <div className='text-center break-words'>
-        {user.name} has not yet registered on Pathology.
+        {user.name} has not yet registered on {game.displayName}.
       </div>
     ),
     [ProfileTab.Insights]: <ProfileInsights reqUser={reqUser} user={user} />,
@@ -655,11 +657,11 @@ export default function ProfilePage({
     <Page title={user.name}>
       <>
         <NextSeo
-          title={`${user.name} - Pathology`}
+          title={`${user.name} - ${game.displayName}}`}
           description={`${user.name}'s profile`}
           canonical={'https://pathology.gg' + getProfileSlug(user) + '/' + profileTab}
           openGraph={{
-            title: `${user.name} - Pathology`,
+            title: `${user.name} - ${game.displayName}}`,
             description: `${user.name}'s profile`,
             type: 'profile',
             url: getProfileSlug(user),

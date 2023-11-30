@@ -1,9 +1,12 @@
 /* istanbul ignore file */
-import '../styles/global.css';
 import 'react-tooltip/dist/react-tooltip.css';
+import '../styles/global.css';
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react';
 import { Portal } from '@headlessui/react';
+import { GameId } from '@root/constants/GameId';
+import { Game, Games } from '@root/constants/Games';
 import MusicContextProvider from '@root/contexts/musicContext';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import useDeviceCheck from '@root/hooks/useDeviceCheck';
 import Collection from '@root/models/db/collection';
 import Notification from '@root/models/db/notification';
@@ -26,7 +29,7 @@ import { AppContext } from '../contexts/appContext';
 import useUser from '../hooks/useUser';
 import { MultiplayerMatchState } from '../models/constants/multiplayer';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
-import User, { ReqUser, UserWithMultiplayerProfile } from '../models/db/user';
+import User, { UserWithMultiplayerProfile } from '../models/db/user';
 
 export const rubik = Rubik({ display: 'swap', subsets: ['latin'] });
 export const teko = Teko({ display: 'swap', subsets: ['latin'], weight: '500' });
@@ -69,20 +72,23 @@ function updateGrowthBookURL() {
 MyApp.getInitialProps = async ({ ctx }: { ctx: NextPageContext }) => {
   let userAgent;
 
+  const gameId = getGameIdFromReq(ctx.req);
+
   if (ctx.req) {
     userAgent = ctx.req.headers['user-agent'];
   } else {
     userAgent = navigator.userAgent;
   }
 
-  return { userAgent };
+  return { userAgent, game: Games[gameId] || GameId.UNAVAILABLE };
 };
 
-export default function MyApp({ Component, pageProps, userAgent }: AppProps & { userAgent: string }) {
+export default function MyApp({ Component, pageProps, userAgent, game }: AppProps & { userAgent: string, game: Game }) {
   const deviceInfo = useDeviceCheck(userAgent);
   const forceUpdate = useForceUpdate();
   const { user, isLoading, mutateUser } = useUser();
   const [notifications, setNotifications] = useState<Notification[]>([]);
+
   const [multiplayerSocket, setMultiplayerSocket] = useState<MultiplayerSocket>({
     connectedPlayers: [],
     connectedPlayersCount: 0,
@@ -378,17 +384,17 @@ export default function MyApp({ Component, pageProps, userAgent }: AppProps & { 
         <meta name='apple-itunes-app' content='app-id=1668925562, app-argument=pathology.gg' />
       </Head>
       <DefaultSeo
-        defaultTitle='Pathology - Shortest Path Puzzle Game'
-        description='The goal of the puzzle game Pathology is simple. Get to the exit in the least number of moves.'
-        canonical='https://pathology.gg/'
+        defaultTitle={game.displayName + ' - Shortest Path Puzzle Game'}
+        description={game.SEODescription}
+        canonical={`https://${game.baseUrl}'`}
         openGraph={{
           type: 'website',
-          url: 'https://pathology.gg',
-          siteName: 'Pathology',
+          url: `https://${game.baseUrl}'`,
+          siteName: game.displayName,
         }}
         twitter={{
           handle: '@pathologygame',
-          site: 'https://pathology.gg',
+          site: 'https://' + game.baseUrl,
           cardType: 'summary_large_image'
         }}
       />
@@ -410,6 +416,7 @@ export default function MyApp({ Component, pageProps, userAgent }: AppProps & { 
       )}
       <GrowthBookProvider growthbook={growthbook}>
         <AppContext.Provider value={{
+          game: game,
           deviceInfo: deviceInfo,
           forceUpdate: forceUpdate,
           notifications: notifications,

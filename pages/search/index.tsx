@@ -266,7 +266,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState(searchQuery);
   const router = useRouter();
-  const { setTempCollection } = useContext(AppContext);
+  const { game, setTempCollection } = useContext(AppContext);
 
   useEffect(() => {
     setData(enrichedLevels);
@@ -825,10 +825,10 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
 
   return (<>
     <NextSeo
-      title={'Search - Pathology'}
+      title={'Search - ' + game.displayName}
       canonical={'https://pathology.gg/search'}
       openGraph={{
-        title: 'Search - Pathology',
+        title: 'Search - ' + game.displayName,
         type: 'article',
         url: '/search',
       }}

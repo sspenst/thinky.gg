@@ -17,7 +17,7 @@ export default function HomeDefault() {
               color: 'var(--color-gray)',
             }}><Link href='/level/vanadium/xisco' className='underline'>Xisco</Link> by vanadium</figcaption>
           </figure>
-          <div>Pathology is a sokoban game that was originally created in <span className='italic' data-tooltip-id='psychopath-year' data-tooltip-content='Originally named Psychopath'>2005</span>. While a simple concept, the game can become incredibly challenging and will put your brain to the test.</div>
+          <div>Pathology is a sokoban type game that was originally created in <span className='italic' data-tooltip-id='psychopath-year' data-tooltip-content='Originally named Psychopath'>2005</span>. While a simple concept, the game can become incredibly challenging and will put your brain to the test.</div>
           <StyledTooltip id='psychopath-year' />
         </div>
         <div className='max-w-screen-md p-3'>

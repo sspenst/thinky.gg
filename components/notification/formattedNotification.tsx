@@ -1,9 +1,10 @@
 import { AchievementRulesCombined } from '@root/constants/achievements/achievementInfo';
+import { AppContext } from '@root/contexts/appContext';
 import Collection from '@root/models/db/collection';
 import classNames from 'classnames';
 import Image from 'next/image';
 import Link from 'next/link';
-import React from 'react';
+import React, { useContext } from 'react';
 import Dimensions from '../../constants/dimensions';
 import NotificationType from '../../constants/notificationType';
 import getProfileSlug from '../../helpers/getProfileSlug';
@@ -188,6 +189,8 @@ interface FormattedNotificationProps {
 }
 
 export default function FormattedNotification({ close, notification, onMarkAsRead }: FormattedNotificationProps) {
+  const { game } = useContext(AppContext);
+
   return (
     <div
       className='p-3 border rounded shadow flex flex-cols-2 justify-between gap-2 items-center'
@@ -213,7 +216,7 @@ export default function FormattedNotification({ close, notification, onMarkAsRea
           :
           <div className='flex items-center gap-2 truncate'>
             <NotificationIcon notification={notification} />
-            <span className='font-bold'>Pathology</span>
+            <span className='font-bold'>{game.displayName}</span>
           </div>
         }
         <div className='flex items-center justify-between'>

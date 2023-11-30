@@ -1,5 +1,7 @@
 /* istanbul ignore file */
 
+import { GameId } from '@root/constants/GameId';
+import { Games } from '@root/constants/Games';
 import user from '@root/pages/api/user';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -10,6 +12,7 @@ import User from '../models/db/user';
 // https://htmlemail.io/inline/
 
 interface EmailBodyProps {
+  gameId: GameId
   user: User;
   title: string;
   message?: string;
@@ -17,7 +20,9 @@ interface EmailBodyProps {
   linkHref?: string;
 }
 
-export function getEmailBodyBasic({ user, title, message, linkText, linkHref }: EmailBodyProps) {
+export function getEmailBodyBasic({ gameId, user, title, message, linkText, linkHref }: EmailBodyProps) {
+  const game = Games[gameId];
+
   return renderToStaticMarkup(
     <html>
       <body>
@@ -48,9 +53,9 @@ export function getEmailBodyBasic({ user, title, message, linkText, linkHref }: 
                       padding: 20,
                       textAlign: 'center',
                     }}>
-                      <a href='https://pathology.gg'>
+                      <a href={`https://${game.baseUrl}`}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src='https://i.imgur.com/fD1SUrZ.png' alt='Pathology' />
+                        <img src='https://i.imgur.com/fD1SUrZ.png' alt={game.displayName} />
                       </a>
                       <h1>Hi {user.name},</h1>
                       <p>{title}</p>
@@ -74,10 +79,10 @@ export function getEmailBodyBasic({ user, title, message, linkText, linkHref }: 
                         </a>
                       }
                       <p>
-                        Thanks for playing <a href='https://pathology.gg' style={{
+                        Thanks for playing <a href={`https://${game.baseUrl}`} style={{
                           color: '#4890ce',
                           textDecoration: 'none',
-                        }}>Pathology</a>!
+                        }}>{game.displayName}</a>!
                       </p>
                       <div id='footer' style={{
                         fontSize: '10px',
@@ -87,7 +92,7 @@ export function getEmailBodyBasic({ user, title, message, linkText, linkHref }: 
                         <p>Join the <a href='https://discord.gg/kpfdRBt43v' style={{
                           color: '#4890ce',
                           textDecoration: 'none',
-                        }}>Pathology Discord</a> to chat with other players and the developers!</p>
+                        }}>{game.displayName} Discord</a> to chat with other players and the developers!</p>
                         <p><a href='https://pathology.gg/settings/notifications' style={{
                           color: '#4890ce',
                           textDecoration: 'none',
@@ -106,6 +111,7 @@ export function getEmailBodyBasic({ user, title, message, linkText, linkHref }: 
 }
 
 export default function getEmailBody(
+  gameId: GameId,
   levelOfDay: EnrichedLevel | null,
   notificationsCount: number,
   title: string,
@@ -114,6 +120,8 @@ export default function getEmailBody(
   linkHref?: string,
   linkText?: string,
 ) {
+  const game = Games[gameId];
+
   return renderToStaticMarkup(
     <html>
       <body>
@@ -144,9 +152,9 @@ export default function getEmailBody(
                       padding: 20,
                       textAlign: 'center',
                     }}>
-                      <a href='https://pathology.gg'>
+                      <a href={`https://${game.baseUrl}`}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src='https://i.imgur.com/fD1SUrZ.png' alt='Pathology' />
+                        <img src='https://i.imgur.com/fD1SUrZ.png' alt={game.displayName} />
                       </a>
                       <h1>Hi {user.name},</h1>
                       <p>{title}</p>
@@ -212,7 +220,7 @@ export default function getEmailBody(
                         Thanks for playing <a href='https://pathology.gg' style={{
                           color: '#4890ce',
                           textDecoration: 'none',
-                        }}>Pathology</a>!
+                        }}>{game.displayName}</a>!
                       </p>
                       <div id='footer' style={{
                         fontSize: '10px',
@@ -222,8 +230,8 @@ export default function getEmailBody(
                         <p>Join the <a href='https://discord.gg/kpfdRBt43v' style={{
                           color: '#4890ce',
                           textDecoration: 'none',
-                        }}>Pathology Discord</a> to chat with other players and the developers!</p>
-                        <p><a href='https://pathology.gg/settings/notifications' style={{
+                        }}>{game.displayName} Discord</a> to chat with other players and the developers!</p>
+                        <p><a href={`https://${game.baseUrl}/settings/notifications`} style={{
                           color: '#4890ce',
                           textDecoration: 'none',
                         }}>Manage your email notification settings</a></p>

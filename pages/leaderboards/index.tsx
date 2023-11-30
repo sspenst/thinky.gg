@@ -2,13 +2,14 @@ import { DIFFICULTY_INDEX, getDifficultyColor, getDifficultyRangeByIndex } from 
 import Page from '@root/components/page/page';
 import UserAndSumTable from '@root/components/tables/userAndSumTable';
 import { GameId } from '@root/constants/GameId';
+import { AppContext } from '@root/contexts/appContext';
 import { UserAndSum } from '@root/contexts/levelContext';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import cleanUser from '@root/lib/cleanUser';
 import { LevelModel, StatModel, UserModel } from '@root/models/mongoose';
 import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import { GetServerSidePropsContext } from 'next';
-import React from 'react';
+import React, { useContext } from 'react';
 
 async function getDifficultyLeaderboard(gameId: GameId, index: DIFFICULTY_INDEX) {
   const difficultyRange = getDifficultyRangeByIndex(index);
@@ -135,6 +136,7 @@ interface LeaderboardsProps {
 }
 
 export default function Leaderboards({ gmLeaderboard, sgmLeaderboard }: LeaderboardsProps) {
+  const { game } = useContext(AppContext);
   const gmRange = getDifficultyRangeByIndex(DIFFICULTY_INDEX.GRANDMASTER);
   const sgmRange = getDifficultyRangeByIndex(DIFFICULTY_INDEX.SUPER_GRANDMASTER);
   const gmColor = getDifficultyColor(gmRange[0]);
@@ -146,12 +148,12 @@ export default function Leaderboards({ gmLeaderboard, sgmLeaderboard }: Leaderbo
         <h2 className='text-2xl font-bold text-center'>Leaderboards</h2>
         <div className='flex flex-col md:flex-row gap-5 justify-center'>
           <div className='flex flex-col text-center gap-1'>
-            <span className='font-bold italic text-lg' style={{ color: gmColor }}>Pathology Grandmasters</span>
+            <span className='font-bold italic text-lg' style={{ color: gmColor }}>{game.displayName} Grandmasters</span>
             <span className='text-xs'>Grandmasters have solved at minimum 7 Grandmaster (or harder) levels</span>
             <UserAndSumTable data={gmLeaderboard} sumName='GMs Solved' />
           </div>
           <div className='flex flex-col text-center gap-1'>
-            <span className='font-bold italic text-lg' style={{ color: sgmColor }}>Pathology Super Grandmasters</span>
+            <span className='font-bold italic text-lg' style={{ color: sgmColor }}>{game.displayName} Super Grandmasters</span>
             <span className='text-xs'>Super Grandmasters have solved at minimum 7 Super Grandmaster levels</span>
             <UserAndSumTable data={sgmLeaderboard} sumName='SGMs Solved' />
           </div>

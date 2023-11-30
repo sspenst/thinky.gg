@@ -1,4 +1,5 @@
 import { AchievementRulesCombined } from '@root/constants/achievements/achievementInfo';
+import { Game } from '@root/constants/Games';
 import Collection from '@root/models/db/collection';
 import NotificationType from '../constants/notificationType';
 import { EnrichedLevel } from '../models/db/level';
@@ -39,11 +40,11 @@ function getNewReviewOnYourLevelBody(message?: string) {
 }
 
 /* notification must be populated using getEnrichNotificationPipelineStages */
-export default function getMobileNotification(notification: Notification) {
+export default function getMobileNotification(game: Game, notification: Notification) {
   const host = 'https://pathology.gg';
   const mobileNotification = {
     badgeCount: 1,
-    title: 'Pathology - New Notification',
+    title: game.displayName + ' - New Notification',
     body: 'You have an unread notification',
     url: `${host}/notifications`,
   } as MobileNotification;
@@ -59,7 +60,7 @@ export default function getMobileNotification(notification: Notification) {
     if (notification.message) {
       const payload = JSON.parse(notification.message);
 
-      mobileNotification.title = 'Pathology';
+      mobileNotification.title = game.displayName;
       mobileNotification.body = `${payload.message}`;
       mobileNotification.url = `${host}${payload.href}`;
     }
@@ -68,7 +69,7 @@ export default function getMobileNotification(notification: Notification) {
   }
 
   case NotificationType.NEW_ACHIEVEMENT: {
-    mobileNotification.title = 'Pathology - New Achievement';
+    mobileNotification.title = game.displayName + ' - New Achievement';
     const meta = AchievementRulesCombined[notification.source.type];
 
     if (notification.source) {
@@ -83,7 +84,7 @@ export default function getMobileNotification(notification: Notification) {
   }
 
   case NotificationType.NEW_FOLLOWER:
-    mobileNotification.title = 'Pathology - New Follower';
+    mobileNotification.title = game.displayName + ' - New Follower';
     mobileNotification.body = `${notification.source.name} started following you`;
     mobileNotification.imageUrl = `${host}/api/avatar/${notification.source._id}.png`;
     mobileNotification.url = `${host}/profile/${notification.source.name}`;
@@ -91,7 +92,7 @@ export default function getMobileNotification(notification: Notification) {
     return mobileNotification;
 
   case NotificationType.NEW_LEVEL:
-    mobileNotification.title = 'Pathology - New Level';
+    mobileNotification.title = game.displayName + ' - New Level';
     mobileNotification.body = `${notification.source.name} published a new level: ${targetAsLevel.name}`;
     mobileNotification.imageUrl = `${host}/api/level/image/${targetAsLevel._id}.png`;
     mobileNotification.url = `${host}/level/${targetAsLevel.slug}`;
@@ -99,7 +100,7 @@ export default function getMobileNotification(notification: Notification) {
     return mobileNotification;
 
   case NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION:
-    mobileNotification.title = 'Pathology - Your level added to a collection';
+    mobileNotification.title = game.displayName + ' - Your level added to a collection';
     mobileNotification.body = `${notification.source?.name} was added to the collection: ${targetAsCollection.name}`;
     mobileNotification.imageUrl = `${host}/logo.svg`;
     mobileNotification.url = `${host}/collection/${targetAsCollection.slug}`;
@@ -107,7 +108,7 @@ export default function getMobileNotification(notification: Notification) {
     return mobileNotification;
 
   case NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_SOLVED:
-    mobileNotification.title = 'Pathology - New Record';
+    mobileNotification.title = game.displayName + ' - New Record';
     mobileNotification.body = `${notification.source.name} set a new record: ${targetAsLevel.name} - ${notification.message} moves`;
     mobileNotification.imageUrl = `${host}/api/level/image/${targetAsLevel._id}.png`;
     mobileNotification.url = `${host}/level/${targetAsLevel.slug}`;
@@ -115,7 +116,7 @@ export default function getMobileNotification(notification: Notification) {
     return mobileNotification;
 
   case NotificationType.NEW_REVIEW_ON_YOUR_LEVEL:
-    mobileNotification.title = 'Pathology - New Review';
+    mobileNotification.title = game.displayName + ' - New Review';
     mobileNotification.body = `${notification.source.name} ${getNewReviewOnYourLevelBody(notification.message)} on your level ${targetAsLevel.name}`;
     mobileNotification.imageUrl = `${host}/api/level/image/${targetAsLevel._id}.png`;
     mobileNotification.url = `${host}/level/${targetAsLevel.slug}`;
@@ -123,7 +124,7 @@ export default function getMobileNotification(notification: Notification) {
     return mobileNotification;
 
   case NotificationType.NEW_WALL_POST: {
-    mobileNotification.title = 'Pathology - New Comment';
+    mobileNotification.title = game.displayName + ' - New Comment';
     const comment = notification.message
       ? JSON.parse(notification.message)
       : null;
@@ -141,7 +142,7 @@ export default function getMobileNotification(notification: Notification) {
   }
 
   case NotificationType.NEW_WALL_REPLY: {
-    mobileNotification.title = 'Pathology - New Reply';
+    mobileNotification.title = game.displayName + ' - New Reply';
     const comment = notification.message
       ? JSON.parse(notification.message)
       : null;

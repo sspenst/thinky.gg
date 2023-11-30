@@ -1,8 +1,9 @@
 import PagePath from '@root/constants/pagePath';
+import { AppContext } from '@root/contexts/appContext';
 import { useTour } from '@root/hooks/useTour';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
-import React, { useCallback } from 'react';
+import React, { useCallback, useContext } from 'react';
 import { CallBackProps } from 'react-joyride';
 import ChapterSelectCard from '../../components/cards/chapterSelectCard';
 import Page from '../../components/page/page';
@@ -35,6 +36,7 @@ interface PlayPageProps {
 
 /* istanbul ignore next */
 export default function PlayPage({ reqUser }: PlayPageProps) {
+  const { game } = useContext(AppContext);
   const chapterUnlocked = reqUser.chapterUnlocked ?? 1;
   const router = useRouter();
   const memoizedCallback = useCallback((data: CallBackProps) => {
@@ -51,7 +53,7 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
         {tour}
         <div className='flex flex-col items-center gap-8 p-4'>
           <div className='font-bold text-3xl text-center' id='title'>
-            Pathology Official Campaign
+            {game.displayName} Official Campaign
           </div>
           <ChapterSelectCard chapter={1} chapterUnlocked={chapterUnlocked} />
           <ChapterSelectCard chapter={2} chapterUnlocked={chapterUnlocked} />

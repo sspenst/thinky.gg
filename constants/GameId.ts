@@ -1,6 +1,8 @@
 export enum GameId {
   GLOBAL = 'global',
-  PATHOLOGY = 'pathology'
+  PATHOLOGY = 'pathology',
+  SOKOBAN = 'sokoban',
+  UNAVAILABLE = 'unavailable',
 }
 
-export const DEFAULT_GAME_ID = GameId.PATHOLOGY;
+export const DEFAULT_GAME_ID = GameId.SOKOBAN;

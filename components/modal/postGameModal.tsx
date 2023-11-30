@@ -1,10 +1,11 @@
 import DidYouKnowTip from '@root/components/page/didYouKnowTip';
+import { AppContext } from '@root/contexts/appContext';
 import useHomePageData, { HomepageDataType } from '@root/hooks/useHomePageData';
 import Collection from '@root/models/db/collection';
 import Level, { EnrichedLevel } from '@root/models/db/level';
 import User from '@root/models/db/user';
 import Link from 'next/link';
-import React, { useEffect, useState } from 'react';
+import React, { use, useContext, useEffect, useState } from 'react';
 import Card from '../cards/card';
 import ChapterSelectCard from '../cards/chapterSelectCard';
 import { getDifficultyFromValue } from '../formatted/formattedDifficulty';
@@ -38,6 +39,7 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
     }
   }
 
+  const { game } = useContext(AppContext);
   const { data } = useHomePageData([HomepageDataType.RecommendedLevel], !isOpen || nextLevel !== undefined);
   const [queryParams, setQueryParams] = useState({});
   const [recommendedLevel, setRecommendedLevel] = useState<EnrichedLevel>();
@@ -58,8 +60,8 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
     setQueryParams(new URLSearchParams(window.location.search));
   }, []);
 
-  const url = `https://pathology.gg/level/${level.slug}`;
-  const quote = 'Just completed Pathology.gg puzzle "' + level.name + '" (Difficulty: ' + getDifficultyFromValue(level.calc_difficulty_estimate).name + ')';
+  const url = `https://${game.baseUrl}/level/${level.slug}`;
+  const quote = 'Just completed ' + game.baseUrl + ' puzzle "' + level.name + '" (Difficulty: ' + getDifficultyFromValue(level.calc_difficulty_estimate).name + ')';
 
   function nextActionCard() {
     if (nextLevel) {

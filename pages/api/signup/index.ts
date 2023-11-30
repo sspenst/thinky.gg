@@ -1,4 +1,5 @@
 import { GameId } from '@root/constants/GameId';
+import { Games } from '@root/constants/Games';
 import Role from '@root/constants/role';
 import { generatePassword } from '@root/helpers/generatePassword';
 import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmationEmail';
@@ -93,8 +94,9 @@ export default apiWrapper({ POST: {
     // if the user exists but there is no ts, send them an email so they sign up with the existing account
     if (!userWithEmail.ts) {
       const err = await sendPasswordResetEmail(req, userWithEmail);
+      const game = Games[req.gameId];
 
-      return res.status(400).json({ error: !err ? 'We tried emailing you a reset password link. If you still have problems please contact Pathology devs via Discord.' : 'Error trying to register. Please contact pathology devs via Discord' });
+      return res.status(400).json({ error: !err ? 'We tried emailing you a reset password link. If you still have problems please contact ' + game.displayName + ' devs via Discord.' : 'Error trying to register. Please contact ' + game.displayName + ' devs via Discord' });
     } else {
       return res.status(401).json({
         error: 'Email already exists',

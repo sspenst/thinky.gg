@@ -57,7 +57,7 @@ export default function Game({
   onStatsSuccess,
 }: GameProps) {
   const levelContext = useContext(LevelContext);
-  const { deviceInfo, mutateUser, shouldAttemptAuth, user } = useContext(AppContext);
+  const { game, deviceInfo, mutateUser, shouldAttemptAuth, user } = useContext(AppContext);
   const { preventKeyDownEvent } = useContext(PageContext);
 
   const mutateCollection = levelContext?.mutateCollection;
@@ -360,7 +360,7 @@ export default function Game({
       if (!pro) {
         toast.dismiss();
         toast.error(
-          <div>Upgrade to <Link href='/settings/pro' className='text-blue-500'>Pathology Pro</Link> to unlock checkpoints!</div>,
+          <div>Upgrade to <Link href='/settings/pro' className='text-blue-500'>{game.displayName} Pro</Link> to unlock checkpoints!</div>,
           {
             duration: 3000,
             icon: <Image alt='pro' src='/pro.svg' width='16' height='16' />,
@@ -438,7 +438,7 @@ export default function Game({
       if (redo && !pro) {
         toast.dismiss();
         toast.error(
-          <div>Upgrade to <Link href='/settings/pro' className='text-blue-500'>Pathology Pro</Link> to unlock redo!</div>,
+          <div>Upgrade to <Link href='/settings/pro' className='text-blue-500'>{game.displayName} Pro</Link> to unlock redo!</div>,
           {
             duration: 3000,
             icon: <Image alt='pro' src='/pro.svg' width='16' height='16' />,
@@ -473,7 +473,7 @@ export default function Game({
 
       return onSuccessfulMove(newGameState);
     });
-  }, [allowFreeUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, level._id, level.data, level.leastMoves, loadCheckpoint, onMove, onNext, onPrev, onSolve, pro, saveCheckpoint, saveSessionToSessionStorage, trackStats]);
+  }, [allowFreeUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, game.displayName, level._id, level.data, level.leastMoves, loadCheckpoint, onMove, onNext, onPrev, onSolve, pro, saveCheckpoint, saveSessionToSessionStorage, trackStats]);
 
   useEffect(() => {
     if (disableCheckpoints || !pro || !checkpoints) {

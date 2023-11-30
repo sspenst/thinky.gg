@@ -1,9 +1,10 @@
 import TestId from '@root/constants/testId';
+import { AppContext } from '@root/contexts/appContext';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { PipelineStage, Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Image from 'next/image';
-import React, { useCallback } from 'react';
+import React, { useCallback, useContext } from 'react';
 import SelectCard from '../../components/cards/selectCard';
 import Page from '../../components/page/page';
 import dbConnect from '../../lib/dbConnect';
@@ -211,6 +212,7 @@ interface CampaignsProps {
 
 /* istanbul ignore next */
 export default function Campaigns({ enrichedCampaigns }: CampaignsProps) {
+  const { game } = useContext(AppContext);
   const getCampaigns = useCallback(() => {
     return campaignInfos.map(campaignInfo => {
       const enrichedCampaign = enrichedCampaigns.find(campaign => campaign._id.toString() === campaignInfo.id);
@@ -254,7 +256,7 @@ export default function Campaigns({ enrichedCampaigns }: CampaignsProps) {
           Campaigns
         </h1>
         <div className='italic'>
-          Created by the Pathology community.
+          Created by the {game.displayName} community.
         </div>
         <div className='flex flex-wrap justify-center pt-4'>
           {getCampaigns()}
