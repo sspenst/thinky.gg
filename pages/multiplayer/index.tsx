@@ -1,8 +1,9 @@
 import PagePath from '@root/constants/pagePath';
+import { AppContext } from '@root/contexts/appContext';
 import { useTour } from '@root/hooks/useTour';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { NextSeo } from 'next-seo';
-import React from 'react';
+import React, { useContext } from 'react';
 import Multiplayer from '../../components/multiplayer/multiplayer';
 import Page from '../../components/page/page';
 import { getUserFromToken } from '../../lib/withAuth';
@@ -28,15 +29,16 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
 /* istanbul ignore next */
 export default function MultiplayerPage() {
+  const { game } = useContext(AppContext);
   const tour = useTour(PagePath.MULTIPLAYER);
 
   return (
     <Page title='Multiplayer'>
       <>
         <NextSeo
-          title={'Multiplayer - Pathology'}
-          description={'Play Pathology in real time against other players'}
-          canonical='https://pathology.gg/multiplayer'
+          title={'Multiplayer - ' + game.displayName}
+          description={'Play ' + game.displayName + ' in real time against other players'}
+          canonical={`https://${game.baseUrl}/multiplayer`}
         />
         {tour}
         <Multiplayer />

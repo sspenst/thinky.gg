@@ -1,5 +1,6 @@
 import SettingsAccount from '@root/components/settings/settingsAccount';
 import SettingsNotifications from '@root/components/settings/settingsNotifications';
+import { AppContext } from '@root/contexts/appContext';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
@@ -7,7 +8,7 @@ import classNames from 'classnames';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import Page from '../../components/page/page';
 import SettingsGeneral from '../../components/settings/settingsGeneral';
 import SettingsPro from '../../components/settings/settingsPro';
@@ -113,6 +114,8 @@ export default function Settings({
   user,
   userConfig,
 }: SettingsProps) {
+  const { game } = useContext(AppContext);
+
   function getQueryTab(tab: string | string[] | undefined) {
     if (!tab) {
       return SettingsTab.General;
@@ -165,7 +168,7 @@ export default function Settings({
             label={
               <div className='flex flex-row items-center gap-2'>
                 <Image alt='pro' src='/pro.svg' width='16' height='16' />
-                <span>Pathology Pro</span>
+                <span>{game.displayName} Pro</span>
               </div>
             }
             value={SettingsTab.Pro}

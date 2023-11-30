@@ -1,11 +1,12 @@
 import Page from '@root/components/page/page';
 import PlayHistory from '@root/components/profile/playHistory';
+import { AppContext } from '@root/contexts/appContext';
 import isPro from '@root/helpers/isPro';
 import { getUserFromToken } from '@root/lib/withAuth';
 import User from '@root/models/db/user';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
-import React from 'react';
+import React, { useContext } from 'react';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
@@ -32,6 +33,8 @@ interface PlayHistoryPageProps {
 }
 
 export default function PlayHistoryPage({ reqUser }: PlayHistoryPageProps): JSX.Element {
+  const { game } = useContext(AppContext);
+
   return (
     <Page hideFooter title='Play History'>
       {isPro(reqUser) ?
@@ -39,7 +42,7 @@ export default function PlayHistoryPage({ reqUser }: PlayHistoryPageProps): JSX.
         :
         <div className='text-center text-lg break-words p-3'>
           Get <Link href='/settings/pro' className='text-blue-500 hover:text-blue-300 transition'>
-            Pathology Pro
+            {game.displayName} Pro
           </Link> to view your play history.
         </div>
       }

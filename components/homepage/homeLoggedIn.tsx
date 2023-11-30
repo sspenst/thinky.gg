@@ -43,7 +43,7 @@ export default function HomeLoggedIn({
   topLevelsThisMonth,
   user,
 }: HomeLoggedInProps) {
-  const { multiplayerSocket, userConfig } = useContext(AppContext);
+  const { game, multiplayerSocket, userConfig } = useContext(AppContext);
   const router = useRouter();
   const [search, setSearch] = useState('');
   const { connectedPlayersCount, matches, socket } = multiplayerSocket;
@@ -64,7 +64,7 @@ export default function HomeLoggedIn({
     }
     <div className='flex flex-col gap-4 m-4 items-center'>
       <div className='flex flex-col md:flex-row justify-center items-center flex-wrap gap-4 max-w-full'>
-        <Card id='campaign' title='Pathology Official Campaign'>
+        <Card id='campaign' title={game.displayName + ' Official Campaign'}>
           <div className='p-3'>
             <ChapterSelectCard chapter={user.chapterUnlocked ?? 1} href='/play' />
           </div>

@@ -1,6 +1,7 @@
+import { AppContext } from '@root/contexts/appContext';
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
-import React from 'react';
+import React, { useContext } from 'react';
 import LoginForm from '../../components/forms/loginForm';
 import Page from '../../components/page/page';
 import redirectToHome from '../../helpers/redirectToHome';
@@ -11,6 +12,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
 /* istanbul ignore next */
 export default function Login() {
+  const { game } = useContext(AppContext);
+
   return (
     <Page title={'Log In'}>
       <>
@@ -22,7 +25,7 @@ export default function Login() {
           </Link>
         </div>
         <div className='text-center mb-4'>
-          {'New to Pathology? '}
+          {'New to ' + game.displayName + '? '}
           <Link href='/signup' passHref className='underline'>
             Sign Up
           </Link>

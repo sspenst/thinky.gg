@@ -1,3 +1,4 @@
+import { Games } from '@root/constants/Games';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
@@ -24,6 +25,9 @@ interface CampaignUrlQueryParams extends ParsedUrlQuery {
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
+  const gameId = getGameIdFromReq(context.req);
+  const game = Games[gameId];
+
   if (!context.params) {
     return {
       redirect: {
@@ -42,7 +46,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         permanent: false,
       },
     };
-  } else if (slug === 'pathology') {
+  } else if (slug === game.id) {
     return {
       redirect: {
         destination: '/play',
@@ -52,7 +56,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   const token = context.req?.cookies?.token;
-  const gameId = getGameIdFromReq(context.req);
+
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
   const campaign = await CampaignModel.findOne<Campaign>({ slug: slug, gameId: gameId });
 

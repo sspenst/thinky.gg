@@ -18,7 +18,7 @@ import DismissToast from '../toasts/dismissToast';
 import MusicIcon from './musicIcon';
 
 export default function Dropdown() {
-  const { forceUpdate, mutateUser, playLater, setShouldAttemptAuth, user, userLoading } = useContext(AppContext);
+  const { game, forceUpdate, mutateUser, playLater, setShouldAttemptAuth, user, userLoading } = useContext(AppContext);
   const [isMusicModalOpen, setIsMusicModalOpen] = useState(false);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const router = useRouter();
@@ -118,7 +118,7 @@ export default function Dropdown() {
                       }}
                     >
                       <Image alt='pro' src='/pro.svg' width='20' height='20' />
-                      Pathology Pro
+                      {game.displayName} Pro
                     </div>
                   </Link>
                 )}

@@ -45,7 +45,7 @@ interface SettingsProProps {
 }
 
 export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLink, stripePaymentYearlyLink }: SettingsProProps) {
-  const { mutateUser, user, userLoading } = useContext(AppContext);
+  const { game, mutateUser, user, userLoading } = useContext(AppContext);
   const [plan, setPlan] = useState('year');
   const [shouldContinouslyFetch, setShouldContinouslyFetch] = useState(false);
   const { data: subscriptions, isLoading: subscriptionsLoading, mutate: refreshGifts } = useSWRHelper<SubscriptionData[]>('/api/subscription');
@@ -108,7 +108,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
     <div className='flex flex-col justify-center items-center gap-6'>
       <div className='flex gap-4'>
         <Image alt='pro' src='/pro.svg' width='24' height='24' />
-        <h2 className='font-bold text-2xl'>Pathology Pro</h2>
+        <h2 className='font-bold text-2xl'>{game.displayName} Pro</h2>
       </div>
       <div className='rounded-md px-4 py-2 bg-yellow-200 text-black text-sm'>
         <span><span className='font-bold'>Update: </span>On December 1, 2023, the pricing of Pathology Pro will be updated as follows:</span>
@@ -120,7 +120,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
       {isPro(user) &&
         <div className='flex flex-col gap-4 text-center justify-center items-center'>
           <div>
-            You have Pathology Pro! Thank you for your support!
+            You have {game.displayName} Pro! Thank you for your support!
           </div>
           {hasAPaymentMethod && (
             <div className='flex flex-col sm:flex-row gap-4 items-center'>

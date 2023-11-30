@@ -93,7 +93,7 @@ export default function CollectionPage({ collection }: CollectionProps) {
   const [isAddCollectionOpen, setIsAddCollectionOpen] = useState(false);
   const [isDeleteCollectionOpen, setIsDeleteCollectionOpen] = useState(false);
   const [statFilter, setStatFilter] = useState(StatFilter.All);
-  const { user } = useContext(AppContext);
+  const { game, user } = useContext(AppContext);
 
   const getOptions = useCallback(() => {
     if (!collection.levels) {
@@ -129,11 +129,11 @@ export default function CollectionPage({ collection }: CollectionProps) {
 
   return (<>
     <NextSeo
-      title={`${collection.name} - Pathology`}
+      title={`${collection.name} - ${game.displayName}`}
       description={collection.authorNote}
-      canonical={`https://pathology.gg/collection/${collection.slug}`}
+      canonical={`https://${game.baseUrl}/collection/${collection.slug}`}
       openGraph={{
-        title: `${collection.name} - Pathology`,
+        title: `${collection.name} - ${game.displayName}`,
         description: collection.authorNote,
         type: 'article',
         url: `/collection/${collection.slug}`,

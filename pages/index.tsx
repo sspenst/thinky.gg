@@ -1,6 +1,7 @@
 import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
+import { AppContext } from '@root/contexts/appContext';
 import { NextSeo } from 'next-seo';
-import React from 'react';
+import React, { useContext } from 'react';
 import { SWRConfig } from 'swr';
 import HomeDefault from '../components/homepage/homeDefault';
 import HomeVideo from '../components/homepage/homeVideo';
@@ -47,20 +48,22 @@ export default function AppSWR({ levelOfDay }: AppSWRProps) {
 function App() {
   const { levelOfDay } = useLevelOfDay();
 
+  const { game } = useContext(AppContext);
+
   return (
-    <Page title={'Pathology'}>
+    <Page title={game.displayName}>
       <>
         <NextSeo
-          title={'Pathology - Shortest Path Puzzle Game'}
+          title={game.SEOTitle}
           openGraph={{
-            title: 'Pathology - Shortest Path Puzzle Game',
-            description: 'The goal of Pathology is simple. Get to the exit in the least number of moves. Sounds easy right? Yet, this sokoban style game is one of the most mind-bending puzzle games you will find. Different blocks stand in your way to the exit, and your job is to figure out the optimal route',
+            title: game.SEOTitle,
+            description: game.SEODescription,
             images: [
               {
-                url: 'https://pathology.gg/logo.png',
+                url: 'https://' + game.baseUrl + '/logo.png',
                 width: 128,
                 height: 128,
-                alt: 'Pathology Logo',
+                alt: game.displayName + ' Logo',
                 type: 'image/png',
               },
             ],

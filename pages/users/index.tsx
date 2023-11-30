@@ -296,7 +296,7 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState(searchQuery);
   const router = useRouter();
-  const { user } = useContext(AppContext);
+  const { game, user } = useContext(AppContext);
 
   useEffect(() => {
     setData(users);
@@ -452,10 +452,10 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
 
   return (<>
     <NextSeo
-      title={'Users - Pathology'}
-      canonical={'https://pathology.gg/users'}
+      title={'Users - ' + game.displayName}
+      canonical={`https://${game.baseUrl}/users`}
       openGraph={{
-        title: 'Users - Pathology',
+        title: 'Users - ' + game.displayName,
         type: 'article',
         url: '/users',
       }}

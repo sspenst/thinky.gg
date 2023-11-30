@@ -1,5 +1,6 @@
+import { AppContext } from '@root/contexts/appContext';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useSWRConfig } from 'swr';
 import HomeLoggedIn from '../../components/homepage/homeLoggedIn';
 import Page from '../../components/page/page';
@@ -58,6 +59,7 @@ export function isVisibleInDom(id: string) {
 
 /* istanbul ignore next */
 export default function Home({ user }: HomeProps) {
+  const { game } = useContext(AppContext);
   const [loadLatestLevels, setLoadLatestLevels] = useState(false);
   const [loadLatestReviews, setLoadLatestReviews] = useState(false);
   const [loadLevelOfDay, setLoadLevelOfDay] = useState(false);
@@ -142,7 +144,7 @@ export default function Home({ user }: HomeProps) {
   const topLevelsThisMonth = dataMerge[HomepageDataType.TopLevelsThisMonth];
 
   return (
-    <Page title={'Pathology'}>
+    <Page title={game.displayName}>
       <HomeLoggedIn
         lastLevelPlayed={lastLevelPlayed}
         latestLevels={latestLevels}

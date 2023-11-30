@@ -1,7 +1,8 @@
+import { AppContext } from '@root/contexts/appContext';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
-import React from 'react';
+import React, { useContext } from 'react';
 import FormattedCampaign from '../../components/formatted/formattedCampaign';
 import LinkInfo from '../../components/formatted/linkInfo';
 import Page from '../../components/page/page';
@@ -85,6 +86,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
 /* istanbul ignore next */
 export default function Chapter3Page({ enrichedCollections, solvedLevels, totalLevels }: CampaignProps) {
+  const { game } = useContext(AppContext);
+
   return (
     <Page folders={[new LinkInfo('Chapter Select', '/play')]} title={'Chapter 3'}>
       <FormattedCampaign
@@ -96,7 +99,7 @@ export default function Chapter3Page({ enrichedCollections, solvedLevels, totalL
             <div>Congratulations! You&apos;ve solved every level in Chapter 3.</div>
             <div>If you&apos;re looking for more levels, try a campaign from the <Link className='font-bold underline' href='/campaigns' passHref>Campaigns</Link> page, or try browsing the <Link className='font-bold underline' href='/search' passHref>Search</Link> page.</div>
             <div>You could also try creating a level of your own on the <Link className='font-bold underline' href='/create' passHref>Create</Link> page.</div>
-            <div>We hope you&apos;re enjoying Pathology!</div>
+            <div>We hope you&apos;re enjoying {game.displayName}!</div>
           </div>
         }
         solvedLevels={solvedLevels}

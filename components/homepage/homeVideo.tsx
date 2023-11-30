@@ -4,7 +4,7 @@ import React, { useContext } from 'react';
 import { AppContext } from '../../contexts/appContext';
 
 export default function HomeVideo() {
-  const { userConfig } = useContext(AppContext);
+  const { game, userConfig } = useContext(AppContext);
 
   const featureFlagButtonSizeValue = useFeatureValue('main-cta-button-size', 'text-3xl');
   const ctaClass = 'fadeIn inline-block px-3 py-1.5 mb-1 border-4 border-neutral-400 bg-white text-black font-bold ' + featureFlagButtonSizeValue + ' leading-snug rounded-xl hover:ring-4 hover:bg-blue-500 hover:text-white ring-blue-500/50 focus:ring-0 transition duration-400 ease-in-out';
@@ -21,8 +21,8 @@ export default function HomeVideo() {
         style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)' }}>
         <div className='flex justify-center items-center h-full'>
           <div className='text-white transition-blur duration-75'>
-            <h2 className='fadeIn font-semibold text-4xl my-4'>Pathology</h2>
-            <h3 className='fadeIn font-semibold text-xl mb-6'>Find the way</h3>
+            <h2 className='fadeIn font-semibold text-4xl my-4'>{game.displayName}</h2>
+            <h3 className='fadeIn font-semibold text-xl mb-6'>{game.subtitle}</h3>
             <div className='flex flex-col items-center mb-4'>
               <Link
                 className={ctaClass}

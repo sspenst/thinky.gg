@@ -1,3 +1,5 @@
+import { GameId } from '@root/constants/GameId';
+import { Game, Games } from '@root/constants/Games';
 import { DeviceInfo, ScreenSize } from '@root/hooks/useDeviceCheck';
 import Collection from '@root/models/db/collection';
 import Notification from '@root/models/db/notification';
@@ -8,6 +10,7 @@ import UserConfig from '../models/db/userConfig';
 import { MultiplayerSocket } from '../pages/_app';
 
 interface AppContextInterface {
+  game: Game;
   deviceInfo: DeviceInfo;
   forceUpdate: () => void;
   notifications: Notification[];
@@ -29,6 +32,7 @@ interface AppContextInterface {
 }
 
 export const AppContext = createContext<AppContextInterface>({
+  game: Games[GameId.UNAVAILABLE],
   deviceInfo: {
     isMobile: false,
     isAndroid: false,

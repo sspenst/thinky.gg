@@ -17,7 +17,7 @@ interface FilterButtonProps {
 }
 
 export default function FilterButton({ element, first, last, onClick, proRequired, selected, transparent, value }: FilterButtonProps) {
-  const { user } = useContext(AppContext);
+  const { game, user } = useContext(AppContext);
   const proDisabled = !isPro(user) && proRequired;
 
   return (
@@ -36,7 +36,7 @@ export default function FilterButton({ element, first, last, onClick, proRequire
           toast.dismiss();
           toast.error(
             <div className='text-lg'>
-              Requires <Link href='/settings/pro' className='text-blue-500'>Pathology Pro</Link>
+              Requires <Link href='/settings/pro' className='text-blue-500'>{game.displayName} Pro</Link>
             </div>,
             {
               duration: 3000,
