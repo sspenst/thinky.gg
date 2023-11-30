@@ -1,4 +1,4 @@
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
 import { NextApiRequestGuest } from '@root/helpers/apiWrapper';
 import { enableFetchMocks } from 'jest-fetch-mock';
@@ -329,7 +329,7 @@ describe('Testing slugs for levels', () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestGuest = {
-          gameId: GameId.PATHOLOGY,
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             username: 'newuser',
@@ -361,7 +361,7 @@ describe('Testing slugs for levels', () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestGuest = {
-          gameId: GameId.PATHOLOGY,
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             id: 'newuser',
@@ -418,7 +418,7 @@ describe('Testing slugs for levels', () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestGuest = {
-          gameId: GameId.PATHOLOGY,
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             username: 'newuser',
@@ -521,13 +521,13 @@ describe('Testing slugs for levels', () => {
   test('Create 18 levels with same name in DB, so that we can test to make sure the server will not crash. The 19th should crash however.', async () => {
     for (let i = 1; i <= 18; i++) {
       // expect no exceptions
-      const promise = initLevel(GameId.PATHOLOGY, TestId.USER, `Sample${'!'.repeat(i)}`);
+      const promise = initLevel(DEFAULT_GAME_ID, TestId.USER, `Sample${'!'.repeat(i)}`);
 
       await expect(promise).resolves.toBeDefined();
     }
 
     // Now create one more, it should throw exception
-    const promise = initLevel(GameId.PATHOLOGY, TestId.USER, 'Sample');
+    const promise = initLevel(DEFAULT_GAME_ID, TestId.USER, 'Sample');
 
     await expect(promise).rejects.toThrow('Couldn\'t generate a unique level slug');
   }, 30000);

@@ -1,4 +1,4 @@
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import Theme from '@root/constants/theme';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
@@ -258,7 +258,7 @@ describe('api/follow', () => {
 
     // USER is still following USER_C, so we're getting USER_C to publish a level
     const [level, ] = await Promise.all([
-      initLevel(GameId.PATHOLOGY, TestId.USER_C, 'notif', {
+      initLevel(DEFAULT_GAME_ID, TestId.USER_C, 'notif', {
         data: '43',
         height: 1,
         isDraft: true,
@@ -268,7 +268,7 @@ describe('api/follow', () => {
       // set emailConfirmed for UserC. User C has no user config
       await UserConfigModel.create({
         _id: new Types.ObjectId(),
-        gameId: GameId.PATHOLOGY,
+        gameId: DEFAULT_GAME_ID,
         theme: Theme.Modern,
         userId: new Types.ObjectId(TestId.USER_C),
         emailConfirmed: true

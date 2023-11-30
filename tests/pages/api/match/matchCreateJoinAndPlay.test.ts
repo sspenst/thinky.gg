@@ -1,5 +1,5 @@
 import Direction from '@root/constants/direction';
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -30,7 +30,7 @@ afterEach(() => {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const defaultReq: any = {
   method: 'PUT',
-  gameId: GameId.PATHOLOGY,
+  gameId: DEFAULT_GAME_ID,
   cookies: {
     token: getTokenCookieValue(TestId.USER),
   },
@@ -325,7 +325,7 @@ describe('matchCreateJoinAndPlay', () => {
         const multiplayerProfiles = await MultiplayerProfileModel.find({ userId: { $in: [TestId.USER, TestId.USER_B] } });
 
         expect(multiplayerProfiles).toHaveLength(2);
-        expect(multiplayerProfiles[0].gameId).toBe(GameId.PATHOLOGY);
+        expect(multiplayerProfiles[0].gameId).toBe(DEFAULT_GAME_ID);
       }
     });
   });

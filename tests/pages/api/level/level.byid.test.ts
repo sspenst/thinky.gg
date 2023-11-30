@@ -1,5 +1,5 @@
 import Direction from '@root/constants/direction';
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -524,7 +524,7 @@ describe('pages/api/level/index.ts', () => {
 
         expect(lvl.authorNote).toBe('I\'m a changed nice little note.');
         expect(lvl.name).toBe('A Change Test Level');
-        expect(lvl.gameId).toBe(GameId.PATHOLOGY);
+        expect(lvl.gameId).toBe(DEFAULT_GAME_ID);
       },
     });
   });
@@ -648,7 +648,7 @@ describe('pages/api/level/index.ts', () => {
   test('Deleting a level before unpublishing should not work', async () => {
     await LevelModel.create({
       _id: test_level_id,
-      gameId: GameId.PATHOLOGY,
+      gameId: DEFAULT_GAME_ID,
       authorNote: 'test level X author note',
       data: '40000\n12000\n05000\n67890\nABCD3',
       height: 5,
@@ -774,7 +774,7 @@ describe('pages/api/level/index.ts', () => {
     await Promise.all([
       LevelModel.create({
         _id: test_level_id_delete,
-        gameId: GameId.PATHOLOGY,
+        gameId: DEFAULT_GAME_ID,
         authorNote: 'test level X author note',
         data: '40000\n12000\n05000\n67890\nABCD3',
         height: 5,
@@ -790,7 +790,7 @@ describe('pages/api/level/index.ts', () => {
 
       RecordModel.create({
         _id: new Types.ObjectId(),
-        gameId: GameId.PATHOLOGY,
+        gameId: DEFAULT_GAME_ID,
         levelId: test_level_id_delete,
         moves: 20,
         ts: TimerUtil.getTs(),

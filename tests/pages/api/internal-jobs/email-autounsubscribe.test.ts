@@ -1,8 +1,7 @@
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { NextApiRequestGuest } from '@root/helpers/apiWrapper';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';
-import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import { EmailDigestSettingTypes } from '../../../../constants/emailDigest';
@@ -32,7 +31,7 @@ jest.mock('nodemailer', () => ({
 
 const defaultReq: NextApiRequestGuest = {
   method: 'GET',
-  gameId: GameId.PATHOLOGY,
+  gameId: DEFAULT_GAME_ID,
   query: {
     secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
   },

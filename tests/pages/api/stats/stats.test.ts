@@ -1,5 +1,5 @@
 import Direction from '@root/constants/direction';
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import Stat from '@root/models/db/stat';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
@@ -424,7 +424,7 @@ describe('Testing stats api', () => {
         const stat = await StatModel.findOne({ userId: TestId.USER_B, levelId: TestId.LEVEL });
 
         expect(stat.attempts).toBe(3);
-        expect(stat.gameId).toBe(GameId.PATHOLOGY);
+        expect(stat.gameId).toBe(DEFAULT_GAME_ID);
 
         const b = await UserModel.findById(TestId.USER_B);
 

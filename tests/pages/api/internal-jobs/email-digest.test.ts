@@ -1,4 +1,4 @@
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { NextApiRequestGuest } from '@root/helpers/apiWrapper';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -43,7 +43,7 @@ describe('Email digest', () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestGuest = {
-          gameId: GameId.PATHOLOGY,
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             secret: 'abc'
@@ -75,12 +75,12 @@ describe('Email digest', () => {
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
 
-    await createNewRecordOnALevelYouSolvedNotifications(GameId.PATHOLOGY, [TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah');
+    await createNewRecordOnALevelYouSolvedNotifications(DEFAULT_GAME_ID, [TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah');
 
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestGuest = {
-          gameId: GameId.PATHOLOGY,
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST,
@@ -120,12 +120,12 @@ describe('Email digest', () => {
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
 
-    await createNewRecordOnALevelYouSolvedNotifications(GameId.PATHOLOGY, [TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah');
+    await createNewRecordOnALevelYouSolvedNotifications(DEFAULT_GAME_ID, [TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah');
 
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestGuest = {
-          gameId: GameId.PATHOLOGY,
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST,
@@ -166,13 +166,13 @@ describe('Email digest', () => {
 
     await dbConnect();
 
-    await Promise.all([createNewRecordOnALevelYouSolvedNotifications(GameId.PATHOLOGY, [TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah'),
-      createNewRecordOnALevelYouSolvedNotifications(GameId.PATHOLOGY, [TestId.USER_C], TestId.USER, TestId.LEVEL_2, 'blah2')]);
+    await Promise.all([createNewRecordOnALevelYouSolvedNotifications(DEFAULT_GAME_ID, [TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah'),
+      createNewRecordOnALevelYouSolvedNotifications(DEFAULT_GAME_ID, [TestId.USER_C], TestId.USER, TestId.LEVEL_2, 'blah2')]);
 
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestGuest = {
-          gameId: GameId.PATHOLOGY,
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
@@ -210,13 +210,13 @@ describe('Email digest', () => {
 
     await dbConnect();
 
-    await Promise.all([createNewRecordOnALevelYouSolvedNotifications(GameId.PATHOLOGY, [TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah'),
-      createNewRecordOnALevelYouSolvedNotifications(GameId.PATHOLOGY, [TestId.USER_C], TestId.USER, TestId.LEVEL_2, 'blah2')]);
+    await Promise.all([createNewRecordOnALevelYouSolvedNotifications(DEFAULT_GAME_ID, [TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah'),
+      createNewRecordOnALevelYouSolvedNotifications(DEFAULT_GAME_ID, [TestId.USER_C], TestId.USER, TestId.LEVEL_2, 'blah2')]);
 
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestGuest = {
-          gameId: GameId.PATHOLOGY,
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
@@ -259,7 +259,7 @@ describe('Email digest', () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestGuest = {
-          gameId: GameId.PATHOLOGY,
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
@@ -298,7 +298,7 @@ describe('Email digest', () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestGuest = {
-          gameId: GameId.PATHOLOGY,
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
@@ -328,7 +328,7 @@ describe('Email digest', () => {
     // delete user config
     await Promise.all([UserModel.findByIdAndDelete(TestId.USER),
       EmailLogModel.deleteMany({ type: EmailType.EMAIL_DIGEST, userId: TestId.USER }),
-      createNewRecordOnALevelYouSolvedNotifications(GameId.PATHOLOGY, [TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah')]);
+      createNewRecordOnALevelYouSolvedNotifications(DEFAULT_GAME_ID, [TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah')]);
 
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
@@ -338,7 +338,7 @@ describe('Email digest', () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestGuest = {
-          gameId: GameId.PATHOLOGY,
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST

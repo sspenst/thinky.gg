@@ -1,4 +1,4 @@
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import TestId from '@root/constants/testId';
 import { logger } from '@root/helpers/logger';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
@@ -170,7 +170,7 @@ describe('api/play-later', () => {
 
   test('POST another level should be OK', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    const newLevel = await initLevel(GameId.PATHOLOGY, TestId.USER, 'name0');
+    const newLevel = await initLevel(DEFAULT_GAME_ID, TestId.USER, 'name0');
 
     newLevelId = newLevel._id.toString();
     await testApiHandler({
@@ -201,7 +201,7 @@ describe('api/play-later', () => {
   });
   test('POST another level to trigger the MAX_LEVELS_IN_PLAYLIST hit', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    const newLevel = await initLevel(GameId.PATHOLOGY, TestId.USER, 'name');
+    const newLevel = await initLevel(DEFAULT_GAME_ID, TestId.USER, 'name');
 
     await testApiHandler({
       handler: async (_, res) => {

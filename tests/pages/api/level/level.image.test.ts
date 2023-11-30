@@ -1,4 +1,4 @@
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { NextApiRequestGuest } from '@root/helpers/apiWrapper';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
@@ -37,7 +37,7 @@ describe('pages/api/level/image/[id]', () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestGuest = {
-          gameId: GameId.PATHOLOGY,
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             id: TestId.LEVEL,
@@ -62,7 +62,7 @@ describe('pages/api/level/image/[id]', () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestGuest = {
-          gameId: GameId.PATHOLOGY,
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             id: TestId.LEVEL,
@@ -87,7 +87,7 @@ describe('pages/api/level/image/[id]', () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestGuest = {
-          gameId: GameId.PATHOLOGY,
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             id: new Types.ObjectId().toString(),
@@ -143,7 +143,7 @@ describe('pages/api/level/image/[id]', () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestGuest = {
-          gameId: GameId.PATHOLOGY,
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             id: draftLevelId,
@@ -169,7 +169,7 @@ describe('pages/api/level/image/[id]', () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestGuest = {
-          gameId: GameId.PATHOLOGY,
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             id: '[catalog]',

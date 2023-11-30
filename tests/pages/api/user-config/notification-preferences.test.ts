@@ -1,4 +1,4 @@
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
 import { createNewFollowerNotification, createNewReviewOnYourLevelNotification } from '@root/helpers/notificationHelper';
 import { processQueueMessages } from '@root/pages/api/internal-jobs/worker';
@@ -11,7 +11,7 @@ import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import UserConfig from '../../../../models/db/userConfig';
-import { QueueMessageModel, UserConfigModel } from '../../../../models/mongoose';
+import { UserConfigModel } from '../../../../models/mongoose';
 import handler from '../../../../pages/api/user-config/index';
 
 beforeAll(async () => {
@@ -77,7 +77,7 @@ describe('account settings notification preferences', () => {
         // check the db
         const config = await UserConfigModel.findOne({ userId: TestId.USER }).lean<UserConfig>() as UserConfig;
 
-        expect(config.gameId).toBe(GameId.PATHOLOGY);
+        expect(config.gameId).toBe(DEFAULT_GAME_ID);
         expect(config.disallowedEmailNotifications).toEqual(disallowedEmailNotifications);
         expect(config.disallowedPushNotifications).toEqual(disallowedPushNotifications);
       },
@@ -95,7 +95,7 @@ describe('account settings notification preferences', () => {
     originalSendPush.sendPushNotification = jest.fn().mockImplementation(() => {
       // do nothing
     });
-    await createNewReviewOnYourLevelNotification(GameId.PATHOLOGY, new Types.ObjectId(TestId.USER), new Types.ObjectId(TestId.USER_B), TestId.LEVEL, 'Sample review');
+    await createNewReviewOnYourLevelNotification(DEFAULT_GAME_ID, new Types.ObjectId(TestId.USER), new Types.ObjectId(TestId.USER_B), TestId.LEVEL, 'Sample review');
 
     const queueProcessed = await processQueueMessages();
 
@@ -115,7 +115,7 @@ describe('account settings notification preferences', () => {
     originalSendPush.sendPushNotification = jest.fn().mockImplementation(() => {
       // do nothing
     });
-    await createNewFollowerNotification(GameId.PATHOLOGY, TestId.USER_B, TestId.USER);
+    await createNewFollowerNotification(DEFAULT_GAME_ID, TestId.USER_B, TestId.USER);
 
     const queueProcessed = await processQueueMessages();
 
@@ -135,7 +135,7 @@ describe('account settings notification preferences', () => {
     originalSendPush.sendPushNotification = jest.fn().mockImplementation(() => {
       // do nothing
     });
-    await createNewFollowerNotification(GameId.PATHOLOGY, TestId.USER_B, TestId.USER_GUEST);
+    await createNewFollowerNotification(DEFAULT_GAME_ID, TestId.USER_B, TestId.USER_GUEST);
 
     const queueProcessed = await processQueueMessages();
 
