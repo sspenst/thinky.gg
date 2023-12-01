@@ -77,6 +77,6 @@ export default function validateSokobanSolution(directions: Direction[], level: 
     const x = index % level.width;
     const y = Math.floor(index / level.width);
 
-    return data[y * level.width + x] === TileType.Block;
+    return TileTypeHelper.canMove(data[y * level.width + x]);
   });
 }
