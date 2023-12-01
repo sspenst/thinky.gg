@@ -12,7 +12,7 @@ import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
 import { GraphModel, UserModel } from '../../../models/mongoose';
 import * as search from '../../../pages/api/search';
-import { ProfileTab, getServerSideProps } from '../../../pages/profile/[name]/[[...tab]]/index';
+import { getServerSideProps, ProfileTab } from '../../../pages/profile/[name]/[[...tab]]/index';
 
 beforeAll(async () => {
   await dbConnect();
@@ -28,7 +28,7 @@ afterAll(async () => {
   await dbDisconnect();
 });
 
-const gameId = DEFAULT_GAME_ID,;
+const gameId = DEFAULT_GAME_ID;
 
 describe('pages/profile page', () => {
   test('getServerSideProps with no parameters', async () => {
