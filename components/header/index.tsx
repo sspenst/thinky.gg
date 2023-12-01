@@ -6,6 +6,7 @@ import { AppContext } from '../../contexts/appContext';
 import LinkInfo from '../formatted/linkInfo';
 import Directory from './directory';
 import Dropdown from './dropdown';
+import { GameMenu } from './gameMenu';
 import HeaderControls from './headerControls';
 
 interface HeaderProps {
@@ -45,9 +46,11 @@ export default function Header({
             <Image alt='logo' src='/logo.svg' width='24' height='24' className='h-6 w-6' style={{ minWidth: 24, minHeight: 24 }} />
           </Link>
         </div>
+
         <Directory folders={folders} subtitle={subtitle} title={title} />
       </div>
       <div className='flex gap-4 items-center z-20'>
+        <GameMenu />
         <HeaderControls />
         <Dropdown />
       </div>
