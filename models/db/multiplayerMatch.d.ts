@@ -8,6 +8,7 @@ interface MultiplayerMatch {
   createdAt: Date;
   createdBy: User;
   endTime: Date;
+  gameId?: string;
   gameTable?: {
     [key: string]: Level[];
   };

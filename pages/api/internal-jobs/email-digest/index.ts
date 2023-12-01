@@ -41,7 +41,7 @@ const transporter = isLocal() ? nodemailer.createTransport({
   rateDelta: 10000,
 }) : nodemailer.createTransport({
   SES: { ses, aws },
-  sendingRate: 10 // max 10 messages/second
+  sendingRate: 20 // max 10 messages/second
 });
 
 export async function sendMail(batchId: Types.ObjectId, type: EmailType | NotificationType, user: User, subject: string, body: string) {
@@ -286,56 +286,60 @@ export async function sendAutoUnsubscribeUsers(batchId: Types.ObjectId, limit: n
     type: EmailType.EMAIL_7D_REACTIVATE,
     createdAt: { $lte: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) },
   }).distinct('userId');
-
-  const inactive7DUsersWhoWeHaveTriedToEmail = await UserModel.aggregate([
-    {
-      $match: {
-        _id: { $in: usersThatHaveBeenSentReactivationEmailIn3dAgoOrMore },
-        // checking if they have been not been active in past 10 days
-        last_visited_at: { $lte: (Date.now() / 1000) - (10 * 24 * 60 * 60 ) }, // TODO need to refactor last_visited_at to be a DATE object instead of seconds
-        roles: { $ne: Role.GUEST },
-        email: { $ne: null },
+  const [totalLevels, totalCreatorsQuery, inactive7DUsersWhoWeHaveTriedToEmail] = await Promise.all([
+    LevelModel.countDocuments({
+      isDeleted: { $ne: true },
+      isDraft: false,
+    }),
+    LevelModel.distinct('userId'),
+    UserModel.aggregate([
+      {
+        $match: {
+          _id: { $in: usersThatHaveBeenSentReactivationEmailIn3dAgoOrMore },
+          // checking if they have been not been active in past 10 days
+          last_visited_at: { $lte: (Date.now() / 1000) - (10 * 24 * 60 * 60 ) }, // TODO need to refactor last_visited_at to be a DATE object instead of seconds
+          roles: { $ne: Role.GUEST },
+          email: { $ne: null },
+        },
       },
-    },
-    {
-      $lookup: {
-        from: UserConfigModel.collection.name,
-        localField: '_id',
-        foreignField: 'userId',
-        as: 'userConfig',
+      {
+        $lookup: {
+          from: UserConfigModel.collection.name,
+          localField: '_id',
+          foreignField: 'userId',
+          as: 'userConfig',
+        },
       },
-    },
-    {
-      $unwind: {
-        path: '$userConfig',
-        preserveNullAndEmptyArrays: false, // if user has no config, don't include them
+      {
+        $unwind: {
+          path: '$userConfig',
+          preserveNullAndEmptyArrays: false, // if user has no config, don't include them
+        },
       },
-    },
-    {
-      $match: {
-        'userConfig.emailConfirmed': { $ne: true }, // don't unsubscribe users with verified emails
-        'userConfig.emailDigest': { $ne: EmailDigestSettingTypes.NONE },
+      {
+        $match: {
+          'userConfig.emailConfirmed': { $ne: true }, // don't unsubscribe users with verified emails
+          'userConfig.emailDigest': { $ne: EmailDigestSettingTypes.NONE },
+        },
       },
-    },
-    {
-      $project: {
-        _id: 1,
-        name: 1,
-        email: 1,
-        userConfig: 1,
-        last_visited_at: 1,
-        score: 1
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          email: 1,
+          userConfig: 1,
+          last_visited_at: 1,
+          score: 1
+        }
       }
-    }
+    ])
+
   ]);
+  const totalCreators = totalCreatorsQuery.length;
 
   const sentList: string[] = [];
   const failedList: string[] = [];
-  const totalLevels = await LevelModel.countDocuments({
-    isDeleted: { $ne: true },
-    isDraft: false,
-  });
-  const totalCreators = (await LevelModel.distinct('userId')).length;
+
   let count = 0;
 
   for (const user of inactive7DUsersWhoWeHaveTriedToEmail) {
@@ -374,55 +378,58 @@ export async function sendEmailReactivation(batchId: Types.ObjectId, limit: numb
     createdAt: { $gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000) },
     state: EmailState.SENT
   }).distinct('userId');
-
-  const inactive7DUsers = await UserModel.aggregate([
-    {
-      $match: {
-        _id: { $nin: usersThatHaveBeenSentReactivationInPast90d },
-        // checking if they have been not been active in past 7 days
-        last_visited_at: { $lte: (Date.now() / 1000) - (7 * 24 * 60 * 60 ) }, // TODO need to refactor last_visited_at to be a DATE object instead of seconds
-        roles: { $ne: Role.GUEST },
-        email: { $ne: null },
+  const [totalLevels, totalCreatorsQuery, inactive7DUsers] = await Promise.all([
+    LevelModel.countDocuments({
+      isDeleted: { $ne: true },
+      isDraft: false,
+    }),
+    LevelModel.distinct('userId'),
+    UserModel.aggregate([
+      {
+        $match: {
+          _id: { $nin: usersThatHaveBeenSentReactivationInPast90d },
+          // checking if they have been not been active in past 7 days
+          last_visited_at: { $lte: (Date.now() / 1000) - (7 * 24 * 60 * 60 ) }, // TODO need to refactor last_visited_at to be a DATE object instead of seconds
+          roles: { $ne: Role.GUEST },
+          email: { $ne: null },
+        },
       },
-    },
-    {
-      $lookup: {
-        from: UserConfigModel.collection.name,
-        localField: '_id',
-        foreignField: 'userId',
-        as: 'userConfig',
+      {
+        $lookup: {
+          from: UserConfigModel.collection.name,
+          localField: '_id',
+          foreignField: 'userId',
+          as: 'userConfig',
+        },
       },
-    },
-    {
-      $unwind: {
-        path: '$userConfig',
-        preserveNullAndEmptyArrays: false, // if user has no config, don't include them
+      {
+        $unwind: {
+          path: '$userConfig',
+          preserveNullAndEmptyArrays: false, // if user has no config, don't include them
+        },
       },
-    },
-    {
-      $match: {
-        'userConfig.emailDigest': { $ne: EmailDigestSettingTypes.NONE },
+      {
+        $match: {
+          'userConfig.emailDigest': { $ne: EmailDigestSettingTypes.NONE },
+        },
       },
-    },
-    {
-      $project: {
-        _id: 1,
-        name: 1,
-        email: 1,
-        userConfig: 1,
-        last_visited_at: 1,
-        score: 1
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          email: 1,
+          userConfig: 1,
+          last_visited_at: 1,
+          score: 1
+        }
       }
-    }
-  ]);
+    ]
+    )]);
 
   const sentList: string[] = [];
   const failedList: string[] = [];
-  const totalLevels = await LevelModel.countDocuments({
-    isDeleted: { $ne: true },
-    isDraft: false,
-  });
-  const totalCreators = (await LevelModel.distinct('userId')).length;
+
+  const totalCreators = totalCreatorsQuery.length;
   let count = 0;
 
   for (const user of inactive7DUsers) {

@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import mongoose from 'mongoose';
 import Review from '../db/review';
 
@@ -8,6 +9,11 @@ const ReviewSchema = new mongoose.Schema<Review>({
   },
   isDeleted: {
     type: Boolean,
+  },
+  gameId: {
+    type: String,
+    enum: GameId,
+    required: false,
   },
   levelId: {
     type: mongoose.Schema.Types.ObjectId,

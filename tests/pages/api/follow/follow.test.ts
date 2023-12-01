@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import Theme from '@root/constants/theme';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
@@ -267,6 +268,7 @@ describe('api/follow', () => {
       // set emailConfirmed for UserC. User C has no user config
       await UserConfigModel.create({
         _id: new Types.ObjectId(),
+        gameId: GameId.PATHOLOGY,
         theme: Theme.Modern,
         userId: new Types.ObjectId(TestId.USER_C),
         emailConfirmed: true

@@ -198,6 +198,7 @@ export default function PlayHistory() {
                       href: `/level/${level.slug}`,
                       id: playAttempt.levelId._id.toString() + '-' + playAttempt._id.toString(),
                       level: level,
+                      searchLabel: level.name,
                       stats: new SelectOptionStats(level.leastMoves, level.userMoves),
                       text: level.name,
                     }} />

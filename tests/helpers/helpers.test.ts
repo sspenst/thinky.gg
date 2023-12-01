@@ -134,20 +134,24 @@ describe('helpers/*.ts', () => {
       {
         stats: new SelectOptionStats(7, 7),
         text: 'complete',
+        searchLabel: 'complete',
       },
       {
         stats: new SelectOptionStats(9, 1),
         text: 'in progress',
+        searchLabel: 'in progress',
       },
       {
         stats: new SelectOptionStats(5, 0),
       },
       {
         text: 'empty',
+        searchLabel: 'empty',
       },
       {
         stats: new SelectOptionStats(10, undefined),
         text: 'no user total',
+        searchLabel: 'no user total',
       },
     ] as SelectOption[];
 

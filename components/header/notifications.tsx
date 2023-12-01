@@ -3,18 +3,16 @@ import Link from 'next/link';
 import React, { Fragment, useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { AppContext } from '../../contexts/appContext';
-import Notification from '../../models/db/notification';
 import NotificationList from '../notification/notificationList';
 
 export default function Notifications() {
-  const { mutateUser, user } = useContext(AppContext);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const { user, notifications, setNotifications } = useContext(AppContext);
 
   useEffect(() => {
     if (user) {
       setNotifications(user.notifications);
     }
-  }, [user]);
+  }, [setNotifications, user]);
 
   if (!user) {
     return null;
@@ -23,7 +21,6 @@ export default function Notifications() {
   return (
     <Menu>
       <Menu.Button onClickCapture={() => {
-        mutateUser();
       }} aria-label='notifications'>
         <div className='flex items-start hover:opacity-70' id='notificationsBtn'>
           <svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' className='bi bi-bell h-6 w-5' viewBox='0 0 17 17'>

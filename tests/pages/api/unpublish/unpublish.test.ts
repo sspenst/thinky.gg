@@ -213,8 +213,7 @@ describe('Testing unpublish', () => {
         const levelClone = await LevelModel.findOne({ slug: userALevel1.slug });
 
         // Grab both collections
-        userACollection = await CollectionModel.findById(userACollection?._id);
-        userBCollection = await CollectionModel.findById(userBCollection?._id);
+        [userACollection, userBCollection] = await Promise.all([CollectionModel.findById(userACollection?._id), CollectionModel.findById(userBCollection?._id)]);
 
         // Check to make sure that userALevel1 is in userACollection but not in userBCollection
         expect((userACollection?.levels as Types.ObjectId[]).includes(levelClone._id)).toBe(true);

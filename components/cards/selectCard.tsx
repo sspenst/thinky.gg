@@ -22,7 +22,7 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
   const { user } = useContext(AppContext);
 
   useEffect(() => {
-    if (option.level) {
+    if (option.level && option.level.data) {
       setBackgroundImage(getPngDataClient(option.level.data));
     }
   }, [option.level]);

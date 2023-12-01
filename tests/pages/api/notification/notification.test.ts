@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';
 import { Types } from 'mongoose';
@@ -91,18 +92,24 @@ describe('Notifications', () => {
     const ONE_DAY = 86400000;
 
     MockDate.set(Date.now() - ONE_DAY);
-    const n1: Notification[] = await createNewRecordOnALevelYouSolvedNotifications([TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah') as Notification[];
+    const n1: Notification[] = await createNewRecordOnALevelYouSolvedNotifications(GameId.PATHOLOGY, [TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah') as Notification[];
 
     MockDate.set(Date.now() + ONE_DAY);
-    const n2 = await createNewReviewOnYourLevelNotification(TestId.USER, TestId.USER_B, TestId.LEVEL, '4') as Notification;
+    const n2 = await createNewReviewOnYourLevelNotification(GameId.PATHOLOGY, new Types.ObjectId(TestId.USER), new Types.ObjectId(TestId.USER_B), TestId.LEVEL, '4') as Notification;
 
     expect(new Date(n1[0].updatedAt).getTime()).toBeLessThan(new Date(n2.updatedAt).getTime());
 
     // reviewing your own level should be null
-    const nullNotif = await createNewReviewOnYourLevelNotification(TestId.USER_B, TestId.USER_B, TestId.LEVEL, '4');
+    const nullNotif = await createNewReviewOnYourLevelNotification(GameId.PATHOLOGY, new Types.ObjectId(TestId.USER_B), new Types.ObjectId(TestId.USER_B), TestId.LEVEL, '4');
 
     expect(nullNotif).toBeNull();
-    expect(await NotificationModel.find({})).toHaveLength(2);
+
+    const notifs = await NotificationModel.find({});
+
+    expect(notifs).toHaveLength(2);
+    expect(notifs[0].gameId).toBe(GameId.PATHOLOGY);
+    expect(notifs[1].gameId).toBe(GameId.PATHOLOGY);
+
     // Now get the current user and check notifications
 
     await testApiHandler({
@@ -127,6 +134,7 @@ describe('Notifications', () => {
 
         expect(response.notifications).toHaveLength(2);
         notificationId = response.notifications[0]._id;
+
         expect(response.notifications[0].userId).toBe(TestId.USER);
         expect(response.notifications[0].source._id).toBe(TestId.USER_B);
         expect(response.notifications[0].source.name).toBe('BBB'); // ensure we populate this correctly

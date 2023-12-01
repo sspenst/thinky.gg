@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import mongoose from 'mongoose';
 import Stat from '../db/stat';
 
@@ -13,6 +14,11 @@ const StatSchema = new mongoose.Schema<Stat>({
   complete: {
     type: Boolean,
     required: true,
+  },
+  gameId: {
+    type: String,
+    enum: GameId,
+    required: false,
   },
   isDeleted: {
     type: Boolean,

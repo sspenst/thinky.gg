@@ -63,7 +63,7 @@ export default withAuth({
 
     const notifyCollectionIds = notifyCollections.map(c => c._id.toString());
 
-    promises.push(createNewLevelAddedToCollectionNotification(req.user, level, notifyCollectionIds));
+    promises.push(createNewLevelAddedToCollectionNotification(level.gameId, req.user, level, notifyCollectionIds));
   }
 
   promises.push(

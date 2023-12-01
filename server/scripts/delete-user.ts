@@ -1,6 +1,7 @@
 // ts-node -r tsconfig-paths/register --files server/scripts/delete-user.ts
 
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
+import { GameId } from '@root/constants/GameId';
 import { clearNotifications } from '@root/helpers/notificationHelper';
 import { requestBroadcastMatch } from '@root/lib/appSocketToClient';
 import { MatchAction, MatchLogGeneric, MultiplayerMatchState } from '@root/models/constants/multiplayer';
@@ -112,7 +113,11 @@ async function deleteReviews(user: User) {
   progressBar.stop();
 
   for (const userId of creatorUserIds) {
-    await queueRefreshAchievements(userId, [AchievementCategory.CREATOR]);
+    for (const key of Object.keys(GameId)) {
+      const gameId = GameId[key as keyof typeof GameId];
+
+      await queueRefreshAchievements(gameId as GameId, userId, [AchievementCategory.CREATOR]);
+    }
   }
 }
 

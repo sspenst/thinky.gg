@@ -8,6 +8,7 @@ interface UserConfig {
   _id: Types.ObjectId;
   disallowedEmailNotifications: NotificationType[];
   disallowedPushNotifications: NotificationType[];
+  gameId?: string;
   emailConfirmationToken: string;
   emailConfirmed: boolean;
   emailDigest: EmailDigestSettingTypes;

@@ -43,6 +43,7 @@ export default withAuth({
       collection = (await CollectionModel.create([{
         _id: new Types.ObjectId(),
         authorNote: authorNote?.trim(),
+        gameId: req.gameId,
         isPrivate: setIsPrivate,
         name: trimmedName,
         slug: slug,

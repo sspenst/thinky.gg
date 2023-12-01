@@ -69,6 +69,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     },
   );
 
+  // ensure that enrichedCollections is sorted in the same order as collections
+  enrichedCollections.sort((a, b) => {
+    return campaign.collections.findIndex(collection => collection._id.toString() === a._id.toString()) -
+      campaign.collections.findIndex(collection => collection._id.toString() === b._id.toString());
+  });
+
   return {
     props: {
       campaign: JSON.parse(JSON.stringify(campaign)),

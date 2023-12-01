@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import mongoose from 'mongoose';
 import { CollectionType } from '../constants/collection';
 import Collection from '../db/collection';
@@ -14,6 +15,11 @@ const CollectionSchema = new mongoose.Schema<Collection>({
   isPrivate: {
     type: Boolean,
     default: false,
+  },
+  gameId: {
+    type: String,
+    enum: GameId,
+    required: false,
   },
   isThemed: {
     type: Boolean,

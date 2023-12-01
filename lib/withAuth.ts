@@ -2,7 +2,9 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 // https://github.com/newrelic/node-newrelic/issues/956#issuecomment-962729137
 import type { NextApiRequest, NextApiResponse } from 'next';
 import requestIp from 'request-ip';
+import { GameId } from '../constants/GameId';
 import { parseReq, ReqValidator } from '../helpers/apiWrapper';
+import { getGameIdFromReq } from '../helpers/getGameIdFromReq';
 import { TimerUtil } from '../helpers/getTs';
 import { logger } from '../helpers/logger';
 import User from '../models/db/user';
@@ -14,6 +16,7 @@ import isLocal from './isLocal';
 export type NextApiRequestWithAuth = NextApiRequest & {
   user: User;
   userId: string;
+  gameId: GameId;
 };
 
 export async function getUserFromToken(
@@ -111,6 +114,8 @@ export default function withAuth(
       );
 
       res.setHeader('Set-Cookie', refreshCookie);
+
+      req.gameId = getGameIdFromReq(req);
       req.user = reqUser;
       req.userId = reqUser._id.toString();
 

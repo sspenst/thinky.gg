@@ -1,10 +1,11 @@
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
+import { GameId } from '@root/constants/GameId';
+import { getEnrichNotificationPipelineStages } from '@root/helpers/getEnrichNotificationPipelineStages';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
 import UserConfig from '@root/models/db/userConfig';
 import mongoose, { ClientSession, QueryOptions, Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
-import { getEnrichNotificationPipelineStages } from '../../../../helpers/enrich';
 import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
 import Notification from '../../../../models/db/notification';
@@ -87,11 +88,11 @@ export async function bulkQueuePushNotification(notificationIds: Types.ObjectId[
   await QueueMessageModel.insertMany(queueMessages, { session: session });
 }
 
-export async function queueRefreshAchievements(userId: string | Types.ObjectId, categories: AchievementCategory[], options?: QueryOptions) {
+export async function queueRefreshAchievements(gameId: GameId, userId: string | Types.ObjectId, categories: AchievementCategory[], options?: QueryOptions) {
   await queue(
     userId.toString() + '-refresh-achievements-' + new Types.ObjectId().toString(),
     QueueMessageType.REFRESH_ACHIEVEMENTS,
-    JSON.stringify({ userId: userId.toString(), categories: categories }),
+    JSON.stringify({ gameId: gameId, userId: userId.toString(), categories: categories }),
     options,
   );
 }
@@ -189,7 +190,7 @@ async function processQueueMessage(queueMessage: QueueMessage) {
         log = `Notification ${notificationId} not sent: not found`;
       } else {
         const notification = notificationAgg[0];
-        const userConfig = await UserConfigModel.findOne<UserConfig>({ userId: notification.userId._id });
+        const userConfig = await UserConfigModel.findOne<UserConfig>({ userId: notification.userId._id }).lean<UserConfig>();
 
         if (userConfig === null) {
           log = `Notification ${notificationId} not sent: user config not found`;
@@ -230,10 +231,11 @@ async function processQueueMessage(queueMessage: QueueMessage) {
     log = `calcCreatorCounts for ${userId}`;
     await calcCreatorCounts(new Types.ObjectId(userId));
   } else if (queueMessage.type === QueueMessageType.REFRESH_ACHIEVEMENTS) {
-    const { userId, categories } = JSON.parse(queueMessage.message) as { userId: string, categories: AchievementCategory[] };
-    const achievementsEarned = await refreshAchievements(new Types.ObjectId(userId), categories);
+    const { gameId, userId, categories } = JSON.parse(queueMessage.message) as {gameId: GameId, userId: string, categories: AchievementCategory[]};
 
-    log = `refreshAchievements for ${userId} created ${achievementsEarned} achievements`;
+    const achievementsEarned = await refreshAchievements(gameId, new Types.ObjectId(userId), categories);
+
+    log = `refreshAchievements game ${gameId} for ${userId} created ${achievementsEarned} achievements`;
   } else {
     log = `Unknown queue message type ${queueMessage.type}`;
     error = true;
