@@ -51,20 +51,26 @@ export default function Header({
       <div className='flex gap-4 items-center z-20'>
         <HeaderControls />
         {user && <div className='hidden sm:block h-6 w-px bg-neutral-500' />}
-        <div className='flex gap-2 items-center'>
+        <div className='flex gap-3 items-center'>
           {user && <>
             <Link
               className='hidden sm:block'
               data-tooltip-content='Ranked Solves'
               data-tooltip-id='ranked-solves-header'
               href='/ranked'
-              id='levelsSolvedBtn'
             >
-              <div className='flex flex-col gap-1'>
-                <span className='font-bold text-yellow-500 leading-none'>{user.calcRankedSolves} 🏅</span>
-                <span className='font-bold text-sm leading-none'>{user.score}</span>
-              </div>
+              <span className='font-bold leading-none'>{user.calcRankedSolves} 🏅</span>
               <StyledTooltip id='ranked-solves-header' />
+            </Link>
+            <div className='hidden sm:block h-6 w-px bg-neutral-500' />
+            <Link
+              className='hidden sm:block ml-1'
+              data-tooltip-content='Levels Solved'
+              data-tooltip-id='levels-solved-header'
+              href='/users'
+            >
+              <span className='font-bold'>{user.score}</span>
+              <StyledTooltip id='levels-solved-header' />
             </Link>
           </>}
           <Dropdown />
