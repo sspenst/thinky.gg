@@ -308,6 +308,7 @@ export default function ProfilePage({
         href: `/collection/${enrichedCollection.slug}`,
         id: enrichedCollection._id.toString(),
         stats: new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userSolvedCount),
+        searchLabel: enrichedCollection.name,
         text: <>
           {enrichedCollection.name}
           {ownProfile &&
@@ -464,15 +465,15 @@ export default function ProfilePage({
     [ProfileTab.Multiplayer]: <ProfileMultiplayer user={user} />,
     [ProfileTab.Collections]: (
       <div className='flex flex-col gap-2 justify-center'>
-        {collectionsAsOptions.length > 0 &&
-          <SelectFilter
-            filter={showCollectionFilter}
-            onFilterClick={onFilterCollectionClick}
-            placeholder={`Search ${collectionsAsOptions.length} collection${collectionsAsOptions.length !== 1 ? 's' : ''}...`}
-            searchText={collectionFilterText}
-            setSearchText={setCollectionFilterText}
-          />
-        }
+
+        <SelectFilter
+          filter={showCollectionFilter}
+          onFilterClick={onFilterCollectionClick}
+          placeholder={`Search ${collectionsAsOptions.length} collection${collectionsAsOptions.length !== 1 ? 's' : ''}...`}
+          searchText={collectionFilterText}
+          setSearchText={setCollectionFilterText}
+        />
+
         {reqUser?._id === user._id &&
           <div className='text-center'>
             <button

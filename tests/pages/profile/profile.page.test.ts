@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext } from 'next';
 import { Logger } from 'winston';
@@ -15,10 +16,13 @@ import { getServerSideProps, ProfileTab } from '../../../pages/profile/[name]/[[
 
 beforeAll(async () => {
   await dbConnect();
+  const promises = [];
 
   for (let i = 0; i < 30; i++) {
-    await createNewReviewOnYourLevelNotification(TestId.USER, TestId.USER_B, new Types.ObjectId(), 'id ' + i);
+    promises.push(createNewReviewOnYourLevelNotification(GameId.PATHOLOGY, new Types.ObjectId(TestId.USER), new Types.ObjectId(TestId.USER_B), new Types.ObjectId(), 'id ' + i));
   }
+
+  await Promise.all(promises);
 });
 afterAll(async () => {
   await dbDisconnect();

@@ -1,4 +1,5 @@
 import Direction from '@root/constants/direction';
+import { GameId } from '@root/constants/GameId';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -8,7 +9,7 @@ import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { MatchAction, MultiplayerMatchState, MultiplayerMatchType } from '../../../../models/constants/multiplayer';
 import MultiplayerMatch from '../../../../models/db/multiplayerMatch';
-import { LevelModel, MultiplayerMatchModel, StatModel } from '../../../../models/mongoose';
+import { LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, StatModel } from '../../../../models/mongoose';
 import handler from '../../../../pages/api/match/[matchId]';
 import handlerCreate, { checkForFinishedMatch } from '../../../../pages/api/match/index';
 import statHandler from '../../../../pages/api/stats/index';
@@ -29,6 +30,7 @@ afterEach(() => {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const defaultReq: any = {
   method: 'PUT',
+  gameId: GameId.PATHOLOGY,
   cookies: {
     token: getTokenCookieValue(TestId.USER),
   },
@@ -178,7 +180,7 @@ describe('matchCreateJoinAndPlay', () => {
         expect(response.winners).toHaveLength(0);
         expect(response.timeUntilStart).toBe(-1000);
         expect(response.levels).toHaveLength(1); // should have level for this user now
-        expect(Object.keys(response.levels[0]).sort()).toEqual(['_id', 'calc_playattempts_unique_users', 'calc_playattempts_unique_users_count', 'calc_difficulty_estimate', 'userId', 'data', 'width', 'height', 'leastMoves', 'name', 'slug', 'isRanked'].sort());
+        expect(Object.keys(response.levels[0]).sort()).toEqual(['_id', 'calc_playattempts_unique_users', 'calc_playattempts_unique_users_count', 'calc_difficulty_estimate', 'complete', 'userId', 'data', 'width', 'height', 'leastMoves', 'name', 'slug', 'isRanked'].sort());
       }
 
     });
@@ -290,7 +292,9 @@ describe('matchCreateJoinAndPlay', () => {
 
   test('Wait until end and then get match behalf of USER 1', async () => {
     MockDate.set(new Date().getTime() + 190000); // 3 minutes later
-    const checkReturn = await checkForFinishedMatch(matchId); // should return null
+    const [checkReturn, profiles] = await Promise.all([checkForFinishedMatch(matchId), MultiplayerProfileModel.find({ userId: { $in: [TestId.USER, TestId.USER_B] } })]);
+
+    expect(profiles).toHaveLength(0);
 
     expect(checkReturn).not.toBeNull();
     expect(checkReturn?.matchId).toBe(matchId);
@@ -316,6 +320,12 @@ describe('matchCreateJoinAndPlay', () => {
         expect(response.winners).toHaveLength(1);
 
         expect(response.levels).toHaveLength(3); // @TODO: Probably shouldn't return all the levels on finish of match - just need the levels that were played
+
+        // query mutliplayerprofiles
+        const multiplayerProfiles = await MultiplayerProfileModel.find({ userId: { $in: [TestId.USER, TestId.USER_B] } });
+
+        expect(multiplayerProfiles).toHaveLength(2);
+        expect(multiplayerProfiles[0].gameId).toBe(GameId.PATHOLOGY);
       }
     });
   });

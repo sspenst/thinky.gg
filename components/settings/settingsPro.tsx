@@ -110,13 +110,6 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
         <Image alt='pro' src='/pro.svg' width='24' height='24' />
         <h2 className='font-bold text-2xl'>Pathology Pro</h2>
       </div>
-      <div className='rounded-md px-4 py-2 bg-yellow-200 text-black text-sm'>
-        <span><span className='font-bold'>Update: </span>On December 1, 2023, the pricing of Pathology Pro will be updated as follows:</span>
-        <ul className=''>
-          <li>Monthly: $5 USD per month</li>
-          <li>Yearly: $4 USD per month ($48 USD per year billed annually)</li>
-        </ul>
-      </div>
       {isPro(user) &&
         <div className='flex flex-col gap-4 text-center justify-center items-center'>
           <div>
@@ -200,9 +193,9 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                 <div className='flex flex-col'>
                   <span className='text-lg'>Gift Pro</span>
                   {giftInterval === 'month' ?
-                    <span className='text-sm'>$3.00 USD / month</span>
+                    <span className='text-sm'>$5.00 USD / month</span>
                     :
-                    <span className='text-sm'>$27.00 USD / year</span>
+                    <span className='text-sm'>$48.00 USD / year</span>
                   }
                 </div>
               </button>
@@ -264,7 +257,6 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
         </div>
       )}
       {subscriptionsLoading ? <LoadingSpinner /> : null}
-      <div><p className='text-xs'>For questions please contact <Link className='text-blue-300' href='mailto:help@pathology.gg'>help@pathology.gg</Link>.</p></div>
       {!userLoading && !isPro(user) &&
         <div className='flex flex-col items-center justify-center gap-4'>
           <div className='flex flex-col gap-3 w-fit items-center mt-3'>
@@ -283,10 +275,10 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                       <span className='text-xs rounded-md px-1' style={{
                         backgroundColor: 'var(--bg-color)',
                         color: 'rgb(134 239 172)',
-                      }}>SAVE 25%</span>
+                      }}>SAVE 20%</span>
                     </div>
-                    <span className='font-bold text-lg' style={{ color: 'var(--color)' }}>$2.25 USD / month</span>
-                    <span className='text-xs'>$27 per year billed annually</span>
+                    <span className='font-bold text-lg' style={{ color: 'var(--color)' }}>$4.00 USD / month</span>
+                    <span className='text-xs'>$48 per year billed annually</span>
                   </div>
                 )}
               </RadioGroup.Option>
@@ -300,8 +292,8 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                     color: 'var(--color-gray)',
                   }}>
                     <span>Monthly Plan</span>
-                    <span className='font-bold text-lg' style={{ color: 'var(--color)' }}>$3.00 USD / month</span>
-                    <span className='text-xs'>$36 per year billed monthly</span>
+                    <span className='font-bold text-lg' style={{ color: 'var(--color)' }}>$5.00 USD / month</span>
+                    <span className='text-xs'>$60 per year billed monthly</span>
                   </div>
                 )}
               </RadioGroup.Option>
@@ -322,6 +314,9 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
           </p>
         </div>
       }
+      <div className='text-xs'>
+        For questions please contact <Link className='text-blue-300' href='mailto:help@pathology.gg'>help@pathology.gg</Link>.
+      </div>
       <div className='flex flex-col xl:flex-row items-center gap-4 justify-center'>
         <div className='p-2'>
           <video autoPlay loop muted playsInline className='rounded-xl'>

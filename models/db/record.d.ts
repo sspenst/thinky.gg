@@ -5,6 +5,7 @@ import User from './user';
 interface Record {
   _id: Types.ObjectId;
   isDeleted: boolean;
+  gameId?: string;
   levelId: Types.ObjectId & Level;
   moves: number;
   ts: number;

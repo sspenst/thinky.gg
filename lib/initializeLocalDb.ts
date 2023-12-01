@@ -4,6 +4,7 @@ import { PASSWORD_SALTROUNDS } from '@root/models/schemas/userSchema';
 import { getNewUserConfig } from '@root/pages/api/user-config';
 import bcrypt from 'bcryptjs';
 import { Types } from 'mongoose';
+import { GameId } from '../constants/GameId';
 import Role from '../constants/role';
 import TestId from '../constants/testId';
 import { generateCollectionSlug, generateLevelSlug } from '../helpers/generateSlug';
@@ -94,10 +95,10 @@ export default async function initializeLocalDb() {
   ));
 
   promises.push(UserConfigModel.insertMany([
-    getNewUserConfig([], 0, new Types.ObjectId(TestId.USER), { emailConfirmed: true }),
-    getNewUserConfig([], 0, new Types.ObjectId(TestId.USER_B), { emailConfirmed: true }),
-    getNewUserConfig([Role.GUEST], 0, new Types.ObjectId(TestId.USER_GUEST)),
-    getNewUserConfig([Role.PRO], 0, new Types.ObjectId(TestId.USER_PRO), { emailConfirmed: true, emailDigest: EmailDigestSettingTypes.NONE }),
+    getNewUserConfig(GameId.PATHOLOGY, [], 0, new Types.ObjectId(TestId.USER), { emailConfirmed: true }),
+    getNewUserConfig(GameId.PATHOLOGY, [], 0, new Types.ObjectId(TestId.USER_B), { emailConfirmed: true }),
+    getNewUserConfig(GameId.PATHOLOGY, [Role.GUEST], 0, new Types.ObjectId(TestId.USER_GUEST)),
+    getNewUserConfig(GameId.PATHOLOGY, [Role.PRO], 0, new Types.ObjectId(TestId.USER_PRO), { emailConfirmed: true, emailDigest: EmailDigestSettingTypes.NONE }),
   ], { ordered: false }));
 
   // LEVEL
@@ -108,6 +109,7 @@ export default async function initializeLocalDb() {
         authorNote: 'test level 1 author note',
         data: '4000B0\n120000\n050000\n678900\nABCD30',
         height: 5,
+        gameId: GameId.PATHOLOGY,
         isDraft: false,
         isRanked: false,
         leastMoves: 20,
@@ -121,6 +123,7 @@ export default async function initializeLocalDb() {
         _id: new Types.ObjectId(TestId.LEVEL_2),
         data: '40000\n12000\n05000\n67890\nABC03',
         height: 5,
+        gameId: GameId.PATHOLOGY,
         isDraft: true,
         isRanked: false,
         leastMoves: 20,
@@ -134,6 +137,7 @@ export default async function initializeLocalDb() {
         _id: new Types.ObjectId(TestId.LEVEL_3),
         data: '40\n03',
         height: 2,
+        gameId: GameId.PATHOLOGY,
         isDraft: false,
         isRanked: false,
         leastMoves: 80,
@@ -147,6 +151,7 @@ export default async function initializeLocalDb() {
         _id: new Types.ObjectId(TestId.LEVEL_4),
         data: '40000\n02000\n05000\n67890\nABCD3',
         height: 5,
+        gameId: GameId.PATHOLOGY,
         isDraft: false,
         isRanked: false,
         leastMoves: 20,
@@ -161,6 +166,7 @@ export default async function initializeLocalDb() {
         authorNote: 'test level deleted author note',
         data: '4000B0\n120000\n050000\n678900\nABCD30',
         height: 5,
+        gameId: GameId.PATHOLOGY,
         isDeleted: true,
         isDraft: false,
         isRanked: false,
@@ -179,6 +185,7 @@ export default async function initializeLocalDb() {
       {
         _id: new Types.ObjectId(TestId.RECORD),
         levelId: new Types.ObjectId(TestId.LEVEL),
+        gameId: GameId.PATHOLOGY,
         moves: 20,
         ts: ts,
         userId: new Types.ObjectId(TestId.USER),
@@ -186,6 +193,7 @@ export default async function initializeLocalDb() {
       {
         _id: new Types.ObjectId(),
         levelId: new Types.ObjectId(TestId.LEVEL_3),
+        gameId: GameId.PATHOLOGY,
         moves: 80,
         ts: ts,
         userId: new Types.ObjectId(TestId.USER),
@@ -193,6 +201,7 @@ export default async function initializeLocalDb() {
       {
         _id: new Types.ObjectId(),
         levelId: new Types.ObjectId(TestId.LEVEL_3),
+        gameId: GameId.PATHOLOGY,
         moves: 20,
         ts: ts,
         userId: new Types.ObjectId(TestId.USER_B),
@@ -201,6 +210,7 @@ export default async function initializeLocalDb() {
         _id: new Types.ObjectId(),
         isDeleted: true,
         levelId: new Types.ObjectId(TestId.LEVEL_DELETED),
+        gameId: GameId.PATHOLOGY,
         moves: 20,
         ts: ts,
         userId: new Types.ObjectId(TestId.USER),
@@ -217,6 +227,7 @@ export default async function initializeLocalDb() {
         attempts: 1,
         complete: true,
         levelId: new Types.ObjectId(TestId.LEVEL),
+        gameId: GameId.PATHOLOGY,
         moves: 20,
         ts: ts,
         userId: new Types.ObjectId(TestId.USER),
@@ -226,6 +237,7 @@ export default async function initializeLocalDb() {
         attempts: 1,
         complete: false,
         levelId: new Types.ObjectId(TestId.LEVEL),
+        gameId: GameId.PATHOLOGY,
         moves: 22,
         ts: ts,
         userId: new Types.ObjectId(TestId.USER_B),
@@ -235,6 +247,7 @@ export default async function initializeLocalDb() {
         attempts: 1,
         complete: true,
         levelId: new Types.ObjectId(TestId.LEVEL_3),
+        gameId: GameId.PATHOLOGY,
         moves: 80,
         ts: ts,
         userId: new Types.ObjectId(TestId.USER),
@@ -244,6 +257,7 @@ export default async function initializeLocalDb() {
         attempts: 1,
         complete: true,
         levelId: new Types.ObjectId(TestId.LEVEL_4),
+        gameId: GameId.PATHOLOGY,
         moves: 20,
         ts: ts,
         userId: new Types.ObjectId(TestId.USER_B),
@@ -254,6 +268,7 @@ export default async function initializeLocalDb() {
         complete: true,
         isDeleted: true,
         levelId: new Types.ObjectId(TestId.LEVEL_DELETED),
+        gameId: GameId.PATHOLOGY,
         moves: 20,
         ts: ts,
         userId: new Types.ObjectId(TestId.USER),
@@ -273,6 +288,7 @@ export default async function initializeLocalDb() {
       endTime: 200,
       isDeleted: true,
       levelId: new Types.ObjectId(TestId.LEVEL_DELETED),
+      gameId: GameId.PATHOLOGY,
       startTime: 100,
       updateCount: 1,
       userId: new Types.ObjectId(TestId.USER),
@@ -288,6 +304,7 @@ export default async function initializeLocalDb() {
         isDeleted: true,
         levelId: new Types.ObjectId(TestId.LEVEL_DELETED),
         score: 5,
+        gameId: GameId.PATHOLOGY,
         text: 'My best creation. I can\'t really imagine anything better.',
         ts: ts,
         userId: new Types.ObjectId(TestId.USER_B),
@@ -296,6 +313,7 @@ export default async function initializeLocalDb() {
         _id: new Types.ObjectId(TestId.REVIEW),
         levelId: new Types.ObjectId(TestId.LEVEL),
         score: 5,
+        gameId: GameId.PATHOLOGY,
         text: 'My best creation. I can\'t really imagine anything better.',
         ts: ts,
         userId: new Types.ObjectId(TestId.USER_B),
@@ -310,6 +328,7 @@ export default async function initializeLocalDb() {
         _id: new Types.ObjectId(TestId.COLLECTION),
         authorNote: 'test collection author note',
         name: 'test collection',
+        gameId: GameId.PATHOLOGY,
         slug: await generateCollectionSlug('test', 'test collection'),
         userId: new Types.ObjectId(TestId.USER),
         levels: [new Types.ObjectId(TestId.LEVEL), new Types.ObjectId(TestId.LEVEL_2)]
@@ -318,6 +337,7 @@ export default async function initializeLocalDb() {
         _id: new Types.ObjectId(TestId.COLLECTION_2),
         levels: [new Types.ObjectId(TestId.LEVEL), new Types.ObjectId(TestId.LEVEL_2), new Types.ObjectId(TestId.LEVEL_3)],
         name: 'test collection 2',
+        gameId: GameId.PATHOLOGY,
         slug: await generateCollectionSlug('test', 'test collection 2'),
         userId: new Types.ObjectId(TestId.USER),
       },
@@ -325,6 +345,7 @@ export default async function initializeLocalDb() {
         _id: new Types.ObjectId(TestId.COLLECTION_B),
         levels: [new Types.ObjectId(TestId.LEVEL), new Types.ObjectId(TestId.LEVEL_2), new Types.ObjectId(TestId.LEVEL_3)],
         name: 'test collection 3',
+        gameId: GameId.PATHOLOGY,
         slug: await generateCollectionSlug('BBB', 'test collection 3'),
         userId: new Types.ObjectId(TestId.USER_B),
       }
@@ -338,6 +359,7 @@ export default async function initializeLocalDb() {
       {
         _id: new Types.ObjectId(TestId.CAMPAIGN_OFFICIAL),
         authorNote: 'The official campaign!',
+        gameId: GameId.PATHOLOGY,
         collections: [new Types.ObjectId(TestId.COLLECTION)],
         name: 'Official Campaign',
         slug: 'official-campaign',
@@ -356,6 +378,7 @@ export async function initLevel(userId: string, name: string, obj: Partial<Level
   // based on name length create that many reviews
   const lvl = await LevelModel.create({
     _id: id,
+    gameId: GameId.PATHOLOGY,
     authorNote: 'test level ' + name + ' author note',
     data: '40000\n12000\n05000\n67890\nABCD3',
     height: 5,
@@ -375,6 +398,7 @@ export async function initLevel(userId: string, name: string, obj: Partial<Level
     for (let i = 0; i < name.length; i++) {
       revs.push({
         _id: new Types.ObjectId(),
+        gameId: GameId.PATHOLOGY,
         levelId: id,
         score: (3903 * i * i + 33 * i) % 5 + 1,
         text: 'Game is OK',
@@ -393,6 +417,7 @@ export async function initCollection(userId: string, name: string, obj: Partial<
   const id = new Types.ObjectId();
   const collection = await CollectionModel.create({
     _id: id,
+    gameId: GameId.PATHOLOGY,
     authorNote: 'test collection ' + name + ' author note',
     name: name,
     userId: userId,

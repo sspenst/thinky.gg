@@ -12,7 +12,7 @@ import { MultiplayerMatchState } from '../../models/constants/multiplayer';
 import { MultiplayerMatchModel } from '../../models/mongoose';
 import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
 import { getMatch } from '../../pages/api/match/[matchId]';
-import { broadcastConnectedPlayers, broadcastCountOfUsersInRoom, broadcastMatches, broadcastMatchGameState, broadcastPrivateAndInvitedMatches, scheduleBroadcastMatch } from './socketFunctions';
+import { broadcastConnectedPlayers, broadcastCountOfUsersInRoom, broadcastMatches, broadcastMatchGameState, broadcastNotifications, broadcastPrivateAndInvitedMatches, scheduleBroadcastMatch } from './socketFunctions';
 
 'use strict';
 
@@ -51,22 +51,49 @@ process.on('SIGTERM', () => {
 });
 let GlobalSocketIO: Server;
 
-export default async function startSocketIOServer() {
+async function authenticateSocket(socket: any, next: (err?: Error) => void) {
+  const cookies = socket.handshake.headers.cookie;
+
+  if (!cookies) {
+    logger.error('No cookies found in socket handshake');
+
+    return next(new Error('Authentication error'));
+  }
+
+  const tokenCookie = cookies.split(';').find((c: string) => c.trim().startsWith('token='));
+
+  if (!tokenCookie) {
+    logger.error('No token cookie found');
+
+    return next(new Error('Authentication error'));
+  }
+
+  try {
+    const user = await getUserFromToken(tokenCookie.split('=')[1]);
+
+    if (!user) {
+      logger.error('User not found from token');
+
+      return next(new Error('Authentication error'));
+    }
+
+    // Attach user to socket for future use
+    socket.data.user = user;
+    next();
+  } catch (error) {
+    logger.error('Error during socket authentication', error);
+    next(new Error('Authentication error'));
+  }
+}
+
+export default async function startSocketIOServer(server: Server) {
   logger.info('Connecting to DB');
   const mongooseConnection = await dbConnect();
 
   logger.info('Connected to DB');
 
-  logger.info('Booting Server on 3001');
-  GlobalSocketIO = new Server(3001, {
-    path: '/api/socket',
-    cors: {
-      // allow pathology.gg and localhost:3000
-      origin: ['http://localhost:3000', 'https://pathology.gg'],
-      methods: ['GET', 'POST'],
-      credentials: true,
-    },
-  });
+  logger.info('Booting Server on ' + server.path());
+  GlobalSocketIO = server;
   const db = mongooseConnection.connection.db;
 
   try {
@@ -100,98 +127,74 @@ export default async function startSocketIOServer() {
     await scheduleBroadcastMatch(MongoEmitter, match.matchId.toString());
   });
 
+  GlobalSocketIO.use(authenticateSocket);
+
   GlobalSocketIO.on('connection', async socket => {
     // get cookies from socket
-    const cookies = socket.handshake.headers.cookie;
+    const reqUser = socket.data.user;
 
-    if (cookies) {
-      const tokenCookie = cookies.split(';').find((c: string) => {
-        return c.trim().startsWith('token=');
-      });
+    socket.on('matchGameState', async (data) => {
+      const userId = socket.data.userId as Types.ObjectId | undefined;
+      const { matchId, matchGameState } = data;
 
-      if (!tokenCookie) {
-        logger.error('no token cookie found');
-        // end connection
-        socket.disconnect();
+      if (userId && isValidMatchGameState(matchGameState)) {
+        await broadcastMatchGameState(mongoEmitter, userId, matchId, matchGameState);
+        await broadcastCountOfUsersInRoom(adapted, matchId); // TODO: probably worth finding a better place to put this
+      }
+    });
+    socket.on('disconnect', async () => {
+      const userId = socket.data.userId as Types.ObjectId;
 
+      if (!userId) {
         return;
       }
 
-      let reqUser;
+      await Promise.all([
+        broadcastConnectedPlayers(adapted),
+        broadcastMatches(mongoEmitter),
+      ]);
+    });
 
-      try {
-        reqUser = await getUserFromToken(tokenCookie?.split('=')[1]);
+    // TODO can't find anywhere in docs what socket type is... so using any for now
+    // TODO: On reconnection, we need to add the user back to any rooms they should have been in before
+    socket.data = {
+      userId: reqUser._id,
+    };
+    socket.join(reqUser._id.toString());
+    broadcastNotifications(mongoEmitter, reqUser._id);
+    // note socket on the same computer will have the same id
+    const matchId = socket.handshake.query.matchId as string;
 
-        if (!reqUser) {
-          logger.error('cant find user from token');
-          // end connection
-          socket.disconnect();
+    if (matchId) {
+      socket.join(matchId);
+      const match = await getMatch(matchId as string);
 
-          return;
-        }
-      } catch (e) {
-        logger.error('error getting user from token', e);
-        socket.disconnect();
+      if (match) {
+        const matchClone = JSON.parse(JSON.stringify(match));
 
-        return;
-      }
-
-      socket.on('matchGameState', async (data) => {
-        const userId = socket.data.userId as Types.ObjectId | undefined;
-        const { matchId, matchGameState } = data;
-
-        if (userId && isValidMatchGameState(matchGameState)) {
-          await broadcastMatchGameState(mongoEmitter, userId, matchId, matchGameState);
-          await broadcastCountOfUsersInRoom(adapted, matchId); // TODO: probably worth finding a better place to put this
-        }
-      });
-      socket.on('disconnect', async () => {
-        const userId = socket.data.userId as Types.ObjectId;
-
-        if (!userId) {
-          return;
-        }
-
-        await Promise.all([
-          broadcastConnectedPlayers(adapted),
-          broadcastMatches(mongoEmitter),
-        ]);
-      });
-
-      // TODO can't find anywhere in docs what socket type is... so using any for now
-      // TODO: On reconnection, we need to add the user back to any rooms they should have been in before
-      socket.data = {
-        userId: reqUser._id,
-      };
-      socket.join(reqUser._id.toString());
-      // note socket on the same computer will have the same id
-      const matchId = socket.handshake.query.matchId as string;
-
-      if (matchId) {
-        socket.join(matchId);
-        const match = await getMatch(matchId as string);
-
-        if (match) {
-          const matchClone = JSON.parse(JSON.stringify(match));
-
-          enrichMultiplayerMatch(matchClone, reqUser._id.toString());
-          socket?.emit('match', matchClone);
-          broadcastCountOfUsersInRoom(adapted, matchId);
-        } else {
-          // TODO: emit only to matchId? or can we just show a 404 here?
-          socket?.emit('matchNotFound');
-        }
+        enrichMultiplayerMatch(matchClone, reqUser._id.toString());
+        socket?.emit('match', matchClone);
+        broadcastCountOfUsersInRoom(adapted, matchId);
       } else {
-        socket.join('LOBBY');
-        await Promise.all([broadcastMatches(mongoEmitter),
-          broadcastPrivateAndInvitedMatches(mongoEmitter, reqUser._id)]);
+        // TODO: emit only to matchId? or can we just show a 404 here?
+        socket?.emit('matchNotFound');
       }
-
-      await broadcastConnectedPlayers(adapted);
     } else {
-      logger.error('Someone tried to connect to websockets unauthenticated!');
+      socket.join('LOBBY');
+      await Promise.all([broadcastMatches(mongoEmitter),
+        broadcastPrivateAndInvitedMatches(mongoEmitter, reqUser._id)]);
     }
+
+    await broadcastConnectedPlayers(adapted);
   });
 }
 
-startSocketIOServer();
+process.env.NODE_ENV !== 'test' && startSocketIOServer(new Server(3001, {
+  path: '/api/socket',
+  cors: {
+    // allow pathology.gg and localhost:3000
+    origin: ['http://localhost:3000', 'https://pathology.gg'],
+    methods: ['GET', 'POST'],
+    credentials: true,
+  },
+}));

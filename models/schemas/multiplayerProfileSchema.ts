@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import mongoose from 'mongoose';
 import MultiplayerProfile from '../db/multiplayerProfile';
 
@@ -24,6 +25,11 @@ const MultiplayerProfileSchema = new mongoose.Schema<MultiplayerProfile>(
       type: Number,
       required: true,
       default: 0,
+    },
+    gameId: {
+      type: String,
+      enum: GameId,
+      required: false,
     },
     ratingRushBullet: {
       type: Number,

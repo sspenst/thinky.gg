@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
@@ -22,6 +23,7 @@ afterEach(() => {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const defaultReq: any = {
   method: 'POST',
+  gameId: GameId.PATHOLOGY,
   cookies: {
     token: getTokenCookieValue(TestId.USER),
   },
@@ -104,6 +106,7 @@ describe('matchCreate', () => {
         expect(response).toHaveLength(1);
         const match = response[0] as MultiplayerMatch;
 
+        expect(match.gameId).toBe(GameId.PATHOLOGY);
         expect(match.matchId).toHaveLength(11);
         expect(match.winners).toHaveLength(0);
         expect(match.levels).toHaveLength(0);

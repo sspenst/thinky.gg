@@ -1,5 +1,6 @@
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import AchievementType from '@root/constants/achievements/achievementType';
+import { GameId } from '@root/constants/GameId';
 import TestId from '@root/constants/testId';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
 import { AchievementModel, LevelModel } from '@root/models/mongoose';
@@ -23,7 +24,7 @@ describe('helpers/refreshAchievements.ts', () => {
 
     expect(achievementsBefore.length).toBe(0);
 
-    await refreshAchievements(new Types.ObjectId(TestId.USER), [AchievementCategory.CREATOR]);
+    await refreshAchievements(GameId.PATHOLOGY, new Types.ObjectId(TestId.USER), [AchievementCategory.CREATOR]);
     const achievementsAfter = await AchievementModel.find({ userId: TestId.USER }, {}, { sort: { type: 1 } }).lean();
 
     expect(achievementsAfter.length).toBe(2);

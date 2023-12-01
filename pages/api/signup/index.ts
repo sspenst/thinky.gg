@@ -1,11 +1,12 @@
+import { GameId } from '@root/constants/GameId';
 import Role from '@root/constants/role';
 import { generatePassword } from '@root/helpers/generatePassword';
 import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmationEmail';
 import UserConfig from '@root/models/db/userConfig';
 import mongoose, { QueryOptions, Types } from 'mongoose';
-import type { NextApiRequest, NextApiResponse } from 'next';
+import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
-import apiWrapper, { ValidNumber, ValidType } from '../../../helpers/apiWrapper';
+import apiWrapper, { NextApiRequestGuest, ValidNumber, ValidType } from '../../../helpers/apiWrapper';
 import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import getProfileSlug from '../../../helpers/getProfileSlug';
 import { TimerUtil } from '../../../helpers/getTs';
@@ -17,7 +18,7 @@ import User from '../../../models/db/user';
 import { UserConfigModel, UserModel } from '../../../models/mongoose';
 import { getNewUserConfig } from '../user-config';
 
-async function createUser({ email, name, password, tutorialCompletedAt, roles }: {email: string, name: string, password: string, tutorialCompletedAt: number, roles: Role[]}, queryOptions: QueryOptions): Promise<[User, UserConfig]> {
+async function createUser({ gameId, email, name, password, tutorialCompletedAt, roles }: {gameId: GameId, email: string, name: string, password: string, tutorialCompletedAt: number, roles: Role[]}, queryOptions: QueryOptions): Promise<[User, UserConfig]> {
   const id = new Types.ObjectId();
 
   const [userCreated, configCreated] = await Promise.all([
@@ -30,7 +31,7 @@ async function createUser({ email, name, password, tutorialCompletedAt, roles }:
       score: 0,
       ts: TimerUtil.getTs(),
     }], queryOptions),
-    UserConfigModel.create([getNewUserConfig(roles, tutorialCompletedAt, id)], queryOptions),
+    UserConfigModel.create([getNewUserConfig(gameId, roles, tutorialCompletedAt, id)], queryOptions),
   ]);
 
   const user = userCreated[0] as User;
@@ -48,7 +49,7 @@ export default apiWrapper({ POST: {
     tutorialCompletedAt: ValidNumber(false),
     recaptchaToken: ValidType('string', false),
   },
-} }, async (req: NextApiRequest, res: NextApiResponse) => {
+} }, async (req: NextApiRequestGuest, res: NextApiResponse) => {
   const { email, name, password, tutorialCompletedAt, recaptchaToken, guest } = req.body;
 
   await dbConnect();
@@ -113,6 +114,7 @@ export default apiWrapper({ POST: {
   try {
     await session.withTransaction(async () => {
       const [user, userConfig] = await createUser({
+        gameId: req.gameId,
         email: trimmedEmail,
         name: trimmedName,
         password: passwordValue,

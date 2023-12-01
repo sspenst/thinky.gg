@@ -32,6 +32,7 @@ export default withAuth({
   },
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
+    // Todo: only select needed fields here to minimize data transfer
     const stats = await StatModel.find({ userId: new Types.ObjectId(req.userId), isDeleted: { $ne: true } }).lean<Stat[]>();
 
     return res.status(200).json(stats);
@@ -97,7 +98,7 @@ export default withAuth({
           await matchMarkCompleteLevel(req.user._id, matchId, level._id);
         }
 
-        const stat = await StatModel.findOne({ levelId: level._id, userId: req.user._id }, {}, { session: session }).lean<Stat>();
+        const stat = await StatModel.findOne({ userId: req.user._id, levelId: level._id, }, {}, { session: session }).lean<Stat>();
 
         // level was previously solved and no personal best was set, only need to $inc attempts and return
         if (stat && moves >= stat.moves) {
@@ -112,6 +113,7 @@ export default withAuth({
             _id: new Types.ObjectId(),
             attempts: 1,
             complete: complete,
+            gameId: level.gameId,
             levelId: level._id,
             moves: moves,
             ts: ts,
@@ -145,7 +147,7 @@ export default withAuth({
 
           await Promise.all([
             UserModel.updateOne({ _id: req.userId }, { $inc: userInc }, { session: session }),
-            queueRefreshAchievements(req.user._id, [AchievementCategory.SKILL, AchievementCategory.USER], { session: session })
+            queueRefreshAchievements(level.gameId, req.user._id, [AchievementCategory.SKILL, AchievementCategory.USER], { session: session })
           ]);
         }
 
@@ -171,8 +173,10 @@ export default withAuth({
             }
           }
 
+          // TODO can these two promises be combined to an promise all?
           await RecordModel.create([{
             _id: new Types.ObjectId(),
+            gameId: level.gameId,
             levelId: level._id,
             moves: moves,
             ts: ts,
@@ -181,9 +185,9 @@ export default withAuth({
 
           // find the stats and users that that need to be updated
           const stats = await StatModel.find({
-            complete: true,
-            levelId: level._id,
             userId: { $ne: req.userId },
+            levelId: level._id,
+            complete: true,
           }, 'userId', {
             session: session,
           }).lean<Stat[]>();
@@ -209,7 +213,8 @@ export default withAuth({
                 { $inc: userInc },
                 { session: session },
               ),
-              createNewRecordOnALevelYouSolvedNotifications(statUserIds, req.userId, level._id, moves.toString(), { session: session })
+
+              createNewRecordOnALevelYouSolvedNotifications(level.gameId, statUserIds, req.userId, level._id, moves.toString(), { session: session })
             ]);
           }
 
@@ -247,9 +252,9 @@ export default withAuth({
 
         // extend the user's recent playattempt up to current ts
         const found = await PlayAttemptModel.findOneAndUpdate({
-          endTime: { $gt: ts - 3 * 60 },
           levelId: level._id,
           userId: req.user._id,
+          endTime: { $gt: ts - 3 * 60 },
         }, {
           $set: {
             attemptContext: AttemptContext.JUST_SOLVED,
@@ -271,6 +276,7 @@ export default withAuth({
           await PlayAttemptModel.create([{
             _id: new Types.ObjectId(),
             attemptContext: AttemptContext.JUST_SOLVED,
+            gameId: level.gameId,
             startTime: ts,
             endTime: ts,
             updateCount: 0,

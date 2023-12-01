@@ -1,5 +1,6 @@
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import Discord from '@root/constants/discord';
+import { GameId } from '@root/constants/GameId';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import { MULTIPLAYER_INITIAL_ELO } from '@root/models/schemas/multiplayerProfileSchema';
@@ -115,18 +116,24 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
           {
             userId: winnerId,
           },
-          {},
+          {
+            userId: winnerId,
+            gameId: finishedMatch.gameId,
+          },
           {
             upsert: true, // create the user if they don't exist
             new: true,
             session: session,
           }
         ).lean<MultiplayerProfile>(),
-        await MultiplayerProfileModel.findOneAndUpdate(
+        MultiplayerProfileModel.findOneAndUpdate(
           {
             userId: loserId,
           },
-          {},
+          {
+            userId: loserId,
+            gameId: finishedMatch.gameId,
+          },
           {
             upsert: true, // create the user if they don't exist
             new: true,
@@ -230,8 +237,9 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
             session: session,
           }
         ).lean<MultiplayerMatch>(),
-        queueRefreshAchievements(new Types.ObjectId(winnerId), [AchievementCategory.MULTIPLAYER]),
-        queueRefreshAchievements(new Types.ObjectId(loserId), [AchievementCategory.MULTIPLAYER]),
+        // TODO: Dont hardcode pathology, figure out what game we are connected to
+        queueRefreshAchievements(GameId.PATHOLOGY, new Types.ObjectId(winnerId), [AchievementCategory.MULTIPLAYER]),
+        queueRefreshAchievements(GameId.PATHOLOGY, new Types.ObjectId(loserId), [AchievementCategory.MULTIPLAYER]),
       ]);
 
       if (!newFinishedMatch) {
@@ -314,6 +322,7 @@ async function createMatch(req: NextApiRequestWithAuth) {
   const match = await MultiplayerMatchModel.create({
     createdBy: reqUser._id,
     matchId: matchId,
+    gameId: req.gameId,
     matchLog: [
       generateMatchLog(MatchAction.CREATE, {
         userId: reqUser._id,
