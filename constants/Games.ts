@@ -16,7 +16,7 @@ export const Games: Record<GameId, Game> = {
     id: GameId.GLOBAL,
     baseUrl: '',
     displayName: 'Global',
-    logo: '/logos/global.webp',
+    logo: '/logos/global.png',
     subtitle: 'Global Subtitle',
     SEOTitle: 'Global - Global Title',
     SEODescription: 'Global Short Description',

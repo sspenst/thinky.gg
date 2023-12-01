@@ -33,7 +33,7 @@ export function GameMenu() {
 
   return (
     <Menu>
-      <Menu.Button className='inline-flex justify-center w-full px-2 py-2 text-sm font-medium text-white bg-black rounded-md bg-opacity-20 hover:bg-opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75'>
+      <Menu.Button className='inline-flex justify-center px-2 py-2 text-sm font-medium text-white bg-black rounded-md bg-opacity-40 hover:bg-opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75'>
         <div className='flex items-center gap-3'>
           <Image alt='logo' src={game.logo} width='24' height='24' className='h-6 w-6' style={{ minWidth: 24, minHeight: 24 }} /> {game.displayName}
         </div>
