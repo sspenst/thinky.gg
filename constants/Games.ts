@@ -45,7 +45,7 @@ export const Games: Record<GameId, Game> = {
     type: GameType.SHORTEST_PATH,
     //
     gameStateIsSolveFunction: sokobanSolveState,
-    validateSolutionFunction: validateSokobanSolution
+    validateSolutionFunction: validateSokobanSolution,
   },
 };
 export interface Game {

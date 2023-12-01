@@ -659,7 +659,7 @@ export default function ProfilePage({
         <NextSeo
           title={`${user.name} - ${game.displayName}}`}
           description={`${user.name}'s profile`}
-          canonical={'https://pathology.gg' + getProfileSlug(user) + '/' + profileTab}
+          canonical={'https://' + game.baseUrl + getProfileSlug(user) + '/' + profileTab}
           openGraph={{
             title: `${user.name} - ${game.displayName}}`,
             description: `${user.name}'s profile`,
