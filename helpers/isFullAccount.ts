@@ -12,5 +12,5 @@ export default async function isFullAccount(user: User | null, userConfig?: User
     userConfig = await UserConfigModel.findOne<UserConfig>({ userId: user._id });
   }
 
-  return userConfig?.emailConfirmed;
+  return user?.emailConfirmed;
 }

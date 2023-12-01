@@ -9,8 +9,8 @@ interface UserConfig {
   disallowedEmailNotifications: NotificationType[];
   disallowedPushNotifications: NotificationType[];
   gameId?: string;
-  emailConfirmationToken: string;
-  emailConfirmed: boolean;
+  //emailConfirmationToken: string;
+  //emailConfirmed: boolean;
   emailDigest: EmailDigestSettingTypes;
   giftSubscriptions: string[]; // gift subscriptions this user has given out
   mobileDeviceTokens: string[];

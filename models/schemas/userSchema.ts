@@ -57,6 +57,15 @@ const UserSchema = new mongoose.Schema<User>({
       }
     }
   },
+  emailConfirmationToken: {
+    type: String,
+    select: false,
+  },
+  emailConfirmed: {
+    type: Boolean,
+    default: false,
+    select: false,
+  },
   hideStatus: {
     type: Boolean,
   },

@@ -134,7 +134,7 @@ export default withAuth({
       const newUser = await UserModel.findOneAndUpdate({ _id: req.userId }, { $set: setObj }, { runValidators: true, new: true, projection: { _id: 1, email: 1, name: 1 } });
 
       if (setObj['email']) {
-        const userConfig = await UserConfigModel.findOneAndUpdate({ userId: req.userId }, {
+        await UserModel.findOneAndUpdate({ _id: req.userId }, {
           $set: {
             emailConfirmationToken: getEmailConfirmationToken(),
             emailConfirmed: false,
@@ -144,7 +144,7 @@ export default withAuth({
           projection: { emailConfirmationToken: 1, },
         });
 
-        await sendEmailConfirmationEmail(req, newUser, userConfig as UserConfig);
+        await sendEmailConfirmationEmail(req, newUser);
       }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {

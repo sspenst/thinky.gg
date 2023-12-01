@@ -1,14 +1,13 @@
 import EmailLog from '@root/models/db/emailLog';
 import User from '@root/models/db/user';
-import UserConfig from '@root/models/db/userConfig';
 import { EmailLogModel } from '@root/models/mongoose';
 import { Types } from 'mongoose';
 import { NextApiRequest } from 'next';
 import { EmailType } from '../constants/emailDigest';
 import { sendMail } from '../pages/api/internal-jobs/email-digest';
 
-export default async function sendEmailConfirmationEmail(req: NextApiRequest, user: User, userConfig: UserConfig) {
-  const token = userConfig.emailConfirmationToken;
+export default async function sendEmailConfirmationEmail(req: NextApiRequest, user: User) {
+  const token = user.emailConfirmationToken;
   const url = `${req.headers.origin}/confirm-email/${user._id}/${token}`;
 
   const lastSent = await EmailLogModel.findOne<EmailLog>({

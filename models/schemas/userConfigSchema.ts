@@ -26,14 +26,7 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       enum: GameId,
       required: false,
     },
-    emailConfirmationToken: {
-      type: String,
-      select: false,
-    },
-    emailConfirmed: {
-      type: Boolean,
-      default: false,
-    },
+
     emailDigest: {
       type: String,
       required: true,

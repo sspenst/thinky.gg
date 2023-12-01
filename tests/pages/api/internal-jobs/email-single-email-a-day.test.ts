@@ -58,7 +58,10 @@ describe('Email per day', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
-    await UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.DAILY, emailConfirmed: false }, {});
+    await Promise.all([
+      UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.DAILY }, {}),
+      UserModel.findByIdAndUpdate(TestId.USER, { emailConfirmed: false })
+    ]);
 
     for (let day = 0; day < 21; day++) {
       await testApiHandler({
