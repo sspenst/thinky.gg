@@ -88,7 +88,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   const profileTab = !tab ? ProfileTab.Profile : tab[0] as ProfileTab;
-  const users = await getUsersWithMultiplayerProfile({ name: name }, { bio: 1, ts: 1, calc_levels_created_count: 1, calc_records: 1, score: 1 });
+  const users = await getUsersWithMultiplayerProfile({ name: name }, { bio: 1, calcRankedSolves: 1, calc_levels_created_count: 1, calc_records: 1, score: 1, ts: 1 });
 
   if (!users || users.length !== 1) {
     return {
@@ -431,8 +431,7 @@ export default function ProfilePage({
                 levelsSolvedByDifficulty ? <PlayerRank levelsSolvedByDifficulty={levelsSolvedByDifficulty} user={user} /> : '...'
               }
             </h2>
-            {/* TODO: h2?? */}
-            <h2><span className='font-bold'>Ranked Solves:</span> {user.calcRankedSolves}</h2>
+            <h2><span className='font-bold'>Ranked Solves:</span> {user.calcRankedSolves} 🏅</h2>
             <h2><span className='font-bold'>Levels Solved:</span> {user.score}</h2>
             <h2><span className='font-bold'>Levels Created:</span> {user.calc_levels_created_count}</h2>
             {!user.hideStatus && <>
