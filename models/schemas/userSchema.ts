@@ -89,11 +89,13 @@ const UserSchema = new mongoose.Schema<User>({
     minlength: 8,
     maxlength: 64,
   },
+  // TODO: Probably better to move roles to userConfig
   roles: {
     type: [String],
     enum: Role,
     default: [],
   },
+  // TODO: Move score to userConfig
   score: {
     type: Number,
     required: true,
