@@ -2,14 +2,15 @@ import { Menu, Transition } from '@headlessui/react';
 import { DIFFICULTY_INDEX, getDifficultyColor, getDifficultyRangeByIndex } from '@root/components/formatted/formattedDifficulty';
 import FormattedUser from '@root/components/formatted/formattedUser';
 import Page from '@root/components/page/page';
-import UserAndSumTable from '@root/components/tables/userAndSumTable';
 import { UserAndSum } from '@root/contexts/levelContext';
 import cleanUser from '@root/lib/cleanUser';
 import { getUserFromToken } from '@root/lib/withAuth';
 import User from '@root/models/db/user';
 import { LevelModel, StatModel, UserModel } from '@root/models/mongoose';
 import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
+import classNames from 'classnames';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
+import Link from 'next/link';
 import React, { Fragment, useState } from 'react';
 
 async function getDifficultyLeaderboard(index: DIFFICULTY_INDEX) {
@@ -170,47 +171,58 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
   const sgmColor = getDifficultyColor(sgmRange[0]);
 
   const leaderboardStrings = {
-    'ranked': 'Ranked Solves 🏅',
+    'ranked': 'Ranked 🏅',
     'sgm': 'Super Grandmasters 🧠',
     'gm': 'Grandmasters 📜',
   } as { [key: string]: string };
 
+  function getLeaderboardTable(users: User[], values: number[]) {
+    return (
+      <div className='grid gap-2 items-center' style={{
+        gridTemplateColumns: 'repeat(3, min-content)',
+      }}>
+        {users.map((user, i) => {
+          const isYou = user._id === reqUser._id;
+
+          return (<>
+            <div className={classNames('font-bold text-xl', { 'border rounded-md border-color-4': isYou })}>{i + 1}.</div>
+            <div
+              className='flex items-center text-lg gap-3 rounded-lg w-fit'
+              key={`${user._id}-levels-solved`}
+            >
+              <FormattedUser id='ranked' size={32} user={user} />
+            </div>
+            <div className='ml-2 font-medium text-lg'>
+              {values[i]}
+            </div>
+          </>);
+        })}
+      </div>
+    );
+  }
+
   function getLeaderboard() {
     if (leaderboard === 'ranked') {
       return (
-        <div className='grid gap-2 items-center' style={{
-          gridTemplateColumns: 'repeat(3, min-content)',
-        }}>
-          {rankedLeaderboard.map((user, i) => {
-            return (<>
-              <div className='font-bold text-xl'>{i + 1}.</div>
-              <div
-                className='flex items-center text-lg gap-3 rounded-lg w-fit'
-                key={`${user._id}-levels-solved`}
-              >
-                <FormattedUser id='ranked' size={32} user={user} />
-              </div>
-              <div className='ml-2 font-medium text-lg'>
-                {user.calcRankedSolves}
-              </div>
-            </>);
-          })}
+        <div className='flex flex-col text-center gap-6'>
+          <Link className='font-bold text-2xl hover:underline' href='/ranked'>Ranked Solves 🏅</Link>
+          {getLeaderboardTable(rankedLeaderboard, rankedLeaderboard.map(user => user.calcRankedSolves))}
         </div>
       );
     } else if (leaderboard === 'sgm') {
       return (
-        <div className='flex flex-col text-center gap-1'>
+        <div className='flex flex-col items-center text-center gap-4'>
           <span className='font-bold italic text-lg' style={{ color: sgmColor }}>Pathology Super Grandmasters</span>
-          <span className='text-xs'>Super Grandmasters have solved at minimum 7 Super Grandmaster levels</span>
-          <UserAndSumTable data={sgmLeaderboard} sumName='SGMs Solved' />
+          <span className='text-sm'>Super Grandmasters have solved at minimum 7 Super Grandmaster levels</span>
+          {getLeaderboardTable(sgmLeaderboard.map(userAndSum => userAndSum.user), sgmLeaderboard.map(userAndSum => userAndSum.sum))}
         </div>
       );
     } else if (leaderboard === 'gm') {
       return (
-        <div className='flex flex-col text-center gap-1'>
+        <div className='flex flex-col items-center text-center gap-4'>
           <span className='font-bold italic text-lg' style={{ color: gmColor }}>Pathology Grandmasters</span>
-          <span className='text-xs'>Grandmasters have solved at minimum 7 Grandmaster (or harder) levels</span>
-          <UserAndSumTable data={gmLeaderboard} sumName='GMs Solved' />
+          <span className='text-sm'>Grandmasters have solved at minimum 7 Grandmaster (or harder) levels</span>
+          {getLeaderboardTable(gmLeaderboard.map(userAndSum => userAndSum.user), gmLeaderboard.map(userAndSum => userAndSum.sum))}
         </div>
       );
     } else {
