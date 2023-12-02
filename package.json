@@ -6,7 +6,7 @@
     "@root": "dist"
   },
   "dependencies": {
-    "@aws-sdk/client-ses": "^3.445.0",
+    "@aws-sdk/client-ses": "^3.449.0",
     "@aws-sdk/credential-provider-node": "^3.445.0",
     "@growthbook/growthbook-react": "^0.20.0",
     "@headlessui/react": "^1.7.17",
