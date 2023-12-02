@@ -17,7 +17,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     const user = await UserModel.findOneAndUpdate<User>(
       {
         emailConfirmationToken: token,
-        userId: userId,
+        _id: userId,
       },
       {
         emailConfirmationToken: null,
@@ -25,6 +25,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       },
       {
         new: true,
+        projection: {
+          emailConfirmationToken: 1,
+          emailConfirmed: 1,
+        },
       },
     );
 
@@ -48,20 +52,26 @@ export default function ConfirmEmail({ emailConfirmed }: ConfirmEmailProps) {
 
   useEffect(() => {
     toast.dismiss();
+    const ts = setTimeout(() => {
+      if (!emailConfirmed) {
+        toast.error('Email confirmation failed. Please try again');
+        router.push('/settings/account');
+      } else {
+        toast.success('Email confirmed!');
+        router.push('/home');
+      }
+    }, 100);
 
-    if (!emailConfirmed) {
-      router.push('/settings/account');
-      toast.error('Email confirmation failed');
-    } else {
-      router.push('/home');
-      toast.success('Email confirmed!');
-    }
+    return () => {
+      clearTimeout(ts);
+    };
   }, [emailConfirmed, router]);
 
   return (
     <Page title={'Confirm Email'}>
       <div className='flex flex-col items-center justify-center'>
         <h1>Email is {emailConfirmed ? 'confirmed' : 'not confirmed'}</h1>
+        <span>Redirecting...</span>
       </div>
     </Page>
   );
