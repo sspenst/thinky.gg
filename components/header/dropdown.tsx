@@ -140,26 +140,22 @@ export default function Dropdown() {
               </Menu.Item>
               <Divider />
             </>}
-            <div className='block sm:hidden'>
+            {isLoggedIn && <>
               <Menu.Item>
                 {({ active }) => (
-                  <Link href='/search' passHref>
+                  <Link href='/ranked' passHref>
                     <div
                       className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3'
                       style={{
                         backgroundColor: active ? 'var(--bg-color-3)' : undefined,
                       }}
                     >
-                      <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={2}>
-                        <path strokeLinecap='round' strokeLinejoin='round' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
-                      </svg>
-                      Search
+                      <span className='w-5 h-5 flex justify-center items-center text-xl'>🏅</span>
+                      Ranked
                     </div>
                   </Link>
                 )}
               </Menu.Item>
-            </div>
-            {isLoggedIn && <>
               <Menu.Item>
                 {({ active }) => (
                   <Link href='/create' passHref>
@@ -173,21 +169,6 @@ export default function Dropdown() {
                         <path strokeLinecap='round' strokeLinejoin='round' d='M12 4.5v15m7.5-7.5h-15' />
                       </svg>
                       Create
-                    </div>
-                  </Link>
-                )}
-              </Menu.Item>
-              <Menu.Item>
-                {({ active }) => (
-                  <Link href='/ranked' passHref>
-                    <div
-                      className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3'
-                      style={{
-                        backgroundColor: active ? 'var(--bg-color-3)' : undefined,
-                      }}
-                    >
-                      <span className='w-5 h-5 flex justify-center items-center text-xl'>🏅</span>
-                      Ranked
                     </div>
                   </Link>
                 )}

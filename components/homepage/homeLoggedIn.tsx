@@ -72,6 +72,22 @@ export default function HomeLoggedIn({
         <div className='flex flex-col items-center md:items-start gap-2 max-w-full'>
           <FormattedUser className='text-2xl' id='home' size={40} user={user} />
           <div className='flex flex-col gap-2 w-fit'>
+            {!isPro(user) &&
+              <Link href='/settings/pro' passHref className={buttonClassNames + ' bg-green-500 dark:bg-green-800'}>
+                <Image alt='pro' src='/pro.svg' width={16} height={16} style={{ minWidth: 16, minHeight: 16 }} />
+                <span className='text-base font-semibold'>Pathology Pro</span>
+              </Link>
+            }
+            <Link passHref href='/ranked' className={buttonClassNames}>
+              <span className='w-5 h-5 flex justify-center items-center text-xl'>🏅</span>
+              <span className='text-lg font-bold'>Ranked</span>
+            </Link>
+            <Link passHref href='/create' className={buttonClassNames}>
+              <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='2 2 20 20' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
+                <path strokeLinecap='round' strokeLinejoin='round' d='M12 4.5v15m7.5-7.5h-15' />
+              </svg>
+              <span className='text-lg font-bold'>Create</span>
+            </Link>
             <Link passHref href='/multiplayer' className={buttonClassNames}>
               <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
                 <path strokeLinecap='round' strokeLinejoin='round' d='M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z' />
@@ -92,18 +108,6 @@ export default function HomeLoggedIn({
                 }
               </div>
             </Link>
-            <Link passHref href='/create' className={buttonClassNames}>
-              <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-wrench' viewBox='0 0 16 16'>
-                <path d='M.102 2.223A3.004 3.004 0 0 0 3.78 5.897l6.341 6.252A3.003 3.003 0 0 0 13 16a3 3 0 1 0-.851-5.878L5.897 3.781A3.004 3.004 0 0 0 2.223.1l2.141 2.142L4 4l-1.757.364L.102 2.223zm13.37 9.019.528.026.287.445.445.287.026.529L15 13l-.242.471-.026.529-.445.287-.287.445-.529.026L13 15l-.471-.242-.529-.026-.287-.445-.445-.287-.026-.529L11 13l.242-.471.026-.529.445-.287.287-.445.529-.026L13 11l.471.242z' />
-              </svg>
-              <span className='text-lg font-bold'>Create</span>
-            </Link>
-            {!isPro(user) &&
-              <Link href='/settings/pro' passHref className={buttonClassNames + ' bg-green-500 dark:bg-green-800'}>
-                <span className='text-base font-semibold'>Go Pro!</span>
-                <Image alt='pro' src='/pro.svg' width={16} height={16} style={{ minWidth: 16, minHeight: 16 }} />
-              </Link>
-            }
           </div>
         </div>
       </div>
