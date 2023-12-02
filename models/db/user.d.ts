@@ -13,6 +13,8 @@ interface User {
   calc_records: number;
   chapterUnlocked?: number; // chapter unlocked in the campaign
   email: string;
+  emailConfirmationToken: string;
+  emailConfirmed: boolean;
   hideStatus?: boolean;
   ip_addresses_used: string[];
   last_visited_at?: number; // last time user visited website

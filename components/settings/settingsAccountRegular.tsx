@@ -251,11 +251,11 @@ export default function SettingsAccountRegular({ user, userConfig }: SettingsAcc
           <button className='italic underline' type='submit'>Update</button>
         </form>
         <form className='flex flex-col items-start' onSubmit={
-          (!userConfig?.emailConfirmed && email === user.email ? resendEmailConfirmation : updateEmail)
+          (!user.emailConfirmed && email === user.email ? resendEmailConfirmation : updateEmail)
         }>
           <label className='block font-bold mb-2' htmlFor='email'>
             {'Email - '}
-            {userConfig?.emailConfirmed && email === user.email ?
+            {user.emailConfirmed && email === user.email ?
               <span className='text-green-500'>Confirmed</span>
               :
               <span className='text-red-500'>Unconfirmed</span>
@@ -272,7 +272,7 @@ export default function SettingsAccountRegular({ user, userConfig }: SettingsAcc
             value={email}
           />
           <button className='italic underline' type='submit'>
-            {!userConfig?.emailConfirmed && email === user.email ? 'Resend confirmation' : 'Update'}
+            {!user.emailConfirmed && email === user.email ? 'Resend confirmation' : 'Update'}
           </button>
         </form>
         <form className='flex flex-col items-start' onSubmit={updatePassword}>

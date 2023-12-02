@@ -1,7 +1,7 @@
 import Page from '@root/components/page/page';
 import { getUserFromToken } from '@root/lib/withAuth';
-import UserConfig from '@root/models/db/userConfig';
-import { UserConfigModel } from '@root/models/mongoose';
+import User from '@root/models/db/user';
+import { UserModel } from '@root/models/mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import React, { useEffect } from 'react';
@@ -14,7 +14,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   let emailConfirmed = false;
 
   if (reqUser?._id.toString() === userId?.toString()) {
-    const userConfig = await UserConfigModel.findOneAndUpdate<UserConfig>(
+    const user = await UserModel.findOneAndUpdate<User>(
       {
         emailConfirmationToken: token,
         userId: userId,
@@ -28,7 +28,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       },
     );
 
-    emailConfirmed = !!userConfig?.emailConfirmed;
+    emailConfirmed = !!user?.emailConfirmed;
   }
 
   return {
