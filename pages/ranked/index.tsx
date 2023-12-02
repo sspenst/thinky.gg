@@ -74,7 +74,7 @@ export default function RankedPage({ levelsByDifficulty, rankedSolvesByDifficult
     <Page title='Ranked'>
       <div className='p-6 flex flex-col gap-6 items-center'>
         <h2 className='font-bold text-3xl'>Ranked 🏅</h2>
-        <p className='text-center max-w-xl'>Ranked levels are high quality puzzles curated by the Pathology community. Solving ranked levels is the best way to compete against other Pathology players and improve your spot on the <Link href='/leaderboards' className='font-bold text-blue-500 hover:text-blue-400 transition'>leaderboards</Link>! New levels are periodically marked as ranked, so there is always a chance <Link href='/create' className='font-bold text-blue-500 hover:text-blue-400 transition'>your levels</Link> could enter this curated list. Have fun!</p>
+        <p className='text-center max-w-xl'>Ranked levels are high quality puzzles hand-picked by the Pathology community. Solving ranked levels is the best way to compete against other Pathology players and improve your spot on the <Link href='/leaderboards' className='font-bold text-blue-500 hover:text-blue-400 transition'>leaderboards</Link>! New levels are periodically marked as ranked, so there is always a chance <Link href='/create' className='font-bold text-blue-500 hover:text-blue-400 transition'>your levels</Link> could enter this curated list. Have fun!</p>
         <div className='flex flex-col gap-4 items-center'>
           <Link
             className='font-bold text-2xl hover:underline rounded-lg'
