@@ -42,15 +42,6 @@ function UserHeaderControls() {
   }
 
   return (<>
-    <div
-      className='hidden sm:block'
-      data-tooltip-content='Levels Solved'
-      data-tooltip-id='levels-solved-header'
-      id='levelsSolvedBtn'
-    >
-      <span className='font-bold'>{user.score}</span>
-      <StyledTooltip id='levels-solved-header' />
-    </div>
     {socket?.connected && connectedPlayersCount > 0 &&
       <Link className='hover:opacity-70' id='multiplayerBtn' aria-label={`multiplayer - ${connectedPlayersCount} online`} href='/multiplayer' passHref>
         <div className='flex items-start -mr-1' data-tooltip-id='connected-players-count' data-tooltip-content={`${connectedPlayersCount} player${connectedPlayersCount !== 1 ? 's' : ''} online${matches.length > 0 ? `, ${matches.length} current multiplayer match${matches.length === 1 ? '' : 'es'}` : ''}`}>
@@ -88,7 +79,7 @@ export default function HeaderControls() {
 
   return (<>
     <UserHeaderControls />
-    <Link id='searchBtn' aria-label='search' className='hidden sm:block hover:opacity-70' href={'/search'} passHref prefetch={false}>
+    <Link id='searchBtn' aria-label='search' className='hover:opacity-70' href={'/search'} passHref prefetch={false}>
       <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={2}>
         <path strokeLinecap='round' strokeLinejoin='round' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
       </svg>
