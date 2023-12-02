@@ -70,7 +70,9 @@ export default function SettingsAccountRegular({ user, userConfig }: SettingsAcc
     }).catch(async err => {
       console.error(err);
       toast.dismiss();
-      toast.error(JSON.parse(await err)?.error || 'Error sending confirmation email');
+      toast.error(JSON.parse(await err)?.error || 'Error sending confirmation email', {
+        duration: 4000,
+      });
     });
   }
 
