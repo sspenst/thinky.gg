@@ -43,7 +43,7 @@ export default function HomeLoggedIn({
   topLevelsThisMonth,
   user,
 }: HomeLoggedInProps) {
-  const { game, multiplayerSocket, userConfig } = useContext(AppContext);
+  const { game, multiplayerSocket } = useContext(AppContext);
   const router = useRouter();
   const [search, setSearch] = useState('');
   const { connectedPlayersCount, matches, socket } = multiplayerSocket;
@@ -53,7 +53,7 @@ export default function HomeLoggedIn({
 
   return (<>
     {tour}
-    {userConfig && !userConfig.emailConfirmed &&
+    {user && !user.emailConfirmed &&
       <div className='bg-yellow-200 w-full text-black text-center text-sm p-2 shadow-lg'>
         {`${isGuest(user) ? 'Convert to a regular account' : 'Confirm your email'} in your `}
         <Link className='font-semibold text-blue-600 hover:underline' href='/settings/account'>

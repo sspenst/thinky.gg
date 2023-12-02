@@ -271,7 +271,6 @@ describe('api/follow', () => {
         gameId: DEFAULT_GAME_ID,
         theme: Theme.Modern,
         userId: new Types.ObjectId(TestId.USER_C),
-        emailConfirmed: true
       })
 
     ]);

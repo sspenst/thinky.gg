@@ -307,6 +307,7 @@ export async function sendAutoUnsubscribeUsers(gameId: GameId, batchId: Types.Ob
           last_visited_at: { $lte: (Date.now() / 1000) - (10 * 24 * 60 * 60 ) }, // TODO need to refactor last_visited_at to be a DATE object instead of seconds
           roles: { $ne: Role.GUEST },
           email: { $ne: null },
+          emailConfirmed: { $ne: true } // don't unsubscribe users with verified emails
         },
       },
       {
@@ -325,7 +326,6 @@ export async function sendAutoUnsubscribeUsers(gameId: GameId, batchId: Types.Ob
       },
       {
         $match: {
-          'userConfig.emailConfirmed': { $ne: true }, // don't unsubscribe users with verified emails
           'userConfig.emailDigest': { $ne: EmailDigestSettingTypes.NONE },
         },
       },

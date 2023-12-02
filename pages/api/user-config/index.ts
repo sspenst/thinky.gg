@@ -21,7 +21,6 @@ export function getNewUserConfig(gameId: GameId, roles: Role[], tutorialComplete
     emailDigest = EmailDigestSettingTypes.NONE;
   }
 
-  const emailConfirmationToken = getEmailConfirmationToken();
   const disallowedEmailNotifications = [
     NotificationType.NEW_FOLLOWER,
     NotificationType.NEW_LEVEL,
@@ -35,8 +34,6 @@ export function getNewUserConfig(gameId: GameId, roles: Role[], tutorialComplete
     gameId: gameId,
     disallowedEmailNotifications: disallowedEmailNotifications,
     disallowedPushNotifications: [],
-    emailConfirmed: false,
-    emailConfirmationToken: emailConfirmationToken,
     emailDigest: emailDigest,
     theme: Theme.Modern,
     tutorialCompletedAt: tutorialCompletedAt,
