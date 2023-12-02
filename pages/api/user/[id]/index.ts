@@ -1,10 +1,32 @@
+import { GameId } from '@root/constants/GameId';
 import { ProfileQueryType } from '@root/constants/profileQueryType';
-import apiWrapper, { ValidCommaSeparated, ValidEnum } from '@root/helpers/apiWrapper';
-import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import apiWrapper, { NextApiRequestGuest, ValidCommaSeparated, ValidEnum } from '@root/helpers/apiWrapper';
+import { getLevelsByDifficultyTable } from '@root/helpers/getLevelsByDifficultyTable';
 import { getSolvesByDifficultyTable } from '@root/helpers/getSolvesByDifficultyTable';
 import { Types } from 'mongoose';
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextApiResponse } from 'next';
 import { getUserById } from '../../user-by-id/[id]';
+
+export async function getProfileQuery(gameId: GameId, userId: string, types: ProfileQueryType[]) {
+  const [
+    levelsByDifficulty,
+    levelsSolvedByDifficulty,
+    rankedSolvesByDifficulty,
+    user,
+  ] = await Promise.all([
+    types.includes(ProfileQueryType.LevelsByDifficulty) ? getLevelsByDifficultyTable(gameId, { isRanked: true }) : null,
+    types.includes(ProfileQueryType.LevelsSolvedByDifficulty) ? getSolvesByDifficultyTable(gameId, new Types.ObjectId(userId)) : null,
+    types.includes(ProfileQueryType.RankedSolvesByDifficulty) ? getSolvesByDifficultyTable(gameId, new Types.ObjectId(userId), {}, { isRanked: true }) : null,
+    types.includes(ProfileQueryType.User) ? getUserById(userId) : null,
+  ]);
+
+  return {
+    [ProfileQueryType.LevelsByDifficulty]: levelsByDifficulty,
+    [ProfileQueryType.LevelsSolvedByDifficulty]: levelsSolvedByDifficulty,
+    [ProfileQueryType.RankedSolvesByDifficulty]: rankedSolvesByDifficulty,
+    [ProfileQueryType.User]: user,
+  };
+}
 
 export default apiWrapper({
   GET: {
@@ -12,19 +34,11 @@ export default apiWrapper({
       type: ValidCommaSeparated(true, ValidEnum(Object.values(ProfileQueryType))),
     }
   }
-}, async (req: NextApiRequest, res: NextApiResponse) => {
+}, async (req: NextApiRequestGuest, res: NextApiResponse) => {
   const { id: userId, type } = req.query as { id: string, type: string };
-  const gameId = getGameIdFromReq(req);
-  const typeArray = type.split(',');
-
-  const [levelsSolvedByDifficulty, user] = await Promise.all([
-    typeArray.includes(ProfileQueryType.LevelsSolvedByDifficulty) ? getSolvesByDifficultyTable(gameId, new Types.ObjectId(userId)) : null,
-    typeArray.includes(ProfileQueryType.User) ? getUserById(userId) : null,
-  ]);
+  const types = type.split(',') as ProfileQueryType[];
+  const json = await getProfileQuery(req.gameId, userId, types);
 
   // TODO: make this an object with a type definition (use it in formattedUser)
-  return res.status(200).json({
-    [ProfileQueryType.LevelsSolvedByDifficulty]: levelsSolvedByDifficulty,
-    [ProfileQueryType.User]: user,
-  });
+  return res.status(200).json(json);
 });

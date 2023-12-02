@@ -93,19 +93,34 @@ export default function Dropdown() {
           top: Dimensions.MenuHeight,
         }}>
           <div className='px-1 py-1'>
-            {isLoggedIn &&
-              <div className='block sm:hidden'>
-                <div
-                  className='px-3 py-1 text-center'
+            {isLoggedIn && <>
+              <div className='flex justify-center gap-2 items-center sm:hidden py-1.5 px-3'>
+                <Link
+                  className='flex justify-center'
+                  data-tooltip-content='Ranked Solves'
+                  data-tooltip-id='ranked-solves-dropdown'
+                  href='/ranked'
+                  id='levelsSolvedBtn'
+                >
+                  <span className='font-bold'>{user.calcRankedSolves} 🏅</span>
+                  <StyledTooltip id='ranked-solves-dropdown' />
+                </Link>
+                <div className='h-6 w-px bg-neutral-500' />
+                <Link
+                  className='ml-1'
                   data-tooltip-content='Levels Solved'
-                  data-tooltip-id='levels-solved-dropdown'
+                  data-tooltip-id='levels-solves-dropdown'
+                  href='/users'
                   id='levelsSolvedBtn'
                 >
                   <span className='font-bold'>{user.score}</span>
-                  <StyledTooltip id='levels-solved-dropdown' />
-                </div>
+                  <StyledTooltip id='levels-solves-dropdown' />
+                </Link>
+              </div>
+              <div className='block sm:hidden'>
                 <Divider />
               </div>
+            </>
             }
             {isLoggedIn && !isPro(user) && <>
               <Menu.Item>
@@ -125,26 +140,22 @@ export default function Dropdown() {
               </Menu.Item>
               <Divider />
             </>}
-            <div className='block sm:hidden'>
+            {isLoggedIn && <>
               <Menu.Item>
                 {({ active }) => (
-                  <Link href='/search' passHref>
+                  <Link href='/ranked' passHref>
                     <div
                       className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3'
                       style={{
                         backgroundColor: active ? 'var(--bg-color-3)' : undefined,
                       }}
                     >
-                      <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={2}>
-                        <path strokeLinecap='round' strokeLinejoin='round' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
-                      </svg>
-                      Search
+                      <span className='w-5 h-5 flex justify-center items-center text-xl'>🏅</span>
+                      Ranked
                     </div>
                   </Link>
                 )}
               </Menu.Item>
-            </div>
-            {isLoggedIn && <>
               <Menu.Item>
                 {({ active }) => (
                   <Link href='/create' passHref>

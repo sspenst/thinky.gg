@@ -97,9 +97,9 @@ export default function Chapter3Page({ enrichedCollections, solvedLevels, totalL
         solvedElement={
           <div className='flex flex-col items-center justify-center text-center mt-2'>
             <div>Congratulations! You&apos;ve solved every level in Chapter 3.</div>
-            <div>If you&apos;re looking for more levels, try a campaign from the <Link className='font-bold underline' href='/campaigns' passHref>Campaigns</Link> page, or try browsing the <Link className='font-bold underline' href='/search' passHref>Search</Link> page.</div>
-            <div>You could also try creating a level of your own on the <Link className='font-bold underline' href='/create' passHref>Create</Link> page.</div>
-            <div>We hope you&apos;re enjoying {game.displayName}!</div>
+            <div>If you&apos;re looking for more levels, try playing <Link className='font-bold text-blue-500 hover:text-blue-400 transition' href='/ranked' passHref>Ranked 🏅</Link> levels next, or try a campaign from the <Link className='font-bold text-blue-500 hover:text-blue-400 transition' href='/campaigns' passHref>Campaigns</Link> page.</div>
+            <div>You could also try creating a level of your own on the <Link className='font-bold text-blue-500 hover:text-blue-400 transition' href='/create' passHref>Create</Link> page.</div>
+            <div>We hope you&apos;re enjoying Pathology!</div>
           </div>
         }
         solvedLevels={solvedLevels}

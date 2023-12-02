@@ -2,7 +2,9 @@ import { Tab } from '@headlessui/react';
 import FormattedDate from '@root/components/formatted/formattedDate';
 import Solved from '@root/components/level/info/solved';
 import FormattedLevelReviews from '@root/components/level/reviews/formattedLevelReviews';
+import StyledTooltip from '@root/components/page/styledTooltip';
 import Image from 'next/image';
+import Link from 'next/link';
 import React, { useContext, useState } from 'react';
 import Dimensions from '../../../constants/dimensions';
 import { AppContext } from '../../../contexts/appContext';
@@ -83,19 +85,32 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
 
   return (<>
     <div className='flex flex-col gap-4'>
-      <div className='flex flex-col gap-1'>
-        <div className='flex justify-between w-full items-start gap-2'>
-          <div className='font-bold text-2xl overflow-hidden break-words'>{level.name}</div>
-          <div className='mt-1'>
-            <LevelDropdown level={level} />
+      <div className='flex justify-between w-full items-start gap-2'>
+        <div className='flex flex-col gap-1'>
+          <span className='text-2xl overflow-hidden break-words font-bold'>
+            {level.name}
+          </span>
+          <div className='flex gap-2 items-center'>
+            <FormattedUser id='author' size={Dimensions.AvatarSizeSmall} user={level.userId} />
+            <FormattedDate ts={level.ts} />
+          </div>
+          <div className='text-sm flex pt-0.5'>
+            <FormattedDifficulty difficultyEstimate={level.calc_difficulty_estimate} id={level._id.toString()} uniqueUsers={level.calc_playattempts_unique_users_count} />
           </div>
         </div>
-        <div className='flex gap-2 items-center'>
-          <FormattedUser id='author' size={Dimensions.AvatarSizeSmall} user={level.userId} />
-          <FormattedDate ts={level.ts} />
-        </div>
-        <div className='text-sm flex pt-0.5'>
-          <FormattedDifficulty difficultyEstimate={level.calc_difficulty_estimate} id={level._id.toString()} uniqueUsers={level.calc_playattempts_unique_users_count} />
+        <div className='flex flex-col items-center gap-3 mt-1'>
+          <LevelDropdown level={level} />
+          {level.isRanked && <>
+            <Link
+              className='font-normal text-xl'
+              data-tooltip-content='Ranked level'
+              data-tooltip-id='ranked-tooltip'
+              href='/ranked'
+            >
+              🏅
+            </Link>
+            <StyledTooltip id='ranked-tooltip' />
+          </>}
         </div>
       </div>
       {level.authorNote && <AuthorNote authorNote={level.authorNote} />}

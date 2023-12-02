@@ -135,6 +135,10 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
     };
   }
 
+  if (query.isRanked === 'true') {
+    searchObj['isRanked'] = true;
+  }
+
   let searchAuthor: User | null = null;
 
   if (query.searchAuthor && query.searchAuthor.length > 0) {
