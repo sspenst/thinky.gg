@@ -530,7 +530,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
 
   const subHeaderComponent = (
     <div className='flex flex-col items-center gap-1 p-1' id='level_search_box'>
-      <div className='flex flex-wrap items-center z-10 gap-1'>
+      <div className='flex flex-wrap items-center justify-center z-10 gap-1'>
         <input
           className='form-control relative min-w-0 block w-52 px-3 py-1.5 h-10 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded-md transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none'
           id='default-search'
@@ -550,7 +550,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
           });
         }} />
       </div>
-      <div className='flex items-center flex-wrap gap-1'>
+      <div className='flex items-center flex-wrap gap-1 justify-center'>
         {reqUser && <StatFilterMenu onStatFilterClick={onStatFilterClick} query={query} />}
         <Menu as='div' className='relative inline-block text-left'>
           <Menu.Button
