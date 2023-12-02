@@ -395,7 +395,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
           {row.isRanked &&
             <div className='text-yellow-500 text-base'>
               <Link
-                data-tooltip-content='This level contributes to your leaderboard ranking!'
+                data-tooltip-content='Ranked level'
                 data-tooltip-id={`ranked-tooltip-${row._id.toString()}`}
                 href='/ranked'
               >
