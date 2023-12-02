@@ -1,6 +1,7 @@
 import FormattedDifficulty, { difficultyList, getDifficultyColor } from '@root/components/formatted/formattedDifficulty';
 import Page from '@root/components/page/page';
 import { ProfileQueryType } from '@root/constants/profileQueryType';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import cleanUser from '@root/lib/cleanUser';
 import { getUserFromToken } from '@root/lib/withAuth';
 import { UserModel } from '@root/models/mongoose';
@@ -13,6 +14,7 @@ import { getProfileQuery } from '../api/user/[id]';
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
+  const gameId = getGameIdFromReq(context.req);
 
   if (!reqUser) {
     return {
@@ -24,7 +26,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   const [profileQuery, users] = await Promise.all([
-    getProfileQuery(
+    getProfileQuery(gameId,
       reqUser._id.toString(),
       [
         ProfileQueryType.LevelsByDifficulty,
