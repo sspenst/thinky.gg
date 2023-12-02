@@ -96,13 +96,14 @@ export default withAuth({
       }
 
       if (emailTrimmed !== req.user.email) {
-        setObj['email'] = emailTrimmed;
         const userWithEmail = await UserModel.findOne({ email: email.trim() }, '_id').lean<User>();
 
         if (userWithEmail) {
           return res.status(400).json({ error: 'Email already taken' });
         }
       }
+
+      setObj['email'] = emailTrimmed;
     }
 
     if (bio !== undefined) {
@@ -131,18 +132,11 @@ export default withAuth({
     }
 
     try {
-      const newUser = await UserModel.findOneAndUpdate({ _id: req.userId }, { $set: setObj }, { runValidators: true, new: true, projection: { _id: 1, email: 1, name: 1 } });
+      const newUser = await UserModel.findOneAndUpdate({ _id: req.userId }, { $set: setObj }, { runValidators: true, new: true, projection: { _id: 1, email: 1, name: 1, emailConfirmationToken: 1 } });
 
       if (setObj['email']) {
-        await UserModel.findOneAndUpdate({ _id: req.userId }, {
-          $set: {
-            emailConfirmationToken: getEmailConfirmationToken(),
-            emailConfirmed: false,
-          }
-        }, {
-          new: true,
-          projection: { emailConfirmationToken: 1, },
-        });
+        newUser.emailConfirmationToken = getEmailConfirmationToken();
+        await newUser.save();
 
         await sendEmailConfirmationEmail(req, newUser);
       }
