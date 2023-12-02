@@ -179,7 +179,7 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
   function getLeaderboardTable(users: User[], values: number[]) {
     return (
       <div className='grid gap-2 items-center' style={{
-        gridTemplateColumns: 'repeat(3, min-content)',
+        gridTemplateColumns: 'min-content 1fr min-content',
       }}>
         {users.map((user, i) => {
           const isYou = user._id === reqUser._id;
@@ -187,7 +187,7 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
           return (<>
             <div className={classNames('font-bold text-xl', { 'border rounded-md border-color-4': isYou })}>{i + 1}.</div>
             <div
-              className='flex items-center text-lg gap-3 rounded-lg w-fit'
+              className='flex items-center text-lg gap-3 rounded-lg truncate'
               key={`${user._id}-levels-solved`}
             >
               <FormattedUser id='ranked' size={32} user={user} />
@@ -205,7 +205,9 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
     if (leaderboard === 'ranked') {
       return (
         <div className='flex flex-col text-center gap-6'>
-          <Link className='font-bold text-2xl hover:underline' href='/ranked'>Ranked Solves 🏅</Link>
+          <div className='flex justify-center'>
+            <Link className='font-bold text-2xl hover:underline w-fit' href='/ranked'>Ranked Solves 🏅</Link>
+          </div>
           {getLeaderboardTable(rankedLeaderboard, rankedLeaderboard.map(user => user.calcRankedSolves))}
         </div>
       );
