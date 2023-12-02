@@ -42,21 +42,12 @@ export default withAuth({
   user.name = trimmedName;
   user.password = password;
   user.roles = user.roles.filter((role: Role) => role !== Role.GUEST);
-
+  user.emailConfirmed = false;
+  user.emailConfirmationToken = getEmailConfirmationToken();
   await user.save();
 
-  const userConfig = await UserConfigModel.findOneAndUpdate({ userId: req.userId }, {
-    $set: {
-      emailConfirmationToken: getEmailConfirmationToken(),
-      emailConfirmed: false,
-    }
-  }, {
-    new: true,
-    projection: { emailConfirmationToken: 1, },
-  });
-
   await Promise.all([
-    sendEmailConfirmationEmail(req, user, userConfig as UserConfig),
+    sendEmailConfirmationEmail(req, user),
     queueDiscordWebhook(Discord.NewUsers, `**${trimmedName}** just converted from a guest account! Welcome them on their [profile](${req.headers.origin}${getProfileSlug(user)})!`),
   ]);
 

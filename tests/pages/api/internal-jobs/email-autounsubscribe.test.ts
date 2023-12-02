@@ -9,7 +9,7 @@ import { EmailDigestSettingTypes } from '../../../../constants/emailDigest';
 import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
-import { EmailLogModel, UserConfigModel } from '../../../../models/mongoose';
+import { EmailLogModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
 import { EmailState } from '../../../../models/schemas/emailLogSchema';
 import handler from '../../../../pages/api/internal-jobs/email-digest';
 
@@ -59,7 +59,10 @@ describe('Email auto unsubscribe', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
-    await UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.DAILY, emailConfirmed: false }, {});
+    await Promise.all([
+      UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.DAILY }, {}),
+      UserModel.findOneAndUpdate({ _id: TestId.USER }, { emailConfirmed: false }).lean()
+    ]);
 
     for (let day = 0; day < 12; day++) {
       await dbConnect();
