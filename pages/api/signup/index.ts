@@ -1,6 +1,7 @@
 import { GameId } from '@root/constants/GameId';
 import Role from '@root/constants/role';
 import { generatePassword } from '@root/helpers/generatePassword';
+import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
 import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmationEmail';
 import UserConfig from '@root/models/db/userConfig';
 import mongoose, { QueryOptions, Types } from 'mongoose';
@@ -26,6 +27,8 @@ async function createUser({ gameId, email, name, password, tutorialCompletedAt, 
       _id: id,
       email: email,
       name: name,
+      emailConfirmed: false,
+      emailConfirmationToken: getEmailConfirmationToken(),
       password: password,
       roles: roles,
       score: 0,
