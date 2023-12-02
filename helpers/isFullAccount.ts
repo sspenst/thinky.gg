@@ -13,6 +13,5 @@ export default async function isFullAccount(gameId: GameId, user: User | null, u
     userConfig = await UserConfigModel.findOne<UserConfig>({ userId: user._id, gameId: gameId });
   }
 
-  //TODO: We need to move email confirmed to user model... since it is shared across games
-  return userConfig?.emailConfirmed;
+  return user?.emailConfirmed;
 }

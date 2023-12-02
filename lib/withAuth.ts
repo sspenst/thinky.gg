@@ -73,7 +73,7 @@ export async function getUserFromToken(
       }),
       ...ipData,
     },
-    { new: true, projection: '+email +bio' },
+    { new: true, projection: '+email +bio +emailConfirmed' },
   ).lean<User>();
 
   if (user && !isLocal()) {

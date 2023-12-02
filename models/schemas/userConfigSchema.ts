@@ -26,16 +26,6 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       enum: GameId,
       required: false,
     },
-    /** TODO: MOVE TO user */
-    emailConfirmationToken: {
-      type: String,
-      select: false,
-    },
-    /** TODO: MOVE TO user */
-    emailConfirmed: {
-      type: Boolean,
-      default: false,
-    },
     emailDigest: {
       type: String,
       required: true,

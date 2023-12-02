@@ -1,15 +1,15 @@
+import { getEmailBodyBasic } from '@root/helpers/getEmailBody';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import EmailLog from '@root/models/db/emailLog';
 import User from '@root/models/db/user';
-import UserConfig from '@root/models/db/userConfig';
 import { EmailLogModel } from '@root/models/mongoose';
 import { Types } from 'mongoose';
 import { NextApiRequest } from 'next';
 import { EmailType } from '../constants/emailDigest';
 import { sendMail } from '../pages/api/internal-jobs/email-digest';
 
-export default async function sendEmailConfirmationEmail(req: NextApiRequest, user: User, userConfig: UserConfig) {
-  const token = userConfig.emailConfirmationToken;
+export default async function sendEmailConfirmationEmail(req: NextApiRequest, user: User) {
+  const token = user.emailConfirmationToken;
   const url = `${req.headers.origin}/confirm-email/${user._id}/${token}`;
   const gameId = getGameIdFromReq(req);
   const lastSent = await EmailLogModel.findOne<EmailLog>({
@@ -32,6 +32,6 @@ export default async function sendEmailConfirmationEmail(req: NextApiRequest, us
     EmailType.EMAIL_CONFIRM_EMAIL,
     user,
     `Confirm Email - ${user.name}`,
-    `Click here to confirm your email: ${url}`,
+    getEmailBodyBasic({ gameId: gameId, user: user, title: 'Confirm your email', message: 'Hello there ' + user.name + ', please confirm your email to access more features!', linkText: 'Confirm Email', linkHref: url }),
   );
 }
