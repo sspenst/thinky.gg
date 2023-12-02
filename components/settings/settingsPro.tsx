@@ -257,7 +257,6 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
         </div>
       )}
       {subscriptionsLoading ? <LoadingSpinner /> : null}
-      <div><p className='text-xs'>For questions please contact <Link className='text-blue-300' href='mailto:help@pathology.gg'>help@pathology.gg</Link>.</p></div>
       {!userLoading && !isPro(user) &&
         <div className='flex flex-col items-center justify-center gap-4'>
           <div className='flex flex-col gap-3 w-fit items-center mt-3'>
@@ -276,10 +275,10 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                       <span className='text-xs rounded-md px-1' style={{
                         backgroundColor: 'var(--bg-color)',
                         color: 'rgb(134 239 172)',
-                      }}>SAVE 25%</span>
+                      }}>SAVE 20%</span>
                     </div>
-                    <span className='font-bold text-lg' style={{ color: 'var(--color)' }}>$2.25 USD / month</span>
-                    <span className='text-xs'>$27 per year billed annually</span>
+                    <span className='font-bold text-lg' style={{ color: 'var(--color)' }}>$4.00 USD / month</span>
+                    <span className='text-xs'>$48 per year billed annually</span>
                   </div>
                 )}
               </RadioGroup.Option>
@@ -294,7 +293,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                   }}>
                     <span>Monthly Plan</span>
                     <span className='font-bold text-lg' style={{ color: 'var(--color)' }}>$5.00 USD / month</span>
-                    <span className='text-xs'>$45 per year billed monthly</span>
+                    <span className='text-xs'>$60 per year billed monthly</span>
                   </div>
                 )}
               </RadioGroup.Option>
@@ -315,6 +314,9 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
           </p>
         </div>
       }
+      <div className='text-xs'>
+        For questions please contact <Link className='text-blue-300' href='mailto:help@pathology.gg'>help@pathology.gg</Link>.
+      </div>
       <div className='flex flex-col xl:flex-row items-center gap-4 justify-center'>
         <div className='p-2'>
           <video autoPlay loop muted playsInline className='rounded-xl'>

@@ -3,7 +3,7 @@ import React from 'react';
 
 export interface TableColumn<T> {
   id: string;
-  name: React.ReactNode;
+  name?: React.ReactNode;
   selector: (row: T) => JSX.Element;
   sortable?: boolean;
   style?: React.CSSProperties | undefined;

@@ -2,6 +2,7 @@ import { Menu, Transition } from '@headlessui/react';
 import { PlayLaterToggleButton } from '@root/components/cards/playLaterToggleButton';
 import FormattedDate from '@root/components/formatted/formattedDate';
 import FormattedUser from '@root/components/formatted/formattedUser';
+import StyledTooltip from '@root/components/page/styledTooltip';
 import DataTable, { TableColumn } from '@root/components/tables/dataTable';
 import Dimensions from '@root/constants/dimensions';
 import StatFilter from '@root/constants/statFilter';
@@ -46,6 +47,7 @@ export interface SearchQuery extends ParsedUrlQuery {
   difficultyFilter?: string;
   disableCount?: string;
   excludeLevelIds?: string;
+  isRanked?: string;
   maxDifficulty?: string;
   maxDimension1?: string;
   maxDimension2?: string;
@@ -70,6 +72,7 @@ export interface SearchQuery extends ParsedUrlQuery {
 const DefaultQuery = {
   blockFilter: String(BlockFilterMask.NONE),
   difficultyFilter: '',
+  isRanked: 'false',
   maxDimension1: '',
   maxDimension2: '',
   maxSteps: '2500',
@@ -368,29 +371,43 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       id: 'name',
       name: 'Name',
       grow: 2,
-      selector: (row: EnrichedLevel) => {
-        return <FormattedLevelLink onClick={() => {
-          const q = getParsedUrlQuery(query);
-          const queryString = Object.keys(q).map(key => key + '=' + query[key]).join('&');
-          const ts = new Date();
+      selector: (row: EnrichedLevel) => (
+        <div className='flex items-center gap-2 truncate'>
+          <FormattedLevelLink onClick={() => {
+            const q = getParsedUrlQuery(query);
+            const queryString = Object.keys(q).map(key => key + '=' + query[key]).join('&');
+            const ts = new Date();
 
-          // TODO: temp collection is a hack (doesn't represent a real collection so there are other UX problems)
-          // should make a new collection class to be used on the level page (with an href property, isInMemory, etc.)
-          const collectionTemp = {
-            createdAt: ts,
-            isPrivate: true,
-            levels: data, _id: new Types.ObjectId(),
-            name: 'Search',
-            slug: `../search${queryString ? `?${queryString}` : ''}`,
-            type: CollectionType.InMemory,
-            updatedAt: ts,
-            userId: { _id: new Types.ObjectId() } as Types.ObjectId & User,
-          } as EnrichedCollection;
+            // TODO: temp collection is a hack (doesn't represent a real collection so there are other UX problems)
+            // should make a new collection class to be used on the level page (with an href property, isInMemory, etc.)
+            const collectionTemp = {
+              createdAt: ts,
+              isPrivate: true,
+              levels: data, _id: new Types.ObjectId(),
+              name: 'Search',
+              slug: `../search${queryString ? `?${queryString}` : ''}`,
+              type: CollectionType.InMemory,
+              updatedAt: ts,
+              userId: { _id: new Types.ObjectId() } as Types.ObjectId & User,
+            } as EnrichedCollection;
 
-          sessionStorage.setItem('tempCollection', JSON.stringify(collectionTemp));
-          setTempCollection(collectionTemp);
-        }} id='search' level={row} />;
-      },
+            sessionStorage.setItem('tempCollection', JSON.stringify(collectionTemp));
+            setTempCollection(collectionTemp);
+          }} id='search' level={row} />
+          {row.isRanked &&
+            <div className='text-yellow-500 text-base'>
+              <Link
+                data-tooltip-content='Ranked level'
+                data-tooltip-id={`ranked-tooltip-${row._id.toString()}`}
+                href='/ranked'
+              >
+                🏅
+              </Link>
+              <StyledTooltip id={`ranked-tooltip-${row._id.toString()}`} />
+            </div>
+          }
+        </div>
+      ),
       sortable: true,
       style: {
         minWidth: '150px',
@@ -407,7 +424,6 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
         />
       ),
       sortable: true,
-      allowOverflow: true,
       style: {
         fontSize: '13px',
         minWidth: '150px',
@@ -515,32 +531,28 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
   const difficulty = difficultyList.find(d => d.name === query.difficultyFilter);
 
   const subHeaderComponent = (
-    <div className='flex flex-col gap-1 p-1' id='level_search_box'>
-      <div className='flex flex-row flex-wrap items-center justify-center z-10 gap-1'>
-        <div>
-          <input
-            className='form-control relative min-w-0 block w-52 px-3 py-1.5 h-10 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded-md transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none'
-            id='default-search'
-            key='search-level-input'
-            onChange={e => {
-              queryDebounceHelper({
-                search: e.target.value,
-              });
-            } }
-            placeholder='Search level name...'
-            type='search'
-            value={query.search}
-          />
-        </div>
-        <div>
-          <MultiSelectUser key={'search-author-input-' + searchAuthor?._id.toString()} placeholder='Search authors...' defaultValue={searchAuthor} onSelect={(user) => {
+    <div className='flex flex-col items-center gap-1 p-1' id='level_search_box'>
+      <div className='flex flex-wrap items-center z-10 gap-1'>
+        <input
+          className='form-control relative min-w-0 block w-52 px-3 py-1.5 h-10 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded-md transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none'
+          id='default-search'
+          key='search-level-input'
+          onChange={e => {
             queryDebounceHelper({
-              searchAuthor: user?.name || '',
+              search: e.target.value,
             });
-          }} />
-        </div>
+          } }
+          placeholder='Search level name...'
+          type='search'
+          value={query.search}
+        />
+        <MultiSelectUser key={'search-author-input-' + searchAuthor?._id.toString()} placeholder='Search authors...' defaultValue={searchAuthor} onSelect={(user) => {
+          queryDebounceHelper({
+            searchAuthor: user?.name || '',
+          });
+        }} />
       </div>
-      <div className='flex items-center justify-center flex-wrap gap-1'>
+      <div className='flex items-center flex-wrap gap-1'>
         {reqUser && <StatFilterMenu onStatFilterClick={onStatFilterClick} query={query} />}
         <Menu as='div' className='relative inline-block text-left'>
           <Menu.Button
@@ -640,6 +652,23 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
           </Transition>
         </Menu>
         <TimeRangeMenu onTimeRangeClick={onTimeRangeClick} timeRange={query.timeRange} />
+      </div>
+      <div className='flex items-center gap-1 border border-color-4 rounded-md px-2 py-1'>
+        <input
+          checked={query.isRanked === 'true'}
+          id='ranked_checkbox'
+          onChange={() => {
+            fetchLevels({
+              ...query,
+              isRanked: query.isRanked === 'true' ? 'false' : 'true',
+              page: '1',
+            });
+          }}
+          type='checkbox'
+        />
+        <label className='text-sm font-medium' htmlFor='ranked_checkbox'>
+          🏅 Ranked
+        </label>
       </div>
       <div className='flex items-center justify-center py-0.5'>
         <label htmlFor='min-step' className='text-xs font-medium pr-1'>Min steps</label>
