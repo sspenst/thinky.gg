@@ -49,7 +49,7 @@ export const DEFAULT_QUERY = {
   search: '',
   showOnline: 'false',
   showUnregistered: 'false',
-  sortBy: 'calcRankedSolves',
+  sortBy: 'score',
   sortDir: 'desc',
 } as UserSearchQuery;
 
@@ -366,15 +366,15 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
       sortable: true,
     },
     {
-      id: 'calcRankedSolves',
-      name: 'Ranked Solves',
-      selector: row => row.calcRankedSolves,
-      sortable: true,
-    },
-    {
       id: 'score',
       name: 'Solves',
       selector: row => row.score,
+      sortable: true,
+    },
+    {
+      id: 'calcRankedSolves',
+      name: 'Ranked Solves',
+      selector: row => row.calcRankedSolves,
       sortable: true,
     },
     {
