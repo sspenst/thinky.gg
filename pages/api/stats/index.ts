@@ -149,6 +149,7 @@ export default withAuth({
             userConfigInc.calcRankedSolves = 1;
           }
 
+          console.log('updating user config', userConfigInc, req.userId, level.gameId);
           await Promise.all([
             UserConfigModel.updateOne({ userId: req.userId, gameId: level.gameId }, { $inc: userConfigInc }, { session: session }),
             queueRefreshAchievements(level.gameId, req.user._id, [AchievementCategory.SKILL, AchievementCategory.USER], { session: session })
@@ -161,19 +162,19 @@ export default withAuth({
         if (newRecord) {
           const prevRecord = await RecordModel.findOne<Record>({ levelId: level._id }, {}, { session: session }).sort({ ts: -1 });
 
-          // update calc_records if the previous record was set by a different user
+          // update calcRecordsCount if the previous record was set by a different user
           if (prevRecord && prevRecord.userId.toString() !== req.userId) {
             const authorId = level.archivedBy?.toString() ?? level.userId.toString();
 
-            // decrease calc_records if the previous user was not the original level creator
+            // decrease calcRecordsCount if the previous user was not the original level creator
             if (prevRecord.userId.toString() !== authorId) {
               // NB: await to avoid multiple user updates in parallel
-              await UserModel.updateOne({ _id: prevRecord.userId }, { $inc: { calc_records: -1 } }, { session: session });
+              await UserConfigModel.updateOne({ userId: prevRecord.userId }, { $inc: { calcRecordsCount: -1 } }, { session: session });
             }
 
-            // increase calc_records if the new user was not the original level creator
+            // increase calcRecordsCount if the new user was not the original level creator
             if (req.userId !== authorId) {
-              await UserModel.updateOne({ _id: req.userId }, { $inc: { calc_records: 1 } }, { session: session });
+              await UserConfigModel.updateOne({ userId: req.userId }, { $inc: { calcRecordsCount: 1 } }, { session: session });
             }
           }
 

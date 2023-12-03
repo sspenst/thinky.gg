@@ -17,7 +17,7 @@ export async function getProfileQuery(gameId: GameId, userId: string, types: Pro
     types.includes(ProfileQueryType.LevelsByDifficulty) ? getLevelsByDifficultyTable(gameId, { isRanked: true }) : null,
     types.includes(ProfileQueryType.LevelsSolvedByDifficulty) ? getSolvesByDifficultyTable(gameId, new Types.ObjectId(userId)) : null,
     types.includes(ProfileQueryType.RankedSolvesByDifficulty) ? getSolvesByDifficultyTable(gameId, new Types.ObjectId(userId), {}, { isRanked: true }) : null,
-    types.includes(ProfileQueryType.User) ? getUserById(userId) : null,
+    types.includes(ProfileQueryType.User) ? getUserById(userId, gameId) : null,
   ]);
 
   return {

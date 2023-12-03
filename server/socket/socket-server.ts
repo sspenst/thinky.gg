@@ -140,7 +140,7 @@ export default async function startSocketIOServer(server: Server) {
 
       if (userId && isValidMatchGameState(matchGameState)) {
         await broadcastMatchGameState(mongoEmitter, userId, matchId, matchGameState);
-        await broadcastCountOfUsersInRoom(adapted, matchId); // TODO: probably worth finding a better place to put this
+        await broadcastCountOfUsersInRoom(gameId, adapted, matchId); // TODO: probably worth finding a better place to put this
       }
     });
     socket.on('disconnect', async () => {
@@ -151,7 +151,7 @@ export default async function startSocketIOServer(server: Server) {
       }
 
       await Promise.all([
-        broadcastConnectedPlayers(adapted),
+        broadcastConnectedPlayers(gameId, adapted),
         broadcastMatches(mongoEmitter),
       ]);
     });
@@ -175,7 +175,7 @@ export default async function startSocketIOServer(server: Server) {
 
         enrichMultiplayerMatch(matchClone, reqUser._id.toString());
         socket?.emit('match', matchClone);
-        broadcastCountOfUsersInRoom(adapted, matchId);
+        broadcastCountOfUsersInRoom(gameId, adapted, matchId);
       } else {
         // TODO: emit only to matchId? or can we just show a 404 here?
         socket?.emit('matchNotFound');
@@ -186,7 +186,7 @@ export default async function startSocketIOServer(server: Server) {
         broadcastPrivateAndInvitedMatches(mongoEmitter, reqUser._id)]);
     }
 
-    await broadcastConnectedPlayers(adapted);
+    await broadcastConnectedPlayers(gameId, adapted);
   });
 }
 

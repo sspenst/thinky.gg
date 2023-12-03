@@ -95,7 +95,7 @@ export async function clearBroadcastMatchSchedule(matchId: string) {
   }
 }
 
-export async function broadcastCountOfUsersInRoom(emitter: Server, matchId: string) {
+export async function broadcastCountOfUsersInRoom(gameId: GameId, emitter: Server, matchId: string) {
   let clientsMap;
 
   try {
@@ -113,7 +113,7 @@ export async function broadcastCountOfUsersInRoom(emitter: Server, matchId: stri
   });
 
   // we have all the connected user ids now... so let's get all of them
-  const users = await getUsersWithMultiplayerProfileFromIds(connectedUserIds);
+  const users = await getUsersWithMultiplayerProfileFromIds(gameId, connectedUserIds);
   // remove users with hideStatus: true and inactive users
   const filteredUsers = users.filter(user => !user.hideStatus);
 
@@ -144,7 +144,7 @@ export async function broadcastNotifications(gameId: GameId, emitter: Emitter, u
   }
 }
 
-export async function broadcastConnectedPlayers(emitter: Server) {
+export async function broadcastConnectedPlayers(gameId: GameId, emitter: Server) {
   // return an array of all the connected players
   let clientsMap;
 
@@ -163,7 +163,7 @@ export async function broadcastConnectedPlayers(emitter: Server) {
   });
 
   // we have all the connected user ids now... so let's get all of them
-  const users = await getUsersWithMultiplayerProfileFromIds(connectedUserIds);
+  const users = await getUsersWithMultiplayerProfileFromIds(gameId, connectedUserIds);
   // remove users with hideStatus: true and inactive users
   const filteredUsers = users.filter(user => !user.hideStatus);
 
