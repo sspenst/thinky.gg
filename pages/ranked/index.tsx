@@ -40,7 +40,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
           ...USER_DEFAULT_PROJECTION,
         },
       },
-      ...getEnrichUserConfigPipelineStage(gameId, { includeCalcs: true }),
+      ...getEnrichUserConfigPipelineStage(gameId),
       {
         $sort: {
           // config.calcRankedSolves: -1,

@@ -148,7 +148,6 @@ export default withAuth({
             userConfigInc.calcRankedSolves = 1;
           }
 
-          console.log('updating user config', userConfigInc, req.userId, level.gameId);
           await Promise.all([
             UserConfigModel.updateOne({ userId: req.userId, gameId: level.gameId }, { $inc: userConfigInc }, { session: session }),
             queueRefreshAchievements(level.gameId, req.user._id, [AchievementCategory.SKILL, AchievementCategory.USER], { session: session })

@@ -118,7 +118,7 @@ describe('matchCreateJoinAndPlay', () => {
         expect(response.players).toHaveLength(2);
 
         for (const player of response.players) {
-          expect(Object.keys(player).sort()).toEqual(['__v', '_id', 'config', 'last_visited_at', 'name', 'roles', 'ts'].sort());
+          expect(Object.keys(player).sort()).toEqual([ '_id', 'config', 'last_visited_at', 'name', 'roles'].sort());
         }
 
         expect(response.gameTable).toBeUndefined();
@@ -261,6 +261,37 @@ describe('matchCreateJoinAndPlay', () => {
         expect(res.status).toBe(200);
         expect(response.error).toBeUndefined();
         expect(response.success).toBe(true);
+      }
+    });
+  });
+  test('user B match skip via api again', async () => {
+    MockDate.set(new Date().getTime() + 2000); // two seconds later
+
+    const match = await MultiplayerMatchModel.findOne({ matchId: matchId });
+
+    expect(match.state).toBe(MultiplayerMatchState.ACTIVE);
+    const levels = match.levels;
+
+    expect(levels).toHaveLength(3);
+    await testApiHandler({
+      handler: async (_, res) => {
+        await handler({
+          ...defaultReq,
+          method: 'PUT',
+          query: {
+            matchId: matchId,
+          },
+          body: {
+            action: MatchAction.SKIP_LEVEL
+          }
+        }, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(res.status).toBe(400);
+        expect(response.error).toBe('Already used skip');
       }
     });
   });

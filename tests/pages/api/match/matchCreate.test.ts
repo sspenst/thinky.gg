@@ -115,13 +115,13 @@ describe('matchCreate', () => {
         const createdByFields = Object.keys(match.createdBy);
 
         expect(match.createdBy.name).toBe('test');
-        expect(createdByFields.sort()).toStrictEqual(['_id', 'last_visited_at', 'name', 'roles'].sort());
+        expect(createdByFields.sort()).toStrictEqual(['_id', 'config', 'last_visited_at', 'name', 'roles'].sort());
         const sample_player = match.players[0];
 
         expect(sample_player._id).toBe(TestId.USER);
         const sample_player_fields = Object.keys(sample_player);
 
-        expect(sample_player_fields.sort()).toStrictEqual(['_id', 'last_visited_at', 'name', 'roles'].sort());
+        expect(sample_player_fields.sort()).toStrictEqual(['_id', 'config', 'last_visited_at', 'name', 'roles'].sort());
       },
     });
   });

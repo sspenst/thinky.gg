@@ -81,7 +81,7 @@ async function unpublishLevel(level: Level) {
   ]);
 
   await Promise.all([
-    ...matchesToRebroadcast.map(match => requestBroadcastMatch(match.matchId)),
+    ...matchesToRebroadcast.map(match => requestBroadcastMatch(match.gameId, match.matchId)),
   ]);
 }
 
