@@ -1,5 +1,6 @@
 import AdminCommand from '@root/constants/adminCommand';
 import Direction from '@root/constants/direction';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import Level from '@root/models/db/level';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -7,7 +8,7 @@ import TestId from '../../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { LevelModel, UserModel } from '../../../../models/mongoose';
+import { LevelModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
 import adminHandler from '../../../../pages/api/admin/index';
 import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
 import createLevelHandler from '../../../../pages/api/level/index';
@@ -132,7 +133,7 @@ describe('Publishing a new level, setting it to ranked, verifying ranked data is
         expect(level.calc_reviews_count).toBe(0);
         expect(level.calc_reviews_score_laplace.toFixed(2)).toBe('0.67');
 
-        const u = await UserModel.findById(TestId.USER);
+        const u = await UserConfigModel.findOne({ userId: TestId.USER, gameId: level.gameId });
 
         expect(u.calcRankedSolves).toBe(0);
       },
@@ -168,7 +169,7 @@ describe('Publishing a new level, setting it to ranked, verifying ranked data is
 
         expect(level.isRanked).toBe(true);
 
-        const u = await UserModel.findById(TestId.USER);
+        const u = await UserConfigModel.findOne({ userId: TestId.USER, gameId: level.gameId });
 
         expect(u.calcRankedSolves).toBe(1);
       },
@@ -232,7 +233,7 @@ describe('Publishing a new level, setting it to ranked, verifying ranked data is
         expect(response.success).toBe(true);
         expect(res.status).toBe(200);
 
-        const u = await UserModel.findById(TestId.USER_B);
+        const u = await UserConfigModel.findOne({ userId: TestId.USER_B, gameId: DEFAULT_GAME_ID });
 
         expect(u.calcRankedSolves).toBe(1);
       },
@@ -268,7 +269,7 @@ describe('Publishing a new level, setting it to ranked, verifying ranked data is
 
         expect(level.isRanked).toBe(false);
 
-        const u = await UserModel.findById(TestId.USER);
+        const u = await UserConfigModel.findOne({ userId: TestId.USER, gameId: level.gameId });
 
         expect(u.calcRankedSolves).toBe(0);
       },

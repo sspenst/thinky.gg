@@ -24,7 +24,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  const chapterUnlocked = reqUser.chapterUnlocked ?? 1;
+  const chapterUnlocked = reqUser.config.chapterUnlocked ?? 1;
 
   if (chapterUnlocked === 1) {
     return {

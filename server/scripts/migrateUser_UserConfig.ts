@@ -14,7 +14,8 @@ async function migrate() {
   // get all collections
   await dbConnect();
 
-  const allUserConfigs = await UserConfigModel.find({}, { 'emailConfirmed': 1, 'userId': 1 }).lean();
+  const allUserConfigs = await UserConfigModel.find({
+  }, { 'emailConfirmed': 1, 'userId': 1 }).lean();
 
   progressBar.start(allUserConfigs.length, 0);
 
@@ -22,7 +23,10 @@ async function migrate() {
   for (let i = 0; i < allUserConfigs.length; i++) {
     const userConfig = allUserConfigs[i];
 
-    await UserModel.updateOne({ _id: userConfig.userId }, {
+    await UserModel.updateOne({ _id: userConfig.userId,
+    // where emailConfirmed doesn't exist
+      emailConfirmed: { $exists: false }
+    }, {
       emailConfirmed: userConfig.emailConfirmed,
     });
     progressBar.update(i);

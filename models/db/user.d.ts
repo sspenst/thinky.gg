@@ -8,10 +8,10 @@ interface User {
   _id: Types.ObjectId;
   avatarUpdatedAt?: number;
   bio?: string;
-  calcRankedSolves: number;
-  calc_levels_created_count: number;
-  calc_records: number;
-  chapterUnlocked?: number; // chapter unlocked in the campaign
+  //calcRankedSolves: number;
+  //calc_levels_created_count: number;
+ // calc_records: number;
+ // chapterUnlocked?: number; // chapter unlocked in the campaign
   email: string;
   emailConfirmationToken: string;
   emailConfirmed: boolean;
@@ -21,8 +21,11 @@ interface User {
   name: string;
   password?: string;
   roles: Role[];
-  score: number;
+  //score: number;
   ts?: number; // created timestamp
+
+  // virtual field
+  config?: UserConfig;
 }
 
 export interface ReqUser extends User {

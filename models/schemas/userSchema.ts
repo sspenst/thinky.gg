@@ -28,7 +28,7 @@ const UserSchema = new mongoose.Schema<User>({
     maxlength: 256,
     select: false
   },
-  // TODO: Move ALL the calcs to userConfig
+  /*// TODO: Move ALL the calcs to userConfig
   calcRankedSolves: {
     type: Number,
     required: true,
@@ -46,7 +46,7 @@ const UserSchema = new mongoose.Schema<User>({
   chapterUnlocked: {
     type: Number,
     default: 1,
-  },
+  },*/
   email: {
     type: String,
     required: true,
@@ -104,12 +104,12 @@ const UserSchema = new mongoose.Schema<User>({
     enum: Role,
     default: [],
   },
-  // TODO: Move score to userConfig
+  /* TODO: Move score to userConfig
   score: {
     type: Number,
     required: true,
     default: 0,
-  },
+  },*/
   ts: {
     type: Number,
   },

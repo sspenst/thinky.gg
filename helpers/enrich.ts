@@ -8,7 +8,7 @@ import Level, { EnrichedLevel } from '../models/db/level';
 import Notification from '../models/db/notification';
 import Stat from '../models/db/stat';
 import User, { ReqUser } from '../models/db/user';
-import { NotificationModel, StatModel, UserModel } from '../models/mongoose';
+import { NotificationModel, StatModel, UserConfigModel, UserModel } from '../models/mongoose';
 import { getEnrichNotificationPipelineStages } from './getEnrichNotificationPipelineStages';
 
 export async function enrichCampaign(campaign: Campaign, reqUser: User | null) {
@@ -160,6 +160,49 @@ export async function enrichReqUser(gameId: GameId, reqUser: User, filters?: any
   enrichedReqUser.notifications = notificationAgg;
 
   return enrichedReqUser;
+}
+
+interface EnrichUserConfigOptions {
+  localField?: string;
+  includeCalcs?: boolean;
+  includeChapter?: boolean;
+}
+
+export function getEnrichUserConfigPipelineStage(gameId: GameId, { localField, includeCalcs, includeChapter }: EnrichUserConfigOptions = {}): PipelineStage[] {
+  if (!localField) {
+    localField = '_id';
+  }
+
+  const includeCalcsObject = includeCalcs ? {
+    calcRecordsCount: 1,
+    calcLevelsSolvedCount: 1,
+    calcRankedSolves: 1,
+  } : {};
+  const includeChapterObject = includeChapter ? {
+    chapterUnlocked: 1,
+  } : {};
+
+  return [{
+    $lookup: {
+      from: UserConfigModel.collection.name,
+      localField: localField,
+      foreignField: 'userId',
+      as: 'config',
+      pipeline: [
+        { $match: { gameId: gameId } },
+        { $project: {
+          gameId: 1,
+          ...includeCalcsObject,
+          ...includeChapterObject
+        } }
+      ]
+    },
+  },
+  {
+    $unwind: '$config'
+  },
+
+  ];
 }
 
 export function getEnrichUserIdPipelineSteps(userIdField = 'userId', outputToField = 'userId') {

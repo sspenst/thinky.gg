@@ -99,11 +99,11 @@ export default function FormattedUser({ className, id, noLinks, noTooltip, onCli
                 </div>
                 <div className='flex gap-1'>
                   <span className='font-medium'>Ranked Solves:</span>
-                  <span className='gray'>{userExtendedData.user.calcRankedSolves} 🏅</span>
+                  <span className='gray'>{userExtendedData.user.config?.calcRankedSolves} 🏅</span>
                 </div>
                 <div className='flex gap-1'>
                   <span className='font-medium'>Levels Solved:</span>
-                  <span className='gray'>{userExtendedData.user.score}</span>
+                  <span className='gray'>{userExtendedData.user.config?.calcLevelsSolvedCount}</span>
                 </div>
                 {!user.hideStatus &&
                   <div className='flex gap-1'>

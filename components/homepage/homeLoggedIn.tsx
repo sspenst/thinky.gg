@@ -66,7 +66,7 @@ export default function HomeLoggedIn({
       <div className='flex flex-col md:flex-row justify-center items-center flex-wrap gap-4 max-w-full'>
         <Card id='campaign' title={game.displayName + ' Official Campaign'}>
           <div className='p-3'>
-            <ChapterSelectCard chapter={user.chapterUnlocked ?? 1} href='/play' />
+            <ChapterSelectCard chapter={user.config?.chapterUnlocked ?? 1} href='/play' />
           </div>
         </Card>
         <div className='flex flex-col items-center md:items-start gap-2 max-w-full'>
