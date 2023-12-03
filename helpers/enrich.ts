@@ -164,16 +164,16 @@ export async function enrichReqUser(gameId: GameId, reqUser: User, filters?: any
 
 interface EnrichUserConfigOptions {
   localField?: string;
-  includeCalcs?: boolean;
+  excludeCalcs?: boolean;
   includeChapter?: boolean;
 }
 
-export function getEnrichUserConfigPipelineStage(gameId: GameId, { localField, includeCalcs, includeChapter }: EnrichUserConfigOptions = {}): PipelineStage[] {
+export function getEnrichUserConfigPipelineStage(gameId: GameId, { localField, excludeCalcs, includeChapter }: EnrichUserConfigOptions = {}): PipelineStage[] {
   if (!localField) {
     localField = '_id';
   }
 
-  const includeCalcsObject = includeCalcs ? {
+  const includeCalcsObject = !excludeCalcs ? {
     calcRecordsCount: 1,
     calcLevelsSolvedCount: 1,
     calcRankedSolves: 1,

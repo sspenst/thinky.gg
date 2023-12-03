@@ -124,7 +124,7 @@ export default async function startSocketIOServer(server: Server) {
 
   activeMatches.map(async (match) => {
     logger.info('Rescheduling broadcasts for active match ' + match.matchId);
-    await scheduleBroadcastMatch(MongoEmitter, match.matchId.toString());
+    await scheduleBroadcastMatch(match.gameId, MongoEmitter, match.matchId.toString());
   });
 
   GlobalSocketIO.use(authenticateSocket);
@@ -152,7 +152,7 @@ export default async function startSocketIOServer(server: Server) {
 
       await Promise.all([
         broadcastConnectedPlayers(gameId, adapted),
-        broadcastMatches(mongoEmitter),
+        broadcastMatches(gameId, mongoEmitter),
       ]);
     });
 
@@ -168,7 +168,7 @@ export default async function startSocketIOServer(server: Server) {
 
     if (matchId) {
       socket.join(matchId);
-      const match = await getMatch(matchId as string);
+      const match = await getMatch(gameId, matchId as string);
 
       if (match) {
         const matchClone = JSON.parse(JSON.stringify(match));
@@ -182,8 +182,8 @@ export default async function startSocketIOServer(server: Server) {
       }
     } else {
       socket.join('LOBBY');
-      await Promise.all([broadcastMatches(mongoEmitter),
-        broadcastPrivateAndInvitedMatches(mongoEmitter, reqUser._id)]);
+      await Promise.all([broadcastMatches(gameId, mongoEmitter),
+        broadcastPrivateAndInvitedMatches(gameId, mongoEmitter, reqUser._id)]);
     }
 
     await broadcastConnectedPlayers(gameId, adapted);

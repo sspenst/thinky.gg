@@ -49,7 +49,7 @@ describe('pages/api/user/[id]/index.ts', () => {
         expect(
           response[ProfileQueryType.LevelsSolvedByDifficulty]
         ).toStrictEqual({ '-1': 2 }); // -1 stands for pending
-        expect(((response[ProfileQueryType.User]) as User).score).toBe(2);
+        expect(((response[ProfileQueryType.User]) as User).config?.calcLevelsSolvedCount).toBe(2);
       },
     });
   });

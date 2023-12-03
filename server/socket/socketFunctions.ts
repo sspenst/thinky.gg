@@ -21,8 +21,8 @@ const GlobalMatchTimers = {} as { [matchId: string]: {
   end: NodeJS.Timeout;
 } };
 
-export async function broadcastPrivateAndInvitedMatches(emitter: Emitter, userId: Types.ObjectId) {
-  const matches = await getAllMatches(userId as unknown as User,
+export async function broadcastPrivateAndInvitedMatches(gameId: GameId, emitter: Emitter, userId: Types.ObjectId) {
+  const matches = await getAllMatches(gameId, userId as unknown as User,
     {
       $or: [
         {
@@ -48,8 +48,8 @@ export async function broadcastPrivateAndInvitedMatches(emitter: Emitter, userId
   emitter?.to(userId.toString()).emit('privateAndInvitedMatches', matches);
 }
 
-export async function broadcastMatches(emitter: Emitter) {
-  const matches = await getAllMatches();
+export async function broadcastMatches(gameId: GameId, emitter: Emitter) {
+  const matches = await getAllMatches(gameId);
 
   matches.forEach(match => {
     enrichMultiplayerMatch(match);
@@ -62,16 +62,16 @@ export async function broadcastMatches(emitter: Emitter) {
  * @param matchId
  * @param date
  */
-export async function scheduleBroadcastMatch(emitter: Emitter, matchId: string) {
+export async function scheduleBroadcastMatch(gameId: GameId, emitter: Emitter, matchId: string) {
   const match = await MultiplayerMatchModel.findOne({ matchId: matchId });
 
   const timeoutStart = setTimeout(async () => {
     await checkForUnreadyAboutToStartMatch(matchId);
-    await broadcastMatch(emitter, matchId);
+    await broadcastMatch(gameId, emitter, matchId);
   }, 1 + new Date(match.startTime).getTime() - Date.now()); // @TODO: the +1 is kind of hacky, we need to make sure websocket server and mongodb are on same time
   const timeoutEnd = setTimeout(async () => {
     await checkForFinishedMatch(matchId);
-    await broadcastMatch(emitter, matchId);
+    await broadcastMatch(gameId, emitter, matchId);
   }, 1 + new Date(match.endTime).getTime() - Date.now()); // @TODO: the +1 is kind of hacky, we need to make sure websocket server and mongodb are on same time
 
   GlobalMatchTimers[matchId] = {
@@ -178,8 +178,8 @@ export async function broadcastMatchGameState(emitter: Emitter, userId: Types.Ob
   });
 }
 
-export async function broadcastMatch(emitter: Emitter, matchId: string) {
-  const match = await getMatch(matchId);
+export async function broadcastMatch(gameId: GameId, emitter: Emitter, matchId: string) {
+  const match = await getMatch(gameId, matchId);
 
   if (!match) {
     logger.error('cant find match to broadcast to');
@@ -200,6 +200,5 @@ export async function broadcastMatch(emitter: Emitter, matchId: string) {
 }
 
 export async function broadcastKillSocket(emitter: Emitter, userId: Types.ObjectId) {
-  console.log('BROADCASTING KILL SOCKET');
   emitter?.to(userId.toString()).emit('killSocket');
 }

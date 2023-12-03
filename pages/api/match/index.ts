@@ -7,7 +7,7 @@ import { MULTIPLAYER_INITIAL_ELO } from '@root/models/schemas/multiplayerProfile
 import mongoose, { PipelineStage, Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { ValidEnum, ValidType } from '../../../helpers/apiWrapper';
-import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
+import { getEnrichLevelsPipelineSteps, getEnrichUserConfigPipelineStage } from '../../../helpers/enrich';
 import { logger } from '../../../helpers/logger';
 import { getRatingFromProfile, isProvisional, multiplayerMatchTypeToText } from '../../../helpers/multiplayerHelperFunctions';
 import { requestBroadcastMatches, requestClearBroadcastMatchSchedule } from '../../../lib/appSocketToClient';
@@ -356,7 +356,7 @@ async function createMatch(req: NextApiRequestWithAuth) {
  * @returns
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
+export async function getAllMatches(gameId: GameId, reqUser?: User, matchFilters: any = null) {
   if (!matchFilters) {
     matchFilters = {
       private: false,
@@ -397,7 +397,8 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
                 path: '$multiplayerProfile',
                 preserveNullAndEmptyArrays: true,
               }
-            }
+            },
+            ...getEnrichUserConfigPipelineStage(gameId) as PipelineStage.Lookup[],
           ],
         }
       },
@@ -411,6 +412,7 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
             {
               $project: USER_DEFAULT_PROJECTION,
             },
+            ...getEnrichUserConfigPipelineStage(gameId) as PipelineStage.Lookup[],
           ],
         }
       },
@@ -424,6 +426,7 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
             {
               $project: USER_DEFAULT_PROJECTION,
             },
+            ...getEnrichUserConfigPipelineStage(gameId) as PipelineStage.Lookup[],
           ],
         }
       },
@@ -496,7 +499,7 @@ export default withAuth(
   async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
     if (req.method === 'GET') {
       // get any matches
-      const matches = await getAllMatches(req.user);
+      const matches = await getAllMatches(req.gameId, req.user);
 
       return res.status(200).json(matches);
     } else if (req.method === 'POST') {
@@ -517,7 +520,7 @@ export default withAuth(
           .json({ error: 'You are already involved in a match' });
       }
 
-      await requestBroadcastMatches();
+      await requestBroadcastMatches(match.gameId);
 
       return res.status(200).json(match);
     }

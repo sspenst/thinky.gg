@@ -111,7 +111,7 @@ async function getDifficultyLeaderboard(gameId: GameId, index: DIFFICULTY_INDEX)
     {
       $limit: 100
     },
-    ...getEnrichUserConfigPipelineStage(gameId, { includeCalcs: true }),
+    ...getEnrichUserConfigPipelineStage(gameId),
 
   ]) as UserAndSum[];
 
@@ -136,7 +136,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
           ...USER_DEFAULT_PROJECTION,
         },
       },
-      ...getEnrichUserConfigPipelineStage(gameId, { includeCalcs: true }),
+      ...getEnrichUserConfigPipelineStage(gameId),
       {
         $sort: {
           // sort by config.calcRankedSolves: -1,

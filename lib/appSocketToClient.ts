@@ -19,42 +19,42 @@ export async function GenMongoWSEmitter(mongooseConnection: Mongoose) {
   return global.MongoEmitter;
 }
 
-export async function requestBroadcastPrivateAndInvitedMatches(userId: Types.ObjectId) {
+export async function requestBroadcastPrivateAndInvitedMatches(gameId: GameId, userId: Types.ObjectId) {
   if (!global.MongoEmitter) {
     logger.warn('App Server asked itself to broadcast private and invited matches but MongoEmitter is not created');
 
     return;
   }
 
-  await broadcastPrivateAndInvitedMatches(global.MongoEmitter, userId);
+  await broadcastPrivateAndInvitedMatches(gameId, global.MongoEmitter, userId);
 }
 
-export async function requestBroadcastMatches() {
+export async function requestBroadcastMatches(gameId: GameId ) {
   if (!global.MongoEmitter) {
     logger.warn('App Server asked itself to broadcast matches but MongoEmitter is not created');
 
     return;
   }
 
-  await broadcastMatches(global.MongoEmitter);
+  await broadcastMatches(gameId, global.MongoEmitter);
 }
 
-export async function requestBroadcastMatch(matchId: string) {
+export async function requestBroadcastMatch(gameId: GameId, matchId: string) {
   if (!global.MongoEmitter) {
     logger.warn('App Server asked itself to broadcast match but MongoEmitter is not created');
 
     return;
   }
 
-  await broadcastMatch(global.MongoEmitter, matchId);
+  await broadcastMatch(gameId, global.MongoEmitter, matchId);
 }
 
-export async function requestScheduleBroadcastMatch(matchId: string) {
+export async function requestScheduleBroadcastMatch(gameId: GameId, matchId: string) {
   if (!global.MongoEmitter) {
     logger.warn('App Server asked itself to schedule broadcast match but MongoEmitter is not created');
   }
 
-  await scheduleBroadcastMatch(global.MongoEmitter, matchId);
+  await scheduleBroadcastMatch(gameId, global.MongoEmitter, matchId);
 }
 
 export async function requestClearBroadcastMatchSchedule(matchId: string) {

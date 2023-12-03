@@ -32,7 +32,7 @@ export async function getUserById(id: string | string[] | undefined, gameId: Gam
   try {
     const userAgg = await UserModel.aggregate<User>([
       { $match: { _id: new Types.ObjectId(id as string) } },
-      ...getEnrichUserConfigPipelineStage(gameId, { includeCalcs: true }),
+      ...getEnrichUserConfigPipelineStage(gameId),
     ]);
 
     if (!userAgg.length) {

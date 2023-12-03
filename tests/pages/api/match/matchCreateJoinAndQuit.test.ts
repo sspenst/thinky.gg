@@ -1,4 +1,5 @@
 import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import { UserWithMultiplayerProfile } from '@root/models/db/user';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
@@ -99,7 +100,19 @@ describe('matchCreateJoinAndQuit', () => {
         expect(response.players).toHaveLength(2);
 
         for (const player of response.players) {
-          expect(Object.keys(player).sort()).toEqual(['__v', '_id', 'calcRankedSolves', 'calc_levels_created_count', 'calc_records', 'chapterUnlocked', 'last_visited_at', 'name', 'roles', 'score', 'ts'].sort());
+          expect(Object.keys(player).sort()).toEqual(['_id', 'config', 'last_visited_at', 'name', 'roles'].sort());
+          expect(player.config).toBeDefined();
+          const keys = Object.keys(player?.config || []);
+
+          expect(keys.sort()).toEqual(['_id', 'gameId', 'calcRankedSolves', 'calcLevelsSolvedCount', 'calcRecordsCount'].sort());
+        }
+
+        for (const winner of response.winners as UserWithMultiplayerProfile[]) {
+          expect(Object.keys(winner).sort()).toEqual(['_id', 'config', 'last_visited_at', 'name', 'roles'].sort());
+          expect(winner.config).toBeDefined();
+          const keys = Object.keys(winner?.config || []);
+
+          expect(keys.sort()).toEqual(['_id', 'gameId', 'calcRankedSolves', 'calcLevelsSolvedCount', 'calcRecordsCount'].sort());
         }
 
         expect(response.gameTable).toBeUndefined();
