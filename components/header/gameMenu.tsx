@@ -24,8 +24,10 @@ export function GameMenu() {
     const hostname = window.location.port === '80' || window.location.port === '443' ?
       window.location.hostname :
       `${window.location.hostname}:${window.location.port}`;
+    const dots = hostname.split('.');
 
-    const hostnameStrippedOfFirstSubdomain = hostname.split('.').slice(1).join('.');
+    const hostnameStrippedOfFirstSubdomain = dots.length === 2 ?
+      dots.slice(1).join('.') : hostname;
 
     setCurrentProtocal(window.location.protocol);
     setCurrentHost(hostnameStrippedOfFirstSubdomain);
