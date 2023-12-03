@@ -11,7 +11,7 @@ import { initCollection, initLevel } from '../../../../lib/initializeLocalDb';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Collection from '../../../../models/db/collection';
 import Level from '../../../../models/db/level';
-import { CollectionModel, LevelModel, StatModel, UserModel } from '../../../../models/mongoose';
+import { CollectionModel, LevelModel, StatModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
 import updateCollectionHandler from '../../../../pages/api/collection/[id]';
 import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
 import updateLevelHandler from '../../../../pages/api/level/[id]';
@@ -201,9 +201,9 @@ describe('Testing unpublish', () => {
         expect(res.status).toBe(200);
         expect(response.updated).toBe(true);
 
-        const user = await UserModel.findById(TestId.USER);
+        const userConfig = await UserConfigModel.findOne({ userId: TestId.USER });
 
-        expect(user?.calc_levels_created_count).toEqual(3);
+        expect(userConfig?.calcLevelsCreatedCount).toEqual(3);
 
         const levelDeleted = await LevelModel.findOne({ _id: userALevel1._id });
 

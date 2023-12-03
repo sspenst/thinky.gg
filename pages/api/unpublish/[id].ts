@@ -13,7 +13,7 @@ import Level from '../../../models/db/level';
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
 import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
-import { CollectionModel, ImageModel, LevelModel, MultiplayerMatchModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
+import { CollectionModel, ImageModel, LevelModel, MultiplayerMatchModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserConfigModel, UserModel } from '../../../models/mongoose';
 import { generateMatchLog } from '../../../models/schemas/multiplayerMatchSchema';
 import { queueCalcCreatorCounts, queueCalcPlayAttempts, queueRefreshIndexCalcs } from '../internal-jobs/worker';
 
@@ -57,7 +57,7 @@ export default withAuth({ POST: {
       // update calc_records if the record was set by a different user
       if (record && record.userId.toString() !== level.userId.toString()) {
         // NB: await to avoid multiple user updates in parallel
-        await UserModel.updateOne({ _id: record.userId }, { $inc: { calc_records: -1 } }, { session: session });
+        await UserConfigModel.updateOne({ userId: record.userId }, { $inc: { calcRecordsCount: -1 } }, { session: session });
       }
 
       const [levelClone, matchesToRebroadcast, stats] = await Promise.all([

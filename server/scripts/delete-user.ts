@@ -36,7 +36,7 @@ async function unpublishLevel(level: Level) {
   // update calc_records if the record was set by a different user
   if (record && record.userId.toString() !== level.userId.toString()) {
     // NB: await to avoid multiple user updates in parallel
-    await UserModel.updateOne({ _id: record.userId }, { $inc: { calc_records: -1 } });
+    await UserConfigModel.updateOne({ userId: record.userId }, { $inc: { calcRecordsCount: -1 } });
   }
 
   const [matchesToRebroadcast, stats] = await Promise.all([

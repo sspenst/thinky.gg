@@ -172,7 +172,7 @@ describe('pages/api/user-by-id', () => {
   test('Correct http method with query object with valid id but throw error', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
-    jest.spyOn(UserModel, 'findById').mockImplementation(() => {
+    jest.spyOn(UserModel, 'aggregate').mockImplementation(() => {
       throw new Error('Error finding User');
     });
     await testApiHandler({

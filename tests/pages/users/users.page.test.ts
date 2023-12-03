@@ -1,7 +1,6 @@
 import { Aggregate } from 'mongoose';
 import { GetServerSidePropsContext } from 'next';
 import { Logger } from 'winston';
-import TestId from '../../../constants/testId';
 import { logger } from '../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { UserModel } from '../../../models/mongoose';
@@ -21,7 +20,7 @@ describe('pages/users page', () => {
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
     expect(ret.props.searchQuery).toStrictEqual(DEFAULT_QUERY);
-    expect(ret.props.totalRows).toBe(6);
+    expect(ret.props.totalRows).toBe(5);
     expect(ret.props.users[0].reviewCount).toBeUndefined();
   }
   );

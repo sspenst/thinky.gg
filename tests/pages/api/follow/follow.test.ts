@@ -265,12 +265,12 @@ describe('api/follow', () => {
         leastMoves: 1,
         width: 2,
       }),
-      // set emailConfirmed for UserC. User C has no user config
-      await UserConfigModel.create({
-        _id: new Types.ObjectId(),
-        gameId: DEFAULT_GAME_ID,
-        theme: Theme.Modern,
+
+      await UserConfigModel.findOneAndUpdate({
         userId: new Types.ObjectId(TestId.USER_C),
+        gameId: DEFAULT_GAME_ID,
+      }, {
+        theme: Theme.Modern,
       })
 
     ]);
