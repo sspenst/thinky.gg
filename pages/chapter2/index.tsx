@@ -23,7 +23,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  const chapterUnlocked = reqUser.config.chapterUnlocked ?? 1;
+  const chapterUnlocked = reqUser.config?.chapterUnlocked ?? 1;
 
   if (chapterUnlocked === 1) {
     const { props } = await getCampaignProps(gameId, reqUser, 'chapter1');
@@ -64,7 +64,7 @@ export default function Chapter2Page({ enrichedCollections, reqUser, solvedLevel
         enrichedCollections={enrichedCollections}
         levelHrefQuery={'chapter=2'}
         nextHref={'/chapter3'}
-        nextTitle={(reqUser.config.chapterUnlocked ?? 1) < 3 ? 'Unlock Chapter 3' : undefined}
+        nextTitle={(reqUser.config?.chapterUnlocked ?? 1) < 3 ? 'Unlock Chapter 3' : undefined}
         solvedElement={
           <div className='flex flex-col items-center justify-center text-center mt-2'>
             <div>Congratulations! You&apos;ve solved every level in Chapter 2. Try out <Link className='font-bold underline' href='/chapter3' passHref>Chapter 3</Link> next!</div>
