@@ -1,5 +1,6 @@
-import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
 import { AppContext } from '@root/contexts/appContext';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import { GetServerSidePropsContext } from 'next';
 import { NextSeo } from 'next-seo';
 import React, { useContext } from 'react';
 import { SWRConfig } from 'swr';
@@ -12,20 +13,14 @@ import useLevelOfDay from '../hooks/useLevelOfDay';
 import { EnrichedLevel } from '../models/db/level';
 import { getLevelOfDay } from './api/level-of-day';
 
-export async function getStaticProps() {
-  let levelOfDay: EnrichedLevel | null = null;
-
-  if (process.env.OFFLINE_BUILD !== 'true') {
-    // NOTE that getStaticProps doesn't have access to req, so hardcoding for now
-    // TODO: figure out best thing to do here to avoid hardcoding
-    levelOfDay = await getLevelOfDay(DEFAULT_GAME_ID);
-  }
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const gameId = getGameIdFromReq(context.req);
+  const levelOfDay: EnrichedLevel | null = await getLevelOfDay(gameId);
 
   return {
     props: {
       levelOfDay: JSON.parse(JSON.stringify(levelOfDay)),
     } as AppSWRProps,
-    revalidate: 60 * 60,
   };
 }
 

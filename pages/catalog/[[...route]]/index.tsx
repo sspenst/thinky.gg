@@ -4,6 +4,7 @@
 
 import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
 import StatFilter from '@root/constants/statFilter';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import * as mongoose from 'mongoose';
 import { GetServerSidePropsContext } from 'next';
 import React, { useCallback, useState } from 'react';
@@ -17,20 +18,13 @@ import dbConnect from '../../../lib/dbConnect';
 import { LevelModel, UserModel } from '../../../models/mongoose';
 import SelectOption from '../../../models/selectOption';
 
-export async function getStaticPaths() {
-  return {
-    paths: [],
-    fallback: true,
-  };
-}
-
 export interface UserWithLevels {
   _id: mongoose.Types.ObjectId;
   levels: mongoose.Types.ObjectId[];
   name: string;
 }
 
-export async function getStaticProps(context: GetServerSidePropsContext) {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
   if (context.params?.route) {
     return { notFound: true };
   }
@@ -40,7 +34,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   if (process.env.OFFLINE_BUILD !== 'true') {
     await dbConnect();
     // TODO: getStaticProps doesnt have access to context req... so hardcoding for now
-    const gameId = DEFAULT_GAME_ID;
+    const gameId = getGameIdFromReq(context.req);
 
     // get all levels grouped by userId
     usersWithLevels = await LevelModel.aggregate<UserWithLevels>([
@@ -78,7 +72,6 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
     props: {
       usersWithLevels: JSON.parse(JSON.stringify(usersWithLevels)),
     } as CatalogProps,
-    revalidate: 60 * 60,
   };
 }
 
