@@ -5,7 +5,7 @@ import Page from '@root/components/page/page';
 import { GameId } from '@root/constants/GameId';
 import { AppContext } from '@root/contexts/appContext';
 import { UserAndSum } from '@root/contexts/levelContext';
-import { getEnrichLevelsPipelineSteps, getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
+import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import cleanUser from '@root/lib/cleanUser';
 import { getUserFromToken } from '@root/lib/withAuth';

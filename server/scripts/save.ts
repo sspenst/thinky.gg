@@ -9,6 +9,7 @@ import Level from '@root/models/db/level';
 import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import PlayAttempt from '@root/models/db/playAttempt';
 import Record from '@root/models/db/record';
+import UserConfig from '@root/models/db/userConfig';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
 import { queueRefreshAchievements } from '@root/pages/api/internal-jobs/worker';
 import cliProgress from 'cli-progress';
@@ -16,7 +17,7 @@ import dotenv from 'dotenv';
 import dbConnect from '../../lib/dbConnect';
 import { MultiplayerMatchType } from '../../models/constants/multiplayer';
 import User from '../../models/db/user';
-import { LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../models/mongoose';
+import { LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, PlayAttemptModel, RecordModel, StatModel, UserConfigModel, UserModel } from '../../models/mongoose';
 import { calcPlayAttempts, refreshIndexCalcs } from '../../models/schemas/levelSchema';
 import { calcCreatorCounts } from '../../models/schemas/userSchema';
 
@@ -203,19 +204,19 @@ async function integrityCheckUsersScore() {
   for (const user of allUsers) {
     const scoreForThisUser = scoreTable.find((x: any) => x._id.toString() === user._id.toString())?.count || 0;
 
-    const userBefore = await UserModel.findOneAndUpdate({ _id: user._id }, { $set: { score: scoreForThisUser } }, { new: false });
+    const userBefore = await UserConfigModel.findOneAndUpdate<UserConfig>({ _id: user._id }, { $set: { calcLevelsSolvedCount: scoreForThisUser } }, { new: false });
 
     const gameId = GameId.PATHOLOGY; // TODO: loop through all games
 
     await calcCreatorCounts(gameId, user._id);
-    const userAfter = await UserModel.findById(user._id);
+    const userAfter = await UserConfigModel.findOne({ userId: user._id });
 
-    if (user.score !== scoreForThisUser) {
-      console.warn(`\nUser ${user.name} score changed from ${userBefore.score} to ${scoreForThisUser}`);
+    if (user.config?.calcLevelsSolvedCount !== scoreForThisUser) {
+      console.warn(`\nUser ${user.name} score changed from ${userBefore?.calcLevelsSolvedCount} to ${scoreForThisUser}`);
     }
 
-    if (userAfter.calc_levels_created_count !== userBefore.calc_levels_created_count) {
-      console.warn(`\nUser ${user.name} calc_levels_created_count changed from ${userBefore.calc_levels_created_count} to ${userAfter.calc_levels_created_count}`);
+    if (userAfter.calcLevelsCreatedCount !== userBefore?.calcLevelsCreatedCount) {
+      console.warn(`\nUser ${user.name} calcLevelsCreatedCount changed from ${userBefore?.calcLevelsCreatedCount} to ${userAfter.calcLevelsCreatedCount}`);
     }
 
     i++;
@@ -268,13 +269,13 @@ async function integrityCheckRecords() {
   i = 0;
   progressBar.start(allUsers, 0);
 
-  for await (const user of UserModel.find<User>()) {
-    const userId = user._id.toString();
+  for await (const config of UserConfigModel.find<UserConfig>()) {
+    const userId = config.userId.toString();
     const records = (userId in recordCounts) ? recordCounts[userId] : 0;
 
-    if (user.calc_records !== records) {
-      console.warn(`\nUser ${user.name} score changed from ${user.calc_records} to ${records}`);
-      await UserModel.updateOne({ _id: user._id }, { $set: { calc_records: records } });
+    if (config.calcRecordsCount !== records) {
+      console.warn(`\nConfig ${config._id} score changed from ${config.calcRecordsCount} to ${records}`);
+      await UserConfigModel.updateOne({ userId: userId }, { $set: { calcRecordsCount: records } });
     }
 
     i++;

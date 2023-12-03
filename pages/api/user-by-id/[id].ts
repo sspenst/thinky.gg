@@ -1,7 +1,7 @@
 import { GameId } from '@root/constants/GameId';
 import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { Types } from 'mongoose';
-import type { NextApiRequest, NextApiResponse } from 'next';
+import type { NextApiResponse } from 'next';
 import apiWrapper, { NextApiRequestGuest, ValidObjectId } from '../../../helpers/apiWrapper';
 import { logger } from '../../../helpers/logger';
 import cleanUser from '../../../lib/cleanUser';

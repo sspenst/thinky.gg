@@ -351,7 +351,7 @@ export async function sendAutoUnsubscribeUsers(gameId: GameId, batchId: Types.Ob
   const game = Games[gameId];
 
   for (const user of inactive7DUsersWhoWeHaveTriedToEmail) {
-    const totalLevelsSolved = user.score;
+    const totalLevelsSolved = user.config.calcLevelsSolvedCount;
     const toSolve = (totalLevels - totalLevelsSolved);
     const subject = 'Auto unsubscribing you from our emails';
     const title = 'It has been some time since we have seen you login to ' + game.displayName + '! We are going to automatically change your email settings so that you will not hear from us again. You can always change your email settings back by visiting the account settings page.';
@@ -443,7 +443,7 @@ export async function sendEmailReactivation(gameId: GameId, batchId: Types.Objec
   const game = Games[gameId];
 
   for (const user of inactive7DUsers) {
-    const totalLevelsSolved = user.score;
+    const totalLevelsSolved = user.config.calcLevelsSolvedCount;
     const toSolve = (totalLevels - totalLevelsSolved);
     const subject = 'New ' + game.displayName + ' levels are waiting to be solved!';
     const title = 'We haven\'t seen you in a bit!';
