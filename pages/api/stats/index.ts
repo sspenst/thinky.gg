@@ -5,6 +5,7 @@ import getDifficultyEstimate from '@root/helpers/getDifficultyEstimate';
 import { randomRotateLevelDataViaMatchHash } from '@root/helpers/randomRotateLevelDataViaMatchHash';
 import PlayAttempt from '@root/models/db/playAttempt';
 import User from '@root/models/db/user';
+import UserConfig from '@root/models/db/userConfig';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
@@ -18,7 +19,7 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level, { EnrichedLevel } from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
-import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
+import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserConfigModel, UserModel } from '../../../models/mongoose';
 import { queueRefreshAchievements, queueRefreshIndexCalcs } from '../internal-jobs/worker';
 import { matchMarkCompleteLevel } from '../match/[matchId]';
 
@@ -142,14 +143,14 @@ export default withAuth({
 
         // if the level was previously incomplete, increment score
         if (!stat?.complete) {
-          const userInc: mongoose.AnyKeys<User> = { score: 1 };
+          const userConfigInc: mongoose.AnyKeys<UserConfig> = { calcLevelsSolvedCount: 1 };
 
           if (level.isRanked) {
-            userInc.calcRankedSolves = 1;
+            userConfigInc.calcRankedSolves = 1;
           }
 
           await Promise.all([
-            UserModel.updateOne({ _id: req.userId }, { $inc: userInc }, { session: session }),
+            UserConfigModel.updateOne({ userId: req.userId, gameId: level.gameId }, { $inc: userConfigInc }, { session: session }),
             queueRefreshAchievements(level.gameId, req.user._id, [AchievementCategory.SKILL, AchievementCategory.USER], { session: session })
           ]);
         }
@@ -195,10 +196,10 @@ export default withAuth({
             session: session,
           }).lean<Stat[]>();
 
-          const userInc: mongoose.AnyKeys<User> = { score: -1 };
+          const userConfigInc: mongoose.AnyKeys<UserConfig> = { calcLevelsSolvedCount: -1 };
 
           if (level.isRanked) {
-            userInc.calcRankedSolves = -1;
+            userConfigInc.calcRankedSolves = -1;
           }
 
           // update all stats/users that had the record on this level
@@ -211,9 +212,9 @@ export default withAuth({
                 { $set: { complete: false } },
                 { session: session },
               ),
-              UserModel.updateMany(
-                { _id: { $in: statUserIds } },
-                { $inc: userInc },
+              UserConfigModel.updateMany(
+                { userId: { $in: statUserIds }, gameId: level.gameId },
+                { $inc: userConfigInc },
                 { session: session },
               ),
 

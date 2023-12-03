@@ -1,5 +1,7 @@
 import FormattedDate from '@root/components/formatted/formattedDate';
 import MultiplayerRating from '@root/components/multiplayer/multiplayerRating';
+import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import debounce from 'debounce';
 import { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
@@ -49,13 +51,13 @@ export const DEFAULT_QUERY = {
   search: '',
   showOnline: 'false',
   showUnregistered: 'false',
-  sortBy: 'score',
+  sortBy: 'config.calcLevelsSolvedCount',
   sortDir: 'desc',
 } as UserSearchQuery;
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
-
+  const gameId = getGameIdFromReq(context.req);
   const searchQuery = { ...DEFAULT_QUERY };
 
   if (context.query && (Object.keys(context.query).length > 0)) {
@@ -110,6 +112,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   try {
     const usersAgg = await UserModel.aggregate([
       { $match: searchObj },
+      ...getEnrichUserConfigPipelineStage(gameId),
       // mulitplayer ratings
       {
         $lookup: {
@@ -194,9 +197,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         $project: {
           _id: 1,
           avatarUpdatedAt: 1,
-          calcRankedSolves: 1,
-          calc_levels_created_count: 1,
-          calc_records: 1,
           followerCount: '$followers.count',
           last_visited_at: {
             $cond: {
@@ -247,10 +247,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
             }
           },
           reviewCount: '$reviews.count',
-          score: 1,
           ts: 1,
         }
       },
+      ...getEnrichUserConfigPipelineStage(gameId, { includeCalcs: true }),
       { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
       { '$facet': {
         metadata: [ { $count: 'totalRows' } ],
@@ -366,27 +366,27 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
       sortable: true,
     },
     {
-      id: 'score',
+      id: 'config.calcLevelsSolvedCount',
       name: 'Solves',
-      selector: row => row.score,
+      selector: row => row.config?.calcLevelsSolvedCount,
       sortable: true,
     },
     {
-      id: 'calcRankedSolves',
+      id: 'config.calcRankedSolves',
       name: 'Ranked Solves',
-      selector: row => row.calcRankedSolves,
+      selector: row => row.config?.calcRankedSolves,
       sortable: true,
     },
     {
-      id: 'calc_levels_created_count',
+      id: 'config.calcLevelsCreatedCount',
       name: 'Levels',
-      selector: row => row.calc_levels_created_count ?? 0,
+      selector: row => row.config?.calcLevelsCreatedCount ?? 0,
       sortable: true,
     },
     {
-      id: 'calc_records',
+      id: 'config.calcRecordsCount',
       name: 'Records',
-      selector: row => row.calc_records,
+      selector: row => row.config?.calcRecordsCount,
       sortable: true,
     },
     {

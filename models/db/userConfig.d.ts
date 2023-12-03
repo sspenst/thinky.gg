@@ -7,6 +7,11 @@ import User from './user';
 
 interface UserConfig {
   _id: Types.ObjectId;
+  calcRankedSolves: number;
+  calcLevelsCreatedCount: number;
+  calcRecordsCount: number;
+  chapterUnlocked: number;
+  calcLevelsSolvedCount: number;
   disallowedEmailNotifications: NotificationType[];
   disallowedPushNotifications: NotificationType[];
   gameId: GameId;

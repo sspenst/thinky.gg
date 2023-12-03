@@ -59,7 +59,7 @@ describe('Testing a valid user', () => {
 
         keys.sort();
         // Important to keep this track of keys that we may add/remove in future
-        expect(keys).toMatchObject([ '__v', '_id', 'calcRankedSolves', 'calc_levels_created_count', 'calc_records', 'chapterUnlocked', 'config', 'email', 'emailConfirmed', 'last_visited_at', 'multiplayerProfile', 'name', 'notifications', 'roles', 'score', 'ts' ]);
+        expect(keys).toMatchObject([ '__v', '_id', 'config', 'email', 'emailConfirmed', 'last_visited_at', 'multiplayerProfile', 'name', 'notifications', 'roles', 'ts' ]);
         expect(response.last_visited_at).toBeGreaterThan(TimerUtil.getTs() - 30000);
         expect(response.name).toBe('test');
         expect(response.password).toBeUndefined();
@@ -452,10 +452,15 @@ describe('Testing a valid user', () => {
 
         keys.sort();
         // Important to keep this track of keys that we may add/remove in future
-        expect(keys).toMatchObject([ '__v', '_id', 'calcRankedSolves', 'calc_levels_created_count', 'calc_records', 'chapterUnlocked', 'config', 'email', 'emailConfirmed', 'last_visited_at', 'multiplayerProfile', 'name', 'notifications', 'roles', 'score', 'ts' ]);
+        expect(keys).toMatchObject([ '__v', '_id', 'config', 'email', 'emailConfirmed', 'last_visited_at', 'multiplayerProfile', 'name', 'notifications', 'roles', 'ts' ]);
         expect(response.name).toBe('newuser3');
         expect(response.last_visited_at).toBeGreaterThan(TimerUtil.getTs() - 30000);
         expect(response.password).toBeUndefined();
+        expect(response.config.calcLevelsSolvedCount).toBe(2);
+
+        // For getting our own user we should get the full config
+        expect(Object.keys(response.config)).toMatchObject(['_id', 'calcRankedSolves', 'calcLevelsCreatedCount', 'calcLevelsSolvedCount', 'calcRecordsCount', 'chapterUnlocked', 'disallowedEmailNotifications', 'disallowedPushNotifications', 'gameId', 'emailDigest', 'showPlayStats', 'theme', 'toursCompleted', 'tutorialCompletedAt', 'userId', 'createdAt', 'updatedAt']);
+
         expect(res.status).toBe(200);
       },
     });

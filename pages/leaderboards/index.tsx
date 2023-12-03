@@ -5,6 +5,7 @@ import Page from '@root/components/page/page';
 import { GameId } from '@root/constants/GameId';
 import { AppContext } from '@root/contexts/appContext';
 import { UserAndSum } from '@root/contexts/levelContext';
+import { getEnrichLevelsPipelineSteps, getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import cleanUser from '@root/lib/cleanUser';
 import { getUserFromToken } from '@root/lib/withAuth';
@@ -110,6 +111,8 @@ async function getDifficultyLeaderboard(gameId: GameId, index: DIFFICULTY_INDEX)
     {
       $limit: 100
     },
+    ...getEnrichUserConfigPipelineStage(gameId, { includeCalcs: true }),
+
   ]) as UserAndSum[];
 
   // clean each one
@@ -131,12 +134,13 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       {
         $project: {
           ...USER_DEFAULT_PROJECTION,
-          calcRankedSolves: 1,
         },
       },
+      ...getEnrichUserConfigPipelineStage(gameId, { includeCalcs: true }),
       {
         $sort: {
-          calcRankedSolves: -1,
+          // sort by config.calcRankedSolves: -1,
+          'config.calcRankedSolves': -1,
         },
       },
       {
@@ -190,7 +194,8 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
           const isYou = user._id === reqUser._id;
 
           return (<>
-            <div className={classNames('font-bold text-xl', { 'border rounded-md border-color-4': isYou })}>{i + 1}.</div>
+            <div key={`${user._id}-rank`}
+              className={classNames('font-bold text-xl', { 'border rounded-md border-color-4': isYou })}>{i + 1}.</div>
             <div
               className='flex items-center text-lg gap-3 rounded-lg truncate'
               key={`${user._id}-levels-solved`}
@@ -213,7 +218,7 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
           <div className='flex justify-center'>
             <Link className='font-bold text-2xl hover:underline w-fit' href='/ranked'>Ranked Solves 🏅</Link>
           </div>
-          {getLeaderboardTable(rankedLeaderboard, rankedLeaderboard.map(user => user.calcRankedSolves))}
+          {getLeaderboardTable(rankedLeaderboard, rankedLeaderboard.map(user => user.config?.calcRankedSolves || 0))}
         </div>
       );
     } else if (leaderboard === 'sgm') {

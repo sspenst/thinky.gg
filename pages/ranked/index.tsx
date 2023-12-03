@@ -1,6 +1,7 @@
 import FormattedDifficulty, { difficultyList, getDifficultyColor } from '@root/components/formatted/formattedDifficulty';
 import Page from '@root/components/page/page';
 import { ProfileQueryType } from '@root/constants/profileQueryType';
+import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import cleanUser from '@root/lib/cleanUser';
 import { getUserFromToken } from '@root/lib/withAuth';
@@ -37,12 +38,13 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       {
         $project: {
           ...USER_DEFAULT_PROJECTION,
-          calcRankedSolves: 1,
         },
       },
+      ...getEnrichUserConfigPipelineStage(gameId, { includeCalcs: true }),
       {
         $sort: {
-          calcRankedSolves: -1,
+          // config.calcRankedSolves: -1,
+          'config.calcRankedSolves': -1,
         },
       },
       {

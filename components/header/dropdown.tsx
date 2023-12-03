@@ -102,7 +102,7 @@ export default function Dropdown() {
                   href='/ranked'
                   id='levelsSolvedBtn'
                 >
-                  <span className='font-bold'>{user.calcRankedSolves} 🏅</span>
+                  <span className='font-bold'>{user.config.calcRankedSolves} 🏅</span>
                   <StyledTooltip id='ranked-solves-dropdown' />
                 </Link>
                 <div className='h-6 w-px bg-neutral-500' />
@@ -113,7 +113,7 @@ export default function Dropdown() {
                   href='/users'
                   id='levelsSolvedBtn'
                 >
-                  <span className='font-bold'>{user.score}</span>
+                  <span className='font-bold'>{user.config.calcLevelsSolvedCount}</span>
                   <StyledTooltip id='levels-solves-dropdown' />
                 </Link>
               </div>

@@ -37,7 +37,7 @@ interface PlayPageProps {
 /* istanbul ignore next */
 export default function PlayPage({ reqUser }: PlayPageProps) {
   const { game } = useContext(AppContext);
-  const chapterUnlocked = reqUser.chapterUnlocked ?? 1;
+  const chapterUnlocked = reqUser.config.chapterUnlocked ?? 1;
   const router = useRouter();
   const memoizedCallback = useCallback((data: CallBackProps) => {
     if (data.action === 'next' && data.index === 0) {

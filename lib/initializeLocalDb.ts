@@ -23,34 +23,28 @@ export default async function initializeLocalDb() {
   promises.push(UserModel.insertMany([
     {
       _id: new Types.ObjectId(TestId.USER),
-      calc_records: 2,
       email: 'test@gmail.com',
       emailConfirmed: true,
       last_visited_at: ts,
       name: 'test',
       password: await bcrypt.hash('test1234', PASSWORD_SALTROUNDS),
-      score: 2,
       ts: ts,
     },
     {
       _id: new Types.ObjectId(TestId.USER_B),
-      calc_records: 0,
       email: 'bbb@gmail.com',
       emailConfirmed: true,
       name: 'BBB',
       password: await bcrypt.hash('BBB12345', PASSWORD_SALTROUNDS),
-      score: 0,
       ts: ts,
     },
     {
       _id: new Types.ObjectId(TestId.USER_C),
-      calc_records: 1,
       email: 'the_curator@gmail.com',
       emailConfirmed: true,
       name: 'Curator',
       password: await bcrypt.hash('Curator1', PASSWORD_SALTROUNDS),
       roles: [Role.CURATOR],
-      score: 1,
       ts: ts,
     },
     {
@@ -61,40 +55,33 @@ export default async function initializeLocalDb() {
       name: 'AncientUser',
       password: await bcrypt.hash('ancient1', PASSWORD_SALTROUNDS),
       roles: [],
-      score: 1,
       // no ts
     },
     {
       _id: new Types.ObjectId(TestId.USER_GUEST),
-      calc_records: 0,
       email: 'guest@guest.com',
       emailConfirmed: true,
       name: 'guest',
       password: await bcrypt.hash('BBB12345', PASSWORD_SALTROUNDS),
-      score: 0,
       roles: [Role.GUEST],
       ts: ts,
     },
     {
       _id: new Types.ObjectId(TestId.USER_PRO),
-      calc_records: 1,
       email: 'pro@pro.com',
       emailConfirmed: true,
       name: 'Pro',
       password: await bcrypt.hash('pro', PASSWORD_SALTROUNDS),
       roles: [Role.PRO],
-      score: 0,
       ts: ts,
     },
     {
       _id: new Types.ObjectId(TestId.USER_ADMIN),
-      calc_records: 1,
       email: 'admin@admin.com',
       emailConfirmed: true,
       name: 'Admin',
       password: await bcrypt.hash('admin', PASSWORD_SALTROUNDS),
       roles: [Role.ADMIN],
-      score: 0,
       ts: ts,
     },
   ],
@@ -102,10 +89,22 @@ export default async function initializeLocalDb() {
   ));
 
   promises.push(UserConfigModel.insertMany([
-    getNewUserConfig(DEFAULT_GAME_ID, [], 0, new Types.ObjectId(TestId.USER), ),
-    getNewUserConfig(DEFAULT_GAME_ID, [], 0, new Types.ObjectId(TestId.USER_B)),
-    getNewUserConfig(DEFAULT_GAME_ID, [Role.GUEST], 0, new Types.ObjectId(TestId.USER_GUEST)),
-    getNewUserConfig(DEFAULT_GAME_ID, [Role.PRO], 0, new Types.ObjectId(TestId.USER_PRO), { emailDigest: EmailDigestSettingTypes.NONE }),
+    getNewUserConfig(DEFAULT_GAME_ID, [], 0, new Types.ObjectId(TestId.USER), {
+      calcRecordsCount: 2,
+      calcLevelsSolvedCount: 2
+    }),
+
+    getNewUserConfig(DEFAULT_GAME_ID, [], 0, new Types.ObjectId(TestId.USER_B), {
+      calcRecordsCount: 0,
+
+    }),
+    getNewUserConfig(DEFAULT_GAME_ID, [Role.GUEST], 0, new Types.ObjectId(TestId.USER_GUEST), {
+      calcRecordsCount: 0,
+    }),
+    getNewUserConfig(DEFAULT_GAME_ID, [Role.PRO], 0, new Types.ObjectId(TestId.USER_PRO), { emailDigest: EmailDigestSettingTypes.NONE,
+      calcRecordsCount: 1,
+    }),
+
   ], { ordered: false }));
 
   // LEVEL

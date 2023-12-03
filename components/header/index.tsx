@@ -62,7 +62,7 @@ export default function Header({
               data-tooltip-id='ranked-solves-header'
               href='/ranked'
             >
-              <span className='font-bold leading-none'>{user.calcRankedSolves} 🏅</span>
+              <span className='font-bold leading-none'>{user.config.calcRankedSolves} 🏅</span>
               <StyledTooltip id='ranked-solves-header' />
             </Link>
             <div className='hidden sm:block h-6 w-px bg-neutral-500' />
@@ -72,7 +72,7 @@ export default function Header({
               data-tooltip-id='levels-solved-header'
               href='/users'
             >
-              <span className='font-bold'>{user.score}</span>
+              <span className='font-bold'>{user.config.calcLevelsSolvedCount}</span>
               <StyledTooltip id='levels-solved-header' />
             </Link>
           </>}

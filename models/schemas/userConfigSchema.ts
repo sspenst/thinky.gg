@@ -11,6 +11,28 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
+    // TODO: Move ALL the calcs to userConfig
+    calcRankedSolves: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+    calcLevelsCreatedCount: {
+      type: Number,
+      default: 0,
+    },
+    calcLevelsSolvedCount: {
+      type: Number,
+      default: 0,
+    },
+    calcRecordsCount: {
+      type: Number,
+      default: 0,
+    },
+    chapterUnlocked: {
+      type: Number,
+      default: 1,
+    },
     disallowedEmailNotifications: {
       type: [{ type: String, enum: NotificationType }],
       required: true,

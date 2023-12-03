@@ -8,7 +8,7 @@ import { createNewAdminMessageNotifications } from '@root/helpers/notificationHe
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
 import withAuth, { NextApiRequestWithAuth } from '@root/lib/withAuth';
 import Level from '@root/models/db/level';
-import { AchievementModel, LevelModel, NotificationModel, StatModel, UserModel } from '@root/models/mongoose';
+import { AchievementModel, LevelModel, NotificationModel, StatModel, UserConfigModel, UserModel } from '@root/models/mongoose';
 import { calcPlayAttempts, refreshIndexCalcs } from '@root/models/schemas/levelSchema';
 import mongoose, { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
@@ -76,7 +76,7 @@ export default withAuth({ POST: {
           const stats = await StatModel.find({ levelId: levelId, complete: true }, 'userId', { session: session });
           const userIds = stats.map(stat => stat.userId);
 
-          await UserModel.updateMany({ _id: { $in: userIds } }, { $inc: { calcRankedSolves: newIsRanked ? 1 : -1 } }, { session: session });
+          await UserConfigModel.updateMany({ userId: { $in: userIds }, gameId: req.gameId }, { $inc: { calcRankedSolves: newIsRanked ? 1 : -1 } }, { session: session });
         });
 
         session.endSession();
