@@ -86,8 +86,8 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
   return (<>
     <div className='flex flex-col gap-4'>
       <div className='flex justify-between w-full items-start gap-2'>
-        <div className='flex flex-col gap-1 truncate'>
-          <span className='text-2xl overflow-hidden break-words font-bold'>
+        <div className='flex flex-col gap-1 overflow-hidden break-words'>
+          <span className='text-2xl font-bold'>
             {level.name}
           </span>
           <div className='flex gap-2 items-center'>
