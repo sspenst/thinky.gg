@@ -1,12 +1,14 @@
+import { GameId } from '@root/constants/GameId';
 import dbConnect from '@root/lib/dbConnect';
 import { FilterQuery, Types } from 'mongoose';
 import cleanUser from '../lib/cleanUser';
 import { UserWithMultiplayerProfile } from '../models/db/user';
 import { MultiplayerProfileModel, UserModel } from '../models/mongoose';
 import { USER_DEFAULT_PROJECTION } from '../models/schemas/userSchema';
+import { getEnrichUserConfigPipelineStage } from './enrich';
 
-export async function getUsersWithMultiplayerProfileFromIds(ids: Types.ObjectId[]) {
-  return getUsersWithMultiplayerProfile({
+export async function getUsersWithMultiplayerProfileFromIds(gameId: GameId, ids: Types.ObjectId[]) {
+  return getUsersWithMultiplayerProfile(gameId, {
     _id: {
       $in: ids
     }
@@ -14,6 +16,7 @@ export async function getUsersWithMultiplayerProfileFromIds(ids: Types.ObjectId[
 }
 
 export async function getUsersWithMultiplayerProfile(
+  gameId: GameId,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   match: FilterQuery<any>,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -47,6 +50,7 @@ export async function getUsersWithMultiplayerProfile(
         multiplayerProfile: 1,
       }
     },
+    ...getEnrichUserConfigPipelineStage(gameId, { includeCalcs: true }),
   ]) as UserWithMultiplayerProfile[];
 
   users.forEach(user => cleanUser(user));

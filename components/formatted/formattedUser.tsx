@@ -88,12 +88,12 @@ export default function FormattedUser({ className, id, noLinks, noTooltip, onCli
         data-tooltip-html={renderToStaticMarkup(
           <div className='flex flex-col gap-0.5 p-1 items-start text-sm truncate'>
             {!userExtendedData ? <LoadingSpinner /> : <>
-              <span className='font-bold text-base'>{userExtendedData.user.name}</span>
-              {!userExtendedData.user.ts ? <span>Unregistered</span> : <>
+              <span className='font-bold text-base'>{userExtendedData.user?.name}</span>
+              {!userExtendedData.user?.ts ? <span>Unregistered</span> : <>
                 <div className='flex gap-1'>
                   <span className='font-medium'>Rank:</span>
                   <PlayerRank
-                    levelsSolvedByDifficulty={userExtendedData.levelsSolvedByDifficulty}
+                    levelsSolvedByDifficulty={userExtendedData?.levelsSolvedByDifficulty}
                     user={user}
                   />
                 </div>
@@ -112,7 +112,7 @@ export default function FormattedUser({ className, id, noLinks, noTooltip, onCli
                 }
                 <div className='flex gap-1'>
                   <span className='font-medium'>Registered:</span>
-                  <FormattedDate ts={userExtendedData.user.ts} />
+                  <FormattedDate ts={userExtendedData.user?.ts} />
                 </div>
               </>}
             </>}
