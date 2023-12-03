@@ -6,6 +6,7 @@ import { Games } from '@root/constants/Games';
 import NotificationType from '@root/constants/notificationType';
 import Role from '@root/constants/role';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
+import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { convert } from 'html-to-text';
 import { Types } from 'mongoose';
@@ -403,23 +404,10 @@ export async function sendEmailReactivation(gameId: GameId, batchId: Types.Objec
           email: { $ne: null },
         },
       },
-      {
-        $lookup: {
-          from: UserConfigModel.collection.name,
-          localField: '_id',
-          foreignField: 'userId',
-          as: 'userConfig',
-        },
-      },
-      {
-        $unwind: {
-          path: '$userConfig',
-          preserveNullAndEmptyArrays: false, // if user has no config, don't include them
-        },
-      },
+      ...getEnrichUserConfigPipelineStage(gameId),
       {
         $match: {
-          'userConfig.emailDigest': { $ne: EmailDigestSettingTypes.NONE },
+          'config.emailDigest': { $ne: EmailDigestSettingTypes.NONE },
         },
       },
       {
@@ -427,7 +415,7 @@ export async function sendEmailReactivation(gameId: GameId, batchId: Types.Objec
           _id: 1,
           name: 1,
           email: 1,
-          userConfig: 1,
+          config: 1,
           last_visited_at: 1,
           score: 1
         }
