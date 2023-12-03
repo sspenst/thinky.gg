@@ -80,11 +80,10 @@ describe('Email auto unsubscribe', () => {
           if (day <= 6) {
             expect(totalEmailsSent.length).toBe(day + 1);
             expect(response.emailUnsubscribeSent).toHaveLength(0);
-            expect(response.emailDigestSent).toHaveLength(2);
+            expect(response.emailDigestSent).toHaveLength(3);
+            expect(response.emailDigestSent.sort()).toMatchObject(['bbb@gmail.com', 'test@gmail.com', 'the_curator@gmail.com'].sort());
             // sort response.emailDigestSent array alphabetically
 
-            expect(response.emailDigestSent[0]).toBe('bbb@gmail.com');
-            expect(response.emailDigestSent[1]).toBe('test@gmail.com');
             expect(response.emailReactivationSent).toHaveLength(0);
           } else if (day === 7) {
             expect(totalEmailsSent.length).toBe(day + 1);
@@ -94,9 +93,7 @@ describe('Email auto unsubscribe', () => {
           } else if (day > 7 && day < 10) {
             expect(totalEmailsSent.length).toBe(day + 1);
             expect(response.emailUnsubscribeSent).toHaveLength(0);
-            expect(response.emailDigestSent).toHaveLength(2);
-            expect(response.emailDigestSent[0]).toBe('bbb@gmail.com');
-            expect(response.emailDigestSent[1]).toBe('test@gmail.com');
+            expect(response.emailDigestSent.sort()).toMatchObject(['bbb@gmail.com', 'test@gmail.com', 'the_curator@gmail.com'].sort());
             expect(response.emailReactivationSent).toHaveLength(0);
 
             if (day === 9) {
@@ -116,7 +113,8 @@ describe('Email auto unsubscribe', () => {
             expect(totalEmailsFailed.length).toBe(2);
             expect(totalEmailsPending.length).toBe(0);
             expect(response.emailDigestSent).toHaveLength(0);
-            expect(response.emailDigestFailed).toHaveLength(2); // because the unsubscribe failed - it'll try to send the digest again.. and the mock is still pointing to the failure
+            expect(response.emailDigestFailed).toHaveLength(3); // because the unsubscribe failed - it'll try to send the digest again.. and the mock is still pointing to the failure
+            expect(response.emailDigestFailed.sort()).toMatchObject(['bbb@gmail.com', 'test@gmail.com', 'the_curator@gmail.com'].sort());
             expect(response.emailReactivationSent).toHaveLength(0);
             sendMailRefMock.ref = acceptMock;
           } else if (day === 11) {
@@ -126,7 +124,8 @@ describe('Email auto unsubscribe', () => {
             expect(response.emailUnsubscribeFailed).toHaveLength(0);
             expect(response.emailUnsubscribeSent).toHaveLength(1);
             expect(response.emailUnsubscribeSent[0]).toBe('test@gmail.com');
-            expect(response.emailDigestSent).toHaveLength(1);
+            expect(response.emailDigestSent).toHaveLength(2);
+            expect(response.emailDigestSent.sort()).toMatchObject(['bbb@gmail.com', 'the_curator@gmail.com'].sort());
             expect(response.emailReactivationSent).toHaveLength(0);
             // hopefully we tried again to send email
           } else if (day > 11) {

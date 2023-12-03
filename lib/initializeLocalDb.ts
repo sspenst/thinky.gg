@@ -49,7 +49,7 @@ export default async function initializeLocalDb() {
     },
     {
       _id: new Types.ObjectId(TestId.USER_D),
-      calc_records: 1,
+      //calc_records: 1,
       email: 'someolduser@someolduser.com',
       emailConfirmed: false,
       name: 'AncientUser',
@@ -96,6 +96,11 @@ export default async function initializeLocalDb() {
 
     getNewUserConfig(DEFAULT_GAME_ID, [], 0, new Types.ObjectId(TestId.USER_B), {
       calcRecordsCount: 0,
+
+    }),
+    getNewUserConfig(DEFAULT_GAME_ID, [], 0, new Types.ObjectId(TestId.USER_C), {
+      calcRecordsCount: 1,
+      calcLevelsSolvedCount: 1
 
     }),
     getNewUserConfig(DEFAULT_GAME_ID, [Role.GUEST], 0, new Types.ObjectId(TestId.USER_GUEST), {

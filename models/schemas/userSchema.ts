@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import mongoose, { Types } from 'mongoose';
 import Role from '../../constants/role';
 import User from '../db/user';
-import { LevelModel, UserModel } from '../mongoose';
+import { LevelModel, UserConfigModel, UserModel } from '../mongoose';
 
 export const USER_DEFAULT_PROJECTION = {
   _id: 1,
@@ -120,11 +120,11 @@ const UserSchema = new mongoose.Schema<User>({
   },
 });
 
-UserSchema.index({ calcRankedSolves: -1 });
+//UserSchema.index({ calcRankedSolves: -1 });
 UserSchema.index({ score: -1 });
 UserSchema.index({ name: 1 }, { unique: true });
 UserSchema.index({ email: 1 }, { unique: true });
-UserSchema.index({ calc_records: -1 });
+//UserSchema.index({ calc_records: -1 });
 
 export const PASSWORD_SALTROUNDS = process.env.NODE_ENV !== 'test' ? 10 : 1;
 
@@ -166,8 +166,8 @@ export async function calcCreatorCounts(gameId: GameId, userId: Types.ObjectId, 
   ], { session: session });
   const levelsCreatedCount = levelsCreatedCountAgg.length > 0 ? levelsCreatedCountAgg[0].count : 0;
 
-  await UserModel.updateOne({ _id: userId }, {
-    calc_levels_created_count: levelsCreatedCount,
+  await UserConfigModel.updateOne({ userId: userId }, {
+    calcLevelsCreatedCount: levelsCreatedCount,
   }, { session: session });
 }
 

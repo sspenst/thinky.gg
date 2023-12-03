@@ -1,3 +1,4 @@
+import UserConfig from '@root/models/db/userConfig';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 // https://github.com/newrelic/node-newrelic/issues/956#issuecomment-962729137
 import type { NextApiRequest, NextApiResponse } from 'next';
@@ -8,7 +9,7 @@ import { getGameIdFromReq } from '../helpers/getGameIdFromReq';
 import { TimerUtil } from '../helpers/getTs';
 import { logger } from '../helpers/logger';
 import User from '../models/db/user';
-import { UserModel } from '../models/mongoose';
+import { UserConfigModel, UserModel } from '../models/mongoose';
 import dbConnect from './dbConnect';
 import getTokenCookie from './getTokenCookie';
 import isLocal from './isLocal';
@@ -62,7 +63,7 @@ export async function getUserFromToken(
     },
   };
 
-  const user = await UserModel.findByIdAndUpdate(
+  const [user, config] = await Promise.all([UserModel.findByIdAndUpdate(
     userId,
     {
       // Update last visited only if dontUpdateLastSeen is false
@@ -74,10 +75,16 @@ export async function getUserFromToken(
       ...ipData,
     },
     { new: true, projection: '+email +bio +emailConfirmed' },
-  ).lean<User>();
+  ).lean<User>(),
+  UserConfigModel.findOne({ userId: userId }, { calcRankedSolves: 1, calcLevelsCreatedCount: 1, calcLevelsSolveCount: 1, chapterUnlocked: 1 }).lean<UserConfig>()
+  ]);
 
   if (user && !isLocal()) {
     newrelic.addCustomAttribute && newrelic.addCustomAttribute('userName', user.name);
+  }
+
+  if (user && config) {
+    user.config = config as UserConfig;
   }
 
   return user;

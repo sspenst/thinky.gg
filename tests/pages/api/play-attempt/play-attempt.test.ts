@@ -961,7 +961,6 @@ describe('Testing stats api', () => {
       }),
       UserModel.create({
         _id: unsolvedUserId,
-        calc_records: 0,
         email: 'unsolved@gmail.com',
         last_visited_at: 0,
         name: 'unsolved',

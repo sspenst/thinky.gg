@@ -1,5 +1,6 @@
 import Direction from '@root/constants/direction';
 import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import UserConfig from '@root/models/db/userConfig';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -11,7 +12,7 @@ import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Level from '../../../../models/db/level';
-import { LevelModel, RecordModel, UserModel } from '../../../../models/mongoose';
+import { LevelModel, RecordModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
 import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
 import modifyLevelHandler from '../../../../pages/api/level/[id]';
 import createLevelHandler from '../../../../pages/api/level/index';
@@ -824,9 +825,9 @@ describe('pages/api/level/index.ts', () => {
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
 
-        const userB = await UserModel.findById(TestId.USER_B);
+        const userB = await UserConfigModel.findOne({ userId: TestId.USER_B });
 
-        expect(userB.calc_records).toBe(1);
+        expect(userB.calcRecordsCount).toBe(1);
       },
     });
 
@@ -854,9 +855,9 @@ describe('pages/api/level/index.ts', () => {
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
         test_level_id_delete = response.levelId; // Note that level Id gets changed on unpublished
-        const userB = await UserModel.findById(TestId.USER_B);
+        const userB = await UserConfigModel.findOne({ userId: TestId.USER_B });
 
-        expect(userB.calc_records).toBe(0);
+        expect(userB.calcRecordsCount).toBe(0);
       },
     });
     await testApiHandler({
@@ -883,9 +884,9 @@ describe('pages/api/level/index.ts', () => {
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
 
-        const userB = await UserModel.findById(TestId.USER_B);
+        const userB = await UserConfigModel.findOne<UserConfig>({ userId: TestId.USER_B });
 
-        expect(userB.calc_records).toBe(0);
+        expect(userB?.calcRecordsCount).toBe(0);
       },
     });
   });

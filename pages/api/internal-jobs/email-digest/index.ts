@@ -293,6 +293,7 @@ export async function sendAutoUnsubscribeUsers(gameId: GameId, batchId: Types.Ob
     type: EmailType.EMAIL_7D_REACTIVATE,
     createdAt: { $lte: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) },
   }).distinct('userId');
+
   const [totalLevels, totalCreatorsQuery, inactive7DUsersWhoWeHaveTriedToEmail] = await Promise.all([
     LevelModel.countDocuments({
       isDeleted: { $ne: true },
@@ -311,23 +312,10 @@ export async function sendAutoUnsubscribeUsers(gameId: GameId, batchId: Types.Ob
           emailConfirmed: { $ne: true } // don't unsubscribe users with verified emails
         },
       },
-      {
-        $lookup: {
-          from: UserConfigModel.collection.name,
-          localField: '_id',
-          foreignField: 'userId',
-          as: 'userConfig',
-        },
-      },
-      {
-        $unwind: {
-          path: '$userConfig',
-          preserveNullAndEmptyArrays: false, // if user has no config, don't include them
-        },
-      },
+      ...getEnrichUserConfigPipelineStage(gameId, { project: { 'emailDigest': 1 } }),
       {
         $match: {
-          'userConfig.emailDigest': { $ne: EmailDigestSettingTypes.NONE },
+          'config.emailDigest': { $ne: EmailDigestSettingTypes.NONE },
         },
       },
       {
@@ -335,7 +323,7 @@ export async function sendAutoUnsubscribeUsers(gameId: GameId, batchId: Types.Ob
           _id: 1,
           name: 1,
           email: 1,
-          userConfig: 1,
+          config: 1,
           last_visited_at: 1,
           score: 1
         }
@@ -343,6 +331,7 @@ export async function sendAutoUnsubscribeUsers(gameId: GameId, batchId: Types.Ob
     ])
 
   ]);
+
   const totalCreators = totalCreatorsQuery.length;
 
   const sentList: string[] = [];
@@ -352,7 +341,8 @@ export async function sendAutoUnsubscribeUsers(gameId: GameId, batchId: Types.Ob
   const game = Games[gameId];
 
   for (const user of inactive7DUsersWhoWeHaveTriedToEmail) {
-    const totalLevelsSolved = user.config.calcLevelsSolvedCount;
+    const totalLevelsSolved = user.config?.calcLevelsSolvedCount;
+
     const toSolve = (totalLevels - totalLevelsSolved);
     const subject = 'Auto unsubscribing you from our emails';
     const title = 'It has been some time since we have seen you login to ' + game.displayName + '! We are going to automatically change your email settings so that you will not hear from us again. You can always change your email settings back by visiting the account settings page.';
@@ -404,7 +394,7 @@ export async function sendEmailReactivation(gameId: GameId, batchId: Types.Objec
           email: { $ne: null },
         },
       },
-      ...getEnrichUserConfigPipelineStage(gameId),
+      ...getEnrichUserConfigPipelineStage(gameId, { project: { 'emailDigest': 1 } }),
       {
         $match: {
           'config.emailDigest': { $ne: EmailDigestSettingTypes.NONE },
@@ -431,7 +421,7 @@ export async function sendEmailReactivation(gameId: GameId, batchId: Types.Objec
   const game = Games[gameId];
 
   for (const user of inactive7DUsers) {
-    const totalLevelsSolved = user.config.calcLevelsSolvedCount;
+    const totalLevelsSolved = user.config?.calcLevelsSolvedCount;
     const toSolve = (totalLevels - totalLevelsSolved);
     const subject = 'New ' + game.displayName + ' levels are waiting to be solved!';
     const title = 'We haven\'t seen you in a bit!';

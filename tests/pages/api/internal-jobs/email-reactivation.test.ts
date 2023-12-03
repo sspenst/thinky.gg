@@ -80,10 +80,11 @@ describe('Email reactivation', () => {
         const response = await res.json();
         const emailLogs = await EmailLogModel.find({}, {}, { sort: { createdAt: -1 } });
 
-        expect(emailLogs).toHaveLength(3);
-        expect(emailLogs[2].state).toBe(EmailState.FAILED);
-        expect(emailLogs[2].error).toBe('rejected Test rejection');
-        expect(emailLogs[2].type).toBe(EmailType.EMAIL_7D_REACTIVATE);
+        expect(emailLogs).toHaveLength(4);
+
+        expect(emailLogs[3].state).toBe(EmailState.FAILED);
+        expect(emailLogs[3].error).toBe('rejected Test rejection');
+        expect(emailLogs[3].type).toBe(EmailType.EMAIL_7D_REACTIVATE);
         expect(response.emailReactivationFailed).toHaveLength(1);
         expect(response.emailReactivationFailed[0]).toBe('test@gmail.com');
         expect(res.status).toBe(200);
@@ -124,10 +125,11 @@ describe('Email reactivation', () => {
         const response = await res.json();
         const emailLogs = await EmailLogModel.find({}, {}, { sort: { createdAt: -1 } });
 
-        expect(emailLogs).toHaveLength(4);
-        expect(emailLogs[1].state).toBe(EmailState.SENT);
-        expect(emailLogs[1].error).toBeNull();
-        expect(emailLogs[1].type).toBe(EmailType.EMAIL_7D_REACTIVATE);
+        expect(emailLogs).toHaveLength(6);
+
+        expect(emailLogs[2].state).toBe(EmailState.SENT);
+        expect(emailLogs[2].error).toBeNull();
+        expect(emailLogs[2].type).toBe(EmailType.EMAIL_7D_REACTIVATE);
         expect(response.emailReactivationSent).toHaveLength(1);
         expect(response.emailReactivationSent[0]).toBe('test@gmail.com');
         expect(res.status).toBe(200);

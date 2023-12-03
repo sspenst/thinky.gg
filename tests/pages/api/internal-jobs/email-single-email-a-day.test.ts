@@ -79,12 +79,14 @@ describe('Email per day', () => {
           if (day <= 6) {
             expect(totalEmailsSent.length).toBe(day + 1); // No notifications
             expect(response.emailUnsubscribeSent).toHaveLength(0);
-            expect(response.emailDigestSent).toHaveLength(2);
+            expect(response.emailDigestSent.sort()).toMatchObject(['bbb@gmail.com', 'test@gmail.com', 'the_curator@gmail.com'].sort());
             expect(response.emailReactivationSent).toHaveLength(0);
           } else if (day === 7) {
             expect(totalEmailsSent.length).toBe(8); // +1 the reactivation?
-            expect(response.emailDigestSent).toHaveLength(1);
+            expect(response.emailDigestSent).toHaveLength(2);
+            expect(response.emailDigestSent.sort()).toMatchObject(['bbb@gmail.com', 'the_curator@gmail.com'].sort());
             expect(response.emailReactivationSent).toHaveLength(1);
+            expect(response.emailReactivationSent[0]).toBe('test@gmail.com');
             expect(response.emailUnsubscribeSent).toHaveLength(0);
 
             expect(response.emailReactivationSent[0]).toBe('test@gmail.com');
@@ -96,25 +98,25 @@ describe('Email per day', () => {
           } else if (day === 8) {
             expect(totalEmailsSent.length).toBe(9); // +1 the notification daily digest?
             expect(response.emailUnsubscribeSent).toHaveLength(0);
-            expect(response.emailDigestSent).toHaveLength(2);
+            expect(response.emailDigestSent.sort()).toMatchObject(['bbb@gmail.com', 'test@gmail.com', 'the_curator@gmail.com'].sort());
             expect(response.emailReactivationSent).toHaveLength(0);
             // Now let's make the user come back to the site!
             await UserModel.findByIdAndUpdate(TestId.USER, { last_visited_at: TimerUtil.getTs() });
           } else if (day > 8 && day < 18) {
             expect(totalEmailsSent.length).toBe(day + 1);
             expect(response.emailUnsubscribeSent).toHaveLength(0);
-            expect(response.emailDigestSent).toHaveLength(2);
+            expect(response.emailDigestSent.sort()).toMatchObject(['bbb@gmail.com', 'test@gmail.com', 'the_curator@gmail.com'].sort());
             expect(response.emailReactivationSent).toHaveLength(0);
           } else if (day === 18) {
             expect(totalEmailsSent.length).toBe(day + 1); // +1 the goodbye email too
             expect(response.emailUnsubscribeSent).toHaveLength(1);
-            expect(response.emailDigestSent).toHaveLength(1);
+            expect(response.emailDigestSent.sort()).toMatchObject(['bbb@gmail.com', 'the_curator@gmail.com'].sort());
             expect(response.emailReactivationSent).toHaveLength(0);
           } else if (day > 19) {
-            expect(totalEmailsSent.length).toBe(day - 1);
             expect(response.emailUnsubscribeSent).toHaveLength(0);
-            expect(response.emailDigestSent).toHaveLength(1);
+            expect(response.emailDigestSent.sort()).toMatchObject(['bbb@gmail.com', 'the_curator@gmail.com'].sort());
             expect(response.emailReactivationSent).toHaveLength(0);
+            expect(totalEmailsSent.length).toBe(day - 1);
           }
         },
       });

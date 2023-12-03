@@ -166,11 +166,16 @@ interface EnrichUserConfigOptions {
   localField?: string;
   excludeCalcs?: boolean;
   includeChapter?: boolean;
+  project?: Record<string, unknown>;
 }
 
-export function getEnrichUserConfigPipelineStage(gameId: GameId, { localField, excludeCalcs, includeChapter }: EnrichUserConfigOptions = {}): PipelineStage[] {
+export function getEnrichUserConfigPipelineStage(gameId: GameId, { localField, excludeCalcs, includeChapter, project }: EnrichUserConfigOptions = {}): PipelineStage[] {
   if (!localField) {
     localField = '_id';
+  }
+
+  if (!project) {
+    project = {};
   }
 
   const includeCalcsObject = !excludeCalcs ? {
@@ -193,7 +198,8 @@ export function getEnrichUserConfigPipelineStage(gameId: GameId, { localField, e
         { $project: {
           gameId: 1,
           ...includeCalcsObject,
-          ...includeChapterObject
+          ...includeChapterObject,
+          ...project
         } }
       ]
     },
