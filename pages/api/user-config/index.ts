@@ -2,7 +2,6 @@ import { EmailDigestSettingTypes } from '@root/constants/emailDigest';
 import { GameId } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
 import Role from '@root/constants/role';
-import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
 import isGuest from '@root/helpers/isGuest';
 import { logger } from '@root/helpers/logger';
 import User from '@root/models/db/user';
@@ -64,7 +63,6 @@ export default withAuth({
       showPlayStats: ValidType('boolean', false),
       theme: ValidType('string', false),
       tutorialCompletedAt: ValidNumber(false),
-      toursCompleted: ValidArray(false),
     }
   },
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
@@ -80,7 +78,6 @@ export default withAuth({
       emailDigest,
       showPlayStats,
       theme,
-      toursCompleted,
       tutorialCompletedAt,
     } = req.body;
 
@@ -106,10 +103,6 @@ export default withAuth({
 
     if (tutorialCompletedAt) {
       setObj['tutorialCompletedAt'] = tutorialCompletedAt;
-    }
-
-    if (toursCompleted) {
-      setObj['toursCompleted'] = toursCompleted;
     }
 
     if (disallowedEmailNotifications !== undefined) {

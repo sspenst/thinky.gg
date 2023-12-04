@@ -1,4 +1,3 @@
-import PagePath from '@root/constants/pagePath';
 import StatFilter from '@root/constants/statFilter';
 import getProfileSlug from '@root/helpers/getProfileSlug';
 import isGuest from '@root/helpers/isGuest';
@@ -10,7 +9,6 @@ import { useRouter } from 'next/router';
 import React, { useContext, useState } from 'react';
 import TimeRange from '../../constants/timeRange';
 import { AppContext } from '../../contexts/appContext';
-import { useTour } from '../../hooks/useTour';
 import { EnrichedLevel } from '../../models/db/level';
 import Review from '../../models/db/review';
 import User from '../../models/db/user';
@@ -49,10 +47,7 @@ export default function HomeLoggedIn({
   const { connectedPlayersCount, matches, socket } = multiplayerSocket;
   const buttonClassNames = 'py-2.5 px-3.5 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm whitespace-nowrap bg-green-100 dark:bg-gray-800 hover:bg-gray-50 hover:dark:bg-slate-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300';
 
-  const tour = useTour(PagePath.HOME);
-
   return (<>
-    {tour}
     {user && !user.emailConfirmed &&
       <div className='bg-yellow-200 w-full text-black text-center text-sm p-2 shadow-lg'>
         {`${isGuest(user) ? 'Convert to a regular account' : 'Confirm your email'} in your `}
