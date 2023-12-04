@@ -325,7 +325,6 @@ export async function sendAutoUnsubscribeUsers(gameId: GameId, batchId: Types.Ob
           email: 1,
           config: 1,
           last_visited_at: 1,
-          score: 1
         }
       }
     ])

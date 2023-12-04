@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// run with ts-node -r tsconfig-paths/register --files server/scripts/save.ts
+// run with
+// ts-node -r tsconfig-paths/register --files server/scripts/save.ts
 // import dotenv
 // import tsconfig-paths
 
@@ -187,36 +188,34 @@ async function integrityCheckRankedScore() {
   console.log('done');
 }
 
-async function integrityCheckUsersScore() {
+async function integrityCheckUsersScore(gameId: GameId) {
   // Aggregate all of the stat model complete:true by userId
   const scoreTable = await StatModel.aggregate([
-    { $match: { complete: true, isDeleted: { $ne: true } } },
+    { $match: { gameId: gameId, complete: true, isDeleted: { $ne: true } } },
     { $group: { _id: '$userId', count: { $sum: 1 } } },
   ]);
 
   // now update all user's  based on their play attempt count
   console.log('Querying all users into memory...');
-  const allUsers = await UserModel.find<User>({}, '_id name score', { sort: { last_visited_at: -1 } });
+  const count = await UserConfigModel.countDocuments();
   let i = 0;
 
-  progressBar.start(allUsers.length, 0);
+  progressBar.start(count, 0);
 
-  for (const user of allUsers) {
-    const scoreForThisUser = scoreTable.find((x: any) => x._id.toString() === user._id.toString())?.count || 0;
+  for await (const config of UserConfigModel.find({ gameId: gameId })) {
+    const scoreForThisUser = scoreTable.find((x: any) => x._id.toString() === config.userId.toString())?.count || 0;
 
-    const userBefore = await UserConfigModel.findOneAndUpdate<UserConfig>({ _id: user._id }, { $set: { calcLevelsSolvedCount: scoreForThisUser } }, { new: false });
+    const userBefore = await UserConfigModel.findOneAndUpdate<UserConfig>({ _id: config._id, }, { $set: { calcLevelsSolvedCount: scoreForThisUser } }, { new: false });
 
-    const gameId = GameId.PATHOLOGY; // TODO: loop through all games
+    await calcCreatorCounts(gameId, config.userId);
+    const userAfter = await UserConfigModel.findOne({ _id: config._id });
 
-    await calcCreatorCounts(gameId, user._id);
-    const userAfter = await UserConfigModel.findOne({ userId: user._id });
-
-    if (user.config?.calcLevelsSolvedCount !== scoreForThisUser) {
-      console.warn(`\nUser ${user.name} score changed from ${userBefore?.calcLevelsSolvedCount} to ${scoreForThisUser}`);
+    if (config?.calcLevelsSolvedCount !== scoreForThisUser) {
+      console.warn(`\nUser ${config.userId} score changed from ${userBefore?.calcLevelsSolvedCount} to ${scoreForThisUser}`);
     }
 
     if (userAfter.calcLevelsCreatedCount !== userBefore?.calcLevelsCreatedCount) {
-      console.warn(`\nUser ${user.name} calcLevelsCreatedCount changed from ${userBefore?.calcLevelsCreatedCount} to ${userAfter.calcLevelsCreatedCount}`);
+      console.warn(`\nUser ${config.userId} calcLevelsCreatedCount changed from ${userBefore?.calcLevelsCreatedCount} to ${userAfter.calcLevelsCreatedCount}`);
     }
 
     i++;
@@ -390,6 +389,7 @@ async function init() {
   console.log('connecting to db...');
   await dbConnect();
   console.log('connected');
+  const allGameIds = Object.values(GameId);
 
   if (runLevels) {
     await integrityCheckLevels(chunks, chunkIndex);
@@ -400,7 +400,9 @@ async function init() {
   }
 
   if (runUsers) {
-    await integrityCheckUsersScore();
+    for (const gameId of allGameIds) {
+      await integrityCheckUsersScore(gameId);
+    }
   }
 
   if (runRecords) {
