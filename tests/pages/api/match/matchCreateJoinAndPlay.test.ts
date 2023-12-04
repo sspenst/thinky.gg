@@ -4,6 +4,7 @@ import { Games } from '@root/constants/Games';
 import { UserWithMultiplayerProfile } from '@root/models/db/user';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';
+import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
@@ -119,7 +120,7 @@ describe('matchCreateJoinAndPlay', () => {
           expect(player.config).toBeDefined();
           const keys = Object.keys(player?.config || []);
 
-          expect(keys.sort()).toEqual(['_id', 'gameId', 'calcRankedSolves', 'calcLevelsSolvedCount', 'calcRecordsCount'].sort());
+          expect(keys.sort()).toEqual(['_id', 'gameId', 'calcRankedSolves', 'calcLevelsCreatedCount', 'calcLevelsSolvedCount', 'calcRecordsCount'].sort());
         }
 
         for (const winner of response.winners as UserWithMultiplayerProfile[]) {
@@ -207,7 +208,21 @@ describe('matchCreateJoinAndPlay', () => {
     expect(match.state).toBe(MultiplayerMatchState.ACTIVE);
     const levels = match.levels;
 
-    expect(levels).toHaveLength(3);
+    expect(levels).toHaveLength(6); // When we have less than 40 levels selected we get extra pending levels. So here it should be 3 + 3 levels that are pending
+    // expect each level to have a different Id. Loop through and check
+    const s = new Set();
+    const levelsDeduped = levels.filter((level: Types.ObjectId) => {
+      if (s.has(level._id)) {
+        return false;
+      }
+
+      s.add(level._id);
+
+      return true;
+    }
+    );
+
+    expect(levelsDeduped).toHaveLength(6); // should be all levels
 
     // need to mock validate solution so it doesn't fail
     // ../../../../pages/api/stats/index has a function validateSolution that needs to be mocked
@@ -249,7 +264,7 @@ describe('matchCreateJoinAndPlay', () => {
     expect(match.state).toBe(MultiplayerMatchState.ACTIVE);
     const levels = match.levels;
 
-    expect(levels).toHaveLength(3);
+    expect(levels).toHaveLength(6); // see above 3+3 comment
     await testApiHandler({
       handler: async (_, res) => {
         await handler({
@@ -330,7 +345,7 @@ describe('matchCreateJoinAndPlay', () => {
         });
         expect(response.winners).toHaveLength(1);
 
-        expect(response.levels).toHaveLength(3); // @TODO: Probably shouldn't return all the levels on finish of match - just need the levels that were played
+        expect(response.levels).toHaveLength(6); // @TODO: Probably shouldn't return all the levels on finish of match - just need the levels that were played
 
         // query mutliplayerprofiles
         const multiplayerProfiles = await MultiplayerProfileModel.find({ userId: { $in: [TestId.USER, TestId.USER_B] } });

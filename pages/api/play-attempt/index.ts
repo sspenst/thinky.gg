@@ -93,7 +93,7 @@ export default withAuth({
 
           if (!level) {
             resTrack.status = 404;
-            resTrack.json.error = `Level ${levelId}, ${levelObjectId} not found`;
+            resTrack.json.error = `Level ${levelId} not found`;
 
             throw new Error(resTrack.json.error);
           }
