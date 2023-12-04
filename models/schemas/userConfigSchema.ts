@@ -1,6 +1,5 @@
 import { GameId } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
-import { TourType } from '@root/constants/tourType';
 import mongoose from 'mongoose';
 import { EmailDigestSettingTypes } from '../../constants/emailDigest';
 import UserConfig from '../db/userConfig';
@@ -57,11 +56,6 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
     theme: {
       type: String,
       required: true,
-    },
-    toursCompleted: {
-      type: [{ type: String, enum: TourType }],
-      required: false,
-      default: [],
     },
     tutorialCompletedAt: {
       type: Number,
