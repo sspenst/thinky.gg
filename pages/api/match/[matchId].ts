@@ -511,7 +511,10 @@ export default withAuth(
           if (dedupedLevels.size < 40) {
             // we don't have enough levels, so try and query any levels at all...
             // @TODO: Remove this when games have enough levels
-            const level4s = await generateLevels(populatedMatch.gameId, 0, DIFFICULTY_INDEX.SUPER_GRANDMASTER, { minSteps: 0, maxSteps: 10000, minLaplace: 0.0, minReviews: 0 }, 40 - dedupedLevels.size);
+            const level4s = await LevelModel.find<Level[]>({
+              isDraft: { $ne: true },
+              isDeleted: { $ne: true },
+              gameId: populatedMatch.gameId }, { _id: 1 }, { limit: 40 - dedupedLevels.size }).lean<Level[]>();
 
             level4s.forEach(level => dedupedLevels.add(level));
           }

@@ -73,7 +73,7 @@ export default withAuth({
           randomRotateLevelDataViaMatchHash(level, matchId);
         }
 
-        const validateSolutionFunction = Games[req.gameId].validateSolutionFunction;
+        const validateSolutionFunction = Games[level.gameId].validateSolutionFunction;
 
         if (!validateSolutionFunction(directions, level)) {
           resTrack.status = 400;
