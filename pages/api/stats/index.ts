@@ -96,12 +96,17 @@ export default withAuth({
 
         const complete = moves <= level.leastMoves;
 
+        const promises = [];
+
         if (complete && matchId) {
           // TODO: use session here
-          await matchMarkCompleteLevel(req.user._id, matchId, level._id);
+          promises.push(matchMarkCompleteLevel(req.user._id, matchId, level._id));
         }
 
-        const stat = await StatModel.findOne({ userId: req.user._id, levelId: level._id, }, {}, { session: session }).lean<Stat>();
+        const [stat] = await Promise.all([
+          StatModel.findOne({ userId: req.user._id, levelId: level._id, }, {}, { session: session }).lean<Stat>(),
+          ...promises,
+        ]);
 
         // level was previously solved and no personal best was set, only need to $inc attempts and return
         if (stat && moves >= stat.moves) {
@@ -244,12 +249,13 @@ export default withAuth({
           incPlayattemptsDurationSum += sumDuration[0]?.sumDuration ?? 0;
 
           // reset all playattempts to unsolved
-          await Promise.all([PlayAttemptModel.updateMany(
-            { levelId: level._id },
-            { $set: { attemptContext: AttemptContext.UNSOLVED } },
-            { session: session },
-          ),
-          queueDiscordWebhook(Discord.Levels, `**${req.user.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`, { session: session })
+          await Promise.all([
+            PlayAttemptModel.updateMany(
+              { levelId: level._id },
+              { $set: { attemptContext: AttemptContext.UNSOLVED } },
+              { session: session },
+            ),
+            queueDiscordWebhook(Discord.Levels, `**${req.user.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`, { session: session }),
           ]);
         }
 
