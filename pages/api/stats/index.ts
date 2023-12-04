@@ -245,6 +245,7 @@ export default withAuth({
 
           incPlayattemptsDurationSum += sumDuration[0]?.sumDuration ?? 0;
 
+          // reset all playattempts to unsolved
           await Promise.all([
             PlayAttemptModel.updateMany(
               { levelId: level._id },
