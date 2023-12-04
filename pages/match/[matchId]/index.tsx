@@ -348,6 +348,10 @@ export default function Match() {
   for (let i = 0; i < match.levels.length; i++) {
     const level = match.levels[i] as Level;
 
+    if (!level) {
+      continue;
+    }
+
     levelResults.push(
       <div className='flex justify-center items-center flex-wrap' key={`level-result-${level._id.toString()}`}>
         <div className='flex flex-row items-center'>

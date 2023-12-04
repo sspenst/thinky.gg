@@ -35,6 +35,13 @@ export async function getUsersWithMultiplayerProfile(
         localField: '_id',
         foreignField: 'userId',
         as: 'multiplayerProfile',
+        pipeline: [
+          {
+            $match: {
+              gameId: gameId,
+            }
+          },
+        ]
       },
     },
     {

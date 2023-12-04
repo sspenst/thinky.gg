@@ -366,6 +366,7 @@ export async function getAllMatches(gameId: GameId, reqUser?: User, matchFilters
     };
   }
 
+  matchFilters.gameId = gameId;
   const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPipelineSteps(reqUser, '_id', '');
 
   const [matches] = await Promise.all([
@@ -390,6 +391,13 @@ export async function getAllMatches(gameId: GameId, reqUser?: User, matchFilters
                 localField: '_id',
                 foreignField: 'userId',
                 as: 'multiplayerProfile',
+                pipeline: [
+                  {
+                    $match: {
+                      gameId: gameId,
+                    }
+                  },
+                ]
               }
             },
             {
