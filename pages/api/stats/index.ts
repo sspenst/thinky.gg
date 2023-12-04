@@ -167,12 +167,12 @@ export default withAuth({
             // decrease calcRecordsCount if the previous user was not the original level creator
             if (prevRecord.userId.toString() !== authorId) {
               // NB: await to avoid multiple user updates in parallel
-              await UserConfigModel.updateOne({ userId: prevRecord.userId }, { $inc: { calcRecordsCount: -1 } }, { session: session });
+              await UserConfigModel.updateOne({ userId: prevRecord.userId, gameId: level.gameId }, { $inc: { calcRecordsCount: -1 } }, { session: session });
             }
 
             // increase calcRecordsCount if the new user was not the original level creator
             if (req.userId !== authorId) {
-              await UserConfigModel.updateOne({ userId: req.userId }, { $inc: { calcRecordsCount: 1 } }, { session: session });
+              await UserConfigModel.updateOne({ userId: req.userId, gameId: level.gameId }, { $inc: { calcRecordsCount: 1 } }, { session: session });
             }
           }
 
