@@ -198,7 +198,7 @@ describe('matchCreateJoinAndPlay', () => {
     expect(match.state).toBe(MultiplayerMatchState.ACTIVE);
     const levels = match.levels;
 
-    expect(levels).toHaveLength(3);
+    expect(levels).toHaveLength(6); // 3 + (since it is less than 40 levels) 3 pendings
 
     // need to mock validate solution so it doesn't fail
     // ../../../../pages/api/stats/index has a function validateSolution that needs to be mocked
@@ -240,7 +240,7 @@ describe('matchCreateJoinAndPlay', () => {
     expect(match.state).toBe(MultiplayerMatchState.ACTIVE);
     const levels = match.levels;
 
-    expect(levels).toHaveLength(3);
+    expect(levels).toHaveLength(6); // see 3+3 comment above
     await testApiHandler({
       handler: async (_, res) => {
         await handler({
@@ -272,7 +272,7 @@ describe('matchCreateJoinAndPlay', () => {
     expect(match.state).toBe(MultiplayerMatchState.ACTIVE);
     const levels = match.levels;
 
-    expect(levels).toHaveLength(3);
+    expect(levels).toHaveLength(6); // see 3+3 comment above
     await testApiHandler({
       handler: async (_, res) => {
         await handler({

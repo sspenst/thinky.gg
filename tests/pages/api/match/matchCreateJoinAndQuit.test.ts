@@ -104,7 +104,7 @@ describe('matchCreateJoinAndQuit', () => {
           expect(player.config).toBeDefined();
           const keys = Object.keys(player?.config || []);
 
-          expect(keys.sort()).toEqual(['_id', 'gameId', 'calcRankedSolves', 'calcLevelsSolvedCount', 'calcRecordsCount'].sort());
+          expect(keys.sort()).toEqual(['_id', 'gameId', 'calcRankedSolves', 'calcLevelsCreatedCount', 'calcLevelsSolvedCount', 'calcRecordsCount'].sort());
         }
 
         for (const winner of response.winners as UserWithMultiplayerProfile[]) {
@@ -157,7 +157,7 @@ describe('matchCreateJoinAndQuit', () => {
         expect(response.matchLog && response.matchLog[2].type).toBe(MatchAction.QUIT);
         expect(response.state).toBe(MultiplayerMatchState.ABORTED);
         expect(response.type).toBe(MultiplayerMatchType.RushBullet);
-        expect(response.levels).toHaveLength(0);
+        expect(response.levels).toHaveLength(3); // NOTE - On 12/4 when introducing the platform we made it so that multiplayer will select pending levels if there is not enough levels in the ecosystem that are not "pending"
         expect(response.winners).toHaveLength(0);
         expect(response.timeUntilStart).toBeGreaterThan(500);
         expect(response.timeUntilEnd).toBeGreaterThan(15000);
