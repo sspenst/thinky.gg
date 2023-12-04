@@ -1,7 +1,6 @@
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import { GameId } from '@root/constants/GameId';
 import TileType from '@root/constants/tileType';
-import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import isFullAccount from '@root/helpers/isFullAccount';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
@@ -15,7 +14,7 @@ import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import User from '../../../models/db/user';
-import { LevelModel, RecordModel, StatModel, UserConfigModel, UserModel } from '../../../models/mongoose';
+import { LevelModel, RecordModel, StatModel, UserConfigModel } from '../../../models/mongoose';
 import { queueCalcCreatorCounts, queueCalcPlayAttempts, queueRefreshAchievements, queueRefreshIndexCalcs } from '../internal-jobs/worker';
 
 export async function checkPublishRestrictions(gameId: GameId, userId: Types.ObjectId) {
@@ -61,7 +60,6 @@ export default withAuth({ POST: {
   }
 
   const { id } = req.query;
-  const gameId = getGameIdFromReq(req);
 
   await dbConnect();
 
