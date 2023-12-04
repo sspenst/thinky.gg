@@ -102,8 +102,8 @@ export default async function initializeLocalDb() {
   ));
 
   promises.push(UserConfigModel.insertMany([
-    getNewUserConfig(GameId.PATHOLOGY, [], 0, new Types.ObjectId(TestId.USER), ),
-    getNewUserConfig(GameId.PATHOLOGY, [], 0, new Types.ObjectId(TestId.USER_B),),
+    getNewUserConfig(GameId.PATHOLOGY, [], 0, new Types.ObjectId(TestId.USER)),
+    getNewUserConfig(GameId.PATHOLOGY, [], 0, new Types.ObjectId(TestId.USER_B)),
     getNewUserConfig(GameId.PATHOLOGY, [Role.GUEST], 0, new Types.ObjectId(TestId.USER_GUEST)),
     getNewUserConfig(GameId.PATHOLOGY, [Role.PRO], 0, new Types.ObjectId(TestId.USER_PRO), { emailDigest: EmailDigestSettingTypes.NONE }),
   ], { ordered: false }));

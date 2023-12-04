@@ -2,7 +2,6 @@ import { EmailDigestSettingTypes } from '@root/constants/emailDigest';
 import { GameId } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
 import Role from '@root/constants/role';
-import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
 import isGuest from '@root/helpers/isGuest';
 import { logger } from '@root/helpers/logger';
 import User from '@root/models/db/user';

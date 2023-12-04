@@ -5,12 +5,11 @@ import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
 import getProfileSlug from '@root/helpers/getProfileSlug';
 import isGuest from '@root/helpers/isGuest';
 import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmationEmail';
-import UserConfig from '@root/models/db/userConfig';
 import type { NextApiResponse } from 'next';
 import { ValidType } from '../../../helpers/apiWrapper';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import { UserConfigModel, UserModel } from '../../../models/mongoose';
+import { UserModel } from '../../../models/mongoose';
 
 export default withAuth({
   PUT: {
@@ -39,11 +38,11 @@ export default withAuth({
   const trimmedName = name.trim();
 
   user.email = email.trim();
+  user.emailConfirmationToken = getEmailConfirmationToken();
+  user.emailConfirmed = false;
   user.name = trimmedName;
   user.password = password;
   user.roles = user.roles.filter((role: Role) => role !== Role.GUEST);
-  user.emailConfirmed = false;
-  user.emailConfirmationToken = getEmailConfirmationToken();
   await user.save();
 
   await Promise.all([

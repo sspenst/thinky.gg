@@ -17,7 +17,7 @@ export default withAuth({
       name: ValidType('string', true),
     }
   } }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-  if (!(await isFullAccount(req.user))) {
+  if (!isFullAccount(req.user)) {
     return res.status(401).json({
       error: 'Creating a collection requires a full account with a confirmed email'
     });
