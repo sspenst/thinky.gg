@@ -61,7 +61,7 @@ export function GameMenu() {
             <Menu.Item key={link.subdomain}>
               {({ active }) => (
                 <Link
-                  href={`${currentProtocal}//${link.subdomain}.${currentHost}`}
+                  href={`${currentProtocal}//${link.subdomain}.${currentHost}/home`}
                   passHref
                 >
                   <div
