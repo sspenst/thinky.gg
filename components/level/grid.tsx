@@ -7,6 +7,7 @@ import classNames from 'classnames';
 import React, { useContext, useEffect, useState } from 'react';
 import Theme from '../../constants/theme';
 import { teko } from '../../pages/_app';
+import { getSolveStateFunction } from './solutionStates/helpers';
 import Tile from './tile/tile';
 
 interface GridProps {
@@ -18,7 +19,7 @@ interface GridProps {
 }
 
 export default function Grid({ cellClassName, gameState, id, leastMoves, onCellClick }: GridProps) {
-  const { theme } = useContext(AppContext);
+  const { game, theme } = useContext(AppContext);
   const classic = theme === Theme.Classic;
   const height = gameState.board.length;
   const width = gameState.board[0].length;
@@ -124,7 +125,7 @@ export default function Grid({ cellClassName, gameState, id, leastMoves, onCellC
             {Object.values(blocks)}
             {gameState.pos &&
               <Tile
-                atEnd={gameState.board[gameState.pos.y][gameState.pos.x].tileType === TileType.End}
+                atEnd={getSolveStateFunction(game)(gameState)}
                 pos={gameState.pos}
                 text={gameState.moves.length}
                 tileType={TileType.Start}
