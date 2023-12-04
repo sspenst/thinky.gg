@@ -221,6 +221,7 @@ export async function generateLevels(
     minSteps?: number;
     maxSteps?: number;
     minLaplace?: number;
+    minReviews?: number;
     maxWidth?: number;
     maxHeight?: number;
   },
@@ -231,7 +232,7 @@ export async function generateLevels(
   const MAX_STEPS = options.maxSteps || 100;
   const MAX_WIDTH = options.maxWidth || 25;
   const MAX_HEIGHT = options.maxHeight || 25;
-  const MIN_REVIEWS = 3;
+  const MIN_REVIEWS = options.minReviews || 3;
   const MIN_LAPLACE = options.minLaplace || 0.3;
   const [minDifficultyRange] = getDifficultyRangeByIndex(minDifficultyIndex);
   const [, maxDifficultyRange] = getDifficultyRangeByIndex(maxDifficultyIndex);
@@ -496,6 +497,7 @@ export default withAuth(
             {},
             5
           );
+
           const [l0, l1, l2, l3] = await Promise.all([
             level0s,
             level1s,
@@ -505,6 +507,14 @@ export default withAuth(
 
           // dedupe these level ids, just in case though it should be extremely rare
           const dedupedLevels = new Set([...l0, ...l1, ...l2, ...l3]);
+
+          if (dedupedLevels.size < 40) {
+            // we don't have enough levels, so try and query any levels at all...
+            // @TODO: Remove this when games have enough levels
+            const level4s = await generateLevels(populatedMatch.gameId, 0, DIFFICULTY_INDEX.SUPER_GRANDMASTER, { minSteps: 0, maxSteps: 10000, minLaplace: 0.0, minReviews: 0 }, 40 - dedupedLevels.size);
+
+            level4s.forEach(level => dedupedLevels.add(level));
+          }
 
           // add levels to match
           const matchUrl = `${req.headers.origin}/match/${matchId}`;
