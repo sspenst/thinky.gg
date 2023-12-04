@@ -1,6 +1,5 @@
 import { Types } from 'mongoose';
 import Collection, { EnrichedCollection } from './collection';
-import Game from './game';
 
 interface Campaign {
   _id: Types.ObjectId;
@@ -10,7 +9,6 @@ interface Campaign {
   gameId?: string;
   name: string;
   slug: string;
-
 }
 
 export interface EnrichedCampaign extends Campaign {

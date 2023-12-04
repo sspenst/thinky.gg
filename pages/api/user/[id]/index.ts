@@ -1,4 +1,4 @@
-import { ProfileQueryType } from '@root/constants/profileQueryType';
+import { ProfileQueryType, UserExtendedData } from '@root/constants/profileQueryType';
 import apiWrapper, { ValidCommaSeparated, ValidEnum } from '@root/helpers/apiWrapper';
 import { getLevelsByDifficultyTable } from '@root/helpers/getLevelsByDifficultyTable';
 import { getSolvesByDifficultyTable } from '@root/helpers/getSolvesByDifficultyTable';
@@ -24,7 +24,7 @@ export async function getProfileQuery(userId: string, types: ProfileQueryType[])
     [ProfileQueryType.LevelsSolvedByDifficulty]: levelsSolvedByDifficulty,
     [ProfileQueryType.RankedSolvesByDifficulty]: rankedSolvesByDifficulty,
     [ProfileQueryType.User]: user,
-  };
+  } as UserExtendedData;
 }
 
 export default apiWrapper({
@@ -38,6 +38,5 @@ export default apiWrapper({
   const types = type.split(',') as ProfileQueryType[];
   const json = await getProfileQuery(userId, types);
 
-  // TODO: make this an object with a type definition (use it in formattedUser)
   return res.status(200).json(json);
 });
