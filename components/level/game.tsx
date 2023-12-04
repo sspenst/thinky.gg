@@ -12,7 +12,6 @@ import NProgress from 'nprogress';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { debounce, throttle } from 'throttle-debounce';
-import TileType from '../../constants/tileType';
 import { AppContext } from '../../contexts/appContext';
 import { LevelContext } from '../../contexts/levelContext';
 import { PageContext } from '../../contexts/pageContext';
@@ -457,6 +456,11 @@ export default function Game({
         return prevGameState;
       }
 
+      // lock movement once you reach the finish
+      if (isSolved(newGameState)) {
+        return prevGameState;
+      }
+
       if (!makeMove(newGameState, direction, allowFreeUndo)) {
         return prevGameState;
       }
@@ -475,14 +479,15 @@ export default function Game({
 
       return onSuccessfulMove(newGameState);
     });
-  }, [allowFreeUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, game.displayName, level._id, level.data, level.leastMoves, loadCheckpoint, onMove, onNext, onPrev, onSolve, pro, saveCheckpoint, saveSessionToSessionStorage, trackStats]);
+  }, [allowFreeUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, game.displayName, isSolved, level._id, level.data, level.leastMoves, loadCheckpoint, onMove, onNext, onPrev, onSolve, pro, saveCheckpoint, saveSessionToSessionStorage, trackStats]);
 
   useEffect(() => {
     if (disableCheckpoints || !pro || !checkpoints) {
       return;
     }
 
-    const atEnd = gameState.board[gameState.pos.y][gameState.pos.x].tileType === TileType.End;
+    const atEnd = isSolved(gameState);
+
     const bestCheckpoint = checkpoints[BEST_CHECKPOINT_INDEX];
 
     function newBest() {
@@ -496,7 +501,7 @@ export default function Game({
     if (atEnd && newBest()) {
       saveCheckpoint(BEST_CHECKPOINT_INDEX);
     }
-  }, [checkpoints, disableCheckpoints, enrichedLevel.userMoves, gameState, pro, saveCheckpoint]);
+  }, [checkpoints, disableCheckpoints, enrichedLevel.userMoves, gameState, isSolved, pro, saveCheckpoint]);
 
   const touchXDown = useRef<number>(0);
   const touchYDown = useRef<number>(0);

@@ -244,11 +244,6 @@ function checkForFreeUndo(gameState: GameState, direction: Direction): boolean {
 export function makeMove(gameState: GameState, direction: Direction, allowFreeUndo = false): boolean {
   const posTileState = gameState.board[gameState.pos.y][gameState.pos.x];
 
-  // lock movement once you reach the finish
-  if (posTileState.tileType === TileType.End) {
-    return false;
-  }
-
   // before making a move, check if undo is a better choice
   if (allowFreeUndo && checkForFreeUndo(gameState, direction)) {
     return undo(gameState);
