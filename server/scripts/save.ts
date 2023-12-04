@@ -132,18 +132,19 @@ async function integrityCheckMultiplayerProfiles() {
   console.log('All done');
 }
 
-async function integrityCheckRankedScore() {
+async function integrityCheckRankedScore(gameId: GameId) {
   console.log('collecting stats...');
 
   // find all ranked levels, then all complete stats for those levels, then group by userId
   const stats = await LevelModel.aggregate([
-    { $match: { isRanked: true } },
+    { $match: { isRanked: true, gameId: gameId } },
     {
       $lookup: {
         from: 'stats',
         localField: '_id',
         foreignField: 'levelId',
         as: 'stats',
+
       },
     },
     { $unwind: '$stats' },
@@ -167,7 +168,7 @@ async function integrityCheckRankedScore() {
   for (const user of allUsers) {
     const calcRankedSolves = rankedSolvesTable[user._id.toString()] ?? 0;
 
-    await UserModel.updateOne({ _id: user._id }, { $set: { calcRankedSolves: calcRankedSolves } });
+    await UserConfigModel.updateOne({ userId: user._id, gameId }, { $set: { calcRankedSolves: calcRankedSolves } });
 
     // const userBefore = await UserModel.findOneAndUpdate({ _id: user._id }, { $set: { calcRankedSolves: calcRankedSolves } }, { new: false });
 
@@ -396,7 +397,9 @@ async function init() {
   }
 
   if (runRanked) {
-    await integrityCheckRankedScore();
+    for (const gameId of allGameIds) {
+      await integrityCheckRankedScore(gameId);
+    }
   }
 
   if (runUsers) {
