@@ -166,7 +166,7 @@ export async function calcCreatorCounts(gameId: GameId, userId: Types.ObjectId, 
   ], { session: session });
   const levelsCreatedCount = levelsCreatedCountAgg.length > 0 ? levelsCreatedCountAgg[0].count : 0;
 
-  await UserConfigModel.updateOne({ userId: userId }, {
+  await UserConfigModel.updateOne({ userId: userId, gameId: gameId }, {
     calcLevelsCreatedCount: levelsCreatedCount,
   }, { session: session });
 }
