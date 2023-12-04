@@ -139,7 +139,7 @@ export default withAuth({
   }
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'POST') {
-    if (!(await isFullAccount(req.user))) {
+    if (!isFullAccount(req.user)) {
       return res.status(401).json({
         error: 'Commenting requires a full account with a confirmed email'
       });

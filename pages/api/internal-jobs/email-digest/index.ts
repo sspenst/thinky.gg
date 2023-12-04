@@ -296,11 +296,11 @@ export async function sendAutoUnsubscribeUsers(batchId: Types.ObjectId, limit: n
       {
         $match: {
           _id: { $in: usersThatHaveBeenSentReactivationEmailIn3dAgoOrMore },
+          email: { $ne: null },
+          emailConfirmed: { $ne: true }, // don't unsubscribe users with verified emails
           // checking if they have been not been active in past 10 days
           last_visited_at: { $lte: (Date.now() / 1000) - (10 * 24 * 60 * 60 ) }, // TODO need to refactor last_visited_at to be a DATE object instead of seconds
           roles: { $ne: Role.GUEST },
-          email: { $ne: null },
-          emailConfirmed: { $ne: true } // don't unsubscribe users with verified emails
         },
       },
       {

@@ -1,6 +1,7 @@
 import PagePath from '@root/constants/pagePath';
 import StatFilter from '@root/constants/statFilter';
 import getProfileSlug from '@root/helpers/getProfileSlug';
+import isFullAccount from '@root/helpers/isFullAccount';
 import isGuest from '@root/helpers/isGuest';
 import isPro from '@root/helpers/isPro';
 import classNames from 'classnames';
@@ -53,7 +54,7 @@ export default function HomeLoggedIn({
 
   return (<>
     {tour}
-    {user && !user.emailConfirmed &&
+    {!isFullAccount(user) &&
       <div className='bg-yellow-200 w-full text-black text-center text-sm p-2 shadow-lg'>
         {`${isGuest(user) ? 'Convert to a regular account' : 'Confirm your email'} in your `}
         <Link className='font-semibold text-blue-600 hover:underline' href='/settings/account'>
