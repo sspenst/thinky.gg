@@ -4,7 +4,6 @@ import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmationEmail';
 import Collection from '@root/models/db/collection';
 import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import User from '@root/models/db/user';
-import UserConfig from '@root/models/db/userConfig';
 import bcrypt from 'bcryptjs';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
