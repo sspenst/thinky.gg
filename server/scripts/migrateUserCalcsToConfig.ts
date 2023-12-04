@@ -1,6 +1,7 @@
 // run with
 // ts-node -r tsconfig-paths/register --files server/scripts/migrateUserCalcsToConfig.ts
 // import dotenv
+import User from '@root/models/db/user';
 import { UserConfigModel, UserModel } from '@root/models/mongoose';
 import cliProgress from 'cli-progress';
 import dotenv from 'dotenv';
@@ -21,7 +22,12 @@ async function migrate() {
 
   // loop through all userConfigs and update UserModel.emailConfirmed to equal it
   for (let i = 0; i < allUsers.length; i++) {
-    const user = allUsers[i];
+    const user = await UserModel.findById<User>(allUsers[i]._id, { 'calcRankedSolves': 1, 'calc_levels_created_count': 1, 'calc_records': 1, 'chapterUnlocked': 1, 'score': 1 }).lean();
+
+    if (!user) {
+      console.log('\nno user for user', allUsers[i]._id);
+      continue;
+    }
 
     const updated = await UserConfigModel.findOneAndUpdate({ userId: user._id,
       calcRankedSolves: { $exists: false },
