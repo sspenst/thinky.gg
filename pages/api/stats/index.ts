@@ -224,8 +224,6 @@ export default withAuth({
           }
 
           // keep track of all playtime after the record was set
-
-          // reset all playattempts to unsolved
           const sumDuration = await PlayAttemptModel.aggregate([
             {
               $match: {
@@ -245,17 +243,16 @@ export default withAuth({
             }
           ], { session: session });
 
-          await Promise.all([
+          incPlayattemptsDurationSum += sumDuration[0]?.sumDuration ?? 0;
 
+          await Promise.all([
             PlayAttemptModel.updateMany(
               { levelId: level._id },
               { $set: { attemptContext: AttemptContext.UNSOLVED } },
               { session: session },
             ),
-            queueDiscordWebhook(Discord.Levels, `**${req.user.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`, { session: session })
+            queueDiscordWebhook(Discord.Levels, `**${req.user.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`, { session: session }),
           ]);
-
-          incPlayattemptsDurationSum += sumDuration[0]?.sumDuration ?? 0;
         }
 
         // extend the user's recent playattempt up to current ts
@@ -333,7 +330,7 @@ export default withAuth({
           $set: {
             calc_difficulty_estimate: getDifficultyEstimate(enrichedLevel, enrichedLevel.calc_playattempts_unique_users_count ?? 0),
           },
-        }, { session: session }),
+        }, { session: session });
 
         await queueRefreshIndexCalcs(level._id, { session: session });
       });
