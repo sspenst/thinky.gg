@@ -95,6 +95,13 @@ async function doMatchQuery(gameId: GameId, query: MatchQuery) {
               localField: '_id',
               foreignField: 'userId',
               as: 'multiplayerProfile',
+              pipeline: [
+                {
+                  $match: {
+                    gameId: gameId,
+                  }
+                },
+              ]
             }
           },
           {
