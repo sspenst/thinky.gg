@@ -26,7 +26,7 @@ import { AppContext } from '../contexts/appContext';
 import useUser from '../hooks/useUser';
 import { MultiplayerMatchState } from '../models/constants/multiplayer';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
-import User, { ReqUser, UserWithMultiplayerProfile } from '../models/db/user';
+import User, { UserWithMultiplayerProfile } from '../models/db/user';
 
 export const rubik = Rubik({ display: 'swap', subsets: ['latin'] });
 export const teko = Teko({ display: 'swap', subsets: ['latin'], weight: '500' });

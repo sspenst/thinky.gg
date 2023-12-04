@@ -1,6 +1,6 @@
 import { Menu, Transition } from '@headlessui/react';
 import Link from 'next/link';
-import React, { Fragment, useContext, useEffect, useState } from 'react';
+import React, { Fragment, useContext, useEffect } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { AppContext } from '../../contexts/appContext';
 import NotificationList from '../notification/notificationList';

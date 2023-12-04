@@ -32,10 +32,11 @@ describe('pages/chapter1 page', () => {
     const context = {
 
     };
-    const ret = await getServerSideProps(context as GetServerSidePropsContext);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const ret = await getServerSideProps(context as GetServerSidePropsContext) as any;
 
     expect(ret).toBeDefined();
-    expect((ret as any).props).toBeUndefined();
+    expect(ret.props).toBeUndefined();
   });
   test('getServerSideProps logged in', async () => {
     // Created from initialize db file
@@ -46,12 +47,13 @@ describe('pages/chapter1 page', () => {
         }
       },
     };
-    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext) as any;
 
     expect(ret).toBeDefined();
-    expect((ret as any).props).toBeDefined();
-    expect((ret as any).props?.enrichedCollections).toBeDefined();
-    expect((ret as any).props?.enrichedCollections[0]._id).toBe(TestId.COLLECTION);
+    expect(ret.props).toBeDefined();
+    expect(ret.props?.enrichedCollections).toBeDefined();
+    expect(ret.props?.enrichedCollections[0]._id).toBe(TestId.COLLECTION);
   });
   test('getServerSideProps logged in no collection exists', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
@@ -64,9 +66,10 @@ describe('pages/chapter1 page', () => {
         }
       },
     };
-    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext) as any;
 
     expect(ret).toBeDefined();
-    expect((ret as any).props).toBeUndefined();
+    expect(ret.props).toBeUndefined();
   });
 });

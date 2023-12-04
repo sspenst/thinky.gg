@@ -288,6 +288,7 @@ export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {
   const update = {
     calc_playattempts_duration_sum: sumDuration ?? 0,
     calc_playattempts_just_beaten_count: countJustSolved,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     calc_playattempts_unique_users: uniqueUsersList.map((u: any) => u?.userId.toString()),
   } as Partial<Level>;
 
