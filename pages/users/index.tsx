@@ -120,6 +120,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
           localField: '_id',
           foreignField: 'userId',
           as: 'multiplayerProfile',
+          pipeline: [{
+            $match: {
+              gameId: gameId,
+            }
+          }
+          ]
         }
       },
       {
@@ -164,6 +170,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
           foreignField: 'userId',
           as: 'reviews',
           pipeline: [
+            {
+              $match: {
+                gameId: gameId,
+              }
+            },
             {
               $project: {
                 hasScore: {
