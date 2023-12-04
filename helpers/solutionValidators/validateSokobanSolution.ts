@@ -16,11 +16,6 @@ export default function validateSokobanSolution(directions: Direction[], level: 
   }
 
   for (let i = 0; i < directions.length; i++) {
-    // cannot continue moving if already on an exit
-    if (data[pos.y * level.width + pos.x] === TileType.End) {
-      return false;
-    }
-
     const direction = directions[i];
 
     // validate and update position with direction
