@@ -27,6 +27,9 @@ export function randomRotateLevelDataViaMatchHash(level: Level, matchId: string)
   rotationFunction.forEach((rotation) => {
     level.data = rotation(level.data);
   });
-  level.width = level.data.indexOf('\n');
-  level.height = level.data.length / level.width;
+
+  const data = level.data.split('\n');
+
+  level.width = data[0].length;
+  level.height = data.length;
 }
