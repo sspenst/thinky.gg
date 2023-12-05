@@ -1,5 +1,5 @@
 import { Games } from '@root/constants/Games';
-import { getEmailBodyBasic } from '@root/helpers/getEmailBody';
+import getEmailBody from '@root/helpers/getEmailBody';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import EmailLog from '@root/models/db/emailLog';
 import { EmailLogModel } from '@root/models/mongoose';
@@ -37,6 +37,13 @@ export default async function sendPasswordResetEmail(req: NextApiRequest, user: 
     EmailType.EMAIL_PASSWORD_RESET,
     user,
     `${game.displayName} - Password Reset - ${user.name}`,
-    getEmailBodyBasic({ gameId, user: user, title: 'Forgot Password', message: 'Someone requested a password reset for your ' + game.displayName + ' account', linkText: 'Reset Password', linkHref: url }),
+    getEmailBody({
+      gameId: gameId,
+      linkHref: url,
+      linkText: 'Reset Password',
+      message: 'Someone requested a password reset for your Pathology account',
+      title: 'Forgot Password',
+      user: user,
+    }),
   );
 }
