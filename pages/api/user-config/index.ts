@@ -2,6 +2,7 @@ import { EmailDigestSettingTypes } from '@root/constants/emailDigest';
 import { GameId } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
 import Role from '@root/constants/role';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import isGuest from '@root/helpers/isGuest';
 import { logger } from '@root/helpers/logger';
 import User from '@root/models/db/user';
@@ -34,7 +35,7 @@ export function getNewUserConfig(gameId: GameId, roles: Role[], tutorialComplete
     disallowedPushNotifications: [],
     emailDigest: emailDigest,
     gameId: gameId,
-    theme: Theme.Modern,
+    theme: getGameFromId(gameId).defaultTheme,
     tutorialCompletedAt: tutorialCompletedAt,
     userId: userId,
     ...params,

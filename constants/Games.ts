@@ -5,6 +5,7 @@ import validateSokobanSolution from '@root/helpers/solutionValidators/validateSo
 import Level from '@root/models/db/level';
 import Direction from './direction';
 import { GameId } from './GameId';
+import Theme from './theme';
 
 export enum GameType {
   SHORTEST_PATH = 'SHORTEST_PATH',
@@ -18,6 +19,7 @@ export const Games: Record<GameId, Game> = {
   [GameId.GLOBAL]: {
     id: GameId.GLOBAL,
     baseUrl: '',
+    defaultTheme: Theme.Classic,
     displayName: 'Global',
     logo: '/logos/global.png',
     subtitle: 'Global Subtitle',
@@ -30,6 +32,7 @@ export const Games: Record<GameId, Game> = {
   [GameId.PATHOLOGY]: {
     id: GameId.PATHOLOGY,
     baseUrl: 'pathology.gg',
+    defaultTheme: Theme.Modern,
     displayName: 'Pathology',
     logo: '/logos/pathology.svg',
     subtitle: 'Find the way',
@@ -39,10 +42,13 @@ export const Games: Record<GameId, Game> = {
     //
     gameStateIsSolveFunction: pathologySolveState,
     validateSolutionFunction: validatePathologySolution,
+    //
+
   },
   [GameId.SOKOBAN]: {
     id: GameId.SOKOBAN,
     baseUrl: 'sokoban.pathology.gg',
+    defaultTheme: Theme.Winter,
     displayName: 'Sokoban',
     logo: '/logos/sokoban.webp',
     SEOTitle: 'Sokoban - Push the boxes puzzle game',
@@ -57,6 +63,7 @@ export const Games: Record<GameId, Game> = {
 export interface Game {
   id: GameId;
   baseUrl: string;
+  defaultTheme: Theme;
   displayName: string;
   logo: string;
   subtitle: string;
