@@ -8,11 +8,7 @@ import { USER_DEFAULT_PROJECTION } from '../models/schemas/userSchema';
 import { getEnrichUserConfigPipelineStage } from './enrich';
 
 export async function getUsersWithMultiplayerProfileFromIds(gameId: GameId, ids: Types.ObjectId[]) {
-  return getUsersWithMultiplayerProfile(gameId, {
-    _id: {
-      $in: ids
-    }
-  }, {});
+  return getUsersWithMultiplayerProfile(gameId, { _id: { $in: ids } }, {});
 }
 
 export async function getUsersWithMultiplayerProfile(
@@ -39,9 +35,9 @@ export async function getUsersWithMultiplayerProfile(
           {
             $match: {
               gameId: gameId,
-            }
+            },
           },
-        ]
+        ],
       },
     },
     {
