@@ -77,6 +77,10 @@ skillRequirements.forEach(req => {
     name: difficulty.name,
     unlocked: ({ rollingLevelSolvesSum }) => rollingLevelSolvesSum[req.difficultyIndex] >= req.levels,
   };
+
+  if (req.difficultyIndex >= DIFFICULTY_INDEX.GRANDMASTER) {
+    AchievementRulesSkill[req.achievementType].discordNotification = true;
+  }
 });
 
 AchievementRulesSkill[AchievementType.RECORD_AFTER_1_YEAR] = {
