@@ -14,7 +14,7 @@ interface BlockProps {
 
 export default function Block({ inHole, tileType }: BlockProps) {
   const { borderWidth, innerTileSize } = useContext(GridContext);
-  const { theme } = useContext(AppContext);
+  const { game, theme } = useContext(AppContext);
   const classic = theme === Theme.Classic;
   const fillCenter = classic && tileType === TileType.Block;
   const innerBorderWidth = Math.round(innerTileSize / 4.5);
@@ -23,6 +23,8 @@ export default function Block({ inHole, tileType }: BlockProps) {
     <div
       className={classNames(
         'select-none relative z-20',
+        'tile-type-' + tileType,
+        'tile-' + game.id,
         inHole ? styles['in-hole'] : undefined,
       )}
       style={{
