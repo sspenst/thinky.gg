@@ -75,7 +75,7 @@ function NotificationIcon({ notification }: { notification: Notification }) {
 }
 
 function NotificationMessage({ notification, onMarkAsRead }: NotificationMessageProps) {
-  const game = getGameFromId(notification.gameId);
+  const game = getGameFromId(notification.gameId as GameId);
 
   switch (notification.type) {
   case NotificationType.ADMIN_MESSAGE: {

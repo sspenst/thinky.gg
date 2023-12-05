@@ -11,6 +11,6 @@ export function getGameIdFromReq(req?: NextApiRequest | IncomingMessage): GameId
   return Games[subdomain as GameId]?.id || DEFAULT_GAME_ID;
 }
 
-export function getGameFromId(gameId: GameId) {
-  return Games[gameId];
+export function getGameFromId(gameId: GameId | undefined) {
+  return Games[gameId || DEFAULT_GAME_ID];
 }
