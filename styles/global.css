@@ -189,8 +189,11 @@ body {
   --level-block: rgb(0, 0, 0, 0.5);
 }
 .tile-sokoban {
-  /** rounded corners */
-  border-radius: 1.5rem;
+  /** make the borders have a cool effect */
+  border: 1px ridge rgb(0, 0, 0, 0.5); /* other options are dotted, double, groove, ridge, inset, outset */
+  border-radius: 5px;
+
+
 }
 
 .theme-boss {
