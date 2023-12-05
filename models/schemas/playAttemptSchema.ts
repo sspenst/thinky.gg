@@ -28,7 +28,6 @@ const PlayAttemptSchema = new mongoose.Schema<PlayAttempt>({
     enum: GameId,
     required: false,
   },
-
   isDeleted: {
     type: Boolean,
   },

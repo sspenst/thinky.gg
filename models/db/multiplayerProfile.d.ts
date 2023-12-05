@@ -4,15 +4,12 @@ interface MultiplayerProfile {
   calcRushBlitzCount: number;
   calcRushRapidCount: number;
   calcRushClassicalCount: number;
-
   gameId?: string;
-  // elo
+  ratingDeviation: number;
   ratingRushBullet: number;
   ratingRushBlitz: number;
   ratingRushRapid: number;
   ratingRushClassical: number;
-
-  ratingDeviation: number;
   userId: Types.ObjectId & User;
   volatility: number;
 }

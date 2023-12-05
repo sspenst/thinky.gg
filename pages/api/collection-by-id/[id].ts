@@ -9,7 +9,7 @@ import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
 import { getUserFromToken } from '../../../lib/withAuth';
 import Collection, { EnrichedCollection } from '../../../models/db/collection';
 import User from '../../../models/db/user';
-import { CollectionModel, LevelModel, StatModel, UserModel } from '../../../models/mongoose';
+import { CollectionModel, LevelModel, UserModel } from '../../../models/mongoose';
 
 export default apiWrapper({
   GET: {

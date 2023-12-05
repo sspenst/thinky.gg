@@ -41,6 +41,15 @@ const MultiplayerMatchSchema = new mongoose.Schema<MultiplayerMatch>(
       enum: GameId,
       required: false,
     },
+    gameTable: {
+      type: Map,
+      of: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Level',
+        },
+      ],
+    },
     levels: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -79,20 +88,6 @@ const MultiplayerMatchSchema = new mongoose.Schema<MultiplayerMatch>(
       type: Boolean,
       default: true,
     },
-    type: {
-      type: String,
-      enum: MultiplayerMatchType,
-      required: true,
-    },
-    gameTable: {
-      type: Map,
-      of: [
-        {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'Level',
-        },
-      ],
-    },
     startTime: {
       type: Date,
     },
@@ -101,13 +96,16 @@ const MultiplayerMatchSchema = new mongoose.Schema<MultiplayerMatch>(
       enum: MultiplayerMatchState,
       required: true,
     },
-    winners:
-      {
-        type: [mongoose.Schema.Types.ObjectId],
-        ref: 'User',
-        default: [],
-      },
-
+    type: {
+      type: String,
+      enum: MultiplayerMatchType,
+      required: true,
+    },
+    winners: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: 'User',
+      default: [],
+    },
   },
   {
     timestamps: true,

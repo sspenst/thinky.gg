@@ -1,5 +1,5 @@
 import { GameId } from '@root/constants/GameId';
-import { ProfileQueryType } from '@root/constants/profileQueryType';
+import { ProfileQueryType, UserExtendedData } from '@root/constants/profileQueryType';
 import apiWrapper, { NextApiRequestGuest, ValidCommaSeparated, ValidEnum } from '@root/helpers/apiWrapper';
 import { getLevelsByDifficultyTable } from '@root/helpers/getLevelsByDifficultyTable';
 import { getSolvesByDifficultyTable } from '@root/helpers/getSolvesByDifficultyTable';
@@ -25,7 +25,7 @@ export async function getProfileQuery(gameId: GameId, userId: string, types: Pro
     [ProfileQueryType.LevelsSolvedByDifficulty]: levelsSolvedByDifficulty,
     [ProfileQueryType.RankedSolvesByDifficulty]: rankedSolvesByDifficulty,
     [ProfileQueryType.User]: user,
-  };
+  } as UserExtendedData;
 }
 
 export default apiWrapper({
@@ -39,6 +39,5 @@ export default apiWrapper({
   const types = type.split(',') as ProfileQueryType[];
   const json = await getProfileQuery(req.gameId, userId, types);
 
-  // TODO: make this an object with a type definition (use it in formattedUser)
   return res.status(200).json(json);
 });

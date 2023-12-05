@@ -221,7 +221,6 @@ export default withAuth({
                 { $inc: userConfigInc },
                 { session: session },
               ),
-
               createNewRecordOnALevelYouSolvedNotifications(level.gameId, statUserIds, req.userId, level._id, moves.toString(), { session: session })
             ]);
           }
@@ -285,11 +284,11 @@ export default withAuth({
           await PlayAttemptModel.create([{
             _id: new Types.ObjectId(),
             attemptContext: AttemptContext.JUST_SOLVED,
-            gameId: level.gameId,
-            startTime: ts,
             endTime: ts,
-            updateCount: 0,
+            gameId: level.gameId,
             levelId: level._id,
+            startTime: ts,
+            updateCount: 0,
             userId: req.user._id,
           }], { session: session });
         } else {

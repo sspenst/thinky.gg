@@ -35,7 +35,6 @@ export default function ProfileInsights({ reqUser, user }: ProfileInsightsProps)
         <ProfileInsightsLevelPlayLog user={user} />
         <ProfileInsightsMostSolves user={user} />
       </div>
-
       {reqUser?._id === user._id && <ProfileInsightsSolveTimeComparison user={user} />}
     </div>
   );

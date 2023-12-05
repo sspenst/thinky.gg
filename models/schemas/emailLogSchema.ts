@@ -16,19 +16,19 @@ const EmailLogSchema = new mongoose.Schema<EmailLog>(
       type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
+    error: {
+      type: String,
+      required: false,
+    },
     gameId: {
       type: String,
       enum: GameId,
       required: false,
     },
-    error: {
+    state: {
       type: String,
-      required: false,
-    },
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
       required: true,
+      enum: EmailState,
     },
     subject: {
       type: String,
@@ -36,15 +36,15 @@ const EmailLogSchema = new mongoose.Schema<EmailLog>(
       minlength: 1,
       maxlength: 1000,
     },
-    state: {
-      type: String,
-      required: true,
-      enum: EmailState,
-    },
     type: {
       type: String,
       required: true,
       enum: Object.values({ ...EmailType, ...NotificationType }),
+    },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
     },
   },
   {

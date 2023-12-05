@@ -1,7 +1,7 @@
 import { GameId } from '@root/constants/GameId';
+import UserConfig from '@root/models/db/userConfig';
 import { UserConfigModel } from '@root/models/mongoose';
 import User from '../models/db/user';
-import UserConfig from '../models/db/userConfig';
 import isGuest from './isGuest';
 
 export default async function isFullAccount(gameId: GameId, user: User | null, userConfig?: UserConfig | null) {

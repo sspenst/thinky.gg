@@ -23,9 +23,9 @@ export async function createNewAdminMessageNotifications(gameId: GameId, userIds
       _id: notificationId,
       gameId: gameId,
       message: payload,
+      read: false,
       type: NotificationType.ADMIN_MESSAGE,
       userId: userId,
-      read: false,
     });
   }
 
@@ -45,13 +45,13 @@ export async function createNewWallPostNotification(gameId: GameId, type: Notifi
       createdAt: new Date(),
       gameId: gameId,
       message: message,
+      read: false,
       source: sourceUserId,
       sourceModel: 'User',
       target: targetUserId,
       targetModel: 'User',
       type: type,
       userId: userId,
-      read: false,
     }]),
     queuePushNotification(id),
 
@@ -73,14 +73,14 @@ export async function createNewProUserNotification(gameId: GameId, userId: strin
     // TODO: probably should check for createdAt < 1 day here...
   }, {
     gameId: gameId,
+    message: message,
+    read: false,
     source: fromUser || userId,
     sourceModel: 'User',
     target: userId,
     targetModel: 'User',
-    message: message,
     type: NotificationType.UPGRADED_TO_PRO,
     userId: userId,
-    read: false,
   }, {
     upsert: true,
     new: true,
@@ -104,8 +104,8 @@ export async function createNewFollowerNotification(gameId: GameId, follower: st
     gameId: gameId,
     // TODO: probably should check for createdAt < 1 day here...
   }, {
-    message: '',
     gameId: gameId,
+    message: '',
     source: follower,
     sourceModel: 'User',
     target: following,
@@ -139,8 +139,8 @@ export async function createNewReviewOnYourLevelNotification(gameId: GameId, lev
     userId: levelUserId,
     gameId: gameId,
   }, {
-    message: message,
     gameId: gameId,
+    message: message,
     source: sourceUserId,
     sourceModel: 'User',
     target: targetLevelId,
@@ -166,9 +166,9 @@ export async function createNewAchievement(gameId: GameId, achievementType: Achi
     userId: userId,
     gameId: gameId,
   }, {
+    gameId: gameId,
     type: achievementType,
     userId: userId,
-    gameId: gameId,
   }, {
     upsert: true,
     new: true,
@@ -184,9 +184,9 @@ export async function createNewAchievement(gameId: GameId, achievementType: Achi
     userId: userId,
     gameId: gameId,
   }, {
+    gameId: gameId,
     source: achievement._id,
     sourceModel: 'Achievement',
-    gameId: gameId,
     target: userId,
     targetModel: 'User',
     type: NotificationType.NEW_ACHIEVEMENT,
@@ -217,12 +217,12 @@ export async function createNewLevelAddedToCollectionNotification(gameId: GameId
 
     return {
       _id: id,
+      gameId: gameId,
       message: actor._id,
       source: level._id,
       sourceModel: 'Level',
       target: collection,
       targetModel: 'Collection',
-      gameId: gameId,
       type: NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION,
       userId: level.userId,
     };
@@ -256,8 +256,8 @@ export async function createNewLevelNotifications(gameId: GameId, userIdWhoCreat
 
     return {
       _id: id,
-      message: message,
       gameId: gameId,
+      message: message,
       source: userIdWhoCreatedLevel,
       sourceModel: 'User',
       target: targetLevelId,
