@@ -14,9 +14,9 @@ import getTokenCookie from './getTokenCookie';
 import isLocal from './isLocal';
 
 export type NextApiRequestWithAuth = NextApiRequest & {
+  gameId: GameId;
   user: User;
   userId: string;
-  gameId: GameId;
 };
 
 export async function getUserFromToken(

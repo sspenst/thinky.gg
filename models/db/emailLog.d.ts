@@ -7,8 +7,8 @@ interface EmailLog {
   _id: Types.ObjectId;
   batchId: Types.ObjectId;
   createdAt: Date;
-  gameId?: string;
   error: string,
+  gameId?: string;
   state: EmailState;
   subject: string;
   type: EmailType | NotificationType;

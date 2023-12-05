@@ -30,10 +30,10 @@ export function getNewUserConfig(gameId: GameId, roles: Role[], tutorialComplete
 
   return {
     _id: new Types.ObjectId(),
-    gameId: gameId,
     disallowedEmailNotifications: disallowedEmailNotifications,
     disallowedPushNotifications: [],
     emailDigest: emailDigest,
+    gameId: gameId,
     theme: Theme.Modern,
     tutorialCompletedAt: tutorialCompletedAt,
     userId: userId,

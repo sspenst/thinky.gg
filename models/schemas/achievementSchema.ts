@@ -8,15 +8,15 @@ const AchievementSchema = new mongoose.Schema<Achievement>({
     type: mongoose.Schema.Types.ObjectId,
     required: true,
   },
-  type: {
-    type: String,
-    enum: AchievementType,
-    required: true,
-  },
   gameId: {
     type: String,
     enum: GameId,
     required: false,
+  },
+  type: {
+    type: String,
+    enum: AchievementType,
+    required: true,
   },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
