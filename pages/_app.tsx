@@ -9,6 +9,7 @@ import MusicContextProvider from '@root/contexts/musicContext';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import useDeviceCheck from '@root/hooks/useDeviceCheck';
 import Collection from '@root/models/db/collection';
+import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import Notification from '@root/models/db/notification';
 import { NextPageContext } from 'next';
 import type { AppProps } from 'next/app';
@@ -29,7 +30,7 @@ import { AppContext } from '../contexts/appContext';
 import useUser from '../hooks/useUser';
 import { MultiplayerMatchState } from '../models/constants/multiplayer';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
-import User, { UserWithMultiplayerProfile } from '../models/db/user';
+import User, { UserWithMultiMultiplayerProfile, UserWithMultiplayerProfile } from '../models/db/user';
 
 export const rubik = Rubik({ display: 'swap', subsets: ['latin'] });
 export const teko = Teko({ display: 'swap', subsets: ['latin'], weight: '500' });
@@ -205,15 +206,23 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
       setNotifications(notifications);
     });
     socketConn.on('killSocket', () => {
+      console.log('killSocket');
       socketConn.disconnect();
     });
     socketConn.on('connectedPlayers', (connectedPlayers: {
       count: number;
-      users: UserWithMultiplayerProfile[];
+      users: UserWithMultiMultiplayerProfile[];
     }) => {
+      connectedPlayers.users.forEach(player => {
+        if (player.multiplayerProfile === undefined) {
+          return;
+        }
+
+        player.multiplayerProfile = (player.multiplayerProfile as MultiplayerProfile[]).filter(profile => profile.gameId?.toString() === selectedGame.id)[0];
+      });
       setMultiplayerSocket(prevMultiplayerSocket => {
         return {
-          connectedPlayers: connectedPlayers.users,
+          connectedPlayers: connectedPlayers.users as UserWithMultiplayerProfile[],
           connectedPlayersCount: connectedPlayers.count,
           matches: prevMultiplayerSocket.matches,
           privateAndInvitedMatches: prevMultiplayerSocket.privateAndInvitedMatches,
