@@ -125,7 +125,7 @@ export async function broadcastNotifications(gameId: GameId, emitter: Emitter, u
   if (emitter) {
     // get notifications
     const notificationAgg = await NotificationModel.aggregate<Notification>([
-      { $match: { userId: userId._id, gameId: gameId } },
+      { $match: { userId: userId._id, /*gameId: gameId*/ } }, // Not adding gameId on purpose so we can get all notifications for all games
       { $sort: { createdAt: -1 } },
       { $limit: 5 },
       ...getEnrichNotificationPipelineStages(userId)

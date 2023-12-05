@@ -1,4 +1,6 @@
 import { AchievementRulesCombined } from '@root/constants/achievements/achievementInfo';
+import { GameId } from '@root/constants/GameId';
+import { Games } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
 import Collection from '@root/models/db/collection';
 import classNames from 'classnames';
@@ -171,7 +173,6 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
     const isGift = notification.source._id !== notification.target._id;
 
     return (<>
-      <Image alt='logo' src='/pro.svg' width='24' height='24' className='h-4 w-4' />
       {isGift ? 'You received a gift of Pro!' : 'You just upgraded to Pro!'}
       <Link href='/settings/pro' className='underline' onClick={onMarkAsRead}>Check it out!</Link>
     </>);
@@ -199,26 +200,31 @@ export default function FormattedNotification({ close, notification, onMarkAsRea
         color: notification.read ? 'var(--color-gray)' : undefined,
       }}
     >
-      <div className='flex flex-col gap-1 truncate'>
-        {notification.sourceModel === 'User' ?
-          <FormattedUser
-            id={`notification-${notification._id.toString()}`}
-            onClick={() => {
-              onMarkAsRead(true);
 
-              if (close) {
-                close();
-              }
-            }}
-            size={Dimensions.AvatarSizeSmall}
-            user={notification.source as User}
-          />
-          :
-          <div className='flex items-center gap-2 truncate'>
-            <NotificationIcon notification={notification} />
-            <span className='font-bold'>{game.displayName}</span>
-          </div>
-        }
+      <div className='flex flex-col gap-1 truncate'>
+        <div className='flex flex-row items-center gap-1'>
+          <Image alt='logo' src={Games[notification.gameId as GameId].logo} width='24' height='24' className='h-6 w-6' />
+
+          {notification.sourceModel === 'User' ?
+            <FormattedUser
+              id={`notification-${notification._id.toString()}`}
+              onClick={() => {
+                onMarkAsRead(true);
+
+                if (close) {
+                  close();
+                }
+              }}
+              size={Dimensions.AvatarSizeSmall}
+              user={notification.source as User}
+            />
+            :
+            <div className='flex items-center gap-2 truncate'>
+              <NotificationIcon notification={notification} />
+              <span className='font-bold'>{game.displayName}</span>
+            </div>
+          }
+        </div>
         <div className='flex items-center justify-between'>
           <div className='focus:outline-none text-sm whitespace-normal truncate flex items-center gap-1 flex-wrap'>
             <NotificationMessage
