@@ -1,8 +1,9 @@
 /* istanbul ignore file */
+import { AppContext } from '@root/contexts/appContext';
 import User from '@root/models/db/user';
 import { Types } from 'mongoose';
 import Document, { DocumentContext, DocumentInitialProps, Head, Html, Main, NextScript } from 'next/document';
-import React from 'react';
+import React, { useContext } from 'react';
 import Theme from '../constants/theme';
 import { logger } from '../helpers/logger';
 import dbConnect from '../lib/dbConnect';
@@ -72,7 +73,6 @@ class MyDocument extends Document<DocumentProps> {
 
     return initialProps;
   }
-
   render() {
     return (
       <Html lang='en'>
