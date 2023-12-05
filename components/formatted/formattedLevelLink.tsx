@@ -19,7 +19,7 @@ interface EnrichedLevelLinkProps {
 export default function FormattedLevelLink({ id, game, level, onClick }: EnrichedLevelLinkProps) {
   const isSolved = level.userMoves === level.leastMoves;
   const tooltipId = `formatted-level-link-${level._id.toString()}-${id}`;
-  const baseUrl = BASE_PROTOCOL + game.id + '.' + BASE_DOMAIN + '/' || '';
+  const baseUrl = BASE_PROTOCOL + game.id + '.' + BASE_DOMAIN + '' || '';
 
   return (<>
     <Link
