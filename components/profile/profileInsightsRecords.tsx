@@ -40,7 +40,7 @@ export default function ProfileInsightsRecords({ user }: {user: User}) {
           },
           {
             grow: 3,
-            name: 'Discovered Time Delta',
+            name: 'Time Since Creation',
             sortable: true,
             cell: (row) => row.records[0].ts > row.ts ? moment.duration(((row.records[0].ts - row.ts) * 1000)).humanize() : 'N/A',
 
