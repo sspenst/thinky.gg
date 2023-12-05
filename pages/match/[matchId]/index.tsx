@@ -2,7 +2,8 @@ import Grid from '@root/components/level/grid';
 import { getSolveStateFunction } from '@root/components/level/solutionStates/helpers';
 import MatchResults from '@root/components/multiplayer/matchResults';
 import { MatchGameState } from '@root/helpers/gameStateHelpers';
-import { UserWithMultiplayerProfile } from '@root/models/db/user';
+import MultiplayerProfile from '@root/models/db/multiplayerProfile';
+import { UserWithMultiMultiplayerProfile, UserWithMultiplayerProfile } from '@root/models/db/user';
 import moment from 'moment';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
@@ -102,8 +103,16 @@ export default function Match() {
       });
     }
 
-    socketConn.on('connectedPlayersInRoom', (players: {count: number, users: UserWithMultiplayerProfile[]}) => {
-      setConnectedPlayersInRoom(players);
+    socketConn.on('connectedPlayersInRoom', (players: {count: number, users: UserWithMultiMultiplayerProfile[]}) => {
+      // loop through players and remove the multiplayerProfiles that aren't matching the current selected game
+      players.users.forEach(player => {
+        if (player.multiplayerProfile === undefined) {
+          return;
+        }
+
+        player.multiplayerProfile = (player.multiplayerProfile as MultiplayerProfile[]).filter(profile => profile.gameId?.toString() === game.toString());
+      });
+      setConnectedPlayersInRoom(players as {count: number, users: UserWithMultiplayerProfile[]});
     });
     socketConn.on('match', (match: MultiplayerMatch) => {
       setMatch(match);

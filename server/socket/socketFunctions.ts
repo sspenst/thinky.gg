@@ -157,7 +157,9 @@ export async function broadcastConnectedPlayers(gameId: GameId, emitter: Server)
   }
 
   // clientsMap is a map of socketId -> socket, let's just get the array of sockets
+
   const clients = Array.from(clientsMap.values());
+
   const connectedUserIds = clients.map((client) => {
     return client.data.userId;
   });

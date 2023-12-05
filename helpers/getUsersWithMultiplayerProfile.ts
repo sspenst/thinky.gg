@@ -24,6 +24,7 @@ export async function getUsersWithMultiplayerProfile(
     {
       $match: match
     },
+
     // join with multiplayer profile
     {
       $lookup: {
@@ -31,19 +32,6 @@ export async function getUsersWithMultiplayerProfile(
         localField: '_id',
         foreignField: 'userId',
         as: 'multiplayerProfile',
-        pipeline: [
-          {
-            $match: {
-              gameId: gameId,
-            },
-          },
-        ],
-      },
-    },
-    {
-      $unwind: {
-        path: '$multiplayerProfile',
-        preserveNullAndEmptyArrays: true,
       },
     },
     {
@@ -53,9 +41,10 @@ export async function getUsersWithMultiplayerProfile(
         multiplayerProfile: 1,
       }
     },
-    ...getEnrichUserConfigPipelineStage(gameId),
+    //...getEnrichUserConfigPipelineStage(gameId),
   ]) as UserWithMultiplayerProfile[];
 
+  console.log(match, 'users', users);
   users.forEach(user => cleanUser(user));
 
   return users;

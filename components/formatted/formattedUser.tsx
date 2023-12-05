@@ -1,7 +1,7 @@
 import Dimensions from '@root/constants/dimensions';
 import { ProfileQueryType, UserExtendedData } from '@root/constants/profileQueryType';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
-import { getGameLogo } from '@root/helpers/getGameLogo';
+import { getGameLogo, getGameLogoAndLabel } from '@root/helpers/getGameLogo';
 import isOnline from '@root/helpers/isOnline';
 import classNames from 'classnames';
 import Link from 'next/link';
@@ -92,11 +92,10 @@ export default function FormattedUser({ className, id, noLinks, noTooltip, onCli
           <div className='flex flex-col gap-0.5 p-1 items-start text-sm truncate'>
             {!userExtendedData ? <LoadingSpinner /> : <>
               <span className='font-bold text-base'>{userExtendedData.user?.name}</span>
-              {!userExtendedData.user?.ts ? <span>Unregistered</span> : <>
+              {!userExtendedData.user?.ts ? <span>Unregistered for this game</span> : <>
                 { isOnline(userExtendedData.user) && <div className='flex gap-1 items-center'>
                   <span className='font-medium'>Currently Playing:</span>
-                  {userExtendedData.user?.lastGame && getGameLogo(userExtendedData.user?.lastGame)}
-                  {userExtendedData.user?.lastGame && (getGameFromId(userExtendedData.user?.lastGame).displayName)}
+                  {getGameLogoAndLabel(userExtendedData.user.lastGame)}
                 </div>
                 }
                 <div className='flex gap-1'>
