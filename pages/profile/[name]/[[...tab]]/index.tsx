@@ -659,7 +659,7 @@ export default function ProfilePage({
     <Page title={user.name}>
       <>
         <NextSeo
-          title={`${user.name} - ${game.displayName}}`}
+          title={`${user.name} - ${game.displayName}`}
           description={`${user.name}'s profile`}
           canonical={'https://' + game.baseUrl + getProfileSlug(user) + '/' + profileTab}
           openGraph={{
