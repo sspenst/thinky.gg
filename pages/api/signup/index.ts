@@ -117,8 +117,8 @@ export default apiWrapper({ POST: {
   try {
     await session.withTransaction(async () => {
       const [user] = await createUser({
-        gameId: req.gameId,
         email: trimmedEmail,
+        gameId: req.gameId,
         name: trimmedName,
         password: passwordValue,
         tutorialCompletedAt: tutorialCompletedAt,

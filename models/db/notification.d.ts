@@ -7,8 +7,8 @@ import User from './user';
 interface Notification {
   _id: Types.ObjectId;
   createdAt: Date;
-  message?: string;
   gameId?: string;
+  message?: string;
   read: boolean;
   // the object that initiates the notification
   source: User | Achievement | null;

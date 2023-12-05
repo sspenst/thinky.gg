@@ -4,6 +4,11 @@ import NotificationType from '../../constants/notificationType';
 import Notification from '../db/notification';
 
 const NotificationSchema = new mongoose.Schema<Notification>({
+  gameId: {
+    type: String,
+    enum: GameId,
+    required: false,
+  },
   message: {
     type: String,
     required: false,
@@ -13,11 +18,6 @@ const NotificationSchema = new mongoose.Schema<Notification>({
     type: Boolean,
     required: true,
     default: false,
-  },
-  gameId: {
-    type: String,
-    enum: GameId,
-    required: false,
   },
   source: {
     type: mongoose.Schema.Types.ObjectId,

@@ -4,8 +4,8 @@ import User from './user';
 
 interface Record {
   _id: Types.ObjectId;
-  isDeleted: boolean;
   gameId?: string;
+  isDeleted: boolean;
   levelId: Types.ObjectId & Level;
   moves: number;
   ts: number;

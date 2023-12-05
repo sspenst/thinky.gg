@@ -31,6 +31,11 @@ const MultiplayerProfileSchema = new mongoose.Schema<MultiplayerProfile>(
       enum: GameId,
       required: false,
     },
+    ratingDeviation: {
+      type: Number,
+      required: true,
+      default: 400,
+    },
     ratingRushBullet: {
       type: Number,
       required: true,
@@ -50,11 +55,6 @@ const MultiplayerProfileSchema = new mongoose.Schema<MultiplayerProfile>(
       type: Number,
       required: true,
       default: MULTIPLAYER_INITIAL_ELO,
-    },
-    ratingDeviation: {
-      type: Number,
-      required: true,
-      default: 400,
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
