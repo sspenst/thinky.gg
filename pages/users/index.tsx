@@ -57,6 +57,7 @@ export const DEFAULT_QUERY = {
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
+
   const gameId = getGameIdFromReq(context.req);
   const searchQuery = { ...DEFAULT_QUERY };
 
@@ -120,13 +121,14 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
           localField: '_id',
           foreignField: 'userId',
           as: 'multiplayerProfile',
-          pipeline: [{
-            $match: {
-              gameId: gameId,
-            }
-          }
-          ]
-        }
+          pipeline: [
+            {
+              $match: {
+                gameId: gameId,
+              },
+            },
+          ],
+        },
       },
       {
         $unwind: {
