@@ -190,7 +190,7 @@ body {
 }
 .tile-sokoban {
   /** make the borders have a cool effect */
-  border: 1px ridge; /* other options are dotted, double, groove, ridge, inset, outset */
+  border: 0px ridge; /* other options are dotted, double, groove, ridge, inset, outset */
   border-radius: 5px;
 }
 .tile-sokoban.tile-type-5 {
