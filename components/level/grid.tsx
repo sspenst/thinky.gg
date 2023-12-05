@@ -23,7 +23,9 @@ export default function Grid({ cellClassName, gameState, id, leastMoves, onCellC
   const classic = theme === Theme.Classic;
   const height = gameState.board.length;
   const width = gameState.board[0].length;
+
   const gridId = `grid-${id}`;
+
   const [tileSize, setTileSize] = useState(0);
   const borderWidth = Math.round(tileSize / 40) || 1;
   const innerTileSize = tileSize - 2 * borderWidth;
