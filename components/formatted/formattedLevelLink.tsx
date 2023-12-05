@@ -43,6 +43,7 @@ export default function FormattedLevelLink({ id, level, onClick }: EnrichedLevel
     >
       <span className='truncate'>{level.name}</span>
       {isSolved && <Solved className='-mr-1' />}
+
     </Link>
     <StyledTooltip id={tooltipId} />
   </>);

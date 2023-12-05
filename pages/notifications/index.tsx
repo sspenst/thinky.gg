@@ -17,7 +17,7 @@ import { NotificationModel } from '../../models/mongoose';
 const notificationsPerPage = 20;
 
 type NotificationSearchObjProps = {
-  gameId: GameId
+  gameId?: GameId // optional for now
   userId: Types.ObjectId;
   read?: boolean;
 }
@@ -37,7 +37,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
-  const gameId = getGameIdFromReq(context.req);
+  //const gameId = getGameIdFromReq(context.req);
 
   if (!reqUser) {
     return {
@@ -54,7 +54,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     page: typeof page !== 'string' || isNaN(parseInt(page + '')) ? DefaultQuery.page : parseInt(page),
   } as SearchQuery;
 
-  const searchObj: NotificationSearchObjProps = { userId: reqUser._id, gameId: gameId };
+  const searchObj: NotificationSearchObjProps = { userId: reqUser._id, /*gameId: gameId*/ }; // Purposefully not filtering by gameId for now to get all notifications
 
   if (searchQuery.filter === 'unread') {
     searchObj.read = false;
