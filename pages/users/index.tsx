@@ -1,5 +1,6 @@
 import FormattedDate from '@root/components/formatted/formattedDate';
 import MultiplayerRating from '@root/components/multiplayer/multiplayerRating';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import debounce from 'debounce';
 import { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
@@ -107,6 +108,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     skip = ((Math.abs(parseInt(page))) - 1) * limit;
   }
 
+  const gameId = getGameIdFromReq(context.req);
+
   try {
     const usersAgg = await UserModel.aggregate([
       { $match: searchObj },
@@ -117,7 +120,14 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
           localField: '_id',
           foreignField: 'userId',
           as: 'multiplayerProfile',
-        }
+          pipeline: [
+            {
+              $match: {
+                gameId: gameId,
+              },
+            },
+          ],
+        },
       },
       {
         $unwind: {
