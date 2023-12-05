@@ -126,7 +126,7 @@ const LevelSchema = new mongoose.Schema<Level>(
   },
 );
 
-LevelSchema.index({ slug: 1, gameId: 1 }, { name: 'slug_index', unique: true });
+LevelSchema.index({ slug: 1, gameId: 1 }, { unique: true });
 LevelSchema.index({ userId: 1 });
 LevelSchema.index({ name: 1 });
 LevelSchema.index({ userId: 1, name: 1 });
