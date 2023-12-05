@@ -7,6 +7,7 @@ import PlayerRank from '@root/components/profile/playerRank';
 import { ProfileAchievments } from '@root/components/profile/profileAchievements';
 import ProfileMultiplayer from '@root/components/profile/profileMultiplayer';
 import StatFilter from '@root/constants/statFilter';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { getUsersWithMultiplayerProfile } from '@root/helpers/getUsersWithMultiplayerProfile';
 import useSWRHelper from '@root/hooks/useSWRHelper';
 import { MultiplayerMatchState } from '@root/models/constants/multiplayer';
@@ -88,7 +89,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   const profileTab = !tab ? ProfileTab.Profile : tab[0] as ProfileTab;
-  const users = await getUsersWithMultiplayerProfile({ name: name }, { bio: 1, calcRankedSolves: 1, calc_levels_created_count: 1, calc_records: 1, score: 1, ts: 1 });
+  const gameId = getGameIdFromReq(context.req);
+  const users = await getUsersWithMultiplayerProfile(gameId, { name: name }, { bio: 1, calcRankedSolves: 1, calc_levels_created_count: 1, calc_records: 1, score: 1, ts: 1 });
 
   if (!users || users.length !== 1) {
     return {
