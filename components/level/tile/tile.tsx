@@ -31,7 +31,7 @@ export default function Tile({
   const { borderWidth, innerTileSize, tileSize } = useContext(GridContext);
   // initialize the block at the starting position to avoid an animation from the top left
   const [initPos] = useState(new Position(pos.x, pos.y));
-  const { theme } = useContext(AppContext);
+  const { game, theme } = useContext(AppContext);
   const classic = theme === Theme.Classic;
 
   function onClick(e: React.MouseEvent<HTMLDivElement>) {
@@ -83,7 +83,7 @@ export default function Tile({
 
   return (
     <div
-      className={classNames(`absolute tile-type-${tileType}`, className)}
+      className={classNames(`absolute tile-${game.id} tile-type-${tileType}`, className)}
       onClick={onClick}
       onContextMenu={onClick}
       onTouchEnd={onTouch}

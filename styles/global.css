@@ -188,6 +188,10 @@ body {
 .theme-modern.sokoban {
   --level-block: rgb(0, 0, 0, 0.5);
 }
+.tile-sokoban {
+  /** rounded corners */
+  border-radius: 1.5rem;
+}
 
 .theme-boss {
   --bg-color: rgb(22, 21, 21);

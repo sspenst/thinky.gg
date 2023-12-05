@@ -12,7 +12,7 @@ interface SquareProps {
 
 export default function Square({ text, tileType }: SquareProps) {
   const { borderWidth, innerTileSize, leastMoves, tileSize } = useContext(GridContext);
-  const { theme } = useContext(AppContext);
+  const { game, theme } = useContext(AppContext);
   const classic = theme === Theme.Classic;
   const innerBorderWidth = Math.round(innerTileSize / 4.5);
   const fontSizeRatio = text === undefined || String(text).length <= 3 ?
@@ -41,7 +41,7 @@ export default function Square({ text, tileType }: SquareProps) {
 
   return (
     <div
-      className={`select-none tile-type-${tileType} flex items-center justify-center relative`}
+      className={`select-none tile-${game.id} tile-type-${tileType} flex items-center justify-center relative`}
       style={{
         backgroundColor: getBackgroundColor(),
         borderBottomWidth: tileType === TileType.Hole || TileTypeHelper.canMoveUp(tileType) ? innerBorderWidth : 0,
