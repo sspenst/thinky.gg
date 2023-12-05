@@ -4,7 +4,7 @@ import { Games } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { Fragment, useContext, useEffect, useState } from 'react';
+import React, { Fragment, useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 const LinksThatCarryOver = [
   '/profile'
@@ -18,11 +18,8 @@ const links = Object.values(Games).map((game) => ({
 
 export function GameMenu() {
   const { game } = useContext(AppContext);
-  const [currentHost, setCurrentHost] = useState('');
-  const [currentProtocal, setCurrentProtocal] = useState('');
-  const [currentPath, setCurrentPath] = useState('');
 
-  useEffect(() => {
+  const getUrl = useCallback((subdomain: string) => {
     // if port is not 80 or 443, include it in the hostname
 
     // also hostname needs to strip out subdomain
@@ -34,11 +31,13 @@ export function GameMenu() {
     const hostnameStrippedOfFirstSubdomain = dots.length === 2 ?
       dots.slice(1).join('.') : hostname;
 
-    setCurrentProtocal(window.location.protocol);
-    setCurrentHost(hostnameStrippedOfFirstSubdomain);
+    const currentProtocol = (window.location.protocol);
+    const currentHost = (hostnameStrippedOfFirstSubdomain);
     const carryOver = LinksThatCarryOver.some((link) => window.location.pathname.startsWith(link));
 
-    setCurrentPath(carryOver ? window.location.pathname : '');
+    const currentPath = (carryOver ? window.location.pathname : '');
+
+    return `${currentProtocol}//${subdomain}.${currentHost}${currentPath}`;
   }, []);
 
   return (
@@ -69,8 +68,7 @@ export function GameMenu() {
             <Menu.Item key={link.subdomain}>
               {({ active }) => (
                 <Link
-                  href={`${currentProtocal}//${link.subdomain}.${currentHost}${currentPath}`}
-                  passHref
+                  href={getUrl(link.subdomain)}
                 >
                   <div
                     className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3'
