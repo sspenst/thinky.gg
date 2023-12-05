@@ -67,7 +67,7 @@ export default function validateSokobanSolution(directions: Direction[], level: 
     }
   }
 
-  // check if
+  // check if all exits are covered
   return endIndices.every((index) => {
     const x = index % level.width;
     const y = Math.floor(index / level.width);
