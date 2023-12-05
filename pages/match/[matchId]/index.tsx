@@ -521,6 +521,7 @@ export default function Match() {
                   onMove={(gameState) => {
                     const matchGameState: MatchGameState = { ...gameState, leastMoves: activeLevel.leastMoves };
 
+                    console.log('aaa');
                     multiplayerSocket.socket?.emit('matchGameState', {
                       matchId: matchId,
                       matchGameState: matchGameState,
