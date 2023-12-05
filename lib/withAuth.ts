@@ -63,6 +63,7 @@ export async function getUserFromToken(
     },
   };
 
+  const gameId = getGameIdFromReq(req);
   const [user, config] = await Promise.all([UserModel.findByIdAndUpdate(
     userId,
     {
@@ -70,6 +71,7 @@ export async function getUserFromToken(
       ...(dontUpdateLastSeen ? {} : {
         $set: {
           last_visited_at: last_visited_ts,
+          lastGame: gameId
         },
       }),
       ...ipData,

@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import { Types } from 'mongoose';
 import Role from '../../constants/role';
 import MultiplayerProfile from './multiplayerProfile';
@@ -17,6 +18,7 @@ interface User {
   emailConfirmed: boolean;
   hideStatus?: boolean;
   ip_addresses_used: string[];
+  lastGame?: GameId;
   last_visited_at?: number; // last time user visited website
   name: string;
   password?: string;

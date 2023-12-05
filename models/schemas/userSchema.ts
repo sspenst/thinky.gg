@@ -75,6 +75,11 @@ const UserSchema = new mongoose.Schema<User>({
   last_visited_at: {
     type: Number,
   },
+  lastGame: {
+    type: String,
+    enum: GameId,
+    required: false,
+  },
   ip_addresses_used: {
     type: [String],
     select: false,
