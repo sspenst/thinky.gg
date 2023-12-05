@@ -1,4 +1,4 @@
-import { getEmailBodyBasic } from '@root/helpers/getEmailBody';
+import getEmailBody from '@root/helpers/getEmailBody';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import EmailLog from '@root/models/db/emailLog';
 import User from '@root/models/db/user';
@@ -32,6 +32,13 @@ export default async function sendEmailConfirmationEmail(req: NextApiRequest, us
     EmailType.EMAIL_CONFIRM_EMAIL,
     user,
     `Confirm Email - ${user.name}`,
-    getEmailBodyBasic({ gameId: gameId, user: user, title: 'Confirm your email', message: 'Hello there ' + user.name + ', please confirm your email to access more features!', linkText: 'Confirm Email', linkHref: url }),
+    getEmailBody({
+      gameId: gameId,
+      linkHref: url,
+      linkText: 'Confirm Email',
+      message: 'Hello there ' + user.name + ', please confirm your email to access more features!',
+      title: 'Confirm your email',
+      user: user,
+    }),
   );
 }

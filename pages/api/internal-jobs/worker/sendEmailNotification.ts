@@ -34,7 +34,14 @@ export async function sendEmailNotification(gameId: GameId, notification: Notifi
   }
 
   const mobileNotification = getMobileNotification(gameId, notification);
-  const emailBody = getEmailBody(gameId, null, 0, mobileNotification.title, notification.userId, mobileNotification.body, mobileNotification.url, 'View');
+  const emailBody = getEmailBody({
+    gameId: gameId,
+    linkHref: mobileNotification.url,
+    linkText: 'View',
+    message: mobileNotification.body,
+    title: mobileNotification.title,
+    user: notification.userId,
+  });
 
   await sendMail(gameId, new Types.ObjectId(), notification.type, notification.userId, mobileNotification.title, emailBody);
 

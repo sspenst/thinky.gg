@@ -260,7 +260,13 @@ export async function sendEmailDigests(gameId: GameId, batchId: Types.ObjectId, 
       `You have ${notificationsCount} new notification${notificationsCount !== 1 ? 's' : ''}`;
 
     const title = `Welcome to the ${game.displayName} Level of the Day for ${todaysDatePretty}.`;
-    const body = getEmailBody(gameId, levelOfDay, notificationsCount, title, user);
+    const body = getEmailBody({
+      gameId: gameId,
+      levelOfDay: levelOfDay,
+      notificationsCount: notificationsCount,
+      title: title,
+      user: user,
+    });
     const sentError = await sendMail(gameId, batchId, EmailType.EMAIL_DIGEST, user, subject, body);
 
     if (!sentError) {
@@ -341,13 +347,17 @@ export async function sendAutoUnsubscribeUsers(gameId: GameId, batchId: Types.Ob
 
   for (const user of inactive7DUsersWhoWeHaveTriedToEmail) {
     const totalLevelsSolved = user.config?.calcLevelsSolvedCount;
-
     const toSolve = (totalLevels - totalLevelsSolved);
     const subject = 'Auto unsubscribing you from our emails';
     const title = 'It has been some time since we have seen you login to ' + game.displayName + '! We are going to automatically change your email settings so that you will not hear from us again. You can always change your email settings back by visiting the account settings page.';
     const message = `You've completed ${totalLevelsSolved.toLocaleString()} levels on ${game.displayName}. There are still ${toSolve.toLocaleString()} levels for you to play by ${totalCreators.toLocaleString()} different creators. Come back and play!`;
-    const body = getEmailBody(gameId, levelOfDay, 0, title, user, message);
-
+    const body = getEmailBody({
+      gameId: gameId,
+      levelOfDay: levelOfDay,
+      message: message,
+      title: title,
+      user: user,
+    });
     const sentError = await sendMail(gameId, batchId, EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE, user, subject, body);
 
     if (!sentError) {
@@ -425,8 +435,13 @@ export async function sendEmailReactivation(gameId: GameId, batchId: Types.Objec
     const subject = 'New ' + game.displayName + ' levels are waiting to be solved!';
     const title = 'We haven\'t seen you in a bit!';
     const message = `You've completed ${totalLevelsSolved.toLocaleString()} levels on ${game.displayName}. There are still ${toSolve.toLocaleString()} levels for you to play by ${totalCreators.toLocaleString()} different creators. Come back and play!`;
-    const body = getEmailBody(gameId, levelOfDay, 0, title, user, message);
-
+    const body = getEmailBody({
+      gameId: gameId,
+      levelOfDay: levelOfDay,
+      message: message,
+      title: title,
+      user: user,
+    });
     const sentError = await sendMail(gameId, batchId, EmailType.EMAIL_7D_REACTIVATE, user, subject, body);
 
     if (!sentError) {
