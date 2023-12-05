@@ -186,7 +186,7 @@ body {
   --level-wall: rgb(38, 38, 38);
 }
 .theme-modern.sokoban {
-  --level-block: rgb(0, 0, 0,0.5);
+  --level-block: rgb(0, 0, 0, 0.5);
 }
 
 .theme-boss {
