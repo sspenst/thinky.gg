@@ -185,6 +185,9 @@ body {
   --level-player-text: rgb(0, 0, 0);
   --level-wall: rgb(38, 38, 38);
 }
+.theme-modern.sokoban {
+  --level-block: rgb(0, 0, 0,0.5);
+}
 
 .theme-boss {
   --bg-color: rgb(22, 21, 21);

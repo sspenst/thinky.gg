@@ -269,6 +269,8 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
       return;
     }
 
+    document.body.classList.add(selectedGame.id);
+
     if (Object.values(Theme).includes(user.config.theme as Theme) && theme !== user.config.theme) {
       // need to remove the default theme so we can add the userConfig theme
       document.body.classList.remove(Theme.Modern);
@@ -276,7 +278,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
       setTheme(user.config.theme);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.config]);
+  }, [user?.config, selectedGame]);
 
   useEffect(() => {
     for (const match of matches) {
