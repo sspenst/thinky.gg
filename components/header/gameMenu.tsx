@@ -6,6 +6,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import React, { Fragment, useContext, useEffect, useState } from 'react';
 
+const LinksThatCarryOver = [
+  '/profile'
+];
+
 const links = Object.values(Games).map((game) => ({
   logo: game.logo,
   subdomain: game.id,
@@ -16,6 +20,7 @@ export function GameMenu() {
   const { game } = useContext(AppContext);
   const [currentHost, setCurrentHost] = useState('');
   const [currentProtocal, setCurrentProtocal] = useState('');
+  const [currentPath, setCurrentPath] = useState('');
 
   useEffect(() => {
     // if port is not 80 or 443, include it in the hostname
@@ -31,6 +36,9 @@ export function GameMenu() {
 
     setCurrentProtocal(window.location.protocol);
     setCurrentHost(hostnameStrippedOfFirstSubdomain);
+    const carryOver = LinksThatCarryOver.some((link) => window.location.pathname.startsWith(link));
+
+    setCurrentPath(carryOver ? window.location.pathname : '');
   }, []);
 
   return (
@@ -61,7 +69,7 @@ export function GameMenu() {
             <Menu.Item key={link.subdomain}>
               {({ active }) => (
                 <Link
-                  href={`${currentProtocal}//${link.subdomain}.${currentHost}/home`}
+                  href={`${currentProtocal}//${link.subdomain}.${currentHost}${currentPath}`}
                   passHref
                 >
                   <div
