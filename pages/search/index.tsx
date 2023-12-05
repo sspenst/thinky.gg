@@ -373,7 +373,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       grow: 2,
       selector: (row: EnrichedLevel) => (
         <div className='flex items-center gap-2 truncate'>
-          <FormattedLevelLink onClick={() => {
+          <FormattedLevelLink game={game} onClick={() => {
             const q = getParsedUrlQuery(query);
             const queryString = Object.keys(q).map(key => key + '=' + query[key]).join('&');
             const ts = new Date();

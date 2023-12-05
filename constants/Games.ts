@@ -11,6 +11,9 @@ export enum GameType {
   NONE = 'NONE'
 
 }
+
+export const BASE_PROTOCOL = process.env.NODE_ENV === 'production' ? 'https://' : 'http://';
+export const BASE_DOMAIN = process.env.NODE_ENV === 'production' ? 'pathology.gg' : 'localhost:3000';
 export const Games: Record<GameId, Game> = {
   [GameId.GLOBAL]: {
     id: GameId.GLOBAL,

@@ -10,3 +10,7 @@ export function getGameIdFromReq(req?: NextApiRequest | IncomingMessage): GameId
 
   return Games[subdomain as GameId]?.id || DEFAULT_GAME_ID;
 }
+
+export function getGameFromId(gameId: GameId) {
+  return Games[gameId];
+}

@@ -2,6 +2,7 @@ import { AchievementRulesCombined } from '@root/constants/achievements/achieveme
 import { GameId } from '@root/constants/GameId';
 import { Games } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import Collection from '@root/models/db/collection';
 import classNames from 'classnames';
 import Image from 'next/image';
@@ -74,6 +75,8 @@ function NotificationIcon({ notification }: { notification: Notification }) {
 }
 
 function NotificationMessage({ notification, onMarkAsRead }: NotificationMessageProps) {
+  const game = getGameFromId(notification.gameId);
+
   switch (notification.type) {
   case NotificationType.ADMIN_MESSAGE: {
     if (!notification.message) {
@@ -93,6 +96,7 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
     return (<>
       {'set a new record: '}
       <FormattedLevelLink
+        game={game}
         id={`notification-${notification._id.toString()}`}
         level={notification.target as EnrichedLevel}
         onClick={onMarkAsRead}
@@ -106,6 +110,7 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
         {getNewReviewOnYourLevelBody(notification.message)}
         {' on your level '}
         <FormattedLevelLink
+          game={game}
           id={`notification-${notification._id.toString()}`}
           level={notification.target as EnrichedLevel}
           onClick={onMarkAsRead}
@@ -120,6 +125,7 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
     return (<>
       {'published a new level: '}
       <FormattedLevelLink
+        game={game}
         id={`notification-${notification._id.toString()}`}
         level={notification.target as EnrichedLevel}
         onClick={onMarkAsRead}
@@ -128,6 +134,7 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
   case NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION:
     return (<>
       <FormattedLevelLink
+        game={game}
         id={`notification-${notification._id.toString()}`}
         level={notification.source as EnrichedLevel}
         onClick={onMarkAsRead}
