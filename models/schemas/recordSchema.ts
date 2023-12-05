@@ -7,13 +7,13 @@ const RecordSchema = new mongoose.Schema<Record>({
     type: mongoose.Schema.Types.ObjectId,
     required: true,
   },
-  isDeleted: {
-    type: Boolean,
-  },
   gameId: {
     type: String,
     enum: GameId,
     required: false,
+  },
+  isDeleted: {
+    type: Boolean,
   },
   levelId: {
     type: mongoose.Schema.Types.ObjectId,

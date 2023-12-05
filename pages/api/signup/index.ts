@@ -27,9 +27,9 @@ async function createUser({ gameId, email, name, password, tutorialCompletedAt, 
     UserModel.create([{
       _id: id,
       email: email,
-      name: name,
-      emailConfirmed: false,
       emailConfirmationToken: getEmailConfirmationToken(),
+      emailConfirmed: false,
+      name: name,
       password: password,
       roles: roles,
       score: 0,
@@ -119,8 +119,8 @@ export default apiWrapper({ POST: {
   try {
     await session.withTransaction(async () => {
       const [user] = await createUser({
-        gameId: req.gameId,
         email: trimmedEmail,
+        gameId: req.gameId,
         name: trimmedName,
         password: passwordValue,
         tutorialCompletedAt: tutorialCompletedAt,

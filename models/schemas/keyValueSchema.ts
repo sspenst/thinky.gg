@@ -4,6 +4,11 @@ import KeyValue from '../db/keyValue';
 
 const KeyValueSchema = new mongoose.Schema<KeyValue>(
   {
+    gameId: {
+      type: String,
+      enum: GameId,
+      required: false,
+    },
     key: {
       type: String,
       required: true,
@@ -15,11 +20,6 @@ const KeyValueSchema = new mongoose.Schema<KeyValue>(
       required: true,
       minlength: 1,
       maxlength: 50,
-    },
-    gameId: {
-      type: String,
-      enum: GameId,
-      required: false,
     },
   },
   {

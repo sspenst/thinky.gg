@@ -1,5 +1,5 @@
 import Dimensions from '@root/constants/dimensions';
-import { ProfileQueryType } from '@root/constants/profileQueryType';
+import { ProfileQueryType, UserExtendedData } from '@root/constants/profileQueryType';
 import classNames from 'classnames';
 import Link from 'next/link';
 import React, { useEffect, useRef, useState } from 'react';
@@ -24,11 +24,11 @@ interface FormattedUserProps {
   user?: User | null;
 }
 
-const cache = {} as { [key: string]: any };
+const cache = {} as { [key: string]: UserExtendedData };
 
 export default function FormattedUser({ className, id, noLinks, noTooltip, onClick, size = Dimensions.AvatarSize, user }: FormattedUserProps) {
   const [showTooltip, setShowTooltip] = useState(false);
-  const [userExtendedData, setUserExtendedData] = useState<any>();
+  const [userExtendedData, setUserExtendedData] = useState<UserExtendedData>();
   const setTimer = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
@@ -43,7 +43,7 @@ export default function FormattedUser({ className, id, noLinks, noTooltip, onCli
     }
 
     fetch(`/api/user/${user._id}?type=${Object.values(ProfileQueryType).join(',')}`).then(async res => {
-      const data = await res.json();
+      const data = await res.json() as UserExtendedData;
 
       setUserExtendedData(data);
       cache[user._id.toString()] = data;

@@ -147,6 +147,7 @@ export default function CollectionScrollList({ collection, onLoading, onLevelsCh
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accumlatedLevels, collection.type, targetLevel._id]);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onScroll = useCallback(async (e: any) => {
     if (collection.type === CollectionType.InMemory) {
       return;
@@ -172,11 +173,7 @@ export default function CollectionScrollList({ collection, onLoading, onLevelsCh
   }
 
   return (
-    <div className='overflow-y-auto max-w-full'
-      onScroll={(e: any) => {
-        onScroll(e);
-      }
-      }>
+    <div className='overflow-y-auto max-w-full' onScroll={e => onScroll(e)}>
       {isLoading && <div className='justify-center items-center pt-3'><LoadingSpinner /></div>}
       {!isLoading && !isAutoScrolling.current && !noMoreAbove && <div className='flex flex-col justify-center items-center pt-3'><button className='text-sm bg-gray-600 p-1 rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75'
         onClick={() => {

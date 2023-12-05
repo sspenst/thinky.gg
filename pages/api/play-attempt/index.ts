@@ -102,8 +102,8 @@ export default withAuth({
           const resp = await PlayAttemptModel.create([{
             _id: new Types.ObjectId(),
             attemptContext: level.userId.toString() === req.userId ? AttemptContext.SOLVED : AttemptContext.UNSOLVED,
-            gameId: level.gameId,
             endTime: now,
+            gameId: level.gameId,
             levelId: levelObjectId,
             startTime: now,
             updateCount: 0,
@@ -172,8 +172,8 @@ export default withAuth({
         const resp = await PlayAttemptModel.create([{
           _id: new Types.ObjectId(),
           attemptContext: latestPlayAttempt.attemptContext === AttemptContext.UNSOLVED ? AttemptContext.UNSOLVED : AttemptContext.SOLVED,
-          gameId: latestPlayAttempt.gameId,
           endTime: now,
+          gameId: latestPlayAttempt.gameId,
           levelId: levelObjectId,
           startTime: now,
           updateCount: 0,

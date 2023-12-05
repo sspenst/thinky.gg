@@ -2,7 +2,6 @@ import { EmailDigestSettingTypes } from '@root/constants/emailDigest';
 import { GameId } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
 import Role from '@root/constants/role';
-import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
 import isGuest from '@root/helpers/isGuest';
 import { logger } from '@root/helpers/logger';
 import User from '@root/models/db/user';
@@ -31,10 +30,10 @@ export function getNewUserConfig(gameId: GameId, roles: Role[], tutorialComplete
 
   return {
     _id: new Types.ObjectId(),
-    gameId: gameId,
     disallowedEmailNotifications: disallowedEmailNotifications,
     disallowedPushNotifications: [],
     emailDigest: emailDigest,
+    gameId: gameId,
     theme: Theme.Modern,
     tutorialCompletedAt: tutorialCompletedAt,
     userId: userId,

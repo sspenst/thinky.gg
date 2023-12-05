@@ -12,14 +12,14 @@ const CollectionSchema = new mongoose.Schema<Collection>({
     type: String,
     maxlength: 1024 * 5, // 5 kb limit seems reasonable
   },
-  isPrivate: {
-    type: Boolean,
-    default: false,
-  },
   gameId: {
     type: String,
     enum: GameId,
     required: false,
+  },
+  isPrivate: {
+    type: Boolean,
+    default: false,
   },
   isThemed: {
     type: Boolean,

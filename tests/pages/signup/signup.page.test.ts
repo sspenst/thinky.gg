@@ -15,7 +15,6 @@ afterAll(async () => {
 afterEach(() => {
   jest.restoreAllMocks();
 });
-//enableFetchMocks()
 
 describe('pages/signup page', () => {
   test('getServerProps with no params', async () => {
@@ -23,13 +22,14 @@ describe('pages/signup page', () => {
     const context = {
     };
 
-    const ret = await getServerSideProps(context as GetServerSidePropsContext);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const ret = await getServerSideProps(context as GetServerSidePropsContext) as any;
 
     expect(ret).toBeDefined();
 
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
-    expect((ret as any).redirect).toBeUndefined();
+    expect(ret.redirect).toBeUndefined();
   });
   test('getServerProps with params', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
@@ -41,10 +41,11 @@ describe('pages/signup page', () => {
       },
     };
 
-    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext) as any;
 
     expect(ret.props).toBeUndefined();
-    expect((ret as any).redirect).toBeDefined();
-    expect((ret as any).redirect?.destination).toBe('/home');
+    expect(ret.redirect).toBeDefined();
+    expect(ret.redirect?.destination).toBe('/home');
   });
 });

@@ -59,17 +59,17 @@ const LevelSchema = new mongoose.Schema<Level>(
       required: false,
       default: 0
     },
-    gameId: {
-      type: String,
-      enum: GameId,
-      required: false,
-    },
     // https://github.com/sspenst/pathology/wiki/Level-data-format
     data: {
       type: String,
       required: true,
       minLength: 2, // always need start and end
       maxlength: 40 * 40 + 39,
+    },
+    gameId: {
+      type: String,
+      enum: GameId,
+      required: false,
     },
     height: {
       type: Number,
@@ -289,6 +289,7 @@ export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {
   const update = {
     calc_playattempts_duration_sum: sumDuration ?? 0,
     calc_playattempts_just_beaten_count: countJustSolved,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     calc_playattempts_unique_users: uniqueUsersList.map((u: any) => u?.userId.toString()),
   } as Partial<Level>;
 
