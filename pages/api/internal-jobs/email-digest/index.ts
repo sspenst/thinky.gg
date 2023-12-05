@@ -254,7 +254,12 @@ export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFa
       `You have ${notificationsCount} new notification${notificationsCount !== 1 ? 's' : ''}`;
 
     const title = `Welcome to the Pathology Level of the Day for ${todaysDatePretty}.`;
-    const body = getEmailBody(levelOfDay, notificationsCount, title, user);
+    const body = getEmailBody({
+      levelOfDay: levelOfDay,
+      notificationsCount: notificationsCount,
+      title: title,
+      user: user,
+    });
     const sentError = await sendMail(batchId, EmailType.EMAIL_DIGEST, user, subject, body);
 
     if (!sentError) {
@@ -348,8 +353,12 @@ export async function sendAutoUnsubscribeUsers(batchId: Types.ObjectId, limit: n
     const subject = 'Auto unsubscribing you from our emails';
     const title = 'It has been some time since we have seen you login to Pathology! We are going to automatically change your email settings so that you will not hear from us again. You can always change your email settings back by visiting the account settings page.';
     const message = `You've completed ${totalLevelsSolved.toLocaleString()} levels on Pathology. There are still ${toSolve.toLocaleString()} levels for you to play by ${totalCreators.toLocaleString()} different creators. Come back and play!`;
-    const body = getEmailBody(levelOfDay, 0, title, user, message);
-
+    const body = getEmailBody({
+      levelOfDay: levelOfDay,
+      message: message,
+      title: title,
+      user: user,
+    });
     const sentError = await sendMail(batchId, EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE, user, subject, body);
 
     if (!sentError) {
@@ -438,8 +447,12 @@ export async function sendEmailReactivation(batchId: Types.ObjectId, limit: numb
     const subject = 'New Pathology levels are waiting to be solved!';
     const title = 'We haven\'t seen you in a bit!';
     const message = `You've completed ${totalLevelsSolved.toLocaleString()} levels on Pathology. There are still ${toSolve.toLocaleString()} levels for you to play by ${totalCreators.toLocaleString()} different creators. Come back and play!`;
-    const body = getEmailBody(levelOfDay, 0, title, user, message);
-
+    const body = getEmailBody({
+      levelOfDay: levelOfDay,
+      message: message,
+      title: title,
+      user: user,
+    });
     const sentError = await sendMail(batchId, EmailType.EMAIL_7D_REACTIVATE, user, subject, body);
 
     if (!sentError) {
