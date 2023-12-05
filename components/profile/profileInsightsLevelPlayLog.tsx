@@ -11,7 +11,7 @@ import FormattedUser from '../formatted/formattedUser';
 
 export default function ProfileInsightsLevelPlayLog({ user }: {user: User}) {
   const { proStatsUser } = useProStatsUser(user, ProStatsUserType.PlayLogForUserCreatedLevels);
-  const { user: reqUser } = useContext(AppContext);
+  const { game, user: reqUser } = useContext(AppContext);
 
   if (!proStatsUser || !proStatsUser[ProStatsUserType.PlayLogForUserCreatedLevels]) {
     return <span>Loading...</span>;
@@ -30,7 +30,7 @@ export default function ProfileInsightsLevelPlayLog({ user }: {user: User}) {
             },
             {
               name: 'Level',
-              cell: (row, index) => <FormattedLevelLink id={`play-log-${index}`} level={row.levelId} />,
+              cell: (row, index) => <FormattedLevelLink game={game} id={`play-log-${index}`} level={row.levelId} />,
               grow: 2,
             },
             {
