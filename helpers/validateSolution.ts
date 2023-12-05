@@ -37,12 +37,14 @@ export function randomRotateLevelDataViaMatchHash(level: Level, matchId: string)
   const rotationFunction = orientations[hash];
 
   // apply the rotation
-
   rotationFunction.forEach((rotation) => {
     level.data = rotation(level.data);
   });
-  level.width = level.data.indexOf('\n');
-  level.height = level.data.length / level.width;
+
+  const data = level.data.split('\n');
+
+  level.width = data[0].length;
+  level.height = data.length;
 }
 
 export default function validateSolution(directions: Direction[], level: Level) {
