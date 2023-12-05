@@ -261,7 +261,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
         />
       </div>
       <BasicLayout
-        id={level._id.toString()}
         controls={[
           new Control('btn-undo', () => undo(), <>Undo</>, historyIndex.current === 0),
           new Control('btn-redo', () => redo(), <>Redo</>, historyIndex.current === history.current.length - 1),
@@ -281,6 +280,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
             new Control('btn-publish', () => setIsPublishLevelOpen(true), <>Publish</>, isDirty || level.leastMoves === 0),
           ]),
         ]}
+        id={level._id?.toString() ?? 'new'}
         level={level}
         onClick={onClick}
       />
