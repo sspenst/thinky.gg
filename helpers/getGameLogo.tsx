@@ -1,13 +1,19 @@
+import StyledTooltip from '@root/components/page/styledTooltip';
 import { GameId } from '@root/constants/GameId';
 import { Games } from '@root/constants/Games';
 import Image from 'next/image';
 import React from 'react';
 import { getGameFromId } from './getGameIdFromReq';
 
-export function getGameLogo(game: GameId) {
-  const logo = Games[game].logo;
+export function getGameLogo(gameId: GameId) {
+  const game = getGameFromId(gameId);
+  const logo = game.logo;
+  const random = game.id + '-tip-' + Math.random();
 
-  return <Image alt='logo' src={logo} width='24' height='24' className='h-6 w-6' />;
+  return <div data-tooltip-id={random} data-tooltip-content={game.displayName}>
+    <Image alt='logo' src={logo} width='24' height='24' className='h-6 w-6' />
+    <StyledTooltip id={random} />
+  </div>;
 }
 
 export function getGameLogoAndLabel(game?: GameId) {
