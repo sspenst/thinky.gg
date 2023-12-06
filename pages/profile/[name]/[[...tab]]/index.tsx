@@ -474,7 +474,6 @@ export default function ProfilePage({
           searchText={collectionFilterText}
           setSearchText={setCollectionFilterText}
         />
-
         {reqUser?._id === user._id &&
           <div className='text-center'>
             <button

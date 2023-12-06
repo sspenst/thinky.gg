@@ -226,9 +226,7 @@ export default function GameWrapper({ chapter, collection, setCollection, level,
               </svg>
             </button>
           </div>
-
           {getCollectionLevelList('sidebar')}
-
         </div>
       }
       <div className='hidden xl:flex flex-col border-l border-color-4 break-words z-10 h-full w-100'>

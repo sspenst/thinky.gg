@@ -53,6 +53,7 @@
       { "blankLine": "any", "prev": ["const", "let"], "next": ["const", "let"] }
     ],
     "quotes": ["warn", "single"],
+    "react/jsx-newline": ["warn", { "prevent": true }],
     "react/jsx-tag-spacing": ["warn", { "beforeSelfClosing": "always" }],
     "react/self-closing-comp": ["warn", {
       "component": true,
