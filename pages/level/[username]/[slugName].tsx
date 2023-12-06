@@ -185,19 +185,23 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
         if (levelIndex + 1 < collection.levels.length) {
           const nextLevel = collection.levels[levelIndex + 1];
 
-          url = `/level/${nextLevel.slug}?cid=${collection._id}${chapter ? `&chapter=${chapter}` : ''}`;
-        } else {
-          // if we are at the end of the collection...
-
+          if (collection.type === CollectionType.InMemory) {
+            // InMemory collections should not expose the cid
+            url = `/level/${nextLevel.slug}`;
+          } else {
+            url = `/level/${nextLevel.slug}?cid=${collection._id}${chapter ? `&chapter=${chapter}` : ''}`;
+          }
         }
       } else {
         if (levelIndex - 1 >= 0) {
           const prevLevel = collection.levels[levelIndex - 1];
 
-          url = `/level/${prevLevel.slug}?cid=${collection._id}${chapter ? `&chapter=${chapter}` : ''}`;
-        } else {
-          // if we are at the start of the collection...
-
+          if (collection.type === CollectionType.InMemory) {
+            // InMemory collections should not expose the cid
+            url = `/level/${prevLevel.slug}`;
+          } else {
+            url = `/level/${prevLevel.slug}?cid=${collection._id}${chapter ? `&chapter=${chapter}` : ''}`;
+          }
         }
       }
     }
@@ -329,10 +333,10 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
           <GameWrapper
             chapter={chapter as string | undefined}
             collection={collection}
-            setCollection={setCollection}
             level={level}
             onNext={() => changeLevel(true)}
             onPrev={() => changeLevel(false)}
+            setCollection={setCollection}
             user={reqUser}
           />
         </Page>
