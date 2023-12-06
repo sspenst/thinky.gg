@@ -15,6 +15,7 @@ import User from '@root/models/db/user';
 import { AchievementModel, LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, ReviewModel, UserModel } from '@root/models/mongoose';
 import { Types } from 'mongoose';
 import queueDiscordWebhook from './discordWebhook';
+import { getGameFromId } from './getGameIdFromReq';
 import { getRecordsByUserId } from './getRecordsByUserId';
 
 const AchievementCategoryFetch = {
@@ -109,7 +110,7 @@ export async function refreshAchievements(gameId: GameId, userId: Types.ObjectId
           const achievementHref = 'https://' + game.baseUrl + '/achievement/' + achievementType;
           const achievementLinkDiscord = `[${achievementInfo.name}](${achievementHref})`;
           // message should also include emoji
-          const message = `${userLinkDiscord} just unlocked the ${achievementLinkDiscord} ${achievementInfo.emoji} achievement!`;
+          const message = `**${game.displayName}** - ${userLinkDiscord} just unlocked the ${achievementLinkDiscord} ${achievementInfo.emoji} achievement!`;
 
           achievementsCreatedPromises.push(queueDiscordWebhook(Discord.General, message));
         }

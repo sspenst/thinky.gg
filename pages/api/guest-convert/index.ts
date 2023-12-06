@@ -2,6 +2,7 @@ import Discord from '@root/constants/discord';
 import Role from '@root/constants/role';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import getProfileSlug from '@root/helpers/getProfileSlug';
 import isGuest from '@root/helpers/isGuest';
 import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmationEmail';
@@ -44,10 +45,11 @@ export default withAuth({
   user.password = password;
   user.roles = user.roles.filter((role: Role) => role !== Role.GUEST);
   await user.save();
+  const game = getGameFromId(req.gameId);
 
   await Promise.all([
     sendEmailConfirmationEmail(req, user),
-    queueDiscordWebhook(Discord.NewUsers, `**${trimmedName}** just converted from a guest account! Welcome them on their [profile](${req.headers.origin}${getProfileSlug(user)})!`),
+    queueDiscordWebhook(Discord.NewUsers, `**${game.displayName}** - **${trimmedName}** just converted from a guest account! Welcome them on their [profile](${req.headers.origin}${getProfileSlug(user)})!`),
   ]);
 
   return res.status(200).json({ updated: true });

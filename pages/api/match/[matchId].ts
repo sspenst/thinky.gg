@@ -2,6 +2,7 @@ import Discord from '@root/constants/discord';
 import { GameId } from '@root/constants/GameId';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import { multiplayerMatchTypeToText } from '@root/helpers/multiplayerHelperFunctions';
 import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import { PipelineStage, Types } from 'mongoose';
@@ -521,7 +522,8 @@ export default withAuth(
 
           // add levels to match
           const matchUrl = `${req.headers.origin}/match/${matchId}`;
-          const discordMessage = `*${multiplayerMatchTypeToText(match.type)}* match starting between ${populatedMatch.players?.map(p => `**${p.name}**`).join(' and ')}! [Spectate here](<${matchUrl}>)`;
+          const game = getGameFromId(populatedMatch.gameId);
+          const discordMessage = `**${game.displayName}** - *${multiplayerMatchTypeToText(match.type)}* match starting between ${populatedMatch.players?.map(p => `**${p.name}**`).join(' and ')}! [Spectate here](<${matchUrl}>)`;
 
           Promise.all([
             MultiplayerMatchModel.updateOne(

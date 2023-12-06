@@ -510,7 +510,9 @@ export default apiWrapper({ GET: {
     });
   }
 
-  await queueDiscordWebhook(Discord.DevPriv, `📧 **Email Digest**\n\tSent: ${emailDigestSent.length}\n\tFailed: ${emailDigestFailed.length}\n🔄 **Reactivation**\n\tSent: ${emailReactivationSent.length}\n\tFailed: ${emailReactivationFailed.length}\n❌ **Unsubscribe**\n\tSent: ${emailUnsubscribeSent.length}\n\tFailed: ${emailUnsubscribeFailed.length}`);
+  const game = Games[gameId];
+
+  await queueDiscordWebhook(Discord.DevPriv, `**${game.displayName}**\n\n📧 **Email Digest**\n\tSent: ${emailDigestSent.length}\n\tFailed: ${emailDigestFailed.length}\n🔄 **Reactivation**\n\tSent: ${emailReactivationSent.length}\n\tFailed: ${emailReactivationFailed.length}\n❌ **Unsubscribe**\n\tSent: ${emailUnsubscribeSent.length}\n\tFailed: ${emailUnsubscribeFailed.length}`);
 
   return res.status(200).json({ success: true, emailDigestSent: emailDigestSent, emailDigestFailed: emailDigestFailed, emailReactivationSent: emailReactivationSent, emailReactivationFailed: emailReactivationFailed, emailUnsubscribeSent: emailUnsubscribeSent, emailUnsubscribeFailed: emailUnsubscribeFailed });
 });

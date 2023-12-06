@@ -1,3 +1,4 @@
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
@@ -48,11 +49,12 @@ export default withAuth({ POST: {
         slug: slug,
         userId: new Types.ObjectId(TestId.ARCHIVE),
       } }, { new: true, session: session });
+      const game = getGameFromId(level.gameId);
 
       await Promise.all([
         queueCalcCreatorCounts(level.gameId, new Types.ObjectId(TestId.ARCHIVE), { session: session }),
         queueCalcCreatorCounts(level.gameId, level.userId, { session: session }),
-        queueDiscordWebhook(Discord.Levels, `**${req.user.name}** archived a level: [${level.name}](${req.headers.origin}/level/${slug}?ts=${ts})`, { session: session }),
+        queueDiscordWebhook(Discord.Levels, `**${game.displayName}** - **${req.user.name}** archived a level: [${level.name}](${req.headers.origin}/level/${slug}?ts=${ts})`, { session: session }),
       ]);
     });
 

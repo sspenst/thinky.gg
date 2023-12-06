@@ -3,7 +3,7 @@ import 'react-tooltip/dist/react-tooltip.css';
 import '../styles/global.css';
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react';
 import { Portal } from '@headlessui/react';
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
 import { Game, Games } from '@root/constants/Games';
 import MusicContextProvider from '@root/contexts/musicContext';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
@@ -81,7 +81,7 @@ MyApp.getInitialProps = async ({ ctx }: { ctx: NextPageContext }) => {
     userAgent = navigator.userAgent;
   }
 
-  return { userAgent, initGame: gameId ? Games[gameId] : Games[GameId.GLOBAL] };
+  return { userAgent, initGame: gameId ? Games[gameId] : Games[DEFAULT_GAME_ID] };
 };
 
 export default function MyApp({ Component, pageProps, userAgent, initGame }: AppProps & { userAgent: string, initGame: Game }) {

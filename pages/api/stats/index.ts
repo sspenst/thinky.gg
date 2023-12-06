@@ -2,6 +2,7 @@ import { AchievementCategory } from '@root/constants/achievements/achievementInf
 import Direction from '@root/constants/direction';
 import { Games } from '@root/constants/Games';
 import getDifficultyEstimate from '@root/helpers/getDifficultyEstimate';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import { randomRotateLevelDataViaMatchHash } from '@root/helpers/randomRotateLevelDataViaMatchHash';
 import PlayAttempt from '@root/models/db/playAttempt';
 import UserConfig from '@root/models/db/userConfig';
@@ -248,13 +249,15 @@ export default withAuth({
           incPlayattemptsDurationSum += sumDuration[0]?.sumDuration ?? 0;
 
           // reset all playattempts to unsolved
+          const game = getGameFromId(level.gameId);
+
           await Promise.all([
             PlayAttemptModel.updateMany(
               { levelId: level._id },
               { $set: { attemptContext: AttemptContext.UNSOLVED } },
               { session: session },
             ),
-            queueDiscordWebhook(Discord.Levels, `**${req.user.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`, { session: session }),
+            queueDiscordWebhook(Discord.Levels, `**${game.displayName}** - **${req.user.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`, { session: session }),
           ]);
         }
 

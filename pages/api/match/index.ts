@@ -2,6 +2,7 @@ import { AchievementCategory } from '@root/constants/achievements/achievementInf
 import Discord from '@root/constants/discord';
 import { GameId } from '@root/constants/GameId';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import { MULTIPLAYER_INITIAL_ELO } from '@root/models/schemas/multiplayerProfileSchema';
 import mongoose, { PipelineStage, Types } from 'mongoose';
@@ -322,7 +323,8 @@ async function createMatch(req: NextApiRequestWithAuth) {
 
   const matchId = makeId(11);
   const matchUrl = `${req.headers.origin}/match/${matchId}`;
-  const discordMessage = `New *${multiplayerMatchTypeToText(type)}* match created by **${reqUser.name}**! [Join here](<${matchUrl}>)`;
+  const game = getGameFromId(req.gameId);
+  const discordMessage = `**${game.displayName}** - New *${multiplayerMatchTypeToText(type)}* match created by **${reqUser.name}**! [Join here](<${matchUrl}>)`;
 
   const match = await MultiplayerMatchModel.create({
     createdBy: reqUser._id,

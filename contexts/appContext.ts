@@ -1,4 +1,4 @@
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
 import { Game, Games } from '@root/constants/Games';
 import { DeviceInfo, ScreenSize } from '@root/hooks/useDeviceCheck';
 import Collection from '@root/models/db/collection';
@@ -32,7 +32,7 @@ interface AppContextInterface {
 }
 
 export const AppContext = createContext<AppContextInterface>({
-  game: Games[GameId.GLOBAL],
+  game: Games[DEFAULT_GAME_ID],
   deviceInfo: {
     isMobile: false,
     isAndroid: false,

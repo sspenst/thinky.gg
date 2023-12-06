@@ -3,6 +3,7 @@ import { Games } from '@root/constants/Games';
 import Role from '@root/constants/role';
 import { generatePassword } from '@root/helpers/generatePassword';
 import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmationEmail';
 import UserConfig from '@root/models/db/userConfig';
 import mongoose, { QueryOptions, Types } from 'mongoose';
@@ -132,10 +133,11 @@ export default apiWrapper({ POST: {
       }
 
       id = user._id;
+      const game = getGameFromId(req.gameId);
 
       await Promise.all([
         !guest && sendEmailConfirmationEmail(req, user),
-        queueDiscordWebhook(Discord.NewUsers, `**${trimmedName}** just registered! Welcome them on their [profile](${req.headers.origin}${getProfileSlug(user)})!`, { session: session }),
+        queueDiscordWebhook(Discord.NewUsers, `**${game.displayName}** - **${trimmedName}** just registered! Welcome them on their [profile](${req.headers.origin}${getProfileSlug(user)})!`, { session: session }),
       ]);
     });
     session.endSession();
