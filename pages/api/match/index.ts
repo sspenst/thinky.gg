@@ -117,8 +117,8 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
             userId: winnerId,
           },
           {
-            userId: winnerId,
             gameId: finishedMatch.gameId,
+            userId: winnerId,
           },
           {
             upsert: true, // create the user if they don't exist
@@ -131,8 +131,8 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
             userId: loserId,
           },
           {
-            userId: loserId,
             gameId: finishedMatch.gameId,
+            userId: loserId,
           },
           {
             upsert: true, // create the user if they don't exist
@@ -321,8 +321,8 @@ async function createMatch(req: NextApiRequestWithAuth) {
 
   const match = await MultiplayerMatchModel.create({
     createdBy: reqUser._id,
-    matchId: matchId,
     gameId: req.gameId,
+    matchId: matchId,
     matchLog: [
       generateMatchLog(MatchAction.CREATE, {
         userId: reqUser._id,

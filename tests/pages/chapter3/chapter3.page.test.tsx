@@ -14,8 +14,8 @@ beforeAll(async () => {
   await CampaignModel.create({
     _id: new Types.ObjectId(),
     collections: [new Types.ObjectId(TestId.COLLECTION)],
-    name: 'Chapter 1',
     gameId: GameId.PATHOLOGY,
+    name: 'Chapter 1',
     slug: 'chapter3',
   });
 });

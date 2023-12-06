@@ -1,6 +1,7 @@
 // run with ts-node -r tsconfig-paths/register --files server/scripts/backfill-gameId.ts
 // import dotenv
 import { GameId } from '@root/constants/GameId';
+// import * as models from '@root/models/mongoose';
 import cliProgress from 'cli-progress';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
@@ -11,73 +12,73 @@ dotenv.config();
 
 const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
 
-async function backfillGameId() {
-  // get all collections
+/**
+ * backfill gameId field for all collections that have a gameId field
+ * note that any other gameIds will be overwritten with the gameId passed in
+ */
+async function backfillGameId(gameId: GameId = GameId.PATHOLOGY) {
   await dbConnect();
 
-  const allMongoDBCollections = await mongoose.connection.db.listCollections().toArray();
-  const collectionsWithGameIdField = [];
+  const modelsWithInvalidGameIds = [];
+  const allMongoDBModels = Object.keys(mongoose.models);
 
-  progressBar.start(allMongoDBCollections.length, 0);
+  progressBar.start(allMongoDBModels.length, 0);
 
-  for (let i = 0; i < allMongoDBCollections.length; i++) {
+  for (let i = 0; i < allMongoDBModels.length; i++) {
+    progressBar.increment();
+
     // check which collections have a gameId field
-    const collection = allMongoDBCollections[i];
-    const collectionName = collection.name;
+    const model = mongoose.models[allMongoDBModels[i]];
+    const hasGameId = model.schema.paths.gameId ? true : false;
 
-    const countWithGameId = await mongoose.connection.db.collection(collectionName).countDocuments({
-      gameId: { $exists: true }
-    });
-
-    if (countWithGameId === 0) {
-      progressBar.update(i);
+    if (!hasGameId) {
       continue;
     }
 
-    const countWithNullGameId = await mongoose.connection.db.collection(collectionName).countDocuments({
-      gameId: { $eq: null }
+    const countInvalidGameIds = await model.countDocuments({
+      gameId: { $ne: gameId }
     });
 
-    if (countWithGameId > 0 && countWithNullGameId > 0) {
-      collectionsWithGameIdField.push([collectionName, countWithNullGameId]);
+    if (countInvalidGameIds > 0) {
+      modelsWithInvalidGameIds.push([model, countInvalidGameIds]);
     }
-
-    progressBar.update(i);
   }
 
-  console.log('\nStarting backfill on ', collectionsWithGameIdField.length, ' collections');
-  progressBar.update(allMongoDBCollections.length);
+  progressBar.stop();
 
-  progressBar.start(collectionsWithGameIdField.length, 0);
+  console.log('Starting backfill on ', modelsWithInvalidGameIds.length, ' collections');
+
+  progressBar.start(modelsWithInvalidGameIds.length, 0);
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
   });
 
-  for (let i = 0; i < collectionsWithGameIdField.length; i++) {
-    // update the gameId field to be the correct gameId
-    const [collectionName, toUpdate] = collectionsWithGameIdField[i];
+  for (let i = 0; i < modelsWithInvalidGameIds.length; i++) {
+    const [model, countInvalidGameIds] = modelsWithInvalidGameIds[i] as [mongoose.Model<mongoose.Document>, number];
 
-    console.log('\nConfirm you want to update gameId field for collection: ', collectionName, '(' + toUpdate + ' rows) (y/n): ');
+    console.log('\nConfirm you want to update gameId field for collection: ', model.modelName, '(' + countInvalidGameIds + ' rows) (y/n): ');
 
     if (await new Promise((resolve) => {
       rl.question('', (answer) => {
         resolve(answer === 'y');
       });
     }) === false) {
-      console.log('\nSkipping collection: ', collectionName);
+      console.log('Skipping collection: ', model.modelName);
+      progressBar.increment();
       continue;
     }
 
-    await mongoose.connection.db.collection(collectionName as string).updateMany({
-      // where gameId is not the correct gameId
-      gameId: { $ne: GameId.PATHOLOGY }
-    }, { $set: { gameId: GameId.PATHOLOGY } });
-    progressBar.update(i);
+    await model.updateMany(
+      { gameId: { $ne: gameId } },
+      { $set: { gameId: gameId } },
+    );
+    progressBar.increment();
   }
 
-  progressBar.update(collectionsWithGameIdField.length);
-  console.log('\nFinished');
+  progressBar.stop();
+
+  console.log('Finished');
   await dbDisconnect();
   process.exit(0);
 }

@@ -84,12 +84,12 @@ describe('Testing latest reviews api', () => {
 
       await LevelModel.create({
         _id: levelId,
-        gameId: GameId.PATHOLOGY,
-        leastMoves: i + 1,
         data: '40000\n12000\n05000\n67890\nABCD3',
+        gameId: GameId.PATHOLOGY,
         height: 5,
         isDraft: false,
         isRanked: false,
+        leastMoves: i + 1,
         name: `review-level-${i}`,
         slug: `test/review-level-${i}`,
         ts: TimerUtil.getTs(),
