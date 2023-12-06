@@ -20,14 +20,14 @@ import { getSolveStateFunction } from './solutionStates/helpers';
 interface GameWrapperProps {
   chapter?: string;
   collection: EnrichedCollection | Collection | null;
-  setCollection: Dispatch<SetStateAction<EnrichedCollection | Collection | null>>;
   level: EnrichedLevel;
   onNext: () => void;
   onPrev: () => void;
+  setCollection: Dispatch<SetStateAction<EnrichedCollection | Collection | null>>;
   user: User | null;
 }
 
-export default function GameWrapper({ chapter, collection, setCollection, level, onNext, onPrev, user }: GameWrapperProps) {
+export default function GameWrapper({ chapter, collection, level, onNext, onPrev, setCollection, user }: GameWrapperProps) {
   const [dontShowPostGameModal, setDontShowPostGameModal] = useState(false);
   const [isCollectionViewHidden, setIsCollectionViewHidden] = useState(false);
   const { game } = useContext(AppContext);
