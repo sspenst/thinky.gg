@@ -10,7 +10,7 @@ const RecordSchema = new mongoose.Schema<Record>({
   gameId: {
     type: String,
     enum: GameId,
-    required: false,
+    required: true,
   },
   isDeleted: {
     type: Boolean,

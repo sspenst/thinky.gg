@@ -46,37 +46,39 @@ async function backfillGameId(gameId: GameId = GameId.PATHOLOGY) {
 
   progressBar.stop();
 
-  console.log('Starting backfill on ', modelsWithInvalidGameIds.length, ' collections');
+  if (modelsWithInvalidGameIds.length > 0) {
+    console.log(`Starting backfill on ${modelsWithInvalidGameIds.length} collections`);
 
-  progressBar.start(modelsWithInvalidGameIds.length, 0);
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-  });
+    progressBar.start(modelsWithInvalidGameIds.length, 0);
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+    });
 
-  for (let i = 0; i < modelsWithInvalidGameIds.length; i++) {
-    const [model, countInvalidGameIds] = modelsWithInvalidGameIds[i] as [mongoose.Model<mongoose.Document>, number];
+    for (let i = 0; i < modelsWithInvalidGameIds.length; i++) {
+      const [model, countInvalidGameIds] = modelsWithInvalidGameIds[i] as [mongoose.Model<mongoose.Document>, number];
 
-    console.log('\nConfirm you want to update gameId field for collection: ', model.modelName, '(' + countInvalidGameIds + ' rows) (y/n): ');
+      console.log('\nConfirm you want to update gameId field for collection: ', model.modelName, '(' + countInvalidGameIds + ' rows) (y/n): ');
 
-    if (await new Promise((resolve) => {
-      rl.question('', (answer) => {
-        resolve(answer === 'y');
-      });
-    }) === false) {
-      console.log('Skipping collection: ', model.modelName);
+      if (await new Promise((resolve) => {
+        rl.question('', (answer) => {
+          resolve(answer === 'y');
+        });
+      }) === false) {
+        console.log('Skipping collection: ', model.modelName);
+        progressBar.increment();
+        continue;
+      }
+
+      await model.updateMany(
+        { gameId: { $ne: gameId } },
+        { $set: { gameId: gameId } },
+      );
       progressBar.increment();
-      continue;
     }
 
-    await model.updateMany(
-      { gameId: { $ne: gameId } },
-      { $set: { gameId: gameId } },
-    );
-    progressBar.increment();
+    progressBar.stop();
   }
-
-  progressBar.stop();
 
   console.log('Finished');
   await dbDisconnect();

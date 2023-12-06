@@ -18,7 +18,7 @@ const CampaignSchema = new mongoose.Schema<Campaign>({
   gameId: {
     type: String,
     enum: GameId,
-    required: false,
+    required: true,
   },
   name: {
     type: String,
