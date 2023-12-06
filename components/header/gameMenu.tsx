@@ -45,7 +45,7 @@ export function GameMenu() {
     const currentHost = (hostnameStrippedOfFirstSubdomain);
     const carryOver = LinksThatCarryOver.some((link) => window.location.pathname.match(new RegExp(link)));
 
-    const currentPath = (carryOver ? window.location.pathname : '');
+    const currentPath = (carryOver ? window.location.pathname : '/home');
 
     return `${currentProtocol}//${subdomain}.${currentHost}${currentPath}`;
   }, []);
