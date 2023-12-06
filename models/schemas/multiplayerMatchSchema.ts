@@ -39,7 +39,7 @@ const MultiplayerMatchSchema = new mongoose.Schema<MultiplayerMatch>(
     gameId: {
       type: String,
       enum: GameId,
-      required: false,
+      required: true,
     },
     gameTable: {
       type: Map,

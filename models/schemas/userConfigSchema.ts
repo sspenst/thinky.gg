@@ -24,7 +24,7 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
     gameId: {
       type: String,
       enum: GameId,
-      required: false,
+      required: true,
     },
     emailDigest: {
       type: String,

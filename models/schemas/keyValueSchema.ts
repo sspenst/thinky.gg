@@ -7,7 +7,7 @@ const KeyValueSchema = new mongoose.Schema<KeyValue>(
     gameId: {
       type: String,
       enum: GameId,
-      required: false,
+      required: true,
     },
     key: {
       type: String,

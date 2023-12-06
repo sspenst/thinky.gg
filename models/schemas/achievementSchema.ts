@@ -11,7 +11,7 @@ const AchievementSchema = new mongoose.Schema<Achievement>({
   gameId: {
     type: String,
     enum: GameId,
-    required: false,
+    required: true,
   },
   type: {
     type: String,

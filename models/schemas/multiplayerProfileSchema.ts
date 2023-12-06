@@ -29,7 +29,7 @@ const MultiplayerProfileSchema = new mongoose.Schema<MultiplayerProfile>(
     gameId: {
       type: String,
       enum: GameId,
-      required: false,
+      required: true,
     },
     ratingDeviation: {
       type: Number,

@@ -23,7 +23,7 @@ const EmailLogSchema = new mongoose.Schema<EmailLog>(
     gameId: {
       type: String,
       enum: GameId,
-      required: false,
+      required: true,
     },
     state: {
       type: String,
