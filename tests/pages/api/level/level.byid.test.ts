@@ -648,9 +648,9 @@ describe('pages/api/level/index.ts', () => {
   test('Deleting a level before unpublishing should not work', async () => {
     await LevelModel.create({
       _id: test_level_id,
-      gameId: GameId.PATHOLOGY,
       authorNote: 'test level X author note',
       data: '40000\n12000\n05000\n67890\nABCD3',
+      gameId: GameId.PATHOLOGY,
       height: 5,
       isDraft: false,
       isRanked: false,
@@ -774,9 +774,9 @@ describe('pages/api/level/index.ts', () => {
     await Promise.all([
       LevelModel.create({
         _id: test_level_id_delete,
-        GameId: GameId.PATHOLOGY,
         authorNote: 'test level X author note',
         data: '40000\n12000\n05000\n67890\nABCD3',
+        gameId: GameId.PATHOLOGY,
         height: 5,
         isDraft: false,
         isRanked: false,
@@ -787,7 +787,6 @@ describe('pages/api/level/index.ts', () => {
         userId: TestId.USER,
         width: 5,
       }),
-
       RecordModel.create({
         _id: new Types.ObjectId(),
         gameId: GameId.PATHOLOGY,

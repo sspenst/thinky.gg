@@ -921,8 +921,8 @@ describe('Testing stats api', () => {
           // half solved
           attemptContext:
             i % 2 === 0 ? AttemptContext.JUST_SOLVED : AttemptContext.UNSOLVED,
-          gameId: GameId.PATHOLOGY,
           endTime: i + 10,
+          gameId: GameId.PATHOLOGY,
           levelId: level._id,
           startTime: 0,
           updateCount: 0,
@@ -951,8 +951,8 @@ describe('Testing stats api', () => {
       PlayAttemptModel.create({
         _id: new Types.ObjectId(),
         attemptContext: AttemptContext.UNSOLVED,
-        gameId: GameId.PATHOLOGY,
         endTime: 20,
+        gameId: GameId.PATHOLOGY,
         levelId: level._id,
         startTime: 0,
         updateCount: 0,
@@ -1217,6 +1217,7 @@ describe('Testing stats api', () => {
       _id: playAttemptId1,
       attemptContext: AttemptContext.UNSOLVED,
       endTime: 10,
+      gameId: GameId.PATHOLOGY,
       levelId: new Types.ObjectId(TestId.LEVEL),
       startTime: 1,
       userId: new Types.ObjectId(TestId.USER),

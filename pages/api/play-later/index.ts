@@ -125,8 +125,8 @@ export default withAuth(
         },
         {
           // add to set the id of the level to add to the PlayLater
-          name: !playLater?.name ? 'Play Later' : undefined,
           gameId: playLater?.gameId || req.gameId,
+          name: !playLater?.name ? 'Play Later' : undefined,
           $addToSet: {
             levels: id,
           },

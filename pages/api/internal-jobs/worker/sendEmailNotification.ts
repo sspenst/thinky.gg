@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import getEmailBody from '@root/helpers/getEmailBody';
 import getMobileNotification from '@root/helpers/getMobileNotification';
 import Notification from '@root/models/db/notification';
@@ -41,7 +42,7 @@ export async function sendEmailNotification(notification: Notification) {
     user: notification.userId,
   });
 
-  await sendMail(new Types.ObjectId(), notification.type, notification.userId, mobileNotification.title, emailBody);
+  await sendMail(notification.gameId as GameId ?? GameId.PATHOLOGY, new Types.ObjectId(), notification.type, notification.userId, mobileNotification.title, emailBody);
 
   return 'email sent';
 }

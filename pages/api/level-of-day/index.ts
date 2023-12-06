@@ -142,14 +142,15 @@ export async function getLevelOfDay(reqUser?: User | null) {
       (previouslySelected?.value as any)?.push(genLevel._id);
       await KeyValueModel.updateOne({ key: 'level-of-day-list' }, {
         $set: {
+          gameId: genLevel.gameId,
           value: previouslySelected?.value || [genLevel._id],
         }
       }, { session: session, upsert: true });
 
       await KeyValueModel.updateOne({ key: key }, {
         $set: {
-          value: new Types.ObjectId(genLevel._id),
           gameId: genLevel.gameId,
+          value: new Types.ObjectId(genLevel._id),
         } }, { session: session, upsert: true });
     });
     session.endSession();

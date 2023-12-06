@@ -36,9 +36,9 @@ describe('Testing updating collection data', () => {
       levels[i] = new Types.ObjectId();
       promises.push(LevelModel.create({
         _id: levels[i],
-        gameId: GameId.PATHOLOGY,
         authorNote: 'test level 1 author note',
         data: '40010\n12000\n05000\n67890\nABCD3',
+        gameId: GameId.PATHOLOGY,
         height: 5,
         isDraft: false,
         isRanked: false,
