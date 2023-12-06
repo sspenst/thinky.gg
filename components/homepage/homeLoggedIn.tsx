@@ -47,7 +47,6 @@ export default function HomeLoggedIn({
 }: HomeLoggedInProps) {
   const { game, multiplayerSocket } = useContext(AppContext);
   const router = useRouter();
-  const [search, setSearch] = useState('');
   const { connectedPlayersCount, matches, socket } = multiplayerSocket;
   const buttonClassNames = 'py-2.5 px-3.5 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm whitespace-nowrap bg-green-100 dark:bg-gray-800 hover:bg-gray-50 hover:dark:bg-slate-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300';
 
@@ -202,10 +201,7 @@ export default function HomeLoggedIn({
         className={classNames(buttonClassNames, 'py-1.5 h-20 mr-0 rounded-l-none cursor-pointer')}
         href={{
           pathname: '/search',
-          query: {
-            search: search,
-            timeRange: TimeRange[TimeRange.All],
-          },
+
         }}
         passHref
       >
