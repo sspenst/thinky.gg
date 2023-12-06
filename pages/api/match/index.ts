@@ -302,6 +302,12 @@ export async function checkForFinishedMatch(matchId: string) {
 }
 
 async function createMatch(req: NextApiRequestWithAuth) {
+  const game = getGameFromId(req.gameId);
+
+  if (game.disableMultiplayer) {
+    return null;
+  }
+
   const isPrivate: boolean = req.body.private;
   const rated: boolean = req.body.rated;
   const reqUser = req.user;
@@ -323,7 +329,7 @@ async function createMatch(req: NextApiRequestWithAuth) {
 
   const matchId = makeId(11);
   const matchUrl = `${req.headers.origin}/match/${matchId}`;
-  const game = getGameFromId(req.gameId);
+
   const discordMessage = `**${game.displayName}** - New *${multiplayerMatchTypeToText(type)}* match created by **${reqUser.name}**! [Join here](<${matchUrl}>)`;
 
   const match = await MultiplayerMatchModel.create({
