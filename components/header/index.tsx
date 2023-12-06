@@ -51,7 +51,7 @@ export default function Header({
         <Directory folders={folders} subtitle={subtitle} title={title} />
       </div>
       <div className='flex gap-4 items-center z-20'>
-        { deviceInfo.screenSize > ScreenSize.XS && <GameMenu />}
+        { deviceInfo.screenSize > ScreenSize.XS && <GameMenu expandAbsolute={true} />}
         <HeaderControls />
         {user && <div className='hidden sm:block h-6 w-px bg-neutral-500' />}
         <div className='flex gap-3 items-center'>

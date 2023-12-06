@@ -3,6 +3,7 @@ import Dimensions from '@root/constants/dimensions';
 import { Games } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
 import { getGameLogoAndLabel } from '@root/helpers/getGameLogo';
+import { ScreenSize } from '@root/hooks/useDeviceCheck';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { Fragment, useCallback, useContext } from 'react';
@@ -29,7 +30,11 @@ const links = Object.values(Games).map((game) => ({
   label: game.displayName,
 }));
 
-export function GameMenu() {
+interface GameMenuProps {
+  expandAbsolute?: boolean;
+}
+
+export function GameMenu({ expandAbsolute }: GameMenuProps) {
   const { game } = useContext(AppContext);
 
   const getUrl = useCallback((subdomain: string) => {
@@ -52,10 +57,16 @@ export function GameMenu() {
 
     return `${currentProtocol}//${subdomain}.${currentHost}${currentPath}`;
   }, []);
+  const absolute = expandAbsolute ? 'absolute' : '';
 
   return (
     <Menu>
-      <Menu.Button className='inline-flex justify-center px-2 py-2 text-sm font-medium text-white  rounded-md bg-opacity-40 hover:bg-opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75'>
+      <Menu.Button className='inline-flex justify-center px-2 py-1 text-sm font-medium rounded-md bg-opacity-40 hover:bg-opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75'
+        style={{
+          backgroundColor: 'var(--bg-color-2)',
+          color: 'var(--color)',
+        }}
+      >
         <div className='flex items-center gap-3'>
           {getGameLogoAndLabel(game.id)}
         </div>
@@ -69,7 +80,7 @@ export function GameMenu() {
         leaveFrom='transform opacity-100 scale-100'
         leaveTo='transform opacity-0 scale-95'
       >
-        <Menu.Items className='absolute m-1 w-fit origin-top-right rounded-[10px] shadow-lg border overflow-y-auto' style={{
+        <Menu.Items className={absolute + ' m-1 w-fit origin-top-right rounded-[10px] shadow-lg border overflow-y-auto'} style={{
           backgroundColor: 'var(--bg-color-2)',
           borderColor: 'var(--bg-color-4)',
           color: 'var(--color)',
