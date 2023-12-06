@@ -11,12 +11,13 @@ import StyledTooltip from '../page/styledTooltip';
 interface EnrichedLevelLinkProps {
   // NB: this id should not contain the level id
   id: string;
+  disableHover?: boolean;
   game: Game;
   level: EnrichedLevel;
   onClick?: () => void;
 }
 
-export default function FormattedLevelLink({ id, game, level, onClick }: EnrichedLevelLinkProps) {
+export default function FormattedLevelLink({ id, disableHover, game, level, onClick }: EnrichedLevelLinkProps) {
   const isSolved = level.userMoves === level.leastMoves;
   const tooltipId = `formatted-level-link-${level._id.toString()}-${id}`;
   const baseUrl = BASE_PROTOCOL + game.id + '.' + BASE_DOMAIN + '' || '';
@@ -48,6 +49,6 @@ export default function FormattedLevelLink({ id, game, level, onClick }: Enriche
       {isSolved && <Solved className='-mr-1' />}
 
     </Link>
-    <StyledTooltip id={tooltipId} />
+    {!disableHover && <StyledTooltip id={tooltipId} />}
   </>);
 }
