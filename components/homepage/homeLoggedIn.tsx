@@ -22,6 +22,7 @@ import LoadingCard from '../cards/loadingCard';
 import FormattedUser from '../formatted/formattedUser';
 import FormattedReview from '../level/reviews/formattedReview';
 import LoadingSpinner from '../page/loadingSpinner';
+import MultiSelectLevel from '../page/multiSelectLevel';
 import MultiSelectUser from '../page/multiSelectUser';
 import RecommendedLevel from './recommendedLevel';
 
@@ -176,12 +177,9 @@ export default function HomeLoggedIn({
     </div>
     <div className='flex items-center justify-center'>
       <div className='flex flex-col'>
-        <div className='flex items-center'>
-          <form action='/search'>
-            <input type='hidden' name='timeRange' value='All' />
-            <input onChange={e => setSearch(e.target.value)} id='search' type='search' name='search' className='form-control relative flex-auto min-w-0 block w-52 px-2.5 py-1.5 h-10 text-base font-normal text-gray-700 placeholder:text-gray-400 bg-white bg-clip-padding border border-solid border-gray-300 rounded-md rounded-r-none rounded-b-none transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' placeholder='Search levels...' aria-label='Search' aria-describedby='button-addon2' />
-          </form>
-        </div>
+        <MultiSelectLevel onSelect={(selectedItem: EnrichedLevel) => {
+          router.push(`/level/${selectedItem.slug}`);
+        }} />
         <div>
           <MultiSelectUser
             controlStyles={{

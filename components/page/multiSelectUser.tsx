@@ -72,7 +72,7 @@ export default function MultiSelectUser({ controlStyles, defaultValue, onSelect,
     styles={{
       control: (provided: any, state: any) => ({
         ...provided,
-        backgroundColor: 'white',
+        backgroundColor: 'var(--bg-color-2)',
         borderColor: state.isFocused ? 'rgb(37 99 235)' : 'rgb(209 213 219)',
         borderRadius: '0.375rem',
         borderWidth: '1px',
@@ -84,30 +84,30 @@ export default function MultiSelectUser({ controlStyles, defaultValue, onSelect,
       }),
       dropdownIndicator: (provided: any) => ({
         ...provided,
-        color: 'black',
+        color: 'var(--color)',
         // change to search icon
         '&:hover': {
-          color: 'gray',
+          color: 'var(--color)',
         },
       }),
       input: (provided: any) => ({
         ...provided,
-        color: 'rgb(55 65 81)',
+        color: 'var(--color)',
       }),
       menu: (provided: any) => ({
         ...provided,
-        borderColor: 'rgb(209 213 219)',
+        borderColor: 'var(--border-color)',
         borderRadius: '0.375rem',
         borderWidth: '1px',
-        boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+
         marginTop: '2px',
       }),
       option: (provided: any, state: any) => ({
         ...provided,
-        backgroundColor: state.isSelected ? '#e2e8f0' : 'white',
-        color: 'black',
+        backgroundColor: state.isSelected ? '#e2e8f0' : 'var(--bg-color-2)',
+        color: 'var(--color)',
         '&:hover': {
-          backgroundColor: '#e2e8f0',
+          backgroundColor: 'var(--bg-color-3)',
         },
         overflow: 'hidden',
         textOverflow: 'ellipsis',
@@ -115,11 +115,11 @@ export default function MultiSelectUser({ controlStyles, defaultValue, onSelect,
       }),
       placeholder: (provided: any) => ({
         ...provided,
-        color: 'rgb(156 163 175)',
+        color: 'var(--color-gray)',
       }),
       singleValue: (provided: any) => ({
         ...provided,
-        color: 'black',
+        color: 'var(--color)',
       }),
     }}
     value={value}
