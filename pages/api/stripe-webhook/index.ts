@@ -102,6 +102,41 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
     error = `${giftToUser.name} is already a pro subscriber. Error applying gift. Please contact support.`;
   }
 
+  // Extract product name from properties, if available
+  let productName = 'unknown';
+
+  // Fetch line items for the session
+  try {
+    const lineItems = await stripe.checkout.sessions.listLineItems(subscription.id);
+
+    if (lineItems.data.length > 0) {
+      // Assuming the first line item represents the product purchased
+      const productId = lineItems.data[0].price?.product;
+
+      if (productId) {
+        const product = await stripe.products.retrieve(productId as string);
+
+        productName = product.name;
+      } else {
+        logger.error('Error fetching product details: no product id');
+      }
+    }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (err: any) {
+    logger.error(`Error fetching product details: ${err.message}`);
+  }
+
+  logger.info(`Product name purchasing: ${productName}`);
+
+  let gameId: GameId = GameId.GLOBAL;
+
+  // TODO: test this
+  if (productName.match(/pathology/i)) {
+    gameId = GameId.PATHOLOGY;
+  } else if (productName.match(/sokoban/i)) {
+    gameId = GameId.SOKOBAN;
+  }
+
   if (!error) {
     const session = await mongoose.startSession();
 
@@ -138,7 +173,7 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
             },
           ),
           // TODO: Figure a way to get the game ID from the subscription object since each game should be different, but for now this is fine
-          createNewProUserNotification(GameId.GLOBAL, giftToUser._id, giftFromUser._id),
+          createNewProUserNotification(gameId, giftToUser._id, giftFromUser._id),
           queueDiscordWebhook(Discord.DevPriv, `💸 [${giftFromUser.name}](https://pathology.gg/profile/${giftFromUser.name}) just gifted ${quantity} ${type === GiftType.Yearly ? 'year' : 'month'}${quantity === 1 ? '' : 's'} of Pro to [${giftToUser.name}](https://pathology.gg/profile/${giftToUser.name})`)
         ]);
       });
@@ -176,11 +211,20 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
         logger.error('Error fetching product details: no product id');
       }
     }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     logger.error(`Error fetching product details: ${err.message}`);
   }
 
   logger.info(`Product name purchasing: ${productName}`);
+
+  let gameId: GameId = GameId.GLOBAL;
+
+  if (productName.match(/pathology/i)) {
+    gameId = GameId.PATHOLOGY;
+  } else if (productName.match(/sokoban/i)) {
+    gameId = GameId.SOKOBAN;
+  }
 
   const customerId = properties.customer;
 
@@ -223,7 +267,7 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
               session: session
             },
           ),
-          createNewProUserNotification(GameId.GLOBAL, userToUpgrade._id),
+          createNewProUserNotification(gameId, userToUpgrade._id),
           queueDiscordWebhook(Discord.DevPriv, `💸 [${userToUpgrade.name}](https://pathology.gg/profile/${userToUpgrade.name}) just subscribed to ${productName}!`),
         ]);
       });
