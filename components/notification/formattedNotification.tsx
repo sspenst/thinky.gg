@@ -3,6 +3,7 @@ import { GameId } from '@root/constants/GameId';
 import { Games } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
+import { getGameLogo } from '@root/helpers/getGameLogo';
 import Collection from '@root/models/db/collection';
 import classNames from 'classnames';
 import Image from 'next/image';
@@ -210,7 +211,7 @@ export default function FormattedNotification({ close, notification, onMarkAsRea
 
       <div className='flex flex-col gap-1 truncate'>
         <div className='flex flex-row items-center gap-1'>
-          <Image alt='logo' src={Games[notification.gameId as GameId].logo} width='24' height='24' className='h-6 w-6' />
+          {getGameLogo(notification.gameId as GameId)}
           {notification.sourceModel === 'User' ?
             <FormattedUser
               id={`notification-${notification._id.toString()}`}
