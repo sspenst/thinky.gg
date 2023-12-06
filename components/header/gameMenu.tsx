@@ -18,6 +18,7 @@ const LinksThatCarryOver = [
   '^/collection/.+/play-later',
   '^/play-history',
   '^/play',
+  '^/multiplayer',
   '^/tutorial'
 ];
 
