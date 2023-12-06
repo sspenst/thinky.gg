@@ -1,3 +1,4 @@
+import { ScreenSize } from '@root/hooks/useDeviceCheck';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useContext, useEffect, useState } from 'react';
@@ -22,7 +23,7 @@ export default function Header({
   title,
 }: HeaderProps) {
   const [background, setBackground] = useState('var(--bg-color-2)');
-  const { user, userLoading } = useContext(AppContext);
+  const { deviceInfo, user, userLoading } = useContext(AppContext);
 
   useEffect(() => {
     setBackground(window.location.hostname !== 'pathology.gg' ?
@@ -50,7 +51,7 @@ export default function Header({
         <Directory folders={folders} subtitle={subtitle} title={title} />
       </div>
       <div className='flex gap-4 items-center z-20'>
-        <GameMenu />
+        { deviceInfo.screenSize > ScreenSize.XS && <GameMenu />}
         <HeaderControls />
         {user && <div className='hidden sm:block h-6 w-px bg-neutral-500' />}
         <div className='flex gap-3 items-center'>
