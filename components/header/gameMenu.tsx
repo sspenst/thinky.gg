@@ -4,7 +4,7 @@ import { Games } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { Fragment, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { Fragment, useCallback, useContext } from 'react';
 
 const LinksThatCarryOver = [
   '/profile'

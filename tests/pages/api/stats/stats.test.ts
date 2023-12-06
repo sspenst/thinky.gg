@@ -11,7 +11,7 @@ import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { LevelModel, RecordModel, StatModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
+import { LevelModel, RecordModel, StatModel, UserConfigModel } from '../../../../models/mongoose';
 import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
 import handler from '../../../../pages/api/stats/index';
 import unpublishLevelHandler from '../../../../pages/api/unpublish/[id]';

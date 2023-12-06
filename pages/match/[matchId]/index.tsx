@@ -130,7 +130,7 @@ export default function Match() {
       socketConn.off('userMatchGameState');
       socketConn.disconnect();
     };
-  }, [matchId, isSpectating, router]);
+  }, [game, isSpectating, matchId, router]);
 
   const [countDown, setCountDown] = useState<number>(-1);
 

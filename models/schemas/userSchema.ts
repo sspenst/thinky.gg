@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import mongoose, { Types } from 'mongoose';
 import Role from '../../constants/role';
 import User from '../db/user';
-import { LevelModel, UserConfigModel, UserModel } from '../mongoose';
+import { LevelModel, UserConfigModel } from '../mongoose';
 
 export const USER_DEFAULT_PROJECTION = {
   _id: 1,

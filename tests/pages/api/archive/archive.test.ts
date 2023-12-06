@@ -1,5 +1,4 @@
 import { DEFAULT_GAME_ID } from '@root/constants/GameId';
-import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
@@ -13,7 +12,7 @@ import { initCollection, initLevel } from '../../../../lib/initializeLocalDb';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Collection from '../../../../models/db/collection';
 import Level from '../../../../models/db/level';
-import { CollectionModel, LevelModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
+import { CollectionModel, LevelModel, UserConfigModel } from '../../../../models/mongoose';
 import archiveLevelHandler from '../../../../pages/api/archive/[id]';
 import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
 

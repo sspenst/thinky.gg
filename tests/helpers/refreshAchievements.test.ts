@@ -1,6 +1,6 @@
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import AchievementType from '@root/constants/achievements/achievementType';
-import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import TestId from '@root/constants/testId';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
 import { AchievementModel, LevelModel } from '@root/models/mongoose';

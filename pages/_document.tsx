@@ -1,9 +1,8 @@
 /* istanbul ignore file */
-import { AppContext } from '@root/contexts/appContext';
 import User from '@root/models/db/user';
 import { Types } from 'mongoose';
 import Document, { DocumentContext, DocumentInitialProps, Head, Html, Main, NextScript } from 'next/document';
-import React, { useContext } from 'react';
+import React from 'react';
 import Theme from '../constants/theme';
 import { logger } from '../helpers/logger';
 import dbConnect from '../lib/dbConnect';

@@ -8,7 +8,7 @@ import TestId from '../../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { LevelModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
+import { LevelModel, UserConfigModel } from '../../../../models/mongoose';
 import adminHandler from '../../../../pages/api/admin/index';
 import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
 import createLevelHandler from '../../../../pages/api/level/index';

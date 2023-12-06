@@ -9,7 +9,6 @@ import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
 import { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
-import Theme from '../../../constants/theme';
 import { ValidArray, ValidNumber, ValidType } from '../../../helpers/apiWrapper';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { UserConfigModel } from '../../../models/mongoose';
