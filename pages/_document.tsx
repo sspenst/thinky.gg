@@ -84,7 +84,6 @@ class MyDocument extends Document<DocumentProps> {
             type='text/javascript'
           />
         </Head>
-
         <body className={Theme.Modern}>
           <Main />
           <NextScript />
