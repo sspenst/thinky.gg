@@ -7,7 +7,17 @@ import Link from 'next/link';
 import React, { Fragment, useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 const LinksThatCarryOver = [
-  '/profile'
+  '^/profile',
+  '^/home',
+  '^/leaderboard',
+  '^/users',
+  '^/settings',
+  '^/create',
+  '^/search',
+  '^/notifications',
+  '^/collection/.+/play-later',
+  '^/play-history',
+  '^/play'
 ];
 
 const links = Object.values(Games).map((game) => ({
@@ -33,7 +43,7 @@ export function GameMenu() {
 
     const currentProtocol = (window.location.protocol);
     const currentHost = (hostnameStrippedOfFirstSubdomain);
-    const carryOver = LinksThatCarryOver.some((link) => window.location.pathname.startsWith(link));
+    const carryOver = LinksThatCarryOver.some((link) => window.location.pathname.match(new RegExp(link)));
 
     const currentPath = (carryOver ? window.location.pathname : '');
 
