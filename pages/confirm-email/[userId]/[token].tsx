@@ -1,5 +1,4 @@
 import Page from '@root/components/page/page';
-import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { getUserFromToken } from '@root/lib/withAuth';
 import User from '@root/models/db/user';
 import { UserModel } from '@root/models/mongoose';

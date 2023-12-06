@@ -1,5 +1,5 @@
 import Dimensions from '@root/constants/dimensions';
-import { BASE_DOMAIN, BASE_PROTOCOL, Game, Games } from '@root/constants/Games';
+import { BASE_DOMAIN, BASE_PROTOCOL, Game } from '@root/constants/Games';
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';

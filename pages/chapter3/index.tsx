@@ -1,8 +1,7 @@
-import { AppContext } from '@root/contexts/appContext';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
-import React, { useContext } from 'react';
+import React from 'react';
 import FormattedCampaign from '../../components/formatted/formattedCampaign';
 import LinkInfo from '../../components/formatted/linkInfo';
 import Page from '../../components/page/page';
@@ -86,8 +85,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
 /* istanbul ignore next */
 export default function Chapter3Page({ enrichedCollections, solvedLevels, totalLevels }: CampaignProps) {
-  const { game } = useContext(AppContext);
-
   return (
     <Page folders={[new LinkInfo('Chapter Select', '/play')]} title={'Chapter 3'}>
       <FormattedCampaign
