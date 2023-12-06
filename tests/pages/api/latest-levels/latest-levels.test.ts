@@ -84,9 +84,9 @@ describe('Testing latest levels api', () => {
     for (let i = 0; i < 30; i++) {
       promises.push(LevelModel.create({
         _id: new Types.ObjectId(),
-        gameId: DEFAULT_GAME_ID,
         authorNote: 'level ' + i + ' author note',
         data: '40000\n12000\n05000\n67890\nABCD3',
+        gameId: DEFAULT_GAME_ID,
         height: 5,
         isDraft: i % 10 === 0,
         isRanked: false,

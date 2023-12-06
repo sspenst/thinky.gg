@@ -14,10 +14,8 @@ interface UserConfig {
   calcLevelsSolvedCount: number;
   disallowedEmailNotifications: NotificationType[];
   disallowedPushNotifications: NotificationType[];
-  gameId: GameId;
-  //emailConfirmationToken: string;
-  //emailConfirmed: boolean;
   emailDigest: EmailDigestSettingTypes;
+  gameId: GameId;
   giftSubscriptions: string[]; // gift subscriptions this user has given out
   mobileDeviceTokens: string[];
   showPlayStats: boolean;

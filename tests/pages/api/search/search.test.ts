@@ -72,24 +72,24 @@ beforeAll(async () => {
     if (i % 3 === 0) {
       statsToCreate.push({
         _id: new Types.ObjectId(),
-        gameId: DEFAULT_GAME_ID,
-        userId: TestId.USER,
-        levelId: id.toString(),
-        complete: true,
         attempts: 1,
+        complete: true,
+        gameId: DEFAULT_GAME_ID,
+        levelId: id.toString(),
         moves: leastMvs,
-        ts: TimerUtil.getTs() + i
+        ts: TimerUtil.getTs() + i,
+        userId: TestId.USER,
       });
     } else if (i % 5 === 0 ) {
       statsToCreate.push({
         _id: new Types.ObjectId(),
-        gameId: DEFAULT_GAME_ID,
-        userId: TestId.USER,
-        levelId: id.toString(),
-        complete: false,
         attempts: 1,
+        complete: false,
+        gameId: DEFAULT_GAME_ID,
+        levelId: id.toString(),
         moves: leastMvs + 2,
-        ts: TimerUtil.getTs() + i
+        ts: TimerUtil.getTs() + i,
+        userId: TestId.USER,
       });
     }
   }

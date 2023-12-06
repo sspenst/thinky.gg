@@ -27,7 +27,8 @@ export default async function sendEmailConfirmationEmail(req: NextApiRequest, us
     }
   }
 
-  return await sendMail(gameId,
+  return await sendMail(
+    gameId,
     new Types.ObjectId(),
     EmailType.EMAIL_CONFIRM_EMAIL,
     user,

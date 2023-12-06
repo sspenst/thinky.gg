@@ -251,6 +251,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
               return 'editor-selected';
             }
           }}
+          id='editor-selection'
           level={{
             data: allTiles,
             height: 2,

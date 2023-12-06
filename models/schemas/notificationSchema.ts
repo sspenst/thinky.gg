@@ -7,7 +7,7 @@ const NotificationSchema = new mongoose.Schema<Notification>({
   gameId: {
     type: String,
     enum: GameId,
-    required: false,
+    required: true,
   },
   message: {
     type: String,

@@ -706,6 +706,7 @@ export default function Tutorial() {
             <BasicLayout
               id={'tutorial-editor-' + tutorialStep.key}
               controls={controls}
+              id={'tutorial-' + tutorialStep.key}
               key={tutorialStep.key}
               level={tutorialStep.level}
             />

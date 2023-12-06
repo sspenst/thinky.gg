@@ -9,7 +9,7 @@ import Grid from './grid';
 interface BasicLayoutProps {
   cellClassName?: (index: number) => string | undefined;
   controls?: Control[];
-  id: string,
+  id: string;
   level: Level;
   onClick?: (index: number, rightClick: boolean) => void;
 }
@@ -41,7 +41,7 @@ export default function BasicLayout({ cellClassName, controls, id, level, onClic
       <Grid
         cellClassName={(x, y) => cellClassName ? cellClassName(y * (level.width + 1) + x) : undefined}
         gameState={{ board: board } as GameState}
-        id={(id ?? level._id.toString())}
+        id={id}
         leastMoves={level.leastMoves}
         onCellClick={(x, y, rightClick) => onClick ? onClick(y * (level.width + 1) + x, rightClick) : undefined}
       />

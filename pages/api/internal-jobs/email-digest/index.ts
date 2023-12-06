@@ -64,10 +64,11 @@ export async function sendMail(gameId: GameId, batchId: Types.ObjectId, type: Em
 
   const emailLog = await EmailLogModel.create({
     batchId: batchId,
-    userId: user._id,
-    type: type,
-    subject: subject,
+    gameId: gameId,
     state: EmailState.PENDING,
+    subject: subject,
+    type: type,
+    userId: user._id,
   });
   let err = null;
 

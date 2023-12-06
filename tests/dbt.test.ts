@@ -1,5 +1,6 @@
 /* istanbul ignore file */
 
+import { GameId } from '@root/constants/GameId';
 import mongoose, { Types } from 'mongoose';
 import TestId from '../constants/testId';
 import { TimerUtil } from '../helpers/getTs';
@@ -47,6 +48,7 @@ async function doCreateStat(session?: mongoose.ClientSession) {
       _id: new Types.ObjectId(),
       attempts: 1,
       complete: true,
+      gameId: GameId.PATHOLOGY,
       levelId: TestId.LEVEL,
       moves: 10,
       ts: TimerUtil.getTs(),
