@@ -1,3 +1,4 @@
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import mongoose from 'mongoose';
 import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
@@ -121,12 +122,14 @@ export default withAuth({ POST: {
       // need to wait for the level to get deleted before we insert the new one (otherwise we get a duplicate key error)
       await LevelModel.insertMany([levelClone], { session: session });
 
+      const game = getGameFromId(level.gameId);
+
       // need to wait for the level to get inserted before we update the stats
       await Promise.all([
         queueRefreshIndexCalcs(levelClone._id, { session: session }),
         queueCalcPlayAttempts(levelClone._id, { session: session }),
         queueCalcCreatorCounts(level.gameId, level.userId, { session: session }),
-        queueDiscordWebhook(Discord.Levels, `**${req.user.name}** unpublished a level: ${level.name}`, { session: session }),
+        queueDiscordWebhook(Discord.Levels, `**${game.displayName}** - **${req.user.name}** unpublished a level: ${level.name}`, { session: session }),
         ...matchesToRebroadcast.map(match => requestBroadcastMatch(level.gameId, match.matchId)),
       ]);
     });
