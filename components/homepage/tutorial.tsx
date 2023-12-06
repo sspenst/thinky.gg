@@ -704,7 +704,6 @@ export default function Tutorial() {
         {tutorialStep.editorGrid && tutorialStep.level && (
           <div key={'div-' + tutorialStep.key} className={classNames('grow flex flex-col', tutorialStep.gameClasses)}>
             <BasicLayout
-              id={'tutorial-editor-' + tutorialStep.key}
               controls={controls}
               id={'tutorial-' + tutorialStep.key}
               key={tutorialStep.key}

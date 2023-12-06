@@ -243,7 +243,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
     <div className='flex flex-col h-full'>
       <div className='flex flex-col h-24 py-1'>
         <BasicLayout
-          id='editor-selection'
           cellClassName={(index) => {
             if (allTiles[index] !== tileType) {
               return 'opacity-50 hover:opacity-100 transition cursor-pointer';
