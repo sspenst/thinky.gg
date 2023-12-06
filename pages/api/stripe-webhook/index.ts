@@ -157,6 +157,31 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
 async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.Checkout.Session): Promise<string | undefined> {
   logger.info(`checkoutSessionComplete - ${userToUpgrade.name} (${userToUpgrade._id.toString()})`);
 
+  // Extract product name from properties, if available
+  let productName = 'unknown';
+
+  // Fetch line items for the session
+  try {
+    const lineItems = await stripe.checkout.sessions.listLineItems(properties.id);
+
+    if (lineItems.data.length > 0) {
+      // Assuming the first line item represents the product purchased
+      const productId = lineItems.data[0].price?.product;
+
+      if (productId) {
+        const product = await stripe.products.retrieve(productId as string);
+
+        productName = product.name;
+      } else {
+        logger.error('Error fetching product details: no product id');
+      }
+    }
+  } catch (err: any) {
+    logger.error(`Error fetching product details: ${err.message}`);
+  }
+
+  logger.info(`Product name purchasing: ${productName}`);
+
   const customerId = properties.customer;
 
   let error: string | undefined;
@@ -199,7 +224,7 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
             },
           ),
           createNewProUserNotification(GameId.GLOBAL, userToUpgrade._id),
-          queueDiscordWebhook(Discord.DevPriv, `💸 [${userToUpgrade.name}](https://pathology.gg/profile/${userToUpgrade.name}) just subscribed!`),
+          queueDiscordWebhook(Discord.DevPriv, `💸 [${userToUpgrade.name}](https://pathology.gg/profile/${userToUpgrade.name}) just subscribed to ${productName}!`),
         ]);
       });
       session.endSession();
