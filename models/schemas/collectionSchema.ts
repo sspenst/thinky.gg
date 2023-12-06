@@ -15,7 +15,7 @@ const CollectionSchema = new mongoose.Schema<Collection>({
   gameId: {
     type: String,
     enum: GameId,
-    required: false,
+    required: true,
   },
   isPrivate: {
     type: Boolean,

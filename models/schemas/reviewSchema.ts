@@ -13,7 +13,7 @@ const ReviewSchema = new mongoose.Schema<Review>({
   gameId: {
     type: String,
     enum: GameId,
-    required: false,
+    required: true,
   },
   levelId: {
     type: mongoose.Schema.Types.ObjectId,

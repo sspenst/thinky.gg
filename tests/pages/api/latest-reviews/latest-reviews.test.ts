@@ -32,12 +32,12 @@ describe('Testing latest reviews api', () => {
 
       promises.push(LevelModel.create({
         _id: levelId,
-        gameId: DEFAULT_GAME_ID,
-        leastMoves: i + 1,
         data: '40000\n12000\n05000\n67890\nABCD3',
+        gameId: DEFAULT_GAME_ID,
         height: 5,
         isDraft: false,
         isRanked: false,
+        leastMoves: i + 1,
         name: `review-level-${i}`,
         slug: `test/review-level-${i}`,
         ts: TimerUtil.getTs(),

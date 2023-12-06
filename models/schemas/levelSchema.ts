@@ -69,7 +69,7 @@ const LevelSchema = new mongoose.Schema<Level>(
     gameId: {
       type: String,
       enum: GameId,
-      required: false,
+      required: true,
     },
     height: {
       type: Number,
