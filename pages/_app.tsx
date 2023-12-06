@@ -197,9 +197,10 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
     const hasPortInUrl = window.location.port !== '';
 
     const socketConn = io('', {
+      // we should not try to connect when running in dev mode (localhost:3000)
+      autoConnect: !hasPortInUrl,
       path: '/api/socket/',
       withCredentials: true,
-      autoConnect: hasPortInUrl ? false : true,
     });
 
     socketConn.on('notifications', (notifications: Notification[]) => {

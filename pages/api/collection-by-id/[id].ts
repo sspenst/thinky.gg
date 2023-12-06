@@ -41,14 +41,14 @@ export default apiWrapper({
 });
 
 interface GetCollectionProps {
+  includeDraft?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  matchQuery: FilterQuery<any>,
-  reqUser: User | null,
-  includeDraft?: boolean,
-  populateLevels?: boolean,
-  populateLevelCursor?: Types.ObjectId | string, // target level
-  populateAroundSlug?: string, // target level
-  populateLevelDirection?: 'before' | 'after' | 'around',
+  matchQuery: FilterQuery<any>;
+  reqUser: User | null;
+  populateAroundSlug?: string; // target level
+  populateLevelCursor?: Types.ObjectId | string; // target level
+  populateLevelDirection?: 'before' | 'after' | 'around';
+  populateLevels?: boolean;
 }
 
 /**
@@ -64,8 +64,6 @@ export async function getCollection(props: GetCollectionProps): Promise<Collecti
 
   return collections[0] as Collection;
 }
-
-// Create interface for partial collection where we have the fields targetLevelIndex and levelCount added
 
 /**
  * Query collections with optionally populated levels and stats.
@@ -120,7 +118,6 @@ export async function getCollections({ matchQuery, reqUser, includeDraft, popula
         }
       }
     },
-
     {
       $lookup: {
         from: LevelModel.collection.name,
@@ -198,7 +195,6 @@ export async function getCollections({ matchQuery, reqUser, includeDraft, popula
     {
       $unset: 'levelsWithSort'
     },
-
     {
       $addFields: {
         levelCount: {
@@ -211,7 +207,6 @@ export async function getCollections({ matchQuery, reqUser, includeDraft, popula
     },
     ...populateLevelCursor || populateAroundSlug ? [{
       // slice the levels array to include 10 before and 10 after the target level.. keep in mind that there may not be 10 levels before or after
-
       $addFields: {
         targetLevelIndex: {
           $cond: {
@@ -219,7 +214,6 @@ export async function getCollections({ matchQuery, reqUser, includeDraft, popula
             then: { $indexOfArray: ['$levels._id', populateLevelCursor] },
             else: { $indexOfArray: ['$levels.slug', populateAroundSlug] },
           }
-          //$indexOfArray: ['$levels._id', populateLevelCursor]
         },
       },
     }, {
@@ -256,7 +250,6 @@ export async function getCollections({ matchQuery, reqUser, includeDraft, popula
           }
         }
       }
-
     }] : [],
   ] as PipelineStage[]));
 
