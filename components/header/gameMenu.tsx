@@ -17,7 +17,8 @@ const LinksThatCarryOver = [
   '^/notifications',
   '^/collection/.+/play-later',
   '^/play-history',
-  '^/play'
+  '^/play',
+  '^/tutorial'
 ];
 
 const links = Object.values(Games).map((game) => ({
