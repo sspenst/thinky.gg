@@ -2,6 +2,7 @@ import { Menu, Transition } from '@headlessui/react';
 import Dimensions from '@root/constants/dimensions';
 import { Games } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
+import { getGameLogoAndLabel } from '@root/helpers/getGameLogo';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { Fragment, useCallback, useContext } from 'react';
@@ -54,9 +55,9 @@ export function GameMenu() {
 
   return (
     <Menu>
-      <Menu.Button className='inline-flex justify-center px-2 py-2 text-sm font-medium text-white bg-black rounded-md bg-opacity-40 hover:bg-opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75'>
+      <Menu.Button className='inline-flex justify-center px-2 py-2 text-sm font-medium text-white  rounded-md bg-opacity-40 hover:bg-opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75'>
         <div className='flex items-center gap-3'>
-          <Image alt='logo' src={game.logo} width='24' height='24' className='h-6 w-6' style={{ minWidth: 24, minHeight: 24 }} /> {game.displayName}
+          {getGameLogoAndLabel(game.id)}
         </div>
       </Menu.Button>
       <Transition

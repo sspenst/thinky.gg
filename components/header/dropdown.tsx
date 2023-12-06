@@ -15,10 +15,11 @@ import ThemeModal from '../modal/themeModal';
 import StyledTooltip from '../page/styledTooltip';
 import ProfileAvatar from '../profile/profileAvatar';
 import DismissToast from '../toasts/dismissToast';
+import { GameMenu } from './gameMenu';
 import MusicIcon from './musicIcon';
 
 export default function Dropdown() {
-  const { game, forceUpdate, mutateUser, playLater, setShouldAttemptAuth, user, userLoading } = useContext(AppContext);
+  const { deviceInfo, game, forceUpdate, mutateUser, playLater, setShouldAttemptAuth, user, userLoading } = useContext(AppContext);
   const [isMusicModalOpen, setIsMusicModalOpen] = useState(false);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const router = useRouter();
@@ -293,6 +294,10 @@ export default function Dropdown() {
                     </div>
                   </Link>
                 )}
+              </Menu.Item>
+              <Divider />
+              <Menu.Item>
+                <GameMenu />
               </Menu.Item>
               <Divider />
               <Menu.Item>
