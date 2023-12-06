@@ -48,6 +48,9 @@ export const Games: Record<GameId, Game> = {
   [GameId.SOKOBAN]: {
     id: GameId.SOKOBAN,
     baseUrl: 'sokoban.pathology.gg',
+    disableCampaign: true,
+    disableTutorial: true,
+    disableMultiplayer: true,
     defaultTheme: Theme.Winter,
     displayName: 'Sokoban',
     logo: '/logos/sokoban.webp',
@@ -65,11 +68,15 @@ export interface Game {
   baseUrl: string;
   defaultTheme: Theme;
   displayName: string;
+  disableCampaign?: boolean;
+  disableTutorial?: boolean;
+  disableMultiplayer?: boolean;
   logo: string;
   subtitle: string;
   SEOTitle: string;
   SEODescription: string;
   type: GameType;
+
 //
 gameStateIsSolveFunction: (gameState: GameState) => boolean;
 validateSolutionFunction: (directions: Direction[], level: Level) => boolean;
