@@ -5,7 +5,6 @@ import cleanUser from '../lib/cleanUser';
 import { UserWithMultiplayerProfile } from '../models/db/user';
 import { MultiplayerProfileModel, UserModel } from '../models/mongoose';
 import { USER_DEFAULT_PROJECTION } from '../models/schemas/userSchema';
-import { getEnrichUserConfigPipelineStage } from './enrich';
 
 export async function getUsersWithMultiplayerProfileFromIds(gameId: GameId, ids: Types.ObjectId[]) {
   return getUsersWithMultiplayerProfile(gameId, { _id: { $in: ids } }, {});

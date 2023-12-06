@@ -47,7 +47,6 @@ export default function Header({
             <Image alt='logo' src='/logo.svg' width='24' height='24' className='h-6 w-6' style={{ minWidth: 24, minHeight: 24 }} />
           </Link>
         </div>
-
         <Directory folders={folders} subtitle={subtitle} title={title} />
       </div>
       <div className='flex gap-4 items-center z-20'>

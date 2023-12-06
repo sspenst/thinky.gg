@@ -211,7 +211,6 @@ export default function FormattedNotification({ close, notification, onMarkAsRea
       <div className='flex flex-col gap-1 truncate'>
         <div className='flex flex-row items-center gap-1'>
           <Image alt='logo' src={Games[notification.gameId as GameId].logo} width='24' height='24' className='h-6 w-6' />
-
           {notification.sourceModel === 'User' ?
             <FormattedUser
               id={`notification-${notification._id.toString()}`}

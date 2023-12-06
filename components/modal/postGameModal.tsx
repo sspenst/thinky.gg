@@ -5,7 +5,7 @@ import Collection from '@root/models/db/collection';
 import Level, { EnrichedLevel } from '@root/models/db/level';
 import User from '@root/models/db/user';
 import Link from 'next/link';
-import React, { use, useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import Card from '../cards/card';
 import ChapterSelectCard from '../cards/chapterSelectCard';
 import { getDifficultyFromValue } from '../formatted/formattedDifficulty';

@@ -1,5 +1,4 @@
 import { GameState, TileState } from '@root/helpers/gameStateHelpers';
-import { Types } from 'mongoose';
 import React from 'react';
 import TileType from '../../constants/tileType';
 import Control from '../../models/control';

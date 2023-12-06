@@ -271,7 +271,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
       socketConn.off('privateAndInvitedMatches');
       socketConn.disconnect();
     };
-  }, [user?._id]);
+  }, [selectedGame.id, user?._id]);
 
   useEffect(() => {
     if (!user?.config) {

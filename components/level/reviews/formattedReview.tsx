@@ -1,4 +1,3 @@
-import { Games } from '@root/constants/Games';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import classNames from 'classnames';
 import moment from 'moment';
@@ -99,7 +98,6 @@ export default function FormattedReview({ hideBorder, inModal, level, onEditClic
               />
             )}
           </div>
-
           {level && <FormattedLevelLink game={getGameFromId(level.gameId)} id={`review-${user?._id.toString() ?? 'deleted'}`} level={level} />}
         </div>
         <span className='flex items-center'>
