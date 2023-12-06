@@ -54,7 +54,7 @@ export default function HomeLoggedIn({
 
   return (<>
     {tour}
-    {isGuest(user) &&
+    {!isFullAccount(user) &&
       <div className='bg-yellow-200 w-full text-black text-center text-sm p-2 shadow-lg'>
         {`${isGuest(user) ? 'Convert to a regular account' : 'Confirm your email'} in your `}
         <Link className='font-semibold text-blue-600 hover:underline' href='/settings/account'>

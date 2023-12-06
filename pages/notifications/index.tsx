@@ -1,5 +1,4 @@
 import { GameId } from '@root/constants/GameId';
-import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';

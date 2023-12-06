@@ -1,7 +1,6 @@
 import Dimensions from '@root/constants/dimensions';
 import { ProfileQueryType, UserExtendedData } from '@root/constants/profileQueryType';
-import { getGameFromId } from '@root/helpers/getGameIdFromReq';
-import { getGameLogo, getGameLogoAndLabel } from '@root/helpers/getGameLogo';
+import { getGameLogoAndLabel } from '@root/helpers/getGameLogo';
 import isOnline from '@root/helpers/isOnline';
 import classNames from 'classnames';
 import Link from 'next/link';

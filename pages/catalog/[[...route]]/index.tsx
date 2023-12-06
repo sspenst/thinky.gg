@@ -2,7 +2,6 @@
 // ignoring because we will eventually deprecate this page
 /* istanbul ignore file */
 
-import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
 import StatFilter from '@root/constants/statFilter';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import * as mongoose from 'mongoose';
