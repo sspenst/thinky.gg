@@ -297,7 +297,7 @@ export default function Dropdown() {
               </Menu.Item>
               <Divider />
               <Menu.Item>
-                <GameMenu />
+                <GameMenu expandAbsolute={false} />
               </Menu.Item>
               <Divider />
               <Menu.Item>
