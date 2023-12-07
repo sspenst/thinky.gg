@@ -27,6 +27,6 @@ const AchievementSchema = new mongoose.Schema<Achievement>({
   timestamps: true,
 });
 
-AchievementSchema.index({ type: 1, userId: 1 }, { unique: true });
+AchievementSchema.index({ type: 1, userId: 1, gameId: 1 }, { unique: true });
 
 export default AchievementSchema;

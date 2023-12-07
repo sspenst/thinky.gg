@@ -36,6 +36,6 @@ const RecordSchema = new mongoose.Schema<Record>({
 });
 
 RecordSchema.index({ levelId: 1 });
-RecordSchema.index({ levelId: 1, moves: 1 }, { unique: true });
+RecordSchema.index({ levelId: 1, moves: 1, gameId: 1 }, { unique: true });
 
 export default RecordSchema;
