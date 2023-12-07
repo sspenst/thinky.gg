@@ -1,4 +1,4 @@
-import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { Game, Games } from '@root/constants/Games';
 import { DeviceInfo, ScreenSize } from '@root/hooks/useDeviceCheck';
 import Collection from '@root/models/db/collection';
@@ -10,9 +10,9 @@ import UserConfig from '../models/db/userConfig';
 import { MultiplayerSocket } from '../pages/_app';
 
 interface AppContextInterface {
-  game: Game;
   deviceInfo: DeviceInfo;
   forceUpdate: () => void;
+  game: Game;
   notifications: Notification[];
   multiplayerSocket: MultiplayerSocket;
   mutatePlayLater: () => void;
@@ -32,7 +32,6 @@ interface AppContextInterface {
 }
 
 export const AppContext = createContext<AppContextInterface>({
-  game: Games[DEFAULT_GAME_ID],
   deviceInfo: {
     isMobile: false,
     isAndroid: false,
@@ -44,6 +43,7 @@ export const AppContext = createContext<AppContextInterface>({
     screenSize: ScreenSize.SM,
   },
   forceUpdate: () => { return; },
+  game: Games[DEFAULT_GAME_ID],
   notifications: [],
   multiplayerSocket: {
     connectedPlayers: [],

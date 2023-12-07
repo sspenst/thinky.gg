@@ -18,7 +18,6 @@ import BasicLayout from '../level/basicLayout';
 import Controls from '../level/controls';
 import styles from '../level/Controls.module.css';
 import Game from '../level/game';
-import { getSolveStateFunction } from '../level/solutionStates/helpers';
 import Page from '../page/page';
 import DismissToast from '../toasts/dismissToast';
 
@@ -67,7 +66,7 @@ export default function Tutorial() {
   const globalTimeout = useRef<NodeJS.Timeout | null>(null);
   const [isNextButtonDisabled, setIsNextButtonDisabled] = useState(false);
   const [isPrevButtonDisabled, setIsPrevButtonDisabled] = useState(false);
-  const { game, mutateUser, user } = useContext(AppContext);
+  const { mutateUser, user } = useContext(AppContext);
   const [popperInstance, setPopperInstance] = useState<Instance | null>(null);
   const popperUpdateInterval = useRef<NodeJS.Timeout | null>(null);
   const [showNiceJob, setShowNiceJob] = useState(false);
@@ -716,7 +715,6 @@ export default function Tutorial() {
             <Game
               disableCheckpoints={true}
               disablePlayAttempts={true}
-              isSolved={getSolveStateFunction(game)}
               disableStats={true}
               extraControls={controls}
               key={tutorialStep.key}

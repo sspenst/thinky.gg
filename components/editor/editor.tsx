@@ -1,3 +1,5 @@
+import { GameId } from '@root/constants/GameId';
+import { AppContext } from '@root/contexts/appContext';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -21,6 +23,7 @@ interface EditorProps {
 }
 
 export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorProps) {
+  const { game } = useContext(AppContext);
   const history = useRef<Level[]>([level]);
   const historyIndex = useRef<number>(0);
   const [isCreateLevelOpen, setIsCreateLevelOpen] = useState(false);
@@ -237,27 +240,51 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
     });
   }
 
-  const allTiles = '0123456789\nABCDEFGHIJ';
+  function getEditorSelectionLevel() {
+    if (game.id === GameId.SOKOBAN) {
+      const data = [
+        TileType.Default,
+        TileType.Wall,
+        TileType.Block,
+        TileType.End,
+        TileType.Start,
+        TileType.BlockOnExit,
+      ].map(tileType => tileType.toString()).join('');
+
+      return {
+        data: data,
+        height: 1,
+        leastMoves: 0,
+        width: data.length,
+      } as Level;
+    }
+
+    return {
+      data: '0123456789\nABCDEFGHIJ',
+      height: 2,
+      leastMoves: 0,
+      width: 10,
+    } as Level;
+  }
+
+  const editorSelectionLevel = getEditorSelectionLevel();
 
   return (<>
     <div className='flex flex-col h-full'>
-      <div className='flex flex-col h-24 py-1'>
+      <div className='flex flex-col h-24 py-1' style={{
+        height: editorSelectionLevel.height * 48,
+      }}>
         <BasicLayout
           cellClassName={(index) => {
-            if (allTiles[index] !== tileType) {
+            if (editorSelectionLevel.data[index] !== tileType) {
               return 'opacity-50 hover:opacity-100 transition cursor-pointer';
             } else {
               return 'editor-selected';
             }
           }}
           id='editor-selection'
-          level={{
-            data: allTiles,
-            height: 2,
-            leastMoves: 0,
-            width: 10,
-          } as Level}
-          onClick={(index) => setTileType(allTiles[index] as TileType)}
+          level={editorSelectionLevel}
+          onClick={(index) => setTileType(editorSelectionLevel.data[index] as TileType)}
         />
       </div>
       <BasicLayout

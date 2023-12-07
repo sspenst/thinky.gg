@@ -1,5 +1,4 @@
 import Grid from '@root/components/level/grid';
-import { getSolveStateFunction } from '@root/components/level/solutionStates/helpers';
 import MatchResults from '@root/components/multiplayer/matchResults';
 import { MatchGameState } from '@root/helpers/gameStateHelpers';
 import MultiplayerProfile from '@root/models/db/multiplayerProfile';
@@ -526,7 +525,6 @@ export default function Match() {
                   key={'game-' + activeLevel._id.toString()}
                   level={activeLevel}
                   matchId={match.matchId}
-                  isSolved={getSolveStateFunction(game)}
                   onMove={(gameState) => {
                     const matchGameState: MatchGameState = { ...gameState, leastMoves: activeLevel.leastMoves };
 
