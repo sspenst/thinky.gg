@@ -17,5 +17,5 @@ interface MultiplayerProfile {
 }
 
 // add unique index for userId and type
-MultiplayerProfileSchema.index({ userId: 1 }, { unique: true });
+MultiplayerProfileSchema.index({ userId: 1, gameId: 1 }, { unique: true });
 export default MultiplayerProfile;
