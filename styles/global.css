@@ -187,15 +187,12 @@ body {
 }
 .theme-modern.sokoban {
   --level-block: rgb(255, 250, 200, 0.15);
-  
 }
+
 .tile-sokoban {
   /** make the borders have a cool effect */
   border: 0px ridge; /* other options are dotted, double, groove, ridge, inset, outset */
   border-radius: 5px;
-
-  
-  
 }
 
 @property --border-angle {

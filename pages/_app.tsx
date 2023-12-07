@@ -88,7 +88,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
   const [selectedGame, setSelectedGame] = useState<Game>(initGame);
   const deviceInfo = useDeviceCheck(userAgent);
   const forceUpdate = useForceUpdate();
-  const { user, isLoading, mutateUser } = useUser();
+  const { isLoading, mutateUser, user } = useUser();
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   const [multiplayerSocket, setMultiplayerSocket] = useState<MultiplayerSocket>({
