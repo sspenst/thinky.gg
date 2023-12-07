@@ -16,6 +16,4 @@ interface MultiplayerProfile {
   volatility: number;
 }
 
-// add unique index for userId and type
-MultiplayerProfileSchema.index({ userId: 1, gameId: 1 }, { unique: true });
 export default MultiplayerProfile;
