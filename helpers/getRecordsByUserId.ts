@@ -6,7 +6,7 @@ import dbConnect from '../lib/dbConnect';
 import Level from '../models/db/level';
 import Review from '../models/db/review';
 import { LevelModel, RecordModel, ReviewModel } from '../models/mongoose';
-import { getEnrichLevelsPipelineSteps } from './enrich';
+import { getEnrichLevelsPipelineSteps, getEnrichUserConfigPipelineStage } from './enrich';
 import { logger } from './logger';
 
 export interface LevelWithRecordHistory extends Level {

@@ -6,7 +6,7 @@ import Level from '../models/db/level';
 import Review from '../models/db/review';
 import User from '../models/db/user';
 import { LevelModel, ReviewModel, UserModel } from '../models/mongoose';
-import { getEnrichLevelsPipelineSteps } from './enrich';
+import { getEnrichLevelsPipelineSteps, getEnrichUserConfigPipelineStage } from './enrich';
 import { logger } from './logger';
 
 export async function getReviewsForUserId(gameId: GameId, id: string | string[] | undefined, reqUser: User | null = null, queryOptions: QueryOptions = {}) {
@@ -78,6 +78,9 @@ export async function getReviewsForUserId(gameId: GameId, id: string | string[] 
           localField: 'userId',
           foreignField: '_id',
           as: 'userId',
+          pipeline: [
+            ...getEnrichUserConfigPipelineStage(gameId),
+          ],
         },
       },
       {
@@ -86,6 +89,7 @@ export async function getReviewsForUserId(gameId: GameId, id: string | string[] 
           preserveNullAndEmptyArrays: true,
         },
       },
+
       {
         $project: {
           levelId: {
@@ -101,6 +105,7 @@ export async function getReviewsForUserId(gameId: GameId, id: string | string[] 
             last_visited_at: '$userId.last_visited_at',
             avatarUpdatedAt: '$userId.avatarUpdatedAt',
             hideStatus: '$userId.hideStatus',
+            config: 1
           },
           _id: 1,
           ts: 1,
