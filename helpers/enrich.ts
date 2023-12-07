@@ -198,6 +198,7 @@ export function getEnrichUserConfigPipelineStage(gameId: GameId, { localField, e
         { $match: { gameId: gameId } },
         { $project: {
           gameId: 1,
+          roles: 1,
           ...includeCalcsObject,
           ...includeChapterObject,
           ...project
