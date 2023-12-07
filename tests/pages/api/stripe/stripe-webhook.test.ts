@@ -1,3 +1,4 @@
+import UserConfig from '@root/models/db/userConfig';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -8,7 +9,7 @@ import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { UserConfigModel, UserModel } from '../../../../models/mongoose';
+import { UserConfigModel } from '../../../../models/mongoose';
 import handler, { StripeWebhookHelper } from '../../../../pages/api/stripe-webhook/index';
 import { stripe as stripeReal } from '../../../../pages/api/subscription';
 
@@ -119,19 +120,22 @@ async function runStripeWebhookTest({
   });
 }
 
-async function expectUserStatus(userId: string, role: Role | null, stripeCustomerId: string | null) {
-  const [user, userConfig] = await Promise.all([
-    UserModel.findById(userId),
-    UserConfigModel.findOne({ userId }, { stripeCustomerId: 1, gameId: 1 }),
+async function expectUserStatus(userId: string, role: Role | null, stripeCustomerId: string | null | undefined, stripeGiftCustomerId?: string | null | undefined) {
+  const [userConfig] = await Promise.all([
+    UserConfigModel.findOne<UserConfig>({ userId: userId }, { roles: 1, stripeCustomerId: 1, giftSubscriptions: 1, gameId: 1 }),
   ]);
 
   if (role) {
-    expect(user.roles).toContain(role);
+    expect(userConfig?.roles).toContain(role);
   } else {
-    expect(user.roles).not.toContain(Role.PRO);
+    expect(userConfig?.roles).not.toContain(Role.PRO);
   }
 
-  expect(userConfig.stripeCustomerId).toBe(stripeCustomerId);
+  expect(userConfig?.stripeCustomerId).toBe(stripeCustomerId);
+
+  if (stripeGiftCustomerId) {
+    expect(userConfig?.giftSubscriptions).toContain(stripeGiftCustomerId);
+  }
 }
 
 describe('pages/api/stripe-webhook/index.ts', () => {
@@ -202,6 +206,8 @@ describe('pages/api/stripe-webhook/index.ts', () => {
   test('some valid user subscribes', async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(stripeReal.subscriptions, 'search').mockResolvedValue({ data: [], } as any);
+    jest.spyOn(stripeReal.checkout.sessions, 'listLineItems').mockResolvedValue({ data: [{ price: { product: 'test' } }], } as any);
+    jest.spyOn(stripeReal.products, 'retrieve').mockResolvedValue({ name: 'Pathology Yearly' } as any);
     await runStripeWebhookTest({
       eventType: 'checkout.session.completed',
       payloadData: {
@@ -258,6 +264,8 @@ describe('pages/api/stripe-webhook/index.ts', () => {
   test('resubscribe', async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(stripeReal.subscriptions, 'search').mockResolvedValue({ data: [], } as any);
+    jest.spyOn(stripeReal.checkout.sessions, 'listLineItems').mockResolvedValue({ data: [{ price: { product: 'test' } }], } as any);
+    jest.spyOn(stripeReal.products, 'retrieve').mockResolvedValue({ name: 'Pathology Yearly' } as any);
     await runStripeWebhookTest({
       eventType: 'checkout.session.completed',
       payloadData: {
@@ -284,6 +292,50 @@ describe('pages/api/stripe-webhook/index.ts', () => {
       expectedStatus: 400,
       additionalAssertions: async () => {
         await expectUserStatus(TestId.USER, Role.PRO, 'customer_id_123');
+      },
+    });
+  });
+  test('gifting subscription', async () => {
+    jest.spyOn(stripeReal.checkout.sessions, 'listLineItems').mockResolvedValue({ data: [{ price: { product: 'test' } }], } as any);
+    jest.spyOn(stripeReal.products, 'retrieve').mockResolvedValue({ name: 'Pathology Yearly' } as any);
+    await runStripeWebhookTest({
+      eventType: 'customer.subscription.created',
+      payloadData: {
+        id: 'cs_test_123',
+        client_reference_id: TestId.USER,
+        customer: 'customer_id_123',
+        metadata: {
+          giftFromId: TestId.USER,
+          giftToId: TestId.USER_B,
+        },
+      },
+      expectedError: undefined,
+      expectedStatus: 200,
+      additionalAssertions: async () => {
+        await expectUserStatus(TestId.USER_B, Role.PRO, undefined);
+        await expectUserStatus(TestId.USER, Role.PRO, 'customer_id_123', 'cs_test_123');
+      },
+    });
+  });
+  test('regifting should not work since user is already on pro', async () => {
+    jest.spyOn(stripeReal.checkout.sessions, 'listLineItems').mockResolvedValue({ data: [{ price: { product: 'test' } }], } as any);
+    jest.spyOn(stripeReal.products, 'retrieve').mockResolvedValue({ name: 'Pathology Yearly' } as any);
+    await runStripeWebhookTest({
+      eventType: 'customer.subscription.created',
+      payloadData: {
+        id: 'cs_test_123',
+        client_reference_id: TestId.USER,
+        customer: 'customer_id_123',
+        metadata: {
+          giftFromId: TestId.USER,
+          giftToId: TestId.USER_B,
+        },
+      },
+      expectedError: 'test is already a pro subscriber. Error applying gift. Please contact support.',
+      expectedStatus: 400,
+      additionalAssertions: async () => {
+        await expectUserStatus(TestId.USER_B, Role.PRO, undefined);
+        await expectUserStatus(TestId.USER, Role.PRO, 'customer_id_123', 'cs_test_123');
       },
     });
   });

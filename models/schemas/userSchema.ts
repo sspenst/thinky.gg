@@ -109,12 +109,6 @@ const UserSchema = new mongoose.Schema<User>({
     enum: Role,
     default: [],
   },
-  /* TODO: Move score to userConfig
-  score: {
-    type: Number,
-    required: true,
-    default: 0,
-  },*/
   ts: {
     type: Number,
   },

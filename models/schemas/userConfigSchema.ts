@@ -1,5 +1,6 @@
 import { GameId } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
+import Role from '@root/constants/role';
 import { TourType } from '@root/constants/tourType';
 import mongoose from 'mongoose';
 import { EmailDigestSettingTypes } from '../../constants/emailDigest';
@@ -66,6 +67,11 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       select: false,
       default: [],
       maxlength: 100, // max 100 devices @TODO: should probably 'rotate' this list and remove oldest device tokens on push of new one
+    },
+    roles: {
+      type: [String],
+      enum: Role,
+      default: [],
     },
     showPlayStats: {
       type: Boolean,

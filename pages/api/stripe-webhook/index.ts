@@ -31,17 +31,6 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
   try {
     await session.withTransaction(async () => {
       const promises = [
-        UserModel.findByIdAndUpdate(
-          userToDowngrade._id,
-          {
-            $pull: {
-              roles: Role.PRO
-            }
-          },
-          {
-            session: session
-          },
-        ),
         // NB: gift recipients do not have a stripe customer id
         UserConfigModel.findOneAndUpdate(
           {
@@ -50,6 +39,9 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
           },
           {
             stripeCustomerId: null,
+            $pull: {
+              roles: Role.PRO
+            }
           },
           {
             session: session
@@ -95,11 +87,13 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
 
 async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscription: Stripe.Subscription): Promise<string | undefined> {
   let error: string | undefined;
+  const giftToUserConfig = await UserConfigModel.findOne({ userId: giftToUser._id });
 
-  if (isPro(giftToUser)) {
+  if (isPro(giftToUserConfig)) {
     // TODO: create a coupon and apply it to the existing subscription..
     // https://stripe.com/docs/api/coupons/create
-    error = `${giftToUser.name} is already a pro subscriber. Error applying gift. Please contact support.`;
+
+    error = `${giftFromUser.name} is already a pro subscriber. Error applying gift. Please contact support.`;
   }
 
   // Extract product name from properties, if available
@@ -146,12 +140,17 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
         const type = subscription.metadata?.type as GiftType;
 
         await Promise.all([
-          UserModel.findByIdAndUpdate(
-            giftToUser._id,
+          UserConfigModel.findOneAndUpdate(
             {
+              userId: giftToUser._id,
+              gameId: gameId,
+              // TODO: Get GameId
+            },
+            {
+              // add to set gift subscriptions
               $addToSet: {
                 roles: Role.PRO
-              }
+              },
             },
             {
               session: session
@@ -160,6 +159,7 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
           UserConfigModel.findOneAndUpdate(
             {
               userId: giftFromUser._id,
+              gameId: gameId,
               // TODO: Get GameId
             },
             {
@@ -231,7 +231,9 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
   let error: string | undefined;
 
   // if the user is already a pro subscriber, we don't want to do anything
-  if (isPro(userToUpgrade)) {
+  const userToUpgradeConfig = await UserConfigModel.findOne({ userId: userToUpgrade._id });
+
+  if (isPro(userToUpgradeConfig)) {
     // we want to log the error
     error = `User with id ${userToUpgrade._id} is already a pro subscriber`;
   }
@@ -244,33 +246,28 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
     try {
       await session.withTransaction(async () => {
         await Promise.all([
-          UserModel.findByIdAndUpdate(
-            userToUpgrade._id,
+          UserConfigModel.findOneAndUpdate(
             {
+              userId: userToUpgrade._id,
+              gameId: gameId,
+              // TODO: Get GameId
+            },
+            {
+              stripeCustomerId: customerId,
               $addToSet: {
                 roles: Role.PRO
               }
             },
             {
-              session: session
-            },
-          ),
-          UserConfigModel.findOneAndUpdate(
-            {
-              userId: userToUpgrade._id
-              // TODO: Get GameId
-            },
-            {
-              stripeCustomerId: customerId
-            },
-            {
-              session: session
+              session: session,
+              new: true,
             },
           ),
           createNewProUserNotification(gameId, userToUpgrade._id),
           queueDiscordWebhook(Discord.DevPriv, `💸 [${userToUpgrade.name}](https://pathology.gg/profile/${userToUpgrade.name}) just subscribed to ${productName}!`),
         ]);
       });
+
       session.endSession();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
