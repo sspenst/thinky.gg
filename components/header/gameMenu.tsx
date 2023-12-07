@@ -3,7 +3,6 @@ import Dimensions from '@root/constants/dimensions';
 import { Games } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
 import { getGameLogoAndLabel } from '@root/helpers/getGameLogo';
-import { ScreenSize } from '@root/hooks/useDeviceCheck';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { Fragment, useCallback, useContext } from 'react';

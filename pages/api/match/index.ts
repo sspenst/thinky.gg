@@ -3,6 +3,7 @@ import Discord from '@root/constants/discord';
 import { GameId } from '@root/constants/GameId';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
+import { LEVEL_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import { MULTIPLAYER_INITIAL_ELO } from '@root/models/schemas/multiplayerProfileSchema';
 import mongoose, { PipelineStage, Types } from 'mongoose';
@@ -17,7 +18,6 @@ import { MatchAction, MultiplayerMatchState, MultiplayerMatchType } from '../../
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
 import User from '../../../models/db/user';
 import { LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, UserModel } from '../../../models/mongoose';
-import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
 import { computeMatchScoreTable, enrichMultiplayerMatch, generateMatchLog } from '../../../models/schemas/multiplayerMatchSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 import { queueRefreshAchievements } from '../internal-jobs/worker';

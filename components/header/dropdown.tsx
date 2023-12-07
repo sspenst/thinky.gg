@@ -19,7 +19,7 @@ import { GameMenu } from './gameMenu';
 import MusicIcon from './musicIcon';
 
 export default function Dropdown() {
-  const { deviceInfo, game, forceUpdate, mutateUser, playLater, setShouldAttemptAuth, user, userLoading } = useContext(AppContext);
+  const { game, forceUpdate, mutateUser, playLater, setShouldAttemptAuth, user, userLoading } = useContext(AppContext);
   const [isMusicModalOpen, setIsMusicModalOpen] = useState(false);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const router = useRouter();

@@ -1,4 +1,5 @@
 import { GameId } from '@root/constants/GameId';
+import { LEVEL_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import KeyValue from '@root/models/db/keyValue';
 import { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
@@ -11,7 +12,6 @@ import { getUserFromToken } from '../../../lib/withAuth';
 import Level, { EnrichedLevel } from '../../../models/db/level';
 import User from '../../../models/db/user';
 import { KeyValueModel, LevelModel, UserModel } from '../../../models/mongoose';
-import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 
 export const KV_LEVEL_OF_DAY_KEY_PREFIX = 'level-of-day-';

@@ -2,7 +2,7 @@
 // ts-node -r tsconfig-paths/register --files server/scripts/migrateUserCalcsToConfig.ts
 // import dotenv
 import User from '@root/models/db/user';
-import { MultiplayerMatchModel, MultiplayerProfileModel, UserConfigModel, UserModel } from '@root/models/mongoose';
+import { UserConfigModel, UserModel } from '@root/models/mongoose';
 import cliProgress from 'cli-progress';
 import dotenv from 'dotenv';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
