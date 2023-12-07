@@ -83,6 +83,6 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
   }
 );
 
-UserConfigSchema.index({ userId: 1 }, { unique: true });
+UserConfigSchema.index({ userId: 1, gameId: 1 }, { unique: true });
 
 export default UserConfigSchema;
