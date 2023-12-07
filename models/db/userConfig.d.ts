@@ -1,5 +1,6 @@
 import { GameId } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
+import Role from '@root/constants/role';
 import { TourType } from '@root/hooks/useTour';
 import { Types } from 'mongoose';
 import EmailDigestSettingTypes from '../../constants/emailDigest';
@@ -18,6 +19,7 @@ interface UserConfig {
   gameId: GameId;
   giftSubscriptions: string[]; // gift subscriptions this user has given out
   mobileDeviceTokens: string[];
+  roles: Role[];
   showPlayStats: boolean;
   stripeCustomerId: string;
   theme: string;
