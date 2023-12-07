@@ -53,6 +53,6 @@ interface RoleIconsProps {
 
 export default function RoleIcons({ id, size, user }: RoleIconsProps) {
   return (<>
-    {user.roles?.map(role => <RoleIcon id={id} key={`role-icon-${user._id.toString()}-${role.toString()}`} role={role} size={size} />)}
+    {user.config?.roles?.map(role => <RoleIcon id={id} key={`role-icon-${user._id.toString()}-${role.toString()}`} role={role} size={size} />)}
   </>);
 }
