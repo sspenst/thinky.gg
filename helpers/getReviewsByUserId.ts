@@ -1,13 +1,12 @@
 import { GameId } from '@root/constants/GameId';
 import cleanUser from '@root/lib/cleanUser';
-import { LEVEL_DEFAULT_PROJECTION, LEVEL_SEARCH_DEFAULT_PROJECTION } from '@root/models/schemas/levelSchema';
-import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
+import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { PipelineStage, QueryOptions, Types } from 'mongoose';
 import dbConnect from '../lib/dbConnect';
 import Review from '../models/db/review';
 import User from '../models/db/user';
-import { LevelModel, ReviewModel, UserModel } from '../models/mongoose';
-import { enrichLevels, getEnrichLevelsPipelineSteps, getEnrichUserConfigPipelineStage } from './enrich';
+import { LevelModel, ReviewModel } from '../models/mongoose';
+import { getEnrichLevelsPipelineSteps } from './enrich';
 import { logger } from './logger';
 
 export async function getReviewsByUserId(gameId: GameId, id: string | string[] | undefined, reqUser: User | null = null, queryOptions: QueryOptions = {}) {

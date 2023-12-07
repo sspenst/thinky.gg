@@ -1,12 +1,12 @@
 import { GameId } from '@root/constants/GameId';
 import StatFilter from '@root/constants/statFilter';
+import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import Level from '@root/models/db/level';
 import { LevelModel, StatModel } from '@root/models/mongoose';
 import TimeRange from '../../../constants/timeRange';
 import { ValidType } from '../../../helpers/apiWrapper';
 import withAuth from '../../../lib/withAuth';
 import User from '../../../models/db/user';
-import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
 import { SearchQuery } from '../../search';
 import { getLatestLevels } from '../latest-levels';
 import { getLatestReviews } from '../latest-reviews';

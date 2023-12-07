@@ -1,6 +1,5 @@
 import StyledTooltip from '@root/components/page/styledTooltip';
 import { GameId } from '@root/constants/GameId';
-import { Games } from '@root/constants/Games';
 import Image from 'next/image';
 import React from 'react';
 import { getGameFromId } from './getGameIdFromReq';

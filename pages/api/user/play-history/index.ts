@@ -5,7 +5,7 @@ import isPro from '@root/helpers/isPro';
 import withAuth from '@root/lib/withAuth';
 import User from '@root/models/db/user';
 import { PlayAttemptModel, UserModel } from '@root/models/mongoose';
-import { LEVEL_DEFAULT_PROJECTION } from '@root/models/schemas/levelSchema';
+import { LEVEL_DEFAULT_PROJECTION }  from '@root/models/constants/projections';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
 import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import { PipelineStage, Types } from 'mongoose';

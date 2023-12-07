@@ -1,5 +1,6 @@
 import { GameId } from '@root/constants/GameId';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import { LEVEL_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { PipelineStage } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper from '../../../../helpers/apiWrapper';
@@ -11,7 +12,6 @@ import { getUserFromToken } from '../../../../lib/withAuth';
 import Level, { EnrichedLevel } from '../../../../models/db/level';
 import User from '../../../../models/db/user';
 import { LevelModel, UserModel } from '../../../../models/mongoose';
-import { LEVEL_DEFAULT_PROJECTION } from '../../../../models/schemas/levelSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../../models/schemas/userSchema';
 import { LevelUrlQueryParams } from '../../../level/[username]/[slugName]';
 
