@@ -9,6 +9,7 @@ import StyledTooltip from '../page/styledTooltip';
 import Directory from './directory';
 import Dropdown from './dropdown';
 import { GameMenu } from './gameMenu';
+import GameMenuLogo from './gameMenuLogo';
 import HeaderControls from './headerControls';
 
 interface HeaderProps {
@@ -42,12 +43,13 @@ export default function Header({
         minHeight: Dimensions.MenuHeight,
       }}
     >
-      <div className='flex truncate'>
+      <div className='flex items-center truncate'>
         <div className='cursor-default items-center flex pr-2'>
           <Link className={'font-bold text-3xl'} href={!userLoading && !user ? '/' : '/home'}>
-            <Image alt='logo' src='/logo.svg' width='24' height='24' className='h-6 w-6' style={{ minWidth: 24, minHeight: 24 }} />
+            <Image alt='logo' src={game.logo} width='24' height='24' className='h-6 w-6' style={{ minWidth: 24, minHeight: 24 }} />
           </Link>
         </div>
+        <GameMenuLogo />
         <Directory folders={folders} subtitle={subtitle} title={title} />
       </div>
       <div className='flex gap-4 items-center z-20'>
