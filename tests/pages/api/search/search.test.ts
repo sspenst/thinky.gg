@@ -17,7 +17,7 @@ import { initLevel } from '../../../../lib/initializeLocalDb';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { LevelModel, StatModel, UserModel } from '../../../../models/mongoose';
 import handler from '../../../../pages/api/search';
-import { BlockFilterMask } from '../../../../pages/search';
+import { BlockFilterMask } from '../../../../pages/[subdomain]/search';
 
 afterEach(() => {
   jest.restoreAllMocks();

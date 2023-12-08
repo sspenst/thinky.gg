@@ -6,7 +6,7 @@ import TestId from '../../../constants/testId';
 import { logger } from '../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
-import { getServerSideProps } from '../../../pages/campaign/[slug]';
+import { getServerSideProps } from '../../../pages/[subdomain]/campaign/[slug]';
 
 beforeAll(async () => {
   await dbConnect();

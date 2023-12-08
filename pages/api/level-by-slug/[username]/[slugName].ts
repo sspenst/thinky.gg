@@ -13,7 +13,7 @@ import Level, { EnrichedLevel } from '../../../../models/db/level';
 import User from '../../../../models/db/user';
 import { LevelModel, UserModel } from '../../../../models/mongoose';
 import { USER_DEFAULT_PROJECTION } from '../../../../models/schemas/userSchema';
-import { LevelUrlQueryParams } from '../../../level/[username]/[slugName]';
+import { LevelUrlQueryParams } from '../../../[subdomain]/level/[username]/[slugName]';
 
 export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
   const { slugName, username } = req.query as LevelUrlQueryParams;

@@ -18,7 +18,7 @@ import { EnrichedLevel } from '../../../models/db/level';
 import User from '../../../models/db/user';
 import { LevelModel, StatModel, UserModel } from '../../../models/mongoose';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
-import { BlockFilterMask, SearchQuery } from '../../search';
+import { BlockFilterMask, SearchQuery } from '../../[subdomain]/search';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getDimensionLimits(query: SearchQuery, searchObj: FilterQuery<any>) {

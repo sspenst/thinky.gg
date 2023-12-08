@@ -2,7 +2,7 @@ import { GetServerSidePropsContext } from 'next';
 import { Logger } from 'winston';
 import { logger } from '../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
-import { getServerSideProps } from '../../pages/index';
+import { getServerSideProps } from '../../pages/[subdomain]/index';
 
 beforeAll(async () => {
   await dbConnect();

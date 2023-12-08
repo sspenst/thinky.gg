@@ -7,7 +7,7 @@ import TimeRange from '../../../constants/timeRange';
 import { ValidType } from '../../../helpers/apiWrapper';
 import withAuth from '../../../lib/withAuth';
 import User from '../../../models/db/user';
-import { SearchQuery } from '../../search';
+import { SearchQuery } from '../../[subdomain]/search';
 import { getLatestLevels } from '../latest-levels';
 import { getLatestReviews } from '../latest-reviews';
 import { getLevelOfDay } from '../level-of-day';

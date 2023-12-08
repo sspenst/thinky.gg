@@ -5,7 +5,7 @@ import TimeRange from '../../constants/timeRange';
 import Level from '../../models/db/level';
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
-import { CreatePageProps } from '../../pages/create';
+import { CreatePageProps } from '../../pages/[subdomain]/create';
 import SelectCard from '../cards/selectCard';
 import DeleteLevelModal from '../modal/deleteLevelModal';
 import EditLevelModal from '../modal/editLevelModal';

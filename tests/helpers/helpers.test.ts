@@ -16,7 +16,7 @@ import User from '../../models/db/user';
 import { UserModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
-import { UserWithLevels } from '../../pages/catalog/[[...route]]';
+import { UserWithLevels } from '../../pages/[subdomain]/catalog/[[...route]]';
 
 beforeAll(async () => {
   await dbConnect();
