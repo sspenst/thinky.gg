@@ -7,7 +7,7 @@ import { logger } from '../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
 import { CampaignModel } from '../../../models/mongoose';
-import { getServerSideProps } from '../../../pages/chapter1';
+import { getServerSideProps } from '../../../pages/[subdomain]/chapter1';
 
 beforeAll(async () => {
   await dbConnect();

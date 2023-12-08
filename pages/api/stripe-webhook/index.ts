@@ -122,7 +122,7 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
 
   logger.info(`Product name purchasing: ${productName}`);
 
-  let gameId: GameId = GameId.GLOBAL;
+  let gameId: GameId = GameId.THINKY;
 
   // TODO: test this
   if (productName.match(/pathology/i)) {
@@ -218,7 +218,7 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
 
   logger.info(`Product name purchasing: ${productName}`);
 
-  let gameId: GameId = GameId.GLOBAL;
+  let gameId: GameId = GameId.THINKY;
 
   if (productName.match(/pathology/i)) {
     gameId = GameId.PATHOLOGY;

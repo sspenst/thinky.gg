@@ -11,8 +11,8 @@ import { createNewReviewOnYourLevelNotification } from '../../../helpers/notific
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
 import { GraphModel, UserModel } from '../../../models/mongoose';
+import { getServerSideProps, ProfileTab } from '../../../pages/[subdomain]/profile/[name]/[[...tab]]/index';
 import * as search from '../../../pages/api/search';
-import { getServerSideProps, ProfileTab } from '../../../pages/profile/[name]/[[...tab]]/index';
 
 beforeAll(async () => {
   await dbConnect();

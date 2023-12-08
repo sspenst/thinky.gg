@@ -4,7 +4,7 @@
 
 import Stat from '../models/db/stat';
 import SelectOptionStats from '../models/selectOptionStats';
-import { UserWithLevels } from '../pages/catalog/[[...route]]';
+import { UserWithLevels } from '../pages/[subdomain]/catalog/[[...route]]';
 
 export default function getUserStats(
   stats: Stat[] | undefined,

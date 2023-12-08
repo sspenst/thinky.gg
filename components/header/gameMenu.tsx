@@ -1,5 +1,6 @@
 import { Menu, Transition } from '@headlessui/react';
 import Dimensions from '@root/constants/dimensions';
+import { GameId } from '@root/constants/GameId';
 import { Games } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
 import { getGameLogoAndLabel } from '@root/helpers/getGameLogo';
@@ -54,8 +55,12 @@ export function GameMenu({ expandAbsolute }: GameMenuProps) {
 
     const currentPath = (carryOver ? window.location.pathname : '/home');
 
+    if (subdomain === GameId.THINKY) {
+      return `${currentProtocol}//${currentHost}`;
+    }
+
     return `${currentProtocol}//${subdomain}.${currentHost}${currentPath}`;
-  }, []);
+  }, [game.id]);
   const absolute = expandAbsolute ? 'absolute' : '';
 
   return (
