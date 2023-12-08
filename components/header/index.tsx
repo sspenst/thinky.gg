@@ -1,4 +1,3 @@
-import { ScreenSize } from '@root/hooks/useDeviceCheck';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useContext, useEffect, useState } from 'react';
@@ -8,8 +7,7 @@ import LinkInfo from '../formatted/linkInfo';
 import StyledTooltip from '../page/styledTooltip';
 import Directory from './directory';
 import Dropdown from './dropdown';
-import { GameMenu } from './gameMenu';
-import GameMenuLogo from './gameMenuLogo';
+import GameMenu from './gameMenu';
 import HeaderControls from './headerControls';
 
 interface HeaderProps {
@@ -24,7 +22,7 @@ export default function Header({
   title,
 }: HeaderProps) {
   const [background, setBackground] = useState('var(--bg-color-2)');
-  const { game, deviceInfo, user, userLoading } = useContext(AppContext);
+  const { game, user, userLoading } = useContext(AppContext);
 
   useEffect(() => {
     setBackground(window.location.hostname !== 'pathology.gg' ?
@@ -43,17 +41,16 @@ export default function Header({
         minHeight: Dimensions.MenuHeight,
       }}
     >
-      <div className='flex items-center truncate'>
+      <div className='flex items-center truncate z-20'>
         <div className='cursor-default items-center flex pr-2'>
           <Link className={'font-bold text-3xl'} href={!userLoading && !user ? '/' : '/home'}>
             <Image alt='logo' src={game.logo} width='24' height='24' className='h-6 w-6' style={{ minWidth: 24, minHeight: 24 }} />
           </Link>
         </div>
-        <GameMenuLogo />
+        <GameMenu />
         <Directory folders={folders} subtitle={subtitle} title={title} />
       </div>
       <div className='flex gap-4 items-center z-20'>
-        {deviceInfo.screenSize > ScreenSize.XS && <GameMenu expandAbsolute={true} />}
         <HeaderControls />
         {user && <div className='hidden sm:block h-6 w-px bg-neutral-500' />}
         <div className='flex gap-3 items-center'>
