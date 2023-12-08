@@ -60,7 +60,7 @@ export function GameMenu({ expandAbsolute }: GameMenuProps) {
     }
 
     return `${currentProtocol}//${subdomain}.${currentHost}${currentPath}`;
-  }, [game.id]);
+  }, []);
   const absolute = expandAbsolute ? 'absolute' : '';
 
   return (

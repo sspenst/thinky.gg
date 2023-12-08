@@ -31,7 +31,9 @@ const whiteList = {
   'play-as-guest': 1,
   'reset-password': 1,
   'settings': 1,
-  'signup': 1
+  'signup': 1,
+  'notifications': 1,
+
 } as Record<string, number>;
 
 export async function middleware(req: NextRequest) {
