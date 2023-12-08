@@ -23,7 +23,7 @@ export default function Header({
   title,
 }: HeaderProps) {
   const [background, setBackground] = useState('var(--bg-color-2)');
-  const { deviceInfo, user, userLoading } = useContext(AppContext);
+  const { game, deviceInfo, user, userLoading } = useContext(AppContext);
 
   useEffect(() => {
     setBackground(window.location.hostname !== 'pathology.gg' ?
@@ -55,7 +55,7 @@ export default function Header({
         <HeaderControls />
         {user && <div className='hidden sm:block h-6 w-px bg-neutral-500' />}
         <div className='flex gap-3 items-center'>
-          {user && <>
+          {user && !game.disableGames && <>
             <Link
               className='hidden sm:block'
               data-tooltip-content='Ranked Solves'

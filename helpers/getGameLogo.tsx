@@ -20,11 +20,11 @@ export function getGameLogoAndLabel(game?: GameId) {
     return null;
   }
 
-  return <>
+  return <div className='flex flex-row gap-1 items-center'>
     <div>
       {getGameLogo(game)}
     </div>
     <div>{getGameFromId(game).displayName}
     </div>
-  </>;
+  </div>;
 }

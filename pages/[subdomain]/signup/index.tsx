@@ -1,3 +1,5 @@
+import { GameId } from '@root/constants/GameId';
+import { getGameLogoAndLabel } from '@root/helpers/getGameLogo';
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
 import React from 'react';
@@ -24,6 +26,12 @@ export default function SignUp({ recaptchaPublicKey }: {recaptchaPublicKey?: str
   return (
     <Page title={'Sign Up'}>
       <>
+        <div className='w-full max-w-md mx-auto mt-3 justify-center text-center'>
+          <div className='flex flex-col gap-2 items-center'>
+            <div className='text-2xl items-center self-center'>{getGameLogoAndLabel(GameId.THINKY)}</div>
+            <div>Create a Thinky.gg account and start playing!</div><div>Your Thinky.gg account works across all games on the site.</div>
+          </div>
+        </div>
         <SignupForm recaptchaPublicKey={recaptchaPublicKey} />
         <div className='text-center mb-4'>
           {'Already have an account? '}
