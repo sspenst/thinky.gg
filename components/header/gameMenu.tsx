@@ -72,7 +72,7 @@ export function GameMenu({ expandAbsolute }: GameMenuProps) {
         }}
       >
         <div className='flex items-center gap-3'>
-          {getGameLogoAndLabel(game.id)}
+          {getGameLogoAndLabel(game.id, 'game-menu')}
         </div>
       </Menu.Button>
       <Transition

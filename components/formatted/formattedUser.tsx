@@ -1,4 +1,5 @@
 import Dimensions from '@root/constants/dimensions';
+import { GameId } from '@root/constants/GameId';
 import { ProfileQueryType, UserExtendedData } from '@root/constants/profileQueryType';
 import { getGameLogoAndLabel } from '@root/helpers/getGameLogo';
 import isOnline from '@root/helpers/isOnline';
@@ -92,10 +93,11 @@ export default function FormattedUser({ className, id, noLinks, noTooltip, onCli
             {!userExtendedData ? <LoadingSpinner /> : <>
               <span className='font-bold text-base'>{userExtendedData.user?.name}</span>
               {!userExtendedData.user?.ts ? <span>Unregistered for this game</span> : <>
-                { isOnline(userExtendedData.user) && <div className='flex gap-1 items-center'>
-                  <span className='font-medium'>Currently Playing:</span>
-                  {getGameLogoAndLabel(userExtendedData.user.lastGame)}
-                </div>
+                {isOnline(userExtendedData.user) &&
+                  <div className='flex gap-1 items-center'>
+                    <span className='font-medium'>Currently Playing:</span>
+                    {getGameLogoAndLabel(userExtendedData.user.lastGame ?? GameId.THINKY, id)}
+                  </div>
                 }
                 <div className='flex gap-1'>
                   <span className='font-medium'>Rank:</span>

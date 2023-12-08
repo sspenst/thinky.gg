@@ -73,7 +73,7 @@ export default function MultiSelectUser({ controlStyles, defaultValue, onSelect,
       control: (provided: any, state: any) => ({
         ...provided,
         backgroundColor: 'var(--bg-color-2)',
-        borderColor: state.isFocused ? 'rgb(37 99 235)' : 'rgb(209 213 219)',
+        borderColor: state.isFocused ? 'rgb(37 99 235)' : 'var(--bg-color-4)',
         borderRadius: '0.375rem',
         borderWidth: '1px',
         boxShadow: 'none',
@@ -96,10 +96,9 @@ export default function MultiSelectUser({ controlStyles, defaultValue, onSelect,
       }),
       menu: (provided: any) => ({
         ...provided,
-        borderColor: 'var(--border-color)',
+        borderColor: 'var(--bg-color-4)',
         borderRadius: '0.375rem',
         borderWidth: '1px',
-
         marginTop: '2px',
       }),
       option: (provided: any, state: any) => ({
