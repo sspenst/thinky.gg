@@ -159,7 +159,7 @@ export default function Dropdown() {
                 )}
               </Menu.Item>
               }
-              <Menu.Item>
+              { !game.disableGames && <Menu.Item>
                 {({ active }) => (
                   <Link href='/create' passHref>
                     <div
@@ -175,7 +175,7 @@ export default function Dropdown() {
                     </div>
                   </Link>
                 )}
-              </Menu.Item>
+              </Menu.Item>}
               {isPro(user) && !game.disableGames &&
                 <Menu.Item>
                   {({ active }) => (
