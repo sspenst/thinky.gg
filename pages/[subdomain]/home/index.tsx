@@ -1,4 +1,6 @@
+import { GameId } from '@root/constants/GameId';
 import { AppContext } from '@root/contexts/appContext';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import React, { useContext, useEffect, useState } from 'react';
 import { useSWRConfig } from 'swr';
@@ -13,8 +15,9 @@ import User from '../../../models/db/user';
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
+  const gameId = getGameIdFromReq(context.req);
 
-  if (!reqUser) {
+  if (!reqUser || gameId === GameId.THINKY) {
     return {
       redirect: {
         destination: '/',
