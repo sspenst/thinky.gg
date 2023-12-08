@@ -2,9 +2,9 @@ import { AppContext } from '@root/contexts/appContext';
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
 import React, { useContext } from 'react';
-import LoginForm from '../../components/forms/loginForm';
-import Page from '../../components/page/page';
-import redirectToHome from '../../helpers/redirectToHome';
+import LoginForm from '../../../components/forms/loginForm';
+import Page from '../../../components/page/page';
+import redirectToHome from '../../../helpers/redirectToHome';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   return await redirectToHome(context);

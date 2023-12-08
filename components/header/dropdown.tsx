@@ -121,6 +121,7 @@ export default function Dropdown() {
               <div className='block sm:hidden'>
                 <Divider />
               </div>
+
             </>
             }
             {isLoggedIn && !isPro(user) && <>
@@ -142,7 +143,7 @@ export default function Dropdown() {
               <Divider />
             </>}
             {isLoggedIn && <>
-              <Menu.Item>
+              { !game.disableGames && <Menu.Item>
                 {({ active }) => (
                   <Link href='/ranked' passHref>
                     <div
@@ -157,6 +158,7 @@ export default function Dropdown() {
                   </Link>
                 )}
               </Menu.Item>
+              }
               <Menu.Item>
                 {({ active }) => (
                   <Link href='/create' passHref>
@@ -174,7 +176,7 @@ export default function Dropdown() {
                   </Link>
                 )}
               </Menu.Item>
-              {isPro(user) &&
+              {isPro(user) && !game.disableGames &&
                 <Menu.Item>
                   {({ active }) => (
                     <Link
@@ -202,6 +204,7 @@ export default function Dropdown() {
                   )}
                 </Menu.Item>
               }
+              { !game.disableGames &&
               <Menu.Item>
                 {({ active }) => (
                   <Link href={`${getProfileSlug(user)}/collections`} passHref>
@@ -219,6 +222,7 @@ export default function Dropdown() {
                   </Link>
                 )}
               </Menu.Item>
+              }
               <Menu.Item>
                 {({ active }) => (
                   <Link href={getProfileSlug(user)} passHref>

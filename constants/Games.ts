@@ -21,6 +21,12 @@ export const Games: Record<GameId, Game> = {
     baseUrl: '',
     defaultTheme: Theme.Classic,
     displayName: 'Global',
+    disableCampaign: true,
+    disableCommunityCampaigns: true,
+    disableGames: true,
+    disableTutorial: true,
+    disableMultiplayer: true,
+    disableRanked: true,
     logo: '/logos/global.png',
     subtitle: 'Global Subtitle',
     SEOTitle: 'Global - Global Title',
@@ -68,6 +74,7 @@ export interface Game {
   displayName: string;
   disableCampaign?: boolean;
   disableCommunityCampaigns?: boolean;
+  disableGames?: boolean;
   disableTutorial?: boolean;
   disableMultiplayer?: boolean;
   disableRanked?: boolean,

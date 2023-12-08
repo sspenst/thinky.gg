@@ -1,9 +1,9 @@
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
 import React from 'react';
-import SignupForm from '../../components/forms/signupForm';
-import Page from '../../components/page/page';
-import redirectToHome from '../../helpers/redirectToHome';
+import SignupForm from '../../../components/forms/signupForm';
+import Page from '../../../components/page/page';
+import redirectToHome from '../../../helpers/redirectToHome';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const redirect = await redirectToHome(context);

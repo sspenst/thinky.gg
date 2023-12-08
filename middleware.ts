@@ -29,6 +29,7 @@ const whiteList = {
   'forgot-password': 1,
   'login': 1,
   'play-as-guest': 1,
+  'profile': 1,
   'reset-password': 1,
   'settings': 1,
   'signup': 1,
@@ -41,27 +42,22 @@ export async function middleware(req: NextRequest) {
   const url = req.nextUrl.clone();
 
   // Skip public files
-  if (PUBLIC_FILE.test(url.pathname) || url.pathname.includes('_next')) return;
+  if (PUBLIC_FILE.test(url.pathname) || url.pathname.startsWith('/_next')) return;
 
   const host = req.headers.get('host');
   const subdomain = getValidSubdomain(host);
 
-  if (subdomain) {
-    // Subdomain available, rewriting
-    console.log(`>>> Rewriting: ${url.pathname} to /${subdomain}${url.pathname}`);
+  const folder = url.pathname.split('/')[1];
+
+  if (folder === 'api') {
+    //console.log(`>>> api -> Rewriting folder ${folder}: ${url.pathname} to /api${url.pathname}`);
+
+    return;
+  }
+
+  if (subdomain || whiteList[folder]) {
+    // console.log(`>>> subdomain -> Rewriting folder ${folder}: ${url.pathname} to /${subdomain}${url.pathname}`);
     url.pathname = `/${subdomain}${url.pathname}`;
-  } else {
-    // check if not in whitelist
-    const folder = url.pathname.split('/')[1];
-
-    console.log(folder);
-
-    if (!whiteList[folder]) {
-      console.log(`>>> Rewriting: ${url.pathname} to /`);
-      url.pathname = '/';
-    } else {
-      console.log(`>>> Not rewriting: ${url.pathname}`);
-    }
   }
 
   return NextResponse.rewrite(url);

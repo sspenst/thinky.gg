@@ -9,11 +9,11 @@ import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
-import Page from '../../components/page/page';
-import SettingsGeneral from '../../components/settings/settingsGeneral';
-import SettingsPro from '../../components/settings/settingsPro';
-import { getUserFromToken } from '../../lib/withAuth';
-import { getUserConfig } from '../api/user-config';
+import Page from '../../../components/page/page';
+import SettingsGeneral from '../../../components/settings/settingsGeneral';
+import SettingsPro from '../../../components/settings/settingsPro';
+import { getUserFromToken } from '../../../lib/withAuth';
+import { getUserConfig } from '../../api/user-config';
 
 enum SettingsTab {
   Account = 'account',

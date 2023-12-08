@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import { AppContext } from '@root/contexts/appContext';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { GetServerSidePropsContext } from 'next';
@@ -16,6 +17,15 @@ import { getLevelOfDay } from '../api/level-of-day';
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const gameId = getGameIdFromReq(context.req);
   const levelOfDay: EnrichedLevel | null = await getLevelOfDay(gameId);
+
+  if (GameId.THINKY === gameId) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
 
   return {
     props: {
