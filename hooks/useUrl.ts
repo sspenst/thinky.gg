@@ -1,5 +1,4 @@
 import { GameId } from '@root/constants/GameId';
-import { useCallback } from 'react';
 
 const LinksThatCarryOver = [
   '^/profile',
@@ -18,9 +17,8 @@ const LinksThatCarryOver = [
 ];
 
 export default function useUrl() {
-  const getUrl = useCallback((gameId?: GameId, path?: string) => {
+  function getUrl(gameId?: GameId, path?: string) {
     if (typeof window === 'undefined') {
-      // return `https://${gameId ? `${gameId}.` : ''}thinky.gg${path || '/home'}`;
       return undefined;
     }
 
@@ -61,7 +59,7 @@ export default function useUrl() {
     }
 
     return `${getProtocol()}//${getSubdomain()}${getHost()}${getPath()}`;
-  }, []);
+  }
 
   return getUrl;
 }
