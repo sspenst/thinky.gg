@@ -174,7 +174,6 @@ export function initGameState(levelData: string) {
         tileType === TileType.Hole) {
         board[y][x].tileType = tileType;
       } else if (tileType === TileType.BlockOnExit) {
-        console.log('here');
         board[y][x].tileType = TileType.End;
         board[y][x].block = {
           id: blockId++,
