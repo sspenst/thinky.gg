@@ -1,8 +1,8 @@
 import { GameId } from '@root/constants/GameId';
+import { useRouterQuery } from '@root/hooks/useRouterQuery';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
-import { useRouter } from 'next/router';
-import { ParsedUrlQuery, ParsedUrlQueryInput } from 'querystring';
+import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useEffect, useState } from 'react';
 import FilterButton from '../../../components/buttons/filterButton';
 import NotificationList from '../../../components/notification/notificationList';
@@ -84,7 +84,7 @@ interface NotificationProps {
 export default function NotificationsPage({ notifications, searchQuery, totalRows }: NotificationProps) {
   const [data, setData] = useState(notifications);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const routerQuery = useRouterQuery();
 
   useEffect(() => {
     setData(notifications);
@@ -93,20 +93,8 @@ export default function NotificationsPage({ notifications, searchQuery, totalRow
 
   const fetchNotifications = useCallback((query: SearchQuery) => {
     setLoading(true);
-
-    // only add non-default query params for a clean URL
-    const q: ParsedUrlQueryInput = {};
-
-    for (const prop in query) {
-      if (query[prop] !== DefaultQuery[prop]) {
-        q[prop] = query[prop];
-      }
-    }
-
-    router.push({
-      query: q,
-    });
-  }, [router, setLoading]);
+    routerQuery(query, DefaultQuery);
+  }, [routerQuery, setLoading]);
 
   const onUnreadFilterButtonClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     const value = e.currentTarget.value;
