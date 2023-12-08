@@ -2,11 +2,11 @@ import FormattedDate from '@root/components/formatted/formattedDate';
 import MultiplayerRating from '@root/components/multiplayer/multiplayerRating';
 import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import { useRouterQuery } from '@root/hooks/useRouterQuery';
 import debounce from 'debounce';
 import { GetServerSidePropsContext } from 'next';
-import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
-import { ParsedUrlQuery, ParsedUrlQueryInput } from 'querystring';
+import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import DataTable, { Alignment, TableColumn } from 'react-data-table-component-sspenst';
 import FormattedUser from '../../../components/formatted/formattedUser';
@@ -307,10 +307,10 @@ interface PlayersProps {
 /* istanbul ignore next */
 export default function PlayersPage({ searchQuery, totalRows, users }: PlayersProps) {
   const [data, setData] = useState<UserWithStats[]>();
+  const { game, user } = useContext(AppContext);
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState(searchQuery);
-  const router = useRouter();
-  const { game, user } = useContext(AppContext);
+  const routerQuery = useRouterQuery();
 
   useEffect(() => {
     setData(users);
@@ -324,20 +324,8 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
   const fetchLevels = useCallback((query: UserSearchQuery) => {
     setQuery(query);
     setLoading(true);
-
-    // only add non-default query params for a clean URL
-    const q: ParsedUrlQueryInput = {};
-
-    for (const prop in query) {
-      if (query[prop] !== DEFAULT_QUERY[prop]) {
-        q[prop] = query[prop];
-      }
-    }
-
-    router.push({
-      query: q,
-    });
-  }, [router, setLoading]);
+    routerQuery(query, DEFAULT_QUERY);
+  }, [routerQuery, setLoading]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const queryDebounce = useCallback(

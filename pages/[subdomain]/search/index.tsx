@@ -9,6 +9,7 @@ import StatFilter from '@root/constants/statFilter';
 import { AppContext } from '@root/contexts/appContext';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import isPro from '@root/helpers/isPro';
+import { useRouterQuery } from '@root/hooks/useRouterQuery';
 import { CollectionType } from '@root/models/constants/collection';
 import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { EnrichedCollection } from '@root/models/db/collection';
@@ -21,7 +22,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
 import nProgress from 'nprogress';
-import { ParsedUrlQuery, ParsedUrlQueryInput } from 'querystring';
+import { ParsedUrlQuery } from 'querystring';
 import React, { Fragment, useCallback, useContext, useEffect, useState } from 'react';
 import FilterButton from '../../../components/buttons/filterButton';
 import FormattedDifficulty, { difficultyList, getDifficultyColor } from '../../../components/formatted/formattedDifficulty';
@@ -266,10 +267,11 @@ interface SearchProps {
 /* istanbul ignore next */
 export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQuery, totalRows }: SearchProps) {
   const [data, setData] = useState<EnrichedLevel[]>(enrichedLevels);
+  const { game, setTempCollection } = useContext(AppContext);
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState(searchQuery);
   const router = useRouter();
-  const { game, setTempCollection } = useContext(AppContext);
+  const routerQuery = useRouterQuery();
 
   useEffect(() => {
     setData(enrichedLevels);
@@ -280,30 +282,14 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
     setQuery(searchQuery);
   }, [searchQuery]);
 
-  function getParsedUrlQuery(query: SearchQuery) {
-    // only add non-default query params for a clean URL
-    const q: ParsedUrlQueryInput = {};
-
-    for (const prop in query) {
-      if (query[prop] !== DefaultQuery[prop]) {
-        q[prop] = query[prop];
-      }
-    }
-
-    return q;
-  }
-
   const fetchLevels = useCallback((query: SearchQuery) => {
     // TODO: check if query is identical, in which case do nothing
 
     nProgress.start();
     setQuery(query);
     setLoading(true);
-
-    router.push({
-      query: getParsedUrlQuery(query),
-    });
-  }, [router]);
+    routerQuery(query, DefaultQuery);
+  }, [routerQuery]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const queryDebounce = useCallback(
@@ -374,8 +360,6 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       selector: (row: EnrichedLevel) => (
         <div className='flex items-center gap-2 truncate'>
           <FormattedLevelLink game={game} onClick={() => {
-            const q = getParsedUrlQuery(query);
-            const queryString = Object.keys(q).map(key => key + '=' + query[key]).join('&');
             const ts = new Date();
 
             // TODO: temp collection is a hack (doesn't represent a real collection so there are other UX problems)
@@ -385,7 +369,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
               isPrivate: true,
               levels: data, _id: new Types.ObjectId(),
               name: 'Search',
-              slug: `../search${queryString ? `?${queryString}` : ''}`,
+              slug: router.query.toString(),
               type: CollectionType.InMemory,
               updatedAt: ts,
               userId: { _id: new Types.ObjectId() } as Types.ObjectId & User,
