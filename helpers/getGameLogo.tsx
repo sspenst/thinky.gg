@@ -4,25 +4,25 @@ import Image from 'next/image';
 import React from 'react';
 import { getGameFromId } from './getGameIdFromReq';
 
-export function getGameLogo(gameId: GameId) {
+export function getGameLogo(gameId: GameId, id: string) {
   const game = getGameFromId(gameId);
   const logo = game.logo;
-  const random = game.id + '-tip-' + Math.random();
+  const tooltipId = `${game.id}-tip-${id}`;
 
-  return <div data-tooltip-id={random} data-tooltip-content={game.displayName}>
+  return <div data-tooltip-id={tooltipId} data-tooltip-content={game.displayName}>
     <Image alt='logo' src={logo} width='24' height='24' className='h-6 w-6' />
-    <StyledTooltip id={random} />
+    <StyledTooltip id={tooltipId} />
   </div>;
 }
 
-export function getGameLogoAndLabel(game?: GameId) {
+export function getGameLogoAndLabel(game: GameId, id: string) {
   if (!game) {
     return null;
   }
 
   return <div className='flex flex-row gap-1 items-center'>
     <div>
-      {getGameLogo(game)}
+      {getGameLogo(game, id)}
     </div>
     <div>{getGameFromId(game).displayName}
     </div>

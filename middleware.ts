@@ -37,6 +37,7 @@ const whiteList = {
 
 } as Record<string, number>;
 
+// https://medium.com/@jfbaraky/using-subdomains-as-paths-on-next-js-e5aab5c28c28
 export async function middleware(req: NextRequest) {
   // Clone the URL
   const url = req.nextUrl.clone();
@@ -46,17 +47,13 @@ export async function middleware(req: NextRequest) {
 
   const host = req.headers.get('host');
   const subdomain = getValidSubdomain(host);
-
   const folder = url.pathname.split('/')[1];
 
   if (folder === 'api') {
-    //console.log(`>>> api -> Rewriting folder ${folder}: ${url.pathname} to /api${url.pathname}`);
-
     return;
   }
 
   if (subdomain || whiteList[folder]) {
-    // console.log(`>>> subdomain -> Rewriting folder ${folder}: ${url.pathname} to /${subdomain}${url.pathname}`);
     url.pathname = `/${subdomain}${url.pathname}`;
   }
 
