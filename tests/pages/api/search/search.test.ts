@@ -16,8 +16,8 @@ import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { initLevel } from '../../../../lib/initializeLocalDb';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { LevelModel, StatModel, UserModel } from '../../../../models/mongoose';
-import handler from '../../../../pages/api/search';
 import { BlockFilterMask } from '../../../../pages/[subdomain]/search';
+import handler from '../../../../pages/api/search';
 
 afterEach(() => {
   jest.restoreAllMocks();
