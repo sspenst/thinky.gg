@@ -9,7 +9,7 @@ import StatFilter from '@root/constants/statFilter';
 import { AppContext } from '@root/contexts/appContext';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import isPro from '@root/helpers/isPro';
-import { useRouterQuery } from '@root/hooks/useRouterQuery';
+import useRouterQuery from '@root/hooks/useRouterQuery';
 import { CollectionType } from '@root/models/constants/collection';
 import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { EnrichedCollection } from '@root/models/db/collection';
