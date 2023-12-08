@@ -3,7 +3,7 @@
   "name": "Pathology",
   "icons": [
     {
-      "src": "lovo.svg",
+      "src": "logo.svg",
       "sizes": "96x96 64x64 32x32 24x24 16x16",
       "type": "image/svg+xml"
     }
