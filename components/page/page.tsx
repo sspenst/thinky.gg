@@ -7,6 +7,7 @@ import Header from '../header';
 import Footer from './footer';
 
 interface PageProps {
+  style?: React.CSSProperties;
   children: React.ReactNode;
   folders?: LinkInfo[];
   hideFooter?: boolean;
@@ -18,6 +19,7 @@ interface PageProps {
 }
 
 export default function Page({
+  style,
   children,
   folders,
   hideFooter,
@@ -49,7 +51,8 @@ export default function Page({
       setPreventKeyDownEvent: setPreventKeyDownEvent,
       showHeader: showHeader,
     }}>
-      <div className={classNames('flex flex-col', { 'fixed inset-0 overflow-hidden': isFullScreen })}>
+      <div className={classNames('flex flex-col', { 'fixed inset-0 overflow-hidden': isFullScreen })}
+        style={style}>
         {showHeader &&
           <Header
             folders={folders}
