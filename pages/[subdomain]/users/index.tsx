@@ -2,7 +2,7 @@ import FormattedDate from '@root/components/formatted/formattedDate';
 import MultiplayerRating from '@root/components/multiplayer/multiplayerRating';
 import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
-import { useRouterQuery } from '@root/hooks/useRouterQuery';
+import useRouterQuery from '@root/hooks/useRouterQuery';
 import debounce from 'debounce';
 import { GetServerSidePropsContext } from 'next';
 import { NextSeo } from 'next-seo';

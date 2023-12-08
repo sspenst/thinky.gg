@@ -1,28 +1,11 @@
 import { Menu, Transition } from '@headlessui/react';
 import Dimensions from '@root/constants/dimensions';
-import { GameId } from '@root/constants/GameId';
 import { Games } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
 import { getGameLogoAndLabel } from '@root/helpers/getGameLogo';
+import useUrl from '@root/hooks/useUrl';
 import Image from 'next/image';
-import Link from 'next/link';
-import React, { Fragment, useCallback, useContext } from 'react';
-
-const LinksThatCarryOver = [
-  '^/profile',
-  '^/home',
-  '^/leaderboard',
-  '^/users',
-  '^/settings',
-  '^/create',
-  '^/search',
-  '^/notifications',
-  '^/collection/.+/play-later',
-  '^/play-history',
-  '^/play',
-  '^/multiplayer',
-  '^/tutorial'
-];
+import React, { Fragment, useContext } from 'react';
 
 const links = Object.values(Games).map((game) => ({
   logo: game.logo,
@@ -36,31 +19,7 @@ interface GameMenuProps {
 
 export function GameMenu({ expandAbsolute }: GameMenuProps) {
   const { game } = useContext(AppContext);
-
-  const getUrl = useCallback((subdomain: string) => {
-    // if port is not 80 or 443, include it in the hostname
-
-    // also hostname needs to strip out subdomain
-    const hostname = window.location.port === '80' || window.location.port === '443' ?
-      window.location.hostname :
-      `${window.location.hostname}:${window.location.port}`;
-    const dots = hostname.split('.');
-
-    const hostnameStrippedOfFirstSubdomain = dots.length === 2 ?
-      dots.slice(1).join('.') : hostname;
-
-    const currentProtocol = (window.location.protocol);
-    const currentHost = (hostnameStrippedOfFirstSubdomain);
-    const carryOver = LinksThatCarryOver.some((link) => window.location.pathname.match(new RegExp(link)));
-
-    const currentPath = (carryOver ? window.location.pathname : '/home');
-
-    if (subdomain === GameId.THINKY) {
-      return `${currentProtocol}//${currentHost}`;
-    }
-
-    return `${currentProtocol}//${subdomain}.${currentHost}${currentPath}`;
-  }, []);
+  const getUrl = useUrl();
   const absolute = expandAbsolute ? 'absolute' : '';
 
   return (
@@ -95,9 +54,7 @@ export function GameMenu({ expandAbsolute }: GameMenuProps) {
           {links.map((link) => (
             <Menu.Item key={link.subdomain}>
               {({ active }) => (
-                <Link
-                  href={getUrl(link.subdomain)}
-                >
+                <a href={getUrl(link.subdomain)}>
                   <div
                     className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3'
                     style={{
@@ -107,7 +64,7 @@ export function GameMenu({ expandAbsolute }: GameMenuProps) {
                     <Image alt='logo' src={link.logo} width='24' height='24' className='h-6 w-6' style={{ minWidth: 24, minHeight: 24 }} />
                     {link.label}
                   </div>
-                </Link>
+                </a>
               )}
             </Menu.Item>
           ))}

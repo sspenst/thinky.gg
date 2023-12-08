@@ -1,5 +1,5 @@
 import { GameId } from '@root/constants/GameId';
-import { useRouterQuery } from '@root/hooks/useRouterQuery';
+import useRouterQuery from '@root/hooks/useRouterQuery';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { ParsedUrlQuery } from 'querystring';
