@@ -15,7 +15,6 @@ import ThemeModal from '../modal/themeModal';
 import StyledTooltip from '../page/styledTooltip';
 import ProfileAvatar from '../profile/profileAvatar';
 import DismissToast from '../toasts/dismissToast';
-import { GameMenu } from './gameMenu';
 import MusicIcon from './musicIcon';
 
 export default function Dropdown() {
@@ -298,10 +297,6 @@ export default function Dropdown() {
                     </div>
                   </Link>
                 )}
-              </Menu.Item>
-              <Divider />
-              <Menu.Item>
-                <GameMenu expandAbsolute={false} />
               </Menu.Item>
               <Divider />
               <Menu.Item>

@@ -1,11 +1,9 @@
 import { Menu, Transition } from '@headlessui/react';
 import Dimensions from '@root/constants/dimensions';
 import { Games } from '@root/constants/Games';
-import { AppContext } from '@root/contexts/appContext';
-import { getGameLogoAndLabel } from '@root/helpers/getGameLogo';
 import useUrl from '@root/hooks/useUrl';
 import Image from 'next/image';
-import React, { Fragment, useContext } from 'react';
+import React, { Fragment } from 'react';
 
 const links = Object.values(Games).map((game) => ({
   logo: game.logo,
@@ -13,26 +11,15 @@ const links = Object.values(Games).map((game) => ({
   label: game.displayName,
 }));
 
-interface GameMenuProps {
-  expandAbsolute?: boolean;
-}
-
-export function GameMenu({ expandAbsolute }: GameMenuProps) {
-  const { game } = useContext(AppContext);
+export default function GameMenu() {
   const getUrl = useUrl();
-  const absolute = expandAbsolute ? 'absolute' : '';
 
   return (
     <Menu>
-      <Menu.Button className='inline-flex justify-center px-2 py-1 text-sm font-medium rounded-md bg-opacity-40 hover:bg-opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75'
-        style={{
-          backgroundColor: 'var(--bg-color-2)',
-          color: 'var(--color)',
-        }}
-      >
-        <div className='flex items-center gap-3'>
-          {getGameLogoAndLabel(game.id, 'game-menu')}
-        </div>
+      <Menu.Button>
+        <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
+          <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
+        </svg>
       </Menu.Button>
       <Transition
         as={Fragment}
@@ -43,7 +30,7 @@ export function GameMenu({ expandAbsolute }: GameMenuProps) {
         leaveFrom='transform opacity-100 scale-100'
         leaveTo='transform opacity-0 scale-95'
       >
-        <Menu.Items className={absolute + ' m-1 w-fit origin-top-right rounded-[10px] shadow-lg border overflow-y-auto'} style={{
+        <Menu.Items className={'absolute m-1 w-fit origin-top-left left-0 rounded-[10px] shadow-lg border overflow-y-auto'} style={{
           backgroundColor: 'var(--bg-color-2)',
           borderColor: 'var(--bg-color-4)',
           color: 'var(--color)',
