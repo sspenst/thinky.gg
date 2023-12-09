@@ -46,10 +46,10 @@ export async function getUserFromToken(
   const decoded = verifiedSignature;
   const userId = decoded.userId as string;
   // dynamically import newrelic
-  const newrelic = await import('newrelic');
+  const newrelic = process.env.NODE_ENV === 'test' ? undefined : await import('newrelic');
 
   if (!isLocal()) {
-    newrelic.addCustomAttribute && newrelic.addCustomAttribute('userId', userId);
+    newrelic?.addCustomAttribute && newrelic.addCustomAttribute('userId', userId);
   }
 
   await dbConnect();
@@ -82,7 +82,7 @@ export async function getUserFromToken(
   ]);
 
   if (user && !isLocal()) {
-    newrelic.addCustomAttribute && newrelic.addCustomAttribute('userName', user.name);
+    newrelic?.addCustomAttribute && newrelic.addCustomAttribute('userName', user.name);
   }
 
   if (user && config) {
