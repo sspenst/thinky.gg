@@ -14,7 +14,7 @@ import { CollectionType } from '@root/models/constants/collection';
 import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { EnrichedCollection } from '@root/models/db/collection';
 import classNames from 'classnames';
-import { debounce } from 'debounce';
+import debounce from 'debounce';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Image from 'next/image';

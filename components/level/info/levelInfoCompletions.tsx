@@ -84,9 +84,13 @@ export default function LevelInfoCompletions() {
   }
 
   const completionDivs = [];
+  const solves = proStatsLevel[ProStatsLevelType.CommunityStepData][0].count;
+  let completions = 0;
 
   for (let i = 0; i < (proStatsLevel[ProStatsLevelType.CommunityStepData] as ProStatsCommunityStepData[]).length; i++) {
     const completion = (proStatsLevel[ProStatsLevelType.CommunityStepData] as ProStatsCommunityStepData[])[i];
+
+    completions += completion.count;
 
     // green bar fill for the users that completed the level
     if (i === 0) {
@@ -146,7 +150,7 @@ export default function LevelInfoCompletions() {
   return (
     <div className='flex flex-col gap-2'>
       <Tab.Group>
-        {isPro(user) &&
+        {isPro(user) && <>
           <Tab.List className='flex flex-wrap gap-x-1 items-start rounded text-sm'>
             <Tab as={Fragment}>
               {({ selected }) => (
@@ -173,7 +177,7 @@ export default function LevelInfoCompletions() {
               )}
             </Tab>
           </Tab.List>
-        }
+        </>}
         <Tab.Panels>
           <Tab.Panel tabIndex={-1}>
             <div className='grid gap-x-2 pl-1' style={{
@@ -181,6 +185,12 @@ export default function LevelInfoCompletions() {
             }}>
               {completionDivs}
             </div>
+            {isPro(user) &&
+              <div className='flex flex-col text-sm mt-3 italic'>
+                <span>{solves} solve{solves === 1 ? '' : 's'}</span>
+                <span>{completions} completion{completions === 1 ? '' : 's'}</span>
+              </div>
+            }
           </Tab.Panel>
           <Tab.Panel tabIndex={-1}>
             <ResponsiveContainer width='100%' height={300}>

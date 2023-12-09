@@ -75,6 +75,22 @@ export default function Header({
               <StyledTooltip id='levels-solved-header' />
             </Link>
           </>}
+          {!userLoading && !user &&
+            <div className='hidden sm:flex gap-3'>
+              <Link
+                className='hover:underline'
+                href='/login'
+                onClick={() => {
+                  sessionStorage.clear();
+                }}
+              >
+                Log In
+              </Link>
+              <Link href='/signup' className='hover:underline'>
+                Sign Up
+              </Link>
+            </div>
+          }
           <Dropdown />
         </div>
       </div>

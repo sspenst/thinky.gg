@@ -86,7 +86,10 @@ export async function dbDisconnect() {
   }
 
   if (cached.mongoMemoryServer) {
-    await cached.mongoMemoryServer.stop();
+    await cached.mongoMemoryServer.stop({
+      doCleanup: true,
+      force: true,
+    });
   }
 
   clearAllSchedules();

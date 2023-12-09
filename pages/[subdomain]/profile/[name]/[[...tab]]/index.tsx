@@ -16,7 +16,7 @@ import { LEVEL_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import Graph from '@root/models/db/graph';
 import { getCollections } from '@root/pages/api/collection-by-id/[id]';
 import classNames from 'classnames';
-import { debounce } from 'debounce';
+import debounce from 'debounce';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
