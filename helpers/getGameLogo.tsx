@@ -4,7 +4,12 @@ import Image from 'next/image';
 import React from 'react';
 import { getGameFromId } from './getGameIdFromReq';
 
-export function getGameLogo(gameId: GameId, id: string) {
+export function getGameLogo(gameId: GameId, id?: string) {
+  if (!id) {
+    // gen random
+    id = Math.random().toString(36).substring(7);
+  }
+
   const game = getGameFromId(gameId);
   const logo = game.logo;
   const tooltipId = `${game.id}-tip-${id}`;
