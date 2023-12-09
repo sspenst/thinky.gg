@@ -49,7 +49,7 @@ const ShareBar: FC<ShareBarProps> = ({ platforms = ['Generic', 'Copy', 'Facebook
       </RedditShareButton>
     ),
     Facebook: (
-      <FacebookShareButton url={url} quote={quote}>
+      <FacebookShareButton url={url}>
         <FacebookIcon size={size} />
       </FacebookShareButton>
     ),
