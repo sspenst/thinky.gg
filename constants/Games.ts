@@ -44,6 +44,7 @@ export const Games: Record<GameId, Game> = {
     subtitle: 'Find the way',
     SEOTitle: 'Pathology - Shortest Path Puzzle Game',
     SEODescription: 'The goal of Pathology is simple. Get to the exit in the least number of moves. Sounds easy right? Yet, this sokoban style game is one of the most mind-bending puzzle games you will find. Different blocks stand in your way to the exit, and your job is to figure out the optimal route',
+    shortDescription: 'Go from start to finish in the least number of moves',
     type: GameType.SHORTEST_PATH,
     gameStateIsSolveFunction: pathologySolveState,
     validateSolutionFunction: validatePathologySolution,
@@ -61,6 +62,7 @@ export const Games: Record<GameId, Game> = {
     logo: '/logos/sokoban.webp',
     SEOTitle: 'Sokoban - Push the boxes puzzle game',
     SEODescription: 'The goal of the puzzle game Sokoban is simple. Push the boxes onto the goals. Sounds easy right? Yet, this sokoban style game is one of the most mind-bending puzzle games you will find. The boxes can only be pushed, never pulled, and only one can be pushed at a time.',
+    shortDescription: 'Push the boxes onto the goals',
     subtitle: 'Push the boxes',
     type: GameType.SHORTEST_PATH,
     gameStateIsSolveFunction: sokobanSolveState,
@@ -82,6 +84,7 @@ export interface Game {
   subtitle: string;
   SEOTitle: string;
   SEODescription: string;
+  shortDescription?: string;
   type: GameType;
   gameStateIsSolveFunction: (gameState: GameState) => boolean;
   validateSolutionFunction: (directions: Direction[], level: Level) => boolean;

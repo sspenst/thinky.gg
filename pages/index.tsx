@@ -5,7 +5,7 @@ import useUrl from '@root/hooks/useUrl';
 import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
 
-function GameCard({ game }: { game: Game }) {
+function GameCard({ game, onMouseOver, onMouseOut }: { game: Game, onMouseOver: () => void, onMouseOut: () => void }) {
   const [gameId, setGameId] = useState<GameId>();
   const getUrl = useUrl();
 
@@ -20,7 +20,8 @@ function GameCard({ game }: { game: Game }) {
   return (
     <div className='flex flex-col items-center justify-center' style={{}}
     >
-      <a suppressHydrationWarning href={getUrl(gameId)} className='flex flex-col gap-3 items-center justify-center w-full h-full p-4 border border-color-3 rounded-lg hover-bg-3 hover:scale-105 transition'
+      <a onMouseOver={onMouseOver} onMouseOut={onMouseOut}
+        suppressHydrationWarning href={getUrl(gameId)} className='flex flex-col gap-3 items-center justify-center w-full h-full p-4 border border-color-3 rounded-lg hover-bg-3 hover:scale-105 transition'
         style={{
           backgroundColor: 'rgba(0,0,0,0.4)',
 
@@ -34,6 +35,8 @@ function GameCard({ game }: { game: Game }) {
 }
 
 export default function ThinkyHomePage() {
+  const [gameHovered, setGameHovered] = useState<Game>();
+
   return (
     <Page title='Puzzle Games - Thinky.gg' style={{
       backgroundImage: 'url(https://i.imgur.com/h2qnMrV.png)',
@@ -76,10 +79,18 @@ export default function ThinkyHomePage() {
         </div>
         <div className='flex flex-wrap justify-center gap-8 mt-16'>
           {Object.values(Games).map(game => (
-            <GameCard game={game} key={game.id} />
+            <GameCard game={game} key={game.id} onMouseOver={() => {
+              setGameHovered(game);
+            }} onMouseOut={() => {
+              setGameHovered(undefined);
+            }
+            } />
           ))}
         </div>
+        {gameHovered && <div className='rounded-lg p-2 w-auto text-center fadeIn' style={{
 
+          backgroundColor: 'rgba(0,0,0,0.6)',
+        }} >{gameHovered.shortDescription}</div>}
       </div>
     </Page>
   );
