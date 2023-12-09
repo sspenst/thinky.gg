@@ -1,5 +1,5 @@
-import PagePath from '@root/constants/pagePath';
 import StatFilter from '@root/constants/statFilter';
+import TourPath from '@root/constants/tourPath';
 import getProfileSlug from '@root/helpers/getProfileSlug';
 import isFullAccount from '@root/helpers/isFullAccount';
 import isGuest from '@root/helpers/isGuest';
@@ -11,7 +11,7 @@ import { useRouter } from 'next/router';
 import React, { useContext, useState } from 'react';
 import TimeRange from '../../constants/timeRange';
 import { AppContext } from '../../contexts/appContext';
-import { useTour } from '../../hooks/useTour';
+import useTour from '../../hooks/useTour';
 import { EnrichedLevel } from '../../models/db/level';
 import Review from '../../models/db/review';
 import User from '../../models/db/user';
@@ -26,10 +26,10 @@ import MultiSelectUser from '../page/multiSelectUser';
 import RecommendedLevel from './recommendedLevel';
 
 interface HomeLoggedInProps {
-  lastLevelPlayed?: EnrichedLevel;
+  lastLevelPlayed?: EnrichedLevel | null;
   latestLevels?: EnrichedLevel[];
   latestReviews?: Review[];
-  levelOfDay?: EnrichedLevel;
+  levelOfDay?: EnrichedLevel | null;
   recommendedLevel?: EnrichedLevel | null;
   topLevelsThisMonth?: EnrichedLevel[];
   user: User;
@@ -47,10 +47,10 @@ export default function HomeLoggedIn({
   const { multiplayerSocket } = useContext(AppContext);
   const router = useRouter();
   const [search, setSearch] = useState('');
-  const { connectedPlayersCount, matches, socket } = multiplayerSocket;
-  const buttonClassNames = 'py-2.5 px-3.5 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm whitespace-nowrap bg-green-100 dark:bg-gray-800 hover:bg-gray-50 hover:dark:bg-slate-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300';
+  const tour = useTour(TourPath.HOME);
 
-  const tour = useTour(PagePath.HOME);
+  const buttonClassNames = 'py-2.5 px-3.5 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm whitespace-nowrap bg-green-100 dark:bg-gray-800 hover:bg-gray-50 hover:dark:bg-slate-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300';
+  const { connectedPlayersCount, matches, socket } = multiplayerSocket;
 
   return (<>
     {tour}
@@ -64,85 +64,81 @@ export default function HomeLoggedIn({
       </div>
     }
     <div className='flex flex-col gap-4 m-4 items-center'>
+      <div className='flex flex-wrap justify-center gap-4'>
+        <FormattedUser className='text-2xl' id='home' size={40} user={user} />
+        {!isPro(user) &&
+          <Link href='/settings/pro' passHref className={buttonClassNames + ' bg-green-500 dark:bg-green-800'}>
+            <Image alt='pro' src='/pro.svg' width={16} height={16} style={{ minWidth: 16, minHeight: 16 }} />
+            <span className='text-base font-semibold'>Pathology Pro</span>
+          </Link>
+        }
+      </div>
       <div className='flex flex-col md:flex-row justify-center items-center flex-wrap gap-4 max-w-full'>
         <Card id='campaign' title='Pathology Official Campaign'>
           <div className='p-3'>
             <ChapterSelectCard chapter={user.chapterUnlocked ?? 1} href='/play' />
           </div>
         </Card>
-        <div className='flex flex-col items-center md:items-start gap-2 max-w-full'>
-          <FormattedUser className='text-2xl' id='home' size={40} user={user} />
-          <div className='flex flex-col gap-2 w-fit'>
-            {!isPro(user) &&
-              <Link href='/settings/pro' passHref className={buttonClassNames + ' bg-green-500 dark:bg-green-800'}>
-                <Image alt='pro' src='/pro.svg' width={16} height={16} style={{ minWidth: 16, minHeight: 16 }} />
-                <span className='text-base font-semibold'>Pathology Pro</span>
+        <RecommendedLevel
+          id='level-of-day'
+          level={levelOfDay}
+          title='Level of the Day'
+          tooltip={'Every day there is a new level of the day. Difficulty increases throughout the week!'}
+        />
+        <RecommendedLevel
+          id='recommended-level'
+          level={recommendedLevel}
+          title='Try this Level'
+          tooltip={'This is a quality level with similar difficulty to levels you\'ve played recently.'}
+        />
+        <RecommendedLevel
+          id='last-level-played'
+          level={lastLevelPlayed}
+          title={
+            <div className='flex items-center gap-2'>
+              <Link className='font-bold hover:underline' href='/play-history'>
+                Last Played
               </Link>
-            }
-            <Link passHref href='/ranked' className={buttonClassNames}>
-              <span className='w-5 h-5 flex justify-center items-center text-xl'>🏅</span>
-              <span className='text-lg font-bold'>Ranked</span>
-            </Link>
-            <Link passHref href='/create' className={buttonClassNames}>
-              <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='2 2 20 20' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
-                <path strokeLinecap='round' strokeLinejoin='round' d='M12 4.5v15m7.5-7.5h-15' />
-              </svg>
-              <span className='text-lg font-bold'>Create</span>
-            </Link>
-            <Link passHref href='/multiplayer' className={buttonClassNames}>
-              <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
-                <path strokeLinecap='round' strokeLinejoin='round' d='M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z' />
-              </svg>
-              <div className='flex flex-col'>
-                <span className='text-lg font-bold'>Multiplayer</span>
-                {!socket?.connected || connectedPlayersCount === 0 ?
-                  <span className='text-xs text-yellow-500'>Connecting...</span>
-                  :
-                  <>
-                    <span className='text-xs text-green-500'>{`${connectedPlayersCount} player${connectedPlayersCount !== 1 ? 's' : ''} online`}</span>
-                    {matches.length > 0 &&
-                      <span className='text-xs text-green-300'>
-                        {`${matches.length} current match${matches.length === 1 ? '' : 'es'}`}
-                      </span>
-                    }
-                  </>
-                }
-              </div>
-            </Link>
-          </div>
-        </div>
+              <Link href='/settings/pro' passHref>
+                <Image alt='pro' src='/pro.svg' width={16} height={16} style={{ minWidth: 16, minHeight: 16 }} />
+              </Link>
+            </div>
+          }
+          tooltip='Resume your last play. Click to see your play history.'
+        />
       </div>
-    </div>
-    <div className='flex flex-wrap justify-center m-4 gap-4'>
-      <RecommendedLevel
-        id='level-of-day'
-        level={levelOfDay}
-        title='Level of the Day'
-        tooltip={'Every day there is a new level of the day. Difficulty increases throughout the week!'}
-      />
-      <RecommendedLevel
-        id='recommended-level'
-        level={recommendedLevel}
-        title='Try this Level'
-        tooltip={'This is a quality level with similar difficulty to levels you\'ve played recently.'}
-      />
-      <RecommendedLevel
-        id='last-level-played'
-        level={lastLevelPlayed}
-        title={
-          <div className='flex items-center gap-2'>
-            <Link className='font-bold hover:underline' href='/play-history'>
-              Last Played
-            </Link>
-            <Link href='/settings/pro' passHref>
-              <Image alt='pro' src='/pro.svg' width={16} height={16} style={{ minWidth: 16, minHeight: 16 }} />
-            </Link>
+      <div className='flex flex-wrap items-center justify-center gap-4'>
+        <Link passHref href='/ranked' className={buttonClassNames} id='ranked'>
+          <span className='w-5 h-5 flex justify-center items-center text-xl'>🏅</span>
+          <span className='text-lg font-bold'>Ranked</span>
+        </Link>
+        <Link passHref href='/multiplayer' className={buttonClassNames}>
+          <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
+            <path strokeLinecap='round' strokeLinejoin='round' d='M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z' />
+          </svg>
+          <div className='flex flex-col'>
+            <span className='text-lg font-bold'>Multiplayer</span>
+            {!socket?.connected || connectedPlayersCount === 0 ?
+              <span className='text-xs text-yellow-500'>Connecting...</span>
+              :
+              <>
+                <span className='text-xs text-green-500'>{`${connectedPlayersCount} player${connectedPlayersCount !== 1 ? 's' : ''} online`}</span>
+                {matches.length > 0 &&
+                  <span className='text-xs text-green-300'>
+                    {`${matches.length} current match${matches.length === 1 ? '' : 'es'}`}
+                  </span>
+                }
+              </>
+            }
           </div>
-        }
-        tooltip='Resume your last play. Click to see your play history.'
-      />
-    </div>
-    <div className='flex justify-center m-6'>
+        </Link>
+        <Link passHref href='/create' className={buttonClassNames} id='create'>
+          <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='2 2 20 20' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
+            <path strokeLinecap='round' strokeLinejoin='round' d='M12 4.5v15m7.5-7.5h-15' />
+          </svg>
+          <span className='text-lg font-bold'>Create</span>
+        </Link>
+      </div>
       <div className='gap-x-4 gap-y-2 flex flex-wrap flex-col md:flex-row justify-center'>
         <Link passHref href='/tutorial' className={buttonClassNames}>
           <svg xmlns='http://www.w3.org/2000/svg' className='h-6 w-6' fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={1}>
@@ -173,53 +169,51 @@ export default function HomeLoggedIn({
           </svg>Catalog
         </Link>
       </div>
-    </div>
-    <div className='flex items-center justify-center'>
-      <div className='flex flex-col'>
-        <div className='flex items-center'>
-          <form action='/search'>
-            <input type='hidden' name='timeRange' value='All' />
-            <input onChange={e => setSearch(e.target.value)} id='search' type='search' name='search' className='form-control relative flex-auto min-w-0 block w-52 px-2.5 py-1.5 h-10 text-base font-normal text-gray-700 placeholder:text-gray-400 bg-white bg-clip-padding border border-solid border-gray-300 rounded-md rounded-r-none rounded-b-none transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' placeholder='Search levels...' aria-label='Search' aria-describedby='button-addon2' />
-          </form>
+      <div className='flex items-center justify-center'>
+        <div className='flex flex-col'>
+          <div className='flex items-center'>
+            <form action='/search'>
+              <input type='hidden' name='timeRange' value='All' />
+              <input onChange={e => setSearch(e.target.value)} id='search' type='search' name='search' className='form-control relative flex-auto min-w-0 block w-52 px-2.5 py-1.5 h-10 text-base font-normal text-gray-700 placeholder:text-gray-400 bg-white bg-clip-padding border border-solid border-gray-300 rounded-md rounded-r-none rounded-b-none transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' placeholder='Search levels...' aria-label='Search' aria-describedby='button-addon2' />
+            </form>
+          </div>
+          <div>
+            <MultiSelectUser
+              controlStyles={{
+                borderBottomLeftRadius: '0.375rem',
+                borderBottomRightRadius: '0rem',
+                borderTopLeftRadius: '0rem',
+                borderTopRightRadius: '0rem',
+              }}
+              onSelect={(selectedItem: User) => {
+                router.push(
+                  {
+                    pathname: getProfileSlug(selectedItem),
+                  }
+                );
+              }}
+            />
+          </div>
         </div>
-        <div>
-          <MultiSelectUser
-            controlStyles={{
-              borderBottomLeftRadius: '0.375rem',
-              borderBottomRightRadius: '0rem',
-              borderTopLeftRadius: '0rem',
-              borderTopRightRadius: '0rem',
-            }}
-            onSelect={(selectedItem: User) => {
-              router.push(
-                {
-                  pathname: getProfileSlug(selectedItem),
-                }
-              );
-            }}
-          />
-        </div>
+        <Link
+          className={classNames(buttonClassNames, 'py-1.5 h-20 mr-0 rounded-l-none cursor-pointer')}
+          href={{
+            pathname: '/search',
+            query: {
+              search: search,
+              timeRange: TimeRange[TimeRange.All],
+            },
+          }}
+          passHref
+        >
+          <svg xmlns='http://www.w3.org/2000/svg' className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
+          </svg>
+        </Link>
       </div>
-      <Link
-        className={classNames(buttonClassNames, 'py-1.5 h-20 mr-0 rounded-l-none cursor-pointer')}
-        href={{
-          pathname: '/search',
-          query: {
-            search: search,
-            timeRange: TimeRange[TimeRange.All],
-          },
-        }}
-        passHref
-      >
-        <svg xmlns='http://www.w3.org/2000/svg' className='w-5 h-5' fill='none' viewBox='0 0 24 24'
-          stroke='currentColor'>
-          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2'
-            d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
-        </svg>
-      </Link>
     </div>
     <div className='flex flex-wrap justify-center max-w-screen-2xl mx-auto'>
-      <div className='w-full pt-6 px-4'>
+      <div className='w-full pt-4 px-4'>
         <div id='top-levels-of-month' className='flex justify-center'>
           <Link
             className='font-bold text-xl text-center hover:underline'
@@ -245,7 +239,7 @@ export default function HomeLoggedIn({
           </div>
         }
       </div>
-      <div className='w-full md:w-1/2 p-4' id='latestLevelsSection'>
+      <div className='w-full md:w-1/2 p-4 h-min' id='latestLevelsSection'>
         <div id='latest-levels' className='flex justify-center'>
           <Link
             className='font-bold text-xl text-center hover:underline'

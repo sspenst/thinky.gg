@@ -1,6 +1,6 @@
 import { GameId } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
-import { TourType } from '@root/constants/tourType';
+import TourType from '@root/constants/tourType';
 import mongoose from 'mongoose';
 import { EmailDigestSettingTypes } from '../../constants/emailDigest';
 import UserConfig from '../db/userConfig';
