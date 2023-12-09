@@ -128,7 +128,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }),
     getFollowData(user._id.toString(), reqUser),
     LevelModel.countDocuments({ isDeleted: { $ne: true }, isDraft: false, userId: userId }),
-    profileTab === ProfileTab.Levels ? LevelModel.aggregate([
+    profileTab === ProfileTab.Levels && reqUser ? LevelModel.aggregate([
       { $match: { isDeleted: { $ne: true }, isDraft: false, userId: new Types.ObjectId(userId) } },
       {
         $lookup: {
@@ -137,7 +137,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
           foreignField: 'levelId',
           as: 'stats',
           pipeline: [
-            { $match: { userId: reqUser?._id, complete: true } },
+            { $match: { userId: reqUser._id, complete: true } },
           ],
         },
       },
@@ -528,15 +528,17 @@ export default function ProfilePage({
     [ProfileTab.Levels]: (
       <div className='flex flex-col gap-2 items-center'>
         <h1 className='font-bold text-3xl'>{user.name}&apos;s Levels</h1>
-        <h2
-          className='font-bold text-xl flex items-center'
-          style={{
-            color: levelsSolved === levelsCount ? 'var(--color-complete)' : undefined,
-          }}
-        >
-          <span>{levelsSolved} / {levelsCount}</span>
-          {levelsSolved === levelsCount && <Solved className='w-8 h-8' />}
-        </h2>
+        {reqUser &&
+          <h2
+            className='font-bold text-xl flex items-center'
+            style={{
+              color: levelsSolved === levelsCount ? 'var(--color-complete)' : undefined,
+            }}
+          >
+            <span>{levelsSolved} / {levelsCount}</span>
+            {levelsSolved === levelsCount && <Solved className='w-8 h-8' />}
+          </h2>
+        }
         <SelectFilter
           filter={showLevelFilter}
           onFilterClick={onFilterLevelClick}
