@@ -77,7 +77,7 @@ export async function getUserFromToken(
   ).lean<User>();
 
   if (user && !isLocal()) {
-    newrelic.addCustomAttribute && newrelic.addCustomAttribute('userName', user.name);
+    newrelic?.addCustomAttribute && newrelic.addCustomAttribute('userName', user.name);
   }
 
   return user;
