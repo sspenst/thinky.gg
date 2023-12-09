@@ -52,27 +52,44 @@ export default function Header({
         <HeaderControls />
         {user && <div className='hidden sm:block h-6 w-px bg-neutral-500' />}
         <div className='flex gap-3 items-center'>
-          {user && <>
-            <Link
-              className='hidden sm:block'
-              data-tooltip-content='Ranked Solves'
-              data-tooltip-id='ranked-solves-header'
-              href='/ranked'
-            >
-              <span className='font-bold leading-none'>{user.calcRankedSolves} 🏅</span>
-              <StyledTooltip id='ranked-solves-header' />
-            </Link>
-            <div className='hidden sm:block h-6 w-px bg-neutral-500' />
-            <Link
-              className='hidden sm:block ml-1'
-              data-tooltip-content='Levels Solved'
-              data-tooltip-id='levels-solved-header'
-              href='/users'
-            >
-              <span className='font-bold'>{user.score}</span>
-              <StyledTooltip id='levels-solved-header' />
-            </Link>
-          </>}
+          {user ?
+            <>
+              <Link
+                className='hidden sm:block'
+                data-tooltip-content='Ranked Solves'
+                data-tooltip-id='ranked-solves-header'
+                href='/ranked'
+              >
+                <span className='font-bold leading-none'>{user.calcRankedSolves} 🏅</span>
+                <StyledTooltip id='ranked-solves-header' />
+              </Link>
+              <div className='hidden sm:block h-6 w-px bg-neutral-500' />
+              <Link
+                className='hidden sm:block ml-1'
+                data-tooltip-content='Levels Solved'
+                data-tooltip-id='levels-solved-header'
+                href='/users'
+              >
+                <span className='font-bold'>{user.score}</span>
+                <StyledTooltip id='levels-solved-header' />
+              </Link>
+            </>
+            :
+            <div className='hidden sm:flex gap-3'>
+              <Link
+                className='hover:underline'
+                href='/login'
+                onClick={() => {
+                  sessionStorage.clear();
+                }}
+              >
+                Log In
+              </Link>
+              <Link href='/signup' className='hover:underline'>
+                Sign Up
+              </Link>
+            </div>
+          }
           <Dropdown />
         </div>
       </div>
