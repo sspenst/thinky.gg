@@ -100,7 +100,7 @@ export default function HomeLoggedIn({
                 </svg>
                 <div className='flex flex-col'>
                   <span className='text-lg font-bold'>Multiplayer</span>
-                  {!socket?.connected ?
+                  {!socket?.connected || connectedPlayersCount === 0 ?
                     <span className='text-xs text-yellow-500'>Connecting...</span>
                     :
                     <>

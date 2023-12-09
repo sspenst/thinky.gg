@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Select from 'react-select';
+import Select, { CSSObjectWithLabel } from 'react-select';
 import * as transformLevel from '../../helpers/transformLevel';
 import Level from '../../models/db/level';
 import Modal from '.';
@@ -118,9 +118,9 @@ export default function ModifyModal({ closeModal, historyPush, isOpen, setIsDirt
               { label: 'Flip | vertical', value: 'fY' },
             ]}
             styles={{
-              menuPortal: base => ({ ...base, zIndex: 9999, color: 'black' }),
-              menu: base => ({ ...base, zIndex: 9999 }),
-              control: base => ({ ...base, width: '300px' }),
+              menuPortal: base => ({ ...base, zIndex: 9999, color: 'black' }) as CSSObjectWithLabel,
+              menu: base => ({ ...base, zIndex: 9999 }) as CSSObjectWithLabel,
+              control: base => ({ ...base, width: '300px' }) as CSSObjectWithLabel,
             }}
           />
         </div>
