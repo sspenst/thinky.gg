@@ -113,7 +113,7 @@ async function integrityCheckMultiplayerProfiles() {
 
   for (const type of Object.keys(MultiplayerMatchType)) {
     for (const profile of multiplayerProfiles) {
-      const count = await MultiplayerMatchModel.count({
+      const count = await MultiplayerMatchModel.countDocuments({
         players: profile.userId,
         type: type,
       });

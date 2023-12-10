@@ -1,4 +1,5 @@
 import FormattedDate from '@root/components/formatted/formattedDate';
+import Solved from '@root/components/level/info/solved';
 import LoadingSpinner from '@root/components/page/loadingSpinner';
 import RoleIcons from '@root/components/page/roleIcons';
 import StyledTooltip from '@root/components/page/styledTooltip';
@@ -14,7 +15,8 @@ import { MultiplayerMatchState } from '@root/models/constants/multiplayer';
 import Graph from '@root/models/db/graph';
 import { getCollections } from '@root/pages/api/collection-by-id/[id]';
 import classNames from 'classnames';
-import { debounce } from 'debounce';
+import debounce from 'debounce';
+import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -111,6 +113,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     collectionsCount,
     followData,
     levelsCount,
+    levelsSolvedAgg,
     multiplayerCount,
     reviewsReceived,
     reviewsWritten,
@@ -125,6 +128,22 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }),
     getFollowData(user._id.toString(), reqUser),
     LevelModel.countDocuments({ isDeleted: { $ne: true }, isDraft: false, userId: userId }),
+    profileTab === ProfileTab.Levels && reqUser ? LevelModel.aggregate([
+      { $match: { isDeleted: { $ne: true }, isDraft: false, userId: new Types.ObjectId(userId) } },
+      {
+        $lookup: {
+          from: 'stats',
+          localField: '_id',
+          foreignField: 'levelId',
+          as: 'stats',
+          pipeline: [
+            { $match: { userId: reqUser._id, complete: true } },
+          ],
+        },
+      },
+      { $match: { 'stats.0': { $exists: true } } },
+      { $count: 'count' },
+    ]) : undefined,
     MultiplayerMatchModel.countDocuments({ players: userId, state: MultiplayerMatchState.FINISHED, rated: true }),
     profileTab === ProfileTab.ReviewsReceived ? getReviewsForUserId(userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
     profileTab === ProfileTab.ReviewsWritten ? getReviewsByUserId(userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
@@ -132,12 +151,15 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     getReviewsByUserIdCount(userId),
   ]);
 
+  const levelsSolved = levelsSolvedAgg?.at(0)?.count ?? 0;
+
   const profilePageProps = {
     achievements: JSON.parse(JSON.stringify(achievements)),
     achievementsCount: achievementsCount,
     collectionsCount: collectionsCount,
     followerCountInit: followData.followerCount,
     levelsCount: levelsCount,
+    levelsSolved: levelsSolved,
     multiplayerCount: multiplayerCount,
     pageProp: page,
     profileTab: profileTab,
@@ -232,6 +254,7 @@ export interface ProfilePageProps {
   enrichedLevels: EnrichedLevel[] | undefined;
   followerCountInit: number;
   levelsCount: number;
+  levelsSolved: number;
   multiplayerCount: number;
   pageProp: number;
   profileTab: ProfileTab;
@@ -256,6 +279,7 @@ export default function ProfilePage({
   enrichedLevels,
   followerCountInit,
   levelsCount,
+  levelsSolved,
   multiplayerCount,
   pageProp,
   profileTab,
@@ -503,6 +527,18 @@ export default function ProfilePage({
     ),
     [ProfileTab.Levels]: (
       <div className='flex flex-col gap-2 items-center'>
+        <h1 className='font-bold text-3xl'>{user.name}&apos;s Levels</h1>
+        {reqUser &&
+          <h2
+            className='font-bold text-xl flex items-center'
+            style={{
+              color: levelsSolved === levelsCount ? 'var(--color-complete)' : undefined,
+            }}
+          >
+            <span>{levelsSolved} / {levelsCount}</span>
+            {levelsSolved === levelsCount && <Solved className='w-8 h-8' />}
+          </h2>
+        }
         <SelectFilter
           filter={showLevelFilter}
           onFilterClick={onFilterLevelClick}

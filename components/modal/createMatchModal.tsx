@@ -1,7 +1,7 @@
 import { multiplayerMatchTypeToText } from '@root/helpers/multiplayerHelperFunctions';
 import React from 'react';
 import { toast } from 'react-hot-toast';
-import Select from 'react-select';
+import Select, { CSSObjectWithLabel } from 'react-select';
 import { MultiplayerMatchType } from '../../models/constants/multiplayer';
 import Modal from '.';
 
@@ -80,10 +80,10 @@ export default function CreateMatchModal({ closeModal, isOpen, onConfirm }: Crea
               defaultValue={defaultValue}
               isSearchable={false}
               styles={{
-                menuPortal: base => ({ ...base, zIndex: 9999, color: 'black' }),
-                menu: base => ({ ...base, zIndex: 9999 }),
+                menuPortal: base => ({ ...base, zIndex: 9999, color: 'black' }) as CSSObjectWithLabel,
+                menu: base => ({ ...base, zIndex: 9999 }) as CSSObjectWithLabel,
                 // adjust width of dropdown
-                control: base => ({ ...base, width: '200px' }),
+                control: base => ({ ...base, width: '200px' }) as CSSObjectWithLabel,
               }}
               placeholder='Game type'
               className='text-black'
