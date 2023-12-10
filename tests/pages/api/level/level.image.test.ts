@@ -172,7 +172,7 @@ describe('pages/api/level/image/[id]', () => {
           gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
-            id: '[catalog]',
+            id: '[home]',
           },
         } as unknown as NextApiRequestGuest;
 

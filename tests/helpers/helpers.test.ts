@@ -1,22 +1,18 @@
 import StatFilter from '@root/constants/statFilter';
-import { Types } from 'mongoose';
 import TestId from '../../constants/testId';
 import statFilterOptions from '../../helpers/filterSelectOptions';
 import getDifficultyEstimate from '../../helpers/getDifficultyEstimate';
 import getProfileSlug from '../../helpers/getProfileSlug';
 import getSWRKey from '../../helpers/getSWRKey';
 import { TimerUtil } from '../../helpers/getTs';
-import getUserStats from '../../helpers/getUserStats';
 import isOnline from '../../helpers/isOnline';
 import naturalSort from '../../helpers/naturalSort';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 import Level from '../../models/db/level';
-import Stat from '../../models/db/stat';
 import User from '../../models/db/user';
 import { UserModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
-import { UserWithLevels } from '../../pages/[subdomain]/catalog/[[...route]]';
 
 beforeAll(async () => {
   await dbConnect();
@@ -25,39 +21,6 @@ afterAll(async () => {
   await dbDisconnect();
 });
 describe('helpers/*.ts', () => {
-  test('getUserStats', async () => {
-    const levelId = new Types.ObjectId();
-    const stats = [
-      {
-        complete: true,
-        levelId: levelId,
-      },
-    ] as Stat[];
-    const usersWithLevels = [
-      {
-        levels: [levelId],
-      },
-      {
-        levels: [new Types.ObjectId()],
-      },
-      {
-        levels: undefined,
-      },
-    ] as UserWithLevels[];
-
-    let userStats = getUserStats(undefined, usersWithLevels);
-
-    expect(userStats.length).toBe(3);
-    expect(userStats[0].userTotal).toBeUndefined();
-
-    userStats = getUserStats(stats, usersWithLevels);
-
-    expect(userStats.length).toBe(3);
-    expect(userStats[0].userTotal).toBe(1);
-    expect(userStats[1].userTotal).toBe(0);
-    expect(userStats[2].total).toBe(0);
-    expect(userStats[2].userTotal).toBe(0);
-  });
   test('naturalSort', async () => {
     const obj = [
       {
