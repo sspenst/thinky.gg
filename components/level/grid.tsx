@@ -2,11 +2,11 @@ import TileType from '@root/constants/tileType';
 import { AppContext } from '@root/contexts/appContext';
 import { GridContext } from '@root/contexts/gridContext';
 import { GameState } from '@root/helpers/gameStateHelpers';
+import { teko } from '@root/helpers/getFont';
 import Position from '@root/models/position';
 import classNames from 'classnames';
 import React, { useContext, useEffect, useState } from 'react';
 import Theme from '../../constants/theme';
-import { teko } from '../../pages/_app';
 import { getSolveStateFunction } from './solutionStates/helpers';
 import Tile from './tile/tile';
 

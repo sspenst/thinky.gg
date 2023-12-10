@@ -6,6 +6,7 @@ import { Portal } from '@headlessui/react';
 import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
 import { Game, Games } from '@root/constants/Games';
 import MusicContextProvider from '@root/contexts/musicContext';
+import getFontFromTheme from '@root/helpers/getFont';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import useDeviceCheck from '@root/hooks/useDeviceCheck';
 import Collection from '@root/models/db/collection';
@@ -13,7 +14,6 @@ import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import Notification from '@root/models/db/notification';
 import { NextPageContext } from 'next';
 import type { AppProps } from 'next/app';
-import { Rubik, Teko } from 'next/font/google';
 import Head from 'next/head';
 import { Router, useRouter } from 'next/router';
 import { DefaultSeo } from 'next-seo';
@@ -31,9 +31,6 @@ import useUser from '../hooks/useUser';
 import { MultiplayerMatchState } from '../models/constants/multiplayer';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
 import User, { UserWithMultiMultiplayerProfile, UserWithMultiplayerProfile } from '../models/db/user';
-
-export const rubik = Rubik({ display: 'swap', subsets: ['latin'] });
-export const teko = Teko({ display: 'swap', subsets: ['latin'], weight: '500' });
 
 export interface MultiplayerSocket {
   connectedPlayers: UserWithMultiplayerProfile[];
@@ -456,7 +453,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
           userConfig: user?.config,
           userLoading: isLoading,
         }}>
-          <div className={rubik.className} style={{
+          <div className={getFontFromTheme(selectedGame, theme)} style={{
             backgroundColor: 'var(--bg-color)',
             color: 'var(--color)',
           }}>
