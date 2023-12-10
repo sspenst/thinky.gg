@@ -1,6 +1,6 @@
 import { GameId } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
-import { TourType } from '@root/hooks/useTour';
+import TourType from '@root/hooks/useTour';
 import { Types } from 'mongoose';
 import EmailDigestSettingTypes from '../../constants/emailDigest';
 import User from './user';
