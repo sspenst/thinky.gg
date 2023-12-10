@@ -3,10 +3,6 @@
 import { NextApiResponse } from 'next';
 import { logger } from './logger';
 
-export enum RevalidatePaths {
-  CATALOG = '/catalog',
-}
-
 /**
  * @param res NextAPI response
  * @param url Url such as `/level/`
