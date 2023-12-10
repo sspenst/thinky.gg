@@ -8,22 +8,22 @@ const TOUR_STEPS_HOME_PAGE: Step[] = [
     target: '#campaign',
   },
   {
-    content: 'If you want a different challenge than the campaign, try solving some ranked levels to improve your spot on the leaderboard.',
+    content: 'Every day we select a level that we think is fun and interesting. You can play it here!',
     disableBeacon: true,
     placement: 'top',
-    target: '#ranked',
+    target: '#level-of-day',
   },
   {
-    content: 'The community has created various campaigns to play through. Check them out here!',
+    content: 'Levels are recommended here based on what you\'ve been playing recently.',
+    disableBeacon: true,
+    placement: 'top',
+    target: '#recommended-level',
+  },
+  {
+    content: 'If you want a different challenge than the main campaign, check out one of the campaigns created by the community.',
     disableBeacon: true,
     placement: 'top',
     target: '#communityCampaignsBtn',
-  },
-  {
-    content: 'Create your own levels and share them with the community!',
-    disableBeacon: true,
-    placement: 'top',
-    target: '#create',
   },
   {
     content: 'Here are the latest levels that have been created by the community. Check them out if you are looking for some fresh levels.',
