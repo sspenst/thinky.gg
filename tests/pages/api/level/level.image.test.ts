@@ -172,7 +172,7 @@ describe('pages/api/level/image/[id]', () => {
           gameId: GameId.PATHOLOGY,
           method: 'GET',
           query: {
-            id: '[catalog]',
+            id: '[home]',
           },
         } as unknown as NextApiRequestGuest;
 
