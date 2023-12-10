@@ -1,8 +1,6 @@
 /* istanbul ignore file */
-import PagePath from '@root/constants/pagePath';
 import { AppContext } from '@root/contexts/appContext';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
-import { useTour } from '@root/hooks/useTour';
 import { CollectionType } from '@root/models/constants/collection';
 import Collection, { EnrichedCollection } from '@root/models/db/collection';
 import { getCollection } from '@root/pages/api/collection-by-id/[id]';
@@ -289,11 +287,9 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
   const ogUrl = `https://${game.baseUrl}/level/${level.slug}`;
   const ogFullUrl = `https://${game.baseUrl}${ogUrl}`;
   const authorNote = level.authorNote ? level.authorNote : `${level.name} by ${level.userId.name}`;
-  const tour = useTour(PagePath.LEVEL, undefined, true);
 
   return (
     <>
-      {tour}
       <NextSeo
         title={`${level.name} - ${game.displayName}`}
         description={authorNote}
