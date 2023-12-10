@@ -1,6 +1,7 @@
 import { Menu, Transition } from '@headlessui/react';
 import Dimensions from '@root/constants/dimensions';
 import { Games } from '@root/constants/Games';
+import { getGameLogoAndLabel } from '@root/helpers/getGameLogo';
 import useUrl from '@root/hooks/useUrl';
 import Image from 'next/image';
 import React, { Fragment } from 'react';
@@ -48,8 +49,7 @@ export default function GameMenu() {
                       backgroundColor: active ? 'var(--bg-color-3)' : undefined,
                     }}
                   >
-                    <Image alt='logo' src={link.logo} width='24' height='24' className='h-6 w-6' style={{ minWidth: 24, minHeight: 24 }} />
-                    {link.label}
+                    {getGameLogoAndLabel(link.subdomain, link.subdomain)}
                   </div>
                 </a>
               )}
