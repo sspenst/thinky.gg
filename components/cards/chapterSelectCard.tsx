@@ -1,4 +1,3 @@
-import Dimensions from '@root/constants/dimensions';
 import classNames from 'classnames';
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
@@ -33,10 +32,8 @@ function ChapterSelectCardBase({
   }, [levelData]);
 
   return (<>
-    <div className='overflow-hidden relative inline-block align-middle w-90 max-w-full'>
-      <div className='wrapper rounded-md overflow-hidden relative w-full' style={{
-        height: Dimensions.OptionHeightLarge,
-      }}>
+    <div className='overflow-hidden relative inline-block align-middle w-100 max-w-full'>
+      <div className='wrapper rounded-md overflow-hidden relative h-40 w-full'>
         <div
           className='absolute background rounded-md bg-cover bg-center h-full w-full'
           style={{
