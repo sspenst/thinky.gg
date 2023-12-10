@@ -1,6 +1,4 @@
-import PagePath from '@root/constants/pagePath';
 import { AppContext } from '@root/contexts/appContext';
-import { useTour } from '@root/hooks/useTour';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { NextSeo } from 'next-seo';
 import React, { useContext } from 'react';
@@ -30,7 +28,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 /* istanbul ignore next */
 export default function MultiplayerPage() {
   const { game } = useContext(AppContext);
-  const tour = useTour(PagePath.MULTIPLAYER);
 
   return (
     <Page title='Multiplayer'>
@@ -40,7 +37,6 @@ export default function MultiplayerPage() {
           description={'Play ' + game.displayName + ' in real time against other players'}
           canonical={`https://${game.baseUrl}/multiplayer`}
         />
-        {tour}
         <Multiplayer />
       </>
     </Page>
