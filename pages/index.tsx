@@ -89,9 +89,9 @@ export default function ThinkyHomePage() {
           ))}
         </div>
         {gameHovered && <div className='rounded-lg p-2 w-auto text-center fadeIn' style={{
-
           backgroundColor: 'rgba(0,0,0,0.6)',
         }} >{gameHovered.shortDescription}</div>}
+        {gameHovered && <video autoPlay loop muted className='rounded-lg  w-40 text-center fadeIn' src={gameHovered.videoDemo} />}
       </div>
     </Page>
   );

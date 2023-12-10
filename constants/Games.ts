@@ -46,6 +46,7 @@ export const Games: Record<GameId, Game> = {
     SEODescription: 'The goal of Pathology is simple. Get to the exit in the least number of moves. Sounds easy right? Yet, this sokoban style game is one of the most mind-bending puzzle games you will find. Different blocks stand in your way to the exit, and your job is to figure out the optimal route',
     shortDescription: 'Go from start to finish in the least number of moves',
     type: GameType.SHORTEST_PATH,
+    videoDemo: 'https://i.imgur.com/TNbZUed.mp4',
     gameStateIsSolveFunction: pathologySolveState,
     validateSolutionFunction: validatePathologySolution,
   },
@@ -65,6 +66,7 @@ export const Games: Record<GameId, Game> = {
     shortDescription: 'Push the boxes onto the goals',
     subtitle: 'Push the boxes',
     type: GameType.SHORTEST_PATH,
+    videoDemo: 'https://i.imgur.com/bZpBEUW.mp4',
     gameStateIsSolveFunction: sokobanSolveState,
     validateSolutionFunction: validateSokobanSolution,
   },
@@ -86,6 +88,7 @@ export interface Game {
   SEODescription: string;
   shortDescription?: string;
   type: GameType;
+  videoDemo?: string;
   gameStateIsSolveFunction: (gameState: GameState) => boolean;
   validateSolutionFunction: (directions: Direction[], level: Level) => boolean;
 }
