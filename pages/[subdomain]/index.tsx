@@ -1,12 +1,13 @@
 import { GameId } from '@root/constants/GameId';
 import { AppContext } from '@root/contexts/appContext';
+import getHomeDefault from '@root/helpers/getComponentFromGame';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { GetServerSidePropsContext } from 'next';
 import { NextSeo } from 'next-seo';
 import React, { useContext } from 'react';
 import { SWRConfig } from 'swr';
-import HomeDefault from '../../components/homepage/homeDefault';
 import HomeVideo from '../../components/homepage/homeVideo';
+import HomeDefaultPathology from '../../components/homepage/pathology/homeDefaultPathology';
 import RecommendedLevel from '../../components/homepage/recommendedLevel';
 import Page from '../../components/page/page';
 import getSWRKey from '../../helpers/getSWRKey';
@@ -51,8 +52,6 @@ export default function AppSWR({ levelOfDay }: AppSWRProps) {
 
 /* istanbul ignore next */
 function App() {
-  const { levelOfDay } = useLevelOfDay();
-
   const { game } = useContext(AppContext);
 
   return (
@@ -74,18 +73,7 @@ function App() {
             ],
           }}
         />
-        <HomeVideo />
-        <div className='flex flex-wrap justify-center m-4'>
-          {levelOfDay &&
-            <RecommendedLevel
-              id='level-of-day'
-              level={levelOfDay}
-              title='Level of the Day'
-              tooltip={'Every day there is a new level of the day. Difficulty increases throughout the week!'}
-            />
-          }
-        </div>
-        <HomeDefault />
+        {getHomeDefault(game)}
       </>
     </Page>
   );
