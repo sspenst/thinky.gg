@@ -55,7 +55,6 @@ test('Doing a PUT from USER with 14 step solution and 12 step solution RIGHT aft
     sendStat(TestId.USER_C, SOL_14),
     sendStat(TestId.USER_B, SOL_12),
     sendStat(TestId.USER, SOL_14),
-
   ]);
   const lvl = await LevelModel.findById(TestId.LEVEL);
 
