@@ -38,19 +38,20 @@ export default function ThinkyHomePage() {
   const [gameHovered, setGameHovered] = useState<Game>();
 
   return (
-    <Page title='Puzzle Games - Thinky.gg' style={{
-      backgroundImage: 'url(https://i.imgur.com/h2qnMrV.png)',
-      height: '100vh',
-      // center
-      backgroundPosition: 'center',
-      /** add a fade to black on the top half of the image */
-      backgroundSize: 'cover',
-      backgroundRepeat: 'no-repeat',
-      backgroundAttachment: 'fixed',
-      backgroundBlendMode: 'multiply',
-      background: 'linear-gradient(rgba(0,0,0,1), rgba(0,0,0,0)), url(https://i.imgur.com/h2qnMrV.png)',
+    <Page title='Thinky.gg'
+      style={{
+        backgroundImage: 'url(https://i.imgur.com/h2qnMrV.png)',
+        height: '100vh',
+        // center
+        backgroundPosition: 'center',
+        /** add a fade to black on the top half of the image */
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed',
+        backgroundBlendMode: 'multiply',
+        background: 'linear-gradient(rgba(0,0,0,1), rgba(0,0,0,0)), url(https://i.imgur.com/h2qnMrV.png)',
 
-    }}>
+      }}>
       <div className='flex flex-col items-center m-6 gap-8'
       >
         <div className='flex flex-col text-4xl md:text-8xl bg-opacity-60 rounded p-4 max-w-6xl mx-auto items-center gap-10'>

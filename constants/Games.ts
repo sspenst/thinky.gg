@@ -27,7 +27,7 @@ export const Games: Record<GameId, Game> = {
     disableTutorial: true,
     disableMultiplayer: true,
     disableRanked: true,
-    logo: '/logos/global.png',
+    logo: '/logos/thinky.png',
     subtitle: 'Thinky Games',
     SEOTitle: 'Thinky Puzzle Games',
     SEODescription: 'Thinky Games is a collection of puzzle games',
