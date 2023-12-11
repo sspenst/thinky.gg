@@ -1,4 +1,6 @@
 import { MONKEY_THEME_ICONS, ThemeIconProps } from '@root/components/theme/monkey';
+import { GameId } from './GameId';
+import { Game } from './Games';
 import TileType from './tileType';
 
 enum Theme {
@@ -13,13 +15,17 @@ enum Theme {
   Halloween = 'theme-halloween',
 }
 
-export function getIconFromTheme(theme?: Theme | string, tileType?: TileType): ((props: ThemeIconProps) => JSX.Element) | undefined {
+export function getIconFromTheme(game: Game, theme?: Theme | string, tileType?: TileType): ((props: ThemeIconProps) => JSX.Element) | undefined {
   if (theme) {
     const themeMap = ICON_MAP[theme as Theme];
 
     if (themeMap && tileType) {
       return themeMap[tileType];
     }
+  }
+
+  if (game.id === GameId.SOKOBAN && tileType === TileType.Start) {
+    // Sokobon start tile maybe should be different?
   }
 
   return undefined;

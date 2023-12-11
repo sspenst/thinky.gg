@@ -237,12 +237,7 @@ body {
 
 
 }
-.tile-sokoban.tile-type-k {
-  /** make the borders have a cool effect */
-  opacity: 0.5;
 
-
-}
 .theme-boss {
   --bg-color: rgb(22, 21, 21);
   --bg-color-2: rgb(50, 50, 50);

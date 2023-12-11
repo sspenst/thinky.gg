@@ -18,7 +18,7 @@ export default function Player({ atEnd, moveCount }: PlayerProps) {
   const fontSize = innerTileSize / fontSizeRatio;
   const { game, theme } = useContext(AppContext);
   const classic = theme === Theme.Classic;
-  const icon = getIconFromTheme(theme, TileType.Start);
+  const icon = getIconFromTheme(game, theme, TileType.Start);
   const overstepped = leastMoves !== 0 && moveCount > leastMoves;
 
   return (

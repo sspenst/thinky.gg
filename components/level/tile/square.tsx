@@ -37,7 +37,7 @@ export default function Square({ text, tileType }: SquareProps) {
     }
   }
 
-  const icon = getIconFromTheme(theme, tileType);
+  const icon = getIconFromTheme(game, theme, tileType);
 
   return (
     <div
