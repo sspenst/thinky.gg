@@ -66,7 +66,7 @@ export default function TutorialSokobon() {
   const globalTimeout = useRef<NodeJS.Timeout | null>(null);
   const [isNextButtonDisabled, setIsNextButtonDisabled] = useState(false);
   const [isPrevButtonDisabled, setIsPrevButtonDisabled] = useState(false);
-  const { mutateUser, user } = useContext(AppContext);
+  const { game, mutateUser, user } = useContext(AppContext);
   const [popperInstance, setPopperInstance] = useState<Instance | null>(null);
   const popperUpdateInterval = useRef<NodeJS.Timeout | null>(null);
   const [showNiceJob, setShowNiceJob] = useState(false);
@@ -82,13 +82,8 @@ export default function TutorialSokobon() {
   const LEVEL_1 = '00040\n00000\n00230\n00000\n00000';
   const WALL_INTRO = '00000\n00102\n40100\n00103\n00000';
   const MULTIPLE_ENDS = '41300\n01200\n30000\n20320\n00000';
-  const MOVABLE_INTRO = '400\n000\n120\n000\n300';
   const MOVABLE_EXPLAIN = '410100\n002200\n010103\n000110';
-  const MOVABLE_EXPLAIN_END_COVER = '00000\n004K0\n00000\n02300\n00000';
-  const RESTRICTED_MOVABLES = '00000\n060E0\n00000\n0D0I0\n00000';
-  const RESTRICTED_MOVABLES_EXPLAIN = '4010010\n070C000\n0010013';
-  const HOLES_EXPLAIN = '000010\n000053\n000010\n000011';
-  const HOLES_INTRO = '000010\n080053\n000010\n004011';
+  const MOVABLE_EXPLAIN_END_COVER = '00400\n10K00\n02000\n01300\n00000';
 
   useEffect(() => {
     const sessionStorageTutorialStep = sessionStorage.getItem('tutorialStep');
@@ -476,43 +471,9 @@ export default function TutorialSokobon() {
       {
         gameClasses: 'fadeIn',
         gameGrid: true,
-        header: <div className='text-3xl'>Blocks can cover exits.</div>,
+        header: <><div key='tutorial-level-1-coverexit' className='text-3xl fadeIn'>Boxes can cover exit squares</div><div className='text-xl'>Try this tricky level!</div></>,
         key: 'tutorial-movable-explain-end-cover',
-        level: getLevel(MOVABLE_EXPLAIN_END_COVER, { leastMoves: 8 }),
-        onSolve: niceJob,
-      },
-      {
-        editorGrid: true,
-        gameClasses: 'fadeIn',
-        header: <div key='tutorial-restricted-movables-header' className='text-3xl fadeIn'>Blocks can only be pushed <span className='underline'>from sides with borders.</span></div>,
-        key: 'tutorial-restricted-movables',
-        level: getLevel(RESTRICTED_MOVABLES),
-        tooltip: { canClose: true, target: '.tile-type-D', title: <div>Can only be pushed down and to the left</div>, dir: 'bottom' },
-      },
-      {
-        gameClasses: 'fadeIn',
-        gameGrid: true,
-        header: <div key='tutorial-restricted-movables-explain-header' className='text-3xl fadeIn'>Find the path through these restricted blocks!</div>,
-        key: 'tutorial-restricted-movables-explain',
-        level: getLevel(RESTRICTED_MOVABLES_EXPLAIN, { leastMoves: 12 }),
-        onSolve: niceJob,
-      },
-      {
-        editorGrid: true,
-        gameClasses: 'fadeIn',
-        header: <div key='tutorial-holes-explain-header' className='fadeIn'>
-          <div className='text-3xl mb-6'>Lastly, this is a hole.</div>
-          <div className='text-xl'>Holes can be filled with any block to create a bridge.</div>
-        </div>,
-        key: 'tutorial-holes-explain',
-        level: getLevel(HOLES_EXPLAIN, { leastMoves: 9 }),
-        tooltip: { target: '.tile-type-5', title: <div>Hole</div> },
-      },
-      {
-        gameGrid: true,
-        header: <div key='tutorial-holes-intro' className='text-3xl fadeIn'>Use this block to cross over the hole!</div>,
-        key: 'tutorial-holes-intro',
-        level: getLevel(HOLES_INTRO, { leastMoves: 9 }),
+        level: getLevel(MOVABLE_EXPLAIN_END_COVER, { leastMoves: 18 }),
         onSolve: niceJob,
       },
       {
@@ -520,13 +481,13 @@ export default function TutorialSokobon() {
           <div className='text-3xl mb-6 fadeIn'>Congratulations on completing the tutorial!</div>
           <div className='text-xl mb-6 fadeIn' style={{
             animationDelay: '1s',
-          }}>There is a lot more to Pathology than just this:<br />An active community, level editor, and thousands of levels to explore.</div>
-          {isLoggedIn ?
+          }}>There is a lot more to Sokobon than just this:<br />An active community, level editor, and thousands of levels to explore.</div>
+          {isLoggedIn && !game.disableCampaign ?
             <div className='text-xl fadeIn' style={{
               pointerEvents: 'all',
               animationDelay: '2s',
             }}>
-              Continue your Pathology journey with the <span className='font-bold'>Campaign</span>!
+              Continue your Sokobon journey with the <span className='font-bold'>Campaign</span>!
             </div>
             :
             <div className='flex flex-col gap-3'>
@@ -534,7 +495,7 @@ export default function TutorialSokobon() {
                 pointerEvents: 'all',
                 animationDelay: '2s'
               }}>
-                Now <Link href='/signup' className='font-bold text-blue-500 hover:text-blue-400'>sign up</Link> for free to explore the world of Pathology!
+                Now <Link href='/signup' className='font-bold text-blue-500 hover:text-blue-400'>sign up</Link> for free to explore the world of Sokobon (and other puzzle games!)
               </div>
               <div className='fadeIn' style={{
                 pointerEvents: 'all',
@@ -547,7 +508,7 @@ export default function TutorialSokobon() {
         </div>,
       },
     ] as TutorialStep[];
-  }, [isLoggedIn, niceJob]);
+  }, [game.disableCampaign, isLoggedIn, niceJob]);
 
   const skipControl = useCallback(() => new Control(
     'control-skip',
@@ -664,8 +625,7 @@ export default function TutorialSokobon() {
       false,
       true,
     ));
-
-    controls.push(isLoggedIn ?
+    const btn = isLoggedIn && !game.disableCampaign ?
       new Control(
         'control-campaign',
         () => {
@@ -676,7 +636,7 @@ export default function TutorialSokobon() {
         true,
       )
       :
-      new Control(
+      (!isLoggedIn && new Control(
         'control-sign-up',
         () => {
           router.push('/signup');
@@ -687,7 +647,9 @@ export default function TutorialSokobon() {
         false,
         true,
       )
-    );
+      );
+
+    btn && controls.push(btn);
   }
 
   return (

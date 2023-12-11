@@ -530,7 +530,7 @@ export default function TutorialPathology() {
                 pointerEvents: 'all',
                 animationDelay: '2s'
               }}>
-                Now <Link href='/signup' className='font-bold text-blue-500 hover:text-blue-400'>sign up</Link> for free to explore the world of Pathology!
+                Now <Link href='/signup' className='font-bold text-blue-500 hover:text-blue-400'>sign up</Link> for free to explore the world of Pathology (and other puzzle games!))
               </div>
               <div className='fadeIn' style={{
                 pointerEvents: 'all',
