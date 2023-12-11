@@ -1,5 +1,6 @@
 import { GameId } from '@root/constants/GameId';
 import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import apiWrapper, { NextApiRequestGuest, ValidObjectId } from '../../../helpers/apiWrapper';
@@ -28,11 +29,12 @@ export default apiWrapper({ GET: {
 
 export async function getUserById(id: string | string[] | undefined, gameId: GameId) {
   await dbConnect();
+  const game = getGameFromId(gameId);
 
   try {
     const userAgg = await UserModel.aggregate<User>([
       { $match: { _id: new Types.ObjectId(id as string) } },
-      ...getEnrichUserConfigPipelineStage(gameId),
+      ...(game.disableGames ? [] : getEnrichUserConfigPipelineStage(gameId)),
     ]);
 
     if (!userAgg.length) {
