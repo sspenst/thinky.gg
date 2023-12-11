@@ -16,6 +16,7 @@ interface BasicLayoutProps {
 
 export default function BasicLayout({ cellClassName, controls, id, level, onClick }: BasicLayoutProps) {
   const data = level.data.split('\n');
+
   const height = level.height;
   const width = level.width;
   const board = Array(height).fill(undefined).map(() =>

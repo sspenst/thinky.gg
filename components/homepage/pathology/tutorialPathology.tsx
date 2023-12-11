@@ -9,17 +9,17 @@ import { Types } from 'mongoose';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { AppContext } from '../../contexts/appContext';
-import { TimerUtil } from '../../helpers/getTs';
-import Control from '../../models/control';
-import Level from '../../models/db/level';
-import Position from '../../models/position';
-import BasicLayout from '../level/basicLayout';
-import Controls from '../level/controls';
-import styles from '../level/Controls.module.css';
-import Game from '../level/game';
-import Page from '../page/page';
-import DismissToast from '../toasts/dismissToast';
+import { AppContext } from '../../../contexts/appContext';
+import { TimerUtil } from '../../../helpers/getTs';
+import Control from '../../../models/control';
+import Level from '../../../models/db/level';
+import Position from '../../../models/position';
+import BasicLayout from '../../level/basicLayout';
+import Controls from '../../level/controls';
+import styles from '../../level/Controls.module.css';
+import Game from '../../level/game';
+import Page from '../../page/page';
+import DismissToast from '../../toasts/dismissToast';
 
 interface Tooltip {
   canClose?: boolean;
@@ -43,7 +43,7 @@ interface TutorialStep {
   tooltip?: Tooltip;
 }
 
-export default function Tutorial() {
+export default function TutorialPathology() {
   function getLevel(data: string, override: Partial<Level> = {}): Level {
     const sp = data.split('\n');
     const width = sp[0].length;

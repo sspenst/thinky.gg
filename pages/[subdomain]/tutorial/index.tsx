@@ -1,9 +1,9 @@
 /* istanbul ignore file */
 
 import { AppContext } from '@root/contexts/appContext';
+import { getTutorialComponent } from '@root/helpers/getComponentFromGame';
 import { NextSeo } from 'next-seo';
 import React, { useContext } from 'react';
-import Tutorial from '../../../components/homepage/tutorial';
 
 export default function TutorialPage() {
   const { game } = useContext(AppContext);
@@ -19,6 +19,6 @@ export default function TutorialPage() {
         url: '/tutorial',
       }}
     />
-    <Tutorial />
+    {getTutorialComponent(game)}
   </>);
 }

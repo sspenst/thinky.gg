@@ -11,16 +11,17 @@ import styles from './Block.module.css';
 interface BlockProps {
   inHole: boolean;
   tileType: TileType;
+  onTopOf?: TileType;
 }
 
-export default function Block({ inHole, tileType }: BlockProps) {
+export default function Block({ inHole, tileType, onTopOf }: BlockProps) {
   const { borderWidth, innerTileSize } = useContext(GridContext);
   const { game, theme } = useContext(AppContext);
   const classic = theme === Theme.Classic;
   const innerBorderWidth = Math.round(innerTileSize / 4.5);
 
   function getBackgroundColor() {
-    if (game.id === GameId.SOKOBAN && tileType === TileType.BlockOnExit) {
+    if (game.id === GameId.SOKOBAN && onTopOf === TileType.End) {
       return 'var(--level-end)';
     } else {
       const fillCenter = classic && tileType === TileType.Block;
