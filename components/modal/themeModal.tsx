@@ -13,7 +13,7 @@ interface ThemeModalProps {
 }
 
 export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
-  const { mutateUser, setTheme, theme } = useContext(AppContext);
+  const { game, mutateUser, setTheme, theme } = useContext(AppContext);
   const { setTheme: setAppTheme } = useTheme();
 
   useEffect(() => {
@@ -71,7 +71,7 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
       <div>
         {Object.keys(Theme).map(themeTextStr => {
           const themeText = themeTextStr as keyof typeof Theme;
-          const icon = getIconFromTheme(Theme[themeText], TileType.Start);
+          const icon = getIconFromTheme(game, Theme[themeText], TileType.Start);
 
           return (
             <div key={`${Theme[themeText]}-parent-div`} className='flex flex-row'>

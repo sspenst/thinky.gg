@@ -21,7 +21,8 @@ export default function Block({ inHole, tileType, onTopOf }: BlockProps) {
   const innerBorderWidth = Math.round(innerTileSize / 4.5);
 
   function getBackgroundColor() {
-    if (game.id === GameId.SOKOBAN && onTopOf === TileType.End) {
+    // For level editor, it'll be a blockOnExit. For regular game it'll have an onTopOf end
+    if (game.id === GameId.SOKOBAN && onTopOf === TileType.End || tileType === TileType.BlockOnExit) {
       return 'var(--level-end)';
     } else {
       const fillCenter = classic && tileType === TileType.Block;
