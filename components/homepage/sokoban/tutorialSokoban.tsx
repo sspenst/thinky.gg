@@ -620,7 +620,11 @@ export default function TutorialSokobon() {
   } else {
     controls.push(new Control(
       'restart',
-      () => {return;},
+      () => {
+        setTutorialStepIndex(0);
+
+        return;
+      },
       <button onClick={() => setTutorialStepIndex(0)}>Restart</button>,
       false,
       true,
