@@ -447,7 +447,7 @@ export default function ProfilePage({
         )}
         <div className='flex flex-row flex-wrap justify-center text-left gap-10 m-4'>
           <div>
-            <h2 className='flex gap-2'>
+            {!game.disableGames && <h2 className='flex gap-2'>
               <span
                 className='font-bold'
                 data-tooltip-content='Highest unlocked Skill achievement'
@@ -459,16 +459,16 @@ export default function ProfilePage({
               {
                 levelsSolvedByDifficulty ? <PlayerRank levelsSolvedByDifficulty={levelsSolvedByDifficulty} user={user} /> : '...'
               }
-            </h2>
-            <h2><span className='font-bold'>Ranked Solves:</span> {user.config?.calcRankedSolves} 🏅</h2>
-            <h2><span className='font-bold'>Levels Solved:</span> {user.config?.calcLevelsSolvedCount}</h2>
-            <h2><span className='font-bold'>Levels Created:</span> {user.config?.calcLevelsCreatedCount}</h2>
+            </h2>}
+            {!game.disableGames && <h2><span className='font-bold'>Ranked Solves:</span> {user.config?.calcRankedSolves} 🏅</h2>}
+            {!game.disableGames && <h2><span className='font-bold'>Levels Solved:</span> {user.config?.calcLevelsSolvedCount}</h2>}
+            {!game.disableGames && <h2><span className='font-bold'>Levels Created:</span> {user.config?.calcLevelsCreatedCount}</h2>}
             {!user.hideStatus && <>
               <h2><span className='font-bold'>Last Seen:</span> <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.last_visited_at ? user.last_visited_at : user.ts} /></h2>
             </>}
             <h2><span className='font-bold'>Registered:</span> <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.ts} /></h2>
             <h2><span className='font-bold'>Followers:</span> {followerCount}</h2>
-            <div className='mt-4'>
+            {!game.disableGames && <div className='mt-4'>
               <h2><span className='font-bold'>Levels Solved by Difficulty:</span></h2>
               {levelsSolvedByDifficulty ?
                 <LevelsSolvedByDifficultyList data={levelsSolvedByDifficulty} />
@@ -476,6 +476,7 @@ export default function ProfilePage({
                 <div className='p-2'><LoadingSpinner /></div>
               }
             </div>
+            }
             {reqUser && reqUser._id.toString() === user._id.toString() && reqUserFollowing && (<>
               <div className='font-bold text-xl mt-4 mb-2 justify-center flex'>{`${reqUserFollowing.length} following:`}</div>
               <FollowingList graphs={reqUserFollowing} />
