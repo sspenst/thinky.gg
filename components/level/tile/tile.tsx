@@ -17,6 +17,7 @@ interface TileProps {
   pos: Position;
   text?: number | undefined;
   tileType: TileType;
+  onTopOf?: TileType;
 }
 
 export default function Tile({
@@ -27,6 +28,7 @@ export default function Tile({
   pos,
   text,
   tileType,
+  onTopOf
 }: TileProps) {
   const { borderWidth, innerTileSize, tileSize } = useContext(GridContext);
   // initialize the block at the starting position to avoid an animation from the top left
@@ -77,9 +79,10 @@ export default function Tile({
       <Block
         inHole={inHole ?? false}
         tileType={tileType}
+        onTopOf={onTopOf}
       />
     );
-  }, [atEnd, inHole, text, tileType]);
+  }, [atEnd, inHole, onTopOf, text, tileType]);
 
   return (
     <div

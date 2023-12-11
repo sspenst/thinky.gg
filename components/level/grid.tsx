@@ -79,16 +79,20 @@ export default function Grid({ cellClassName, gameState, id, leastMoves, onCellC
           pos={new Position(x, y)}
           text={text}
           tileType={tileType}
+
         />
       );
 
       if (tileState.block) {
+        const tileAtPosition = gameState.board[y][x];
+
         blocks[tileState.block.id] = (
           <Tile
             handleClick={onCellClick ? (rightClick: boolean) => onCellClick(x, y, rightClick) : undefined}
             key={`block-${tileState.block.id}`}
             pos={new Position(x, y)}
             tileType={tileState.block.tileType}
+            onTopOf={tileAtPosition.tileType}
           />
         );
       }

@@ -13,13 +13,14 @@ export function pathologySolveState(gameState: GameState) {
 export function sokobanSolveState(gameState: GameState) {
   // check that each end tile has a box on it
   // get all end tile positions
+
   const endTilePositions = gameState.board
     .map((row, y) => row.map((tile, x) => ({ tile, x, y })))
     .flat()
     .filter(({ tile }) => (tile.tileType === TileType.End || tile.tileType === TileType.BlockOnExit));
 
   // check that each end tile has a Block on it
-  return endTilePositions.every(({ x, y }) => {
+  return endTilePositions.length > 0 && endTilePositions.every(({ x, y }) => {
     return gameState.board[y][x].block !== undefined;
   });
 }
