@@ -9,7 +9,7 @@ import { ProfileAchievments } from '@root/components/profile/profileAchievements
 import ProfileMultiplayer from '@root/components/profile/profileMultiplayer';
 import StatFilter from '@root/constants/statFilter';
 import { AppContext } from '@root/contexts/appContext';
-import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { getUsersWithMultiplayerProfile } from '@root/helpers/getUsersWithMultiplayerProfile';
 import useSWRHelper from '@root/hooks/useSWRHelper';
 import { MultiplayerMatchState } from '@root/models/constants/multiplayer';
@@ -107,7 +107,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const userId = user._id.toString();
   const viewingOwnProfile = reqUser?._id.toString() === userId;
-
+  const game = getGameFromId(getGameIdFromReq(context.req));
   const [
     achievements,
     achievementsCount,
@@ -121,16 +121,16 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     reviewsReceivedCount,
     reviewsWrittenCount,
   ] = await Promise.all([
-    profileTab === ProfileTab.Achievements ? AchievementModel.find<Achievement>({ userId: userId, gameId: gameId }) : [] as Achievement[],
-    AchievementModel.countDocuments({ userId: userId, gameId: gameId }),
-    CollectionModel.countDocuments({
+    !game.disableGames && profileTab === ProfileTab.Achievements ? AchievementModel.find<Achievement>({ userId: userId, gameId: gameId }) : [] as Achievement[],
+    !game.disableGames && AchievementModel.countDocuments({ userId: userId, gameId: gameId }),
+    !game.disableGames && CollectionModel.countDocuments({
       userId: userId,
       ...(!viewingOwnProfile && { isPrivate: { $ne: true } }),
       gameId: gameId,
     }),
     getFollowData(user._id.toString(), reqUser),
-    LevelModel.countDocuments({ isDeleted: { $ne: true }, isDraft: false, userId: userId, gameId: gameId }),
-    profileTab === ProfileTab.Levels && reqUser ? LevelModel.aggregate([
+    !game.disableGames && LevelModel.countDocuments({ isDeleted: { $ne: true }, isDraft: false, userId: userId, gameId: gameId }),
+    !game.disableGames && profileTab === ProfileTab.Levels && reqUser ? LevelModel.aggregate([
       { $match: { isDeleted: { $ne: true }, isDraft: false, userId: new Types.ObjectId(userId) } },
       {
         $lookup: {
@@ -146,11 +146,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       { $match: { 'stats.0': { $exists: true } } },
       { $count: 'count' },
     ]) : undefined,
-    MultiplayerMatchModel.countDocuments({ players: userId, state: MultiplayerMatchState.FINISHED, rated: true, gameId: gameId }),
-    profileTab === ProfileTab.ReviewsReceived ? getReviewsForUserId(gameId, userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
-    profileTab === ProfileTab.ReviewsWritten ? getReviewsByUserId(gameId, userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
-    getReviewsForUserIdCount(gameId, userId),
-    getReviewsByUserIdCount(gameId, userId),
+    !game.disableGames && MultiplayerMatchModel.countDocuments({ players: userId, state: MultiplayerMatchState.FINISHED, rated: true, gameId: gameId }),
+    !game.disableGames && profileTab === ProfileTab.ReviewsReceived ? getReviewsForUserId(gameId, userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
+    !game.disableGames && profileTab === ProfileTab.ReviewsWritten ? getReviewsByUserId(gameId, userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
+    !game.disableGames && getReviewsForUserIdCount(gameId, userId),
+    !game.disableGames && getReviewsByUserIdCount(gameId, userId),
   ]);
 
   const levelsSolved = levelsSolvedAgg?.at(0)?.count ?? 0;
@@ -713,7 +713,7 @@ export default function ProfilePage({
             ],
           }}
         />
-        <div className='flex flex-wrap text-sm text-center gap-2 mt-2 justify-center items-center'>
+        {!game.disableGames && <div className='flex flex-wrap text-sm text-center gap-2 mt-2 justify-center items-center'>
           <Link
             className={getTabClassNames(ProfileTab.Profile)}
             href={`/profile/${user.name}`}
@@ -795,6 +795,7 @@ export default function ProfilePage({
             placeholder='Switch to another profile'
           />
         </div>
+        }
         <div className='tab-content'>
           <div className='p-4' id='content' role='tabpanel' aria-labelledby='tabs-home-tabFill'>
             {tabsContent[tab]}
