@@ -14,20 +14,16 @@ interface ThemeModalProps {
 
 export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
   const { mutateUser, setTheme, theme } = useContext(AppContext);
-  const { setTheme: setAppTheme } = useTheme();
+  const { setTheme: setAppTheme, theme: appTheme } = useTheme();
 
-  // maintain accurate app theme for tailwind dark mode classes
-  useEffect(() => {
-    if (theme) {
-      setAppTheme(theme);
-      document.documentElement.setAttribute('data-theme-dark', theme === Theme.Light ? 'false' : 'true');
-    }
-  }, [setAppTheme, theme]);
+  console.log(appTheme, theme);
 
   function onChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const newTheme = e.currentTarget.value;
+    const newTheme = e.currentTarget.value as Theme;
 
     setTheme(newTheme);
+    setAppTheme(newTheme);
+    document.documentElement.setAttribute('data-theme-dark', newTheme === Theme.Light ? 'false' : 'true');
   }
 
   function putTheme() {

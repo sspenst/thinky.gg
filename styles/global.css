@@ -27,6 +27,7 @@ body {
 }
 
 .theme-accessible {
+  color-scheme: dark;
   --bg-color: rgb(0, 0, 0);
   --bg-color-2: rgb(0, 0, 0);
   --bg-color-3: rgb(50, 50, 50);
@@ -51,6 +52,7 @@ body {
 }
 
 .theme-classic {
+  color-scheme: dark;
   --bg-color: rgb(51, 51, 51);
   --bg-color-2: rgb(70, 70, 70);
   --bg-color-3: rgb(100, 100, 100);
@@ -75,6 +77,7 @@ body {
 }
 
 .theme-monkey {
+  color-scheme: dark;
   --bg-color: rgb(40, 13, 6);
   --bg-color-2: rgb(86, 34, 11);
   --bg-color-3: rgb(90, 67, 55);
@@ -115,6 +118,7 @@ body {
 }
 
 .theme-dark {
+  color-scheme: dark;
   --bg-color: rgb(0, 0, 0);
   --bg-color-2: rgb(0, 0, 0);
   --bg-color-3: rgb(50, 50, 50);
@@ -189,6 +193,7 @@ body {
 }
 
 .theme-boss {
+  color-scheme: dark;
   --bg-color: rgb(22, 21, 21);
   --bg-color-2: rgb(50, 50, 50);
   --bg-color-3: rgb(80, 80, 80);
@@ -213,6 +218,7 @@ body {
 }
 
 .theme-winter {
+  color-scheme: dark;
   --bg-color: rgb(22, 21, 21);
   --bg-color-2: rgb(50, 50, 50);
   --bg-color-3: rgb(80, 80, 80);
@@ -237,6 +243,7 @@ body {
 }
 
 .theme-halloween {
+  color-scheme: dark;
   --bg-color: rgb(22, 21, 21);
   --bg-color-2: rgb(50, 50, 50);
   --bg-color-3: rgb(80, 80, 80);
