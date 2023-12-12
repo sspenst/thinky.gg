@@ -6,12 +6,8 @@ import { GetServerSidePropsContext } from 'next';
 import { NextSeo } from 'next-seo';
 import React, { useContext } from 'react';
 import { SWRConfig } from 'swr';
-import HomeVideo from '../../components/homepage/homeVideo';
-import HomeDefaultPathology from '../../components/homepage/pathology/homeDefaultPathology';
-import RecommendedLevel from '../../components/homepage/recommendedLevel';
 import Page from '../../components/page/page';
 import getSWRKey from '../../helpers/getSWRKey';
-import useLevelOfDay from '../../hooks/useLevelOfDay';
 import { EnrichedLevel } from '../../models/db/level';
 import { getLevelOfDay } from '../api/level-of-day';
 

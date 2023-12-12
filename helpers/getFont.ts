@@ -1,6 +1,6 @@
 import { GameId } from '@root/constants/GameId';
 import { Game } from '@root/constants/Games';
-import { Nunito_Sans, Pixelify_Sans, Rubik, Teko, VT323 } from 'next/font/google';
+import { Nunito_Sans, Rubik, Teko, VT323 } from 'next/font/google';
 
 export const rubik = Rubik({ display: 'swap', subsets: ['latin'] });
 export const teko = Teko({ display: 'swap', subsets: ['latin'], weight: '500' });

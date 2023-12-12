@@ -660,7 +660,7 @@ export default function TutorialPathology() {
 
         return;
       },
-      <button onClick={() => setTutorialStepIndex(0)}>Restart</button>,
+      <button onClick={() => setTutorialStepIndex(0)}>Restart Tutorial</button>,
       false,
       true,
     ));
