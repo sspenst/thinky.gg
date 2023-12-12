@@ -1,6 +1,9 @@
+import { GameId } from '@root/constants/GameId';
+import { logger } from '@root/helpers/logger';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import { TimerUtil } from '../../../../helpers/getTs';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
@@ -9,7 +12,7 @@ import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { LevelModel } from '../../../../models/mongoose';
 import updateCollectionHandler from '../../../../pages/api/collection/[id]';
 import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
-import updateLevelHandler from '../../../../pages/api/level/[id]';
+import saveLevelToHandler from '../../../../pages/api/save-level-to/[id]';
 
 afterAll(async() => {
   await dbDisconnect();
@@ -31,12 +34,14 @@ describe('Testing updating collection data', () => {
       const ts = TimerUtil.getTs();
 
       levels[i] = new Types.ObjectId();
-      promises.push( LevelModel.create({
+      promises.push(LevelModel.create({
         _id: levels[i],
         authorNote: 'test level 1 author note',
         data: '40010\n12000\n05000\n67890\nABCD3',
+        gameId: GameId.PATHOLOGY,
         height: 5,
         isDraft: false,
+        isRanked: false,
         leastMoves: 20,
         name: 'level ' + i,
         slug: 'test/level-' + i,
@@ -149,7 +154,9 @@ describe('Testing updating collection data', () => {
           body: {
             levels: levels.map(levelId => levelId.toString()),
             authorNote: 'added 100 levels',
-            name: 'the big collection'
+            name: 'the big collection',
+            // should not work for non-pro user
+            isPrivate: true,
           },
           headers: {
             'content-type': 'application/json',
@@ -165,6 +172,7 @@ describe('Testing updating collection data', () => {
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
 
+        expect(response.isPrivate).toBeFalsy();
         expect(response.levels).toBeDefined();
         expect(response.levels.length).toBe(numLevels);
       },
@@ -198,6 +206,71 @@ describe('Testing updating collection data', () => {
         for (let i = 0; i < numLevels; i++) {
           expect(response.levels[i]._id).toBe(levels[i].toString());
         }
+      },
+    });
+  });
+  test('try to change the name to a reserved slug', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as unknown as Logger));
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          userId: TestId.USER,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: TestId.COLLECTION, // shouldn't exist
+          },
+          body: {
+            levels: levels.map(levelId => levelId.toString()),
+            authorNote: 'added 100 levels',
+            name: 'play ^later'
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await updateCollectionHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('This uses a reserved word (play later). Please use another name for this collection.');
+        expect(res.status).toBe(400);
+      },
+    });
+  });
+  test('try to change to private', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          userId: TestId.USER,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: TestId.COLLECTION, // shouldn't exist
+          },
+          body: {
+            levels: levels.map(levelId => levelId.toString()),
+            authorNote: 'added 100 levels',
+            private: true
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await updateCollectionHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+
+        expect(res.status).toBe(200);
       },
     });
   });
@@ -286,8 +359,6 @@ describe('Testing updating collection data', () => {
             id: toRemove.toString(),
           },
           body: {
-            name: 'removed level',
-            authorNote: 'removed level note',
             collectionIds: [],
           },
           headers: {
@@ -295,7 +366,7 @@ describe('Testing updating collection data', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await updateLevelHandler(req, res);
+        await saveLevelToHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();

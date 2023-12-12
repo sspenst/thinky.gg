@@ -57,10 +57,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   const [notifications, totalRows] = await Promise.all([
-    NotificationModel.find(searchObj, {}, { sort: { createdAt: -1 }, lean: true, limit: notificationsPerPage, skip: notificationsPerPage * (Number(searchQuery.page) - 1) }).populate(['target', 'source']),
+    NotificationModel.find(searchObj, {}, { sort: { createdAt: -1 }, limit: notificationsPerPage, skip: notificationsPerPage * (Number(searchQuery.page) - 1) }).populate(['target', 'source']).lean<Notification[]>(),
     NotificationModel.countDocuments(searchObj),
   ]);
-  const enrichedNotifications = await enrichNotifications(notifications as Notification[], reqUser);
+  const enrichedNotifications = await enrichNotifications(notifications, reqUser);
 
   return {
     props: {
@@ -72,9 +72,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 interface NotificationProps {
-    notifications: Notification[];
-    searchQuery: SearchQuery;
-    totalRows: number;
+  notifications: Notification[];
+  searchQuery: SearchQuery;
+  totalRows: number;
 }
 
 /* istanbul ignore next */

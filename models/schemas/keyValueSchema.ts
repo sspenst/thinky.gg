@@ -1,8 +1,14 @@
+import { GameId } from '@root/constants/GameId';
 import mongoose, { Schema } from 'mongoose';
 import KeyValue from '../db/keyValue';
 
 const KeyValueSchema = new mongoose.Schema<KeyValue>(
   {
+    gameId: {
+      type: String,
+      enum: GameId,
+      required: true,
+    },
     key: {
       type: String,
       required: true,

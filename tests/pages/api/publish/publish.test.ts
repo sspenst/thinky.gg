@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import TestId from '@root/constants/testId';
 import { TimerUtil } from '@root/helpers/getTs';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
@@ -32,8 +33,10 @@ describe('publishLevelHandler', () => {
     await LevelModel.create({
       authorNote: 'YOOOOO',
       data: '4100B0\n120000\n050000\n678900\nABCD30',
+      gameId: GameId.PATHOLOGY,
       height: 5,
       isDraft: false,
+      isRanked: false,
       leastMoves: 20,
       name: 'test level 100',
       slug: 'test/test-level-100',
@@ -67,8 +70,10 @@ describe('publishLevelHandler', () => {
     await LevelModel.create({
       authorNote: 'YOOOOO',
       data: '4200B0\n120000\n050000\n678900\nABCD30',
+      gameId: GameId.PATHOLOGY,
       height: 5,
       isDraft: false,
+      isRanked: false,
       leastMoves: 20,
       calc_reviews_score_laplace: 0.3,
       name: 'test level 101',
@@ -81,8 +86,10 @@ describe('publishLevelHandler', () => {
     await LevelModel.create({
       authorNote: 'YOOOOO',
       data: '4300B0\n120000\n050000\n678900\nABCD30',
+      gameId: GameId.PATHOLOGY,
       height: 5,
       isDraft: false,
+      isRanked: false,
       leastMoves: 20,
       calc_reviews_score_laplace: 0.35,
       name: 'test level 102',
@@ -95,8 +102,10 @@ describe('publishLevelHandler', () => {
     await LevelModel.create({
       authorNote: 'YOOOOO',
       data: '4400B0\n120000\n050000\n678900\nABCD30',
+      gameId: GameId.PATHOLOGY,
       height: 5,
       isDraft: false,
+      isRanked: false,
       leastMoves: 20,
       calc_reviews_score_laplace: 0.33,
       name: 'test level 103',
@@ -109,8 +118,10 @@ describe('publishLevelHandler', () => {
     await LevelModel.create({
       authorNote: 'YOOOOO',
       data: '4500B0\n120000\n050000\n678900\nABCD30',
+      gameId: GameId.PATHOLOGY,
       height: 5,
       isDraft: false,
+      isRanked: false,
       leastMoves: 20,
       calc_reviews_score_laplace: 0.31,
       name: 'test level 104',
@@ -145,8 +156,10 @@ describe('publishLevelHandler', () => {
     await LevelModel.create({
       authorNote: 'YOOOOO',
       data: '4210B0\n120000\n050000\n678900\nABCD30',
+      gameId: GameId.PATHOLOGY,
       height: 5,
       isDraft: false,
+      isRanked: false,
       leastMoves: 20,
       calc_reviews_score_laplace: 0.63,
       name: 'test level 105',
@@ -159,8 +172,10 @@ describe('publishLevelHandler', () => {
     await LevelModel.create({
       authorNote: 'YOOOOO',
       data: '4320B0\n120000\n050000\n678900\nABCD30',
+      gameId: GameId.PATHOLOGY,
       height: 5,
       isDraft: false,
+      isRanked: false,
       leastMoves: 20,
       calc_reviews_score_laplace: 0.85,
       name: 'test level 106',
@@ -173,8 +188,10 @@ describe('publishLevelHandler', () => {
     await LevelModel.create({
       authorNote: 'YOOOOO',
       data: '4430B0\n120000\n050000\n678900\nABCD30',
+      gameId: GameId.PATHOLOGY,
       height: 5,
       isDraft: false,
+      isRanked: false,
       leastMoves: 20,
       calc_reviews_score_laplace: 0.83,
       name: 'test level 107',
@@ -187,8 +204,10 @@ describe('publishLevelHandler', () => {
     await LevelModel.create({
       authorNote: 'YOOOOO',
       data: '4550B0\n120000\n050000\n678900\nABCD30',
+      gameId: GameId.PATHOLOGY,
       height: 5,
       isDraft: false,
+      isRanked: false,
       leastMoves: 20,
       calc_reviews_score_laplace: 0.91,
       name: 'test level 108',

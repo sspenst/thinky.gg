@@ -4,7 +4,9 @@
 // import tsconfig-paths
 
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
+import { GameId } from '@root/constants/GameId';
 import Level from '@root/models/db/level';
+import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import PlayAttempt from '@root/models/db/playAttempt';
 import Record from '@root/models/db/record';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
@@ -12,21 +14,20 @@ import { queueRefreshAchievements } from '@root/pages/api/internal-jobs/worker';
 import cliProgress from 'cli-progress';
 import dotenv from 'dotenv';
 import dbConnect from '../../lib/dbConnect';
+import { MultiplayerMatchType } from '../../models/constants/multiplayer';
 import User from '../../models/db/user';
 import { LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../models/mongoose';
-import { MultiplayerMatchType } from '../../models/MultiplayerEnums';
 import { calcPlayAttempts, refreshIndexCalcs } from '../../models/schemas/levelSchema';
 import { calcCreatorCounts } from '../../models/schemas/userSchema';
 
 'use strict';
 
 dotenv.config();
-
-console.log('env vars are ', dotenv.config().parsed);
+console.log('loaded env vars');
 const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
 
 async function integrityCheckLevels(chunks = 1, chunkIndex = 0) {
-  const allLevels = await LevelModel.find({ isDeleted: { $ne: true }, isDraft: false }, '_id', { lean: false, sort: { ts: -1 } });
+  const allLevels = await LevelModel.find({ isDeleted: { $ne: true }, isDraft: false }, '_id', { sort: { ts: -1 } });
 
   const chunk = Math.floor(allLevels.length / chunks);
   const start = chunk * chunkIndex;
@@ -108,11 +109,11 @@ async function integrityCheckLevels(chunks = 1, chunkIndex = 0) {
 
 async function integrityCheckMultiplayerProfiles() {
   console.log('Querying all users into memory...');
-  const multiplayerProfiles = await MultiplayerProfileModel.find({}, {}, { lean: true }).populate('userId', 'name');
+  const multiplayerProfiles = await MultiplayerProfileModel.find().populate('userId', 'name').lean<MultiplayerProfile[]>();
 
   for (const type of Object.keys(MultiplayerMatchType)) {
     for (const profile of multiplayerProfiles) {
-      const count = await MultiplayerMatchModel.count({
+      const count = await MultiplayerMatchModel.countDocuments({
         players: profile.userId,
         type: type,
       });
@@ -127,6 +128,62 @@ async function integrityCheckMultiplayerProfiles() {
   console.log('All done');
 }
 
+async function integrityCheckRankedScore() {
+  console.log('collecting stats...');
+
+  // find all ranked levels, then all complete stats for those levels, then group by userId
+  const stats = await LevelModel.aggregate([
+    { $match: { isRanked: true } },
+    {
+      $lookup: {
+        from: 'stats',
+        localField: '_id',
+        foreignField: 'levelId',
+        as: 'stats',
+      },
+    },
+    { $unwind: '$stats' },
+    { $replaceRoot: { newRoot: '$stats' } },
+    { $match: { complete: true, isDeleted: { $ne: true } } },
+    { $group: { _id: '$userId', count: { $sum: 1 } } },
+  ]);
+
+  // convert stats to a dictionary
+  const rankedSolvesTable: { [userId: string]: number } = {};
+
+  for (const stat of stats) {
+    rankedSolvesTable[stat._id.toString()] = stat.count;
+  }
+
+  console.log('querying all users into memory...');
+  const allUsers = await UserModel.find<User>().sort({ last_visited_at: -1 });
+
+  progressBar.start(allUsers.length, 0);
+
+  for (const user of allUsers) {
+    const calcRankedSolves = rankedSolvesTable[user._id.toString()] ?? 0;
+
+    await UserModel.updateOne({ _id: user._id }, { $set: { calcRankedSolves: calcRankedSolves } });
+
+    // const userBefore = await UserModel.findOneAndUpdate({ _id: user._id }, { $set: { calcRankedSolves: calcRankedSolves } }, { new: false });
+
+    // const userAfter = await UserModel.findById(user._id);
+
+    // if (user.score !== calcRankedSolves) {
+    //   console.warn(`\nUser ${user.name} score changed from ${userBefore.score} to ${calcRankedSolves}`);
+    // }
+
+    // if (userAfter.calc_levels_created_count !== userBefore.calc_levels_created_count) {
+    //   console.warn(`\nUser ${user.name} calc_levels_created_count changed from ${userBefore.calc_levels_created_count} to ${userAfter.calc_levels_created_count}`);
+    // }
+
+    progressBar.increment();
+  }
+
+  progressBar.stop();
+  console.log('done');
+}
+
 async function integrityCheckUsersScore() {
   // Aggregate all of the stat model complete:true by userId
   const scoreTable = await StatModel.aggregate([
@@ -136,7 +193,7 @@ async function integrityCheckUsersScore() {
 
   // now update all user's  based on their play attempt count
   console.log('Querying all users into memory...');
-  const allUsers = await UserModel.find<User>({}, '_id name score', { lean: false, sort: { last_visited_at: -1 } });
+  const allUsers = await UserModel.find<User>({}, '_id name score', { sort: { last_visited_at: -1 } });
   let i = 0;
 
   progressBar.start(allUsers.length, 0);
@@ -166,6 +223,8 @@ async function integrityCheckUsersScore() {
 }
 
 async function integrityCheckRecords() {
+  console.log('Integrity Check Records');
+  console.log('Querying all levels\' records into memory...');
   const allLevels = await LevelModel.countDocuments({ isDeleted: { $ne: true }, isDraft: false });
   const recordCounts: { [userId: string]: number } = {};
   let i = 0;
@@ -224,7 +283,7 @@ async function integrityCheckRecords() {
 
 async function integrityCheckAcheivements() {
   console.log('Querying all users into memory...');
-  const users = await UserModel.find<User>({}, '_id name score', { lean: false, sort: { score: -1 } });
+  const users = await UserModel.find<User>({}, '_id name score', { sort: { score: -1 } });
 
   // looping through all users
 
@@ -234,7 +293,8 @@ async function integrityCheckAcheivements() {
   progressBar.start(users.length, 0);
 
   for (const user of users) {
-    await queueRefreshAchievements(user._id, allAchievementCategories as AchievementCategory[], { session: null });
+    // TODO - loop through all games and refresh achievements for each game
+    await queueRefreshAchievements(GameId.PATHOLOGY, user._id, allAchievementCategories as AchievementCategory[], { session: null });
     progressBar.increment();
   }
 
@@ -244,10 +304,10 @@ async function integrityCheckAcheivements() {
 
 async function integrityCheckPlayAttempts() {
   let prevPlayAttempt: PlayAttempt | null = null;
-  let trackJustBeaten = false;
+  let trackJustSolved = false;
 
   // stream with async interator, sorted using the existing index
-  for await (const playAttempt of PlayAttemptModel.find<PlayAttempt>({}, {}, { lean: true, sort: { levelId: 1, userId: 1, endTime: -1, attemptContext: -1 } })) {
+  for await (const playAttempt of PlayAttemptModel.find({}, {}, { sort: { levelId: 1, userId: 1, endTime: -1, attemptContext: -1 } }).lean<PlayAttempt[]>()) {
     if (playAttempt.startTime > playAttempt.endTime) {
       console.warn(`[${playAttempt._id.toString()}, ${playAttempt.levelId.toString()}, ${playAttempt.userId.toString()}] startTime greater than endTime`);
       continue;
@@ -259,34 +319,34 @@ async function integrityCheckPlayAttempts() {
         console.warn(`[${playAttempt._id.toString()}, ${playAttempt.levelId.toString()}, ${playAttempt.userId.toString()}] attemptContext out of order`);
       }
 
-      if (playAttempt.attemptContext === AttemptContext.UNBEATEN && prevPlayAttempt.attemptContext === AttemptContext.BEATEN) {
+      if (playAttempt.attemptContext === AttemptContext.UNSOLVED && prevPlayAttempt.attemptContext === AttemptContext.SOLVED) {
         if (playAttempt.startTime === playAttempt.endTime) {
-          // sometimes this is a bug where an author has UNBEATEN on their own level - safe to delete either way
+          // sometimes this is a bug where an author has UNSOLVED on their own level - safe to delete either way
           await PlayAttemptModel.deleteOne({ _id: playAttempt._id });
-          console.log(`[${playAttempt._id.toString()}, ${playAttempt.levelId.toString()}, ${playAttempt.userId.toString()}] DELETED - missing AttemptContext.JUST_BEATEN`);
+          console.log(`[${playAttempt._id.toString()}, ${playAttempt.levelId.toString()}, ${playAttempt.userId.toString()}] DELETED - missing AttemptContext.JUST_SOLVED`);
           continue;
         } else {
           // otherwise attempt to correct the data
-          await PlayAttemptModel.findByIdAndUpdate(playAttempt._id, { $set: { attemptContext: AttemptContext.JUST_BEATEN } });
-          playAttempt.attemptContext = AttemptContext.JUST_BEATEN;
+          await PlayAttemptModel.findByIdAndUpdate(playAttempt._id, { $set: { attemptContext: AttemptContext.JUST_SOLVED } });
+          playAttempt.attemptContext = AttemptContext.JUST_SOLVED;
 
-          console.log(`[${playAttempt._id.toString()}, ${playAttempt.levelId.toString()}, ${playAttempt.userId.toString()}] UPDATED - AttemptContext.JUST_BEATEN`);
+          console.log(`[${playAttempt._id.toString()}, ${playAttempt.levelId.toString()}, ${playAttempt.userId.toString()}] UPDATED - AttemptContext.JUST_SOLVED`);
         }
       }
 
-      if (playAttempt.attemptContext === AttemptContext.JUST_BEATEN) {
-        if (trackJustBeaten) {
-          await PlayAttemptModel.findByIdAndUpdate(playAttempt._id, { $set: { attemptContext: AttemptContext.UNBEATEN } });
-          playAttempt.attemptContext = AttemptContext.UNBEATEN;
+      if (playAttempt.attemptContext === AttemptContext.JUST_SOLVED) {
+        if (trackJustSolved) {
+          await PlayAttemptModel.findByIdAndUpdate(playAttempt._id, { $set: { attemptContext: AttemptContext.UNSOLVED } });
+          playAttempt.attemptContext = AttemptContext.UNSOLVED;
 
-          console.log(`[${playAttempt._id.toString()}, ${playAttempt.levelId.toString()}, ${playAttempt.userId.toString()}] UPDATED - multiple AttemptContext.JUST_BEATEN`);
+          console.log(`[${playAttempt._id.toString()}, ${playAttempt.levelId.toString()}, ${playAttempt.userId.toString()}] UPDATED - multiple AttemptContext.JUST_SOLVED`);
         } else {
-          trackJustBeaten = true;
+          trackJustSolved = true;
         }
       }
 
       if (playAttempt.endTime > prevPlayAttempt.startTime) {
-        if (playAttempt.startTime >= prevPlayAttempt.startTime && playAttempt.attemptContext !== AttemptContext.JUST_BEATEN) {
+        if (playAttempt.startTime >= prevPlayAttempt.startTime && playAttempt.attemptContext !== AttemptContext.JUST_SOLVED) {
           await PlayAttemptModel.deleteOne({ _id: playAttempt._id });
           console.log(`[${playAttempt._id.toString()}, ${playAttempt.levelId.toString()}, ${playAttempt.userId.toString()}] DELETED - time range overlapping`);
           continue;
@@ -296,13 +356,13 @@ async function integrityCheckPlayAttempts() {
       }
     } else {
       // reset tracking variable
-      trackJustBeaten = false;
+      trackJustSolved = false;
     }
 
     prevPlayAttempt = playAttempt;
   }
 
-  // NB: not worth comparing all the playattempt JUST_BEATEN against all completed stats, since playattempts are not guaranteed to be complete (data is missing from before playattempts were collected and so there are many special cases)
+  // NB: not worth comparing all the playattempt JUST_SOLVED against all completed stats, since playattempts are not guaranteed to be complete (data is missing from before playattempts were collected and so there are many special cases)
 
   console.log('integrityCheckPlayAttempts done');
 }
@@ -311,6 +371,7 @@ async function integrityCheckPlayAttempts() {
 async function init() {
   const args = process.argv.slice(2);
   const runLevels = args.includes('--levels');
+  const runRanked = args.includes('--ranked');
   const runUsers = args.includes('--users');
   const runMultiplayerProfiles = args.includes('--multiplayer');
   const runAchievements = args.includes('--achievements');
@@ -321,12 +382,16 @@ async function init() {
   const chunks = parseInt(args.find((x: string) => x.startsWith('--chunks='))?.split('=')[1] || '1');
   const chunkIndex = parseInt(args.find((x: string) => x.startsWith('--chunk-index='))?.split('=')[1] || '0');
 
-  console.log('Connecting to db...');
+  console.log('connecting to db...');
   await dbConnect();
   console.log('connected');
 
   if (runLevels) {
     await integrityCheckLevels(chunks, chunkIndex);
+  }
+
+  if (runRanked) {
+    await integrityCheckRankedScore();
   }
 
   if (runUsers) {

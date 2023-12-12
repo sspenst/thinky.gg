@@ -73,7 +73,7 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
       isOpen={isOpen}
       title={'Theme'}
     >
-      <>
+      <div>
         {Object.keys(Theme).map(themeTextStr => {
           const themeText = themeTextStr as keyof typeof Theme;
           const icon = getIconFromTheme(Theme[themeText], TileType.Start);
@@ -98,7 +98,7 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
             </div>
           );
         })}
-      </>
+      </div>
     </Modal>
   );
 }

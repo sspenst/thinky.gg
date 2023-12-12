@@ -1,6 +1,6 @@
-import SettingsAccountGuest from '@root/components/settings/settingsAccountGuest';
+import SettingsAccount from '@root/components/settings/settingsAccount';
 import SettingsNotifications from '@root/components/settings/settingsNotifications';
-import isGuest from '@root/helpers/isGuest';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
 import classNames from 'classnames';
@@ -9,8 +9,6 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import Page from '../../components/page/page';
-import SettingsAccount from '../../components/settings/settingsAccount';
-import SettingsDanger from '../../components/settings/settingsDanger';
 import SettingsGeneral from '../../components/settings/settingsGeneral';
 import SettingsPro from '../../components/settings/settingsPro';
 import { getUserFromToken } from '../../lib/withAuth';
@@ -18,16 +16,15 @@ import { getUserConfig } from '../api/user-config';
 
 enum SettingsTab {
   Account = 'account',
-  Danger = 'danger',
   General = 'general',
-  Pro = 'proaccount',
+  Pro = 'pro',
   Notifications = 'notifications',
 }
 
 interface TabProps {
   activeTab: string;
   className?: string;
-  label: string | JSX.Element;
+  label: React.ReactNode;
   value: string;
 }
 
@@ -83,9 +80,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   let userConfig: UserConfig | null = null;
+  const gameId = getGameIdFromReq(context.req);
 
   if (tab === SettingsTab.Account || tab === SettingsTab.Notifications) {
-    userConfig = await getUserConfig(reqUser._id);
+    userConfig = await getUserConfig(gameId, reqUser);
   }
 
   return {
@@ -133,11 +131,9 @@ export default function Settings({
   function getTabContent() {
     switch (tab) {
     case SettingsTab.Account:
-      return !isGuest(user) ? <SettingsAccount user={user} userConfig={userConfig} /> : <SettingsAccountGuest />;
+      return <SettingsAccount user={user} userConfig={userConfig} />;
     case SettingsTab.Pro:
       return <SettingsPro stripeCustomerPortalLink={stripeCustomerPortalLink} stripePaymentLink={stripePaymentLink} stripePaymentYearlyLink={stripePaymentYearlyLink} />;
-    case SettingsTab.Danger:
-      return <SettingsDanger />;
     case SettingsTab.Notifications:
       return <SettingsNotifications />;
     default:
@@ -173,12 +169,6 @@ export default function Settings({
               </div>
             }
             value={SettingsTab.Pro}
-          />
-          <Tab
-            activeTab={tab}
-            className='border border-red-500'
-            label='Danger Zone'
-            value={SettingsTab.Danger}
           />
         </div>
         <div>

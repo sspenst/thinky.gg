@@ -17,7 +17,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 /* istanbul ignore next */
 export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?: string}) {
   const { cache } = useSWRConfig();
-  const { mutateUser, setShouldAttemptAuth } = useContext(AppContext);
+  const { userConfig, mutateUser, setShouldAttemptAuth } = useContext(AppContext);
   const [name, setName] = useState<string>('');
   const recaptchaRef = useRef<ReCAPTCHA>(null);
   const [recaptchaToken, setRecaptchaToken] = useState<string>('');
@@ -105,9 +105,7 @@ export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?
       <button
         className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer'
         onClick={() => {
-          const tutorialCompletedAt = window.localStorage.getItem('tutorialCompletedAt') || '0';
-
-          if (tutorialCompletedAt !== '0') {
+          if (userConfig?.tutorialCompletedAt) {
             router.push('/play');
           } else {
             router.push('/tutorial');

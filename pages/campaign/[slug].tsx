@@ -3,7 +3,7 @@ import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback } from 'react';
 import Select from '../../components/cards/select';
-import formattedAuthorNote from '../../components/formatted/formattedAuthorNote';
+import FormattedAuthorNote from '../../components/formatted/formattedAuthorNote';
 import LinkInfo from '../../components/formatted/linkInfo';
 import Page from '../../components/page/page';
 import { logger } from '../../helpers/logger';
@@ -64,10 +64,17 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const enrichedCollections = await getCollections(
     {
-      matchQuery: { $match: { _id: { $in: campaign.collections.map(collection => new Types.ObjectId(collection._id)) } } },
+      matchQuery: { _id: { $in: campaign.collections.map(collection => new Types.ObjectId(collection._id)) } },
+      populateLevelData: false,
       reqUser: reqUser,
     },
   );
+
+  // ensure that enrichedCollections is sorted in the same order as collections
+  enrichedCollections.sort((a, b) => {
+    return campaign.collections.findIndex(collection => collection._id.toString() === a._id.toString()) -
+      campaign.collections.findIndex(collection => collection._id.toString() === b._id.toString());
+  });
 
   return {
     props: {
@@ -105,12 +112,8 @@ export default function CampaignPage({ campaign, enrichedCollections }: Campaign
           {campaign.name}
         </h1>
         {!campaign.authorNote ? null :
-          <div className='p-2'
-            style={{
-              textAlign: 'center',
-            }}
-          >
-            {formattedAuthorNote(campaign.authorNote)}
+          <div className='p-2 text-center'>
+            <FormattedAuthorNote authorNote={campaign.authorNote} />
           </div>
         }
         <Select options={getOptions()} prefetch={false} />

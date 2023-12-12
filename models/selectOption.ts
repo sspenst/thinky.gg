@@ -6,12 +6,14 @@ interface SelectOption {
   disabled?: boolean;
   height?: number;
   hideDifficulty?: boolean;
+  hideStats?: boolean;
   href?: string;
   id: string;
   level?: EnrichedLevel | undefined;
   onClick?: () => void;
   stats?: SelectOptionStats | undefined;
-  text: string | JSX.Element;
+  searchLabel: string; // text to search on, since text field is a react node with private/public lock stuff
+  text: React.ReactNode;
   width?: number;
 }
 

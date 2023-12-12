@@ -307,6 +307,14 @@ body {
   background-color: var(--bg-color-4);
 }
 
+.audio-bar-button {
+  background-color: var(--bg-color-2);
+}
+
+.audio-bar-button:enabled:hover {
+  background-color: var(--bg-color-4);
+}
+
 .glow {
   animation: glow 1s ease-in-out infinite alternate;
   -webkit-animation: glow 1s ease-in-out infinite alternate;
@@ -495,6 +503,46 @@ body {
   background-color: var(--bg-color-3);
 }
 
+.hover-bg-2:hover {
+  background-color: var(--bg-color-2);
+}
+
+.hover-bg-3:hover {
+  background-color: var(--bg-color-3);
+}
+
+.hover-bg-4:hover {
+  background-color: var(--bg-color-4);
+}
+
+.bg-1 {
+  background-color: var(--bg-color);
+}
+
+.bg-2 {
+  background-color: var(--bg-color-2);
+}
+
+.bg-3 {
+  background-color: var(--bg-color-3);
+}
+
+.bg-4 {
+  background-color: var(--bg-color-4);
+}
+
+.border-color-2 {
+  border-color: var(--bg-color-2);
+}
+
+.border-color-3 {
+  border-color: var(--bg-color-3);
+}
+
+.border-color-4 {
+  border-color: var(--bg-color-4);
+}
+
 .gray {
   color: var(--color-gray);
 }
@@ -505,4 +553,18 @@ body {
 
 [data-theme="theme-light"] {
   color-scheme: light;
+}
+
+/**
+ * ScreenSize.XL is when the desktop view displays on the level page
+ * assume anything under this could be a mobile device
+ */
+@media (min-width: 1280px) {
+  .select-card-button {
+    display: none;
+  }
+
+  .select-card:hover .select-card-button {
+    display: block;
+  }
 }

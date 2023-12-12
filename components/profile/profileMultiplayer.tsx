@@ -1,7 +1,7 @@
 import useSWRHelper from '@root/hooks/useSWRHelper';
+import { MultiplayerMatchType } from '@root/models/constants/multiplayer';
 import MultiplayerMatch from '@root/models/db/multiplayerMatch';
 import User, { UserWithMultiplayerProfile } from '@root/models/db/user';
-import { MultiplayerMatchType } from '@root/models/MultiplayerEnums';
 import Link from 'next/link';
 import React, { useState } from 'react';
 import FilterButton from '../buttons/filterButton';
@@ -69,7 +69,6 @@ export default function ProfileMultiplayer({ user }: ProfileMultiplayerProps) {
             key={game._id.toString()}
           />
         ))}
-
         <div className='flex flex-row gap-4 text-center justify-center items-center'>
           <button
             className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
@@ -81,7 +80,6 @@ export default function ProfileMultiplayer({ user }: ProfileMultiplayerProps) {
           >
               Prev
           </button>
-
           <button
             className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
             id='nextPage'
@@ -138,7 +136,6 @@ export default function ProfileMultiplayer({ user }: ProfileMultiplayerProps) {
             type={MultiplayerMatchType.RushClassical}
           />
         </div>
-
         <div className='flex flex-row gap-2 text-center justify-center items-center'>
           <input type='checkbox' checked={rated} onChange={() => {
             setPage(0);

@@ -1,8 +1,8 @@
 import { MultiplayerMatchHistoryFilters } from '@root/components/profile/profileMultiplayer';
 import { ValidCommaSeparated, ValidEnum, ValidNumber, ValidObjectId, ValidType } from '@root/helpers/apiWrapper';
 import withAuth, { NextApiRequestWithAuth } from '@root/lib/withAuth';
+import { MultiplayerMatchState } from '@root/models/constants/multiplayer';
 import { MultiplayerMatchModel, MultiplayerProfileModel, UserModel } from '@root/models/mongoose';
-import { MultiplayerMatchState } from '@root/models/MultiplayerEnums';
 import { enrichMultiplayerMatch } from '@root/models/schemas/multiplayerMatchSchema';
 import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import { Types } from 'mongoose';

@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import { Types } from 'mongoose';
 import User from './user';
 
@@ -15,9 +16,11 @@ interface Level {
   calc_reviews_score_laplace: number;
   calc_stats_players_beaten: number;
   data: string;
+  gameId: GameId;
   height: number;
   isDeleted: boolean;
   isDraft: boolean;
+  isRanked: boolean;
   leastMoves: number;
   name: string;
   slug: string;

@@ -250,6 +250,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
               return 'editor-selected';
             }
           }}
+          id='editor-selection'
           level={{
             data: allTiles,
             height: 2,
@@ -279,6 +280,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
             new Control('btn-publish', () => setIsPublishLevelOpen(true), <>Publish</>, isDirty || level.leastMoves === 0),
           ]),
         ]}
+        id={level._id?.toString() ?? 'new'}
         level={level}
         onClick={onClick}
       />

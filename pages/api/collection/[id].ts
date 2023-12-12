@@ -1,4 +1,6 @@
+import isPro from '@root/helpers/isPro';
 import { logger } from '@root/helpers/logger';
+import { CollectionType } from '@root/models/constants/collection';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidObjectId, ValidObjectIdArray, ValidType } from '../../../helpers/apiWrapper';
@@ -6,27 +8,23 @@ import { generateCollectionSlug } from '../../../helpers/generateSlug';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
 import { CollectionModel } from '../../../models/mongoose';
-import { getCollection } from '../collection-by-id/[id]';
 
 type UpdateLevelParams = {
   authorNote?: string,
+  isPrivate?: boolean,
   levels?: (string | Types.ObjectId)[],
   name?: string,
   slug?: string,
 }
 
 export default withAuth({
-  GET: {
-    query: {
-      id: ValidObjectId(),
-    }
-  },
   PUT: {
     query: {
       id: ValidObjectId(),
     },
     body: {
       authorNote: ValidType('string', false),
+      isPrivate: ValidType('boolean', false),
       levels: ValidObjectIdArray(false),
       name: ValidType('string', false),
     },
@@ -37,45 +35,51 @@ export default withAuth({
     }
   }
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-  if (req.method === 'GET') {
+  if (req.method === 'PUT') {
     const { id } = req.query;
-
-    const collection = await getCollection({
-      matchQuery: {
-        $match: {
-          _id: new Types.ObjectId(id as string),
-          userId: req.user._id,
-        }
-      }, reqUser: req.user,
-      includeDraft: true
-    });
-
-    if (!collection) {
-      return res.status(404).json({
-        error: 'Error finding Collection',
-      });
-    }
-
-    return res.status(200).json(collection);
-  } else if (req.method === 'PUT') {
-    const { id } = req.query;
-    const { authorNote, name, levels } = req.body as UpdateLevelParams;
+    const { authorNote, isPrivate, name, levels } = req.body as UpdateLevelParams;
+    const setIsPrivate = isPro(req.user) ? !!isPrivate : false;
 
     if (!authorNote && !name && !levels) {
-      res.status(400).json({ error: 'Missing required fields' });
-
-      return;
+      return res.status(400).json({ error: 'Missing required fields' });
     }
 
     const session = await mongoose.startSession();
     let collection: Collection | null = null;
+    let errorCode = 500, errorMessage = 'Error updating collection';
 
     try {
       await session.withTransaction(async () => {
-        const setObj: UpdateLevelParams = {};
+        const collectionCurrent = await CollectionModel.findById(id, { userId: 1, type: 1 }, { session: session });
 
-        if (authorNote) {
+        if (!collectionCurrent) {
+          errorCode = 404;
+          errorMessage = 'Collection not found';
+          throw new Error(errorMessage);
+        }
+
+        if (collectionCurrent.userId.toString() !== req.userId) {
+          errorCode = 401;
+          errorMessage = 'Not authorized to update this Collection';
+          throw new Error(errorMessage);
+        }
+
+        if (collectionCurrent.type === CollectionType.PlayLater) {
+          errorCode = 400;
+          errorMessage = 'Cannot update Play Later collection';
+          throw new Error(errorMessage);
+        }
+
+        const setObj: UpdateLevelParams = {
+          isPrivate: setIsPrivate,
+        };
+
+        if (authorNote !== undefined) {
           setObj.authorNote = authorNote.trim();
+        }
+
+        if (levels) {
+          setObj.levels = (levels as string[]).map(i => new Types.ObjectId(i));
         }
 
         if (name) {
@@ -83,10 +87,12 @@ export default withAuth({
 
           setObj.name = trimmedName;
           setObj.slug = await generateCollectionSlug(req.user.name, trimmedName, id as string, { session: session });
-        }
 
-        if (levels) {
-          setObj.levels = (levels as string[]).map(i => new Types.ObjectId(i));
+          if (setObj.slug.endsWith('/play-later')) {
+            errorCode = 400;
+            errorMessage = 'This uses a reserved word (play later). Please use another name for this collection.';
+            throw new Error(errorMessage);
+          }
         }
 
         collection = await CollectionModel.findOneAndUpdate({
@@ -106,11 +112,7 @@ export default withAuth({
       logger.error(err);
       session.endSession();
 
-      return res.status(500).json({ error: 'Error creating collection' });
-    }
-
-    if (!collection) {
-      return res.status(401).json({ error: 'User is not authorized to perform this action' });
+      return res.status(errorCode).json({ error: errorMessage });
     }
 
     return res.status(200).json(collection);

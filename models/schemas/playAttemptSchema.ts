@@ -1,10 +1,11 @@
+import { GameId } from '@root/constants/GameId';
 import mongoose from 'mongoose';
 import PlayAttempt from '../db/playAttempt';
 
 export enum AttemptContext {
-  UNBEATEN = 0,
-  JUST_BEATEN = 1,
-  BEATEN = 2,
+  UNSOLVED = 0,
+  JUST_SOLVED = 1,
+  SOLVED = 2,
 }
 
 const PlayAttemptSchema = new mongoose.Schema<PlayAttempt>({
@@ -20,6 +21,11 @@ const PlayAttemptSchema = new mongoose.Schema<PlayAttempt>({
   },
   endTime: {
     type: Number,
+    required: true,
+  },
+  gameId: {
+    type: String,
+    enum: GameId,
     required: true,
   },
   isDeleted: {

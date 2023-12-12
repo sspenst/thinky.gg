@@ -1,9 +1,9 @@
 enum StatFilter {
   All = 'all',
-  HideWon = 'hideWon',
-  ShowWon = 'showWon',
-  ShowInProgress = 'onlyAttempted',
-  ShowUnattempted = 'showUnattempted',
+  HideSolved = 'hideSolved',
+  Solved = 'solved',
+  InProgress = 'inProgress',
+  Unattempted = 'unattempted',
 }
 
 export default StatFilter;

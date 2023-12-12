@@ -7,6 +7,7 @@ import { GameState } from '@root/helpers/gameStateHelpers';
 import classNames from 'classnames';
 import { Types } from 'mongoose';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { AppContext } from '../../contexts/appContext';
 import { TimerUtil } from '../../helpers/getTs';
@@ -61,6 +62,7 @@ export default function Tutorial() {
     } as Level;
   }
 
+  const router = useRouter();
   const globalTimeout = useRef<NodeJS.Timeout | null>(null);
   const [isNextButtonDisabled, setIsNextButtonDisabled] = useState(false);
   const [isPrevButtonDisabled, setIsPrevButtonDisabled] = useState(false);
@@ -530,7 +532,7 @@ export default function Tutorial() {
               }}>
                 Now <Link href='/signup' className='font-bold text-blue-500 hover:text-blue-400'>sign up</Link> for free to explore the world of Pathology!
               </div>
-              <div className='text-md fadeIn' style={{
+              <div className='fadeIn' style={{
                 pointerEvents: 'all',
                 animationDelay: '2.5s'
               }}>
@@ -662,16 +664,22 @@ export default function Tutorial() {
     controls.push(isLoggedIn ?
       new Control(
         'control-campaign',
-        () => {return;},
-        <Link href='/play'>Campaign</Link>,
+        () => {
+          router.push('/play');
+        },
+        <>Campaign</>,
         false,
         true,
       )
       :
       new Control(
         'control-sign-up',
-        () => {return;},
-        <Link href='/signup'>Sign up</Link>,
+        () => {
+          router.push('/signup');
+
+          return;
+        },
+        <>Sign up</>,
         false,
         true,
       )
@@ -696,6 +704,7 @@ export default function Tutorial() {
           <div key={'div-' + tutorialStep.key} className={classNames('grow flex flex-col', tutorialStep.gameClasses)}>
             <BasicLayout
               controls={controls}
+              id={'tutorial-' + tutorialStep.key}
               key={tutorialStep.key}
               level={tutorialStep.level}
             />
@@ -708,7 +717,6 @@ export default function Tutorial() {
               disablePlayAttempts={true}
               disableStats={true}
               extraControls={controls}
-              hideSidebar={true}
               key={tutorialStep.key}
               level={tutorialStep.level}
               onMove={(gameState: GameState) => {

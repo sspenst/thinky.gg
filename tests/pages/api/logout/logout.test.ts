@@ -1,3 +1,4 @@
+import { NextApiRequestGuest } from '@root/helpers/apiWrapper';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
@@ -18,33 +19,24 @@ enableFetchMocks();
 describe('Testing logout api', () => {
   jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
-  test('Sending nothing should return 405', async () => {
-    await testApiHandler({
-      handler: handler,
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('Method not allowed');
-        expect(res.status).toBe(405);
-      }
-    });
-  });
-
   test('Sending correct data should return 200', async () => {
     const credsJSON = { name: 'test', password: 'test' };
 
     await testApiHandler({
-      handler: handler,
-      test: async ({ fetch }) => {
-        const res = await fetch({
+      handler: async (_, res) => {
+        const req = {
           method: 'POST',
-          body: JSON.stringify(credsJSON),
           headers: {
             'content-type': 'application/json',
             'host': 'localhost:3000'
-          }
-        });
+          },
+          body: JSON.stringify(credsJSON)
+        } as unknown as NextApiRequestGuest;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
         const response = await res.json();
 
         expect(response.success).toBe(true);

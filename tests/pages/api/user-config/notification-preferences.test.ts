@@ -1,6 +1,6 @@
-import AchievementType from '@root/constants/achievements/achievementType';
+import { GameId } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
-import { createNewAchievement, createNewFollowerNotification, createNewReviewOnYourLevelNotification } from '@root/helpers/notificationHelper';
+import { createNewFollowerNotification, createNewReviewOnYourLevelNotification } from '@root/helpers/notificationHelper';
 import { processQueueMessages } from '@root/pages/api/internal-jobs/worker';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
@@ -49,11 +49,8 @@ jest.mock('nodemailer', () => ({
 }));
 
 describe('account settings notification preferences', () => {
-  const emailNotificationList = Object.values(NotificationType);
-  const pushNotificationList = Object.values(NotificationType);
-
-  // remove new follower notification from only emails
-  emailNotificationList.splice(emailNotificationList.indexOf(NotificationType.NEW_FOLLOWER), 1);
+  const disallowedEmailNotifications = [] as NotificationType[];
+  const disallowedPushNotifications = [NotificationType.NEW_FOLLOWER];
 
   // enable all notifications
   test('enable all notifications except for new follower', async () => {
@@ -62,8 +59,8 @@ describe('account settings notification preferences', () => {
         const req: NextApiRequestWithAuth = {
           ...defaultObj,
           body: {
-            emailNotificationsList: emailNotificationList,
-            pushNotificationsList: pushNotificationList,
+            disallowedEmailNotifications: disallowedEmailNotifications,
+            disallowedPushNotifications: disallowedPushNotifications,
             emailDigestSetting: EmailDigestSettingTypes.DAILY,
           }
         } as unknown as NextApiRequestWithAuth;
@@ -78,13 +75,11 @@ describe('account settings notification preferences', () => {
         expect(response.updated).toBe(true);
 
         // check the db
-        const config = await UserConfigModel.findOne<UserConfig>({ userId: TestId.USER }, {}, { lean: true }) as UserConfig;
+        const config = await UserConfigModel.findOne({ userId: TestId.USER }).lean<UserConfig>() as UserConfig;
 
-        expect(config.pushNotificationsList).toEqual(pushNotificationList);
-        expect(config.emailNotificationsList).toEqual(emailNotificationList);
-        // make sure it does not have new follower
-        expect(config.emailNotificationsList).not.toContain(NotificationType.NEW_FOLLOWER);
-        expect(config.pushNotificationsList).toContain(NotificationType.NEW_FOLLOWER);
+        expect(config.gameId).toBe(GameId.PATHOLOGY);
+        expect(config.disallowedEmailNotifications).toEqual(disallowedEmailNotifications);
+        expect(config.disallowedPushNotifications).toEqual(disallowedPushNotifications);
       },
     });
   });
@@ -100,7 +95,7 @@ describe('account settings notification preferences', () => {
     originalSendPush.sendPushNotification = jest.fn().mockImplementation(() => {
       // do nothing
     });
-    await createNewReviewOnYourLevelNotification(TestId.USER, TestId.USER_B, TestId.LEVEL, 'Sample review');
+    await createNewReviewOnYourLevelNotification(GameId.PATHOLOGY, new Types.ObjectId(TestId.USER), new Types.ObjectId(TestId.USER_B), TestId.LEVEL, 'Sample review');
 
     const queueProcessed = await processQueueMessages();
 
@@ -120,15 +115,15 @@ describe('account settings notification preferences', () => {
     originalSendPush.sendPushNotification = jest.fn().mockImplementation(() => {
       // do nothing
     });
-    await createNewFollowerNotification(TestId.USER_B, TestId.USER);
+    await createNewFollowerNotification(GameId.PATHOLOGY, TestId.USER_B, TestId.USER);
 
     const queueProcessed = await processQueueMessages();
 
     expect(queueProcessed).toBe('Processed 2 messages with no errors');
-    expect(originalSendEmail.sendEmailNotification).toHaveBeenCalledTimes(0); // important
-    expect(originalSendPush.sendPushNotification).toHaveBeenCalledTimes(1); // important!
+    expect(originalSendEmail.sendEmailNotification).toHaveBeenCalledTimes(1); // important
+    expect(originalSendPush.sendPushNotification).toHaveBeenCalledTimes(0); // important!
   });
-  test('create a new achievement notification', async () => {
+  test('create a new follow notification', async () => {
     // spy on sendMailRefMock.ref
 
     const originalSendEmail = jest.requireActual('@root/pages/api/internal-jobs/worker/sendEmailNotification');
@@ -140,12 +135,12 @@ describe('account settings notification preferences', () => {
     originalSendPush.sendPushNotification = jest.fn().mockImplementation(() => {
       // do nothing
     });
-    await createNewAchievement(AchievementType.SOLVED_LEVELS_100, new Types.ObjectId(TestId.USER_GUEST), false );
+    await createNewFollowerNotification(GameId.PATHOLOGY, TestId.USER_B, TestId.USER_GUEST);
 
     const queueProcessed = await processQueueMessages();
 
     expect(queueProcessed).toBe('Processed 2 messages with no errors');
     expect(originalSendEmail.sendEmailNotification).toHaveBeenCalledTimes(0); // important
-    expect(originalSendPush.sendPushNotification).toHaveBeenCalledTimes(0); // important!
+    expect(originalSendPush.sendPushNotification).toHaveBeenCalledTimes(1); // important!
   });
 });

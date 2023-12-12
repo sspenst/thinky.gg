@@ -1,5 +1,6 @@
+import { GameId } from '@root/constants/GameId';
 import { Types } from 'mongoose';
-import { MatchLog, MultiplayerMatchType } from '../MultiplayerEnums';
+import { MatchLog, MultiplayerMatchType } from '../constants/multiplayer';
 import Level from './level';
 import User, { UserWithMultiplayerProfile } from './user';
 
@@ -8,6 +9,7 @@ interface MultiplayerMatch {
   createdAt: Date;
   createdBy: User;
   endTime: Date;
+  gameId: GameId;
   gameTable?: {
     [key: string]: Level[];
   };

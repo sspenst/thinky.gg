@@ -1,6 +1,7 @@
 import User from '@root/models/db/user';
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
+import ReactTextareaAutosize from 'react-textarea-autosize';
 import UploadImage from './uploadImage';
 
 interface SettingsGeneralProps {
@@ -9,6 +10,8 @@ interface SettingsGeneralProps {
 
 export default function SettingsGeneral({ user }: SettingsGeneralProps) {
   const [bio, setBio] = useState(user.bio ?? '');
+  const [initialBio, setInitialBio] = useState(user.bio ?? '');
+  const [updating, setUpdating] = useState(false);
 
   function updateUser(
     body: string,
@@ -16,6 +19,7 @@ export default function SettingsGeneral({ user }: SettingsGeneralProps) {
   ) {
     toast.dismiss();
     toast.loading(`Updating ${property}...`);
+    setUpdating(true);
 
     fetch('/api/user', {
       method: 'PUT',
@@ -34,10 +38,14 @@ export default function SettingsGeneral({ user }: SettingsGeneralProps) {
         toast.dismiss();
         toast.success(`Updated ${property}`);
       }
+
+      setInitialBio(bio);
     }).catch(err => {
       console.error(err);
       toast.dismiss();
       toast.error(`Error updating ${property}`);
+    }).finally(() => {
+      setUpdating(false);
     });
   }
 
@@ -54,22 +62,30 @@ export default function SettingsGeneral({ user }: SettingsGeneralProps) {
 
   return (
     <div className='flex flex-col justify-center items-center gap-6'>
+      <h2 className='font-bold text-2xl text-center'>General</h2>
       <UploadImage user={user} />
-      <form onSubmit={updateBio}>
-        <label className='block font-bold mb-2' htmlFor='bio'>
+      <form className='flex flex-col gap-3' onSubmit={updateBio}>
+        <label className='font-bold' htmlFor='bio'>
           About me
         </label>
-        <textarea
-          className='shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline'
+        <ReactTextareaAutosize
+          className='bg-inherit block py-1 -mt-2 w-80 max-w-full border-b border-neutral-500 disabled:text-neutral-500 transition resize-none placeholder:text-neutral-500 focus:outline-0 rounded-none focus:border-black focus:dark:border-white'
+          disabled={updating}
           id='bio'
-          name='bio'
-          onChange={e => setBio(e.target.value)}
-          placeholder='Couple sentences about you?'
           maxLength={256}
-          rows={4}
+          onChange={(e) => setBio(e.currentTarget.value)}
+          placeholder='Couple sentences about you?'
           value={bio}
         />
-        <button className='italic underline' type='submit'>Update</button>
+        {bio !== initialBio &&
+          <button
+            className='bg-blue-500 enabled:hover:bg-blue-700 text-white font-medium px-3 py-2 rounded-full text-sm disabled:opacity-50 w-fit'
+            disabled={updating}
+            type='submit'
+          >
+            Update
+          </button>
+        }
       </form>
     </div>
   );

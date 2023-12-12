@@ -1,7 +1,7 @@
 import { AppContext } from '@root/contexts/appContext';
 import { multiplayerMatchTypeToText } from '@root/helpers/multiplayerHelperFunctions';
+import { MatchAction, MatchLogDataGameRecap, MultiplayerMatchState } from '@root/models/constants/multiplayer';
 import MultiplayerMatch from '@root/models/db/multiplayerMatch';
-import { MatchAction, MatchLogDataGameRecap, MultiplayerMatchState } from '@root/models/MultiplayerEnums';
 import classNames from 'classnames';
 import Link from 'next/link';
 import React, { useContext, useEffect } from 'react';

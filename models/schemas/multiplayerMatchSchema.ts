@@ -1,9 +1,7 @@
+import { GameId } from '@root/constants/GameId';
 import { randomRotateLevelDataViaMatchHash } from '@root/helpers/validateSolution';
 import mongoose, { ObjectId } from 'mongoose';
 import cleanUser from '../../lib/cleanUser';
-import Level from '../db/level';
-import MultiplayerMatch from '../db/multiplayerMatch';
-import User from '../db/user';
 import {
   MatchAction,
   MatchLog,
@@ -13,7 +11,10 @@ import {
   MatchLogGeneric,
   MultiplayerMatchState,
   MultiplayerMatchType,
-} from '../MultiplayerEnums';
+} from '../constants/multiplayer';
+import Level from '../db/level';
+import MultiplayerMatch from '../db/multiplayerMatch';
+import User from '../db/user';
 
 export const SKIP_MATCH_LEVEL_ID = '000000000000000000000000';
 
@@ -34,6 +35,20 @@ const MultiplayerMatchSchema = new mongoose.Schema<MultiplayerMatch>(
     },
     endTime: {
       type: Date,
+    },
+    gameId: {
+      type: String,
+      enum: GameId,
+      required: true,
+    },
+    gameTable: {
+      type: Map,
+      of: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Level',
+        },
+      ],
     },
     levels: [
       {
@@ -73,20 +88,6 @@ const MultiplayerMatchSchema = new mongoose.Schema<MultiplayerMatch>(
       type: Boolean,
       default: true,
     },
-    type: {
-      type: String,
-      enum: MultiplayerMatchType,
-      required: true,
-    },
-    gameTable: {
-      type: Map,
-      of: [
-        {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'Level',
-        },
-      ],
-    },
     startTime: {
       type: Date,
     },
@@ -95,13 +96,16 @@ const MultiplayerMatchSchema = new mongoose.Schema<MultiplayerMatch>(
       enum: MultiplayerMatchState,
       required: true,
     },
-    winners:
-      {
-        type: [mongoose.Schema.Types.ObjectId],
-        ref: 'User',
-        default: [],
-      },
-
+    type: {
+      type: String,
+      enum: MultiplayerMatchType,
+      required: true,
+    },
+    winners: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: 'User',
+      default: [],
+    },
   },
   {
     timestamps: true,

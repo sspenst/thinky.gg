@@ -29,7 +29,7 @@ export default withAuth({
 
   const { id: levelId } = req.query as { id: string };
   const checkpointKey = getCheckpointKey(levelId, req.userId);
-  const level = await LevelModel.findById(levelId);
+  const level = await LevelModel.findById(levelId, { gameId: 1, isDraft: 1 });
 
   if (!level) {
     return res.status(404).json({
@@ -64,7 +64,10 @@ export default withAuth({
     /** findOneAndUpdate upsert this value... We need to be able set the specific index of the array the value of directions */
     const checkpoint = await KeyValueModel.findOneAndUpdate(
       { key: checkpointKey },
-      { $set: { [`value.${index}`]: directions } },
+      {
+        $set: { [`value.${index}`]: directions },
+        gameId: level.gameId,
+      },
       { upsert: true, new: true }
     );
 
@@ -75,7 +78,10 @@ export default withAuth({
     /** findOneAndUpdate upsert this value... We need to be able set the specific index of the array the value of directions */
     const checkpoint = await KeyValueModel.findOneAndUpdate(
       { key: checkpointKey },
-      { $unset: { [`value.${index}`]: '' } },
+      {
+        $unset: { [`value.${index}`]: '' },
+        gameId: level.gameId,
+      },
       { upsert: true, new: true }
     );
 

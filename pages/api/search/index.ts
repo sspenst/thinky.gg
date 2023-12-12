@@ -132,16 +132,19 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
     };
   }
 
+  if (query.isRanked === 'true') {
+    searchObj['isRanked'] = true;
+  }
+
   let searchAuthor: User | null = null;
 
   if (query.searchAuthor && query.searchAuthor.length > 0) {
     const searchAuthorStr = cleanInput(query.searchAuthor);
 
-    searchAuthor = await UserModel.findOne<User>(
+    searchAuthor = await UserModel.findOne(
       { 'name': searchAuthorStr },
       'name hideStatus last_visited_at avatarUpdatedAt',
-      { lean: true }
-    );
+    ).lean<User>();
 
     cleanUser(searchAuthor);
 
@@ -213,7 +216,7 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
       searchObj['calc_reviews_score_avg'] = { $gte: 0 };
     } else if (query.sortBy === 'total_reviews') {
       sortObj.push(['calc_reviews_count', sortDirection]);
-    } else if (query.sortBy === 'playersBeaten') {
+    } else if (query.sortBy === 'solves') {
       sortObj.push(['calc_stats_players_beaten', sortDirection]);
     } else if (query.sortBy === 'calcDifficultyEstimate') {
       if (query.difficultyFilter === 'Pending') {
@@ -250,7 +253,7 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
     },
   }];
 
-  if (query.statFilter === StatFilter.HideWon) {
+  if (query.statFilter === StatFilter.HideSolved) {
     statLookupAndMatchStage.push({
       $match: {
         $or: [
@@ -259,15 +262,15 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
         ],
       },
     });
-  } else if (query.statFilter === StatFilter.ShowWon) {
+  } else if (query.statFilter === StatFilter.Solved) {
     statLookupAndMatchStage.push({
       $match: { 'stat.complete': true },
     });
-  } else if (query.statFilter === StatFilter.ShowInProgress) {
+  } else if (query.statFilter === StatFilter.InProgress) {
     statLookupAndMatchStage.push({
       $match: { 'stat.complete': false },
     });
-  } else if (query.statFilter === StatFilter.ShowUnattempted) {
+  } else if (query.statFilter === StatFilter.Unattempted) {
     projection['calc_playattempts_unique_users'] = 1;
 
     statLookupAndMatchStage.push(
@@ -287,6 +290,10 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
           ],
         },
       },
+      {
+        $unset: 'calc_playattempts_unique_users',
+
+      }
     );
   } else {
     statLookupAndMatchStage = [{ $unwind: '$_id' }];
@@ -385,7 +392,7 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
               { $skip: skip },
               { $limit: limit },
               ...(lookupUserBeforeSort ? [] : lookupUserStage),
-              // note this last getEnrichLevelsPipeline is "technically a bit wasteful" if they select Hide Won or Show In Progress
+              // note this last getEnrichLevelsPipeline is "technically a bit wasteful" if they select Hide Solved or In Progress
               // Because technically the above statLookupAndMatchStage will have this data already...
               // But since the results are limited by limit, this is constant time and not a big deal to do the lookup again...
               ...getEnrichLevelsPipelineSteps(new Types.ObjectId(userId) as unknown as User, '_id', '') as PipelineStage.Lookup[],
@@ -397,9 +404,9 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let statMatchQuery: FilterQuery<any> = {};
 
-      if (query.statFilter === StatFilter.HideWon) {
+      if (query.statFilter === StatFilter.HideSolved) {
         statMatchQuery = { complete: false };
-      } else if (query.statFilter === StatFilter.ShowWon) {
+      } else if (query.statFilter === StatFilter.Solved) {
         statMatchQuery = { complete: true };
       }
 
@@ -459,7 +466,7 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
               { $skip: skip },
               { $limit: limit },
               ...(lookupUserBeforeSort ? [] : lookupUserStage),
-              // note this last getEnrichLevelsPipeline is "technically a bit wasteful" if they select Hide Won or Show In Progress
+              // note this last getEnrichLevelsPipeline is "technically a bit wasteful" if they select Hide Solved or In Progress
               // Because technically the above statLookupAndMatchStage will have this data already...
               // But since the results are limited by limit, this is constant time and not a big deal to do the lookup again...
               ...getEnrichLevelsPipelineSteps(new Types.ObjectId(userId) as unknown as User, '_id', '') as PipelineStage.Lookup[],
@@ -489,7 +496,7 @@ export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiR
   await dbConnect();
   const token = req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, req) : null;
-  const query = await doQuery(req.query as SearchQuery, reqUser);
+  const query = await doQuery(req.query as SearchQuery, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, ...{ data: 1, width: 1, height: 1 } });
 
   if (!query) {
     return res.status(500).json({

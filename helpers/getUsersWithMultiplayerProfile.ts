@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import dbConnect from '@root/lib/dbConnect';
 import { FilterQuery, Types } from 'mongoose';
 import cleanUser from '../lib/cleanUser';
@@ -5,15 +6,13 @@ import { UserWithMultiplayerProfile } from '../models/db/user';
 import { MultiplayerProfileModel, UserModel } from '../models/mongoose';
 import { USER_DEFAULT_PROJECTION } from '../models/schemas/userSchema';
 
+// TODO: pass in gameId here?
 export async function getUsersWithMultiplayerProfileFromIds(ids: Types.ObjectId[]) {
-  return getUsersWithMultiplayerProfile({
-    _id: {
-      $in: ids
-    }
-  }, {});
+  return getUsersWithMultiplayerProfile(GameId.PATHOLOGY, { _id: { $in: ids } }, {});
 }
 
 export async function getUsersWithMultiplayerProfile(
+  gameId: GameId,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   match: FilterQuery<any>,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -32,6 +31,13 @@ export async function getUsersWithMultiplayerProfile(
         localField: '_id',
         foreignField: 'userId',
         as: 'multiplayerProfile',
+        pipeline: [
+          {
+            $match: {
+              gameId: gameId,
+            },
+          },
+        ],
       },
     },
     {

@@ -7,7 +7,7 @@ import Header from '../header';
 import Footer from './footer';
 
 interface PageProps {
-  children: JSX.Element;
+  children: React.ReactNode;
   folders?: LinkInfo[];
   hideFooter?: boolean;
   isFullScreen?: boolean;

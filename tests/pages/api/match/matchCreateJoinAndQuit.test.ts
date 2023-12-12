@@ -1,10 +1,11 @@
+import { GameId } from '@root/constants/GameId';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
+import { MatchAction, MultiplayerMatchState, MultiplayerMatchType } from '../../../../models/constants/multiplayer';
 import MultiplayerMatch from '../../../../models/db/multiplayerMatch';
-import { MatchAction, MultiplayerMatchState, MultiplayerMatchType } from '../../../../models/MultiplayerEnums';
 import handler from '../../../../pages/api/match/[matchId]';
 import handlerCreate from '../../../../pages/api/match/index';
 
@@ -23,6 +24,7 @@ afterEach(() => {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const defaultReq: any = {
   method: 'PUT',
+  gameId: GameId.PATHOLOGY,
   cookies: {
     token: getTokenCookieValue(TestId.USER),
   },
@@ -97,7 +99,7 @@ describe('matchCreateJoinAndQuit', () => {
         expect(response.players).toHaveLength(2);
 
         for (const player of response.players) {
-          expect(Object.keys(player).sort()).toEqual(['__v', '_id', 'calc_levels_created_count', 'calc_records', 'chapterUnlocked', 'last_visited_at', 'name', 'roles', 'score', 'ts'].sort());
+          expect(Object.keys(player).sort()).toEqual(['__v', '_id', 'calcRankedSolves', 'calc_levels_created_count', 'calc_records', 'chapterUnlocked', 'last_visited_at', 'name', 'roles', 'score', 'ts'].sort());
         }
 
         expect(response.gameTable).toBeUndefined();

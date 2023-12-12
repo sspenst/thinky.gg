@@ -72,7 +72,21 @@ function NotificationIcon({ notification }: { notification: Notification }) {
 
 function NotificationMessage({ notification, onMarkAsRead }: NotificationMessageProps) {
   switch (notification.type) {
-  case NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT:
+  case NotificationType.ADMIN_MESSAGE: {
+    if (!notification.message) {
+      return null;
+    }
+
+    const payload = JSON.parse(notification.message);
+
+    return (
+      <Link className='hover:underline' href={payload.href} onClick={onMarkAsRead}>
+        {payload.message}
+      </Link>
+    );
+  }
+
+  case NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_SOLVED:
     return (<>
       {'set a new record: '}
       <FormattedLevelLink
@@ -149,6 +163,16 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
 
     return (<>
       replied &quot;{shortenedText}&quot; to your <Link onClick={onMarkAsRead} className='underline' href={getProfileSlug(notification.target as User) + '?commentId=' + comment?._id}>message</Link> on {notification.target.name}&apos;s profile.
+    </>);
+  }
+
+  case NotificationType.UPGRADED_TO_PRO: {
+    const isGift = notification.source._id !== notification.target._id;
+
+    return (<>
+      <Image alt='logo' src='/pro.svg' width='24' height='24' className='h-4 w-4' />
+      {isGift ? 'You received a gift of Pro!' : 'You just upgraded to Pro!'}
+      <Link href='/settings/pro' className='underline' onClick={onMarkAsRead}>Check it out!</Link>
     </>);
   }
 

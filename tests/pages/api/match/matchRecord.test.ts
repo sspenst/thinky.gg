@@ -1,9 +1,10 @@
+import { GameId } from '@root/constants/GameId';
 import TestId from '@root/constants/testId';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { getTokenCookieValue } from '@root/lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '@root/lib/withAuth';
+import { MultiplayerMatchState, MultiplayerMatchType } from '@root/models/constants/multiplayer';
 import { MultiplayerMatchModel } from '@root/models/mongoose';
-import { MultiplayerMatchState, MultiplayerMatchType } from '@root/models/MultiplayerEnums';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import mongoose, { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -16,8 +17,9 @@ beforeAll(async () => {
   await dbConnect();
 
   await Promise.all([MultiplayerMatchModel.create({
-    matchId: 'abc',
     createdBy: TestId.USER,
+    gameId: GameId.PATHOLOGY,
+    matchId: 'abc',
     players: [new Types.ObjectId(TestId.USER), new Types.ObjectId(TestId.USER_B)],
     private: false,
     rated: true,
@@ -26,8 +28,9 @@ beforeAll(async () => {
     winners: [new mongoose.Types.ObjectId(TestId.USER)],
   }),
   MultiplayerMatchModel.create({
-    matchId: 'def',
     createdBy: TestId.USER_B,
+    gameId: GameId.PATHOLOGY,
+    matchId: 'def',
     players: [new Types.ObjectId(TestId.USER_B), new Types.ObjectId(TestId.USER_C)],
     private: false,
     rated: true,
@@ -36,8 +39,9 @@ beforeAll(async () => {
     winners: [new Types.ObjectId(TestId.USER_B)],
   }),
   MultiplayerMatchModel.create({
-    matchId: 'ghi',
     createdBy: TestId.USER,
+    gameId: GameId.PATHOLOGY,
+    matchId: 'ghi',
     players: [new Types.ObjectId(TestId.USER), new Types.ObjectId(TestId.USER_B)],
     private: false,
     rated: true,

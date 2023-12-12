@@ -5,7 +5,7 @@ import Level from '../models/db/level';
 import generateLevelCanvas from './generateLevelCanvas';
 
 export default async function getPngDataServer(level: Level): Promise<Buffer> {
-  let canvas = PImage.make(Dimensions.LevelCanvasWidth, Dimensions.LevelCanvasHeight, {});
+  let canvas = PImage.make(Dimensions.LevelCanvasWidth, Dimensions.LevelCanvasHeight);
 
   canvas = generateLevelCanvas(canvas, level.data) as PImage.Bitmap;
 

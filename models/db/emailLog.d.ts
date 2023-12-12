@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
 import { Types } from 'mongoose';
 import { EmailType } from '../../constants/emailDigest';
@@ -8,6 +9,7 @@ interface EmailLog {
   batchId: Types.ObjectId;
   createdAt: Date;
   error: string,
+  gameId: GameId;
   state: EmailState;
   subject: string;
   type: EmailType | NotificationType;

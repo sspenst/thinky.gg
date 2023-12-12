@@ -11,11 +11,12 @@ export default async function queueDiscordWebhook(id: string, content: string, o
   }
 
   const tokenToIdMap = {
-    [Discord.LevelsId]: process.env.DISCORD_WEBHOOK_TOKEN_LEVELS,
-    [Discord.NotifsId]: process.env.DISCORD_WEBHOOK_TOKEN_NOTIFS,
-    [Discord.GeneralId]: process.env.DISCORD_WEBHOOK_TOKEN_PATHOLOGY,
-    [Discord.DevPriv]: process.env.DISCORD_WEBHOOK_TOKEN_DEVPRIV,
+    [Discord.DevPriv]: process.env.DISCORD_WEBHOOK_TOKEN_DEV_PRIV,
+    [Discord.General]: process.env.DISCORD_WEBHOOK_TOKEN_GENERAL,
+    [Discord.Levels]: process.env.DISCORD_WEBHOOK_TOKEN_LEVELS,
     [Discord.Multiplayer]: process.env.DISCORD_WEBHOOK_TOKEN_MULTIPLAYER,
+    [Discord.NewUsers]: process.env.DISCORD_WEBHOOK_TOKEN_NEW_USERS,
+    [Discord.Notifs]: process.env.DISCORD_WEBHOOK_TOKEN_NOTIFS,
   } as Record<string, string | undefined>;
 
   const token = tokenToIdMap[id];

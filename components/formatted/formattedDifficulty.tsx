@@ -39,37 +39,37 @@ export const difficultyList: Difficulty[] = [
     value: 0,
   },
   {
-    description: 'Beginner level',
+    description: 'Beginner',
     emoji: '✏️',
     name: 'Elementary',
     value: 45,
   },
   {
-    description: 'Easy level',
+    description: 'Easy',
     emoji: '📝',
     name: 'Junior High',
     value: 120,
   },
   {
-    description: 'Intermediate level',
+    description: 'Intermediate',
     emoji: '📚',
     name: 'Highschool',
     value: 300,
   },
   {
-    description: 'Tricky level',
+    description: 'Tricky',
     emoji: '🎓',
     name: 'Bachelors',
     value: 600,
   },
   {
-    description: 'Difficult level',
+    description: 'Difficult',
     emoji: '💉',
     name: 'Masters',
     value: 1200,
   },
   {
-    description: 'Very difficult level',
+    description: 'Very difficult',
     emoji: '🔬',
     name: 'PhD',
     value: 3000,
@@ -151,9 +151,9 @@ export default function FormattedDifficulty({ difficultyEstimate, id, uniqueUser
     difficulty.description;
 
   return (
-    <div className='flex justify-center difficultyText'>
-      <div data-tooltip-id={`difficulty-${id}`} data-tooltip-content={tooltip}>
-        <span className='text-md pr-1'>{difficulty.emoji}</span>
+    <div className='flex justify-center difficultyText truncate'>
+      <div className='truncate' data-tooltip-id={`difficulty-${id}`} data-tooltip-content={tooltip}>
+        <span className='pr-1'>{difficulty.emoji}</span>
         <span className='italic pr-1' style={{
           color: color,
           textShadow: '1px 1px black',

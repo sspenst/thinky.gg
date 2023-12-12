@@ -1,15 +1,13 @@
-import { EmailDigestSettingTypes } from '@root/constants/emailDigest';
-import NotificationType from '@root/constants/notificationType';
+import { GameId } from '@root/constants/GameId';
 import Role from '@root/constants/role';
 import { generatePassword } from '@root/helpers/generatePassword';
 import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
 import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmationEmail';
 import UserConfig from '@root/models/db/userConfig';
 import mongoose, { QueryOptions, Types } from 'mongoose';
-import type { NextApiRequest, NextApiResponse } from 'next';
+import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
-import Theme from '../../../constants/theme';
-import apiWrapper, { ValidNumber, ValidType } from '../../../helpers/apiWrapper';
+import apiWrapper, { NextApiRequestGuest, ValidNumber, ValidType } from '../../../helpers/apiWrapper';
 import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import getProfileSlug from '../../../helpers/getProfileSlug';
 import { TimerUtil } from '../../../helpers/getTs';
@@ -19,38 +17,24 @@ import getTokenCookie from '../../../lib/getTokenCookie';
 import sendPasswordResetEmail from '../../../lib/sendPasswordResetEmail';
 import User from '../../../models/db/user';
 import { UserConfigModel, UserModel } from '../../../models/mongoose';
+import { getNewUserConfig } from '../user-config';
 
-async function createUser({ email, name, password, tutorialCompletedAt, roles }: {email: string, name: string, password: string, tutorialCompletedAt: number, roles: Role[]}, queryOptions: QueryOptions): Promise<[User, UserConfig]> {
+async function createUser({ gameId, email, name, password, tutorialCompletedAt, roles }: {gameId: GameId, email: string, name: string, password: string, tutorialCompletedAt: number, roles: Role[]}, queryOptions: QueryOptions): Promise<[User, UserConfig]> {
   const id = new Types.ObjectId();
-  let emailDigest = EmailDigestSettingTypes.DAILY;
-
-  if (roles.includes(Role.GUEST)) {
-    emailDigest = EmailDigestSettingTypes.NONE;
-  }
-
-  const emailConfirmationToken = getEmailConfirmationToken();
 
   const [userCreated, configCreated] = await Promise.all([
     UserModel.create([{
       _id: id,
       email: email,
+      emailConfirmationToken: getEmailConfirmationToken(),
+      emailConfirmed: false,
       name: name,
       password: password,
+      roles: roles,
       score: 0,
       ts: TimerUtil.getTs(),
-      roles: roles,
     }], queryOptions),
-    UserConfigModel.create([{
-      _id: new Types.ObjectId(),
-      theme: Theme.Modern,
-      userId: id,
-      tutorialCompletedAt: tutorialCompletedAt,
-      emailConfirmed: false,
-      emailConfirmationToken: emailConfirmationToken,
-      emailDigest: emailDigest,
-      emailNotificationsList: [NotificationType.NEW_WALL_POST, NotificationType.NEW_WALL_REPLY, NotificationType.NEW_ACHIEVEMENT],
-      pushNotificationsList: Object.values(NotificationType),
-    }], queryOptions),
+    UserConfigModel.create([getNewUserConfig(gameId, roles, tutorialCompletedAt, id)], queryOptions),
   ]);
 
   const user = userCreated[0] as User;
@@ -68,7 +52,7 @@ export default apiWrapper({ POST: {
     tutorialCompletedAt: ValidNumber(false),
     recaptchaToken: ValidType('string', false),
   },
-} }, async (req: NextApiRequest, res: NextApiResponse) => {
+} }, async (req: NextApiRequestGuest, res: NextApiResponse) => {
   const { email, name, password, tutorialCompletedAt, recaptchaToken, guest } = req.body;
 
   await dbConnect();
@@ -132,8 +116,9 @@ export default apiWrapper({ POST: {
 
   try {
     await session.withTransaction(async () => {
-      const [user, userConfig] = await createUser({
+      const [user] = await createUser({
         email: trimmedEmail,
+        gameId: req.gameId,
         name: trimmedName,
         password: passwordValue,
         tutorialCompletedAt: tutorialCompletedAt,
@@ -147,8 +132,8 @@ export default apiWrapper({ POST: {
       id = user._id;
 
       await Promise.all([
-        !guest && sendEmailConfirmationEmail(req, user, userConfig as UserConfig),
-        queueDiscordWebhook(Discord.NotifsId, `**${trimmedName}** just registered! Welcome them on their [profile](${req.headers.origin}${getProfileSlug(user)})!`, { session: session }),
+        !guest && sendEmailConfirmationEmail(req, user),
+        queueDiscordWebhook(Discord.NewUsers, `**${trimmedName}** just registered! Welcome them on their [profile](${req.headers.origin}${getProfileSlug(user)})!`, { session: session }),
       ]);
     });
     session.endSession();

@@ -1,3 +1,5 @@
+import getEmailBody from '@root/helpers/getEmailBody';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import EmailLog from '@root/models/db/emailLog';
 import { EmailLogModel } from '@root/models/mongoose';
 import { Types } from 'mongoose';
@@ -10,6 +12,7 @@ import getResetPasswordToken from './getResetPasswordToken';
 export default async function sendPasswordResetEmail(req: NextApiRequest, user: User) {
   const token = getResetPasswordToken(user);
   const url = `${req.headers.origin}/reset-password/${user._id}/${token}`;
+  const gameId = getGameIdFromReq(req);
 
   const lastSent = await EmailLogModel.findOne<EmailLog>({
     userId: user._id,
@@ -21,16 +24,23 @@ export default async function sendPasswordResetEmail(req: NextApiRequest, user: 
     const timeSinceLastSent = Date.now() - lastSentTime;
 
     // if it's been less than 2 minutes since the last email was sent, don't send another one
-    if (timeSinceLastSent < 1000 * 60 * 2) {
-      throw new Error('Please wait a couple minutes before requesting another password reset');
+    if (timeSinceLastSent < 1000 * 60) {
+      throw new Error('Please wait a minute before requesting another password reset');
     }
   }
 
   return await sendMail(
+    gameId,
     new Types.ObjectId(),
     EmailType.EMAIL_PASSWORD_RESET,
     user,
-    `Password Reset - ${user.name}`,
-    `Click here to reset your password: ${url}`,
+    `Pathology - Password Reset - ${user.name}`,
+    getEmailBody({
+      linkHref: url,
+      linkText: 'Reset Password',
+      message: 'Someone requested a password reset for your Pathology account',
+      title: 'Forgot Password',
+      user: user,
+    }),
   );
 }

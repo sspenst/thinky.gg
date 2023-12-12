@@ -11,24 +11,28 @@ const AchievementRulesReviewer: { [achievementType: string]: IAchievementInfoRev
     name: 'Legendary Reviewer',
     emoji: '👑',
     description: 'Reviewed 3000 levels',
+    discordNotification: true,
     unlocked: ({ reviewsCreated }) => reviewsCreated.length >= 3000,
   },
   [AchievementType.REVIEWED_1000_LEVELS]: {
     name: 'Master Critic',
     emoji: '🎭',
     description: 'Reviewed 1000 levels',
+    discordNotification: true,
     unlocked: ({ reviewsCreated }) => reviewsCreated.length >= 1000,
   },
   [AchievementType.REVIEWED_500_LEVELS]: {
     name: 'Critic',
     emoji: '🍿',
     description: 'Reviewed 500 levels',
+    discordNotification: true,
     unlocked: ({ reviewsCreated }) => reviewsCreated.length >= 500,
   },
   [AchievementType.REVIEWED_100_LEVELS]: {
     name: 'Reviewer',
     emoji: '📝',
     description: 'Reviewed 100 levels',
+    discordNotification: true,
     unlocked: ({ reviewsCreated }) => reviewsCreated.length >= 100,
   },
   [AchievementType.REVIEWED_25_LEVELS]: {

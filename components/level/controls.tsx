@@ -59,7 +59,7 @@ export default function Controls({ controls }: ControlsProps) {
   const mouseDownStartTs = useRef(0);
 
   return (
-    <div className='select-none flex justify-evenly z-10 min-h-[36px] sm:min-h-[44px] text-xs sm:text-base'>
+    <div className='select-none flex justify-evenly z-10 min-h-[44px] text-xs sm:text-base'>
       {controls.map((control) => (
         <button
           className={classNames(
@@ -88,7 +88,10 @@ export default function Controls({ controls }: ControlsProps) {
 
             e.stopPropagation();
           }}
-          onMouseOut={(e: React.MouseEvent) => { e.stopPropagation(); }}
+          onMouseOut={(e: React.MouseEvent) => {
+            onMouseUp();
+            e.stopPropagation();
+          }}
           onMouseUp={(e: React.MouseEvent) => {
             if (useTouch.current) { return; }
 
@@ -106,7 +109,6 @@ export default function Controls({ controls }: ControlsProps) {
             }
 
             e.stopPropagation();
-            e.preventDefault();
           }}
           onTouchStart={(e: React.TouchEvent<HTMLButtonElement>) => {
             if (Date.now() - mouseDownStartTs.current < 500) {
@@ -120,11 +122,8 @@ export default function Controls({ controls }: ControlsProps) {
             }
 
             useTouch.current = true;
-
             onMouseDown(control);
-
             e.stopPropagation();
-            e.preventDefault();
           }}
           style={{
             color: control.disabled ? 'var(--bg-color-4)' : 'var(--color)',

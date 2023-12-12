@@ -41,7 +41,7 @@ export default function DeleteReviewModal({ closeModal, isOpen, userId }: Delete
       onConfirm={onConfirm}
       title={'Delete Review'}
     >
-      <div style={{ textAlign: 'center' }}>
+      <div className='text-center'>
         {'Are you sure you want to delete this review?'}
       </div>
     </Modal>

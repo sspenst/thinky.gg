@@ -1,17 +1,18 @@
+import { GameId } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
-import { TourType } from '@root/hooks/useTour';
+import TourType from '@root/hooks/useTour';
 import { Types } from 'mongoose';
 import EmailDigestSettingTypes from '../../constants/emailDigest';
 import User from './user';
 
 interface UserConfig {
   _id: Types.ObjectId;
-  emailConfirmationToken: string;
-  emailConfirmed: boolean;
+  disallowedEmailNotifications: NotificationType[];
+  disallowedPushNotifications: NotificationType[];
   emailDigest: EmailDigestSettingTypes;
-  emailNotificationsList: NotificationType[];
+  gameId: GameId;
+  giftSubscriptions: string[]; // gift subscriptions this user has given out
   mobileDeviceTokens: string[];
-  pushNotificationsList: NotificationType[];
   showPlayStats: boolean;
   stripeCustomerId: string;
   theme: string;

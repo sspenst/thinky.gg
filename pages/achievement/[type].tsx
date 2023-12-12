@@ -11,6 +11,7 @@ import { getUserFromToken } from '@root/lib/withAuth';
 import Achievement from '@root/models/db/achievement';
 import User from '@root/models/db/user';
 import { AchievementModel, UserModel } from '@root/models/mongoose';
+import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import React from 'react';
 
@@ -33,7 +34,17 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       { $match: { type: type as string } },
       { $sort: { createdAt: -1 } },
       { $limit: 1000 },
-      { $lookup: { from: UserModel.collection.name, localField: 'userId', foreignField: '_id', as: 'userId' } },
+      {
+        $lookup: {
+          from: UserModel.collection.name,
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'userId',
+          pipeline: [
+            { $project: USER_DEFAULT_PROJECTION },
+          ],
+        },
+      },
       { $unwind: { path: '$userId' } },
     ]),
   ]);

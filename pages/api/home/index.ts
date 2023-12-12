@@ -75,7 +75,7 @@ async function getRecommendedLevel(reqUser: User) {
     numResults: '20', // randomly select one of these
     sortBy: 'calcDifficultyEstimate',
     sortDir: 'asc',
-    statFilter: StatFilter.HideWon,
+    statFilter: StatFilter.HideSolved,
     timeRange: TimeRange[TimeRange.All],
   } as SearchQuery;
 
@@ -83,7 +83,7 @@ async function getRecommendedLevel(reqUser: User) {
   let levels = result?.levels;
 
   if (!levels || levels.length === 0) {
-    // try a broader query without min and max difficulty for those rare users that have beaten so many levels to not have any recommended one
+    // try a broader query without min and max difficulty for those rare users that have solved so many levels to not have any recommended one
     const query = {
       disableCount: 'true',
       excludeLevelIds: [...uniqueLevelIdsFromRecentAttempts].join(','),
@@ -94,7 +94,7 @@ async function getRecommendedLevel(reqUser: User) {
       numResults: '10', // randomly select one of these
       sortBy: 'calcDifficultyEstimate',
       sortDir: 'asc',
-      statFilter: StatFilter.HideWon,
+      statFilter: StatFilter.HideSolved,
       timeRange: TimeRange[TimeRange.All],
     } as SearchQuery;
 

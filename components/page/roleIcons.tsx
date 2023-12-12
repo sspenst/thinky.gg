@@ -35,7 +35,7 @@ export function RoleIcon({ id, role, size = 18 }: RoleIconProps) {
     return null;
   } else {
     return (
-      <Link href='/settings/proaccount'>
+      <Link href='/settings/pro'>
         <span data-tooltip-id={tooltipId} data-tooltip-content={tooltip}>
           {icon}
         </span>

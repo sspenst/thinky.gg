@@ -13,7 +13,7 @@ export default function getDifficultyEstimate(
   }
 
   // when we have 10 unique users, we want to return a non-zero value
-  const beatenCount = !level.calc_playattempts_just_beaten_count ? 1 : level.calc_playattempts_just_beaten_count;
+  const solveCount = !level.calc_playattempts_just_beaten_count ? 1 : level.calc_playattempts_just_beaten_count;
 
   // calculate a scaling factor based on how many people have solved the problem
   // Base curve: logistic function
@@ -23,7 +23,7 @@ export default function getDifficultyEstimate(
   const m = DIFFICULTY_LOGISTIC_M;
   const t = DIFFICULTY_LOGISTIC_T;
   const k = DIFFICULTY_LOGISTIC_K;
-  const beatenCountFactor = ((k - 1) / (1 + Math.exp(t * (beatenCount - m)))) + 1;
+  const solveCountFactor = ((k - 1) / (1 + Math.exp(t * (solveCount - m)))) + 1;
 
-  return level.calc_playattempts_duration_sum / beatenCount * beatenCountFactor;
+  return level.calc_playattempts_duration_sum / solveCount * solveCountFactor;
 }

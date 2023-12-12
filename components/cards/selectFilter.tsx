@@ -26,25 +26,23 @@ export default function SelectFilter({
         {user &&
           <div className='flex'>
             <FilterButton
-              element={<>{'Hide Won'}</>}
+              element='Hide Solved'
               first={true}
               onClick={onFilterClick}
-              selected={filter === StatFilter.HideWon}
-              value={StatFilter.HideWon}
+              selected={filter === StatFilter.HideSolved}
+              value={StatFilter.HideSolved}
             />
             <FilterButton
-              element={<>{'Show Won'}</>}
+              element='Solved'
               onClick={onFilterClick}
-              proRequired={true}
-              selected={filter === StatFilter.ShowWon}
-              value={StatFilter.ShowWon}
+              selected={filter === StatFilter.Solved}
+              value={StatFilter.Solved}
             />
             <FilterButton
-              element={<>{'Show In Progress'}</>}
+              element='In Progress'
               last={true} onClick={onFilterClick}
-              proRequired={true}
-              selected={filter === StatFilter.ShowInProgress}
-              value={StatFilter.ShowInProgress}
+              selected={filter === StatFilter.InProgress}
+              value={StatFilter.InProgress}
             />
           </div>
         }

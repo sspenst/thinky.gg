@@ -2,7 +2,9 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 // https://github.com/newrelic/node-newrelic/issues/956#issuecomment-962729137
 import type { NextApiRequest, NextApiResponse } from 'next';
 import requestIp from 'request-ip';
+import { GameId } from '../constants/GameId';
 import { parseReq, ReqValidator } from '../helpers/apiWrapper';
+import { getGameIdFromReq } from '../helpers/getGameIdFromReq';
 import { TimerUtil } from '../helpers/getTs';
 import { logger } from '../helpers/logger';
 import User from '../models/db/user';
@@ -12,6 +14,7 @@ import getTokenCookie from './getTokenCookie';
 import isLocal from './isLocal';
 
 export type NextApiRequestWithAuth = NextApiRequest & {
+  gameId: GameId;
   user: User;
   userId: string;
 };
@@ -42,10 +45,10 @@ export async function getUserFromToken(
   const decoded = verifiedSignature;
   const userId = decoded.userId as string;
   // dynamically import newrelic
-  const newrelic = await import('newrelic');
+  const newrelic = process.env.NODE_ENV === 'test' ? undefined : await import('newrelic');
 
   if (!isLocal()) {
-    newrelic.addCustomAttribute && newrelic.addCustomAttribute('userId', userId);
+    newrelic?.addCustomAttribute && newrelic.addCustomAttribute('userId', userId);
   }
 
   await dbConnect();
@@ -70,11 +73,11 @@ export async function getUserFromToken(
       }),
       ...ipData,
     },
-    { lean: true, new: true, projection: '+email +bio' },
-  );
+    { new: true, projection: '+email +bio +emailConfirmed' },
+  ).lean<User>();
 
   if (user && !isLocal()) {
-    newrelic.addCustomAttribute && newrelic.addCustomAttribute('userName', user.name);
+    newrelic?.addCustomAttribute && newrelic.addCustomAttribute('userName', user.name);
   }
 
   return user;
@@ -111,6 +114,8 @@ export default function withAuth(
       );
 
       res.setHeader('Set-Cookie', refreshCookie);
+
+      req.gameId = getGameIdFromReq(req);
       req.user = reqUser;
       req.userId = reqUser._id.toString();
 
@@ -118,7 +123,9 @@ export default function withAuth(
 
       if (validate !== null) {
         return Promise.resolve(
-          res.status(validate.statusCode).json({ error: validate.error })
+          res.status(validate.statusCode).json({
+            error: validate.error,
+          })
         );
       }
 
@@ -126,7 +133,9 @@ export default function withAuth(
       return handler(req, res).catch((error: Error) => {
         logger.error('API Handler Error Caught', error);
 
-        return res.status(500).send(error.message || error);
+        return res.status(500).json({
+          error: error.message || error,
+        });
       });
     } catch (err) {
       logger.error(err);

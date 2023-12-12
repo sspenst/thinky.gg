@@ -6,7 +6,7 @@ import React, { useContext } from 'react';
 import { toast } from 'react-hot-toast';
 
 interface FilterButtonProps {
-  element: JSX.Element;
+  element: React.ReactNode;
   first?: boolean;
   last?: boolean;
   onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
@@ -36,10 +36,10 @@ export default function FilterButton({ element, first, last, onClick, proRequire
           toast.dismiss();
           toast.error(
             <div className='text-lg'>
-              Requires <Link href='/settings/proaccount' className='text-blue-500'>Pathology Pro</Link>
+              Requires <Link href='/settings/pro' className='text-blue-500'>Pathology Pro</Link>
             </div>,
             {
-              duration: 5000,
+              duration: 3000,
               icon: '🔒',
             }
           );

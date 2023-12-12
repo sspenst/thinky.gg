@@ -20,7 +20,7 @@ export default withAuth({
   } }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   await dbConnect();
   const { id } = req.query;
-  const level = await LevelModel.findOne<Level>({ _id: id, isDeleted: { $ne: true } }, {}, { lean: true });
+  const level = await LevelModel.findOne({ _id: id, isDeleted: { $ne: true } }).lean<Level>();
 
   if (!level) {
     return res.status(404).json({

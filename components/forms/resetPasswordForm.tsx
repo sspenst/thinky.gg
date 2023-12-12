@@ -58,6 +58,7 @@ export default function ResetPasswordForm({ token, userId }: ResetPasswordFormPr
 
   return (
     <FormTemplate>
+      <h1 className='text-xl font-bold text-center'>Reset Password</h1>
       <form onSubmit={onSubmit}>
         <div className='mb-4'>
           <label className='block text-sm font-bold mb-2' htmlFor='password'>
