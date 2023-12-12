@@ -1,10 +1,11 @@
 import Dimensions from '@root/constants/dimensions';
 import { MusicContext } from '@root/contexts/musicContext';
 import { PageContext } from '@root/contexts/pageContext';
+import classNames from 'classnames';
 import Link from 'next/link';
-import React, { Dispatch, SetStateAction, useCallback, useContext, useEffect, useState } from 'react';
+import React, { Dispatch, SetStateAction, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import Collection, { EnrichedCollection } from '../../models/db/collection';
-import Level, { EnrichedLevel } from '../../models/db/level';
+import { EnrichedLevel } from '../../models/db/level';
 import User from '../../models/db/user';
 import CollectionScrollList from '../collection/collectionScrollList';
 import FormattedUser from '../formatted/formattedUser';
@@ -27,6 +28,7 @@ interface GameWrapperProps {
 
 export default function GameWrapper({ chapter, collection, level, onNext, onPrev, setCollection, user }: GameWrapperProps) {
   const [dontShowPostGameModal, setDontShowPostGameModal] = useState(false);
+  const isCollectionLoading = useRef(false);
   const [isCollectionViewHidden, setIsCollectionViewHidden] = useState(false);
   const { isDynamic, isDynamicSupported, toggleVersion } = useContext(MusicContext);
   const [isLevelInfoOpen, setIsLevelInfoOpen] = useState(false);
@@ -34,7 +36,6 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
   const [postGameModalOpen, setShowPostGameModalOpen] = useState(false);
   const { setPreventKeyDownEvent } = useContext(PageContext);
   const [showCollectionViewModal, setShowCollectionViewModal] = useState(false);
-  const [disableNavigation, setDisableNavigation] = useState(false);
 
   useEffect(() => {
     const storedCollectionViewHidden = localStorage.getItem('isCollectionViewHidden');
@@ -103,13 +104,18 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
       return null;
     }
 
-    return <CollectionScrollList onLoading={() => {
-      //setDisableNavigation(true); // TODO: re-enable this when we have a better way to handle edge case
-    }} onLevelsChange={ (levels: Level[]) => {
-      collection.levels = levels;
-      setDisableNavigation(false);
-      setCollection(collection);
-    }} isHidden={isCollectionViewHidden} targetLevel={level} collection={collection} id={id} />;
+    return (
+      <CollectionScrollList
+        collection={collection}
+        id={id}
+        isHidden={isCollectionViewHidden}
+        onLoading={(loading) => {
+          isCollectionLoading.current = loading;
+        }}
+        setCollection={setCollection}
+        targetLevel={level}
+      />
+    );
   }, [collection, isCollectionViewHidden, level, setCollection]);
 
   return (
@@ -134,10 +140,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
               }}
               title={getCollectionTitle()}
             >
-              <div className='flex justify-center'
-                style={{
-                  maxHeight: 'calc(100vh - 200px)',
-                }}>
+              <div className='flex justify-center' >
                 <div className='flex flex-col w-fit items-center'>
                   {getCollectionLevelList('modal')}
                 </div>
@@ -188,14 +191,14 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
           key={`game-${level._id.toString()}`}
           level={level}
           onNext={collection ? () => {
-            if (disableNavigation) {
+            if (isCollectionLoading.current) {
               return;
             }
 
             onNext();
           } : undefined}
           onPrev={collection ? () => {
-            if (disableNavigation) {
+            if (isCollectionLoading.current) {
               return;
             }
 
@@ -216,8 +219,13 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
           }}
         />
       </div>
-      {collection && !isCollectionViewHidden &&
-        <div className='hidden xl:flex flex-col items-center border-l border-color-4 w-60'>
+      {collection &&
+        <div className={classNames(
+          'hidden flex-col items-center border-l border-color-4 w-60',
+          // NB: we want to keep this component in the DOM when it is hidden by the user
+          // this allows updating the collection level list on level change to continue running behind the scenes
+          { 'xl:flex': !isCollectionViewHidden },
+        )}>
           <div className='flex justify-between w-full gap-2 items-center px-4 py-3 border-b border-color-4'>
             {getCollectionTitle()}
             <button onClick={() => setIsCollectionViewHidden(true)}>
