@@ -32,6 +32,7 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
 
     if (theme) {
       setAppTheme(theme);
+      document.documentElement.setAttribute('data-theme-dark', theme === Theme.Light ? 'false' : 'true');
     }
     // setAppTheme(theme === Theme.Light ? 'light' : 'dark');
   }, [setAppTheme, theme]);
