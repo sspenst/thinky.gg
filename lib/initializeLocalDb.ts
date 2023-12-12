@@ -355,6 +355,7 @@ export default async function initializeLocalDb() {
       {
         _id: new Types.ObjectId(TestId.COLLECTION_B),
         gameId: DEFAULT_GAME_ID,
+        isPrivate: true,
         levels: [new Types.ObjectId(TestId.LEVEL), new Types.ObjectId(TestId.LEVEL_2), new Types.ObjectId(TestId.LEVEL_3)],
         name: 'test collection 3',
         slug: await generateCollectionSlug(DEFAULT_GAME_ID, 'BBB', 'test collection 3'),

@@ -58,7 +58,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const collection = await getCollection({
     matchQuery: { slug: username + '/' + slugName },
     reqUser,
-    populateLevels: true,
   });
 
   if (!collection && reqUser?.name === username && slugName === 'play-later') {

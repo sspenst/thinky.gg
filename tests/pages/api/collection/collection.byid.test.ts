@@ -8,6 +8,7 @@ import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { CollectionModel } from '../../../../models/mongoose';
 import collectionHandler from '../../../../pages/api/collection/[id]';
+import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
 
 afterAll(async() => {
   await dbDisconnect();
@@ -17,7 +18,7 @@ beforeAll(async () => {
 });
 enableFetchMocks();
 describe('pages/api/collection/[id].ts', () => {
-  test('GET other user\'s collection should 404', async () => {
+  test('GET other user\'s private collection should 404', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -31,7 +32,7 @@ describe('pages/api/collection/[id].ts', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await collectionHandler(req, res);
+        await getCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
@@ -54,7 +55,7 @@ describe('pages/api/collection/[id].ts', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await collectionHandler(req, res);
+        await getCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
