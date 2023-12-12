@@ -1,4 +1,3 @@
-import { GameId } from '@root/constants/GameId';
 import TileType from '@root/constants/tileType';
 import { AppContext } from '@root/contexts/appContext';
 import { GridContext } from '@root/contexts/gridContext';
@@ -22,13 +21,13 @@ export default function Block({ inHole, tileType, onTopOf }: BlockProps) {
 
   function getBackgroundColor() {
     // For level editor, it'll be a blockOnExit. For regular game it'll have an onTopOf end
-    if (game.id === GameId.SOKOBAN && onTopOf === TileType.End || tileType === TileType.BlockOnExit) {
-      return 'var(--level-end)';
-    } else {
-      const fillCenter = classic && tileType === TileType.Block;
+    // if (game.id === GameId.SOKOBAN && onTopOf === TileType.End || tileType === TileType.BlockOnExit) {
+    //   return 'var(--level-end)';
+    // } else {
+    const fillCenter = classic && tileType === TileType.Block;
 
-      return fillCenter ? 'var(--level-block-border)' : 'var(--level-block)';
-    }
+    return fillCenter ? 'var(--level-block-border)' : 'var(--level-block)';
+    // }
   }
 
   return (
@@ -38,11 +37,12 @@ export default function Block({ inHole, tileType, onTopOf }: BlockProps) {
         'tile-type-' + tileType,
         'tile-' + game.id,
         inHole ? styles['in-hole'] : undefined,
+        { 'on-exit': onTopOf === TileType.End },
       )}
       style={{
         backgroundColor: getBackgroundColor(),
         borderBottomWidth: TileTypeHelper.canMoveUp(tileType) ? innerBorderWidth : 0,
-        borderColor: 'var(--level-block-border)',
+        borderColor: onTopOf === TileType.End ? 'var(--color-complete)' : 'var(--level-block-border)',
         borderLeftWidth: TileTypeHelper.canMoveRight(tileType) ? innerBorderWidth : 0,
         borderRightWidth: TileTypeHelper.canMoveLeft(tileType) ? innerBorderWidth : 0,
         borderTopWidth: TileTypeHelper.canMoveDown(tileType) ? innerBorderWidth : 0,
