@@ -55,7 +55,7 @@ export default function useUrl() {
     function getPath() {
       // if you click the same game it should go back to the home page
       if (game.id === gameId) {
-        return gameId === GameId.THINKY ? '' : '/home';
+        return '/';
       }
 
       if (path) {
