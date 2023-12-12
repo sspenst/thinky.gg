@@ -1,4 +1,6 @@
 import { GameId } from '@root/constants/GameId';
+import { AppContext } from '@root/contexts/appContext';
+import { useContext } from 'react';
 
 const LinksThatCarryOver = [
   '^/profile',
@@ -17,6 +19,8 @@ const LinksThatCarryOver = [
 ];
 
 export default function useUrl() {
+  const { game } = useContext(AppContext);
+
   function getUrl(gameId?: GameId, path?: string) {
     if (typeof window === 'undefined') {
       return undefined;
@@ -49,6 +53,11 @@ export default function useUrl() {
     }
 
     function getPath() {
+      // if you click the same game it should go back to the home page
+      if (game.id === gameId) {
+        return gameId === GameId.THINKY ? '' : '/home';
+      }
+
       if (path) {
         return path;
       }

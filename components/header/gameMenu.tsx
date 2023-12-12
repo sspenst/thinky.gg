@@ -3,7 +3,6 @@ import Dimensions from '@root/constants/dimensions';
 import { Games } from '@root/constants/Games';
 import { getGameLogoAndLabel } from '@root/helpers/getGameLogo';
 import useUrl from '@root/hooks/useUrl';
-import Image from 'next/image';
 import React, { Fragment } from 'react';
 
 const links = Object.values(Games).map((game) => ({
