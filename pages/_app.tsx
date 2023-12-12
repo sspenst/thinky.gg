@@ -270,10 +270,6 @@ export default function MyApp({ Component, pageProps, userAgent }: AppProps & { 
   }, [user?.config]);
 
   useEffect(() => {
-
-  }, [theme]);
-
-  useEffect(() => {
     for (const match of matches) {
       // if match is active and includes user, then redirect to match page /match/[matchId]
       if (match.state === MultiplayerMatchState.ACTIVE && match.players.some((player: User) => player?._id?.toString() === user?._id?.toString())) {
@@ -380,19 +376,20 @@ export default function MyApp({ Component, pageProps, userAgent }: AppProps & { 
 
   const isEU = Intl.DateTimeFormat().resolvedOptions().timeZone.startsWith('Europe');
 
-  // useEffect(() => {
-  //   setMounted(true);
-  // }, []);
-
-  // if (!mounted) {
-  //   return null;
-  // }
-
   return (
-    <ThemeProvider themes={['theme-modern', 'theme-light', 'theme-dark']} attribute='class'>
+    <ThemeProvider attribute='data-theme' themes={Object.values(Theme)}>
       <Head>
         <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' />
         <meta name='apple-itunes-app' content='app-id=1668925562, app-argument=pathology.gg' />
+        {/* add a script that checks data-theme and sets data-theme-dark based on the value */}
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            (function() {
+              const theme = localStorage.getItem('theme');
+              document.documentElement.setAttribute('data-theme-dark', theme === 'theme-light' ? 'false' : 'true');
+            })();
+          `,
+        }} />
       </Head>
       <DefaultSeo
         defaultTitle='Pathology - Shortest Path Puzzle Game'

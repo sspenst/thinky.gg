@@ -26,7 +26,7 @@ body {
   transition: none !important;
 }
 
-.theme-accessible {
+[data-theme="theme-accessible"] {
   --bg-color: rgb(0, 0, 0);
   --bg-color-2: rgb(0, 0, 0);
   --bg-color-3: rgb(50, 50, 50);
@@ -50,7 +50,7 @@ body {
   --level-wall: rgb(0, 0, 0);
 }
 
-.theme-classic {
+[data-theme="theme-classic"] {
   --bg-color: rgb(51, 51, 51);
   --bg-color-2: rgb(70, 70, 70);
   --bg-color-3: rgb(100, 100, 100);
@@ -74,7 +74,7 @@ body {
   --level-wall: rgb(0, 0, 0);
 }
 
-.theme-monkey {
+[data-theme="theme-monkey"] {
   --bg-color: rgb(40, 13, 6);
   --bg-color-2: rgb(86, 34, 11);
   --bg-color-3: rgb(90, 67, 55);
@@ -114,8 +114,7 @@ body {
   }
 }
 
-.theme-dark {
-  /* color-scheme: dark; */
+[data-theme="theme-dark"] {
   --bg-color: rgb(0, 0, 0);
   --bg-color-2: rgb(0, 0, 0);
   --bg-color-3: rgb(50, 50, 50);
@@ -139,8 +138,8 @@ body {
   --level-wall: rgb(0, 0, 0);
 }
 
-.theme-light {
-  /* color-scheme: light; */
+[data-theme="theme-light"] {
+  color-scheme: light;
   --bg-color: rgb(255, 255, 255);
   --bg-color-2: rgb(255, 255, 255);
   --bg-color-3: rgb(220, 220, 220);
@@ -164,8 +163,8 @@ body {
   --level-wall: rgb(76, 100, 127);
 }
 
-.theme-modern {
-  /* color-scheme: dark; */
+[data-theme="theme-modern"] {
+  color-scheme: dark;
   --bg-color: rgb(38, 38, 38);
   --bg-color-2: rgb(50, 50, 50);
   --bg-color-3: rgb(80, 80, 80);
@@ -189,7 +188,7 @@ body {
   --level-wall: rgb(38, 38, 38);
 }
 
-.theme-boss {
+[data-theme="theme-boss"] {
   --bg-color: rgb(22, 21, 21);
   --bg-color-2: rgb(50, 50, 50);
   --bg-color-3: rgb(80, 80, 80);
@@ -213,7 +212,7 @@ body {
   --level-wall: rgb(38, 38, 38);
 }
 
-.theme-winter {
+[data-theme="theme-winter"] {
   --bg-color: rgb(22, 21, 21);
   --bg-color-2: rgb(50, 50, 50);
   --bg-color-3: rgb(80, 80, 80);
@@ -237,7 +236,7 @@ body {
   --level-wall: rgb(38, 38, 38);
 }
 
-.theme-halloween {
+[data-theme="theme-halloween"] {
   --bg-color: rgb(22, 21, 21);
   --bg-color-2: rgb(50, 50, 50);
   --bg-color-3: rgb(80, 80, 80);
@@ -547,13 +546,20 @@ body {
   color: var(--color-gray);
 }
 
-[data-theme="theme-modern"] {
+/* [data-theme="theme-modern"] {
   color-scheme: dark;
 }
 
 [data-theme="theme-light"] {
   color-scheme: light;
+} */
+/* [class="theme-modern"] {
+  color-scheme: dark;
 }
+
+[class="theme-light"] {
+  color-scheme: light;
+} */
 
 /**
  * ScreenSize.XL is when the desktop view displays on the level page
