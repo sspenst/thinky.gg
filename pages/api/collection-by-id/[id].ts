@@ -15,20 +15,19 @@ export default apiWrapper({
   GET: {
     query: {
       id: ValidObjectId(true),
-      populateCursor: ValidObjectId(false),
-      populateDirection: ValidEnum(['before', 'after', 'around'], false),
+      populateLevelCursor: ValidObjectId(false),
+      populateLevelDirection: ValidEnum(['before', 'after', 'around'], false),
     }
   } }, async (req: NextApiRequest, res: NextApiResponse) => {
-  const { id, populateCursor, populateDirection } = req.query;
+  const { id, populateLevelCursor, populateLevelDirection } = req.query;
   const token = req.cookies?.token;
   const gameId = getGameIdFromReq(req);
   const reqUser = token ? await getUserFromToken(token, req) : null;
   const collection = await getCollection({
     matchQuery: { _id: new Types.ObjectId(id as string), gameId: gameId },
+    ...(populateLevelCursor ? { populateLevelCursor: new Types.ObjectId(populateLevelCursor as string) } : {}),
+    ...(populateLevelDirection ? { populateLevelDirection: populateLevelDirection as 'before' | 'after' | 'around' } : {}),
     reqUser,
-    populateLevels: true,
-    ...(populateCursor ? { populateLevelCursor: new Types.ObjectId(populateCursor as string) } : {}),
-    ...(populateDirection ? { populateLevelDirection: populateDirection as 'before' | 'after' | 'around' } : {}),
   });
 
   if (!collection) {
@@ -44,11 +43,11 @@ interface GetCollectionProps {
   includeDraft?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   matchQuery: FilterQuery<any>;
-  reqUser: User | null;
   populateAroundSlug?: string; // target level
   populateLevelCursor?: Types.ObjectId | string; // target level
+  populateLevelData?: boolean;
   populateLevelDirection?: 'before' | 'after' | 'around';
-  populateLevels?: boolean;
+  reqUser: User | null;
 }
 
 /**
@@ -69,8 +68,16 @@ export async function getCollection(props: GetCollectionProps): Promise<Collecti
  * Query collections with optionally populated levels and stats.
  * Private collections are filtered out unless they were created by the reqUser.
  */
-export async function getCollections({ matchQuery, reqUser, includeDraft, populateLevels, populateLevelCursor, populateAroundSlug, populateLevelDirection }: GetCollectionProps): Promise<Collection[]> {
-  const pageSize = 5;
+export async function getCollections({
+  includeDraft,
+  matchQuery,
+  reqUser,
+  populateAroundSlug,
+  populateLevelCursor,
+  populateLevelData = true,
+  populateLevelDirection,
+}: GetCollectionProps): Promise<Collection[]> {
+  const populateLevelCount = 5;
   const collectionAgg = await CollectionModel.aggregate<EnrichedCollection>(([
     {
       $match: {
@@ -151,13 +158,12 @@ export async function getCollections({ matchQuery, reqUser, includeDraft, popula
               sort: 1
             }
           },
-
           {
             $project: {
               ...(includeDraft ? {
                 isDraft: 1
               } : {}),
-              ...(populateLevels ? {
+              ...(populateLevelData ? {
                 ...LEVEL_DEFAULT_PROJECTION
               } : {
                 ...LEVEL_SEARCH_DEFAULT_PROJECTION
@@ -205,52 +211,57 @@ export async function getCollections({ matchQuery, reqUser, includeDraft, popula
         }
       }
     },
-    ...populateLevelCursor || populateAroundSlug ? [{
-      // slice the levels array to include 10 before and 10 after the target level.. keep in mind that there may not be 10 levels before or after
-      $addFields: {
-        targetLevelIndex: {
-          $cond: {
-            if: populateLevelCursor,
-            then: { $indexOfArray: ['$levels._id', populateLevelCursor] },
-            else: { $indexOfArray: ['$levels.slug', populateAroundSlug] },
-          }
+    ...(populateLevelCursor || populateAroundSlug ? [
+      {
+        $addFields: {
+          targetLevelIndex: {
+            $cond: {
+              if: populateLevelCursor,
+              then: { $indexOfArray: ['$levels._id', populateLevelCursor] },
+              else: { $indexOfArray: ['$levels.slug', populateAroundSlug] },
+            }
+          },
         },
       },
-    }, {
-      $addFields: {
-        levels: {
-          $cond: {
-            if: { $eq: [populateLevelDirection, 'before'] },
-            then: {
-              $slice: [
-                '$levels',
-                { $max: [0, { $subtract: ['$targetLevelIndex', pageSize] }] },
-                { $min: [pageSize + 1, { $add: ['$targetLevelIndex', 1] }] }
-              ]
-            },
-            else: {
-              $cond: {
-                if: { $eq: [populateLevelDirection, 'after'] },
-                then: {
-                  $slice: [
-                    '$levels',
-                    '$targetLevelIndex',
-                    { $min: [pageSize + 1, { $subtract: [{ $size: '$levels' }, '$targetLevelIndex'] }] }
-                  ]
-                },
-                else: { // 'around'
-                  $slice: [
-                    '$levels',
-                    { $max: [0, { $subtract: ['$targetLevelIndex', pageSize] }] },
-                    pageSize * 2 + 1
-                  ]
+      {
+        $addFields: {
+          levels: {
+            $cond: {
+              if: { $eq: [populateLevelDirection, 'before'] },
+              // populate the target level + at most 5 levels before
+              then: {
+                $slice: [
+                  '$levels',
+                  { $max: [0, { $subtract: ['$targetLevelIndex', populateLevelCount] }] },
+                  { $min: [populateLevelCount + 1, { $add: ['$targetLevelIndex', 1] }] }
+                ]
+              },
+              else: {
+                $cond: {
+                  if: { $eq: [populateLevelDirection, 'after'] },
+                  // populate the target level + at most 5 levels after
+                  then: {
+                    $slice: [
+                      '$levels',
+                      '$targetLevelIndex',
+                      { $min: [populateLevelCount + 1, { $subtract: [{ $size: '$levels' }, '$targetLevelIndex'] }] }
+                    ]
+                  },
+                  else: { // 'around'
+                    // populate the target level + at most 5 levels before and 5 levels after
+                    $slice: [
+                      '$levels',
+                      { $max: [0, { $subtract: ['$targetLevelIndex', populateLevelCount] }] },
+                      { $min: [populateLevelCount * 2 + 1, { $size: '$levels' }] },
+                    ]
+                  }
                 }
               }
             }
           }
         }
-      }
-    }] : [],
+      },
+    ] : []),
   ] as PipelineStage[]));
 
   collectionAgg.forEach(collection => {

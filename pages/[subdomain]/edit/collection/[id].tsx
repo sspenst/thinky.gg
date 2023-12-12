@@ -33,14 +33,13 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const collection = await getCollection(
     {
+      includeDraft: true,
       matchQuery: {
         _id: new Types.ObjectId(id as string),
         userId: reqUser._id,
         gameId: gameId
       },
       reqUser,
-      populateLevels: true,
-      includeDraft: true
     });
 
   if (!collection) {

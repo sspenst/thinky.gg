@@ -45,10 +45,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     getLevelByUrlPath(gameId, username, slugName, reqUser),
     (cid) ? getCollection({
       matchQuery: { _id: new Types.ObjectId(cid), gameId: gameId },
-      reqUser,
-      populateLevels: true,
       populateAroundSlug: username + '/' + slugName,
       populateLevelDirection: 'around',
+      reqUser,
     }) : null,
   ]);
 

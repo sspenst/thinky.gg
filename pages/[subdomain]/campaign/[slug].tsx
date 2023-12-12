@@ -71,6 +71,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const enrichedCollections = await getCollections(
     {
       matchQuery: { _id: { $in: campaign.collections.map(collection => new Types.ObjectId(collection._id)) }, gameId: gameId },
+      populateLevelData: false,
       reqUser: reqUser,
     },
   );
