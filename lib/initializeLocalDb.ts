@@ -350,6 +350,7 @@ export default async function initializeLocalDb() {
       },
       {
         _id: new Types.ObjectId(TestId.COLLECTION_B),
+        isPrivate: true,
         levels: [new Types.ObjectId(TestId.LEVEL), new Types.ObjectId(TestId.LEVEL_2), new Types.ObjectId(TestId.LEVEL_3)],
         name: 'test collection 3',
         gameId: GameId.PATHOLOGY,
