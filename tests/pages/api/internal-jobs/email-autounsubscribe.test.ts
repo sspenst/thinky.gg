@@ -1,13 +1,14 @@
+import { GameId } from '@root/constants/GameId';
+import { NextApiRequestGuest } from '@root/helpers/apiWrapper';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';
-import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import { EmailDigestSettingTypes } from '../../../../constants/emailDigest';
 import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
-import { EmailLogModel, UserConfigModel } from '../../../../models/mongoose';
+import { EmailLogModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
 import { EmailState } from '../../../../models/schemas/emailLogSchema';
 import handler from '../../../../pages/api/internal-jobs/email-digest';
 
@@ -28,15 +29,16 @@ jest.mock('nodemailer', () => ({
   })),
 }));
 
-const defaultReq: NextApiRequest = {
+const defaultReq: NextApiRequestGuest = {
   method: 'GET',
+  gameId: GameId.PATHOLOGY,
   query: {
     secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
   },
   headers: {
     'content-type': 'application/json',
   },
-} as unknown as NextApiRequest;
+} as unknown as NextApiRequestGuest;
 
 afterEach(() => {
   jest.restoreAllMocks();
@@ -56,7 +58,10 @@ describe('Email auto unsubscribe', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
-    await UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.DAILY, emailConfirmed: false }, {});
+    await Promise.all([
+      UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.DAILY }, {}),
+      UserModel.findOneAndUpdate({ _id: TestId.USER }, { emailConfirmed: false }).lean()
+    ]);
 
     for (let day = 0; day < 12; day++) {
       await dbConnect();

@@ -12,7 +12,7 @@ import LoadingSpinner from '../page/loadingSpinner';
 export default function PlayHistory() {
   const [cursor, setCursor] = useState<string | null>();
   const [datetime, setDatetime] = useState<string | null>(null);
-  const [filterWon, setFilterWon] = useState(false);
+  const [filterSolved, setFilterSolved] = useState(false);
   const [minDurationMinutes, setMinDurationMinutes] = useState(0);
 
   const [accumulatedPlayHistory, setAccumulatedPlayHistory] = useState<PlayAttempt[]>([]);
@@ -22,7 +22,7 @@ export default function PlayHistory() {
   const queryParams = new URLSearchParams({
     ...(cursor && { cursor: cursor.toString() }),
     ...(datetime && { datetime: datetime.toString() }),
-    filterWon: filterWon.toString(),
+    filterSolved: filterSolved.toString(),
     minDurationMinutes: minDurationMinutes.toString(),
   });
 
@@ -114,7 +114,7 @@ export default function PlayHistory() {
         )}
       </div>
       <div className='flex flex-col items-start gap-1'>
-        <label className='text-md font-semibold truncate'>Minimum Duration</label>
+        <label className='font-semibold truncate'>Minimum Duration</label>
         <div className='flex items-center gap-2'>
           <input
             className='cursor-pointer'
@@ -135,14 +135,14 @@ export default function PlayHistory() {
         </div>
       </div>
       <div className='flex items-center gap-2'>
-        <label className='text-md font-semibold truncate' htmlFor='solvedOnly'>Solved Only</label>
+        <label className='font-semibold truncate' htmlFor='solvedOnly'>Solved Only</label>
         <input
-          checked={filterWon}
+          checked={filterSolved}
           id='solvedOnly'
           onChange={() => {
             setAccumulatedPlayHistory([]);
             setCursor(null);
-            setFilterWon(!filterWon);
+            setFilterSolved(!filterSolved);
           }}
           type='checkbox'
         />
@@ -198,13 +198,14 @@ export default function PlayHistory() {
                       href: `/level/${level.slug}`,
                       id: playAttempt.levelId._id.toString() + '-' + playAttempt._id.toString(),
                       level: level,
+                      searchLabel: level.name,
                       stats: new SelectOptionStats(level.leastMoves, level.userMoves),
                       text: level.name,
                     }} />
                     <span className='px-3 py-1'>
                       {moment.unix(playAttempt.startTime).local().format('h:mma')}
                       <br />
-                      Played for {moment.duration(playAttempt.endTime - playAttempt.startTime, 'seconds').humanize()} {playAttempt.attemptContext === AttemptContext.JUST_BEATEN && 'and won'}
+                      Played for {moment.duration(playAttempt.endTime - playAttempt.startTime, 'seconds').humanize()} {playAttempt.attemptContext === AttemptContext.JUST_SOLVED && 'and solved'}
                     </span>
                   </div>
                 </div>

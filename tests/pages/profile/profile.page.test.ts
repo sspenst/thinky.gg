@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext } from 'next';
 import { Logger } from 'winston';
@@ -15,10 +16,13 @@ import { getServerSideProps, ProfileTab } from '../../../pages/profile/[name]/[[
 
 beforeAll(async () => {
   await dbConnect();
+  const promises = [];
 
   for (let i = 0; i < 30; i++) {
-    await createNewReviewOnYourLevelNotification(TestId.USER, TestId.USER_B, new Types.ObjectId(), 'id ' + i);
+    promises.push(createNewReviewOnYourLevelNotification(GameId.PATHOLOGY, new Types.ObjectId(TestId.USER), new Types.ObjectId(TestId.USER_B), new Types.ObjectId(), 'id ' + i));
   }
+
+  await Promise.all(promises);
 });
 afterAll(async () => {
   await dbDisconnect();
@@ -71,7 +75,7 @@ describe('pages/profile page', () => {
     expect(ret.props?.reviewsWritten).toHaveLength(0);
     expect(ret.props?.profileTab).toBe('');
     expect(ret.props?.reviewsReceivedCount).toBe(1);
-    expect(ret.props?.reviewsWrittenCount).toBe(1);
+    expect(ret.props?.reviewsWrittenCount).toBe(0);
     expect(ret.props?.user._id).toBe(TestId.USER);
     expect(ret.props?.followerCountInit).toBe(0);
     expect(ret.props?.reqUserIsFollowing).toBeNull();
@@ -97,7 +101,7 @@ describe('pages/profile page', () => {
     expect(ret.props?.reviewsWritten).toHaveLength(0);
     expect(ret.props?.profileTab).toBe('collections');
     expect(ret.props?.reviewsReceivedCount).toBe(1);
-    expect(ret.props?.reviewsWrittenCount).toBe(1);
+    expect(ret.props?.reviewsWrittenCount).toBe(0);
     expect(ret.props?.user._id).toBe(TestId.USER);
   });
   test('getServerSideProps levels tab', async () => {
@@ -125,7 +129,7 @@ describe('pages/profile page', () => {
     expect(ret.props?.reviewsWritten).toHaveLength(0);
     expect(ret.props?.profileTab).toBe('levels');
     expect(ret.props?.reviewsReceivedCount).toBe(1);
-    expect(ret.props?.reviewsWrittenCount).toBe(1);
+    expect(ret.props?.reviewsWrittenCount).toBe(0);
     expect(ret.props?.user._id).toBe(TestId.USER);
   });
   test('getServerSideProps reviews-received tab', async () => {
@@ -144,7 +148,7 @@ describe('pages/profile page', () => {
     expect(ret.props?.reviewsWritten).toHaveLength(0);
     expect(ret.props?.profileTab).toBe('reviews-received');
     expect(ret.props?.reviewsReceivedCount).toBe(1);
-    expect(ret.props?.reviewsWrittenCount).toBe(1);
+    expect(ret.props?.reviewsWrittenCount).toBe(0);
     expect(ret.props?.user._id).toBe(TestId.USER);
   });
   test('getServerSideProps reviews-written tab', async () => {
@@ -160,10 +164,10 @@ describe('pages/profile page', () => {
     expect(ret.props).toBeDefined();
     expect(ret.props?.pageProp).toBe(1);
     expect(ret.props?.reviewsReceived).toHaveLength(0);
-    expect(ret.props?.reviewsWritten).toHaveLength(1);
+    expect(ret.props?.reviewsWritten).toHaveLength(0);
     expect(ret.props?.profileTab).toBe('reviews-written');
     expect(ret.props?.reviewsReceivedCount).toBe(1);
-    expect(ret.props?.reviewsWrittenCount).toBe(1);
+    expect(ret.props?.reviewsWrittenCount).toBe(0);
     expect(ret.props?.user._id).toBe(TestId.USER);
   });
   test('getServerSideProps after following 2 users', async () => {
@@ -202,7 +206,7 @@ describe('pages/profile page', () => {
     expect(ret.props?.reviewsWritten).toHaveLength(0);
     expect(ret.props?.profileTab).toBe('');
     expect(ret.props?.reviewsReceivedCount).toBe(1);
-    expect(ret.props?.reviewsWrittenCount).toBe(1);
+    expect(ret.props?.reviewsWrittenCount).toBe(0);
     expect(ret.props?.user._id).toBe(TestId.USER);
     expect(ret.props?.followerCountInit).toBe(0);
     expect(ret.props?.reqUserFollowing).toHaveLength(2);

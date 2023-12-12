@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import Theme from '@root/constants/theme';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
@@ -16,6 +17,27 @@ import userHandle from '../../../../pages/api/user/index';
 
 beforeAll(async () => {
   await dbConnect();
+});
+
+jest.mock('stripe', () => {
+  return jest.fn().mockImplementation(() => {
+    return {
+      plans: {
+        retrieve: jest.fn(),
+      },
+      products: {
+        retrieve: jest.fn(),
+      },
+      paymentMethods: {
+        retrieve: jest.fn(),
+      },
+      subscriptions: {
+        list: jest.fn().mockReturnValue({ data: [] }),
+        update: jest.fn(),
+        search: jest.fn().mockReturnValue({ data: [] }),
+      },
+    };
+  });
 });
 afterEach(() => {
   jest.restoreAllMocks();
@@ -246,9 +268,9 @@ describe('api/follow', () => {
       // set emailConfirmed for UserC. User C has no user config
       await UserConfigModel.create({
         _id: new Types.ObjectId(),
+        gameId: GameId.PATHOLOGY,
         theme: Theme.Modern,
         userId: new Types.ObjectId(TestId.USER_C),
-        emailConfirmed: true
       })
 
     ]);

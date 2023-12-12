@@ -1,13 +1,14 @@
+import { GameId } from '@root/constants/GameId';
 import mongoose, { Types } from 'mongoose';
 import getDifficultyEstimate from '../../helpers/getDifficultyEstimate';
 import Level from '../db/level';
 import { LevelModel, PlayAttemptModel, ReviewModel, StatModel } from '../mongoose';
 import { AttemptContext } from './playAttemptSchema';
 
-export const LEVEL_DEFAULT_PROJECTION = { _id: 1, name: 1, slug: 1, width: 1, height: 1, data: 1, leastMoves: 1, calc_difficulty_estimate: 1, userId: 1, calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' }, };
+export const LEVEL_DEFAULT_PROJECTION = { _id: 1, name: 1, slug: 1, width: 1, height: 1, data: 1, leastMoves: 1, calc_difficulty_estimate: 1, userId: 1, calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' }, isRanked: 1 };
 
-// adds ts,calc_reviews_score_laplace and users won
-export const LEVEL_SEARCH_DEFAULT_PROJECTION = { _id: 1, ts: 1, name: 1, slug: 1, /*width: 1, height: 1, data: 1,*/ leastMoves: 1, calc_difficulty_estimate: 1, userId: 1, calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' }, calc_reviews_score_laplace: 1, calc_stats_players_beaten: 1, calc_reviews_count: 1 };
+// adds ts,calc_reviews_score_laplace and users solved
+export const LEVEL_SEARCH_DEFAULT_PROJECTION = { _id: 1, ts: 1, name: 1, slug: 1, leastMoves: 1, calc_difficulty_estimate: 1, userId: 1, calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' }, calc_reviews_score_laplace: 1, calc_stats_players_beaten: 1, calc_reviews_count: 1, isRanked: 1 };
 
 const LevelSchema = new mongoose.Schema<Level>(
   {
@@ -65,6 +66,11 @@ const LevelSchema = new mongoose.Schema<Level>(
       minLength: 2, // always need start and end
       maxlength: 40 * 40 + 39,
     },
+    gameId: {
+      type: String,
+      enum: GameId,
+      required: true,
+    },
     height: {
       type: Number,
       required: true,
@@ -75,6 +81,10 @@ const LevelSchema = new mongoose.Schema<Level>(
       type: Boolean,
     },
     isDraft: {
+      type: Boolean,
+      required: true,
+    },
+    isRanked: {
       type: Boolean,
       required: true,
     },
@@ -116,12 +126,13 @@ const LevelSchema = new mongoose.Schema<Level>(
   },
 );
 
-LevelSchema.index({ slug: 1 }, { name: 'slug_index', unique: true });
+LevelSchema.index({ slug: 1, gameId: 1 }, { name: 'slug_index', unique: true });
 LevelSchema.index({ userId: 1 });
 LevelSchema.index({ name: 1 });
 LevelSchema.index({ userId: 1, name: 1 });
 LevelSchema.index({ ts: -1 });
 LevelSchema.index({ isDraft: 1 });
+LevelSchema.index({ isRanked: 1 });
 LevelSchema.index({ leastMoves: 1 });
 LevelSchema.index({ calc_difficulty_estimate: 1 });
 LevelSchema.index({ calc_playattempts_duration_sum: 1 });
@@ -190,89 +201,95 @@ async function calcStats(lvl: Level) {
 
   const q = await StatModel.aggregate(aggs);
 
-  const players_beaten = q.length;
+  const solves = q.length;
 
   return {
-    calc_stats_players_beaten: players_beaten
+    calc_stats_players_beaten: solves
   };
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {}) {
-  const countJustBeaten = await PlayAttemptModel.countDocuments({
-    levelId: levelId,
-    attemptContext: AttemptContext.JUST_BEATEN,
-  });
-
-  // sumDuration is all of the sum(endTime-startTime) within the playAttempts
-  const sumDuration = await PlayAttemptModel.aggregate([
+  const bigQ = await PlayAttemptModel.aggregate([
     {
       $match: {
         levelId: levelId,
-        attemptContext: { $ne: AttemptContext.BEATEN },
       }
     },
     {
-      $group: {
-        _id: null,
-        sumDuration: {
-          $sum: {
-            $subtract: ['$endTime', '$startTime']
-          }
-        }
+      $facet: {
+        'countJustSolved': [
+          { $match: { attemptContext: AttemptContext.JUST_SOLVED } },
+          { $count: 'total' }
+        ],
+        'sumDuration': [
+          { $match: { attemptContext: { $ne: AttemptContext.SOLVED } } },
+          { $group: { _id: null, totalDuration: { $sum: { $subtract: ['$endTime', '$startTime'] } } } }
+        ],
+        'uniqueUsersList': [
+          {
+            $match: {
+              $or: [
+                {
+                  $and: [
+                    {
+                      $expr: {
+                        $gt: [
+                          {
+                            $subtract: ['$endTime', '$startTime']
+                          },
+                          0
+                        ]
+                      }
+                    },
+                    {
+                      attemptContext: AttemptContext.UNSOLVED,
+                    }
+                  ],
+                },
+                {
+                  attemptContext: AttemptContext.JUST_SOLVED,
+                },
+              ],
+            },
+          },
+          {
+            $group: {
+              _id: null,
+              userId: {
+                $addToSet: '$userId',
+              },
+            }
+          },
+          {
+            $unwind: {
+              path: '$userId',
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+
+        ]
+      }
+    },
+    {
+      $project: {
+        countJustSolved: { $arrayElemAt: ['$countJustSolved.total', 0] },
+        sumDuration: { $arrayElemAt: ['$sumDuration.totalDuration', 0] },
+        uniqueUsersList: '$uniqueUsersList',
       }
     }
   ], options);
 
-  // get array of unique userIds from playattempt calc_playattempts_unique_users
-  const uniqueUsersList = await PlayAttemptModel.aggregate([
-    {
-      $match: {
-        $or: [
-          {
-            $and: [
-              {
-                $expr: {
-                  $gt: [
-                    {
-                      $subtract: ['$endTime', '$startTime']
-                    },
-                    0
-                  ]
-                }
-              },
-              {
-                attemptContext: AttemptContext.UNBEATEN,
-              }
-            ],
-          },
-          {
-            attemptContext: AttemptContext.JUST_BEATEN,
-          },
-        ],
-        levelId: levelId,
-      },
-    },
-    {
-      $group: {
-        _id: null,
-        userId: {
-          $addToSet: '$userId',
-        },
-      }
-    },
-    {
-      $unwind: {
-        path: '$userId',
-        preserveNullAndEmptyArrays: true,
-      },
-    },
-  ]);
+  const result = bigQ[0];
+  const countJustSolved = result?.countJustSolved ?? 0;
+  const sumDuration = result?.sumDuration ?? 0;
+  const uniqueUsersList = result?.uniqueUsersList ?? [];
 
   const update = {
-    calc_playattempts_duration_sum: sumDuration[0]?.sumDuration ?? 0,
-    calc_playattempts_just_beaten_count: countJustBeaten,
-    calc_playattempts_unique_users: uniqueUsersList.map(u => u?.userId.toString()),
+    calc_playattempts_duration_sum: sumDuration ?? 0,
+    calc_playattempts_just_beaten_count: countJustSolved,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    calc_playattempts_unique_users: uniqueUsersList.map((u: any) => u?.userId.toString()),
   } as Partial<Level>;
 
   update.calc_difficulty_estimate = getDifficultyEstimate(update, uniqueUsersList.length);

@@ -17,46 +17,48 @@ export default function ProfileInsightsLevelPlayLog({ user }: {user: User}) {
     return <span>Loading...</span>;
   }
 
-  return (<>
-    <h2 className='text-xl font-bold break-words max-w-full'>Play Log for {user.name}&apos;s Levels</h2>
-    <div className='w-full max-w-lg'>
-      <DataTable
-        columns={[
-          {
-            name: 'User',
-            cell: (row, index) => <FormattedUser id={`play-log-${index}`} size={Dimensions.AvatarSizeSmall} user={row.user} />,
-            grow: 2,
-          },
-          {
-            name: 'Level',
-            cell: (row, index) => <FormattedLevelLink id={`play-log-${index}`} level={row.levelId} />,
-            grow: 2,
-          },
-          {
-            name: 'When',
-            cell: (row) => <FormattedDate ts={row.statTs} />,
-          },
-        ]}
-        conditionalRowStyles={[{
-          when: row => row.user?._id === reqUser?._id,
-          style: {
-            backgroundColor: 'var(--bg-color-4)',
-          },
-        }]}
-        customStyles={DATA_TABLE_CUSTOM_STYLES}
-        data={proStatsUser[ProStatsUserType.PlayLogForUserCreatedLevels]}
-        dense
-        noDataComponent={
-          <div className='p-3'>
+  return (
+    <div className='flex flex-col gap-1'>
+      <h2 className='text-xl font-bold break-words max-w-full'>Play Log for {user.name}&apos;s Levels</h2>
+      <div className='w-full max-w-lg'>
+        <DataTable
+          columns={[
+            {
+              name: 'User',
+              cell: (row, index) => <FormattedUser id={`play-log-${index}`} size={Dimensions.AvatarSizeSmall} user={row.user} />,
+              grow: 2,
+            },
+            {
+              name: 'Level',
+              cell: (row, index) => <FormattedLevelLink id={`play-log-${index}`} level={row.levelId} />,
+              grow: 2,
+            },
+            {
+              name: 'When',
+              cell: (row) => <FormattedDate ts={row.statTs} />,
+            },
+          ]}
+          conditionalRowStyles={[{
+            when: row => row.user?._id === reqUser?._id,
+            style: {
+              backgroundColor: 'var(--bg-color-4)',
+            },
+          }]}
+          customStyles={DATA_TABLE_CUSTOM_STYLES}
+          data={proStatsUser[ProStatsUserType.PlayLogForUserCreatedLevels]}
+          dense
+          noDataComponent={
+            <div className='p-3'>
             Nothing to display...
-          </div>
-        }
-        pagination={true}
-        paginationComponentOptions={{
-          noRowsPerPage: true,
-        }}
-        striped
-      />
+            </div>
+          }
+          pagination={true}
+          paginationComponentOptions={{
+            noRowsPerPage: true,
+          }}
+          striped
+        />
+      </div>
     </div>
-  </>);
+  );
 }

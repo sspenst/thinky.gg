@@ -1,11 +1,12 @@
 import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
 import isGuest from '@root/helpers/isGuest';
 import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmationEmail';
-import UserConfig from '@root/models/db/userConfig';
+import Collection from '@root/models/db/collection';
+import MultiplayerProfile from '@root/models/db/multiplayerProfile';
+import User from '@root/models/db/user';
 import bcrypt from 'bcryptjs';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
-import Stripe from 'stripe';
 import TestId from '../../../constants/testId';
 import { ValidType } from '../../../helpers/apiWrapper';
 import { enrichReqUser } from '../../../helpers/enrich';
@@ -18,7 +19,7 @@ import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import { AchievementModel, CollectionModel, CommentModel, GraphModel, KeyValueModel, LevelModel, MultiplayerProfileModel, NotificationModel, UserConfigModel, UserModel } from '../../../models/mongoose';
-import { getSubscription } from '../subscription';
+import { getSubscriptions, SubscriptionData } from '../subscription';
 import { getUserConfig } from '../user-config';
 
 export default withAuth({
@@ -39,8 +40,8 @@ export default withAuth({
   if (req.method === 'GET') {
     const [enrichedUser, multiplayerProfile, userConfig] = await Promise.all([
       enrichReqUser(req.user),
-      MultiplayerProfileModel.findOne({ 'userId': req.user._id }),
-      getUserConfig(req.user._id),
+      MultiplayerProfileModel.findOne({ 'userId': req.user._id }).lean<MultiplayerProfile>(),
+      getUserConfig(req.gameId, req.user),
     ]);
 
     cleanUser(enrichedUser);
@@ -66,7 +67,7 @@ export default withAuth({
     } = req.body;
 
     if (password) {
-      const user = await UserModel.findById(req.userId, '+password', { lean: false });
+      const user = await UserModel.findById(req.userId, '+password');
 
       if (!(await bcrypt.compare(currentPassword, user.password))) {
         return res.status(401).json({
@@ -87,34 +88,56 @@ export default withAuth({
     }
 
     if (email !== undefined) {
-      setObj['email'] = email.trim();
+      const emailTrimmed = email.trim();
+
+      if (emailTrimmed.length === 0) {
+        return res.status(400).json({ error: 'Email cannot be empty' });
+      }
+
+      if (emailTrimmed !== req.user.email) {
+        const userWithEmail = await UserModel.findOne({ email: email.trim() }, '_id').lean<User>();
+
+        if (userWithEmail) {
+          return res.status(400).json({ error: 'Email already taken' });
+        }
+      }
+
+      setObj['email'] = emailTrimmed;
     }
 
     if (bio !== undefined) {
       setObj['bio'] = bio.trim();
     }
 
+    // /^[-a-zA-Z0-9_]+$/.test(v);
     const trimmedName = name?.trim();
+    const nameValid = /^[a-zA-Z0-9_]+$/.test(trimmedName);
 
-    if (trimmedName) {
+    if (name !== undefined && !nameValid) {
+      return res.status(400).json({ error: 'Username can only contain letters, numbers, and underscores' });
+    }
+
+    if (name !== undefined && trimmedName.length === 0) {
+      return res.status(400).json({ error: 'Username cannot be empty' });
+    }
+
+    if (trimmedName && trimmedName !== req.user.name ) {
       setObj['name'] = trimmedName;
+      const userWithUsername = await UserModel.findOne({ name: trimmedName }, '_id').lean<User>();
+
+      if (userWithUsername) {
+        return res.status(400).json({ error: 'Username already taken' });
+      }
     }
 
     try {
-      const newUser = await UserModel.findOneAndUpdate({ _id: req.userId }, { $set: setObj }, { runValidators: true, new: true, projection: { _id: 1, email: 1, name: 1 } });
+      const newUser = await UserModel.findOneAndUpdate({ _id: req.userId }, { $set: setObj }, { runValidators: true, new: true, projection: { _id: 1, email: 1, name: 1, emailConfirmationToken: 1 } });
 
       if (setObj['email']) {
-        const userConfig = await UserConfigModel.findOneAndUpdate({ userId: req.userId }, {
-          $set: {
-            emailConfirmationToken: getEmailConfirmationToken(),
-            emailConfirmed: false,
-          }
-        }, {
-          new: true,
-          projection: { emailConfirmationToken: 1, },
-        });
+        newUser.emailConfirmationToken = getEmailConfirmationToken();
+        await newUser.save();
 
-        await sendEmailConfirmationEmail(req, newUser, userConfig as UserConfig);
+        await sendEmailConfirmationEmail(req, newUser);
       }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
@@ -128,10 +151,10 @@ export default withAuth({
 
       try {
         await session.withTransaction(async () => {
-          const levels = await LevelModel.find<Level>({
-            isDeleted: { $ne: true },
+          const levels = await LevelModel.find({
             userId: req.userId,
-          }, '_id name', { lean: true, session: session });
+            isDeleted: { $ne: true },
+          }, '_id name', { session: session }).lean<Level[]>();
 
           for (const level of levels) {
             const slug = await generateLevelSlug(trimmedName, level.name, level._id.toString(), { session: session });
@@ -142,7 +165,7 @@ export default withAuth({
           // Do the same for collections
           const collections = await CollectionModel.find({
             userId: req.userId,
-          }, '_id name', { lean: true, session: session });
+          }, '_id name', { session: session }).lean<Collection[]>();
 
           for (const collection of collections) {
             const slug = await generateCollectionSlug(trimmedName, collection.name, collection._id.toString(), { session: session });
@@ -163,13 +186,13 @@ export default withAuth({
     return res.status(200).json({ updated: true });
   } else if (req.method === 'DELETE') {
     // check if there is an active subscription
-    const [code, data] = await getSubscription(req);
+    const [code, data] = await getSubscriptions(req);
 
     if (code === 200) {
-      const subscription = (data as Partial<Stripe.Subscription>);
-
-      if (subscription.status === 'active' && subscription.cancel_at_period_end === false) {
-        return res.status(400).json({ error: 'You must cancel your subscription before deleting your account.' });
+      for (const subscription of data as SubscriptionData[]) {
+        if (subscription.status === 'active' && subscription.cancel_at_period_end === false) {
+          return res.status(400).json({ error: 'You must cancel all subscriptions before deleting your account. Contact help@pathology.gg if you are still experiencing issues' });
+        }
       }
     }
 
@@ -180,19 +203,21 @@ export default withAuth({
     try {
       await session.withTransaction(async () => {
         const levels = await LevelModel.find<Level>({
+          userId: req.userId,
           isDeleted: { $ne: true },
           isDraft: false,
-          userId: req.userId,
-        }, '_id name', { lean: true, session: session });
+        }, '_id name', { session: session }).lean<Level[]>();
 
         for (const level of levels) {
           const slug = await generateLevelSlug('archive', level.name, level._id.toString(), { session: session });
 
+          // TODO: promise.all this?
           await LevelModel.updateOne({ _id: level._id }, { $set: {
+            userId: new Types.ObjectId(TestId.ARCHIVE),
             archivedBy: req.userId,
             archivedTs: ts,
             slug: slug,
-            userId: new Types.ObjectId(TestId.ARCHIVE),
+
           } }, { session: session });
         }
 

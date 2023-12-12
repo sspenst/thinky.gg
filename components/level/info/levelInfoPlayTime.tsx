@@ -1,4 +1,5 @@
 import { Tab } from '@headlessui/react';
+import LoadingSpinner from '@root/components/page/loadingSpinner';
 import { RoleIcon } from '@root/components/page/roleIcons';
 import StyledTooltip from '@root/components/page/styledTooltip';
 import Role from '@root/constants/role';
@@ -39,7 +40,7 @@ export default function LevelInfoPlayTime() {
       <div className='flex gap-3 items-center'>
         <RoleIcon id='level-info-play-time' role={Role.PRO} size={20} />
         <div>
-          Get <Link href='/settings/proaccount' className='text-blue-300'>
+          Get <Link href='/settings/pro' className='text-blue-300'>
             Pathology Pro
           </Link> to see your play time for this level.
         </div>
@@ -47,9 +48,15 @@ export default function LevelInfoPlayTime() {
     );
   }
 
-  if (!proStatsLevel || !proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime]) {
+  if (!proStatsLevel) {
+    return <LoadingSpinner />;
+  }
+
+  if (!proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime]) {
     return <div className='text-sm'>No play time data available.</div>;
   }
+
+  const total = (proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime] as DateAndSum[]).reduce((a, b) => a + b.sum, 0);
 
   return (
     <div className='flex flex-col gap-2'>
@@ -82,30 +89,30 @@ export default function LevelInfoPlayTime() {
         </Tab.List>
         <Tab.Panels>
           <Tab.Panel tabIndex={-1}>
-            <div className='flex flex-col gap-1'>
+            <div className='grid gap-x-4 gap-y-1 pl-1' style={{
+              gridTemplateColumns: 'min-content 1fr',
+            }}>
               {
                 (proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime] as DateAndSum[]).map((d, i) => {
-                  return (
-                    <div key={'prostat-playattemptgraph-' + i} className='flex flex-row gap-4 items-center'>
-                      <div className='w-20 text-right'>{moment(new Date(d.date)).utc().format('M/D/YY')}</div>
-                      <div className='w-1/2 text-left text-sm' style={{
-                        color: 'var(--color-gray)',
-                      }}>{getTimePlayedStr(d.sum)}</div>
-                    </div>
-                  );
+                  return [
+                    <div className='w-full justify-end flex items-center' key={`prostat-playattemptgraph-${i}-1`}>{moment(new Date(d.date)).utc().format('M/D/YY')}</div>,
+                    <div className='text-left text-sm flex items-center' key={`prostat-playattemptgraph-${i}-2`} style={{
+                      color: 'var(--color-gray)',
+                    }}>{getTimePlayedStr(d.sum)}</div>,
+                  ];
                 })
               }
-              {((proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime] as DateAndSum[]).length > 0) ? (
-                <div className='flex flex-row gap-4 items-center font-bold'>
-                  <div className='w-20 text-right'>Total</div>
-                  <div className='w-1/2 text-left'>{getTimePlayedStr((proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime] as DateAndSum[]).reduce((a, b) => a + b.sum, 0))}</div>
-                </div>
-              ) : <div className='text-sm text-center'>You have no play time recorded for this level.</div> }
+              <div className='w-full justify-end flex items-center font-bold'>Total</div>
+              <div className={classNames('text-left flex items-center', { 'font-bold': total })}>{total === 0 ? 'No play time recorded' : getTimePlayedStr(total)}</div>
               {proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData] && (proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData] as CountAndSum).count >= 1 && (<>
-                <div className='flex flex-row gap-4 items-center font-medium'>
-                  <div data-tooltip-id='others-tooltip' className='w-20 text-right underline decoration-dashed cursor-help' data-tooltip-content='Average time for others who solved this level'>Others</div>
-                  <div className='w-1/2 text-left'>{getTimePlayedStr(((proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData] as CountAndSum)?.sum / (proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData] as CountAndSum)?.count) || 0)}</div>
+                <div
+                  className='w-20 w-full justify-end flex items-center font-medium underline decoration-dashed cursor-help'
+                  data-tooltip-content='Average time for others who solved this level'
+                  data-tooltip-id='others-tooltip'
+                >
+                  Others
                 </div>
+                <div className='text-left flex items-center font-medium'>{getTimePlayedStr(((proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData] as CountAndSum)?.sum / (proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData] as CountAndSum)?.count) || 0)}</div>
                 <StyledTooltip id='others-tooltip' />
               </>)}
             </div>

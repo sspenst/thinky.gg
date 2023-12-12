@@ -8,12 +8,12 @@ import { logger } from '../../../helpers/logger';
 import { clearNotifications } from '../../../helpers/notificationHelper';
 import { requestBroadcastMatch } from '../../../lib/appSocketToClient';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import { MatchAction, MatchLogGeneric, MultiplayerMatchState } from '../../../models/constants/multiplayer';
 import Level from '../../../models/db/level';
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
 import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
 import { CollectionModel, ImageModel, LevelModel, MultiplayerMatchModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
-import { MatchAction, MatchLogGeneric, MultiplayerMatchState } from '../../../models/MultiplayerEnums';
 import { generateMatchLog } from '../../../models/schemas/multiplayerMatchSchema';
 import { queueCalcCreatorCounts, queueCalcPlayAttempts, queueRefreshIndexCalcs } from '../internal-jobs/worker';
 
@@ -37,16 +37,22 @@ export default withAuth({ POST: {
     });
   }
 
+  if (level.isRanked) {
+    return res.status(403).json({
+      error: 'Cannot unpublish ranked levels',
+    });
+  }
+
   const session = await mongoose.startSession();
   let newLevelId;
 
   try {
     await session.withTransaction(async () => {
-      const record = await RecordModel.findOne<Record>(
+      const record = await RecordModel.findOne(
         { levelId: id },
         { userId: 1 },
-        { lean: true, session: session },
-      ).sort({ moves: 1, ts: -1 });
+        { session: session },
+      ).sort({ moves: 1, ts: -1 }).lean<Record>();
 
       // update calc_records if the record was set by a different user
       if (record && record.userId.toString() !== level.userId.toString()) {
@@ -55,18 +61,17 @@ export default withAuth({ POST: {
       }
 
       const [levelClone, matchesToRebroadcast, stats] = await Promise.all([
-        LevelModel.findOne<Level>({ _id: id, isDeleted: { $ne: true }, isDraft: false }, {}, { session: session, lean: true }),
-        MultiplayerMatchModel.find<MultiplayerMatch>({
+        LevelModel.findOne({ _id: id, isDeleted: { $ne: true }, isDraft: false }, {}, { session: session }).lean<Level>(),
+        MultiplayerMatchModel.find({
           state: MultiplayerMatchState.ACTIVE,
           levels: id,
         }, {
           _id: 1,
           matchId: 1
         }, {
-          lean: true,
           session: session,
-        }),
-        StatModel.find<Stat>({ levelId: id, complete: true }, 'userId', { lean: true, session: session }),
+        }).lean<MultiplayerMatch[]>(),
+        StatModel.find({ levelId: id, complete: true }, 'userId', { session: session }).lean<Stat[]>(),
       ]);
 
       const userIds = stats.map(stat => stat.userId);
@@ -120,7 +125,7 @@ export default withAuth({ POST: {
         queueRefreshIndexCalcs(levelClone._id, { session: session }),
         queueCalcPlayAttempts(levelClone._id, { session: session }),
         queueCalcCreatorCounts(level.userId, { session: session }),
-        queueDiscordWebhook(Discord.LevelsId, `**${req.user.name}** unpublished a level: ${level.name}`, { session: session }),
+        queueDiscordWebhook(Discord.Levels, `**${req.user.name}** unpublished a level: ${level.name}`, { session: session }),
         ...matchesToRebroadcast.map(match => requestBroadcastMatch(match.matchId)),
       ]);
     });

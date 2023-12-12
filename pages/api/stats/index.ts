@@ -1,6 +1,8 @@
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import Direction from '@root/constants/direction';
 import getDifficultyEstimate from '@root/helpers/getDifficultyEstimate';
+import PlayAttempt from '@root/models/db/playAttempt';
+import User from '@root/models/db/user';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
@@ -9,7 +11,7 @@ import { ValidArray, ValidObjectId, ValidType } from '../../../helpers/apiWrappe
 import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
-import { createNewRecordOnALevelYouBeatNotifications } from '../../../helpers/notificationHelper';
+import { createNewRecordOnALevelYouSolvedNotifications } from '../../../helpers/notificationHelper';
 import validateSolution, { randomRotateLevelDataViaMatchHash } from '../../../helpers/validateSolution';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level, { EnrichedLevel } from '../../../models/db/level';
@@ -30,7 +32,8 @@ export default withAuth({
   },
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
-    const stats = await StatModel.find<Stat>({ userId: new Types.ObjectId(req.userId), isDeleted: { $ne: true } }, {}, { lean: true });
+    // Todo: only select needed fields here to minimize data transfer
+    const stats = await StatModel.find({ userId: new Types.ObjectId(req.userId), isDeleted: { $ne: true } }).lean<Stat[]>();
 
     return res.status(200).json(stats);
   } else if (req.method === 'PUT') {
@@ -51,7 +54,7 @@ export default withAuth({
 
     try {
       await session.withTransaction(async () => {
-        const level = await LevelModel.findOne<Level>({ _id: levelId, isDeleted: { $ne: true } }, {}, { lean: true, session: session });
+        const level = await LevelModel.findOne({ _id: levelId, isDeleted: { $ne: true } }, {}, { session: session }).lean<Level>();
 
         if (!level) {
           resTrack.status = 404;
@@ -90,12 +93,17 @@ export default withAuth({
 
         const complete = moves <= level.leastMoves;
 
+        const promises = [];
+
         if (complete && matchId) {
           // TODO: use session here
-          await matchMarkCompleteLevel(req.user._id, matchId, level._id);
+          promises.push(matchMarkCompleteLevel(req.user._id, matchId, level._id));
         }
 
-        const stat = await StatModel.findOne<Stat>({ levelId: level._id, userId: req.user._id }, {}, { lean: true, session: session });
+        const [stat] = await Promise.all([
+          StatModel.findOne({ userId: req.user._id, levelId: level._id, }, {}, { session: session }).lean<Stat>(),
+          ...promises,
+        ]);
 
         // level was previously solved and no personal best was set, only need to $inc attempts and return
         if (stat && moves >= stat.moves) {
@@ -110,6 +118,7 @@ export default withAuth({
             _id: new Types.ObjectId(),
             attempts: 1,
             complete: complete,
+            gameId: level.gameId,
             levelId: level._id,
             moves: moves,
             ts: ts,
@@ -135,9 +144,15 @@ export default withAuth({
 
         // if the level was previously incomplete, increment score
         if (!stat?.complete) {
+          const userInc: mongoose.AnyKeys<User> = { score: 1 };
+
+          if (level.isRanked) {
+            userInc.calcRankedSolves = 1;
+          }
+
           await Promise.all([
-            UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }, { session: session }),
-            queueRefreshAchievements(req.user._id, [AchievementCategory.SKILL, AchievementCategory.USER], { session: session })
+            UserModel.updateOne({ _id: req.userId }, { $inc: userInc }, { session: session }),
+            queueRefreshAchievements(level.gameId, req.user._id, [AchievementCategory.SKILL, AchievementCategory.USER], { session: session })
           ]);
         }
 
@@ -163,8 +178,10 @@ export default withAuth({
             }
           }
 
+          // TODO can these two promises be combined to an promise all?
           await RecordModel.create([{
             _id: new Types.ObjectId(),
+            gameId: level.gameId,
             levelId: level._id,
             moves: moves,
             ts: ts,
@@ -172,14 +189,19 @@ export default withAuth({
           }], { session: session });
 
           // find the stats and users that that need to be updated
-          const stats = await StatModel.find<Stat>({
-            complete: true,
-            levelId: level._id,
+          const stats = await StatModel.find({
             userId: { $ne: req.userId },
+            levelId: level._id,
+            complete: true,
           }, 'userId', {
-            lean: true,
             session: session,
-          });
+          }).lean<Stat[]>();
+
+          const userInc: mongoose.AnyKeys<User> = { score: -1 };
+
+          if (level.isRanked) {
+            userInc.calcRankedSolves = -1;
+          }
 
           // update all stats/users that had the record on this level
           if (stats.length > 0) {
@@ -193,10 +215,10 @@ export default withAuth({
               ),
               UserModel.updateMany(
                 { _id: { $in: statUserIds } },
-                { $inc: { score: -1 } },
+                { $inc: userInc },
                 { session: session },
               ),
-              createNewRecordOnALevelYouBeatNotifications(statUserIds, req.userId, level._id, moves.toString(), { session: session })
+              createNewRecordOnALevelYouSolvedNotifications(level.gameId, statUserIds, req.userId, level._id, moves.toString(), { session: session })
             ]);
           }
 
@@ -205,7 +227,7 @@ export default withAuth({
             {
               $match: {
                 levelId: level._id,
-                attemptContext: AttemptContext.BEATEN,
+                attemptContext: AttemptContext.SOLVED,
               }
             },
             {
@@ -222,47 +244,48 @@ export default withAuth({
 
           incPlayattemptsDurationSum += sumDuration[0]?.sumDuration ?? 0;
 
-          // reset all playattempts to unbeaten
-          await Promise.all([PlayAttemptModel.updateMany(
-            { levelId: level._id },
-            { $set: { attemptContext: AttemptContext.UNBEATEN } },
-            { session: session },
-          ),
-          queueDiscordWebhook(Discord.LevelsId, `**${req.user.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`, { session: session })
+          // reset all playattempts to unsolved
+          await Promise.all([
+            PlayAttemptModel.updateMany(
+              { levelId: level._id },
+              { $set: { attemptContext: AttemptContext.UNSOLVED } },
+              { session: session },
+            ),
+            queueDiscordWebhook(Discord.Levels, `**${req.user.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`, { session: session }),
           ]);
         }
 
         // extend the user's recent playattempt up to current ts
         const found = await PlayAttemptModel.findOneAndUpdate({
-          endTime: { $gt: ts - 3 * 60 },
           levelId: level._id,
           userId: req.user._id,
+          endTime: { $gt: ts - 3 * 60 },
         }, {
           $set: {
-            attemptContext: AttemptContext.JUST_BEATEN,
+            attemptContext: AttemptContext.JUST_SOLVED,
             endTime: ts,
           },
           $inc: { updateCount: 1 }
         }, {
           new: false,
-          lean: true,
           session: session,
           sort: {
             endTime: -1,
-            // NB: if end time is identical, we want to get the highest attempt context (JUST_BEATEN over UNBEATEN)
+            // NB: if end time is identical, we want to get the highest attempt context (JUST_SOLVED over UNSOLVED)
             attemptContext: -1,
           },
-        });
+        }).lean<PlayAttempt>();
 
         if (!found) {
           // create one if it did not exist... rare but possible
           await PlayAttemptModel.create([{
             _id: new Types.ObjectId(),
-            attemptContext: AttemptContext.JUST_BEATEN,
-            startTime: ts,
+            attemptContext: AttemptContext.JUST_SOLVED,
             endTime: ts,
-            updateCount: 0,
+            gameId: level.gameId,
             levelId: level._id,
+            startTime: ts,
+            updateCount: 0,
             userId: req.user._id,
           }], { session: session });
         } else {
@@ -288,16 +311,15 @@ export default withAuth({
           levelUpdate['$inc']['calc_playattempts_just_beaten_count'] = 1;
         }
 
-        const enrichedLevel = await LevelModel.findByIdAndUpdate<EnrichedLevel>(level._id, levelUpdate, {
+        const enrichedLevel = await LevelModel.findByIdAndUpdate(level._id, levelUpdate, {
           new: true,
-          lean: true,
           projection: {
             calc_playattempts_duration_sum: 1,
             calc_playattempts_just_beaten_count: 1,
             calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' },
           },
           session: session,
-        });
+        }).lean<EnrichedLevel>();
 
         // should be impossible, but need this check for typescript to be happy
         if (!enrichedLevel) {

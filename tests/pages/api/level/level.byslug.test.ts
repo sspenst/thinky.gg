@@ -1,6 +1,7 @@
+import { GameId } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
+import { NextApiRequestGuest } from '@root/helpers/apiWrapper';
 import { enableFetchMocks } from 'jest-fetch-mock';
-import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
@@ -12,6 +13,7 @@ import { LevelModel, NotificationModel } from '../../../../models/mongoose';
 import modifyLevelHandler from '../../../../pages/api/level/[id]';
 import createLevelHandler from '../../../../pages/api/level/index';
 import getLevelBySlugHandler from '../../../../pages/api/level-by-slug/[username]/[slugName]';
+import saveLevelToHandler from '../../../../pages/api/save-level-to/[id]';
 import modifyUserHandler from '../../../../pages/api/user/index';
 
 let level_id_1: string;
@@ -37,7 +39,6 @@ describe('Testing slugs for levels', () => {
           body: {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
-            collectionIds: [TestId.COLLECTION],
             data: '4000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000003',
           },
           headers: {
@@ -97,7 +98,6 @@ describe('Testing slugs for levels', () => {
           },
           body: {
             name: 'I\'m happy and I know it! Pt. </1]>',
-            collectionIds: [TestId.COLLECTION, TestId.COLLECTION_2],
             authorNote: 'I\'m a nice little note OK.',
           },
           query: {
@@ -116,11 +116,6 @@ describe('Testing slugs for levels', () => {
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-
-        // should not have a notification
-        const notifs = await NotificationModel.find({ type: NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION });
-
-        expect(notifs.length).toBe(0);
       },
     });
     await testApiHandler({
@@ -155,7 +150,7 @@ describe('Testing slugs for levels', () => {
       },
     });
   });
-  test('Adding a level to your collection should create a notification', async () => {
+  test('Adding a draft level to your collection should 404', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -166,7 +161,6 @@ describe('Testing slugs for levels', () => {
           },
           body: {
             collectionIds: [TestId.COLLECTION_B],
-            name: 'TODO: name is required even though it is ignored'
           },
           query: {
             id: level_id_1,
@@ -176,7 +170,38 @@ describe('Testing slugs for levels', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await modifyLevelHandler(req, res);
+        await saveLevelToHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Level not found');
+        expect(res.status).toBe(404);
+      },
+    });
+  });
+  test('Adding a level to your collection should create a notification', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          userId: TestId.USER,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            collectionIds: [TestId.COLLECTION],
+          },
+          query: {
+            id: TestId.LEVEL_4,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await saveLevelToHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
@@ -188,9 +213,9 @@ describe('Testing slugs for levels', () => {
         const notifs = await NotificationModel.find({ type: NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION });
 
         expect(notifs.length).toBe(1);
-        expect(notifs[0].userId.toString()).toBe(TestId.USER);
-        expect(notifs[0].source?._id.toString()).toBe(level_id_1);
-        expect(notifs[0].target?._id.toString()).toBe(TestId.COLLECTION_B);
+        expect(notifs[0].userId.toString()).toBe(TestId.USER_B);
+        expect(notifs[0].source?._id.toString()).toBe(TestId.LEVEL_4);
+        expect(notifs[0].target?._id.toString()).toBe(TestId.COLLECTION);
       },
     });
   });
@@ -205,7 +230,6 @@ describe('Testing slugs for levels', () => {
           },
           body: {
             name: '<(~.~)>',
-            collectionIds: [TestId.COLLECTION],
             authorNote: 'I\'m a nice little note OK.',
           },
           query: {
@@ -304,7 +328,8 @@ describe('Testing slugs for levels', () => {
   test('Getting a level by slug when not logged in should work', async () => {
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
+          gameId: GameId.PATHOLOGY,
           method: 'GET',
           query: {
             username: 'newuser',
@@ -335,7 +360,8 @@ describe('Testing slugs for levels', () => {
   test('Getting an UNDRAFTED level by slug when not logged in should work', async () => {
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
+          gameId: GameId.PATHOLOGY,
           method: 'GET',
           query: {
             id: 'newuser',
@@ -369,7 +395,6 @@ describe('Testing slugs for levels', () => {
           body: {
             authorNote: 'Test level note draft',
             name: 'Test Level [1]', // This should generate a different slug that matches the others
-            collectionIds: [TestId.COLLECTION],
             data: '4000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000003',
           },
           headers: {
@@ -392,7 +417,8 @@ describe('Testing slugs for levels', () => {
   test('Getting the slug for test-level-1 should still return the original level', async () => {
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
+          gameId: GameId.PATHOLOGY,
           method: 'GET',
           query: {
             username: 'newuser',
@@ -429,7 +455,6 @@ describe('Testing slugs for levels', () => {
           },
           body: {
             name: 'test level (2)',
-            collectionIds: [TestId.COLLECTION],
             authorNote: 'I\'m a nice little note OK.',
           },
           query: {
@@ -467,7 +492,6 @@ describe('Testing slugs for levels', () => {
           },
           body: {
             name: 'test level (2)',
-            collectionIds: [TestId.COLLECTION],
             authorNote: 'I\'m a nice little note OK.',
           },
           query: {

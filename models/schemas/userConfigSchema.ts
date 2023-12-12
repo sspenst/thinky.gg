@@ -1,5 +1,6 @@
+import { GameId } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
-import { TourType } from '@root/constants/tourType';
+import TourType from '@root/constants/tourType';
 import mongoose from 'mongoose';
 import { EmailDigestSettingTypes } from '../../constants/emailDigest';
 import UserConfig from '../db/userConfig';
@@ -10,13 +11,20 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
-    emailConfirmationToken: {
-      type: String,
-      select: false,
+    disallowedEmailNotifications: {
+      type: [{ type: String, enum: NotificationType }],
+      required: true,
+      default: [],
     },
-    emailConfirmed: {
-      type: Boolean,
-      default: false,
+    disallowedPushNotifications: {
+      type: [{ type: String, enum: NotificationType }],
+      required: true,
+      default: [],
+    },
+    gameId: {
+      type: String,
+      enum: GameId,
+      required: true,
     },
     emailDigest: {
       type: String,
@@ -24,9 +32,10 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       enum: EmailDigestSettingTypes,
       default: EmailDigestSettingTypes.DAILY,
     },
-    emailNotificationsList: {
-      type: [{ type: String, enum: NotificationType }],
+    giftSubscriptions: {
+      type: [String],
       required: false,
+      select: false,
       default: [],
     },
     mobileDeviceTokens: {
@@ -35,11 +44,6 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       select: false,
       default: [],
       maxlength: 100, // max 100 devices @TODO: should probably 'rotate' this list and remove oldest device tokens on push of new one
-    },
-    pushNotificationsList: {
-      type: [{ type: String, enum: NotificationType }],
-      required: false,
-      default: [],
     },
     showPlayStats: {
       type: Boolean,
@@ -79,6 +83,6 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
   }
 );
 
-UserConfigSchema.index({ userId: 1 }, { unique: true });
+UserConfigSchema.index({ userId: 1, gameId: 1 }, { unique: true });
 
 export default UserConfigSchema;

@@ -21,10 +21,10 @@ import StyledTooltip from '../../../components/page/styledTooltip';
 import Dimensions from '../../../constants/dimensions';
 import { AppContext } from '../../../contexts/appContext';
 import { getUserFromToken } from '../../../lib/withAuth';
+import { MatchAction, MatchLogDataGameRecap, MatchLogDataLevelComplete, MatchLogDataUserLeveId, MultiplayerMatchState } from '../../../models/constants/multiplayer';
 import Control from '../../../models/control';
 import Level from '../../../models/db/level';
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
-import { MatchAction, MatchLogDataGameRecap, MatchLogDataLevelComplete, MatchLogDataUserLeveId, MultiplayerMatchState } from '../../../models/MultiplayerEnums';
 import SelectOption from '../../../models/selectOption';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -508,7 +508,6 @@ export default function Match() {
                   disableCheckpoints={true}
                   enableSessionCheckpoint={false}
                   extraControls={[skipControl(usedSkip)]}
-                  hideSidebar={true}
                   key={'game-' + activeLevel._id.toString()}
                   level={activeLevel}
                   matchId={match.matchId}

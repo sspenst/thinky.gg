@@ -27,7 +27,7 @@ export async function getLastLevelPlayed(user: User) {
 export default withAuth({
   GET: {
     query: {
-      context: ValidEnum(['recent_unbeaten']),
+      context: ValidEnum(['recent_unsolved']),
     },
   },
   POST: {
@@ -50,31 +50,31 @@ export default withAuth({
 
     try {
       await session.withTransaction(async () => {
-        const latestPlayAttempt = await PlayAttemptModel.findOne<PlayAttempt>(
+        const latestPlayAttempt = await PlayAttemptModel.findOne(
           {
-            isDeleted: { $ne: true },
             levelId: levelObjectId,
             userId: req.user._id,
+            isDeleted: { $ne: true },
           },
           {
             _id: 1,
             attemptContext: 1,
+            gameId: 1,
             endTime: 1,
           },
           {
-            lean: true,
             session: session,
             $sort: {
               endTime: -1,
-              // NB: if end time is identical, we want to get the highest attempt context (JUST_BEATEN over UNBEATEN)
+              // NB: if end time is identical, we want to get the highest attempt context (JUST_SOLVED over UNSOLVED)
               attemptContext: -1,
             },
           },
-        );
+        ).lean<PlayAttempt>();
 
         if (!latestPlayAttempt) {
           // there is no playattempt yet, so need to check if the level exists before continuing
-          const level = await LevelModel.findOne<EnrichedLevel>(
+          const level = await LevelModel.findOne(
             {
               _id: levelObjectId,
               isDeleted: { $ne: true },
@@ -82,12 +82,12 @@ export default withAuth({
             },
             {
               userId: 1,
+              gameId: 1
             },
             {
-              lean: true,
               session: session,
             },
-          );
+          ).lean<EnrichedLevel>();
 
           if (!level) {
             resTrack.status = 404;
@@ -98,8 +98,9 @@ export default withAuth({
           // create the user's first playattempt for this level and return
           const resp = await PlayAttemptModel.create([{
             _id: new Types.ObjectId(),
-            attemptContext: level.userId.toString() === req.userId ? AttemptContext.BEATEN : AttemptContext.UNBEATEN,
+            attemptContext: level.userId.toString() === req.userId ? AttemptContext.SOLVED : AttemptContext.UNSOLVED,
             endTime: now,
+            gameId: level.gameId,
             levelId: levelObjectId,
             startTime: now,
             updateCount: 0,
@@ -112,7 +113,7 @@ export default withAuth({
           return;
         }
 
-        if (latestPlayAttempt.endTime > (now - 3 * 60) && latestPlayAttempt.attemptContext !== AttemptContext.JUST_BEATEN) {
+        if (latestPlayAttempt.endTime > (now - 3 * 60) && latestPlayAttempt.attemptContext !== AttemptContext.JUST_SOLVED) {
           // extend recent playattempts
           await PlayAttemptModel.updateOne(
             { _id: latestPlayAttempt._id },
@@ -124,10 +125,10 @@ export default withAuth({
           );
 
           // increment the level's calc_playattempts_duration_sum
-          if (latestPlayAttempt.attemptContext === AttemptContext.UNBEATEN) {
+          if (latestPlayAttempt.attemptContext === AttemptContext.UNSOLVED) {
             const newPlayDuration = now - latestPlayAttempt.endTime;
 
-            const updatedLevel = await LevelModel.findByIdAndUpdate<EnrichedLevel>(levelObjectId, {
+            const updatedLevel = await LevelModel.findByIdAndUpdate(levelObjectId, {
               $inc: {
                 calc_playattempts_duration_sum: newPlayDuration,
               },
@@ -136,14 +137,13 @@ export default withAuth({
               },
             }, {
               new: true,
-              lean: true,
               projection: {
                 calc_playattempts_duration_sum: 1,
                 calc_playattempts_just_beaten_count: 1,
                 calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' },
               },
               session: session,
-            });
+            }).lean<EnrichedLevel>();
 
             if (!updatedLevel) {
               resTrack.status = 404;
@@ -156,9 +156,8 @@ export default withAuth({
                 calc_difficulty_estimate: getDifficultyEstimate(updatedLevel, updatedLevel.calc_playattempts_unique_users_count ?? 0),
               },
             }, {
-              lean: true,
               session: session,
-            });
+            }).lean();
           }
 
           resTrack.status = 200;
@@ -169,8 +168,9 @@ export default withAuth({
 
         const resp = await PlayAttemptModel.create([{
           _id: new Types.ObjectId(),
-          attemptContext: latestPlayAttempt.attemptContext === AttemptContext.UNBEATEN ? AttemptContext.UNBEATEN : AttemptContext.BEATEN,
+          attemptContext: latestPlayAttempt.attemptContext === AttemptContext.UNSOLVED ? AttemptContext.UNSOLVED : AttemptContext.SOLVED,
           endTime: now,
+          gameId: latestPlayAttempt.gameId,
           levelId: levelObjectId,
           startTime: now,
           updateCount: 0,

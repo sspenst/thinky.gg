@@ -18,10 +18,10 @@ export default apiWrapper({ POST: {
 
   // trim whitespaces from name
   const trimmedName = name.trim();
-  let user = await UserModel.findOne<User>({ name: trimmedName }, '_id password', { lean: true });
+  let user = await UserModel.findOne({ name: trimmedName }, '_id password').lean<User>();
 
   if (!user) {
-    user = await UserModel.findOne<User>({ email: trimmedName }, '_id password', { lean: true });
+    user = await UserModel.findOne({ email: trimmedName }, '_id password').lean<User>();
   }
 
   if (!user || user.password === undefined) {

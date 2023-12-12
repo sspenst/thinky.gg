@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import { Types } from 'mongoose';
 import NotificationType from '../../constants/notificationType';
 import Collection from './collection';
@@ -7,10 +8,13 @@ import User from './user';
 interface Notification {
   _id: Types.ObjectId;
   createdAt: Date;
+  gameId: GameId;
   message?: string;
   read: boolean;
+  // the object that initiates the notification
   source: User | Achievement | null;
   sourceModel: string;
+  // the object that the notification is about
   target: User | EnrichedLevel | Collection;
   targetModel: string;
   type: NotificationType;

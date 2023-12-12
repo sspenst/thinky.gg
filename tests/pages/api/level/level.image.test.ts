@@ -1,6 +1,7 @@
+import { GameId } from '@root/constants/GameId';
+import { NextApiRequestGuest } from '@root/helpers/apiWrapper';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
-import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import Dimensions from '../../../../constants/dimensions';
@@ -35,12 +36,13 @@ describe('pages/api/level/image/[id]', () => {
     expect(Dimensions.LevelCanvasWidth).toBe(1);
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
+          gameId: GameId.PATHOLOGY,
           method: 'GET',
           query: {
             id: TestId.LEVEL,
           },
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestGuest;
 
         await getLevelImageHandler(req, res);
       },
@@ -59,12 +61,13 @@ describe('pages/api/level/image/[id]', () => {
   test('GET a second time to get the cached image', async () => {
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
+          gameId: GameId.PATHOLOGY,
           method: 'GET',
           query: {
             id: TestId.LEVEL,
           },
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestGuest;
 
         await getLevelImageHandler(req, res);
       },
@@ -83,12 +86,13 @@ describe('pages/api/level/image/[id]', () => {
   test('Requesting an image for a level that doesn\'t exist should 404', async () => {
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
+          gameId: GameId.PATHOLOGY,
           method: 'GET',
           query: {
             id: new Types.ObjectId().toString(),
           },
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestGuest;
 
         await getLevelImageHandler(req, res);
       },
@@ -117,7 +121,6 @@ describe('pages/api/level/image/[id]', () => {
           body: {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
-            collectionIds: [TestId.COLLECTION],
             data: '4000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000003',
           },
           headers: {
@@ -139,12 +142,13 @@ describe('pages/api/level/image/[id]', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
+          gameId: GameId.PATHOLOGY,
           method: 'GET',
           query: {
             id: draftLevelId,
           },
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestGuest;
 
         await getLevelImageHandler(req, res);
       },
@@ -164,12 +168,13 @@ describe('pages/api/level/image/[id]', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestGuest = {
+          gameId: GameId.PATHOLOGY,
           method: 'GET',
           query: {
-            id: '[catalog]',
+            id: '[home]',
           },
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestGuest;
 
         await getLevelImageHandler(req, res);
       },

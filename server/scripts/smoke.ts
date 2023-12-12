@@ -25,7 +25,6 @@ async function smokeKeyPages() {
     '/create',
     '/users',
     '/tutorial',
-    '/catalog',
     '/play',
     '/profile/k2xl',
     '/profile/tilu',

@@ -1,4 +1,5 @@
 import FormattedDate from '@root/components/formatted/formattedDate';
+import Solved from '@root/components/level/info/solved';
 import LoadingSpinner from '@root/components/page/loadingSpinner';
 import RoleIcons from '@root/components/page/roleIcons';
 import StyledTooltip from '@root/components/page/styledTooltip';
@@ -7,13 +8,15 @@ import PlayerRank from '@root/components/profile/playerRank';
 import { ProfileAchievments } from '@root/components/profile/profileAchievements';
 import ProfileMultiplayer from '@root/components/profile/profileMultiplayer';
 import StatFilter from '@root/constants/statFilter';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { getUsersWithMultiplayerProfile } from '@root/helpers/getUsersWithMultiplayerProfile';
 import useSWRHelper from '@root/hooks/useSWRHelper';
+import { MultiplayerMatchState } from '@root/models/constants/multiplayer';
 import Graph from '@root/models/db/graph';
-import { MultiplayerMatchState } from '@root/models/MultiplayerEnums';
 import { getCollections } from '@root/pages/api/collection-by-id/[id]';
 import classNames from 'classnames';
-import { debounce } from 'debounce';
+import debounce from 'debounce';
+import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -39,7 +42,7 @@ import statFilterOptions from '../../../../helpers/filterSelectOptions';
 import getProfileSlug from '../../../../helpers/getProfileSlug';
 import { getReviewsByUserId, getReviewsByUserIdCount } from '../../../../helpers/getReviewsByUserId';
 import { getReviewsForUserId, getReviewsForUserIdCount } from '../../../../helpers/getReviewsForUserId';
-import naturalSort from '../../../../helpers/naturalSort';
+import naturalSort, { playLaterCompareFn } from '../../../../helpers/naturalSort';
 import cleanUser from '../../../../lib/cleanUser';
 import { getUserFromToken } from '../../../../lib/withAuth';
 import Achievement from '../../../../models/db/achievement';
@@ -88,7 +91,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   const profileTab = !tab ? ProfileTab.Profile : tab[0] as ProfileTab;
-  const users = await getUsersWithMultiplayerProfile({ name: name }, { bio: 1, ts: 1, calc_levels_created_count: 1, calc_records: 1, score: 1 });
+  const gameId = getGameIdFromReq(context.req);
+  const users = await getUsersWithMultiplayerProfile(gameId, { name: name }, { bio: 1, calcRankedSolves: 1, calc_levels_created_count: 1, calc_records: 1, score: 1, ts: 1 });
 
   if (!users || users.length !== 1) {
     return {
@@ -101,6 +105,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   cleanUser(user);
 
   const userId = user._id.toString();
+  const viewingOwnProfile = reqUser?._id.toString() === userId;
 
   const [
     achievements,
@@ -108,6 +113,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     collectionsCount,
     followData,
     levelsCount,
+    levelsSolvedAgg,
     multiplayerCount,
     reviewsReceived,
     reviewsWritten,
@@ -116,9 +122,28 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   ] = await Promise.all([
     profileTab === ProfileTab.Achievements ? AchievementModel.find<Achievement>({ userId: userId }) : [] as Achievement[],
     AchievementModel.countDocuments({ userId: userId }),
-    CollectionModel.countDocuments({ userId: userId }),
+    CollectionModel.countDocuments({
+      userId: userId,
+      ...(!viewingOwnProfile && { isPrivate: { $ne: true } }),
+    }),
     getFollowData(user._id.toString(), reqUser),
     LevelModel.countDocuments({ isDeleted: { $ne: true }, isDraft: false, userId: userId }),
+    profileTab === ProfileTab.Levels && reqUser ? LevelModel.aggregate([
+      { $match: { isDeleted: { $ne: true }, isDraft: false, userId: new Types.ObjectId(userId) } },
+      {
+        $lookup: {
+          from: 'stats',
+          localField: '_id',
+          foreignField: 'levelId',
+          as: 'stats',
+          pipeline: [
+            { $match: { userId: reqUser._id, complete: true } },
+          ],
+        },
+      },
+      { $match: { 'stats.0': { $exists: true } } },
+      { $count: 'count' },
+    ]) : undefined,
     MultiplayerMatchModel.countDocuments({ players: userId, state: MultiplayerMatchState.FINISHED, rated: true }),
     profileTab === ProfileTab.ReviewsReceived ? getReviewsForUserId(userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
     profileTab === ProfileTab.ReviewsWritten ? getReviewsByUserId(userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
@@ -126,12 +151,15 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     getReviewsByUserIdCount(userId),
   ]);
 
+  const levelsSolved = levelsSolvedAgg?.at(0)?.count ?? 0;
+
   const profilePageProps = {
     achievements: JSON.parse(JSON.stringify(achievements)),
     achievementsCount: achievementsCount,
     collectionsCount: collectionsCount,
     followerCountInit: followData.followerCount,
     levelsCount: levelsCount,
+    levelsSolved: levelsSolved,
     multiplayerCount: multiplayerCount,
     pageProp: page,
     profileTab: profileTab,
@@ -175,7 +203,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   if (profileTab === ProfileTab.Collections) {
     const collectionsAgg = await getCollections({
-      matchQuery: { $match: { userId: user._id } },
+      matchQuery: { userId: user._id },
+      populateLevelData: false,
       reqUser,
     });
 
@@ -226,6 +255,7 @@ export interface ProfilePageProps {
   enrichedLevels: EnrichedLevel[] | undefined;
   followerCountInit: number;
   levelsCount: number;
+  levelsSolved: number;
   multiplayerCount: number;
   pageProp: number;
   profileTab: ProfileTab;
@@ -250,6 +280,7 @@ export default function ProfilePage({
   enrichedLevels,
   followerCountInit,
   levelsCount,
+  levelsSolved,
   multiplayerCount,
   pageProp,
   profileTab,
@@ -267,6 +298,7 @@ export default function ProfilePage({
   const [collectionFilterText, setCollectionFilterText] = useState('');
   const [followerCount, setFollowerCount] = useState<number>();
   const [isAddCollectionOpen, setIsAddCollectionOpen] = useState(false);
+  const ownProfile = reqUser?._id.toString() === user._id.toString();
   const [page, setPage] = useState(pageProp);
   const router = useRouter();
   const [searchLevelText, setSearchLevelText] = useState('');
@@ -296,23 +328,45 @@ export default function ProfilePage({
       return [];
     }
 
-    // sort collections by name but use a natural sort
-    const sortedEnrichedCollections = naturalSort(enrichedCollections) as EnrichedCollection[];
+    const sortedEnrichedCollections = naturalSort(enrichedCollections, playLaterCompareFn);
 
     return sortedEnrichedCollections.map(enrichedCollection => {
       return {
         href: `/collection/${enrichedCollection.slug}`,
         id: enrichedCollection._id.toString(),
         stats: new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userSolvedCount),
-        text: enrichedCollection.name,
+        searchLabel: enrichedCollection.name,
+        text: <>
+          {enrichedCollection.name}
+          {ownProfile &&
+            <div className='flex justify-center items-center gap-1 italic text-sm'>
+              {enrichedCollection.isPrivate ?
+                <>
+                  <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
+                    <path strokeLinecap='round' strokeLinejoin='round' d='M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z' />
+                  </svg>
+                  Private
+                </>
+                :
+                <>
+                  <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
+                    <path strokeLinecap='round' strokeLinejoin='round' d='M12.75 3.03v.568c0 .334.148.65.405.864l1.068.89c.442.369.535 1.01.216 1.49l-.51.766a2.25 2.25 0 01-1.161.886l-.143.048a1.107 1.107 0 00-.57 1.664c.369.555.169 1.307-.427 1.605L9 13.125l.423 1.059a.956.956 0 01-1.652.928l-.679-.906a1.125 1.125 0 00-1.906.172L4.5 15.75l-.612.153M12.75 3.031a9 9 0 00-8.862 12.872M12.75 3.031a9 9 0 016.69 14.036m0 0l-.177-.529A2.25 2.25 0 0017.128 15H16.5l-.324-.324a1.453 1.453 0 00-2.328.377l-.036.073a1.586 1.586 0 01-.982.816l-.99.282c-.55.157-.894.702-.8 1.267l.073.438c.08.474.49.821.97.821.846 0 1.598.542 1.865 1.345l.215.643m5.276-3.67a9.012 9.012 0 01-5.276 3.67m0 0a9 9 0 01-10.275-4.835M15.75 9c0 .896-.393 1.7-1.016 2.25' />
+                  </svg>
+                  Public
+                </>
+              }
+            </div>
+          }
+        </>,
       } as SelectOption;
     });
-  }, [enrichedCollections]);
+  }, [enrichedCollections, ownProfile]);
 
   const getFilteredCollectionOptions = useCallback(() => {
     return statFilterOptions(getCollectionOptions(), showCollectionFilter, collectionFilterText);
   }, [collectionFilterText, getCollectionOptions, showCollectionFilter]);
 
+  const collectionsAsOptions = getFilteredCollectionOptions();
   const getLevelOptions = useCallback(() => {
     if (!user || !enrichedLevels) {
       return [];
@@ -363,6 +417,7 @@ export default function ProfilePage({
     });
   };
 
+  // TODO: no SWR here
   const { data: profileDataFetched } = useSWRHelper<{levelsSolvedByDifficulty: {[key: string]: number}}>('/api/user/' + user._id + '?type=levelsSolvedByDifficulty', {}, {}, tab !== ProfileTab.Profile);
 
   const levelsSolvedByDifficulty = profileDataFetched?.levelsSolvedByDifficulty;
@@ -403,6 +458,7 @@ export default function ProfilePage({
                 levelsSolvedByDifficulty ? <PlayerRank levelsSolvedByDifficulty={levelsSolvedByDifficulty} user={user} /> : '...'
               }
             </h2>
+            <h2><span className='font-bold'>Ranked Solves:</span> {user.calcRankedSolves} 🏅</h2>
             <h2><span className='font-bold'>Levels Solved:</span> {user.score}</h2>
             <h2><span className='font-bold'>Levels Created:</span> {user.calc_levels_created_count}</h2>
             {!user.hideStatus && <>
@@ -435,17 +491,16 @@ export default function ProfilePage({
     [ProfileTab.Multiplayer]: <ProfileMultiplayer user={user} />,
     [ProfileTab.Collections]: (
       <div className='flex flex-col gap-2 justify-center'>
-        {getCollectionOptions().length > 0 &&
-          <SelectFilter
-            filter={showCollectionFilter}
-            onFilterClick={onFilterCollectionClick}
-            placeholder={`Search ${getFilteredCollectionOptions().length} collection${getFilteredCollectionOptions().length !== 1 ? 's' : ''}...`}
-            searchText={collectionFilterText}
-            setSearchText={setCollectionFilterText}
-          />
-        }
+
+        <SelectFilter
+          filter={showCollectionFilter}
+          onFilterClick={onFilterCollectionClick}
+          placeholder={`Search ${collectionsAsOptions.length} collection${collectionsAsOptions.length !== 1 ? 's' : ''}...`}
+          searchText={collectionFilterText}
+          setSearchText={setCollectionFilterText}
+        />
         {reqUser?._id === user._id &&
-          <div className='text-center '>
+          <div className='text-center'>
             <button
               className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer'
               onClick={() => {
@@ -462,17 +517,29 @@ export default function ProfilePage({
           }}
           isOpen={isAddCollectionOpen}
         />
-        {getFilteredCollectionOptions().length === 0 ?
+        {collectionsAsOptions.length === 0 ?
           <div className='p-3 justify-center flex'>
             No collections!
           </div>
           :
-          <Select options={getFilteredCollectionOptions()} />
+          <Select options={collectionsAsOptions} />
         }
       </div>
     ),
     [ProfileTab.Levels]: (
-      <div className='flex flex-col gap-2 justify-center'>
+      <div className='flex flex-col gap-2 items-center'>
+        <h1 className='font-bold text-3xl'>{user.name}&apos;s Levels</h1>
+        {reqUser &&
+          <h2
+            className='font-bold text-xl flex items-center'
+            style={{
+              color: levelsSolved === levelsCount ? 'var(--color-complete)' : undefined,
+            }}
+          >
+            <span>{levelsSolved} / {levelsCount}</span>
+            {levelsSolved === levelsCount && <Solved className='w-8 h-8' />}
+          </h2>
+        }
         <SelectFilter
           filter={showLevelFilter}
           onFilterClick={onFilterLevelClick}
@@ -483,14 +550,20 @@ export default function ProfilePage({
             setSearchLevelTextDebounce(searchText);
           }}
         />
-        <div className='flex justify-center'>
+        {reqUser?._id === user._id &&
           <Link
-            className='underline'
-            href={'/search?timeRange=All&searchAuthor=' + user.name}
+            className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer block w-fit'
+            href='/new'
           >
-            Advanced search
+            New Level
           </Link>
-        </div>
+        }
+        <Link
+          className='underline'
+          href={'/search?timeRange=All&searchAuthor=' + user.name}
+        >
+          Advanced search
+        </Link>
         <Select options={getLevelOptions()} />
         {totalRows !== undefined && totalRows > 20 &&
           <div className='flex justify-center flex-row'>
@@ -644,7 +717,7 @@ export default function ProfilePage({
             href={`/profile/${user.name}`}
           >
             <div className='flex flex-row items-center gap-2'>
-              <ProfileAvatar size={20} user={user} />
+              <ProfileAvatar size={24} user={user} />
               <span>Profile</span>
             </div>
           </Link>
@@ -676,21 +749,21 @@ export default function ProfilePage({
             </div>
           </Link>
           <Link
-            className={getTabClassNames(ProfileTab.Multiplayer)}
-            href={`/profile/${user.name}/${ProfileTab.Multiplayer}`}
-          >
-            <div className='flex flex-row items-center gap-2'>
-              <span>🎮</span>
-              <span>Multiplayer ({multiplayerCount})</span>
-            </div>
-          </Link>
-          <Link
             className={getTabClassNames(ProfileTab.Collections)}
             href={`/profile/${user.name}/${ProfileTab.Collections}`}
           >
             <div className='flex flex-row items-center gap-2'>
               <span>📚</span>
               <span>Collections ({collectionsCount})</span>
+            </div>
+          </Link>
+          <Link
+            className={getTabClassNames(ProfileTab.Multiplayer)}
+            href={`/profile/${user.name}/${ProfileTab.Multiplayer}`}
+          >
+            <div className='flex flex-row items-center gap-2'>
+              <span>🎮</span>
+              <span>Multiplayer ({multiplayerCount})</span>
             </div>
           </Link>
           <Link

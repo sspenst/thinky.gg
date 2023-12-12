@@ -59,7 +59,7 @@ describe('Testing a valid user', () => {
 
         keys.sort();
         // Important to keep this track of keys that we may add/remove in future
-        expect(keys).toMatchObject([ '__v', '_id', 'calc_levels_created_count', 'calc_records', 'chapterUnlocked', 'config', 'email', 'last_visited_at', 'multiplayerProfile', 'name', 'notifications', 'roles', 'score', 'ts' ]);
+        expect(keys).toMatchObject([ '__v', '_id', 'calcRankedSolves', 'calc_levels_created_count', 'calc_records', 'chapterUnlocked', 'config', 'email', 'emailConfirmed', 'last_visited_at', 'multiplayerProfile', 'name', 'notifications', 'roles', 'score', 'ts' ]);
         expect(response.last_visited_at).toBeGreaterThan(TimerUtil.getTs() - 30000);
         expect(response.name).toBe('test');
         expect(response.password).toBeUndefined();
@@ -122,8 +122,212 @@ describe('Testing a valid user', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Error: Please wait a couple minutes before requesting another email confirmation');
+        expect(response.error).toBe('Error: Please wait a minute before requesting another email confirmation');
         expect(res.status).toBe(500);
+      },
+    });
+  });
+  test('Changing username to words should error gracefully', async () => {
+    // mock date
+    const fiveMinFromNow = new Date().getTime() + 5 * 60 * 1000;
+
+    MockDate.set(fiveMinFromNow);
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          userId: TestId.USER,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            name: 'hi mom ',
+            email: '   test1234@test.com    ',
+            currentPassword: 'test1234',
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await modifyUserHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Username can only contain letters, numbers, and underscores');
+        expect(res.status).toBe(400);
+      },
+    });
+  });
+  test('Changing username to blank username should error gracefully', async () => {
+    // mock date
+    const fiveMinFromNow = new Date().getTime() + 5 * 60 * 1000;
+
+    MockDate.set(fiveMinFromNow);
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          userId: TestId.USER,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            name: ' ',
+            email: '   test1234@test.com    ',
+            currentPassword: 'test1234',
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await modifyUserHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Username can only contain letters, numbers, and underscores');
+        expect(res.status).toBe(400);
+      },
+    });
+  });
+  test('Changing username to slash username should error gracefully', async () => {
+    // mock date
+    const fiveMinFromNow = new Date().getTime() + 5 * 60 * 1000;
+
+    MockDate.set(fiveMinFromNow);
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          userId: TestId.USER,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            name: ' / ',
+            email: '   test1234@test.com    ',
+            currentPassword: 'test1234',
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await modifyUserHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Username can only contain letters, numbers, and underscores');
+        expect(res.status).toBe(400);
+      },
+    });
+  });
+  test('Changing email to blank username should error gracefully', async () => {
+    // mock date
+    const fiveMinFromNow = new Date().getTime() + 5 * 60 * 1000;
+
+    MockDate.set(fiveMinFromNow);
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          userId: TestId.USER,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            name: ' eofwe ',
+            email: '       ',
+            currentPassword: 'test1234',
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await modifyUserHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Email cannot be empty');
+        expect(res.status).toBe(400);
+      },
+    });
+  });
+  test('Changing username to existing username should error gracefully', async () => {
+    // mock date
+    const fiveMinFromNow = new Date().getTime() + 5 * 60 * 1000;
+
+    MockDate.set(fiveMinFromNow);
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          userId: TestId.USER,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            name: 'BBB',
+            email: '   test1234@test.com    ',
+            currentPassword: 'test1234',
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await modifyUserHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Username already taken');
+        expect(res.status).toBe(400);
+      },
+    });
+  });
+  test('Changing email to existing email should error gracefully', async () => {
+    // mock date
+    const fiveMinFromNow = new Date().getTime() + 5 * 60 * 1000;
+
+    MockDate.set(fiveMinFromNow);
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          userId: TestId.USER,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            name: 'newuser4',
+            email: '   bbb@gmail.com    ',
+            currentPassword: 'test1234',
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await modifyUserHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Email already taken');
+        expect(res.status).toBe(400);
       },
     });
   });
@@ -248,7 +452,7 @@ describe('Testing a valid user', () => {
 
         keys.sort();
         // Important to keep this track of keys that we may add/remove in future
-        expect(keys).toMatchObject([ '__v', '_id', 'calc_levels_created_count', 'calc_records', 'chapterUnlocked', 'config', 'email', 'last_visited_at', 'multiplayerProfile', 'name', 'notifications', 'roles', 'score', 'ts' ]);
+        expect(keys).toMatchObject([ '__v', '_id', 'calcRankedSolves', 'calc_levels_created_count', 'calc_records', 'chapterUnlocked', 'config', 'email', 'emailConfirmed', 'last_visited_at', 'multiplayerProfile', 'name', 'notifications', 'roles', 'score', 'ts' ]);
         expect(response.name).toBe('newuser3');
         expect(response.last_visited_at).toBeGreaterThan(TimerUtil.getTs() - 30000);
         expect(response.password).toBeUndefined();

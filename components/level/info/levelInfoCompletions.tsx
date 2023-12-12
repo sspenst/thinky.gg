@@ -1,6 +1,7 @@
 import { Tab } from '@headlessui/react';
 import FormattedDate from '@root/components/formatted/formattedDate';
 import FormattedUser from '@root/components/formatted/formattedUser';
+import LoadingSpinner from '@root/components/page/loadingSpinner';
 import { RoleIcon } from '@root/components/page/roleIcons';
 import StyledTooltip from '@root/components/page/styledTooltip';
 import Dimensions from '@root/constants/dimensions';
@@ -74,14 +75,22 @@ export default function LevelInfoCompletions() {
     });
   }
 
-  if (!proStatsLevel || !proStatsLevel[ProStatsLevelType.CommunityStepData] || (proStatsLevel[ProStatsLevelType.CommunityStepData] as ProStatsCommunityStepData[]).length === 0) {
+  if (!proStatsLevel) {
+    return <LoadingSpinner />;
+  }
+
+  if (!proStatsLevel[ProStatsLevelType.CommunityStepData] || (proStatsLevel[ProStatsLevelType.CommunityStepData] as ProStatsCommunityStepData[]).length === 0) {
     return <div className='text-sm'>No completion data available.</div>;
   }
 
   const completionDivs = [];
+  const solves = proStatsLevel[ProStatsLevelType.CommunityStepData][0].count;
+  let completions = 0;
 
   for (let i = 0; i < (proStatsLevel[ProStatsLevelType.CommunityStepData] as ProStatsCommunityStepData[]).length; i++) {
     const completion = (proStatsLevel[ProStatsLevelType.CommunityStepData] as ProStatsCommunityStepData[])[i];
+
+    completions += completion.count;
 
     // green bar fill for the users that completed the level
     if (i === 0) {
@@ -94,20 +103,25 @@ export default function LevelInfoCompletions() {
 
       completionDivs.push(
         <div
-          className='flex gap-2 items-center'
-          key={`completion-${completion.moves}-${j}`}
+          className='flex items-center'
+          key={`completion-${completion.moves}-${j}-1`}
         >
           <span
-            className='font-bold w-11 text-right'
+            className='font-bold w-full text-right'
             data-tooltip-content={`${completion.count} user${completion.count === 1 ? '' : 's'} at ${completion.moves} step${completion.moves === 1 ? '' : 's'}`}
             data-tooltip-id='steps'
-            style={{
-              minWidth: 44,
-            }}
           >
             {j === 0 ? completion.moves : null}
           </span>
           <StyledTooltip id='steps' />
+        </div>
+      );
+
+      completionDivs.push(
+        <div
+          className='flex gap-2 items-center truncate'
+          key={`completion-${completion.moves}-${j}-2`}
+        >
           <FormattedUser id='completion' size={Dimensions.AvatarSizeSmall} user={userAndStatTs.user} />
           <FormattedDate ts={userAndStatTs.statTs} />
         </div>
@@ -115,12 +129,13 @@ export default function LevelInfoCompletions() {
     }
 
     if (completion.users.length < completion.count) {
+      completionDivs.push(<span className='font-bold w-full text-right' key={`completion-${completion.moves}-others-1`} />);
+
       completionDivs.push(
         <div
           className='flex gap-2 items-center'
-          key={`completion-${completion.moves}-others`}
+          key={`completion-${completion.moves}-others-2`}
         >
-          <span className='font-bold w-11 text-right' />
           <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1} stroke='currentColor' className='w-7 h-7'>
             <path strokeLinecap='round' strokeLinejoin='round' d='M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z' />
           </svg>
@@ -134,18 +149,8 @@ export default function LevelInfoCompletions() {
 
   return (
     <div className='flex flex-col gap-2'>
-      {!isPro(user) &&
-        <div className='flex gap-3 items-center'>
-          <RoleIcon id='level-info-completions' role={Role.PRO} size={20} />
-          <div>
-            Get <Link href='/settings/proaccount' className='text-blue-300'>
-              Pathology Pro
-            </Link> to see all completions for this level.
-          </div>
-        </div>
-      }
       <Tab.Group>
-        {isPro(user) &&
+        {isPro(user) && <>
           <Tab.List className='flex flex-wrap gap-x-1 items-start rounded text-sm'>
             <Tab as={Fragment}>
               {({ selected }) => (
@@ -172,10 +177,20 @@ export default function LevelInfoCompletions() {
               )}
             </Tab>
           </Tab.List>
-        }
+        </>}
         <Tab.Panels>
           <Tab.Panel tabIndex={-1}>
-            {completionDivs}
+            <div className='grid gap-x-2 pl-1' style={{
+              gridTemplateColumns: 'min-content 1fr',
+            }}>
+              {completionDivs}
+            </div>
+            {isPro(user) &&
+              <div className='flex flex-col text-sm mt-3 italic'>
+                <span>{solves} solve{solves === 1 ? '' : 's'}</span>
+                <span>{completions} completion{completions === 1 ? '' : 's'}</span>
+              </div>
+            }
           </Tab.Panel>
           <Tab.Panel tabIndex={-1}>
             <ResponsiveContainer width='100%' height={300}>
@@ -227,6 +242,16 @@ export default function LevelInfoCompletions() {
           </Tab.Panel>
         </Tab.Panels>
       </Tab.Group>
+      {!isPro(user) &&
+        <div className='flex gap-3 items-center'>
+          <RoleIcon id='level-info-completions' role={Role.PRO} size={20} />
+          <div>
+            Get <Link href='/settings/pro' className='text-blue-300'>
+              Pathology Pro
+            </Link> to see all completions for this level.
+          </div>
+        </div>
+      }
     </div>
   );
 }

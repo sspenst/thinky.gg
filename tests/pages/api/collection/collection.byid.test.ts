@@ -1,11 +1,14 @@
+import { logger } from '@root/helpers/logger';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { CollectionModel } from '../../../../models/mongoose';
 import collectionHandler from '../../../../pages/api/collection/[id]';
+import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
 
 afterAll(async() => {
   await dbDisconnect();
@@ -15,7 +18,7 @@ beforeAll(async () => {
 });
 enableFetchMocks();
 describe('pages/api/collection/[id].ts', () => {
-  test('GET other user\'s collection should 404', async () => {
+  test('GET other user\'s private collection should 404', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -29,7 +32,7 @@ describe('pages/api/collection/[id].ts', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await collectionHandler(req, res);
+        await getCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
@@ -52,7 +55,7 @@ describe('pages/api/collection/[id].ts', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await collectionHandler(req, res);
+        await getCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
@@ -62,6 +65,7 @@ describe('pages/api/collection/[id].ts', () => {
     });
   });
   test('PUT other user\'s collection should 401', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

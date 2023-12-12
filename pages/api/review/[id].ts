@@ -45,7 +45,7 @@ function generateDiscordWebhook(
   const contentCleaned = slicedText.replace(/\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*/g, '[link]');
   const discordTxt = `${score ? getScoreEmojis(score) + ' - ' : ''}**${req.user?.name}** wrote a review for ${level.userId.name}'s [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}):\n${contentCleaned}`;
 
-  return queueDiscordWebhook(Discord.NotifsId, discordTxt);
+  return queueDiscordWebhook(Discord.Notifs, discordTxt);
 }
 
 export default withAuth({
@@ -76,94 +76,90 @@ export default withAuth({
   },
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'POST') {
-    if (!(await isFullAccount(req.user))) {
+    if (!isFullAccount(req.user)) {
       return res.status(401).json({
         error: 'Reviewing requires a full account with a confirmed email'
       });
     }
 
-    try {
-      const { id } = req.query;
-      const { score, text }: { score: number, text?: string } = req.body;
-      const trimmedText = text?.trim();
-
-      if (score === 0 && (!trimmedText || trimmedText.length === 0)) {
-        return res.status(400).json({
-          error: 'Missing required parameters',
-        });
-      }
-
-      const levels = await LevelModel.aggregate<Level>([
-        {
-          $match: {
-            _id: new Types.ObjectId(id as string),
-            isDeleted: { $ne: true },
-            isDraft: false,
-          }
+    const { id } = req.query;
+    const levels = await LevelModel.aggregate<Level>([
+      {
+        $match: {
+          _id: new Types.ObjectId(id as string),
+          isDeleted: { $ne: true },
+          isDraft: false,
+        }
+      },
+      {
+        $lookup: {
+          from: UserModel.collection.name,
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'userId',
+          pipeline: [{
+            $project: USER_DEFAULT_PROJECTION,
+          }],
         },
-        {
-          $lookup: {
-            from: UserModel.collection.name,
-            localField: 'userId',
-            foreignField: '_id',
-            as: 'userId',
-            pipeline: [{
-              $project: USER_DEFAULT_PROJECTION,
-            }],
-          },
-        },
-        {
-          $unwind: '$userId',
-        },
-      ]);
+      },
+      {
+        $unwind: '$userId',
+      },
+    ]);
 
-      if (levels.length !== 1) {
-        return res.status(404).json({
-          error: 'Level not found',
-        });
-      }
-
-      const level = levels[0];
-
-      // Check if a review was already created
-      const existing = await ReviewModel.findOne({
-        userId: req.userId,
-        levelId: level._id,
-      }, {}, { lean: true });
-
-      if (existing) {
-        return res.status(400).json({
-          error: 'You already reviewed this level',
-        });
-      }
-
-      const ts = TimerUtil.getTs();
-
-      const review = await ReviewModel.create({
-        _id: new Types.ObjectId(),
-        levelId: id,
-        score: score,
-        text: !trimmedText ? undefined : trimmedText,
-        ts: ts,
-        userId: req.userId,
-      });
-
-      await Promise.all([
-        queueRefreshAchievements(req.user._id, [AchievementCategory.REVIEWER]),
-        queueRefreshAchievements(level.userId._id, [AchievementCategory.REVIEWER]),
-        generateDiscordWebhook(undefined, level, req, score, trimmedText, ts),
-        queueRefreshIndexCalcs(new Types.ObjectId(id?.toString())),
-        createNewReviewOnYourLevelNotification(level.userId._id, req.userId, level._id, String(score), !!trimmedText),
-      ]);
-
-      return res.status(200).json(review);
-    } catch (err) {
-      logger.error(err);
-
-      return res.status(500).json({
-        error: 'Error creating review',
+    if (levels.length !== 1) {
+      return res.status(404).json({
+        error: 'Level not found',
       });
     }
+
+    const level = levels[0];
+    const { score, text }: { score: number, text?: string } = req.body;
+    const trimmedText = text?.trim();
+
+    // cannot give a rating to your own level
+    const authorId = level.archivedBy?.toString() ?? level.userId._id.toString();
+    const setScore = authorId === req.userId ? 0 : score;
+
+    if (setScore === 0 && (!trimmedText || trimmedText.length === 0)) {
+      return res.status(400).json({
+        error: 'Missing required parameters',
+      });
+    }
+
+    // Check if a review was already created
+    const existing = await ReviewModel.findOne({
+      userId: req.userId,
+      levelId: level._id,
+    }).lean<Review>();
+
+    if (existing) {
+      return res.status(400).json({
+        error: 'You already reviewed this level',
+      });
+    }
+
+    const ts = TimerUtil.getTs();
+
+    const review = await ReviewModel.create({
+      _id: new Types.ObjectId(),
+      gameId: level.gameId,
+      levelId: id,
+      score: setScore,
+      text: !trimmedText ? undefined : trimmedText,
+      ts: ts,
+      userId: req.userId,
+    });
+
+    await Promise.all([
+      queueRefreshAchievements(level.gameId, req.user._id, [AchievementCategory.REVIEWER]),
+      queueRefreshAchievements(level.gameId, level.userId._id, [AchievementCategory.CREATOR]),
+      generateDiscordWebhook(undefined, level, req, setScore, trimmedText, ts),
+      queueRefreshIndexCalcs(new Types.ObjectId(id?.toString())),
+      createNewReviewOnYourLevelNotification(level.gameId, level.userId._id, req.userId, level._id, String(setScore), !!trimmedText),
+    ]);
+
+    return res.status(200).json(review);
   } else if (req.method === 'PUT') {
     const { id } = req.query;
     const levels = await LevelModel.aggregate<Level>([
@@ -199,7 +195,11 @@ export default withAuth({
     const { score, text, userId } = req.body;
     const trimmedText = text?.trim();
 
-    if (score === 0 && (!trimmedText || trimmedText.length === 0)) {
+    // cannot give a rating to your own level
+    const authorId = level.archivedBy?.toString() ?? level.userId._id.toString();
+    const setScore = authorId === req.userId ? 0 : score;
+
+    if (setScore === 0 && (!trimmedText || trimmedText.length === 0)) {
       return res.status(400).json({
         error: 'Missing required parameters',
       });
@@ -217,7 +217,7 @@ export default withAuth({
     // need to also unset the field to delete it completely
     const update = {
       $set: {
-        score: score,
+        score: setScore,
         text: !trimmedText ? undefined : trimmedText,
         ts: ts,
       },
@@ -234,7 +234,7 @@ export default withAuth({
       const review = await ReviewModel.findOneAndUpdate<Review>({
         levelId: new Types.ObjectId(id as string),
         userId: new Types.ObjectId(userId),
-      }, update, { runValidators: true });
+      }, update, { new: true, runValidators: true });
 
       if (!review) {
         return res.status(404).json({
@@ -243,14 +243,14 @@ export default withAuth({
       }
 
       const promises = [
-        queueRefreshAchievements(userId, [AchievementCategory.REVIEWER]),
-        queueRefreshAchievements(level.userId._id, [AchievementCategory.REVIEWER]),
+        queueRefreshAchievements(review.gameId, userId, [AchievementCategory.REVIEWER]),
+        queueRefreshAchievements(review.gameId, level.userId._id, [AchievementCategory.CREATOR]),
         queueRefreshIndexCalcs(new Types.ObjectId(id?.toString())),
-        createNewReviewOnYourLevelNotification(level.userId, userId, level._id, String(score), !!trimmedText),
+        createNewReviewOnYourLevelNotification(level.gameId, level.userId, userId, level._id, String(setScore), !!trimmedText),
       ];
 
       if (userId === req.userId) {
-        promises.push(generateDiscordWebhook(review.ts, level, req, score, trimmedText, ts));
+        promises.push(generateDiscordWebhook(review.ts, level, req, setScore, trimmedText, ts));
       }
 
       await Promise.all(promises);
@@ -288,8 +288,8 @@ export default withAuth({
       });
 
       await Promise.all([
-        queueRefreshAchievements(userId, [AchievementCategory.REVIEWER]),
-        queueRefreshAchievements(level.userId._id, [AchievementCategory.REVIEWER]),
+        queueRefreshAchievements(level.gameId, userId, [AchievementCategory.REVIEWER]),
+        queueRefreshAchievements(level.gameId, level.userId._id, [AchievementCategory.CREATOR]),
         queueRefreshIndexCalcs(new Types.ObjectId(id?.toString())),
         clearNotifications(level.userId._id, userId, level._id, NotificationType.NEW_REVIEW_ON_YOUR_LEVEL),
       ]);

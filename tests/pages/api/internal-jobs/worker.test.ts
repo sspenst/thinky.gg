@@ -300,14 +300,17 @@ describe('Worker test', () => {
     });
   });
   test('Creating 15 messages to see limit', async () => {
-    for (let i = 0; i < 15; i++) {
-      await queueFetch('sample', {}, `sampleKey${i}`);
+    const promises = [];
+
+    for (let i = 0; i < 25; i++) {
+      promises.push(queueFetch('sample', {}, `sampleKey${i}`));
     }
 
+    await Promise.all(promises);
     await processQueueMessages();
     const allMessagesProcessing = await QueueMessageModel.find({ processingAttempts: 1 }, {}, { sort: { createdAt: 1 } });
 
-    expect(allMessagesProcessing.length).toBe(10);
+    expect(allMessagesProcessing.length).toBe(20);
   });
   test('mocking error in fetching from db queue messages', async () => {
     jest.spyOn(QueueMessageModel, 'find').mockImplementationOnce(() => {

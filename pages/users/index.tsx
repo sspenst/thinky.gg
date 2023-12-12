@@ -1,5 +1,6 @@
 import FormattedDate from '@root/components/formatted/formattedDate';
 import MultiplayerRating from '@root/components/multiplayer/multiplayerRating';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import debounce from 'debounce';
 import { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
@@ -16,10 +17,10 @@ import { DATA_TABLE_CUSTOM_STYLES } from '../../helpers/dataTableCustomStyles';
 import { TimerUtil } from '../../helpers/getTs';
 import { logger } from '../../helpers/logger';
 import dbConnect from '../../lib/dbConnect';
+import { MultiplayerMatchType } from '../../models/constants/multiplayer';
 import MultiplayerProfile from '../../models/db/multiplayerProfile';
 import User from '../../models/db/user';
 import { GraphModel, MultiplayerProfileModel, ReviewModel, UserModel } from '../../models/mongoose';
-import { MultiplayerMatchType } from '../../models/MultiplayerEnums';
 import { cleanInput } from '../api/search';
 
 const PAGINATION_PER_PAGE = 40;
@@ -107,6 +108,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     skip = ((Math.abs(parseInt(page))) - 1) * limit;
   }
 
+  const gameId = getGameIdFromReq(context.req);
+
   try {
     const usersAgg = await UserModel.aggregate([
       { $match: searchObj },
@@ -117,7 +120,14 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
           localField: '_id',
           foreignField: 'userId',
           as: 'multiplayerProfile',
-        }
+          pipeline: [
+            {
+              $match: {
+                gameId: gameId,
+              },
+            },
+          ],
+        },
       },
       {
         $unwind: {
@@ -194,6 +204,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         $project: {
           _id: 1,
           avatarUpdatedAt: 1,
+          calcRankedSolves: 1,
           calc_levels_created_count: 1,
           calc_records: 1,
           followerCount: '$followers.count',
@@ -368,6 +379,12 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
       id: 'score',
       name: 'Solves',
       selector: row => row.score,
+      sortable: true,
+    },
+    {
+      id: 'calcRankedSolves',
+      name: 'Ranked Solves',
+      selector: row => row.calcRankedSolves,
       sortable: true,
     },
     {

@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext } from 'next';
 import TestId from '../../../constants/testId';
@@ -11,6 +12,7 @@ beforeAll(async () => {
   await CampaignModel.create({
     _id: new Types.ObjectId(),
     collections: [new Types.ObjectId(TestId.COLLECTION)],
+    gameId: GameId.PATHOLOGY,
     name: 'Pathology',
     slug: 'pathology',
   });

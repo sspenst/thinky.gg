@@ -1,5 +1,8 @@
+import { GameId } from '@root/constants/GameId';
 import mongoose from 'mongoose';
 import MultiplayerProfile from '../db/multiplayerProfile';
+
+export const MULTIPLAYER_INITIAL_ELO = 1000;
 
 const MultiplayerProfileSchema = new mongoose.Schema<MultiplayerProfile>(
   {
@@ -23,32 +26,36 @@ const MultiplayerProfileSchema = new mongoose.Schema<MultiplayerProfile>(
       required: true,
       default: 0,
     },
-    ratingRushBullet: {
-      type: Number,
+    gameId: {
+      type: String,
+      enum: GameId,
       required: true,
-      default: 1000,
-    },
-    ratingRushBlitz: {
-      type: Number,
-      required: true,
-      default: 1000,
-    },
-    ratingRushRapid: {
-      type: Number,
-      required: true,
-      default: 1000,
-    },
-    ratingRushClassical: {
-      type: Number,
-      required: true,
-      default: 1000,
     },
     ratingDeviation: {
       type: Number,
       required: true,
       default: 400,
     },
-
+    ratingRushBullet: {
+      type: Number,
+      required: true,
+      default: MULTIPLAYER_INITIAL_ELO,
+    },
+    ratingRushBlitz: {
+      type: Number,
+      required: true,
+      default: MULTIPLAYER_INITIAL_ELO,
+    },
+    ratingRushRapid: {
+      type: Number,
+      required: true,
+      default: MULTIPLAYER_INITIAL_ELO,
+    },
+    ratingRushClassical: {
+      type: Number,
+      required: true,
+      default: MULTIPLAYER_INITIAL_ELO,
+    },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -66,7 +73,7 @@ const MultiplayerProfileSchema = new mongoose.Schema<MultiplayerProfile>(
 );
 
 // index on userId
-MultiplayerProfileSchema.index({ userId: 1 }, { unique: true });
+MultiplayerProfileSchema.index({ userId: 1, gameId: 1 }, { unique: true });
 // index on rating
 MultiplayerProfileSchema.index({ rating: 1 });
 

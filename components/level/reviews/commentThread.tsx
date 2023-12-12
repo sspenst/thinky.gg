@@ -4,7 +4,7 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { KeyedMutator } from 'swr';
 import { AppContext } from '../../../contexts/appContext';
-import { COMMENT_QUERY_LIMIT } from '../../../models/CommentEnums';
+import { COMMENT_QUERY_LIMIT } from '../../../models/constants/comment';
 import { EnrichedComment } from '../../../models/db/comment';
 import { CommentQuery } from '../../../pages/api/comment/[id]';
 import FormattedDate from '../../formatted/formattedDate';

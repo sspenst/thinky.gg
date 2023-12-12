@@ -3,6 +3,14 @@ name: Update Production
 on:
   workflow_dispatch:
     inputs:
+      environment:
+        description: 'Environment'
+        required: true
+        default: 'prod'
+        type: choice
+        options:
+        - stage
+        - prod
       action:
         description: 'Desired action against env'
         required: true
@@ -11,6 +19,11 @@ on:
         options:
         - update
         - revert
+      desired_sha:
+        description: "[Optional] Target Short SHA"
+        required: false
+        default: ''
+        type: string
       deployment_description:
         description: "A brief description of what changed in this deployment"
         required: false
@@ -53,5 +66,10 @@ jobs:
           SSH_USER: ${{ secrets.SERVER_SSH_USER }}
           SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
 
-      - name: Update Environments with New Containers
-        run: ssh ${{ matrix.server }} 'bash /opt/pathology/scripts/update-Environments.sh -e prod -a ${{ inputs.action }} -c "${{ inputs.deployment_description }}"'
+      - name: Update Environments with New Containers - Default
+        if: github.event.inputs.desired_sha == ''
+        run: ssh ${{ matrix.server }} 'bash /opt/pathology/scripts/update-Environments.sh -e ${{ inputs.environment }} -a ${{ inputs.action }} -c "${{ inputs.deployment_description }}"'
+
+      - name: Update Environments with New Containers - With SHA
+        if: github.event.inputs.desired_sha != ''
+        run: ssh ${{ matrix.server }} 'bash /opt/pathology/scripts/update-Environments.sh -e ${{ inputs.environment }} -a ${{ inputs.action }} -c "${{ inputs.deployment_description }}" -v "${{ inputs.desired_sha }}"'

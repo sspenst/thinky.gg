@@ -1,13 +1,16 @@
 import { MatchGameState } from '@root/helpers/gameStateHelpers';
+import { getEnrichNotificationPipelineStages } from '@root/helpers/getEnrichNotificationPipelineStages';
 import { getUsersWithMultiplayerProfileFromIds } from '@root/helpers/getUsersWithMultiplayerProfile';
+import cleanUser from '@root/lib/cleanUser';
+import Notification from '@root/models/db/notification';
 import { Emitter } from '@socket.io/mongo-emitter';
 import { Types } from 'mongoose';
 import { Server } from 'socket.io';
 import { logger } from '../../helpers/logger';
 import sortByRating from '../../helpers/sortByRating';
+import { MultiplayerMatchState, MultiplayerMatchType } from '../../models/constants/multiplayer';
 import User from '../../models/db/user';
-import { MultiplayerMatchModel } from '../../models/mongoose';
-import { MultiplayerMatchState, MultiplayerMatchType } from '../../models/MultiplayerEnums';
+import { MultiplayerMatchModel, NotificationModel } from '../../models/mongoose';
 import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
 import { checkForFinishedMatch, checkForUnreadyAboutToStartMatch, getAllMatches } from '../../pages/api/match';
 import { getMatch } from '../../pages/api/match/[matchId]';
@@ -117,6 +120,29 @@ export async function broadcastCountOfUsersInRoom(emitter: Server, matchId: stri
   emitter?.in(matchId).emit('connectedPlayersInRoom', { users: filteredUsers.sort((a, b) => sortByRating(a, b, MultiplayerMatchType.RushBullet)).slice(0, 20), count: filteredUsers.length });
 }
 
+export async function broadcastNotifications(emitter: Emitter, userId: Types.ObjectId) {
+  if (emitter) {
+    // get notifications
+    const notificationAgg = await NotificationModel.aggregate<Notification>([
+      { $match: { userId: userId._id, } },
+      { $sort: { createdAt: -1 } },
+      { $limit: 5 },
+      ...getEnrichNotificationPipelineStages(userId)
+    ]);
+
+    notificationAgg.forEach(notification => {
+      if (notification.sourceModel === 'User' && notification.source) {
+        cleanUser(notification.source as User);
+      }
+
+      if (notification.targetModel === 'User' && notification.target) {
+        cleanUser(notification.target as User);
+      }
+    });
+    emitter.to(userId.toString()).emit('notifications', notificationAgg);
+  }
+}
+
 export async function broadcastConnectedPlayers(emitter: Server) {
   // return an array of all the connected players
   let clientsMap;
@@ -170,4 +196,9 @@ export async function broadcastMatch(emitter: Emitter, matchId: string) {
   enrichMultiplayerMatch(match);
   // emit to everyone in the room except the players in the match since we already emitted to them
   emitter?.to(matchId).except(match.players.map((player: User) => player._id.toString())).emit('match', match);
+}
+
+export async function broadcastKillSocket(emitter: Emitter, userId: Types.ObjectId) {
+  console.log('BROADCASTING KILL SOCKET');
+  emitter?.to(userId.toString()).emit('killSocket');
 }

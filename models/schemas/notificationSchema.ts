@@ -1,8 +1,14 @@
+import { GameId } from '@root/constants/GameId';
 import mongoose from 'mongoose';
 import NotificationType from '../../constants/notificationType';
 import Notification from '../db/notification';
 
 const NotificationSchema = new mongoose.Schema<Notification>({
+  gameId: {
+    type: String,
+    enum: GameId,
+    required: true,
+  },
   message: {
     type: String,
     required: false,
@@ -16,21 +22,21 @@ const NotificationSchema = new mongoose.Schema<Notification>({
   source: {
     type: mongoose.Schema.Types.ObjectId,
     refPath: 'sourceModel',
-    required: true,
+    required: false,
   },
   sourceModel: {
     type: String,
-    required: true,
+    required: false,
     enum: ['User', 'Level', 'Achievement'],
   },
   target: {
     type: mongoose.Schema.Types.ObjectId,
     refPath: 'targetModel',
-    required: true,
+    required: false,
   },
   targetModel: {
     type: String,
-    required: true,
+    required: false,
     enum: ['User', 'Level', 'Collection'],
   },
   type: {

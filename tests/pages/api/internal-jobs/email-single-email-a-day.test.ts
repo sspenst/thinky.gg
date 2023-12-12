@@ -1,13 +1,14 @@
+import { GameId } from '@root/constants/GameId';
+import { NextApiRequestGuest } from '@root/helpers/apiWrapper';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';
-import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import { EmailDigestSettingTypes } from '../../../../constants/emailDigest';
 import TestId from '../../../../constants/testId';
 import { TimerUtil } from '../../../../helpers/getTs';
 import { logger } from '../../../../helpers/logger';
-import { createNewRecordOnALevelYouBeatNotifications } from '../../../../helpers/notificationHelper';
+import { createNewRecordOnALevelYouSolvedNotifications } from '../../../../helpers/notificationHelper';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { EmailLogModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
 import { EmailState } from '../../../../models/schemas/emailLogSchema';
@@ -26,15 +27,16 @@ jest.mock('nodemailer', () => ({
     }),
   })),
 }));
-const defaultReq: NextApiRequest = {
+const defaultReq: NextApiRequestGuest = {
   method: 'GET',
+  gameId: GameId.PATHOLOGY,
   query: {
     secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
   },
   headers: {
     'content-type': 'application/json',
   },
-} as unknown as NextApiRequest;
+} as unknown as NextApiRequestGuest;
 
 beforeAll(async () => {
   await dbConnect();
@@ -56,7 +58,10 @@ describe('Email per day', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
-    await UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.DAILY, emailConfirmed: false }, {});
+    await Promise.all([
+      UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.DAILY }, {}),
+      UserModel.findByIdAndUpdate(TestId.USER, { emailConfirmed: false })
+    ]);
 
     for (let day = 0; day < 21; day++) {
       await testApiHandler({
@@ -86,7 +91,7 @@ describe('Email per day', () => {
 
             if (day === 7) {
               // create a notification on same day as their reactivation email... it should get skipped
-              await createNewRecordOnALevelYouBeatNotifications([TestId.USER], TestId.USER_B, TestId.LEVEL, TestId.LEVEL);
+              await createNewRecordOnALevelYouSolvedNotifications(GameId.PATHOLOGY, [TestId.USER], TestId.USER_B, TestId.LEVEL, TestId.LEVEL);
             }
           } else if (day === 8) {
             expect(totalEmailsSent.length).toBe(9); // +1 the notification daily digest?

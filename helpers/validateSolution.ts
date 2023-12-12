@@ -1,7 +1,6 @@
 import Direction, { directionToVector } from '@root/constants/direction';
 import TileType from '@root/constants/tileType';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
-import MultiplayerMatch from '@root/models/db/multiplayerMatch';
 import Level from '../models/db/level';
 import Position from '../models/position';
 import { flipLevelX, flipLevelY, rotateLevelCCW, rotateLevelCW } from './transformLevel';
@@ -38,12 +37,14 @@ export function randomRotateLevelDataViaMatchHash(level: Level, matchId: string)
   const rotationFunction = orientations[hash];
 
   // apply the rotation
-
   rotationFunction.forEach((rotation) => {
     level.data = rotation(level.data);
   });
-  level.width = level.data.indexOf('\n');
-  level.height = level.data.length / level.width;
+
+  const data = level.data.split('\n');
+
+  level.width = data[0].length;
+  level.height = data.length;
 }
 
 export default function validateSolution(directions: Direction[], level: Level) {

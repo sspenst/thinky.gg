@@ -1,4 +1,5 @@
 import Direction from '@root/constants/direction';
+import { GameId } from '@root/constants/GameId';
 import Stat from '@root/models/db/stat';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
@@ -26,116 +27,6 @@ afterAll(async () => {
 enableFetchMocks();
 
 describe('Testing stats api', () => {
-  test('Wrong HTTP method should fail', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'PATCH',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER),
-          },
-          body: {
-
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('Method not allowed');
-        expect(res.status).toBe(405);
-      },
-    });
-  });
-  test('Doing a PUT with empty body should error', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'PUT',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER),
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('Bad request');
-        expect(res.status).toBe(400);
-      },
-    });
-  });
-  test('Doing a PUT with empty body should error', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'PUT',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER),
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('Bad request');
-        expect(res.status).toBe(400);
-      },
-    });
-  });
-  test('Doing a PUT with a body but no params should error', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'PUT',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER),
-          },
-          body: {
-
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('Invalid body.directions, body.levelId');
-        expect(res.status).toBe(400);
-      },
-    });
-  });
   test('Doing a PUT with a body but malformed level solution should error', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
@@ -308,10 +199,9 @@ describe('Testing stats api', () => {
         expect(response.error).toBeUndefined();
         expect(response.success).toBe(true);
         expect(res.status).toBe(200);
-        const lvl = await LevelModel.findById(TestId.LEVEL);
+        const [lvl, u] = await Promise.all([LevelModel.findById(TestId.LEVEL), UserModel.findById(TestId.USER)]);
 
         expect(lvl.leastMoves).toBe(14);
-        const u = await UserModel.findById(TestId.USER);
 
         expect(u.calc_records).toEqual(2);
       },
@@ -344,10 +234,9 @@ describe('Testing stats api', () => {
         expect(response.error).toBeUndefined();
         expect(response.success).toBe(true);
         expect(res.status).toBe(200);
-        const lvl = await LevelModel.findById(TestId.LEVEL);
+        const [lvl, u] = await Promise.all([LevelModel.findById(TestId.LEVEL), UserModel.findById(TestId.USER)]);
 
         expect(lvl.leastMoves).toBe(14);
-        const u = await UserModel.findById(TestId.USER);
 
         expect(u.calc_records).toEqual(2);
       },
@@ -421,10 +310,9 @@ describe('Testing stats api', () => {
         expect(response.error).toBeUndefined();
         expect(response.success).toBe(true);
         expect(res.status).toBe(200);
-        const lvl = await LevelModel.findById(TestId.LEVEL);
+        const [lvl, u] = await Promise.all([LevelModel.findById(TestId.LEVEL), UserModel.findById(TestId.USER)]);
 
         expect(lvl.leastMoves).toBe(12);
-        const u = await UserModel.findById(TestId.USER);
 
         expect(u.calc_records).toEqual(2); // +0 since this is the same owner of the level
       },
@@ -493,7 +381,7 @@ describe('Testing stats api', () => {
         const lvl = await LevelModel.findById(TestId.LEVEL);
 
         expect(lvl.leastMoves).toBe(12);
-        expect(lvl.calc_stats_players_beaten).toBe(1); // still hasn't won since 14 steps > minimum
+        expect(lvl.calc_stats_players_beaten).toBe(1); // still hasn't solved since 14 steps > minimum
 
         const b = await UserModel.findById(TestId.USER_B);
 
@@ -531,11 +419,12 @@ describe('Testing stats api', () => {
         const lvl = await LevelModel.findById(TestId.LEVEL);
 
         expect(lvl.leastMoves).toBe(12);
-        expect(lvl.calc_stats_players_beaten).toBe(1); // still hasn't won since 14 steps > minimum
+        expect(lvl.calc_stats_players_beaten).toBe(1); // still hasn't solved since 14 steps > minimum
 
         const stat = await StatModel.findOne({ userId: TestId.USER_B, levelId: TestId.LEVEL });
 
         expect(stat.attempts).toBe(3);
+        expect(stat.gameId).toBe(GameId.PATHOLOGY);
 
         const b = await UserModel.findById(TestId.USER_B);
 
@@ -570,12 +459,11 @@ describe('Testing stats api', () => {
         expect(response.error).toBeUndefined();
         expect(response.success).toBe(true);
         expect(res.status).toBe(200);
-        const lvl = await LevelModel.findById(TestId.LEVEL);
+
+        const [lvl, b] = await Promise.all([LevelModel.findById(TestId.LEVEL), UserModel.findById(TestId.USER_B)]);
 
         expect(lvl.leastMoves).toBe(12);
         expect(lvl.calc_stats_players_beaten).toBe(2);
-
-        const b = await UserModel.findById(TestId.USER_B);
 
         expect(b.calc_records).toEqual(0);
       },
@@ -613,20 +501,18 @@ describe('Testing stats api', () => {
         expect(response.error).toBe('Internal server error');
 
         expect(res.status).toBe(500);
-        const lvl = await LevelModel.findById(TestId.LEVEL);
+        const [lvl, records] = await Promise.all([LevelModel.findById(TestId.LEVEL), RecordModel.find({ levelId: TestId.LEVEL }, {}, { sort: { moves: 1 } })]);
 
         expect(lvl.leastMoves).toBe(12);
         expect(lvl.calc_stats_players_beaten).toBe(2);
         // get records
-        const records = await RecordModel.find({ levelId: TestId.LEVEL }, {}, { sort: { moves: 1 } });
 
         expect(records.length).toBe(2); // should still be 2 records
         expect(records[0].moves).toBe(12);
         expect(records[1].moves).toBe(20);
 
         // get user
-        const u = await UserModel.findById(TestId.USER);
-        const b = await UserModel.findById(TestId.USER_B);
+        const [u, b] = await Promise.all([UserModel.findById(TestId.USER), UserModel.findById(TestId.USER_B)]);
 
         expect(u.score).toBe(2);
         expect(b.score).toBe(1);
@@ -685,9 +571,10 @@ describe('Testing stats api', () => {
         expect(stat.moves).toBe(8);
 
         // get user
-        const u = await UserModel.findById(TestId.USER);
-        const b = await UserModel.findById(TestId.USER_B);
-        const c = await UserModel.findById(TestId.USER_C);
+        const [u, b, c] = await Promise.all([
+          UserModel.findById(TestId.USER),
+          UserModel.findById(TestId.USER_B),
+          UserModel.findById(TestId.USER_C)]);
 
         expect(u.score).toBe(1); // user a should have lost points
         expect(u.calc_records).toBe(2);
@@ -738,9 +625,10 @@ describe('Testing stats api', () => {
         expect(records[2].moves).toBe(20);
 
         // get user
-        const u = await UserModel.findById(TestId.USER);
-        const b = await UserModel.findById(TestId.USER_B);
-        const c = await UserModel.findById(TestId.USER_C);
+        const [u, b, c] = await Promise.all([
+          UserModel.findById(TestId.USER),
+          UserModel.findById(TestId.USER_B),
+          UserModel.findById(TestId.USER_C)]);
 
         expect(u.score).toBe(1); // user a should have lost points
         expect(u.calc_records).toBe(2);

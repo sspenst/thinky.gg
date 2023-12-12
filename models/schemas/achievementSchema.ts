@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import mongoose from 'mongoose';
 import AchievementType from '../../constants/achievements/achievementType';
 import Achievement from '../db/achievement';
@@ -5,6 +6,11 @@ import Achievement from '../db/achievement';
 const AchievementSchema = new mongoose.Schema<Achievement>({
   _id: {
     type: mongoose.Schema.Types.ObjectId,
+    required: true,
+  },
+  gameId: {
+    type: String,
+    enum: GameId,
     required: true,
   },
   type: {
@@ -21,6 +27,6 @@ const AchievementSchema = new mongoose.Schema<Achievement>({
   timestamps: true,
 });
 
-AchievementSchema.index({ type: 1, userId: 1 }, { unique: true });
+AchievementSchema.index({ type: 1, userId: 1, gameId: 1 }, { unique: true });
 
 export default AchievementSchema;

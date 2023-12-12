@@ -5,7 +5,7 @@ import NotificationType from '../../../constants/notificationType';
 import { ValidEnum, ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
 import { clearNotifications, createNewWallPostNotification } from '../../../helpers/notificationHelper';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import { COMMENT_QUERY_LIMIT } from '../../../models/CommentEnums';
+import { COMMENT_QUERY_LIMIT } from '../../../models/constants/comment';
 import Comment, { EnrichedComment } from '../../../models/db/comment';
 import User from '../../../models/db/user';
 import { CommentModel, UserModel } from '../../../models/mongoose';
@@ -139,7 +139,7 @@ export default withAuth({
   }
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'POST') {
-    if (!(await isFullAccount(req.user))) {
+    if (!isFullAccount(req.user)) {
       return res.status(401).json({
         error: 'Commenting requires a full account with a confirmed email'
       });
@@ -167,16 +167,14 @@ export default withAuth({
     if (targetModel === 'User') {
       // if you aren't commenting on your own profile, notify the target user
       if (target.toString() !== req.user._id.toString()) {
-        await createNewWallPostNotification(NotificationType.NEW_WALL_POST, target, comment.author, target, JSON.stringify(comment));
+        await createNewWallPostNotification(req.gameId, NotificationType.NEW_WALL_POST, target, comment.author, target, JSON.stringify(comment));
       }
     } else if (targetModel === 'Comment') {
       const [parentComment, everyoneInThread] = await Promise.all([
-        CommentModel.findOne<Comment>({
+        CommentModel.findOne({
           _id: target,
           deletedAt: null,
-        }, {}, {
-          lean: true
-        }),
+        }).lean<Comment>(),
         CommentModel.aggregate([
           {
             $match: {
@@ -201,7 +199,7 @@ export default withAuth({
       if (parentComment) {
         // if you aren't replying to yourself, notify the parent comment author
         if (parentComment.author.toString() !== req.user._id.toString()) {
-          await createNewWallPostNotification(NotificationType.NEW_WALL_REPLY, parentComment.author, req.user._id, parentComment.target, JSON.stringify(comment));
+          await createNewWallPostNotification(req.gameId, NotificationType.NEW_WALL_REPLY, parentComment.author, req.user._id, parentComment.target, JSON.stringify(comment));
         }
 
         const othersInThread = everyoneInThread.filter(x => x._id.toString() !== parentComment.author.toString());
@@ -209,7 +207,8 @@ export default withAuth({
         // notify everyone else in the thread
         for (const user of othersInThread) {
           if (user._id.toString() !== req.user._id.toString()) {
-            await createNewWallPostNotification(NotificationType.NEW_WALL_REPLY, user._id, req.user._id, parentComment.target, JSON.stringify(comment));
+            // TODO: Promise.all this loop
+            await createNewWallPostNotification(req.gameId, NotificationType.NEW_WALL_REPLY, user._id, req.user._id, parentComment.target, JSON.stringify(comment));
           }
         }
       }
@@ -261,15 +260,11 @@ async function softDeleteComment(commentId: Types.ObjectId, reqUser: User): Prom
       CommentModel.findOne({
         _id: comment.target,
         deletedAt: null
-      }, {}, {
-        lean: true
-      }),
+      }).lean<Comment>(),
       CommentModel.find({
         target: comment._id,
         deletedAt: null
-      }, {}, {
-        lean: true
-      })
+      }).lean<Comment[]>(),
     ]);
 
   const promises = [];

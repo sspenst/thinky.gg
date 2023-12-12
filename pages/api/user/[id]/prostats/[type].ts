@@ -1,6 +1,7 @@
 import { getEnrichLevelsPipelineSteps } from '@root/helpers/enrich';
+import { getRecordsByUserId } from '@root/helpers/getRecordsByUserId';
 import User from '@root/models/db/user';
-import mongoose, { PipelineStage } from 'mongoose';
+import mongoose, { PipelineStage, Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { ValidEnum } from '../../../../../helpers/apiWrapper';
 import { DIFFICULTY_LOGISTIC_K, DIFFICULTY_LOGISTIC_M, DIFFICULTY_LOGISTIC_T } from '../../../../../helpers/getDifficultyEstimate';
@@ -83,7 +84,7 @@ async function getDifficultyDataComparisons(userId: string) {
           },
           {
             $match: {
-              attemptContext: AttemptContext.JUST_BEATEN,
+              attemptContext: AttemptContext.JUST_SOLVED,
             },
           },
           {
@@ -92,27 +93,27 @@ async function getDifficultyDataComparisons(userId: string) {
             },
           },
         ],
-        as: 'players_with_beaten_playattempt',
+        as: 'players_with_just_solved_playattempt',
       }
     },
     {
-      // convert players_with_beaten_playattempt to an array of ids
+      // convert players_with_just_solved_playattempt to an array of ids
       $addFields: {
-        players_with_beaten_playattempt: {
+        players_with_just_solved_playattempt: {
           $map: {
-            input: '$players_with_beaten_playattempt',
+            input: '$players_with_just_solved_playattempt',
             as: 'player',
             in: '$$player._id',
           },
         },
       }
     },
-    // remove my own playattempt id from players_with_beaten_playattempt
+    // remove my own playattempt id from players_with_just_solved_playattempt
     {
       $addFields: {
-        players_with_beaten_playattempt: {
+        players_with_just_solved_playattempt: {
           $filter: {
-            input: '$players_with_beaten_playattempt',
+            input: '$players_with_just_solved_playattempt',
             as: 'player',
             cond: { $ne: ['$$player', new mongoose.Types.ObjectId(userId)] },
           },
@@ -128,21 +129,21 @@ async function getDifficultyDataComparisons(userId: string) {
         slug: '$level.slug',
         calc_playattempts_just_beaten_count: '$level.calc_playattempts_just_beaten_count',
         calc_playattempts_duration_sum: '$level.calc_playattempts_duration_sum',
-        players_with_beaten_playattempt: 1,
+        players_with_just_solved_playattempt: 1,
       },
     },
     {
       $lookup: {
         from: PlayAttemptModel.collection.name,
-        let: { levelId: '$_id', players_with_beaten_playattempt: '$players_with_beaten_playattempt' },
+        let: { levelId: '$_id', players_with_just_solved_playattempt: '$players_with_just_solved_playattempt' },
         pipeline: [
           {
             $match: {
               $expr: {
                 $and: [
                   { $eq: ['$levelId', '$$levelId'] },
-                  // check where user is in players_with_beaten_playattempt
-                  { $in: ['$userId', '$$players_with_beaten_playattempt'] },
+                  // check where user is in players_with_just_solved_playattempt
+                  { $in: ['$userId', '$$players_with_just_solved_playattempt'] },
                   { $ne: ['$startTime', '$endTime'] },
 
                 ],
@@ -151,7 +152,7 @@ async function getDifficultyDataComparisons(userId: string) {
           },
           {
             $match: {
-              attemptContext: { $in: [AttemptContext.JUST_BEATEN, AttemptContext.UNBEATEN] },
+              attemptContext: { $in: [AttemptContext.JUST_SOLVED, AttemptContext.UNSOLVED] },
             },
           },
           {
@@ -199,7 +200,7 @@ async function getDifficultyDataComparisons(userId: string) {
           },
           {
             $match: {
-              attemptContext: { $in: [AttemptContext.JUST_BEATEN, AttemptContext.UNBEATEN] },
+              attemptContext: { $in: [AttemptContext.JUST_SOLVED, AttemptContext.UNSOLVED] },
             },
           },
           {
@@ -230,7 +231,7 @@ async function getDifficultyDataComparisons(userId: string) {
     {
       $project: {
         _id: 1,
-        other_calc_playattempts_just_beaten_count: { $size: '$players_with_beaten_playattempt' },
+        other_calc_playattempts_just_beaten_count: { $size: '$players_with_just_solved_playattempt' },
         myPlayattemptsSumDuration: '$myplayattempts.sumDuration',
         name: 1,
         difficulty: 1,
@@ -238,7 +239,7 @@ async function getDifficultyDataComparisons(userId: string) {
         ts: 1,
         calc_playattempts_just_beaten_count: 1,
 
-        otherPlayattemptsAverageDuration: { $divide: ['$otherplayattempts.sumDuration', { $size: '$players_with_beaten_playattempt' }] },
+        otherPlayattemptsAverageDuration: { $divide: ['$otherplayattempts.sumDuration', { $size: '$players_with_just_solved_playattempt' }] },
         calc_playattempts_duration_sum: 1,
       },
     },
@@ -249,7 +250,7 @@ async function getDifficultyDataComparisons(userId: string) {
   const m = 20;
   const t = 0.2;
   const k = 1.5;
-  const beatenCountFactor = ((k - 1) / (1 + Math.exp(t * (beatenCount - m)))) + 1;
+  const solveCountFactor = ((k - 1) / (1 + Math.exp(t * (solveCount - m)))) + 1;
   */
   const m = DIFFICULTY_LOGISTIC_M;
   const t = DIFFICULTY_LOGISTIC_T;
@@ -257,12 +258,12 @@ async function getDifficultyDataComparisons(userId: string) {
 
   for (let i = 0; i < difficultyData.length; i++) {
     const level = difficultyData[i];
-    const beatenCount = !level.calc_playattempts_just_beaten_count ? 1 : level.calc_playattempts_just_beaten_count;
+    const solveCount = !level.calc_playattempts_just_beaten_count ? 1 : level.calc_playattempts_just_beaten_count;
 
-    const beatenCountFactor = ((k - 1) / (1 + Math.exp(t * (beatenCount - m)))) + 1;
+    const solveCountFactor = ((k - 1) / (1 + Math.exp(t * (solveCount - m)))) + 1;
 
     if (level.averageDuration) {
-      level.difficultyAdjusted = level.difficulty / beatenCountFactor;
+      level.difficultyAdjusted = level.difficulty / solveCountFactor;
     }
   }
 
@@ -479,7 +480,7 @@ export default withAuth({
   }
 
   const { id: userId, type } = req.query as { id: string, type: string };
-  let scoreHistory, difficultyLevelsComparisons, mostSolvesForUserLevels, playLogForUserCreatedLevels;
+  let scoreHistory, difficultyLevelsComparisons, mostSolvesForUserLevels, playLogForUserCreatedLevels, records;
 
   if (type === ProStatsUserType.DifficultyLevelsComparisons) {
     if (userId !== req.user._id.toString()) {
@@ -495,6 +496,8 @@ export default withAuth({
     mostSolvesForUserLevels = await getMostSolvesForUserLevels(userId);
   } else if (type === ProStatsUserType.PlayLogForUserCreatedLevels) {
     playLogForUserCreatedLevels = await getPlayLogForUsersCreatedLevels(req.user, userId);
+  } else if (type === ProStatsUserType.Records) {
+    records = await getRecordsByUserId(new Types.ObjectId(userId), req.user);
   }
 
   return res.status(200).json({
@@ -502,5 +505,6 @@ export default withAuth({
     [ProStatsUserType.DifficultyLevelsComparisons]: difficultyLevelsComparisons,
     [ProStatsUserType.MostSolvesForUserLevels]: mostSolvesForUserLevels,
     [ProStatsUserType.PlayLogForUserCreatedLevels]: playLogForUserCreatedLevels,
+    [ProStatsUserType.Records]: records,
   });
 });

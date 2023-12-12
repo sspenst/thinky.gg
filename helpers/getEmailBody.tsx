@@ -7,15 +7,26 @@ import User from '../models/db/user';
 
 // good place to test the output:
 // https://htmlemail.io/inline/
-export default function getEmailBody(
-  levelOfDay: EnrichedLevel | null,
-  notificationsCount: number,
-  title: string,
-  user: User,
-  message?: string,
-  linkHref?: string,
-  linkText?: string,
-) {
+
+interface EmailBodyProps {
+  levelOfDay?: EnrichedLevel | null;
+  linkHref?: string;
+  linkText?: string;
+  message?: string;
+  notificationsCount?: number;
+  title: string;
+  user: User;
+}
+
+export default function getEmailBody({
+  levelOfDay,
+  linkHref,
+  linkText,
+  message,
+  notificationsCount = 0,
+  title,
+  user,
+}: EmailBodyProps) {
   return renderToStaticMarkup(
     <html>
       <body>

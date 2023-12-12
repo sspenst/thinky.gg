@@ -1,9 +1,11 @@
 import * as aws from '@aws-sdk/client-ses';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import Discord from '@root/constants/discord';
+import { GameId } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
 import Role from '@root/constants/role';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { convert } from 'html-to-text';
 import { Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
@@ -41,10 +43,10 @@ const transporter = isLocal() ? nodemailer.createTransport({
   rateDelta: 10000,
 }) : nodemailer.createTransport({
   SES: { ses, aws },
-  sendingRate: 10 // max 10 messages/second
+  sendingRate: 20 // max 10 messages/second
 });
 
-export async function sendMail(batchId: Types.ObjectId, type: EmailType | NotificationType, user: User, subject: string, body: string) {
+export async function sendMail(gameId: GameId, batchId: Types.ObjectId, type: EmailType | NotificationType, user: User, subject: string, body: string) {
   /* istanbul ignore next */
   const textVersion = convert(body, {
     wordwrap: 130,
@@ -60,10 +62,11 @@ export async function sendMail(batchId: Types.ObjectId, type: EmailType | Notifi
 
   const emailLog = await EmailLogModel.create({
     batchId: batchId,
-    userId: user._id,
-    type: type,
-    subject: subject,
+    gameId: gameId,
     state: EmailState.PENDING,
+    subject: subject,
+    type: type,
+    userId: user._id,
   });
   let err = null;
 
@@ -84,7 +87,7 @@ export async function sendMail(batchId: Types.ObjectId, type: EmailType | Notifi
   return err;
 }
 
-export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFar: string[], limit: number) {
+export async function sendEmailDigests(gameId: GameId, batchId: Types.ObjectId, totalEmailedSoFar: string[], limit: number) {
   const userConfigsAggQ = UserConfigModel.aggregate([{
     $match: {
       emailDigest: {
@@ -254,8 +257,13 @@ export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFa
       `You have ${notificationsCount} new notification${notificationsCount !== 1 ? 's' : ''}`;
 
     const title = `Welcome to the Pathology Level of the Day for ${todaysDatePretty}.`;
-    const body = getEmailBody(levelOfDay, notificationsCount, title, user);
-    const sentError = await sendMail(batchId, EmailType.EMAIL_DIGEST, user, subject, body);
+    const body = getEmailBody({
+      levelOfDay: levelOfDay,
+      notificationsCount: notificationsCount,
+      title: title,
+      user: user,
+    });
+    const sentError = await sendMail(gameId, batchId, EmailType.EMAIL_DIGEST, user, subject, body);
 
     if (!sentError) {
       sentList.push(user.email);
@@ -273,7 +281,7 @@ export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFa
   return { sentList, failedList };
 }
 
-export async function sendAutoUnsubscribeUsers(batchId: Types.ObjectId, limit: number) {
+export async function sendAutoUnsubscribeUsers(gameId: GameId, batchId: Types.ObjectId, limit: number) {
   /**
    * here is the rules...
    * 1. If we sent a reactivation email to someone 3 days ago and they still haven't logged on, change their email notifications settings to NONE
@@ -286,56 +294,60 @@ export async function sendAutoUnsubscribeUsers(batchId: Types.ObjectId, limit: n
     type: EmailType.EMAIL_7D_REACTIVATE,
     createdAt: { $lte: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) },
   }).distinct('userId');
-
-  const inactive7DUsersWhoWeHaveTriedToEmail = await UserModel.aggregate([
-    {
-      $match: {
-        _id: { $in: usersThatHaveBeenSentReactivationEmailIn3dAgoOrMore },
-        // checking if they have been not been active in past 10 days
-        last_visited_at: { $lte: (Date.now() / 1000) - (10 * 24 * 60 * 60 ) }, // TODO need to refactor last_visited_at to be a DATE object instead of seconds
-        roles: { $ne: Role.GUEST },
-        email: { $ne: null },
+  const [totalLevels, totalCreatorsQuery, inactive7DUsersWhoWeHaveTriedToEmail] = await Promise.all([
+    LevelModel.countDocuments({
+      isDeleted: { $ne: true },
+      isDraft: false,
+    }),
+    LevelModel.distinct('userId'),
+    UserModel.aggregate([
+      {
+        $match: {
+          _id: { $in: usersThatHaveBeenSentReactivationEmailIn3dAgoOrMore },
+          email: { $ne: null },
+          emailConfirmed: { $ne: true }, // don't unsubscribe users with verified emails
+          // checking if they have been not been active in past 10 days
+          last_visited_at: { $lte: (Date.now() / 1000) - (10 * 24 * 60 * 60 ) }, // TODO need to refactor last_visited_at to be a DATE object instead of seconds
+          roles: { $ne: Role.GUEST },
+        },
       },
-    },
-    {
-      $lookup: {
-        from: UserConfigModel.collection.name,
-        localField: '_id',
-        foreignField: 'userId',
-        as: 'userConfig',
+      {
+        $lookup: {
+          from: UserConfigModel.collection.name,
+          localField: '_id',
+          foreignField: 'userId',
+          as: 'userConfig',
+        },
       },
-    },
-    {
-      $unwind: {
-        path: '$userConfig',
-        preserveNullAndEmptyArrays: false, // if user has no config, don't include them
+      {
+        $unwind: {
+          path: '$userConfig',
+          preserveNullAndEmptyArrays: false, // if user has no config, don't include them
+        },
       },
-    },
-    {
-      $match: {
-        'userConfig.emailConfirmed': { $ne: true }, // don't unsubscribe users with verified emails
-        'userConfig.emailDigest': { $ne: EmailDigestSettingTypes.NONE },
+      {
+        $match: {
+          'userConfig.emailDigest': { $ne: EmailDigestSettingTypes.NONE },
+        },
       },
-    },
-    {
-      $project: {
-        _id: 1,
-        name: 1,
-        email: 1,
-        userConfig: 1,
-        last_visited_at: 1,
-        score: 1
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          email: 1,
+          userConfig: 1,
+          last_visited_at: 1,
+          score: 1
+        }
       }
-    }
+    ])
+
   ]);
+  const totalCreators = totalCreatorsQuery.length;
 
   const sentList: string[] = [];
   const failedList: string[] = [];
-  const totalLevels = await LevelModel.countDocuments({
-    isDeleted: { $ne: true },
-    isDraft: false,
-  });
-  const totalCreators = (await LevelModel.distinct('userId')).length;
+
   let count = 0;
 
   for (const user of inactive7DUsersWhoWeHaveTriedToEmail) {
@@ -344,9 +356,13 @@ export async function sendAutoUnsubscribeUsers(batchId: Types.ObjectId, limit: n
     const subject = 'Auto unsubscribing you from our emails';
     const title = 'It has been some time since we have seen you login to Pathology! We are going to automatically change your email settings so that you will not hear from us again. You can always change your email settings back by visiting the account settings page.';
     const message = `You've completed ${totalLevelsSolved.toLocaleString()} levels on Pathology. There are still ${toSolve.toLocaleString()} levels for you to play by ${totalCreators.toLocaleString()} different creators. Come back and play!`;
-    const body = getEmailBody(levelOfDay, 0, title, user, message);
-
-    const sentError = await sendMail(batchId, EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE, user, subject, body);
+    const body = getEmailBody({
+      levelOfDay: levelOfDay,
+      message: message,
+      title: title,
+      user: user,
+    });
+    const sentError = await sendMail(gameId, batchId, EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE, user, subject, body);
 
     if (!sentError) {
       await UserConfigModel.updateOne({ userId: user._id }, { emailDigest: EmailDigestSettingTypes.NONE });
@@ -365,7 +381,7 @@ export async function sendAutoUnsubscribeUsers(batchId: Types.ObjectId, limit: n
   return { sentList, failedList };
 }
 
-export async function sendEmailReactivation(batchId: Types.ObjectId, limit: number) {
+export async function sendEmailReactivation(gameId: GameId, batchId: Types.ObjectId, limit: number) {
   // if they haven't been active in 7 days and they have an email address, send them an email, but only once every 90 days
   // get users that haven't been active in 7 days
   const levelOfDay = await getLevelOfDay();
@@ -374,55 +390,58 @@ export async function sendEmailReactivation(batchId: Types.ObjectId, limit: numb
     createdAt: { $gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000) },
     state: EmailState.SENT
   }).distinct('userId');
-
-  const inactive7DUsers = await UserModel.aggregate([
-    {
-      $match: {
-        _id: { $nin: usersThatHaveBeenSentReactivationInPast90d },
-        // checking if they have been not been active in past 7 days
-        last_visited_at: { $lte: (Date.now() / 1000) - (7 * 24 * 60 * 60 ) }, // TODO need to refactor last_visited_at to be a DATE object instead of seconds
-        roles: { $ne: Role.GUEST },
-        email: { $ne: null },
+  const [totalLevels, totalCreatorsQuery, inactive7DUsers] = await Promise.all([
+    LevelModel.countDocuments({
+      isDeleted: { $ne: true },
+      isDraft: false,
+    }),
+    LevelModel.distinct('userId'),
+    UserModel.aggregate([
+      {
+        $match: {
+          _id: { $nin: usersThatHaveBeenSentReactivationInPast90d },
+          // checking if they have been not been active in past 7 days
+          last_visited_at: { $lte: (Date.now() / 1000) - (7 * 24 * 60 * 60 ) }, // TODO need to refactor last_visited_at to be a DATE object instead of seconds
+          roles: { $ne: Role.GUEST },
+          email: { $ne: null },
+        },
       },
-    },
-    {
-      $lookup: {
-        from: UserConfigModel.collection.name,
-        localField: '_id',
-        foreignField: 'userId',
-        as: 'userConfig',
+      {
+        $lookup: {
+          from: UserConfigModel.collection.name,
+          localField: '_id',
+          foreignField: 'userId',
+          as: 'userConfig',
+        },
       },
-    },
-    {
-      $unwind: {
-        path: '$userConfig',
-        preserveNullAndEmptyArrays: false, // if user has no config, don't include them
+      {
+        $unwind: {
+          path: '$userConfig',
+          preserveNullAndEmptyArrays: false, // if user has no config, don't include them
+        },
       },
-    },
-    {
-      $match: {
-        'userConfig.emailDigest': { $ne: EmailDigestSettingTypes.NONE },
+      {
+        $match: {
+          'userConfig.emailDigest': { $ne: EmailDigestSettingTypes.NONE },
+        },
       },
-    },
-    {
-      $project: {
-        _id: 1,
-        name: 1,
-        email: 1,
-        userConfig: 1,
-        last_visited_at: 1,
-        score: 1
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          email: 1,
+          userConfig: 1,
+          last_visited_at: 1,
+          score: 1
+        }
       }
-    }
-  ]);
+    ]
+    )]);
 
   const sentList: string[] = [];
   const failedList: string[] = [];
-  const totalLevels = await LevelModel.countDocuments({
-    isDeleted: { $ne: true },
-    isDraft: false,
-  });
-  const totalCreators = (await LevelModel.distinct('userId')).length;
+
+  const totalCreators = totalCreatorsQuery.length;
   let count = 0;
 
   for (const user of inactive7DUsers) {
@@ -431,9 +450,13 @@ export async function sendEmailReactivation(batchId: Types.ObjectId, limit: numb
     const subject = 'New Pathology levels are waiting to be solved!';
     const title = 'We haven\'t seen you in a bit!';
     const message = `You've completed ${totalLevelsSolved.toLocaleString()} levels on Pathology. There are still ${toSolve.toLocaleString()} levels for you to play by ${totalCreators.toLocaleString()} different creators. Come back and play!`;
-    const body = getEmailBody(levelOfDay, 0, title, user, message);
-
-    const sentError = await sendMail(batchId, EmailType.EMAIL_7D_REACTIVATE, user, subject, body);
+    const body = getEmailBody({
+      levelOfDay: levelOfDay,
+      message: message,
+      title: title,
+      user: user,
+    });
+    const sentError = await sendMail(gameId, batchId, EmailType.EMAIL_7D_REACTIVATE, user, subject, body);
 
     if (!sentError) {
       sentList.push(user.email);
@@ -463,6 +486,7 @@ export default apiWrapper({ GET: {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
+  const gameId = getGameIdFromReq(req);
   // default limit to 1000
   const limitNum = limit ? parseInt(limit as string) : 1000;
 
@@ -475,14 +499,14 @@ export default apiWrapper({ GET: {
 
   try {
     const [emailUnsubscribeResult, emailReactivationResult] = await Promise.all([
-      sendAutoUnsubscribeUsers(batchId, limitNum),
-      sendEmailReactivation(batchId, limitNum),
+      sendAutoUnsubscribeUsers(gameId, batchId, limitNum),
+      sendEmailReactivation(gameId, batchId, limitNum),
     ]);
 
     totalEmailedSoFar.push(...emailUnsubscribeResult.sentList);
     totalEmailedSoFar.push(...emailReactivationResult.sentList);
 
-    const emailDigestResult = await sendEmailDigests(batchId, totalEmailedSoFar, limitNum);
+    const emailDigestResult = await sendEmailDigests(gameId, batchId, totalEmailedSoFar, limitNum);
 
     totalEmailedSoFar.push(...emailDigestResult.sentList);
 

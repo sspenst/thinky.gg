@@ -1,4 +1,6 @@
+import { GameId } from '@root/constants/GameId';
 import mongoose from 'mongoose';
+import { CollectionType } from '../constants/collection';
 import Collection from '../db/collection';
 
 const CollectionSchema = new mongoose.Schema<Collection>({
@@ -9,6 +11,15 @@ const CollectionSchema = new mongoose.Schema<Collection>({
   authorNote: {
     type: String,
     maxlength: 1024 * 5, // 5 kb limit seems reasonable
+  },
+  gameId: {
+    type: String,
+    enum: GameId,
+    required: true,
+  },
+  isPrivate: {
+    type: Boolean,
+    default: false,
   },
   isThemed: {
     type: Boolean,
@@ -32,6 +43,11 @@ const CollectionSchema = new mongoose.Schema<Collection>({
     type: [String],
     default: [],
   },
+  type: {
+    type: String,
+    enum: CollectionType,
+    default: CollectionType.Regular,
+  },
   unlockPercent: {
     type: Number,
     default: 50,
@@ -50,6 +66,6 @@ const CollectionSchema = new mongoose.Schema<Collection>({
 });
 
 CollectionSchema.index({ userId: 1 });
-CollectionSchema.index({ slug: 1 }, { name: 'slug_index', unique: true });
+CollectionSchema.index({ slug: 1, gameId: 1 }, { name: 'slug_index', unique: true });
 
 export default CollectionSchema;

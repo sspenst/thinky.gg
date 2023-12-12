@@ -1,12 +1,19 @@
 import { Menu, Transition } from '@headlessui/react';
+import { PlayLaterToggleButton } from '@root/components/cards/playLaterToggleButton';
 import FormattedDate from '@root/components/formatted/formattedDate';
 import FormattedUser from '@root/components/formatted/formattedUser';
+import StyledTooltip from '@root/components/page/styledTooltip';
 import DataTable, { TableColumn } from '@root/components/tables/dataTable';
 import Dimensions from '@root/constants/dimensions';
 import StatFilter from '@root/constants/statFilter';
+import { AppContext } from '@root/contexts/appContext';
 import isPro from '@root/helpers/isPro';
+import { CollectionType } from '@root/models/constants/collection';
+import { EnrichedCollection } from '@root/models/db/collection';
+import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '@root/models/schemas/levelSchema';
 import classNames from 'classnames';
-import { debounce } from 'debounce';
+import debounce from 'debounce';
+import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -14,7 +21,7 @@ import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
 import nProgress from 'nprogress';
 import { ParsedUrlQuery, ParsedUrlQueryInput } from 'querystring';
-import React, { Fragment, useCallback, useEffect, useState } from 'react';
+import React, { Fragment, useCallback, useContext, useEffect, useState } from 'react';
 import FilterButton from '../../components/buttons/filterButton';
 import FormattedDifficulty, { difficultyList, getDifficultyColor } from '../../components/formatted/formattedDifficulty';
 import FormattedLevelLink from '../../components/formatted/formattedLevelLink';
@@ -39,6 +46,7 @@ export interface SearchQuery extends ParsedUrlQuery {
   difficultyFilter?: string;
   disableCount?: string;
   excludeLevelIds?: string;
+  isRanked?: string;
   maxDifficulty?: string;
   maxDimension1?: string;
   maxDimension2?: string;
@@ -63,6 +71,7 @@ export interface SearchQuery extends ParsedUrlQuery {
 const DefaultQuery = {
   blockFilter: String(BlockFilterMask.NONE),
   difficultyFilter: '',
+  isRanked: 'false',
   maxDimension1: '',
   maxDimension2: '',
   maxSteps: '2500',
@@ -92,7 +101,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }
   }
 
-  const query = await doQuery(searchQuery, reqUser);
+  const query = await doQuery(searchQuery, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, ...{ width: 1, data: 1, height: 1 } });
 
   if (!query) {
     throw new Error('Error querying Levels');
@@ -183,13 +192,13 @@ interface StatFilterMenuProps {
 function StatFilterMenu({ onStatFilterClick, query }: StatFilterMenuProps) {
   const statFilterStrings = {
     [StatFilter.All]: 'All Levels',
-    [StatFilter.HideWon]: 'Hide Solved',
-    [StatFilter.ShowWon]: 'Solved',
+    [StatFilter.HideSolved]: 'Hide Solved',
+    [StatFilter.Solved]: 'Solved',
   } as Record<string, string>;
 
   if (query.sortBy !== 'completed') {
-    statFilterStrings[StatFilter.ShowInProgress] = 'In Progress';
-    statFilterStrings[StatFilter.ShowUnattempted] = 'Unattempted';
+    statFilterStrings[StatFilter.InProgress] = 'In Progress';
+    statFilterStrings[StatFilter.Unattempted] = 'Unattempted';
   }
 
   return (
@@ -258,6 +267,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState(searchQuery);
   const router = useRouter();
+  const { setTempCollection } = useContext(AppContext);
 
   useEffect(() => {
     setData(enrichedLevels);
@@ -268,13 +278,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
     setQuery(searchQuery);
   }, [searchQuery]);
 
-  const fetchLevels = useCallback((query: SearchQuery) => {
-    // TODO: check if query is identical, in which case do nothing
-
-    nProgress.start();
-    setQuery(query);
-    setLoading(true);
-
+  function getParsedUrlQuery(query: SearchQuery) {
     // only add non-default query params for a clean URL
     const q: ParsedUrlQueryInput = {};
 
@@ -284,8 +288,18 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       }
     }
 
+    return q;
+  }
+
+  const fetchLevels = useCallback((query: SearchQuery) => {
+    // TODO: check if query is identical, in which case do nothing
+
+    nProgress.start();
+    setQuery(query);
+    setLoading(true);
+
     router.push({
-      query: q,
+      query: getParsedUrlQuery(query),
     });
   }, [router]);
 
@@ -320,6 +334,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       name: 'Author',
       selector: (row: EnrichedLevel) => (
         <div className='flex gap-3 truncate'>
+          <PlayLaterToggleButton id={row._id.toString()} level={row} />
           <button
             onClick={() => {
               if (query.searchAuthor === row.userId.name) {
@@ -354,7 +369,43 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       id: 'name',
       name: 'Name',
       grow: 2,
-      selector: (row: EnrichedLevel) => <FormattedLevelLink id='search' level={row} />,
+      selector: (row: EnrichedLevel) => (
+        <div className='flex items-center gap-2 truncate'>
+          <FormattedLevelLink onClick={() => {
+            const q = getParsedUrlQuery(query);
+            const queryString = Object.keys(q).map(key => key + '=' + query[key]).join('&');
+            const ts = new Date();
+
+            // TODO: temp collection is a hack (doesn't represent a real collection so there are other UX problems)
+            // should make a new collection class to be used on the level page (with an href property, isInMemory, etc.)
+            const collectionTemp = {
+              createdAt: ts,
+              isPrivate: true,
+              levels: data, _id: new Types.ObjectId(),
+              name: 'Search',
+              slug: `../search${queryString ? `?${queryString}` : ''}`,
+              type: CollectionType.InMemory,
+              updatedAt: ts,
+              userId: { _id: new Types.ObjectId() } as Types.ObjectId & User,
+            } as EnrichedCollection;
+
+            sessionStorage.setItem('tempCollection', JSON.stringify(collectionTemp));
+            setTempCollection(collectionTemp);
+          }} id='search' level={row} />
+          {row.isRanked &&
+            <div className='text-yellow-500 text-base'>
+              <Link
+                data-tooltip-content='Ranked level'
+                data-tooltip-id={`ranked-tooltip-${row._id.toString()}`}
+                href='/ranked'
+              >
+                🏅
+              </Link>
+              <StyledTooltip id={`ranked-tooltip-${row._id.toString()}`} />
+            </div>
+          }
+        </div>
+      ),
       sortable: true,
       style: {
         minWidth: '150px',
@@ -371,7 +422,6 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
         />
       ),
       sortable: true,
-      allowOverflow: true,
       style: {
         fontSize: '13px',
         minWidth: '150px',
@@ -391,8 +441,8 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       sortable: true,
     },
     {
-      id: 'playersBeaten',
-      name: 'Users Won',
+      id: 'solves',
+      name: 'Solves',
       selector: (row: EnrichedLevel) => row.calc_stats_players_beaten || 0,
       sortable: true,
       style: {
@@ -479,32 +529,28 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
   const difficulty = difficultyList.find(d => d.name === query.difficultyFilter);
 
   const subHeaderComponent = (
-    <div className='flex flex-col gap-1 p-1' id='level_search_box'>
-      <div className='flex flex-row flex-wrap items-center justify-center z-10 gap-1'>
-        <div>
-          <input
-            className='form-control relative min-w-0 block w-52 px-3 py-1.5 h-10 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded-md transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none'
-            id='default-search'
-            key='search-level-input'
-            onChange={e => {
-              queryDebounceHelper({
-                search: e.target.value,
-              });
-            } }
-            placeholder='Search level name...'
-            type='search'
-            value={query.search}
-          />
-        </div>
-        <div>
-          <MultiSelectUser key={'search-author-input-' + searchAuthor?._id.toString()} placeholder='Search authors...' defaultValue={searchAuthor} onSelect={(user) => {
+    <div className='flex flex-col items-center gap-1 p-1' id='level_search_box'>
+      <div className='flex flex-wrap items-center justify-center z-10 gap-1'>
+        <input
+          className='form-control relative min-w-0 block w-52 px-3 py-1.5 h-10 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded-md transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none'
+          id='default-search'
+          key='search-level-input'
+          onChange={e => {
             queryDebounceHelper({
-              searchAuthor: user?.name || '',
+              search: e.target.value,
             });
-          }} />
-        </div>
+          } }
+          placeholder='Search level name...'
+          type='search'
+          value={query.search}
+        />
+        <MultiSelectUser key={'search-author-input-' + searchAuthor?._id.toString()} placeholder='Search authors...' defaultValue={searchAuthor} onSelect={(user) => {
+          queryDebounceHelper({
+            searchAuthor: user?.name || '',
+          });
+        }} />
       </div>
-      <div className='flex items-center justify-center flex-wrap gap-1'>
+      <div className='flex items-center flex-wrap gap-1 justify-center'>
         {reqUser && <StatFilterMenu onStatFilterClick={onStatFilterClick} query={query} />}
         <Menu as='div' className='relative inline-block text-left'>
           <Menu.Button
@@ -605,6 +651,23 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
         </Menu>
         <TimeRangeMenu onTimeRangeClick={onTimeRangeClick} timeRange={query.timeRange} />
       </div>
+      <div className='flex items-center gap-1 border border-color-4 rounded-md px-2 py-1'>
+        <input
+          checked={query.isRanked === 'true'}
+          id='ranked_checkbox'
+          onChange={() => {
+            fetchLevels({
+              ...query,
+              isRanked: query.isRanked === 'true' ? 'false' : 'true',
+              page: '1',
+            });
+          }}
+          type='checkbox'
+        />
+        <label className='text-sm font-medium' htmlFor='ranked_checkbox'>
+          🏅 Ranked
+        </label>
+      </div>
       <div className='flex items-center justify-center py-0.5'>
         <label htmlFor='min-step' className='text-xs font-medium pr-1'>Min steps</label>
         <input
@@ -640,7 +703,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
         />
       </div>
       <div className='flex justify-center items-center gap-2'>
-        <Link href='/settings/proaccount' passHref>
+        <Link href='/settings/pro' passHref>
           <Image alt='pro' src='/pro.svg' width='20' height='20' />
         </Link>
         <div className='flex flex-col items-center justify-center w-fit border p-2 rounded-md gap-2 border-cyan-200'>
@@ -835,7 +898,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
             }
 
             // move off of invalid stat filter option when sorting by completed
-            if (columnId === 'completed' && (query.statFilter === StatFilter.ShowInProgress || query.statFilter === StatFilter.ShowUnattempted)) {
+            if (columnId === 'completed' && (query.statFilter === StatFilter.InProgress || query.statFilter === StatFilter.Unattempted)) {
               update.statFilter = StatFilter.All;
             }
 
