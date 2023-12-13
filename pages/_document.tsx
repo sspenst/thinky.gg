@@ -3,7 +3,6 @@ import User from '@root/models/db/user';
 import { Types } from 'mongoose';
 import Document, { DocumentContext, DocumentInitialProps, Head, Html, Main, NextScript } from 'next/document';
 import React from 'react';
-import Theme from '../constants/theme';
 import { logger } from '../helpers/logger';
 import dbConnect from '../lib/dbConnect';
 import isLocal from '../lib/isLocal';
@@ -84,7 +83,7 @@ class MyDocument extends Document<DocumentProps> {
             type='text/javascript'
           />
         </Head>
-        <body className={Theme.Modern}>
+        <body>
           <Main />
           <NextScript />
         </body>
