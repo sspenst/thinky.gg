@@ -1,10 +1,10 @@
 import TileType from '@root/constants/tileType';
-import { AppContext } from '@root/contexts/appContext';
 import { GridContext } from '@root/contexts/gridContext';
 import { GameState } from '@root/helpers/gameStateHelpers';
 import Position from '@root/models/position';
 import classNames from 'classnames';
-import React, { useContext, useEffect, useState } from 'react';
+import { useTheme } from 'next-themes';
+import React, { useEffect, useState } from 'react';
 import Theme from '../../constants/theme';
 import { teko } from '../../pages/_app';
 import Tile from './tile/tile';
@@ -18,7 +18,7 @@ interface GridProps {
 }
 
 export default function Grid({ cellClassName, gameState, id, leastMoves, onCellClick }: GridProps) {
-  const { theme } = useContext(AppContext);
+  const { theme } = useTheme();
   const classic = theme === Theme.Classic;
   const height = gameState.board.length;
   const width = gameState.board[0].length;

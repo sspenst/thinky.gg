@@ -1,8 +1,8 @@
 import Theme from '@root/constants/theme';
-import { AppContext } from '@root/contexts/appContext';
 import { GridContext } from '@root/contexts/gridContext';
 import Position from '@root/models/position';
 import classNames from 'classnames';
+import { useTheme } from 'next-themes';
 import React, { useContext, useMemo, useState } from 'react';
 import TileType from '../../../constants/tileType';
 import Block from './block';
@@ -31,7 +31,7 @@ export default function Tile({
   const { borderWidth, innerTileSize, tileSize } = useContext(GridContext);
   // initialize the block at the starting position to avoid an animation from the top left
   const [initPos] = useState(new Position(pos.x, pos.y));
-  const { theme } = useContext(AppContext);
+  const { theme } = useTheme();
   const classic = theme === Theme.Classic;
 
   function onClick(e: React.MouseEvent<HTMLDivElement>) {
