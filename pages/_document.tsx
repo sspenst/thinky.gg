@@ -3,6 +3,7 @@ import Theme from '@root/constants/theme';
 import User from '@root/models/db/user';
 import { Types } from 'mongoose';
 import Document, { DocumentContext, DocumentInitialProps, Head, Html, Main, NextScript } from 'next/document';
+import Script from 'next/script';
 import React from 'react';
 import { logger } from '../helpers/logger';
 import dbConnect from '../lib/dbConnect';
@@ -83,8 +84,9 @@ class MyDocument extends Document<DocumentProps> {
             dangerouslySetInnerHTML={{ __html: this.props.browserTimingHeader }}
             type='text/javascript'
           />
-          <script
+          <Script
             id='load-theme'
+            strategy='beforeInteractive'
             dangerouslySetInnerHTML={{
               __html: `
 !function() {
