@@ -95,7 +95,6 @@ export default function MyApp({ Component, pageProps, userAgent }: AppProps & { 
   const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);
   const [sounds, setSounds] = useState<{ [key: string]: HTMLAudioElement }>({});
   const [tempCollection, setTempCollection] = useState<Collection>();
-  const [theme, setTheme] = useState<string>();
   const { matches, privateAndInvitedMatches } = multiplayerSocket;
 
   const mutatePlayLater = useCallback(() => {
@@ -251,19 +250,6 @@ export default function MyApp({ Component, pageProps, userAgent }: AppProps & { 
     };
   }, [user?._id]);
 
-  // TODO: move this to thememodal?
-  useEffect(() => {
-    if (!user?.config) {
-      return;
-    }
-
-    if (Object.values(Theme).includes(user.config.theme as Theme) && theme !== user.config.theme) {
-      // need to remove the default theme so we can add the userConfig theme
-      setTheme(user.config.theme);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.config]);
-
   useEffect(() => {
     for (const match of matches) {
       // if match is active and includes user, then redirect to match page /match/[matchId]
@@ -380,7 +366,15 @@ export default function MyApp({ Component, pageProps, userAgent }: AppProps & { 
           __html: `
             (function() {
               const theme = localStorage.getItem('theme');
+
+              // set data-theme-dark for Tailwind dark classes
               document.documentElement.setAttribute('data-theme-dark', theme === 'theme-light' ? 'false' : 'true');
+
+              // check for an invalid theme and default to theme-modern
+              // ThemeProvider doesn't handle this case with defaultTheme so we have to do it manually here
+              if (!${JSON.stringify(Object.values(Theme))}.includes(theme)) {
+                localStorage.setItem('theme', 'theme-modern');
+              }
             })();
           `,
         }} />
@@ -428,11 +422,9 @@ export default function MyApp({ Component, pageProps, userAgent }: AppProps & { 
           setNotifications: setNotifications,
           setShouldAttemptAuth: setShouldAttemptAuth,
           setTempCollection: setTempCollection,
-          setTheme: setTheme,
           shouldAttemptAuth: shouldAttemptAuth,
           sounds: sounds,
           tempCollection,
-          theme: theme,
           user: user,
           userConfig: user?.config,
           userLoading: isLoading,
