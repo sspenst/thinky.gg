@@ -358,25 +358,6 @@ export default function MyApp({ Component, pageProps, userAgent }: AppProps & { 
   const isEU = Intl.DateTimeFormat().resolvedOptions().timeZone.startsWith('Europe');
 
   return (<>
-    <script
-      id='load-theme'
-      dangerouslySetInnerHTML={{
-        __html: `
-          (function() {
-            const theme = localStorage.getItem('theme');
-
-            // set data-theme-dark for Tailwind dark classes
-            document.documentElement.setAttribute('data-theme-dark', theme === 'theme-light' ? 'false' : 'true');
-
-            // check for an invalid theme and default to theme-modern
-            // ThemeProvider doesn't handle this case with defaultTheme so we have to do it manually here
-            if (!${JSON.stringify(Object.values(Theme))}.includes(theme)) {
-              localStorage.setItem('theme', 'theme-modern');
-            }
-          })();
-        `,
-      }}
-    />
     <ThemeProvider attribute='class' defaultTheme={Theme.Modern} themes={Object.values(Theme)}>
       <Head>
         <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' />

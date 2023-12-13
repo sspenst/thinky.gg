@@ -1,4 +1,5 @@
 /* istanbul ignore file */
+import Theme from '@root/constants/theme';
 import User from '@root/models/db/user';
 import { Types } from 'mongoose';
 import Document, { DocumentContext, DocumentInitialProps, Head, Html, Main, NextScript } from 'next/document';
@@ -81,6 +82,25 @@ class MyDocument extends Document<DocumentProps> {
           <script
             dangerouslySetInnerHTML={{ __html: this.props.browserTimingHeader }}
             type='text/javascript'
+          />
+          <script
+            id='load-theme'
+            dangerouslySetInnerHTML={{
+              __html: `
+!function() {
+  const theme = localStorage.getItem('theme');
+
+  // set data-theme-dark for Tailwind dark classes
+  document.documentElement.setAttribute('data-theme-dark', theme === 'theme-light' ? 'false' : 'true');
+
+  // check for an invalid theme and default to theme-modern
+  // ThemeProvider doesn't handle this case with defaultTheme so we have to do it manually here
+  if (!${JSON.stringify(Object.values(Theme))}.includes(theme)) {
+    localStorage.setItem('theme', 'theme-modern');
+  }
+}();
+              `,
+            }}
           />
         </Head>
         <body>
