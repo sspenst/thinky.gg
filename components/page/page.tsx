@@ -68,7 +68,10 @@ export default function Page({
           marginTop: showHeader ? Dimensions.MenuHeight : 0,
         }}>
           {!isFullScreen && <Nav />}
-          <div className={classNames('w-full flex flex-col', { 'ml-60': !isFullScreen })}>
+          <div className={classNames('flex flex-col', { 'ml-60': !isFullScreen })} style={{
+            maxWidth: isFullScreen ? '100%' : 'calc(100% - 240px)',
+            width: isFullScreen ? '100%' : 'calc(100% - 240px)',
+          }}>
             <main className='grow z-10 h-full'>
               {children}
             </main>
