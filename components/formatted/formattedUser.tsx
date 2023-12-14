@@ -2,7 +2,6 @@ import Dimensions from '@root/constants/dimensions';
 import { GameId } from '@root/constants/GameId';
 import { ProfileQueryType, UserExtendedData } from '@root/constants/profileQueryType';
 import { AppContext } from '@root/contexts/appContext';
-import { getGameLogoAndLabel } from '@root/helpers/getGameLogo';
 import isOnline from '@root/helpers/isOnline';
 import classNames from 'classnames';
 import Link from 'next/link';
@@ -10,6 +9,7 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import getProfileSlug from '../../helpers/getProfileSlug';
 import User from '../../models/db/user';
+import GameLogoAndLabel from '../gameLogoAndLabel';
 import LoadingSpinner from '../page/loadingSpinner';
 import RoleIcons from '../page/roleIcons';
 import StyledTooltip from '../page/styledTooltip';
@@ -98,7 +98,7 @@ export default function FormattedUser({ className, id, noLinks, noTooltip, onCli
                 {isOnline(userExtendedData.user) &&
                   <div className='flex gap-1 items-center'>
                     <span className='font-medium'>Currently Playing:</span>
-                    {getGameLogoAndLabel(userExtendedData.user.lastGame ?? GameId.THINKY, id)}
+                    <GameLogoAndLabel gameId={userExtendedData.user.lastGame ?? GameId.THINKY} id={id} />
                   </div>
                 }
                 {!game.disableGames &&

@@ -1,5 +1,5 @@
+import GameLogoAndLabel from '@root/components/gameLogoAndLabel';
 import { GameId } from '@root/constants/GameId';
-import { getGameLogoAndLabel } from '@root/helpers/getGameLogo';
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
 import React from 'react';
@@ -18,7 +18,9 @@ export default function Login() {
       <>
         <div className='w-full max-w-md mx-auto mt-3 justify-center text-center'>
           <div className='flex flex-col gap-2 items-center'>
-            <div className='text-2xl items-center self-center'>{getGameLogoAndLabel(GameId.THINKY, 'login')}</div>
+            <div className='text-2xl items-center self-center'>
+              <GameLogoAndLabel gameId={GameId.THINKY} id='login' />
+            </div>
             <div>Login with your Thinky.gg account</div>
           </div>
         </div>
