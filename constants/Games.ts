@@ -19,7 +19,7 @@ export const Games: Record<GameId, Game> = {
   [GameId.THINKY]: {
     id: GameId.THINKY,
     baseUrl: '',
-    defaultTheme: Theme.Classic,
+    defaultTheme: Theme.Dark,
     displayName: 'Thinky.gg',
     disableCampaign: true,
     disableCommunityCampaigns: true,
@@ -44,7 +44,7 @@ export const Games: Record<GameId, Game> = {
     subtitle: 'Find the way',
     SEOTitle: 'Pathology - Shortest Path Puzzle Game',
     SEODescription: 'The goal of Pathology is simple. Get to the exit in the least number of moves. Sounds easy right? Yet, this sokoban style game is one of the most mind-bending puzzle games you will find. Different blocks stand in your way to the exit, and your job is to figure out the optimal route',
-    shortDescription: 'Go from start to finish in the least number of moves',
+    shortDescription: 'Get to the exit in the least number of moves',
     type: GameType.SHORTEST_PATH,
     videoDemo: 'https://i.imgur.com/bZpBEUW.mp4',
     gameStateIsSolveFunction: pathologySolveState,

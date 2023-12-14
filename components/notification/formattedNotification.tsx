@@ -2,7 +2,6 @@ import { AchievementRulesCombined } from '@root/constants/achievements/achieveme
 import { GameId } from '@root/constants/GameId';
 import { AppContext } from '@root/contexts/appContext';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
-import { getGameLogo } from '@root/helpers/getGameLogo';
 import Collection from '@root/models/db/collection';
 import classNames from 'classnames';
 import Image from 'next/image';
@@ -20,6 +19,7 @@ import FormattedCollectionLink from '../formatted/formattedCollectedLink';
 import FormattedDate from '../formatted/formattedDate';
 import FormattedLevelLink from '../formatted/formattedLevelLink';
 import FormattedUser from '../formatted/formattedUser';
+import GameLogo from '../gameLogo';
 import { Stars } from '../level/reviews/formattedReview';
 
 interface NotificationMessageProps {
@@ -210,7 +210,7 @@ export default function FormattedNotification({ close, notification, onMarkAsRea
 
       <div className='flex flex-col gap-1 truncate'>
         <div className='flex flex-row items-center gap-1'>
-          {getGameLogo(notification.gameId as GameId)}
+          <GameLogo gameId={notification.gameId} id={notification._id.toString()} tooltip />
           {notification.sourceModel === 'User' ?
             <FormattedUser
               id={`notification-${notification._id.toString()}`}

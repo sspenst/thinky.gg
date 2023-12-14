@@ -1,47 +1,33 @@
+import GameLogo from '@root/components/gameLogo';
+import GameLogoAndLabel from '@root/components/gameLogoAndLabel';
 import Page from '@root/components/page/page';
 import { GameId } from '@root/constants/GameId';
 import { Game, Games } from '@root/constants/Games';
+import { AppContext } from '@root/contexts/appContext';
 import useUrl from '@root/hooks/useUrl';
 import Image from 'next/image';
-import React, { useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 
-function GameCard({ game, onMouseOver, onMouseOut }: { game: Game, onMouseOver: () => void, onMouseOut: () => void }) {
-  const [gameId, setGameId] = useState<GameId>();
+function GameCard({ game }: { game: Game }) {
   const getUrl = useUrl();
 
-  useEffect(() => {
-    setGameId(game.id);
-  }, [game.id]);
-
-  if (game.id === GameId.THINKY) {
-    return null;
-  }
-
   return (
-    <div className='flex flex-col items-center justify-center' style={{}}
-    >
-      <a onMouseOver={onMouseOver} onMouseOut={onMouseOut}
-        suppressHydrationWarning href={getUrl(gameId)} className='flex flex-col gap-3 items-center justify-center w-full h-full p-4 border border-color-3 rounded-lg hover-bg-3 hover:scale-105 transition'
-        style={{
-          backgroundColor: 'rgba(0,0,0,0.4)',
-
-        }}
-      >
-        <Image src={game.logo} alt={game.displayName} width='128' height='128' className='w-32 h-32' />
-        <span className='font-medium text-xl'>{game.displayName}</span>
-      </a>
-    </div>
+    <a suppressHydrationWarning href={getUrl(game.id)} className='flex flex-col gap-3 items-center justify-center w-full h-full p-4 border border-color-3 rounded-lg hover-bg-3 hover:scale-105 transition h-min w-min'>
+      <Image src={game.logo} alt={game.displayName} width='128' height='128' className='w-32 h-32' style={{ minWidth: 128 }} />
+      <span className='font-medium text-xl'>{game.displayName}</span>
+    </a>
   );
 }
 
 export default function ThinkyHomePage() {
-  const [gameHovered, setGameHovered] = useState<Game>();
+  const getUrl = useUrl();
+  const { userConfig } = useContext(AppContext);
 
   return (
     <Page title='Thinky.gg'
       style={{
-        backgroundImage: 'url(https://i.imgur.com/h2qnMrV.png)',
-        height: '100vh',
+        // backgroundImage: 'url(https://i.imgur.com/h2qnMrV.png)',
+        // height: '100vh',
         // center
         backgroundPosition: 'center',
         /** add a fade to black on the top half of the image */
@@ -49,49 +35,37 @@ export default function ThinkyHomePage() {
         backgroundRepeat: 'no-repeat',
         backgroundAttachment: 'fixed',
         backgroundBlendMode: 'multiply',
-        background: 'linear-gradient(rgba(0,0,0,1), rgba(0,0,0,0)), url(https://i.imgur.com/h2qnMrV.png)',
-
+        // background: 'linear-gradient(rgba(0,0,0,1), rgba(0,0,0,0)), url(https://i.imgur.com/h2qnMrV.png)',
       }}>
-      <div className='flex flex-col items-center m-6 gap-8'
-      >
-        <div className='flex flex-col text-4xl md:text-8xl bg-opacity-60 rounded p-4 max-w-6xl mx-auto items-center gap-10'>
-          <div className='flex flex-col text-center' style={{
-
-          }}>
-            <h1 className='' style={{
-              /* super big font for the title. make it really stand out
-              /* font-size: 8rem;
-          font-weight: bold;
-          color: #FFFFFF;
-          text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-          text-align: center;
-              */
-
-              fontWeight: 'bold',
-              color: '#FFFFFF',
-              textAlign: 'center',
-              /** add some shadows and stuff to make it look cool.. */
-              textShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)',
-
-            }}>Thinky.gg</h1>
-            <h2 className='text-lg italic'>Puzzle Games</h2>
-          </div>
-
-        </div>
-        <div className='flex flex-wrap justify-center gap-8 mt-16'>
-          {Object.values(Games).map(game => (
-            <GameCard game={game} key={game.id} onMouseOver={() => {
-              setGameHovered(game);
-            }} onMouseOut={() => {
-              setGameHovered(undefined);
+      <div className='flex justify-center'>
+        <div className='flex flex-wrap justify-center m-6 gap-24'>
+          {Object.values(Games).map(game => {
+            if (game.id === GameId.THINKY) {
+              return null;
             }
-            } />
-          ))}
+
+            return (
+              <div className='flex flex-col items-center gap-6' key={`game${game.id}`}>
+                <a className='flex gap-3 items-center hover:underline mb-4' href={getUrl(game.id)}>
+                  <GameLogo gameId={game.id} id={game.id} size={48} />
+                  <span className='text-4xl font-bold'>{game.displayName}</span>
+                </a>
+                <video autoPlay loop muted className='rounded-lg w-40 text-center fadeIn' src={game.videoDemo} />
+                <div className='p-2 w-auto text-center text-xl fadeIn'>
+                  {game.shortDescription}
+                </div>
+                <a
+                  className='text-2xl font-bold px-4 py-3 border-2 border-color-3 rounded-lg hover-bg-3 hover:scale-110 transition'
+                  href={userConfig?.tutorialCompletedAt ? getUrl(game.id, '/play') : getUrl(game.id, '/tutorial')}
+                  role='button'
+                >
+                  Play Now
+                </a>
+              </div>
+            );
+          } )}
         </div>
-        {gameHovered && <div className='rounded-lg p-2 w-auto text-center fadeIn' style={{
-          backgroundColor: 'rgba(0,0,0,0.6)',
-        }} >{gameHovered.shortDescription}</div>}
-        {gameHovered && <video autoPlay loop muted className='rounded-lg  w-40 text-center fadeIn' src={gameHovered.videoDemo} />}
+
       </div>
     </Page>
   );
