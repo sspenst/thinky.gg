@@ -1,5 +1,6 @@
 import { AchievementRulesCombined } from '@root/constants/achievements/achievementInfo';
 import { GameId } from '@root/constants/GameId';
+import { Games } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import Collection from '@root/models/db/collection';
@@ -68,7 +69,7 @@ function NotificationIcon({ notification }: { notification: Notification }) {
   }
 
   if (!icon) {
-    return <Image alt='logo' src='/logo.svg' width='24' height='24' className='h-6 w-6' />;
+    return <Image alt='logo' src={getGameFromId(GameId.THINKY).logo} width='24' height='24' className='h-6 w-6' />;
   }
 
   return icon;

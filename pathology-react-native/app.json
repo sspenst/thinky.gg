@@ -100,7 +100,7 @@
       "versionCode": "5"
     },
     "web": {
-      "favicon": "../public/logo.png"
+      "favicon": "../public/logos/thinky/thinky.png"
     },
     "extra": {
       "eas": {
