@@ -29,7 +29,7 @@ export default function RecommendedLevel({ hrefOverride, id, level, onClick, tit
             author: level.userId?.name,
             height: Dimensions.OptionHeightLarge,
             href: hrefOverride || `/level/${level.slug}`,
-            id: level._id.toString(),
+            id: `${id}-${level._id.toString()}`,
             level: level,
             onClick: onClick,
             stats: new SelectOptionStats(level.leastMoves, level.userMoves),

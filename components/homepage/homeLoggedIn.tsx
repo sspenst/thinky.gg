@@ -84,6 +84,7 @@ export default function HomeLoggedIn({
             <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2'
               d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
           </svg>
+          <span>Search</span>
         </Link>
       </div>
       <div className='flex flex-wrap justify-center items-center gap-4'>
@@ -148,7 +149,7 @@ export default function HomeLoggedIn({
           </div>
         }
       </div>
-      <div className='flex flex-wrap justify-center max-w-screen-2xl mx-auto'>
+      <div className='flex flex-wrap justify-center max-w-screen-2xl'>
         <div className='w-full md:w-1/2 px-4 h-min' id='latestLevelsSection'>
           <div id='latest-levels' className='flex justify-center'>
             <Link
