@@ -62,6 +62,7 @@ export default function Page({
         }
         <main className='grow z-10' style={{
           height: showHeader ? `calc(100% - ${Dimensions.MenuHeight}px)` : '100%',
+          marginTop: showHeader ? Dimensions.MenuHeight : 0,
         }}>
           {children}
         </main>
