@@ -3,6 +3,7 @@ import { AppContext } from '@root/contexts/appContext';
 import { GridContext } from '@root/contexts/gridContext';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import classNames from 'classnames';
+import { useTheme } from 'next-themes';
 import React, { useContext } from 'react';
 import Theme from '../../../constants/theme';
 import styles from './Block.module.css';
@@ -15,7 +16,8 @@ interface BlockProps {
 
 export default function Block({ inHole, tileType, onTopOf }: BlockProps) {
   const { borderWidth, innerTileSize } = useContext(GridContext);
-  const { game, theme } = useContext(AppContext);
+  const { game } = useContext(AppContext);
+  const { theme } = useTheme();
   const classic = theme === Theme.Classic;
   const innerBorderWidth = Math.round(innerTileSize / 4.5);
 

@@ -1,6 +1,7 @@
 import { AppContext } from '@root/contexts/appContext';
 import { GridContext } from '@root/contexts/gridContext';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
+import { useTheme } from 'next-themes';
 import React, { useContext } from 'react';
 import Theme, { getIconFromTheme } from '../../../constants/theme';
 import TileType from '../../../constants/tileType';
@@ -12,7 +13,8 @@ interface SquareProps {
 
 export default function Square({ text, tileType }: SquareProps) {
   const { borderWidth, innerTileSize, leastMoves, tileSize } = useContext(GridContext);
-  const { game, theme } = useContext(AppContext);
+  const { game } = useContext(AppContext);
+  const { theme } = useTheme();
   const classic = theme === Theme.Classic;
   const innerBorderWidth = Math.round(innerTileSize / 4.5);
   const fontSizeRatio = text === undefined || String(text).length <= 3 ?

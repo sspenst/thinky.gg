@@ -311,6 +311,10 @@ body {
   --level-wall: rgb(38, 38, 38);
 }
 
+[data-theme-dark="true"] {
+  color-scheme: dark;
+}
+
 #arrow,
 #arrow::before {
   position: absolute;

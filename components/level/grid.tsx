@@ -5,6 +5,7 @@ import { GameState } from '@root/helpers/gameStateHelpers';
 import { teko } from '@root/helpers/getFont';
 import Position from '@root/models/position';
 import classNames from 'classnames';
+import { useTheme } from 'next-themes';
 import React, { useContext, useEffect, useState } from 'react';
 import Theme from '../../constants/theme';
 import { getSolveStateFunction } from './solutionStates/helpers';
@@ -19,7 +20,8 @@ interface GridProps {
 }
 
 export default function Grid({ cellClassName, gameState, id, leastMoves, onCellClick }: GridProps) {
-  const { game, theme } = useContext(AppContext);
+  const { game } = useContext(AppContext);
+  const { theme } = useTheme();
   const classic = theme === Theme.Classic;
   const height = gameState.board.length;
   const width = gameState.board[0].length;
