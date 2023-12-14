@@ -1,6 +1,6 @@
 import { GameId } from '@root/constants/GameId';
 import { AppContext } from '@root/contexts/appContext';
-import { useContext } from 'react';
+import { useCallback, useContext } from 'react';
 
 const LinksThatCarryOver = [
   '^/profile',
@@ -21,7 +21,7 @@ const LinksThatCarryOver = [
 export default function useUrl() {
   const { game } = useContext(AppContext);
 
-  function getUrl(gameId?: GameId, path?: string) {
+  const getUrl = useCallback((gameId?: GameId, path?: string) => {
     if (typeof window === 'undefined') {
       return undefined;
     }
@@ -68,7 +68,7 @@ export default function useUrl() {
     }
 
     return `${getProtocol()}//${getSubdomain()}${getHost()}${getPath()}`;
-  }
+  }, [game.id]);
 
   return getUrl;
 }

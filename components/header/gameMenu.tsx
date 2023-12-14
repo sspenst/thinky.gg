@@ -5,12 +5,6 @@ import useUrl from '@root/hooks/useUrl';
 import React, { Fragment } from 'react';
 import GameLogoAndLabel from '../gameLogoAndLabel';
 
-const links = Object.values(Games).map((game) => ({
-  logo: game.logo,
-  subdomain: game.id,
-  label: game.displayName,
-}));
-
 export default function GameMenu() {
   const getUrl = useUrl();
 
@@ -30,7 +24,7 @@ export default function GameMenu() {
         leaveFrom='transform opacity-100 scale-100'
         leaveTo='transform opacity-0 scale-95'
       >
-        <Menu.Items className={'absolute m-1 w-fit origin-top-left left-0 rounded-[10px] shadow-lg border overflow-y-auto'} style={{
+        <Menu.Items className={'fixed m-1 w-fit origin-top-left left-0 rounded-[10px] shadow-lg border overflow-y-auto'} style={{
           backgroundColor: 'var(--bg-color-2)',
           borderColor: 'var(--bg-color-4)',
           color: 'var(--color)',
@@ -38,17 +32,17 @@ export default function GameMenu() {
           maxHeight: 'calc(100% - 56px)',
           top: Dimensions.MenuHeight,
         }}>
-          {links.map((link) => (
-            <Menu.Item key={link.subdomain}>
+          {Object.values(Games).map((game) => (
+            <Menu.Item key={game.id}>
               {({ active }) => (
-                <a href={getUrl(link.subdomain)}>
+                <a href={getUrl(game.id)}>
                   <div
                     className='flex w-full items-center cursor-pointer px-3 py-2 gap-3'
                     style={{
                       backgroundColor: active ? 'var(--bg-color-3)' : undefined,
                     }}
                   >
-                    <GameLogoAndLabel gameId={link.subdomain} id={link.subdomain} />
+                    <GameLogoAndLabel gameId={game.id} id={game.id} />
                   </div>
                 </a>
               )}

@@ -32,11 +32,9 @@ export default function Header({
 
   return (
     <header
-      className='select-none shadow-md w-full flex justify-between px-4 gap-4'
+      className='select-none shadow-md w-full sticky top-0 z-20 flex justify-between px-4 gap-4 border-color-4 border-b'
       style={{
         background: background,
-        borderBottom: '1px solid',
-        borderColor: 'var(--bg-color-4)',
         height: Dimensions.MenuHeight,
         minHeight: Dimensions.MenuHeight,
       }}
