@@ -28,7 +28,7 @@ body {
 
 .theme-accessible {
   --bg-color: rgb(0, 0, 0);
-  --bg-color-2: rgb(0, 0, 0);
+  --bg-color-2: rgb(20, 20, 20);
   --bg-color-3: rgb(50, 50, 50);
   --bg-color-4: rgb(80, 80, 80);
   --color: rgb(255, 255, 255);
@@ -116,7 +116,7 @@ body {
 
 .theme-dark {
   --bg-color: rgb(0, 0, 0);
-  --bg-color-2: rgb(0, 0, 0);
+  --bg-color-2: rgb(20, 20, 20);
   --bg-color-3: rgb(50, 50, 50);
   --bg-color-4: rgb(80, 80, 80);
   --color: rgb(255, 255, 255);
@@ -140,7 +140,7 @@ body {
 
 .theme-light {
   --bg-color: rgb(255, 255, 255);
-  --bg-color-2: rgb(255, 255, 255);
+  --bg-color-2: rgb(240, 240, 240);
   --bg-color-3: rgb(220, 220, 220);
   --bg-color-4: rgb(150, 150, 150);
   --color: rgb(0, 0, 0);
