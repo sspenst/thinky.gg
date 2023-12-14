@@ -434,7 +434,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
           userConfig: user?.config,
           userLoading: isLoading,
         }}>
-          <div className={getFontFromTheme(selectedGame, theme)} style={{
+          <div className={getFontFromTheme(selectedGame)} style={{
             backgroundColor: 'var(--bg-color)',
             color: 'var(--color)',
           }}>

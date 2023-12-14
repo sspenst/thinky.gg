@@ -7,7 +7,7 @@ export const teko = Teko({ display: 'swap', subsets: ['latin'], weight: '500' })
 export const pixelifySans = VT323({ weight: '400', subsets: ['latin'] });
 export const nunitoSans = Nunito_Sans({ display: 'swap', subsets: ['latin'] });
 
-export default function getFontFromTheme(game: Game, theme?: string) {
+export default function getFontFromTheme(game: Game) {
   if (game.id === GameId.PATHOLOGY) {
     return rubik.className;
   } else if (game.id === GameId.SOKOBAN) {
