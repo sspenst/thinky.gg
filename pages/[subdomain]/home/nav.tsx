@@ -23,7 +23,7 @@ export default function Nav() {
   }
 
   return (
-    <div className='fixed w-60 border-color-4 bg-1 p-2 flex flex-col gap-1' style={{
+    <nav className='fixed w-60 border-color-4 bg-1 p-2 flex flex-col gap-1' style={{
       height: 'calc(100% - 48px)',
     }}>
       {Object.values(Games).map((g) => {
@@ -153,6 +153,6 @@ export default function Nav() {
           <span>Users</span>
         </div>
       </Link>
-    </div>
+    </nav>
   );
 }
