@@ -1,3 +1,4 @@
+import 'react-responsive-carousel/lib/styles/carousel.min.css';
 import GameLogo from '@root/components/gameLogo';
 import GameLogoAndLabel from '@root/components/gameLogoAndLabel';
 import Page from '@root/components/page/page';
@@ -7,6 +8,7 @@ import { AppContext } from '@root/contexts/appContext';
 import useUrl from '@root/hooks/useUrl';
 import Image from 'next/image';
 import React, { useContext } from 'react';
+import { Carousel } from 'react-responsive-carousel';
 
 function GameCard({ game }: { game: Game }) {
   const getUrl = useUrl();
@@ -37,6 +39,56 @@ export default function ThinkyHomePage() {
         backgroundBlendMode: 'multiply',
         // background: 'linear-gradient(rgba(0,0,0,1), rgba(0,0,0,0)), url(https://i.imgur.com/h2qnMrV.png)',
       }}>
+      <div className=' flex w-full justify-center'>
+        <Carousel className='max-w-screen-lg' showStatus={false}>
+
+          {Object.values(Games).filter(game => game.id !== GameId.THINKY).map(game => {
+            return (
+              <div className='flex justify-center' key={`carousel-game-${game.id}`}>
+                <video autoPlay loop muted playsInline >
+                  <source src='https://i.imgur.com/b3BjzDz.mp4' type='video/mp4' />
+                </video>
+                <p className='legend flex flex-col' style={{
+                  textAlign: 'left',
+                  paddingLeft: 16,
+                }}>
+                  <span className='text-2xl font-bold text-left'>
+                    {game.displayName}
+                  </span>
+                  <span className='text-lg text-left'>
+                    {game.shortDescription}
+                  </span>
+                </p>
+              </div>
+            );
+          })}
+        </Carousel>
+
+      </div>
+      {/* features that span every game ("platform" features) */}
+      <div className='flex gap-12 flex-wrap justify-center'>
+        <div className='h-40 w-40 rounded-xl p-4 border border-color-4'>
+          Level Editor
+        </div>
+        <div className='h-40 w-40 rounded-xl p-4 border border-color-4'>
+          Leaderboards
+        </div>
+        <div className='h-40 w-40 rounded-xl p-4 border border-color-4'>
+          Reviews
+        </div>
+        <div className='h-40 w-40 rounded-xl p-4 border border-color-4'>
+          Advanced Search
+        </div>
+        <div className='h-40 w-40 rounded-xl p-4 border border-color-4'>
+         Automatic difficulty
+        </div>
+        <div className='h-40 w-40 rounded-xl p-4 border border-color-4'>
+          Pro
+        </div>
+        {/* <div className='h-40 w-40 rounded-xl p-4 border border-color-4'>
+          Multiplayer
+        </div> */}
+      </div>
       <div className='flex justify-center'>
         <div className='flex flex-wrap justify-center m-6 gap-24'>
           {Object.values(Games).map(game => {
@@ -45,7 +97,7 @@ export default function ThinkyHomePage() {
             }
 
             return (
-              <div className='flex flex-col items-center gap-6' key={`game${game.id}`}>
+              <div className='flex flex-col items-center gap-6' key={`game-${game.id}`}>
                 <a className='flex gap-3 items-center hover:underline mb-4' href={getUrl(game.id)}>
                   <GameLogo gameId={game.id} id={game.id} size={48} />
                   <span className='text-4xl font-bold'>{game.displayName}</span>

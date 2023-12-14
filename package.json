@@ -43,6 +43,7 @@
     "react-gtm-module": "^2.0.11",
     "react-hot-toast": "^2.4.1",
     "react-joyride": "^2.7.1",
+    "react-responsive-carousel": "^3.2.23",
     "react-select": "^5.8.0",
     "react-share": "^5.0.3",
     "react-simple-star-rating": "^5.1.7",
