@@ -7,7 +7,6 @@ const Home: React.FC = () => {
     <div className='mt-3'>
       <Head>
         <title>Sokoban - The Classic Puzzle Game from Thinky.gg</title>
-        <link rel='icon' href='/favicon.ico' />
       </Head>
       <main className='flex flex-col items-center justify-center w-full flex-1 px-20 text-center'>
         <h1 className='text-6xl font-bold'>

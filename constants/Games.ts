@@ -27,7 +27,8 @@ export const Games: Record<GameId, Game> = {
     disableTutorial: true,
     disableMultiplayer: true,
     disableRanked: true,
-    logo: '/logos/thinky.png',
+    favicon: '/logos/thinky/thinky.png',
+    logo: '/logos/thinky/thinky.png',
     subtitle: 'Thinky Games',
     SEOTitle: 'Thinky Puzzle Games',
     SEODescription: 'Thinky Games is a collection of puzzle games',
@@ -40,7 +41,8 @@ export const Games: Record<GameId, Game> = {
     baseUrl: 'pathology.gg',
     defaultTheme: Theme.Modern,
     displayName: 'Pathology',
-    logo: '/logos/pathology.svg',
+    favicon: '/logos/pathology/logo.svg',
+    logo: '/logos/pathology/pathology.svg',
     subtitle: 'Find the way',
     SEOTitle: 'Pathology - Shortest Path Puzzle Game',
     SEODescription: 'The goal of Pathology is simple. Get to the exit in the least number of moves. Sounds easy right? Yet, this sokoban style game is one of the most mind-bending puzzle games you will find. Different blocks stand in your way to the exit, and your job is to figure out the optimal route',
@@ -60,7 +62,8 @@ export const Games: Record<GameId, Game> = {
     disableRanked: true,
     defaultTheme: Theme.Winter,
     displayName: 'Sokoban',
-    logo: '/logos/sokoban.webp',
+    favicon: '/logos/sokoban/sokoban.webp',
+    logo: '/logos/sokoban/sokoban.webp',
     SEOTitle: 'Sokoban - Push the boxes puzzle game',
     SEODescription: 'The goal of the puzzle game Sokoban is simple. Push the boxes onto the goals. Sounds easy right? Yet, this sokoban style game is one of the most mind-bending puzzle games you will find. The boxes can only be pushed, never pulled, and only one can be pushed at a time.',
     shortDescription: 'Push the boxes onto the goals',
@@ -82,6 +85,7 @@ export interface Game {
   disableTutorial?: boolean;
   disableMultiplayer?: boolean;
   disableRanked?: boolean,
+  favicon?: string;
   logo: string;
   subtitle: string;
   SEOTitle: string;

@@ -60,7 +60,7 @@ function App() {
             description: game.SEODescription,
             images: [
               {
-                url: 'https://' + game.baseUrl + '/logo.png',
+                url: 'https://' + game.baseUrl + game.logo,
                 width: 128,
                 height: 128,
                 alt: game.displayName + ' Logo',
