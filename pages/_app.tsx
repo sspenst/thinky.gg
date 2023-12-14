@@ -100,7 +100,6 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
   const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);
   const [sounds, setSounds] = useState<{ [key: string]: HTMLAudioElement }>({});
   const [tempCollection, setTempCollection] = useState<Collection>();
-  const [theme, setTheme] = useState<string>();
   const { matches, privateAndInvitedMatches } = multiplayerSocket;
 
   const mutatePlayLater = useCallback(() => {
@@ -272,22 +271,6 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
   }, [selectedGame.id, user?._id]);
 
   useEffect(() => {
-    if (!user?.config) {
-      return;
-    }
-
-    document.body.classList.add(selectedGame.id);
-
-    if (Object.values(Theme).includes(user.config.theme as Theme) && theme !== user.config.theme) {
-      // need to remove the default theme so we can add the userConfig theme
-      document.body.classList.remove(Theme.Modern);
-      document.body.classList.add(user.config.theme);
-      setTheme(user.config.theme);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.config, selectedGame]);
-
-  useEffect(() => {
     for (const match of matches) {
       // if match is active and includes user, then redirect to match page /match/[matchId]
       if (match.state === MultiplayerMatchState.ACTIVE && match.players.some((player: User) => player?._id?.toString() === user?._id?.toString())) {
@@ -394,8 +377,8 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
 
   const isEU = Intl.DateTimeFormat().resolvedOptions().timeZone.startsWith('Europe');
 
-  return (
-    <ThemeProvider attribute='class'>
+  return (<>
+    <ThemeProvider attribute='class' defaultTheme={Theme.Modern} themes={Object.values(Theme)}>
       <Head>
         <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' />
         <meta name='apple-itunes-app' content='app-id=1668925562, app-argument=pathology.gg' />
@@ -444,11 +427,9 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
           setNotifications: setNotifications,
           setShouldAttemptAuth: setShouldAttemptAuth,
           setTempCollection: setTempCollection,
-          setTheme: setTheme,
           shouldAttemptAuth: shouldAttemptAuth,
           sounds: sounds,
           tempCollection,
-          theme: theme,
           user: user,
           userConfig: user?.config,
           userLoading: isLoading,
@@ -473,5 +454,5 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
         </AppContext.Provider>
       </GrowthBookProvider>
     </ThemeProvider>
-  );
+  </>);
 }
