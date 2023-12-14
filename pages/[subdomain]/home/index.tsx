@@ -9,7 +9,6 @@ import { getUserFromToken } from '../../../lib/withAuth';
 import { EnrichedLevel } from '../../../models/db/level';
 import Review from '../../../models/db/review';
 import User from '../../../models/db/user';
-import Nav from './nav';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
@@ -137,22 +136,19 @@ export default function Home({ user }: HomeProps) {
 
   return (
     <Page title={game.displayName}>
-      <Nav />
-      <div className='pl-60'>
-        {user ?
-          <HomeLoggedIn
-            lastLevelPlayed={lastLevelPlayed}
-            latestLevels={latestLevels}
-            latestReviews={latestReviews}
-            levelOfDay={levelOfDay}
-            recommendedLevel={recommendedLevel}
-            topLevelsThisMonth={topLevelsThisMonth}
-            user={user}
-          />
-          :
-          <span>TODO: /home when not logged in</span>
-        }
-      </div>
+      {user ?
+        <HomeLoggedIn
+          lastLevelPlayed={lastLevelPlayed}
+          latestLevels={latestLevels}
+          latestReviews={latestReviews}
+          levelOfDay={levelOfDay}
+          recommendedLevel={recommendedLevel}
+          topLevelsThisMonth={topLevelsThisMonth}
+          user={user}
+        />
+        :
+        <span>TODO: /home when not logged in</span>
+      }
     </Page>
   );
 }
