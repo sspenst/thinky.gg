@@ -1,6 +1,4 @@
-import { GameId } from '@root/constants/GameId';
 import { AppContext } from '@root/contexts/appContext';
-import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import React, { useContext, useEffect, useState } from 'react';
 import { useSWRConfig } from 'swr';
@@ -11,20 +9,11 @@ import { getUserFromToken } from '../../../lib/withAuth';
 import { EnrichedLevel } from '../../../models/db/level';
 import Review from '../../../models/db/review';
 import User from '../../../models/db/user';
+import Nav from './nav';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
-  const gameId = getGameIdFromReq(context.req);
-
-  if (!reqUser || gameId === GameId.THINKY) {
-    return {
-      redirect: {
-        destination: '/',
-        permanent: false,
-      },
-    };
-  }
 
   return {
     props: {
@@ -44,7 +33,7 @@ export interface HomepageDataProps {
 }
 
 interface HomeProps {
-  user: User;
+  user: User | null;
 }
 
 export function isVisibleInDom(id: string) {
@@ -148,15 +137,22 @@ export default function Home({ user }: HomeProps) {
 
   return (
     <Page title={game.displayName}>
-      <HomeLoggedIn
-        lastLevelPlayed={lastLevelPlayed}
-        latestLevels={latestLevels}
-        latestReviews={latestReviews}
-        levelOfDay={levelOfDay}
-        recommendedLevel={recommendedLevel}
-        topLevelsThisMonth={topLevelsThisMonth}
-        user={user}
-      />
+      <Nav />
+      <div className='pl-60'>
+        {user ?
+          <HomeLoggedIn
+            lastLevelPlayed={lastLevelPlayed}
+            latestLevels={latestLevels}
+            latestReviews={latestReviews}
+            levelOfDay={levelOfDay}
+            recommendedLevel={recommendedLevel}
+            topLevelsThisMonth={topLevelsThisMonth}
+            user={user}
+          />
+          :
+          <span>TODO: /home when not logged in</span>
+        }
+      </div>
     </Page>
   );
 }
