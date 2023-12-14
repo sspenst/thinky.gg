@@ -1,8 +1,10 @@
 import Dimensions from '@root/constants/dimensions';
-import { BASE_DOMAIN, BASE_PROTOCOL, Game } from '@root/constants/Games';
+import { GameId } from '@root/constants/GameId';
+import { AppContext } from '@root/contexts/appContext';
+import useUrl from '@root/hooks/useUrl';
 import Image from 'next/image';
 import Link from 'next/link';
-import React from 'react';
+import React, { useContext } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { EnrichedLevel } from '../../models/db/level';
 import Solved from '../level/info/solved';
@@ -12,15 +14,17 @@ interface EnrichedLevelLinkProps {
   // NB: this id should not contain the level id
   id: string;
   disableHover?: boolean;
-  game: Game;
+  gameId?: GameId;
   level: EnrichedLevel;
   onClick?: () => void;
 }
 
-export default function FormattedLevelLink({ id, disableHover, game, level, onClick }: EnrichedLevelLinkProps) {
+export default function FormattedLevelLink({ id, disableHover, gameId, level, onClick }: EnrichedLevelLinkProps) {
+  const { game } = useContext(AppContext);
+  const getUrl = useUrl();
+  const href = getUrl(gameId || game.id, `/level/${level.slug}`);
   const isSolved = level.userMoves === level.leastMoves;
   const tooltipId = `formatted-level-link-${level._id.toString()}-${id}`;
-  const baseUrl = BASE_PROTOCOL + game.id + '.' + BASE_DOMAIN + '' || '';
 
   return (<>
     <Link
@@ -35,7 +39,7 @@ export default function FormattedLevelLink({ id, disableHover, game, level, onCl
         />
       )}
       data-tooltip-id={tooltipId}
-      href={baseUrl + `/level/${level.slug}`}
+      href={href}
       onClick={onClick}
       passHref
       prefetch={false}

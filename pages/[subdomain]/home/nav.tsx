@@ -18,20 +18,22 @@ export default function Nav() {
 
   function Divider() {
     return (
-      <div className='h-px mx-2 bg-4 opacity-30' />
+      <div className='h-px mx-2 bg-3' />
     );
   }
 
   return (
-    <div className='fixed w-60 border-r border-color-4 bg-1 p-2 flex flex-col gap-1' style={{
+    <div className='fixed w-60 border-color-4 bg-1 p-2 flex flex-col gap-1' style={{
       height: 'calc(100% - 48px)',
     }}>
       {Object.values(Games).map((g) => {
-        // TODO: these links don't work
+        const isCurrentGame = game.id === g.id;
+        // if you click the same game it should go back to '/'
+        const path = isCurrentGame ? '/' : undefined;
 
         return (
-          <a href={getUrl(g.id)} key={`nav-game-${g.id}`}>
-            <div className={classNames('flex w-full items-center cursor-pointer px-3 py-2 gap-3 hover-bg-3 rounded-md', { 'bg-3': game.id === g.id })}>
+          <a suppressHydrationWarning href={getUrl(g.id, path)} key={`nav-game-${g.id}`}>
+            <div className={classNames('flex w-full items-center cursor-pointer px-3 py-2 gap-3 hover-bg-3 rounded-md', { 'bg-3': isCurrentGame })}>
               <GameLogo gameId={g.id} id={g.id} />
               <span>{g.displayName}</span>
             </div>
@@ -122,21 +124,24 @@ export default function Nav() {
             <path d='M12 14l9-5-9-5-9 5 9 5z' />
             <path d='M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z' />
             <path strokeLinecap='round' strokeLinejoin='round' d='M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222' />
-          </svg>Tutorial
+          </svg>
+          <span>Tutorial</span>
         </div>
       </Link>
       <Link href='/campaigns' passHref>
         <div className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3 hover-bg-3'>
           <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-book' viewBox='0 0 16 16'>
             <path d='M1 2.828c.885-.37 2.154-.769 3.388-.893 1.33-.134 2.458.063 3.112.752v9.746c-.935-.53-2.12-.603-3.213-.493-1.18.12-2.37.461-3.287.811V2.828zm7.5-.141c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492V2.687zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783z' />
-          </svg>Campaigns
+          </svg>
+          <span>Campaigns</span>
         </div>
       </Link>
       <Link href='/leaderboards' passHref>
         <div className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3 hover-bg-3'>
           <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-trophy' viewBox='0 0 16 16'>
             <path d='M2.5.5A.5.5 0 0 1 3 0h10a.5.5 0 0 1 .5.5c0 .538-.012 1.05-.034 1.536a3 3 0 1 1-1.133 5.89c-.79 1.865-1.878 2.777-2.833 3.011v2.173l1.425.356c.194.048.377.135.537.255L13.3 15.1a.5.5 0 0 1-.3.9H3a.5.5 0 0 1-.3-.9l1.838-1.379c.16-.12.343-.207.537-.255L6.5 13.11v-2.173c-.955-.234-2.043-1.146-2.833-3.012a3 3 0 1 1-1.132-5.89A33.076 33.076 0 0 1 2.5.5zm.099 2.54a2 2 0 0 0 .72 3.935c-.333-1.05-.588-2.346-.72-3.935zm10.083 3.935a2 2 0 0 0 .72-3.935c-.133 1.59-.388 2.885-.72 3.935zM3.504 1c.007.517.026 1.006.056 1.469.13 2.028.457 3.546.87 4.667C5.294 9.48 6.484 10 7 10a.5.5 0 0 1 .5.5v2.61a1 1 0 0 1-.757.97l-1.426.356a.5.5 0 0 0-.179.085L4.5 15h7l-.638-.479a.501.501 0 0 0-.18-.085l-1.425-.356a1 1 0 0 1-.757-.97V10.5A.5.5 0 0 1 9 10c.516 0 1.706-.52 2.57-2.864.413-1.12.74-2.64.87-4.667.03-.463.049-.952.056-1.469H3.504z' />
-          </svg>Leaderboards
+          </svg>
+          <span>Leaderboards</span>
         </div>
       </Link>
       <Link href='/users' passHref>
@@ -144,7 +149,8 @@ export default function Nav() {
           <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-list-ol' viewBox='0 0 16 16'>
             <path fillRule='evenodd' d='M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5z' />
             <path d='M1.713 11.865v-.474H2c.217 0 .363-.137.363-.317 0-.185-.158-.31-.361-.31-.223 0-.367.152-.373.31h-.59c.016-.467.373-.787.986-.787.588-.002.954.291.957.703a.595.595 0 0 1-.492.594v.033a.615.615 0 0 1 .569.631c.003.533-.502.8-1.051.8-.656 0-1-.37-1.008-.794h.582c.008.178.186.306.422.309.254 0 .424-.145.422-.35-.002-.195-.155-.348-.414-.348h-.3zm-.004-4.699h-.604v-.035c0-.408.295-.844.958-.844.583 0 .96.326.96.756 0 .389-.257.617-.476.848l-.537.572v.03h1.054V9H1.143v-.395l.957-.99c.138-.142.293-.304.293-.508 0-.18-.147-.32-.342-.32a.33.33 0 0 0-.342.338v.041zM2.564 5h-.635V2.924h-.031l-.598.42v-.567l.629-.443h.635V5z' />
-          </svg>Users
+          </svg>
+          <span>Users</span>
         </div>
       </Link>
     </div>

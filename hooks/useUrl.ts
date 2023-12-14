@@ -1,6 +1,5 @@
 import { GameId } from '@root/constants/GameId';
-import { AppContext } from '@root/contexts/appContext';
-import { useCallback, useContext } from 'react';
+import { useEffect, useState } from 'react';
 
 const LinksThatCarryOver = [
   '^/profile',
@@ -19,17 +18,26 @@ const LinksThatCarryOver = [
 ];
 
 export default function useUrl() {
-  const { game } = useContext(AppContext);
+  const [host, setHost] = useState<string>();
+  const [protocol, setProtocol] = useState<string>();
 
-  const getUrl = useCallback((gameId?: GameId, path?: string) => {
-    if (typeof window === 'undefined') {
-      return undefined;
-    }
+  useEffect(() => {
+    setProtocol(window.location.protocol);
 
-    function getProtocol() {
-      return window.location.protocol;
-    }
+    // if port is not 80 or 443, include it in the hostname
+    // also hostname needs to strip out subdomain
+    const hostname = window.location.port === '80' || window.location.port === '443' ?
+      window.location.hostname :
+      `${window.location.hostname}:${window.location.port}`;
+    const dots = hostname.split('.');
 
+    const hostnameStrippedOfFirstSubdomain = dots.length === 2 ?
+      dots.slice(1).join('.') : hostname;
+
+    setHost(hostnameStrippedOfFirstSubdomain);
+  }, []);
+
+  function getUrl(gameId?: GameId, path?: string) {
     function getSubdomain() {
       if (!gameId || gameId === GameId.THINKY) {
         return '';
@@ -38,37 +46,22 @@ export default function useUrl() {
       return `${gameId.toLowerCase()}.`;
     }
 
-    function getHost() {
-      // if port is not 80 or 443, include it in the hostname
-      // also hostname needs to strip out subdomain
-      const hostname = window.location.port === '80' || window.location.port === '443' ?
-        window.location.hostname :
-        `${window.location.hostname}:${window.location.port}`;
-      const dots = hostname.split('.');
-
-      const hostnameStrippedOfFirstSubdomain = dots.length === 2 ?
-        dots.slice(1).join('.') : hostname;
-
-      return (hostnameStrippedOfFirstSubdomain);
-    }
-
     function getPath() {
-      // if you click the same game it should go back to the home page
-      if (game.id === gameId) {
-        return '/';
-      }
-
       if (path) {
         return path;
       }
 
+      if (typeof window === 'undefined') {
+        return '/';
+      }
+
       const carryOver = LinksThatCarryOver.some((link) => window.location.pathname.match(new RegExp(link)));
 
-      return (carryOver ? window.location.pathname : '/home');
+      return (carryOver ? window.location.pathname : '/');
     }
 
-    return `${getProtocol()}//${getSubdomain()}${getHost()}${getPath()}`;
-  }, [game.id]);
+    return `${protocol}//${getSubdomain()}${host}${getPath()}`;
+  }
 
   return getUrl;
 }

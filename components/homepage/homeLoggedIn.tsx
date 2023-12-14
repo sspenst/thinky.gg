@@ -61,7 +61,7 @@ export default function HomeLoggedIn({
       </div>
     }
     <div className='flex flex-col gap-6 m-6'>
-      <div className='flex items-center justify-center gap-2'>
+      <div className='flex flex-wrap items-center justify-center gap-2'>
         <MultiSelectLevel
           onSelect={(selectedItem: EnrichedLevel) => {
             router.push(`/level/${selectedItem.slug}`);
@@ -86,7 +86,7 @@ export default function HomeLoggedIn({
           </svg>
         </Link>
       </div>
-      <div className='flex flex-wrap justify-center gap-4'>
+      <div className='flex flex-wrap justify-center items-center gap-4'>
         {!game.disableCampaign &&
           <Card id='campaign' title={game.displayName + ' Official Campaign'}>
             <div className='p-3'>
