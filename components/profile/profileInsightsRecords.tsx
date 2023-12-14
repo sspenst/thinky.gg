@@ -1,6 +1,5 @@
-import { AppContext } from '@root/contexts/appContext';
 import moment from 'moment';
-import React, { useContext } from 'react';
+import React from 'react';
 import DataTable from 'react-data-table-component-sspenst';
 import { DATA_TABLE_CUSTOM_STYLES } from '../../helpers/dataTableCustomStyles';
 import useProStatsUser, { ProStatsUserType } from '../../hooks/useProStatsUser';
@@ -10,7 +9,6 @@ import FormattedLevelLink from '../formatted/formattedLevelLink';
 
 export default function ProfileInsightsRecords({ user }: {user: User}) {
   const { proStatsUser } = useProStatsUser(user, ProStatsUserType.Records);
-  const { game } = useContext(AppContext);
 
   if (!proStatsUser || !proStatsUser[ProStatsUserType.Records]) {
     return <span>Loading...</span>;
@@ -27,7 +25,7 @@ export default function ProfileInsightsRecords({ user }: {user: User}) {
             name: 'Level',
             sortable: true,
             selector: (row) => row.name,
-            cell: (row, index) => <FormattedLevelLink game={game} id={`play-log-${index}`} level={row} />,
+            cell: (row, index) => <FormattedLevelLink id={`play-log-${index}`} level={row} />,
             grow: 2,
           },
 

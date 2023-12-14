@@ -359,7 +359,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       grow: 2,
       selector: (row: EnrichedLevel) => (
         <div className='flex items-center gap-2 truncate'>
-          <FormattedLevelLink game={game} onClick={() => {
+          <FormattedLevelLink onClick={() => {
             const ts = new Date();
 
             // TODO: temp collection is a hack (doesn't represent a real collection so there are other UX problems)

@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import Level from '@root/models/db/level';
 import React, { useState } from 'react';
 import AsyncSelect from 'react-select/async';
@@ -42,7 +41,7 @@ export default function MultiSelectLevel({ controlStyles, defaultValue, onSelect
       IndicatorSeparator: null,
     }}
     formatOptionLabel={(option: Level) => (
-      <FormattedLevelLink disableHover game={getGameFromId(option.gameId)} id={option._id.toString()} level={option} />
+      <FormattedLevelLink disableHover id={option._id.toString()} level={option} />
     )}
     getOptionLabel={(option: any) => option.name}
     getOptionValue={(option: any) => option._id.toString()}
@@ -79,8 +78,13 @@ export default function MultiSelectLevel({ controlStyles, defaultValue, onSelect
         boxShadow: 'none',
         cursor: 'text',
         height: '2.5rem',
+        maxWidth: '100%',
         width: '13rem',
         ...controlStyles,
+      }),
+      container: (provided: any) => ({
+        ...provided,
+        maxWidth: '100%',
       }),
       dropdownIndicator: (provided: any) => ({
         ...provided,
@@ -96,6 +100,7 @@ export default function MultiSelectLevel({ controlStyles, defaultValue, onSelect
       }),
       menu: (provided: any) => ({
         ...provided,
+        backgroundColor: 'var(--bg-color-2)',
         borderColor: 'var(--bg-color-4)',
         borderRadius: '0.375rem',
         borderWidth: '1px',
