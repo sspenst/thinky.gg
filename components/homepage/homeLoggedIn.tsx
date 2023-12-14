@@ -3,7 +3,6 @@ import TourPath from '@root/constants/tourPath';
 import getProfileSlug from '@root/helpers/getProfileSlug';
 import isFullAccount from '@root/helpers/isFullAccount';
 import isGuest from '@root/helpers/isGuest';
-import classNames from 'classnames';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -47,8 +46,6 @@ export default function HomeLoggedIn({
   const router = useRouter();
   const tour = useTour(TourPath.HOME);
 
-  const buttonClassNames = 'py-2.5 px-3.5 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm whitespace-nowrap bg-green-100 dark:bg-slate-800 hover:bg-gray-50 hover:dark:bg-slate-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300';
-
   return (<>
     {tour}
     {!isFullAccount(user) &&
@@ -73,7 +70,7 @@ export default function HomeLoggedIn({
           }}
         />
         <Link
-          className={classNames(buttonClassNames, 'py-1.5 h-10 cursor-pointer')}
+          className='px-3.5 h-10 flex items-center gap-2 rounded-md border font-medium transition text-sm bg-green-100 dark:bg-slate-800 hover:bg-gray-50 hover:dark:bg-slate-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300'
           href={{
             pathname: '/search',
           }}
