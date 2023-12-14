@@ -18,11 +18,9 @@ interface AppContextInterface {
   setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>;
   setShouldAttemptAuth: React.Dispatch<React.SetStateAction<boolean>>;
   setTempCollection: React.Dispatch<React.SetStateAction<Collection | undefined>>;
-  setTheme: React.Dispatch<React.SetStateAction<string | undefined>>;
   shouldAttemptAuth: boolean;
   sounds: { [key: string]: HTMLAudioElement };
   tempCollection?: Collection;
-  theme: string | undefined;
   user?: ReqUser;
   userConfig?: UserConfig;
   userLoading: boolean;
@@ -54,10 +52,8 @@ export const AppContext = createContext<AppContextInterface>({
   setNotifications: () => { return; },
   setShouldAttemptAuth: () => { return; },
   setTempCollection: () => { return; },
-  setTheme: () => { return; },
   shouldAttemptAuth: true,
   sounds: {},
   tempCollection: undefined,
-  theme: undefined,
   userLoading: true,
 });

@@ -3,7 +3,10 @@ module.exports = {
     './components/**/*.{js,jsx,ts,tsx}',
     './pages/**/*.{js,jsx,ts,tsx}',
   ],
-  darkMode: 'class',
+  darkMode: [
+    'class',
+    '[data-theme-dark="true"]',
+  ],
   plugins: [
     require('@headlessui/tailwindcss')
   ],
