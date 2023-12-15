@@ -103,6 +103,10 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
   const { matches, privateAndInvitedMatches } = multiplayerSocket;
 
   const mutatePlayLater = useCallback(() => {
+    if (!user) {
+      return;
+    }
+
     fetch('/api/play-later', {
       method: 'GET',
     }).then(async res => {
@@ -114,7 +118,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
     }).catch(err => {
       console.error(err);
     });
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     // get selected game from the subdomain

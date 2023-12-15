@@ -4,8 +4,8 @@ import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '@root/models/constants/projecti
 import Level from '@root/models/db/level';
 import { LevelModel, StatModel } from '@root/models/mongoose';
 import TimeRange from '../../../constants/timeRange';
-import { ValidType } from '../../../helpers/apiWrapper';
-import withAuth from '../../../lib/withAuth';
+import apiWrapper, { ValidType } from '../../../helpers/apiWrapper';
+import { getUserFromToken } from '../../../lib/withAuth';
 import User from '../../../models/db/user';
 import { SearchQuery } from '../../[subdomain]/search';
 import { getLatestLevels } from '../latest-levels';
@@ -15,7 +15,7 @@ import { getLastLevelPlayed } from '../play-attempt';
 import { doQuery } from '../search';
 import { getPlayAttempts } from '../user/play-history';
 
-async function getTopLevelsThisMonth(gameId: GameId, reqUser: User) {
+async function getTopLevelsThisMonth(gameId: GameId, reqUser: User | null) {
   const query = {
     disableCount: 'true',
     numResults: '5',
@@ -113,7 +113,7 @@ async function getRecommendedLevel(gameId: GameId, reqUser: User) {
   return levels[randomIndex];
 }
 
-export default withAuth({
+export default apiWrapper({
   GET: {
     query: {
       lastLevelPlayed: ValidType('number', false, true),
@@ -125,8 +125,9 @@ export default withAuth({
     }
   }
 }, async (req, res) => {
-  const reqUser = req.user;
   const { lastLevelPlayed, latestLevels, latestReviews, levelOfDay, recommendedLevel, topLevelsThisMonth } = req.query;
+  const token = req.cookies?.token;
+  const reqUser = token ? await getUserFromToken(token, req) : null;
 
   const [
     plastLevelPlayed,
@@ -136,11 +137,11 @@ export default withAuth({
     precommendedLevel,
     ptopLevelsThisMonth
   ] = await Promise.all([
-    lastLevelPlayed ? getLastLevelPlayed(req.gameId, reqUser) : undefined,
+    lastLevelPlayed && reqUser ? getLastLevelPlayed(req.gameId, reqUser) : undefined,
     latestLevels ? getLatestLevels(req.gameId, reqUser) : undefined,
     latestReviews ? getLatestReviews(req.gameId, reqUser) : undefined,
     levelOfDay ? getLevelOfDay(req.gameId, reqUser) : undefined,
-    recommendedLevel ? getRecommendedLevel(req.gameId, reqUser) : undefined,
+    recommendedLevel && reqUser ? getRecommendedLevel(req.gameId, reqUser) : undefined,
     topLevelsThisMonth ? getTopLevelsThisMonth(req.gameId, reqUser) : undefined,
   ]);
 

@@ -31,8 +31,9 @@ export default withAuth(
       const playLater = await CollectionModel.aggregate([
         {
           $match: {
-            userId: req.user._id,
+            gameId: req.gameId,
             type: CollectionType.PlayLater,
+            userId: req.user._id,
           }
         },
         {

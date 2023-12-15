@@ -1,3 +1,4 @@
+import HomeLoggedOut from '@root/components/homepage/homeLoggedOut';
 import { AppContext } from '@root/contexts/appContext';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import React, { useContext, useEffect, useState } from 'react';
@@ -147,7 +148,13 @@ export default function Home({ user }: HomeProps) {
           user={user}
         />
         :
-        <span>TODO: /home when not logged in</span>
+        <HomeLoggedOut
+          latestLevels={latestLevels}
+          latestReviews={latestReviews}
+          levelOfDay={levelOfDay}
+          topLevelsThisMonth={topLevelsThisMonth}
+          user={user}
+        />
       }
     </Page>
   );

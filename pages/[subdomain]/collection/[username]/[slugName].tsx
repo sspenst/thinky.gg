@@ -1,5 +1,6 @@
 import FormattedUser from '@root/components/formatted/formattedUser';
 import StatFilter from '@root/constants/statFilter';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { CollectionType } from '@root/models/constants/collection';
 import { getCollection } from '@root/pages/api/collection-by-id/[id]';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
@@ -56,7 +57,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
 
   const collection = await getCollection({
-    matchQuery: { slug: username + '/' + slugName },
+    matchQuery: {
+      gameId: getGameIdFromReq(context.req),
+      slug: username + '/' + slugName,
+    },
     reqUser,
   });
 

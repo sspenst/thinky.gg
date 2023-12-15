@@ -41,6 +41,7 @@ export default function Header({
     >
       <div className='flex items-center truncate z-20'>
         <GameMenu />
+        {/* TODO: show only on isFullScreen / on mobile */}
         <div className='pl-4 pr-2'>
           <Link className={'font-bold text-3xl'} href={!userLoading && !user ? '/' : '/home'}>
             <Image alt='logo' src={game.logo} width='24' height='24' className='h-6 w-6' style={{ minWidth: 24, minHeight: 24 }} />

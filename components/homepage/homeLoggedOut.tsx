@@ -2,7 +2,6 @@ import StatFilter from '@root/constants/statFilter';
 import TourPath from '@root/constants/tourPath';
 import isFullAccount from '@root/helpers/isFullAccount';
 import isGuest from '@root/helpers/isGuest';
-import Image from 'next/image';
 import Link from 'next/link';
 import React, { useContext } from 'react';
 import TimeRange from '../../constants/timeRange';
@@ -19,25 +18,21 @@ import FormattedReview from '../level/reviews/formattedReview';
 import LoadingSpinner from '../page/loadingSpinner';
 import RecommendedLevel from './recommendedLevel';
 
-interface HomeLoggedInProps {
-  lastLevelPlayed?: EnrichedLevel | null;
+interface HomeLoggedOutProps {
   latestLevels?: EnrichedLevel[];
   latestReviews?: Review[];
   levelOfDay?: EnrichedLevel | null;
-  recommendedLevel?: EnrichedLevel | null;
   topLevelsThisMonth?: EnrichedLevel[];
   user: User | null;
 }
 
-export default function HomeLoggedIn({
-  lastLevelPlayed,
+export default function HomeLoggedOut({
   latestLevels,
   latestReviews,
   levelOfDay,
-  recommendedLevel,
   topLevelsThisMonth,
   user,
-}: HomeLoggedInProps) {
+}: HomeLoggedOutProps) {
   const { game } = useContext(AppContext);
   const tour = useTour(TourPath.HOME);
 
@@ -66,27 +61,6 @@ export default function HomeLoggedIn({
           level={levelOfDay}
           title='Level of the Day'
           tooltip={'Every day there is a new level of the day. Difficulty increases throughout the week!'}
-        />
-        <RecommendedLevel
-          id='recommended-level'
-          level={recommendedLevel}
-          title='Try this Level'
-          tooltip={'This is a quality level with similar difficulty to levels you\'ve played recently.'}
-        />
-        <RecommendedLevel
-          id='last-level-played'
-          level={lastLevelPlayed}
-          title={
-            <div className='flex items-center gap-2'>
-              <Link className='font-bold hover:underline' href='/play-history'>
-              Last Played
-              </Link>
-              <Link href='/settings/pro' passHref>
-                <Image alt='pro' src='/pro.svg' width={16} height={16} style={{ minWidth: 16, minHeight: 16 }} />
-              </Link>
-            </div>
-          }
-          tooltip='Resume your last play. Click to see your play history.'
         />
       </div>
       <div className='w-full pt-4'>
@@ -129,7 +103,7 @@ export default function HomeLoggedIn({
                 },
               }}
             >
-            Latest Unsolved Levels:
+              Latest Unsolved Levels:
             </Link>
           </div>
           {latestLevels ? <LevelSelect levels={latestLevels} /> :
