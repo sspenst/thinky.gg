@@ -218,7 +218,7 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
           <div className='flex justify-center'>
             <Link className='font-bold text-2xl hover:underline w-fit' href='/ranked'>Ranked Solves 🏅</Link>
           </div>
-          {getLeaderboardTable(rankedLeaderboard, rankedLeaderboard.map(user => user.config?.calcRankedSolves || 0))}
+          {getLeaderboardTable(rankedLeaderboard, rankedLeaderboard?.map(user => user.config?.calcRankedSolves || 0))}
         </div>
       );
     } else if (leaderboard === 'sgm') {
