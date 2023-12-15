@@ -71,12 +71,7 @@ function NavGameMenu() {
           leaveFrom='transform opacity-100 scale-100'
           leaveTo='transform opacity-0 scale-95'
         >
-          <Menu.Items className='absolute w-full origin-top left-0 top-0 rounded-md shadow-lg border overflow-y-auto flex flex-col gap-1 bg-1 border-color-3' style={{
-            left: -1,
-            top: -1,
-            width: 'calc(100% + 2px)',
-          }}>
-            <NavGameMenuItem game={currentGame} />
+          <Menu.Items className='absolute w-full origin-top mt-1 p-1 rounded-[10px] shadow-lg border overflow-y-auto flex flex-col gap-1 bg-1 border-color-3'>
             {Object.values(Games).filter(game => game.id !== currentGame.id).map((game) => (
               <NavGameMenuItem game={game} key={game.id} />
             ))}
@@ -128,7 +123,7 @@ export default function Nav() {
   const proNavLink = <NavLink
     href='/settings/pro'
     icon={<Image alt='pro' src='/pro.svg' width='20' height='20' />}
-    label='Get Pro'
+    label='Pro'
   />;
 
   const multiplayerNavLink = <NavLink
@@ -286,6 +281,16 @@ export default function Nav() {
     label='Discord'
   />;
 
+  const playNavLink = <NavLink
+    href='/play'
+    icon={
+      <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
+        <path strokeLinecap='round' strokeLinejoin='round' d='M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z' />
+      </svg>
+    }
+    label='Play'
+  />;
+
   return (
     <nav className='fixed w-60 border-color-4 bg-1 p-2 flex flex-col gap-1 overflow-y-auto' style={{
       height: 'calc(100% - 48px)',
@@ -294,14 +299,11 @@ export default function Nav() {
       <NavDivider />
       {homeNavLink}
       {isLoggedIn && <>
+        {playNavLink}
         {rankedNavLink}
         {multiplayerNavLink}
       </>}
       <NavDivider />
-      {user && !isPro(user) && <>
-        {proNavLink}
-        <NavDivider />
-      </>}
       {isLoggedIn && <>
         {profileNavLink}
         {playLaterNavLink}
@@ -315,6 +317,9 @@ export default function Nav() {
       {leaderboardNavLink}
       {tutorialNavLink}
       <NavDivider />
+      {isLoggedIn && !isPro(user) && <>
+        {proNavLink}
+      </>}
       {discordNavLink}
     </nav>
   );

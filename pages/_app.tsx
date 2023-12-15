@@ -82,12 +82,10 @@ MyApp.getInitialProps = async ({ ctx }: { ctx: NextPageContext }) => {
 };
 
 export default function MyApp({ Component, pageProps, userAgent, initGame }: AppProps & { userAgent: string, initGame: Game }) {
-  const [selectedGame, setSelectedGame] = useState<Game>(initGame);
   const deviceInfo = useDeviceCheck(userAgent);
   const forceUpdate = useForceUpdate();
+  const [host, setHost] = useState<string>();
   const { isLoading, mutateUser, user } = useUser();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-
   const [multiplayerSocket, setMultiplayerSocket] = useState<MultiplayerSocket>({
     connectedPlayers: [],
     connectedPlayersCount: 0,
@@ -95,8 +93,11 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
     privateAndInvitedMatches: [],
     socket: undefined,
   });
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [playLater, setPlayLater] = useState<{ [key: string]: boolean }>();
+  const [protocol, setProtocol] = useState<string>();
   const router = useRouter();
+  const [selectedGame, setSelectedGame] = useState<Game>(initGame);
   const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);
   const [sounds, setSounds] = useState<{ [key: string]: HTMLAudioElement }>({});
   const [tempCollection, setTempCollection] = useState<Collection>();
@@ -127,6 +128,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
 
     setSelectedGame(game);
   }, [initGame]);
+
   useEffect(() => {
     mutatePlayLater();
   }, [mutatePlayLater]);
@@ -137,6 +139,24 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
       'start': new Audio('/sounds/start.wav'),
       'warning': new Audio('/sounds/warning.wav'),
     });
+  }, []);
+
+  useEffect(() => {
+    setProtocol(window.location.protocol);
+  }, []);
+
+  useEffect(() => {
+    // if port is not 80 or 443, include it in the hostname
+    // also hostname needs to strip out subdomain
+    const hostname = window.location.port === '80' || window.location.port === '443' ?
+      window.location.hostname :
+      `${window.location.hostname}:${window.location.port}`;
+    const dots = hostname.split('.');
+
+    const hostnameStrippedOfFirstSubdomain = dots.length === 2 ?
+      dots.slice(1).join('.') : hostname;
+
+    setHost(hostnameStrippedOfFirstSubdomain);
   }, []);
 
   // initialize sessionStorage values
@@ -421,14 +441,16 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
       )}
       <GrowthBookProvider growthbook={growthbook}>
         <AppContext.Provider value={{
-          game: selectedGame,
           deviceInfo: deviceInfo,
           forceUpdate: forceUpdate,
-          notifications: notifications,
+          game: selectedGame,
+          host: host,
           multiplayerSocket: multiplayerSocket,
           mutatePlayLater: mutatePlayLater,
           mutateUser: mutateUser,
+          notifications: notifications,
           playLater: playLater,
+          protocol: protocol,
           setNotifications: setNotifications,
           setShouldAttemptAuth: setShouldAttemptAuth,
           setTempCollection: setTempCollection,
