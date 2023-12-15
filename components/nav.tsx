@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import GameMenu from './header/gameMenu';
 import MultiSelectUser from './page/multiSelectUser';
 
 function NavDivider() {
@@ -217,8 +218,6 @@ export default function Nav() {
     <nav className='fixed w-60 border-color-4 bg-1 p-2 flex flex-col gap-1 overflow-y-auto' style={{
       height: 'calc(100% - 48px)',
     }}>
-      {Object.values(Games).map((g) => <NavGameLink game={g} key={`nav-game-${g.id}`} />)}
-      <NavDivider />
       {isLoggedIn && <>
         {playLaterNavLink}
         {rankedNavLink}
