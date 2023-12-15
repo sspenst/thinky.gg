@@ -42,7 +42,7 @@ export default function Modal({
   onSubmit,
   title,
 }: ModalProps) {
-  const { game, theme } = useContext(AppContext);
+  const { game } = useContext(AppContext);
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -73,7 +73,7 @@ export default function Modal({
             leaveTo='opacity-0 scale-95'
           >
             <Dialog.Panel
-              className={classNames('py-3 px-4 my-8 text-left align-middle transition-all transform shadow-xl rounded-xl flex flex-col gap-4', getFontFromTheme(game, theme))}
+              className={classNames('py-3 px-4 my-8 text-left align-middle transition-all transform shadow-xl rounded-xl flex flex-col gap-4', getFontFromTheme(game))}
               style={{
                 backgroundColor: 'var(--bg-color-2)',
                 border: '1px solid',
