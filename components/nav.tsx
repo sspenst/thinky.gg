@@ -13,7 +13,7 @@ import toast from 'react-hot-toast';
 
 function NavDivider() {
   return (
-    <div className='h-px mx-2 bg-3' style={{ minHeight: 1 }} />
+    <div className='h-px mx-2 my-1 bg-3' style={{ minHeight: 1 }} />
   );
 }
 
@@ -80,7 +80,7 @@ export default function Nav() {
   const { connectedPlayersCount, matches, socket } = multiplayerSocket;
 
   return (
-    <nav className='fixed w-60 border-color-4 bg-1 p-2 flex flex-col gap-1 overflow-y-scroll' style={{
+    <nav className='fixed w-60 border-color-4 bg-1 p-2 flex flex-col gap-1 overflow-y-auto' style={{
       height: 'calc(100% - 48px)',
     }}>
       {Object.values(Games).map((g) => <NavGameLink game={g} key={`nav-game-${g.id}`} />)}
