@@ -1,7 +1,5 @@
 import { Menu, Transition } from '@headlessui/react';
 import isGuest from '@root/helpers/isGuest';
-import isPro from '@root/helpers/isPro';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { Fragment, useContext, useState } from 'react';
@@ -18,7 +16,7 @@ import DismissToast from '../toasts/dismissToast';
 import MusicIcon from './musicIcon';
 
 export default function Dropdown() {
-  const { game, forceUpdate, mutateUser, playLater, setShouldAttemptAuth, user, userLoading } = useContext(AppContext);
+  const { forceUpdate, mutateUser, setShouldAttemptAuth, user, userLoading } = useContext(AppContext);
   const [isMusicModalOpen, setIsMusicModalOpen] = useState(false);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const router = useRouter();
@@ -120,110 +118,6 @@ export default function Dropdown() {
               <div className='block sm:hidden'>
                 <Divider />
               </div>
-
-            </>
-            }
-            {isLoggedIn && !isPro(user) && <>
-              <Menu.Item>
-                {({ active }) => (
-                  <Link href='/settings/pro' passHref>
-                    <div
-                      className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3'
-                      style={{
-                        backgroundColor: active ? 'var(--bg-color-3)' : undefined,
-                      }}
-                    >
-                      <Image alt='pro' src='/pro.svg' width='20' height='20' />
-                      {game.displayName} Pro
-                    </div>
-                  </Link>
-                )}
-              </Menu.Item>
-              <Divider />
-            </>}
-            {isLoggedIn && <>
-              {!game.disableGames && <Menu.Item>
-                {({ active }) => (
-                  <Link href='/ranked' passHref>
-                    <div
-                      className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3'
-                      style={{
-                        backgroundColor: active ? 'var(--bg-color-3)' : undefined,
-                      }}
-                    >
-                      <span className='w-5 h-5 flex justify-center items-center text-xl'>🏅</span>
-                      Ranked
-                    </div>
-                  </Link>
-                )}
-              </Menu.Item>
-              }
-              { !game.disableGames && <Menu.Item>
-                {({ active }) => (
-                  <Link href='/create' passHref>
-                    <div
-                      className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3'
-                      style={{
-                        backgroundColor: active ? 'var(--bg-color-3)' : undefined,
-                      }}
-                    >
-                      <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='w-5 h-5 bi bi-tools' viewBox='0 0 16 16'>
-                        <path d='M16 4.5a4.492 4.492 0 0 1-1.703 3.526L13 5l2.959-1.11c.027.2.041.403.041.61' />
-                        <path d='M11.5 9c.653 0 1.273-.139 1.833-.39L12 5.5 11 3l3.826-1.53A4.5 4.5 0 0 0 7.29 6.092l-6.116 5.096a2.583 2.583 0 1 0 3.638 3.638L9.908 8.71A4.49 4.49 0 0 0 11.5 9m-1.292-4.361-.596.893.809-.27a.25.25 0 0 1 .287.377l-.596.893.809-.27.158.475-1.5.5a.25.25 0 0 1-.287-.376l.596-.893-.809.27a.25.25 0 0 1-.287-.377l.596-.893-.809.27-.158-.475 1.5-.5a.25.25 0 0 1 .287.376M3 14a1 1 0 1 1 0-2 1 1 0 0 1 0 2' />
-
-                      </svg>
-                      Create
-                    </div>
-                  </Link>
-                )}
-              </Menu.Item>}
-              {isPro(user) && !game.disableGames &&
-                <Menu.Item>
-                  {({ active }) => (
-                    <Link
-                      href={`/collection/${user.name}/play-later`}
-                      onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
-                        if (!playLater || Object.keys(playLater).length === 0) {
-                          toast.success('Add a level to your Play Later collection first!', { icon: '➕', duration: 3000 });
-                          e.preventDefault();
-                        }
-                      }}
-                    >
-                      <div
-                        className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3'
-                        style={{
-                          backgroundColor: active ? 'var(--bg-color-3)' : undefined,
-                        }}
-                      >
-                        <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='w-5 h-5' viewBox='0 0 16 16'>
-                          <path d='M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z' />
-                          <path d='M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z' />
-                        </svg>
-                        Play Later
-                      </div>
-                    </Link>
-                  )}
-                </Menu.Item>
-              }
-              { !game.disableGames &&
-              <Menu.Item>
-                {({ active }) => (
-                  <Link href={`${getProfileSlug(user)}/collections`} passHref>
-                    <div
-                      className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3'
-                      style={{
-                        backgroundColor: active ? 'var(--bg-color-3)' : undefined,
-                      }}
-                    >
-                      <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
-                        <path strokeLinecap='round' strokeLinejoin='round' d='M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z' />
-                      </svg>
-                      Collections
-                    </div>
-                  </Link>
-                )}
-              </Menu.Item>
-              }
               <Menu.Item>
                 {({ active }) => (
                   <Link href={getProfileSlug(user)} passHref>

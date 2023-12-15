@@ -59,16 +59,6 @@ export default function HomeDefaultPathology() {
             </div>
           </div>
         </div>
-        <div className='flex justify-center'>
-          <iframe
-            className='max-w-xl m-8'
-            height='500'
-            sandbox='allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts'
-            src='https://discord.com/widget?id=971585343956590623&theme=dark'
-            title='discord'
-            width='100%'
-          />
-        </div>
       </>
     </>
   );

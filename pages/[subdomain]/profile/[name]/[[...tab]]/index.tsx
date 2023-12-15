@@ -32,7 +32,6 @@ import SelectFilter from '../../../../../components/cards/selectFilter';
 import CommentWall from '../../../../../components/level/reviews/commentWall';
 import FormattedReview from '../../../../../components/level/reviews/formattedReview';
 import AddCollectionModal from '../../../../../components/modal/addCollectionModal';
-import MultiSelectUser from '../../../../../components/page/multiSelectUser';
 import Page from '../../../../../components/page/page';
 import FollowingList from '../../../../../components/profile/followingList';
 import ProfileAvatar from '../../../../../components/profile/profileAvatar';
@@ -131,7 +130,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     getFollowData(user._id.toString(), reqUser),
     !game.disableGames && LevelModel.countDocuments({ isDeleted: { $ne: true }, isDraft: false, userId: userId, gameId: gameId }),
     !game.disableGames && profileTab === ProfileTab.Levels && reqUser ? LevelModel.aggregate([
-      { $match: { isDeleted: { $ne: true }, isDraft: false, userId: new Types.ObjectId(userId) } },
+      { $match: {
+        gameId: gameId,
+        isDeleted: { $ne: true },
+        isDraft: false,
+        userId: new Types.ObjectId(userId),
+      } },
       {
         $lookup: {
           from: 'stats',
@@ -788,14 +792,6 @@ export default function ProfilePage({
               <span>Reviews Received ({reviewsReceivedCount})</span>
             </div>
           </Link>
-          <MultiSelectUser
-            onSelect={(user) => {
-              if (user?.name) {
-                router.push(`/profile/${user.name}/${profileTab}`);
-              }
-            }}
-            placeholder='Switch to another profile'
-          />
         </div>
         }
         <div className='tab-content'>
