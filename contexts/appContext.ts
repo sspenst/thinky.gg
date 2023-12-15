@@ -13,11 +13,13 @@ interface AppContextInterface {
   deviceInfo: DeviceInfo;
   forceUpdate: () => void;
   game: Game;
+  host: string | undefined;
   notifications: Notification[];
   multiplayerSocket: MultiplayerSocket;
   mutatePlayLater: () => void;
   mutateUser: KeyedMutator<ReqUser>;
   playLater?: { [key: string]: boolean };
+  protocol: string | undefined;
   setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>;
   setShouldAttemptAuth: React.Dispatch<React.SetStateAction<boolean>>;
   setTempCollection: React.Dispatch<React.SetStateAction<Collection | undefined>>;
@@ -42,7 +44,7 @@ export const AppContext = createContext<AppContextInterface>({
   },
   forceUpdate: () => { return; },
   game: Games[DEFAULT_GAME_ID],
-  notifications: [],
+  host: undefined,
   multiplayerSocket: {
     connectedPlayers: [],
     connectedPlayersCount: 0,
@@ -52,7 +54,9 @@ export const AppContext = createContext<AppContextInterface>({
   },
   mutatePlayLater: () => { return; },
   mutateUser: {} as KeyedMutator<ReqUser>,
+  notifications: [],
   playLater: undefined,
+  protocol: undefined,
   setNotifications: () => { return; },
   setShouldAttemptAuth: () => { return; },
   setTempCollection: () => { return; },

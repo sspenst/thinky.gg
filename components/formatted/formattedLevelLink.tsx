@@ -51,7 +51,6 @@ export default function FormattedLevelLink({ id, disableHover, gameId, level, on
     >
       <span className='truncate'>{level.name}</span>
       {isSolved && <Solved className='-mr-1' />}
-
     </Link>
     {!disableHover && <StyledTooltip id={tooltipId} />}
   </>);
