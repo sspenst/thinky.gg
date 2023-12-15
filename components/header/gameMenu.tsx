@@ -1,19 +1,25 @@
 import { Menu, Transition } from '@headlessui/react';
 import Dimensions from '@root/constants/dimensions';
 import { Games } from '@root/constants/Games';
+import { AppContext } from '@root/contexts/appContext';
 import useUrl from '@root/hooks/useUrl';
-import React, { Fragment } from 'react';
+import React, { Fragment, useContext } from 'react';
 import GameLogoAndLabel from '../gameLogoAndLabel';
 
-export default function GameMenu() {
+export default function GameMenu({ words }: {words?: boolean}) {
   const getUrl = useUrl();
+  const { game: currentGame } = useContext(AppContext);
 
   return (
     <Menu>
       <Menu.Button>
-        <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5 hover:opacity-70' fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={2}>
-          <path strokeLinecap='round' strokeLinejoin='round' d='M4 6h16M4 12h16M4 18h16' />
-        </svg>
+        { !words ?
+          <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5 hover:opacity-70' fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={2}>
+            <path strokeLinecap='round' strokeLinejoin='round' d='M4 6h16M4 12h16M4 18h16' />
+          </svg>
+          :
+          <div className=''><GameLogoAndLabel className='' size={24} gameId={currentGame.id} id={currentGame.id + '-game-menu'} /></div>
+        }
       </Menu.Button>
       <Transition
         as={Fragment}
