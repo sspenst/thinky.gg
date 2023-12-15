@@ -1,4 +1,4 @@
-import Nav from '@root/pages/[subdomain]/home/nav';
+import Nav from '@root/components/nav';
 import classNames from 'classnames';
 import React, { useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
