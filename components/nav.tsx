@@ -4,12 +4,14 @@ import { AppContext } from '@root/contexts/appContext';
 import getProfileSlug from '@root/helpers/getProfileSlug';
 import isPro from '@root/helpers/isPro';
 import useUrl from '@root/hooks/useUrl';
+import User from '@root/models/db/user';
 import classNames from 'classnames';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import MultiSelectUser from './page/multiSelectUser';
 
 function NavDivider() {
   return (
@@ -78,7 +80,7 @@ export default function Nav() {
   const { game, multiplayerSocket, playLater, user, userLoading } = useContext(AppContext);
   const isLoggedIn = !userLoading && user;
   const { connectedPlayersCount, matches, socket } = multiplayerSocket;
-
+  const [selectedUser, setSelectedUser] = useState<User | undefined>();
   const goProNavLink = !isPro(user) && <><NavLink
     href='/settings/pro'
     icon={<Image alt='pro' src='/pro.svg' width='20' height='20' />}
@@ -197,6 +199,20 @@ export default function Nav() {
     label='Users'
   />;
 
+  const levelSearchNavLink = <NavLink
+    href='/search'
+    icon={
+      <svg xmlns='http://www.w3.org/2000/svg' className='w-5 h-5' fill='none' viewBox='0 0 24 24'
+        stroke='currentColor'>
+        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2'
+          d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
+      </svg>
+    }
+    label='Search'
+  />;
+
+  const router = useRouter();
+
   return (
     <nav className='fixed w-60 border-color-4 bg-1 p-2 flex flex-col gap-1 overflow-y-auto' style={{
       height: 'calc(100% - 48px)',
@@ -206,16 +222,24 @@ export default function Nav() {
       {isLoggedIn && <>
         {playLaterNavLink}
         {rankedNavLink}
+        {levelSearchNavLink}
         {createNavLinked}
         {collectionNavLink}
         {goProNavLink}
         {multiplayerNavLink}
         <NavDivider />
       </>}
-      {tutorialNavLink}
+      <MultiSelectUser defaultValue={selectedUser} onSelect={(user: User) => {
+        setSelectedUser(user);
+
+        if (user) {
+          router.push('/profile/' + user.name);
+        }
+      }} />
+      {usersNavLink}
       {campaignNavLink}
       {leaderboardNavLink}
-      {usersNavLink}
+      {tutorialNavLink}
     </nav>
   );
 }
