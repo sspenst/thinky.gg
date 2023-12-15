@@ -1,3 +1,4 @@
+import { Menu, Transition } from '@headlessui/react';
 import GameLogo from '@root/components/gameLogo';
 import { Game, Games } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
@@ -8,7 +9,7 @@ import classNames from 'classnames';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { Fragment, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
 function NavDivider() {
@@ -17,11 +18,11 @@ function NavDivider() {
   );
 }
 
-interface NavGameLinkProps {
+interface NavGameMenuItemProps {
   game: Game;
 }
 
-function NavGameLink({ game }: NavGameLinkProps) {
+function NavGameMenuItem({ game }: NavGameMenuItemProps) {
   const { game: currentGame } = useContext(AppContext);
   const getUrl = useUrl();
   const isCurrentGame = game.id === currentGame.id;
@@ -29,15 +30,60 @@ function NavGameLink({ game }: NavGameLinkProps) {
   const path = isCurrentGame ? '/' : undefined;
 
   return (
-    <a href={getUrl(game.id, path)} suppressHydrationWarning>
-      <div className={classNames(
-        'flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-5',
-        isCurrentGame ? 'bg-2 hover-bg-4' : 'bg-1 hover-bg-3',
-      )}>
-        <GameLogo gameId={game.id} id={game.id} />
-        <span>{game.displayName}</span>
-      </div>
-    </a>
+    <Menu.Item>
+      <a href={getUrl(game.id, path)} suppressHydrationWarning>
+        <div className={classNames(
+          'flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-5',
+          isCurrentGame ? 'bg-2 hover-bg-4' : 'bg-1 hover-bg-3',
+        )}>
+          <GameLogo gameId={game.id} id={game.id} />
+          <span>{game.displayName}</span>
+        </div>
+      </a>
+    </Menu.Item>
+  );
+}
+
+function NavGameMenu() {
+  const { game: currentGame } = useContext(AppContext);
+
+  return (
+    // NB: need this relative outer div for the absolute menu to have the right width
+    <div className='w-full relative'>
+      <Menu>
+        <Menu.Button className='w-full'>
+          <div className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 justify-between hover-bg-3'>
+            <div className='flex gap-5'>
+              <GameLogo gameId={currentGame.id} id={currentGame.id} />
+              <span>{currentGame.displayName}</span>
+            </div>
+            <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
+              <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
+            </svg>
+          </div>
+        </Menu.Button>
+        <Transition
+          as={Fragment}
+          enter='transition ease-out duration-100'
+          enterFrom='transform opacity-0 scale-95'
+          enterTo='transform opacity-100 scale-100'
+          leave='transition ease-in duration-75'
+          leaveFrom='transform opacity-100 scale-100'
+          leaveTo='transform opacity-0 scale-95'
+        >
+          <Menu.Items className='absolute w-full origin-top left-0 top-0 rounded-md shadow-lg border overflow-y-auto flex flex-col gap-1 bg-1 border-color-3' style={{
+            left: -1,
+            top: -1,
+            width: 'calc(100% + 2px)',
+          }}>
+            <NavGameMenuItem game={currentGame} />
+            {Object.values(Games).filter(game => game.id !== currentGame.id).map((game) => (
+              <NavGameMenuItem game={game} key={game.id} />
+            ))}
+          </Menu.Items>
+        </Transition>
+      </Menu>
+    </div>
   );
 }
 
@@ -244,8 +290,7 @@ export default function Nav() {
     <nav className='fixed w-60 border-color-4 bg-1 p-2 flex flex-col gap-1 overflow-y-auto' style={{
       height: 'calc(100% - 48px)',
     }}>
-      {/* TODO: change this to a dropdown */}
-      {Object.values(Games).map(g => <NavGameLink key={g.id} game={g} />)}
+      <NavGameMenu />
       <NavDivider />
       {homeNavLink}
       {isLoggedIn && <>
