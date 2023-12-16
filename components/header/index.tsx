@@ -37,7 +37,7 @@ export default function Header({
 
   return (
     <header
-      className='select-none shadow-md w-full fixed top-0 z-20 flex justify-between px-4 gap-4 border-color-4 border-b'
+      className='select-none shadow-md w-full fixed top-0 z-20 flex justify-between px-4 gap-4 border-color-3 border-b'
       style={{
         background: background,
         height: Dimensions.MenuHeight,

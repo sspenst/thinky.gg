@@ -147,9 +147,9 @@ export default function Nav({ isDropdown }: NavProps) {
           <>
             <span className='text-xs text-green-500'>{`${connectedPlayersCount} player${connectedPlayersCount !== 1 ? 's' : ''} online`}</span>
             {matches.length > 0 &&
-        <span className='text-xs text-green-300'>
-          {`${matches.length} current match${matches.length === 1 ? '' : 'es'}`}
-        </span>
+              <span className='text-xs text-green-300'>
+                {`${matches.length} current match${matches.length === 1 ? '' : 'es'}`}
+              </span>
             }
           </>
         }
