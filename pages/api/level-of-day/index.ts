@@ -131,8 +131,18 @@ export async function getLevelOfDay(gameId: GameId, reqUser?: User | null) {
 
   if (!genLevel) {
     logger.error('Could not generate a new level of the day as there are no candidates left to choose from');
+    logger.warn('Going to choose the last level published as the level of the day');
 
-    return null;
+    genLevel = await LevelModel.findOne<Level>({
+      isDeleted: { $ne: true },
+      isDraft: false,
+      gameId: gameId,
+    }, '_id gameId name slug width height data leastMoves calc_difficulty_estimate', {
+      // sort by calculated difficulty estimate and then by id
+      sort: {
+        _id: -1,
+      },
+    }).lean<Level>() as Level;
   }
 
   // Create a new mongodb transaction and update levels-of-the-day value and also add another key value for this level

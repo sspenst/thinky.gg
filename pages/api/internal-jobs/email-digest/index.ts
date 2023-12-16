@@ -8,6 +8,7 @@ import Role from '@root/constants/role';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import { EnrichedLevel } from '@root/models/db/level';
 import UserConfig from '@root/models/db/userConfig';
 import { convert } from 'html-to-text';
 import { Types } from 'mongoose';
@@ -97,8 +98,7 @@ interface UserConfigWithNotificationsCount extends UserConfig {
   };
 }
 
-export async function sendEmailDigests(gameId: GameId, batchId: Types.ObjectId, totalEmailedSoFar: string[], limit: number) {
-  const game = Games[gameId];
+export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFar: string[], limit: number) {
   const userConfigsAggQ = UserConfigModel.aggregate<UserConfigWithNotificationsCount>([
     {
       $lookup: {
@@ -234,8 +234,17 @@ export async function sendEmailDigests(gameId: GameId, batchId: Types.ObjectId, 
     },*/
   ]);
 
-  const [levelOfDay, userConfigs] = await Promise.all([
-    getLevelOfDay(gameId),
+  const promises = [];
+
+  for (const game of Object.values(Games)) {
+    promises.push(getLevelOfDay(game.id));
+  }
+
+  const levelsOfDay = await Promise.all(promises);
+
+  //const levelsOfDayMappedByGameId = Object.fromEntries(Object.values(Games).map((game, i) => [game.id, levelsOfDay[i]]));
+
+  const [userConfigs] = await Promise.all([
     userConfigsAggQ
   ]);
 
@@ -270,15 +279,17 @@ export async function sendEmailDigests(gameId: GameId, batchId: Types.ObjectId, 
       `Level of the Day - ${todaysDatePretty}` :
       `You have ${notificationsCount} new notification${notificationsCount !== 1 ? 's' : ''}`;
 
-    const title = `Welcome to the ${game.displayName} Level of the Day for ${todaysDatePretty}.`;
+    const title = `Welcome to the Thinky.gg Levels of the Day for ${todaysDatePretty}.`;
+
     const body = getEmailBody({
-      gameId: gameId,
-      levelOfDay: levelOfDay,
+      gameId: GameId.THINKY,
+      featuredLevelsLabel: 'Levels of the Day',
+      featuredLevels: levelsOfDay as EnrichedLevel[],
       notificationsCount: notificationsCount,
       title: title,
       user: user,
     });
-    const sentError = await sendMail(gameId, batchId, EmailType.EMAIL_DIGEST, user, subject, body);
+    const sentError = await sendMail(GameId.THINKY, batchId, EmailType.EMAIL_DIGEST, user, subject, body);
 
     if (!sentError) {
       sentList.push(user.email);
@@ -303,8 +314,13 @@ export async function sendAutoUnsubscribeUsers(gameId: GameId, batchId: Types.Ob
    * 1a. Ignore folks that have had a reactivation email sent to them in past 3 days... we should give them a chance to come back and play
    */
 
-  const levelOfDay = await getLevelOfDay(gameId);
+  const promises = [];
 
+  for (const game of Object.values(Games)) {
+    promises.push(getLevelOfDay(game.id));
+  }
+
+  const levelsOfDay = await Promise.all(promises);
   const usersThatHaveBeenSentReactivationEmailIn3dAgoOrMore = await EmailLogModel.find({
     state: EmailState.SENT,
     type: EmailType.EMAIL_7D_REACTIVATE,
@@ -361,7 +377,8 @@ export async function sendAutoUnsubscribeUsers(gameId: GameId, batchId: Types.Ob
     const message = `You've completed ${totalLevelsSolved.toLocaleString()} levels on ${game.displayName}. There are still ${toSolve.toLocaleString()} levels for you to play by ${totalCreators.toLocaleString()} different creators. Come back and play!`;
     const body = getEmailBody({
       gameId: gameId,
-      levelOfDay: levelOfDay,
+      featuredLevelsLabel: 'Levels of the Day',
+      featuredLevels: levelsOfDay as EnrichedLevel[],
       message: message,
       title: title,
       user: user,
@@ -388,7 +405,13 @@ export async function sendAutoUnsubscribeUsers(gameId: GameId, batchId: Types.Ob
 export async function sendEmailReactivation(gameId: GameId, batchId: Types.ObjectId, limit: number) {
   // if they haven't been active in 7 days and they have an email address, send them an email, but only once every 90 days
   // get users that haven't been active in 7 days
-  const levelOfDay = await getLevelOfDay(gameId);
+  const promises = [];
+
+  for (const game of Object.values(Games)) {
+    promises.push(getLevelOfDay(game.id));
+  }
+
+  const levelsOfDay = await Promise.all(promises);
   const usersThatHaveBeenSentReactivationInPast90d = await EmailLogModel.find({
     type: EmailType.EMAIL_7D_REACTIVATE,
     createdAt: { $gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000) },
@@ -445,7 +468,8 @@ export async function sendEmailReactivation(gameId: GameId, batchId: Types.Objec
     const message = `You've completed ${totalLevelsSolved.toLocaleString()} levels on ${game.displayName}. There are still ${toSolve.toLocaleString()} levels for you to play by ${totalCreators.toLocaleString()} different creators. Come back and play!`;
     const body = getEmailBody({
       gameId: gameId,
-      levelOfDay: levelOfDay,
+      featuredLevelsLabel: 'Levels of the Day',
+      featuredLevels: levelsOfDay as EnrichedLevel[],
       message: message,
       title: title,
       user: user,
@@ -500,7 +524,7 @@ export default apiWrapper({ GET: {
     totalEmailedSoFar.push(...emailUnsubscribeResult.sentList);
     totalEmailedSoFar.push(...emailReactivationResult.sentList);
 
-    const emailDigestResult = await sendEmailDigests(gameId, batchId, totalEmailedSoFar, limitNum);
+    const emailDigestResult = await sendEmailDigests(batchId, totalEmailedSoFar, limitNum);
 
     totalEmailedSoFar.push(...emailDigestResult.sentList);
 

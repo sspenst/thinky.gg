@@ -15,7 +15,7 @@ export enum GameType {
 export const Games: Record<GameId, Game> = {
   [GameId.THINKY]: {
     id: GameId.THINKY,
-    baseUrl: '',
+    baseUrl: 'thinky.gg',
     defaultTheme: Theme.Dark,
     displayName: 'Thinky.gg',
     disableCampaign: true,

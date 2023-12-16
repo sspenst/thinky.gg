@@ -11,6 +11,7 @@ import { ValidArray, ValidNumber, ValidType } from '../../../helpers/apiWrapper'
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { UserConfigModel, UserModel } from '../../../models/mongoose';
 
+// TODO: this function is kind of useless now. consider removing it
 export function getNewUserConfig(gameId: GameId, tutorialCompletedAt: number, userId: Types.ObjectId, params?: Partial<UserConfig>) {
   return {
     _id: new Types.ObjectId(),
