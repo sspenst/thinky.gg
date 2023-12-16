@@ -21,7 +21,7 @@ import FormattedReview from '../level/reviews/formattedReview';
 import LoadingSpinner from '../page/loadingSpinner';
 import RecommendedLevel from './recommendedLevel';
 
-interface HomeLoggedInProps {
+interface HomeProps {
   lastLevelPlayed?: EnrichedLevel | null;
   latestLevels?: EnrichedLevel[];
   latestReviews?: Review[];
@@ -31,7 +31,7 @@ interface HomeLoggedInProps {
   user: User | null;
 }
 
-export default function HomeLoggedIn({
+export default function Home({
   lastLevelPlayed,
   latestLevels,
   latestReviews,
@@ -39,7 +39,7 @@ export default function HomeLoggedIn({
   recommendedLevel,
   topLevelsThisMonth,
   user,
-}: HomeLoggedInProps) {
+}: HomeProps) {
   const { game, userConfig } = useContext(AppContext);
   const tour = useTour(TourPath.HOME);
 

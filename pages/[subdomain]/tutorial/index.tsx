@@ -1,9 +1,31 @@
 /* istanbul ignore file */
 
+import TutorialPathology from '@root/components/home/tutorialPathology';
+import TutorialSokoban from '@root/components/home/tutorialSokoban';
+import { GameId } from '@root/constants/GameId';
+import { Games } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
-import { getTutorialComponent } from '@root/helpers/getComponentFromGame';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import { GetServerSidePropsContext } from 'next';
 import { NextSeo } from 'next-seo';
 import React, { useContext } from 'react';
+
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const gameId = getGameIdFromReq(context.req);
+
+  if (Games[gameId].disableTutorial) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {},
+  };
+}
 
 export default function TutorialPage() {
   const { game } = useContext(AppContext);
@@ -19,6 +41,6 @@ export default function TutorialPage() {
         url: '/tutorial',
       }}
     />
-    {getTutorialComponent(game)}
+    {game.id === GameId.SOKOBAN ? <TutorialSokoban /> : <TutorialPathology />}
   </>);
 }

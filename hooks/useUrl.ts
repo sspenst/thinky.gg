@@ -4,7 +4,6 @@ import { useContext } from 'react';
 
 const LinksThatCarryOver = [
   '^/profile',
-  '^/home',
   '^/leaderboard',
   '^/users',
   '^/settings',

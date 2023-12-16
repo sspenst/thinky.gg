@@ -9,7 +9,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import Card from '../cards/card';
 import ChapterSelectCard from '../cards/chapterSelectCard';
 import { getDifficultyFromValue } from '../formatted/formattedDifficulty';
-import RecommendedLevel from '../homepage/recommendedLevel';
+import RecommendedLevel from '../home/recommendedLevel';
 import FormattedLevelReviews from '../level/reviews/formattedLevelReviews';
 import ShareBar from '../social/shareBar';
 import Modal from '.';

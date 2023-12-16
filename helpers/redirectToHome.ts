@@ -12,7 +12,7 @@ export default async function redirectToHome(context: GetServerSidePropsContext,
   if (reqUser && gameId !== GameId.THINKY) {
     return {
       redirect: {
-        destination: '/home',
+        destination: '/',
         permanent: false,
       },
     };

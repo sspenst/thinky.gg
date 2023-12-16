@@ -83,7 +83,7 @@ export default function Header({
           </button>
         }
         <div className='pl-4'>
-          <Link className='font-bold text-3xl' href={!userLoading && !user ? '/' : '/home'}>
+          <Link className='font-bold text-3xl' href='/'>
             <Image alt='logo' src={game.logo} width='24' height='24' className='h-6 w-6' style={{ minWidth: 24, minHeight: 24 }} />
           </Link>
         </div>

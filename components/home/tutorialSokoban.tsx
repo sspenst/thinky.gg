@@ -9,17 +9,17 @@ import { Types } from 'mongoose';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { AppContext } from '../../../contexts/appContext';
-import { TimerUtil } from '../../../helpers/getTs';
-import Control from '../../../models/control';
-import Level from '../../../models/db/level';
-import Position from '../../../models/position';
-import BasicLayout from '../../level/basicLayout';
-import Controls from '../../level/controls';
+import { AppContext } from '../../contexts/appContext';
+import { TimerUtil } from '../../helpers/getTs';
 import styles from '../../level/Controls.module.css';
-import Game from '../../level/game';
-import Page from '../../page/page';
-import DismissToast from '../../toasts/dismissToast';
+import Control from '../../models/control';
+import Level from '../../models/db/level';
+import Position from '../../models/position';
+import BasicLayout from '../level/basicLayout';
+import Controls from '../level/controls';
+import Game from '../level/game';
+import Page from '../page/page';
+import DismissToast from '../toasts/dismissToast';
 
 interface Tooltip {
   canClose?: boolean;
@@ -43,7 +43,7 @@ interface TutorialStep {
   tooltip?: Tooltip;
 }
 
-export default function TutorialPathology() {
+export default function TutorialSokoban() {
   function getLevel(data: string, override: Partial<Level> = {}): Level {
     const sp = data.split('\n');
     const width = sp[0].length;
@@ -66,7 +66,7 @@ export default function TutorialPathology() {
   const globalTimeout = useRef<NodeJS.Timeout | null>(null);
   const [isNextButtonDisabled, setIsNextButtonDisabled] = useState(false);
   const [isPrevButtonDisabled, setIsPrevButtonDisabled] = useState(false);
-  const { mutateUser, user } = useContext(AppContext);
+  const { game, mutateUser, user } = useContext(AppContext);
   const [popperInstance, setPopperInstance] = useState<Instance | null>(null);
   const popperUpdateInterval = useRef<NodeJS.Timeout | null>(null);
   const [showNiceJob, setShowNiceJob] = useState(false);
@@ -76,18 +76,14 @@ export default function TutorialPathology() {
   const isLoggedIn = !!user;
 
   const BLANK_GRID = '0000000\n0000000\n0000000\n0000000\n0000000';
-  const GRID_WITH_PLAYER = '0000000\n0000000\n0004000\n0000000\n0000000';
-  const LEVEL_1_ONLY_END = '000000\n000000\n000000\n000030\n000000';
-  const LEVEL_1 = '000000\n040000\n000000\n000030\n000000';
-  const WALL_INTRO = '00000\n00100\n40100\n00103\n00000';
-  const MULTIPLE_ENDS = '0000100\n0400000\n0001003\n0000000\n0100030\n0000000\n0303000';
-  const MOVABLE_INTRO = '400\n000\n120\n000\n300';
+  const GRID_WITH_PLAYER = '00000\n00400\n00000\n00000\n00000';
+  const LEVEL_1_ONLY_END = '00000\n00000\n00030\n00000\n00000';
+  const LEVEL_1_ONLY_BLOCK = '00000\n00000\n00230\n00000\n00000';
+  const LEVEL_1 = '00040\n00000\n00230\n00000\n00000';
+  const WALL_INTRO = '00000\n00102\n40100\n00103\n00000';
+  const MULTIPLE_ENDS = '41300\n01200\n30000\n20320\n00000';
   const MOVABLE_EXPLAIN = '410100\n002200\n010103\n000110';
-  const MOVABLE_EXPLAIN_END_COVER = '00100\n04232\n01010\n00000';
-  const RESTRICTED_MOVABLES = '00000\n060E0\n00000\n0D0I0\n00000';
-  const RESTRICTED_MOVABLES_EXPLAIN = '4010010\n070C000\n0010013';
-  const HOLES_EXPLAIN = '000010\n000053\n000010\n000011';
-  const HOLES_INTRO = '000010\n080053\n000010\n004011';
+  const MOVABLE_EXPLAIN_END_COVER = '00400\n10K00\n02000\n01300\n00000';
 
   useEffect(() => {
     const sessionStorageTutorialStep = sessionStorage.getItem('tutorialStep');
@@ -239,7 +235,7 @@ export default function TutorialPathology() {
       {
         hasNext: true,
         header: <>
-          <div className='text-3xl fadeIn'>Welcome to the Pathology tutorial!</div>
+          <div className='text-3xl fadeIn'>Welcome to the Sokoban tutorial!</div>
           <div className='text-xl fadeIn' style={{
             animationDelay: '1s',
           }}>In this tutorial you will be walked through the basics of the game.</div>
@@ -248,13 +244,13 @@ export default function TutorialPathology() {
       {
         editorGrid: true,
         gameClasses: 'fadeIn',
-        header: <div key='tutorial-blank-grid-header' className='text-3xl fadeIn'>Pathology is a grid-based puzzle game.</div>,
+        header: <div key='tutorial-blank-grid-header' className='text-3xl fadeIn'>Sokoban is a grid-based puzzle game.</div>,
         key: 'tutorial-blank-grid',
         level: getLevel(BLANK_GRID),
       },
       {
         editorGrid: true,
-        header: <div key='tutorial-player-intro-header' className='text-2xl'>That square in the middle is the <span className='font-bold'>Player</span> you will be controlling.</div>,
+        header: <div key='tutorial-player-intro-header' className='text-2xl'>That character in the middle is the <span className='font-bold'>Player</span> you will be controlling.</div>,
         key: 'tutorial-player-intro',
         level: getLevel(GRID_WITH_PLAYER),
         tooltip: { target: '.tile-type-4', title: <div>Player</div> },
@@ -405,16 +401,27 @@ export default function TutorialPathology() {
         editorGrid: true,
         gameClasses: 'fadeIn',
         header: <>
-          <div className='text-3xl'>This is an exit.</div>
-          <div className='text-xl'>Your goal is to reach it in the specified number of moves.</div>
+          <div className='text-3xl'>This is an exit square.</div>
+          <div className='text-xl'>Some levels have multiple exit squares.</div>
         </>,
         key: 'tutorial-level-1-only-end',
         level: getLevel(LEVEL_1_ONLY_END, { leastMoves: 5 }),
         tooltip: { target: '.tile-type-3', title: <div>Exit</div>, dir: 'top' },
       },
       {
+        editorGrid: true,
+        gameClasses: 'fadeIn',
+        header: <>
+          <div className='text-3xl'>This is a box.</div>
+          <div className='text-xl'>Your goal is to push boxes into exit squares.</div>
+        </>,
+        key: 'tutorial-level-1-only-block',
+        level: getLevel(LEVEL_1_ONLY_BLOCK, { leastMoves: 5 }),
+        tooltip: { target: '.tile-type-2', title: <div>Box</div>, dir: 'top' },
+      },
+      {
         gameGrid: true,
-        header: <div key='tutorial-level-1-header' className='text-3xl fadeIn'>Try solving your first level!</div>,
+        header: <><div key='tutorial-level-1-header' className='text-3xl fadeIn'>Try solving your first level!</div><div className='text-xl'>Push the box into the exit square.</div></>,
         key: 'tutorial-level-1',
         level: getLevel(LEVEL_1, { leastMoves: 5 }),
         onMove: (gameState: GameState) => {
@@ -434,31 +441,23 @@ export default function TutorialPathology() {
           }
         },
         onSolve: niceJob,
-        tooltip: { canClose: true, target: '.tile-type-3', title: <div>Move the Player here in 5 moves</div>, dir: 'bottom' },
+        tooltip: { canClose: true, target: '.tile-type-4', title: <div>Your player</div>, dir: 'top' },
       },
       {
         gameClasses: 'fadeIn',
         gameGrid: true,
         header: <div key='tutorial-wall-header' className='text-3xl fadeIn'>Try getting to the exit now.</div>,
         key: 'tutorial-wall',
-        level: getLevel(WALL_INTRO, { leastMoves: 7 }),
+        level: getLevel(WALL_INTRO, { leastMoves: 8 }),
         onSolve: niceJob,
         tooltip: { canClose: true, target: '.tile-type-1', title: <div>You are not able to go through walls</div> },
       },
       {
         gameClasses: 'fadeIn',
         gameGrid: true,
-        header: <div key='tutorial-ends-header' className='text-3xl fadeIn'>There can be multiple exits.</div>,
+        header: <><div key='tutorial-level-1-multipleexits' className='text-3xl fadeIn'>Levels can have multiple exit squares</div><div className='text-xl'>To win, put a box on each exit square.</div></>,
         key: 'tutorial-ends',
-        level: getLevel(MULTIPLE_ENDS, { leastMoves: 6 }),
-        onSolve: niceJob,
-      },
-      {
-        gameClasses: 'fadeIn',
-        gameGrid: true,
-        header: <div key='tutorial-movable-header' className='text-3xl fadeIn'>Blocks with borders can be pushed by the player.</div>,
-        key: 'tutorial-movable',
-        level: getLevel(MOVABLE_INTRO, { leastMoves: 6 }),
+        level: getLevel(MULTIPLE_ENDS, { leastMoves: 15 }),
         onSolve: niceJob,
       },
       {
@@ -466,49 +465,15 @@ export default function TutorialPathology() {
         gameGrid: true,
         header: <div key='tutorial-movable-explain-header' className='text-3xl fadeIn'>You can only push one block at a time.</div>,
         key: 'tutorial-movable-explain',
-        level: getLevel(MOVABLE_EXPLAIN, { leastMoves: 11 }),
+        level: getLevel(MOVABLE_EXPLAIN, { leastMoves: 12 }),
         onSolve: niceJob,
       },
       {
         gameClasses: 'fadeIn',
         gameGrid: true,
-        header: <div className='text-3xl'>Blocks can cover exits.</div>,
+        header: <><div key='tutorial-level-1-coverexit' className='text-3xl fadeIn'>Boxes can cover exit squares</div><div className='text-xl'>Try this tricky level!</div></>,
         key: 'tutorial-movable-explain-end-cover',
-        level: getLevel(MOVABLE_EXPLAIN_END_COVER, { leastMoves: 8 }),
-        onSolve: niceJob,
-      },
-      {
-        editorGrid: true,
-        gameClasses: 'fadeIn',
-        header: <div key='tutorial-restricted-movables-header' className='text-3xl fadeIn'>Blocks can only be pushed <span className='underline'>from sides with borders.</span></div>,
-        key: 'tutorial-restricted-movables',
-        level: getLevel(RESTRICTED_MOVABLES),
-        tooltip: { canClose: true, target: '.tile-type-D', title: <div>Can only be pushed down and to the left</div>, dir: 'bottom' },
-      },
-      {
-        gameClasses: 'fadeIn',
-        gameGrid: true,
-        header: <div key='tutorial-restricted-movables-explain-header' className='text-3xl fadeIn'>Find the path through these restricted blocks!</div>,
-        key: 'tutorial-restricted-movables-explain',
-        level: getLevel(RESTRICTED_MOVABLES_EXPLAIN, { leastMoves: 12 }),
-        onSolve: niceJob,
-      },
-      {
-        editorGrid: true,
-        gameClasses: 'fadeIn',
-        header: <div key='tutorial-holes-explain-header' className='fadeIn'>
-          <div className='text-3xl mb-6'>Lastly, this is a hole.</div>
-          <div className='text-xl'>Holes can be filled with any block to create a bridge.</div>
-        </div>,
-        key: 'tutorial-holes-explain',
-        level: getLevel(HOLES_EXPLAIN, { leastMoves: 9 }),
-        tooltip: { target: '.tile-type-5', title: <div>Hole</div> },
-      },
-      {
-        gameGrid: true,
-        header: <div key='tutorial-holes-intro' className='text-3xl fadeIn'>Use this block to cross over the hole!</div>,
-        key: 'tutorial-holes-intro',
-        level: getLevel(HOLES_INTRO, { leastMoves: 9 }),
+        level: getLevel(MOVABLE_EXPLAIN_END_COVER, { leastMoves: 18 }),
         onSolve: niceJob,
       },
       {
@@ -516,13 +481,13 @@ export default function TutorialPathology() {
           <div className='text-3xl mb-6 fadeIn'>Congratulations on completing the tutorial!</div>
           <div className='text-xl mb-6 fadeIn' style={{
             animationDelay: '1s',
-          }}>There is a lot more to Pathology than just this:<br />An active community, level editor, and thousands of levels to explore.</div>
-          {isLoggedIn ?
+          }}>There is a lot more to Sokoban than just this:<br />An active community, level editor, and thousands of levels to explore.</div>
+          {isLoggedIn && !game.disableCampaign ?
             <div className='text-xl fadeIn' style={{
               pointerEvents: 'all',
               animationDelay: '2s',
             }}>
-              Continue your Pathology journey with the <span className='font-bold'>Campaign</span>!
+              Continue your Sokoban journey with the <span className='font-bold'>Campaign</span>!
             </div>
             :
             <div className='flex flex-col gap-3'>
@@ -530,7 +495,7 @@ export default function TutorialPathology() {
                 pointerEvents: 'all',
                 animationDelay: '2s'
               }}>
-                Now <Link href='/signup' className='font-bold text-blue-500 hover:text-blue-400'>sign up</Link> for free to explore the world of Pathology (and other puzzle games!))
+                Now <Link href='/signup' className='font-bold text-blue-500 hover:text-blue-400'>sign up</Link> for free to explore the world of Sokoban (and other puzzle games!)
               </div>
               <div className='fadeIn' style={{
                 pointerEvents: 'all',
@@ -543,7 +508,7 @@ export default function TutorialPathology() {
         </div>,
       },
     ] as TutorialStep[];
-  }, [isLoggedIn, niceJob]);
+  }, [game.disableCampaign, isLoggedIn, niceJob]);
 
   const skipControl = useCallback(() => new Control(
     'control-skip',
@@ -664,8 +629,7 @@ export default function TutorialPathology() {
       false,
       true,
     ));
-
-    controls.push(isLoggedIn ?
+    const btn = isLoggedIn && !game.disableCampaign ?
       new Control(
         'control-campaign',
         () => {
@@ -676,7 +640,7 @@ export default function TutorialPathology() {
         true,
       )
       :
-      new Control(
+      (!isLoggedIn && new Control(
         'control-sign-up',
         () => {
           router.push('/signup');
@@ -687,7 +651,9 @@ export default function TutorialPathology() {
         false,
         true,
       )
-    );
+      );
+
+    btn && controls.push(btn);
   }
 
   return (
