@@ -1,4 +1,4 @@
-import { HomepageDataProps } from '../pages/[subdomain]/home';
+import { HomepageDataProps } from '../pages/[subdomain]';
 import useSWRHelper from './useSWRHelper';
 
 export enum HomepageDataType {

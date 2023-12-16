@@ -47,7 +47,7 @@ export default function LoginForm() {
         if (redirectUrl && redirectUrl !== 'undefined') {
           router.push(redirectUrl);
         } else {
-          router.push('/home');
+          router.push('/');
         }
       } else {
         throw res.text();

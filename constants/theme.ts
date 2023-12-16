@@ -25,7 +25,7 @@ export function getIconFromTheme(game: Game, theme?: Theme | string, tileType?: 
   }
 
   if (game.id === GameId.SOKOBAN && tileType === TileType.Start) {
-    // Sokobon start tile maybe should be different?
+    // Sokoban start tile maybe should be different?
   }
 
   return undefined;

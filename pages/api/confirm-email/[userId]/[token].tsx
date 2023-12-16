@@ -58,7 +58,7 @@ export default function ConfirmEmail({ emailConfirmed }: ConfirmEmailProps) {
         router.push('/settings/account');
       } else {
         toast.success('Email confirmed!');
-        router.push('/home');
+        router.push('/');
       }
     }, 100);
 

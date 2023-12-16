@@ -1,5 +1,5 @@
 enum TourPath {
-  HOME = '/home',
+  HOME = '/',
 }
 
 export default TourPath;

@@ -55,7 +55,6 @@ export const Games: Record<GameId, Game> = {
     baseUrl: 'sokoban.pathology.gg',
     disableCampaign: true,
     disableCommunityCampaigns: true,
-    disableTutorial: true,
     disableMultiplayer: true,
     disableRanked: true,
     defaultTheme: Theme.Winter,

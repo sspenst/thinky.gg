@@ -44,6 +44,6 @@ describe('pages/forgot-password page', () => {
     expect(ret).toBeDefined();
     expect(ret.props).toBeUndefined();
     expect(ret.redirect).toBeDefined();
-    expect(ret.redirect?.destination).toBe('/home');
+    expect(ret.redirect?.destination).toBe('/');
   });
 });

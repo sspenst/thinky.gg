@@ -33,7 +33,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   if (!level) {
     return {
       redirect: {
-        destination: '/home',
+        destination: '/',
         permanent: false,
       },
     };
