@@ -6,15 +6,17 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { NextApiRequestWithAuth } from '../lib/withAuth';
 import { logger } from './logger';
 
-export type NextApiRequestGuest = NextApiRequest & {
+export interface NextApiRequestWrapper extends NextApiRequest {
   gameId: GameId;
-};
+}
+
 export interface ReqValidator {
   GET?: ReqExpected;
   POST?: ReqExpected,
   PUT?: ReqExpected,
   DELETE?: ReqExpected,
 }
+
 export interface ReqExpected {
   body?: { [key: string]: (value: unknown) => boolean };
   query?: { [key: string]: (value: unknown) => boolean };
@@ -219,9 +221,9 @@ export function parseReq(validator: ReqValidator, req: NextApiRequest | NextApiR
 
 export default function apiWrapper(
   validator: ReqValidator,
-  handler: (req: NextApiRequestGuest, res: NextApiResponse) => Promise<void>
+  handler: (req: NextApiRequestWrapper, res: NextApiResponse) => Promise<void>
 ) {
-  return async (req: NextApiRequestGuest, res: NextApiResponse): Promise<unknown> => {
+  return async (req: NextApiRequestWrapper, res: NextApiResponse): Promise<unknown> => {
     const validate = parseReq(validator, req);
 
     if (validate !== null) {

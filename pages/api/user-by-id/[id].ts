@@ -3,7 +3,7 @@ import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
-import apiWrapper, { NextApiRequestGuest, ValidObjectId } from '../../../helpers/apiWrapper';
+import apiWrapper, { NextApiRequestWrapper, ValidObjectId } from '../../../helpers/apiWrapper';
 import { logger } from '../../../helpers/logger';
 import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
@@ -14,7 +14,7 @@ export default apiWrapper({ GET: {
   query: {
     id: ValidObjectId(),
   }
-} }, async (req: NextApiRequestGuest, res: NextApiResponse) => {
+} }, async (req: NextApiRequestWrapper, res: NextApiResponse) => {
   const { id } = req.query;
   const user = await getUserById(id, req.gameId);
 

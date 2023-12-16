@@ -1,5 +1,5 @@
 import { DEFAULT_GAME_ID } from '@root/constants/GameId';
-import { NextApiRequestGuest } from '@root/helpers/apiWrapper';
+import { NextApiRequestWrapper } from '@root/helpers/apiWrapper';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
@@ -42,7 +42,7 @@ describe('Email digest', () => {
   test('send with an invalid process.env var', async () => {
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequestGuest = {
+        const req: NextApiRequestWrapper = {
           gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
@@ -54,7 +54,7 @@ describe('Email digest', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequestGuest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },
@@ -79,7 +79,7 @@ describe('Email digest', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequestGuest = {
+        const req: NextApiRequestWrapper = {
           gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
@@ -92,7 +92,7 @@ describe('Email digest', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequestGuest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },
@@ -124,7 +124,7 @@ describe('Email digest', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequestGuest = {
+        const req: NextApiRequestWrapper = {
           gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
@@ -136,7 +136,7 @@ describe('Email digest', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequestGuest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },
@@ -171,7 +171,7 @@ describe('Email digest', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequestGuest = {
+        const req: NextApiRequestWrapper = {
           gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
@@ -183,7 +183,7 @@ describe('Email digest', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequestGuest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },
@@ -216,7 +216,7 @@ describe('Email digest', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequestGuest = {
+        const req: NextApiRequestWrapper = {
           gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
@@ -228,7 +228,7 @@ describe('Email digest', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequestGuest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },
@@ -259,7 +259,7 @@ describe('Email digest', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequestGuest = {
+        const req: NextApiRequestWrapper = {
           gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
@@ -271,7 +271,7 @@ describe('Email digest', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequestGuest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },
@@ -297,7 +297,7 @@ describe('Email digest', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequestGuest = {
+        const req: NextApiRequestWrapper = {
           gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
@@ -309,7 +309,7 @@ describe('Email digest', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequestGuest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },
@@ -337,7 +337,7 @@ describe('Email digest', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequestGuest = {
+        const req: NextApiRequestWrapper = {
           gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
@@ -349,7 +349,7 @@ describe('Email digest', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequestGuest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },

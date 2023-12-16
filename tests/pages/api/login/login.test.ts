@@ -1,4 +1,4 @@
-import { NextApiRequestGuest } from '@root/helpers/apiWrapper';
+import { NextApiRequestWrapper } from '@root/helpers/apiWrapper';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
@@ -26,7 +26,7 @@ describe('pages/api/login/index.ts', () => {
           headers: {
             'content-type': 'application/json'
           }
-        } as unknown as NextApiRequestGuest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },
@@ -48,7 +48,7 @@ describe('pages/api/login/index.ts', () => {
           headers: {
             key: process.env.SPECIAL_TOKEN
           }
-        } as unknown as NextApiRequestGuest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },
@@ -73,7 +73,7 @@ describe('pages/api/login/index.ts', () => {
             'content-type': 'application/json' // Must use correct content type
           },
 
-        } as unknown as NextApiRequestGuest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },
@@ -99,7 +99,7 @@ describe('pages/api/login/index.ts', () => {
             'content-type': 'application/json' // Must use correct content type
           },
 
-        } as unknown as NextApiRequestGuest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },
@@ -124,7 +124,7 @@ describe('pages/api/login/index.ts', () => {
             'content-type': 'application/json' // Must use correct content type
           },
 
-        } as unknown as NextApiRequestGuest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },
@@ -150,7 +150,7 @@ describe('pages/api/login/index.ts', () => {
             'content-type': 'application/json' // Must use correct content type
           },
 
-        } as unknown as NextApiRequestGuest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },

@@ -4,7 +4,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import requestIp from 'request-ip';
 import { GameId } from '../constants/GameId';
-import { parseReq, ReqValidator } from '../helpers/apiWrapper';
+import { NextApiRequestWrapper, parseReq, ReqValidator } from '../helpers/apiWrapper';
 import { getGameIdFromReq } from '../helpers/getGameIdFromReq';
 import { TimerUtil } from '../helpers/getTs';
 import { logger } from '../helpers/logger';
@@ -14,11 +14,11 @@ import dbConnect from './dbConnect';
 import getTokenCookie from './getTokenCookie';
 import isLocal from './isLocal';
 
-export type NextApiRequestWithAuth = NextApiRequest & {
+export interface NextApiRequestWithAuth extends NextApiRequestWrapper {
   gameId: GameId;
   user: User;
   userId: string;
-};
+}
 
 export async function getUserFromToken(
   token: string | undefined,
