@@ -6,7 +6,7 @@ import { Portal } from '@headlessui/react';
 import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
 import { Game, Games } from '@root/constants/Games';
 import MusicContextProvider from '@root/contexts/musicContext';
-import getFontFromTheme from '@root/helpers/getFont';
+import getFontFromGameId from '@root/helpers/getFont';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import useDeviceCheck from '@root/hooks/useDeviceCheck';
 import Collection from '@root/models/db/collection';
@@ -465,7 +465,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
           userConfig: user?.config,
           userLoading: isLoading,
         }}>
-          <div className={getFontFromTheme(selectedGame)} style={{
+          <div className={getFontFromGameId(selectedGame.id)} style={{
             backgroundColor: 'var(--bg-color)',
             color: 'var(--color)',
           }}>
