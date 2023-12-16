@@ -1,6 +1,7 @@
 import { EmailDigestSettingType } from '@root/constants/emailDigest';
 import { GameId } from '@root/constants/GameId';
 import { Games } from '@root/constants/Games';
+import NotificationType from '@root/constants/notificationType';
 import Role from '@root/constants/role';
 import { generatePassword } from '@root/helpers/generatePassword';
 import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
@@ -24,10 +25,19 @@ import { getNewUserConfig } from '../user-config';
 
 async function createUser({ gameId, email, name, password, tutorialCompletedAt, roles }: {gameId: GameId, email: string, name: string, password: string, tutorialCompletedAt: number, roles: Role[]}, queryOptions: QueryOptions): Promise<[User, UserConfig]> {
   const id = new Types.ObjectId();
+  const disallowedEmailNotifications = [
+    NotificationType.NEW_FOLLOWER,
+    NotificationType.NEW_LEVEL,
+    NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION,
+    NotificationType.NEW_REVIEW_ON_YOUR_LEVEL,
+    NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_SOLVED,
+  ];
 
   const [userCreated, configCreated] = await Promise.all([
     UserModel.create([{
       _id: id,
+      disallowedEmailNotifications: disallowedEmailNotifications,
+      disallowedPushNotifications: [],
       email: email,
       emailConfirmationToken: getEmailConfirmationToken(),
       emailConfirmed: false,

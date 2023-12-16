@@ -320,8 +320,8 @@ describe('pages/api/signup', () => {
           NotificationType.NEW_REVIEW_ON_YOUR_LEVEL,
         ];
 
-        expect(config.disallowedEmailNotifications.sort()).toStrictEqual(disallowedEmailNotifications);
-        expect(config.disallowedPushNotifications).toStrictEqual([]);
+        expect(db.disallowedEmailNotifications.sort()).toStrictEqual(disallowedEmailNotifications);
+        expect(db.disallowedPushNotifications).toStrictEqual([]);
       },
     });
   });
