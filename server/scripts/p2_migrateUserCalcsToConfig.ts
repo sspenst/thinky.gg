@@ -6,67 +6,17 @@ import { UserConfigModel, UserModel } from '@root/models/mongoose';
 import cliProgress from 'cli-progress';
 import dotenv from 'dotenv';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
+import { migrateFields } from './migrateFields';
 
 dotenv.config();
 
-const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
+const fieldsToMigrate = {
+  calcRankedSolves: '$calcRankedSolves',
+  calcLevelsCreatedCount: '$calc_levels_created_count',
+  calcRecordsCount: '$calc_records',
+  chapterUnlocked: '$chapterUnlocked',
+  calcLevelsSolvedCount: '$score',
+  roles: '$roles',
+};
 
-async function migrate() {
-  // get all collections
-  await dbConnect();
-
-  const allUsers = await UserModel.find({
-  }, { 'calcRankedSolves': 1, 'calc_levels_created_count': 1, 'calc_records': 1, 'chapterUnlocked': 1, 'score': 1, 'roles': 1 }, { sort: { ts: -1 } }).lean();
-
-  progressBar.start(allUsers.length, 0);
-  const ids = [];
-
-  // loop through all userConfigs and update UserModel.emailConfirmed to equal it
-  for (let i = 0; i < allUsers.length; i++) {
-    const user = await UserModel.findById<User>(allUsers[i]._id, { 'calcRankedSolves': 1, 'calc_levels_created_count': 1, 'calc_records': 1, 'chapterUnlocked': 1, 'score': 1, 'roles': 1 }).lean();
-
-    ids.push(allUsers[i]._id);
-
-    if (!user) {
-      console.log('\nno user for user', allUsers[i]._id);
-      continue;
-    }
-
-    const updated = await UserConfigModel.findOneAndUpdate({ userId: user._id,
-      /*calcRankedSolves: { $exists: false },
-      calcLevelsCreatedCount: { $exists: false },
-      calcRecordsCount: { $exists: false },
-      chapterUnlocked: { $exists: false },
-      calcLevelsSolvedCount: { $exists: false },
-      roles: { $exists: false },*/
-    }, {
-      calcRankedSolves: user.calcRankedSolves,
-      calcLevelsCreatedCount: user.calc_levels_created_count,
-      calcRecordsCount: user.calc_records,
-      chapterUnlocked: user.chapterUnlocked,
-      calcLevelsSolvedCount: user.score,
-      roles: user.roles || [],
-    }, {
-      //new: true,
-    }).lean();
-
-    if (!updated) {
-      console.log('\nno update for user', user._id);
-    }
-
-    //console.log(updated);
-    progressBar.update(i);
-  }
-
-  console.log('Pulling all PRO from USER');
-  //await UserModel.updateMany({ _id: { $in: ids } }, { $pull: { roles: 'PRO' } });
-
-  progressBar.update(allUsers.length);
-  progressBar.stop();
-
-  await dbDisconnect();
-
-  console.log('Done!');
-}
-
-migrate();
+migrateFields(UserModel, UserConfigModel, fieldsToMigrate, '_id', 'userId', { 'target.gameId': 'pathology' });
