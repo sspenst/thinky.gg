@@ -1,25 +1,18 @@
-import { EmailDigestSettingTypes } from '@root/constants/emailDigest';
 import { GameId } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
-import Role from '@root/constants/role';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import isGuest from '@root/helpers/isGuest';
 import { logger } from '@root/helpers/logger';
 import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidArray, ValidNumber, ValidType } from '../../../helpers/apiWrapper';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import { UserConfigModel } from '../../../models/mongoose';
+import { UserConfigModel, UserModel } from '../../../models/mongoose';
+import emailDigest from '../internal-jobs/email-digest';
 
-export function getNewUserConfig(gameId: GameId, roles: Role[], tutorialCompletedAt: number, userId: Types.ObjectId, params?: Partial<UserConfig>) {
-  let emailDigest = EmailDigestSettingTypes.DAILY;
-
-  if (roles.includes(Role.GUEST)) {
-    emailDigest = EmailDigestSettingTypes.NONE;
-  }
-
+export function getNewUserConfig(gameId: GameId, tutorialCompletedAt: number, userId: Types.ObjectId, params?: Partial<UserConfig>) {
   const disallowedEmailNotifications = [
     NotificationType.NEW_FOLLOWER,
     NotificationType.NEW_LEVEL,
@@ -32,7 +25,7 @@ export function getNewUserConfig(gameId: GameId, roles: Role[], tutorialComplete
     _id: new Types.ObjectId(),
     disallowedEmailNotifications: disallowedEmailNotifications,
     disallowedPushNotifications: [],
-    emailDigest: emailDigest,
+
     gameId: gameId,
     theme: getGameFromId(gameId).defaultTheme,
     tutorialCompletedAt: tutorialCompletedAt,
@@ -45,7 +38,7 @@ export async function getUserConfig(gameId: GameId, user: User) {
   let userConfig = await UserConfigModel.findOne({ userId: user._id, gameId: gameId }, { '__v': 0 }).lean<UserConfig>();
 
   if (!userConfig) {
-    userConfig = await UserConfigModel.create(getNewUserConfig(gameId, user.roles, 0, user._id));
+    userConfig = await UserConfigModel.create(getNewUserConfig(gameId, 0, user._id));
   }
 
   return userConfig;
@@ -70,7 +63,7 @@ export default withAuth({
   if (req.method === 'GET') {
     const userConfig = await getUserConfig(req.gameId, req.user);
 
-    return res.status(200).json(userConfig);
+    return res.status(200).json({ ...userConfig, ...{ emailDigest: req.user.emailDigest } });
   } else if (req.method === 'PUT') {
     const {
       deviceToken,
@@ -84,9 +77,10 @@ export default withAuth({
     } = req.body;
 
     const setObj: {[k: string]: string} = {};
+    const setObjUser: {[k: string]: string} = {};
 
     if (emailDigest !== undefined) {
-      setObj['emailDigest'] = emailDigest;
+      setObjUser['emailDigest'] = emailDigest;
 
       if (isGuest(req.user)) {
         return res.status(400).json({
@@ -125,10 +119,17 @@ export default withAuth({
     }
 
     try {
-      const updateResult = await UserConfigModel.updateOne({ userId: req.userId, gameId: req.gameId }, { $set: setObj, $addToSet: { mobileDeviceTokens: deviceToken } });
+      const session = await mongoose.startSession();
 
-      /* istanbul ignore next */
-      if (updateResult.acknowledged === false) {
+      try {
+        await session.withTransaction(async () => {
+          const updateResult = await UserConfigModel.updateOne({ userId: req.userId, gameId: req.gameId }, { $set: setObj, $addToSet: { mobileDeviceTokens: deviceToken } }, { session: session });
+          const updateResultUser = await UserModel.updateOne({ _id: req.userId }, { $set: setObjUser }, { session: session });
+        });
+      } catch (err) {
+        logger.error(err);
+        session.endSession();
+
         return res.status(500).json({ error: 'Error updating config', updated: false });
       }
     } catch (err) {

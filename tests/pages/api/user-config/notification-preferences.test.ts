@@ -5,7 +5,7 @@ import { processQueueMessages } from '@root/pages/api/internal-jobs/worker';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
-import { EmailDigestSettingTypes } from '../../../../constants/emailDigest';
+import { EmailDigestSettingType } from '../../../../constants/emailDigest';
 import TestId from '../../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
@@ -61,7 +61,7 @@ describe('account settings notification preferences', () => {
           body: {
             disallowedEmailNotifications: disallowedEmailNotifications,
             disallowedPushNotifications: disallowedPushNotifications,
-            emailDigestSetting: EmailDigestSettingTypes.DAILY,
+            emailDigestSetting: EmailDigestSettingType.DAILY,
           }
         } as unknown as NextApiRequestWithAuth;
 

@@ -1,4 +1,4 @@
-import { EmailDigestSettingTypes } from '@root/constants/emailDigest';
+import { EmailDigestSettingType } from '@root/constants/emailDigest';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
 import { PASSWORD_SALTROUNDS } from '@root/models/schemas/userSchema';
 import { getNewUserConfig } from '@root/pages/api/user-config';
@@ -72,6 +72,7 @@ export default async function initializeLocalDb() {
       emailConfirmed: true,
       name: 'Pro',
       password: await bcrypt.hash('pro', PASSWORD_SALTROUNDS),
+      emailDigest: EmailDigestSettingType.NONE,
       roles: [Role.PRO],
       ts: ts,
     },
@@ -89,24 +90,24 @@ export default async function initializeLocalDb() {
   ));
 
   promises.push(UserConfigModel.insertMany([
-    getNewUserConfig(DEFAULT_GAME_ID, [], 0, new Types.ObjectId(TestId.USER), {
+    getNewUserConfig(DEFAULT_GAME_ID, 0, new Types.ObjectId(TestId.USER), {
       calcRecordsCount: 2,
       calcLevelsSolvedCount: 2
     }),
 
-    getNewUserConfig(DEFAULT_GAME_ID, [], 0, new Types.ObjectId(TestId.USER_B), {
+    getNewUserConfig(DEFAULT_GAME_ID, 0, new Types.ObjectId(TestId.USER_B), {
       calcRecordsCount: 0,
 
     }),
-    getNewUserConfig(DEFAULT_GAME_ID, [], 0, new Types.ObjectId(TestId.USER_C), {
+    getNewUserConfig(DEFAULT_GAME_ID, 0, new Types.ObjectId(TestId.USER_C), {
       calcRecordsCount: 1,
       calcLevelsSolvedCount: 1
 
     }),
-    getNewUserConfig(DEFAULT_GAME_ID, [Role.GUEST], 0, new Types.ObjectId(TestId.USER_GUEST), {
+    getNewUserConfig(DEFAULT_GAME_ID, 0, new Types.ObjectId(TestId.USER_GUEST), {
       calcRecordsCount: 0,
     }),
-    getNewUserConfig(DEFAULT_GAME_ID, [Role.PRO], 0, new Types.ObjectId(TestId.USER_PRO), { emailDigest: EmailDigestSettingTypes.NONE,
+    getNewUserConfig(DEFAULT_GAME_ID, 0, new Types.ObjectId(TestId.USER_PRO), {
       calcRecordsCount: 1,
     }),
 

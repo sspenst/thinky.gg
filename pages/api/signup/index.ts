@@ -1,3 +1,4 @@
+import { EmailDigestSettingType } from '@root/constants/emailDigest';
 import { GameId } from '@root/constants/GameId';
 import { Games } from '@root/constants/Games';
 import Role from '@root/constants/role';
@@ -30,13 +31,14 @@ async function createUser({ gameId, email, name, password, tutorialCompletedAt, 
       email: email,
       emailConfirmationToken: getEmailConfirmationToken(),
       emailConfirmed: false,
+      emailDigest: EmailDigestSettingType.DAILY,
       name: name,
       password: password,
       roles: roles,
       score: 0,
       ts: TimerUtil.getTs(),
     }], queryOptions),
-    UserConfigModel.create([getNewUserConfig(gameId, roles, tutorialCompletedAt, id)], queryOptions),
+    UserConfigModel.create([getNewUserConfig(gameId, tutorialCompletedAt, id)], queryOptions),
   ]);
 
   const user = userCreated[0] as User;

@@ -1,19 +1,19 @@
-import { EmailDigestSettingTypes } from '@root/constants/emailDigest';
+import { EmailDigestSettingType } from '@root/constants/emailDigest';
 import NotificationType from '@root/constants/notificationType';
 import { AppContext } from '@root/contexts/appContext';
 import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
 export default function SettingsNotifications() {
-  const [emailDigest, setEmailDigest] = useState(EmailDigestSettingTypes.DAILY);
+  const [emailDigest, setEmailDigest] = useState(EmailDigestSettingType.DAILY);
   const [isUserConfigLoading, setIsUserConfigLoading] = useState(false);
-  const { mutateUser, userConfig } = useContext(AppContext);
+  const { user, mutateUser, userConfig } = useContext(AppContext);
 
   useEffect(() => {
-    if (userConfig?.emailDigest) {
-      setEmailDigest(userConfig.emailDigest);
+    if (user?.emailDigest) {
+      setEmailDigest(user.emailDigest);
     }
-  }, [userConfig]);
+  }, [user]);
 
   function updateUserConfig(
     body: string,
@@ -204,7 +204,7 @@ export default function SettingsNotifications() {
               </td>
               <td className='px-4 py-2 text-center'>
                 <input
-                  checked={emailDigest === EmailDigestSettingTypes.DAILY}
+                  checked={emailDigest === EmailDigestSettingType.DAILY}
                   disabled={isUserConfigLoading}
                   id='level-of-the-day'
                   name='level-of-the-day'
@@ -213,7 +213,7 @@ export default function SettingsNotifications() {
                       return;
                     }
 
-                    const newEmailDigest = emailDigest === EmailDigestSettingTypes.DAILY ? EmailDigestSettingTypes.NONE : EmailDigestSettingTypes.DAILY;
+                    const newEmailDigest = emailDigest === EmailDigestSettingType.DAILY ? EmailDigestSettingType.NONE : EmailDigestSettingType.DAILY;
 
                     updateUserConfig(
                       JSON.stringify({

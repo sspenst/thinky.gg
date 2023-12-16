@@ -3,7 +3,7 @@ import NotificationType from '@root/constants/notificationType';
 import Role from '@root/constants/role';
 import TourType from '@root/constants/tourType';
 import mongoose from 'mongoose';
-import { EmailDigestSettingTypes } from '../../constants/emailDigest';
+import { EmailDigestSettingType as EmailDigestSettingType } from '../../constants/emailDigest';
 import UserConfig from '../db/userConfig';
 
 const UserConfigSchema = new mongoose.Schema<UserConfig>(
@@ -49,12 +49,12 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       enum: GameId,
       required: true,
     },
-    emailDigest: {
+    /*emailDigest: {
       type: String,
       required: true,
-      enum: EmailDigestSettingTypes,
-      default: EmailDigestSettingTypes.DAILY,
-    },
+      enum: EmailDigestSettingType,
+      default: EmailDigestSettingType.DAILY,
+    },*/
     giftSubscriptions: {
       type: [String],
       required: false,

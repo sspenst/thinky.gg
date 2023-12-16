@@ -2,7 +2,7 @@ import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
-import { EmailDigestSettingTypes } from '../../../../constants/emailDigest';
+import { EmailDigestSettingType } from '../../../../constants/emailDigest';
 import TestId from '../../../../constants/testId';
 import Theme from '../../../../constants/theme';
 import { logger } from '../../../../helpers/logger';
@@ -117,7 +117,7 @@ describe('pages/api/user-config', () => {
           ...defaultObj,
           method: 'PUT',
           body: {
-            emailDigest: EmailDigestSettingTypes.DAILY,
+            emailDigest: EmailDigestSettingType.DAILY,
             theme: Theme.Light,
             tutorialCompletedAt: Date.now(),
             deviceToken: 'mymobiletoken'
@@ -155,9 +155,9 @@ describe('pages/api/user-config', () => {
         const response = await res.json();
 
         expect(res.status).toBe(200);
-        const config = response as UserConfig;
+        const config = response as { [k: string]: any};
 
-        expect(config.emailDigest).toBe(EmailDigestSettingTypes.DAILY);
+        expect(config.emailDigest).toBe(EmailDigestSettingType.DAILY);
         expect(config.theme).toBe(Theme.Light);
         expect(config.tutorialCompletedAt).toBeGreaterThan(Date.now() - 1000);
         expect(config.userId).toBe(TestId.USER_C);

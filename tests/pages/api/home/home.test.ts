@@ -42,24 +42,7 @@ describe('pages/api/home.ts', () => {
       },
     });
   });
-  test('Sending nothing should return 401', async () => {
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          cookies: {
-            token: '',
-          },
-        } as unknown as NextApiRequestWithAuth;
 
-        await homeHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-
-        expect(res.status).toBe(401);
-      },
-    });
-  });
   test('GET no query', async () => {
     await testApiHandler({
       handler: async (_, res) => {

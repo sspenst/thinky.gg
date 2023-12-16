@@ -1,3 +1,4 @@
+import { EmailDigestSettingType } from '@root/constants/emailDigest';
 import { GameId } from '@root/constants/GameId';
 import { Types } from 'mongoose';
 import Role from '../../constants/role';
@@ -16,6 +17,7 @@ interface User {
   email: string;
   emailConfirmationToken: string;
   emailConfirmed: boolean;
+  emailDigest: EmailDigestSettingType;
   hideStatus?: boolean;
   ip_addresses_used: string[];
   lastGame?: GameId;
