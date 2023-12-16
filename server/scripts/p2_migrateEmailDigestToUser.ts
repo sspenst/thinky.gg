@@ -1,45 +1,61 @@
-// run with
 // ts-node -r tsconfig-paths/register --files server/scripts/p2_migrateEmailDigestToUser.ts
-// import dotenv
 import { UserConfigModel, UserModel } from '@root/models/mongoose';
-import cliProgress from 'cli-progress';
 import dotenv from 'dotenv';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 
 dotenv.config();
 
-const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
-
 async function migrate() {
-  // get all collections
+  console.log('Starting the database connection...');
   await dbConnect();
+  console.log('Database connected.');
 
-  const allUserConfigs = await UserConfigModel.find({
-  }, { 'emailDigest': 1, 'userId': 1, 'disallowedEmailNotifications': 1, 'disallowedPushNotifications': 1 }).lean();
+  console.log('Starting the aggregation pipeline...');
+  const s = Date.now();
 
-  progressBar.start(allUserConfigs.length, 0);
+  await UserConfigModel.aggregate([
+    {
+      $match: {} // Match all documents or apply any filters if necessary
+    },
+    {
+      $lookup: {
+        from: UserModel.collection.name, // The collection name of UserModel in MongoDB
+        localField: 'userId',
+        foreignField: '_id',
+        as: 'user'
+      }
+    },
+    {
+      $unwind: '$user'
+    },
+    {
+      $match: { 'user.emailDigest': { $exists: false } } // Only match users where emailDigest doesn't exist
+    },
+    {
+      $project: {
+        _id: '$user._id',
+        emailDigest: '$emailDigest',
+        disallowedEmailNotifications: '$disallowedEmailNotifications',
+        disallowedPushNotifications: '$disallowedPushNotifications'
+      }
+    },
+    {
+      $merge: {
+        into: UserModel.collection.name, // The collection name of UserModel in MongoDB
+        whenMatched: 'merge'
+      }
+    }
+  ]);
+  const timeTaken = Date.now() - s;
+  const timeTakenSeconds = (timeTaken / 1000).toFixed(2);
 
-  // loop through all userConfigs and update UserModel.emailConfirmed to equal it
-  for (let i = 0; i < allUserConfigs.length; i++) {
-    const userConfig = allUserConfigs[i];
+  console.log('Aggregation pipeline completed in ' + timeTakenSeconds + ' seconds.');
 
-    await UserModel.updateOne({ _id: userConfig.userId,
-    // where emailConfirmed doesn't exist
-      emailDigest: { $exists: false }
-    }, {
-      emailDigest: userConfig.emailDigest,
-      disallowedEmailNotifications: userConfig.disallowedEmailNotifications,
-      disallowedPushNotifications: userConfig.disallowedPushNotifications,
-    });
-    progressBar.update(i);
-  }
-
-  progressBar.update(allUserConfigs.length);
-  progressBar.stop();
-
+  console.log('Closing the database connection...');
   await dbDisconnect();
+  console.log('Database disconnected.');
 
-  console.log('Done!');
+  console.log('Migration completed successfully.');
 }
 
 migrate();
