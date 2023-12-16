@@ -28,7 +28,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 /* istanbul ignore next */
 export default function Chapter1Page({ enrichedCollections, reqUser, solvedLevels, totalLevels }: CampaignProps) {
   return (
-    <Page folders={[new LinkInfo('Chapter Select', '/play')]} title={'Chapter 1'}>
+    <Page folders={[new LinkInfo('Play', '/play')]} title={'Chapter 1'}>
       <FormattedCampaign
         enrichedCollections={enrichedCollections}
         levelHrefQuery={'chapter=1'}

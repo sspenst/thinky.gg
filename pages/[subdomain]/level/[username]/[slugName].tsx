@@ -258,7 +258,7 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
 
   if (chapter) {
     folders.push(
-      new LinkInfo('Chapter Select', '/play'),
+      new LinkInfo('Play', '/play'),
       new LinkInfo(`Chapter ${chapter}`, `/chapter${chapter}`),
     );
 
