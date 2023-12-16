@@ -36,7 +36,6 @@ const StripeEventSchema = new mongoose.Schema<StripeEvent>({
   timestamps: true
 });
 
-// add indices
 StripeEventSchema.index({ stripeId: 1 });
 StripeEventSchema.index({ type: 1 });
 StripeEventSchema.index({ created: 1 });

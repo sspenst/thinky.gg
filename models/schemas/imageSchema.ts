@@ -10,7 +10,6 @@ const ImageSchema = new mongoose.Schema<Image>(
     documentId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      unique: true,
     },
     image: {
       type: Buffer,
