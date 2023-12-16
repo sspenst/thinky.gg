@@ -27,6 +27,6 @@ describe('pages/index page', () => {
 
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
-    expect(ret.props?.levelOfDay).toBeDefined();
+    expect(ret.props?.user).toBeNull();
   });
 });

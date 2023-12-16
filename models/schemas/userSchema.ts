@@ -1,3 +1,4 @@
+import { EmailDigestSettingType as EmailDigestSettingType } from '@root/constants/emailDigest';
 import { GameId } from '@root/constants/GameId';
 import bcrypt from 'bcryptjs';
 import mongoose, { Types } from 'mongoose';
@@ -59,6 +60,12 @@ const UserSchema = new mongoose.Schema<User>({
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
       }
     }
+  },
+  emailDigest: {
+    type: String,
+    required: true,
+    enum: EmailDigestSettingType,
+    default: EmailDigestSettingType.DAILY,
   },
   emailConfirmationToken: {
     type: String,

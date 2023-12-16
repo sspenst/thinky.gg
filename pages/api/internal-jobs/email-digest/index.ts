@@ -8,13 +8,14 @@ import Role from '@root/constants/role';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import UserConfig from '@root/models/db/userConfig';
 import { convert } from 'html-to-text';
 import { Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import nodemailer from 'nodemailer';
 import SESTransport from 'nodemailer/lib/ses-transport';
 import SMTPPool from 'nodemailer/lib/smtp-pool';
-import { EmailDigestSettingTypes, EmailType } from '../../../../constants/emailDigest';
+import { EmailDigestSettingType, EmailType } from '../../../../constants/emailDigest';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
 import getEmailBody from '../../../../helpers/getEmailBody';
 import { logger } from '../../../../helpers/logger';
@@ -89,139 +90,148 @@ export async function sendMail(gameId: GameId, batchId: Types.ObjectId, type: Em
   return err;
 }
 
+interface UserConfigWithNotificationsCount extends UserConfig {
+  notificationsCount: number;
+  lastSentEmailLog: {
+    createdAt: Date;
+  };
+}
+
 export async function sendEmailDigests(gameId: GameId, batchId: Types.ObjectId, totalEmailedSoFar: string[], limit: number) {
   const game = Games[gameId];
-  const userConfigsAggQ = UserConfigModel.aggregate([{
-    $match: {
-      emailDigest: {
-        $in: [EmailDigestSettingTypes.DAILY],
-      },
-      gameId: gameId,
-    },
-  }, {
-    $lookup: {
-      from: UserModel.collection.name,
-      localField: 'userId',
-      foreignField: '_id',
-      as: 'userId',
-      pipeline: [
-        {
-          $project: {
-            email: 1,
-            name: 1,
-            _id: 1,
-            roles: 1,
+  const userConfigsAggQ = UserConfigModel.aggregate<UserConfigWithNotificationsCount>([
+    {
+      $lookup: {
+        from: UserModel.collection.name,
+        localField: 'userId',
+        foreignField: '_id',
+        as: 'userId',
+        pipeline: [
+          {
+            $match: {
+              emailDigest: {
+                $in: [EmailDigestSettingType.DAILY],
+              },
+            },
+          }, {
+            $project: {
+              email: 1,
+              emailDigest: 1,
+              name: 1,
+              _id: 1,
+              roles: 1,
+            }
           }
-        }
-      ]
-    },
-  }, {
-    $unwind: '$userId',
-  }, {
-    $project: {
-      userId: {
-        _id: 1,
-        email: 1,
-        name: 1,
-        roles: 1,
+        ]
       },
-      emailDigest: 1,
-    },
-  },
-  {
-    $match: {
-      'userId.roles': {
-        $ne: Role.GUEST,
+    }, {
+      $unwind: '$userId',
+    }, {
+      $project: {
+        userId: {
+          _id: 1,
+          email: 1,
+          name: 1,
+          roles: 1,
+          emailDigest: 1,
+        },
+
       },
     },
-  },
-  // join notifications and count how many are unread, createdAt { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }, and userId is the same as the user
-  {
-    $lookup: {
-      from: NotificationModel.collection.name,
-      let: { userId: '$userId._id' },
-      pipeline: [
-        {
-          $match: {
-            $expr: {
-              $and: [
-                { $eq: ['$userId', '$$userId'] },
-                { $eq: ['$read', false] },
-                { $gte: ['$createdAt', new Date(Date.now() - 24 * 60 * 60 * 1000)] },
-              ],
+    {
+      $match: {
+        'userId.roles': {
+          $ne: Role.GUEST,
+        },
+      },
+    },
+    // join notifications and count how many are unread, createdAt { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }, and userId is the same as the user
+    {
+      $lookup: {
+        from: NotificationModel.collection.name,
+        let: { userId: '$userId._id' },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$userId', '$$userId'] },
+                  { $eq: ['$read', false] },
+                  { $gte: ['$createdAt', new Date(Date.now() - 24 * 60 * 60 * 1000)] },
+                ],
+              },
             },
           },
-        },
-        {
-          $group: {
-            _id: null,
-            count: { $sum: 1 },
-          },
-        },
-        {
-          $project: {
-            _id: 0,
-            notificationCount: '$count',
-          },
-        },
-      ],
-      as: 'notificationsCount',
-    },
-  },
-  {
-    $unwind: {
-      path: '$notificationsCount',
-      preserveNullAndEmptyArrays: true,
-    },
-  },
-  {
-    $set: {
-      notificationsCount: {
-        $ifNull: ['$notificationsCount.notificationCount', 0],
-      },
-    }
-  },
-  // join email logs and get the last one
-  {
-    $lookup: {
-      from: EmailLogModel.collection.name,
-      let: { userId: '$userId._id' },
-      pipeline: [
-        {
-          $match: {
-            $expr: {
-              $and: [
-                { $eq: ['$userId', '$$userId'] },
-                { $eq: ['$type', EmailType.EMAIL_DIGEST] },
-                { $ne: ['$state', EmailState.FAILED] },
-              ],
+          {
+            $group: {
+              _id: null,
+              count: { $sum: 1 },
             },
           },
+          {
+            $project: {
+              _id: 0,
+              notificationCount: '$count',
+            },
+          },
+        ],
+        as: 'notificationsCount',
+      },
+    },
+    {
+      $unwind: {
+        path: '$notificationsCount',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $set: {
+        notificationsCount: {
+          $ifNull: ['$notificationsCount.notificationCount', 0],
         },
-        { $sort: { createdAt: -1 } },
-        { $limit: 1 },
-      ],
-      as: 'lastSentEmailLog',
+      }
     },
-  },
-  {
-    $unwind: {
-      path: '$lastSentEmailLog',
-      preserveNullAndEmptyArrays: true,
+    // join email logs and get the last one
+    {
+      $lookup: {
+        from: EmailLogModel.collection.name,
+        let: { userId: '$userId._id' },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$userId', '$$userId'] },
+                  { $eq: ['$type', EmailType.EMAIL_DIGEST] },
+                  { $ne: ['$state', EmailState.FAILED] },
+                ],
+              },
+            },
+          },
+          { $sort: { createdAt: -1 } },
+          { $limit: 1 },
+        ],
+        as: 'lastSentEmailLog',
+      },
     },
-  },
-  // filter out userConfig.emailDigest === EmailDigestSettingTypes.ONLY_NOTIFICATIONS && notificationsCount === 0
-  {
-    $match: {
-      $or: [
-        {
-          $and: [
-            { 'emailDigest': EmailDigestSettingTypes.DAILY },
-          ],
-        },
-      ],
+    {
+      $unwind: {
+        path: '$lastSentEmailLog',
+        preserveNullAndEmptyArrays: true,
+      },
     },
-  },
+    // filter out userConfig.emailDigest === EmailDigestSettingTypes.ONLY_NOTIFICATIONS && notificationsCount === 0
+    /* {
+      $match: {
+        $or: [
+          {
+            $and: [
+              { 'emailDigest': EmailDigestSettingType.DAILY },
+            ],
+          },
+        ],
+      },
+    },*/
   ]);
 
   const [levelOfDay, userConfigs] = await Promise.all([
@@ -256,7 +266,7 @@ export async function sendEmailDigests(gameId: GameId, batchId: Types.ObjectId, 
 
     const todaysDatePretty = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     /* istanbul ignore next */
-    const subject = userConfig.emailDigest === EmailDigestSettingTypes.DAILY ?
+    const subject = (userConfig.userId as User).emailDigest === EmailDigestSettingType.DAILY ?
       `Level of the Day - ${todaysDatePretty}` :
       `You have ${notificationsCount} new notification${notificationsCount !== 1 ? 's' : ''}`;
 
@@ -314,17 +324,14 @@ export async function sendAutoUnsubscribeUsers(gameId: GameId, batchId: Types.Ob
           _id: { $in: usersThatHaveBeenSentReactivationEmailIn3dAgoOrMore },
           email: { $ne: null },
           emailConfirmed: { $ne: true }, // don't unsubscribe users with verified emails
+          emailDigest: { $ne: EmailDigestSettingType.NONE }, // don't unsubscribe users that have already unsubscribed
           // checking if they have been not been active in past 10 days
           last_visited_at: { $lte: (Date.now() / 1000) - (10 * 24 * 60 * 60 ) }, // TODO need to refactor last_visited_at to be a DATE object instead of seconds
           roles: { $ne: Role.GUEST },
         },
       },
       ...getEnrichUserConfigPipelineStage(gameId, { project: { 'emailDigest': 1 } }),
-      {
-        $match: {
-          'config.emailDigest': { $ne: EmailDigestSettingTypes.NONE },
-        },
-      },
+
       {
         $project: {
           _id: 1,
@@ -362,7 +369,7 @@ export async function sendAutoUnsubscribeUsers(gameId: GameId, batchId: Types.Ob
     const sentError = await sendMail(gameId, batchId, EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE, user, subject, body);
 
     if (!sentError) {
-      await UserConfigModel.updateOne({ userId: user._id, gameId: gameId }, { emailDigest: EmailDigestSettingTypes.NONE });
+      await UserModel.updateOne({ _id: user._id }, { emailDigest: EmailDigestSettingType.NONE });
       sentList.push(user.email);
     } else {
       failedList.push(user.email);
@@ -407,7 +414,7 @@ export async function sendEmailReactivation(gameId: GameId, batchId: Types.Objec
       ...getEnrichUserConfigPipelineStage(gameId, { project: { 'emailDigest': 1 } }),
       {
         $match: {
-          'config.emailDigest': { $ne: EmailDigestSettingTypes.NONE },
+          'config.emailDigest': { $ne: EmailDigestSettingType.NONE },
         },
       },
       {

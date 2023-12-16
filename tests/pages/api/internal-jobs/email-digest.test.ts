@@ -3,7 +3,7 @@ import { NextApiRequestWrapper } from '@root/helpers/apiWrapper';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
-import { EmailDigestSettingTypes, EmailType } from '../../../../constants/emailDigest';
+import { EmailDigestSettingType, EmailType } from '../../../../constants/emailDigest';
 import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
 import { createNewRecordOnALevelYouSolvedNotifications } from '../../../../helpers/notificationHelper';
@@ -100,8 +100,6 @@ describe('Email digest', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.emailDigestFailed).toHaveLength(1);
-
         expect(res.status).toBe(200);
 
         const emailLogs = await EmailLogModel.find({}, {}, { sort: { createdAt: -1 } });
@@ -109,6 +107,7 @@ describe('Email digest', () => {
         expect(emailLogs).toHaveLength(1);
         expect(emailLogs[0].state).toBe(EmailState.FAILED);
         expect(emailLogs[0].error).toBe('Error: Mock email error');
+        expect(response.emailDigestFailed).toHaveLength(1);
       },
     });
   }, 10000);
@@ -144,7 +143,6 @@ describe('Email digest', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.emailDigestFailed).toHaveLength(3);
         expect(response.emailDigestFailed.sort()).toMatchObject(['bbb@gmail.com', 'test@gmail.com', 'the_curator@gmail.com'].sort());
         expect(res.status).toBe(200);
 
@@ -158,7 +156,7 @@ describe('Email digest', () => {
   }, 10000);
   test('User set email setting to never', async () => {
     // setup
-    await UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.NONE }, {});
+    await UserModel.findOneAndUpdate({ _id: TestId.USER }, { emailDigest: EmailDigestSettingType.NONE }, {});
     sendMailRefMock.ref = acceptMock;
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
@@ -193,8 +191,9 @@ describe('Email digest', () => {
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        expect(response.emailDigestSent).toHaveLength(2);
+
         expect(response.emailDigestSent.sort()).toMatchObject(['bbb@gmail.com', 'the_curator@gmail.com'].sort());
+        expect(response.emailDigestSent).toHaveLength(2);
         expect(response.emailDigestFailed).toHaveLength(0);
         expect(response.emailReactivationSent).toHaveLength(0);
         expect(response.emailReactivationFailed).toHaveLength(0);
@@ -203,7 +202,7 @@ describe('Email digest', () => {
   }, 10000);
   test('Run it once OK', async () => {
     // setup
-    await UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.DAILY }, {});
+    await UserModel.findOneAndUpdate({ _id: TestId.USER }, { emailDigest: EmailDigestSettingType.DAILY }, {});
     sendMailRefMock.ref = acceptMock;
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
@@ -246,7 +245,7 @@ describe('Email digest', () => {
   }, 10000);
   test('Run it again for another user who set settings to daily but has no notificaitons', async () => {
     // setup
-    await Promise.all([UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.DAILY }, {}),
+    await Promise.all([UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingType.DAILY }, {}),
       EmailLogModel.deleteMany({}),
       NotificationModel.deleteMany({})
     ]);

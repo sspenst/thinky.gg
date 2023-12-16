@@ -4,7 +4,7 @@ import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
-import { EmailDigestSettingTypes } from '../../../../constants/emailDigest';
+import { EmailDigestSettingType } from '../../../../constants/emailDigest';
 import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
@@ -59,8 +59,7 @@ describe('Email auto unsubscribe', () => {
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
     await Promise.all([
-      UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.DAILY }, {}),
-      UserModel.findOneAndUpdate({ _id: TestId.USER }, { emailConfirmed: false }).lean()
+      UserModel.findOneAndUpdate({ _id: TestId.USER }, { emailConfirmed: false, emailDigest: EmailDigestSettingType.DAILY }).lean()
     ]);
 
     for (let day = 0; day < 12; day++) {

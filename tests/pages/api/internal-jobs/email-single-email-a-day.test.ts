@@ -4,13 +4,13 @@ import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
-import { EmailDigestSettingTypes } from '../../../../constants/emailDigest';
+import { EmailDigestSettingType } from '../../../../constants/emailDigest';
 import TestId from '../../../../constants/testId';
 import { TimerUtil } from '../../../../helpers/getTs';
 import { logger } from '../../../../helpers/logger';
 import { createNewRecordOnALevelYouSolvedNotifications } from '../../../../helpers/notificationHelper';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
-import { EmailLogModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
+import { EmailLogModel, UserModel } from '../../../../models/mongoose';
 import { EmailState } from '../../../../models/schemas/emailLogSchema';
 import handler from '../../../../pages/api/internal-jobs/email-digest';
 
@@ -59,8 +59,7 @@ describe('Email per day', () => {
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
     await Promise.all([
-      UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.DAILY }, {}),
-      UserModel.findByIdAndUpdate(TestId.USER, { emailConfirmed: false })
+      UserModel.findByIdAndUpdate(TestId.USER, { emailConfirmed: false, emailDigest: EmailDigestSettingType.DAILY })
     ]);
 
     for (let day = 0; day < 21; day++) {
