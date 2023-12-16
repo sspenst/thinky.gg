@@ -98,6 +98,8 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
   const [protocol, setProtocol] = useState<string>();
   const router = useRouter();
   const [selectedGame, setSelectedGame] = useState<Game>(initGame);
+  // if the non-menu nav is visible
+  const [showNav, setShowNav] = useState(true);
   const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);
   const [sounds, setSounds] = useState<{ [key: string]: HTMLAudioElement }>({});
   const [tempCollection, setTempCollection] = useState<Collection>();
@@ -453,8 +455,10 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
           protocol: protocol,
           setNotifications: setNotifications,
           setShouldAttemptAuth: setShouldAttemptAuth,
+          setShowNav: setShowNav,
           setTempCollection: setTempCollection,
           shouldAttemptAuth: shouldAttemptAuth,
+          showNav: showNav,
           sounds: sounds,
           tempCollection,
           user: user,

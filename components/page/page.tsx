@@ -1,6 +1,8 @@
 import Nav from '@root/components/nav';
+import { AppContext } from '@root/contexts/appContext';
+import { ScreenSize } from '@root/hooks/useDeviceCheck';
 import classNames from 'classnames';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { PageContext } from '../../contexts/pageContext';
 import LinkInfo from '../formatted/linkInfo';
@@ -30,8 +32,12 @@ export default function Page({
   title,
   titleHref,
 }: PageProps) {
+  const { deviceInfo, showNav } = useContext(AppContext);
   const [preventKeyDownEvent, setPreventKeyDownEvent] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
+
+  const isNavDropdown = deviceInfo.screenSize < ScreenSize.XL || isFullScreen;
+  const isNavOnPage = !isNavDropdown && showNav;
 
   useEffect(() => {
     if (isFullScreen) {
@@ -48,8 +54,8 @@ export default function Page({
   return (
     <PageContext.Provider value={{
       preventKeyDownEvent: preventKeyDownEvent,
-      setShowHeader: setShowHeader,
       setPreventKeyDownEvent: setPreventKeyDownEvent,
+      setShowHeader: setShowHeader,
       showHeader: showHeader,
     }}>
       <div
@@ -59,6 +65,7 @@ export default function Page({
         {showHeader &&
           <Header
             folders={folders}
+            isFullScreen={isFullScreen}
             subtitle={subtitle ? new LinkInfo(subtitle, subtitleHref) : undefined}
             title={title ? new LinkInfo(title, titleHref) : undefined}
           />
@@ -67,11 +74,14 @@ export default function Page({
           height: showHeader ? `calc(100% - ${Dimensions.MenuHeight}px)` : '100%',
           marginTop: showHeader ? Dimensions.MenuHeight : 0,
         }}>
-          {!isFullScreen && <Nav />}
-          <div className={classNames('flex flex-col', { 'ml-60': !isFullScreen })} style={{
-            maxWidth: isFullScreen ? '100%' : 'calc(100% - 240px)',
-            width: isFullScreen ? '100%' : 'calc(100% - 240px)',
-          }}>
+          {isNavOnPage && <Nav />}
+          <div
+            className={classNames('flex flex-col', { 'ml-60': isNavOnPage })}
+            style={{
+              maxWidth: !isNavOnPage ? '100%' : 'calc(100% - 240px)',
+              width: !isNavOnPage ? '100%' : 'calc(100% - 240px)',
+            }}
+          >
             <main className='grow z-10 h-full'>
               {children}
             </main>

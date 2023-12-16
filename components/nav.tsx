@@ -36,7 +36,7 @@ function NavGameMenuItem({ game }: NavGameMenuItemProps) {
           'flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-5',
           isCurrentGame ? 'bg-2 hover-bg-4' : 'bg-1 hover-bg-3',
         )}>
-          <GameLogo gameId={game.id} id={game.id} />
+          <GameLogo gameId={game.id} id={game.id} size={20} />
           <span>{game.displayName}</span>
         </div>
       </a>
@@ -53,8 +53,8 @@ function NavGameMenu() {
       <Menu>
         <Menu.Button className='w-full'>
           <div className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 justify-between hover-bg-3'>
-            <div className='flex gap-5'>
-              <GameLogo gameId={currentGame.id} id={currentGame.id} />
+            <div className='flex items-center gap-5'>
+              <GameLogo gameId={currentGame.id} id={currentGame.id} size={20} />
               <span>{currentGame.displayName}</span>
             </div>
             <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
@@ -115,7 +115,11 @@ function NavLink({ hidden, href, icon, label, onClick }: NavLinkProps) {
   );
 }
 
-export default function Nav() {
+interface NavProps {
+  isDropdown?: boolean;
+}
+
+export default function Nav({ isDropdown }: NavProps) {
   const { game, multiplayerSocket, playLater, user, userLoading } = useContext(AppContext);
   const isLoggedIn = !userLoading && user;
   const { connectedPlayersCount, matches, socket } = multiplayerSocket;
@@ -292,17 +296,23 @@ export default function Nav() {
   />;
 
   return (
-    <nav className='fixed w-60 border-color-4 bg-1 p-2 flex flex-col gap-1 overflow-y-auto' style={{
-      height: 'calc(100% - 48px)',
-    }}>
-      <NavGameMenu />
-      <NavDivider />
+    <nav
+      className={classNames(
+        'w-60 border-color-4 bg-1 flex flex-col gap-1 overflow-y-auto',
+        isDropdown ? 'p-1' : 'fixed p-2',
+      )}
+      style={{
+        height: 'calc(100% - 48px)',
+      }}
+    >
       {homeNavLink}
       {isLoggedIn && <>
         {playNavLink}
         {rankedNavLink}
         {multiplayerNavLink}
       </>}
+      <NavDivider />
+      <NavGameMenu />
       <NavDivider />
       {isLoggedIn && <>
         {profileNavLink}

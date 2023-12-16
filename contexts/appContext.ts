@@ -22,8 +22,10 @@ interface AppContextInterface {
   protocol: string | undefined;
   setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>;
   setShouldAttemptAuth: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowNav: React.Dispatch<React.SetStateAction<boolean>>;
   setTempCollection: React.Dispatch<React.SetStateAction<Collection | undefined>>;
   shouldAttemptAuth: boolean;
+  showNav: boolean;
   sounds: { [key: string]: HTMLAudioElement };
   tempCollection?: Collection;
   user?: ReqUser;
@@ -42,7 +44,7 @@ export const AppContext = createContext<AppContextInterface>({
     isMac: false,
     screenSize: ScreenSize.SM,
   },
-  forceUpdate: () => { return; },
+  forceUpdate: () => {},
   game: Games[DEFAULT_GAME_ID],
   host: undefined,
   multiplayerSocket: {
@@ -52,15 +54,17 @@ export const AppContext = createContext<AppContextInterface>({
     privateAndInvitedMatches: [],
     socket: undefined,
   },
-  mutatePlayLater: () => { return; },
+  mutatePlayLater: () => {},
   mutateUser: {} as KeyedMutator<ReqUser>,
   notifications: [],
   playLater: undefined,
   protocol: undefined,
-  setNotifications: () => { return; },
-  setShouldAttemptAuth: () => { return; },
-  setTempCollection: () => { return; },
+  setNotifications: () => {},
+  setShouldAttemptAuth: () => {},
+  setShowNav: () => {},
+  setTempCollection: () => {},
   shouldAttemptAuth: true,
+  showNav: true,
   sounds: {},
   tempCollection: undefined,
   userLoading: true,

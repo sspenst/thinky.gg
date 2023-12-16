@@ -36,7 +36,7 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
   const chapterUnlocked = reqUser.config?.chapterUnlocked ?? 1;
 
   return (
-    <Page title={'Chapter Select'}>
+    <Page title={'Play'}>
       <div className='flex flex-col items-center gap-8 p-4'>
         <div className='font-bold text-3xl text-center' id='title'>
           {game.displayName} Official Campaign

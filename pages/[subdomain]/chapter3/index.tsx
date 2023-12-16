@@ -86,7 +86,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 /* istanbul ignore next */
 export default function Chapter3Page({ enrichedCollections, solvedLevels, totalLevels }: CampaignProps) {
   return (
-    <Page folders={[new LinkInfo('Chapter Select', '/play')]} title={'Chapter 3'}>
+    <Page folders={[new LinkInfo('Play', '/play')]} title={'Chapter 3'}>
       <FormattedCampaign
         enrichedCollections={enrichedCollections}
         hideUnlockRequirements={true}
