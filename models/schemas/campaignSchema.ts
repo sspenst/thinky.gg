@@ -39,6 +39,6 @@ const CampaignSchema = new mongoose.Schema<Campaign>({
   },
 });
 
-CampaignSchema.index({ slug: 1, gameId: 1 }, { name: 'slug_index', unique: true });
+CampaignSchema.index({ slug: 1, gameId: 1 }, { unique: true });
 
 export default CampaignSchema;
