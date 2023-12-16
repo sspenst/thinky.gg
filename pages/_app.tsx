@@ -95,7 +95,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
   });
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [playLater, setPlayLater] = useState<{ [key: string]: boolean }>();
-  const [protocol, setProtocol] = useState<string>();
+  const [protocol, setProtocol] = useState<string>('https:');
   const router = useRouter();
   const [selectedGame, setSelectedGame] = useState<Game>(initGame);
   // if the non-menu nav is visible

@@ -1,18 +1,21 @@
 /* istanbul ignore file */
 
+import GameLogoAndLabel from '@root/components/gameLogoAndLabel';
 import { GameId } from '@root/constants/GameId';
 import { Games } from '@root/constants/Games';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { EnrichedLevel } from '../models/db/level';
 import User from '../models/db/user';
+import { getGameFromId } from './getGameIdFromReq';
 
 // good place to test the output:
 // https://htmlemail.io/inline/
 
 interface EmailBodyProps {
   gameId: GameId
-  levelOfDay?: EnrichedLevel | null;
+  featuredLevelsLabel?: string;
+  featuredLevels?: EnrichedLevel[];
   linkHref?: string;
   linkText?: string;
   message?: string;
@@ -23,7 +26,8 @@ interface EmailBodyProps {
 
 export default function getEmailBody({
   gameId,
-  levelOfDay,
+  featuredLevelsLabel,
+  featuredLevels,
   linkHref,
   linkText,
   message,
@@ -94,38 +98,40 @@ export default function getEmailBody({
                           {linkText}
                         </a>
                       }
-                      {levelOfDay &&
+                      {featuredLevels &&
                         <div>
-                          <h2>Check out the level of the day:</h2>
-                          <div style={{
-                            textAlign: 'center',
-                          }}>
-                            <a href={`https://${game.baseUrl}/level/${levelOfDay.slug}`} style={{
-                              color: '#4890ce',
-                              textDecoration: 'none',
+                          <h2>{featuredLevelsLabel}</h2>
+                          {featuredLevels.filter(level => level).map((level) => (
+                            <div key={level._id.toString()} style={{
+                              textAlign: 'center',
                             }}>
-                              {levelOfDay.name}
-                            </a>
-                            {' by '}
-                            <a href={`https://${game.baseUrl}/profile/${encodeURI(levelOfDay.userId.name)}`} style={{
-                              color: '#4890ce',
-                              textDecoration: 'none',
-                            }}>
-                              {levelOfDay.userId.name}
-                            </a>
-                            <div style={{
-                              padding: 20,
-                            }}>
-                              <a href={`https://${game.baseUrl}/level/${levelOfDay.slug}`} style={{
+                              <GameLogoAndLabel id={level._id.toString()} gameId={level.gameId} /> {getGameFromId(level.gameId).displayName} {level.userId.name}
+                              <a href={`https://${getGameFromId(level.gameId).baseUrl}/level/${level.slug}`} style={{
                                 color: '#4890ce',
                                 textDecoration: 'none',
                               }}>
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={`https://${game.baseUrl}/api/level/image/${levelOfDay._id}.png`} width='100%' alt={levelOfDay.name} />
+                                {level.name}
                               </a>
+                              {' by '}
+                              <a href={`https://${getGameFromId(level.gameId).baseUrl}/profile/${encodeURI(level.userId.name)}`} style={{
+                                color: '#4890ce',
+                                textDecoration: 'none',
+                              }} />
+                              <div style={{
+                                padding: 20,
+                              }}>
+                                <a href={`https://${getGameFromId(level.gameId).baseUrl}/level/${level.slug}`} style={{
+                                  color: '#4890ce',
+                                  textDecoration: 'none',
+                                }}>
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                                  <img src={`https://${getGameFromId(level.gameId).baseUrl}/api/level/image/${level._id}.png`} width='100%' alt={level.name} />
+                                </a>
+                              </div>
                             </div>
-                          </div>
+                          ))}
                         </div>
+
                       }
                       <p>
                         Thanks for playing <a href={`https://${game.baseUrl}`} style={{
