@@ -1,5 +1,5 @@
 // run with
-// ts-node -r tsconfig-paths/register --files server/scripts/migrateEmailDigestToUser.ts
+// ts-node -r tsconfig-paths/register --files server/scripts/p2_migrateEmailDigestToUser.ts
 // import dotenv
 import { UserConfigModel, UserModel } from '@root/models/mongoose';
 import cliProgress from 'cli-progress';
