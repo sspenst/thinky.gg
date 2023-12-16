@@ -14,6 +14,8 @@ interface User {
   //calc_levels_created_count: number;
  // calc_records: number;
  // chapterUnlocked?: number; // chapter unlocked in the campaign
+  disallowedEmailNotifications: NotificationType[];
+  disallowedPushNotifications: NotificationType[];
   email: string;
   emailConfirmationToken: string;
   emailConfirmed: boolean;

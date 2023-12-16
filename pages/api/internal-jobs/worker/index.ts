@@ -1,7 +1,9 @@
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import { GameId } from '@root/constants/GameId';
 import { getEnrichNotificationPipelineStages } from '@root/helpers/getEnrichNotificationPipelineStages';
+import isGuest from '@root/helpers/isGuest';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
+import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
 import mongoose, { ClientSession, QueryOptions, Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
@@ -173,6 +175,9 @@ async function processQueueMessage(queueMessage: QueueMessage) {
                 $project: {
                   ...USER_DEFAULT_PROJECTION,
                   email: 1,
+                  emailConfirmed: 1,
+                  disallowedEmailNotifications: 1,
+                  disallowedPushNotifications: 1,
                 }
               }
             ]
@@ -196,11 +201,14 @@ async function processQueueMessage(queueMessage: QueueMessage) {
         if (userConfig === null) {
           log = `Notification ${notificationId} not sent: user config not found`;
           error = true;
+        } else if (isGuest(notification.userId as User)) {
+          log = `Notification ${notificationId} not sent: user is guest`;
+          error = true;
         } else {
           const whereSend = queueMessage.type === QueueMessageType.PUSH_NOTIFICATION ? sendPushNotification : sendEmailNotification;
 
-          const disallowedEmail = userConfig.disallowedEmailNotifications.includes(notification.type);
-          const disallowedPush = userConfig.disallowedPushNotifications.includes(notification.type);
+          const disallowedEmail = (notification.userId as User).disallowedEmailNotifications.includes(notification.type);
+          const disallowedPush = (notification.userId as User).disallowedPushNotifications.includes(notification.type);
 
           if (whereSend === sendEmailNotification && disallowedEmail) {
             log = `Notification ${notificationId} not sent: ${notification.type} not allowed by user (email)`;

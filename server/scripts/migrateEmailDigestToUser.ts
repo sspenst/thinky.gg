@@ -15,7 +15,7 @@ async function migrate() {
   await dbConnect();
 
   const allUserConfigs = await UserConfigModel.find({
-  }, { 'emailDigest': 1, 'userId': 1 }).lean();
+  }, { 'emailDigest': 1, 'userId': 1, 'disallowedEmailNotifications': 1, 'disallowedPushNotifications': 1 }).lean();
 
   progressBar.start(allUserConfigs.length, 0);
 
@@ -28,6 +28,8 @@ async function migrate() {
       emailDigest: { $exists: false }
     }, {
       emailDigest: userConfig.emailDigest,
+      disallowedEmailNotifications: userConfig.disallowedEmailNotifications,
+      disallowedPushNotifications: userConfig.disallowedPushNotifications,
     });
     progressBar.update(i);
   }

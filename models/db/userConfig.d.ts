@@ -1,7 +1,5 @@
 import { GameId } from '@root/constants/GameId';
-import NotificationType from '@root/constants/notificationType';
 import Role from '@root/constants/role';
-import TourType from '@root/hooks/useTour';
 import { Types } from 'mongoose';
 import User from './user';
 
@@ -12,9 +10,6 @@ interface UserConfig {
   calcRecordsCount: number;
   chapterUnlocked: number;
   calcLevelsSolvedCount: number;
-  disallowedEmailNotifications: NotificationType[];
-  disallowedPushNotifications: NotificationType[];
-  //emailDigest: EmailDigestSettingType;
   gameId: GameId;
   giftSubscriptions: string[]; // gift subscriptions this user has given out
   mobileDeviceTokens: string[];

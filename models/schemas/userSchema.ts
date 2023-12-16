@@ -1,5 +1,6 @@
-import { EmailDigestSettingType as EmailDigestSettingType } from '@root/constants/emailDigest';
+import { EmailDigestSettingType } from '@root/constants/emailDigest';
 import { GameId } from '@root/constants/GameId';
+import NotificationType from '@root/constants/notificationType';
 import bcrypt from 'bcryptjs';
 import mongoose, { Types } from 'mongoose';
 import Role from '../../constants/role';
@@ -29,25 +30,16 @@ const UserSchema = new mongoose.Schema<User>({
     maxlength: 256,
     select: false
   },
-  /*// TODO: Move ALL the calcs to userConfig
-  calcRankedSolves: {
-    type: Number,
+  disallowedEmailNotifications: {
+    type: [{ type: String, enum: NotificationType }],
     required: true,
-    default: 0,
+    default: [],
   },
-  calc_levels_created_count: {
-    type: Number,
-    default: 0,
+  disallowedPushNotifications: {
+    type: [{ type: String, enum: NotificationType }],
+    required: true,
+    default: [],
   },
-
-  calc_records: {
-    type: Number,
-    default: 0,
-  },
-  chapterUnlocked: {
-    type: Number,
-    default: 1,
-  },*/
   email: {
     type: String,
     required: true,

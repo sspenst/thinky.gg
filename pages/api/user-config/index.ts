@@ -10,21 +10,10 @@ import type { NextApiResponse } from 'next';
 import { ValidArray, ValidNumber, ValidType } from '../../../helpers/apiWrapper';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { UserConfigModel, UserModel } from '../../../models/mongoose';
-import emailDigest from '../internal-jobs/email-digest';
 
 export function getNewUserConfig(gameId: GameId, tutorialCompletedAt: number, userId: Types.ObjectId, params?: Partial<UserConfig>) {
-  const disallowedEmailNotifications = [
-    NotificationType.NEW_FOLLOWER,
-    NotificationType.NEW_LEVEL,
-    NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION,
-    NotificationType.NEW_REVIEW_ON_YOUR_LEVEL,
-    NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_SOLVED,
-  ];
-
   return {
     _id: new Types.ObjectId(),
-    disallowedEmailNotifications: disallowedEmailNotifications,
-    disallowedPushNotifications: [],
 
     gameId: gameId,
     theme: getGameFromId(gameId).defaultTheme,
@@ -106,15 +95,15 @@ export default withAuth({
     }
 
     if (disallowedEmailNotifications !== undefined) {
-      setObj['disallowedEmailNotifications'] = disallowedEmailNotifications;
+      setObjUser['disallowedEmailNotifications'] = disallowedEmailNotifications;
     }
 
     if (disallowedPushNotifications !== undefined) {
-      setObj['disallowedPushNotifications'] = disallowedPushNotifications;
+      setObjUser['disallowedPushNotifications'] = disallowedPushNotifications;
     }
 
     // check if setObj is blank
-    if (!deviceToken && Object.keys(setObj).length === 0) {
+    if (!deviceToken && (Object.keys(setObj).length === 0 && Object.keys(setObjUser).length === 0)) {
       return res.status(400).json({ error: 'Missing required parameters' });
     }
 
@@ -123,8 +112,8 @@ export default withAuth({
 
       try {
         await session.withTransaction(async () => {
-          const updateResult = await UserConfigModel.updateOne({ userId: req.userId, gameId: req.gameId }, { $set: setObj, $addToSet: { mobileDeviceTokens: deviceToken } }, { session: session });
-          const updateResultUser = await UserModel.updateOne({ _id: req.userId }, { $set: setObjUser }, { session: session });
+          await UserConfigModel.updateOne({ userId: req.userId, gameId: req.gameId }, { $set: setObj, $addToSet: { mobileDeviceTokens: deviceToken } }, { session: session });
+          await UserModel.updateOne({ _id: req.userId }, { $set: setObjUser }, { session: session });
         });
       } catch (err) {
         logger.error(err);
