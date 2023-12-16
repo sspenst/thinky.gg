@@ -82,10 +82,7 @@ export default function Dropdown() {
         leaveFrom='transform opacity-100 scale-100'
         leaveTo='transform opacity-0 scale-95'
       >
-        <Menu.Items className='fixed right-0 m-1 w-fit origin-top-right rounded-[10px] shadow-lg border overflow-y-auto' style={{
-          backgroundColor: 'var(--bg-color-2)',
-          borderColor: 'var(--bg-color-4)',
-          color: 'var(--color)',
+        <Menu.Items className='fixed right-0 m-1 w-fit origin-top-right rounded-[10px] shadow-lg border overflow-y-auto bg-1 border-color-3' style={{
           // NB: hardcoded value accounting for header + menu margin
           maxHeight: 'calc(100% - 56px)',
           top: Dimensions.MenuHeight,
