@@ -1,4 +1,3 @@
-import HomeLoggedOut from '@root/components/homepage/homeLoggedOut';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import React, { useEffect, useState } from 'react';
 import { useSWRConfig } from 'swr';
@@ -109,11 +108,11 @@ export default function Home({ user }: HomeProps) {
   }, [cache]);
 
   const chunks = [
-    [HomepageDataType.LastLevelPlayed],
+    user ? [HomepageDataType.LastLevelPlayed] : [],
     loadLatestLevels ? [HomepageDataType.LatestLevels] : [],
     loadLatestReviews ? [HomepageDataType.LatestReviews] : [],
     loadLevelOfDay ? [HomepageDataType.LevelOfDay] : [],
-    loadRecommendedLevel ? [HomepageDataType.RecommendedLevel] : [],
+    loadRecommendedLevel && user ? [HomepageDataType.RecommendedLevel] : [],
     loadTopLevelsThisMonth ? [HomepageDataType.TopLevelsThisMonth] : [],
   ];
 
@@ -126,34 +125,24 @@ export default function Home({ user }: HomeProps) {
     ...useHomePageData(chunks[5]).data,
   } as HomepageDataProps;
 
-  const lastLevelPlayed = dataMerge[HomepageDataType.LastLevelPlayed];
+  const lastLevelPlayed = user ? dataMerge[HomepageDataType.LastLevelPlayed] : null;
   const latestLevels = dataMerge[HomepageDataType.LatestLevels];
   const latestReviews = dataMerge[HomepageDataType.LatestReviews];
   const levelOfDay = dataMerge[HomepageDataType.LevelOfDay];
-  const recommendedLevel = dataMerge[HomepageDataType.RecommendedLevel];
+  const recommendedLevel = user ? dataMerge[HomepageDataType.RecommendedLevel] : null;
   const topLevelsThisMonth = dataMerge[HomepageDataType.TopLevelsThisMonth];
 
   return (
     <Page title='Home'>
-      {user ?
-        <HomeLoggedIn
-          lastLevelPlayed={lastLevelPlayed}
-          latestLevels={latestLevels}
-          latestReviews={latestReviews}
-          levelOfDay={levelOfDay}
-          recommendedLevel={recommendedLevel}
-          topLevelsThisMonth={topLevelsThisMonth}
-          user={user}
-        />
-        :
-        <HomeLoggedOut
-          latestLevels={latestLevels}
-          latestReviews={latestReviews}
-          levelOfDay={levelOfDay}
-          topLevelsThisMonth={topLevelsThisMonth}
-          user={user}
-        />
-      }
+      <HomeLoggedIn
+        lastLevelPlayed={lastLevelPlayed}
+        latestLevels={latestLevels}
+        latestReviews={latestReviews}
+        levelOfDay={levelOfDay}
+        recommendedLevel={recommendedLevel}
+        topLevelsThisMonth={topLevelsThisMonth}
+        user={user}
+      />
     </Page>
   );
 }

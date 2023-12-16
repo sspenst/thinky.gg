@@ -1,3 +1,4 @@
+import Dimensions from '@root/constants/dimensions';
 import StatFilter from '@root/constants/statFilter';
 import TourPath from '@root/constants/tourPath';
 import isFullAccount from '@root/helpers/isFullAccount';
@@ -15,6 +16,7 @@ import Card from '../cards/card';
 import ChapterSelectCard from '../cards/chapterSelectCard';
 import LevelSelect from '../cards/levelSelect';
 import LoadingCard from '../cards/loadingCard';
+import SelectCard from '../cards/selectCard';
 import FormattedReview from '../level/reviews/formattedReview';
 import LoadingSpinner from '../page/loadingSpinner';
 import RecommendedLevel from './recommendedLevel';
@@ -38,7 +40,7 @@ export default function HomeLoggedIn({
   topLevelsThisMonth,
   user,
 }: HomeLoggedInProps) {
-  const { game } = useContext(AppContext);
+  const { game, userConfig } = useContext(AppContext);
   const tour = useTour(TourPath.HOME);
 
   return (<>
@@ -54,6 +56,16 @@ export default function HomeLoggedIn({
     }
     <div className='flex flex-col items-center gap-6 m-6'>
       <div className='flex flex-wrap justify-center items-center gap-4 max-w-full'>
+        {!userConfig?.tutorialCompletedAt &&
+          <Card id='tutorial' title='Tutorial'>
+            <SelectCard option={{
+              height: Dimensions.OptionHeightLarge,
+              href: '/tutorial',
+              id: 'tutorial',
+              text: <span className='text-3xl font-bold'>Start</span>,
+            }} />
+          </Card>
+        }
         {!game.disableCampaign && user &&
           <Card id='campaign' title={game.displayName + ' Official Campaign'}>
             <div className='p-3'>
