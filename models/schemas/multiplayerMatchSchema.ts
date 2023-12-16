@@ -66,7 +66,6 @@ const MultiplayerMatchSchema = new mongoose.Schema<MultiplayerMatch>(
     matchId: {
       type: String,
       required: true,
-      unique: true,
     },
     matchLog: {
       // array of MatchLog
@@ -199,9 +198,6 @@ export function computeMatchScoreTable(match: MultiplayerMatch) {
 
 export default MultiplayerMatchSchema;
 
-// create index for matchId
-MultiplayerMatchSchema.index({ matchId: 1 });
-// create index for state
+MultiplayerMatchSchema.index({ matchId: 1 }, { unique: true });
 MultiplayerMatchSchema.index({ state: 1 });
-// create index for type
 MultiplayerMatchSchema.index({ type: 1 });

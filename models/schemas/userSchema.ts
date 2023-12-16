@@ -43,7 +43,6 @@ const UserSchema = new mongoose.Schema<User>({
   email: {
     type: String,
     required: true,
-    unique: true,
     select: false,
     minlength: 3,
     maxlength: 50,
@@ -86,7 +85,6 @@ const UserSchema = new mongoose.Schema<User>({
   name: {
     type: String,
     required: true,
-    unique: true,
     minlength: 3,
     maxlength: 50,
     validate: {
