@@ -160,9 +160,7 @@ function TimeRangeMenu({ onTimeRangeClick, timeRange }: TimeRangeMenuProps) {
         leaveFrom='transform opacity-100 scale-100'
         leaveTo='transform opacity-0 scale-95'
       >
-        <Menu.Items className='absolute right-0 z-10 mt-1 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none' style={{
-          borderColor: 'var(--bg-color)',
-        }}>
+        <Menu.Items className='absolute right-0 z-10 mt-1 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none border-color-1'>
           <div>
             {Object.keys(timeRangeStrings).map(timeRangeKey => (
               <Menu.Item key={`time-range-${timeRangeKey}`}>
@@ -229,9 +227,7 @@ function StatFilterMenu({ onStatFilterClick, query }: StatFilterMenuProps) {
         leaveFrom='transform opacity-100 scale-100'
         leaveTo='transform opacity-0 scale-95'
       >
-        <Menu.Items className='absolute right-0 z-10 mt-1 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none' style={{
-          borderColor: 'var(--bg-color)',
-        }}>
+        <Menu.Items className='absolute right-0 z-10 mt-1 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none border-color-1'>
           <div>
             {Object.keys(statFilterStrings).map(statFilterKey => (
               <Menu.Item key={`filter-completions-${statFilterKey}`}>
@@ -569,9 +565,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
             leaveFrom='transform opacity-100 scale-100'
             leaveTo='transform opacity-0 scale-95'
           >
-            <Menu.Items className='absolute right-0 z-10 mt-1 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none' style={{
-              borderColor: 'var(--bg-color)',
-            }}>
+            <Menu.Items className='absolute right-0 z-10 mt-1 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none border-color-1'>
               <div>
                 <Menu.Item>
                   {({ active }) => (

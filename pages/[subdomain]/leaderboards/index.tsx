@@ -270,9 +270,7 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
             leaveFrom='transform opacity-100 scale-100'
             leaveTo='transform opacity-0 scale-95'
           >
-            <Menu.Items className='absolute right-0 z-10 mt-1 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none' style={{
-              borderColor: 'var(--bg-color)',
-            }}>
+            <Menu.Items className='absolute right-0 z-10 mt-1 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none border-color-1'>
               <div>
                 {Object.keys(leaderboardStrings).map(leaderboardKey => {
                   return (

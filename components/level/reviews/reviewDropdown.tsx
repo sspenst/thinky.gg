@@ -42,11 +42,7 @@ export default function ReviewDropdown({ inModal, onEditClick, userId }: ReviewD
         leaveFrom='transform opacity-100 scale-100'
         leaveTo='transform opacity-0 scale-95'
       >
-        <Menu.Items className='absolute right-0 m-1 w-fit origin-top-right rounded-[10px] shadow-lg border z-20' style={{
-          backgroundColor: 'var(--bg-color-2)',
-          borderColor: 'var(--bg-color-4)',
-          color: 'var(--color)',
-        }}>
+        <Menu.Items className='absolute right-0 m-1 w-fit origin-top-right rounded-[10px] shadow-lg border z-20 bg-1 border-color-3'>
           <div className='px-1 py-1'>
             <Menu.Item>
               {({ active }) => (

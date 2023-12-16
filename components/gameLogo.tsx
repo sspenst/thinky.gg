@@ -1,8 +1,7 @@
 import { GameId } from '@root/constants/GameId';
-import { AppContext } from '@root/contexts/appContext';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import Image from 'next/image';
-import React, { useContext } from 'react';
+import React from 'react';
 import StyledTooltip from './page/styledTooltip';
 
 interface GameLogoProps {
@@ -13,9 +12,7 @@ interface GameLogoProps {
 }
 
 export default function GameLogo({ gameId, id, size = 24, tooltip = false }: GameLogoProps) {
-  const { protocol } = useContext(AppContext);
   const game = getGameFromId(gameId);
-  const logo = game.logo;
   const tooltipId = `${game.id}-tooltip-${id}`;
 
   return (<>
@@ -24,7 +21,7 @@ export default function GameLogo({ gameId, id, size = 24, tooltip = false }: Gam
       data-tooltip-content={game.displayName}
       data-tooltip-id={tooltipId}
       height={size}
-      src={(protocol || 'https:') + '//' + game.baseUrl + logo}
+      src={game.logo}
       style={{
         width: size,
         height: size,
