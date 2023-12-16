@@ -1,5 +1,5 @@
 // run with
-// ts-node -r tsconfig-paths/register --files server/scripts/migrateUserCalcsToConfig.ts
+// ts-node -r tsconfig-paths/register --files server/scripts/p2_migrateUserCalcsToConfig.ts
 // import dotenv
 import User from '@root/models/db/user';
 import { UserConfigModel, UserModel } from '@root/models/mongoose';
