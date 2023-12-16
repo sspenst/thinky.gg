@@ -1,6 +1,7 @@
 /* istanbul ignore file */
 
 import { createPopper, Instance, Placement } from '@popperjs/core';
+import styles from '@root/components/level/Controls.module.css';
 import { directionToVector } from '@root/constants/direction';
 import TileType from '@root/constants/tileType';
 import { GameState } from '@root/helpers/gameStateHelpers';
@@ -11,7 +12,6 @@ import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { AppContext } from '../../contexts/appContext';
 import { TimerUtil } from '../../helpers/getTs';
-import styles from '../../level/Controls.module.css';
 import Control from '../../models/control';
 import Level from '../../models/db/level';
 import Position from '../../models/position';
