@@ -10,7 +10,6 @@ import Theme from './theme';
 export enum GameType {
   SHORTEST_PATH = 'SHORTEST_PATH',
   NONE = 'NONE'
-
 }
 
 export const Games: Record<GameId, Game> = {
@@ -22,9 +21,9 @@ export const Games: Record<GameId, Game> = {
     disableCampaign: true,
     disableCommunityCampaigns: true,
     disableGames: true,
-    disableTutorial: true,
     disableMultiplayer: true,
     disableRanked: true,
+    disableTutorial: true,
     favicon: '/logos/thinky/thinky.png',
     logo: '/logos/thinky/thinky.png',
     subtitle: 'Thinky Games',
@@ -71,6 +70,7 @@ export const Games: Record<GameId, Game> = {
     validateSolutionFunction: validateSokobanSolution,
   },
 };
+
 export interface Game {
   id: GameId;
   baseUrl: string;
@@ -79,9 +79,9 @@ export interface Game {
   disableCampaign?: boolean;
   disableCommunityCampaigns?: boolean;
   disableGames?: boolean;
-  disableTutorial?: boolean;
   disableMultiplayer?: boolean;
-  disableRanked?: boolean,
+  disableRanked?: boolean;
+  disableTutorial?: boolean;
   favicon?: string;
   logo: string;
   subtitle: string;

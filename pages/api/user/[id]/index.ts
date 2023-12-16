@@ -1,6 +1,6 @@
 import { GameId } from '@root/constants/GameId';
 import { ProfileQueryType, UserExtendedData } from '@root/constants/profileQueryType';
-import apiWrapper, { NextApiRequestGuest, ValidCommaSeparated, ValidEnum } from '@root/helpers/apiWrapper';
+import apiWrapper, { NextApiRequestWrapper, ValidCommaSeparated, ValidEnum } from '@root/helpers/apiWrapper';
 import { getLevelsByDifficultyTable } from '@root/helpers/getLevelsByDifficultyTable';
 import { getSolvesByDifficultyTable } from '@root/helpers/getSolvesByDifficultyTable';
 import { Types } from 'mongoose';
@@ -34,7 +34,7 @@ export default apiWrapper({
       type: ValidCommaSeparated(true, ValidEnum(Object.values(ProfileQueryType))),
     }
   }
-}, async (req: NextApiRequestGuest, res: NextApiResponse) => {
+}, async (req: NextApiRequestWrapper, res: NextApiResponse) => {
   const { id: userId, type } = req.query as { id: string, type: string };
   const types = type.split(',') as ProfileQueryType[];
   const json = await getProfileQuery(req.gameId, userId, types);

@@ -3,7 +3,7 @@ import { LEVEL_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import KeyValue from '@root/models/db/keyValue';
 import { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
-import apiWrapper, { NextApiRequestGuest } from '../../../helpers/apiWrapper';
+import apiWrapper, { NextApiRequestWrapper } from '../../../helpers/apiWrapper';
 import { enrichLevels, getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
@@ -170,7 +170,7 @@ export async function getLevelOfDay(gameId: GameId, reqUser?: User | null) {
 
 export default apiWrapper({
   GET: {},
-}, async (req: NextApiRequestGuest, res: NextApiResponse) => {
+}, async (req: NextApiRequestWrapper, res: NextApiResponse) => {
   const token = req.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, req) : null;
 

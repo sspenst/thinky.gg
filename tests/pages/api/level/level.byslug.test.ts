@@ -1,6 +1,6 @@
 import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
-import { NextApiRequestGuest } from '@root/helpers/apiWrapper';
+import { NextApiRequestWrapper } from '@root/helpers/apiWrapper';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
@@ -328,7 +328,7 @@ describe('Testing slugs for levels', () => {
   test('Getting a level by slug when not logged in should work', async () => {
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequestGuest = {
+        const req: NextApiRequestWrapper = {
           gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
@@ -360,7 +360,7 @@ describe('Testing slugs for levels', () => {
   test('Getting an UNDRAFTED level by slug when not logged in should work', async () => {
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequestGuest = {
+        const req: NextApiRequestWrapper = {
           gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
@@ -417,7 +417,7 @@ describe('Testing slugs for levels', () => {
   test('Getting the slug for test-level-1 should still return the original level', async () => {
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequestGuest = {
+        const req: NextApiRequestWrapper = {
           gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {

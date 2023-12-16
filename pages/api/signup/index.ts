@@ -9,7 +9,7 @@ import UserConfig from '@root/models/db/userConfig';
 import mongoose, { QueryOptions, Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
-import apiWrapper, { NextApiRequestGuest, ValidNumber, ValidType } from '../../../helpers/apiWrapper';
+import apiWrapper, { NextApiRequestWrapper, ValidNumber, ValidType } from '../../../helpers/apiWrapper';
 import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import getProfileSlug from '../../../helpers/getProfileSlug';
 import { TimerUtil } from '../../../helpers/getTs';
@@ -54,7 +54,7 @@ export default apiWrapper({ POST: {
     tutorialCompletedAt: ValidNumber(false),
     recaptchaToken: ValidType('string', false),
   },
-} }, async (req: NextApiRequestGuest, res: NextApiResponse) => {
+} }, async (req: NextApiRequestWrapper, res: NextApiResponse) => {
   const { email, name, password, tutorialCompletedAt, recaptchaToken, guest } = req.body;
 
   await dbConnect();

@@ -1,5 +1,5 @@
 import { DEFAULT_GAME_ID } from '@root/constants/GameId';
-import { NextApiRequestGuest } from '@root/helpers/apiWrapper';
+import { NextApiRequestWrapper } from '@root/helpers/apiWrapper';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -29,7 +29,7 @@ jest.mock('nodemailer', () => ({
   })),
 }));
 
-const defaultReq: NextApiRequestGuest = {
+const defaultReq: NextApiRequestWrapper = {
   method: 'GET',
   gameId: DEFAULT_GAME_ID,
   query: {
@@ -38,7 +38,7 @@ const defaultReq: NextApiRequestGuest = {
   headers: {
     'content-type': 'application/json',
   },
-} as unknown as NextApiRequestGuest;
+} as unknown as NextApiRequestWrapper;
 
 afterEach(() => {
   jest.restoreAllMocks();
