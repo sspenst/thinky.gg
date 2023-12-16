@@ -27,9 +27,7 @@ const KeyValueSchema = new mongoose.Schema<KeyValue>(
   }
 );
 
-// add index on key
 KeyValueSchema.index({ key: 1 });
-// add index on value (why not... could be helpful for debugging?)
 KeyValueSchema.index({ value: 1 });
 
 export default KeyValueSchema;
