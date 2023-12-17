@@ -282,9 +282,9 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
 
   // subtitle is only useful when a level is within a collection created by a different user
   const showSubtitle = collection && (collection.userId._id !== level.userId._id);
-  const ogImageUrl = `https://${game.baseUrl}/api/level/image/${level._id.toString()}.png${ts ? `?ts=${ts}` : ''}`;
-  const ogUrl = `https://${game.baseUrl}/level/${level.slug}`;
-  const ogFullUrl = `https://${game.baseUrl}${ogUrl}`;
+  const ogImageUrl = `${game.baseUrl}/api/level/image/${level._id.toString()}.png${ts ? `?ts=${ts}` : ''}`;
+  const ogUrl = `${game.baseUrl}/level/${level.slug}`;
+  const ogFullUrl = `${game.baseUrl}${ogUrl}`;
   const authorNote = level.authorNote ? level.authorNote : `${level.name} by ${level.userId.name}`;
 
   return (

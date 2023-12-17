@@ -43,7 +43,7 @@ function getNewReviewOnYourLevelBody(message?: string) {
 /* notification must be populated using getEnrichNotificationPipelineStages */
 export default function getMobileNotification(gameId: GameId, notification: Notification) {
   const game = Games[gameId];
-  const host = 'https://' + game.baseUrl;
+  const host = game.baseUrl;
   const mobileNotification = {
     badgeCount: 1,
     title: game.displayName + ' - New Notification',

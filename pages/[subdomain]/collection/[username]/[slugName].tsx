@@ -133,7 +133,7 @@ export default function CollectionPage({ collection }: CollectionProps) {
     <NextSeo
       title={`${collection.name} - ${game.displayName}`}
       description={collection.authorNote}
-      canonical={`https://${game.baseUrl}/collection/${collection.slug}`}
+      canonical={`${game.baseUrl}/collection/${collection.slug}`}
       openGraph={{
         title: `${collection.name} - ${game.displayName}`,
         description: collection.authorNote,

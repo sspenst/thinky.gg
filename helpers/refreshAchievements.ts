@@ -104,9 +104,9 @@ export async function refreshAchievements(gameId: GameId, userId: Types.ObjectId
         if (achievementInfo.discordNotification) {
           // Should be "<User.name> just unlocked <Achievement.name> achievement!" where <User.name> is a link to the user's profile and <Achievement.name> is a link to the achievement's page
           const userName = user?.name;
-          const userHref = 'https://' + game.baseUrl + '/profile/' + userName;
+          const userHref = game.baseUrl + '/profile/' + userName;
           const userLinkDiscord = `[${userName}](${userHref})`;
-          const achievementHref = 'https://' + game.baseUrl + '/achievement/' + achievementType;
+          const achievementHref = game.baseUrl + '/achievement/' + achievementType;
           const achievementLinkDiscord = `[${achievementInfo.name}](${achievementHref})`;
           // message should also include emoji
           const message = `**${game.displayName}** - ${userLinkDiscord} just unlocked the ${achievementLinkDiscord} ${achievementInfo.emoji} achievement!`;

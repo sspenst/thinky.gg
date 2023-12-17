@@ -15,7 +15,7 @@ export enum GameType {
 export const Games: Record<GameId, Game> = {
   [GameId.THINKY]: {
     id: GameId.THINKY,
-    baseUrl: 'thinky.gg',
+    baseUrl: process.env.NODE_ENV !== 'development' ? 'https://thinky.gg' : 'http://localhost:3000',
     defaultTheme: Theme.Dark,
     displayName: 'Thinky.gg',
     disableCampaign: true,
@@ -35,7 +35,7 @@ export const Games: Record<GameId, Game> = {
   },
   [GameId.PATHOLOGY]: {
     id: GameId.PATHOLOGY,
-    baseUrl: 'pathology.gg',
+    baseUrl: process.env.NODE_ENV !== 'development' ? 'https://pathology.thinky.gg' : 'http://pathology.localhost:3000',
     defaultTheme: Theme.Modern,
     displayName: 'Pathology',
     favicon: '/logos/pathology/logo.svg',
@@ -51,7 +51,7 @@ export const Games: Record<GameId, Game> = {
   },
   [GameId.SOKOBAN]: {
     id: GameId.SOKOBAN,
-    baseUrl: 'sokoban.pathology.gg',
+    baseUrl: process.env.NODE_ENV !== 'development' ? 'https://sokoban.thinky.gg' : 'http://sokoban.localhost:3000',
     disableCampaign: true,
     disableCommunityCampaigns: true,
     disableMultiplayer: true,

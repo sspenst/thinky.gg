@@ -413,15 +413,15 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
       <DefaultSeo
         defaultTitle={selectedGame.displayName + ' - Shortest Path Puzzle Game'}
         description={selectedGame.SEODescription}
-        canonical={`https://${selectedGame.baseUrl}'`}
+        canonical={`${selectedGame.baseUrl}'`}
         openGraph={{
           type: 'website',
-          url: `https://${selectedGame.baseUrl}'`,
+          url: `${selectedGame.baseUrl}'`,
           siteName: selectedGame.displayName,
         }}
         twitter={{
           handle: '@pathologygame',
-          site: 'https://' + selectedGame.baseUrl,
+          site: '' + selectedGame.baseUrl,
           cardType: 'summary_large_image'
         }}
       />
