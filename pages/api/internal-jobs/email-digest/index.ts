@@ -234,13 +234,7 @@ export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFa
     },*/
   ]);
 
-  const promises = [];
-
-  for (const game of Object.values(Games)) {
-    promises.push(getLevelOfDay(game.id));
-  }
-
-  const levelsOfDay = await Promise.all(promises);
+  const levelsOfDay = await getlevelsOfDay();
 
   //const levelsOfDayMappedByGameId = Object.fromEntries(Object.values(Games).map((game, i) => [game.id, levelsOfDay[i]]));
 
@@ -314,13 +308,7 @@ export async function sendAutoUnsubscribeUsers(gameId: GameId, batchId: Types.Ob
    * 1a. Ignore folks that have had a reactivation email sent to them in past 3 days... we should give them a chance to come back and play
    */
 
-  const promises = [];
-
-  for (const game of Object.values(Games)) {
-    promises.push(getLevelOfDay(game.id));
-  }
-
-  const levelsOfDay = await Promise.all(promises);
+  const levelsOfDay = await getlevelsOfDay();
   const usersThatHaveBeenSentReactivationEmailIn3dAgoOrMore = await EmailLogModel.find({
     state: EmailState.SENT,
     type: EmailType.EMAIL_7D_REACTIVATE,
@@ -402,16 +390,25 @@ export async function sendAutoUnsubscribeUsers(gameId: GameId, batchId: Types.Ob
   return { sentList, failedList };
 }
 
-export async function sendEmailReactivation(gameId: GameId, batchId: Types.ObjectId, limit: number) {
-  // if they haven't been active in 7 days and they have an email address, send them an email, but only once every 90 days
-  // get users that haven't been active in 7 days
+export async function getlevelsOfDay() {
   const promises = [];
 
   for (const game of Object.values(Games)) {
-    promises.push(getLevelOfDay(game.id));
+    if (!game.disableGames) {
+      promises.push(getLevelOfDay(game.id));
+    }
   }
 
   const levelsOfDay = await Promise.all(promises);
+
+  // filter out nulls
+  return levelsOfDay.filter((level) => level);
+}
+
+export async function sendEmailReactivation(gameId: GameId, batchId: Types.ObjectId, limit: number) {
+  // if they haven't been active in 7 days and they have an email address, send them an email, but only once every 90 days
+  // get users that haven't been active in 7 days
+  const levelsOfDay = await getlevelsOfDay();
   const usersThatHaveBeenSentReactivationInPast90d = await EmailLogModel.find({
     type: EmailType.EMAIL_7D_REACTIVATE,
     createdAt: { $gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000) },
@@ -432,19 +429,16 @@ export async function sendEmailReactivation(gameId: GameId, batchId: Types.Objec
           last_visited_at: { $lte: (Date.now() / 1000) - (7 * 24 * 60 * 60 ) }, // TODO need to refactor last_visited_at to be a DATE object instead of seconds
           roles: { $ne: Role.GUEST },
           email: { $ne: null },
+          emailDigest: { $ne: EmailDigestSettingType.NONE }, // don't send reactivation emails to users that have already unsubscribed
         },
       },
       ...getEnrichUserConfigPipelineStage(gameId, { project: { 'emailDigest': 1 } }),
-      {
-        $match: {
-          'config.emailDigest': { $ne: EmailDigestSettingType.NONE },
-        },
-      },
       {
         $project: {
           _id: 1,
           name: 1,
           email: 1,
+          emailDigest: 1,
           config: 1,
           last_visited_at: 1,
           score: 1

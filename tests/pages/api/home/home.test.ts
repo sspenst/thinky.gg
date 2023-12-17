@@ -129,7 +129,7 @@ describe('pages/api/home.ts', () => {
         expect(response.lastLevelPlayed).toBeNull(); // null because we asked but got nothing
         expect(response.latestLevels).toHaveLength(1);
         expect(response.latestReviews).toHaveLength(1);
-        expect(response.levelOfDay).toBeNull(); // no level of the day even though we asked for it
+        expect(response.levelOfDay).not.toBeNull(); // we don't have any levels normally here but we reach the conditional where we just grab the most recently created level since we are out of levels
         expect(response.recommendedLevel).toBeNull(); // no recommended easy level even though we asked for it
         expect(response.topLevelsThisMonth).toHaveLength(3);
 

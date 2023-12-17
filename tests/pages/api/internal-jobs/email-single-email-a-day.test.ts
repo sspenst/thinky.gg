@@ -55,7 +55,7 @@ enableFetchMocks();
 describe('Email per day', () => {
   test('Simulate a bunch of days', async () => {
     // setup
-    // jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
     await Promise.all([
