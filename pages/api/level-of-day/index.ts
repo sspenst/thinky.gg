@@ -1,4 +1,5 @@
 import { GameId } from '@root/constants/GameId';
+import cleanUser from '@root/lib/cleanUser';
 import { LEVEL_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import KeyValue from '@root/models/db/keyValue';
 import { Types } from 'mongoose';
@@ -65,6 +66,8 @@ export async function getLevelOfDay(gameId: GameId, reqUser?: User | null) {
     ]);
 
     if (levelAgg && levelAgg.length > 0) {
+      cleanUser(levelAgg[0].userId);
+
       return levelAgg[0] as EnrichedLevel;
     } else {
       logger.error(`Level of the day ${levelKV.value} not found. Could it have been deleted?`);
@@ -130,19 +133,25 @@ export async function getLevelOfDay(gameId: GameId, reqUser?: User | null) {
   }
 
   if (!genLevel) {
-    logger.error('Could not generate a new level of the day as there are no candidates left to choose from');
+    logger.warn('Could not generate a new level of the day as there are no candidates left to choose from');
     logger.warn('Going to choose the last level published as the level of the day');
 
     genLevel = await LevelModel.findOne<Level>({
       isDeleted: { $ne: true },
       isDraft: false,
       gameId: gameId,
-    }, '_id gameId name slug width height data leastMoves calc_difficulty_estimate', {
+    }, '_id gameId name userId slug width height data leastMoves calc_difficulty_estimate', {
       // sort by calculated difficulty estimate and then by id
       sort: {
         _id: -1,
       },
     }).lean<Level>() as Level;
+
+    if (!genLevel) {
+      logger.error('Could not even find a level to choose from for ' + gameId + '. This is a serious error');
+
+      return null;
+    }
   }
 
   // Create a new mongodb transaction and update levels-of-the-day value and also add another key value for this level
@@ -174,6 +183,8 @@ export async function getLevelOfDay(gameId: GameId, reqUser?: User | null) {
   }
 
   const enriched = await enrichLevels([genLevel], reqUser || null);
+
+  cleanUser(enriched[0].userId);
 
   return enriched[0];
 }

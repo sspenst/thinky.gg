@@ -249,7 +249,7 @@ describe('GET /api/level-of-day', () => {
       },
     });
   });
-  test('changing to the third day should return an error since we are out of levels', async () => {
+  test('changing to the third day should return the latest level since we are out of levels', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     MockDate.set(MOCK_DATE);
     const day3 = Date.now() + (1000 * 60 * 60 * 24 * 2); // Note... Date.now() here is being mocked each time too!
@@ -267,8 +267,9 @@ describe('GET /api/level-of-day', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Error getting level of the day');
-        expect(res.status).toBe(500);
+        expect(response.error).toBeUndefined(); // we actually won't return error... We'll just select the latest level
+        expect(res.status).toBe(200);
+        expect(response._id).toBe(TestId.LEVEL_4);
       },
     });
   });
