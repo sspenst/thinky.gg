@@ -10,10 +10,10 @@ import { MultiplayerSocket } from '../pages/_app';
 interface AppContextInterface {
   deviceInfo: DeviceInfo;
   forceUpdate: () => void;
-  notifications: Notification[];
   multiplayerSocket: MultiplayerSocket;
   mutatePlayLater: () => void;
   mutateUser: KeyedMutator<ReqUser>;
+  notifications: Notification[];
   playLater?: { [key: string]: boolean };
   setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>;
   setShouldAttemptAuth: React.Dispatch<React.SetStateAction<boolean>>;
@@ -38,7 +38,6 @@ export const AppContext = createContext<AppContextInterface>({
     screenSize: ScreenSize.SM,
   },
   forceUpdate: () => { return; },
-  notifications: [],
   multiplayerSocket: {
     connectedPlayers: [],
     connectedPlayersCount: 0,
@@ -48,6 +47,7 @@ export const AppContext = createContext<AppContextInterface>({
   },
   mutatePlayLater: () => { return; },
   mutateUser: {} as KeyedMutator<ReqUser>,
+  notifications: [],
   playLater: undefined,
   setNotifications: () => { return; },
   setShouldAttemptAuth: () => { return; },

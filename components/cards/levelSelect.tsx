@@ -27,7 +27,6 @@ export default function LevelSelect({ levels }: LevelSelectProps) {
         id: level._id.toString(),
         level: level,
         stats: new SelectOptionStats(level.leastMoves, level.userMoves),
-        searchLabel: level.name,
         text: level.name,
       } as SelectOption;
     })} />
