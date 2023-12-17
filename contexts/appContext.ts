@@ -28,9 +28,8 @@ interface AppContextInterface {
   showNav: boolean;
   sounds: { [key: string]: HTMLAudioElement };
   tempCollection?: Collection;
-  user?: ReqUser;
-  userConfig?: UserConfig;
-  userLoading: boolean;
+  user: ReqUser | undefined | null;
+  userConfig: UserConfig | undefined | null;
 }
 
 export const AppContext = createContext<AppContextInterface>({
@@ -67,5 +66,6 @@ export const AppContext = createContext<AppContextInterface>({
   showNav: true,
   sounds: {},
   tempCollection: undefined,
-  userLoading: true,
+  user: undefined,
+  userConfig: undefined,
 });

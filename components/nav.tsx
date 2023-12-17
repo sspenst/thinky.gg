@@ -120,8 +120,7 @@ interface NavProps {
 }
 
 export default function Nav({ isDropdown }: NavProps) {
-  const { game, multiplayerSocket, playLater, user, userLoading } = useContext(AppContext);
-  const isLoggedIn = !userLoading && user;
+  const { game, multiplayerSocket, playLater, user } = useContext(AppContext);
   const { connectedPlayersCount, matches, socket } = multiplayerSocket;
 
   const proNavLink = <NavLink
@@ -306,7 +305,7 @@ export default function Nav({ isDropdown }: NavProps) {
       }}
     >
       {homeNavLink}
-      {isLoggedIn && <>
+      {user && <>
         {playNavLink}
         {rankedNavLink}
         {multiplayerNavLink}
@@ -314,7 +313,7 @@ export default function Nav({ isDropdown }: NavProps) {
       <NavDivider />
       <NavGameMenu />
       <NavDivider />
-      {isLoggedIn && <>
+      {user && <>
         {profileNavLink}
         {playLaterNavLink}
         {createNavLinked}
@@ -327,7 +326,7 @@ export default function Nav({ isDropdown }: NavProps) {
       {leaderboardNavLink}
       {tutorialNavLink}
       <NavDivider />
-      {isLoggedIn && !isPro(user) && <>
+      {user && !isPro(user) && <>
         {proNavLink}
       </>}
       {discordNavLink}
