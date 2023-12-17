@@ -19,6 +19,7 @@ async function removeSelfReviews() {
 
   progressBar.start(levelCount, 0);
 
+  // TODO: should we incorporate gameId here?
   for await (const level of LevelModel.find({ isDeleted: { $ne: true }, isDraft: false })) {
     const authorId = level.archivedBy ?? level.userId;
     const review = await ReviewModel.findOne<Review>({ levelId: level._id, userId: authorId });

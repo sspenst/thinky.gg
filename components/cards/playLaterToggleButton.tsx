@@ -8,10 +8,11 @@ import StyledTooltip from '../page/styledTooltip';
 
 interface PlayLaterToggleButtonProps {
   className?: string;
+  id: string;
   level: EnrichedLevel;
 }
 
-export function PlayLaterToggleButton({ className, level }: PlayLaterToggleButtonProps) {
+export function PlayLaterToggleButton({ className, id, level }: PlayLaterToggleButtonProps) {
   const { mutatePlayLater, playLater, user } = useContext(AppContext);
   const isInPlayLater = !!(playLater && playLater[level._id.toString()]);
   const [isLoading, setIsLoading] = useState(false);
@@ -72,13 +73,13 @@ export function PlayLaterToggleButton({ className, level }: PlayLaterToggleButto
     setIsLoading(false);
   };
 
-  const id = `play-later-btn-tooltip-${level._id.toString()}`;
+  const tooltipId = `play-later-btn-tooltip-${id}`;
 
   return <>
     <button
       className={className}
       data-tooltip-content={isInPlayLater ? 'Remove from Play Later' : 'Add to Play Later'}
-      data-tooltip-id={id}
+      data-tooltip-id={tooltipId}
       disabled={isLoading}
       onClick={async (e) => {
         e.preventDefault();
@@ -98,6 +99,6 @@ export function PlayLaterToggleButton({ className, level }: PlayLaterToggleButto
         </svg>
       }
     </button>
-    <StyledTooltip id={id} />
+    <StyledTooltip id={tooltipId} />
   </>;
 }

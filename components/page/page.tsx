@@ -1,5 +1,8 @@
+import Nav from '@root/components/nav';
+import { AppContext } from '@root/contexts/appContext';
+import { ScreenSize } from '@root/hooks/useDeviceCheck';
 import classNames from 'classnames';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { PageContext } from '../../contexts/pageContext';
 import LinkInfo from '../formatted/linkInfo';
@@ -11,6 +14,7 @@ interface PageProps {
   folders?: LinkInfo[];
   hideFooter?: boolean;
   isFullScreen?: boolean;
+  style?: React.CSSProperties;
   subtitle?: string;
   subtitleHref?: string;
   title?: string;
@@ -22,13 +26,18 @@ export default function Page({
   folders,
   hideFooter,
   isFullScreen,
+  style,
   subtitle,
   subtitleHref,
   title,
   titleHref,
 }: PageProps) {
+  const { deviceInfo, showNav } = useContext(AppContext);
   const [preventKeyDownEvent, setPreventKeyDownEvent] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
+
+  const isNavDropdown = deviceInfo.screenSize < ScreenSize.XL || isFullScreen;
+  const isNavOnPage = !isNavDropdown && showNav;
 
   useEffect(() => {
     if (isFullScreen) {
@@ -45,25 +54,41 @@ export default function Page({
   return (
     <PageContext.Provider value={{
       preventKeyDownEvent: preventKeyDownEvent,
-      setShowHeader: setShowHeader,
       setPreventKeyDownEvent: setPreventKeyDownEvent,
+      setShowHeader: setShowHeader,
       showHeader: showHeader,
     }}>
-      <div className={classNames('flex flex-col', { 'fixed inset-0 overflow-hidden': isFullScreen })}>
+      <div
+        className={classNames('flex flex-col', { 'fixed inset-0 overflow-hidden': isFullScreen })}
+        style={style}
+      >
         {showHeader &&
           <Header
             folders={folders}
+            isFullScreen={isFullScreen}
             subtitle={subtitle ? new LinkInfo(subtitle, subtitleHref) : undefined}
             title={title ? new LinkInfo(title, titleHref) : undefined}
           />
         }
-        <main className='grow z-10' style={{
+        <div className='grow flex' style={{
           height: showHeader ? `calc(100% - ${Dimensions.MenuHeight}px)` : '100%',
+          marginTop: showHeader ? Dimensions.MenuHeight : 0,
         }}>
-          {children}
-        </main>
+          {isNavOnPage && <Nav />}
+          <div
+            className={classNames('flex flex-col', { 'ml-60': isNavOnPage })}
+            style={{
+              maxWidth: !isNavOnPage ? '100%' : 'calc(100% - 240px)',
+              width: !isNavOnPage ? '100%' : 'calc(100% - 240px)',
+            }}
+          >
+            <main className='grow z-10 h-full'>
+              {children}
+            </main>
+            {!isFullScreen && !hideFooter && <Footer />}
+          </div>
+        </div>
       </div>
-      {!isFullScreen && !hideFooter && <Footer />}
     </PageContext.Provider>
   );
 }

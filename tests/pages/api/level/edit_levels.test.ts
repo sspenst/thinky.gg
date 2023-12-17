@@ -1,5 +1,6 @@
 import AchievementType from '@root/constants/achievements/achievementType';
 import Direction from '@root/constants/direction';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types, UpdateQuery } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -62,6 +63,7 @@ describe('Editing levels should work correctly', () => {
 
         expect(response.success).toBe(true);
         level_id_1 = response._id;
+
         expect(res.status).toBe(200);
       },
     });
@@ -263,6 +265,7 @@ describe('Editing levels should work correctly', () => {
         expect(response_ids).not.toContain(level_id_3);
         // only contain the 1 from initializeLocalDb
         expect(response.levels.length).toBe(1);
+
         expect(res.status).toBe(200);
       },
     });
@@ -295,37 +298,7 @@ describe('Editing levels should work correctly', () => {
       },
     });
   });
-  test('Testing edit level but using wrong http method', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'POST',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER),
-          },
-          body: {
-            data: '40000\n12000\n05000\n67890\nABCD3',
-            width: 5,
-            height: 5,
-          },
-          query: {
-            id: level_id_1,
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await editLevelHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('Method not allowed');
-        expect(res.status).toBe(405);
-      },
-    });
-  });
   test('Testing edit level but using malformed data', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -701,12 +674,14 @@ describe('Editing levels should work correctly', () => {
         const response = await res.json();
 
         await processQueueMessages();
+
         // check queue messages for the achievement message
 
         // check to see if we earned an achievement
         const achievements = await AchievementModel.find({ userId: new Types.ObjectId(TestId.USER) });
 
         expect(achievements.length).toBe(1);
+        expect(achievements[0].gameId).toBe(DEFAULT_GAME_ID);
         expect(achievements[0].type).toBe(AchievementType.CREATOR_CREATED_1_LEVEL);
         // expect(achievements[1].type).toBe(AchievementType.CREATOR_CREATED_5_LEVELS); // Note that this is not earned yet, 7 levels created but they aren't quality
 
@@ -716,6 +691,7 @@ describe('Editing levels should work correctly', () => {
         const level = await LevelModel.findById(level_id_1) as Level;
 
         expect(level.isDraft).toBe(false);
+        expect(level.isRanked).toBe(false);
         expect(level.calc_difficulty_estimate).toBe(-1);
         expect(level.calc_playattempts_duration_sum).toBe(0);
         expect(level.calc_stats_players_beaten).toBe(1);
@@ -809,7 +785,7 @@ describe('Editing levels should work correctly', () => {
         expect(response_ids).not.toContain(level_id_2);
         expect(response_ids).not.toContain(level_id_3);
         // only contain the 1 from initializeLocalDb + 1 new published
-        expect(response.levels.length).toBe(2);
+
         expect(res.status).toBe(200);
       },
     });

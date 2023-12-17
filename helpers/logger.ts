@@ -12,8 +12,11 @@ const errorStackTracerFormat = winston.format(info => {
 });
 
 const loggerObj = { logger: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   info: (message: any, meta?: any) => console.info(message, meta),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   error: (message: any, meta?: any) => console.error(message, meta),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   warn: (message: any, meta?: any) => console.warn(message, meta),
 } };
 

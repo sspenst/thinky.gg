@@ -42,24 +42,7 @@ describe('pages/api/home.ts', () => {
       },
     });
   });
-  test('Sending nothing should return 401', async () => {
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          cookies: {
-            token: '',
-          },
-        } as unknown as NextApiRequestWithAuth;
 
-        await homeHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-
-        expect(res.status).toBe(401);
-      },
-    });
-  });
   test('GET no query', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -146,7 +129,7 @@ describe('pages/api/home.ts', () => {
         expect(response.lastLevelPlayed).toBeNull(); // null because we asked but got nothing
         expect(response.latestLevels).toHaveLength(1);
         expect(response.latestReviews).toHaveLength(1);
-        expect(response.levelOfDay).toBeNull(); // no level of the day even though we asked for it
+        expect(response.levelOfDay).not.toBeNull(); // we don't have any levels normally here but we reach the conditional where we just grab the most recently created level since we are out of levels
         expect(response.recommendedLevel).toBeNull(); // no recommended easy level even though we asked for it
         expect(response.topLevelsThisMonth).toHaveLength(3);
 

@@ -1,6 +1,7 @@
 import { AppContext } from '@root/contexts/appContext';
 import { GridContext } from '@root/contexts/gridContext';
 import classNames from 'classnames';
+import { useTheme } from 'next-themes';
 import React, { useContext } from 'react';
 import Theme, { getIconFromTheme } from '../../../constants/theme';
 import TileType from '../../../constants/tileType';
@@ -16,15 +17,17 @@ export default function Player({ atEnd, moveCount }: PlayerProps) {
   const text = String(moveCount);
   const fontSizeRatio = text.length <= 3 ? 2 : (1 + (text.length - 1) / 2);
   const fontSize = innerTileSize / fontSizeRatio;
-  const { theme } = useContext(AppContext);
+  const { game } = useContext(AppContext);
+  const { theme } = useTheme();
   const classic = theme === Theme.Classic;
-  const icon = getIconFromTheme(theme, TileType.Start);
+  const icon = getIconFromTheme(game, theme, TileType.Start);
   const overstepped = leastMoves !== 0 && moveCount > leastMoves;
 
   return (
     <div
       className={classNames(
-        'select-none z-20 flex items-center justify-center relative',
+        'select-none z-20 flex items-center justify-center relative tile-type-4',
+        'tile-' + game.id,
         overstepped ? styles.extra : undefined,
         !atEnd ? undefined : overstepped ? styles.lose :
           classic ? styles['win-classic'] : styles.win,

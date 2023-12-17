@@ -9,7 +9,7 @@ export enum EmailType {
   EMAIL_WALL_REPLY = 'EMAIL_WALL_REPLY',
 }
 
-export enum EmailDigestSettingTypes {
+export enum EmailDigestSettingType {
   DAILY = 'DAILY',
   NONE = 'NONE',
 }

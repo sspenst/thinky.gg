@@ -19,6 +19,7 @@ enum TileType {
   NotDown = 'H',
   LeftRight = 'I',
   UpDown = 'J',
+  BlockOnExit = 'K',
 }
 
 export default TileType;

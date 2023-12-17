@@ -1,16 +1,21 @@
 /* istanbul ignore file */
-import '../styles/global.css';
 import 'react-tooltip/dist/react-tooltip.css';
+import '../styles/global.css';
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react';
 import { Portal } from '@headlessui/react';
+import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
+import { Game, Games } from '@root/constants/Games';
 import MusicContextProvider from '@root/contexts/musicContext';
+import getFontFromGameId from '@root/helpers/getFont';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import useDeviceCheck from '@root/hooks/useDeviceCheck';
 import Collection from '@root/models/db/collection';
+import MultiplayerProfile from '@root/models/db/multiplayerProfile';
+import Notification from '@root/models/db/notification';
 import { NextPageContext } from 'next';
 import type { AppProps } from 'next/app';
-import { Rubik, Teko } from 'next/font/google';
 import Head from 'next/head';
-import Router, { useRouter } from 'next/router';
+import { Router, useRouter } from 'next/router';
 import { DefaultSeo } from 'next-seo';
 import { ThemeProvider } from 'next-themes';
 import nProgress from 'nprogress';
@@ -25,10 +30,7 @@ import { AppContext } from '../contexts/appContext';
 import useUser from '../hooks/useUser';
 import { MultiplayerMatchState } from '../models/constants/multiplayer';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
-import User, { UserWithMultiplayerProfile } from '../models/db/user';
-
-export const rubik = Rubik({ display: 'swap', subsets: ['latin'] });
-export const teko = Teko({ display: 'swap', subsets: ['latin'], weight: '500' });
+import User, { UserWithMultiMultiplayerProfile, UserWithMultiplayerProfile } from '../models/db/user';
 
 export interface MultiplayerSocket {
   connectedPlayers: UserWithMultiplayerProfile[];
@@ -68,18 +70,21 @@ function updateGrowthBookURL() {
 MyApp.getInitialProps = async ({ ctx }: { ctx: NextPageContext }) => {
   let userAgent;
 
+  const gameId = getGameIdFromReq(ctx.req);
+
   if (ctx.req) {
     userAgent = ctx.req.headers['user-agent'];
   } else {
     userAgent = navigator.userAgent;
   }
 
-  return { userAgent };
+  return { userAgent, initGame: gameId ? Games[gameId] : Games[DEFAULT_GAME_ID] };
 };
 
-export default function MyApp({ Component, pageProps, userAgent }: AppProps & { userAgent: string }) {
+export default function MyApp({ Component, pageProps, userAgent, initGame }: AppProps & { userAgent: string, initGame: Game }) {
   const deviceInfo = useDeviceCheck(userAgent);
   const forceUpdate = useForceUpdate();
+  const [host, setHost] = useState<string>();
   const { isLoading, mutateUser, user } = useUser();
   const [multiplayerSocket, setMultiplayerSocket] = useState<MultiplayerSocket>({
     connectedPlayers: [],
@@ -88,15 +93,23 @@ export default function MyApp({ Component, pageProps, userAgent }: AppProps & { 
     privateAndInvitedMatches: [],
     socket: undefined,
   });
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [playLater, setPlayLater] = useState<{ [key: string]: boolean }>();
+  const [protocol, setProtocol] = useState<string>('https:');
   const router = useRouter();
+  const [selectedGame, setSelectedGame] = useState<Game>(initGame);
+  // if the non-menu nav is visible
+  const [showNav, setShowNav] = useState(true);
   const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);
   const [sounds, setSounds] = useState<{ [key: string]: HTMLAudioElement }>({});
   const [tempCollection, setTempCollection] = useState<Collection>();
-  const [theme, setTheme] = useState<string>();
   const { matches, privateAndInvitedMatches } = multiplayerSocket;
 
   const mutatePlayLater = useCallback(() => {
+    if (!user) {
+      return;
+    }
+
     fetch('/api/play-later', {
       method: 'GET',
     }).then(async res => {
@@ -108,7 +121,15 @@ export default function MyApp({ Component, pageProps, userAgent }: AppProps & { 
     }).catch(err => {
       console.error(err);
     });
-  }, []);
+  }, [user]);
+
+  useEffect(() => {
+    // get selected game from the subdomain
+    const subdomain = window.location.hostname.split('.')[0];
+    const game: Game = Games[subdomain as GameId] || initGame;
+
+    setSelectedGame(game);
+  }, [initGame]);
 
   useEffect(() => {
     mutatePlayLater();
@@ -120,6 +141,24 @@ export default function MyApp({ Component, pageProps, userAgent }: AppProps & { 
       'start': new Audio('/sounds/start.wav'),
       'warning': new Audio('/sounds/warning.wav'),
     });
+  }, []);
+
+  useEffect(() => {
+    setProtocol(window.location.protocol);
+  }, []);
+
+  useEffect(() => {
+    // if port is not 80 or 443, include it in the hostname
+    // also hostname needs to strip out subdomain
+    const hostname = window.location.port === '80' || window.location.port === '443' ?
+      window.location.hostname :
+      `${window.location.hostname}:${window.location.port}`;
+    const dots = hostname.split('.');
+
+    const hostnameStrippedOfFirstSubdomain = dots.length === 2 ?
+      dots.slice(1).join('.') : hostname;
+
+    setHost(hostnameStrippedOfFirstSubdomain);
   }, []);
 
   // initialize sessionStorage values
@@ -177,18 +216,36 @@ export default function MyApp({ Component, pageProps, userAgent }: AppProps & { 
       return;
     }
 
+    const hasPortInUrl = window.location.port !== '';
+
     const socketConn = io('', {
+      // we should not try to connect when running in dev mode (localhost:3000)
+      autoConnect: !hasPortInUrl,
       path: '/api/socket/',
       withCredentials: true,
     });
 
+    socketConn.on('notifications', (notifications: Notification[]) => {
+      setNotifications(notifications);
+    });
+    socketConn.on('killSocket', () => {
+      console.log('killSocket');
+      socketConn.disconnect();
+    });
     socketConn.on('connectedPlayers', (connectedPlayers: {
       count: number;
-      users: UserWithMultiplayerProfile[];
+      users: UserWithMultiMultiplayerProfile[];
     }) => {
+      connectedPlayers.users.forEach(player => {
+        if (player.multiplayerProfile === undefined) {
+          return;
+        }
+
+        player.multiplayerProfile = (player.multiplayerProfile as MultiplayerProfile[]).filter(profile => profile.gameId?.toString() === selectedGame.id)[0];
+      });
       setMultiplayerSocket(prevMultiplayerSocket => {
         return {
-          connectedPlayers: connectedPlayers.users,
+          connectedPlayers: connectedPlayers.users as UserWithMultiplayerProfile[],
           connectedPlayersCount: connectedPlayers.count,
           matches: prevMultiplayerSocket.matches,
           privateAndInvitedMatches: prevMultiplayerSocket.privateAndInvitedMatches,
@@ -237,21 +294,7 @@ export default function MyApp({ Component, pageProps, userAgent }: AppProps & { 
       socketConn.off('privateAndInvitedMatches');
       socketConn.disconnect();
     };
-  }, [user?._id]);
-
-  useEffect(() => {
-    if (!user?.config) {
-      return;
-    }
-
-    if (Object.values(Theme).includes(user.config.theme as Theme) && theme !== user.config.theme) {
-      // need to remove the default theme so we can add the userConfig theme
-      document.body.classList.remove(Theme.Modern);
-      document.body.classList.add(user.config.theme);
-      setTheme(user.config.theme);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.config]);
+  }, [selectedGame.id, user?._id]);
 
   useEffect(() => {
     for (const match of matches) {
@@ -317,7 +360,14 @@ export default function MyApp({ Component, pageProps, userAgent }: AppProps & { 
   // }, [GA_ClientID, user?._id]);
 
   useEffect(() => {
-    const handleRouteChange = () => {
+    const handleRouteChange = (url: string) => {
+      const isLevelPage = url.startsWith('/level/');
+
+      // clear tempCollection when we navigate away from a level (temporary workaround)
+      if (!isLevelPage) {
+        setTempCollection(undefined);
+      }
+
       updateGrowthBookURL();
       nProgress.done();
     };
@@ -353,24 +403,25 @@ export default function MyApp({ Component, pageProps, userAgent }: AppProps & { 
 
   const isEU = Intl.DateTimeFormat().resolvedOptions().timeZone.startsWith('Europe');
 
-  return (
-    <ThemeProvider attribute='class'>
+  return (<>
+    <ThemeProvider attribute='class' defaultTheme={Theme.Modern} themes={Object.values(Theme)}>
       <Head>
         <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' />
         <meta name='apple-itunes-app' content='app-id=1668925562, app-argument=pathology.gg' />
+        <link href={selectedGame.favicon || '/logo.svg'} rel='icon' />
       </Head>
       <DefaultSeo
-        defaultTitle='Pathology - Shortest Path Puzzle Game'
-        description='The goal of the puzzle game Pathology is simple. Get to the exit in the least number of moves.'
-        canonical='https://pathology.gg/'
+        defaultTitle={selectedGame.displayName + ' - Shortest Path Puzzle Game'}
+        description={selectedGame.SEODescription}
+        canonical={`${selectedGame.baseUrl}'`}
         openGraph={{
           type: 'website',
-          url: 'https://pathology.gg',
-          siteName: 'Pathology',
+          url: `${selectedGame.baseUrl}'`,
+          siteName: selectedGame.displayName,
         }}
         twitter={{
           handle: '@pathologygame',
-          site: 'https://pathology.gg',
+          site: '' + selectedGame.baseUrl,
           cardType: 'summary_large_image'
         }}
       />
@@ -394,22 +445,26 @@ export default function MyApp({ Component, pageProps, userAgent }: AppProps & { 
         <AppContext.Provider value={{
           deviceInfo: deviceInfo,
           forceUpdate: forceUpdate,
+          game: selectedGame,
+          host: host,
           multiplayerSocket: multiplayerSocket,
           mutatePlayLater: mutatePlayLater,
           mutateUser: mutateUser,
+          notifications: notifications,
           playLater: playLater,
+          protocol: protocol,
+          setNotifications: setNotifications,
           setShouldAttemptAuth: setShouldAttemptAuth,
+          setShowNav: setShowNav,
           setTempCollection: setTempCollection,
-          setTheme: setTheme,
           shouldAttemptAuth: shouldAttemptAuth,
+          showNav: showNav,
           sounds: sounds,
           tempCollection,
-          theme: theme,
-          user: user,
-          userConfig: user?.config,
-          userLoading: isLoading,
+          user: isLoading ? undefined : !user ? null : user,
+          userConfig: isLoading ? undefined : !user?.config ? null : user.config,
         }}>
-          <div className={rubik.className} style={{
+          <div className={getFontFromGameId(selectedGame.id)} style={{
             backgroundColor: 'var(--bg-color)',
             color: 'var(--color)',
           }}>
@@ -429,5 +484,5 @@ export default function MyApp({ Component, pageProps, userAgent }: AppProps & { 
         </AppContext.Provider>
       </GrowthBookProvider>
     </ThemeProvider>
-  );
+  </>);
 }

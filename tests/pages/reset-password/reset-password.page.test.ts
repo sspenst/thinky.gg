@@ -4,7 +4,7 @@ import TestId from '../../../constants/testId';
 import { logger } from '../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
-import { getServerSideProps } from '../../../pages/reset-password/[userId]/[token]';
+import { getServerSideProps } from '../../../pages/[subdomain]/reset-password/[userId]/[token]';
 
 beforeAll(async () => {
   await dbConnect();
@@ -44,6 +44,6 @@ describe('pages/forgot-password page', () => {
     expect(ret).toBeDefined();
     expect(ret.props).toBeUndefined();
     expect(ret.redirect).toBeDefined();
-    expect(ret.redirect?.destination).toBe('/home');
+    expect(ret.redirect?.destination).toBe('/');
   });
 });

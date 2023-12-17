@@ -17,7 +17,7 @@ const URL_HOST = args[0] || 'http://localhost:3000';
 async function startBackfillCollectionSlugs() {
   await dbConnect();
   // select all collections with no slugs
-  const collections = await CollectionModel.find({ slug: { $exists: false } }, { _id: 1, name: 1, userId: 1 }).populate('userId', 'name').lean<Collection[]>();
+  const collections = await CollectionModel.find({ slug: { $exists: false }, }, { _id: 1, name: 1, userId: 1, gameId: 1 }).populate('userId', 'name',).lean<Collection[]>();
 
   // loop through all the collections and generate a slug
   progressBar.start(collections.length, 0);
@@ -31,7 +31,7 @@ async function startBackfillCollectionSlugs() {
       username = 'pathology';
     }
 
-    const slug = await generateCollectionSlug(username, collection.name, collection._id.toString());
+    const slug = await generateCollectionSlug(collection.gameId, username, collection.name, collection._id.toString());
 
     // update the collection
     await CollectionModel.updateOne({ _id: collection._id }, { slug: slug });

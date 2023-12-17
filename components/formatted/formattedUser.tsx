@@ -1,11 +1,15 @@
 import Dimensions from '@root/constants/dimensions';
-import { ProfileQueryType } from '@root/constants/profileQueryType';
+import { GameId } from '@root/constants/GameId';
+import { ProfileQueryType, UserExtendedData } from '@root/constants/profileQueryType';
+import { AppContext } from '@root/contexts/appContext';
+import isOnline from '@root/helpers/isOnline';
 import classNames from 'classnames';
 import Link from 'next/link';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import getProfileSlug from '../../helpers/getProfileSlug';
 import User from '../../models/db/user';
+import GameLogoAndLabel from '../gameLogoAndLabel';
 import LoadingSpinner from '../page/loadingSpinner';
 import RoleIcons from '../page/roleIcons';
 import StyledTooltip from '../page/styledTooltip';
@@ -25,11 +29,12 @@ interface FormattedUserProps {
   user?: User | null;
 }
 
-const cache = {} as { [key: string]: any };
+const cache = {} as { [key: string]: UserExtendedData };
 
 export default function FormattedUser({ className, hideAvatar, id, noLinks, noTooltip, onClick, size = Dimensions.AvatarSize, user }: FormattedUserProps) {
+  const { game } = useContext(AppContext);
   const [showTooltip, setShowTooltip] = useState(false);
-  const [userExtendedData, setUserExtendedData] = useState<any>();
+  const [userExtendedData, setUserExtendedData] = useState<UserExtendedData>();
   const setTimer = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
@@ -44,7 +49,7 @@ export default function FormattedUser({ className, hideAvatar, id, noLinks, noTo
     }
 
     fetch(`/api/user/${user._id}?type=${Object.values(ProfileQueryType).join(',')}`).then(async res => {
-      const data = await res.json();
+      const data = await res.json() as UserExtendedData;
 
       setUserExtendedData(data);
       cache[user._id.toString()] = data;
@@ -89,22 +94,42 @@ export default function FormattedUser({ className, hideAvatar, id, noLinks, noTo
         data-tooltip-html={renderToStaticMarkup(
           <div className='flex flex-col gap-0.5 p-1 items-start text-sm truncate'>
             {!userExtendedData ? <LoadingSpinner /> : <>
-              <span className='font-bold text-base'>{userExtendedData.user.name}</span>
-              {!userExtendedData.user.ts ? <span>Unregistered</span> : <>
+              <span className='font-bold text-base'>{userExtendedData.user?.name}</span>
+              {!userExtendedData.user?.ts ? <span>Unregistered for {game.displayName}</span> : <>
+                {isOnline(userExtendedData.user) &&
+                  <div className='flex gap-1 items-center'>
+                    <span className='font-medium'>Currently Playing:</span>
+                    <GameLogoAndLabel gameId={userExtendedData.user.lastGame ?? GameId.THINKY} id={id} />
+                  </div>
+                }
+                {!game.disableGames &&
                 <div className='flex gap-1'>
                   <span className='font-medium'>Rank:</span>
                   <PlayerRank
-                    levelsSolvedByDifficulty={userExtendedData.levelsSolvedByDifficulty}
+                    levelsSolvedByDifficulty={userExtendedData?.levelsSolvedByDifficulty}
                     user={user}
                   />
+                </div>}
+                {!game.disableGames &&
+                <div className='flex gap-1'>
+                  <span className='font-medium'>Ranked Solves:</span>
+                  <span className='gray'>{userExtendedData.user.config?.calcRankedSolves} 🏅</span>
                 </div>
+                }
+                {!game.disableGames &&
                 <div className='flex gap-1'>
                   <span className='font-medium'>Levels Solved:</span>
-                  <span className='gray'>{userExtendedData.user.score}</span>
+                  <span className='gray'>{userExtendedData.user.config?.calcLevelsSolvedCount}</span>
                 </div>
+                }
+                {!user.hideStatus &&
+                  <div className='flex gap-1'>
+                    <span className='font-medium'>Last Seen:</span> <FormattedDate ts={user.last_visited_at ? user.last_visited_at : user.ts} />
+                  </div>
+                }
                 <div className='flex gap-1'>
                   <span className='font-medium'>Registered:</span>
-                  <FormattedDate ts={userExtendedData.user.ts} />
+                  <FormattedDate ts={userExtendedData.user?.ts} />
                 </div>
               </>}
             </>}

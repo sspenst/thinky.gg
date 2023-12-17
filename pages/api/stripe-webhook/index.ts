@@ -1,4 +1,5 @@
 import Discord from '@root/constants/discord';
+import { GameId } from '@root/constants/GameId';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import isPro from '@root/helpers/isPro';
 import { createNewProUserNotification } from '@root/helpers/notificationHelper';
@@ -30,24 +31,17 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
   try {
     await session.withTransaction(async () => {
       const promises = [
-        UserModel.findByIdAndUpdate(
-          userToDowngrade._id,
-          {
-            $pull: {
-              roles: Role.PRO
-            }
-          },
-          {
-            session: session
-          },
-        ),
         // NB: gift recipients do not have a stripe customer id
         UserConfigModel.findOneAndUpdate(
           {
             userId: userToDowngrade._id,
+            // TODO: Get GameId
           },
           {
             stripeCustomerId: null,
+            $pull: {
+              roles: Role.PRO
+            }
           },
           {
             session: session
@@ -65,6 +59,7 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
           UserConfigModel.findOneAndUpdate(
             {
               userId: new Types.ObjectId(giftFromId),
+              // TODO: Get GameId
             },
             {
               $pull: {
@@ -92,11 +87,48 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
 
 async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscription: Stripe.Subscription): Promise<string | undefined> {
   let error: string | undefined;
+  const giftToUserConfig = await UserConfigModel.findOne({ userId: giftToUser._id });
 
-  if (isPro(giftToUser)) {
+  if (isPro(giftToUserConfig)) {
     // TODO: create a coupon and apply it to the existing subscription..
     // https://stripe.com/docs/api/coupons/create
-    error = `${giftToUser.name} is already a pro subscriber. Error applying gift. Please contact support.`;
+
+    error = `${giftFromUser.name} is already a pro subscriber. Error applying gift. Please contact support.`;
+  }
+
+  // Extract product name from properties, if available
+  let productName = 'unknown';
+
+  // Fetch line items for the session
+  try {
+    const lineItems = await stripe.checkout.sessions.listLineItems(subscription.id);
+
+    if (lineItems.data.length > 0) {
+      // Assuming the first line item represents the product purchased
+      const productId = lineItems.data[0].price?.product;
+
+      if (productId) {
+        const product = await stripe.products.retrieve(productId as string);
+
+        productName = product.name;
+      } else {
+        logger.error('Error fetching product details: no product id');
+      }
+    }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (err: any) {
+    logger.error(`Error fetching product details: ${err.message}`);
+  }
+
+  logger.info(`Product name purchasing: ${productName}`);
+
+  let gameId: GameId = GameId.THINKY;
+
+  // TODO: test this
+  if (productName.match(/pathology/i)) {
+    gameId = GameId.PATHOLOGY;
+  } else if (productName.match(/sokoban/i)) {
+    gameId = GameId.SOKOBAN;
   }
 
   if (!error) {
@@ -108,12 +140,17 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
         const type = subscription.metadata?.type as GiftType;
 
         await Promise.all([
-          UserModel.findByIdAndUpdate(
-            giftToUser._id,
+          UserConfigModel.findOneAndUpdate(
             {
+              userId: giftToUser._id,
+              gameId: gameId,
+              // TODO: Get GameId
+            },
+            {
+              // add to set gift subscriptions
               $addToSet: {
                 roles: Role.PRO
-              }
+              },
             },
             {
               session: session
@@ -122,6 +159,8 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
           UserConfigModel.findOneAndUpdate(
             {
               userId: giftFromUser._id,
+              gameId: gameId,
+              // TODO: Get GameId
             },
             {
               // add to set gift subscriptions
@@ -133,7 +172,8 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
               session: session
             },
           ),
-          createNewProUserNotification(giftToUser._id, giftFromUser._id),
+          // TODO: Figure a way to get the game ID from the subscription object since each game should be different, but for now this is fine
+          createNewProUserNotification(gameId, giftToUser._id, giftFromUser._id),
           queueDiscordWebhook(Discord.DevPriv, `💸 [${giftFromUser.name}](https://pathology.gg/profile/${giftFromUser.name}) just gifted ${quantity} ${type === GiftType.Yearly ? 'year' : 'month'}${quantity === 1 ? '' : 's'} of Pro to [${giftToUser.name}](https://pathology.gg/profile/${giftToUser.name})`)
         ]);
       });
@@ -152,12 +192,48 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
 async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.Checkout.Session): Promise<string | undefined> {
   logger.info(`checkoutSessionComplete - ${userToUpgrade.name} (${userToUpgrade._id.toString()})`);
 
+  // Extract product name from properties, if available
+  let productName = 'unknown';
+
+  // Fetch line items for the session
+  try {
+    const lineItems = await stripe.checkout.sessions.listLineItems(properties.id);
+
+    if (lineItems.data.length > 0) {
+      // Assuming the first line item represents the product purchased
+      const productId = lineItems.data[0].price?.product;
+
+      if (productId) {
+        const product = await stripe.products.retrieve(productId as string);
+
+        productName = product.name;
+      } else {
+        logger.error('Error fetching product details: no product id');
+      }
+    }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (err: any) {
+    logger.error(`Error fetching product details: ${err.message}`);
+  }
+
+  logger.info(`Product name purchasing: ${productName}`);
+
+  let gameId: GameId = GameId.THINKY;
+
+  if (productName.match(/pathology/i)) {
+    gameId = GameId.PATHOLOGY;
+  } else if (productName.match(/sokoban/i)) {
+    gameId = GameId.SOKOBAN;
+  }
+
   const customerId = properties.customer;
 
   let error: string | undefined;
 
   // if the user is already a pro subscriber, we don't want to do anything
-  if (isPro(userToUpgrade)) {
+  const userToUpgradeConfig = await UserConfigModel.findOne({ userId: userToUpgrade._id });
+
+  if (isPro(userToUpgradeConfig)) {
     // we want to log the error
     error = `User with id ${userToUpgrade._id} is already a pro subscriber`;
   }
@@ -170,32 +246,28 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
     try {
       await session.withTransaction(async () => {
         await Promise.all([
-          UserModel.findByIdAndUpdate(
-            userToUpgrade._id,
+          UserConfigModel.findOneAndUpdate(
             {
+              userId: userToUpgrade._id,
+              gameId: gameId,
+              // TODO: Get GameId
+            },
+            {
+              stripeCustomerId: customerId,
               $addToSet: {
                 roles: Role.PRO
               }
             },
             {
-              session: session
+              session: session,
+              new: true,
             },
           ),
-          UserConfigModel.findOneAndUpdate(
-            {
-              userId: userToUpgrade._id
-            },
-            {
-              stripeCustomerId: customerId
-            },
-            {
-              session: session
-            },
-          ),
-          createNewProUserNotification(userToUpgrade._id),
-          queueDiscordWebhook(Discord.DevPriv, `💸 [${userToUpgrade.name}](https://pathology.gg/profile/${userToUpgrade.name}) just subscribed!`),
+          createNewProUserNotification(gameId, userToUpgrade._id),
+          queueDiscordWebhook(Discord.DevPriv, `💸 [${userToUpgrade.name}](https://pathology.gg/profile/${userToUpgrade.name}) just subscribed to ${productName}!`),
         ]);
       });
+
       session.endSession();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
@@ -341,6 +413,7 @@ export default apiWrapper({
       const userConfigAgg = await UserConfigModel.aggregate<UserConfig>([
         {
           $match: { stripeCustomerId: customerId },
+          // TODO: Get GameId
         },
         {
           $lookup: {

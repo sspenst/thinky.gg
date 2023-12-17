@@ -1,10 +1,11 @@
+import { GameId } from '@root/constants/GameId';
 import { ValidDate, ValidEnum, ValidNumber, ValidObjectId } from '@root/helpers/apiWrapper';
 import { getEnrichLevelsPipelineSteps } from '@root/helpers/enrich';
 import isPro from '@root/helpers/isPro';
 import withAuth from '@root/lib/withAuth';
+import { LEVEL_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import User from '@root/models/db/user';
 import { PlayAttemptModel, UserModel } from '@root/models/mongoose';
-import { LEVEL_DEFAULT_PROJECTION } from '@root/models/schemas/levelSchema';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
 import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import { PipelineStage, Types } from 'mongoose';
@@ -16,7 +17,7 @@ interface GetPlayAttemptsParams {
   minDurationMinutes?: number;
 }
 
-export async function getPlayAttempts(reqUser: User, params: GetPlayAttemptsParams, limit = 10) {
+export async function getPlayAttempts(gameId: GameId, reqUser: User, params: GetPlayAttemptsParams, limit = 10) {
   const { cursor, datetime, filterSolved, minDurationMinutes } = params;
   const datetimeInSeconds = datetime ? Math.floor(datetime.getTime() / 1000) : undefined;
   const minDurationInSeconds = minDurationMinutes ? minDurationMinutes * 60 : undefined;
@@ -26,6 +27,7 @@ export async function getPlayAttempts(reqUser: User, params: GetPlayAttemptsPara
       $match: {
         isDeleted: { $ne: true },
         userId: reqUser._id,
+        gameId: gameId,
         ...(cursor && { _id: { $lt: cursor } }),
         ...(datetimeInSeconds && { endTime: { $lte: datetimeInSeconds } }),
         ...(filterSolved && { attemptContext: AttemptContext.JUST_SOLVED }),
@@ -107,7 +109,7 @@ export default withAuth({
 
   const { cursor, datetime, filterSolved, minDurationMinutes } = req.query;
 
-  const playAttempts = await getPlayAttempts(req.user, {
+  const playAttempts = await getPlayAttempts(req.gameId, req.user, {
     cursor: new Types.ObjectId(cursor as string),
     datetime: datetime ? new Date(datetime as string) : undefined,
     filterSolved: filterSolved === 'true',

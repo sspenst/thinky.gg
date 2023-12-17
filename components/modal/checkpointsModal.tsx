@@ -163,7 +163,7 @@ interface CheckpointsModalProps {
 }
 
 export default function CheckpointsModal({ closeModal, isOpen }: CheckpointsModalProps) {
-  const { user } = useContext(AppContext);
+  const { game, user } = useContext(AppContext);
 
   return (
     <Modal
@@ -176,10 +176,10 @@ export default function CheckpointsModal({ closeModal, isOpen }: CheckpointsModa
         :
         <div className='flex flex-col gap-4 items-center'>
           <div>
-            With checkpoints, you can <span className='font-bold italic'>save the state</span> of the board to Pathology servers at any moment, making it easy to jump back and retry from a specific point.
+            With checkpoints, you can <span className='font-bold italic'>save the state</span> of the board to {game.displayName} servers at any moment, making it easy to jump back and retry from a specific point.
           </div>
           <div>
-            By upgrading to <Link href='/settings/pro' className='text-blue-500 hover:text-blue-300 outline-none'>Pathology Pro</Link>, you will gain access to this game-changing feature, along with additional benefits designed to enhance your gameplay:
+            By upgrading to <Link href='/settings/pro' className='text-blue-500 hover:text-blue-300 outline-none'>{game.displayName} Pro</Link>, you will gain access to this game-changing feature, along with additional benefits designed to enhance your gameplay:
           </div>
           <Link href='/settings/pro' className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 m-2 rounded focus:outline-none focus:shadow-outline cursor-pointer'>
             Upgrade to Pro

@@ -57,13 +57,14 @@ export default withAuth({
       isPrivate: { $ne: true },
       levels: { $nin: id },
       userId: req.userId,
+      // don't need gameId because we are searching by ids
     }, {
       _id: 1,
     }).lean<Collection[]>();
 
     const notifyCollectionIds = notifyCollections.map(c => c._id.toString());
 
-    promises.push(createNewLevelAddedToCollectionNotification(req.user, level, notifyCollectionIds));
+    promises.push(createNewLevelAddedToCollectionNotification(level.gameId, req.user, level, notifyCollectionIds));
   }
 
   promises.push(

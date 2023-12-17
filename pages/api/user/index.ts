@@ -2,8 +2,8 @@ import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
 import isGuest from '@root/helpers/isGuest';
 import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmationEmail';
 import Collection from '@root/models/db/collection';
+import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import User from '@root/models/db/user';
-import UserConfig from '@root/models/db/userConfig';
 import bcrypt from 'bcryptjs';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
@@ -39,9 +39,9 @@ export default withAuth({
 
   if (req.method === 'GET') {
     const [enrichedUser, multiplayerProfile, userConfig] = await Promise.all([
-      enrichReqUser(req.user),
-      MultiplayerProfileModel.findOne({ 'userId': req.user._id }),
-      getUserConfig(req.user),
+      enrichReqUser(req.gameId, req.user),
+      MultiplayerProfileModel.findOne({ 'userId': req.user._id, gameId: req.gameId }).lean<MultiplayerProfile>(),
+      getUserConfig(req.gameId, req.user),
     ]);
 
     cleanUser(enrichedUser);
@@ -95,13 +95,14 @@ export default withAuth({
       }
 
       if (emailTrimmed !== req.user.email) {
-        setObj['email'] = emailTrimmed;
         const userWithEmail = await UserModel.findOne({ email: email.trim() }, '_id').lean<User>();
 
         if (userWithEmail) {
           return res.status(400).json({ error: 'Email already taken' });
         }
       }
+
+      setObj['email'] = emailTrimmed;
     }
 
     if (bio !== undefined) {
@@ -130,20 +131,13 @@ export default withAuth({
     }
 
     try {
-      const newUser = await UserModel.findOneAndUpdate({ _id: req.userId }, { $set: setObj }, { runValidators: true, new: true, projection: { _id: 1, email: 1, name: 1 } });
+      const newUser = await UserModel.findOneAndUpdate({ _id: req.userId }, { $set: setObj }, { runValidators: true, new: true, projection: { _id: 1, email: 1, name: 1, emailConfirmationToken: 1 } });
 
       if (setObj['email']) {
-        const userConfig = await UserConfigModel.findOneAndUpdate({ userId: req.userId }, {
-          $set: {
-            emailConfirmationToken: getEmailConfirmationToken(),
-            emailConfirmed: false,
-          }
-        }, {
-          new: true,
-          projection: { emailConfirmationToken: 1, },
-        });
+        newUser.emailConfirmationToken = getEmailConfirmationToken();
+        await newUser.save();
 
-        await sendEmailConfirmationEmail(req, newUser, userConfig as UserConfig);
+        await sendEmailConfirmationEmail(req, newUser);
       }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
@@ -158,12 +152,13 @@ export default withAuth({
       try {
         await session.withTransaction(async () => {
           const levels = await LevelModel.find({
-            isDeleted: { $ne: true },
             userId: req.userId,
+            isDeleted: { $ne: true },
+            gameId: req.gameId,
           }, '_id name', { session: session }).lean<Level[]>();
 
           for (const level of levels) {
-            const slug = await generateLevelSlug(trimmedName, level.name, level._id.toString(), { session: session });
+            const slug = await generateLevelSlug(level.gameId, trimmedName, level.name, level._id.toString(), { session: session });
 
             await LevelModel.updateOne({ _id: level._id }, { $set: { slug: slug } }, { session: session });
           }
@@ -171,10 +166,11 @@ export default withAuth({
           // Do the same for collections
           const collections = await CollectionModel.find({
             userId: req.userId,
+            gameId: req.gameId,
           }, '_id name', { session: session }).lean<Collection[]>();
 
           for (const collection of collections) {
-            const slug = await generateCollectionSlug(trimmedName, collection.name, collection._id.toString(), { session: session });
+            const slug = await generateCollectionSlug(req.gameId, trimmedName, collection.name, collection._id.toString(), { session: session });
 
             await CollectionModel.updateOne({ _id: collection._id }, { $set: { slug: slug } }, { session: session });
           }
@@ -209,19 +205,22 @@ export default withAuth({
     try {
       await session.withTransaction(async () => {
         const levels = await LevelModel.find<Level>({
+          userId: req.userId,
           isDeleted: { $ne: true },
           isDraft: false,
-          userId: req.userId,
+          gameId: req.gameId,
         }, '_id name', { session: session }).lean<Level[]>();
 
         for (const level of levels) {
-          const slug = await generateLevelSlug('archive', level.name, level._id.toString(), { session: session });
+          const slug = await generateLevelSlug(level.gameId, 'archive', level.name, level._id.toString(), { session: session });
 
+          // TODO: promise.all this?
           await LevelModel.updateOne({ _id: level._id }, { $set: {
+            userId: new Types.ObjectId(TestId.ARCHIVE),
             archivedBy: req.userId,
             archivedTs: ts,
             slug: slug,
-            userId: new Types.ObjectId(TestId.ARCHIVE),
+
           } }, { session: session });
         }
 

@@ -1,9 +1,12 @@
 import { AchievementRulesCombined } from '@root/constants/achievements/achievementInfo';
+import { GameId } from '@root/constants/GameId';
+import { AppContext } from '@root/contexts/appContext';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import Collection from '@root/models/db/collection';
 import classNames from 'classnames';
 import Image from 'next/image';
 import Link from 'next/link';
-import React from 'react';
+import React, { useContext } from 'react';
 import Dimensions from '../../constants/dimensions';
 import NotificationType from '../../constants/notificationType';
 import getProfileSlug from '../../helpers/getProfileSlug';
@@ -16,6 +19,7 @@ import FormattedCollectionLink from '../formatted/formattedCollectedLink';
 import FormattedDate from '../formatted/formattedDate';
 import FormattedLevelLink from '../formatted/formattedLevelLink';
 import FormattedUser from '../formatted/formattedUser';
+import GameLogo from '../gameLogo';
 import { Stars } from '../level/reviews/formattedReview';
 
 interface NotificationMessageProps {
@@ -64,13 +68,15 @@ function NotificationIcon({ notification }: { notification: Notification }) {
   }
 
   if (!icon) {
-    return <Image alt='logo' src='/logo.svg' width='24' height='24' className='h-6 w-6' />;
+    return <Image alt='logo' src={getGameFromId(GameId.THINKY).logo} width='24' height='24' className='h-6 w-6' />;
   }
 
   return icon;
 }
 
 function NotificationMessage({ notification, onMarkAsRead }: NotificationMessageProps) {
+  const game = getGameFromId(notification.gameId as GameId);
+
   switch (notification.type) {
   case NotificationType.ADMIN_MESSAGE: {
     if (!notification.message) {
@@ -90,6 +96,7 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
     return (<>
       {'set a new record: '}
       <FormattedLevelLink
+        gameId={game.id}
         id={`notification-${notification._id.toString()}`}
         level={notification.target as EnrichedLevel}
         onClick={onMarkAsRead}
@@ -103,6 +110,7 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
         {getNewReviewOnYourLevelBody(notification.message)}
         {' on your level '}
         <FormattedLevelLink
+          gameId={game.id}
           id={`notification-${notification._id.toString()}`}
           level={notification.target as EnrichedLevel}
           onClick={onMarkAsRead}
@@ -117,6 +125,7 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
     return (<>
       {'published a new level: '}
       <FormattedLevelLink
+        gameId={game.id}
         id={`notification-${notification._id.toString()}`}
         level={notification.target as EnrichedLevel}
         onClick={onMarkAsRead}
@@ -125,6 +134,7 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
   case NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION:
     return (<>
       <FormattedLevelLink
+        gameId={game.id}
         id={`notification-${notification._id.toString()}`}
         level={notification.source as EnrichedLevel}
         onClick={onMarkAsRead}
@@ -170,7 +180,6 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
     const isGift = notification.source._id !== notification.target._id;
 
     return (<>
-      <Image alt='logo' src='/pro.svg' width='24' height='24' className='h-4 w-4' />
       {isGift ? 'You received a gift of Pro!' : 'You just upgraded to Pro!'}
       <Link href='/settings/pro' className='underline' onClick={onMarkAsRead}>Check it out!</Link>
     </>);
@@ -188,6 +197,8 @@ interface FormattedNotificationProps {
 }
 
 export default function FormattedNotification({ close, notification, onMarkAsRead }: FormattedNotificationProps) {
+  const { game } = useContext(AppContext);
+
   return (
     <div
       className='p-3 border rounded shadow flex flex-cols-2 justify-between gap-2 items-center'
@@ -196,26 +207,30 @@ export default function FormattedNotification({ close, notification, onMarkAsRea
         color: notification.read ? 'var(--color-gray)' : undefined,
       }}
     >
-      <div className='flex flex-col gap-1 truncate'>
-        {notification.sourceModel === 'User' ?
-          <FormattedUser
-            id={`notification-${notification._id.toString()}`}
-            onClick={() => {
-              onMarkAsRead(true);
 
-              if (close) {
-                close();
-              }
-            }}
-            size={Dimensions.AvatarSizeSmall}
-            user={notification.source as User}
-          />
-          :
-          <div className='flex items-center gap-2 truncate'>
-            <NotificationIcon notification={notification} />
-            <span className='font-bold'>Pathology</span>
-          </div>
-        }
+      <div className='flex flex-col gap-1 truncate'>
+        <div className='flex flex-row items-center gap-1'>
+          <GameLogo gameId={notification.gameId} id={notification._id.toString()} tooltip />
+          {notification.sourceModel === 'User' ?
+            <FormattedUser
+              id={`notification-${notification._id.toString()}`}
+              onClick={() => {
+                onMarkAsRead(true);
+
+                if (close) {
+                  close();
+                }
+              }}
+              size={Dimensions.AvatarSizeSmall}
+              user={notification.source as User}
+            />
+            :
+            <div className='flex items-center gap-2 truncate'>
+              <NotificationIcon notification={notification} />
+              <span className='font-bold'>{game.displayName}</span>
+            </div>
+          }
+        </div>
         <div className='flex items-center justify-between'>
           <div className='focus:outline-none text-sm whitespace-normal truncate flex items-center gap-1 flex-wrap'>
             <NotificationMessage

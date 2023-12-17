@@ -2,7 +2,7 @@ import { GetServerSidePropsContext } from 'next';
 import TestId from '../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
-import { getServerSideProps } from '../../../pages/campaigns';
+import { getServerSideProps } from '../../../pages/[subdomain]/campaigns';
 
 beforeAll(async () => {
   await dbConnect();

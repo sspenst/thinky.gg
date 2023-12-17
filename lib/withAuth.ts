@@ -1,20 +1,24 @@
+import UserConfig from '@root/models/db/userConfig';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 // https://github.com/newrelic/node-newrelic/issues/956#issuecomment-962729137
 import type { NextApiRequest, NextApiResponse } from 'next';
 import requestIp from 'request-ip';
-import { parseReq, ReqValidator } from '../helpers/apiWrapper';
+import { GameId } from '../constants/GameId';
+import { NextApiRequestWrapper, parseReq, ReqValidator } from '../helpers/apiWrapper';
+import { getGameIdFromReq } from '../helpers/getGameIdFromReq';
 import { TimerUtil } from '../helpers/getTs';
 import { logger } from '../helpers/logger';
 import User from '../models/db/user';
-import { UserModel } from '../models/mongoose';
+import { UserConfigModel, UserModel } from '../models/mongoose';
 import dbConnect from './dbConnect';
 import getTokenCookie from './getTokenCookie';
 import isLocal from './isLocal';
 
-export type NextApiRequestWithAuth = NextApiRequest & {
+export interface NextApiRequestWithAuth extends NextApiRequestWrapper {
+  gameId: GameId;
   user: User;
   userId: string;
-};
+}
 
 export async function getUserFromToken(
   token: string | undefined,
@@ -42,10 +46,10 @@ export async function getUserFromToken(
   const decoded = verifiedSignature;
   const userId = decoded.userId as string;
   // dynamically import newrelic
-  const newrelic = await import('newrelic');
+  const newrelic = process.env.NODE_ENV === 'test' ? undefined : await import('newrelic');
 
   if (!isLocal()) {
-    newrelic.addCustomAttribute && newrelic.addCustomAttribute('userId', userId);
+    newrelic?.addCustomAttribute && newrelic.addCustomAttribute('userId', userId);
   }
 
   await dbConnect();
@@ -59,22 +63,30 @@ export async function getUserFromToken(
     },
   };
 
-  const user = await UserModel.findByIdAndUpdate(
+  const gameId = getGameIdFromReq(req);
+  const [user, config] = await Promise.all([UserModel.findByIdAndUpdate(
     userId,
     {
       // Update last visited only if dontUpdateLastSeen is false
       ...(dontUpdateLastSeen ? {} : {
         $set: {
           last_visited_at: last_visited_ts,
+          lastGame: gameId
         },
       }),
       ...ipData,
     },
-    { new: true, projection: '+email +bio' },
-  ).lean<User>();
+    { new: true, projection: '+email +bio +emailConfirmed' },
+  ).lean<User>(),
+  UserConfigModel.findOne({ userId: userId, gameId: gameId }, { gameId: 1, calcRankedSolves: 1, calcLevelsCreatedCount: 1, calcLevelsSolveCount: 1, chapterUnlocked: 1 }).lean<UserConfig>()
+  ]);
 
   if (user && !isLocal()) {
-    newrelic.addCustomAttribute && newrelic.addCustomAttribute('userName', user.name);
+    newrelic?.addCustomAttribute && newrelic.addCustomAttribute('userName', user.name);
+  }
+
+  if (user && config) {
+    user.config = config as UserConfig;
   }
 
   return user;
@@ -111,6 +123,8 @@ export default function withAuth(
       );
 
       res.setHeader('Set-Cookie', refreshCookie);
+
+      req.gameId = getGameIdFromReq(req);
       req.user = reqUser;
       req.userId = reqUser._id.toString();
 

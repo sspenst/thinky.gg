@@ -125,11 +125,7 @@ export default function MusicModal({ closeModal, isOpen }: MusicModalProps) {
             leaveFrom='transform opacity-100 scale-100'
             leaveTo='transform opacity-0 scale-95'
           >
-            <Menu.Items className='absolute m-1 origin-top-right rounded-[10px] shadow-lg border overflow-y-auto overflow-x-hidden' style={{
-              backgroundColor: 'var(--bg-color-2)',
-              borderColor: 'var(--bg-color-4)',
-              color: 'var(--color)',
-            }}>
+            <Menu.Items className='absolute m-1 origin-top-right rounded-[10px] shadow-lg border overflow-y-auto overflow-x-hidden bg-1 border-color-3'>
               <div className='px-1 py-1'>
                 {songs.map((song, index) => {
                   const isSongPlaying = song.title === songMetadata?.title && isPlaying;

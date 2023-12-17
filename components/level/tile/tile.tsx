@@ -3,6 +3,7 @@ import { AppContext } from '@root/contexts/appContext';
 import { GridContext } from '@root/contexts/gridContext';
 import Position from '@root/models/position';
 import classNames from 'classnames';
+import { useTheme } from 'next-themes';
 import React, { useContext, useMemo, useState } from 'react';
 import TileType from '../../../constants/tileType';
 import Block from './block';
@@ -17,6 +18,7 @@ interface TileProps {
   pos: Position;
   text?: number | undefined;
   tileType: TileType;
+  onTopOf?: TileType;
 }
 
 export default function Tile({
@@ -27,11 +29,13 @@ export default function Tile({
   pos,
   text,
   tileType,
+  onTopOf
 }: TileProps) {
   const { borderWidth, innerTileSize, tileSize } = useContext(GridContext);
+  const { game } = useContext(AppContext);
   // initialize the block at the starting position to avoid an animation from the top left
   const [initPos] = useState(new Position(pos.x, pos.y));
-  const { theme } = useContext(AppContext);
+  const { theme } = useTheme();
   const classic = theme === Theme.Classic;
 
   function onClick(e: React.MouseEvent<HTMLDivElement>) {
@@ -77,13 +81,14 @@ export default function Tile({
       <Block
         inHole={inHole ?? false}
         tileType={tileType}
+        onTopOf={onTopOf}
       />
     );
-  }, [atEnd, inHole, text, tileType]);
+  }, [atEnd, inHole, onTopOf, text, tileType]);
 
   return (
     <div
-      className={classNames(`absolute tile-type-${tileType}`, className)}
+      className={classNames(`absolute tile-${game.id} tile-type-${tileType}`, className)}
       onClick={onClick}
       onContextMenu={onClick}
       onTouchEnd={onTouch}

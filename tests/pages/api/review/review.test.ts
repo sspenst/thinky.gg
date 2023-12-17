@@ -1,4 +1,5 @@
 import AchievementType from '@root/constants/achievements/achievementType';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -455,10 +456,11 @@ describe('Reviewing levels should work correctly', () => {
 
         expect(achievements.length).toBe(1);
         expect(achievements[0].type).toBe(AchievementType.REVIEWED_1_LEVEL);
-
+        expect(achievements[0].gameId).toBe(DEFAULT_GAME_ID);
         expect(response.error).toBeUndefined();
         expect(response.score).toBe(3.5);
         expect(response.text).toBe('t'.repeat(500));
+        expect(response.gameId).toBe(DEFAULT_GAME_ID);
         expect(response.levelId).toBe(TestId.LEVEL_2);
         expect(res.status).toBe(200);
 
@@ -543,7 +545,7 @@ describe('Reviewing levels should work correctly', () => {
         const response = await res.json();
         const processQueueRes = await processQueueMessages();
 
-        expect(processQueueRes).toBe('Processed 2 messages with no errors');
+        expect(processQueueRes).toBe('Processed 4 messages with no errors');
         expect(response.error).toBe('Level not found');
         expect(res.status).toBe(404);
 

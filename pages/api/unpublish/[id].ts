@@ -1,3 +1,4 @@
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import mongoose from 'mongoose';
 import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
@@ -13,7 +14,7 @@ import Level from '../../../models/db/level';
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
 import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
-import { CollectionModel, ImageModel, LevelModel, MultiplayerMatchModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
+import { CollectionModel, ImageModel, LevelModel, MultiplayerMatchModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserConfigModel } from '../../../models/mongoose';
 import { generateMatchLog } from '../../../models/schemas/multiplayerMatchSchema';
 import { queueCalcCreatorCounts, queueCalcPlayAttempts, queueRefreshIndexCalcs } from '../internal-jobs/worker';
 
@@ -37,6 +38,12 @@ export default withAuth({ POST: {
     });
   }
 
+  if (level.isRanked) {
+    return res.status(403).json({
+      error: 'Cannot unpublish ranked levels',
+    });
+  }
+
   const session = await mongoose.startSession();
   let newLevelId;
 
@@ -51,7 +58,7 @@ export default withAuth({ POST: {
       // update calc_records if the record was set by a different user
       if (record && record.userId.toString() !== level.userId.toString()) {
         // NB: await to avoid multiple user updates in parallel
-        await UserModel.updateOne({ _id: record.userId }, { $inc: { calc_records: -1 } }, { session: session });
+        await UserConfigModel.updateOne({ userId: record.userId }, { $inc: { calcRecordsCount: -1 } }, { session: session });
       }
 
       const [levelClone, matchesToRebroadcast, stats] = await Promise.all([
@@ -59,6 +66,7 @@ export default withAuth({ POST: {
         MultiplayerMatchModel.find({
           state: MultiplayerMatchState.ACTIVE,
           levels: id,
+          gameId: level.gameId,
         }, {
           _id: 1,
           matchId: 1
@@ -90,7 +98,7 @@ export default withAuth({ POST: {
         RecordModel.updateMany({ levelId: id }, { $set: { isDeleted: true } }, { session: session }),
         ReviewModel.updateMany({ levelId: id }, { $set: { isDeleted: true } }, { session: session }),
         StatModel.updateMany({ levelId: id }, { $set: { isDeleted: true } }, { session: session }),
-        UserModel.updateMany({ _id: { $in: userIds } }, { $inc: { score: -1 } }, { session: session }),
+        UserConfigModel.updateMany({ userId: { $in: userIds } }, { $inc: { calcLevelsSolvedCount: -1 } }, { session: session }),
         // NB: deleted levels are pulled from all collections, so we never need to filter for deleted levels within collections
         CollectionModel.updateMany({ levels: id }, { $pull: { levels: id } }, { session: session }),
         clearNotifications(undefined, undefined, level._id, undefined, { session: session }),
@@ -114,13 +122,15 @@ export default withAuth({ POST: {
       // need to wait for the level to get deleted before we insert the new one (otherwise we get a duplicate key error)
       await LevelModel.insertMany([levelClone], { session: session });
 
+      const game = getGameFromId(level.gameId);
+
       // need to wait for the level to get inserted before we update the stats
       await Promise.all([
         queueRefreshIndexCalcs(levelClone._id, { session: session }),
         queueCalcPlayAttempts(levelClone._id, { session: session }),
-        queueCalcCreatorCounts(level.userId, { session: session }),
-        queueDiscordWebhook(Discord.Levels, `**${req.user.name}** unpublished a level: ${level.name}`, { session: session }),
-        ...matchesToRebroadcast.map(match => requestBroadcastMatch(match.matchId)),
+        queueCalcCreatorCounts(level.gameId, level.userId, { session: session }),
+        queueDiscordWebhook(Discord.Levels, `**${game.displayName}** - **${req.user.name}** unpublished a level: ${level.name}`, { session: session }),
+        ...matchesToRebroadcast.map(match => requestBroadcastMatch(level.gameId, match.matchId)),
       ]);
     });
 

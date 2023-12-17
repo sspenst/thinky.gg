@@ -6,8 +6,10 @@ import AchievementRulesSkill from './AchievementRulesSkill';
 
 export interface IAchievementInfo {
   description: string;
+  discordNotification?: boolean;
   emoji?: string;
   name: string;
+  secret?: boolean;
   tooltip?: string;
 }
 

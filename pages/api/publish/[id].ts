@@ -1,5 +1,7 @@
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
+import { GameId } from '@root/constants/GameId';
 import TileType from '@root/constants/tileType';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import isFullAccount from '@root/helpers/isFullAccount';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
@@ -13,16 +15,17 @@ import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import User from '../../../models/db/user';
-import { LevelModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
+import { LevelModel, RecordModel, StatModel, UserConfigModel } from '../../../models/mongoose';
 import { queueCalcCreatorCounts, queueCalcPlayAttempts, queueRefreshAchievements, queueRefreshIndexCalcs } from '../internal-jobs/worker';
 
-export async function checkPublishRestrictions(userId: Types.ObjectId) {
+export async function checkPublishRestrictions(gameId: GameId, userId: Types.ObjectId) {
   // check last 24h
   const ts = TimerUtil.getTs() - 60 * 60 * 24;
   const recentPublishedLevels = await LevelModel.find<Level>({
     isDraft: false,
     ts: { $gt: ts },
     userId: userId,
+    gameId: gameId
   }).sort({ ts: -1 });
 
   if (recentPublishedLevels.length > 0) {
@@ -51,7 +54,7 @@ export default withAuth({ POST: {
     id: ValidObjectId(),
   },
 } }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-  if (!(await isFullAccount(req.user))) {
+  if (!isFullAccount(req.user)) {
     return res.status(401).json({
       error: 'Publishing a level requires a full account with a confirmed email'
     });
@@ -64,6 +67,7 @@ export default withAuth({ POST: {
   const level = await LevelModel.findOne<Level>({
     _id: id,
     userId: req.userId,
+    // gameId: gameId
   }).lean<Level>();
 
   if (!level) {
@@ -96,10 +100,12 @@ export default withAuth({ POST: {
     });
   }
 
+  // TODO: These queries can probably be combined into one query
   if (await LevelModel.findOne({
     data: level.data,
     isDeleted: { $ne: true },
     isDraft: false,
+    gameId: level.gameId,
   })) {
     return res.status(400).json({
       error: 'An identical level already exists',
@@ -111,13 +117,14 @@ export default withAuth({ POST: {
     isDraft: false,
     name: level.name,
     userId: req.userId,
+    gameId: level.gameId,
   })) {
     return res.status(400).json({
       error: 'A level with this name already exists',
     });
   }
 
-  const error = await checkPublishRestrictions(req.user._id);
+  const error = await checkPublishRestrictions(level.gameId, req.user._id);
 
   if (error) {
     return res.status(400).json({
@@ -131,8 +138,8 @@ export default withAuth({ POST: {
   try {
     await session.withTransaction(async () => {
       const [user, updatedLevel] = await Promise.all([
-        UserModel.findOneAndUpdate({ _id: req.userId }, {
-          $inc: { score: 1 },
+        UserConfigModel.findOneAndUpdate({ userId: req.userId, gameId: level.gameId }, {
+          $inc: { calcLevelsSolvedCount: 1 },
         }, { session: session }).lean<User>(),
         LevelModel.findOneAndUpdate<Level>({ _id: id, isDraft: true }, {
           $set: {
@@ -142,6 +149,7 @@ export default withAuth({ POST: {
         }, { session: session, new: true }),
         RecordModel.create([{
           _id: new Types.ObjectId(),
+          gameId: level.gameId,
           levelId: level._id,
           moves: level.leastMoves,
           ts: ts,
@@ -151,6 +159,7 @@ export default withAuth({ POST: {
           _id: new Types.ObjectId(),
           attempts: 1,
           complete: true,
+          gameId: level.gameId,
           levelId: level._id,
           moves: level.leastMoves,
           ts: ts,
@@ -163,13 +172,15 @@ export default withAuth({ POST: {
         throw new Error('Level not found [RC]');
       }
 
+      const game = getGameFromId(level.gameId);
+
       await Promise.all([
-        queueRefreshAchievements(req.user._id, [AchievementCategory.CREATOR], { session: session }),
+        queueRefreshAchievements(level.gameId, req.user._id, [AchievementCategory.CREATOR], { session: session }),
         queueRefreshIndexCalcs(level._id, { session: session }),
         queueCalcPlayAttempts(level._id, { session: session }),
-        queueCalcCreatorCounts(req.user._id, { session: session }),
-        createNewLevelNotifications(new Types.ObjectId(req.userId), level._id, undefined, { session: session }),
-        queueDiscordWebhook(Discord.Levels, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`, { session: session }),
+        queueCalcCreatorCounts(level.gameId, req.user._id, { session: session }),
+        createNewLevelNotifications(level.gameId, new Types.ObjectId(req.userId), level._id, undefined, { session: session }),
+        queueDiscordWebhook(Discord.Levels, `**${game.displayName}** - **${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`, { session: session }),
       ]);
     });
     session.endSession();

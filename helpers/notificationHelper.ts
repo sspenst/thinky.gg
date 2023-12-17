@@ -1,4 +1,7 @@
+import { GameId } from '@root/constants/GameId';
+import { requestBroadcastNotifications } from '@root/lib/appSocketToClient';
 import Level from '@root/models/db/level';
+import Notification from '@root/models/db/notification';
 import User from '@root/models/db/user';
 import { ClientSession, QueryOptions, SaveOptions, Types } from 'mongoose';
 import AchievementType from '../constants/achievements/achievementType';
@@ -8,7 +11,7 @@ import Achievement from '../models/db/achievement';
 import { AchievementModel, GraphModel, NotificationModel } from '../models/mongoose';
 import { bulkQueuePushNotification, queuePushNotification } from '../pages/api/internal-jobs/worker';
 
-export async function createNewAdminMessageNotifications(userIds: Types.ObjectId[], payload: string, session: ClientSession) {
+export async function createNewAdminMessageNotifications(gameId: GameId, userIds: Types.ObjectId[], payload: string, session: ClientSession) {
   const notificationIds = [];
   const notifications = [];
 
@@ -18,77 +21,89 @@ export async function createNewAdminMessageNotifications(userIds: Types.ObjectId
     notificationIds.push(notificationId);
     notifications.push({
       _id: notificationId,
+      gameId: gameId,
       message: payload,
+      read: false,
       type: NotificationType.ADMIN_MESSAGE,
       userId: userId,
-      read: false,
     });
   }
 
   await NotificationModel.insertMany(notifications, { session: session });
   await bulkQueuePushNotification(notificationIds, session);
+  await Promise.all(userIds.map(userId => requestBroadcastNotifications(gameId, userId)));
 
   return notifications;
 }
 
-export async function createNewWallPostNotification(type: NotificationType.NEW_WALL_POST |NotificationType.NEW_WALL_REPLY, userId: string | Types.ObjectId, sourceUserId: string | Types.ObjectId, targetUserId: string | Types.ObjectId, message: string) {
+export async function createNewWallPostNotification(gameId: GameId, type: NotificationType.NEW_WALL_POST |NotificationType.NEW_WALL_REPLY, userId: string | Types.ObjectId, sourceUserId: string | Types.ObjectId, targetUserId: string | Types.ObjectId, message: string) {
   const id = new Types.ObjectId();
 
   const [notification] = await Promise.all([
     NotificationModel.create([{
       _id: id,
       createdAt: new Date(),
+      gameId: gameId,
       message: message,
+      read: false,
       source: sourceUserId,
       sourceModel: 'User',
       target: targetUserId,
       targetModel: 'User',
       type: type,
       userId: userId,
-      read: false,
     }]),
     queuePushNotification(id),
   ]);
 
+  await requestBroadcastNotifications(gameId, new Types.ObjectId(userId)); // needs to happen after creating the notif
+
   return notification;
 }
 
-export async function createNewProUserNotification(userId: string | Types.ObjectId, fromUser?: string | Types.ObjectId, message?: string) {
+export async function createNewProUserNotification(gameId: GameId, userId: string | Types.ObjectId, fromUser?: string | Types.ObjectId, message?: string) {
   const notification = await NotificationModel.findOneAndUpdate({
     source: fromUser || userId,
     sourceModel: 'User',
     target: userId,
     targetModel: 'User',
     type: NotificationType.UPGRADED_TO_PRO,
+    gameId: gameId,
     // TODO: probably should check for createdAt < 1 day here...
   }, {
+    gameId: gameId,
+    message: message,
+    read: false,
     source: fromUser || userId,
     sourceModel: 'User',
     target: userId,
     targetModel: 'User',
-    message: message,
     type: NotificationType.UPGRADED_TO_PRO,
     userId: userId,
-    read: false,
   }, {
     upsert: true,
     new: true,
   });
 
-  await queuePushNotification(notification._id);
+  await Promise.all([
+    queuePushNotification(notification._id),
+    requestBroadcastNotifications(gameId, new Types.ObjectId(userId)),
+  ]);
 
   return notification;
 }
 
-export async function createNewFollowerNotification(follower: string | Types.ObjectId, following: string | Types.ObjectId) {
+export async function createNewFollowerNotification(gameId: GameId, follower: string | Types.ObjectId, following: string | Types.ObjectId) {
   const notification = await NotificationModel.findOneAndUpdate({
     source: follower,
     sourceModel: 'User',
     target: following,
     type: NotificationType.NEW_FOLLOWER,
     userId: following,
+    gameId: gameId,
     // TODO: probably should check for createdAt < 1 day here...
   }, {
+    gameId: gameId,
     message: '',
     source: follower,
     sourceModel: 'User',
@@ -101,19 +116,29 @@ export async function createNewFollowerNotification(follower: string | Types.Obj
     new: true,
   });
 
-  await queuePushNotification(notification._id);
+  await Promise.all([
+    queuePushNotification(notification._id),
+    requestBroadcastNotifications(gameId, new Types.ObjectId(following)),
+  ]);
 }
 
-export async function createNewReviewOnYourLevelNotification(levelUserId: string | Types.ObjectId, sourceUserId: string | Types.ObjectId, targetLevelId: string | Types.ObjectId, score: string, hasText?: boolean) {
+export async function createNewReviewOnYourLevelNotification(gameId: GameId, levelUserId: Types.ObjectId, sourceUserId: string | Types.ObjectId, targetLevelId: string | Types.ObjectId, score: string, hasText?: boolean) {
+  // should not create a notification if the user is reviewing their own level
+  if (sourceUserId.toString() === levelUserId.toString()) {
+    return null;
+  }
+
   const message = `${String(score)},${String(!!hasText)}`;
 
-  const notification = await NotificationModel.findOneAndUpdate({
+  const notification = await NotificationModel.findOneAndUpdate<Notification>({
     source: sourceUserId,
     sourceModel: 'User',
     target: targetLevelId,
     type: NotificationType.NEW_REVIEW_ON_YOUR_LEVEL,
     userId: levelUserId,
+    gameId: gameId,
   }, {
+    gameId: gameId,
     message: message,
     source: sourceUserId,
     sourceModel: 'User',
@@ -126,16 +151,21 @@ export async function createNewReviewOnYourLevelNotification(levelUserId: string
     new: true,
   });
 
-  await queuePushNotification(notification._id);
+  await Promise.all([
+    queuePushNotification(notification._id),
+    requestBroadcastNotifications(gameId, levelUserId as Types.ObjectId),
+  ]);
 
   return notification;
 }
 
-export async function createNewAchievement(achievementType: AchievementType, userId: Types.ObjectId, disablePushNotification?: boolean, options?: SaveOptions) {
+export async function createNewAchievement(gameId: GameId, achievementType: AchievementType, userId: Types.ObjectId, disablePushNotification?: boolean, options?: SaveOptions) {
   const achievement = await AchievementModel.findOneAndUpdate<Achievement>({
     type: achievementType,
     userId: userId,
+    gameId: gameId,
   }, {
+    gameId: gameId,
     type: achievementType,
     userId: userId,
   }, {
@@ -151,7 +181,9 @@ export async function createNewAchievement(achievementType: AchievementType, use
     targetModel: 'User',
     type: NotificationType.NEW_ACHIEVEMENT,
     userId: userId,
+    gameId: gameId,
   }, {
+    gameId: gameId,
     source: achievement._id,
     sourceModel: 'Achievement',
     target: userId,
@@ -165,13 +197,16 @@ export async function createNewAchievement(achievementType: AchievementType, use
   });
 
   if (!disablePushNotification) {
-    await queuePushNotification(notification._id);
+    await Promise.all([
+      queuePushNotification(notification._id),
+      requestBroadcastNotifications(gameId, userId),
+    ]);
   }
 
   return achievement;
 }
 
-export async function createNewLevelAddedToCollectionNotification(actor: User, level: Level, targetCollectionIds: string[] | Types.ObjectId[]) {
+export async function createNewLevelAddedToCollectionNotification(gameId: GameId, actor: User, level: Level, targetCollectionIds: string[] | Types.ObjectId[]) {
   // let level
   const ids: Types.ObjectId[] = [];
   const createRecords = targetCollectionIds.map(collection => {
@@ -181,6 +216,7 @@ export async function createNewLevelAddedToCollectionNotification(actor: User, l
 
     return {
       _id: id,
+      gameId: gameId,
       message: actor._id,
       source: level._id,
       sourceModel: 'Level',
@@ -193,13 +229,15 @@ export async function createNewLevelAddedToCollectionNotification(actor: User, l
 
   const [nm,] = await Promise.all([
     await NotificationModel.create(createRecords),
-    ...ids.map(id => queuePushNotification(id))
+    ...ids.map(id => queuePushNotification(id)),
   ]);
+
+  await requestBroadcastNotifications(gameId, new Types.ObjectId(level.userId)); // needs to happen after creating the notif
 
   return nm;
 }
 
-export async function createNewLevelNotifications(userIdWhoCreatedLevel: Types.ObjectId, targetLevelId: Types.ObjectId, message?: string, options?: SaveOptions) {
+export async function createNewLevelNotifications(gameId: GameId, userIdWhoCreatedLevel: Types.ObjectId, targetLevelId: Types.ObjectId, message?: string, options?: SaveOptions) {
   const usersThatFollow = await GraphModel.find({
     target: userIdWhoCreatedLevel,
     targetModel: 'User',
@@ -216,6 +254,7 @@ export async function createNewLevelNotifications(userIdWhoCreatedLevel: Types.O
 
     return {
       _id: id,
+      gameId: gameId,
       message: message,
       source: userIdWhoCreatedLevel,
       sourceModel: 'User',
@@ -229,13 +268,15 @@ export async function createNewLevelNotifications(userIdWhoCreatedLevel: Types.O
   // TODO: can probably generate all the ids in the above map and then wrap in a Promise.all
   const [nm,] = await Promise.all([
     await NotificationModel.create(createRecords, options),
-    ...ids.map(id => queuePushNotification(id))
+    ...ids.map(id => queuePushNotification(id)),
   ]);
+
+  await Promise.all(usersThatFollow.map(user => requestBroadcastNotifications(gameId, user.source._id))); // needs to happen after creating the notif
 
   return nm;
 }
 
-export async function createNewRecordOnALevelYouSolvedNotifications(userIds: string[] | Types.ObjectId[], userIdWhoSetNewRecord: string | Types.ObjectId, targetLevelId: string | Types.ObjectId, message?: string, options?: SaveOptions) {
+export async function createNewRecordOnALevelYouSolvedNotifications(gameId: GameId, userIds: string[] | Types.ObjectId[], userIdWhoSetNewRecord: string | Types.ObjectId, targetLevelId: string | Types.ObjectId, message?: string, options?: SaveOptions) {
   const ids: Types.ObjectId[] = [];
   const createRecords = userIds.map(userId => {
     const id = new Types.ObjectId();
@@ -244,6 +285,7 @@ export async function createNewRecordOnALevelYouSolvedNotifications(userIds: str
 
     return {
       _id: id,
+      gameId: gameId,
       message: message,
       source: userIdWhoSetNewRecord,
       sourceModel: 'User',
@@ -256,8 +298,10 @@ export async function createNewRecordOnALevelYouSolvedNotifications(userIds: str
 
   const [nm, ] = await Promise.all([
     NotificationModel.create(createRecords, options),
-    ...ids.map(id => queuePushNotification(id))
+    ...ids.map(id => queuePushNotification(id)),
   ]);
+
+  await Promise.all(userIds.map(userId => requestBroadcastNotifications(gameId, new Types.ObjectId(userId)))); // needs to happen after creating the notif
 
   return nm;
 }

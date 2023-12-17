@@ -141,7 +141,7 @@ async function onRemoteMessage(message: FirebaseMessagingTypes.RemoteMessage) {
 function App() {
   const linkingUrl = Linking.useURL();
   const webViewRef = useRef<WebView>();
-  const [webViewUrl, setWebViewUrl] = useState(`${host}/home?platform=${Platform.OS}&version=1.1`);
+  const [webViewUrl, setWebViewUrl] = useState(`${host}?platform=${Platform.OS}&version=1.1`);
 
   useEffect(() => {
     if (linkingUrl) {
@@ -276,7 +276,8 @@ function App() {
         onNavigationStateChange={(navState) => {
           console.log('NAV STATE CHANGE', navState.url);
 
-          if (navState.url.includes('/home')) {
+          // TODO: need to find another way to do this
+          if (navState.url.includes('/')) {
             // if we make it to this page we are logged in, so register the device for push notifications
             registerDeviceToken();
           } else if (navState.url === host || navState.url === `${host}/`) {

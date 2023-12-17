@@ -1,7 +1,11 @@
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import Direction from '@root/constants/direction';
+import { Games } from '@root/constants/Games';
 import getDifficultyEstimate from '@root/helpers/getDifficultyEstimate';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
+import { randomRotateLevelDataViaMatchHash } from '@root/helpers/randomRotateLevelDataViaMatchHash';
 import PlayAttempt from '@root/models/db/playAttempt';
+import UserConfig from '@root/models/db/userConfig';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
@@ -11,12 +15,11 @@ import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import { createNewRecordOnALevelYouSolvedNotifications } from '../../../helpers/notificationHelper';
-import validateSolution, { randomRotateLevelDataViaMatchHash } from '../../../helpers/validateSolution';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level, { EnrichedLevel } from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
-import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
+import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserConfigModel } from '../../../models/mongoose';
 import { queueRefreshAchievements, queueRefreshIndexCalcs } from '../internal-jobs/worker';
 import { matchMarkCompleteLevel } from '../match/[matchId]';
 
@@ -31,7 +34,8 @@ export default withAuth({
   },
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
-    const stats = await StatModel.find({ userId: new Types.ObjectId(req.userId), isDeleted: { $ne: true } }).lean<Stat[]>();
+    // Todo: only select needed fields here to minimize data transfer
+    const stats = await StatModel.find({ userId: new Types.ObjectId(req.userId), isDeleted: { $ne: true }, gameId: req.gameId }).lean<Stat[]>();
 
     return res.status(200).json(stats);
   } else if (req.method === 'PUT') {
@@ -70,7 +74,9 @@ export default withAuth({
           randomRotateLevelDataViaMatchHash(level, matchId);
         }
 
-        if (!validateSolution(directions, level)) {
+        const validateSolutionFunction = Games[level.gameId].validateSolutionFunction;
+
+        if (!validateSolutionFunction(directions, level)) {
           resTrack.status = 400;
           resTrack.json.error = `Invalid solution provided for level ${levelId}`;
           throw new Error(resTrack.json.error);
@@ -91,12 +97,17 @@ export default withAuth({
 
         const complete = moves <= level.leastMoves;
 
+        const promises = [];
+
         if (complete && matchId) {
           // TODO: use session here
-          await matchMarkCompleteLevel(req.user._id, matchId, level._id);
+          promises.push(matchMarkCompleteLevel(req.user._id, matchId, level._id));
         }
 
-        const stat = await StatModel.findOne({ levelId: level._id, userId: req.user._id }, {}, { session: session }).lean<Stat>();
+        const [stat] = await Promise.all([
+          StatModel.findOne({ userId: req.user._id, levelId: level._id, }, {}, { session: session }).lean<Stat>(),
+          ...promises,
+        ]);
 
         // level was previously solved and no personal best was set, only need to $inc attempts and return
         if (stat && moves >= stat.moves) {
@@ -111,6 +122,7 @@ export default withAuth({
             _id: new Types.ObjectId(),
             attempts: 1,
             complete: complete,
+            gameId: level.gameId,
             levelId: level._id,
             moves: moves,
             ts: ts,
@@ -136,9 +148,15 @@ export default withAuth({
 
         // if the level was previously incomplete, increment score
         if (!stat?.complete) {
+          const userConfigInc: mongoose.AnyKeys<UserConfig> = { calcLevelsSolvedCount: 1 };
+
+          if (level.isRanked) {
+            userConfigInc.calcRankedSolves = 1;
+          }
+
           await Promise.all([
-            UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }, { session: session }),
-            queueRefreshAchievements(req.user._id, [AchievementCategory.SKILL, AchievementCategory.USER], { session: session })
+            UserConfigModel.updateOne({ userId: req.userId, gameId: level.gameId }, { $inc: userConfigInc }, { session: session }),
+            queueRefreshAchievements(level.gameId, req.user._id, [AchievementCategory.SKILL, AchievementCategory.USER], { session: session })
           ]);
         }
 
@@ -148,24 +166,26 @@ export default withAuth({
         if (newRecord) {
           const prevRecord = await RecordModel.findOne<Record>({ levelId: level._id }, {}, { session: session }).sort({ ts: -1 });
 
-          // update calc_records if the previous record was set by a different user
+          // update calcRecordsCount if the previous record was set by a different user
           if (prevRecord && prevRecord.userId.toString() !== req.userId) {
             const authorId = level.archivedBy?.toString() ?? level.userId.toString();
 
-            // decrease calc_records if the previous user was not the original level creator
+            // decrease calcRecordsCount if the previous user was not the original level creator
             if (prevRecord.userId.toString() !== authorId) {
               // NB: await to avoid multiple user updates in parallel
-              await UserModel.updateOne({ _id: prevRecord.userId }, { $inc: { calc_records: -1 } }, { session: session });
+              await UserConfigModel.updateOne({ userId: prevRecord.userId, gameId: level.gameId }, { $inc: { calcRecordsCount: -1 } }, { session: session });
             }
 
-            // increase calc_records if the new user was not the original level creator
+            // increase calcRecordsCount if the new user was not the original level creator
             if (req.userId !== authorId) {
-              await UserModel.updateOne({ _id: req.userId }, { $inc: { calc_records: 1 } }, { session: session });
+              await UserConfigModel.updateOne({ userId: req.userId, gameId: level.gameId }, { $inc: { calcRecordsCount: 1 } }, { session: session });
             }
           }
 
+          // TODO can these two promises be combined to an promise all?
           await RecordModel.create([{
             _id: new Types.ObjectId(),
+            gameId: level.gameId,
             levelId: level._id,
             moves: moves,
             ts: ts,
@@ -174,12 +194,18 @@ export default withAuth({
 
           // find the stats and users that that need to be updated
           const stats = await StatModel.find({
-            complete: true,
-            levelId: level._id,
             userId: { $ne: req.userId },
+            levelId: level._id,
+            complete: true,
           }, 'userId', {
             session: session,
           }).lean<Stat[]>();
+
+          const userConfigInc: mongoose.AnyKeys<UserConfig> = { calcLevelsSolvedCount: -1 };
+
+          if (level.isRanked) {
+            userConfigInc.calcRankedSolves = -1;
+          }
 
           // update all stats/users that had the record on this level
           if (stats.length > 0) {
@@ -191,12 +217,12 @@ export default withAuth({
                 { $set: { complete: false } },
                 { session: session },
               ),
-              UserModel.updateMany(
-                { _id: { $in: statUserIds } },
-                { $inc: { score: -1 } },
+              UserConfigModel.updateMany(
+                { userId: { $in: statUserIds }, gameId: level.gameId },
+                { $inc: userConfigInc },
                 { session: session },
               ),
-              createNewRecordOnALevelYouSolvedNotifications(statUserIds, req.userId, level._id, moves.toString(), { session: session })
+              createNewRecordOnALevelYouSolvedNotifications(level.gameId, statUserIds, req.userId, level._id, moves.toString(), { session: session })
             ]);
           }
 
@@ -223,20 +249,23 @@ export default withAuth({
           incPlayattemptsDurationSum += sumDuration[0]?.sumDuration ?? 0;
 
           // reset all playattempts to unsolved
-          await Promise.all([PlayAttemptModel.updateMany(
-            { levelId: level._id },
-            { $set: { attemptContext: AttemptContext.UNSOLVED } },
-            { session: session },
-          ),
-          queueDiscordWebhook(Discord.Levels, `**${req.user.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`, { session: session })
+          const game = getGameFromId(level.gameId);
+
+          await Promise.all([
+            PlayAttemptModel.updateMany(
+              { levelId: level._id },
+              { $set: { attemptContext: AttemptContext.UNSOLVED } },
+              { session: session },
+            ),
+            queueDiscordWebhook(Discord.Levels, `**${game.displayName}** - **${req.user.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`, { session: session }),
           ]);
         }
 
         // extend the user's recent playattempt up to current ts
         const found = await PlayAttemptModel.findOneAndUpdate({
-          endTime: { $gt: ts - 3 * 60 },
           levelId: level._id,
           userId: req.user._id,
+          endTime: { $gt: ts - 3 * 60 },
         }, {
           $set: {
             attemptContext: AttemptContext.JUST_SOLVED,
@@ -258,10 +287,11 @@ export default withAuth({
           await PlayAttemptModel.create([{
             _id: new Types.ObjectId(),
             attemptContext: AttemptContext.JUST_SOLVED,
-            startTime: ts,
             endTime: ts,
-            updateCount: 0,
+            gameId: level.gameId,
             levelId: level._id,
+            startTime: ts,
+            updateCount: 0,
             userId: req.user._id,
           }], { session: session });
         } else {

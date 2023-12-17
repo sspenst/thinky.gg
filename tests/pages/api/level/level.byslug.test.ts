@@ -1,6 +1,7 @@
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
+import { NextApiRequestWrapper } from '@root/helpers/apiWrapper';
 import { enableFetchMocks } from 'jest-fetch-mock';
-import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
@@ -327,7 +328,8 @@ describe('Testing slugs for levels', () => {
   test('Getting a level by slug when not logged in should work', async () => {
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestWrapper = {
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             username: 'newuser',
@@ -358,7 +360,8 @@ describe('Testing slugs for levels', () => {
   test('Getting an UNDRAFTED level by slug when not logged in should work', async () => {
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestWrapper = {
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             id: 'newuser',
@@ -414,7 +417,8 @@ describe('Testing slugs for levels', () => {
   test('Getting the slug for test-level-1 should still return the original level', async () => {
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestWrapper = {
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             username: 'newuser',
@@ -517,13 +521,13 @@ describe('Testing slugs for levels', () => {
   test('Create 18 levels with same name in DB, so that we can test to make sure the server will not crash. The 19th should crash however.', async () => {
     for (let i = 1; i <= 18; i++) {
       // expect no exceptions
-      const promise = initLevel(TestId.USER, `Sample${'!'.repeat(i)}`);
+      const promise = initLevel(DEFAULT_GAME_ID, TestId.USER, `Sample${'!'.repeat(i)}`);
 
       await expect(promise).resolves.toBeDefined();
     }
 
     // Now create one more, it should throw exception
-    const promise = initLevel(TestId.USER, 'Sample');
+    const promise = initLevel(DEFAULT_GAME_ID, TestId.USER, 'Sample');
 
     await expect(promise).rejects.toThrow('Couldn\'t generate a unique level slug');
   }, 30000);

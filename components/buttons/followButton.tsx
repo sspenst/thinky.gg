@@ -24,15 +24,17 @@ export default function FollowButton({ isFollowing, onResponse, user }: FollowBu
       targetModel: 'User',
     });
 
-    const res = await fetch(`/api/follow?${queryParams}`, {
+    fetch(`/api/follow?${queryParams}`, {
       method: !_isFollowing ? 'PUT' : 'DELETE',
       headers: {
         'Content-Type': 'application/json',
       },
       credentials: 'include',
-    });
+    }).then(async res => {
+      if (res.status !== 200) {
+        throw res.text();
+      }
 
-    if (res.status === 200) {
       const resp: FollowData = await res.json();
 
       setIsFollowing(!!resp.isFollowing);
@@ -40,12 +42,13 @@ export default function FollowButton({ isFollowing, onResponse, user }: FollowBu
       if (onResponse) {
         onResponse(resp);
       }
-    } else {
+    }).catch(async err => {
+      console.error(err);
       toast.dismiss();
-      toast.error('Something went wrong following this user');
-    }
-
-    setDisabled(false);
+      toast.error(JSON.parse(await err)?.error ?? 'Something went wrong following this user');
+    }).finally(() => {
+      setDisabled(false);
+    });
   };
 
   return (

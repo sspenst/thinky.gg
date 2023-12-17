@@ -1,3 +1,4 @@
+import { NextApiRequestWrapper } from '@root/helpers/apiWrapper';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
@@ -19,7 +20,16 @@ describe('pages/api/login/index.ts', () => {
   jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
   test('Sending nothing should return 405', async () => {
     await testApiHandler({
-      handler: handler,
+      handler: async (_, res) => {
+        const req = {
+          method: '',
+          headers: {
+            'content-type': 'application/json'
+          }
+        } as unknown as NextApiRequestWrapper;
+
+        await handler(req, res);
+      },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
@@ -32,10 +42,15 @@ describe('pages/api/login/index.ts', () => {
   test('Sending blank creds should return 401', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
-      handler: handler,
-      requestPatcher: (req) => {
-        req.headers = { key: process.env.SPECIAL_TOKEN };
-        req.method = 'POST';
+      handler: async (_, res) => {
+        const req = {
+          method: 'POST',
+          headers: {
+            key: process.env.SPECIAL_TOKEN
+          }
+        } as unknown as NextApiRequestWrapper;
+
+        await handler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
@@ -50,15 +65,21 @@ describe('pages/api/login/index.ts', () => {
     const credsJSON = { name: 'awiejgpewajigo', password: 'BAD' };
 
     await testApiHandler({
-      handler: handler,
-      test: async ({ fetch }) => {
-        const res = await fetch({
+      handler: async (_, res) => {
+        const req = {
           method: 'POST',
-          body: JSON.stringify(credsJSON),
+          body: credsJSON,
           headers: {
             'content-type': 'application/json' // Must use correct content type
           },
-        });
+
+        } as unknown as NextApiRequestWrapper;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+
         const response = await res.json();
 
         expect(response.error).toBe('Incorrect email or password');
@@ -70,15 +91,20 @@ describe('pages/api/login/index.ts', () => {
     const credsJSON = { name: 'test', password: 'BAD' };
 
     await testApiHandler({
-      handler: handler,
-      test: async ({ fetch }) => {
-        const res = await fetch({
+      handler: async (_, res) => {
+        const req = {
           method: 'POST',
-          body: JSON.stringify(credsJSON),
+          body: credsJSON,
           headers: {
             'content-type': 'application/json' // Must use correct content type
           },
-        });
+
+        } as unknown as NextApiRequestWrapper;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
         const response = await res.json();
 
         expect(response.error).toBe('Incorrect email or password');
@@ -90,15 +116,20 @@ describe('pages/api/login/index.ts', () => {
     const credsJSON = { name: 'test', password: 'test1234' };
 
     await testApiHandler({
-      handler: handler,
-      test: async ({ fetch }) => {
-        const res = await fetch({
+      handler: async (_, res) => {
+        const req = {
           method: 'POST',
-          body: JSON.stringify(credsJSON),
+          body: credsJSON,
           headers: {
             'content-type': 'application/json' // Must use correct content type
-          }
-        });
+          },
+
+        } as unknown as NextApiRequestWrapper;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
         const response = await res.json();
 
         expect(response.error).toBeUndefined();
@@ -111,15 +142,20 @@ describe('pages/api/login/index.ts', () => {
     const credsJSON = { name: 'test@gmail.com', password: 'test1234' };
 
     await testApiHandler({
-      handler: handler,
-      test: async ({ fetch }) => {
-        const res = await fetch({
+      handler: async (_, res) => {
+        const req = {
           method: 'POST',
-          body: JSON.stringify(credsJSON),
+          body: credsJSON,
           headers: {
             'content-type': 'application/json' // Must use correct content type
-          }
-        });
+          },
+
+        } as unknown as NextApiRequestWrapper;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
         const response = await res.json();
 
         expect(response.success).toBe(true);

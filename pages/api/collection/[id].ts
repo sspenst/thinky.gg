@@ -8,7 +8,6 @@ import { generateCollectionSlug } from '../../../helpers/generateSlug';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
 import { CollectionModel } from '../../../models/mongoose';
-import { getCollection } from '../collection-by-id/[id]';
 
 type UpdateLevelParams = {
   authorNote?: string,
@@ -19,11 +18,6 @@ type UpdateLevelParams = {
 }
 
 export default withAuth({
-  GET: {
-    query: {
-      id: ValidObjectId(),
-    }
-  },
   PUT: {
     query: {
       id: ValidObjectId(),
@@ -41,26 +35,7 @@ export default withAuth({
     }
   }
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-  if (req.method === 'GET') {
-    const { id } = req.query;
-
-    const collection = await getCollection({
-      matchQuery: {
-        _id: new Types.ObjectId(id as string),
-        userId: req.user._id,
-      },
-      reqUser: req.user,
-      includeDraft: true,
-    });
-
-    if (!collection) {
-      return res.status(404).json({
-        error: 'Error finding Collection',
-      });
-    }
-
-    return res.status(200).json(collection);
-  } else if (req.method === 'PUT') {
+  if (req.method === 'PUT') {
     const { id } = req.query;
     const { authorNote, isPrivate, name, levels } = req.body as UpdateLevelParams;
     const setIsPrivate = isPro(req.user) ? !!isPrivate : false;
@@ -111,7 +86,7 @@ export default withAuth({
           const trimmedName = name.trim();
 
           setObj.name = trimmedName;
-          setObj.slug = await generateCollectionSlug(req.user.name, trimmedName, id as string, { session: session });
+          setObj.slug = await generateCollectionSlug(req.gameId, req.user.name, trimmedName, id as string, { session: session });
 
           if (setObj.slug.endsWith('/play-later')) {
             errorCode = 400;
@@ -123,6 +98,7 @@ export default withAuth({
         collection = await CollectionModel.findOneAndUpdate({
           _id: id,
           userId: req.userId,
+          // gameId unnecessary because we are querying by id
         }, {
           $set: setObj,
         }, {

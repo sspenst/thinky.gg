@@ -28,7 +28,7 @@ body {
 
 .theme-accessible {
   --bg-color: rgb(0, 0, 0);
-  --bg-color-2: rgb(0, 0, 0);
+  --bg-color-2: rgb(20, 20, 20);
   --bg-color-3: rgb(50, 50, 50);
   --bg-color-4: rgb(80, 80, 80);
   --color: rgb(255, 255, 255);
@@ -116,7 +116,7 @@ body {
 
 .theme-dark {
   --bg-color: rgb(0, 0, 0);
-  --bg-color-2: rgb(0, 0, 0);
+  --bg-color-2: rgb(20, 20, 20);
   --bg-color-3: rgb(50, 50, 50);
   --bg-color-4: rgb(80, 80, 80);
   --color: rgb(255, 255, 255);
@@ -140,7 +140,7 @@ body {
 
 .theme-light {
   --bg-color: rgb(255, 255, 255);
-  --bg-color-2: rgb(255, 255, 255);
+  --bg-color-2: rgb(240, 240, 240);
   --bg-color-3: rgb(220, 220, 220);
   --bg-color-4: rgb(150, 150, 150);
   --color: rgb(0, 0, 0);
@@ -184,6 +184,59 @@ body {
   --level-player-extra: rgb(240, 80, 80);
   --level-player-text: rgb(0, 0, 0);
   --level-wall: rgb(38, 38, 38);
+}
+
+.tile-sokoban {
+  --level-block: rgb(255, 250, 200, 0);
+}
+
+.tile-sokoban {
+  /** make the borders have a cool effect */
+  border: 0px ridge; /* other options are dotted, double, groove, ridge, inset, outset */
+  border-radius: 5px;
+}
+
+@property --border-angle {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0turn;
+}
+.tile-sokoban.tile-type-3 {
+
+  --border-size: 3px;
+  --border-angle: 0turn;
+  --level-grid-text: rgb(200, 215, 255);
+
+  background-image: conic-gradient(
+      from var(--border-angle),
+      #213,
+      #122 50%,
+      #213
+    ),
+    conic-gradient(from var(--border-angle), transparent 20%, #0af, #ff3);
+  background-size: calc(100% - (var(--border-size) * 2))
+      calc(100% - (var(--border-size) * 2)),
+    cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+
+  
+  animation: bg-spin 7s linear infinite;
+
+}
+
+@keyframes bg-spin {
+  to {
+    --border-angle: 1turn;
+  }
+}
+
+
+.tile-sokoban.tile-type-5 {
+  /** make the borders have a cool effect */
+  border: 0px inset;
+
+
 }
 
 .theme-boss {
@@ -256,6 +309,10 @@ body {
   --level-player-extra: rgb(178, 0, 111);
   --level-player-text: rgb(0, 0, 0);
   --level-wall: rgb(38, 38, 38);
+}
+
+[data-theme-dark="true"] {
+  color-scheme: dark;
 }
 
 #arrow,

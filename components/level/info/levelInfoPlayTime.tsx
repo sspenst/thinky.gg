@@ -1,4 +1,5 @@
 import { Tab } from '@headlessui/react';
+import LoadingSpinner from '@root/components/page/loadingSpinner';
 import { RoleIcon } from '@root/components/page/roleIcons';
 import StyledTooltip from '@root/components/page/styledTooltip';
 import Role from '@root/constants/role';
@@ -32,7 +33,7 @@ function getTimePlayedStr(sum: number, short = false) {
 export default function LevelInfoPlayTime() {
   const levelContext = useContext(LevelContext);
   const proStatsLevel = levelContext?.proStatsLevel;
-  const { user } = useContext(AppContext);
+  const { game, user } = useContext(AppContext);
 
   if (!isPro(user)) {
     return (
@@ -40,14 +41,18 @@ export default function LevelInfoPlayTime() {
         <RoleIcon id='level-info-play-time' role={Role.PRO} size={20} />
         <div>
           Get <Link href='/settings/pro' className='text-blue-300'>
-            Pathology Pro
+            {game.displayName} Pro
           </Link> to see your play time for this level.
         </div>
       </div>
     );
   }
 
-  if (!proStatsLevel || !proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime]) {
+  if (!proStatsLevel) {
+    return <LoadingSpinner />;
+  }
+
+  if (!proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime]) {
     return <div className='text-sm'>No play time data available.</div>;
   }
 

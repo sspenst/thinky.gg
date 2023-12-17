@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import { Types } from 'mongoose';
 import Collection, { EnrichedCollection } from './collection';
 
@@ -6,6 +7,7 @@ interface Campaign {
   authorNote?: string;
   collections: Types.Array<Types.ObjectId & Collection> | EnrichedCollection[];
   collectionsPopulated?: Types.Array<Types.ObjectId & Collection> | EnrichedCollection[]; // virtual
+  gameId: GameId;
   name: string;
   slug: string;
 }

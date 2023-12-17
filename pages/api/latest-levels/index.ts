@@ -1,17 +1,20 @@
+import { GameId } from '@root/constants/GameId';
 import StatFilter from '@root/constants/statFilter';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import TimeRange from '../../../constants/timeRange';
 import apiWrapper from '../../../helpers/apiWrapper';
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
 import User from '../../../models/db/user';
-import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
 import { doQuery } from '../search';
 
 export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
   const token = req.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, req) : null;
-  const levels = await getLatestLevels(reqUser);
+  const gameId = getGameIdFromReq(req);
+  const levels = await getLatestLevels(gameId, reqUser);
 
   if (!levels) {
     return res.status(500).json({
@@ -22,9 +25,9 @@ export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiR
   return res.status(200).json(levels);
 });
 
-export async function getLatestLevels(reqUser: User | null = null) {
+export async function getLatestLevels(gameId: GameId, reqUser: User | null = null) {
   await dbConnect();
-  const query = await doQuery({
+  const query = await doQuery(gameId, {
     disableCount: 'true',
     minRating: '0.5',
     maxRating: '1.0',

@@ -1,8 +1,8 @@
 import { getEnrichLevelsPipelineSteps, getEnrichUserIdPipelineSteps } from '@root/helpers/enrich';
 import cleanUser from '@root/lib/cleanUser';
+import { LEVEL_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { EnrichedLevel } from '@root/models/db/level';
 import { LevelModel } from '@root/models/mongoose';
-import { LEVEL_DEFAULT_PROJECTION } from '@root/models/schemas/levelSchema';
 import { PipelineStage, Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { ValidObjectIdArray } from '../../../helpers/apiWrapper';
@@ -34,7 +34,8 @@ export default withAuth({
         },
         isDeleted: {
           $ne: true
-        }
+        },
+        gameId: req.gameId,
       },
     },
 

@@ -4,7 +4,7 @@ import TestId from '../../../constants/testId';
 import { logger } from '../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
-import { getServerSideProps } from '../../../pages/collection/[username]/[slugName]';
+import { getServerSideProps } from '../../../pages/[subdomain]/collection/[username]/[slugName]';
 
 beforeAll(async () => {
   await dbConnect();

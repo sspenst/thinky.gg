@@ -1,14 +1,15 @@
 import DidYouKnowTip from '@root/components/page/didYouKnowTip';
+import { AppContext } from '@root/contexts/appContext';
 import useHomePageData, { HomepageDataType } from '@root/hooks/useHomePageData';
 import Collection from '@root/models/db/collection';
 import Level, { EnrichedLevel } from '@root/models/db/level';
 import User from '@root/models/db/user';
 import Link from 'next/link';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import Card from '../cards/card';
 import ChapterSelectCard from '../cards/chapterSelectCard';
 import { getDifficultyFromValue } from '../formatted/formattedDifficulty';
-import RecommendedLevel from '../homepage/recommendedLevel';
+import RecommendedLevel from '../home/recommendedLevel';
 import FormattedLevelReviews from '../level/reviews/formattedLevelReviews';
 import ShareBar from '../social/shareBar';
 import Modal from '.';
@@ -38,6 +39,7 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
     }
   }
 
+  const { game } = useContext(AppContext);
   const { data } = useHomePageData([HomepageDataType.RecommendedLevel], !isOpen || nextLevel !== undefined);
   const [queryParams, setQueryParams] = useState({});
   const [recommendedLevel, setRecommendedLevel] = useState<EnrichedLevel>();
@@ -58,14 +60,14 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
     setQueryParams(new URLSearchParams(window.location.search));
   }, []);
 
-  const url = `https://pathology.gg/level/${level.slug}`;
-  const quote = 'Just completed Pathology.gg puzzle "' + level.name + '" (Difficulty: ' + getDifficultyFromValue(level.calc_difficulty_estimate).name + ')';
+  const url = `${game.baseUrl}/level/${level.slug}`;
+  const quote = 'Just completed ' + game.displayName + ' puzzle "' + level.name + '" (Difficulty: ' + getDifficultyFromValue(level.calc_difficulty_estimate).name + ')';
 
   function nextActionCard() {
     if (nextLevel) {
       return (
         <RecommendedLevel
-          hrefOverride={`/level/${nextLevel.slug}?${queryParams}`}
+          hrefOverride={`/level/${nextLevel.slug}${Object.keys(queryParams).length !== 0 ? `?${queryParams}` : ''}`}
           id='next-level'
           level={nextLevel}
           onClick={closeModal}

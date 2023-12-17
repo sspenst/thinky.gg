@@ -83,6 +83,8 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
           <Controls controls={controls} />
         </div>
         <button
+          data-tooltip-content='Fullscreen'
+          data-tooltip-id='fullscreen-tooltip'
           id='fullscreenBtn'
           onClick={() => {
             const el = document.getElementById('game-layout');
@@ -111,6 +113,7 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
             </svg>
           }
         </button>
+        <StyledTooltip id='fullscreen-tooltip' />
       </div>
     </div>
   );

@@ -1,13 +1,14 @@
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import { NextApiRequestWrapper } from '@root/helpers/apiWrapper';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';
-import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
-import { EmailDigestSettingTypes } from '../../../../constants/emailDigest';
+import { EmailDigestSettingType } from '../../../../constants/emailDigest';
 import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
-import { EmailLogModel, UserConfigModel } from '../../../../models/mongoose';
+import { EmailLogModel, UserModel } from '../../../../models/mongoose';
 import { EmailState } from '../../../../models/schemas/emailLogSchema';
 import handler from '../../../../pages/api/internal-jobs/email-digest';
 
@@ -28,15 +29,16 @@ jest.mock('nodemailer', () => ({
   })),
 }));
 
-const defaultReq: NextApiRequest = {
+const defaultReq: NextApiRequestWrapper = {
   method: 'GET',
+  gameId: DEFAULT_GAME_ID,
   query: {
     secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
   },
   headers: {
     'content-type': 'application/json',
   },
-} as unknown as NextApiRequest;
+} as unknown as NextApiRequestWrapper;
 
 afterEach(() => {
   jest.restoreAllMocks();
@@ -56,7 +58,9 @@ describe('Email auto unsubscribe', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
-    await UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.DAILY, emailConfirmed: false }, {});
+    await Promise.all([
+      UserModel.findOneAndUpdate({ _id: TestId.USER }, { emailConfirmed: false, emailDigest: EmailDigestSettingType.DAILY }).lean()
+    ]);
 
     for (let day = 0; day < 12; day++) {
       await dbConnect();
@@ -75,11 +79,10 @@ describe('Email auto unsubscribe', () => {
           if (day <= 6) {
             expect(totalEmailsSent.length).toBe(day + 1);
             expect(response.emailUnsubscribeSent).toHaveLength(0);
-            expect(response.emailDigestSent).toHaveLength(2);
+            expect(response.emailDigestSent).toHaveLength(3);
+            expect(response.emailDigestSent.sort()).toMatchObject(['bbb@gmail.com', 'test@gmail.com', 'the_curator@gmail.com'].sort());
             // sort response.emailDigestSent array alphabetically
 
-            expect(response.emailDigestSent[0]).toBe('bbb@gmail.com');
-            expect(response.emailDigestSent[1]).toBe('test@gmail.com');
             expect(response.emailReactivationSent).toHaveLength(0);
           } else if (day === 7) {
             expect(totalEmailsSent.length).toBe(day + 1);
@@ -89,9 +92,7 @@ describe('Email auto unsubscribe', () => {
           } else if (day > 7 && day < 10) {
             expect(totalEmailsSent.length).toBe(day + 1);
             expect(response.emailUnsubscribeSent).toHaveLength(0);
-            expect(response.emailDigestSent).toHaveLength(2);
-            expect(response.emailDigestSent[0]).toBe('bbb@gmail.com');
-            expect(response.emailDigestSent[1]).toBe('test@gmail.com');
+            expect(response.emailDigestSent.sort()).toMatchObject(['bbb@gmail.com', 'test@gmail.com', 'the_curator@gmail.com'].sort());
             expect(response.emailReactivationSent).toHaveLength(0);
 
             if (day === 9) {
@@ -111,7 +112,8 @@ describe('Email auto unsubscribe', () => {
             expect(totalEmailsFailed.length).toBe(2);
             expect(totalEmailsPending.length).toBe(0);
             expect(response.emailDigestSent).toHaveLength(0);
-            expect(response.emailDigestFailed).toHaveLength(2); // because the unsubscribe failed - it'll try to send the digest again.. and the mock is still pointing to the failure
+            expect(response.emailDigestFailed).toHaveLength(3); // because the unsubscribe failed - it'll try to send the digest again.. and the mock is still pointing to the failure
+            expect(response.emailDigestFailed.sort()).toMatchObject(['bbb@gmail.com', 'test@gmail.com', 'the_curator@gmail.com'].sort());
             expect(response.emailReactivationSent).toHaveLength(0);
             sendMailRefMock.ref = acceptMock;
           } else if (day === 11) {
@@ -121,7 +123,8 @@ describe('Email auto unsubscribe', () => {
             expect(response.emailUnsubscribeFailed).toHaveLength(0);
             expect(response.emailUnsubscribeSent).toHaveLength(1);
             expect(response.emailUnsubscribeSent[0]).toBe('test@gmail.com');
-            expect(response.emailDigestSent).toHaveLength(1);
+            expect(response.emailDigestSent).toHaveLength(2);
+            expect(response.emailDigestSent.sort()).toMatchObject(['bbb@gmail.com', 'the_curator@gmail.com'].sort());
             expect(response.emailReactivationSent).toHaveLength(0);
             // hopefully we tried again to send email
           } else if (day > 11) {

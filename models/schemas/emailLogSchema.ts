@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
 import mongoose from 'mongoose';
 import { EmailType } from '../../constants/emailDigest';
@@ -19,10 +20,15 @@ const EmailLogSchema = new mongoose.Schema<EmailLog>(
       type: String,
       required: false,
     },
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+    gameId: {
+      type: String,
+      enum: GameId,
       required: true,
+    },
+    state: {
+      type: String,
+      required: true,
+      enum: EmailState,
     },
     subject: {
       type: String,
@@ -30,15 +36,15 @@ const EmailLogSchema = new mongoose.Schema<EmailLog>(
       minlength: 1,
       maxlength: 1000,
     },
-    state: {
-      type: String,
-      required: true,
-      enum: EmailState,
-    },
     type: {
       type: String,
       required: true,
       enum: Object.values({ ...EmailType, ...NotificationType }),
+    },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
     },
   },
   {

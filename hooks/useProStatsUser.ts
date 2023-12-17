@@ -1,3 +1,4 @@
+import { LevelWithRecordHistory } from '@root/helpers/getRecordsByUserId';
 import { DifficultyLevelComparison } from '../components/profile/profileInsightsSolveTimeComparison';
 import { DateAndSum, UserAndSum, UserLevelAndStatTs } from '../contexts/levelContext';
 import User from '../models/db/user';
@@ -8,6 +9,7 @@ export enum ProStatsUserType {
   MostSolvesForUserLevels = 'most-solves-for-user-levels',
   ScoreHistory = 'score-history',
   PlayLogForUserCreatedLevels = 'play-log-for-user-created-levels',
+  Records = 'records',
 }
 
 export interface ProStatsUser {
@@ -16,6 +18,7 @@ export interface ProStatsUser {
   [ProStatsUserType.DifficultyLevelsComparisons]?: DifficultyLevelComparison[];
   [ProStatsUserType.MostSolvesForUserLevels]?: UserAndSum[];
   [ProStatsUserType.PlayLogForUserCreatedLevels]?: UserLevelAndStatTs[];
+  [ProStatsUserType.Records]?: LevelWithRecordHistory[];
 }
 
 export default function useProStatsUser(user: User | null, type: ProStatsUserType) {

@@ -1,15 +1,13 @@
 import Dimensions from '@root/constants/dimensions';
 import { MusicContext } from '@root/contexts/musicContext';
 import { PageContext } from '@root/contexts/pageContext';
-import { CollectionType } from '@root/models/constants/collection';
-import SelectOptionStats from '@root/models/selectOptionStats';
 import classNames from 'classnames';
 import Link from 'next/link';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
-import Collection from '../../models/db/collection';
+import React, { Dispatch, SetStateAction, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import Collection, { EnrichedCollection } from '../../models/db/collection';
 import { EnrichedLevel } from '../../models/db/level';
 import User from '../../models/db/user';
-import SelectCard from '../cards/selectCard';
+import CollectionScrollList from '../collection/collectionScrollList';
 import FormattedUser from '../formatted/formattedUser';
 import Modal from '../modal';
 import LevelInfoModal from '../modal/levelInfoModal';
@@ -20,22 +18,37 @@ import Solved from './info/solved';
 
 interface GameWrapperProps {
   chapter?: string;
-  collection: Collection | null;
+  collection: EnrichedCollection | Collection | null;
   level: EnrichedLevel;
   onNext: () => void;
   onPrev: () => void;
+  setCollection: Dispatch<SetStateAction<EnrichedCollection | Collection | null>>;
   user: User | null;
 }
 
-export default function GameWrapper({ chapter, collection, level, onNext, onPrev, user }: GameWrapperProps) {
-  const [collectionViewHidden, setCollectionViewHidden] = useState(false);
+export default function GameWrapper({ chapter, collection, level, onNext, onPrev, setCollection, user }: GameWrapperProps) {
   const [dontShowPostGameModal, setDontShowPostGameModal] = useState(false);
+  const isCollectionLoading = useRef(false);
+  const [isCollectionViewHidden, setIsCollectionViewHidden] = useState(false);
   const { isDynamic, isDynamicSupported, toggleVersion } = useContext(MusicContext);
   const [isLevelInfoOpen, setIsLevelInfoOpen] = useState(false);
   const [mutePostGameModalForThisLevel, setMutePostGameModalForThisLevel] = useState(false);
   const [postGameModalOpen, setShowPostGameModalOpen] = useState(false);
   const { setPreventKeyDownEvent } = useContext(PageContext);
   const [showCollectionViewModal, setShowCollectionViewModal] = useState(false);
+
+  useEffect(() => {
+    const storedCollectionViewHidden = localStorage.getItem('isCollectionViewHidden');
+
+    // only need to set this if we are altering the default state
+    if (storedCollectionViewHidden === 'true') {
+      setIsCollectionViewHidden(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('isCollectionViewHidden', isCollectionViewHidden ? 'true' : 'false');
+  }, [isCollectionViewHidden]);
 
   useEffect(() => {
     const storedPref = localStorage.getItem('dontShowPostGameModal');
@@ -55,24 +68,6 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
     setMutePostGameModalForThisLevel(false);
     setShowCollectionViewModal(false);
   }, [level._id]);
-
-  // scroll to the collection level on level change
-  useEffect(() => {
-    if (!collection) {
-      return;
-    }
-
-    const anchorId = `collection-level-sidebar-${level._id.toString()}`;
-    const anchor = document.getElementById(anchorId);
-
-    if (anchor) {
-      anchor.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center',
-        inline: 'nearest',
-      });
-    }
-  }, [collection, level._id]);
 
   function scrollModalToCollectionLevel() {
     setTimeout(() => {
@@ -109,30 +104,19 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
       return null;
     }
 
-    return (<>
-      {collection.levels.map((levelInCollection) => {
-        const isCurrentLevel = level._id.toString() === levelInCollection._id.toString();
-        const anchorId = `collection-level-${id}-${levelInCollection._id.toString()}`;
-        const href = '/level/' + levelInCollection.slug + (collection.type !== CollectionType.InMemory ? '?cid=' + collection._id.toString() : '');
-
-        return (
-          <div className={classNames({ 'bg-3': isCurrentLevel }, { 'rounded-xl': id === 'modal' })} id={anchorId} key={anchorId}>
-            <SelectCard option={{
-              author: levelInCollection.userId?.name,
-              hideDifficulty: true,
-              hideStats: false,
-              href: href,
-              id: levelInCollection._id.toString(),
-              level: levelInCollection,
-              text: levelInCollection.name,
-              stats: new SelectOptionStats(levelInCollection.leastMoves, (levelInCollection as EnrichedLevel)?.userMoves),
-              width: 216,
-            }} />
-          </div>
-        );
-      })}
-    </>);
-  }, [collection, level._id]);
+    return (
+      <CollectionScrollList
+        collection={collection}
+        id={id}
+        isHidden={isCollectionViewHidden}
+        onLoading={(loading) => {
+          isCollectionLoading.current = loading;
+        }}
+        setCollection={setCollection}
+        targetLevel={level}
+      />
+    );
+  }, [collection, isCollectionViewHidden, level, setCollection]);
 
   return (
     <div className='flex h-full'>
@@ -156,7 +140,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
               }}
               title={getCollectionTitle()}
             >
-              <div className='flex justify-center'>
+              <div className='flex justify-center' >
                 <div className='flex flex-col w-fit items-center'>
                   {getCollectionLevelList('modal')}
                 </div>
@@ -206,8 +190,20 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
           enableSessionCheckpoint={true}
           key={`game-${level._id.toString()}`}
           level={level}
-          onNext={collection ? onNext : undefined}
-          onPrev={collection ? onPrev : undefined}
+          onNext={collection ? () => {
+            if (isCollectionLoading.current) {
+              return;
+            }
+
+            onNext();
+          } : undefined}
+          onPrev={collection ? () => {
+            if (isCollectionLoading.current) {
+              return;
+            }
+
+            onPrev();
+          } : undefined}
           onSolve={() => {
             if (isDynamicSupported && isDynamic) {
               toggleVersion('hot');
@@ -223,28 +219,31 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
           }}
         />
       </div>
-      {collection && !collectionViewHidden &&
-        <div className='hidden xl:flex flex-col items-center border-l border-color-4 w-60'>
+      {collection &&
+        <div className={classNames(
+          'hidden flex-col items-center border-l border-color-4 w-60',
+          // NB: we want to keep this component in the DOM when it is hidden by the user
+          // this allows updating the collection level list on level change to continue running behind the scenes
+          { 'xl:flex': !isCollectionViewHidden },
+        )}>
           <div className='flex justify-between w-full gap-2 items-center px-4 py-3 border-b border-color-4'>
             {getCollectionTitle()}
-            <button onClick={() => setCollectionViewHidden(!collectionViewHidden)}>
+            <button onClick={() => setIsCollectionViewHidden(true)}>
               <svg className='w-5 h-5 hover:opacity-100 opacity-50' fill='currentColor' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg' style={{ minWidth: 20, minHeight: 20 }}>
                 <path fillRule='evenodd' d='M6 8a.5.5 0 0 0 .5.5h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L12.293 7.5H6.5A.5.5 0 0 0 6 8Zm-2.5 7a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5Z' />
               </svg>
             </button>
           </div>
-          <div className='overflow-y-auto max-w-full'>
-            {getCollectionLevelList('sidebar')}
-          </div>
+          {getCollectionLevelList('sidebar')}
         </div>
       }
-      <div className='hidden xl:block border-l border-color-4 break-words z-10 h-full w-100 overflow-y-auto'>
-        {collection && collectionViewHidden &&
+      <div className='hidden xl:flex flex-col border-l border-color-4 break-words z-10 h-full w-100'>
+        {collection && isCollectionViewHidden &&
           <button
             className='flex items-center gap-4 w-full border-b border-color-4 hover-bg-3 transition px-4 py-3'
             onClick={() => {
-              if (setCollectionViewHidden) {
-                setCollectionViewHidden(!collectionViewHidden);
+              if (setIsCollectionViewHidden) {
+                setIsCollectionViewHidden(false);
               }
             }}
           >
@@ -254,7 +253,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
             <span className='font-bold text-left whitespace-pre-wrap truncate'>{collection.name}</span>
           </button>
         }
-        <div className='px-4 py-3'>
+        <div className='px-4 py-3 overflow-y-auto'>
           <FormattedLevelInfo level={level} />
         </div>
       </div>

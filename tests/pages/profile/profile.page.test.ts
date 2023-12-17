@@ -1,3 +1,4 @@
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext } from 'next';
 import { Logger } from 'winston';
@@ -10,23 +11,29 @@ import { createNewReviewOnYourLevelNotification } from '../../../helpers/notific
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
 import { GraphModel, UserModel } from '../../../models/mongoose';
+import { getServerSideProps, ProfileTab } from '../../../pages/[subdomain]/profile/[name]/[[...tab]]/index';
 import * as search from '../../../pages/api/search';
-import { getServerSideProps, ProfileTab } from '../../../pages/profile/[name]/[[...tab]]/index';
 
 beforeAll(async () => {
   await dbConnect();
+  const promises = [];
 
   for (let i = 0; i < 30; i++) {
-    await createNewReviewOnYourLevelNotification(TestId.USER, TestId.USER_B, new Types.ObjectId(), 'id ' + i);
+    promises.push(createNewReviewOnYourLevelNotification(DEFAULT_GAME_ID, new Types.ObjectId(TestId.USER), new Types.ObjectId(TestId.USER_B), new Types.ObjectId(), 'id ' + i));
   }
+
+  await Promise.all(promises);
 });
 afterAll(async () => {
   await dbDisconnect();
 });
 
+const gameId = DEFAULT_GAME_ID;
+
 describe('pages/profile page', () => {
   test('getServerSideProps with no parameters', async () => {
     const context = {
+      // TODO: add subdomain
     };
 
     const ret = await getServerSideProps(context as GetServerSidePropsContext);
@@ -225,35 +232,35 @@ describe('pages/profile page', () => {
   test('getReviewsByUserId with invalid userId', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
-    const reviews = await getReviewsByUserId('invalid');
+    const reviews = await getReviewsByUserId(gameId, 'invalid');
 
     expect(reviews).toBeNull();
   });
   test('getReviewsByUserIdCount with invalid userId', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
-    const reviews = await getReviewsByUserIdCount('invalid');
+    const reviews = await getReviewsByUserIdCount(gameId, 'invalid');
 
     expect(reviews).toBeNull();
   });
   test('getReviewsForUserId with valid userId', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
-    const reviews = await getReviewsForUserId(TestId.USER, await UserModel.findById(TestId.USER_B), { skip: 0, limit: 1 });
+    const reviews = await getReviewsForUserId(gameId, TestId.USER, await UserModel.findById(TestId.USER_B), { skip: 0, limit: 1 });
 
     expect(reviews).toHaveLength(1);
   });
   test('getReviewsForUserId with invalid userId', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
-    const reviews = await getReviewsForUserId('invalid');
+    const reviews = await getReviewsForUserId(gameId, 'invalid');
 
     expect(reviews).toBeNull();
   });
   test('getReviewsForUserIdCount with invalid userId', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
-    const reviews = await getReviewsForUserIdCount('invalid');
+    const reviews = await getReviewsForUserIdCount(gameId, 'invalid');
 
     expect(reviews).toBeNull();
   });

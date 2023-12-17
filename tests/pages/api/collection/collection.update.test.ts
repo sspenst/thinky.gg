@@ -1,3 +1,4 @@
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { logger } from '@root/helpers/logger';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
@@ -33,12 +34,14 @@ describe('Testing updating collection data', () => {
       const ts = TimerUtil.getTs();
 
       levels[i] = new Types.ObjectId();
-      promises.push( LevelModel.create({
+      promises.push(LevelModel.create({
         _id: levels[i],
         authorNote: 'test level 1 author note',
         data: '40010\n12000\n05000\n67890\nABCD3',
+        gameId: DEFAULT_GAME_ID,
         height: 5,
         isDraft: false,
+        isRanked: false,
         leastMoves: 20,
         name: 'level ' + i,
         slug: 'test/level-' + i,

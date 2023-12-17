@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import getMobileNotification from '@root/helpers/getMobileNotification';
 import Device from '@root/models/db/device';
 import Notification from '@root/models/db/notification';
@@ -8,7 +9,7 @@ import admin from 'firebase-admin';
  * Send a mobile push notification
  * NB: assumes the user's push notification settings have already been checked
  */
-export async function sendPushNotification(notification: Notification) {
+export async function sendPushNotification(gameId: GameId, notification: Notification) {
   if (process.env.NODE_ENV === 'test') {
     return 'push notification not sent [test]';
   }
@@ -24,7 +25,7 @@ export async function sendPushNotification(notification: Notification) {
   if (devices.length === 0) {
     log = `Notification ${notificationId} not sent: no devices found`;
   } else {
-    const mobileNotification = getMobileNotification(notification);
+    const mobileNotification = getMobileNotification(gameId, notification);
     const tokens = devices.map((token: Device) => token.deviceToken);
 
     if (!global.firebaseApp) {

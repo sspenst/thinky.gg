@@ -1,4 +1,5 @@
 import { MultiplayerMatchHistoryFilters } from '@root/components/profile/profileMultiplayer';
+import { GameId } from '@root/constants/GameId';
 import { ValidCommaSeparated, ValidEnum, ValidNumber, ValidObjectId, ValidType } from '@root/helpers/apiWrapper';
 import withAuth, { NextApiRequestWithAuth } from '@root/lib/withAuth';
 import { MultiplayerMatchState } from '@root/models/constants/multiplayer';
@@ -17,9 +18,10 @@ interface MatchQuery {
   rated?: boolean;
 }
 
-async function doMatchQuery(query: MatchQuery) {
+async function doMatchQuery(gameId: GameId, query: MatchQuery) {
   const searchObj = {
     state: MultiplayerMatchState.FINISHED,
+    gameId: gameId
     // private: false // TODO: seems right to show private matches...
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as any;
@@ -93,6 +95,13 @@ async function doMatchQuery(query: MatchQuery) {
               localField: '_id',
               foreignField: 'userId',
               as: 'multiplayerProfile',
+              pipeline: [
+                {
+                  $match: {
+                    gameId: gameId,
+                  }
+                },
+              ]
             }
           },
           {
@@ -146,7 +155,7 @@ export default withAuth(
       offset: parseInt(offset as string)
     };
 
-    const matches = await doMatchQuery(query);
+    const matches = await doMatchQuery(req.gameId, query);
 
     res.status(200).json(matches);
   }
