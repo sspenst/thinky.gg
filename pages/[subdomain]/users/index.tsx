@@ -265,7 +265,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
           ts: 1,
         }
       },
-      ...getEnrichUserConfigPipelineStage(gameId),
+      ...getEnrichUserConfigPipelineStage(gameId), // TODO: Figure out wtf we need to do this twice?
       { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
       { '$facet': {
         metadata: [ { $count: 'totalRows' } ],

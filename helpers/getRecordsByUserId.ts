@@ -2,7 +2,6 @@ import { GameId } from '@root/constants/GameId';
 import Record from '@root/models/db/record';
 import User from '@root/models/db/user';
 import { PipelineStage, Types } from 'mongoose';
-import dbConnect from '../lib/dbConnect';
 import Level from '../models/db/level';
 import Review from '../models/db/review';
 import { LevelModel, RecordModel, ReviewModel } from '../models/mongoose';
@@ -120,10 +119,8 @@ export async function getRecordsByUserId(gameId: GameId, userId: Types.ObjectId,
 }
 
 export async function getReviewsForUserIdCount(gameId: GameId, id: string | string[] | undefined) {
-  await dbConnect();
-
   try {
-    const levelsByUser = await LevelModel.find<Level>({ isDeleted: { $ne: true }, isDraft: false, userId: id, gameId: GameId }, '_id');
+    const levelsByUser = await LevelModel.find<Level>({ isDeleted: { $ne: true }, isDraft: false, userId: id, gameId: gameId }, '_id');
     const reviews = await ReviewModel.find<Review>({
       levelId: { $in: levelsByUser.map(level => level._id) },
     }).countDocuments();

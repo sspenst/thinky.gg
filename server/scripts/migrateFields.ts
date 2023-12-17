@@ -1,4 +1,5 @@
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
+import { rawDbConnect, rawDbDisconnect } from './rawDbconnect';
 
 /**
  * Migrates specified fields from one collection to another.
@@ -9,7 +10,8 @@ import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
  */
 export async function migrateFields(sourceModel: any, targetModel: any, fieldsToMigrate: any, localField: string, foreignField: string, matchQuery: any = {}) {
   console.log('Starting the database connection...');
-  await dbConnect();
+  const conn = await rawDbConnect();
+
   console.log('Database connected.');
 
   console.log('Starting the aggregation pipeline...');
@@ -73,7 +75,7 @@ export async function migrateFields(sourceModel: any, targetModel: any, fieldsTo
   console.log('Aggregation pipeline completed in ' + timeTakenSeconds + ' seconds.');
 
   console.log('Closing the database connection...');
-  await dbDisconnect();
+  await rawDbDisconnect(conn);
   console.log('Database disconnected.');
 
   console.log('Migration completed successfully.');

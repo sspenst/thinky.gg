@@ -6,10 +6,6 @@ import UserConfig from '../db/userConfig';
 
 const UserConfigSchema = new mongoose.Schema<UserConfig>(
   {
-    _id: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
-    },
     calcRankedSolves: {
       type: Number,
       required: true,

@@ -1,5 +1,4 @@
 import { GameId } from '@root/constants/GameId';
-import dbConnect from '@root/lib/dbConnect';
 import { FilterQuery, PipelineStage, Types } from 'mongoose';
 import cleanUser from '../lib/cleanUser';
 import { UserWithMultiplayerProfile } from '../models/db/user';
@@ -18,8 +17,6 @@ export async function getUsersWithMultiplayerProfile(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   project: { [field: string]: any },
 ): Promise<UserWithMultiplayerProfile[]> {
-  await dbConnect();
-
   const users = await UserModel.aggregate([
     {
       $match: match
