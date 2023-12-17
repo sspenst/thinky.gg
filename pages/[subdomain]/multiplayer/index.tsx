@@ -35,7 +35,7 @@ export default function MultiplayerPage() {
         <NextSeo
           title={'Multiplayer - ' + game.displayName}
           description={'Play ' + game.displayName + ' in real time against other players'}
-          canonical={`https://${game.baseUrl}/multiplayer`}
+          canonical={`${game.baseUrl}/multiplayer`}
         />
         <Multiplayer />
       </>

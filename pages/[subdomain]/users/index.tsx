@@ -465,7 +465,7 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
   return (<>
     <NextSeo
       title={'Users - ' + game.displayName}
-      canonical={`https://${game.baseUrl}/users`}
+      canonical={`${game.baseUrl}/users`}
       openGraph={{
         title: 'Users - ' + game.displayName,
         type: 'article',

@@ -155,7 +155,7 @@ describe('Notifications', () => {
 
         expect(data.title).toBe(Games[DEFAULT_GAME_ID].displayName + ' - New Review');
         expect(data.body).toBe('BBB gave a 4 star rating on your level test level 1');
-        expect(data.url).toEqual('https://' + Games[DEFAULT_GAME_ID].baseUrl + '/level/test/test-level-1');
+        expect(data.url).toEqual( Games[DEFAULT_GAME_ID].baseUrl + '/level/test/test-level-1');
       },
     });
   });

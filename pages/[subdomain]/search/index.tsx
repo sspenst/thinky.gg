@@ -833,7 +833,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
   return (<>
     <NextSeo
       title={'Search - ' + game.displayName}
-      canonical={'https://' + game.baseUrl + '/search'}
+      canonical={game.baseUrl + '/search'}
       openGraph={{
         title: 'Search - ' + game.displayName,
         type: 'article',

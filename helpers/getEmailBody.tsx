@@ -67,14 +67,14 @@ export default function getEmailBody({
                       padding: 20,
                       textAlign: 'center',
                     }}>
-                      <a href={`https://${game.baseUrl}`}>
+                      <a href={`${game.baseUrl}`}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src='https://i.imgur.com/fD1SUrZ.png' alt={game.displayName} />
                       </a>
                       <h1>Hi {user.name},</h1>
                       <p>{title}</p>
                       {notificationsCount > 0 && (
-                        <p>You have <a href={'https://' + game.baseUrl + '/notifications?source=email-digest&filter=unread'} style={{
+                        <p>You have <a href={game.baseUrl + '/notifications?source=email-digest&filter=unread'} style={{
                           color: '#4890ce',
                           textDecoration: 'none',
                         }}>{notificationsCount} unread notification{notificationsCount !== 1 ? 's' : ''}</a></p>
@@ -101,40 +101,48 @@ export default function getEmailBody({
                       {featuredLevels &&
                         <div>
                           <h2>{featuredLevelsLabel}</h2>
-                          {featuredLevels.filter(level => level).map((level) => (
-                            <div key={level._id.toString()} style={{
-                              textAlign: 'center',
-                            }}>
-                              <GameLogoAndLabel id={level._id.toString()} gameId={level.gameId} /> {getGameFromId(level.gameId).displayName} {level.userId.name}
-                              <a href={`https://${getGameFromId(level.gameId).baseUrl}/level/${level.slug}`} style={{
-                                color: '#4890ce',
-                                textDecoration: 'none',
-                              }}>
-                                {level.name}
-                              </a>
-                              {' by '}
-                              <a href={`https://${getGameFromId(level.gameId).baseUrl}/profile/${encodeURI(level.userId.name)}`} style={{
-                                color: '#4890ce',
-                                textDecoration: 'none',
-                              }} />
-                              <div style={{
-                                padding: 20,
-                              }}>
-                                <a href={`https://${getGameFromId(level.gameId).baseUrl}/level/${level.slug}`} style={{
-                                  color: '#4890ce',
-                                  textDecoration: 'none',
-                                }}>
-                                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                                  <img src={`https://${getGameFromId(level.gameId).baseUrl}/api/level/image/${level._id}.png`} width='100%' alt={level.name} />
-                                </a>
-                              </div>
-                            </div>
-                          ))}
+                          <table role='presentation' cellPadding='0' cellSpacing='0' style={{
+                            width: '100%',
+                          }}>
+                            <tr>
+                              {featuredLevels.filter(level => level).map((level) => (
+                                <td key={level._id.toString()}>
+                                  <div style={{
+                                    textAlign: 'center',
+                                  }}>
+                                    <GameLogoAndLabel id={level._id.toString()} gameId={level.gameId} />
+                                    <a href={`${getGameFromId(level.gameId).baseUrl}/level/${level.slug}`} style={{
+                                      color: '#4890ce',
+                                      textDecoration: 'none',
+                                    }}>
+                                      {level.name}
+                                    </a>
+                                    {' by '}
+                                    <a href={`${getGameFromId(level.gameId).baseUrl}/profile/${encodeURI(level.userId.name)}`} style={{
+                                      color: '#4890ce',
+                                      textDecoration: 'none',
+                                    }} />
+                                    <div style={{
+                                      padding: 20,
+                                    }}>
+                                      <a href={`${getGameFromId(level.gameId).baseUrl}/level/${level.slug}`} style={{
+                                        color: '#4890ce',
+                                        textDecoration: 'none',
+                                      }}>
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img src={`${getGameFromId(level.gameId).baseUrl}/api/level/image/${level._id}.png`} width='100%' alt={level.name} />
+                                      </a>
+                                    </div>
+                                  </div>
+                                </td>
+                              ))}
+                            </tr>
+                          </table>
                         </div>
 
                       }
                       <p>
-                        Thanks for playing <a href={`https://${game.baseUrl}`} style={{
+                        Thanks for playing <a href={`${game.baseUrl}`} style={{
                           color: '#4890ce',
                           textDecoration: 'none',
                         }}>{game.displayName}</a>!
@@ -148,7 +156,7 @@ export default function getEmailBody({
                           color: '#4890ce',
                           textDecoration: 'none',
                         }}>{game.displayName} Discord</a> to chat with other players and the developers!</p>
-                        <p><a href={`https://${game.baseUrl}/settings/notifications`} style={{
+                        <p><a href={`${game.baseUrl}/settings/notifications`} style={{
                           color: '#4890ce',
                           textDecoration: 'none',
                         }}>Manage your email notification settings</a></p>

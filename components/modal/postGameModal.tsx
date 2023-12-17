@@ -60,8 +60,8 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
     setQueryParams(new URLSearchParams(window.location.search));
   }, []);
 
-  const url = `https://${game.baseUrl}/level/${level.slug}`;
-  const quote = 'Just completed ' + game.baseUrl + ' puzzle "' + level.name + '" (Difficulty: ' + getDifficultyFromValue(level.calc_difficulty_estimate).name + ')';
+  const url = `${game.baseUrl}/level/${level.slug}`;
+  const quote = 'Just completed ' + game.displayName + ' puzzle "' + level.name + '" (Difficulty: ' + getDifficultyFromValue(level.calc_difficulty_estimate).name + ')';
 
   function nextActionCard() {
     if (nextLevel) {
