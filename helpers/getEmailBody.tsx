@@ -1,4 +1,4 @@
-/* istanbul ignore file */
+//* istanbul ignore file */
 
 import GameLogoAndLabel from '@root/components/gameLogoAndLabel';
 import { GameId } from '@root/constants/GameId';

@@ -1,7 +1,6 @@
 import { GameId } from '@root/constants/GameId';
 import { PipelineStage, QueryOptions, Types } from 'mongoose';
 import cleanUser from '../lib/cleanUser';
-import dbConnect from '../lib/dbConnect';
 import Level from '../models/db/level';
 import Review from '../models/db/review';
 import User from '../models/db/user';
@@ -10,8 +9,6 @@ import { getEnrichLevelsPipelineSteps, getEnrichUserConfigPipelineStage } from '
 import { logger } from './logger';
 
 export async function getReviewsForUserId(gameId: GameId, id: string | string[] | undefined, reqUser: User | null = null, queryOptions: QueryOptions = {}) {
-  await dbConnect();
-
   try {
     const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPipelineSteps(reqUser);
 
@@ -128,8 +125,6 @@ export async function getReviewsForUserId(gameId: GameId, id: string | string[] 
 }
 
 export async function getReviewsForUserIdCount(gameId: GameId, id: string | string[] | undefined) {
-  await dbConnect();
-
   try {
     const levelsByUser = await LevelModel.find<Level>({ isDeleted: { $ne: true }, isDraft: false, userId: id, gameId: gameId }, '_id');
     const reviews = await ReviewModel.find<Review>({
