@@ -45,7 +45,7 @@ interface SettingsProProps {
 }
 
 export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLink, stripePaymentYearlyLink }: SettingsProProps) {
-  const { game, mutateUser, user, userLoading } = useContext(AppContext);
+  const { game, mutateUser, user } = useContext(AppContext);
   const [plan, setPlan] = useState('year');
   const [shouldContinouslyFetch, setShouldContinouslyFetch] = useState(false);
   const { data: subscriptions, isLoading: subscriptionsLoading, mutate: refreshGifts } = useSWRHelper<SubscriptionData[]>('/api/subscription');
@@ -257,7 +257,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
         </div>
       )}
       {subscriptionsLoading ? <LoadingSpinner /> : null}
-      {!userLoading && !isPro(user) &&
+      {user !== undefined && !isPro(user) &&
         <div className='flex flex-col items-center justify-center gap-4'>
           <div className='flex flex-col gap-3 w-fit items-center mt-3'>
             <RadioGroup value={plan} onChange={setPlan} className='flex flex-wrap justify-center gap-3'>

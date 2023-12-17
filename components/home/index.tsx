@@ -56,7 +56,7 @@ export default function Home({
     }
     <div className='flex flex-col items-center gap-6 m-6'>
       <div className='flex flex-wrap justify-center items-center gap-4 max-w-full'>
-        {!userConfig?.tutorialCompletedAt &&
+        {userConfig !== undefined && !userConfig?.tutorialCompletedAt &&
           <Card id='tutorial' title='Tutorial'>
             <SelectCard option={{
               height: Dimensions.OptionHeightLarge,

@@ -16,7 +16,7 @@ import DismissToast from '../toasts/dismissToast';
 import MusicIcon from './musicIcon';
 
 export default function Dropdown() {
-  const { forceUpdate, mutateUser, setShouldAttemptAuth, user, userLoading } = useContext(AppContext);
+  const { forceUpdate, mutateUser, setShouldAttemptAuth, user } = useContext(AppContext);
   const [isMusicModalOpen, setIsMusicModalOpen] = useState(false);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const router = useRouter();
@@ -56,8 +56,6 @@ export default function Dropdown() {
     });
   }
 
-  const isLoggedIn = !userLoading && user;
-
   function Divider() {
     return <div className='opacity-30 m-1 h-px bg-4' />;
   }
@@ -88,7 +86,7 @@ export default function Dropdown() {
           top: Dimensions.MenuHeight,
         }}>
           <div className='px-1 py-1'>
-            {isLoggedIn && <>
+            {user && <>
               <div className='flex justify-center gap-2 items-center sm:hidden py-1.5 px-3'>
                 <Link
                   className='flex justify-center'
@@ -172,7 +170,7 @@ export default function Dropdown() {
                 )}
               </Menu.Item>
             </div>
-            {isLoggedIn ?
+            {user ?
               <>
                 <Menu.Item>
                   {({ active }) => (
