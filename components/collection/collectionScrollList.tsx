@@ -196,9 +196,8 @@ export default function CollectionScrollList({ collection, id, isHidden, onLoadi
               href: href,
               id: `${id}-${levelInCollection._id.toString()}`,
               level: levelInCollection,
-              text: levelInCollection.name,
-              searchLabel: levelInCollection.name,
               stats: new SelectOptionStats(levelInCollection.leastMoves, (levelInCollection as EnrichedLevel)?.userMoves),
+              text: levelInCollection.name,
               width: 216,
             }} />
           </div>

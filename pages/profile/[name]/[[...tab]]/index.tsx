@@ -334,8 +334,8 @@ export default function ProfilePage({
       return {
         href: `/collection/${enrichedCollection.slug}`,
         id: enrichedCollection._id.toString(),
-        stats: new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userSolvedCount),
         searchLabel: enrichedCollection.name,
+        stats: new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userSolvedCount),
         text: <>
           {enrichedCollection.name}
           {ownProfile &&

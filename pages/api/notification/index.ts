@@ -36,12 +36,10 @@ export default withAuth({
       }
 
       // if successful, return 200 with the user's notifications
-      const [reqUser] = await Promise.all(
-        [
-          enrichReqUser(req.user),
-          requestBroadcastNotifications(new Types.ObjectId(req.user._id.toString())),
-        ]
-      );
+      const [reqUser] = await Promise.all([
+        enrichReqUser(req.user),
+        requestBroadcastNotifications(new Types.ObjectId(req.user._id.toString())),
+      ]);
       const updatedNotifications = reqUser.notifications.map((notification) => {
       // check if notification_id is in ids
         if (ids.includes(notification._id.toString())) {

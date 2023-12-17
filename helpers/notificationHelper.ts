@@ -54,7 +54,6 @@ export async function createNewWallPostNotification(gameId: GameId, type: Notifi
       userId: userId,
     }]),
     queuePushNotification(id),
-
   ]);
 
   await requestBroadcastNotifications(new Types.ObjectId(userId)); // needs to happen after creating the notif
@@ -226,7 +225,6 @@ export async function createNewLevelAddedToCollectionNotification(gameId: GameId
   const [nm,] = await Promise.all([
     await NotificationModel.create(createRecords),
     ...ids.map(id => queuePushNotification(id)),
-
   ]);
 
   await requestBroadcastNotifications(new Types.ObjectId(level.userId)); // needs to happen after creating the notif
@@ -296,7 +294,6 @@ export async function createNewRecordOnALevelYouSolvedNotifications(gameId: Game
   const [nm, ] = await Promise.all([
     NotificationModel.create(createRecords, options),
     ...ids.map(id => queuePushNotification(id)),
-
   ]);
 
   await Promise.all(userIds.map(userId => requestBroadcastNotifications(new Types.ObjectId(userId)))); // needs to happen after creating the notif
