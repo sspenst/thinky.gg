@@ -1,4 +1,6 @@
 import Direction from '@root/constants/direction';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import { Games } from '@root/constants/Games';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -32,6 +34,7 @@ afterEach(() => {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const defaultReq: any = {
   method: 'PUT',
+  gameId: DEFAULT_GAME_ID,
   cookies: {
     token: getTokenCookieValue(TestId.USER),
   },
@@ -115,7 +118,7 @@ describe('matchCreateJoinAndPlay', () => {
         expect(response.players).toHaveLength(2);
 
         for (const player of response.players) {
-          expect(Object.keys(player).sort()).toEqual(['__v', '_id', 'calc_levels_created_count', 'calc_records', 'chapterUnlocked', 'last_visited_at', 'name', 'roles', 'score', 'ts'].sort());
+          expect(Object.keys(player).sort()).toEqual([ '_id', 'config', 'last_visited_at', 'name', 'roles'].sort());
         }
 
         expect(response.gameTable).toBeUndefined();
@@ -182,7 +185,7 @@ describe('matchCreateJoinAndPlay', () => {
         expect(response.winners).toHaveLength(0);
         expect(response.timeUntilStart).toBe(-1000);
         expect(response.levels).toHaveLength(1); // should have level for this user now
-        expect(Object.keys(response.levels[0]).sort()).toEqual(['_id', 'calc_playattempts_unique_users', 'calc_playattempts_unique_users_count', 'calc_difficulty_estimate', 'userId', 'data', 'width', 'height', 'leastMoves', 'name', 'slug'].sort());
+        expect(Object.keys(response.levels[0]).sort()).toEqual(['_id', 'calc_playattempts_unique_users', 'calc_playattempts_unique_users_count', 'calc_difficulty_estimate', 'complete', 'gameId', 'userId', 'data', 'width', 'height', 'leastMoves', 'name', 'slug', 'isRanked'].sort());
       }
 
     });
@@ -195,7 +198,7 @@ describe('matchCreateJoinAndPlay', () => {
     expect(match.state).toBe(MultiplayerMatchState.ACTIVE);
     const levels = match.levels;
 
-    expect(levels).toHaveLength(3);
+    expect(levels).toHaveLength(6); // 3 + (since it is less than 40 levels) 3 pendings
 
     // need to mock validate solution so it doesn't fail
     // ../../../../pages/api/stats/index has a function validateSolution that needs to be mocked
@@ -216,11 +219,8 @@ describe('matchCreateJoinAndPlay', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
-        const mock = jest.requireActual('../../../../helpers/validateSolution'); // import and retain the original functionalities
 
-        jest.spyOn(mock, 'default').mockImplementation(() => {
-          return true;
-        });
+        Games[DEFAULT_GAME_ID].validateSolutionFunction = () => true;
         await statHandler(req, res);
       },
       test: async ({ fetch }) => {
@@ -240,7 +240,7 @@ describe('matchCreateJoinAndPlay', () => {
     expect(match.state).toBe(MultiplayerMatchState.ACTIVE);
     const levels = match.levels;
 
-    expect(levels).toHaveLength(3);
+    expect(levels).toHaveLength(6); // see 3+3 comment above
     await testApiHandler({
       handler: async (_, res) => {
         await handler({
@@ -261,6 +261,37 @@ describe('matchCreateJoinAndPlay', () => {
         expect(res.status).toBe(200);
         expect(response.error).toBeUndefined();
         expect(response.success).toBe(true);
+      }
+    });
+  });
+  test('user B match skip via api again', async () => {
+    MockDate.set(new Date().getTime() + 2000); // two seconds later
+
+    const match = await MultiplayerMatchModel.findOne({ matchId: matchId });
+
+    expect(match.state).toBe(MultiplayerMatchState.ACTIVE);
+    const levels = match.levels;
+
+    expect(levels).toHaveLength(6); // see 3+3 comment above
+    await testApiHandler({
+      handler: async (_, res) => {
+        await handler({
+          ...defaultReq,
+          method: 'PUT',
+          query: {
+            matchId: matchId,
+          },
+          body: {
+            action: MatchAction.SKIP_LEVEL
+          }
+        }, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(res.status).toBe(400);
+        expect(response.error).toBe('Already used skip');
       }
     });
   });

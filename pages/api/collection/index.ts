@@ -17,7 +17,7 @@ export default withAuth({
       name: ValidType('string', true),
     }
   } }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-  if (!(await isFullAccount(req.user))) {
+  if (!isFullAccount(req.user)) {
     return res.status(401).json({
       error: 'Creating a collection requires a full account with a confirmed email'
     });
@@ -31,7 +31,7 @@ export default withAuth({
     await session.withTransaction(async () => {
       const { authorNote, isPrivate, name } = req.body;
       const trimmedName = name.trim();
-      const slug = await generateCollectionSlug(req.user.name, trimmedName, undefined, { session: session });
+      const slug = await generateCollectionSlug(req.gameId, req.user.name, trimmedName, undefined, { session: session });
       const setIsPrivate = isPro(req.user) ? !!isPrivate : false;
 
       if (slug.endsWith('/play-later')) {
@@ -43,6 +43,7 @@ export default withAuth({
       collection = (await CollectionModel.create([{
         _id: new Types.ObjectId(),
         authorNote: authorNote?.trim(),
+        gameId: req.gameId,
         isPrivate: setIsPrivate,
         name: trimmedName,
         slug: slug,

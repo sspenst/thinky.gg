@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import PlayAttempt from '@root/models/db/playAttempt';
 import mongoose, { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
@@ -12,8 +13,8 @@ import { LevelModel, PlayAttemptModel } from '../../../models/mongoose';
 import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
 import { getPlayAttempts } from '../user/play-history';
 
-export async function getLastLevelPlayed(user: User) {
-  const playAttempts = await getPlayAttempts(user, {}, 1);
+export async function getLastLevelPlayed(gameId: GameId, user: User) {
+  const playAttempts = await getPlayAttempts(gameId, user, {}, 1);
 
   if (playAttempts.length === 0) {
     return null;
@@ -37,7 +38,7 @@ export default withAuth({
   },
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
-    const lastPlayed = await getLastLevelPlayed(req.user);
+    const lastPlayed = await getLastLevelPlayed(req.gameId, req.user);
 
     return res.status(200).json(lastPlayed);
   } else if (req.method === 'POST') {
@@ -52,13 +53,15 @@ export default withAuth({
       await session.withTransaction(async () => {
         const latestPlayAttempt = await PlayAttemptModel.findOne(
           {
-            isDeleted: { $ne: true },
             levelId: levelObjectId,
             userId: req.user._id,
+            isDeleted: { $ne: true },
+            // dont need gameId here because we're already filtering by levelId
           },
           {
             _id: 1,
             attemptContext: 1,
+            gameId: 1,
             endTime: 1,
           },
           {
@@ -81,6 +84,7 @@ export default withAuth({
             },
             {
               userId: 1,
+              gameId: 1
             },
             {
               session: session,
@@ -90,6 +94,7 @@ export default withAuth({
           if (!level) {
             resTrack.status = 404;
             resTrack.json.error = `Level ${levelId} not found`;
+
             throw new Error(resTrack.json.error);
           }
 
@@ -98,6 +103,7 @@ export default withAuth({
             _id: new Types.ObjectId(),
             attemptContext: level.userId.toString() === req.userId ? AttemptContext.SOLVED : AttemptContext.UNSOLVED,
             endTime: now,
+            gameId: level.gameId,
             levelId: levelObjectId,
             startTime: now,
             updateCount: 0,
@@ -167,6 +173,7 @@ export default withAuth({
           _id: new Types.ObjectId(),
           attemptContext: latestPlayAttempt.attemptContext === AttemptContext.UNSOLVED ? AttemptContext.UNSOLVED : AttemptContext.SOLVED,
           endTime: now,
+          gameId: latestPlayAttempt.gameId,
           levelId: levelObjectId,
           startTime: now,
           updateCount: 0,

@@ -1,7 +1,8 @@
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import { NextApiRequestWrapper } from '@root/helpers/apiWrapper';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';
 import { Types } from 'mongoose';
-import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
@@ -26,6 +27,7 @@ enableFetchMocks();
 
 const DefaultReq = {
   method: 'GET',
+  gameId: DEFAULT_GAME_ID,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -71,9 +73,9 @@ describe('GET /api/level-of-day', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestWrapper = {
           ...DefaultReq,
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },
@@ -94,6 +96,7 @@ describe('GET /api/level-of-day', () => {
         });
 
         expect(lvlOfDay).toBeDefined();
+        expect(lvlOfDay.gameId).toBe(DEFAULT_GAME_ID);
         expect(lvlOfDay?.value).toStrictEqual(new Types.ObjectId(TestId.LEVEL_3));
       },
     });
@@ -102,9 +105,9 @@ describe('GET /api/level-of-day', () => {
     MockDate.set(MOCK_DATE);
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestWrapper = {
           ...DefaultReq,
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },
@@ -131,12 +134,12 @@ describe('GET /api/level-of-day', () => {
     MockDate.set(MOCK_DATE);
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestWrapper = {
           ...DefaultReq,
           cookies: {
             token: getTokenCookieValue(TestId.USER),
           }
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },
@@ -175,9 +178,9 @@ describe('GET /api/level-of-day', () => {
     });
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestWrapper = {
           ...DefaultReq,
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },
@@ -212,12 +215,12 @@ describe('GET /api/level-of-day', () => {
     MockDate.set(day2);
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestWrapper = {
           ...DefaultReq,
           cookies: {
             token: getTokenCookieValue(TestId.USER),
           }
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },
@@ -246,7 +249,7 @@ describe('GET /api/level-of-day', () => {
       },
     });
   });
-  test('changing to the third day should return an error since we are out of levels', async () => {
+  test('changing to the third day should return the latest level since we are out of levels', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     MockDate.set(MOCK_DATE);
     const day3 = Date.now() + (1000 * 60 * 60 * 24 * 2); // Note... Date.now() here is being mocked each time too!
@@ -254,9 +257,9 @@ describe('GET /api/level-of-day', () => {
     MockDate.set(day3);
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestWrapper = {
           ...DefaultReq,
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },
@@ -264,8 +267,9 @@ describe('GET /api/level-of-day', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Error getting level of the day');
-        expect(res.status).toBe(500);
+        expect(response.error).toBeUndefined(); // we actually won't return error... We'll just select the latest level
+        expect(res.status).toBe(200);
+        expect(response._id).toBe(TestId.LEVEL_4);
       },
     });
   });
@@ -283,9 +287,9 @@ describe('GET /api/level-of-day', () => {
     });
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestWrapper = {
           ...DefaultReq,
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },

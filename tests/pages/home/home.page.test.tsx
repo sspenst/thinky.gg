@@ -4,7 +4,7 @@ import TestId from '../../../constants/testId';
 import { logger } from '../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
-import { getServerSideProps } from '../../../pages/home/index';
+import { getServerSideProps } from '../../../pages/[subdomain]';
 
 beforeAll(async () => {
   await dbConnect();
@@ -43,17 +43,15 @@ describe('pages/index page', () => {
     const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
 
     expect(ret).toBeDefined();
-    expect(ret.props).toBeUndefined();
-    expect(ret.redirect).toBeDefined();
-    expect(ret.redirect?.destination).toBe('/');
+    expect(ret.props?.user).toBeNull();
+    expect(ret.redirect).toBeUndefined();
   });
   test('getServerSideProps but not logged in', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     const ret = await getServerSideProps({} as unknown as GetServerSidePropsContext);
 
     expect(ret).toBeDefined();
-    expect(ret.props).toBeUndefined();
-    expect(ret.redirect).toBeDefined();
-    expect(ret.redirect?.destination).toBe('/');
+    expect(ret.props?.user).toBeNull();
+    expect(ret.redirect).toBeUndefined();
   });
 });

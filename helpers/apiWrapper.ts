@@ -1,8 +1,14 @@
+import { GameId } from '@root/constants/GameId';
 import { isValidDirections } from '@root/helpers/checkpointHelpers';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { NextApiRequestWithAuth } from '../lib/withAuth';
 import { logger } from './logger';
+
+export interface NextApiRequestWrapper extends NextApiRequest {
+  gameId: GameId;
+}
 
 export interface ReqValidator {
   GET?: ReqExpected;
@@ -10,6 +16,7 @@ export interface ReqValidator {
   PUT?: ReqExpected,
   DELETE?: ReqExpected,
 }
+
 export interface ReqExpected {
   body?: { [key: string]: (value: unknown) => boolean };
   query?: { [key: string]: (value: unknown) => boolean };
@@ -212,8 +219,11 @@ export function parseReq(validator: ReqValidator, req: NextApiRequest | NextApiR
   return null;
 }
 
-export default function apiWrapper(validator: ReqValidator, handler: (req: NextApiRequest, res: NextApiResponse) => Promise<unknown>) {
-  return async (req: NextApiRequest, res: NextApiResponse): Promise<unknown> => {
+export default function apiWrapper(
+  validator: ReqValidator,
+  handler: (req: NextApiRequestWrapper, res: NextApiResponse) => Promise<void>
+) {
+  return async (req: NextApiRequestWrapper, res: NextApiResponse): Promise<unknown> => {
     const validate = parseReq(validator, req);
 
     if (validate !== null) {
@@ -221,6 +231,8 @@ export default function apiWrapper(validator: ReqValidator, handler: (req: NextA
 
       return Promise.resolve(res.status(validate.statusCode).json({ error: validate.error }));
     }
+
+    req.gameId = getGameIdFromReq(req);
 
     /* istanbul ignore next */
     return handler(req, res).catch((error: Error) => {

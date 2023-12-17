@@ -1,8 +1,14 @@
+import { GameId } from '@root/constants/GameId';
 import mongoose from 'mongoose';
 import NotificationType from '../../constants/notificationType';
 import Notification from '../db/notification';
 
 const NotificationSchema = new mongoose.Schema<Notification>({
+  gameId: {
+    type: String,
+    enum: GameId,
+    required: true,
+  },
   message: {
     type: String,
     required: false,
@@ -47,7 +53,6 @@ const NotificationSchema = new mongoose.Schema<Notification>({
   timestamps: true,
 });
 
-// add index for userId, createdAt, read
 NotificationSchema.index({ userId: 1, createdAt: -1, read: 1 });
 
 export default NotificationSchema;

@@ -1,3 +1,5 @@
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import UserConfig from '@root/models/db/userConfig';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -10,7 +12,7 @@ import { initCollection, initLevel } from '../../../../lib/initializeLocalDb';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Collection from '../../../../models/db/collection';
 import Level from '../../../../models/db/level';
-import { CollectionModel, LevelModel, UserModel } from '../../../../models/mongoose';
+import { CollectionModel, LevelModel, UserConfigModel } from '../../../../models/mongoose';
 import archiveLevelHandler from '../../../../pages/api/archive/[id]';
 import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
 
@@ -29,7 +31,7 @@ beforeAll(async () => {
   [userACollection, userBCollection, userALevel1] = await Promise.all([
     initCollection(TestId.USER, 'user A collection'),
     initCollection(TestId.USER_B, 'user B collection'),
-    initLevel(TestId.USER, 'user A level 1')
+    initLevel(DEFAULT_GAME_ID, TestId.USER, 'user A level 1')
   ]);
 });
 enableFetchMocks();
@@ -128,9 +130,9 @@ describe('Testing archive', () => {
         expect(res.status).toBe(200);
         expect(response._id).toBe(userALevel1._id.toString());
 
-        const user = await UserModel.findById(TestId.USER);
+        const userConfig = await UserConfigModel.findOne<UserConfig>({ userId: new Types.ObjectId(TestId.USER) });
 
-        expect(user?.calc_levels_created_count).toEqual(2);
+        expect(userConfig?.calcLevelsCreatedCount).toEqual(2);
 
         const level = await LevelModel.findOne({ _id: userALevel1._id });
 

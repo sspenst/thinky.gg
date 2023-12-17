@@ -1,5 +1,9 @@
+import { GameId } from '@root/constants/GameId';
 import { MatchGameState } from '@root/helpers/gameStateHelpers';
+import { getEnrichNotificationPipelineStages } from '@root/helpers/getEnrichNotificationPipelineStages';
 import { getUsersWithMultiplayerProfileFromIds } from '@root/helpers/getUsersWithMultiplayerProfile';
+import cleanUser from '@root/lib/cleanUser';
+import Notification from '@root/models/db/notification';
 import { Emitter } from '@socket.io/mongo-emitter';
 import { Types } from 'mongoose';
 import { Server } from 'socket.io';
@@ -7,7 +11,7 @@ import { logger } from '../../helpers/logger';
 import sortByRating from '../../helpers/sortByRating';
 import { MultiplayerMatchState, MultiplayerMatchType } from '../../models/constants/multiplayer';
 import User from '../../models/db/user';
-import { MultiplayerMatchModel } from '../../models/mongoose';
+import { MultiplayerMatchModel, NotificationModel } from '../../models/mongoose';
 import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
 import { checkForFinishedMatch, checkForUnreadyAboutToStartMatch, getAllMatches } from '../../pages/api/match';
 import { getMatch } from '../../pages/api/match/[matchId]';
@@ -17,8 +21,8 @@ const GlobalMatchTimers = {} as { [matchId: string]: {
   end: NodeJS.Timeout;
 } };
 
-export async function broadcastPrivateAndInvitedMatches(emitter: Emitter, userId: Types.ObjectId) {
-  const matches = await getAllMatches(userId as unknown as User,
+export async function broadcastPrivateAndInvitedMatches(gameId: GameId, emitter: Emitter, userId: Types.ObjectId) {
+  const matches = await getAllMatches(gameId, userId as unknown as User,
     {
       $or: [
         {
@@ -44,8 +48,8 @@ export async function broadcastPrivateAndInvitedMatches(emitter: Emitter, userId
   emitter?.to(userId.toString()).emit('privateAndInvitedMatches', matches);
 }
 
-export async function broadcastMatches(emitter: Emitter) {
-  const matches = await getAllMatches();
+export async function broadcastMatches(gameId: GameId, emitter: Emitter) {
+  const matches = await getAllMatches(gameId);
 
   matches.forEach(match => {
     enrichMultiplayerMatch(match);
@@ -58,16 +62,16 @@ export async function broadcastMatches(emitter: Emitter) {
  * @param matchId
  * @param date
  */
-export async function scheduleBroadcastMatch(emitter: Emitter, matchId: string) {
+export async function scheduleBroadcastMatch(gameId: GameId, emitter: Emitter, matchId: string) {
   const match = await MultiplayerMatchModel.findOne({ matchId: matchId });
 
   const timeoutStart = setTimeout(async () => {
     await checkForUnreadyAboutToStartMatch(matchId);
-    await broadcastMatch(emitter, matchId);
+    await broadcastMatch(gameId, emitter, matchId);
   }, 1 + new Date(match.startTime).getTime() - Date.now()); // @TODO: the +1 is kind of hacky, we need to make sure websocket server and mongodb are on same time
   const timeoutEnd = setTimeout(async () => {
     await checkForFinishedMatch(matchId);
-    await broadcastMatch(emitter, matchId);
+    await broadcastMatch(gameId, emitter, matchId);
   }, 1 + new Date(match.endTime).getTime() - Date.now()); // @TODO: the +1 is kind of hacky, we need to make sure websocket server and mongodb are on same time
 
   GlobalMatchTimers[matchId] = {
@@ -91,7 +95,7 @@ export async function clearBroadcastMatchSchedule(matchId: string) {
   }
 }
 
-export async function broadcastCountOfUsersInRoom(emitter: Server, matchId: string) {
+export async function broadcastCountOfUsersInRoom(gameId: GameId, emitter: Server, matchId: string) {
   let clientsMap;
 
   try {
@@ -109,7 +113,7 @@ export async function broadcastCountOfUsersInRoom(emitter: Server, matchId: stri
   });
 
   // we have all the connected user ids now... so let's get all of them
-  const users = await getUsersWithMultiplayerProfileFromIds(connectedUserIds);
+  const users = await getUsersWithMultiplayerProfileFromIds(undefined, connectedUserIds);
   // remove users with hideStatus: true and inactive users
   const filteredUsers = users.filter(user => !user.hideStatus);
 
@@ -117,7 +121,30 @@ export async function broadcastCountOfUsersInRoom(emitter: Server, matchId: stri
   emitter?.in(matchId).emit('connectedPlayersInRoom', { users: filteredUsers.sort((a, b) => sortByRating(a, b, MultiplayerMatchType.RushBullet)).slice(0, 20), count: filteredUsers.length });
 }
 
-export async function broadcastConnectedPlayers(emitter: Server) {
+export async function broadcastNotifications(gameId: GameId, emitter: Emitter, userId: Types.ObjectId) {
+  if (emitter) {
+    // get notifications
+    const notificationAgg = await NotificationModel.aggregate<Notification>([
+      { $match: { userId: userId._id, /*gameId: gameId*/ } }, // Not adding gameId on purpose so we can get all notifications for all games
+      { $sort: { createdAt: -1 } },
+      { $limit: 5 },
+      ...getEnrichNotificationPipelineStages(userId)
+    ]);
+
+    notificationAgg.forEach(notification => {
+      if (notification.sourceModel === 'User' && notification.source) {
+        cleanUser(notification.source as User);
+      }
+
+      if (notification.targetModel === 'User' && notification.target) {
+        cleanUser(notification.target as User);
+      }
+    });
+    emitter.to(userId.toString()).emit('notifications', notificationAgg);
+  }
+}
+
+export async function broadcastConnectedPlayers(gameId: GameId, emitter: Server) {
   // return an array of all the connected players
   let clientsMap;
 
@@ -130,13 +157,15 @@ export async function broadcastConnectedPlayers(emitter: Server) {
   }
 
   // clientsMap is a map of socketId -> socket, let's just get the array of sockets
+
   const clients = Array.from(clientsMap.values());
+
   const connectedUserIds = clients.map((client) => {
     return client.data.userId;
   });
 
   // we have all the connected user ids now... so let's get all of them
-  const users = await getUsersWithMultiplayerProfileFromIds(connectedUserIds);
+  const users = await getUsersWithMultiplayerProfileFromIds(undefined, connectedUserIds);
   // remove users with hideStatus: true and inactive users
   const filteredUsers = users.filter(user => !user.hideStatus);
 
@@ -151,8 +180,8 @@ export async function broadcastMatchGameState(emitter: Emitter, userId: Types.Ob
   });
 }
 
-export async function broadcastMatch(emitter: Emitter, matchId: string) {
-  const match = await getMatch(matchId);
+export async function broadcastMatch(gameId: GameId, emitter: Emitter, matchId: string) {
+  const match = await getMatch(gameId, matchId);
 
   if (!match) {
     logger.error('cant find match to broadcast to');
@@ -170,4 +199,8 @@ export async function broadcastMatch(emitter: Emitter, matchId: string) {
   enrichMultiplayerMatch(match);
   // emit to everyone in the room except the players in the match since we already emitted to them
   emitter?.to(matchId).except(match.players.map((player: User) => player._id.toString())).emit('match', match);
+}
+
+export async function broadcastKillSocket(emitter: Emitter, userId: Types.ObjectId) {
+  emitter?.to(userId.toString()).emit('killSocket');
 }

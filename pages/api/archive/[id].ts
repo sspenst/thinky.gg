@@ -1,3 +1,4 @@
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
@@ -40,7 +41,7 @@ export default withAuth({ POST: {
   try {
     await session.withTransaction(async () => {
       // level is over 24hrs old, move to archive
-      const slug = await generateLevelSlug('archive', level.name, level._id.toString(), { session: session });
+      const slug = await generateLevelSlug(level.gameId, 'archive', level.name, level._id.toString(), { session: session });
 
       newLevel = await LevelModel.findOneAndUpdate({ _id: id }, { $set: {
         archivedBy: level.userId,
@@ -48,11 +49,12 @@ export default withAuth({ POST: {
         slug: slug,
         userId: new Types.ObjectId(TestId.ARCHIVE),
       } }, { new: true, session: session });
+      const game = getGameFromId(level.gameId);
 
       await Promise.all([
-        queueCalcCreatorCounts(new Types.ObjectId(TestId.ARCHIVE), { session: session }),
-        queueCalcCreatorCounts(level.userId, { session: session }),
-        queueDiscordWebhook(Discord.Levels, `**${req.user.name}** archived a level: [${level.name}](${req.headers.origin}/level/${slug}?ts=${ts})`, { session: session }),
+        queueCalcCreatorCounts(level.gameId, new Types.ObjectId(TestId.ARCHIVE), { session: session }),
+        queueCalcCreatorCounts(level.gameId, level.userId, { session: session }),
+        queueDiscordWebhook(Discord.Levels, `**${game.displayName}** - **${req.user.name}** archived a level: [${level.name}](${req.headers.origin}/level/${slug}?ts=${ts})`, { session: session }),
       ]);
     });
 

@@ -3,6 +3,7 @@ import Level from '@root/models/db/level';
 import React, { useState } from 'react';
 import AsyncSelect from 'react-select/async';
 import { debounce } from 'throttle-debounce';
+import FormattedLevelLink from '../formatted/formattedLevelLink';
 
 interface MultiSelectLevelProps {
   controlStyles?: any;
@@ -39,8 +40,8 @@ export default function MultiSelectLevel({ controlStyles, defaultValue, onSelect
       DropdownIndicator: null,
       IndicatorSeparator: null,
     }}
-    formatOptionLabel={(option: any) => (
-      <>{option.name}</>
+    formatOptionLabel={(option: Level) => (
+      <FormattedLevelLink disableHover id={option._id.toString()} level={option} />
     )}
     getOptionLabel={(option: any) => option.name}
     getOptionValue={(option: any) => option._id.toString()}
@@ -70,42 +71,47 @@ export default function MultiSelectLevel({ controlStyles, defaultValue, onSelect
     styles={{
       control: (provided: any, state: any) => ({
         ...provided,
-        backgroundColor: 'white',
-        borderColor: state.isFocused ? 'rgb(37 99 235)' : 'rgb(209 213 219)',
+        backgroundColor: 'var(--bg-color-2)',
+        borderColor: state.isFocused ? 'rgb(37 99 235)' : 'var(--bg-color-4)',
         borderRadius: '0.375rem',
         borderWidth: '1px',
         boxShadow: 'none',
         cursor: 'text',
         height: '2.5rem',
+        maxWidth: '100%',
         width: '13rem',
         ...controlStyles,
       }),
+      container: (provided: any) => ({
+        ...provided,
+        maxWidth: '100%',
+      }),
       dropdownIndicator: (provided: any) => ({
         ...provided,
-        color: 'black',
+        color: 'var(--color)',
         // change to search icon
         '&:hover': {
-          color: 'gray',
+          color: 'var(--color)',
         },
       }),
       input: (provided: any) => ({
         ...provided,
-        color: 'rgb(55 65 81)',
+        color: 'var(--color)',
       }),
       menu: (provided: any) => ({
         ...provided,
-        borderColor: 'rgb(209 213 219)',
+        backgroundColor: 'var(--bg-color-2)',
+        borderColor: 'var(--bg-color-4)',
         borderRadius: '0.375rem',
         borderWidth: '1px',
-        boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
         marginTop: '2px',
       }),
       option: (provided: any, state: any) => ({
         ...provided,
-        backgroundColor: state.isSelected ? '#e2e8f0' : 'white',
-        color: 'black',
+        backgroundColor: state.isSelected ? 'var(--bg-color-3)' : 'var(--bg-color-2)',
+        color: 'var(--color)',
         '&:hover': {
-          backgroundColor: '#e2e8f0',
+          backgroundColor: 'var(--bg-color-3)',
         },
         overflow: 'hidden',
         textOverflow: 'ellipsis',
@@ -113,11 +119,11 @@ export default function MultiSelectLevel({ controlStyles, defaultValue, onSelect
       }),
       placeholder: (provided: any) => ({
         ...provided,
-        color: 'rgb(156 163 175)',
+        color: 'var(--color-gray)',
       }),
       singleValue: (provided: any) => ({
         ...provided,
-        color: 'black',
+        color: 'var(--color)',
       }),
     }}
     value={value}

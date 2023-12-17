@@ -70,7 +70,9 @@ export default function SettingsAccountRegular({ user, userConfig }: SettingsAcc
     }).catch(async err => {
       console.error(err);
       toast.dismiss();
-      toast.error(JSON.parse(await err)?.error || 'Error sending confirmation email');
+      toast.error(JSON.parse(await err)?.error || 'Error sending confirmation email', {
+        duration: 4000,
+      });
     });
   }
 
@@ -179,26 +181,6 @@ export default function SettingsAccountRegular({ user, userConfig }: SettingsAcc
 
   const inputClass = 'shadow appearance-none border border-color-4 mb-2 rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline';
 
-  async function clearTours() {
-    const res = await fetch('/api/user-config', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        toursCompleted: [],
-      }),
-    });
-
-    if (!res.ok) {
-      toast.dismiss();
-      toast.error('Error occured');
-    } else {
-      toast.dismiss();
-      toast.success('Onboarding tooltips reset');
-    }
-  }
-
   return (
     <div className='flex justify-center'>
       <div className='flex flex-col gap-6 w-full max-w-xs'>
@@ -251,11 +233,11 @@ export default function SettingsAccountRegular({ user, userConfig }: SettingsAcc
           <button className='italic underline' type='submit'>Update</button>
         </form>
         <form className='flex flex-col items-start' onSubmit={
-          (!userConfig?.emailConfirmed && email === user.email ? resendEmailConfirmation : updateEmail)
+          (!user.emailConfirmed && email === user.email ? resendEmailConfirmation : updateEmail)
         }>
           <label className='block font-bold mb-2' htmlFor='email'>
             {'Email - '}
-            {userConfig?.emailConfirmed && email === user.email ?
+            {user.emailConfirmed && email === user.email ?
               <span className='text-green-500'>Confirmed</span>
               :
               <span className='text-red-500'>Unconfirmed</span>
@@ -272,7 +254,7 @@ export default function SettingsAccountRegular({ user, userConfig }: SettingsAcc
             value={email}
           />
           <button className='italic underline' type='submit'>
-            {!userConfig?.emailConfirmed && email === user.email ? 'Resend confirmation' : 'Update'}
+            {!user.emailConfirmed && email === user.email ? 'Resend confirmation' : 'Update'}
           </button>
         </form>
         <form className='flex flex-col items-start' onSubmit={updatePassword}>
@@ -284,15 +266,6 @@ export default function SettingsAccountRegular({ user, userConfig }: SettingsAcc
           <input onChange={e => setPassword2(e.target.value)} className={inputClass} type='password' placeholder='Re-enter new password' required />
           <button className='italic underline' type='submit'>Update</button>
         </form>
-        {userConfig && userConfig.toursCompleted?.length > 0 &&
-          <button className='italic underline' onClick={() => {
-            if (confirm('This will show the onboarding tooltips again. Are you sure?')) {
-              clearTours();
-            }
-          }}>
-            Reset onboarding tooltips
-          </button>
-        }
       </div>
     </div>
   );

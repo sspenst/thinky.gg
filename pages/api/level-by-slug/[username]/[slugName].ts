@@ -1,3 +1,6 @@
+import { GameId } from '@root/constants/GameId';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import { LEVEL_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { PipelineStage } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper from '../../../../helpers/apiWrapper';
@@ -9,15 +12,15 @@ import { getUserFromToken } from '../../../../lib/withAuth';
 import Level, { EnrichedLevel } from '../../../../models/db/level';
 import User from '../../../../models/db/user';
 import { LevelModel, UserModel } from '../../../../models/mongoose';
-import { LEVEL_DEFAULT_PROJECTION } from '../../../../models/schemas/levelSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../../models/schemas/userSchema';
-import { LevelUrlQueryParams } from '../../../level/[username]/[slugName]';
+import { LevelUrlQueryParams } from '../../../[subdomain]/level/[username]/[slugName]';
 
 export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
   const { slugName, username } = req.query as LevelUrlQueryParams;
   const token = req.cookies?.token;
+  const gameId = getGameIdFromReq(req);
   const reqUser = token ? await getUserFromToken(token, req) : null;
-  const level = await getLevelByUrlPath(username, slugName, reqUser);
+  const level = await getLevelByUrlPath(gameId, username, slugName, reqUser);
 
   if (!level) {
     return res.status(404).json({
@@ -28,7 +31,7 @@ export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiR
   return res.status(200).json(level);
 });
 
-export async function getLevelByUrlPath(username: string, slugName: string, reqUser: User | null) {
+export async function getLevelByUrlPath(gameId: GameId, username: string, slugName: string, reqUser: User | null) {
   await dbConnect();
 
   try {
@@ -41,6 +44,7 @@ export async function getLevelByUrlPath(username: string, slugName: string, reqU
             slug: username + '/' + slugName,
             isDeleted: { $ne: true },
             isDraft: false,
+            gameId: gameId
           },
         },
         {

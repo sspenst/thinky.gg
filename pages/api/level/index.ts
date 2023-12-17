@@ -22,14 +22,16 @@ export default withAuth({ POST: {
       const { authorNote, data, name } = req.body;
       const rows = data.split('\n');
       const trimmedName = name.trim();
-      const slug = await generateLevelSlug(req.user.name, trimmedName, undefined, { session: session });
+      const slug = await generateLevelSlug(req.gameId, req.user.name, trimmedName, undefined, { session: session });
 
       await LevelModel.create([{
         _id: levelId,
         authorNote: authorNote?.trim(),
         data: data,
+        gameId: req.gameId,
         height: rows.length,
         isDraft: true,
+        isRanked: false,
         leastMoves: 0,
         name: trimmedName,
         slug: slug,

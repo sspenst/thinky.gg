@@ -1,5 +1,9 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import apiWrapper, { ValidObjectId } from '../../../helpers/apiWrapper';
+import { GameId } from '@root/constants/GameId';
+import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
+import { Types } from 'mongoose';
+import type { NextApiResponse } from 'next';
+import apiWrapper, { NextApiRequestWrapper, ValidObjectId } from '../../../helpers/apiWrapper';
 import { logger } from '../../../helpers/logger';
 import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
@@ -10,9 +14,9 @@ export default apiWrapper({ GET: {
   query: {
     id: ValidObjectId(),
   }
-} }, async (req: NextApiRequest, res: NextApiResponse) => {
+} }, async (req: NextApiRequestWrapper, res: NextApiResponse) => {
   const { id } = req.query;
-  const user = await getUserById(id);
+  const user = await getUserById(id, req.gameId);
 
   if (!user) {
     return res.status(404).json({
@@ -23,11 +27,21 @@ export default apiWrapper({ GET: {
   return res.status(200).json(user);
 });
 
-export async function getUserById(id: string | string[] | undefined) {
+export async function getUserById(id: string | string[] | undefined, gameId: GameId) {
   await dbConnect();
+  const game = getGameFromId(gameId);
 
   try {
-    const user = await UserModel.findById(id, { '__v': 0 }).lean<User>();
+    const userAgg = await UserModel.aggregate<User>([
+      { $match: { _id: new Types.ObjectId(id as string) } },
+      ...(game.disableGames ? [] : getEnrichUserConfigPipelineStage(gameId)),
+    ]);
+
+    if (!userAgg.length) {
+      return null;
+    }
+
+    const user = userAgg[0];
 
     if (user) {
       cleanUser(user);

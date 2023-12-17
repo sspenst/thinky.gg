@@ -1,3 +1,4 @@
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
@@ -22,6 +23,7 @@ afterEach(() => {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const defaultReq: any = {
   method: 'POST',
+  gameId: DEFAULT_GAME_ID,
   cookies: {
     token: getTokenCookieValue(TestId.USER),
   },
@@ -104,6 +106,7 @@ describe('matchCreate', () => {
         expect(response).toHaveLength(1);
         const match = response[0] as MultiplayerMatch;
 
+        expect(match.gameId).toBe(DEFAULT_GAME_ID);
         expect(match.matchId).toHaveLength(11);
         expect(match.winners).toHaveLength(0);
         expect(match.levels).toHaveLength(0);
@@ -112,13 +115,13 @@ describe('matchCreate', () => {
         const createdByFields = Object.keys(match.createdBy);
 
         expect(match.createdBy.name).toBe('test');
-        expect(createdByFields.sort()).toStrictEqual(['_id', 'last_visited_at', 'name', 'roles'].sort());
+        expect(createdByFields.sort()).toStrictEqual(['_id', 'config', 'last_visited_at', 'name', 'roles'].sort());
         const sample_player = match.players[0];
 
         expect(sample_player._id).toBe(TestId.USER);
         const sample_player_fields = Object.keys(sample_player);
 
-        expect(sample_player_fields.sort()).toStrictEqual(['_id', 'last_visited_at', 'name', 'roles'].sort());
+        expect(sample_player_fields.sort()).toStrictEqual(['_id', 'config', 'last_visited_at', 'name', 'roles'].sort());
       },
     });
   });

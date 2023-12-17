@@ -1,12 +1,15 @@
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import Discord from '@root/constants/discord';
+import { GameId } from '@root/constants/GameId';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
+import { LEVEL_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import { MULTIPLAYER_INITIAL_ELO } from '@root/models/schemas/multiplayerProfileSchema';
 import mongoose, { PipelineStage, Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { ValidEnum, ValidType } from '../../../helpers/apiWrapper';
-import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
+import { getEnrichLevelsPipelineSteps, getEnrichUserConfigPipelineStage } from '../../../helpers/enrich';
 import { logger } from '../../../helpers/logger';
 import { getRatingFromProfile, isProvisional, multiplayerMatchTypeToText } from '../../../helpers/multiplayerHelperFunctions';
 import { requestBroadcastMatches, requestClearBroadcastMatchSchedule } from '../../../lib/appSocketToClient';
@@ -15,7 +18,6 @@ import { MatchAction, MultiplayerMatchState, MultiplayerMatchType } from '../../
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
 import User from '../../../models/db/user';
 import { LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, UserModel } from '../../../models/mongoose';
-import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
 import { computeMatchScoreTable, enrichMultiplayerMatch, generateMatchLog } from '../../../models/schemas/multiplayerMatchSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 import { queueRefreshAchievements } from '../internal-jobs/worker';
@@ -114,19 +116,27 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
         MultiplayerProfileModel.findOneAndUpdate(
           {
             userId: winnerId,
+            gameId: finishedMatch.gameId,
           },
-          {},
+          {
+            gameId: finishedMatch.gameId,
+            userId: winnerId,
+          },
           {
             upsert: true, // create the user if they don't exist
             new: true,
             session: session,
           }
         ).lean<MultiplayerProfile>(),
-        await MultiplayerProfileModel.findOneAndUpdate(
+        MultiplayerProfileModel.findOneAndUpdate(
           {
             userId: loserId,
+            gameId: finishedMatch.gameId,
           },
-          {},
+          {
+            gameId: finishedMatch.gameId,
+            userId: loserId,
+          },
           {
             upsert: true, // create the user if they don't exist
             new: true,
@@ -164,6 +174,7 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
           MultiplayerProfileModel.findOneAndUpdate(
             {
               userId: new Types.ObjectId(winnerId),
+              gameId: finishedMatch.gameId,
             },
             {
               $inc: {
@@ -179,6 +190,7 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
           MultiplayerProfileModel.findOneAndUpdate(
             {
               userId: new Types.ObjectId(loserId),
+              gameId: finishedMatch.gameId,
             },
             {
               $inc: {
@@ -230,8 +242,9 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
             session: session,
           }
         ).lean<MultiplayerMatch>(),
-        queueRefreshAchievements(new Types.ObjectId(winnerId), [AchievementCategory.MULTIPLAYER]),
-        queueRefreshAchievements(new Types.ObjectId(loserId), [AchievementCategory.MULTIPLAYER]),
+
+        queueRefreshAchievements(finishedMatch.gameId, new Types.ObjectId(winnerId), [AchievementCategory.MULTIPLAYER]),
+        queueRefreshAchievements(finishedMatch.gameId, new Types.ObjectId(loserId), [AchievementCategory.MULTIPLAYER]),
       ]);
 
       if (!newFinishedMatch) {
@@ -289,6 +302,12 @@ export async function checkForFinishedMatch(matchId: string) {
 }
 
 async function createMatch(req: NextApiRequestWithAuth) {
+  const game = getGameFromId(req.gameId);
+
+  if (game.disableMultiplayer) {
+    return null;
+  }
+
   const isPrivate: boolean = req.body.private;
   const rated: boolean = req.body.rated;
   const reqUser = req.user;
@@ -300,6 +319,7 @@ async function createMatch(req: NextApiRequestWithAuth) {
       state: {
         $in: [MultiplayerMatchState.ACTIVE, MultiplayerMatchState.OPEN],
       },
+      gameId: req.gameId,
     },
   ).lean<MultiplayerMatch>();
 
@@ -309,10 +329,12 @@ async function createMatch(req: NextApiRequestWithAuth) {
 
   const matchId = makeId(11);
   const matchUrl = `${req.headers.origin}/match/${matchId}`;
-  const discordMessage = `New *${multiplayerMatchTypeToText(type)}* match created by **${reqUser.name}**! [Join here](<${matchUrl}>)`;
+
+  const discordMessage = `**${game.displayName}** - New *${multiplayerMatchTypeToText(type)}* match created by **${reqUser.name}**! [Join here](<${matchUrl}>)`;
 
   const match = await MultiplayerMatchModel.create({
     createdBy: reqUser._id,
+    gameId: req.gameId,
     matchId: matchId,
     matchLog: [
       generateMatchLog(MatchAction.CREATE, {
@@ -342,7 +364,7 @@ async function createMatch(req: NextApiRequestWithAuth) {
  * @returns
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
+export async function getAllMatches(gameId: GameId, reqUser?: User, matchFilters: any = null) {
   if (!matchFilters) {
     matchFilters = {
       private: false,
@@ -352,6 +374,7 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
     };
   }
 
+  matchFilters.gameId = gameId;
   const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPipelineSteps(reqUser, '_id', '');
 
   const [matches] = await Promise.all([
@@ -376,6 +399,13 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
                 localField: '_id',
                 foreignField: 'userId',
                 as: 'multiplayerProfile',
+                pipeline: [
+                  {
+                    $match: {
+                      gameId: gameId,
+                    }
+                  },
+                ]
               }
             },
             {
@@ -383,7 +413,8 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
                 path: '$multiplayerProfile',
                 preserveNullAndEmptyArrays: true,
               }
-            }
+            },
+            ...getEnrichUserConfigPipelineStage(gameId) as PipelineStage.Lookup[],
           ],
         }
       },
@@ -397,6 +428,7 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
             {
               $project: USER_DEFAULT_PROJECTION,
             },
+            ...getEnrichUserConfigPipelineStage(gameId) as PipelineStage.Lookup[],
           ],
         }
       },
@@ -410,6 +442,7 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
             {
               $project: USER_DEFAULT_PROJECTION,
             },
+            ...getEnrichUserConfigPipelineStage(gameId) as PipelineStage.Lookup[],
           ],
         }
       },
@@ -482,7 +515,7 @@ export default withAuth(
   async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
     if (req.method === 'GET') {
       // get any matches
-      const matches = await getAllMatches(req.user);
+      const matches = await getAllMatches(req.gameId, req.user);
 
       return res.status(200).json(matches);
     } else if (req.method === 'POST') {
@@ -503,7 +536,7 @@ export default withAuth(
           .json({ error: 'You are already involved in a match' });
       }
 
-      await requestBroadcastMatches();
+      await requestBroadcastMatches(match.gameId);
 
       return res.status(200).json(match);
     }

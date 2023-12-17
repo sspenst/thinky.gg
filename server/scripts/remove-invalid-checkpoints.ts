@@ -49,6 +49,7 @@ async function init() {
         console.log(`\r${kvm.key}[${key}] invalid checkpoint`);
 
         await KeyValueModel.findOneAndUpdate(
+          // GameId should not be needed for this part of the script...
           { key: getCheckpointKey(levelId, userId) },
           { $unset: { [`value.${key}`]: '' } },
         );

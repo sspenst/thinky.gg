@@ -1,9 +1,5 @@
-export enum TourType {
-    HOME_PAGE = 'TOUR',
-    CHAPTER_1 = 'CHAPTER_1',
-    FIRST_LEVEL = 'FIRST_LEVEL',
-    SECOND_LEVEL = 'SECOND_LEVEL',
-    THIRD_LEVEL = 'THIRD_LEVEL',
-    PLAY_PAGE = 'PLAY_PAGE',
-    MULTIPLAYER_PAGE = 'MULTIPLAYER_PAGE',
-  }
+enum TourType {
+  HOME_PAGE = 'TOUR',
+}
+
+export default TourType;

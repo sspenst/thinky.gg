@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import mongoose from 'mongoose';
 import Stat from '../db/stat';
 
@@ -12,6 +13,11 @@ const StatSchema = new mongoose.Schema<Stat>({
   },
   complete: {
     type: Boolean,
+    required: true,
+  },
+  gameId: {
+    type: String,
+    enum: GameId,
     required: true,
   },
   isDeleted: {
@@ -40,6 +46,6 @@ const StatSchema = new mongoose.Schema<Stat>({
 StatSchema.index({ complete: 1 });
 StatSchema.index({ levelId: 1 });
 StatSchema.index({ userId: 1, complete: 1 });
-StatSchema.index({ userId: 1, levelId: 1 }, { unique: true });
+StatSchema.index({ userId: 1, levelId: 1, gameId: 1 }, { unique: true });
 
 export default StatSchema;

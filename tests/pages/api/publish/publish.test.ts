@@ -1,3 +1,4 @@
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import TestId from '@root/constants/testId';
 import { TimerUtil } from '@root/helpers/getTs';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
@@ -22,7 +23,7 @@ describe('publishLevelHandler', () => {
   test('should be OK on first publish', async () => {
     // set to one month in future
     MockDate.set(Date.now() + 1000 * 60 * 60 * 24 * 30);
-    const error = await checkPublishRestrictions(new Types.ObjectId(TestId.USER));
+    const error = await checkPublishRestrictions(DEFAULT_GAME_ID, new Types.ObjectId(TestId.USER));
 
     expect(error).toBeUndefined();
   });
@@ -32,8 +33,10 @@ describe('publishLevelHandler', () => {
     await LevelModel.create({
       authorNote: 'YOOOOO',
       data: '4100B0\n120000\n050000\n678900\nABCD30',
+      gameId: DEFAULT_GAME_ID,
       height: 5,
       isDraft: false,
+      isRanked: false,
       leastMoves: 20,
       name: 'test level 100',
       slug: 'test/test-level-100',
@@ -44,7 +47,7 @@ describe('publishLevelHandler', () => {
     });
 
     MockDate.set(Date.now() + 5000);
-    const error = await checkPublishRestrictions(new Types.ObjectId(TestId.USER));
+    const error = await checkPublishRestrictions(DEFAULT_GAME_ID, new Types.ObjectId(TestId.USER));
 
     expect(error).toBe('Please wait a little bit before publishing another level');
   });
@@ -55,7 +58,7 @@ describe('publishLevelHandler', () => {
 
     MockDate.set(Date.now() + 56000);
 
-    const error = await checkPublishRestrictions(new Types.ObjectId(TestId.USER));
+    const error = await checkPublishRestrictions(DEFAULT_GAME_ID, new Types.ObjectId(TestId.USER));
 
     expect(error).toBeUndefined();
   });
@@ -67,8 +70,10 @@ describe('publishLevelHandler', () => {
     await LevelModel.create({
       authorNote: 'YOOOOO',
       data: '4200B0\n120000\n050000\n678900\nABCD30',
+      gameId: DEFAULT_GAME_ID,
       height: 5,
       isDraft: false,
+      isRanked: false,
       leastMoves: 20,
       calc_reviews_score_laplace: 0.3,
       name: 'test level 101',
@@ -81,8 +86,10 @@ describe('publishLevelHandler', () => {
     await LevelModel.create({
       authorNote: 'YOOOOO',
       data: '4300B0\n120000\n050000\n678900\nABCD30',
+      gameId: DEFAULT_GAME_ID,
       height: 5,
       isDraft: false,
+      isRanked: false,
       leastMoves: 20,
       calc_reviews_score_laplace: 0.35,
       name: 'test level 102',
@@ -95,8 +102,10 @@ describe('publishLevelHandler', () => {
     await LevelModel.create({
       authorNote: 'YOOOOO',
       data: '4400B0\n120000\n050000\n678900\nABCD30',
+      gameId: DEFAULT_GAME_ID,
       height: 5,
       isDraft: false,
+      isRanked: false,
       leastMoves: 20,
       calc_reviews_score_laplace: 0.33,
       name: 'test level 103',
@@ -109,8 +118,10 @@ describe('publishLevelHandler', () => {
     await LevelModel.create({
       authorNote: 'YOOOOO',
       data: '4500B0\n120000\n050000\n678900\nABCD30',
+      gameId: DEFAULT_GAME_ID,
       height: 5,
       isDraft: false,
+      isRanked: false,
       leastMoves: 20,
       calc_reviews_score_laplace: 0.31,
       name: 'test level 104',
@@ -122,18 +133,18 @@ describe('publishLevelHandler', () => {
 
     MockDate.set(Date.now() + 65000);
 
-    const error = await checkPublishRestrictions(new Types.ObjectId(TestId.USER));
+    const error = await checkPublishRestrictions(DEFAULT_GAME_ID, new Types.ObjectId(TestId.USER));
 
     expect(error).toBe('Your recent levels are getting poor reviews. Please wait before publishing a new level');
     // wait 25 h
     MockDate.set(Date.now() + 60000 * 60 * 12 ); // 12 hours later
 
-    const error2 = await checkPublishRestrictions(new Types.ObjectId(TestId.USER));
+    const error2 = await checkPublishRestrictions(DEFAULT_GAME_ID, new Types.ObjectId(TestId.USER));
 
     expect(error2).toBe('Your recent levels are getting poor reviews. Please wait before publishing a new level');
     MockDate.set(Date.now() + 60000 * 60 * 13); // 13 hours later
 
-    const error3 = await checkPublishRestrictions(new Types.ObjectId(TestId.USER));
+    const error3 = await checkPublishRestrictions(DEFAULT_GAME_ID, new Types.ObjectId(TestId.USER));
 
     expect(error3).toBeUndefined();
   });
@@ -145,8 +156,10 @@ describe('publishLevelHandler', () => {
     await LevelModel.create({
       authorNote: 'YOOOOO',
       data: '4210B0\n120000\n050000\n678900\nABCD30',
+      gameId: DEFAULT_GAME_ID,
       height: 5,
       isDraft: false,
+      isRanked: false,
       leastMoves: 20,
       calc_reviews_score_laplace: 0.63,
       name: 'test level 105',
@@ -159,8 +172,10 @@ describe('publishLevelHandler', () => {
     await LevelModel.create({
       authorNote: 'YOOOOO',
       data: '4320B0\n120000\n050000\n678900\nABCD30',
+      gameId: DEFAULT_GAME_ID,
       height: 5,
       isDraft: false,
+      isRanked: false,
       leastMoves: 20,
       calc_reviews_score_laplace: 0.85,
       name: 'test level 106',
@@ -173,8 +188,10 @@ describe('publishLevelHandler', () => {
     await LevelModel.create({
       authorNote: 'YOOOOO',
       data: '4430B0\n120000\n050000\n678900\nABCD30',
+      gameId: DEFAULT_GAME_ID,
       height: 5,
       isDraft: false,
+      isRanked: false,
       leastMoves: 20,
       calc_reviews_score_laplace: 0.83,
       name: 'test level 107',
@@ -187,8 +204,10 @@ describe('publishLevelHandler', () => {
     await LevelModel.create({
       authorNote: 'YOOOOO',
       data: '4550B0\n120000\n050000\n678900\nABCD30',
+      gameId: DEFAULT_GAME_ID,
       height: 5,
       isDraft: false,
+      isRanked: false,
       leastMoves: 20,
       calc_reviews_score_laplace: 0.91,
       name: 'test level 108',
@@ -200,7 +219,7 @@ describe('publishLevelHandler', () => {
 
     MockDate.set(Date.now() + 65000);
 
-    const error = await checkPublishRestrictions(new Types.ObjectId(TestId.USER));
+    const error = await checkPublishRestrictions(DEFAULT_GAME_ID, new Types.ObjectId(TestId.USER));
 
     expect(error).toBeUndefined();
   });

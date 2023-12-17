@@ -1,81 +1,90 @@
-import { NextSeo } from 'next-seo';
-import React from 'react';
-import { SWRConfig } from 'swr';
-import HomeDefault from '../components/homepage/homeDefault';
-import HomeVideo from '../components/homepage/homeVideo';
-import RecommendedLevel from '../components/homepage/recommendedLevel';
-import Page from '../components/page/page';
-import getSWRKey from '../helpers/getSWRKey';
-import useLevelOfDay from '../hooks/useLevelOfDay';
-import { EnrichedLevel } from '../models/db/level';
-import { getLevelOfDay } from './api/level-of-day';
+import Page from '@root/components/page/page';
+import { GameId } from '@root/constants/GameId';
+import { Game, Games } from '@root/constants/Games';
+import { AppContext } from '@root/contexts/appContext';
+import useUrl from '@root/hooks/useUrl';
+import Image from 'next/image';
+import React, { useContext } from 'react';
 
-export async function getStaticProps() {
-  let levelOfDay: EnrichedLevel | null = null;
+function GameCard({ game }: { game: Game }) {
+  const getUrl = useUrl();
 
-  if (process.env.OFFLINE_BUILD !== 'true') {
-    levelOfDay = await getLevelOfDay();
-  }
-
-  return {
-    props: {
-      levelOfDay: JSON.parse(JSON.stringify(levelOfDay)),
-    } as AppSWRProps,
-    revalidate: 60 * 60,
-  };
-}
-
-interface AppSWRProps {
-  levelOfDay: EnrichedLevel;
-}
-
-/* istanbul ignore next */
-export default function AppSWR({ levelOfDay }: AppSWRProps) {
   return (
-    <SWRConfig value={{ fallback: {
-      [getSWRKey('/api/level-of-day')]: levelOfDay,
-    } }}>
-      <App />
-    </SWRConfig>
+    <a suppressHydrationWarning href={getUrl(game.id)} className='flex flex-col gap-3 items-center justify-center w-full h-full p-4 border border-color-3 rounded-lg hover-bg-3 hover:scale-105 transition h-min w-min'>
+      <Image src={game.logo} alt={game.displayName} width='128' height='128' className='w-32 h-32' style={{ minWidth: 128 }} />
+      <span className='font-bold text-2xl'>{game.displayName}</span>
+    </a>
   );
 }
 
-/* istanbul ignore next */
-function App() {
-  const { levelOfDay } = useLevelOfDay();
+export default function ThinkyHomePage() {
+  const getUrl = useUrl();
+  const { userConfig } = useContext(AppContext);
 
   return (
-    <Page title={'Pathology'}>
-      <>
-        <NextSeo
-          title={'Pathology - Shortest Path Puzzle Game'}
-          openGraph={{
-            title: 'Pathology - Shortest Path Puzzle Game',
-            description: 'The goal of Pathology is simple. Get to the exit in the least number of moves. Sounds easy right? Yet, this sokoban style game is one of the most mind-bending puzzle games you will find. Different blocks stand in your way to the exit, and your job is to figure out the optimal route',
-            images: [
-              {
-                url: 'https://pathology.gg/logo.png',
-                width: 128,
-                height: 128,
-                alt: 'Pathology Logo',
-                type: 'image/png',
-              },
-            ],
-          }}
-        />
-        <HomeVideo />
-        <div className='flex flex-wrap justify-center m-4'>
-          {levelOfDay &&
-            <RecommendedLevel
-              id='level-of-day'
-              level={levelOfDay}
-              title='Level of the Day'
-              tooltip={'Every day there is a new level of the day. Difficulty increases throughout the week!'}
-            />
-          }
+    <Page title='Thinky.gg'
+      style={{
+        // backgroundImage: 'url(https://i.imgur.com/h2qnMrV.png)',
+        // height: '100vh',
+        // center
+        backgroundPosition: 'center',
+        /** add a fade to black on the top half of the image */
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed',
+        backgroundBlendMode: 'multiply',
+        // background: 'linear-gradient(rgba(0,0,0,1), rgba(0,0,0,0)), url(https://i.imgur.com/h2qnMrV.png)',
+      }}>
+      <div className='flex justify-center'>
+        <div className='flex flex-wrap justify-center m-6 gap-24'>
+          {Object.values(Games).map(game => {
+            if (game.id === GameId.THINKY) {
+              return null;
+            }
+
+            return (
+              <div className='flex flex-col items-center gap-6' key={`game-${game.id}`}>
+                <GameCard game={game} />
+                <video autoPlay loop muted className='rounded-lg w-40 text-center fadeIn' src={game.videoDemo} />
+                <div className='p-2 w-auto text-center text-xl fadeIn'>
+                  {game.shortDescription}
+                </div>
+                <a
+                  className='text-2xl font-bold px-4 py-3 border-2 border-color-3 rounded-lg hover-bg-3 hover:scale-110 transition'
+                  href={userConfig?.tutorialCompletedAt ? getUrl(game.id, '/play') : getUrl(game.id, '/tutorial')}
+                  role='button'
+                >
+                  Play Now
+                </a>
+              </div>
+            );
+          } )}
         </div>
-        <HomeDefault />
-      </>
+      </div>
+      {/* features that span every game ("platform" features) */}
+      <div className='flex flex-col gap-12 items-center p-12'>
+        <div className='h-40 w-40 rounded-xl p-4 border border-color-4'>
+          Level Editor
+        </div>
+        <div className='h-40 w-40 rounded-xl p-4 border border-color-4'>
+          Leaderboards
+        </div>
+        <div className='h-40 w-40 rounded-xl p-4 border border-color-4'>
+          Reviews
+        </div>
+        <div className='h-40 w-40 rounded-xl p-4 border border-color-4'>
+          Advanced Search
+        </div>
+        <div className='h-40 w-40 rounded-xl p-4 border border-color-4'>
+         Automatic difficulty
+        </div>
+        <div className='h-40 w-40 rounded-xl p-4 border border-color-4'>
+          Pro
+        </div>
+        {/* <div className='h-40 w-40 rounded-xl p-4 border border-color-4'>
+          Multiplayer
+        </div> */}
+      </div>
     </Page>
   );
 }

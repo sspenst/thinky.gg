@@ -1,6 +1,7 @@
 import { AppContext } from '@root/contexts/appContext';
 import { GridContext } from '@root/contexts/gridContext';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
+import { useTheme } from 'next-themes';
 import React, { useContext } from 'react';
 import Theme, { getIconFromTheme } from '../../../constants/theme';
 import TileType from '../../../constants/tileType';
@@ -12,7 +13,8 @@ interface SquareProps {
 
 export default function Square({ text, tileType }: SquareProps) {
   const { borderWidth, innerTileSize, leastMoves, tileSize } = useContext(GridContext);
-  const { theme } = useContext(AppContext);
+  const { game } = useContext(AppContext);
+  const { theme } = useTheme();
   const classic = theme === Theme.Classic;
   const innerBorderWidth = Math.round(innerTileSize / 4.5);
   const fontSizeRatio = text === undefined || String(text).length <= 3 ?
@@ -37,11 +39,11 @@ export default function Square({ text, tileType }: SquareProps) {
     }
   }
 
-  const icon = getIconFromTheme(theme, tileType);
+  const icon = getIconFromTheme(game, theme, tileType);
 
   return (
     <div
-      className={`select-none tile-type-${tileType} flex items-center justify-center relative`}
+      className={`select-none tile-${game.id} tile-type-${tileType} flex items-center justify-center relative`}
       style={{
         backgroundColor: getBackgroundColor(),
         borderBottomWidth: tileType === TileType.Hole || TileTypeHelper.canMoveUp(tileType) ? innerBorderWidth : 0,

@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import mongoose from 'mongoose';
 import MultiplayerProfile from '../db/multiplayerProfile';
 
@@ -25,6 +26,16 @@ const MultiplayerProfileSchema = new mongoose.Schema<MultiplayerProfile>(
       required: true,
       default: 0,
     },
+    gameId: {
+      type: String,
+      enum: GameId,
+      required: true,
+    },
+    ratingDeviation: {
+      type: Number,
+      required: true,
+      default: 400,
+    },
     ratingRushBullet: {
       type: Number,
       required: true,
@@ -45,11 +56,6 @@ const MultiplayerProfileSchema = new mongoose.Schema<MultiplayerProfile>(
       required: true,
       default: MULTIPLAYER_INITIAL_ELO,
     },
-    ratingDeviation: {
-      type: Number,
-      required: true,
-      default: 400,
-    },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -66,9 +72,7 @@ const MultiplayerProfileSchema = new mongoose.Schema<MultiplayerProfile>(
   }
 );
 
-// index on userId
-MultiplayerProfileSchema.index({ userId: 1 }, { unique: true });
-// index on rating
+MultiplayerProfileSchema.index({ userId: 1, gameId: 1 }, { unique: true });
 MultiplayerProfileSchema.index({ rating: 1 });
 
 export default MultiplayerProfileSchema;

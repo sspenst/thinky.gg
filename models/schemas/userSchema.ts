@@ -1,8 +1,11 @@
+import { EmailDigestSettingType } from '@root/constants/emailDigest';
+import { GameId } from '@root/constants/GameId';
+import NotificationType from '@root/constants/notificationType';
 import bcrypt from 'bcryptjs';
 import mongoose, { Types } from 'mongoose';
 import Role from '../../constants/role';
 import User from '../db/user';
-import { LevelModel, UserModel } from '../mongoose';
+import { LevelModel, UserConfigModel } from '../mongoose';
 
 export const USER_DEFAULT_PROJECTION = {
   _id: 1,
@@ -27,22 +30,19 @@ const UserSchema = new mongoose.Schema<User>({
     maxlength: 256,
     select: false
   },
-  calc_levels_created_count: {
-    type: Number,
-    default: 0,
+  disallowedEmailNotifications: {
+    type: [{ type: String, enum: NotificationType }],
+    required: true,
+    default: [],
   },
-  calc_records: {
-    type: Number,
-    default: 0,
-  },
-  chapterUnlocked: {
-    type: Number,
-    default: 1,
+  disallowedPushNotifications: {
+    type: [{ type: String, enum: NotificationType }],
+    required: true,
+    default: [],
   },
   email: {
     type: String,
     required: true,
-    unique: true,
     select: false,
     minlength: 3,
     maxlength: 50,
@@ -52,11 +52,31 @@ const UserSchema = new mongoose.Schema<User>({
       }
     }
   },
+  emailDigest: {
+    type: String,
+    required: true,
+    enum: EmailDigestSettingType,
+    default: EmailDigestSettingType.DAILY,
+  },
+  emailConfirmationToken: {
+    type: String,
+    select: false,
+  },
+  emailConfirmed: {
+    type: Boolean,
+    default: false,
+    select: false,
+  },
   hideStatus: {
     type: Boolean,
   },
   last_visited_at: {
     type: Number,
+  },
+  lastGame: {
+    type: String,
+    enum: GameId,
+    required: false,
   },
   ip_addresses_used: {
     type: [String],
@@ -65,7 +85,6 @@ const UserSchema = new mongoose.Schema<User>({
   name: {
     type: String,
     required: true,
-    unique: true,
     minlength: 3,
     maxlength: 50,
     validate: {
@@ -81,15 +100,11 @@ const UserSchema = new mongoose.Schema<User>({
     minlength: 8,
     maxlength: 64,
   },
+  // TODO: Probably better to move roles to userConfig
   roles: {
     type: [String],
     enum: Role,
     default: [],
-  },
-  score: {
-    type: Number,
-    required: true,
-    default: 0,
   },
   ts: {
     type: Number,
@@ -101,10 +116,11 @@ const UserSchema = new mongoose.Schema<User>({
   },
 });
 
+//UserSchema.index({ calcRankedSolves: -1 });
 UserSchema.index({ score: -1 });
 UserSchema.index({ name: 1 }, { unique: true });
 UserSchema.index({ email: 1 }, { unique: true });
-UserSchema.index({ calc_records: -1 });
+//UserSchema.index({ calc_records: -1 });
 
 export const PASSWORD_SALTROUNDS = process.env.NODE_ENV !== 'test' ? 10 : 1;
 
@@ -131,15 +147,23 @@ UserSchema.pre('save', function(next) {
   }
 });
 
-export async function calcCreatorCounts(userId: Types.ObjectId, session?: mongoose.ClientSession) {
+export async function calcCreatorCounts(gameId: GameId, userId: Types.ObjectId, session?: mongoose.ClientSession) {
   const levelsCreatedCountAgg = await LevelModel.aggregate([
-    { $match: { isDeleted: { $ne: true }, isDraft: false, userId: userId } },
+    {
+      $match:
+      {
+        isDeleted: { $ne: true },
+        isDraft: false,
+        userId: userId,
+        gameId: gameId
+      }
+    },
     { $count: 'count' },
   ], { session: session });
   const levelsCreatedCount = levelsCreatedCountAgg.length > 0 ? levelsCreatedCountAgg[0].count : 0;
 
-  await UserModel.updateOne({ _id: userId }, {
-    calc_levels_created_count: levelsCreatedCount,
+  await UserConfigModel.updateOne({ userId: userId, gameId: gameId }, {
+    calcLevelsCreatedCount: levelsCreatedCount,
   }, { session: session });
 }
 

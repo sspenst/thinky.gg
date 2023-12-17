@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import mongoose from 'mongoose';
 import Campaign from '../db/campaign';
 
@@ -14,6 +15,11 @@ const CampaignSchema = new mongoose.Schema<Campaign>({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Collection',
   }],
+  gameId: {
+    type: String,
+    enum: GameId,
+    required: true,
+  },
   name: {
     type: String,
     minlength: 1,
@@ -24,6 +30,7 @@ const CampaignSchema = new mongoose.Schema<Campaign>({
     type: String,
     required: true,
   },
+
 }, {
   timestamps: true,
   collation: {
@@ -32,6 +39,6 @@ const CampaignSchema = new mongoose.Schema<Campaign>({
   },
 });
 
-CampaignSchema.index({ slug: 1 }, { name: 'slug_index', unique: true });
+CampaignSchema.index({ slug: 1, gameId: 1 }, { unique: true });
 
 export default CampaignSchema;

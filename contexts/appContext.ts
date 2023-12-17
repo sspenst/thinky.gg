@@ -1,5 +1,8 @@
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import { Game, Games } from '@root/constants/Games';
 import { DeviceInfo, ScreenSize } from '@root/hooks/useDeviceCheck';
 import Collection from '@root/models/db/collection';
+import Notification from '@root/models/db/notification';
 import { createContext } from 'react';
 import { KeyedMutator } from 'swr';
 import { ReqUser } from '../models/db/user';
@@ -9,20 +12,24 @@ import { MultiplayerSocket } from '../pages/_app';
 interface AppContextInterface {
   deviceInfo: DeviceInfo;
   forceUpdate: () => void;
+  game: Game;
+  host: string | undefined;
   multiplayerSocket: MultiplayerSocket;
   mutatePlayLater: () => void;
   mutateUser: KeyedMutator<ReqUser>;
+  notifications: Notification[];
   playLater?: { [key: string]: boolean };
+  protocol: string | undefined;
+  setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>;
   setShouldAttemptAuth: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowNav: React.Dispatch<React.SetStateAction<boolean>>;
   setTempCollection: React.Dispatch<React.SetStateAction<Collection | undefined>>;
-  setTheme: React.Dispatch<React.SetStateAction<string | undefined>>;
   shouldAttemptAuth: boolean;
+  showNav: boolean;
   sounds: { [key: string]: HTMLAudioElement };
   tempCollection?: Collection;
-  theme: string | undefined;
-  user?: ReqUser;
-  userConfig?: UserConfig;
-  userLoading: boolean;
+  user: ReqUser | undefined | null;
+  userConfig: UserConfig | undefined | null;
 }
 
 export const AppContext = createContext<AppContextInterface>({
@@ -36,7 +43,9 @@ export const AppContext = createContext<AppContextInterface>({
     isMac: false,
     screenSize: ScreenSize.SM,
   },
-  forceUpdate: () => { return; },
+  forceUpdate: () => {},
+  game: Games[DEFAULT_GAME_ID],
+  host: undefined,
   multiplayerSocket: {
     connectedPlayers: [],
     connectedPlayersCount: 0,
@@ -44,15 +53,19 @@ export const AppContext = createContext<AppContextInterface>({
     privateAndInvitedMatches: [],
     socket: undefined,
   },
-  mutatePlayLater: () => { return; },
+  mutatePlayLater: () => {},
   mutateUser: {} as KeyedMutator<ReqUser>,
+  notifications: [],
   playLater: undefined,
-  setShouldAttemptAuth: () => { return; },
-  setTempCollection: () => { return; },
-  setTheme: () => { return; },
+  protocol: undefined,
+  setNotifications: () => {},
+  setShouldAttemptAuth: () => {},
+  setShowNav: () => {},
+  setTempCollection: () => {},
   shouldAttemptAuth: true,
+  showNav: true,
   sounds: {},
   tempCollection: undefined,
-  theme: undefined,
-  userLoading: true,
+  user: undefined,
+  userConfig: undefined,
 });

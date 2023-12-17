@@ -1,4 +1,6 @@
 import Direction from '@root/constants/direction';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import UserConfig from '@root/models/db/userConfig';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -10,7 +12,7 @@ import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Level from '../../../../models/db/level';
-import { LevelModel, RecordModel, UserModel } from '../../../../models/mongoose';
+import { LevelModel, RecordModel, UserConfigModel } from '../../../../models/mongoose';
 import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
 import modifyLevelHandler from '../../../../pages/api/level/[id]';
 import createLevelHandler from '../../../../pages/api/level/index';
@@ -523,6 +525,7 @@ describe('pages/api/level/index.ts', () => {
 
         expect(lvl.authorNote).toBe('I\'m a changed nice little note.');
         expect(lvl.name).toBe('A Change Test Level');
+        expect(lvl.gameId).toBe(DEFAULT_GAME_ID);
       },
     });
   });
@@ -648,8 +651,10 @@ describe('pages/api/level/index.ts', () => {
       _id: test_level_id,
       authorNote: 'test level X author note',
       data: '40000\n12000\n05000\n67890\nABCD3',
+      gameId: DEFAULT_GAME_ID,
       height: 5,
       isDraft: false,
+      isRanked: false,
       leastMoves: 20,
       name: 'test level 3',
       slug: 'test/test-level-3',
@@ -767,27 +772,31 @@ describe('pages/api/level/index.ts', () => {
   test('Deleting a level after someone has set a new record', async () => {
     let test_level_id_delete = new Types.ObjectId();
 
-    await LevelModel.create({
-      _id: test_level_id_delete,
-      authorNote: 'test level X author note',
-      data: '40000\n12000\n05000\n67890\nABCD3',
-      height: 5,
-      isDraft: false,
-      leastMoves: 20,
-      name: 'test level 3',
-      slug: 'test/test-level-3',
-      ts: TimerUtil.getTs(),
-      userId: TestId.USER,
-      width: 5,
-    });
-
-    await RecordModel.create({
-      _id: new Types.ObjectId(),
-      levelId: test_level_id_delete,
-      moves: 20,
-      ts: TimerUtil.getTs(),
-      userId: TestId.USER,
-    });
+    await Promise.all([
+      LevelModel.create({
+        _id: test_level_id_delete,
+        authorNote: 'test level X author note',
+        data: '40000\n12000\n05000\n67890\nABCD3',
+        gameId: DEFAULT_GAME_ID,
+        height: 5,
+        isDraft: false,
+        isRanked: false,
+        leastMoves: 20,
+        name: 'test level 3',
+        slug: 'test/test-level-3',
+        ts: TimerUtil.getTs(),
+        userId: TestId.USER,
+        width: 5,
+      }),
+      RecordModel.create({
+        _id: new Types.ObjectId(),
+        gameId: DEFAULT_GAME_ID,
+        levelId: test_level_id_delete,
+        moves: 20,
+        ts: TimerUtil.getTs(),
+        userId: TestId.USER,
+      })
+    ]);
 
     // set a new record by USER_B
     await testApiHandler({
@@ -815,9 +824,9 @@ describe('pages/api/level/index.ts', () => {
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
 
-        const userB = await UserModel.findById(TestId.USER_B);
+        const userB = await UserConfigModel.findOne({ userId: TestId.USER_B });
 
-        expect(userB.calc_records).toBe(1);
+        expect(userB.calcRecordsCount).toBe(1);
       },
     });
 
@@ -845,9 +854,9 @@ describe('pages/api/level/index.ts', () => {
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
         test_level_id_delete = response.levelId; // Note that level Id gets changed on unpublished
-        const userB = await UserModel.findById(TestId.USER_B);
+        const userB = await UserConfigModel.findOne({ userId: TestId.USER_B });
 
-        expect(userB.calc_records).toBe(0);
+        expect(userB.calcRecordsCount).toBe(0);
       },
     });
     await testApiHandler({
@@ -874,9 +883,9 @@ describe('pages/api/level/index.ts', () => {
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
 
-        const userB = await UserModel.findById(TestId.USER_B);
+        const userB = await UserConfigModel.findOne<UserConfig>({ userId: TestId.USER_B });
 
-        expect(userB.calc_records).toBe(0);
+        expect(userB?.calcRecordsCount).toBe(0);
       },
     });
   });

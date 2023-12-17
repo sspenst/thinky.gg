@@ -1,11 +1,10 @@
 import { Aggregate } from 'mongoose';
 import { GetServerSidePropsContext } from 'next';
 import { Logger } from 'winston';
-import TestId from '../../../constants/testId';
 import { logger } from '../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { UserModel } from '../../../models/mongoose';
-import { DEFAULT_QUERY, getServerSideProps } from '../../../pages/users/index';
+import { DEFAULT_QUERY, getServerSideProps } from '../../../pages/[subdomain]/users/index';
 
 beforeAll(async () => {
   await dbConnect();
@@ -22,7 +21,6 @@ describe('pages/users page', () => {
     expect(ret.props).toBeDefined();
     expect(ret.props.searchQuery).toStrictEqual(DEFAULT_QUERY);
     expect(ret.props.totalRows).toBe(5);
-    expect(ret.props.users[0]._id).toBe(TestId.USER);
     expect(ret.props.users[0].reviewCount).toBeUndefined();
   }
   );

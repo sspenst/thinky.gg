@@ -7,6 +7,7 @@ import { LevelModel } from '../../models/mongoose';
 
 dotenv.config();
 
+//TODO: incorporate gameId?
 async function genCampaign() {
   await dbConnect();
   const startTime = Date.now();

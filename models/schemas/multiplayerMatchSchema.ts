@@ -1,4 +1,5 @@
-import { randomRotateLevelDataViaMatchHash } from '@root/helpers/validateSolution';
+import { GameId } from '@root/constants/GameId';
+import { randomRotateLevelDataViaMatchHash } from '@root/helpers/randomRotateLevelDataViaMatchHash';
 import mongoose, { ObjectId } from 'mongoose';
 import cleanUser from '../../lib/cleanUser';
 import {
@@ -35,6 +36,20 @@ const MultiplayerMatchSchema = new mongoose.Schema<MultiplayerMatch>(
     endTime: {
       type: Date,
     },
+    gameId: {
+      type: String,
+      enum: GameId,
+      required: true,
+    },
+    gameTable: {
+      type: Map,
+      of: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Level',
+        },
+      ],
+    },
     levels: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -51,7 +66,6 @@ const MultiplayerMatchSchema = new mongoose.Schema<MultiplayerMatch>(
     matchId: {
       type: String,
       required: true,
-      unique: true,
     },
     matchLog: {
       // array of MatchLog
@@ -73,20 +87,6 @@ const MultiplayerMatchSchema = new mongoose.Schema<MultiplayerMatch>(
       type: Boolean,
       default: true,
     },
-    type: {
-      type: String,
-      enum: MultiplayerMatchType,
-      required: true,
-    },
-    gameTable: {
-      type: Map,
-      of: [
-        {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'Level',
-        },
-      ],
-    },
     startTime: {
       type: Date,
     },
@@ -95,13 +95,16 @@ const MultiplayerMatchSchema = new mongoose.Schema<MultiplayerMatch>(
       enum: MultiplayerMatchState,
       required: true,
     },
-    winners:
-      {
-        type: [mongoose.Schema.Types.ObjectId],
-        ref: 'User',
-        default: [],
-      },
-
+    type: {
+      type: String,
+      enum: MultiplayerMatchType,
+      required: true,
+    },
+    winners: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: 'User',
+      default: [],
+    },
   },
   {
     timestamps: true,
@@ -195,9 +198,6 @@ export function computeMatchScoreTable(match: MultiplayerMatch) {
 
 export default MultiplayerMatchSchema;
 
-// create index for matchId
-MultiplayerMatchSchema.index({ matchId: 1 });
-// create index for state
+MultiplayerMatchSchema.index({ matchId: 1 }, { unique: true });
 MultiplayerMatchSchema.index({ state: 1 });
-// create index for type
 MultiplayerMatchSchema.index({ type: 1 });

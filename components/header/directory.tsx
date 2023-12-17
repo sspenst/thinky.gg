@@ -38,8 +38,7 @@ export default function Directory({ folders, subtitle, title }: DirectoryProps) 
 
   return (<>
     {/* back button on mobile */}
-    <div className='flex gap-2 items-center xl:hidden'>
-      <FolderDivider />
+    <div className='flex gap-2 items-center xl:hidden ml-2'>
       <button className='hover:opacity-70 mr-1' onClick={router.back}>
         <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={2} stroke='currentColor' className='w-5 h-5'>
           <path strokeLinecap='round' strokeLinejoin='round' d='M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18' />
@@ -54,7 +53,7 @@ export default function Directory({ folders, subtitle, title }: DirectoryProps) 
     <div className='gap-2 items-center hidden xl:flex truncate'>
       {folderLinks}
       <FolderDivider />
-      <h1 className='text-lg align-middle truncate' style={{ minWidth: 32 }}>
+      <h1 className='text-lg align-middle truncate font-medium' style={{ minWidth: 32 }}>
         {title?.toElement()}
         {!subtitle ? null :
           <>

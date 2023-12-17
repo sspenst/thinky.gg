@@ -53,6 +53,7 @@ export default withAuth({
     }, { runValidators: true }),
     // delete best checkpoint as it may now be invalid
     KeyValueModel.findOneAndUpdate(
+      // don't need gameId since the key has the level id
       { key: getCheckpointKey(id as string, req.userId) },
       { $unset: { [`value.${BEST_CHECKPOINT_INDEX}`]: '' } },
     ),

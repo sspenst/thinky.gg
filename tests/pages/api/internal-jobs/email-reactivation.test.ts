@@ -1,5 +1,6 @@
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import { NextApiRequestWrapper } from '@root/helpers/apiWrapper';
 import { enableFetchMocks } from 'jest-fetch-mock';
-import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import { EmailType } from '../../../../constants/emailDigest';
@@ -58,7 +59,8 @@ describe('Email reactivation', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestWrapper = {
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
@@ -69,7 +71,7 @@ describe('Email reactivation', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },
@@ -78,10 +80,11 @@ describe('Email reactivation', () => {
         const response = await res.json();
         const emailLogs = await EmailLogModel.find({}, {}, { sort: { createdAt: -1 } });
 
-        expect(emailLogs).toHaveLength(3);
-        expect(emailLogs[2].state).toBe(EmailState.FAILED);
-        expect(emailLogs[2].error).toBe('rejected Test rejection');
-        expect(emailLogs[2].type).toBe(EmailType.EMAIL_7D_REACTIVATE);
+        expect(emailLogs).toHaveLength(4);
+
+        expect(emailLogs[3].state).toBe(EmailState.FAILED);
+        expect(emailLogs[3].error).toBe('rejected Test rejection');
+        expect(emailLogs[3].type).toBe(EmailType.EMAIL_7D_REACTIVATE);
         expect(response.emailReactivationFailed).toHaveLength(1);
         expect(response.emailReactivationFailed[0]).toBe('test@gmail.com');
         expect(res.status).toBe(200);
@@ -101,7 +104,8 @@ describe('Email reactivation', () => {
     sendMailRefMock.ref = acceptMock;
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestWrapper = {
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
@@ -112,7 +116,7 @@ describe('Email reactivation', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },
@@ -121,10 +125,11 @@ describe('Email reactivation', () => {
         const response = await res.json();
         const emailLogs = await EmailLogModel.find({}, {}, { sort: { createdAt: -1 } });
 
-        expect(emailLogs).toHaveLength(4);
-        expect(emailLogs[1].state).toBe(EmailState.SENT);
-        expect(emailLogs[1].error).toBeNull();
-        expect(emailLogs[1].type).toBe(EmailType.EMAIL_7D_REACTIVATE);
+        expect(emailLogs).toHaveLength(6);
+
+        expect(emailLogs[2].state).toBe(EmailState.SENT);
+        expect(emailLogs[2].error).toBeNull();
+        expect(emailLogs[2].type).toBe(EmailType.EMAIL_7D_REACTIVATE);
         expect(response.emailReactivationSent).toHaveLength(1);
         expect(response.emailReactivationSent[0]).toBe('test@gmail.com');
         expect(res.status).toBe(200);
@@ -139,7 +144,8 @@ describe('Email reactivation', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestWrapper = {
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
@@ -150,7 +156,7 @@ describe('Email reactivation', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },
@@ -179,7 +185,8 @@ describe('Email reactivation', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequest = {
+        const req: NextApiRequestWrapper = {
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
@@ -190,7 +197,7 @@ describe('Email reactivation', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },

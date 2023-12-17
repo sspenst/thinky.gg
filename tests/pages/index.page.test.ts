@@ -1,7 +1,8 @@
+import { GetServerSidePropsContext } from 'next';
 import { Logger } from 'winston';
 import { logger } from '../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
-import { getStaticProps } from '../../pages/index';
+import { getServerSideProps } from '../../pages/[subdomain]/index';
 
 beforeAll(async () => {
   await dbConnect();
@@ -17,10 +18,15 @@ afterEach(() => {
 describe('pages/index page', () => {
   test('getStaticProps with no params', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    const ret = await getStaticProps();
+    const context = {
+      query: {
+
+      }
+    };
+    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
 
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
-    expect(ret.props?.levelOfDay).toBeDefined();
+    expect(ret.props?.user).toBeNull();
   });
 });

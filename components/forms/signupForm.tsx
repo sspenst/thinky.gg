@@ -107,7 +107,7 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
           sessionStorage.clear();
 
           if (redirectFeatureFlag) {
-            router.push('/home');
+            router.push('/');
           } else {
             if (tutorialCompletedAt !== '0') {
               router.push('/play');

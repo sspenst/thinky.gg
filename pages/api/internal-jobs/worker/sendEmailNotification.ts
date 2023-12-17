@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import getEmailBody from '@root/helpers/getEmailBody';
 import getMobileNotification from '@root/helpers/getMobileNotification';
 import Notification from '@root/models/db/notification';
@@ -10,7 +11,7 @@ import { sendMail } from '../email-digest';
  * Send an email notification
  * NB: assumes the user's email notification settings have already been checked
  */
-export async function sendEmailNotification(notification: Notification) {
+export async function sendEmailNotification(gameId: GameId, notification: Notification) {
   if (process.env.NODE_ENV === 'test') {
     return 'email notification not sent [test]';
   }
@@ -32,10 +33,17 @@ export async function sendEmailNotification(notification: Notification) {
     }
   }
 
-  const mobileNotification = getMobileNotification(notification);
-  const emailBody = getEmailBody(null, 0, mobileNotification.title, notification.userId, mobileNotification.body, mobileNotification.url, 'View');
+  const mobileNotification = getMobileNotification(gameId, notification);
+  const emailBody = getEmailBody({
+    gameId: gameId,
+    linkHref: mobileNotification.url,
+    linkText: 'View',
+    message: mobileNotification.body,
+    title: mobileNotification.title,
+    user: notification.userId,
+  });
 
-  await sendMail(new Types.ObjectId(), notification.type, notification.userId, mobileNotification.title, emailBody);
+  await sendMail(gameId, new Types.ObjectId(), notification.type, notification.userId, mobileNotification.title, emailBody);
 
   return 'email sent';
 }

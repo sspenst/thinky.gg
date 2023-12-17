@@ -2,11 +2,13 @@ import TileType from '@root/constants/tileType';
 import { AppContext } from '@root/contexts/appContext';
 import { GridContext } from '@root/contexts/gridContext';
 import { GameState } from '@root/helpers/gameStateHelpers';
+import { teko } from '@root/helpers/getFont';
 import Position from '@root/models/position';
 import classNames from 'classnames';
+import { useTheme } from 'next-themes';
 import React, { useContext, useEffect, useState } from 'react';
 import Theme from '../../constants/theme';
-import { teko } from '../../pages/_app';
+import { getSolveStateFunction } from './solutionStates/helpers';
 import Tile from './tile/tile';
 
 interface GridProps {
@@ -18,11 +20,14 @@ interface GridProps {
 }
 
 export default function Grid({ cellClassName, gameState, id, leastMoves, onCellClick }: GridProps) {
-  const { theme } = useContext(AppContext);
+  const { game } = useContext(AppContext);
+  const { theme } = useTheme();
   const classic = theme === Theme.Classic;
   const height = gameState.board.length;
   const width = gameState.board[0].length;
+
   const gridId = `grid-${id}`;
+
   const [tileSize, setTileSize] = useState(0);
   const borderWidth = Math.round(tileSize / 40) || 1;
   const innerTileSize = tileSize - 2 * borderWidth;
@@ -76,16 +81,20 @@ export default function Grid({ cellClassName, gameState, id, leastMoves, onCellC
           pos={new Position(x, y)}
           text={text}
           tileType={tileType}
+
         />
       );
 
       if (tileState.block) {
+        const tileAtPosition = gameState.board[y][x];
+
         blocks[tileState.block.id] = (
           <Tile
             handleClick={onCellClick ? (rightClick: boolean) => onCellClick(x, y, rightClick) : undefined}
             key={`block-${tileState.block.id}`}
             pos={new Position(x, y)}
             tileType={tileState.block.tileType}
+            onTopOf={tileAtPosition.tileType}
           />
         );
       }
@@ -124,7 +133,7 @@ export default function Grid({ cellClassName, gameState, id, leastMoves, onCellC
             {Object.values(blocks)}
             {gameState.pos &&
               <Tile
-                atEnd={gameState.board[gameState.pos.y][gameState.pos.x].tileType === TileType.End}
+                atEnd={getSolveStateFunction(game)(gameState)}
                 pos={gameState.pos}
                 text={gameState.moves.length}
                 tileType={TileType.Start}

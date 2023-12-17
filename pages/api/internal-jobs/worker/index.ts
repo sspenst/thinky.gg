@@ -1,10 +1,13 @@
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
+import { GameId } from '@root/constants/GameId';
+import { getEnrichNotificationPipelineStages } from '@root/helpers/getEnrichNotificationPipelineStages';
+import isGuest from '@root/helpers/isGuest';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
+import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
 import mongoose, { ClientSession, QueryOptions, Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
-import { getEnrichNotificationPipelineStages } from '../../../../helpers/enrich';
 import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
 import Notification from '../../../../models/db/notification';
@@ -87,11 +90,11 @@ export async function bulkQueuePushNotification(notificationIds: Types.ObjectId[
   await QueueMessageModel.insertMany(queueMessages, { session: session });
 }
 
-export async function queueRefreshAchievements(userId: string | Types.ObjectId, categories: AchievementCategory[], options?: QueryOptions) {
+export async function queueRefreshAchievements(gameId: GameId, userId: string | Types.ObjectId, categories: AchievementCategory[], options?: QueryOptions) {
   await queue(
     userId.toString() + '-refresh-achievements-' + new Types.ObjectId().toString(),
     QueueMessageType.REFRESH_ACHIEVEMENTS,
-    JSON.stringify({ userId: userId.toString(), categories: categories }),
+    JSON.stringify({ gameId: gameId, userId: userId.toString(), categories: categories }),
     options,
   );
 }
@@ -123,11 +126,11 @@ export async function queueCalcPlayAttempts(levelId: Types.ObjectId, options?: Q
   );
 }
 
-export async function queueCalcCreatorCounts(userId: Types.ObjectId, options?: QueryOptions) {
+export async function queueCalcCreatorCounts(gameId: GameId, userId: Types.ObjectId, options?: QueryOptions) {
   await queue(
     userId.toString(),
     QueueMessageType.CALC_CREATOR_COUNTS,
-    JSON.stringify({ userId: userId.toString() }),
+    JSON.stringify({ userId: userId.toString(), gameId: gameId }),
     options,
   );
 }
@@ -172,6 +175,9 @@ async function processQueueMessage(queueMessage: QueueMessage) {
                 $project: {
                   ...USER_DEFAULT_PROJECTION,
                   email: 1,
+                  emailConfirmed: 1,
+                  disallowedEmailNotifications: 1,
+                  disallowedPushNotifications: 1,
                 }
               }
             ]
@@ -189,23 +195,27 @@ async function processQueueMessage(queueMessage: QueueMessage) {
         log = `Notification ${notificationId} not sent: not found`;
       } else {
         const notification = notificationAgg[0];
-        const userConfig = await UserConfigModel.findOne<UserConfig>({ userId: notification.userId._id });
+
+        const userConfig = await UserConfigModel.findOne<UserConfig>({ userId: notification.userId._id, gameId: notification.gameId }).lean<UserConfig>();
 
         if (userConfig === null) {
           log = `Notification ${notificationId} not sent: user config not found`;
           error = true;
+        } else if (isGuest(notification.userId as User)) {
+          log = `Notification ${notificationId} not sent: user is guest`;
+          error = true;
         } else {
           const whereSend = queueMessage.type === QueueMessageType.PUSH_NOTIFICATION ? sendPushNotification : sendEmailNotification;
 
-          const disallowedEmail = userConfig.disallowedEmailNotifications.includes(notification.type);
-          const disallowedPush = userConfig.disallowedPushNotifications.includes(notification.type);
+          const disallowedEmail = (notification.userId as User).disallowedEmailNotifications.includes(notification.type);
+          const disallowedPush = (notification.userId as User).disallowedPushNotifications.includes(notification.type);
 
           if (whereSend === sendEmailNotification && disallowedEmail) {
             log = `Notification ${notificationId} not sent: ${notification.type} not allowed by user (email)`;
           } else if (whereSend === sendPushNotification && disallowedPush) {
             log = `Notification ${notificationId} not sent: ${notification.type} not allowed by user (push)`;
           } else {
-            log = await whereSend(notification);
+            log = await whereSend(userConfig.gameId, notification);
           }
         }
       }
@@ -225,15 +235,16 @@ async function processQueueMessage(queueMessage: QueueMessage) {
     log = `calcPlayAttempts for ${levelId}`;
     await calcPlayAttempts(new Types.ObjectId(levelId));
   } else if (queueMessage.type === QueueMessageType.CALC_CREATOR_COUNTS) {
-    const { userId } = JSON.parse(queueMessage.message) as { userId: string };
+    const { userId, gameId } = JSON.parse(queueMessage.message) as { userId: string, gameId: GameId };
 
     log = `calcCreatorCounts for ${userId}`;
-    await calcCreatorCounts(new Types.ObjectId(userId));
+    await calcCreatorCounts(gameId, new Types.ObjectId(userId));
   } else if (queueMessage.type === QueueMessageType.REFRESH_ACHIEVEMENTS) {
-    const { userId, categories } = JSON.parse(queueMessage.message) as { userId: string, categories: AchievementCategory[] };
-    const achievementsEarned = await refreshAchievements(new Types.ObjectId(userId), categories);
+    const { gameId, userId, categories } = JSON.parse(queueMessage.message) as {gameId: GameId, userId: string, categories: AchievementCategory[]};
 
-    log = `refreshAchievements for ${userId} created ${achievementsEarned} achievements`;
+    const achievementsEarned = await refreshAchievements(gameId, new Types.ObjectId(userId), categories);
+
+    log = `refreshAchievements game ${gameId} for ${userId} created ${achievementsEarned} achievements`;
   } else {
     log = `Unknown queue message type ${queueMessage.type}`;
     error = true;
@@ -291,7 +302,7 @@ export async function processQueueMessages() {
         isProcessing: false,
       }, {}, {
         session: session,
-        limit: 10,
+        limit: 20,
         sort: { priority: -1, createdAt: 1 },
       }).lean<QueueMessage[]>();
 

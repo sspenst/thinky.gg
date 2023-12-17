@@ -1,53 +1,34 @@
-import { EmailDigestSettingTypes } from '@root/constants/emailDigest';
+import { GameId } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
-import Role from '@root/constants/role';
-import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import isGuest from '@root/helpers/isGuest';
 import { logger } from '@root/helpers/logger';
 import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
-import Theme from '../../../constants/theme';
 import { ValidArray, ValidNumber, ValidType } from '../../../helpers/apiWrapper';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import { UserConfigModel } from '../../../models/mongoose';
+import { UserConfigModel, UserModel } from '../../../models/mongoose';
 
-export function getNewUserConfig(roles: Role[], tutorialCompletedAt: number, userId: Types.ObjectId, params?: Partial<UserConfig>) {
-  let emailDigest = EmailDigestSettingTypes.DAILY;
-
-  if (roles.includes(Role.GUEST)) {
-    emailDigest = EmailDigestSettingTypes.NONE;
-  }
-
-  const emailConfirmationToken = getEmailConfirmationToken();
-  const disallowedEmailNotifications = [
-    NotificationType.NEW_FOLLOWER,
-    NotificationType.NEW_LEVEL,
-    NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION,
-    NotificationType.NEW_REVIEW_ON_YOUR_LEVEL,
-    NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_SOLVED,
-  ];
-
+// TODO: this function is kind of useless now. consider removing it
+export function getNewUserConfig(gameId: GameId, tutorialCompletedAt: number, userId: Types.ObjectId, params?: Partial<UserConfig>) {
   return {
     _id: new Types.ObjectId(),
-    disallowedEmailNotifications: disallowedEmailNotifications,
-    disallowedPushNotifications: [],
-    emailConfirmed: false,
-    emailConfirmationToken: emailConfirmationToken,
-    emailDigest: emailDigest,
-    theme: Theme.Modern,
+
+    gameId: gameId,
+    theme: getGameFromId(gameId).defaultTheme,
     tutorialCompletedAt: tutorialCompletedAt,
     userId: userId,
     ...params,
   } as Partial<UserConfig>;
 }
 
-export async function getUserConfig(user: User) {
-  let userConfig = await UserConfigModel.findOne({ userId: user._id }, { '__v': 0 }).lean<UserConfig>();
+export async function getUserConfig(gameId: GameId, user: User) {
+  let userConfig = await UserConfigModel.findOne({ userId: user._id, gameId: gameId }, { '__v': 0 }).lean<UserConfig>();
 
   if (!userConfig) {
-    userConfig = await UserConfigModel.create(getNewUserConfig(user.roles, 0, user._id));
+    userConfig = await UserConfigModel.create(getNewUserConfig(gameId, 0, user._id));
   }
 
   return userConfig;
@@ -70,9 +51,9 @@ export default withAuth({
   },
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
-    const userConfig = await getUserConfig(req.user);
+    const userConfig = await getUserConfig(req.gameId, req.user);
 
-    return res.status(200).json(userConfig);
+    return res.status(200).json({ ...userConfig, ...{ emailDigest: req.user.emailDigest } });
   } else if (req.method === 'PUT') {
     const {
       deviceToken,
@@ -86,9 +67,10 @@ export default withAuth({
     } = req.body;
 
     const setObj: {[k: string]: string} = {};
+    const setObjUser: {[k: string]: string} = {};
 
     if (emailDigest !== undefined) {
-      setObj['emailDigest'] = emailDigest;
+      setObjUser['emailDigest'] = emailDigest;
 
       if (isGuest(req.user)) {
         return res.status(400).json({
@@ -114,23 +96,30 @@ export default withAuth({
     }
 
     if (disallowedEmailNotifications !== undefined) {
-      setObj['disallowedEmailNotifications'] = disallowedEmailNotifications;
+      setObjUser['disallowedEmailNotifications'] = disallowedEmailNotifications;
     }
 
     if (disallowedPushNotifications !== undefined) {
-      setObj['disallowedPushNotifications'] = disallowedPushNotifications;
+      setObjUser['disallowedPushNotifications'] = disallowedPushNotifications;
     }
 
     // check if setObj is blank
-    if (!deviceToken && Object.keys(setObj).length === 0) {
+    if (!deviceToken && (Object.keys(setObj).length === 0 && Object.keys(setObjUser).length === 0)) {
       return res.status(400).json({ error: 'Missing required parameters' });
     }
 
     try {
-      const updateResult = await UserConfigModel.updateOne({ userId: req.userId }, { $set: setObj, $addToSet: { mobileDeviceTokens: deviceToken } });
+      const session = await mongoose.startSession();
 
-      /* istanbul ignore next */
-      if (updateResult.acknowledged === false) {
+      try {
+        await session.withTransaction(async () => {
+          await UserConfigModel.updateOne({ userId: req.userId, gameId: req.gameId }, { $set: setObj, $addToSet: { mobileDeviceTokens: deviceToken } }, { session: session });
+          await UserModel.updateOne({ _id: req.userId }, { $set: setObjUser }, { session: session });
+        });
+      } catch (err) {
+        logger.error(err);
+        session.endSession();
+
         return res.status(500).json({ error: 'Error updating config', updated: false });
       }
     } catch (err) {

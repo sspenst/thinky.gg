@@ -1,7 +1,8 @@
 import { Dialog, Transition } from '@headlessui/react';
+import { AppContext } from '@root/contexts/appContext';
+import getFontFromGameId from '@root/helpers/getFont';
 import classNames from 'classnames';
-import React, { Fragment } from 'react';
-import { rubik } from '../../pages/_app';
+import React, { Fragment, useContext } from 'react';
 
 interface ModalButtonProps {
   disabled?: boolean;
@@ -41,6 +42,8 @@ export default function Modal({
   onSubmit,
   title,
 }: ModalProps) {
+  const { game } = useContext(AppContext);
+
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog
@@ -69,15 +72,7 @@ export default function Modal({
             leaveFrom='opacity-100 scale-100'
             leaveTo='opacity-0 scale-95'
           >
-            <Dialog.Panel
-              className={classNames('w-full max-w-fit py-3 px-4 my-8 text-left align-middle transition-all transform shadow-xl rounded-xl flex flex-col gap-4', rubik.className)}
-              style={{
-                backgroundColor: 'var(--bg-color-2)',
-                border: '1px solid',
-                borderColor: 'var(--bg-color-4)',
-                color: 'var(--color)',
-              }}
-            >
+            <Dialog.Panel className={classNames('py-3 px-4 my-8 text-left align-middle transition-all transform shadow-xl rounded-xl flex flex-col gap-4 border bg-1 border-color-3 max-w-3xl', getFontFromGameId(game.id))}>
               <Dialog.Title as='div' className='flex gap-4 text-center'>
                 <span className='w-6' />
                 <span className='grow text-xl font-bold truncate'>{title}</span>

@@ -11,6 +11,7 @@ interface SelectOption {
   id: string;
   level?: EnrichedLevel | undefined;
   onClick?: () => void;
+  searchLabel?: string; // text to search on, since text field is a react node (default is text?.toString())
   stats?: SelectOptionStats | undefined;
   text: React.ReactNode;
   width?: number;

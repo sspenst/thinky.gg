@@ -1,3 +1,4 @@
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -78,22 +79,27 @@ describe('Testing latest levels api', () => {
     });
   });
   test('Should always be limited to 15 levels and should only return non-drafts', async () => {
+    const promises = [];
+
     for (let i = 0; i < 30; i++) {
-      await LevelModel.create({
+      promises.push(LevelModel.create({
         _id: new Types.ObjectId(),
         authorNote: 'level ' + i + ' author note',
         data: '40000\n12000\n05000\n67890\nABCD3',
+        gameId: DEFAULT_GAME_ID,
         height: 5,
         isDraft: i % 10 === 0,
+        isRanked: false,
         leastMoves: 20,
         name: 'level ' + i,
         slug: 'test/level-' + i,
-        ts: TimerUtil.getTs(),
+        ts: TimerUtil.getTs() + i,
         userId: TestId.USER,
         width: 5,
-      });
+      }));
     }
 
+    await Promise.all(promises);
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

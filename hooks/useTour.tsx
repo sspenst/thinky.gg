@@ -1,29 +1,17 @@
-import PagePath from '@root/constants/pagePath';
-import { TOUR_STEPS_MULTIPLAYER_PAGE } from '@root/constants/tourSteps/MULTIPLAYER_PAGE';
-import { TourType } from '@root/constants/tourType';
+import TourPath from '@root/constants/tourPath';
+import TourType from '@root/constants/tourType';
 import { AppContext } from '@root/contexts/appContext';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import ReactJoyride, { CallBackProps, Step } from 'react-joyride';
-import { TOUR_STEPS_CHAPTER_1 } from '../constants/tourSteps/CHAPTER_1';
-import { TOUR_STEPS_FIRST_LEVEL } from '../constants/tourSteps/FIRST_LEVEL';
-import { TOUR_STEPS_HOME_PAGE } from '../constants/tourSteps/HOME_PAGE';
-import { TOUR_STEPS_PLAY_PAGE } from '../constants/tourSteps/PLAY_PAGE';
-import { TOUR_STEPS_SECOND_LEVEL } from '../constants/tourSteps/SECOND_LEVEL';
-import { TOUR_STEPS_THIRD_LEVEL } from '../constants/tourSteps/THIRD_LEVEL';
+import ReactJoyride, { CallBackProps, Step, Styles, StylesOptions } from 'react-joyride';
+import TOUR_STEPS_HOME_PAGE from '../constants/tourSteps/TOUR_STEPS_HOME_PAGE';
 
 export const TOUR_DATA: { [key in TourType]: Step[] } = {
-  [TourType.PLAY_PAGE]: TOUR_STEPS_PLAY_PAGE,
-  [TourType.CHAPTER_1]: TOUR_STEPS_CHAPTER_1,
-  [TourType.FIRST_LEVEL]: TOUR_STEPS_FIRST_LEVEL,
-  [TourType.SECOND_LEVEL]: TOUR_STEPS_SECOND_LEVEL,
-  [TourType.THIRD_LEVEL]: TOUR_STEPS_THIRD_LEVEL,
   [TourType.HOME_PAGE]: TOUR_STEPS_HOME_PAGE,
-  [TourType.MULTIPLAYER_PAGE]: TOUR_STEPS_MULTIPLAYER_PAGE,
 };
 
-export function useTour(page: PagePath, cb?: (data: CallBackProps) => void, disableScrolling = false) {
+export default function useTour(path: TourPath, cb?: (data: CallBackProps) => void, disableScrolling = false) {
   const { mutateUser, userConfig } = useContext(AppContext);
   const router = useRouter();
   const [run, setRun] = useState(false);
@@ -72,24 +60,8 @@ export function useTour(page: PagePath, cb?: (data: CallBackProps) => void, disa
 
     let tourType: TourType | undefined = undefined;
 
-    if (page === PagePath.HOME) {
+    if (path === TourPath.HOME) {
       tourType = TourType.HOME_PAGE;
-    } else if (page === PagePath.LEVEL) {
-      if (userConfig.toursCompleted?.includes(TourType.FIRST_LEVEL)) {
-        if (userConfig.toursCompleted?.includes(TourType.SECOND_LEVEL)) {
-          tourType = TourType.THIRD_LEVEL;
-        } else {
-          tourType = TourType.SECOND_LEVEL;
-        }
-      } else {
-        tourType = TourType.FIRST_LEVEL;
-      }
-    } else if (page === PagePath.CHAPTER_1) {
-      tourType = TourType.CHAPTER_1;
-    } else if (page === PagePath.PLAY) {
-      tourType = TourType.PLAY_PAGE;
-    } else if (page === PagePath.MULTIPLAYER) {
-      tourType = TourType.MULTIPLAYER_PAGE;
     }
 
     if (!tourType) {
@@ -154,7 +126,7 @@ export function useTour(page: PagePath, cb?: (data: CallBackProps) => void, disa
             primaryColor: '#5c6bc0',
             textColor: 'var(--color)',
             zIndex: 10000,
-          },
+          } as StylesOptions,
           spotlight: {
             borderRadius: '8px',
           },
@@ -175,10 +147,10 @@ export function useTour(page: PagePath, cb?: (data: CallBackProps) => void, disa
             marginLeft: '8px',
             fontWeight: 'bold',
           },
-        }}
+        } as Styles}
       />
     );
-  }, [cb, disableScrolling, page, putFinishedTour, run, userConfig]);
+  }, [cb, disableScrolling, path, putFinishedTour, run, userConfig]);
 
   return tour;
 }

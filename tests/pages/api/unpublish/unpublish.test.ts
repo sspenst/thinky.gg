@@ -1,3 +1,4 @@
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -10,7 +11,7 @@ import { initCollection, initLevel } from '../../../../lib/initializeLocalDb';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Collection from '../../../../models/db/collection';
 import Level from '../../../../models/db/level';
-import { CollectionModel, LevelModel, StatModel, UserModel } from '../../../../models/mongoose';
+import { CollectionModel, LevelModel, StatModel, UserConfigModel } from '../../../../models/mongoose';
 import updateCollectionHandler from '../../../../pages/api/collection/[id]';
 import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
 import updateLevelHandler from '../../../../pages/api/level/[id]';
@@ -33,10 +34,10 @@ beforeAll(async () => {
   [userACollection, userBCollection, userALevel1, userALevel2, userBLevel1, userBLevel2] = await Promise.all([
     initCollection(TestId.USER, 'user A collection'),
     initCollection(TestId.USER_B, 'user B collection'),
-    initLevel(TestId.USER, 'user A level 1'),
-    initLevel(TestId.USER, 'user A level 2'),
-    initLevel(TestId.USER_B, 'user B level 1'),
-    initLevel(TestId.USER_B, 'user B level 2')
+    initLevel(DEFAULT_GAME_ID, TestId.USER, 'user A level 1'),
+    initLevel(DEFAULT_GAME_ID, TestId.USER, 'user A level 2'),
+    initLevel(DEFAULT_GAME_ID, TestId.USER_B, 'user B level 1'),
+    initLevel(DEFAULT_GAME_ID, TestId.USER_B, 'user B level 2')
   ]);
 });
 enableFetchMocks();
@@ -200,9 +201,9 @@ describe('Testing unpublish', () => {
         expect(res.status).toBe(200);
         expect(response.updated).toBe(true);
 
-        const user = await UserModel.findById(TestId.USER);
+        const userConfig = await UserConfigModel.findOne({ userId: TestId.USER });
 
-        expect(user?.calc_levels_created_count).toEqual(3);
+        expect(userConfig?.calcLevelsCreatedCount).toEqual(3);
 
         const levelDeleted = await LevelModel.findOne({ _id: userALevel1._id });
 
@@ -213,8 +214,7 @@ describe('Testing unpublish', () => {
         const levelClone = await LevelModel.findOne({ slug: userALevel1.slug });
 
         // Grab both collections
-        userACollection = await CollectionModel.findById(userACollection?._id);
-        userBCollection = await CollectionModel.findById(userBCollection?._id);
+        [userACollection, userBCollection] = await Promise.all([CollectionModel.findById(userACollection?._id), CollectionModel.findById(userBCollection?._id)]);
 
         // Check to make sure that userALevel1 is in userACollection but not in userBCollection
         expect((userACollection?.levels as Types.ObjectId[]).includes(levelClone._id)).toBe(true);

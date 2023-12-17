@@ -1,7 +1,7 @@
-import NotificationType from '@root/constants/notificationType';
-import { TourType } from '@root/constants/tourType';
+import { GameId } from '@root/constants/GameId';
+import Role from '@root/constants/role';
+import TourType from '@root/constants/tourType';
 import mongoose from 'mongoose';
-import { EmailDigestSettingTypes } from '../../constants/emailDigest';
 import UserConfig from '../db/userConfig';
 
 const UserConfigSchema = new mongoose.Schema<UserConfig>(
@@ -10,29 +10,31 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
-    disallowedEmailNotifications: {
-      type: [{ type: String, enum: NotificationType }],
+    calcRankedSolves: {
+      type: Number,
       required: true,
-      default: [],
+      default: 0,
     },
-    disallowedPushNotifications: {
-      type: [{ type: String, enum: NotificationType }],
-      required: true,
-      default: [],
+    calcLevelsCreatedCount: {
+      type: Number,
+      default: 0,
     },
-    emailConfirmationToken: {
+    calcLevelsSolvedCount: {
+      type: Number,
+      default: 0,
+    },
+    calcRecordsCount: {
+      type: Number,
+      default: 0,
+    },
+    chapterUnlocked: {
+      type: Number,
+      default: 1,
+    },
+    gameId: {
       type: String,
-      select: false,
-    },
-    emailConfirmed: {
-      type: Boolean,
-      default: false,
-    },
-    emailDigest: {
-      type: String,
+      enum: GameId,
       required: true,
-      enum: EmailDigestSettingTypes,
-      default: EmailDigestSettingTypes.DAILY,
     },
     giftSubscriptions: {
       type: [String],
@@ -47,6 +49,11 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       default: [],
       maxlength: 100, // max 100 devices @TODO: should probably 'rotate' this list and remove oldest device tokens on push of new one
     },
+    roles: {
+      type: [String],
+      enum: Role,
+      default: [],
+    },
     showPlayStats: {
       type: Boolean,
       default: false,
@@ -60,6 +67,7 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       type: String,
       required: true,
     },
+    /** TODO: MOVE TO user? */
     toursCompleted: {
       type: [{ type: String, enum: TourType }],
       required: false,
@@ -73,7 +81,6 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
-      unique: true,
     },
   },
   {
@@ -85,6 +92,6 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
   }
 );
 
-UserConfigSchema.index({ userId: 1 }, { unique: true });
+UserConfigSchema.index({ userId: 1, gameId: 1 }, { unique: true });
 
 export default UserConfigSchema;
