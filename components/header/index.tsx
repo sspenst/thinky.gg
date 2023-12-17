@@ -26,19 +26,19 @@ export default function Header({
   subtitle,
   title,
 }: HeaderProps) {
-  const [background, setBackground] = useState('var(--bg-color-2)');
+  const [background, setBackground] = useState<string>();
   const { deviceInfo, game, setShowNav, user } = useContext(AppContext);
   const isNavDropdown = deviceInfo.screenSize < ScreenSize.XL || isFullScreen;
 
   useEffect(() => {
-    setBackground(window.location.hostname !== 'thinky.gg' ?
-      'linear-gradient(45deg, darkred 20%, var(--bg-color-4) 20%, var(--bg-color-4) 40%, var(--bg-color-2) 40%, var(--bg-color-2) 60%, var(--bg-color-4) 60%, var(--bg-color-4) 80%, var(--bg-color-2) 80%, var(--bg-color-2) 100%'
-      : 'var(--bg-color-2)');
+    if (window.location.hostname !== 'thinky.gg') {
+      setBackground('linear-gradient(45deg, darkred 20%, var(--bg-color-2) 20%, var(--bg-color-2) 40%, var(--bg-color) 40%, var(--bg-color) 60%, var(--bg-color-2) 60%, var(--bg-color-2) 80%, var(--bg-color) 80%, var(--bg-color) 100%');
+    }
   }, []);
 
   return (
     <header
-      className='select-none shadow-md w-full fixed top-0 z-20 flex justify-between px-4 gap-4 border-color-3 border-b'
+      className='select-none shadow-md w-full fixed top-0 z-20 flex justify-between px-4 gap-4 border-color-2 border-b bg-1'
       style={{
         background: background,
         height: Dimensions.MenuHeight,
