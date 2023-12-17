@@ -1,7 +1,8 @@
 import { EmailDigestSettingType } from '@root/constants/emailDigest';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
+import UserConfig from '@root/models/db/userConfig';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
 import { PASSWORD_SALTROUNDS } from '@root/models/schemas/userSchema';
-import { getNewUserConfig } from '@root/pages/api/user-config';
 import bcrypt from 'bcryptjs';
 import { Types } from 'mongoose';
 import { DEFAULT_GAME_ID, GameId } from '../constants/GameId';
@@ -12,6 +13,16 @@ import { TimerUtil } from '../helpers/getTs';
 import Collection from '../models/db/collection';
 import Level from '../models/db/level';
 import { CampaignModel, CollectionModel, LevelModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserConfigModel, UserModel } from '../models/mongoose';
+
+function getNewUserConfig(gameId: GameId, tutorialCompletedAt: number, userId: Types.ObjectId, params?: Partial<UserConfig>) {
+  return {
+    gameId: gameId,
+    theme: getGameFromId(gameId).defaultTheme,
+    tutorialCompletedAt: tutorialCompletedAt,
+    userId: userId,
+    ...params,
+  } as Partial<UserConfig>;
+}
 
 export default async function initializeLocalDb() {
   const ts = TimerUtil.getTs() - 60;

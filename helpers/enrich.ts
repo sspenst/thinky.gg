@@ -207,7 +207,10 @@ export function getEnrichUserConfigPipelineStage(gameId: GameId, { localField, e
     },
   },
   {
-    $unwind: '$config'
+    $unwind: {
+      path: '$config',
+      preserveNullAndEmptyArrays: true,
+    }
   },
 
   ];

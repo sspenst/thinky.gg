@@ -1,5 +1,4 @@
 import { GameId } from '@root/constants/GameId';
-import NotificationType from '@root/constants/notificationType';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import isGuest from '@root/helpers/isGuest';
 import { logger } from '@root/helpers/logger';
@@ -11,24 +10,18 @@ import { ValidArray, ValidNumber, ValidType } from '../../../helpers/apiWrapper'
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { UserConfigModel, UserModel } from '../../../models/mongoose';
 
-// TODO: this function is kind of useless now. consider removing it
-export function getNewUserConfig(gameId: GameId, tutorialCompletedAt: number, userId: Types.ObjectId, params?: Partial<UserConfig>) {
-  return {
-    _id: new Types.ObjectId(),
-
-    gameId: gameId,
-    theme: getGameFromId(gameId).defaultTheme,
-    tutorialCompletedAt: tutorialCompletedAt,
-    userId: userId,
-    ...params,
-  } as Partial<UserConfig>;
-}
-
 export async function getUserConfig(gameId: GameId, user: User) {
   let userConfig = await UserConfigModel.findOne({ userId: user._id, gameId: gameId }, { '__v': 0 }).lean<UserConfig>();
 
   if (!userConfig) {
-    userConfig = await UserConfigModel.create(getNewUserConfig(gameId, 0, user._id));
+    userConfig = await UserConfigModel.create({
+
+      gameId: gameId,
+      theme: getGameFromId(gameId).defaultTheme,
+      tutorialCompletedAt: 0,
+      userId: user._id,
+
+    });
   }
 
   return userConfig;
