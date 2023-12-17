@@ -14,10 +14,10 @@ interface AppContextInterface {
   forceUpdate: () => void;
   game: Game;
   host: string | undefined;
-  notifications: Notification[];
   multiplayerSocket: MultiplayerSocket;
   mutatePlayLater: () => void;
   mutateUser: KeyedMutator<ReqUser>;
+  notifications: Notification[];
   playLater?: { [key: string]: boolean };
   protocol: string | undefined;
   setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>;
