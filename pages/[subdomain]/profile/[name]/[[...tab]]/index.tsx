@@ -123,9 +123,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     !game.disableGames && profileTab === ProfileTab.Achievements ? AchievementModel.find<Achievement>({ userId: userId, gameId: gameId }) : [] as Achievement[],
     !game.disableGames && AchievementModel.countDocuments({ userId: userId, gameId: gameId }),
     !game.disableGames && CollectionModel.countDocuments({
+      gameId: gameId,
       userId: userId,
       ...(!viewingOwnProfile && { isPrivate: { $ne: true } }),
-      gameId: gameId,
     }),
     getFollowData(user._id.toString(), reqUser),
     !game.disableGames && LevelModel.countDocuments({ isDeleted: { $ne: true }, isDraft: false, userId: userId, gameId: gameId }),
@@ -209,7 +209,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   if (profileTab === ProfileTab.Collections) {
     const collectionsAgg = await getCollections({
-      matchQuery: { userId: user._id, gameId: gameId },
+      matchQuery: { gameId: gameId, userId: user._id },
       populateLevelData: false,
       reqUser,
     });

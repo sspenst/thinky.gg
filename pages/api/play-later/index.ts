@@ -80,7 +80,7 @@ export default withAuth(
       return res.status(200).json({ success: true });
     }
 
-    // TODO: should use save-level-to/[id].ts instead of this endpoint
+    // TODO: should use save-to-collection/[id].ts instead of this endpoint
     if (req.method === 'POST') {
       const { id } = req.body;
 

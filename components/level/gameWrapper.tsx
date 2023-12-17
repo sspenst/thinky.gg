@@ -221,7 +221,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
       </div>
       {collection &&
         <div className={classNames(
-          'hidden flex-col items-center border-l border-color-4 w-60',
+          'hidden flex-col items-center border-l border-color-3 w-60',
           // NB: we want to keep this component in the DOM when it is hidden by the user
           // this allows updating the collection level list on level change to continue running behind the scenes
           { 'xl:flex': !isCollectionViewHidden },
@@ -237,7 +237,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
           {getCollectionLevelList('sidebar')}
         </div>
       }
-      <div className='hidden xl:flex flex-col border-l border-color-4 break-words z-10 h-full w-100'>
+      <div className='hidden xl:flex flex-col border-l border-color-3 break-words z-10 h-full w-100'>
         {collection && isCollectionViewHidden &&
           <button
             className='flex items-center gap-4 w-full border-b border-color-4 hover-bg-3 transition px-4 py-3'

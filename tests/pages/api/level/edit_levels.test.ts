@@ -18,7 +18,7 @@ import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker
 import modifyLevelHandler from '../../../../pages/api/level/[id]';
 import createLevelHandler from '../../../../pages/api/level/index';
 import publishLevelHandler from '../../../../pages/api/publish/[id]';
-import saveLevelToHandler from '../../../../pages/api/save-level-to/[id]';
+import saveToCollectionHandler from '../../../../pages/api/save-to-collection/[id]';
 import statsHandler from '../../../../pages/api/stats/index';
 
 let level_id_1: string;
@@ -85,7 +85,7 @@ describe('Editing levels should work correctly', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await saveLevelToHandler(req, res);
+        await saveToCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
@@ -143,7 +143,7 @@ describe('Editing levels should work correctly', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await saveLevelToHandler(req, res);
+        await saveToCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
@@ -201,7 +201,7 @@ describe('Editing levels should work correctly', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await saveLevelToHandler(req, res);
+        await saveToCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();

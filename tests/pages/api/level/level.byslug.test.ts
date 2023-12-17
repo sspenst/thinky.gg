@@ -13,7 +13,7 @@ import { LevelModel, NotificationModel } from '../../../../models/mongoose';
 import modifyLevelHandler from '../../../../pages/api/level/[id]';
 import createLevelHandler from '../../../../pages/api/level/index';
 import getLevelBySlugHandler from '../../../../pages/api/level-by-slug/[username]/[slugName]';
-import saveLevelToHandler from '../../../../pages/api/save-level-to/[id]';
+import saveToCollectionHandler from '../../../../pages/api/save-to-collection/[id]';
 import modifyUserHandler from '../../../../pages/api/user/index';
 
 let level_id_1: string;
@@ -170,7 +170,7 @@ describe('Testing slugs for levels', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await saveLevelToHandler(req, res);
+        await saveToCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
@@ -201,7 +201,7 @@ describe('Testing slugs for levels', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await saveLevelToHandler(req, res);
+        await saveToCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
