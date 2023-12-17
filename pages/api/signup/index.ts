@@ -21,7 +21,6 @@ import getTokenCookie from '../../../lib/getTokenCookie';
 import sendPasswordResetEmail from '../../../lib/sendPasswordResetEmail';
 import User from '../../../models/db/user';
 import { UserConfigModel, UserModel } from '../../../models/mongoose';
-import { getNewUserConfig } from '../user-config';
 
 async function createUser({ gameId, email, name, password, tutorialCompletedAt, roles }: {gameId: GameId, email: string, name: string, password: string, tutorialCompletedAt: number, roles: Role[]}, queryOptions: QueryOptions): Promise<[User, UserConfig]> {
   const id = new Types.ObjectId();
@@ -48,7 +47,16 @@ async function createUser({ gameId, email, name, password, tutorialCompletedAt, 
       score: 0,
       ts: TimerUtil.getTs(),
     }], queryOptions),
-    UserConfigModel.create([getNewUserConfig(gameId, tutorialCompletedAt, id)], queryOptions),
+    UserConfigModel.create([
+      {
+
+        gameId: gameId,
+        theme: getGameFromId(gameId).defaultTheme,
+        tutorialCompletedAt: tutorialCompletedAt,
+        userId: id,
+      }
+
+    ], queryOptions),
   ]);
 
   const user = userCreated[0] as User;
