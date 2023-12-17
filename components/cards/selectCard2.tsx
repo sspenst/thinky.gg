@@ -19,14 +19,7 @@ interface SelectCard2Props {
 }
 
 export default function SelectCard2({ option }: SelectCard2Props) {
-  const [backgroundImage, setBackgroundImage] = useState<string>();
   const [isSaveLevelToModalOpen, setIsSaveLevelToModalOpen] = useState(false);
-
-  useEffect(() => {
-    if (option.level) {
-      setBackgroundImage(getPngDataClient(option.level.data));
-    }
-  }, [option.level]);
 
   const color = option.disabled ? 'var(--bg-color-4)' :
     option.stats?.getColor('var(--color)') ?? 'var(--color)';
@@ -39,7 +32,7 @@ export default function SelectCard2({ option }: SelectCard2Props) {
 
   return (
     <Link
-      className='p-1 pb-2 rounded-lg select-card flex flex-col gap-2 w-60 max-w-full hover-bg-2 transition h-fit'
+      className='p-1 pb-2 rounded-lg select-card flex flex-col gap-2 w-72 max-w-full hover-bg-2 transition h-fit'
       href={(option.disabled) ? '' : option.href ?? ''}
       onClick={option.onClick}
       passHref
@@ -51,7 +44,7 @@ export default function SelectCard2({ option }: SelectCard2Props) {
         )}
         style={{
           aspectRatio: '40 / 21',
-          backgroundImage: backgroundImage ? 'url("' + backgroundImage + '")' : 'none',
+          backgroundImage: `url('/api/level/image/${option.level._id}.png')`,
           // borderColor: color,
           color: color,
           textShadow: '1px 1px black',
