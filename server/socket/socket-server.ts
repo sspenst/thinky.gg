@@ -52,6 +52,7 @@ process.on('SIGTERM', () => {
 });
 let GlobalSocketIO: Server;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function authenticateSocket(socket: any, next: (err?: Error) => void) {
   const cookies = socket.handshake.headers.cookie;
 
@@ -182,8 +183,10 @@ export default async function startSocketIOServer(server: Server) {
       }
     } else {
       socket.join('LOBBY');
-      await Promise.all([broadcastMatches(gameId, mongoEmitter),
-        broadcastPrivateAndInvitedMatches(gameId, mongoEmitter, reqUser._id)]);
+      await Promise.all([
+        broadcastMatches(gameId, mongoEmitter),
+        broadcastPrivateAndInvitedMatches(gameId, mongoEmitter, reqUser._id),
+      ]);
     }
 
     await broadcastConnectedPlayers(gameId, adapted);

@@ -15,7 +15,7 @@ export default function filterSelectOptions(
   }
 
   if (filterText.length > 0) {
-    options = options.filter((option: SelectOption) => (option.searchLabel)?.toLowerCase().includes(filterText.toLowerCase()));
+    options = options.filter((option: SelectOption) => (option.searchLabel ?? option.text?.toString())?.toLowerCase().includes(filterText.toLowerCase()));
   }
 
   return options;
