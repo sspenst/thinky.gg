@@ -8,7 +8,8 @@ import getPngDataClient from '../../helpers/getPngDataClient';
 import SelectOption from '../../models/selectOption';
 import FormattedDifficulty from '../formatted/formattedDifficulty';
 import FormattedUser from '../formatted/formattedUser';
-import SaveLevelToModal from '../modal/saveLevelToModal';
+import LevelDropdown from '../level/info/levelDropdown';
+import SaveToCollectionModal from '../modal/saveToCollectionModal';
 import ProfileAvatar from '../profile/profileAvatar';
 import { PlayLaterToggleButton } from './playLaterToggleButton';
 import styles from './SelectCard.module.css';
@@ -19,7 +20,7 @@ interface SelectCard2Props {
 }
 
 export default function SelectCard2({ option }: SelectCard2Props) {
-  const [isSaveLevelToModalOpen, setIsSaveLevelToModalOpen] = useState(false);
+  const [isSaveToCollectionModalOpen, setIsSaveToCollectionModalOpen] = useState(false);
 
   const color = option.disabled ? 'var(--bg-color-4)' :
     option.stats?.getColor('var(--color)') ?? 'var(--color)';
@@ -58,30 +59,36 @@ export default function SelectCard2({ option }: SelectCard2Props) {
           </div>
         }
       </div>
-      <div className='flex gap-3'>
-        <Link className='h-fit' href={getProfileSlug(user)} passHref>
-          <ProfileAvatar user={user} />
-        </Link>
-        <div className='flex flex-col gap-0.5 overflow-hidden'>
-          <span className='font-bold overflow-hidden' style={{
-            display: '-webkit-box',
-            WebkitBoxOrient: 'vertical',
-            WebkitLineClamp: 2,
-          }}>
-            {option.level?.name}
-          </span>
-          <FormattedUser className='font-medium text-sm gray' hideAvatar id='author' size={Dimensions.AvatarSizeSmall} user={user} />
-          {/* {!option.hideStats && option.stats && <div className='italic text-xs'>{option.stats.getText()} steps</div>} */}
-          <div className='flex text-xs items-center gap-1 pt-0.5'>
-            <FormattedDifficulty
-              difficultyEstimate={option.level.calc_difficulty_estimate}
-              id={option.id}
-              uniqueUsers={option.level.calc_playattempts_unique_users_count !== undefined ?
-                option.level.calc_playattempts_unique_users_count :
-                option.level.calc_playattempts_unique_users.length}
-            />
-            {/* <span>-</span> */}
+      <div className='flex justify-between'>
+        <div className='flex gap-3'>
+          <Link className='h-fit' href={getProfileSlug(user)} passHref>
+            <ProfileAvatar user={user} />
+          </Link>
+          <div className='flex flex-col gap-0.5 overflow-hidden'>
+            <span className='font-bold overflow-hidden' style={{
+              display: '-webkit-box',
+              WebkitBoxOrient: 'vertical',
+              WebkitLineClamp: 2,
+            }}>
+              {option.level?.name}
+            </span>
+            <FormattedUser className='font-medium text-sm gray' hideAvatar id='author' size={Dimensions.AvatarSizeSmall} user={user} />
+            {/* {!option.hideStats && option.stats && <div className='italic text-xs'>{option.stats.getText()} steps</div>} */}
+            <div className='flex text-xs items-center gap-1 pt-0.5'>
+              <FormattedDifficulty
+                difficultyEstimate={option.level.calc_difficulty_estimate}
+                id={option.id}
+                uniqueUsers={option.level.calc_playattempts_unique_users_count !== undefined ?
+                  option.level.calc_playattempts_unique_users_count :
+                  option.level.calc_playattempts_unique_users.length}
+              />
+              {/* <span>-</span> */}
+            </div>
           </div>
+        </div>
+        {/* prevent clicking parent level link */}
+        <div onClick={e => e.preventDefault()}>
+          <LevelDropdown level={option.level} />
         </div>
       </div>
     </Link>

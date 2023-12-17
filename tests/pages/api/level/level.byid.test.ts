@@ -16,7 +16,7 @@ import { LevelModel, RecordModel, UserConfigModel } from '../../../../models/mon
 import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
 import modifyLevelHandler from '../../../../pages/api/level/[id]';
 import createLevelHandler from '../../../../pages/api/level/index';
-import saveLevelToHandler from '../../../../pages/api/save-level-to/[id]';
+import saveToCollectionHandler from '../../../../pages/api/save-to-collection/[id]';
 import statsHandler from '../../../../pages/api/stats/index';
 import unpublishLevelHandler from '../../../../pages/api/unpublish/[id]';
 
@@ -208,7 +208,7 @@ describe('pages/api/level/index.ts', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await saveLevelToHandler(req, res);
+        await saveToCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
@@ -265,7 +265,7 @@ describe('pages/api/level/index.ts', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await saveLevelToHandler(req, res);
+        await saveToCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();

@@ -12,7 +12,7 @@ import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { LevelModel } from '../../../../models/mongoose';
 import updateCollectionHandler from '../../../../pages/api/collection/[id]';
 import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
-import saveLevelToHandler from '../../../../pages/api/save-level-to/[id]';
+import saveToCollectionHandler from '../../../../pages/api/save-to-collection/[id]';
 
 afterAll(async() => {
   await dbDisconnect();
@@ -366,7 +366,7 @@ describe('Testing updating collection data', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await saveLevelToHandler(req, res);
+        await saveToCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();

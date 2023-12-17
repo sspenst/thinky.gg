@@ -8,7 +8,7 @@ import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { CollectionWithLevel } from '../../../../models/db/collection';
 import collectionsHandler from '../../../../pages/api/collections';
-import saveLevelToHandler from '../../../../pages/api/save-level-to/[id]';
+import saveToCollectionHandler from '../../../../pages/api/save-to-collection/[id]';
 
 afterAll(async() => {
   await dbDisconnect();
@@ -17,8 +17,8 @@ beforeAll(async () => {
   await dbConnect();
 });
 enableFetchMocks();
-describe('pages/api/save-level-to/[id].ts', () => {
-  test('GET save-level-to', async () => {
+describe('pages/api/save-to-collection/[id].ts', () => {
+  test('GET save-to-collection', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
@@ -34,7 +34,7 @@ describe('pages/api/save-level-to/[id].ts', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await saveLevelToHandler(req, res);
+        await saveToCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
@@ -57,7 +57,7 @@ describe('pages/api/save-level-to/[id].ts', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await saveLevelToHandler(req, res);
+        await saveToCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
@@ -83,7 +83,7 @@ describe('pages/api/save-level-to/[id].ts', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await saveLevelToHandler(req, res);
+        await saveToCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
@@ -109,7 +109,7 @@ describe('pages/api/save-level-to/[id].ts', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await saveLevelToHandler(req, res);
+        await saveToCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
@@ -137,7 +137,7 @@ describe('pages/api/save-level-to/[id].ts', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await saveLevelToHandler(req, res);
+        await saveToCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
@@ -192,7 +192,7 @@ describe('pages/api/save-level-to/[id].ts', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await saveLevelToHandler(req, res);
+        await saveToCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
@@ -247,7 +247,7 @@ describe('pages/api/save-level-to/[id].ts', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await saveLevelToHandler(req, res);
+        await saveToCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();

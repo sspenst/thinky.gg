@@ -8,13 +8,13 @@ import Level from '../../models/db/level';
 import StyledTooltip from '../page/styledTooltip';
 import Modal from '.';
 
-interface SaveLevelToModalProps {
+interface SaveToCollectionModalProps {
   closeModal: () => void;
   isOpen: boolean;
   level: Level;
 }
 
-export default function SaveLevelToModal({ closeModal, isOpen, level }: SaveLevelToModalProps) {
+export default function SaveToCollectionModal({ closeModal, isOpen, level }: SaveToCollectionModalProps) {
   const [collections, setCollections] = useState<CollectionWithLevel[]>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { shouldAttemptAuth, user } = useContext(AppContext);
@@ -48,7 +48,7 @@ export default function SaveLevelToModal({ closeModal, isOpen, level }: SaveLeve
 
     const collectionIds = collections?.filter(c => c.containsLevel).map(c => c._id.toString()) ?? [];
 
-    fetch(`/api/save-level-to/${level._id}`, {
+    fetch(`/api/save-to-collection/${level._id}`, {
       method: 'PUT',
       body: JSON.stringify({
         collectionIds: collectionIds,
