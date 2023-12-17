@@ -156,7 +156,7 @@ export default function HomePage({ user }: HomePageProps) {
           description: game.SEODescription,
           images: [
             {
-              url: '' + game.baseUrl + game.logo,
+              url: game.baseUrl + game.logo,
               width: 128,
               height: 128,
               alt: game.displayName + ' Logo',
