@@ -14,9 +14,9 @@ import Review from '../../models/db/review';
 import User from '../../models/db/user';
 import Card from '../cards/card';
 import ChapterSelectCard from '../cards/chapterSelectCard';
-import LevelSelect from '../cards/levelSelect';
 import LoadingCard from '../cards/loadingCard';
 import SelectCard from '../cards/selectCard';
+import LevelCard from '../level/info/levelCard';
 import FormattedReview from '../level/reviews/formattedReview';
 import LoadingSpinner from '../page/loadingSpinner';
 import RecommendedLevel from './recommendedLevel';
@@ -117,7 +117,18 @@ export default function Home({
           </Link>
         </div>
         {topLevelsThisMonth ?
-          <LevelSelect levels={topLevelsThisMonth} /> :
+          <div className='flex flex-wrap justify-center gap-2'>
+            {topLevelsThisMonth.map((level) => {
+              return (
+                <LevelCard
+                  id='top-level-this-month'
+                  key={level._id.toString()}
+                  level={level}
+                />
+              );
+            })}
+          </div>
+          :
           <div className='flex flex-wrap justify-center'>
             <LoadingCard />
             <LoadingCard />
@@ -144,7 +155,19 @@ export default function Home({
               Latest Unsolved Levels:
             </Link>
           </div>
-          {latestLevels ? <LevelSelect levels={latestLevels} /> :
+          {latestLevels ?
+            <div className='flex flex-wrap justify-center gap-2'>
+              {latestLevels.map((level) => {
+                return (
+                  <LevelCard
+                    id='latest-unsolved'
+                    key={level._id.toString()}
+                    level={level}
+                  />
+                );
+              })}
+            </div>
+            :
             <div className='flex flex-wrap justify-center'>
               <LoadingCard />
               <LoadingCard />

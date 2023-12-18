@@ -41,13 +41,13 @@ export default function CreateHome({ levels, user }: CreatePageProps) {
             },
           }}
         >
-          My Published Levels
+          Your Published Levels
         </Link>
         <Link
           className='py-2 px-4 rounded-lg hover:bg-neutral-500'
           href={`/profile/${user.name}/collections`}
         >
-          My Collections
+          Your Collections
         </Link>
       </div>
       <div className='flex flex-wrap justify-center gap-y-4'>

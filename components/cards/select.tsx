@@ -4,7 +4,6 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import SelectOption from '../../models/selectOption';
 import DraggableSelectCard from './draggableSelectCard';
 import SelectCard from './selectCard';
-import SelectCard2 from './selectCard2';
 
 interface SelectProps {
   // onchange is a function accepting an array
@@ -56,7 +55,7 @@ export default function Select({ onChange, options, prefetch }: SelectProps) {
     for (let i = 0; i < selectOptions.length; i++) {
       selectCards.push(
         !onChange ?
-          <SelectCard2
+          <SelectCard
             key={`select-${selectOptions[i].id}`}
             option={selectOptions[i]}
             prefetch={prefetch}
