@@ -1,8 +1,13 @@
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
+import Discord from '@root/constants/discord';
 import { GameId } from '@root/constants/GameId';
+import queueDiscordWebhook from '@root/helpers/discordWebhook';
+import genLevelImage from '@root/helpers/genImage';
 import { getEnrichNotificationPipelineStages } from '@root/helpers/getEnrichNotificationPipelineStages';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import isGuest from '@root/helpers/isGuest';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
+import Level from '@root/models/db/level';
 import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
 import mongoose, { ClientSession, QueryOptions, Types } from 'mongoose';
@@ -12,7 +17,7 @@ import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
 import Notification from '../../../../models/db/notification';
 import QueueMessage from '../../../../models/db/queueMessage';
-import { NotificationModel, QueueMessageModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
+import { LevelModel, NotificationModel, QueueMessageModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
 import { calcPlayAttempts, refreshIndexCalcs } from '../../../../models/schemas/levelSchema';
 import { QueueMessageState, QueueMessageType } from '../../../../models/schemas/queueMessageSchema';
 import { calcCreatorCounts, USER_DEFAULT_PROJECTION } from '../../../../models/schemas/userSchema';
@@ -135,6 +140,15 @@ export async function queueCalcCreatorCounts(gameId: GameId, userId: Types.Objec
   );
 }
 
+export async function queueGenLevelImage(levelId: Types.ObjectId, postToDiscord: boolean, options?: QueryOptions) {
+  await queue(
+    levelId.toString() + '-queueGenLevelImage-' + postToDiscord,
+    QueueMessageType.GEN_LEVEL_IMAGE,
+    JSON.stringify({ levelId: levelId.toString(), postToDiscord: postToDiscord }),
+    options,
+  );
+}
+
 ////
 async function processQueueMessage(queueMessage: QueueMessage) {
   let log = '';
@@ -245,6 +259,24 @@ async function processQueueMessage(queueMessage: QueueMessage) {
     const achievementsEarned = await refreshAchievements(gameId, new Types.ObjectId(userId), categories);
 
     log = `refreshAchievements game ${gameId} for ${userId} created ${achievementsEarned} achievements`;
+  } else if (queueMessage.type === QueueMessageType.GEN_LEVEL_IMAGE) {
+    const { levelId, postToDiscord } = JSON.parse(queueMessage.message) as { levelId: string, postToDiscord: boolean };
+
+    log = `genLevelImage for ${levelId}`;
+    const lvl = await LevelModel.findOne({ _id: new Types.ObjectId(levelId) }).populate('userId').lean<Level>();
+
+    if (!lvl) {
+      log = `genLevelImage for ${levelId} failed: level not found`;
+      error = true;
+    } else {
+      await genLevelImage(lvl);
+
+      if (postToDiscord) {
+        const game = getGameFromId(lvl.gameId);
+
+        await queueDiscordWebhook(Discord.Levels, `**${game.displayName}** - **${lvl.userId?.name}** published a new level: [${lvl.name}](${game.baseUrl}/level/${lvl.slug}?ts=${lvl.ts})`);
+      }
+    }
   } else {
     log = `Unknown queue message type ${queueMessage.type}`;
     error = true;
