@@ -69,7 +69,7 @@ export default function getEmailBody({
                     }}>
                       <a href={`${game.baseUrl}`}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src='https://i.imgur.com/fD1SUrZ.png' alt={game.displayName} />
+                        <GameLogoAndLabel id={game.id} gameId={game.id} />
                       </a>
                       <h1>Hi {user.name},</h1>
                       <p>{title}</p>
@@ -155,7 +155,7 @@ export default function getEmailBody({
                         <p>Join the <a href='https://discord.gg/kpfdRBt43v' style={{
                           color: '#4890ce',
                           textDecoration: 'none',
-                        }}>{game.displayName} Discord</a> to chat with other players and the developers!</p>
+                        }}>Thinky.gg Discord</a> to chat with other players and the developers!</p>
                         <p><a href={`${game.baseUrl}/settings/notifications`} style={{
                           color: '#4890ce',
                           textDecoration: 'none',
