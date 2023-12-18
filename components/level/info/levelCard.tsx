@@ -12,13 +12,12 @@ import LevelDropdown from './levelDropdown';
 import Solved from './solved';
 
 interface LevelCardProps {
-  disabled?: boolean;
   // this id should not include levelid
   id: string;
   level: EnrichedLevel | undefined;
 }
 
-export default function LevelCard({ disabled, id, level }: LevelCardProps) {
+export default function LevelCard({ id, level }: LevelCardProps) {
   const [backgroundImage, setBackgroundImage] = useState<string>();
 
   useEffect(() => {
@@ -47,13 +46,10 @@ export default function LevelCard({ disabled, id, level }: LevelCardProps) {
   const user = level.userId;
 
   return (
-    <Link
-      className='p-1 pb-2 rounded-lg select-card flex flex-col gap-2 w-72 max-w-full hover-bg-2 transition h-fit'
-      href={disabled ? '' : `/level/${level.slug}`}
-      passHref
-    >
-      <div
+    <div className='pb-3 rounded-lg select-card flex flex-col gap-2 w-72 max-w-full h-fit'>
+      <Link
         className='border-2 border-color-2 background rounded-md bg-cover bg-center w-full relative overflow-hidden'
+        href={`/level/${level.slug}`}
         style={{
           aspectRatio: '40 / 21',
           backgroundImage: backgroundImage ? 'url("' + backgroundImage + '")' : 'none',
@@ -76,21 +72,25 @@ export default function LevelCard({ disabled, id, level }: LevelCardProps) {
             <Solved />
           </div>
         }
-      </div>
+      </Link>
       <div className='flex justify-between'>
         <div className='flex gap-3'>
           <Link className='h-fit' href={getProfileSlug(user)} passHref>
             <ProfileAvatar user={user} />
           </Link>
           <div className='flex flex-col gap-0.5 overflow-hidden'>
-            <span className='font-bold overflow-hidden' style={{
-              color: getColor(),
-              display: '-webkit-box',
-              WebkitBoxOrient: 'vertical',
-              WebkitLineClamp: 2,
-            }}>
+            <Link
+              className='font-bold overflow-hidden'
+              href={`/level/${level.slug}`}
+              style={{
+                color: getColor(),
+                display: '-webkit-box',
+                WebkitBoxOrient: 'vertical',
+                WebkitLineClamp: 2,
+              }}
+            >
               {level.name}
-            </span>
+            </Link>
             <FormattedUser className='font-medium text-sm gray' hideAvatar id='author' size={Dimensions.AvatarSizeSmall} user={user} />
             <div className='flex text-xs items-center gap-1 pt-0.5'>
               <FormattedDifficulty
@@ -105,7 +105,7 @@ export default function LevelCard({ disabled, id, level }: LevelCardProps) {
         </div>
         {/* prevent clicking parent level link */}
         <div className='flex flex-col items-center gap-2'>
-          <div onClick={e => e.preventDefault()}>
+          <div onClick={e => e.stopPropagation()}>
             <LevelDropdown level={level} />
           </div>
           {level.isRanked && <>
@@ -121,6 +121,6 @@ export default function LevelCard({ disabled, id, level }: LevelCardProps) {
           </>}
         </div>
       </div>
-    </Link>
+    </div>
   );
 }
