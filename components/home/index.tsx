@@ -54,9 +54,10 @@ export default function Home({
         {' to unlock all basic features!'}
       </div>
     }
-    <div className='flex flex-col items-center gap-6 m-6'>
-      <div className='flex flex-wrap justify-center gap-4 max-w-full'>
-        {userConfig !== undefined && !userConfig?.tutorialCompletedAt &&
+    <div className='flex justify-center'>
+      <div className='flex flex-col items-center gap-8 m-6 max-w-screen-2xl'>
+        <div className='flex flex-wrap justify-center gap-8 w-full'>
+          {userConfig !== undefined && !userConfig?.tutorialCompletedAt &&
           <Card id='tutorial' title='Tutorial'>
             <SelectCard option={{
               height: Dimensions.OptionHeightLarge,
@@ -65,102 +66,61 @@ export default function Home({
               text: <span className='text-3xl font-bold'>Start</span>,
             }} />
           </Card>
-        }
-        {!game.disableCampaign && user &&
-          <Card id='campaign' title={game.displayName + ' Official Campaign'}>
-            <div className='p-3'>
-              <ChapterSelectCard chapter={user.config?.chapterUnlocked ?? 1} href='/play' />
-            </div>
-          </Card>
-        }
-        <LevelCardWithTitle
-          id='level-of-day'
-          level={levelOfDay}
-          title='Level of the Day'
-          tooltip={'Every day there is a new level of the day. Difficulty increases throughout the week!'}
-        />
-        <LevelCardWithTitle
-          id='recommended-level'
-          level={recommendedLevel}
-          title='Try this Level'
-          tooltip={'This is a quality level with similar difficulty to levels you\'ve played recently.'}
-        />
-        <LevelCardWithTitle
-          id='last-level-played'
-          level={lastLevelPlayed}
-          title={
-            <div className='flex items-center gap-2'>
-              <Link className='font-bold hover:underline' href='/play-history'>
-              Last Played
-              </Link>
-              <Link href='/settings/pro' passHref>
-                <Image alt='pro' src='/pro.svg' width={16} height={16} style={{ minWidth: 16, minHeight: 16 }} />
-              </Link>
-            </div>
           }
-          tooltip='Resume your last play. Click to see your play history.'
-        />
-      </div>
-      <div className='w-full max-w-screen-2xl pt-4 flex flex-col gap-4'>
-        <div id='top-levels-of-month' className='flex justify-center'>
-          <Link
-            className='font-bold text-xl text-center hover:underline'
-            href={{
-              pathname: '/search',
-              query: {
-                sortBy: 'reviewScore',
-                timeRange: TimeRange[TimeRange.Month],
-              },
-            }}
-          >
-            Top Levels this Month:
-          </Link>
+          {!game.disableCampaign && user &&
+            <Card id='campaign' title={game.displayName + ' Official Campaign'}>
+              <ChapterSelectCard chapter={user.config?.chapterUnlocked ?? 1} href='/play' />
+            </Card>
+          }
+          <LevelCardWithTitle
+            id='level-of-day'
+            level={levelOfDay}
+            title='Level of the Day'
+            tooltip={'Every day there is a new level of the day. Difficulty increases throughout the week!'}
+          />
+          <LevelCardWithTitle
+            id='recommended-level'
+            level={recommendedLevel}
+            title='Try this Level'
+            tooltip={'This is a quality level with similar difficulty to levels you\'ve played recently.'}
+          />
+          <LevelCardWithTitle
+            id='last-level-played'
+            level={lastLevelPlayed}
+            title={
+              <div className='flex items-center gap-2'>
+                <Link className='font-bold hover:underline' href='/play-history'>
+              Last Played
+                </Link>
+                <Link href='/settings/pro' passHref>
+                  <Image alt='pro' src='/pro.svg' width={16} height={16} style={{ minWidth: 16, minHeight: 16 }} />
+                </Link>
+              </div>
+            }
+            tooltip='Resume your last play. Click to see your play history.'
+          />
         </div>
-        {topLevelsThisMonth ?
-          <div className='flex flex-wrap justify-center gap-4'>
-            {topLevelsThisMonth.map((level) => {
-              return (
-                <LevelCard
-                  id='top-level-this-month'
-                  key={level._id.toString()}
-                  level={level}
-                />
-              );
-            })}
-          </div>
-          :
-          <div className='flex flex-wrap justify-center'>
-            <LoadingCard />
-            <LoadingCard />
-            <LoadingCard />
-            <LoadingCard />
-            <LoadingCard />
-          </div>
-        }
-      </div>
-      <div className='flex flex-col 2xl:flex-row justify-center max-w-screen-2xl'>
-        <div className='grow w-full px-4 h-min flex flex-col gap-4' id='latestLevelsSection'>
-          <div id='latest-levels' className='flex justify-center'>
+        <div className='w-full pt-4 flex flex-col gap-4'>
+          <div id='top-levels-of-month' className='flex justify-center'>
             <Link
               className='font-bold text-xl text-center hover:underline'
               href={{
                 pathname: '/search',
                 query: {
-                  sortBy: 'ts',
-                  statFilter: StatFilter.HideSolved,
-                  timeRange: TimeRange[TimeRange.All],
+                  sortBy: 'reviewScore',
+                  timeRange: TimeRange[TimeRange.Month],
                 },
               }}
             >
-              Latest Unsolved Levels:
+            Top Levels this Month:
             </Link>
           </div>
-          {latestLevels ?
+          {topLevelsThisMonth ?
             <div className='flex flex-wrap justify-center gap-4'>
-              {latestLevels.map((level) => {
+              {topLevelsThisMonth.map((level) => {
                 return (
                   <LevelCard
-                    id='latest-unsolved'
+                    id='top-level-this-month'
                     key={level._id.toString()}
                     level={level}
                   />
@@ -174,45 +134,85 @@ export default function Home({
               <LoadingCard />
               <LoadingCard />
               <LoadingCard />
-              <LoadingCard />
-              <LoadingCard />
-              <LoadingCard />
-              <LoadingCard />
-              <LoadingCard />
-              <LoadingCard />
-              <LoadingCard />
-              <LoadingCard />
-              <LoadingCard />
-              <LoadingCard />
             </div>
           }
         </div>
-        <div id='latest-reviews' className=''>
-          <h2 className='font-bold text-xl text-center'>Latest Reviews:</h2>
-          <div className='text-center'>
-            {latestReviews === undefined ?
-              <div className='flex justify-center p-4'><LoadingSpinner /></div>
+        <div className='flex flex-col 2xl:flex-row items-center 2xl:items-start gap-8 w-full'>
+          <div className='grow px-4 h-min flex flex-col gap-4' id='latestLevelsSection'>
+            <div id='latest-levels' className='flex justify-center'>
+              <Link
+                className='font-bold text-xl text-center hover:underline'
+                href={{
+                  pathname: '/search',
+                  query: {
+                    sortBy: 'ts',
+                    statFilter: StatFilter.HideSolved,
+                    timeRange: TimeRange[TimeRange.All],
+                  },
+                }}
+              >
+              Latest Unsolved Levels:
+              </Link>
+            </div>
+            {latestLevels ?
+              <div className='flex flex-wrap justify-center gap-4'>
+                {latestLevels.map((level) => {
+                  return (
+                    <LevelCard
+                      id='latest-unsolved'
+                      key={level._id.toString()}
+                      level={level}
+                    />
+                  );
+                })}
+              </div>
               :
-              latestReviews.length === 0 ?
-                <div className='text-center italic p-3'>
-                No reviews found
+              <div className='flex flex-wrap justify-center'>
+                <LoadingCard />
+                <LoadingCard />
+                <LoadingCard />
+                <LoadingCard />
+                <LoadingCard />
+                <LoadingCard />
+                <LoadingCard />
+                <LoadingCard />
+                <LoadingCard />
+                <LoadingCard />
+                <LoadingCard />
+                <LoadingCard />
+                <LoadingCard />
+                <LoadingCard />
+                <LoadingCard />
+              </div>
+            }
+          </div>
+          <div id='latest-reviews' className='flex flex-col gap-4' style={{
+            minWidth: 500,
+            width: 500,
+          }}>
+            <h2 className='font-bold text-xl text-center'>Latest Reviews:</h2>
+            <div className='w-full text-center flex flex-col gap-4'>
+              {latestReviews === undefined ?
+                <div className='flex justify-center p-4'>
+                  <LoadingSpinner />
                 </div>
                 :
-                latestReviews.map(review => {
-                  return (
-                    <div
-                      className='mx-4 md:mx-8 my-4'
-                      key={`review-${review._id.toString()}`}
-                    >
-                      <FormattedReview
-                        level={review.levelId}
-                        review={review}
-                        user={review.userId}
-                      />
-                    </div>
-                  );
-                })
-            }
+                latestReviews.length === 0 ?
+                  <div className='text-center italic p-3'>No reviews found</div>
+                  :
+                  latestReviews.map(review => {
+                    return (
+                      <div key={`review-${review._id.toString()}`}>
+                        <FormattedReview
+                          level={review.levelId}
+                          review={review}
+                          user={review.userId}
+                        />
+                      </div>
+                    );
+                  })
+              }
+            </div>
           </div>
         </div>
       </div>
