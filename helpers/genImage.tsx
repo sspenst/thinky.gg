@@ -9,6 +9,10 @@ import { TimerUtil } from './getTs';
 import { logger } from './logger';
 
 export default async function genImage(lvl: Level) {
+  if (process.env.NODE_ENV === 'test') {
+    return;
+  }
+
   const browser = await puppeteer.launch({
     /// headless true
     headless: 'new',

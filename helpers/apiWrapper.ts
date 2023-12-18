@@ -233,8 +233,6 @@ export default function apiWrapper(
       return Promise.resolve(res.status(validate.statusCode).json({ error: validate.error }));
     }
 
-    await dbConnect();
-
     req.gameId = getGameIdFromReq(req);
 
     /* istanbul ignore next */

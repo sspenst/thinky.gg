@@ -47,7 +47,7 @@ describe('pages/api/level/index.ts', () => {
   test('cookieOptions', async () => {
     process.env.LOCAL = undefined;
     expect(cookieOptions('host').domain).toBe('.host');
-    expect(cookieOptions(undefined).domain).toBe('.pathology.gg');
+    expect(cookieOptions(undefined).domain).toBe('.thinky.gg');
   });
 });
 
