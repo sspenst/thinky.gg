@@ -24,7 +24,7 @@ export default async function dbConnect() {
   if (cached.conn) {
     /* istanbul ignore next */
     if (mongoose.connection.readyState !== 1) {
-      logger.error('Mongoose connection error');
+      logger.error('Mongoose connection error ' + mongoose.connection.readyState);
     }
 
     return cached.conn;
@@ -68,7 +68,7 @@ export default async function dbConnect() {
 
   /* istanbul ignore next */
   if (mongoose.connection.readyState !== 1) {
-    logger.error('Mongoose connection error');
+    logger.error('Mongoose connection error (b) ' + mongoose.connection.readyState);
   }
 
   if (!process.env.MONGODB_URI || process.env.NODE_ENV === 'test') {

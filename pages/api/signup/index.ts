@@ -16,7 +16,6 @@ import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import getProfileSlug from '../../../helpers/getProfileSlug';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
-import dbConnect from '../../../lib/dbConnect';
 import getTokenCookie from '../../../lib/getTokenCookie';
 import sendPasswordResetEmail from '../../../lib/sendPasswordResetEmail';
 import User from '../../../models/db/user';
@@ -77,7 +76,6 @@ export default apiWrapper({ POST: {
 } }, async (req: NextApiRequestWrapper, res: NextApiResponse) => {
   const { email, name, password, tutorialCompletedAt, recaptchaToken, guest } = req.body;
 
-  await dbConnect();
   const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET || '';
 
   if (RECAPTCHA_SECRET && RECAPTCHA_SECRET.length > 0) {
