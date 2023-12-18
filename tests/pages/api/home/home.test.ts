@@ -60,7 +60,6 @@ describe('pages/api/home.ts', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.lastLevelPlayed).toBeUndefined();
         expect(response.latestLevels).toBeUndefined();
         expect(response.latestReviews).toBeUndefined();
         expect(response.levelOfDay).toBeUndefined();
@@ -90,7 +89,6 @@ describe('pages/api/home.ts', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.lastLevelPlayed).toBeUndefined();
         expect(response.latestLevels).toHaveLength(1);
         expect(response.latestReviews).toBeUndefined();
         expect(response.levelOfDay).toBeUndefined();
@@ -111,7 +109,6 @@ describe('pages/api/home.ts', () => {
             token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            [HomepageDataType.LastLevelPlayed]: '1',
             [HomepageDataType.LatestLevels]: '1',
             [HomepageDataType.LatestReviews]: '1',
             [HomepageDataType.LevelOfDay]: '1',
@@ -126,7 +123,6 @@ describe('pages/api/home.ts', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.lastLevelPlayed).toBeNull(); // null because we asked but got nothing
         expect(response.latestLevels).toHaveLength(1);
         expect(response.latestReviews).toHaveLength(1);
         expect(response.levelOfDay).not.toBeNull(); // we don't have any levels normally here but we reach the conditional where we just grab the most recently created level since we are out of levels

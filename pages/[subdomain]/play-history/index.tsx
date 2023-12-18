@@ -40,10 +40,11 @@ export default function PlayHistoryPage({ reqUser }: PlayHistoryPageProps): JSX.
       {isPro(reqUser) ?
         <PlayHistory />
         :
-        <div className='text-center text-lg break-words p-3'>
-          Get <Link href='/settings/pro' className='text-blue-500 hover:text-blue-300 transition'>
+        <div className='text-center text-lg break-words p-3 flex flex-col gap-4'>
+          <h1 className='text-center text-2xl font-bold'>Play History</h1>
+          <span>Get <Link href='/settings/pro' className='text-blue-500 hover:text-blue-300 transition'>
             {game.displayName} Pro
-          </Link> to view your play history.
+          </Link> to view your play history.</span>
         </div>
       }
     </Page>

@@ -14,6 +14,7 @@ export enum ScreenSize {
   LG,
   XL,
   '2XL',
+  '3XL',
 }
 
 export type DeviceInfo = {
@@ -48,7 +49,9 @@ const useDeviceCheck = (initialUserAgentString: string): DeviceInfo => {
 
     // using tailwind's mobile-first approach to match existing prefixes
     // https://tailwindcss.com/docs/responsive-design
-    if (width >= 1536) {
+    if (width >= 1792) {
+      screenSize = ScreenSize['3XL'];
+    } else if (width >= 1536) {
       screenSize = ScreenSize['2XL'];
     } else if (width >= 1280) {
       screenSize = ScreenSize.XL;

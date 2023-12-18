@@ -36,7 +36,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 export interface HomepageDataProps {
-  lastLevelPlayed?: EnrichedLevel;
   latestLevels?: EnrichedLevel[];
   latestReviews?: Review[];
   levelOfDay?: EnrichedLevel;
@@ -110,7 +109,6 @@ export default function HomePage({ user }: HomePageProps) {
   useEffect(() => {
     for (const key of cache.keys()) {
       if (
-        key.includes(HomepageDataType.LastLevelPlayed) ||
         key.includes(HomepageDataType.LatestLevels) ||
         key.includes(HomepageDataType.LatestReviews) ||
         key.includes(HomepageDataType.LevelOfDay) ||
@@ -123,7 +121,6 @@ export default function HomePage({ user }: HomePageProps) {
   }, [cache]);
 
   const chunks = [
-    user ? [HomepageDataType.LastLevelPlayed] : [],
     loadLatestLevels ? [HomepageDataType.LatestLevels] : [],
     loadLatestReviews ? [HomepageDataType.LatestReviews] : [],
     loadLevelOfDay ? [HomepageDataType.LevelOfDay] : [],
@@ -140,7 +137,6 @@ export default function HomePage({ user }: HomePageProps) {
     ...useHomePageData(chunks[5]).data,
   } as HomepageDataProps;
 
-  const lastLevelPlayed = user ? dataMerge[HomepageDataType.LastLevelPlayed] : null;
   const latestLevels = dataMerge[HomepageDataType.LatestLevels];
   const latestReviews = dataMerge[HomepageDataType.LatestReviews];
   const levelOfDay = dataMerge[HomepageDataType.LevelOfDay];
@@ -166,7 +162,6 @@ export default function HomePage({ user }: HomePageProps) {
         }}
       />
       <Home
-        lastLevelPlayed={lastLevelPlayed}
         latestLevels={latestLevels}
         latestReviews={latestReviews}
         levelOfDay={levelOfDay}
