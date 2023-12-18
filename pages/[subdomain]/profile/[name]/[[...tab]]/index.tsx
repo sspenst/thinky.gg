@@ -1,4 +1,5 @@
 import FormattedDate from '@root/components/formatted/formattedDate';
+import LevelCard from '@root/components/level/info/levelCard';
 import Solved from '@root/components/level/info/solved';
 import LoadingSpinner from '@root/components/page/loadingSpinner';
 import RoleIcons from '@root/components/page/roleIcons';
@@ -374,22 +375,6 @@ export default function ProfilePage({
   }, [collectionFilterText, getCollectionOptions, showCollectionFilter]);
 
   const collectionsAsOptions = getFilteredCollectionOptions();
-  const getLevelOptions = useCallback(() => {
-    if (!user || !enrichedLevels) {
-      return [];
-    }
-
-    return enrichedLevels.map(level => {
-      return {
-        height: Dimensions.OptionHeightMedium,
-        href: `/level/${level.slug}`,
-        id: level._id.toString(),
-        level: level,
-        stats: new SelectOptionStats(level.leastMoves, level.userMoves),
-        text: level.name,
-      } as SelectOption;
-    });
-  }, [enrichedLevels, user]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const setSearchLevelTextDebounce = useCallback(
@@ -499,7 +484,6 @@ export default function ProfilePage({
     [ProfileTab.Multiplayer]: <ProfileMultiplayer user={user} />,
     [ProfileTab.Collections]: (
       <div className='flex flex-col gap-2 justify-center'>
-
         <SelectFilter
           filter={showCollectionFilter}
           onFilterClick={onFilterCollectionClick}
@@ -572,7 +556,17 @@ export default function ProfilePage({
         >
           Advanced search
         </Link>
-        <Select options={getLevelOptions()} />
+        <div className='flex flex-wrap justify-center gap-2'>
+          {enrichedLevels?.map((level) => {
+            return (
+              <LevelCard
+                id='profile'
+                key={level._id.toString()}
+                level={level}
+              />
+            );
+          })}
+        </div>
         {totalRows !== undefined && totalRows > 20 &&
           <div className='flex justify-center flex-row'>
             {page > 1 && (

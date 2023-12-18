@@ -156,7 +156,7 @@ export default function Nav({ isDropdown }: NavProps) {
     }
   />;
 
-  const createNavLinked = <NavLink
+  const createNavLink = <NavLink
     href='/create'
     icon={
       <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='2 2 20 20' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
@@ -166,6 +166,16 @@ export default function Nav({ isDropdown }: NavProps) {
     label='Create'
   />;
 
+  const yourLevelsNavLink = user && <NavLink
+    href={`${getProfileSlug(user)}/levels`}
+    icon={
+      <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
+        <path strokeLinecap='round' strokeLinejoin='round' d='M6.429 9.75L2.25 12l4.179 2.25m0-4.5l5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L21.75 12l-4.179 2.25m0 0l4.179 2.25L12 21.75 2.25 16.5l4.179-2.25m11.142 0l-5.571 3-5.571-3' />
+      </svg>
+    }
+    label='Your Levels'
+  />;
+
   const rankedNavLink = <NavLink
     hidden={game.disableRanked}
     href='/ranked'
@@ -173,14 +183,14 @@ export default function Nav({ isDropdown }: NavProps) {
     label='Ranked'
   />;
 
-  const collectionNavLink = user && <NavLink
+  const yourCollectionsNavLink = user && <NavLink
     href={`${getProfileSlug(user)}/collections`}
     icon={
       <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
         <path strokeLinecap='round' strokeLinejoin='round' d='M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z' />
       </svg>
     }
-    label='Collections'
+    label='Your Collections'
   />;
 
   const playLaterNavLink = user && <NavLink
@@ -273,7 +283,7 @@ export default function Nav({ isDropdown }: NavProps) {
         <path strokeLinecap='round' strokeLinejoin='round' d='M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z' />
       </svg>
     }
-    label='Profile'
+    label='Your Profile'
   />;
 
   const discordNavLink = <NavLink
@@ -316,8 +326,9 @@ export default function Nav({ isDropdown }: NavProps) {
       {user && <>
         {profileNavLink}
         {playLaterNavLink}
-        {createNavLinked}
-        {collectionNavLink}
+        {createNavLink}
+        {yourLevelsNavLink}
+        {yourCollectionsNavLink}
         <NavDivider />
       </>}
       {levelSearchNavLink}
