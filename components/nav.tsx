@@ -317,6 +317,19 @@ export default function Nav({ isDropdown }: NavProps) {
     label='Play'
   />;
 
+  const playHistoryNavLink = !game.disableCampaign && <NavLink
+    href='/play-history'
+    icon={
+
+      <svg xmlns='http://www.w3.org/2000/svg' className='w-5 h-5' viewBox='1 1 22 22' strokeWidth='1.5' stroke='currentColor' fill='none' strokeLinecap='round' strokeLinejoin='round'>
+        <path stroke='none' d='M0 0h24v24H0z' fill='none' />
+        <path d='M12 8l0 4l2 2' />
+        <path d='M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5' />
+      </svg>
+    }
+    label='Play History'
+  />;
+
   return (
     <nav
       className={classNames(
@@ -333,8 +346,12 @@ export default function Nav({ isDropdown }: NavProps) {
         {rankedNavLink}
         {multiplayerNavLink}
       </>}
+      {levelSearchNavLink}
       <NavDivider />
       <NavGameMenu />
+      {user && !isPro(user) && <>
+        {proNavLink}
+      </>}
       <NavDivider />
       {user && <>
         {profileNavLink}
@@ -343,17 +360,14 @@ export default function Nav({ isDropdown }: NavProps) {
         {draftsNavLink}
         {yourLevelsNavLink}
         {yourCollectionsNavLink}
+        {playHistoryNavLink}
         <NavDivider />
       </>}
-      {levelSearchNavLink}
       {usersNavLink}
       {campaignNavLink}
       {leaderboardNavLink}
       {tutorialNavLink}
       <NavDivider />
-      {user && !isPro(user) && <>
-        {proNavLink}
-      </>}
       {discordNavLink}
     </nav>
   );

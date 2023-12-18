@@ -11,7 +11,6 @@ import { SearchQuery } from '../../[subdomain]/search';
 import { getLatestLevels } from '../latest-levels';
 import { getLatestReviews } from '../latest-reviews';
 import { getLevelOfDay } from '../level-of-day';
-import { getLastLevelPlayed } from '../play-attempt';
 import { doQuery } from '../search';
 import { getPlayAttempts } from '../user/play-history';
 
@@ -116,7 +115,6 @@ async function getRecommendedLevel(gameId: GameId, reqUser: User) {
 export default apiWrapper({
   GET: {
     query: {
-      lastLevelPlayed: ValidType('number', false, true),
       latestLevels: ValidType('number', false, true),
       latestReviews: ValidType('number', false, true),
       levelOfDay: ValidType('number', false, true),
@@ -125,19 +123,17 @@ export default apiWrapper({
     }
   }
 }, async (req, res) => {
-  const { lastLevelPlayed, latestLevels, latestReviews, levelOfDay, recommendedLevel, topLevelsThisMonth } = req.query;
+  const { latestLevels, latestReviews, levelOfDay, recommendedLevel, topLevelsThisMonth } = req.query;
   const token = req.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, req) : null;
 
   const [
-    plastLevelPlayed,
     platestLevels,
     platestReviews,
     plevelOfDay,
     precommendedLevel,
     ptopLevelsThisMonth
   ] = await Promise.all([
-    lastLevelPlayed && reqUser ? getLastLevelPlayed(req.gameId, reqUser) : undefined,
     latestLevels ? getLatestLevels(req.gameId, reqUser) : undefined,
     latestReviews ? getLatestReviews(req.gameId, reqUser) : undefined,
     levelOfDay ? getLevelOfDay(req.gameId, reqUser) : undefined,
@@ -146,7 +142,6 @@ export default apiWrapper({
   ]);
 
   return res.status(200).json({
-    lastLevelPlayed: plastLevelPlayed,
     latestLevels: platestLevels,
     latestReviews: platestReviews,
     levelOfDay: plevelOfDay,

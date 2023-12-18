@@ -3,7 +3,8 @@ import StatFilter from '@root/constants/statFilter';
 import TourPath from '@root/constants/tourPath';
 import isFullAccount from '@root/helpers/isFullAccount';
 import isGuest from '@root/helpers/isGuest';
-import Image from 'next/image';
+import { ScreenSize } from '@root/hooks/useDeviceCheck';
+import classNames from 'classnames';
 import Link from 'next/link';
 import React, { useContext } from 'react';
 import TimeRange from '../../constants/timeRange';
@@ -22,7 +23,6 @@ import FormattedReview from '../level/reviews/formattedReview';
 import LoadingSpinner from '../page/loadingSpinner';
 
 interface HomeProps {
-  lastLevelPlayed?: EnrichedLevel | null;
   latestLevels?: EnrichedLevel[];
   latestReviews?: Review[];
   levelOfDay?: EnrichedLevel | null;
@@ -32,7 +32,6 @@ interface HomeProps {
 }
 
 export default function Home({
-  lastLevelPlayed,
   latestLevels,
   latestReviews,
   levelOfDay,
@@ -40,7 +39,7 @@ export default function Home({
   topLevelsThisMonth,
   user,
 }: HomeProps) {
-  const { game, userConfig } = useContext(AppContext);
+  const { deviceInfo, game, userConfig } = useContext(AppContext);
   const tour = useTour(TourPath.HOME);
 
   return (<>
@@ -54,9 +53,9 @@ export default function Home({
         {' to unlock all basic features!'}
       </div>
     }
-    <div className='flex justify-center'>
-      <div className='flex flex-col items-center gap-8 m-6 max-w-screen-2xl'>
-        <div className='flex flex-wrap justify-center gap-8 w-full'>
+    <div className='flex justify-center m-6'>
+      <div className='flex flex-col items-center gap-8 w-full max-w-screen-2xl'>
+        <div className='flex flex-wrap justify-center gap-8 max-w-full'>
           {userConfig !== undefined && !userConfig?.tutorialCompletedAt &&
           <Card id='tutorial' title='Tutorial'>
             <SelectCard option={{
@@ -84,23 +83,11 @@ export default function Home({
             title='Try this Level'
             tooltip={'This is a quality level with similar difficulty to levels you\'ve played recently.'}
           />
-          <LevelCardWithTitle
-            id='last-level-played'
-            level={lastLevelPlayed}
-            title={
-              <div className='flex items-center gap-2'>
-                <Link className='font-bold hover:underline' href='/play-history'>
-              Last Played
-                </Link>
-                <Link href='/settings/pro' passHref>
-                  <Image alt='pro' src='/pro.svg' width={16} height={16} style={{ minWidth: 16, minHeight: 16 }} />
-                </Link>
-              </div>
-            }
-            tooltip='Resume your last play. Click to see your play history.'
-          />
         </div>
-        <div className='w-full pt-4 flex flex-col gap-4'>
+        <div className={classNames(
+          'w-full flex flex-col gap-4',
+          deviceInfo.screenSize >= ScreenSize['3XL'] ? 'max-w-full' : 'max-w-screen-lg',
+        )}>
           <div id='top-levels-of-month' className='flex justify-center'>
             <Link
               className='font-bold text-xl text-center hover:underline'
@@ -112,7 +99,7 @@ export default function Home({
                 },
               }}
             >
-            Top Levels this Month:
+              Top Levels this Month
             </Link>
           </div>
           {topLevelsThisMonth ?
@@ -137,8 +124,8 @@ export default function Home({
             </div>
           }
         </div>
-        <div className='flex flex-col 2xl:flex-row items-center 2xl:items-start gap-8 w-full'>
-          <div className='grow px-4 h-min flex flex-col gap-4' id='latestLevelsSection'>
+        <div className='flex flex-col lg:flex-row items-center lg:items-start gap-8 w-full'>
+          <div className='lg:w-7/12 h-min flex flex-col gap-4 max-w-full' id='latestLevelsSection'>
             <div id='latest-levels' className='flex justify-center'>
               <Link
                 className='font-bold text-xl text-center hover:underline'
@@ -151,7 +138,7 @@ export default function Home({
                   },
                 }}
               >
-              Latest Unsolved Levels:
+                Latest Unsolved Levels
               </Link>
             </div>
             {latestLevels ?
@@ -186,11 +173,10 @@ export default function Home({
               </div>
             }
           </div>
-          <div id='latest-reviews' className='flex flex-col gap-4' style={{
-            minWidth: 500,
-            width: 500,
-          }}>
-            <h2 className='font-bold text-xl text-center'>Latest Reviews:</h2>
+          <div id='latest-reviews' className='flex flex-col gap-4 lg:w-5/12 px-4 max-w-full'>
+            <h2 className='font-bold text-xl text-center'>
+              Latest Reviews
+            </h2>
             <div className='w-full text-center flex flex-col gap-4'>
               {latestReviews === undefined ?
                 <div className='flex justify-center p-4'>
