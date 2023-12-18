@@ -12,12 +12,14 @@ import LevelDropdown from './levelDropdown';
 import Solved from './solved';
 
 interface LevelCardProps {
+  href?: string;
   // this id should not include levelid
   id: string;
-  level: EnrichedLevel | undefined;
+  level: EnrichedLevel | undefined | null;
+  onClick?: () => void;
 }
 
-export default function LevelCard({ id, level }: LevelCardProps) {
+export default function LevelCard({ href, id, level, onClick }: LevelCardProps) {
   const [backgroundImage, setBackgroundImage] = useState<string>();
 
   useEffect(() => {
@@ -49,7 +51,8 @@ export default function LevelCard({ id, level }: LevelCardProps) {
     <div className='pb-3 rounded-lg select-card flex flex-col gap-2 w-72 max-w-full h-fit'>
       <Link
         className='border-2 border-color-2 background rounded-md bg-cover bg-center w-full relative overflow-hidden'
-        href={`/level/${level.slug}`}
+        href={href ?? `/level/${level.slug}`}
+        onClick={onClick}
         style={{
           aspectRatio: '40 / 21',
           backgroundImage: backgroundImage ? 'url("' + backgroundImage + '")' : 'none',
@@ -81,7 +84,8 @@ export default function LevelCard({ id, level }: LevelCardProps) {
           <div className='flex flex-col gap-0.5 overflow-hidden'>
             <Link
               className='font-bold overflow-hidden'
-              href={`/level/${level.slug}`}
+              href={href ?? `/level/${level.slug}`}
+              onClick={onClick}
               style={{
                 color: getColor(),
                 display: '-webkit-box',
