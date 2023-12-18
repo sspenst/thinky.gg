@@ -9,7 +9,7 @@ import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import getResetPasswordToken from '../../../../lib/getResetPasswordToken';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { UserModel } from '../../../../models/mongoose';
-import resetPasswordHandler from '../../../../pages/api/reset-password/index';
+import resetPasswordHandler from '../../../../pages/reset-password/index';
 
 jest.mock('nodemailer', () => ({
   createTransport: jest.fn().mockImplementation(() => ({

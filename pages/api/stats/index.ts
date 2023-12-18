@@ -20,7 +20,7 @@ import Level, { EnrichedLevel } from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
 import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserConfigModel } from '../../../models/mongoose';
-import { queueRefreshAchievements, queueRefreshIndexCalcs } from '../internal-jobs/worker';
+import { queueGenLevelImage, queueRefreshAchievements, queueRefreshIndexCalcs } from '../internal-jobs/worker';
 import { matchMarkCompleteLevel } from '../match/[matchId]';
 
 export default withAuth({
@@ -258,6 +258,7 @@ export default withAuth({
               { session: session },
             ),
             queueDiscordWebhook(Discord.Levels, `**${game.displayName}** - **${req.user.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`, { session: session }),
+            queueGenLevelImage(level._id, false, { session: session }),
           ]);
         }
 
