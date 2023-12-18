@@ -82,7 +82,7 @@ export default function Page({
               width: !isNavOnPage ? '100%' : 'calc(100% - 240px)',
             }}
           >
-            <main className='grow z-10 h-full'>
+            <main className='grow h-full'>
               {children}
             </main>
             {!isFullScreen && !hideFooter && <Footer />}

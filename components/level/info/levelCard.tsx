@@ -48,7 +48,7 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
   const user = level.userId;
 
   return (
-    <div className='pb-3 rounded-lg select-card flex flex-col gap-2 w-72 max-w-full h-fit'>
+    <div className='pb-3 rounded-lg select-card flex flex-col gap-2 w-72 max-w-full h-fit hover-bg-2 transition p-1'>
       <Link
         className='border-2 border-color-2 background rounded-md bg-cover bg-center w-full relative overflow-hidden'
         href={href ?? `/level/${level.slug}`}

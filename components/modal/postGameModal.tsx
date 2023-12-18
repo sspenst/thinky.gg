@@ -79,9 +79,7 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
     if (chapter && !isNaN(Number(chapter))) {
       return (
         <Card id='campaign' title='Head back to the campaign!'>
-          <div className='p-3'>
-            <ChapterSelectCard chapter={Number(chapter)} />
-          </div>
+          <ChapterSelectCard chapter={Number(chapter)} />
         </Card>
       );
     }

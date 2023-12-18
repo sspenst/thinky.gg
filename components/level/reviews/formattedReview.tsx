@@ -77,12 +77,7 @@ interface FormattedReviewProps {
 export default function FormattedReview({ hideBorder, inModal, level, onEditClick, review, user }: FormattedReviewProps) {
   return (
     <div className='flex align-center justify-center text-left break-words'>
-      <div
-        className={classNames('block max-w-3xl w-full', { 'py-2 px-3 rounded-lg border': !hideBorder })}
-        style={{
-          borderColor: 'var(--bg-color-4)',
-        }}
-      >
+      <div className={classNames('block max-w-3xl w-full', { 'py-2 px-3 rounded-lg border border-color-3': !hideBorder })}>
         <div className='flex gap-x-2 items-center flex-wrap'>
           <div className='flex justify-between w-full items-center'>
             <div className='flex gap-x-2 items-center truncate'>
