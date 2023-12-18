@@ -1,6 +1,7 @@
 import { GameId } from '@root/constants/GameId';
 import { isValidDirections } from '@root/helpers/checkpointHelpers';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import dbConnect from '@root/lib/dbConnect';
 import { Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { NextApiRequestWithAuth } from '../lib/withAuth';
@@ -231,6 +232,8 @@ export default function apiWrapper(
 
       return Promise.resolve(res.status(validate.statusCode).json({ error: validate.error }));
     }
+
+    await dbConnect();
 
     req.gameId = getGameIdFromReq(req);
 
