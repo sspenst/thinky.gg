@@ -74,7 +74,7 @@ describe('pages/api/collection/index.ts', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('You must cancel all subscriptions before deleting your account. Contact help@pathology.gg if you are still experiencing issues');
+        expect(response.error).toBe('You must cancel all subscriptions before deleting your account. Contact help@thinky.gg if you are still experiencing issues');
         expect(res.status).toBe(400);
       },
     });

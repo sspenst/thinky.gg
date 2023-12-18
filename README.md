@@ -1,4 +1,4 @@
-# <img src="public/logo.svg"> [Pathology](https://pathology.gg)
+# <img src="public/logo.svg"> [Pathology](https://thinky.gg)
 
 [![codecov](https://codecov.io/gh/sspenst/pathology/branch/main/graph/badge.svg?token=BX0RSQ9R57)](https://codecov.io/gh/sspenst/pathology)
 ![Tests](https://github.com/sspenst/pathology/actions/workflows/node.js.yml/badge.svg)

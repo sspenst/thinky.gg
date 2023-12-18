@@ -3,7 +3,7 @@ import isLocal from './isLocal';
 
 // https://github.com/jshttp/cookie#options-1
 export default function cookieOptions(host: string | undefined, clear = false): CookieSerializeOptions {
-  const domain = host ? `.${host}` : '.pathology.gg';
+  const domain = host ? `.${host}` : '.thinky.gg';
 
   return {
     // unfortunately, you can't set a cookie for a subdomain in localhost https://stackoverflow.com/questions/38669040/share-cookies-to-subdomain-on-localhost

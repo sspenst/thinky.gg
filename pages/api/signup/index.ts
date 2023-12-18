@@ -6,6 +6,7 @@ import Role from '@root/constants/role';
 import { generatePassword } from '@root/helpers/generatePassword';
 import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
+import dbConnect from '@root/lib/dbConnect';
 import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmationEmail';
 import UserConfig from '@root/models/db/userConfig';
 import mongoose, { QueryOptions, Types } from 'mongoose';
@@ -74,6 +75,8 @@ export default apiWrapper({ POST: {
     recaptchaToken: ValidType('string', false),
   },
 } }, async (req: NextApiRequestWrapper, res: NextApiResponse) => {
+  await dbConnect();
+
   const { email, name, password, tutorialCompletedAt, recaptchaToken, guest } = req.body;
 
   const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET || '';

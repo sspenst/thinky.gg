@@ -47,7 +47,7 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
             session: session
           },
         ),
-        queueDiscordWebhook(Discord.DevPriv, `🥹 [${userToDowngrade.name}](https://pathology.gg/profile/${userToDowngrade.name}) was just unsubscribed.`),
+        queueDiscordWebhook(Discord.DevPriv, `🥹 [${userToDowngrade.name}](https://thinky.gg/profile/${userToDowngrade.name}) was just unsubscribed.`),
       ];
 
       // NB: metadata should normally be defined but it isn't mocked in the tests
@@ -174,7 +174,7 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
           ),
           // TODO: Figure a way to get the game ID from the subscription object since each game should be different, but for now this is fine
           createNewProUserNotification(gameId, giftToUser._id, giftFromUser._id),
-          queueDiscordWebhook(Discord.DevPriv, `💸 [${giftFromUser.name}](https://pathology.gg/profile/${giftFromUser.name}) just gifted ${quantity} ${type === GiftType.Yearly ? 'year' : 'month'}${quantity === 1 ? '' : 's'} of Pro to [${giftToUser.name}](https://pathology.gg/profile/${giftToUser.name})`)
+          queueDiscordWebhook(Discord.DevPriv, `💸 [${giftFromUser.name}](https://thinky.gg/profile/${giftFromUser.name}) just gifted ${quantity} ${type === GiftType.Yearly ? 'year' : 'month'}${quantity === 1 ? '' : 's'} of Pro to [${giftToUser.name}](https://thinky.gg/profile/${giftToUser.name})`)
         ]);
       });
       session.endSession();
@@ -264,7 +264,7 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
             },
           ),
           createNewProUserNotification(gameId, userToUpgrade._id),
-          queueDiscordWebhook(Discord.DevPriv, `💸 [${userToUpgrade.name}](https://pathology.gg/profile/${userToUpgrade.name}) just subscribed to ${productName}!`),
+          queueDiscordWebhook(Discord.DevPriv, `💸 [${userToUpgrade.name}](https://thinky.gg/profile/${userToUpgrade.name}) just subscribed to ${productName}!`),
         ]);
       });
 

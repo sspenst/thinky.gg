@@ -1,7 +1,8 @@
 /** Warning, when we get to a sitemap greater than 50MB we'll need to split up the sitemap
  * as of 10.24.2022 we are at around 78kb so we are good for a while
 */
-import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import { GameId } from '@root/constants/GameId';
+import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { GetServerSidePropsContext } from 'next';
 import getProfileSlug from '../../helpers/getProfileSlug';
 import { logger } from '../../helpers/logger';
@@ -11,23 +12,24 @@ import Level from '../../models/db/level';
 import User from '../../models/db/user';
 import { CollectionModel, LevelModel, UserModel } from '../../models/mongoose';
 
-const URL_BASE = 'https://pathology.gg';
+function generateSiteMap(gameId: GameId, users: User[], levels: Level[], collections: Collection[]) {
+  const game = getGameFromId(gameId);
+  const URL_BASE = game.baseUrl;
 
-function generateSiteMap(users: User[], levels: Level[], collections: Collection[]) {
   return `<?xml version="1.0" encoding="UTF-8"?>
    <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
      <!--We manually set the two URLs we know already-->
      <url>
-       <loc>https://pathology.gg</loc>
+       <loc>${URL_BASE}</loc>
      </url>
      <url>
-       <loc>https://pathology.gg/search</loc>
+       <loc>${URL_BASE}/search</loc>
      </url>
      <url>
-       <loc>https://pathology.gg/signup</loc>
+       <loc>${URL_BASE}/signup</loc>
      </url>
      <url>
-       <loc>https://pathology.gg/login</loc>
+       <loc>${URL_BASE}/login</loc>
      </url>
      ${users
     .map(( user) => {
@@ -87,7 +89,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
     const res = context.res;
     // We generate the XML sitemap with the posts data
-    const sitemap = generateSiteMap(allUsers, allLevels, allCollections);
+    const sitemap = generateSiteMap(gameId, allUsers, allLevels, allCollections);
 
     res.statusCode = 200;
 

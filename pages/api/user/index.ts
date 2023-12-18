@@ -193,7 +193,7 @@ export default withAuth({
     if (code === 200) {
       for (const subscription of data as SubscriptionData[]) {
         if (subscription.status === 'active' && subscription.cancel_at_period_end === false) {
-          return res.status(400).json({ error: 'You must cancel all subscriptions before deleting your account. Contact help@pathology.gg if you are still experiencing issues' });
+          return res.status(400).json({ error: 'You must cancel all subscriptions before deleting your account. Contact help@thinky.gg if you are still experiencing issues' });
         }
       }
     }
