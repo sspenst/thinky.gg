@@ -60,6 +60,7 @@ export default function AdminPage({ queryUser, queryLevel, queryUserCommand, que
     { label: 'Refresh Play Attempts', command: AdminCommand.RefreshPlayAttempts },
     { label: 'Refresh Index Calculations', command: AdminCommand.RefreshIndexCalcs },
     { label: 'Switch isRanked', command: AdminCommand.SwitchIsRanked },
+    { label: 'Regen image', command: AdminCommand.RegenImage },
   ];
   const selectedUserCommandFromQuery = commandsUser.find((cmd) => cmd.command === queryUserCommand);
 

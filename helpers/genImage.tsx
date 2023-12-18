@@ -12,14 +12,18 @@ export default async function genImage(lvl: Level) {
   const browser = await puppeteer.launch({
     /// headless true
     headless: 'new',
+    // using chromium
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
+
   });
   const page = await browser.newPage();
 
   const game = getGameFromId(lvl.gameId);
 
   try {
-    await page.goto(game.baseUrl + '/level/' + lvl?.slug, { waitUntil: 'networkidle2' });
+    const url = game.baseUrl + '/level/' + lvl?.slug;
+
+    await page.goto(url, { waitUntil: 'networkidle2' });
 
     // Select the div element using its CSS selector
     const divElement = await page.$('#grid-' + lvl?._id.toString()); // Replace '#myDiv' with your actual selector

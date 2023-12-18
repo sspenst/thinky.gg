@@ -3,6 +3,7 @@ import AdminCommand from '@root/constants/adminCommand';
 import NotificationType from '@root/constants/notificationType';
 import Role from '@root/constants/role';
 import { ValidEnum, ValidObjectId, ValidType } from '@root/helpers/apiWrapper';
+import genImage from '@root/helpers/genImage';
 import { logger } from '@root/helpers/logger';
 import { createNewAdminMessageNotifications } from '@root/helpers/notificationHelper';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
@@ -56,6 +57,18 @@ export default withAuth({ POST: {
     case AdminCommand.RefreshPlayAttempts:
       await calcPlayAttempts(new Types.ObjectId(targetId as string));
       break;
+
+    case AdminCommand.RegenImage: {
+      const lvl = await LevelModel.findById<Level>(new Types.ObjectId(targetId as string));
+
+      if (lvl) {
+        await genImage(lvl);
+      } else {
+        throw new Error('Level not found');
+      }
+
+      break;
+    }
 
     case AdminCommand.SwitchIsRanked: {
       const levelId = new Types.ObjectId(targetId as string);
@@ -124,6 +137,8 @@ export default withAuth({ POST: {
     }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
+    logger.error(e);
+
     return res.status(500).json({
       error: e.message
     });
