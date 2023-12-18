@@ -101,7 +101,7 @@ export default function Home({
           tooltip='Resume your last play. Click to see your play history.'
         />
       </div>
-      <div className='w-full max-w-screen-2xl pt-4 flex flex-col gap-2'>
+      <div className='w-full max-w-screen-2xl pt-4 flex flex-col gap-4'>
         <div id='top-levels-of-month' className='flex justify-center'>
           <Link
             className='font-bold text-xl text-center hover:underline'
@@ -117,7 +117,7 @@ export default function Home({
           </Link>
         </div>
         {topLevelsThisMonth ?
-          <div className='flex flex-wrap justify-center gap-2'>
+          <div className='flex flex-wrap justify-center gap-4'>
             {topLevelsThisMonth.map((level) => {
               return (
                 <LevelCard
@@ -139,7 +139,7 @@ export default function Home({
         }
       </div>
       <div className='flex flex-col 2xl:flex-row justify-center max-w-screen-2xl'>
-        <div className='grow w-full px-4 h-min flex flex-col gap-2' id='latestLevelsSection'>
+        <div className='grow w-full px-4 h-min flex flex-col gap-4' id='latestLevelsSection'>
           <div id='latest-levels' className='flex justify-center'>
             <Link
               className='font-bold text-xl text-center hover:underline'
@@ -156,7 +156,7 @@ export default function Home({
             </Link>
           </div>
           {latestLevels ?
-            <div className='flex flex-wrap justify-center gap-2'>
+            <div className='flex flex-wrap justify-center gap-4'>
               {latestLevels.map((level) => {
                 return (
                   <LevelCard

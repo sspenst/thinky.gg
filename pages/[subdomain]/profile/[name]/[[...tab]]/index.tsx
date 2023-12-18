@@ -556,7 +556,7 @@ export default function ProfilePage({
         >
           Advanced search
         </Link>
-        <div className='flex flex-wrap justify-center gap-2'>
+        <div className='flex flex-wrap justify-center gap-4'>
           {enrichedLevels?.map((level) => {
             return (
               <LevelCard
