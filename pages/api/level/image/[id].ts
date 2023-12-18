@@ -1,32 +1,11 @@
-import mongoose, { QueryOptions } from 'mongoose';
+import mongoose from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidObjectIdPNG } from '../../../../helpers/apiWrapper';
-import getPngDataServer from '../../../../helpers/getPngDataServer';
-import { TimerUtil } from '../../../../helpers/getTs';
 import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
 import Image from '../../../../models/db/image';
 import Level from '../../../../models/db/level';
 import { ImageModel, LevelModel } from '../../../../models/mongoose';
-
-export async function upsertLevelImage(level: Level, queryOptions?: QueryOptions) {
-  const pngData = await getPngDataServer(level);
-
-  await ImageModel.findOneAndUpdate(
-    { documentId: level._id },
-    {
-      documentId: level._id,
-      image: pngData,
-      ts: TimerUtil.getTs(),
-    },
-    {
-      upsert: true,
-      ...queryOptions,
-    },
-  );
-
-  return pngData;
-}
 
 export default apiWrapper({ GET: {
   query: {
@@ -68,8 +47,10 @@ export default apiWrapper({ GET: {
 
       if (levelImage) {
         pngData = levelImage.image;
+        res.setHeader('Content-Length', pngData.length);
       } else {
-        pngData = await upsertLevelImage(level, { session: session });
+        logger.warn(`Image not found for level ${levelId}`);
+        throw new Error('Image not found');
       }
     });
     session.endSession();
@@ -81,15 +62,6 @@ export default apiWrapper({ GET: {
       error: `Error getting level image for id ${levelId}`,
     });
   }
-
-  // should never happen but need to do this because typescript
-  if (!pngData) {
-    return res.status(500).json({
-      error: `Error getting pngData for id ${levelId}`,
-    });
-  }
-
-  res.setHeader('Content-Length', pngData.length);
 
   return res.status(200).send(pngData);
 });

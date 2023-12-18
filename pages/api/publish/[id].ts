@@ -1,13 +1,10 @@
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import { GameId } from '@root/constants/GameId';
 import TileType from '@root/constants/tileType';
-import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import isFullAccount from '@root/helpers/isFullAccount';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
-import Discord from '../../../constants/discord';
 import { ValidObjectId } from '../../../helpers/apiWrapper';
-import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import { createNewLevelNotifications } from '../../../helpers/notificationHelper';
@@ -16,7 +13,7 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import User from '../../../models/db/user';
 import { LevelModel, RecordModel, StatModel, UserConfigModel } from '../../../models/mongoose';
-import { queueCalcCreatorCounts, queueCalcPlayAttempts, queueRefreshAchievements, queueRefreshIndexCalcs } from '../internal-jobs/worker';
+import { queueCalcCreatorCounts, queueCalcPlayAttempts, queueGenLevelImage, queueRefreshAchievements, queueRefreshIndexCalcs } from '../internal-jobs/worker';
 
 export async function checkPublishRestrictions(gameId: GameId, userId: Types.ObjectId) {
   // check last 24h
@@ -172,15 +169,14 @@ export default withAuth({ POST: {
         throw new Error('Level not found [RC]');
       }
 
-      const game = getGameFromId(level.gameId);
-
       await Promise.all([
         queueRefreshAchievements(level.gameId, req.user._id, [AchievementCategory.CREATOR], { session: session }),
         queueRefreshIndexCalcs(level._id, { session: session }),
         queueCalcPlayAttempts(level._id, { session: session }),
         queueCalcCreatorCounts(level.gameId, req.user._id, { session: session }),
         createNewLevelNotifications(level.gameId, new Types.ObjectId(req.userId), level._id, undefined, { session: session }),
-        queueDiscordWebhook(Discord.Levels, `**${game.displayName}** - **${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`, { session: session }),
+        queueGenLevelImage(level._id, true, { session: session }),
+
       ]);
     });
     session.endSession();
