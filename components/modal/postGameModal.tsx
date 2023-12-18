@@ -39,7 +39,7 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
   }
 
   const { data } = useHomePageData([HomepageDataType.RecommendedLevel], !isOpen || nextLevel !== undefined);
-  const [queryParams, setQueryParams] = useState({});
+  const [queryParams, setQueryParams] = useState<URLSearchParams>();
   const [recommendedLevel, setRecommendedLevel] = useState<EnrichedLevel>();
 
   useEffect(() => {
@@ -65,7 +65,7 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
     if (nextLevel) {
       return (
         <RecommendedLevel
-          hrefOverride={`/level/${nextLevel.slug}${Object.keys(queryParams).length !== 0 ? `?${queryParams}` : ''}`}
+          hrefOverride={`/level/${nextLevel.slug}${queryParams?.toString().length ?? 0 !== 0 ? `?${queryParams}` : ''}`}
           id='next-level'
           level={nextLevel}
           onClick={closeModal}
