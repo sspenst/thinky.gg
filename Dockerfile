@@ -11,11 +11,21 @@ ARG OFFLINE_BUILD=true
 
 RUN npm config set fund false
 
+# for puppet image gen
+RUN apt-get update \
+    && apt-get install -y chromium
+WORKDIR /pathology_app
+
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
+ENV PUPPETEER_EXECUTABLE_PATH /usr/bin/chromium
+
+
 # ts-node / tspath is needed for other scripts right now. module-alias is used for socket server production
 # ideally all would use package module alias and we would not need ts-node / tspath. but that's a TODO
 RUN npm install -g ts-node typescript module-alias
 
 COPY --chown=node:node package*.json ./
+
 RUN npm install --platform=linux --arch=x64 sharp
 RUN npm install --platform=linuxmusl
 RUN chown -R node:node node_modules/
