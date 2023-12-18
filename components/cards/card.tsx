@@ -12,7 +12,7 @@ export default function Card({ children, id, title, tooltip }: CardProps) {
   const tooltipId = `card-tooltip-${id}`;
 
   return (
-    <div className='flex flex-col justify-center rounded-lg border max-w-full'
+    <div className='flex flex-col justify-center rounded-lg border max-w-full h-fit'
       id={id}
       style={{
         backgroundColor: 'var(--bg-color-2)',

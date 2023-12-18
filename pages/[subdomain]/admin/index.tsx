@@ -1,6 +1,6 @@
 import { Menu, Transition } from '@headlessui/react';
 import FormattedUser from '@root/components/formatted/formattedUser';
-import RecommendedLevel from '@root/components/home/recommendedLevel';
+import LevelCard from '@root/components/level/info/levelCard';
 import MultiSelectLevel from '@root/components/page/multiSelectLevel';
 import MultiSelectUser from '@root/components/page/multiSelectUser';
 import Page from '@root/components/page/page';
@@ -220,8 +220,10 @@ export default function AdminPage({ queryUser, queryLevel, queryUserCommand, que
 
   return (
     <Page title='Admin Page'>
-      <div className='p-2'>
-        <h1 className='flex flex-col items-center justify-center text-3xl font-semibold p-3'>Admin Page</h1>
+      <div className='flex flex-col items-center gap-3 p-2'>
+        <h1 className='flex flex-col items-center justify-center text-3xl font-semibold p-3'>
+          Admin Page
+        </h1>
         <h2 className='flex flex-col items-center justify-center text-2xl font-medium'>
           User
         </h2>
@@ -308,105 +310,101 @@ export default function AdminPage({ queryUser, queryLevel, queryUserCommand, que
             Run
           </button>
         </div>
-        {levelPreview &&
-          <div className='flex flex-col items-center justify-center p-2 gap-2'>
-            <RecommendedLevel id='level' title='' level={levelPreview} />
-          </div>
-        }
-        <div className='flex flex-row items-center justify-center p-2 gap-2'>
+        <div className='p-4'>
+          <LevelCard id='admin' level={levelPreview} />
+        </div>
+        <div className='flex flex-row items-center justify-center gap-2'>
           {selectedLevel && (
             <div className='flex flex-col gap-2'>
               {display('Level', selectedLevel)}
             </div>
           )}
         </div>
-        <div className='flex flex-col gap-2 items-center'>
-          <h2 className='text-2xl font-medium'>
+        <h2 className='text-2xl font-medium'>
             Send Admin Message
-          </h2>
-          <TextareaAutosize
-            className='bg-inherit block py-1 -mt-2 w-96 max-w-full border-b border-neutral-500 disabled:text-neutral-500 transition resize-none placeholder:text-neutral-500 focus:outline-0 rounded-none focus:border-black focus:dark:border-white'
-            onChange={(e) => setAdminMessage(e.currentTarget.value)}
-            placeholder='Admin message...'
-            value={adminMessage}
-          />
-          <TextareaAutosize
-            className='bg-inherit block py-1 -mt-2 w-96 max-w-full border-b border-neutral-500 disabled:text-neutral-500 transition resize-none placeholder:text-neutral-500 focus:outline-0 rounded-none focus:border-black focus:dark:border-white'
-            onChange={(e) => setAdminHref(e.currentTarget.value)}
-            placeholder='Href (eg: "/settings/pro")...'
-            value={adminHref}
-          />
-          <div className='flex gap-2 items-center'>
-            <span>To:</span>
-            <Menu as='div' className='relative inline-block text-left'>
-              <Menu.Button
-                aria-expanded='true'
-                aria-haspopup='true'
-                className='flex items-center w-full justify-center rounded-md bg-white pl-2 p-1 text-sm font-medium text-black gap-1 h-8 shadow-md border hover:opacity-70'
-                id='menu-button'
-                style={{
-                  borderColor: 'var(--bg-color-3)',
-                }}
-              >
-                {adminMessageRole ?? 'All'}
-                <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
-                  <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
-                </svg>
-              </Menu.Button>
-              <Transition
-                as={Fragment}
-                enter='transition ease-out duration-100'
-                enterFrom='transform opacity-0 scale-95'
-                enterTo='transform opacity-100 scale-100'
-                leave='transition ease-in duration-75'
-                leaveFrom='transform opacity-100 scale-100'
-                leaveTo='transform opacity-0 scale-95'
-              >
-                <Menu.Items className='absolute right-0 z-10 mt-1 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none border-color-1'>
-                  <div>
-                    {Object.values(Role).map(role => (
-                      <Menu.Item key={`role-${role}`}>
-                        {({ active }) => (
-                          <button
-                            className='text-black block p-1 text-sm w-28 flex items-center gap-1 justify-center'
-                            onClick={() => setAdminMessageRole(role)}
-                            role='menuitem'
-                            style= {{
-                              backgroundColor: active ? 'rgb(200, 200, 200)' : '',
-                            }}
-                          >
-                            {role}
-                          </button>
-                        )}
-                      </Menu.Item>
-                    ))}
-                    <Menu.Item key='role-all'>
+        </h2>
+        <TextareaAutosize
+          className='bg-inherit block py-1 -mt-2 w-96 max-w-full border-b border-neutral-500 disabled:text-neutral-500 transition resize-none placeholder:text-neutral-500 focus:outline-0 rounded-none focus:border-black focus:dark:border-white'
+          onChange={(e) => setAdminMessage(e.currentTarget.value)}
+          placeholder='Admin message...'
+          value={adminMessage}
+        />
+        <TextareaAutosize
+          className='bg-inherit block py-1 -mt-2 w-96 max-w-full border-b border-neutral-500 disabled:text-neutral-500 transition resize-none placeholder:text-neutral-500 focus:outline-0 rounded-none focus:border-black focus:dark:border-white'
+          onChange={(e) => setAdminHref(e.currentTarget.value)}
+          placeholder='Href (eg: "/settings/pro")...'
+          value={adminHref}
+        />
+        <div className='flex gap-2 items-center'>
+          <span>To:</span>
+          <Menu as='div' className='relative inline-block text-left'>
+            <Menu.Button
+              aria-expanded='true'
+              aria-haspopup='true'
+              className='flex items-center w-full justify-center rounded-md bg-white pl-2 p-1 text-sm font-medium text-black gap-1 h-8 shadow-md border hover:opacity-70'
+              id='menu-button'
+              style={{
+                borderColor: 'var(--bg-color-3)',
+              }}
+            >
+              {adminMessageRole ?? 'All'}
+              <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
+                <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
+              </svg>
+            </Menu.Button>
+            <Transition
+              as={Fragment}
+              enter='transition ease-out duration-100'
+              enterFrom='transform opacity-0 scale-95'
+              enterTo='transform opacity-100 scale-100'
+              leave='transition ease-in duration-75'
+              leaveFrom='transform opacity-100 scale-100'
+              leaveTo='transform opacity-0 scale-95'
+            >
+              <Menu.Items className='absolute right-0 z-10 mt-1 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none border-color-1'>
+                <div>
+                  {Object.values(Role).map(role => (
+                    <Menu.Item key={`role-${role}`}>
                       {({ active }) => (
                         <button
                           className='text-black block p-1 text-sm w-28 flex items-center gap-1 justify-center'
-                          onClick={() => setAdminMessageRole(null)}
+                          onClick={() => setAdminMessageRole(role)}
                           role='menuitem'
                           style= {{
                             backgroundColor: active ? 'rgb(200, 200, 200)' : '',
                           }}
                         >
-                          All
+                          {role}
                         </button>
                       )}
                     </Menu.Item>
-                  </div>
-                </Menu.Items>
-              </Transition>
-            </Menu>
-          </div>
-          <button
-            className={`bg-blue-500 hover:enabled:bg-blue-700 text-white font-bold py-2 px-4 rounded ${runningCommand ? 'bg-gray-500 cursor-not-allowed' : ''}`}
-            disabled={runningCommand}
-            onClick={runCommandAdmin}
-          >
-            Run
-          </button>
+                  ))}
+                  <Menu.Item key='role-all'>
+                    {({ active }) => (
+                      <button
+                        className='text-black block p-1 text-sm w-28 flex items-center gap-1 justify-center'
+                        onClick={() => setAdminMessageRole(null)}
+                        role='menuitem'
+                        style= {{
+                          backgroundColor: active ? 'rgb(200, 200, 200)' : '',
+                        }}
+                      >
+                        All
+                      </button>
+                    )}
+                  </Menu.Item>
+                </div>
+              </Menu.Items>
+            </Transition>
+          </Menu>
         </div>
+        <button
+          className={`bg-blue-500 hover:enabled:bg-blue-700 text-white font-bold py-2 px-4 rounded ${runningCommand ? 'bg-gray-500 cursor-not-allowed' : ''}`}
+          disabled={runningCommand}
+          onClick={runCommandAdmin}
+        >
+          Run
+        </button>
       </div>
     </Page>
   );

@@ -9,7 +9,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import Card from '../cards/card';
 import ChapterSelectCard from '../cards/chapterSelectCard';
 import { getDifficultyFromValue } from '../formatted/formattedDifficulty';
-import RecommendedLevel from '../home/recommendedLevel';
+import LevelCardWithTitle from '../level/info/levelCardWithTitle';
 import FormattedLevelReviews from '../level/reviews/formattedLevelReviews';
 import ShareBar from '../social/shareBar';
 import Modal from '.';
@@ -66,8 +66,8 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
   function nextActionCard() {
     if (nextLevel) {
       return (
-        <RecommendedLevel
-          hrefOverride={`/level/${nextLevel.slug}${Object.keys(queryParams).length !== 0 ? `?${queryParams}` : ''}`}
+        <LevelCardWithTitle
+          href={`/level/${nextLevel.slug}${Object.keys(queryParams).length !== 0 ? `?${queryParams}` : ''}`}
           id='next-level'
           level={nextLevel}
           onClick={closeModal}
@@ -87,7 +87,7 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
     }
 
     return (
-      <RecommendedLevel
+      <LevelCardWithTitle
         id='next-level'
         level={recommendedLevel}
         onClick={closeModal}

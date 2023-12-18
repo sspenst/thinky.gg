@@ -17,9 +17,9 @@ import ChapterSelectCard from '../cards/chapterSelectCard';
 import LoadingCard from '../cards/loadingCard';
 import SelectCard from '../cards/selectCard';
 import LevelCard from '../level/info/levelCard';
+import LevelCardWithTitle from '../level/info/levelCardWithTitle';
 import FormattedReview from '../level/reviews/formattedReview';
 import LoadingSpinner from '../page/loadingSpinner';
-import RecommendedLevel from './recommendedLevel';
 
 interface HomeProps {
   lastLevelPlayed?: EnrichedLevel | null;
@@ -55,7 +55,7 @@ export default function Home({
       </div>
     }
     <div className='flex flex-col items-center gap-6 m-6'>
-      <div className='flex flex-wrap justify-center items-center gap-4 max-w-full'>
+      <div className='flex flex-wrap justify-center gap-4 max-w-full'>
         {userConfig !== undefined && !userConfig?.tutorialCompletedAt &&
           <Card id='tutorial' title='Tutorial'>
             <SelectCard option={{
@@ -73,19 +73,19 @@ export default function Home({
             </div>
           </Card>
         }
-        <RecommendedLevel
+        <LevelCardWithTitle
           id='level-of-day'
           level={levelOfDay}
           title='Level of the Day'
           tooltip={'Every day there is a new level of the day. Difficulty increases throughout the week!'}
         />
-        <RecommendedLevel
+        <LevelCardWithTitle
           id='recommended-level'
           level={recommendedLevel}
           title='Try this Level'
           tooltip={'This is a quality level with similar difficulty to levels you\'ve played recently.'}
         />
-        <RecommendedLevel
+        <LevelCardWithTitle
           id='last-level-played'
           level={lastLevelPlayed}
           title={
