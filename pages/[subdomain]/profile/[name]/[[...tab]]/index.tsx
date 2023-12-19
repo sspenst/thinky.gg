@@ -1,5 +1,5 @@
+import LevelCard from '@root/components/cards/levelCard';
 import FormattedDate from '@root/components/formatted/formattedDate';
-import LevelCard from '@root/components/level/info/levelCard';
 import Solved from '@root/components/level/info/solved';
 import LoadingSpinner from '@root/components/page/loadingSpinner';
 import RoleIcons from '@root/components/page/roleIcons';

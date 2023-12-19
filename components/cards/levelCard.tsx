@@ -2,14 +2,15 @@ import getProfileSlug from '@root/helpers/getProfileSlug';
 import { EnrichedLevel } from '@root/models/db/level';
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
-import Dimensions from '../../../constants/dimensions';
-import getPngDataClient from '../../../helpers/getPngDataClient';
-import FormattedDifficulty from '../../formatted/formattedDifficulty';
-import FormattedUser from '../../formatted/formattedUser';
-import StyledTooltip from '../../page/styledTooltip';
-import ProfileAvatar from '../../profile/profileAvatar';
-import LevelDropdown from './levelDropdown';
-import Solved from './solved';
+import Dimensions from '../../constants/dimensions';
+import getPngDataClient from '../../helpers/getPngDataClient';
+import FormattedDifficulty from '../formatted/formattedDifficulty';
+import FormattedUser from '../formatted/formattedUser';
+import LevelDropdown from '../level/info/levelDropdown';
+import Solved from '../level/info/solved';
+import StyledTooltip from '../page/styledTooltip';
+import ProfileAvatar from '../profile/profileAvatar';
+import LoadingCard from './loadingCard';
 
 interface LevelCardProps {
   href?: string;
@@ -28,7 +29,10 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
     }
   }, [level]);
 
-  // TODO: skeleton when level is undefined
+  if (level === undefined) {
+    return <LoadingCard />;
+  }
+
   if (!level?.userId) {
     return null;
   }
@@ -48,7 +52,7 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
   const user = level.userId;
 
   return (
-    <div className='pb-3 rounded-lg select-card flex flex-col gap-2 w-64 max-w-full h-fit hover-bg-2 transition p-1'>
+    <div className='pb-3 rounded-lg flex flex-col gap-2 w-64 max-w-full h-fit hover-bg-2 transition p-1'>
       <Link
         className='border-2 border-color-2 background rounded-md bg-cover bg-center w-full relative overflow-hidden'
         href={href ?? `/level/${level.slug}`}
