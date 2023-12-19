@@ -1,11 +1,9 @@
-import Dimensions from '@root/constants/dimensions';
 import { CollectionType } from '@root/models/constants/collection';
 import Collection, { EnrichedCollection } from '@root/models/db/collection';
 import { EnrichedLevel } from '@root/models/db/level';
-import SelectOptionStats from '@root/models/selectOptionStats';
 import classNames from 'classnames';
 import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
-import SelectCard from '../cards/selectCard';
+import LevelCard from '../cards/levelCard';
 import LoadingSpinner from '../page/loadingSpinner';
 
 interface Props {
@@ -189,17 +187,12 @@ export default function CollectionScrollList({ collection, id, isHidden, onLoadi
         const href = '/level/' + levelInCollection.slug + (collection.type !== CollectionType.InMemory ? '?cid=' + collection._id.toString() : '');
 
         return (
-          <div className={classNames({ 'bg-3': isCurrentLevel }, { 'rounded-xl': id === 'modal' })} id={anchorId} key={anchorId}>
-            <SelectCard option={{
-              author: levelInCollection.userId?.name,
-              height: Dimensions.OptionHeightMedium,
-              href: href,
-              id: `${id}-${levelInCollection._id.toString()}`,
-              level: levelInCollection,
-              stats: new SelectOptionStats(levelInCollection.leastMoves, (levelInCollection as EnrichedLevel)?.userMoves),
-              text: levelInCollection.name,
-              width: 216,
-            }} />
+          <div className={classNames('pt-2 px-2', { 'bg-2': isCurrentLevel }, { 'rounded-xl': id === 'modal' })} id={anchorId} key={anchorId}>
+            <LevelCard
+              href={href}
+              id={id}
+              level={levelInCollection}
+            />
           </div>
         );
       })}

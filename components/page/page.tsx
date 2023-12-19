@@ -76,7 +76,7 @@ export default function Page({
         }}>
           {isNavOnPage && <Nav />}
           <div
-            className={classNames('flex flex-col', { 'ml-60': isNavOnPage })}
+            className={classNames('flex flex-col gap-4', { 'ml-60': isNavOnPage })}
             style={{
               maxWidth: !isNavOnPage ? '100%' : 'calc(100% - 240px)',
               width: !isNavOnPage ? '100%' : 'calc(100% - 240px)',

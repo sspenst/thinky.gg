@@ -118,15 +118,18 @@ export default function Home({
           </div>
           <div className='flex flex-wrap justify-center gap-4'>
             {topLevelsThisMonth ?
-              topLevelsThisMonth.map((level) => {
-                return (
-                  <LevelCard
-                    id='top-level-this-month'
-                    key={level._id.toString()}
-                    level={level}
-                  />
-                );
-              })
+              topLevelsThisMonth.length === 0 ?
+                <div className='text-center italic p-3'>No levels found</div>
+                :
+                topLevelsThisMonth.map((level) => {
+                  return (
+                    <LevelCard
+                      id='top-level-this-month'
+                      key={level._id.toString()}
+                      level={level}
+                    />
+                  );
+                })
               :
               <>
                 <LoadingCard />
@@ -157,15 +160,18 @@ export default function Home({
             </div>
             <div className='flex flex-wrap justify-center gap-4'>
               {latestLevels ?
-                latestLevels.map((level) => {
-                  return (
-                    <LevelCard
-                      id='latest-unsolved'
-                      key={level._id.toString()}
-                      level={level}
-                    />
-                  );
-                })
+                latestLevels.length === 0 ?
+                  <div className='text-center italic p-3'>No levels found</div>
+                  :
+                  latestLevels.map((level) => {
+                    return (
+                      <LevelCard
+                        id='latest-unsolved'
+                        key={level._id.toString()}
+                        level={level}
+                      />
+                    );
+                  })
                 :
                 <>
                   <LoadingCard />
