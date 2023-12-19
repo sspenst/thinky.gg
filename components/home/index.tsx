@@ -1,4 +1,3 @@
-import Dimensions from '@root/constants/dimensions';
 import StatFilter from '@root/constants/statFilter';
 import TourPath from '@root/constants/tourPath';
 import isFullAccount from '@root/helpers/isFullAccount';
@@ -16,7 +15,6 @@ import User from '../../models/db/user';
 import Card from '../cards/card';
 import ChapterSelectCard from '../cards/chapterSelectCard';
 import LoadingCard from '../cards/loadingCard';
-import SelectCard from '../cards/selectCard';
 import LevelCard from '../level/info/levelCard';
 import LevelCardWithTitle from '../level/info/levelCardWithTitle';
 import FormattedReview from '../level/reviews/formattedReview';
@@ -42,6 +40,32 @@ export default function Home({
   const { deviceInfo, game, userConfig } = useContext(AppContext);
   const tour = useTour(TourPath.HOME);
 
+  function getSuggestedAction() {
+    // suggest the tutorial if it hasn't been completed
+    if (!userConfig?.tutorialCompletedAt) {
+      if (game.disableTutorial) {
+        return null;
+      }
+
+      return (
+        <Card id='campaign' title={game.displayName + ' Tutorial'}>
+          <ChapterSelectCard chapter={0} />
+        </Card>
+      );
+    }
+
+    // next suggest the next campaign chapter
+    if (game.disableCampaign) {
+      return null;
+    }
+
+    return (
+      <Card id='campaign' title={game.displayName + ' Official Campaign'}>
+        <ChapterSelectCard chapter={userConfig?.chapterUnlocked ?? 1} href='/play' />
+      </Card>
+    );
+  }
+
   return (<>
     {tour}
     {user && !isFullAccount(user) &&
@@ -55,22 +79,8 @@ export default function Home({
     }
     <div className='flex justify-center m-6'>
       <div className='flex flex-col items-center gap-8 w-full max-w-screen-2xl'>
-        <div className='flex flex-wrap justify-center gap-8 max-w-full'>
-          {userConfig !== undefined && !userConfig?.tutorialCompletedAt &&
-          <Card id='tutorial' title='Tutorial'>
-            <SelectCard option={{
-              height: Dimensions.OptionHeightLarge,
-              href: '/tutorial',
-              id: 'tutorial',
-              text: <span className='text-3xl font-bold'>Start</span>,
-            }} />
-          </Card>
-          }
-          {!game.disableCampaign && user &&
-            <Card id='campaign' title={game.displayName + ' Official Campaign'}>
-              <ChapterSelectCard chapter={user.config?.chapterUnlocked ?? 1} href='/play' />
-            </Card>
-          }
+        <div className='flex flex-wrap justify-center gap-6 max-w-full'>
+          {getSuggestedAction()}
           <LevelCardWithTitle
             id='level-of-day'
             level={levelOfDay}
