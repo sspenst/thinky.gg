@@ -1,7 +1,10 @@
+import { AppContext } from '@root/contexts/appContext';
 import getProfileSlug from '@root/helpers/getProfileSlug';
 import { EnrichedLevel } from '@root/models/db/level';
+import User from '@root/models/db/user';
+import { Types } from 'mongoose';
 import Link from 'next/link';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import getPngDataClient from '../../helpers/getPngDataClient';
 import FormattedDifficulty from '../formatted/formattedDifficulty';
@@ -22,6 +25,7 @@ interface LevelCardProps {
 
 export default function LevelCard({ href, id, level, onClick }: LevelCardProps) {
   const [backgroundImage, setBackgroundImage] = useState<string>();
+  const { user: reqUser } = useContext(AppContext);
 
   useEffect(() => {
     if (level && level.data) {
@@ -33,7 +37,7 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
     return <LoadingCard />;
   }
 
-  if (!level?.userId) {
+  if (!level) {
     return null;
   }
 
@@ -49,7 +53,33 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
     return 'var(--color-incomplete)';
   }
 
-  const user = level.userId;
+  /**
+   * get User object from level userId property (which can either be a User or an ObjectId)
+   * @returns the full User object if possible, otherwise null
+   */
+  function getUser() {
+    if (!level || !level.userId) {
+      return null;
+    }
+
+    // user is an ObjectId
+    if (!Object.prototype.hasOwnProperty.call(level.userId, 'name')) {
+      // try to get user from reqUser
+      if (reqUser && reqUser._id.toString() === (level.userId as Types.ObjectId).toString()) {
+        return reqUser;
+      } else {
+        return null;
+      }
+    }
+
+    return level.userId as User;
+  }
+
+  const user = getUser();
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className='pb-3 rounded-lg flex flex-col gap-2 w-64 max-w-full h-fit hover-bg-2 transition p-1'>
@@ -81,7 +111,7 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
         }
       </Link>
       <div className='flex justify-between'>
-        <div className='flex gap-3'>
+        <div className='flex gap-3 overflow-hidden'>
           <Link className='h-fit' href={getProfileSlug(user)} passHref>
             <ProfileAvatar user={user} />
           </Link>

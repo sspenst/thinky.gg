@@ -1,3 +1,4 @@
+import LevelCard from '@root/components/cards/levelCard';
 import FormattedUser from '@root/components/formatted/formattedUser';
 import StatFilter from '@root/constants/statFilter';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
@@ -8,7 +9,6 @@ import Link from 'next/link';
 import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useContext, useState } from 'react';
-import Select from '../../../../components/cards/select';
 import SelectFilter from '../../../../components/cards/selectFilter';
 import FormattedAuthorNote from '../../../../components/formatted/formattedAuthorNote';
 import LinkInfo from '../../../../components/formatted/linkInfo';
@@ -230,7 +230,22 @@ export default function CollectionPage({ collection }: CollectionProps) {
             </Link>
           </div>
         }
-        <Select options={getFilteredOptions()} prefetch={false} />
+        <div className='flex flex-wrap justify-center gap-4'>
+          {getFilteredOptions().map(option => {
+            if (!option.level) {
+              return null;
+            }
+
+            return (
+              <LevelCard
+                href={`/level/${option.level.slug}?cid=${collection._id}`}
+                id='collection'
+                key={option.id}
+                level={option.level}
+              />
+            );
+          })}
+        </div>
       </div>
     </Page>
   </>);

@@ -1,12 +1,9 @@
 import Link from 'next/link';
 import React, { useState } from 'react';
-import Dimensions from '../../constants/dimensions';
 import TimeRange from '../../constants/timeRange';
 import Level from '../../models/db/level';
-import SelectOption from '../../models/selectOption';
-import SelectOptionStats from '../../models/selectOptionStats';
 import { CreatePageProps } from '../../pages/[subdomain]/create';
-import SelectCard from '../cards/selectCard';
+import LevelCard from '../cards/levelCard';
 import DeleteLevelModal from '../modal/deleteLevelModal';
 import EditLevelModal from '../modal/editLevelModal';
 import PublishLevelModal from '../modal/publishLevelModal';
@@ -50,23 +47,17 @@ export default function CreateHome({ levels, user }: CreatePageProps) {
           Your Collections
         </Link>
       </div>
-      <div className='flex flex-wrap justify-center gap-y-4'>
+      <div className='flex flex-wrap justify-center gap-4'>
         {levels.map(level => {
           return (
             <div
-              className='flex flex-col'
+              className='flex flex-col gap-4'
               key={`draft-level-${level._id.toString()}`}
             >
-              <SelectCard
-                option={{
-                  hideDifficulty: true,
-                  height: Dimensions.OptionHeightMedium,
-                  href: `/edit/${level._id.toString()}`,
-                  id: level._id.toString(),
-                  level: level,
-                  stats: level.leastMoves ? new SelectOptionStats(level.leastMoves, level.leastMoves) : undefined,
-                  text: level.name,
-                } as SelectOption}
+              <LevelCard
+                href={`/edit/${level._id.toString()}`}
+                id='draft-level'
+                level={level}
               />
               <div className='flex flex-row gap-4 justify-center'>
                 {level.leastMoves ?
