@@ -14,9 +14,9 @@ import Review from '../../models/db/review';
 import User from '../../models/db/user';
 import Card from '../cards/card';
 import ChapterSelectCard from '../cards/chapterSelectCard';
+import LevelCard from '../cards/levelCard';
+import LevelCardWithTitle from '../cards/levelCardWithTitle';
 import LoadingCard from '../cards/loadingCard';
-import LevelCard from '../level/info/levelCard';
-import LevelCardWithTitle from '../level/info/levelCardWithTitle';
 import FormattedReview from '../level/reviews/formattedReview';
 import LoadingSpinner from '../page/loadingSpinner';
 
@@ -41,6 +41,10 @@ export default function Home({
   const tour = useTour(TourPath.HOME);
 
   function getSuggestedAction() {
+    if (userConfig === undefined) {
+      return null;
+    }
+
     // suggest the tutorial if it hasn't been completed
     if (!userConfig?.tutorialCompletedAt) {
       if (game.disableTutorial) {
@@ -112,9 +116,9 @@ export default function Home({
               Top Levels this Month
             </Link>
           </div>
-          {topLevelsThisMonth ?
-            <div className='flex flex-wrap justify-center gap-4'>
-              {topLevelsThisMonth.map((level) => {
+          <div className='flex flex-wrap justify-center gap-4'>
+            {topLevelsThisMonth ?
+              topLevelsThisMonth.map((level) => {
                 return (
                   <LevelCard
                     id='top-level-this-month'
@@ -122,17 +126,17 @@ export default function Home({
                     level={level}
                   />
                 );
-              })}
-            </div>
-            :
-            <div className='flex flex-wrap justify-center'>
-              <LoadingCard />
-              <LoadingCard />
-              <LoadingCard />
-              <LoadingCard />
-              <LoadingCard />
-            </div>
-          }
+              })
+              :
+              <>
+                <LoadingCard />
+                <LoadingCard />
+                <LoadingCard />
+                <LoadingCard />
+                <LoadingCard />
+              </>
+            }
+          </div>
         </div>
         <div className='flex flex-col lg:flex-row items-center lg:items-start gap-8 w-full'>
           <div className='lg:w-7/12 h-min flex flex-col gap-4 max-w-full' id='latestLevelsSection'>
@@ -151,9 +155,9 @@ export default function Home({
                 Latest Unsolved Levels
               </Link>
             </div>
-            {latestLevels ?
-              <div className='flex flex-wrap justify-center gap-4'>
-                {latestLevels.map((level) => {
+            <div className='flex flex-wrap justify-center gap-4'>
+              {latestLevels ?
+                latestLevels.map((level) => {
                   return (
                     <LevelCard
                       id='latest-unsolved'
@@ -161,27 +165,27 @@ export default function Home({
                       level={level}
                     />
                   );
-                })}
-              </div>
-              :
-              <div className='flex flex-wrap justify-center'>
-                <LoadingCard />
-                <LoadingCard />
-                <LoadingCard />
-                <LoadingCard />
-                <LoadingCard />
-                <LoadingCard />
-                <LoadingCard />
-                <LoadingCard />
-                <LoadingCard />
-                <LoadingCard />
-                <LoadingCard />
-                <LoadingCard />
-                <LoadingCard />
-                <LoadingCard />
-                <LoadingCard />
-              </div>
-            }
+                })
+                :
+                <>
+                  <LoadingCard />
+                  <LoadingCard />
+                  <LoadingCard />
+                  <LoadingCard />
+                  <LoadingCard />
+                  <LoadingCard />
+                  <LoadingCard />
+                  <LoadingCard />
+                  <LoadingCard />
+                  <LoadingCard />
+                  <LoadingCard />
+                  <LoadingCard />
+                  <LoadingCard />
+                  <LoadingCard />
+                  <LoadingCard />
+                </>
+              }
+            </div>
           </div>
           <div id='latest-reviews' className='flex flex-col gap-4 lg:w-5/12 px-4 max-w-full'>
             <h2 className='font-bold text-xl text-center'>

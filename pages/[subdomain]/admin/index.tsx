@@ -1,6 +1,6 @@
 import { Menu, Transition } from '@headlessui/react';
+import LevelCard from '@root/components/cards/levelCard';
 import FormattedUser from '@root/components/formatted/formattedUser';
-import LevelCard from '@root/components/level/info/levelCard';
 import MultiSelectLevel from '@root/components/page/multiSelectLevel';
 import MultiSelectUser from '@root/components/page/multiSelectUser';
 import Page from '@root/components/page/page';

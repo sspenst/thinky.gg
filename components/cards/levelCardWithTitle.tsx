@@ -1,12 +1,12 @@
 import React from 'react';
-import { EnrichedLevel } from '../../../models/db/level';
-import StyledTooltip from '../../page/styledTooltip';
+import { EnrichedLevel } from '../../models/db/level';
+import StyledTooltip from '../page/styledTooltip';
 import LevelCard from './levelCard';
 
 interface LevelCardWithTitleProps {
   href?: string;
   id: string;
-  level?: EnrichedLevel | null;
+  level: EnrichedLevel | null | undefined;
   onClick?: () => void;
   title: React.ReactNode;
   tooltip?: string;
