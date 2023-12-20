@@ -113,8 +113,8 @@ export default function CampaignPage({ campaign, enrichedCollections }: Campaign
       folders={[new LinkInfo('Campaigns', '/campaigns')]}
       title={campaign.name}
     >
-      <>
-        <h1 className='text-2xl text-center pb-1 pt-3'>
+      <div className='p-4 flex flex-col gap-4'>
+        <h1 className='text-3xl font-bold text-center'>
           {campaign.name}
         </h1>
         {!campaign.authorNote ? null :
@@ -123,7 +123,7 @@ export default function CampaignPage({ campaign, enrichedCollections }: Campaign
           </div>
         }
         <Select options={getOptions()} prefetch={false} />
-      </>
+      </div>
     </Page>
   );
 }

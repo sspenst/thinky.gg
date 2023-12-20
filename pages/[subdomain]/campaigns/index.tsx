@@ -251,14 +251,14 @@ export default function Campaigns({ enrichedCampaigns }: CampaignsProps) {
 
   return (
     <Page title={'Campaigns'}>
-      <div className='text-center p-4'>
-        <h1 className='text-2xl pb-2'>
+      <div className='text-center p-4 flex flex-col gap-4'>
+        <h1 className='text-3xl font-bold'>
           Campaigns
         </h1>
         <div className='italic'>
           Created by the {game.displayName} community.
         </div>
-        <div className='flex flex-wrap justify-center pt-4'>
+        <div className='flex flex-wrap justify-center gap-4'>
           {getCampaigns()}
         </div>
       </div>

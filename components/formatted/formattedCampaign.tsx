@@ -1,12 +1,10 @@
 import Link from 'next/link';
 import React, { useCallback } from 'react';
-import Dimensions from '../../constants/dimensions';
 import { EnrichedCollection } from '../../models/db/collection';
 import { EnrichedLevel } from '../../models/db/level';
-import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
 import FilterButton from '../buttons/filterButton';
-import SelectCard from '../cards/selectCard';
+import LevelCard from '../cards/levelCard';
 
 function getCompleteIcon(complete: boolean) {
   if (complete) {
@@ -61,8 +59,6 @@ export default function FormattedCampaign({
 
   const getLevelOptions = useCallback((enrichedCollection: EnrichedCollection) => {
     const levelOptions: JSX.Element[] = [];
-    let disabled = false;
-    let i = 0;
 
     for (const level of enrichedCollection.levels as EnrichedLevel[]) {
       if (filter === 'HIDE_SOLVED' && level.userMoves === level.leastMoves) {
@@ -70,34 +66,14 @@ export default function FormattedCampaign({
       }
 
       levelOptions.push(
-        <div className='flex flex-col w-60' key={`collection-${level._id.toString()}`}>
-          <div className='flex items-center justify-center' id={'level-selectcard-' + i++}>
-            <SelectCard
-              option={{
-                author: level.userId.name,
-                disabled: disabled,
-                height: Dimensions.OptionHeightMedium,
-                hideDifficulty: true,
-                href: `/level/${level.slug}?cid=${enrichedCollection._id}&${levelHrefQuery}`,
-                id: level._id.toString(),
-                level: level,
-                stats: new SelectOptionStats(level.leastMoves, level.userMoves),
-                text: level.name,
-              } as SelectOption}
-            />
-          </div>
-          {disabled &&
-            <div className='px-4 italic text-center'>
-              {'Solve the previous level'}
-            </div>
-          }
+        <div className='flex items-center justify-center' key={`campaign-level-${level._id.toString()}`}>
+          <LevelCard
+            href={`/level/${level.slug}?cid=${enrichedCollection._id}&${levelHrefQuery}`}
+            id='campaign'
+            level={level}
+          />
         </div>
       );
-
-      // in a themed collection, levels must be solved sequentially
-      if (enrichedCollection.isThemed && level.userMoves !== level.leastMoves) {
-        disabled = true;
-      }
     }
 
     return levelOptions;
@@ -123,10 +99,10 @@ export default function FormattedCampaign({
 
       options.push(
         <div
-          className='text-center mt-2 mb-4'
+          className='text-center flex flex-col gap-2'
           key={`collection-${enrichedCollection._id.toString()}`}
         >
-          <div className='text-2xl font-bold mb-1'>
+          <div className='text-2xl font-bold'>
             {enrichedCollection.name}
           </div>
           {lockedStr ?
@@ -135,13 +111,13 @@ export default function FormattedCampaign({
             </div>
             :
             <>
-              <div className='text-lg font-bold' style={{
+              <div className='text-lg font-bold mb-4' style={{
                 color: stats.getColor(),
                 textShadow: '1px 1px black',
               }}>
                 {stats.getText()}
               </div>
-              <div className='flex flex-wrap justify-center'>
+              <div className='flex flex-wrap justify-center items-start gap-4'>
                 {getLevelOptions(enrichedCollection)}
               </div>
             </>
@@ -211,17 +187,17 @@ export default function FormattedCampaign({
         </div>
       }
     </div>
-    <div>
-      <div className='text-center mb-3'>
-        <FilterButton
-          element={<span className='text-base'>{filter === 'HIDE_SOLVED' ? 'Show All' : 'Hide Solved'}</span>}
-          first
-          last
-          onClick={() => setFilter(filter === 'HIDE_SOLVED' ? 'SHOW_ALL' : 'HIDE_SOLVED')}
-          selected={filter === 'HIDE_SOLVED'}
-          value={filter}
-        />
-      </div>
+    <div className='text-center mb-6'>
+      <FilterButton
+        element={<span className='text-base'>{filter === 'HIDE_SOLVED' ? 'Show All' : 'Hide Solved'}</span>}
+        first
+        last
+        onClick={() => setFilter(filter === 'HIDE_SOLVED' ? 'SHOW_ALL' : 'HIDE_SOLVED')}
+        selected={filter === 'HIDE_SOLVED'}
+        value={filter}
+      />
+    </div>
+    <div className='flex flex-col gap-12'>
       {getOptions()}
     </div>
   </>);

@@ -1,3 +1,4 @@
+import LevelCard from '@root/components/cards/levelCard';
 import Grid from '@root/components/level/grid';
 import MatchResults from '@root/components/multiplayer/matchResults';
 import { MatchGameState } from '@root/helpers/gameStateHelpers';
@@ -11,7 +12,6 @@ import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { io } from 'socket.io-client';
-import SelectCard from '../../../../components/cards/selectCard';
 import FormattedUser from '../../../../components/formatted/formattedUser';
 import Game from '../../../../components/level/game';
 import MatchChart from '../../../../components/multiplayer/matchChart';
@@ -26,7 +26,6 @@ import { MatchAction, MatchLogDataGameRecap, MatchLogDataLevelComplete, MatchLog
 import Control from '../../../../models/control';
 import Level from '../../../../models/db/level';
 import MultiplayerMatch from '../../../../models/db/multiplayerMatch';
-import SelectOption from '../../../../models/selectOption';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
@@ -361,21 +360,14 @@ export default function Match() {
     }
 
     levelResults.push(
-      <div className='flex justify-center items-center flex-wrap' key={`level-result-${level._id.toString()}`}>
-        <div className='flex flex-row items-center'>
+      <div className='flex justify-center items-center flex-wrap gap-2' key={`level-result-${level._id.toString()}`}>
+        <div className='flex flex-row items-center gap-4'>
           <div className='text-2xl font-bold w-10 text-right'>
             {i + 1}.
           </div>
-          <SelectCard
-            option={{
-              author: level.userId?.name,
-              hideDifficulty: false,
-              height: Dimensions.OptionHeightLarge,
-              href: `/level/${level.slug}`,
-              id: level._id.toString(),
-              level: level,
-              text: level.name,
-            } as SelectOption}
+          <LevelCard
+            id='match'
+            level={level}
           />
         </div>
         <div className='flex flex-col gap-2 justify-left truncate'>
@@ -472,7 +464,7 @@ export default function Match() {
             <div className='w-full max-w-screen-lg h-96'>
               <MatchChart match={match} />
             </div>
-            <div className='flex flex-col justify-center gap-2 max-w-full'>
+            <div className='flex flex-col justify-center gap-8 max-w-full'>
               {levelResults.reverse()}
             </div>
           </div>
