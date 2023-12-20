@@ -2,6 +2,7 @@ import { AppContext } from '@root/contexts/appContext';
 import getProfileSlug from '@root/helpers/getProfileSlug';
 import { EnrichedLevel } from '@root/models/db/level';
 import User from '@root/models/db/user';
+import classNames from 'classnames';
 import { Types } from 'mongoose';
 import Link from 'next/link';
 import React, { useContext, useEffect, useState } from 'react';
@@ -112,10 +113,12 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
       </Link>
       <div className='flex justify-between'>
         <div className='flex gap-3 overflow-hidden'>
-          <Link className='h-fit' href={getProfileSlug(user)} passHref>
-            <ProfileAvatar user={user} />
-          </Link>
-          <div className='flex flex-col gap-0.5 overflow-hidden'>
+          {!level.isDraft &&
+            <Link className='h-fit' href={getProfileSlug(user)} passHref>
+              <ProfileAvatar user={user} />
+            </Link>
+          }
+          <div className={classNames('flex flex-col gap-0.5 overflow-hidden break-words', { 'pl-2': level.isDraft })}>
             <Link
               className='font-bold overflow-hidden'
               href={href ?? `/level/${level.slug}`}
@@ -129,16 +132,26 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
             >
               {level.name}
             </Link>
-            <FormattedUser className='font-medium text-sm gray' hideAvatar id='author' size={Dimensions.AvatarSizeSmall} user={user} />
-            <div className='flex text-xs items-center gap-1 pt-0.5'>
-              <FormattedDifficulty
-                difficultyEstimate={level.calc_difficulty_estimate}
-                id={`${id}-${level._id}`}
-                uniqueUsers={level.calc_playattempts_unique_users_count !== undefined ?
-                  level.calc_playattempts_unique_users_count :
-                  level.calc_playattempts_unique_users.length}
+            {!level.isDraft &&
+              <FormattedUser
+                className='font-medium text-sm gray'
+                hideAvatar
+                id='author'
+                size={Dimensions.AvatarSizeSmall}
+                user={user}
               />
-            </div>
+            }
+            {!level.isDraft &&
+              <div className='flex text-xs items-center gap-1 pt-0.5'>
+                <FormattedDifficulty
+                  difficultyEstimate={level.calc_difficulty_estimate}
+                  id={`${id}-${level._id}`}
+                  uniqueUsers={level.calc_playattempts_unique_users_count !== undefined ?
+                    level.calc_playattempts_unique_users_count :
+                    level.calc_playattempts_unique_users.length}
+                />
+              </div>
+            }
           </div>
         </div>
         {/* prevent clicking parent level link */}

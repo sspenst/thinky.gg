@@ -1,6 +1,8 @@
 import { Menu, Transition } from '@headlessui/react';
 import ArchiveLevelModal from '@root/components/modal/archiveLevelModal';
+import DeleteLevelModal from '@root/components/modal/deleteLevelModal';
 import EditLevelModal from '@root/components/modal/editLevelModal';
+import PublishLevelModal from '@root/components/modal/publishLevelModal';
 import SaveToCollectionModal from '@root/components/modal/saveToCollectionModal';
 import UnpublishLevelModal from '@root/components/modal/unpublishLevelModal';
 import { AppContext } from '@root/contexts/appContext';
@@ -18,15 +20,17 @@ interface LevelDropdownProps {
 
 export default function LevelDropdown({ level }: LevelDropdownProps) {
   const [isArchiveLevelOpen, setIsArchiveLevelOpen] = useState(false);
+  const [isDeleteLevelOpen, setIsDeleteLevelOpen] = useState(false);
   const [isEditLevelOpen, setIsEditLevelOpen] = useState(false);
   const [isPlayLaterLoading, setIsPlayLaterLoading] = useState(false);
+  const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
   const [isSaveToCollectionOpen, setIsSaveToCollectionOpen] = useState(false);
   const [isUnpublishLevelOpen, setIsUnpublishLevelOpen] = useState(false);
   const { mutatePlayLater, playLater, user } = useContext(AppContext);
   const { setPreventKeyDownEvent } = useContext(PageContext);
 
-  const canEdit = level.userId._id === user?._id || isCurator(user);
-  const isNotAuthor = level.userId._id !== user?._id;
+  const isAuthor = level.userId === user?._id || level.userId._id === user?._id;
+  const canEdit = isAuthor || isCurator(user);
   const boldedLevelName = <span className='font-bold'>{level.name}</span>;
   const isInPlayLater = !!(playLater && playLater[level._id.toString()]);
 
@@ -154,26 +158,28 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
                 )}
               </Menu.Item>
             </>}
-            <Menu.Item>
-              {({ active }) => (
-                <div
-                  className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3 whitespace-nowrap'
-                  onClick={() => {
-                    navigator.clipboard.writeText(`${window.location.origin}/level/${level.slug}`);
-                    toast.dismiss();
-                    toast.success('Link copied to clipboard');
-                  }}
-                  style={{
-                    backgroundColor: active ? 'var(--bg-color-3)' : undefined,
-                  }}
-                >
-                  <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
-                    <path strokeLinecap='round' strokeLinejoin='round' d='M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244' />
-                  </svg>
-                  <span>Copy link</span>
-                </div>
-              )}
-            </Menu.Item>
+            {!level.isDraft &&
+              <Menu.Item>
+                {({ active }) => (
+                  <div
+                    className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3 whitespace-nowrap'
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${window.location.origin}/level/${level.slug}`);
+                      toast.dismiss();
+                      toast.success('Link copied to clipboard');
+                    }}
+                    style={{
+                      backgroundColor: active ? 'var(--bg-color-3)' : undefined,
+                    }}
+                  >
+                    <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
+                      <path strokeLinecap='round' strokeLinejoin='round' d='M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244' />
+                    </svg>
+                    <span>Copy link</span>
+                  </div>
+                )}
+              </Menu.Item>
+            }
             <Menu.Item>
               {({ active }) => (
                 <div
@@ -198,7 +204,7 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
               <Menu.Item>
                 {({ active }) => (
                   <div
-                    className={classNames('flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3', { 'text-red-500': isNotAuthor })}
+                    className={classNames('flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3', { 'text-red-500': !isAuthor })}
                     onClick={() => {
                       setIsEditLevelOpen(true);
                       setPreventKeyDownEvent(true);
@@ -216,44 +222,108 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
                   </div>
                 )}
               </Menu.Item>
-              <Menu.Item>
-                {({ active }) => (
-                  <div
-                    className={classNames('flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3', { 'text-red-500': isNotAuthor })}
-                    onClick={() => {
-                      setIsArchiveLevelOpen(true);
-                      setPreventKeyDownEvent(true);
-                    }}
-                    style={{
-                      backgroundColor: active ? 'var(--bg-color-3)' : undefined,
-                    }}
-                  >
-                    <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
-                      <path strokeLinecap='round' strokeLinejoin='round' d='M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z' />
-                    </svg>
-                    <span>Archive</span>
-                  </div>
-                )}
-              </Menu.Item>
-              <Menu.Item>
-                {({ active }) => (
-                  <div
-                    className={classNames('flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3', { 'text-red-500': isNotAuthor })}
-                    onClick={() => {
-                      setIsUnpublishLevelOpen(true);
-                      setPreventKeyDownEvent(true);
-                    }}
-                    style={{
-                      backgroundColor: active ? 'var(--bg-color-3)' : undefined,
-                    }}
-                  >
-                    <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
-                      <path strokeLinecap='round' strokeLinejoin='round' d='M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0' />
-                    </svg>
-                    <span>Unpublish</span>
-                  </div>
-                )}
-              </Menu.Item>
+              {level.isDraft ?
+                <>
+                  {level.leastMoves ?
+                    <Menu.Item>
+                      {({ active }) => (
+                        <div
+                          className={classNames('flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3', { 'text-red-500': !isAuthor })}
+                          onClick={() => {
+                            setIsPublishLevelOpen(true);
+                            setPreventKeyDownEvent(true);
+                          }}
+                          style={{
+                            backgroundColor: active ? 'var(--bg-color-3)' : undefined,
+                          }}
+                        >
+                          <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
+                            <path strokeLinecap='round' strokeLinejoin='round' d='M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5' />
+                          </svg>
+                          <span>Publish</span>
+                        </div>
+                      )}
+                    </Menu.Item>
+                    :
+                    <Menu.Item>
+                      {({ active }) => (
+                        <Link
+                          className={classNames('flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3', { 'text-red-500': !isAuthor })}
+                          href={`/test/${level._id.toString()}`}
+                          style={{
+                            backgroundColor: active ? 'var(--bg-color-3)' : undefined,
+                          }}
+                        >
+                          <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
+                            <path strokeLinecap='round' strokeLinejoin='round' d='M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z' />
+                          </svg>
+                          <span>Test</span>
+                        </Link>
+                      )}
+                    </Menu.Item>
+                  }
+                  <Menu.Item>
+                    {({ active }) => (
+                      <div
+                        className={classNames('flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3', { 'text-red-500': !isAuthor })}
+                        onClick={() => {
+                          setIsDeleteLevelOpen(true);
+                          setPreventKeyDownEvent(true);
+                        }}
+                        style={{
+                          backgroundColor: active ? 'var(--bg-color-3)' : undefined,
+                        }}
+                      >
+                        <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
+                          <path strokeLinecap='round' strokeLinejoin='round' d='M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0' />
+                        </svg>
+                        <span>Delete</span>
+                      </div>
+                    )}
+                  </Menu.Item>
+                </>
+                :
+                <>
+                  <Menu.Item>
+                    {({ active }) => (
+                      <div
+                        className={classNames('flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3', { 'text-red-500': !isAuthor })}
+                        onClick={() => {
+                          setIsArchiveLevelOpen(true);
+                          setPreventKeyDownEvent(true);
+                        }}
+                        style={{
+                          backgroundColor: active ? 'var(--bg-color-3)' : undefined,
+                        }}
+                      >
+                        <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
+                          <path strokeLinecap='round' strokeLinejoin='round' d='M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z' />
+                        </svg>
+                        <span>Archive</span>
+                      </div>
+                    )}
+                  </Menu.Item>
+                  <Menu.Item>
+                    {({ active }) => (
+                      <div
+                        className={classNames('flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3', { 'text-red-500': !isAuthor })}
+                        onClick={() => {
+                          setIsUnpublishLevelOpen(true);
+                          setPreventKeyDownEvent(true);
+                        }}
+                        style={{
+                          backgroundColor: active ? 'var(--bg-color-3)' : undefined,
+                        }}
+                      >
+                        <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
+                          <path strokeLinecap='round' strokeLinejoin='round' d='M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0' />
+                        </svg>
+                        <span>Unpublish</span>
+                      </div>
+                    )}
+                  </Menu.Item>
+                </>
+              }
             </>}
           </div>
         </Menu.Items>
@@ -278,22 +348,45 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
         isOpen={isEditLevelOpen}
         level={level}
       />
-      <ArchiveLevelModal
-        closeModal={() => {
-          setIsArchiveLevelOpen(false);
-          setPreventKeyDownEvent(false);
-        }}
-        isOpen={isArchiveLevelOpen}
-        level={level}
-      />
-      <UnpublishLevelModal
-        closeModal={() => {
-          setIsUnpublishLevelOpen(false);
-          setPreventKeyDownEvent(false);
-        }}
-        isOpen={isUnpublishLevelOpen}
-        level={level}
-      />
+      {level.isDraft ?
+        <>
+          <PublishLevelModal
+            closeModal={() => {
+              setIsPublishLevelOpen(false);
+              setPreventKeyDownEvent(false);
+            }}
+            isOpen={isPublishLevelOpen}
+            level={level}
+          />
+          <DeleteLevelModal
+            closeModal={() => {
+              setIsDeleteLevelOpen(false);
+              setPreventKeyDownEvent(false);
+            }}
+            isOpen={isDeleteLevelOpen}
+            level={level}
+          />
+        </>
+        :
+        <>
+          <ArchiveLevelModal
+            closeModal={() => {
+              setIsArchiveLevelOpen(false);
+              setPreventKeyDownEvent(false);
+            }}
+            isOpen={isArchiveLevelOpen}
+            level={level}
+          />
+          <UnpublishLevelModal
+            closeModal={() => {
+              setIsUnpublishLevelOpen(false);
+              setPreventKeyDownEvent(false);
+            }}
+            isOpen={isUnpublishLevelOpen}
+            level={level}
+          />
+        </>
+      }
     </>}
   </>);
 }

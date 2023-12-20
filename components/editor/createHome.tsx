@@ -1,20 +1,11 @@
 import Link from 'next/link';
-import React, { useState } from 'react';
+import React from 'react';
 import TimeRange from '../../constants/timeRange';
-import Level from '../../models/db/level';
 import { CreatePageProps } from '../../pages/[subdomain]/create';
 import LevelCard from '../cards/levelCard';
-import DeleteLevelModal from '../modal/deleteLevelModal';
-import EditLevelModal from '../modal/editLevelModal';
-import PublishLevelModal from '../modal/publishLevelModal';
 
 /* istanbul ignore next */
 export default function CreateHome({ levels, user }: CreatePageProps) {
-  const [isDeleteLevelOpen, setIsDeleteLevelOpen] = useState(false);
-  const [isEditLevelOpen, setIsEditLevelOpen] = useState(false);
-  const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
-  const [levelToModify, setLevelToModify] = useState<Level>();
-
   return (
     <div className='flex flex-col gap-5 m-5 items-center'>
       <div className='text-center'>
@@ -50,74 +41,15 @@ export default function CreateHome({ levels, user }: CreatePageProps) {
       <div className='flex flex-wrap justify-center gap-4'>
         {levels.map(level => {
           return (
-            <div
-              className='flex flex-col gap-4'
+            <LevelCard
+              href={`/edit/${level._id.toString()}`}
+              id='draft-level'
               key={`draft-level-${level._id.toString()}`}
-            >
-              <LevelCard
-                href={`/edit/${level._id.toString()}`}
-                id='draft-level'
-                level={level}
-              />
-              <div className='flex flex-row gap-4 justify-center'>
-                {level.leastMoves ?
-                  <button
-                    className='italic underline'
-                    onClick={() => {
-                      setLevelToModify(level);
-                      setIsPublishLevelOpen(true);
-                    }}
-                  >
-                    Publish
-                  </button>
-                  :
-                  <Link
-                    className='italic underline'
-                    href={`/test/${level._id.toString()}`}
-                  >
-                    Test
-                  </Link>
-                }
-                <button
-                  className='italic underline'
-                  onClick={() => {
-                    setLevelToModify(level);
-                    setIsEditLevelOpen(true);
-                  }}
-                >
-                  Edit
-                </button>
-                <button
-                  className='italic underline'
-                  onClick={() => {
-                    setLevelToModify(level);
-                    setIsDeleteLevelOpen(true);
-                  }}
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
+              level={level}
+            />
           );
         })}
       </div>
-      {!levelToModify ? null : <>
-        <PublishLevelModal
-          closeModal={() => setIsPublishLevelOpen(false)}
-          isOpen={isPublishLevelOpen}
-          level={levelToModify}
-        />
-        <EditLevelModal
-          closeModal={() => setIsEditLevelOpen(false)}
-          isOpen={isEditLevelOpen}
-          level={levelToModify}
-        />
-        <DeleteLevelModal
-          closeModal={() => setIsDeleteLevelOpen(false)}
-          isOpen={isDeleteLevelOpen}
-          level={levelToModify}
-        />
-      </>}
     </div>
   );
 }
