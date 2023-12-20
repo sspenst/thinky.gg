@@ -1,10 +1,10 @@
 import { Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import apiWrapper, { ValidObjectId, ValidType } from '../../helpers/apiWrapper';
-import { logger } from '../../helpers/logger';
-import dbConnect from '../../lib/dbConnect';
-import decodeResetPasswordToken from '../../lib/decodeResetPasswordToken';
-import { UserModel } from '../../models/mongoose';
+import apiWrapper, { ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
+import { logger } from '../../../helpers/logger';
+import dbConnect from '../../../lib/dbConnect';
+import decodeResetPasswordToken from '../../../lib/decodeResetPasswordToken';
+import { UserModel } from '../../../models/mongoose';
 
 export default apiWrapper({ POST: {
   body: {

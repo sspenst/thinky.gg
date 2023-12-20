@@ -3,6 +3,7 @@ import Direction from '@root/constants/direction';
 import { Games } from '@root/constants/Games';
 import getDifficultyEstimate from '@root/helpers/getDifficultyEstimate';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
+import { matchMarkCompleteLevel } from '@root/helpers/match/matchMarkCompleteLevel';
 import { randomRotateLevelDataViaMatchHash } from '@root/helpers/randomRotateLevelDataViaMatchHash';
 import PlayAttempt from '@root/models/db/playAttempt';
 import UserConfig from '@root/models/db/userConfig';
@@ -21,7 +22,6 @@ import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
 import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserConfigModel } from '../../../models/mongoose';
 import { queueGenLevelImage, queueRefreshAchievements, queueRefreshIndexCalcs } from '../internal-jobs/worker';
-import { matchMarkCompleteLevel } from '../match/[matchId]';
 
 export default withAuth({
   GET: {},

@@ -4,7 +4,7 @@ import { Mongoose, Types } from 'mongoose';
 import { logger } from '../helpers/logger';
 import { broadcastKillSocket, broadcastMatch, broadcastMatches, broadcastNotifications, broadcastPrivateAndInvitedMatches, clearBroadcastMatchSchedule, scheduleBroadcastMatch } from '../server/socket/socketFunctions';
 
-export async function GenMongoWSEmitter(mongooseConnection: Mongoose) {
+export function GenMongoWSEmitter(mongooseConnection: Mongoose) {
   if (global.MongoEmitter) {
     logger.warn('App Server asked itself to instanciate MongoEmitter but it is already created');
 
@@ -67,6 +67,7 @@ export async function requestClearBroadcastMatchSchedule(matchId: string) {
 
 export async function requestBroadcastNotifications(gameId: GameId, userId: Types.ObjectId) {
   if (!global.MongoEmitter) {
+    console.trace();
     logger.warn('App Server asked itself to broadcast notifications but MongoEmitter is not created');
 
     return;
