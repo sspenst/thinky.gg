@@ -1,5 +1,5 @@
 import Direction from '@root/constants/direction';
-import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
 import Stat from '@root/models/db/stat';
 import UserConfig from '@root/models/db/userConfig';
 import { enableFetchMocks } from 'jest-fetch-mock';
@@ -15,6 +15,7 @@ import { LevelModel, RecordModel, StatModel, UserConfigModel } from '../../../..
 import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
 import handler from '../../../../pages/api/stats/index';
 import unpublishLevelHandler from '../../../../pages/api/unpublish/[id]';
+import { createAnotherGameConfig } from '../helper';
 
 beforeAll(async () => {
   await dbConnect();
@@ -28,6 +29,10 @@ afterAll(async () => {
 enableFetchMocks();
 
 describe('Testing stats api', () => {
+  // setup by creating a new userConfig
+  test('Create another userconfig profile for another game', async () => {
+    createAnotherGameConfig(TestId.USER);
+  });
   test('Doing a PUT with a body but malformed level solution should error', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
@@ -678,5 +683,13 @@ describe('Testing stats api', () => {
         expect(c.calcRecordsCount).toBe(1);
       },
     });
+  });
+  test('after everything, expect that the userconfig for the other game has not changed values', async () => {
+    const u = await UserConfigModel.findOne({ userId: TestId.USER, gameId: GameId.SOKOBAN });
+
+    expect(u?.calcLevelsCreatedCount).toEqual(0);
+    expect(u?.calcRecordsCount).toEqual(0);
+    expect(u?.calcLevelsSolvedCount).toEqual(0);
+    expect(u?.calcRecordsCount).toEqual(0);
   });
 });
