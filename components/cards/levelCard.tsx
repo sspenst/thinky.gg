@@ -83,7 +83,7 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
   }
 
   return (
-    <div className='pb-3 rounded-lg flex flex-col gap-2 w-64 max-w-full h-fit hover-bg-2 transition p-1'>
+    <div className='pb-3 rounded-lg flex flex-col gap-2 w-64 max-w-full h-fit hover-bg-2 transition p-1 text-left'>
       <Link
         className='border-2 border-color-2 background rounded-md bg-cover bg-center w-full relative overflow-hidden'
         href={href ?? `/level/${level.slug}`}

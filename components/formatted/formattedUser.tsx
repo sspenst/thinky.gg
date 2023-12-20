@@ -99,7 +99,7 @@ export default function FormattedUser({ className, hideAvatar, id, noLinks, noTo
                 {isOnline(userExtendedData.user) &&
                   <div className='flex gap-1 items-center'>
                     <span className='font-medium'>Currently Playing:</span>
-                    <GameLogoAndLabel gameId={userExtendedData.user.lastGame ?? GameId.THINKY} id={id} />
+                    <GameLogoAndLabel gameId={userExtendedData.user.lastGame ?? GameId.THINKY} id={id} size={20} />
                   </div>
                 }
                 {!game.disableGames &&

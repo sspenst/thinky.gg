@@ -68,7 +68,6 @@ export default function getEmailBody({
                       textAlign: 'center',
                     }}>
                       <a href={`${game.baseUrl}`}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <GameLogoAndLabel id={game.id} gameId={game.id} />
                       </a>
                       <h1>Hi {user.name},</h1>

@@ -1,8 +1,7 @@
 import { GameId } from '@root/constants/GameId';
-import { AppContext } from '@root/contexts/appContext';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import Image from 'next/image';
-import React, { useContext } from 'react';
+import React from 'react';
 import StyledTooltip from './page/styledTooltip';
 
 interface GameLogoProps {
