@@ -1,4 +1,4 @@
-import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -16,7 +16,6 @@ import updateCollectionHandler from '../../../../pages/api/collection/[id]';
 import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
 import updateLevelHandler from '../../../../pages/api/level/[id]';
 import unpublishLevelHandler from '../../../../pages/api/unpublish/[id]';
-import { createAnotherGameConfig } from '../helper';
 
 beforeAll(async () => {
   await dbConnect();
@@ -43,9 +42,6 @@ beforeAll(async () => {
 });
 enableFetchMocks();
 describe('Testing unpublish', () => {
-  test('Create another userconfig profile for another game', async () => {
-    await createAnotherGameConfig(TestId.USER_B);
-  });
   // set up levels
   // Create two collections. one owned by TestId.USER and one owned by TestId.USER_B
   // in each collection add three levels, two owns by the collection owner and one owned by the other user
@@ -354,14 +350,5 @@ describe('Testing unpublish', () => {
         expect((userACollection?.levels as Types.ObjectId[]).includes(new Types.ObjectId(newLevelId))).toBe(false);
       },
     });
-  });
-  test('after everything, expect that the userconfig for the other game has not changed values', async () => {
-    const u = await UserConfigModel.findOne({ userId: TestId.USER_B, gameId: GameId.SOKOBAN });
-
-    expect(u).toBeDefined();
-    expect(u?.calcLevelsCreatedCount).toEqual(0);
-    expect(u?.calcRecordsCount).toEqual(0);
-    expect(u?.calcLevelsSolvedCount).toEqual(0);
-    expect(u?.calcRecordsCount).toEqual(0);
   });
 });

@@ -1,6 +1,6 @@
 import AchievementType from '@root/constants/achievements/achievementType';
 import Direction from '@root/constants/direction';
-import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types, UpdateQuery } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -11,7 +11,7 @@ import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Level from '../../../../models/db/level';
-import { AchievementModel, LevelModel, QueueMessageModel } from '../../../../models/mongoose';
+import { AchievementModel, LevelModel, QueueMessageModel, UserConfigModel } from '../../../../models/mongoose';
 import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
 import editLevelHandler from '../../../../pages/api/edit/[id]';
 import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
@@ -20,6 +20,8 @@ import createLevelHandler from '../../../../pages/api/level/index';
 import publishLevelHandler from '../../../../pages/api/publish/[id]';
 import saveToCollectionHandler from '../../../../pages/api/save-to-collection/[id]';
 import statsHandler from '../../../../pages/api/stats/index';
+import unpublishLevelHandler from '../../../../pages/api/unpublish/[id]';
+import { createAnotherGameConfig } from '../helper';
 
 let level_id_1: string;
 let level_id_2: string;
@@ -37,6 +39,9 @@ afterAll(async () => {
 enableFetchMocks();
 
 describe('Editing levels should work correctly', () => {
+  test('Create another userconfig profile for another game', async () => {
+    await createAnotherGameConfig(TestId.USER);
+  });
   test('Creating 3 levels where 1 is draft should only show 2 in collection', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -789,5 +794,51 @@ describe('Editing levels should work correctly', () => {
         expect(res.status).toBe(200);
       },
     });
+  });
+  test('Unpublishing the level', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: level_id_1,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await unpublishLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        await processQueueMessages();
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+        expect(response.updated).toBe(true);
+      },
+    });
+  });
+
+  test('after everything, expect that the userconfig for the other game has not changed values', async () => {
+    let u = await UserConfigModel.findOne({ userId: TestId.USER, gameId: GameId.SOKOBAN });
+
+    expect(u).toBeDefined();
+    expect(u?.calcLevelsCreatedCount).toEqual(0);
+    expect(u?.calcRecordsCount).toEqual(0);
+    expect(u?.calcLevelsSolvedCount).toEqual(0);
+    expect(u?.calcRecordsCount).toEqual(0);
+    u = await UserConfigModel.findOne({ userId: TestId.USER_B, gameId: DEFAULT_GAME_ID });
+
+    expect(u).toBeDefined();
+    expect(u?.calcLevelsCreatedCount).toEqual(0);
+    expect(u?.calcRecordsCount).toEqual(0);
+    expect(u?.calcLevelsSolvedCount).toEqual(0);
+    expect(u?.calcRecordsCount).toEqual(0);
   });
 });
