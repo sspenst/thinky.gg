@@ -7,7 +7,7 @@ const LinksThatCarryOver = [
   '^/leaderboard',
   '^/users',
   '^/settings',
-  '^/create',
+  '^/drafts',
   '^/search',
   '^/notifications',
   '^/collection/.+/play-later',

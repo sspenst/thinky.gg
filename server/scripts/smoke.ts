@@ -22,7 +22,7 @@ async function smokeKeyPages() {
   const pages = [
     '/signup',
     '/search',
-    '/create',
+    '/drafts',
     '/users',
     '/tutorial',
     '/play',

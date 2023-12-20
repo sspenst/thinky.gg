@@ -4,7 +4,7 @@ import TestId from '../../../constants/testId';
 import { logger } from '../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
-import { getServerSideProps } from '../../../pages/[subdomain]/create';
+import { getServerSideProps } from '../../../pages/[subdomain]/drafts';
 
 beforeAll(async () => {
   await dbConnect();
@@ -17,7 +17,7 @@ afterEach(() => {
 });
 //enableFetchMocks()
 
-describe('pages/create page', () => {
+describe('pages/drafts page', () => {
   test('getServerProps with no params', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     const context = {
