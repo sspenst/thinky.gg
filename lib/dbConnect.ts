@@ -20,7 +20,11 @@ if (!cached) {
   };
 }
 
-export default async function dbConnect() {
+interface DBConnectProperties {
+  ignoreInitializeLocalDb?: boolean;
+}
+
+export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectProperties = {}) {
   if (cached.conn) {
     /* istanbul ignore next */
     if (mongoose.connection.readyState !== 1) {
@@ -71,7 +75,7 @@ export default async function dbConnect() {
     logger.error('Mongoose connection error (b) ' + mongoose.connection.readyState);
   }
 
-  if (!process.env.MONGODB_URI || process.env.NODE_ENV === 'test') {
+  if (!process.env.MONGODB_URI || process.env.NODE_ENV === 'test' && !ignoreInitializeLocalDb) {
     await initializeLocalDb();
   }
 

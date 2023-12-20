@@ -1,6 +1,6 @@
 import { NextApiRequest } from 'next';
 import cookieOptions from '../lib/cookieOptions';
-import dbConnect, { dbDisconnect } from '../lib/dbConnect';
+import { dbDisconnect } from '../lib/dbConnect';
 import { getTokenCookieValue } from '../lib/getTokenCookie';
 import { getUserFromToken } from '../lib/withAuth';
 
@@ -14,7 +14,7 @@ afterAll(async () => {
   await dbDisconnect();
 });
 beforeAll(async () => {
-  await dbConnect();
+  // await dbConnect();
 });
 beforeEach(() => {
   jest.resetModules(); // Most important - it clears the cache
@@ -51,4 +51,4 @@ describe('pages/api/level/index.ts', () => {
   });
 });
 
-export {};
+export { };
