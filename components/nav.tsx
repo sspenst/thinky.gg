@@ -195,7 +195,7 @@ export default function Nav({ isDropdown }: NavProps) {
   />;
 
   const draftsNavLink = !game.disableGames && <NavLink
-    href='/create'
+    href='/drafts'
     icon={
       <svg className='w-5 h-5' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'>
         <path d='M20 11V10C20 6.22876 20 4.34315 18.7595 3.17157C17.519 2 15.5225 2 11.5294 2L10.4706 2C6.47752 2 4.48098 2 3.24049 3.17157C2 4.34315 2 6.22876 2 10L2 14C2 17.7712 2 19.6569 3.24049 20.8284C4.48098 22 6.47751 22 10.4706 22H11' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round' />
@@ -237,10 +237,10 @@ export default function Nav({ isDropdown }: NavProps) {
   const playLaterNavLink = user && !game.disableGames && <NavLink
     href={`/collection/${user.name}/play-later`}
     icon={
-      <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='w-5 h-5' viewBox='0 0 16 16'>
-        <path d='M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z' />
-        <path d='M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z' />
+      <svg className='w-5 h-5' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'>
+        <path d='M4 17.9808V9.70753C4 6.07416 4 4.25748 5.17157 3.12874C6.34315 2 8.22876 2 12 2C15.7712 2 17.6569 2 18.8284 3.12874C20 4.25748 20 6.07416 20 9.70753V17.9808C20 20.2867 20 21.4396 19.2272 21.8523C17.7305 22.6514 14.9232 19.9852 13.59 19.1824C12.8168 18.7168 12.4302 18.484 12 18.484C11.5698 18.484 11.1832 18.7168 10.41 19.1824C9.0768 19.9852 6.26947 22.6514 4.77285 21.8523C4 21.4396 4 20.2867 4 17.9808Z' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round' strokeLinejoin='round' />
       </svg>
+
     }
     label='Play Later'
     onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -338,7 +338,7 @@ export default function Nav({ isDropdown }: NavProps) {
   const playNavLink = !game.disableCampaign && <NavLink
     href='/play'
     icon={
-      <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
+      <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='1 1 22 22' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
         <path strokeLinecap='round' strokeLinejoin='round' d='M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z' />
       </svg>
     }
@@ -348,11 +348,9 @@ export default function Nav({ isDropdown }: NavProps) {
   const playHistoryNavLink = !game.disableCampaign && <NavLink
     href='/play-history'
     icon={
-
-      <svg xmlns='http://www.w3.org/2000/svg' className='w-5 h-5' viewBox='1 1 22 22' strokeWidth='1.5' stroke='currentColor' fill='none' strokeLinecap='round' strokeLinejoin='round'>
-        <path stroke='none' d='M0 0h24v24H0z' fill='none' />
-        <path d='M12 8l0 4l2 2' />
-        <path d='M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5' />
+      <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='w-5 h-5' viewBox='0 0 16 16'>
+        <path d='M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z' />
+        <path d='M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z' />
       </svg>
     }
     label='Play History'

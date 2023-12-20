@@ -2,7 +2,7 @@
 
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import React, { useState } from 'react';
-import Editor from '../../../components/editor/editor';
+import Editor from '../../../components/editor';
 import LinkInfo from '../../../components/formatted/linkInfo';
 import Page from '../../../components/page/page';
 import useNavigatePrompt from '../../../hooks/useNavigatePrompt';
@@ -41,7 +41,7 @@ export default function New() {
   return (
     <Page
       folders={[
-        new LinkInfo('Create', '/create'),
+        new LinkInfo('Drafts', '/drafts'),
       ]}
       isFullScreen={true}
       title={`New level${isDirty ? '*' : ''}`}

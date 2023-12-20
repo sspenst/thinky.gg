@@ -89,7 +89,7 @@ export default function Test({ level }: TestProps) {
   return (
     <Page
       folders={[
-        new LinkInfo('Create', '/create'),
+        new LinkInfo('Drafts', '/drafts'),
         new LinkInfo(level.name, `/edit/${level._id}`),
       ]}
       isFullScreen={true}

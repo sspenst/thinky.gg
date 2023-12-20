@@ -10,7 +10,7 @@ interface DidYouKnowTipProps {
 export default function DidYouKnowTip({ reqUser }: DidYouKnowTipProps) {
   const { game } = useContext(AppContext);
   const tips = [
-    <>Every level in {game.displayName} was created in the level editor! You can start building <Link className='underline' href='/create'>here</Link>.</>,
+    <>Every level in {game.displayName} was created in the level editor! You can start building <Link className='underline' href='/drafts'>here</Link>.</>,
     <>Use <Link className='underline' href='/search'>advanced search</Link> to find levels that suit your taste.</>,
     <>Compete in <Link className='underline' href='/multiplayer'>real-time multiplayer</Link>. Race to solve puzzles against others!</>,
     <>Join our active <Link className='underline' href='https://discord.gg/kpfdRBt43v'>Discord</Link> to connect with other players and level creators.</>,
