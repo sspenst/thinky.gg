@@ -3,6 +3,7 @@ import { GameId } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
 import bcrypt from 'bcryptjs';
 import mongoose, { Types } from 'mongoose';
+import { PASSWORD_SALTROUNDS } from '../../constants/PASSWORD_SALTROUNDS';
 import Role from '../../constants/role';
 import User from '../db/user';
 import { LevelModel, UserConfigModel } from '../mongoose';
@@ -120,10 +121,6 @@ const UserSchema = new mongoose.Schema<User>({
 UserSchema.index({ score: -1 });
 UserSchema.index({ name: 1 }, { unique: true });
 UserSchema.index({ email: 1 }, { unique: true });
-//UserSchema.index({ calc_records: -1 });
-
-export const PASSWORD_SALTROUNDS = process.env.NODE_ENV !== 'test' ? 10 : 1;
-
 UserSchema.pre('save', function(next) {
   // Check if document is new or a new password has been set
   if (this.isNew || this.isModified('password')) {

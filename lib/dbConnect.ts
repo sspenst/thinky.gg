@@ -1,9 +1,8 @@
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import mongoose, { ConnectOptions, Types } from 'mongoose';
 import { logger } from '../helpers/logger';
-import { clearAllSchedules } from '../server/socket/socketFunctions';
-import { GenMongoWSEmitter } from './appSocketToClient';
 import initializeLocalDb from './initializeLocalDb';
+import { wsConnect, wsDisconnect } from './wsConnect';
 
 /**
  * Global is used here to maintain a cached connection across hot reloads
@@ -48,7 +47,29 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
     if (process.env.NODE_ENV === 'test' || !process.env.MONGODB_URI) {
       // create with replica
       if (!process.env.MONGODB_TEST_URI) {
-        cached.mongoMemoryServer = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
+        const replSetOptions = {
+          replSet: {
+            count: 1, // Number of instances in the replica set
+            // storageEngine: 'inMemory', // Use the in-memory storage engine
+            oplogSize: 10, // Smaller oplog size in MB
+            args: [
+              '--nojournal', // Disable journaling for speed
+              //'--noprealloc', // Avoid file preallocation
+              //'--smallfiles', // Use small files to save disk space (if applicable)
+              '--syncdelay', '0' // Disable periodic flushing
+            ],
+            instanceOpts: [
+              {
+                storageEngine: 'inMemory', // Ensure each instance uses in-memory storage
+                //socketTimeoutMS: 5000, // Reduce socket timeout
+                //connectTimeoutMS: 5000, // Reduce connection timeout
+                // Other options specific to instances can be set here
+              },
+            ],
+          },
+        };
+
+        cached.mongoMemoryServer = await MongoMemoryReplSet.create(replSetOptions);
 
         uri = cached.mongoMemoryServer.getUri();
       } else {
@@ -79,7 +100,7 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
     await initializeLocalDb();
   }
 
-  await GenMongoWSEmitter(cached.conn);
+  wsConnect();
 
   return cached.conn;
 }
@@ -96,5 +117,5 @@ export async function dbDisconnect() {
     });
   }
 
-  clearAllSchedules();
+  await wsDisconnect();
 }

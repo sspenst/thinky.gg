@@ -3,6 +3,7 @@ import Discord from '@root/constants/discord';
 import { GameId } from '@root/constants/GameId';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
+import { abortMatch } from '@root/helpers/match/abortMatch';
 import { LEVEL_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import { MULTIPLAYER_INITIAL_ELO } from '@root/models/schemas/multiplayerProfileSchema';
@@ -21,7 +22,6 @@ import { LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, UserModel }
 import { computeMatchScoreTable, enrichMultiplayerMatch, generateMatchLog } from '../../../models/schemas/multiplayerMatchSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 import { queueRefreshAchievements } from '../internal-jobs/worker';
-import { abortMatch } from './[matchId]';
 
 function makeId(length: number) {
   let result = '';

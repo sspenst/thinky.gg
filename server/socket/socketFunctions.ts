@@ -2,6 +2,7 @@ import { GameId } from '@root/constants/GameId';
 import { MatchGameState } from '@root/helpers/gameStateHelpers';
 import { getEnrichNotificationPipelineStages } from '@root/helpers/getEnrichNotificationPipelineStages';
 import { getUsersWithMultiplayerProfileFromIds } from '@root/helpers/getUsersWithMultiplayerProfile';
+import { getMatch } from '@root/helpers/match/getMatch';
 import cleanUser from '@root/lib/cleanUser';
 import Notification from '@root/models/db/notification';
 import { Emitter } from '@socket.io/mongo-emitter';
@@ -14,7 +15,6 @@ import User from '../../models/db/user';
 import { MultiplayerMatchModel, NotificationModel } from '../../models/mongoose';
 import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
 import { checkForFinishedMatch, checkForUnreadyAboutToStartMatch, getAllMatches } from '../../pages/api/match';
-import { getMatch } from '../../pages/api/match/[matchId]';
 
 const GlobalMatchTimers = {} as { [matchId: string]: {
   start: NodeJS.Timeout;

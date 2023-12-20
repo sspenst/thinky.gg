@@ -1,8 +1,8 @@
 import { EmailDigestSettingType } from '@root/constants/emailDigest';
+import { PASSWORD_SALTROUNDS } from '@root/constants/PASSWORD_SALTROUNDS';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import UserConfig from '@root/models/db/userConfig';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
-import { PASSWORD_SALTROUNDS } from '@root/models/schemas/userSchema';
 import bcrypt from 'bcryptjs';
 import { Types } from 'mongoose';
 import { DEFAULT_GAME_ID, GameId } from '../constants/GameId';

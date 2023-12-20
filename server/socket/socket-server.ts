@@ -1,6 +1,7 @@
 // ts-node --transpile-only --files server/socket/socket-server.ts
 import { isValidMatchGameState } from '@root/helpers/gameStateHelpers';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import { getMatch } from '@root/helpers/match/getMatch';
 import { createAdapter } from '@socket.io/mongo-adapter';
 import { Emitter } from '@socket.io/mongo-emitter';
 import dotenv from 'dotenv';
@@ -12,7 +13,6 @@ import { getUserFromToken } from '../../lib/withAuth';
 import { MultiplayerMatchState } from '../../models/constants/multiplayer';
 import { MultiplayerMatchModel } from '../../models/mongoose';
 import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
-import { getMatch } from '../../pages/api/match/[matchId]';
 import { broadcastConnectedPlayers, broadcastCountOfUsersInRoom, broadcastMatches, broadcastMatchGameState, broadcastNotifications, broadcastPrivateAndInvitedMatches, scheduleBroadcastMatch } from './socketFunctions';
 
 'use strict';
@@ -197,7 +197,7 @@ process.env.NODE_ENV !== 'test' && startSocketIOServer(new Server(3001, {
   path: '/api/socket',
   cors: {
     // allow pathology.gg and localhost:3000
-    origin: ['http://localhost:3000', 'https://pathology.gg'],
+    origin: ['http://localhost:3000', 'https://pathology.gg', 'https://thinky.gg'],
     methods: ['GET', 'POST'],
     credentials: true,
   },

@@ -1,5 +1,6 @@
 /* istanbul ignore file */
 import Theme from '@root/constants/theme';
+import { wsConnect } from '@root/lib/wsConnect';
 import User from '@root/models/db/user';
 import { Types } from 'mongoose';
 import Document, { DocumentContext, DocumentInitialProps, Head, Html, Main, NextScript } from 'next/document';

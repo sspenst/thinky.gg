@@ -53,7 +53,6 @@ export async function getUserFromToken(
   }
 
   await dbConnect();
-
   // Update meta data from user
   const last_visited_ts = TimerUtil.getTs();
   const detectedIp = req ? requestIp.getClientIp(req) : undefined;
