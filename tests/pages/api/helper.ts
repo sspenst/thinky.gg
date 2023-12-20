@@ -11,7 +11,7 @@ export async function createAnotherGameConfig(userId: string) {
       const req: NextApiRequestWithAuth = {
         method: 'GET',
         cookies: {
-          token: getTokenCookieValue(TestId.USER),
+          token: getTokenCookieValue(userId),
         },
         headers: {
           'content-type': 'application/json',
@@ -27,7 +27,7 @@ export async function createAnotherGameConfig(userId: string) {
 
       expect(response.error).toBeUndefined();
       expect(res.status).toBe(200);
-      const u = await UserConfigModel.find({ userId: TestId.USER });
+      const u = await UserConfigModel.find({ userId: userId });
 
       expect(u.length).toBe(2);
     }

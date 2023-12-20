@@ -44,7 +44,7 @@ beforeAll(async () => {
 enableFetchMocks();
 describe('Testing unpublish', () => {
   test('Create another userconfig profile for another game', async () => {
-    createAnotherGameConfig(TestId.USER);
+    await createAnotherGameConfig(TestId.USER_B);
   });
   // set up levels
   // Create two collections. one owned by TestId.USER and one owned by TestId.USER_B
@@ -356,8 +356,9 @@ describe('Testing unpublish', () => {
     });
   });
   test('after everything, expect that the userconfig for the other game has not changed values', async () => {
-    const u = await UserConfigModel.findOne({ userId: TestId.USER, gameId: GameId.SOKOBAN });
+    const u = await UserConfigModel.findOne({ userId: TestId.USER_B, gameId: GameId.SOKOBAN });
 
+    expect(u).toBeDefined();
     expect(u?.calcLevelsCreatedCount).toEqual(0);
     expect(u?.calcRecordsCount).toEqual(0);
     expect(u?.calcLevelsSolvedCount).toEqual(0);
