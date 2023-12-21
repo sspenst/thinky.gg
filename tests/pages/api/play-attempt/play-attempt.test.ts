@@ -31,7 +31,7 @@ import {
 import handler, {
   getLastLevelPlayed, postPlayAttempt,
 } from '../../../../pages/api/play-attempt/index';
-import statsHandler from '../../../../pages/api/stats/index';
+import { putStat } from '../../../../pages/api/stats/index';
 
 beforeAll(async () => {
   await dbConnect();
@@ -627,6 +627,7 @@ const tests = [
     },
   },
 ] as PlayAttemptTest[];
+let USER: User, USER_B: User;
 
 describe('Testing stats api', () => {
   for (const t of tests) {
@@ -637,6 +638,10 @@ describe('Testing stats api', () => {
         async () => {
           jest.spyOn(TimerUtil, 'getTs').mockReturnValue(timestamp as number);
 
+          if (!USER) {
+            [USER, USER_B] = await Promise.all([UserModel.findById(TestId.USER), UserModel.findById(TestId.USER_B)]);
+          }
+
           if (action === 'play') {
             const res = await postPlayAttempt(new Types.ObjectId(TestId.USER), t.levelId);
             const status = res.status;
@@ -645,126 +650,59 @@ describe('Testing stats api', () => {
             expect(status).toBe(200);
             expect(response.message).toBe(expected);
           } else if (action === 'win_20') {
-            await testApiHandler({
-              handler: async (_, res) => {
-                const req: NextApiRequestWithAuth = {
-                  method: 'PUT',
-                  cookies: {
-                    token: getTokenCookieValue(TestId.USER),
-                  },
-                  body: {
-                    levelId: t.levelId,
-                    directions: [
-                      Direction.RIGHT,
-                      Direction.RIGHT,
-                      Direction.RIGHT,
-                      Direction.RIGHT,
-                      Direction.DOWN,
-                      Direction.DOWN,
-                      Direction.DOWN,
-                      Direction.UP,
-                      Direction.DOWN,
-                      Direction.UP,
-                      Direction.DOWN,
-                      Direction.UP,
-                      Direction.DOWN,
-                      Direction.UP,
-                      Direction.DOWN,
-                      Direction.UP,
-                      Direction.DOWN,
-                      Direction.UP,
-                      Direction.DOWN,
-                      Direction.DOWN,
-                    ],
-                  },
-                  headers: {
-                    'content-type': 'application/json',
-                  },
-                } as unknown as NextApiRequestWithAuth;
+            const res = await putStat(USER, [
+              Direction.RIGHT,
+              Direction.RIGHT,
+              Direction.RIGHT,
+              Direction.RIGHT,
+              Direction.DOWN,
+              Direction.DOWN,
+              Direction.DOWN,
+              Direction.UP,
+              Direction.DOWN,
+              Direction.UP,
+              Direction.DOWN,
+              Direction.UP,
+              Direction.DOWN,
+              Direction.UP,
+              Direction.DOWN,
+              Direction.UP,
+              Direction.DOWN,
+              Direction.UP,
+              Direction.DOWN,
+              Direction.DOWN,
+            ], t.levelId);
 
-                await statsHandler(req, res);
-              },
-              test: async ({ fetch }) => {
-                const res = await fetch();
-                const response = await res.json();
-
-                expect(response.error).toBeUndefined();
-              },
-            });
+            expect(res.json.error).toBeUndefined();
           } else if (action === 'win_10') {
-            await testApiHandler({
-              handler: async (_, res) => {
-                const req: NextApiRequestWithAuth = {
-                  method: 'PUT',
-                  cookies: {
-                    token: getTokenCookieValue(TestId.USER),
-                  },
-                  body: {
-                    levelId: t.levelId,
-                    directions: [
-                      Direction.RIGHT,
-                      Direction.RIGHT,
-                      Direction.RIGHT,
-                      Direction.RIGHT,
-                      Direction.DOWN,
-                      Direction.DOWN,
-                      Direction.DOWN,
-                      Direction.UP,
-                      Direction.DOWN,
-                      Direction.DOWN,
-                    ],
-                  },
-                  headers: {
-                    'content-type': 'application/json',
-                  },
-                } as unknown as NextApiRequestWithAuth;
+            const res = await putStat(USER, [
+              Direction.RIGHT,
+              Direction.RIGHT,
+              Direction.RIGHT,
+              Direction.RIGHT,
+              Direction.DOWN,
+              Direction.DOWN,
+              Direction.DOWN,
+              Direction.UP,
+              Direction.DOWN,
+              Direction.DOWN,
+            ], t.levelId);
 
-                await statsHandler(req, res);
-              },
-              test: async ({ fetch }) => {
-                const res = await fetch();
-                const response = await res.json();
-
-                expect(response.error).toBeUndefined();
-              },
-            });
+            expect(res.json.error).toBeUndefined();
           } else if (action === 'win_8' || action === 'b_win_8') {
-            const usrId = action === 'win_8' ? TestId.USER : TestId.USER_B;
+            const WHICH = action === 'win_8' ? USER : USER_B;
+            const res = await putStat(WHICH, [
+              Direction.RIGHT,
+              Direction.RIGHT,
+              Direction.RIGHT,
+              Direction.RIGHT,
+              Direction.DOWN,
+              Direction.DOWN,
+              Direction.DOWN,
+              Direction.DOWN,
+            ], t.levelId);
 
-            await testApiHandler({
-              handler: async (_, res) => {
-                const req: NextApiRequestWithAuth = {
-                  method: 'PUT',
-                  cookies: {
-                    token: getTokenCookieValue(usrId),
-                  },
-                  body: {
-                    levelId: t.levelId,
-                    directions: [
-                      Direction.RIGHT,
-                      Direction.RIGHT,
-                      Direction.RIGHT,
-                      Direction.RIGHT,
-                      Direction.DOWN,
-                      Direction.DOWN,
-                      Direction.DOWN,
-                      Direction.DOWN,
-                    ],
-                  },
-                  headers: {
-                    'content-type': 'application/json',
-                  },
-                } as unknown as NextApiRequestWithAuth;
-
-                await statsHandler(req, res);
-              },
-              test: async ({ fetch }) => {
-                const res = await fetch();
-                const response = await res.json();
-
-                expect(response.error).toBeUndefined();
-              },
-            });
+            expect(res.json.error).toBeUndefined();
           }
         }
       );
@@ -875,24 +813,24 @@ describe('Testing stats api', () => {
       false
     );
     const promises = [];
+    const items = [];
 
     for (let i = 0; i < 9; i++) {
-      promises.push(
-        PlayAttemptModel.create({
-          _id: new Types.ObjectId(),
-          // half solved
-          attemptContext:
+      items.push({
+        _id: new Types.ObjectId(),
+        // half solved
+        attemptContext:
             i % 2 === 0 ? AttemptContext.JUST_SOLVED : AttemptContext.UNSOLVED,
-          endTime: i + 10,
-          gameId: DEFAULT_GAME_ID,
-          levelId: level._id,
-          startTime: 0,
-          updateCount: 0,
-          userId: new Types.ObjectId(),
-        })
-      );
+        endTime: i + 10,
+        gameId: DEFAULT_GAME_ID,
+        levelId: level._id,
+        startTime: 0,
+        updateCount: 0,
+        userId: new Types.ObjectId(),
+      });
     }
 
+    promises.push(PlayAttemptModel.create(items));
     promises.push(queueCalcPlayAttempts(level._id));
     await Promise.all(promises);
 
@@ -909,7 +847,7 @@ describe('Testing stats api', () => {
     const unsolvedUserId = new Types.ObjectId();
 
     // create a playattempt for the 10th unique user
-    await Promise.all([
+    const [pa, unsolvedUsr] = await Promise.all([
       PlayAttemptModel.create({
         _id: new Types.ObjectId(),
         attemptContext: AttemptContext.UNSOLVED,
@@ -959,51 +897,31 @@ describe('Testing stats api', () => {
     expect(levelUpdated3?.calc_playattempts_unique_users?.length).toBe(10);
 
     jest.spyOn(TimerUtil, 'getTs').mockReturnValue(40);
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'PUT',
-          cookies: {
-            token: getTokenCookieValue(unsolvedUserId.toString()),
-          },
-          body: {
-            levelId: level._id,
-            directions: [
-              Direction.RIGHT,
-              Direction.RIGHT,
-              Direction.RIGHT,
-              Direction.RIGHT,
-              Direction.DOWN,
-              Direction.UP,
-              Direction.DOWN,
-              Direction.UP,
-              Direction.DOWN,
-              Direction.UP,
-              Direction.DOWN,
-              Direction.UP,
-              Direction.DOWN,
-              Direction.UP,
-              Direction.DOWN,
-              Direction.UP,
-              Direction.DOWN,
-              Direction.DOWN,
-              Direction.DOWN,
-              Direction.DOWN,
-            ],
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
 
-        await statsHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
+    const res2 = await putStat(unsolvedUsr, [
+      Direction.RIGHT,
+      Direction.RIGHT,
+      Direction.RIGHT,
+      Direction.RIGHT,
+      Direction.DOWN,
+      Direction.UP,
+      Direction.DOWN,
+      Direction.UP,
+      Direction.DOWN,
+      Direction.UP,
+      Direction.DOWN,
+      Direction.UP,
+      Direction.DOWN,
+      Direction.UP,
+      Direction.DOWN,
+      Direction.UP,
+      Direction.DOWN,
+      Direction.DOWN,
+      Direction.DOWN,
+      Direction.DOWN,
+    ], level._id.toString());
 
-        expect(res.status).toBe(200);
-      },
-    });
+    expect(res2.status).toBe(200);
 
     const levelUpdated4 = await LevelModel.findById<Level>(level._id);
 
