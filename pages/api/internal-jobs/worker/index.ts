@@ -321,16 +321,17 @@ export async function processQueueMessages() {
   } catch (e: unknown) {
     console.log('CAUGHT IT!!!');
     logger.error(e);
-    console.log('CALLING VALIDATE [');
+    console.log('About to try catch');
 
     try {
       const db = mongoose.connection.db;
 
-      console.log(db);
       // reconnect to db
-      await dbDisconnect();
+      console.log('disconnecting');
+      await dbDisconnect(true);
+      console.log('disconnected. connecting');
       await dbConnect();
-
+      console.log('connected. validating');
       const whatever = await db.command({ validate: QueueMessageModel.collection.name });
 
       console.log('] VALIDATE DONE. PRINTING [');
@@ -338,7 +339,7 @@ export async function processQueueMessages() {
     } catch (e: unknown) {
       //const allMessages = await QueueMessageModel.find().lean<QueueMessage[]>();
 
-      console.log('] VALIDATE FAILED. PRINTING [', e);
+      console.log('VALIDATE FAILED. PRINTING', e);
       //console.log(allMessages.map(x => x.message));
       //console.log(e);
     }
