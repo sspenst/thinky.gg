@@ -1,17 +1,13 @@
-import AchievementType from '@root/constants/achievements/achievementType';
-import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { enableFetchMocks } from 'jest-fetch-mock';
-import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
-import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
+import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { AchievementModel, LevelModel, ReviewModel } from '../../../../models/mongoose';
-import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
-import reviewLevelHandler, { getScoreEmojis } from '../../../../pages/api/review/[id]';
+import { LevelModel, ReviewModel } from '../../../../models/mongoose';
+import reviewLevelHandler from '../../../../pages/api/review/[id]';
 
 beforeAll(async () => {
   //await dbConnect(); // see if that erroneous index error goes away when commenting this out...

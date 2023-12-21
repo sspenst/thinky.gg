@@ -70,7 +70,6 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
         };
 
         cached.mongoMemoryServer = await MongoMemoryReplSet.create(replSetOptions);
-
         uri = cached.mongoMemoryServer.getUri();
       } else {
         uri = process.env.MONGODB_TEST_URI;
