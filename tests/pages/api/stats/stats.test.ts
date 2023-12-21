@@ -1,6 +1,7 @@
 import Direction from '@root/constants/direction';
 import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
 import Stat from '@root/models/db/stat';
+import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
@@ -11,9 +12,9 @@ import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { LevelModel, RecordModel, StatModel, UserConfigModel } from '../../../../models/mongoose';
+import { LevelModel, RecordModel, StatModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
 import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
-import handler from '../../../../pages/api/stats/index';
+import handler, { putStat } from '../../../../pages/api/stats/index';
 import unpublishLevelHandler from '../../../../pages/api/unpublish/[id]';
 import { createAnotherGameConfig } from '../helper';
 
@@ -27,6 +28,8 @@ afterAll(async () => {
   await dbDisconnect();
 });
 enableFetchMocks();
+let USER: User;
+let USER_B: User;
 
 describe('Testing stats api', () => {
   // setup by creating a new userConfig
@@ -34,8 +37,8 @@ describe('Testing stats api', () => {
     createAnotherGameConfig(TestId.USER);
   });
   test('Doing a PUT with a body but malformed level solution should error', async () => {
+    [USER, USER_B] = await Promise.all([UserModel.findById(TestId.USER), UserModel.findById(TestId.USER_B)]);
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -66,33 +69,10 @@ describe('Testing stats api', () => {
   test('Doing a PUT on an unknown level should error', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     const levelId = new Types.ObjectId();
+    const res = await putStat(USER, [Direction.RIGHT], levelId.toString());
 
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'PUT',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER),
-          },
-          body: {
-            directions: [Direction.RIGHT],
-            levelId: levelId,
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe(`Error finding level ${levelId.toString()}`);
-        expect(res.status).toBe(404);
-      },
-    });
+    expect(res.json.error).toBe(`Error finding level ${levelId.toString()}`);
+    expect(res.status).toBe(404);
   });
   test('Doing a PUT with an invalid direction should 400', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
@@ -138,39 +118,25 @@ describe('Testing stats api', () => {
       [Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.LEFT], // push movable into wall
     ];
 
+    const f = async (directionTest: Direction[]) => {
+      const res = await putStat(USER, directionTest, TestId.LEVEL);
+
+      expect(res.json.error).toBe(`Invalid solution provided for level ${TestId.LEVEL}`);
+      expect(res.status).toBe(400);
+    };
+    const promises = [];
+
     for (const directionTest of directionTests) {
-      await testApiHandler({
-        handler: async (_, res) => {
-          const req: NextApiRequestWithAuth = {
-            method: 'PUT',
-            cookies: {
-              token: getTokenCookieValue(TestId.USER),
-            },
-            body: {
-              directions: directionTest,
-              levelId: TestId.LEVEL
-            },
-            headers: {
-              'content-type': 'application/json',
-            },
-          } as unknown as NextApiRequestWithAuth;
-
-          await handler(req, res);
-        },
-        test: async ({ fetch }) => {
-          const res = await fetch();
-          const response = await res.json();
-          const lvl = await LevelModel.findById(TestId.LEVEL);
-
-          expect(lvl.leastMoves).toBe(20);
-          expect(response.error).toBe(`Invalid solution provided for level ${TestId.LEVEL}`);
-          expect(res.status).toBe(400);
-          const u = await UserConfigModel.findOne({ userId: TestId.USER });
-
-          expect(u.calcRecordsCount).toEqual(2); // initializes with 1
-        },
-      });
+      promises.push(f(directionTest));
     }
+
+    await Promise.all(promises);
+    const lvl = await LevelModel.findById(TestId.LEVEL);
+
+    expect(lvl.leastMoves).toBe(20);
+    const u = await UserConfigModel.findOne({ userId: TestId.USER });
+
+    expect(u.calcRecordsCount).toEqual(2); // initializes with 1
   });
 
   test('Doing a PUT from USER with correct level solution (that is long, 14 steps) on a draft level should be OK', async () => {
@@ -179,107 +145,38 @@ describe('Testing stats api', () => {
         isDraft: true,
       }
     });
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'PUT',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER),
-          },
+    const res = await putStat(USER, [Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.RIGHT, Direction.UP, Direction.LEFT, Direction.LEFT, Direction.DOWN, Direction.DOWN, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.DOWN], TestId.LEVEL);
 
-          body: {
-            directions: [Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.RIGHT, Direction.UP, Direction.LEFT, Direction.LEFT, Direction.DOWN, Direction.DOWN, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.DOWN],
-            levelId: TestId.LEVEL
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
+    expect(res.json.error).toBeUndefined();
+    expect(res.json.success).toBe(true);
+    expect(res.status).toBe(200);
+    const [lvl, u] = await Promise.all([LevelModel.findById(TestId.LEVEL), UserConfigModel.findOne<UserConfig>({ userId: TestId.USER })]);
 
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
+    expect(lvl.leastMoves).toBe(14);
 
-        expect(response.error).toBeUndefined();
-        expect(response.success).toBe(true);
-        expect(res.status).toBe(200);
-        const [lvl, u] = await Promise.all([LevelModel.findById(TestId.LEVEL), UserConfigModel.findOne<UserConfig>({ userId: TestId.USER })]);
-
-        expect(lvl.leastMoves).toBe(14);
-
-        expect(u?.calcRecordsCount).toEqual(2);
-      },
-    });
+    expect(u?.calcRecordsCount).toEqual(2);
   });
   test('Doing ANOTHER PUT from USER with correct level solution (that is long, 14 steps) on a draft level should be OK', async () => {
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'PUT',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER),
-          },
+    const res = await putStat(USER, [Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.RIGHT, Direction.UP, Direction.LEFT, Direction.LEFT, Direction.DOWN, Direction.DOWN, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.DOWN], TestId.LEVEL);
 
-          body: {
-            directions: [Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.RIGHT, Direction.UP, Direction.LEFT, Direction.LEFT, Direction.DOWN, Direction.DOWN, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.DOWN],
-            levelId: TestId.LEVEL
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
+    expect(res.json.error).toBeUndefined();
+    expect(res.json.success).toBe(true);
+    expect(res.status).toBe(200);
+    const [lvl, u] = await Promise.all([LevelModel.findById(TestId.LEVEL), UserConfigModel.findOne({ userId: TestId.USER })]);
 
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
+    expect(lvl.leastMoves).toBe(14);
 
-        expect(response.error).toBeUndefined();
-        expect(response.success).toBe(true);
-        expect(res.status).toBe(200);
-        const [lvl, u] = await Promise.all([LevelModel.findById(TestId.LEVEL), UserConfigModel.findOne({ userId: TestId.USER })]);
-
-        expect(lvl.leastMoves).toBe(14);
-
-        expect(u.calcRecordsCount).toEqual(2);
-      },
-    });
+    expect(u.calcRecordsCount).toEqual(2);
   });
   test('Doing ANOTHER PUT with USERB with correct level solution (that is long, 14 steps) with a DIFFERENT user on a draft level should FAIL', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    const res = await putStat(USER_B, [Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.RIGHT, Direction.UP, Direction.LEFT, Direction.LEFT, Direction.DOWN, Direction.DOWN, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.DOWN], TestId.LEVEL);
 
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'PUT',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER_B),
-          },
-          body: {
-            directions: [Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.RIGHT, Direction.UP, Direction.LEFT, Direction.LEFT, Direction.DOWN, Direction.DOWN, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.DOWN],
-            levelId: TestId.LEVEL,
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
+    expect(res.json.error).toBe(`Unauthorized access for level ${TestId.LEVEL}`);
+    expect(res.status).toBe(401);
+    const u = await UserConfigModel.findOne<UserConfig>({ userId: TestId.USER });
 
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe(`Unauthorized access for level ${TestId.LEVEL}`);
-        expect(res.status).toBe(401);
-        const u = await UserConfigModel.findOne<UserConfig>({ userId: TestId.USER });
-
-        expect(u?.calcRecordsCount).toEqual(2);
-      },
-    });
+    expect(u?.calcRecordsCount).toEqual(2);
   });
   test('Doing a PUT from USER with a correct level solution (that is 12 steps) on a published level should be OK', async () => {
     const u = await UserConfigModel.findOne({ userId: TestId.USER });
