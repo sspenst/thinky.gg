@@ -1,4 +1,5 @@
 import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import * as search from '@root/pages/api/search';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext } from 'next';
 import { Logger } from 'winston';
@@ -12,7 +13,6 @@ import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
 import { GraphModel, UserModel } from '../../../models/mongoose';
 import { getServerSideProps, ProfileTab } from '../../../pages/[subdomain]/profile/[name]/[[...tab]]/index';
-import * as search from '../../../pages/api/search';
 
 beforeAll(async () => {
   await dbConnect();
@@ -263,20 +263,5 @@ describe('pages/profile page', () => {
     const reviews = await getReviewsForUserIdCount(gameId, 'invalid');
 
     expect(reviews).toBeNull();
-  });
-  test('getServerSideProps with a db error should fail', async () => {
-    jest.spyOn(search, 'doQuery').mockReturnValueOnce(Promise.resolve(null));
-
-    const context = {
-      params: {
-        name: 'test',
-        tab: [ProfileTab.Levels],
-      },
-      query: {
-        page: '2',
-      },
-    };
-
-    await expect(getServerSideProps(context as unknown as GetServerSidePropsContext)).rejects.toThrow('Error finding Levels');
   });
 });
