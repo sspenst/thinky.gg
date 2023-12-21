@@ -120,4 +120,5 @@ export async function dbDisconnect() {
   await wsDisconnect();
 
   cached.conn = null;
+  cached.mongoMemoryServer = null;
 }
