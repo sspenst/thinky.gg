@@ -182,23 +182,13 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
         if (levelIndex + 1 < collection.levels.length) {
           const nextLevel = collection.levels[levelIndex + 1];
 
-          if (collection.type === CollectionType.InMemory) {
-            // InMemory collections should not expose the cid
-            url = `/level/${nextLevel.slug}`;
-          } else {
-            url = `/level/${nextLevel.slug}?cid=${collection._id}${chapter ? `&chapter=${chapter}` : ''}`;
-          }
+          url = `/level/${nextLevel.slug}${window.location.search}`;
         }
       } else {
         if (levelIndex - 1 >= 0) {
           const prevLevel = collection.levels[levelIndex - 1];
 
-          if (collection.type === CollectionType.InMemory) {
-            // InMemory collections should not expose the cid
-            url = `/level/${prevLevel.slug}`;
-          } else {
-            url = `/level/${prevLevel.slug}?cid=${collection._id}${chapter ? `&chapter=${chapter}` : ''}`;
-          }
+          url = `/level/${prevLevel.slug}${window.location.search}`;
         }
       }
     }
