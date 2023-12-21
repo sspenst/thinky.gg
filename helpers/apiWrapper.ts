@@ -238,6 +238,7 @@ export default function apiWrapper(
     /* istanbul ignore next */
     return handler(req, res).catch((error: Error) => {
       logger.error('API Handler Error Caught', error);
+      console.trace();
 
       return res.status(500).send(error.message || error);
     });
