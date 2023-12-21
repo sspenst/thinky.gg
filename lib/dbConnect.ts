@@ -105,16 +105,30 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
   return cached.conn;
 }
 
-export async function dbDisconnect() {
+export async function dbDisconnect(log: boolean = false) {
+  log && console.log('in dbdisconnect');
+
   if (cached.conn) {
-    await cached.conn.disconnect();
+    log && console.log('in dbdisconnect. cached.conn exists');
+
+    try {
+      await cached.conn.disconnect();
+    } catch (e) {
+      logger.error('In dbDisconnect. Error disconnecting from db', e);
+    }
   }
 
   if (cached.mongoMemoryServer) {
-    await cached.mongoMemoryServer.stop({
-      doCleanup: true,
-      force: true,
-    });
+    log && console.log('in dbdisconnect. cached.mongoMemoryServer exists');
+
+    try {
+      await cached.mongoMemoryServer.stop({
+        doCleanup: true,
+        force: true,
+      });
+    } catch (e) {
+      logger.error('In dbDisconnect. Error stopping mongo memory server', e);
+    }
   }
 
   await wsDisconnect();
