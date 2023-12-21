@@ -35,7 +35,7 @@ export default {
   // The directory where Jest should output its coverage files
   coverageDirectory: 'coverage',
   preset: 'ts-jest',
-  transform: {
+  /*transform: {
     'node_modules/(react-dnd|dnd-core|@react-dnd|react-dnd-html5-backend)/.+\\.(j|t)sx?$': 'ts-jest',
     '^.+\\.tsx?$': ['ts-jest', {
       isolatedModules: true,
@@ -45,6 +45,9 @@ export default {
         jsx: 'react',
       },
     }],
+  },*/
+  transform: {
+    '^.+\\.(t|j)sx?$': '@swc/jest',
   },
   // An array of regexp pattern strings used to skip coverage collection
   // coveragePathIgnorePatterns: [
