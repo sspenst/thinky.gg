@@ -29,7 +29,7 @@ import {
   queueRefreshIndexCalcs,
 } from '../../../../pages/api/internal-jobs/worker';
 import handler, {
-  getLastLevelPlayed,
+  getLastLevelPlayed, postPlayAttempt,
 } from '../../../../pages/api/play-attempt/index';
 import statsHandler from '../../../../pages/api/stats/index';
 
@@ -638,31 +638,12 @@ describe('Testing stats api', () => {
           jest.spyOn(TimerUtil, 'getTs').mockReturnValue(timestamp as number);
 
           if (action === 'play') {
-            await testApiHandler({
-              handler: async (_, res) => {
-                const req: NextApiRequestWithAuth = {
-                  method: 'POST',
-                  cookies: {
-                    token: getTokenCookieValue(TestId.USER),
-                  },
-                  body: {
-                    levelId: t.levelId,
-                  },
-                  headers: {
-                    'content-type': 'application/json',
-                  },
-                } as unknown as NextApiRequestWithAuth;
+            const res = await postPlayAttempt(new Types.ObjectId(TestId.USER), t.levelId);
+            const status = res.status;
+            const response = res.json;
 
-                await handler(req, res);
-              },
-              test: async ({ fetch }) => {
-                const res = await fetch();
-                const response = await res.json();
-
-                expect(res.status).toBe(200);
-                expect(response.message).toBe(expected);
-              },
-            });
+            expect(status).toBe(200);
+            expect(response.message).toBe(expected);
           } else if (action === 'win_20') {
             await testApiHandler({
               handler: async (_, res) => {
@@ -878,32 +859,12 @@ describe('Testing stats api', () => {
   test('Doing a POST with an invalid level should error', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     const levelId = new Types.ObjectId();
+    const res = await postPlayAttempt(new Types.ObjectId(TestId.USER), levelId.toString());
+    const status = res.status;
+    const response = res.json;
 
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'POST',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER),
-          },
-          body: {
-            levelId: levelId,
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe(`Level ${levelId} not found`);
-        expect(res.status).toBe(404);
-      },
-    });
+    expect(response.error).toBe(`Level ${levelId} not found`);
+    expect(status).toBe(404);
   });
   test('calcDifficultyEstimate', async () => {
     const level = await initLevel(
@@ -982,31 +943,12 @@ describe('Testing stats api', () => {
     expect(levelUpdated2?.calc_playattempts_unique_users?.length).toBe(10);
 
     jest.spyOn(TimerUtil, 'getTs').mockReturnValue(30);
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'POST',
-          cookies: {
-            token: getTokenCookieValue(unsolvedUserId.toString()),
-          },
-          body: {
-            levelId: level._id,
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
+    const res = await postPlayAttempt(new Types.ObjectId(unsolvedUserId), level._id.toString());
+    const status = res.status;
+    const response = res.json;
 
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.message).toBe('updated');
-        expect(res.status).toBe(200);
-      },
-    });
+    expect(response.message).toBe('updated');
+    expect(status).toBe(200);
 
     const levelUpdated3 = await LevelModel.findById<Level>(level._id);
 
@@ -1102,57 +1044,18 @@ describe('Testing stats api', () => {
         expect(res.status).toBe(200);
       },
     });
+    const res = await postPlayAttempt(new Types.ObjectId(TestId.USER), TestId.LEVEL_4);
+    const status = res.status;
+    const response = res.json;
 
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'POST',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER),
-          },
-          body: {
-            levelId: TestId.LEVEL_4,
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
+    expect(response.message).toBe('created');
+    expect(status).toBe(200);
+    const res2 = await postPlayAttempt(new Types.ObjectId(TestId.USER), TestId.LEVEL_4);
+    const status2 = res2.status;
+    const response2 = res2.json;
 
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.message).toBe('created');
-        expect(res.status).toBe(200);
-      },
-    });
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'POST',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER),
-          },
-          body: {
-            levelId: TestId.LEVEL_4,
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.message).toBe('updated');
-        expect(res.status).toBe(200);
-      },
-    });
+    expect(response2.message).toBe('updated');
+    expect(status2).toBe(200);
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -1185,31 +1088,10 @@ describe('Testing stats api', () => {
     jest.spyOn(PlayAttemptModel, 'findOne').mockImplementationOnce(() => {
       throw new Error('Test error');
     });
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'POST',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER),
-          },
-          body: {
-            levelId: TestId.LEVEL_4,
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
+    const res = await postPlayAttempt(new Types.ObjectId(TestId.USER), TestId.LEVEL_4);
 
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('Error in POST play-attempt');
-        expect(res.status).toBe(500);
-      },
-    });
+    expect(res.json.error).toBe('Error in POST play-attempt');
+    expect(res.status).toBe(500);
   });
   test('playAttempts should not sort by _id', async () => {
     const playAttemptId1 = new Types.ObjectId();
@@ -1248,32 +1130,10 @@ describe('Testing stats api', () => {
     await PlayAttemptModel.create([playAttempt1, playAttempt2, playAttempt3]);
 
     jest.spyOn(TimerUtil, 'getTs').mockReturnValue(40);
+    const res = await postPlayAttempt(new Types.ObjectId(TestId.USER), TestId.LEVEL);
 
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'POST',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER),
-          },
-          body: {
-            levelId: TestId.LEVEL,
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(res.status).toBe(200);
-        expect(response.message).toBe('updated');
-        expect(response.playAttempt).toBe(playAttemptId2.toString());
-      },
-    });
+    expect(res.status).toBe(200);
+    expect(res.json.message).toBe('updated');
+    expect(res.json.playAttempt.toString()).toStrictEqual(playAttemptId2.toString());
   });
 });
