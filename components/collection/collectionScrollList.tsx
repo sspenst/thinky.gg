@@ -2,7 +2,7 @@ import { CollectionType } from '@root/models/constants/collection';
 import Collection, { EnrichedCollection } from '@root/models/db/collection';
 import { EnrichedLevel } from '@root/models/db/level';
 import classNames from 'classnames';
-import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
+import React, { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
 import LevelCard from '../cards/levelCard';
 import LoadingSpinner from '../page/loadingSpinner';
 
@@ -16,10 +16,13 @@ interface Props {
 }
 
 export default function CollectionScrollList({ collection, id, isHidden, onLoading, setCollection, targetLevel }: Props) {
-  const isAutoScrolling = useRef(true); // scroll on init
+  const [isAutoScrolling, setIsAutoScrolling] = useState(true); // scroll on init
   const [isLoading, setIsLoading] = useState<string>();
-  const [noMoreAbove, setNoMoreAbove] = useState(collection.type === CollectionType.InMemory);
-  const [noMoreBelow, setNoMoreBelow] = useState(collection.type === CollectionType.InMemory);
+  const [windowSearch, setWindowSearch] = useState('');
+
+  const targetLevelIndex = collection.levels.findIndex(level => level._id.toString() === targetLevel._id.toString());
+  const [noMoreBefore, setNoMoreBefore] = useState(collection.type === CollectionType.InMemory || targetLevelIndex < 5);
+  const [noMoreAfter, setNoMoreAfter] = useState(collection.type === CollectionType.InMemory || targetLevelIndex > collection.levels.length - 6);
 
   // scroll to the collection level on level change
   useEffect(() => {
@@ -27,7 +30,7 @@ export default function CollectionScrollList({ collection, id, isHidden, onLoadi
       return;
     }
 
-    isAutoScrolling.current = true;
+    setIsAutoScrolling(true);
 
     const anchorId = `collection-level-sidebar-${targetLevel._id.toString()}`;
     const anchor = document.getElementById(anchorId);
@@ -40,7 +43,7 @@ export default function CollectionScrollList({ collection, id, isHidden, onLoadi
       });
 
       setTimeout(() => {
-        isAutoScrolling.current = false;
+        setIsAutoScrolling(false);
       }, 500);
     }
   }, [isHidden, targetLevel._id]);
@@ -58,7 +61,7 @@ export default function CollectionScrollList({ collection, id, isHidden, onLoadi
   }, [collection._id]);
 
   const updateList = useCallback(async (direction: 'before' | 'after') => {
-    if (isLoading || (direction === 'before' && noMoreAbove) || (direction === 'after' && noMoreBelow)) {
+    if (isLoading || (direction === 'before' && noMoreBefore) || (direction === 'after' && noMoreAfter)) {
       return;
     }
 
@@ -70,7 +73,7 @@ export default function CollectionScrollList({ collection, id, isHidden, onLoadi
     if (direction === 'after') {
       // a max of 6 levels is expected to be returned
       if (newLevels.length < 6) {
-        setNoMoreBelow(true);
+        setNoMoreAfter(true);
       }
 
       // append new levels at the end
@@ -88,7 +91,7 @@ export default function CollectionScrollList({ collection, id, isHidden, onLoadi
     } else {
       // a max of 6 levels is expected to be returned
       if (newLevels.length < 6) {
-        setNoMoreAbove(true);
+        setNoMoreBefore(true);
       }
 
       // prepend new levels at the start
@@ -106,7 +109,7 @@ export default function CollectionScrollList({ collection, id, isHidden, onLoadi
     }
 
     setIsLoading(undefined);
-  }, [collection.levels, fetchLevels, isLoading, noMoreAbove, noMoreBelow, setCollection]);
+  }, [collection.levels, fetchLevels, isLoading, noMoreBefore, noMoreAfter, setCollection]);
 
   useEffect(() => {
     if (collection.levels.length === 0) {
@@ -134,11 +137,7 @@ export default function CollectionScrollList({ collection, id, isHidden, onLoadi
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onScroll = useCallback(async (e: any) => {
     // wait for auto-scroll to complete so we don't trigger the 'before' level fetch
-    if (isAutoScrolling.current) {
-      return;
-    }
-
-    if (isLoading) {
+    if (isAutoScrolling || isLoading) {
       return;
     }
 
@@ -146,15 +145,23 @@ export default function CollectionScrollList({ collection, id, isHidden, onLoadi
     const { scrollHeight, clientHeight } = e.target;
     const scrollPosition = e.target.scrollTop;
     const thresh = 300;
-    const reachedTop = scrollPosition <= thresh || targetLevel._id.toString() === collection.levels[0]._id.toString();
-    const reachedBottom = scrollPosition + clientHeight >= scrollHeight - thresh || targetLevel._id.toString() === collection.levels[collection.levels.length - 1]._id.toString();
+    const reachedTop = scrollPosition <= thresh;
+    const reachedBottom = scrollPosition + clientHeight >= scrollHeight - thresh;
     const direction = reachedTop ? 'before' : reachedBottom ? 'after' : undefined;
 
     if (direction) {
       setIsLoading(direction);
       updateList(direction).then(() => setIsLoading(undefined));
     }
-  }, [collection.levels, isLoading, targetLevel._id, updateList]);
+  }, [isAutoScrolling, isLoading, updateList]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    setWindowSearch(window.location.search);
+  }, []);
 
   if (!collection.levels.length) {
     return (
@@ -171,7 +178,7 @@ export default function CollectionScrollList({ collection, id, isHidden, onLoadi
           <LoadingSpinner />
         </div>
       }
-      {!isLoading && !isAutoScrolling.current && !noMoreAbove &&
+      {!isLoading && !isAutoScrolling && !noMoreBefore &&
         <div className='flex flex-col justify-center items-center pt-3'>
           <button
             className='text-sm bg-gray-600 p-1 rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75'
@@ -184,7 +191,7 @@ export default function CollectionScrollList({ collection, id, isHidden, onLoadi
       {collection.levels.map((levelInCollection) => {
         const isCurrentLevel = targetLevel._id.toString() === levelInCollection._id.toString();
         const anchorId = `collection-level-${id}-${levelInCollection._id.toString()}`;
-        const href = '/level/' + levelInCollection.slug + (collection.type !== CollectionType.InMemory ? '?cid=' + collection._id.toString() : '');
+        const href = `/level/${levelInCollection.slug}${windowSearch}`;
 
         return (
           <div className={classNames('pt-2 px-2', { 'bg-2': isCurrentLevel }, { 'rounded-xl': id === 'modal' })} id={anchorId} key={anchorId}>
@@ -196,7 +203,7 @@ export default function CollectionScrollList({ collection, id, isHidden, onLoadi
           </div>
         );
       })}
-      {!isLoading && !isAutoScrolling.current && !noMoreBelow &&
+      {!isLoading && !isAutoScrolling && !noMoreAfter &&
         <div className='flex flex-col justify-center items-center pb-3'>
           <button
             className='text-sm bg-gray-600 p-1 rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75'
