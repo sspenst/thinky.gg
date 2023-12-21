@@ -14,7 +14,7 @@ import mongoose, { ClientSession, QueryOptions, Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
 import { logger } from '../../../../helpers/logger';
-import dbConnect from '../../../../lib/dbConnect';
+import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import Notification from '../../../../models/db/notification';
 import QueueMessage from '../../../../models/db/queueMessage';
 import { LevelModel, NotificationModel, QueueMessageModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
@@ -310,13 +310,42 @@ export async function processQueueMessages() {
   await dbConnect();
 
   // this would handle if the server crashed while processing a message
-  await QueueMessageModel.updateMany({
-    state: QueueMessageState.PENDING,
-    isProcessing: true,
-    processingStartedAt: { $lt: new Date(Date.now() - 1000 * 60 * 5) }, // 5 minutes
-  }, {
-    isProcessing: false,
-  });
+  try {
+    await QueueMessageModel.updateMany({
+      state: QueueMessageState.PENDING,
+      isProcessing: true,
+      processingStartedAt: { $lt: new Date(Date.now() - 1000 * 60 * 5) }, // 5 minutes
+    }, {
+      isProcessing: false,
+    });
+  } catch (e: unknown) {
+    console.log('CAUGHT IT!!!');
+    logger.error(e);
+    console.log('CALLING VALIDATE [');
+
+    try {
+      const db = mongoose.connection.db;
+
+      console.log(db);
+      // reconnect to db
+      await dbDisconnect();
+      await dbConnect();
+
+      const whatever = await db.command({ validate: QueueMessageModel.collection.name });
+
+      console.log('] VALIDATE DONE. PRINTING [');
+      console.log(whatever);
+    } catch (e: unknown) {
+      //const allMessages = await QueueMessageModel.find().lean<QueueMessage[]>();
+
+      console.log('] VALIDATE FAILED. PRINTING [', e);
+      //console.log(allMessages.map(x => x.message));
+      //console.log(e);
+    }
+
+    console.log('] PRINTING DONE.');
+    console.trace('WHAT THE HELL');
+  }
 
   const genJobRunId = new Types.ObjectId();
   // grab all PENDING messages
