@@ -486,28 +486,14 @@ export async function sendEmailReactivation(gameId: GameId, batchId: Types.Objec
   return { sentList, failedList };
 }
 
-export default apiWrapper({ GET: {
-  query: {
-    secret: ValidType('string', true),
-    limit: ValidType('number', false, true)
-  }
-} }, async (req: NextApiRequest, res: NextApiResponse) => {
-  const { secret, limit } = req.query;
-
-  if (secret !== process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
-  const gameId = getGameIdFromReq(req);
-  // default limit to 1000
-  const limitNum = limit ? parseInt(limit as string) : 1000;
-
+export async function runEmailDigest(gameId: GameId, limitNum: number) {
   await dbConnect();
   const batchId = new Types.ObjectId(); // Creating a new batch ID for this email batch
 
   let emailDigestSent = [], emailDigestFailed = [];
   let emailReactivationSent = [], emailReactivationFailed = [], emailUnsubscribeSent = [], emailUnsubscribeFailed = [];
   const totalEmailedSoFar: string[] = [];
+  const resTrack = { status: 500, json: { error: 'Error sending email digest' } as any };
 
   try {
     const [emailUnsubscribeResult, emailReactivationResult] = await Promise.all([
@@ -531,14 +517,35 @@ export default apiWrapper({ GET: {
   } catch (err) {
     logger.error(err);
 
-    return res.status(500).json({
-      error: 'Error sending email digest',
-    });
+    return resTrack;
   }
 
   const game = Games[gameId];
 
   await queueDiscordWebhook(Discord.DevPriv, `**${game.displayName}**\n\n📧 **Email Digest**\n\tSent: ${emailDigestSent.length}\n\tFailed: ${emailDigestFailed.length}\n🔄 **Reactivation**\n\tSent: ${emailReactivationSent.length}\n\tFailed: ${emailReactivationFailed.length}\n❌ **Unsubscribe**\n\tSent: ${emailUnsubscribeSent.length}\n\tFailed: ${emailUnsubscribeFailed.length}`);
+  resTrack.status = 200;
+  resTrack.json = { success: true, emailDigestSent: emailDigestSent, emailDigestFailed: emailDigestFailed, emailReactivationSent: emailReactivationSent, emailReactivationFailed: emailReactivationFailed, emailUnsubscribeSent: emailUnsubscribeSent, emailUnsubscribeFailed: emailUnsubscribeFailed };
 
-  return res.status(200).json({ success: true, emailDigestSent: emailDigestSent, emailDigestFailed: emailDigestFailed, emailReactivationSent: emailReactivationSent, emailReactivationFailed: emailReactivationFailed, emailUnsubscribeSent: emailUnsubscribeSent, emailUnsubscribeFailed: emailUnsubscribeFailed });
+  return resTrack;
+}
+
+export default apiWrapper({ GET: {
+  query: {
+    secret: ValidType('string', true),
+    limit: ValidType('number', false, true)
+  }
+} }, async (req: NextApiRequest, res: NextApiResponse) => {
+  const { secret, limit } = req.query;
+
+  if (secret !== process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const gameId = getGameIdFromReq(req);
+  // default limit to 1000
+  const limitNum = limit ? parseInt(limit as string) : 1000;
+
+  const resTrack = await runEmailDigest(gameId, limitNum);
+
+  return res.status(resTrack.status).json(resTrack.json);
 });

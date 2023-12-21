@@ -136,7 +136,7 @@ export default {
   // Use this configuration option to add custom reporters to Jest
   // reporters: undefined,
   //reporters: [
-  //    ['jest-slow-test-reporter', { 'numTests': 8, 'warnOnSlowerThan': 600, 'color': true }]
+  //  ['jest-slow-test-reporter', { 'numTests': 8, 'warnOnSlowerThan': 600, 'color': true }]
   //],
   // Automatically reset mock state before every test
   // resetMocks: false,
