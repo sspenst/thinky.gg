@@ -290,41 +290,7 @@ describe('Reviewing levels should work correctly', () => {
       },
     });
   });
-  test('Testing PUT with no score AND empty text should fail', async () => {
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'PUT',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER_B),
-          },
-          query: {
-            id: TestId.LEVEL_3,
-          },
-          body: {
-            score: 0,
-            text: '',
-            // missing score
-            userId: TestId.USER_B,
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
 
-        await reviewLevelHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-        const processQueueRes = await processQueueMessages();
-
-        expect(processQueueRes).toBe('NONE');
-        expect(response.error).toBe('Missing required parameters');
-        expect(res.status).toBe(400);
-      },
-    });
-  });
   test('Testing editing review without userId', async () => {
     await testApiHandler({
       handler: async (_, res) => {

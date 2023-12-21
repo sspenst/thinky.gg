@@ -1,3 +1,4 @@
+import { processQueueMessages } from '@root/pages/api/internal-jobs/worker';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
@@ -325,6 +326,41 @@ describe('review.test.errors', () => {
 
         expect(res.status).toBe(404);
         expect(response.error).toBe('Error finding Review');
+      },
+    });
+  });
+  test('Testing PUT with no score AND empty text should fail', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_B),
+          },
+          query: {
+            id: TestId.LEVEL_3,
+          },
+          body: {
+            score: 0,
+            text: '',
+            // missing score
+            userId: TestId.USER_B,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await reviewLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+        const processQueueRes = await processQueueMessages();
+
+        expect(processQueueRes).toBe('NONE');
+        expect(response.error).toBe('Missing required parameters');
+        expect(res.status).toBe(400);
       },
     });
   });
