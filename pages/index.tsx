@@ -25,8 +25,7 @@ export default function ThinkyHomePage() {
   setShowNav(false);
 
   const owl: BannerLayer = {
-    image:
-      '/logos/thinky/thinky.svg',
+    image: '/logos/thinky/thinky.svg',
     translateY: [20, -40],
     opacity: [1, 0.3],
 

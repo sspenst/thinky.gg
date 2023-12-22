@@ -167,7 +167,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 interface LeaderboardsProps {
   gmLeaderboard: UserAndSum[];
   rankedLeaderboard: User[];
-  reqUser: User;
+  reqUser: User | null;
   sgmLeaderboard: UserAndSum[];
 }
 

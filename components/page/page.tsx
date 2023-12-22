@@ -32,12 +32,12 @@ export default function Page({
   title,
   titleHref,
 }: PageProps) {
-  const { deviceInfo, showNav } = useContext(AppContext);
+  const { deviceInfo, game, showNav } = useContext(AppContext);
   const [preventKeyDownEvent, setPreventKeyDownEvent] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
 
   const isNavDropdown = deviceInfo.screenSize < ScreenSize.XL || isFullScreen;
-  const isNavOnPage = !isNavDropdown && showNav;
+  const isNavOnPage = !isNavDropdown && showNav && !game.disableGames;
 
   useEffect(() => {
     if (isFullScreen) {

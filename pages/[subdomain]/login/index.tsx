@@ -18,7 +18,7 @@ export default function Login() {
       <>
         <div className='w-full max-w-md mx-auto mt-3 justify-center text-center'>
           <div className='flex flex-col gap-2 items-center'>
-            <div className='text-2xl items-center self-center'>
+            <div className='text-2xl flex items-center gap-4'>
               <GameLogoAndLabel gameId={GameId.THINKY} id='login' />
             </div>
             <div>Login with your Thinky.gg account</div>
