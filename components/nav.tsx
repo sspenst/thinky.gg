@@ -185,7 +185,6 @@ export default function Nav({ isDropdown }: NavProps) {
   />;
 
   const newNavLink = <NavLink
-    hidden={game.disableGames}
     href='/new'
     icon={
       <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='2 2 20 20' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
@@ -196,7 +195,6 @@ export default function Nav({ isDropdown }: NavProps) {
   />;
 
   const draftsNavLink = <NavLink
-    hidden={game.disableGames}
     href='/drafts'
     icon={
       <svg className='w-5 h-5' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'>
@@ -210,7 +208,6 @@ export default function Nav({ isDropdown }: NavProps) {
   />;
 
   const yourLevelsNavLink = user && <NavLink
-    hidden={game.disableGames}
     href={`${getProfileSlug(user)}/levels`}
     icon={
       <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='2 2 20 20' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
@@ -228,7 +225,6 @@ export default function Nav({ isDropdown }: NavProps) {
   />;
 
   const yourCollectionsNavLink = user && <NavLink
-    hidden={game.disableGames}
     href={`${getProfileSlug(user)}/collections`}
     icon={
       <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
@@ -239,7 +235,6 @@ export default function Nav({ isDropdown }: NavProps) {
   />;
 
   const playLaterNavLink = user && <NavLink
-    hidden={game.disableGames}
     href={`/collection/${user.name}/play-later`}
     icon={
       <svg className='w-5 h-5' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'>
@@ -281,7 +276,6 @@ export default function Nav({ isDropdown }: NavProps) {
   />;
 
   const leaderboardNavLink = <NavLink
-    hidden={game.disableGames}
     href='/leaderboards'
     icon={
       <svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' className='w-5 h-5' viewBox='0 0 16 16'>
@@ -292,7 +286,6 @@ export default function Nav({ isDropdown }: NavProps) {
   />;
 
   const usersNavLink = <NavLink
-    hidden={game.disableGames}
     href='/users'
     icon={
       <svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' className='w-5 h-5' viewBox='0 0 16 16'>
@@ -304,7 +297,6 @@ export default function Nav({ isDropdown }: NavProps) {
   />;
 
   const levelSearchNavLink = <NavLink
-    hidden={game.disableGames}
     href='/search'
     icon={
       <svg xmlns='http://www.w3.org/2000/svg' className='w-5 h-5' fill='none' viewBox='0 0 24 24'
@@ -344,7 +336,8 @@ export default function Nav({ isDropdown }: NavProps) {
     label='Discord'
   />;
 
-  const playNavLink = !game.disableCampaign && <NavLink
+  const playNavLink = <NavLink
+    hidden={game.disableCampaign}
     href='/play'
     icon={
       <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='1 1 22 22' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
@@ -354,7 +347,7 @@ export default function Nav({ isDropdown }: NavProps) {
     label='Play'
   />;
 
-  const playHistoryNavLink = !game.disableCampaign && <NavLink
+  const playHistoryNavLink = <NavLink
     href='/play-history'
     icon={
       <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='w-5 h-5' viewBox='0 0 16 16'>
@@ -402,7 +395,7 @@ export default function Nav({ isDropdown }: NavProps) {
       {campaignNavLink}
       {leaderboardNavLink}
       {tutorialNavLink}
-      {!game.disableGames && <NavDivider />}
+      <NavDivider />
       {discordNavLink}
     </nav>
   );

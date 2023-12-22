@@ -28,7 +28,7 @@ export default function SignUp({ recaptchaPublicKey }: {recaptchaPublicKey?: str
       <>
         <div className='w-full max-w-md mx-auto mt-3 justify-center text-center'>
           <div className='flex flex-col gap-2 items-center'>
-            <div className='text-2xl items-center self-center'>
+            <div className='text-2xl flex items-center gap-4'>
               <GameLogoAndLabel gameId={GameId.THINKY} id='signup' />
             </div>
             <div>Create a Thinky.gg account and start playing!</div><div>Your Thinky.gg account works across all games on the site.</div>

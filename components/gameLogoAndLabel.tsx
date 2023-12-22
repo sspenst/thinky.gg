@@ -6,15 +6,12 @@ import GameLogo from './gameLogo';
 interface GameLogoAndLabelPropbs {
   gameId: GameId;
   id: string;
-  className?: string;
   size?: number;
 }
 
-export default function GameLogoAndLabel({ gameId, id, className, size = 36 }: GameLogoAndLabelPropbs) {
-  return (
-    <div className={'flex gap-4 items-center ' + className}>
-      <GameLogo gameId={gameId} id={id} size={size} />
-      {getGameFromId(gameId).displayName}
-    </div>
-  );
+export default function GameLogoAndLabel({ gameId, id, size = 36 }: GameLogoAndLabelPropbs) {
+  return (<>
+    <GameLogo gameId={gameId} id={id} size={size} />
+    {getGameFromId(gameId).displayName}
+  </>);
 }
