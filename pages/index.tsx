@@ -18,33 +18,39 @@ function GameCard({ game }: { game: Game }) {
   );
 }
 
-const Component = () => {
+export default function ThinkyHomePage() {
+  const getUrl = useUrl();
+  const { userConfig, setShowNav } = useContext(AppContext);
+
+  setShowNav(false);
+
   const owl: BannerLayer = {
     image:
       '/logos/thinky/thinky.svg',
-    translateY: [0, 50],
+    translateY: [20, -40],
     opacity: [1, 0.3],
-    //scale: [1, 1, 'easeOutCubic'],
+
+    scale: [1, 0.1, 'easeOutCubic'],
     shouldAlwaysCompleteAnimation: true,
     children: (
       <div className='absolute inset-0 flex items-center justify-center'>
         <h1 className='text-6xl md:text-8xl text-white font-thin'>
-          Puzzle Games
+          Thinky.gg
         </h1>
       </div>
     ),
   };
   const background: BannerLayer = {
     image:
-      'https://i.imgur.com/sYNZBrm.png',
+      'https://s3-us-west-2.amazonaws.com/s.cdpn.io/105988/banner-background.jpg',
     translateY: [0, 50],
-    //opacity: [1, 0.3],
-    //scale: [1.05, 1, 'easeOutCubic'],
+    opacity: [1, 0.3],
+    scale: [1.05, 1, 'easeOutCubic'],
     shouldAlwaysCompleteAnimation: true,
   };
 
   const headline: BannerLayer = {
-    translateY: [0, 30],
+    translateY: [-10, 30],
     speed: 0.1,
     scale: [1, 1.05, 'easeOutCubic'],
     shouldAlwaysCompleteAnimation: true,
@@ -52,7 +58,7 @@ const Component = () => {
     children: (
       <div className='absolute inset-0 flex items-center justify-center'>
         <h1 className='text-6xl md:text-8xl text-white font-thin'>
-          Thinky.gg
+          Puzzle Games
         </h1>
       </div>
     ),
@@ -76,20 +82,6 @@ const Component = () => {
   };
 
   return (
-    <ParallaxBanner
-      layers={[owl, background, headline, foreground, gradientOverlay]}
-      className='aspect-[2/1] bg-gray-900'
-    />
-  );
-};
-
-export default function ThinkyHomePage() {
-  const getUrl = useUrl();
-  const { userConfig, setShowNav } = useContext(AppContext);
-
-  setShowNav(false);
-
-  return (
     <Page title='Thinky.gg'
       hideFooter
       style={{
@@ -109,8 +101,14 @@ export default function ThinkyHomePage() {
     >
       <div className='flex flex-col justify-center items-center h-full'>
         <ParallaxProvider>
-
-          <Component />
+          <ParallaxBanner
+            layers={[background, headline, foreground, gradientOverlay]}
+            className='aspect-[2/1] bg-gray-900'
+          />
+          <ParallaxBanner
+            layers={[owl, headline]}
+            className='aspect-[2/1] bg-gray-900'
+          />
         </ParallaxProvider>
       </div>
     </Page>
