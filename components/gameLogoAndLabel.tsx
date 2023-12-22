@@ -6,12 +6,13 @@ import GameLogo from './gameLogo';
 interface GameLogoAndLabelPropbs {
   gameId: GameId;
   id: string;
+  useAbsoluteUrl?: boolean;
   size?: number;
 }
 
-export default function GameLogoAndLabel({ gameId, id, size = 36 }: GameLogoAndLabelPropbs) {
+export default function GameLogoAndLabel({ gameId, id, useAbsoluteUrl, size = 36 }: GameLogoAndLabelPropbs) {
   return (<>
-    <GameLogo gameId={gameId} id={id} size={size} />
+    <GameLogo useAbsoluteUrl={useAbsoluteUrl} gameId={gameId} id={id} size={size} />
     {getGameFromId(gameId).displayName}
   </>);
 }
