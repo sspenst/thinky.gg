@@ -158,28 +158,6 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
                 )}
               </Menu.Item>
             </>}
-            {!level.isDraft &&
-              <Menu.Item>
-                {({ active }) => (
-                  <div
-                    className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3 whitespace-nowrap'
-                    onClick={() => {
-                      navigator.clipboard.writeText(`${window.location.origin}/level/${level.slug}`);
-                      toast.dismiss();
-                      toast.success('Link copied to clipboard');
-                    }}
-                    style={{
-                      backgroundColor: active ? 'var(--bg-color-3)' : undefined,
-                    }}
-                  >
-                    <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
-                      <path strokeLinecap='round' strokeLinejoin='round' d='M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244' />
-                    </svg>
-                    <span>Copy link</span>
-                  </div>
-                )}
-              </Menu.Item>
-            }
             <Menu.Item>
               {({ active }) => (
                 <div
@@ -200,6 +178,28 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
                 </div>
               )}
             </Menu.Item>
+            {!level.isDraft &&
+              <Menu.Item>
+                {({ active }) => (
+                  <div
+                    className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3 whitespace-nowrap'
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${window.location.origin}/level/${level.slug}`);
+                      toast.dismiss();
+                      toast.success('Link copied to clipboard');
+                    }}
+                    style={{
+                      backgroundColor: active ? 'var(--bg-color-3)' : undefined,
+                    }}
+                  >
+                    <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
+                      <path strokeLinecap='round' strokeLinejoin='round' d='M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244' />
+                    </svg>
+                    <span>Share link</span>
+                  </div>
+                )}
+              </Menu.Item>
+            }
             {canEdit && <>
               <Menu.Item>
                 {({ active }) => (
