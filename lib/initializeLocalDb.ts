@@ -1,5 +1,5 @@
 import { EmailDigestSettingType } from '@root/constants/emailDigest';
-import { PASSWORD_SALTROUNDS } from '@root/constants/PASSWORD_SALTROUNDS';
+import { PASSWORD_SALTROUNDS } from '@root/constants/passwordSaltRounds';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import UserConfig from '@root/models/db/userConfig';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
