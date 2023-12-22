@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { Fragment, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import GameLogoAndLabel from './gameLogoAndLabel';
 
 function NavDivider() {
   return (
@@ -36,7 +37,7 @@ function NavGameMenuItem({ game }: NavGameMenuItemProps) {
           'flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-5',
           isCurrentGame ? 'bg-2 hover-bg-4' : 'bg-1 hover-bg-3',
         )}>
-          <GameLogo gameId={game.id} id={game.id} size={20} />
+          <GameLogo gameId={game.id} id={game.id + 'menu_item'} size={20} />
           <span>{game.displayName}</span>
         </div>
       </a>
@@ -54,8 +55,7 @@ function NavGameMenu() {
         <Menu.Button className='w-full'>
           <div className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 justify-between hover-bg-3'>
             <div className='flex items-center gap-5'>
-              <GameLogo gameId={currentGame.id} id={currentGame.id} size={20} />
-              <span>{currentGame.displayName}</span>
+              <GameLogoAndLabel gameId={currentGame.id} id={currentGame.id} size={20} />
             </div>
             <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
               <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />

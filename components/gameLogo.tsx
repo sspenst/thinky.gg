@@ -9,11 +9,13 @@ interface GameLogoProps {
   id: string;
   size?: number;
   tooltip?: boolean;
+  useAbsoluteUrl?: boolean;
 }
 
-export default function GameLogo({ gameId, id, size = 24, tooltip = false }: GameLogoProps) {
+export default function GameLogo({ gameId, id, size = 24, useAbsoluteUrl = false, tooltip = false }: GameLogoProps) {
   const game = getGameFromId(gameId);
   const tooltipId = `${game.id}-tooltip-${id}`;
+  const url = !useAbsoluteUrl ? game.logo : game.baseUrl + game.logo;
 
   return (<>
     <Image
@@ -21,7 +23,7 @@ export default function GameLogo({ gameId, id, size = 24, tooltip = false }: Gam
       data-tooltip-content={game.displayName}
       data-tooltip-id={tooltipId}
       height={size}
-      src={game.baseUrl + game.logo}
+      src={url}
       style={{
         width: size,
         height: size,
