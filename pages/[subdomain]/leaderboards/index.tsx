@@ -191,7 +191,7 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
         gridTemplateColumns: 'min-content 1fr min-content',
       }}>
         {users.map((user, i) => {
-          const isYou = user._id === reqUser._id;
+          const isYou = reqUser && user._id === reqUser._id;
 
           return (<>
             <div key={`${user._id}-rank`}
