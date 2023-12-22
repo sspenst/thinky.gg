@@ -3,7 +3,7 @@ import { GameId } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
 import bcrypt from 'bcryptjs';
 import mongoose, { Types } from 'mongoose';
-import { PASSWORD_SALTROUNDS } from '../../constants/PASSWORD_SALTROUNDS';
+import { PASSWORD_SALTROUNDS } from '../../constants/passwordSaltRounds';
 import Role from '../../constants/role';
 import User from '../db/user';
 import { LevelModel, UserConfigModel } from '../mongoose';
