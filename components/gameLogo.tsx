@@ -17,7 +17,6 @@ export default function GameLogo({ gameId, id, size = 28, tooltip = false }: Gam
 
   return (<>
     <Image
-      className='rounded'
       alt={`logo-${game.displayName}`}
       data-tooltip-content={game.displayName}
       data-tooltip-id={tooltipId}
