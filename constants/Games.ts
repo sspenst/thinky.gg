@@ -24,7 +24,7 @@ export const Games: Record<GameId, Game> = {
     disableMultiplayer: true,
     disableRanked: true,
     disableTutorial: true,
-    favicon: '/logos/thinky/thinky_only_face.svg',
+    favicon: '/logos/thinky/thinky_face_circle_alt.svg',
     logo: '/logos/thinky/thinky_bg.svg',
     subtitle: 'Thinky Games',
     SEOTitle: 'Thinky Puzzle Games',

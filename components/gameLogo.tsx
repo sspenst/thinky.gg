@@ -11,12 +11,13 @@ interface GameLogoProps {
   tooltip?: boolean;
 }
 
-export default function GameLogo({ gameId, id, size = 24, tooltip = false }: GameLogoProps) {
+export default function GameLogo({ gameId, id, size = 28, tooltip = false }: GameLogoProps) {
   const game = getGameFromId(gameId);
   const tooltipId = `${game.id}-tooltip-${id}`;
 
   return (<>
     <Image
+      className='rounded'
       alt={`logo-${game.displayName}`}
       data-tooltip-content={game.displayName}
       data-tooltip-id={tooltipId}
