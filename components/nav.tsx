@@ -184,7 +184,8 @@ export default function Nav({ isDropdown }: NavProps) {
     }
   />;
 
-  const newNavLink = !game.disableGames && <NavLink
+  const newNavLink = <NavLink
+    hidden={game.disableGames}
     href='/new'
     icon={
       <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='2 2 20 20' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
@@ -194,7 +195,8 @@ export default function Nav({ isDropdown }: NavProps) {
     label='New Level'
   />;
 
-  const draftsNavLink = !game.disableGames && <NavLink
+  const draftsNavLink = <NavLink
+    hidden={game.disableGames}
     href='/drafts'
     icon={
       <svg className='w-5 h-5' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'>
@@ -207,7 +209,8 @@ export default function Nav({ isDropdown }: NavProps) {
     label='Your Draft Levels'
   />;
 
-  const yourLevelsNavLink = user && !game.disableGames && <NavLink
+  const yourLevelsNavLink = user && <NavLink
+    hidden={game.disableGames}
     href={`${getProfileSlug(user)}/levels`}
     icon={
       <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='2 2 20 20' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
@@ -224,7 +227,8 @@ export default function Nav({ isDropdown }: NavProps) {
     label='Ranked'
   />;
 
-  const yourCollectionsNavLink = user && !game.disableGames && <NavLink
+  const yourCollectionsNavLink = user && <NavLink
+    hidden={game.disableGames}
     href={`${getProfileSlug(user)}/collections`}
     icon={
       <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
@@ -234,7 +238,8 @@ export default function Nav({ isDropdown }: NavProps) {
     label='Your Collections'
   />;
 
-  const playLaterNavLink = user && !game.disableGames && <NavLink
+  const playLaterNavLink = user && <NavLink
+    hidden={game.disableGames}
     href={`/collection/${user.name}/play-later`}
     icon={
       <svg className='w-5 h-5' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'>
