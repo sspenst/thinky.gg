@@ -295,7 +295,7 @@ export default function Nav({ isDropdown }: NavProps) {
     label='Users'
   />;
 
-  const levelSearchNavLink = <NavLink
+  const levelSearchNavLink = !game.disableGames && <NavLink
     href='/search'
     icon={
       <svg xmlns='http://www.w3.org/2000/svg' className='w-5 h-5' fill='none' viewBox='0 0 24 24'
