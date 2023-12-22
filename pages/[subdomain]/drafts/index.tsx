@@ -55,7 +55,7 @@ export default function Create({ levels, user }: CreatePageProps) {
         <ul>
           <li>Create a new level and save your changes</li>
           <li><span className='font-bold'>Test</span> your level to set a step count</li>
-          <li><span className='font-bold'>Publish</span> your level to make it available for everyone to play!</li>
+          <li><span className='font-bold'>Publish</span> your level for everyone to play!</li>
           <li>You can unpublish or archive a level at any time</li>
         </ul>
         <div className='flex flex-row flex-wrap justify-center gap-4'>
