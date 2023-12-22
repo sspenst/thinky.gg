@@ -109,7 +109,7 @@ export default function getEmailBody({
                                   <div style={{
                                     textAlign: 'center',
                                   }}>
-                                    <GameLogoAndLabel id={level._id.toString()} gameId={level.gameId} />
+                                    <GameLogoAndLabel useAbsoluteUrl id={level._id.toString()} gameId={level.gameId} />
                                     <a href={`${getGameFromId(level.gameId).baseUrl}/level/${level.slug}`} style={{
                                       color: '#4890ce',
                                       textDecoration: 'none',

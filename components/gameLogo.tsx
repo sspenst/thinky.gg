@@ -7,13 +7,15 @@ import StyledTooltip from './page/styledTooltip';
 interface GameLogoProps {
   gameId: GameId;
   id: string;
+  useAbsoluteUrl?: boolean;
   size?: number;
   tooltip?: boolean;
 }
 
-export default function GameLogo({ gameId, id, size = 28, tooltip = false }: GameLogoProps) {
+export default function GameLogo({ gameId, id, useAbsoluteUrl, size = 28, tooltip = false }: GameLogoProps) {
   const game = getGameFromId(gameId);
   const tooltipId = `${game.id}-tooltip-${id}`;
+  const src = !useAbsoluteUrl ? game.logo : game.baseUrl + game.logo;
 
   return (<>
     <Image
@@ -22,7 +24,7 @@ export default function GameLogo({ gameId, id, size = 28, tooltip = false }: Gam
       data-tooltip-content={game.displayName}
       data-tooltip-id={tooltipId}
       height={size}
-      src={game.logo}
+      src={src}
       style={{
         width: size,
         height: size,
