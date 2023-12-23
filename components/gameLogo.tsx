@@ -15,7 +15,7 @@ interface GameLogoProps {
 export default function GameLogo({ gameId, id, size = 28, tooltip = false }: GameLogoProps) {
   const game = getGameFromId(gameId);
   const tooltipId = `${game.id}-tooltip-${id}`;
-  const src = !useAbsoluteUrl ? game.logo : game.baseUrl + game.logo;
+  const src = game.logo;
 
   return (<>
     <Image
