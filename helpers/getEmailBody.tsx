@@ -72,7 +72,9 @@ export default function getEmailBody({
                         <img src={`${game.baseUrl}${game.logo}`} width='75' alt={game.displayName} />
                       </a>
                       <h1>Hi {user.name},</h1>
-                      <p>{title}</p>
+                      <p style={{
+                        fontSize: '24px',
+                      }}>{title}</p>
                       {notificationsCount > 0 && (
                         <p>You have <a href={game.baseUrl + '/notifications?source=email-digest&filter=unread'} style={{
                           color: '#4890ce',
