@@ -75,8 +75,6 @@ describe('Email digest', () => {
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
 
-    await createNewRecordOnALevelYouSolvedNotifications(DEFAULT_GAME_ID, [TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah');
-
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWrapper = {
@@ -107,7 +105,8 @@ describe('Email digest', () => {
         expect(emailLogs).toHaveLength(1);
         expect(emailLogs[0].state).toBe(EmailState.FAILED);
         expect(emailLogs[0].error).toBe('Error: Mock email error');
-        expect(response.emailDigestFailed).toHaveLength(1);
+
+        expect(response.failed[EmailType.EMAIL_DIGEST]).toHaveLength(1);
       },
     });
   }, 10000);
@@ -118,8 +117,6 @@ describe('Email digest', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
-
-    await createNewRecordOnALevelYouSolvedNotifications(DEFAULT_GAME_ID, [TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah');
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -143,7 +140,9 @@ describe('Email digest', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.emailDigestFailed.sort()).toMatchObject(['bbb@gmail.com', 'test@gmail.com', 'the_curator@gmail.com'].sort());
+        // TestId.USER has a last_visited_at while the other two don't
+        expect(response.failed[EmailType.EMAIL_DIGEST].sort()).toMatchObject(['test@gmail.com'].sort());
+        expect(response.failed[EmailType.EMAIL_7D_REACTIVATE].sort()).toMatchObject(['bbb@gmail.com', 'the_curator@gmail.com'].sort());
         expect(res.status).toBe(200);
 
         const emailLogs = await EmailLogModel.find({}, {}, { sort: { createdAt: -1 } });
@@ -164,9 +163,6 @@ describe('Email digest', () => {
 
     await dbConnect();
 
-    await Promise.all([createNewRecordOnALevelYouSolvedNotifications(DEFAULT_GAME_ID, [TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah'),
-      createNewRecordOnALevelYouSolvedNotifications(DEFAULT_GAME_ID, [TestId.USER_C], TestId.USER, TestId.LEVEL_2, 'blah2')]);
-
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWrapper = {
@@ -192,11 +188,10 @@ describe('Email digest', () => {
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
 
-        expect(response.emailDigestSent.sort()).toMatchObject(['bbb@gmail.com', 'the_curator@gmail.com'].sort());
-        expect(response.emailDigestSent).toHaveLength(2);
-        expect(response.emailDigestFailed).toHaveLength(0);
-        expect(response.emailReactivationSent).toHaveLength(0);
-        expect(response.emailReactivationFailed).toHaveLength(0);
+        expect(response.sent[EmailType.EMAIL_7D_REACTIVATE].sort()).toMatchObject(['bbb@gmail.com', 'the_curator@gmail.com'].sort());
+        expect(response.sent[EmailType.EMAIL_DIGEST]).toHaveLength(0);
+        expect(response.failed[EmailType.EMAIL_DIGEST]).toHaveLength(0);
+        expect(response.failed[EmailType.EMAIL_7D_REACTIVATE]).toHaveLength(0);
       },
     });
   }, 10000);
@@ -210,9 +205,6 @@ describe('Email digest', () => {
 
     await dbConnect();
 
-    await Promise.all([createNewRecordOnALevelYouSolvedNotifications(DEFAULT_GAME_ID, [TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah'),
-      createNewRecordOnALevelYouSolvedNotifications(DEFAULT_GAME_ID, [TestId.USER_C], TestId.USER, TestId.LEVEL_2, 'blah2')]);
-
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWrapper = {
@@ -237,13 +229,13 @@ describe('Email digest', () => {
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        expect(response.emailDigestSent).toHaveLength(1); // TEST USER C has no UserConfig so we skip this user, and TEST USER B has no notifications in the last 24 hrs
-        expect(response.emailDigestSent[0]).toBe('test@gmail.com');
-        expect(response.emailReactivationSent).toHaveLength(0);
+        expect(response.sent[EmailType.EMAIL_DIGEST]).toHaveLength(1); // TEST USER C has no UserConfig so we skip this user, and TEST USER B has no notifications in the last 24 hrs
+        expect(response.sent[EmailType.EMAIL_DIGEST][0]).toBe('test@gmail.com');
+        expect(response.sent[EmailType.EMAIL_7D_REACTIVATE]).toHaveLength(0);
       },
     });
   }, 10000);
-  test('Run it again for another user who set settings to daily but has no notificaitons', async () => {
+  test('Clear emails. Run it again for user who set settings to daily but has no notificaitons', async () => {
     // setup
     await Promise.all([UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingType.DAILY }, {}),
       EmailLogModel.deleteMany({}),
@@ -280,9 +272,8 @@ describe('Email digest', () => {
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        expect(response.emailDigestSent).toHaveLength(3); // TEST USER B has no notifications in the last 24 hrs
-        expect(response.emailDigestSent.sort()).toMatchObject(['bbb@gmail.com', 'test@gmail.com', 'the_curator@gmail.com'].sort());
-        expect(response.emailReactivationSent).toHaveLength(0);
+        expect(response.sent[EmailType.EMAIL_DIGEST].sort()).toMatchObject(['test@gmail.com'].sort());
+        expect(response.sent[EmailType.EMAIL_7D_REACTIVATE]).toHaveLength(2); // since we cleared the emails from the previous test, we should send reactivation emails to the other two users
       },
     });
   }, 10000);
@@ -318,8 +309,8 @@ describe('Email digest', () => {
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        expect(response.emailDigestSent).toHaveLength(0);
-        expect(response.emailReactivationSent).toHaveLength(0);
+        expect(response.sent[EmailType.EMAIL_DIGEST]).toHaveLength(0);
+        expect(response.sent[EmailType.EMAIL_7D_REACTIVATE]).toHaveLength(0);
       },
     });
   }, 10000);
@@ -357,10 +348,10 @@ describe('Email digest', () => {
         const response = await res.json();
 
         expect(response.error).toBeUndefined();
-        expect(response.emailDigestSent).toHaveLength(0);
-        expect(response.emailDigestFailed).toHaveLength(0);
-        expect(response.emailReactivationSent).toHaveLength(0);
-        expect(response.emailReactivationFailed).toHaveLength(0);
+        expect(response.sent[EmailType.EMAIL_DIGEST]).toHaveLength(0);
+        expect(response.failed[EmailType.EMAIL_DIGEST]).toHaveLength(0);
+        expect(response.sent[EmailType.EMAIL_7D_REACTIVATE]).toHaveLength(0);
+        expect(response.sent[EmailType.EMAIL_7D_REACTIVATE]).toHaveLength(0);
         expect(res.status).toBe(200);
       },
     });

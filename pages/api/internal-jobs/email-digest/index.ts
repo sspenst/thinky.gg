@@ -6,8 +6,7 @@ import { Games } from '@root/constants/Games';
 import NotificationType from '@root/constants/notificationType';
 import Role from '@root/constants/role';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
-import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
-import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import EmailLog from '@root/models/db/emailLog';
 import { EnrichedLevel } from '@root/models/db/level';
 import UserConfig from '@root/models/db/userConfig';
 import { convert } from 'html-to-text';
@@ -23,7 +22,7 @@ import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
 import isLocal from '../../../../lib/isLocal';
 import User from '../../../../models/db/user';
-import { EmailLogModel, LevelModel, NotificationModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
+import { EmailLogModel, NotificationModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
 import { EmailState } from '../../../../models/schemas/emailLogSchema';
 import { getLevelOfDay } from '../../level-of-day';
 
@@ -93,12 +92,10 @@ export async function sendMail(gameId: GameId, batchId: Types.ObjectId, type: Em
 
 interface UserConfigWithNotificationsCount extends UserConfig {
   notificationsCount: number;
-  lastSentEmailLog: {
-    createdAt: Date;
-  };
+  lastSentEmailLogs: EmailLog[];
 }
 
-export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFar: string[], limit: number) {
+export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
   const userConfigsAggQ = UserConfigModel.aggregate<UserConfigWithNotificationsCount>([
     {
       $lookup: {
@@ -115,28 +112,19 @@ export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFa
             },
           }, {
             $project: {
-              email: 1,
-              emailDigest: 1,
-              name: 1,
               _id: 1,
+              email: 1,
+              name: 1,
               roles: 1,
+              emailDigest: 1,
+              ts: 1,
+              last_visited_at: 1
             }
           }
         ]
       },
     }, {
       $unwind: '$userId',
-    }, {
-      $project: {
-        userId: {
-          _id: 1,
-          email: 1,
-          name: 1,
-          roles: 1,
-          emailDigest: 1,
-        },
-
-      },
     },
     {
       $match: {
@@ -202,36 +190,28 @@ export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFa
               $expr: {
                 $and: [
                   { $eq: ['$userId', '$$userId'] },
-                  { $eq: ['$type', EmailType.EMAIL_DIGEST] },
+                  // get where type is either EmailType.EMAIL_DIGEST or EmailType.EMAIL_7D_REACTIVATE or EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE
+                  { $in: ['$type', [EmailType.EMAIL_DIGEST, EmailType.EMAIL_7D_REACTIVATE, EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE]] },
                   { $ne: ['$state', EmailState.FAILED] },
+                  // match where created at is greater than 1 week ago
+                  { $gte: ['$createdAt', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)] },
                 ],
               },
             },
           },
-          { $sort: { createdAt: -1 } },
-          { $limit: 1 },
-        ],
-        as: 'lastSentEmailLog',
-      },
-    },
-    {
-      $unwind: {
-        path: '$lastSentEmailLog',
-        preserveNullAndEmptyArrays: true,
-      },
-    },
-    // filter out userConfig.emailDigest === EmailDigestSettingTypes.ONLY_NOTIFICATIONS && notificationsCount === 0
-    /* {
-      $match: {
-        $or: [
           {
-            $and: [
-              { 'emailDigest': EmailDigestSettingType.DAILY },
-            ],
+            $project: {
+              _id: 1,
+              type: 1,
+              createdAt: 1,
+            },
           },
+          { $sort: { createdAt: -1 } },
         ],
+        as: 'lastSentEmailLogs',
       },
-    },*/
+    },
+
   ]);
 
   const levelsOfDay = await getlevelsOfDay();
@@ -242,8 +222,17 @@ export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFa
     userConfigsAggQ
   ]);
 
-  const sentList = [];
-  const failedList = [];
+  const sentListByEmailDigestType = {
+    [EmailType.EMAIL_DIGEST]: [],
+    [EmailType.EMAIL_7D_REACTIVATE]: [],
+    [EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE]: [],
+  } as { [key: string]: string[] };
+  const failedListByEmailDigestType = {
+    [EmailType.EMAIL_DIGEST]: [],
+    [EmailType.EMAIL_7D_REACTIVATE]: [],
+    [EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE]: [],
+  } as { [key: string]: string[] };
+
   let count = 0;
 
   for (const userConfig of userConfigs) {
@@ -253,131 +242,97 @@ export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFa
 
     const user = userConfig.userId as User;
 
-    const [notificationsCount, lastSentEmailLog] = [userConfig.notificationsCount, userConfig.lastSentEmailLog];
+    const [lastVisitedAt, notificationsCount] = [user.last_visited_at || 0, userConfig.notificationsCount];
 
-    const lastSentTs = lastSentEmailLog ? new Date(lastSentEmailLog.createdAt) as unknown as Date : null;
+    const lastSentEmailLogsGroupedByType = {
+      [EmailType.EMAIL_DIGEST]: [],
+      [EmailType.EMAIL_7D_REACTIVATE]: [],
+      [EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE]: [],
+    } as { [key: string]: EmailLog[] };
+
+    let lastSentEmailLogTs = null;
+
+    for (const emailLog of userConfig.lastSentEmailLogs) {
+      lastSentEmailLogsGroupedByType[emailLog.type].push(emailLog);
+
+      if (!lastSentEmailLogTs || emailLog.createdAt > lastSentEmailLogTs) {
+        lastSentEmailLogTs = emailLog.createdAt;
+      }
+    }
 
     // check if last sent is within 23 hours
     // NB: giving an hour of leeway because the email may not be sent at the identical time every day
-    if (lastSentTs && lastSentTs.getTime() > Date.now() - 23 * 60 * 60 * 1000) {
+    if (lastSentEmailLogTs && lastSentEmailLogTs.getTime() > Date.now() - 23 * 60 * 60 * 1000) {
       continue;
     }
 
-    if (totalEmailedSoFar.includes(user.email)) {
-      continue;
+    let emailTypeToSend = EmailType.EMAIL_DIGEST;
+
+    // Check if they have been inactive for 7 days
+
+    const isInactive = lastVisitedAt <= (Date.now() / 1000) - (7 * 24 * 60 * 60 );
+
+    if (isInactive) {
+      if (lastSentEmailLogsGroupedByType[EmailType.EMAIL_7D_REACTIVATE].length > 0) {
+        // This means we've sent them a reactivation email in the past 7 days
+
+        if (lastVisitedAt <= (Date.now() / 1000) - (10 * 24 * 60 * 60 )) {
+          emailTypeToSend = EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE;
+        }
+      } else {
+        emailTypeToSend = EmailType.EMAIL_7D_REACTIVATE;
+      }
     }
 
+    //
     const todaysDatePretty = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     /* istanbul ignore next */
-    const subject = (userConfig.userId as User).emailDigest === EmailDigestSettingType.DAILY ?
-      `Level of the Day - ${todaysDatePretty}` :
-      `You have ${notificationsCount} new notification${notificationsCount !== 1 ? 's' : ''}`;
+    const EmailTextTable: { [key: string]: { title: string, message: string, subject: string, featuredLevelsLabel: string } } = {
+      [EmailType.EMAIL_DIGEST]: {
+        title: 'Welcome to the Thinky.gg Levels of the Day for ' + todaysDatePretty + '.',
+        message: 'Here are the levels of the day for ' + todaysDatePretty + '.',
+        subject: 'Level of the Day',
+        featuredLevelsLabel: 'Levels of the Day',
+      },
+      [EmailType.EMAIL_7D_REACTIVATE]: {
+        subject: 'We miss you - Come check out what\'s new',
+        title: 'We haven\'t seen you in a bit!',
+        message: 'We noticed that you haven\'t come back to Thinky.gg in a bit. There has been a ton of new levels added to the site - would love for you to try them out!',
+        featuredLevelsLabel: 'Levels of the Day',
+      },
+      [EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE]: {
+        subject: 'Auto unsubscribing you from our emails',
+        title: 'Auto unsubscribing you from our emails',
+        message: 'We are automatically changing your email settings so that you will not receive email digests from us. You can always change your email settings back by visiting the account settings page.',
+        featuredLevelsLabel: 'Levels of the Day',
+      },
+    };
 
-    const title = `Welcome to the Thinky.gg Levels of the Day for ${todaysDatePretty}.`;
+    const msgObj = EmailTextTable[emailTypeToSend];
+
+    const title = msgObj.title;
 
     const body = getEmailBody({
       gameId: GameId.THINKY,
-      featuredLevelsLabel: 'Levels of the Day',
+      featuredLevelsLabel: msgObj.featuredLevelsLabel,
       featuredLevels: levelsOfDay as EnrichedLevel[],
       notificationsCount: notificationsCount,
       title: title,
       user: user,
+      message: msgObj.message,
     });
-    const sentError = await sendMail(GameId.THINKY, batchId, EmailType.EMAIL_DIGEST, user, subject, body);
+
+    const sentError = await sendMail(GameId.THINKY, batchId, emailTypeToSend, user, msgObj.subject, body);
 
     if (!sentError) {
-      sentList.push(user.email);
-    } else {
-      failedList.push(user.email);
-    }
-
-    count++;
-
-    if (count >= limit) {
-      break;
-    }
-  }
-
-  return { sentList, failedList };
-}
-
-export async function sendAutoUnsubscribeUsers(gameId: GameId, batchId: Types.ObjectId, limit: number) {
-  /**
-   * here is the rules...
-   * 1. If we sent a reactivation email to someone 3 days ago and they still haven't logged on, change their email notifications settings to NONE
-   * 1a. Ignore folks that have had a reactivation email sent to them in past 3 days... we should give them a chance to come back and play
-   */
-
-  const levelsOfDay = await getlevelsOfDay();
-  const usersThatHaveBeenSentReactivationEmailIn3dAgoOrMore = await EmailLogModel.find({
-    state: EmailState.SENT,
-    type: EmailType.EMAIL_7D_REACTIVATE,
-    createdAt: { $lte: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) },
-  }).distinct('userId');
-
-  const [totalLevels, totalCreatorsQuery, inactive7DUsersWhoWeHaveTriedToEmail] = await Promise.all([
-    LevelModel.countDocuments({
-      isDeleted: { $ne: true },
-      isDraft: false,
-      gameId: gameId
-    }),
-    LevelModel.distinct('userId'),
-    UserModel.aggregate([
-      {
-        $match: {
-          _id: { $in: usersThatHaveBeenSentReactivationEmailIn3dAgoOrMore },
-          email: { $ne: null },
-          emailConfirmed: { $ne: true }, // don't unsubscribe users with verified emails
-          emailDigest: { $ne: EmailDigestSettingType.NONE }, // don't unsubscribe users that have already unsubscribed
-          // checking if they have been not been active in past 10 days
-          last_visited_at: { $lte: (Date.now() / 1000) - (10 * 24 * 60 * 60 ) }, // TODO need to refactor last_visited_at to be a DATE object instead of seconds
-          roles: { $ne: Role.GUEST },
-        },
-      },
-      ...getEnrichUserConfigPipelineStage(gameId, { project: { 'emailDigest': 1 } }),
-
-      {
-        $project: {
-          _id: 1,
-          name: 1,
-          email: 1,
-          config: 1,
-          last_visited_at: 1,
-        }
+      if (emailTypeToSend === EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE) {
+        // time to unsubscribe them
+        await UserModel.updateOne({ _id: user._id }, { emailDigest: EmailDigestSettingType.NONE });
       }
-    ])
 
-  ]);
-
-  const totalCreators = totalCreatorsQuery.length;
-
-  const sentList: string[] = [];
-  const failedList: string[] = [];
-
-  let count = 0;
-  const game = Games[gameId];
-
-  for (const user of inactive7DUsersWhoWeHaveTriedToEmail) {
-    const totalLevelsSolved = user.config?.calcLevelsSolvedCount;
-    const toSolve = (totalLevels - totalLevelsSolved);
-    const subject = 'Auto unsubscribing you from our emails';
-    const title = 'It has been some time since we have seen you login to ' + game.displayName + '! We are going to automatically change your email settings so that you will not hear from us again. You can always change your email settings back by visiting the account settings page.';
-    const message = `You've completed ${totalLevelsSolved.toLocaleString()} levels on ${game.displayName}. There are still ${toSolve.toLocaleString()} levels for you to play by ${totalCreators.toLocaleString()} different creators. Come back and play!`;
-    const body = getEmailBody({
-      gameId: gameId,
-      featuredLevelsLabel: 'Levels of the Day',
-      featuredLevels: levelsOfDay as EnrichedLevel[],
-      message: message,
-      title: title,
-      user: user,
-    });
-    const sentError = await sendMail(gameId, batchId, EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE, user, subject, body);
-
-    if (!sentError) {
-      await UserModel.updateOne({ _id: user._id }, { emailDigest: EmailDigestSettingType.NONE });
-      sentList.push(user.email);
+      sentListByEmailDigestType[emailTypeToSend].push(user.email);
     } else {
-      failedList.push(user.email);
+      failedListByEmailDigestType[emailTypeToSend].push(user.email);
     }
 
     count++;
@@ -387,7 +342,7 @@ export async function sendAutoUnsubscribeUsers(gameId: GameId, batchId: Types.Ob
     }
   }
 
-  return { sentList, failedList };
+  return { sentListByEmailDigestType, failedListByEmailDigestType };
 }
 
 export async function getlevelsOfDay() {
@@ -405,126 +360,34 @@ export async function getlevelsOfDay() {
   return levelsOfDay.filter((level) => level);
 }
 
-export async function sendEmailReactivation(gameId: GameId, batchId: Types.ObjectId, limit: number) {
-  // if they haven't been active in 7 days and they have an email address, send them an email, but only once every 90 days
-  // get users that haven't been active in 7 days
-  const levelsOfDay = await getlevelsOfDay();
-  const usersThatHaveBeenSentReactivationInPast90d = await EmailLogModel.find({
-    type: EmailType.EMAIL_7D_REACTIVATE,
-    createdAt: { $gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000) },
-    state: EmailState.SENT
-  }).distinct('userId');
-  const [totalLevels, totalCreatorsQuery, inactive7DUsers] = await Promise.all([
-    LevelModel.countDocuments({
-      isDeleted: { $ne: true },
-      isDraft: false,
-      gameId: gameId
-    }),
-    LevelModel.distinct('userId'),
-    UserModel.aggregate([
-      {
-        $match: {
-          _id: { $nin: usersThatHaveBeenSentReactivationInPast90d },
-          // checking if they have been not been active in past 7 days
-          last_visited_at: { $lte: (Date.now() / 1000) - (7 * 24 * 60 * 60 ) }, // TODO need to refactor last_visited_at to be a DATE object instead of seconds
-          roles: { $ne: Role.GUEST },
-          email: { $ne: null },
-          emailDigest: { $ne: EmailDigestSettingType.NONE }, // don't send reactivation emails to users that have already unsubscribed
-        },
-      },
-      ...getEnrichUserConfigPipelineStage(gameId, { project: { 'emailDigest': 1 } }),
-      {
-        $project: {
-          _id: 1,
-          name: 1,
-          email: 1,
-          emailDigest: 1,
-          config: 1,
-          last_visited_at: 1,
-          score: 1
-        }
-      }
-    ]
-    )]);
-
-  const sentList: string[] = [];
-  const failedList: string[] = [];
-
-  const totalCreators = totalCreatorsQuery.length;
-  let count = 0;
-  const game = Games[gameId];
-
-  for (const user of inactive7DUsers) {
-    const totalLevelsSolved = user.config?.calcLevelsSolvedCount;
-    const toSolve = (totalLevels - totalLevelsSolved);
-    const subject = 'New ' + game.displayName + ' levels are waiting to be solved!';
-    const title = 'We haven\'t seen you in a bit!';
-    const message = `You've completed ${totalLevelsSolved.toLocaleString()} levels on ${game.displayName}. There are still ${toSolve.toLocaleString()} levels for you to play by ${totalCreators.toLocaleString()} different creators. Come back and play!`;
-    const body = getEmailBody({
-      gameId: gameId,
-      featuredLevelsLabel: 'Levels of the Day',
-      featuredLevels: levelsOfDay as EnrichedLevel[],
-      message: message,
-      title: title,
-      user: user,
-    });
-    const sentError = await sendMail(gameId, batchId, EmailType.EMAIL_7D_REACTIVATE, user, subject, body);
-
-    if (!sentError) {
-      sentList.push(user.email);
-    } else {
-      failedList.push(user.email);
-    }
-
-    count++;
-
-    if (count >= limit) {
-      break;
-    }
-  }
-
-  return { sentList, failedList };
-}
-
-export async function runEmailDigest(gameId: GameId, limitNum: number) {
+export async function runEmailDigest(limitNum: number) {
   await dbConnect();
   const batchId = new Types.ObjectId(); // Creating a new batch ID for this email batch
 
-  let emailDigestSent = [], emailDigestFailed = [];
-  let emailReactivationSent = [], emailReactivationFailed = [], emailUnsubscribeSent = [], emailUnsubscribeFailed = [];
-  const totalEmailedSoFar: string[] = [];
+  let emailDigestResult;
   const resTrack = { status: 500, json: { error: 'Error sending email digest' } as any };
 
   try {
-    const [emailUnsubscribeResult, emailReactivationResult] = await Promise.all([
-      sendAutoUnsubscribeUsers(gameId, batchId, limitNum),
-      sendEmailReactivation(gameId, batchId, limitNum),
-    ]);
-
-    totalEmailedSoFar.push(...emailUnsubscribeResult.sentList);
-    totalEmailedSoFar.push(...emailReactivationResult.sentList);
-
-    const emailDigestResult = await sendEmailDigests(batchId, totalEmailedSoFar, limitNum);
-
-    totalEmailedSoFar.push(...emailDigestResult.sentList);
-
-    emailUnsubscribeSent = emailUnsubscribeResult.sentList.sort();
-    emailUnsubscribeFailed = emailUnsubscribeResult.failedList.sort();
-    emailDigestSent = emailDigestResult.sentList.sort();
-    emailDigestFailed = emailDigestResult.failedList.sort();
-    emailReactivationSent = emailReactivationResult.sentList.sort();
-    emailReactivationFailed = emailReactivationResult.failedList.sort();
+    emailDigestResult = await sendEmailDigests(batchId, limitNum);
   } catch (err) {
     logger.error(err);
 
     return resTrack;
   }
 
-  const game = Games[gameId];
+  let digestSummary = '';
 
-  await queueDiscordWebhook(Discord.DevPriv, `**${game.displayName}**\n\n📧 **Email Digest**\n\tSent: ${emailDigestSent.length}\n\tFailed: ${emailDigestFailed.length}\n🔄 **Reactivation**\n\tSent: ${emailReactivationSent.length}\n\tFailed: ${emailReactivationFailed.length}\n❌ **Unsubscribe**\n\tSent: ${emailUnsubscribeSent.length}\n\tFailed: ${emailUnsubscribeFailed.length}`);
+  for (const emailType in emailDigestResult.sentListByEmailDigestType) {
+    digestSummary += `${emailType}: ${emailDigestResult.sentListByEmailDigestType[emailType].length}\n`;
+
+    if (emailDigestResult.sentListByEmailDigestType[emailType].length > 0) {
+      digestSummary += `Failed ${emailType}: ${emailDigestResult.failedListByEmailDigestType[emailType].length}\n`;
+    }
+  }
+
+  await queueDiscordWebhook(Discord.DevPriv, `📧 **Email Digest**\n${digestSummary}`);
   resTrack.status = 200;
-  resTrack.json = { success: true, emailDigestSent: emailDigestSent, emailDigestFailed: emailDigestFailed, emailReactivationSent: emailReactivationSent, emailReactivationFailed: emailReactivationFailed, emailUnsubscribeSent: emailUnsubscribeSent, emailUnsubscribeFailed: emailUnsubscribeFailed };
+  resTrack.json = { success: true, sent: emailDigestResult.sentListByEmailDigestType, failed: emailDigestResult.failedListByEmailDigestType };
 
   return resTrack;
 }
@@ -541,11 +404,10 @@ export default apiWrapper({ GET: {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  const gameId = getGameIdFromReq(req);
   // default limit to 1000
   const limitNum = limit ? parseInt(limit as string) : 1000;
 
-  const resTrack = await runEmailDigest(gameId, limitNum);
+  const resTrack = await runEmailDigest(limitNum);
 
   return res.status(resTrack.status).json(resTrack.json);
 });
