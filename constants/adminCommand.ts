@@ -11,6 +11,8 @@ enum AdminCommand {
 
   // admin
   SendAdminMessage = 'sendAdminMessage',
+  RunEmailDigest = 'runEmailDigest',
+
 }
 
 export default AdminCommand;
