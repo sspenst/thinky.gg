@@ -119,9 +119,9 @@ export default function getEmailBody({
                                       <tr>
                                         <td>
                                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                                          <img style={{ borderRadius: 10 }} src={`${Games[level.gameId].baseUrl}${Games[level.gameId].logo}`} width='75' alt={Games[level.gameId].displayName} />
+                                          <img style={{ borderRadius: 10 }} src={`${Games[level.gameId].baseUrl}${Games[level.gameId].logo}`} width='50' alt={Games[level.gameId].displayName} />
                                         </td>
-                                        <td>Game: {Games[level.gameId].displayName}</td>
+                                        <td>{Games[level.gameId].displayName}</td>
                                       </tr>
                                     </table>
                                     <a href={`${getGameFromId(level.gameId).baseUrl}/level/${level.slug}`} style={{
