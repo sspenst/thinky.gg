@@ -47,7 +47,7 @@ describe('Email per day', () => {
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
     await Promise.all([
-      UserModel.findByIdAndUpdate(TestId.USER, { emailConfirmed: false, emailDigest: EmailDigestSettingType.DAILY }),
+      UserModel.findByIdAndUpdate(TestId.USER, { emailDigest: EmailDigestSettingType.DAILY }),
       UserModel.updateMany( {}, { last_visited_at: TimerUtil.getTs() })
     ]);
 
@@ -60,12 +60,12 @@ describe('Email per day', () => {
 
       if (day === 6) {
         expect(response.sent[EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE]).toHaveLength(0);
-        expect(response.sent[EmailType.EMAIL_DIGEST].sort()).toMatchObject(['bbb@gmail.com', 'test@gmail.com', 'the_curator@gmail.com'].sort());
+        expect(response.sent[EmailType.EMAIL_DIGEST].sort()).toMatchObject(['admin@admin.com', 'bbb@gmail.com', 'test@gmail.com', 'the_curator@gmail.com'].sort());
         expect(response.sent[EmailType.EMAIL_7D_REACTIVATE]).toHaveLength(0);
       } else if (day === 7) {
         expect(response.sent[EmailType.EMAIL_DIGEST]).toHaveLength(0); // all three were sent a reactivation email
-        expect(response.sent[EmailType.EMAIL_7D_REACTIVATE]).toHaveLength(3);
-        expect(response.sent[EmailType.EMAIL_7D_REACTIVATE].sort()).toMatchObject(['bbb@gmail.com', 'test@gmail.com', 'the_curator@gmail.com'].sort());
+
+        expect(response.sent[EmailType.EMAIL_7D_REACTIVATE].sort()).toMatchObject(['admin@admin.com', 'bbb@gmail.com', 'test@gmail.com', 'the_curator@gmail.com'].sort());
         expect(response.sent[EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE]).toHaveLength(0);
 
         await createNewRecordOnALevelYouSolvedNotifications(DEFAULT_GAME_ID, [TestId.USER], TestId.USER_B, TestId.LEVEL, TestId.LEVEL);
@@ -73,7 +73,7 @@ describe('Email per day', () => {
         expect(response.sent[EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE]).toHaveLength(0);
         expect(response.sent[EmailType.EMAIL_7D_REACTIVATE]).toHaveLength(0);
         // We are continuing to send email digests between the reactivation and the auto unsubscribe
-        expect(response.sent[EmailType.EMAIL_DIGEST].sort()).toMatchObject(['bbb@gmail.com', 'test@gmail.com', 'the_curator@gmail.com'].sort());
+        expect(response.sent[EmailType.EMAIL_DIGEST].sort()).toMatchObject(['admin@admin.com', 'bbb@gmail.com', 'test@gmail.com', 'the_curator@gmail.com'].sort());
 
         // Now let's make the user come back to the site! (As if they got reactivated)
         if (day === 9) {
@@ -83,9 +83,9 @@ describe('Email per day', () => {
         const totalEmailsSent = await EmailLogModel.countDocuments({ userId: TestId.USER, state: EmailState.SENT }).lean();
 
         expect(totalEmailsSent).toBe(day + 1);
-        expect(response.sent[EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE]).toHaveLength(2);
+
         expect(response.sent[EmailType.EMAIL_7D_REACTIVATE]).toHaveLength(0);
-        expect(response.sent[EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE].sort()).toMatchObject(['bbb@gmail.com', 'the_curator@gmail.com'].sort());
+        expect(response.sent[EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE].sort()).toMatchObject(['admin@admin.com', 'bbb@gmail.com', 'the_curator@gmail.com'].sort());
       } else if (day >= 11 && day <= 15) {
         expect(response.sent[EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE]).toHaveLength(0);
         expect(response.sent[EmailType.EMAIL_7D_REACTIVATE]).toHaveLength(0);

@@ -103,6 +103,7 @@ export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
         roles: {
           $ne: Role.GUEST,
         },
+        emailConfirmed: true,
       },
     }, {
       $project: {
