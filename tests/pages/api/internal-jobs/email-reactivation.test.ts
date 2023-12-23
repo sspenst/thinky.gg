@@ -83,13 +83,12 @@ describe('Email reactivation', () => {
         const response = await res.json();
         const emailLogs = await EmailLogModel.find({}, {}, { sort: { createdAt: -1 } });
 
-        expect(emailLogs).toHaveLength(3);
+        expect(emailLogs).toHaveLength(4);
 
         expect(emailLogs[2].state).toBe(EmailState.FAILED);
         expect(emailLogs[2].error).toBe('rejected Test rejection');
         expect(emailLogs[2].type).toBe(EmailType.EMAIL_7D_REACTIVATE);
-        expect(response.failed[EmailType.EMAIL_7D_REACTIVATE]).toHaveLength(3);
-        expect(response.failed[EmailType.EMAIL_7D_REACTIVATE].sort()).toMatchObject(['test@gmail.com', 'bbb@gmail.com', 'the_curator@gmail.com'].sort());
+        expect(response.failed[EmailType.EMAIL_7D_REACTIVATE].sort()).toMatchObject(['admin@admin.com', 'test@gmail.com', 'bbb@gmail.com', 'the_curator@gmail.com'].sort());
         expect(res.status).toBe(200);
       },
     });
@@ -129,12 +128,12 @@ describe('Email reactivation', () => {
 
         const emailLogs = await EmailLogModel.find({}, {}, { sort: { createdAt: -1 } });
 
-        expect(emailLogs).toHaveLength(6);
+        expect(emailLogs).toHaveLength(8);
 
         expect(emailLogs[2].state).toBe(EmailState.SENT);
         expect(emailLogs[2].error).toBeNull();
         expect(emailLogs[2].type).toBe(EmailType.EMAIL_7D_REACTIVATE);
-        expect(response.sent[EmailType.EMAIL_7D_REACTIVATE].sort()).toMatchObject(['test@gmail.com', 'bbb@gmail.com', 'the_curator@gmail.com'].sort());
+        expect(response.sent[EmailType.EMAIL_7D_REACTIVATE].sort()).toMatchObject(['admin@admin.com', 'test@gmail.com', 'bbb@gmail.com', 'the_curator@gmail.com'].sort());
         expect(res.status).toBe(200);
       },
     });
@@ -177,7 +176,7 @@ describe('Email reactivation', () => {
   }, 10000);
   test('Running it again but cause a mongo exception in querying', async () => {
     // setup
-    jest.spyOn(UserConfigModel, 'aggregate').mockImplementation(() => {
+    jest.spyOn(UserModel, 'aggregate').mockImplementation(() => {
       throw new Error('Test mongo error');
     });
     sendMailRefMock.ref = throwMock;
