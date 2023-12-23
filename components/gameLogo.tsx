@@ -7,12 +7,12 @@ import StyledTooltip from './page/styledTooltip';
 interface GameLogoProps {
   gameId: GameId;
   id: string;
-  useAbsoluteUrl?: boolean;
+
   size?: number;
   tooltip?: boolean;
 }
 
-export default function GameLogo({ gameId, id, useAbsoluteUrl, size = 28, tooltip = false }: GameLogoProps) {
+export default function GameLogo({ gameId, id, size = 28, tooltip = false }: GameLogoProps) {
   const game = getGameFromId(gameId);
   const tooltipId = `${game.id}-tooltip-${id}`;
   const src = !useAbsoluteUrl ? game.logo : game.baseUrl + game.logo;
