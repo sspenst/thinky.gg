@@ -13,6 +13,7 @@ import { AchievementModel, LevelModel, NotificationModel, StatModel, UserConfigM
 import { calcPlayAttempts, refreshIndexCalcs } from '@root/models/schemas/levelSchema';
 import mongoose, { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
+import { runEmailDigest } from '../internal-jobs/email-digest';
 import { processQueueMessages } from '../internal-jobs/worker';
 
 interface AdminBodyProps {
@@ -100,6 +101,13 @@ export default withAuth({ POST: {
         return res.status(500).json({ error: 'Error switching isRanked' });
       }
 
+      break;
+    }
+
+    case AdminCommand.RunEmailDigest: {
+      const { limit } = JSON.parse(req.body.payload);
+
+      await runEmailDigest(req.gameId, limit);
       break;
     }
 
