@@ -68,7 +68,8 @@ export default function getEmailBody({
                       textAlign: 'center',
                     }}>
                       <a href={`${game.baseUrl}`}>
-                        <GameLogoAndLabel id={game.id} gameId={game.id} />
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={`${game.baseUrl}${game.logo}`} width='75' alt={game.displayName} />
                       </a>
                       <h1>Hi {user.name},</h1>
                       <p>{title}</p>
@@ -99,7 +100,10 @@ export default function getEmailBody({
                       }
                       {featuredLevels &&
                         <div>
-                          <h2>{featuredLevelsLabel}</h2>
+                          <h2 style={{
+                            margin: '20px 0',
+                          }}
+                          >{featuredLevelsLabel}</h2>
                           <table role='presentation' cellPadding='0' cellSpacing='0' style={{
                             width: '100%',
                           }}>
@@ -109,7 +113,17 @@ export default function getEmailBody({
                                   <div style={{
                                     textAlign: 'center',
                                   }}>
-                                    <GameLogoAndLabel useAbsoluteUrl id={level._id.toString()} gameId={level.gameId} />
+                                    <table role='presentation' cellPadding='0' cellSpacing='0' style={{
+                                      margin: '15 auto',
+                                    }}>
+                                      <tr>
+                                        <td>
+                                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                                          <img style={{ borderRadius: 10 }} src={`${Games[level.gameId].baseUrl}${Games[level.gameId].logo}`} width='75' alt={Games[level.gameId].displayName} />
+                                        </td>
+                                        <td>Game: {Games[level.gameId].displayName}</td>
+                                      </tr>
+                                    </table>
                                     <a href={`${getGameFromId(level.gameId).baseUrl}/level/${level.slug}`} style={{
                                       color: '#4890ce',
                                       textDecoration: 'none',

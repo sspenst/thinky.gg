@@ -90,54 +90,36 @@ export async function sendMail(gameId: GameId, batchId: Types.ObjectId, type: Em
   return err;
 }
 
-interface UserConfigWithNotificationsCount extends UserConfig {
+interface UserWithNotificationsCount extends User {
   notificationsCount: number;
   lastSentEmailLogs: EmailLog[];
 }
 
 export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
-  const userConfigsAggQ = UserConfigModel.aggregate<UserConfigWithNotificationsCount>([
-    {
-      $lookup: {
-        from: UserModel.collection.name,
-        localField: 'userId',
-        foreignField: '_id',
-        as: 'userId',
-        pipeline: [
-          {
-            $match: {
-              emailDigest: {
-                $in: [EmailDigestSettingType.DAILY],
-              },
-            },
-          }, {
-            $project: {
-              _id: 1,
-              email: 1,
-              name: 1,
-              roles: 1,
-              emailDigest: 1,
-              ts: 1,
-              last_visited_at: 1
-            }
-          }
-        ]
-      },
-    }, {
-      $unwind: '$userId',
-    },
+  const userAgg = UserModel.aggregate<UserWithNotificationsCount>([
     {
       $match: {
-        'userId.roles': {
+        emailDigest: EmailDigestSettingType.DAILY,
+        roles: {
           $ne: Role.GUEST,
         },
       },
+    }, {
+      $project: {
+        _id: 1,
+        email: 1,
+        name: 1,
+        roles: 1,
+        emailDigest: 1,
+        ts: 1,
+        last_visited_at: 1
+      }
     },
-    // join notifications and count how many are unread, createdAt { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }, and userId is the same as the user
+
     {
       $lookup: {
         from: NotificationModel.collection.name,
-        let: { userId: '$userId._id' },
+        let: { userId: '$_id' },
         pipeline: [
           {
             $match: {
@@ -183,7 +165,7 @@ export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
     {
       $lookup: {
         from: EmailLogModel.collection.name,
-        let: { userId: '$userId._id' },
+        let: { userId: '$_id' },
         pipeline: [
           {
             $match: {
@@ -218,9 +200,9 @@ export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
 
   //const levelsOfDayMappedByGameId = Object.fromEntries(Object.values(Games).map((game, i) => [game.id, levelsOfDay[i]]));
 
-  const [userConfigs] = await Promise.all([
-    userConfigsAggQ
-  ]);
+  const users = await userAgg;
+
+  //  return { sentListByEmailDigestType: {}, failedListByEmailDigestType: {} };
 
   const sentListByEmailDigestType = {
     [EmailType.EMAIL_DIGEST]: [],
@@ -235,14 +217,8 @@ export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
 
   let count = 0;
 
-  for (const userConfig of userConfigs) {
-    if (!userConfig.userId) {
-      continue;
-    }
-
-    const user = userConfig.userId as User;
-
-    const [lastVisitedAt, notificationsCount] = [user.last_visited_at || 0, userConfig.notificationsCount];
+  for (const user of users) {
+    const [lastVisitedAt, notificationsCount] = [user.last_visited_at || 0, user.notificationsCount];
 
     const lastSentEmailLogsGroupedByType = {
       [EmailType.EMAIL_DIGEST]: [],
@@ -252,7 +228,7 @@ export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
 
     let lastSentEmailLogTs = null;
 
-    for (const emailLog of userConfig.lastSentEmailLogs) {
+    for (const emailLog of user.lastSentEmailLogs) {
       lastSentEmailLogsGroupedByType[emailLog.type].push(emailLog);
 
       if (!lastSentEmailLogTs || emailLog.createdAt > lastSentEmailLogTs) {
@@ -297,7 +273,7 @@ export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
       [EmailType.EMAIL_7D_REACTIVATE]: {
         subject: 'We miss you - Come check out what\'s new',
         title: 'We haven\'t seen you in a bit!',
-        message: 'We noticed that you haven\'t come back to Thinky.gg in a bit. There has been a ton of new levels added to the site - would love for you to try them out!',
+        message: 'We noticed that you haven\'t come back to Thinky.gg in a bit. There has been a ton of new levels added to the site ready to challenge your brain. Come check them out!',
         featuredLevelsLabel: 'Levels of the Day',
       },
       [EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE]: {
