@@ -107,7 +107,7 @@ export default withAuth({ POST: {
     case AdminCommand.RunEmailDigest: {
       const { limit } = JSON.parse(req.body.payload);
 
-      await runEmailDigest(req.gameId, limit);
+      await runEmailDigest(limit);
       break;
     }
 
