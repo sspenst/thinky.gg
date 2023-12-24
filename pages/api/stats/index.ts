@@ -95,16 +95,20 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
 
       // track the new personal best in a stat
       if (!stat) {
-        await StatModel.create([{
-          _id: new Types.ObjectId(),
-          attempts: 1,
-          complete: complete,
-          gameId: level.gameId,
-          levelId: level._id,
-          moves: moves,
-          ts: ts,
-          userId: userId,
-        }], { session: session });
+        await Promise.all(
+          [StatModel.create([{
+            _id: new Types.ObjectId(),
+            attempts: 1,
+            complete: complete,
+            gameId: level.gameId,
+            levelId: level._id,
+            moves: moves,
+            ts: ts,
+            userId: userId,
+          }], { session: session }),
+          // The first time solving this level we should increment calcLevelsCompletedCount
+          UserConfigModel.updateOne({ userId: userId, gameId: level.gameId }, { $inc: { calcLevelsCompletedCount: 1 } }, { session: session }),
+          ]);
       } else {
         await StatModel.updateOne({ _id: stat._id }, {
           $inc: {
@@ -178,7 +182,7 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
           session: session,
         }).lean<Stat[]>();
 
-        const userConfigInc: mongoose.AnyKeys<UserConfig> = { calcLevelsSolvedCount: -1 };
+        const userConfigInc: mongoose.AnyKeys<UserConfig> = { calcLevelsSolvedCount: -1 }; // Don't need to decrement calcLevelsCompletedCount because technically the level is still completed
 
         if (level.isRanked) {
           userConfigInc.calcRankedSolves = -1;

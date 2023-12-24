@@ -19,6 +19,10 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       type: Number,
       default: 0,
     },
+    calcLevelsCompletedCount: {
+      type: Number,
+      default: 0,
+    },
     calcRecordsCount: {
       type: Number,
       default: 0,

@@ -104,7 +104,7 @@ describe('matchCreateJoinAndQuit', () => {
           expect(player.config).toBeDefined();
           const keys = Object.keys(player?.config || []);
 
-          expect(keys.sort()).toEqual(['_id', 'gameId', 'calcRankedSolves', 'calcLevelsCreatedCount', 'calcLevelsSolvedCount', 'calcRecordsCount', 'roles'].sort());
+          expect(keys.sort()).toEqual(['_id', 'gameId', 'calcRankedSolves', 'calcLevelsCreatedCount', 'calcLevelsCompletedCount', 'calcLevelsSolvedCount', 'calcRecordsCount', 'roles'].sort());
         }
 
         for (const winner of response.winners as UserWithMultiplayerProfile[]) {
@@ -112,7 +112,7 @@ describe('matchCreateJoinAndQuit', () => {
           expect(winner.config).toBeDefined();
           const keys = Object.keys(winner?.config || []);
 
-          expect(keys.sort()).toEqual(['_id', 'gameId', 'calcRankedSolves', 'calcLevelsSolvedCount', 'calcRecordsCount'].sort());
+          expect(keys.sort()).toEqual(['_id', 'gameId', 'calcRankedSolves', 'calcLevelsCompletedCount', 'calcLevelsSolvedCount', 'calcRecordsCount'].sort());
         }
 
         expect(response.gameTable).toBeUndefined();
