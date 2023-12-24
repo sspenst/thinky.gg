@@ -1,11 +1,12 @@
-import TestId from '@root/constants/testId';
+import { GameId } from '@root/constants/GameId';
 import { getTokenCookieValue } from '@root/lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '@root/lib/withAuth';
-import { UserConfigModel } from '@root/models/mongoose';
 import userHandler from '@root/pages/api/user/index';
 import { testApiHandler } from 'next-test-api-route-handler';
 
-export async function createAnotherGameConfig(userId: string) {
+export async function createAnotherGameConfig(userId: string, gameId: GameId) {
+  const host = gameId + '.localhost';
+
   await testApiHandler({
     handler: async (_, res) => {
       const req: NextApiRequestWithAuth = {
@@ -15,7 +16,7 @@ export async function createAnotherGameConfig(userId: string) {
         },
         headers: {
           'content-type': 'application/json',
-          'host': 'sokoban.localhost',
+          'host': host,
         },
       } as unknown as NextApiRequestWithAuth;
 
@@ -27,9 +28,6 @@ export async function createAnotherGameConfig(userId: string) {
 
       expect(response.error).toBeUndefined();
       expect(res.status).toBe(200);
-      const u = await UserConfigModel.find({ userId: userId });
-
-      expect(u.length).toBe(2);
     }
   });
 }

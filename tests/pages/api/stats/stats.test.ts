@@ -1,5 +1,6 @@
 import Direction from '@root/constants/direction';
 import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
+import { genTestLevel, genTestUser } from '@root/lib/initializeLocalDb';
 import Stat from '@root/models/db/stat';
 import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
@@ -19,7 +20,37 @@ import unpublishLevelHandler from '../../../../pages/api/unpublish/[id]';
 import { createAnotherGameConfig } from '../helper';
 
 beforeAll(async () => {
-  await dbConnect();
+  await dbConnect({ ignoreInitializeLocalDb: true });
+
+  await Promise.all([
+
+    LevelModel.insertMany([
+      genTestLevel({
+        _id: new Types.ObjectId(TestId.LEVEL),
+        userId: new Types.ObjectId(TestId.USER) as never,
+      }),
+    ]),
+    UserModel.insertMany([
+      await genTestUser({
+        _id: new Types.ObjectId(TestId.USER),
+      }),
+      await genTestUser({
+        _id: new Types.ObjectId(TestId.USER_B),
+      }),
+      await genTestUser({
+        _id: new Types.ObjectId(TestId.USER_C),
+      }),
+      await genTestUser({
+        _id: new Types.ObjectId(TestId.USER_GUEST),
+      })
+    ]),
+    createAnotherGameConfig(TestId.USER, GameId.PATHOLOGY),
+    createAnotherGameConfig(TestId.USER_B, GameId.PATHOLOGY),
+    createAnotherGameConfig(TestId.USER_C, GameId.PATHOLOGY),
+    createAnotherGameConfig(TestId.USER, GameId.SOKOBAN),
+    createAnotherGameConfig(TestId.USER_GUEST, DEFAULT_GAME_ID),
+
+  ]);
 });
 afterEach(() => {
   jest.restoreAllMocks();
@@ -34,7 +65,9 @@ let USER_B: User;
 describe('Testing stats api', () => {
   // setup by creating a new userConfig
   test('Create another userconfig profile for another game', async () => {
-    createAnotherGameConfig(TestId.USER);
+    const u = await UserConfigModel.find({ userId: TestId.USER });
+
+    expect(u.length).toBe(2);
     [USER, USER_B] = await Promise.all([UserModel.findById(TestId.USER), UserModel.findById(TestId.USER_B)]);
   });
 
@@ -108,8 +141,8 @@ describe('Testing stats api', () => {
     expect(lvl.leastMoves).toBe(20);
     const u = await UserConfigModel.findOne({ userId: TestId.USER });
 
-    expect(u.calcLevelsCompletedCount).toEqual(2);
-    expect(u.calcRecordsCount).toEqual(2); // initializes with 1
+    expect(u.calcLevelsCompletedCount).toEqual(0);
+    expect(u.calcRecordsCount).toEqual(0); // initializes with 0
   });
 
   test('Doing a PUT from USER with correct level solution (that is long, 14 steps) on a draft level should be OK', async () => {
@@ -127,7 +160,7 @@ describe('Testing stats api', () => {
 
     expect(lvl.leastMoves).toBe(14);
 
-    expect(u?.calcRecordsCount).toEqual(2);
+    expect(u?.calcRecordsCount).toEqual(0);
   });
   test('Doing ANOTHER PUT from USER with correct level solution (that is long, 14 steps) on a draft level should be OK', async () => {
     const res = await putStat(USER, [Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.RIGHT, Direction.UP, Direction.LEFT, Direction.LEFT, Direction.DOWN, Direction.DOWN, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.DOWN], TestId.LEVEL);
@@ -139,7 +172,7 @@ describe('Testing stats api', () => {
 
     expect(lvl.leastMoves).toBe(14);
 
-    expect(u.calcRecordsCount).toEqual(2);
+    expect(u.calcRecordsCount).toEqual(0);
   });
   test('Doing ANOTHER PUT with USERB with correct level solution (that is long, 14 steps) with a DIFFERENT user on a draft level should FAIL', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
@@ -149,12 +182,12 @@ describe('Testing stats api', () => {
     expect(res.status).toBe(401);
     const u = await UserConfigModel.findOne<UserConfig>({ userId: TestId.USER });
 
-    expect(u?.calcRecordsCount).toEqual(2);
+    expect(u?.calcRecordsCount).toEqual(0);
   });
   test('Doing a PUT from USER with a correct level solution (that is 12 steps) on a published level should be OK', async () => {
     const u = await UserConfigModel.findOne({ userId: TestId.USER });
 
-    expect(u.calcRecordsCount).toEqual(2);
+    expect(u.calcRecordsCount).toEqual(0);
     await LevelModel.findByIdAndUpdate(TestId.LEVEL, {
       $set: {
         isDraft: false,
@@ -190,7 +223,7 @@ describe('Testing stats api', () => {
 
         expect(lvl.leastMoves).toBe(12);
 
-        expect(u.calcRecordsCount).toEqual(2); // +0 since this is the same owner of the level
+        expect(u.calcRecordsCount).toEqual(0); // +0 since this is the same owner of the level
       },
     });
   });
@@ -215,9 +248,12 @@ describe('Testing stats api', () => {
 
         await processQueueMessages();
         expect(response.error).toBeUndefined();
-        expect(response.length).toBe(2);
-        expect(response.some((s: Stat) => s.attempts === 2 && s.moves === 12)).toBeTruthy();
-        expect(response.some((s: Stat) => s.attempts === 1 && s.moves === 80)).toBeTruthy();
+
+        expect(response.length).toBe(1);
+        expect(response[0].attempts).toBe(1);
+        expect(response[0].complete).toBe(true);
+        expect(response[0].moves).toBe(12);
+        expect(response[0].levelId).toBe(TestId.LEVEL);
         expect(res.status).toBe(200);
 
         const lvl = await LevelModel.findById(TestId.LEVEL);
@@ -228,7 +264,7 @@ describe('Testing stats api', () => {
     });
   });
   test('Doing a PUT with a USER_GUEST user with a nonoptimal level solution (that is 14 steps) should be OK', async () => {
-    const g = await UserConfigModel.findOne({ userId: TestId.USER_GUEST });
+    const g = await UserConfigModel.findOne({ userId: TestId.USER_GUEST, gameId: DEFAULT_GAME_ID });
 
     expect(g.calcLevelsCompletedCount).toEqual(0);
     await testApiHandler({
@@ -302,7 +338,7 @@ describe('Testing stats api', () => {
         expect(lvl.leastMoves).toBe(12);
         expect(lvl.calc_stats_players_beaten).toBe(1); // still hasn't solved since 14 steps > minimum
 
-        const b = await UserConfigModel.findOne({ userId: TestId.USER_B });
+        const b = await UserConfigModel.findOne({ userId: TestId.USER_B, gameId: DEFAULT_GAME_ID });
 
         expect(b.calcLevelsSolvedCount).toEqual(0);
         expect(b.calcRecordsCount).toEqual(0);
@@ -343,7 +379,7 @@ describe('Testing stats api', () => {
 
         const stat = await StatModel.findOne({ userId: TestId.USER_B, levelId: TestId.LEVEL });
 
-        expect(stat.attempts).toBe(3);
+        expect(stat.attempts).toBe(2);
         expect(stat.gameId).toBe(DEFAULT_GAME_ID);
 
         const b = await UserConfigModel.findOne({ userId: TestId.USER_B });
@@ -427,14 +463,13 @@ describe('Testing stats api', () => {
         expect(lvl.calc_stats_players_beaten).toBe(2);
         // get records
 
-        expect(records.length).toBe(2); // should still be 2 records
+        expect(records.length).toBe(1); // should still be 1 record
         expect(records[0].moves).toBe(12);
-        expect(records[1].moves).toBe(20);
 
         // get user
         const [u, b] = await Promise.all([UserConfigModel.findOne({ userId: TestId.USER }), UserConfigModel.findOne({ userId: TestId.USER_B })]);
 
-        expect(u.calcLevelsSolvedCount).toBe(2);
+        expect(u.calcLevelsSolvedCount).toBe(1);
         expect(b.calcLevelsSolvedCount).toBe(1);
 
         expect(b.calcRecordsCount).toEqual(0);
@@ -442,10 +477,10 @@ describe('Testing stats api', () => {
     });
   });
   test('Doing a PUT with USER_C user with correct minimum level solution should be OK', async () => {
-    const c = await UserConfigModel.findOne({ userId: TestId.USER_C });
+    const c = await UserConfigModel.findOne({ userId: TestId.USER_C, gameId: DEFAULT_GAME_ID });
 
-    expect(c.calcLevelsSolvedCount).toBe(1);
-    expect(c.calcRecordsCount).toBe(1);
+    expect(c.calcLevelsSolvedCount).toBe(0);
+    expect(c.calcRecordsCount).toBe(0);
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -482,8 +517,7 @@ describe('Testing stats api', () => {
         expect(records[0].moves).toBe(8);
         expect(records[0].userId.toString()).toBe(TestId.USER_C);
         expect(records[1].moves).toBe(12);
-        expect(records[2].moves).toBe(20);
-        expect(records.length).toBe(3);
+        expect(records.length).toBe(2);
 
         // get stat model for level
         const stat = await StatModel.findOne({ userId: TestId.USER_C, levelId: TestId.LEVEL });
@@ -497,13 +531,13 @@ describe('Testing stats api', () => {
           UserConfigModel.findOne({ userId: TestId.USER_C })
         ]);
 
-        expect(u.calcLevelsSolvedCount).toBe(1); // user a should have lost points
-        expect(u.calcRecordsCount).toBe(2);
+        expect(u.calcLevelsSolvedCount).toBe(0); // user a should have lost points
+        expect(u.calcRecordsCount).toBe(0);
         expect(b.calcLevelsSolvedCount).toBe(0);
         expect(b.calcRecordsCount).toBe(0);
-        expect(c.calcLevelsCompletedCount).toEqual(2);
-        expect(c.calcLevelsSolvedCount).toBe(2); // note that User C initializes with a score of 1
-        expect(c.calcRecordsCount).toBe(2); // +1!
+        expect(c.calcLevelsCompletedCount).toEqual(1);
+        expect(c.calcLevelsSolvedCount).toBe(1); // note that User C initializes with a score of 0
+        expect(c.calcRecordsCount).toBe(1); // +1!
       },
     });
   });
@@ -541,10 +575,9 @@ describe('Testing stats api', () => {
         // get records
         const records = await RecordModel.find({ levelId: TestId.LEVEL }, {}, { sort: { moves: 1 } });
 
-        expect(records.length).toBe(3);
+        expect(records.length).toBe(2);
         expect(records[0].moves).toBe(8);
         expect(records[1].moves).toBe(12);
-        expect(records[2].moves).toBe(20);
 
         // get user
         const [u, b, c] = await Promise.all([
@@ -554,19 +587,19 @@ describe('Testing stats api', () => {
 
         ]);
 
-        expect(u.calcLevelsSolvedCount).toBe(1); // user a should have lost points
-        expect(u.calcRecordsCount).toBe(2);
+        expect(u.calcLevelsSolvedCount).toBe(0); // user a should have lost points
+        expect(u.calcRecordsCount).toBe(0);
         expect(b.calcLevelsSolvedCount).toBe(1); // +1
         expect(b.calcRecordsCount).toBe(0);
-        expect(c.calcLevelsSolvedCount).toBe(2); // note that User C initializes with a score of 1
-        expect(c.calcRecordsCount).toBe(2);
+        expect(c.calcLevelsSolvedCount).toBe(1); // note that User C initializes with a score of 0
+        expect(c.calcRecordsCount).toBe(1);
       },
     });
   });
   test('Unpublishing a level and make sure calc records get updated', async () => {
     const user = await UserConfigModel.findOne({ userId: TestId.USER_C });
 
-    expect(user.calcRecordsCount).toBe(2);
+    expect(user.calcRecordsCount).toBe(1);
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -595,7 +628,7 @@ describe('Testing stats api', () => {
         expect(response.updated).toBe(true);
         const c = await UserConfigModel.findOne({ userId: TestId.USER_C });
 
-        expect(c.calcRecordsCount).toBe(1);
+        expect(c.calcRecordsCount).toBe(0);
       },
     });
   });
