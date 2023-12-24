@@ -13,13 +13,14 @@ import Tile from './tile/tile';
 
 interface GridProps {
   cellClassName?: (x: number, y: number) => string | undefined;
+  disableAnimation?: boolean;
   gameState: GameState;
   id: string;
   leastMoves: number;
   onCellClick?: (x: number, y: number, rightClick: boolean) => void;
 }
 
-export default function Grid({ cellClassName, gameState, id, leastMoves, onCellClick }: GridProps) {
+export default function Grid({ cellClassName, disableAnimation, gameState, id, leastMoves, onCellClick }: GridProps) {
   const { game } = useContext(AppContext);
   const { theme } = useTheme();
   const classic = theme === Theme.Classic;
@@ -76,6 +77,7 @@ export default function Grid({ cellClassName, gameState, id, leastMoves, onCellC
       tiles.push(
         <Tile
           className={cellClassName ? cellClassName(x, y) : undefined}
+          disableAnimation={disableAnimation}
           handleClick={onCellClick ? (rightClick: boolean) => onCellClick(x, y, rightClick) : undefined}
           key={`tile-${y}-${x}`}
           pos={new Position(x, y)}
@@ -90,6 +92,8 @@ export default function Grid({ cellClassName, gameState, id, leastMoves, onCellC
 
         blocks[tileState.block.id] = (
           <Tile
+            className={cellClassName ? cellClassName(x, y) : undefined}
+            disableAnimation={disableAnimation}
             handleClick={onCellClick ? (rightClick: boolean) => onCellClick(x, y, rightClick) : undefined}
             key={`block-${tileState.block.id}`}
             pos={new Position(x, y)}
@@ -102,6 +106,8 @@ export default function Grid({ cellClassName, gameState, id, leastMoves, onCellC
       if (tileState.blockInHole) {
         blocks[tileState.blockInHole.id] = (
           <Tile
+            className={cellClassName ? cellClassName(x, y) : undefined}
+            disableAnimation={disableAnimation}
             handleClick={onCellClick ? (rightClick: boolean) => onCellClick(x, y, rightClick) : undefined}
             inHole={true}
             key={`block-${tileState.blockInHole.id}`}
@@ -134,6 +140,9 @@ export default function Grid({ cellClassName, gameState, id, leastMoves, onCellC
             {gameState.pos &&
               <Tile
                 atEnd={getSolveStateFunction(game)(gameState)}
+                className={cellClassName ? cellClassName(gameState.pos.x, gameState.pos.y) : undefined}
+                disableAnimation={disableAnimation}
+                handleClick={onCellClick ? (rightClick: boolean) => onCellClick(gameState.pos.x, gameState.pos.y, rightClick) : undefined}
                 pos={gameState.pos}
                 text={gameState.moves.length}
                 tileType={TileType.Start}

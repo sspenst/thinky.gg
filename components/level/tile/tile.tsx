@@ -13,6 +13,7 @@ import Square from './square';
 interface TileProps {
   atEnd?: boolean;
   className?: string | undefined;
+  disableAnimation?: boolean;
   handleClick?: (rightClick: boolean) => void;
   inHole?: boolean;
   pos: Position;
@@ -24,6 +25,7 @@ interface TileProps {
 export default function Tile({
   atEnd,
   className,
+  disableAnimation,
   handleClick,
   inHole,
   pos,
@@ -98,7 +100,7 @@ export default function Tile({
         left: tileSize * initPos.x + (classic ? 0 : borderWidth),
         top: tileSize * initPos.y + (classic ? 0 : borderWidth),
         transform: `translate(${(pos.x - initPos.x) * tileSize}px, ${(pos.y - initPos.y) * tileSize}px)`,
-        transition: 'transform 0.1s',
+        transition: !disableAnimation ? 'transform 0.1s' : undefined,
         width: classic ? tileSize : innerTileSize,
       }}
     >
