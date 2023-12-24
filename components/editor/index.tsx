@@ -164,13 +164,15 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
         return prevLevel;
       }
 
+      const prevTileType = prevLevel.data.charAt(index);
+
       // there always has to be a start position
-      if (prevLevel.data.charAt(index) === TileType.Start) {
+      if (prevTileType === TileType.Start) {
         return prevLevel;
       }
 
       // there always has to be an end position
-      if (prevLevel.data.charAt(index) === TileType.End &&
+      if (prevTileType === TileType.End &&
         (prevLevel.data.match(new RegExp(TileType.End, 'g')) || []).length === 1) {
         return prevLevel;
       }
@@ -178,11 +180,30 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       const level = JSON.parse(JSON.stringify(prevLevel)) as Level;
       let clear = rightClick;
 
-      if (tileType === prevLevel.data.charAt(index)) {
+      if (tileType === prevTileType) {
         clear = true;
       }
 
-      const newTileType = clear ? TileType.Default : tileType;
+      function getNewTileType() {
+        // handle sokoban block on exit cases
+        if (game.id === GameId.SOKOBAN) {
+          if (prevTileType === TileType.Block && tileType === TileType.End) {
+            return TileType.BlockOnExit;
+          } else if (prevTileType === TileType.End && tileType === TileType.Block) {
+            return TileType.BlockOnExit;
+          } else if (prevTileType === TileType.BlockOnExit) {
+            if (tileType === TileType.Block) {
+              return TileType.End;
+            } else if (tileType === TileType.End) {
+              return TileType.Block;
+            }
+          }
+        }
+
+        return tileType;
+      }
+
+      const newTileType = clear ? TileType.Default : getNewTileType();
 
       // when changing start position the old position needs to be removed
       if (newTileType === TileType.Start) {
@@ -248,7 +269,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
         TileType.Block,
         TileType.End,
         TileType.Start,
-        TileType.BlockOnExit,
       ].map(tileType => tileType.toString()).join('');
 
       return {

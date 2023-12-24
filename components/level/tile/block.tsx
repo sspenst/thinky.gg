@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import TileType from '@root/constants/tileType';
 import { AppContext } from '@root/contexts/appContext';
 import { GridContext } from '@root/contexts/gridContext';
@@ -44,7 +45,7 @@ export default function Block({ inHole, tileType, onTopOf }: BlockProps) {
       style={{
         backgroundColor: getBackgroundColor(),
         borderBottomWidth: TileTypeHelper.canMoveUp(tileType) ? innerBorderWidth : 0,
-        borderColor: onTopOf === TileType.End ? 'var(--color-complete)' : 'var(--level-block-border)',
+        borderColor: onTopOf === TileType.End && game.id === GameId.SOKOBAN ? 'var(--color-complete)' : 'var(--level-block-border)',
         borderLeftWidth: TileTypeHelper.canMoveRight(tileType) ? innerBorderWidth : 0,
         borderRightWidth: TileTypeHelper.canMoveLeft(tileType) ? innerBorderWidth : 0,
         borderTopWidth: TileTypeHelper.canMoveDown(tileType) ? innerBorderWidth : 0,

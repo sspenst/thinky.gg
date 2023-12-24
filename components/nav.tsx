@@ -377,17 +377,18 @@ export default function Nav({ isDropdown }: NavProps) {
       {levelSearchNavLink}
       <NavDivider />
       <NavGameMenu />
-      {user && !isPro(user) && <>
-        {proNavLink}
-      </>}
       <NavDivider />
       {user && <>
         {profileNavLink}
-        {playLaterNavLink}
         {newNavLink}
         {draftsNavLink}
         {yourLevelsNavLink}
         {yourCollectionsNavLink}
+        {!isPro(user) && <>
+          <NavDivider />
+          {proNavLink}
+        </>}
+        {playLaterNavLink}
         {playHistoryNavLink}
         <NavDivider />
       </>}
