@@ -2,7 +2,7 @@ import { Step } from 'react-joyride';
 
 const TOUR_STEPS_HOME_PAGE: Step[] = [
   {
-    content: 'The campaign is the best way to start your Pathology journey!',
+    content: 'The campaign is the best way to start the game!',
     disableBeacon: true,
     placement: 'top',
     target: '#campaign',
@@ -32,7 +32,7 @@ const TOUR_STEPS_HOME_PAGE: Step[] = [
     target: '#latestLevelsSection',
   },
   {
-    content: 'If you want to chat with other players, join our Discord server! We hope you enjoy Pathology!',
+    content: 'If you want to chat with other players, join our Discord server! We hope you enjoy the game!',
     disableBeacon: true,
     placement: 'top',
     target: '#discordSection',
