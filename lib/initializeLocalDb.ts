@@ -1,6 +1,7 @@
 import { EmailDigestSettingType } from '@root/constants/emailDigest';
 import { PASSWORD_SALTROUNDS } from '@root/constants/passwordSaltRounds';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
+import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
 import bcrypt from 'bcryptjs';
@@ -22,6 +23,41 @@ function getNewUserConfig(gameId: GameId, tutorialCompletedAt: number, userId: T
     userId: userId,
     ...params,
   } as Partial<UserConfig>;
+}
+
+export async function genTestUser(props?: Partial<User>) {
+  const ts = TimerUtil.getTs();
+
+  return {
+    email: 'test@gmail.com',
+    name: 'test',
+    emailConfirmed: true,
+    ts: ts,
+    last_visited_at: ts,
+    password: await bcrypt.hash('test1234', PASSWORD_SALTROUNDS),
+    ...props
+  };
+}
+
+export function genTestLevel(props?: Partial<Level>) {
+  const ts = TimerUtil.getTs();
+
+  return {
+    _id: new Types.ObjectId(TestId.LEVEL),
+    authorNote: 'test level 1 author note',
+    data: '4000B0\n120000\n050000\n678900\nABCD30',
+    gameId: DEFAULT_GAME_ID,
+    height: 5,
+    isDraft: false,
+    isRanked: false,
+    leastMoves: 20,
+    name: 'test level 1',
+    slug: 'test/test-level-1',
+    ts: ts,
+    userId: new Types.ObjectId(TestId.USER),
+    width: 6,
+    ...props
+  };
 }
 
 export default async function initializeLocalDb() {
