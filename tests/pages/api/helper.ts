@@ -1,10 +1,10 @@
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
 import { getTokenCookieValue } from '@root/lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '@root/lib/withAuth';
 import userHandler from '@root/pages/api/user/index';
 import { testApiHandler } from 'next-test-api-route-handler';
 
-export async function createAnotherGameConfig(userId: string, gameId: GameId) {
+export async function createAnotherGameConfig(userId: string, gameId: GameId = DEFAULT_GAME_ID) {
   const host = gameId + '.localhost';
 
   await testApiHandler({

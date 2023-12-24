@@ -40,7 +40,7 @@ enableFetchMocks();
 
 describe('Editing levels should work correctly', () => {
   test('Create another userconfig profile for another game', async () => {
-    await createAnotherGameConfig(TestId.USER);
+    await createAnotherGameConfig(TestId.USER, GameId.SOKOBAN);
   });
   test('Creating 3 levels where 1 is draft should only show 2 in collection', async () => {
     await testApiHandler({
