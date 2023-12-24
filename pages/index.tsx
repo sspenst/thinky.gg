@@ -126,7 +126,7 @@ export default function ThinkyHomePage() {
   const foreground: BannerLayer = {
     image:
       'https://i.imgur.com/PL8J0Xl.png',
-    translateY: [30, 50, 'easeOutCubic'],
+    translateY: [0, 10, 'easeOutCubic'],
 
     /** blur effect is on the css property  called filter */
 
@@ -150,7 +150,7 @@ export default function ThinkyHomePage() {
       //translateX: [index + 0, 0 + 30 * index],
       //translateY: [index + 20, 30 * index],
       translateX: [3.5 * 14, 3 + 14 * index],
-      translateY: [40, 20],
+      translateY: [20, 20],
       startScroll: 600,
       endScroll: 1000,
 
@@ -193,8 +193,8 @@ export default function ThinkyHomePage() {
             className='aspect-[2/1] bg-gray-900'
           />
           <div className='flex flex-col p-3 ' />
-          <ParallaxBanner className='bg-gray-900' style={{
-            height: '1000px',
+          <ParallaxBanner className='bg-gray-900 aspect-[4/1]' style={{
+
           }}
           layers={[
             FeatureCard({
