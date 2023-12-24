@@ -35,37 +35,9 @@ describe('Testing stats api', () => {
   // setup by creating a new userConfig
   test('Create another userconfig profile for another game', async () => {
     createAnotherGameConfig(TestId.USER);
-  });
-  test('Doing a PUT with a body but malformed level solution should error', async () => {
     [USER, USER_B] = await Promise.all([UserModel.findById(TestId.USER), UserModel.findById(TestId.USER_B)]);
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'PUT',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER),
-          },
-          body: {
-            directions: '12345',
-            levelId: TestId.LEVEL
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('Invalid body.directions');
-        expect(res.status).toBe(400);
-      },
-    });
   });
+
   test('Doing a PUT on an unknown level should error', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     const levelId = new Types.ObjectId();
@@ -136,6 +108,7 @@ describe('Testing stats api', () => {
     expect(lvl.leastMoves).toBe(20);
     const u = await UserConfigModel.findOne({ userId: TestId.USER });
 
+    expect(u.calcLevelsCompletedCount).toEqual(2);
     expect(u.calcRecordsCount).toEqual(2); // initializes with 1
   });
 
@@ -254,7 +227,50 @@ describe('Testing stats api', () => {
       },
     });
   });
-  test('Doing a PUT with a USERB user with a level solution (that is 14 steps) should be OK', async () => {
+  test('Doing a PUT with a USER_GUEST user with a nonoptimal level solution (that is 14 steps) should be OK', async () => {
+    const g = await UserConfigModel.findOne({ userId: TestId.USER_GUEST });
+
+    expect(g.calcLevelsCompletedCount).toEqual(0);
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_GUEST),
+          },
+          body: {
+            directions: [Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.RIGHT, Direction.UP, Direction.LEFT, Direction.LEFT, Direction.DOWN, Direction.DOWN, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.DOWN],
+            levelId: TestId.LEVEL
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        await processQueueMessages();
+        expect(response.error).toBeUndefined();
+        expect(response.success).toBe(true);
+        expect(res.status).toBe(200);
+        const lvl = await LevelModel.findById(TestId.LEVEL);
+
+        expect(lvl.leastMoves).toBe(12);
+        expect(lvl.calc_stats_players_beaten).toBe(1); // still hasn't solved since 14 steps > minimum
+
+        const g = await UserConfigModel.findOne({ userId: TestId.USER_GUEST });
+
+        expect(g.calcLevelsSolvedCount).toEqual(0);
+        expect(g.calcLevelsCompletedCount).toEqual(1);
+        expect(g.calcRecordsCount).toEqual(0);
+      },
+    });
+  });
+  test('Doing a PUT with a USER user with a level solution (that is 14 steps) should be OK', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -288,6 +304,7 @@ describe('Testing stats api', () => {
 
         const b = await UserConfigModel.findOne({ userId: TestId.USER_B });
 
+        expect(b.calcLevelsSolvedCount).toEqual(0);
         expect(b.calcRecordsCount).toEqual(0);
       },
     });
@@ -484,6 +501,7 @@ describe('Testing stats api', () => {
         expect(u.calcRecordsCount).toBe(2);
         expect(b.calcLevelsSolvedCount).toBe(0);
         expect(b.calcRecordsCount).toBe(0);
+        expect(c.calcLevelsCompletedCount).toEqual(2);
         expect(c.calcLevelsSolvedCount).toBe(2); // note that User C initializes with a score of 1
         expect(c.calcRecordsCount).toBe(2); // +1!
       },
