@@ -9,6 +9,7 @@ interface UserConfig {
   calcLevelsCreatedCount: number;
   calcRecordsCount: number;
   chapterUnlocked: number;
+  calcLevelsCompletedCount: number;
   calcLevelsSolvedCount: number;
   gameId: GameId;
   giftSubscriptions: string[]; // gift subscriptions this user has given out
