@@ -150,7 +150,7 @@ export default function ThinkyHomePage() {
     const banner: BannerLayer = {
       //translateX: [index + 0, 0 + 30 * index],
       //translateY: [index + 20, 30 * index],
-      translateX: [(3.5 * 14) + '%', (3 + 14 * index) + '%'],
+      translateX: [(3.5 * 14) + '%', (0 + 14 * index) + '%'],
       translateY: ['20%', '20%'],
       startScroll: 600,
       endScroll: 1000,
