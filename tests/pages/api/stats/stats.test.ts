@@ -1,7 +1,6 @@
 import Direction from '@root/constants/direction';
 import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
 import { genTestLevel, genTestUser } from '@root/lib/initializeLocalDb';
-import Stat from '@root/models/db/stat';
 import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
 import { enableFetchMocks } from 'jest-fetch-mock';
