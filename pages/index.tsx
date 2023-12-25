@@ -30,11 +30,11 @@ export default function ThinkyHomePage() {
 
     opacity: [1, 0.3],
 
-    scale: [1, 0.5, 'easeOutCubic'],
+    scale: [2, 0.75, 'easeOutCubic'],
     shouldAlwaysCompleteAnimation: true,
     children: (
       <div className='absolute inset-0 flex items-center justify-center'>
-        <h1 className='text-6xl md:text-8xl '>
+        <h1 className='text-2xl md:text-6xl '>
           Puzzle games to make you think
         </h1>
       </div>
@@ -43,7 +43,7 @@ export default function ThinkyHomePage() {
   const background: BannerLayer = {
     image:
       'https://i.imgur.com/zqvfnh3.png',
-    translateY: [0, 50],
+    translateY: ['0%', '50%'],
     style: {
       backgroundImage: 'url(https://i.imgur.com/h2qnMrV.png)',
       // height: '100vh',
@@ -76,7 +76,7 @@ export default function ThinkyHomePage() {
   };
 
   const headline: BannerLayer = {
-    translateY: [0, 20],
+    translateY: ['0%', '20%'],
     scale: [1, 1.05, 'easeOutCubic'],
     shouldAlwaysCompleteAnimation: true,
     expanded: false,
@@ -125,8 +125,9 @@ export default function ThinkyHomePage() {
 
   const foreground: BannerLayer = {
     image:
-      'https://i.imgur.com/PL8J0Xl.png',
-    translateY: [0, 10, 'easeOutCubic'],
+      'https://i.imgur.com/0q38jR7.png',
+
+    translateY: ['0%', '10%', 'easeOutCubic'],
 
     /** blur effect is on the css property  called filter */
 
@@ -149,8 +150,8 @@ export default function ThinkyHomePage() {
     const banner: BannerLayer = {
       //translateX: [index + 0, 0 + 30 * index],
       //translateY: [index + 20, 30 * index],
-      translateX: [3.5 * 14, 3 + 14 * index],
-      translateY: [20, 20],
+      translateX: [(3.5 * 14) + '%', (3 + 14 * index) + '%'],
+      translateY: ['20%', '20%'],
       startScroll: 600,
       endScroll: 1000,
 
@@ -187,14 +188,19 @@ export default function ThinkyHomePage() {
     >
       <div className='flex flex-col justify-center items-center h-full'>
         <ParallaxProvider>
-          <ParallaxBanner layers={[headline]} className='aspect-[1/1] bg-gray-900' />
+          <ParallaxBanner layers={[headline]} className='bg-gray-900' style={{
+            height: '200vh',
+          }} />
           <ParallaxBanner
             layers={[background, foreground, gradientOverlay, subtext]}
-            className='aspect-[2/1] bg-gray-900'
+            className='bg-gray-900' style={{
+              height: '50vh',
+
+            }}
           />
           <div className='flex flex-col p-3 ' />
-          <ParallaxBanner className='bg-gray-900 aspect-[4/1]' style={{
-
+          <ParallaxBanner className='bg-gray-900 ' style={{
+            height: '50vh',
           }}
           layers={[
             FeatureCard({
