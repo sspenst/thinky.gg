@@ -29,9 +29,8 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
     if (mongoose.connection.readyState !== 1) {
       logger.error('Mongoose connection error ' + mongoose.connection.readyState);
 
-      cached.conn = null;
-      cached.mongoMemoryServer = null;
-      cached.promise = null;
+      // try to reconnect
+      await dbDisconnect();
     } else {
       return cached.conn;
     }
