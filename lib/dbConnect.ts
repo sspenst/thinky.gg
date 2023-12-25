@@ -28,9 +28,13 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
     /* istanbul ignore next */
     if (mongoose.connection.readyState !== 1) {
       logger.error('Mongoose connection error ' + mongoose.connection.readyState);
-    }
 
-    return cached.conn;
+      cached.conn = null;
+      cached.mongoMemoryServer = null;
+      cached.promise = null;
+    } else {
+      return cached.conn;
+    }
   }
 
   if (!cached.promise) {
