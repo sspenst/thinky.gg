@@ -391,7 +391,7 @@ export default async function initializeLocalDb() {
         gameId: DEFAULT_GAME_ID,
         levels: [new Types.ObjectId(TestId.LEVEL), new Types.ObjectId(TestId.LEVEL_2)],
         name: 'test collection',
-        slug: await generateCollectionSlug(DEFAULT_GAME_ID, 'test', 'test collection'),
+        slug: 'test/test-collection',
         userId: new Types.ObjectId(TestId.USER),
       },
       {
@@ -399,7 +399,7 @@ export default async function initializeLocalDb() {
         gameId: DEFAULT_GAME_ID,
         levels: [new Types.ObjectId(TestId.LEVEL), new Types.ObjectId(TestId.LEVEL_2), new Types.ObjectId(TestId.LEVEL_3)],
         name: 'test collection 2',
-        slug: await generateCollectionSlug(DEFAULT_GAME_ID, 'test', 'test collection 2'),
+        slug: 'test/test-collection-2',
         userId: new Types.ObjectId(TestId.USER),
       },
       {
@@ -408,7 +408,7 @@ export default async function initializeLocalDb() {
         isPrivate: true,
         levels: [new Types.ObjectId(TestId.LEVEL), new Types.ObjectId(TestId.LEVEL_2), new Types.ObjectId(TestId.LEVEL_3)],
         name: 'test collection 3',
-        slug: await generateCollectionSlug(DEFAULT_GAME_ID, 'BBB', 'test collection 3'),
+        slug: 'bbb/test-collection',
         userId: new Types.ObjectId(TestId.USER_B),
       }
 
