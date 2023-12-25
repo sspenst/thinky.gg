@@ -194,7 +194,7 @@ export default function ThinkyHomePage() {
       <div className='flex flex-col justify-center items-center h-full'>
         <ParallaxProvider>
           <ParallaxBanner layers={[headline]} className='bg-gray-900' style={{
-            height: '200vh',
+            height: '100vh',
           }} />
           <ParallaxBanner
             layers={[background, foreground, gradientOverlay, subtext]}
@@ -269,11 +269,9 @@ export default function ThinkyHomePage() {
             ,
           ]}
           />
-          <h2 className='text-4xl mt-3'>Features</h2>
-        </ParallaxProvider>
-        <div className='flex flex-col justify-center items-center h-full'>
           <Footer />
-        </div>
+        </ParallaxProvider>
+
       </div>
     </Page>
   );
