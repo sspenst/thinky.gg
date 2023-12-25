@@ -39,7 +39,7 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
 
   if (!cached.promise) {
     const options: ConnectOptions = {
-
+      minPoolSize: 10,
       connectTimeoutMS: 10000,
       heartbeatFrequencyMS: 30000,
       serverSelectionTimeoutMS: 10000,
