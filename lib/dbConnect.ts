@@ -55,8 +55,6 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
         };
         const s = Date.now();
 
-        options.minPoolSize = 100;
-        options.maxPoolSize = 100;
         cached.mongoMemoryServer = await MongoMemoryReplSet.create(replSetOptions);
         console.log('MongoMemoryReplSet.create took ' + (Date.now() - s) + 'ms');
         uri = cached.mongoMemoryServer.getUri();
