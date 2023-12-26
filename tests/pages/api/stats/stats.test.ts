@@ -20,29 +20,6 @@ import { createAnotherGameConfig } from '../helper';
 
 beforeAll(async () => {
   await dbConnect({ ignoreInitializeLocalDb: true });
-  await Promise.all([
-    LevelModel.insertMany([
-      genTestLevel({
-        _id: new Types.ObjectId(TestId.LEVEL),
-        userId: new Types.ObjectId(TestId.USER) as never,
-      }),
-    ]),
-    UserModel.insertMany([
-      await genTestUser({
-        _id: new Types.ObjectId(TestId.USER),
-      }),
-      await genTestUser({
-        _id: new Types.ObjectId(TestId.USER_B),
-      }),
-      await genTestUser({
-        _id: new Types.ObjectId(TestId.USER_C),
-      }),
-      await genTestUser({
-        _id: new Types.ObjectId(TestId.USER_GUEST),
-      })
-    ]),
-
-  ]);
 });
 afterEach(() => {
   jest.restoreAllMocks();
@@ -58,10 +35,35 @@ describe('Testing stats api', () => {
   // setup by creating a new userConfig
   test('Create another userconfig profile for another game', async () => {
     await Promise.all([
-      createAnotherGameConfig(TestId.USER, GameId.PATHOLOGY),
-      createAnotherGameConfig(TestId.USER_B, GameId.PATHOLOGY),
-      createAnotherGameConfig(TestId.USER_C, GameId.PATHOLOGY),
+      LevelModel.insertMany([
+        genTestLevel({
+          _id: new Types.ObjectId(TestId.LEVEL),
+          userId: new Types.ObjectId(TestId.USER) as never,
+        }),
+      ]),
+      UserModel.insertMany([
+        await genTestUser({
+          _id: new Types.ObjectId(TestId.USER),
+        }),
+        await genTestUser({
+          _id: new Types.ObjectId(TestId.USER_B),
+        }),
+        await genTestUser({
+          _id: new Types.ObjectId(TestId.USER_C),
+        }),
+        await genTestUser({
+          _id: new Types.ObjectId(TestId.USER_GUEST),
+        })
+      ]),
+
+    ]);
+    console.log('all users');
+    console.log(await UserModel.find({}));
+    await Promise.all([
+      createAnotherGameConfig(TestId.USER, DEFAULT_GAME_ID),
       createAnotherGameConfig(TestId.USER, GameId.SOKOBAN),
+      createAnotherGameConfig(TestId.USER_B, DEFAULT_GAME_ID),
+      createAnotherGameConfig(TestId.USER_C, DEFAULT_GAME_ID),
       createAnotherGameConfig(TestId.USER_GUEST, DEFAULT_GAME_ID),
 
     ]);
