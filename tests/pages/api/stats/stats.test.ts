@@ -19,8 +19,9 @@ import unpublishLevelHandler from '../../../../pages/api/unpublish/[id]';
 import { createAnotherGameConfig } from '../helper';
 
 beforeAll(async () => {
+  console.log('Before dbconnect');
   await dbConnect({ ignoreInitializeLocalDb: true });
-
+  console.log('After dbconnect');
   await Promise.all([
 
     LevelModel.insertMany([

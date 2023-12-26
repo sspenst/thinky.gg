@@ -27,22 +27,18 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
   if (cached.conn) {
     /* istanbul ignore next */
     if (mongoose.connection.readyState !== 1) {
-      logger.error('Mongoose connection error ' + mongoose.connection.readyState);
-
-      // try to reconnect
-      await dbDisconnect();
-    } else {
-      return cached.conn;
+      logger.warn('Mongoose connection error ' + mongoose.connection.readyState);
     }
+
+    return cached.conn;
   }
 
   if (!cached.promise) {
     const options: ConnectOptions = {
-      minPoolSize: 10,
-      connectTimeoutMS: 10000,
+      /*connectTimeoutMS: 10000,
       heartbeatFrequencyMS: 30000,
       serverSelectionTimeoutMS: 10000,
-      socketTimeoutMS: 20000,
+      socketTimeoutMS: 20000,*/
     };
 
     let uri = undefined;
@@ -53,23 +49,7 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
       if (!process.env.MONGODB_TEST_URI) {
         const replSetOptions = {
           replSet: {
-            count: 1, // Number of instances in the replica set
-            // storageEngine: 'inMemory', // Use the in-memory storage engine
-            oplogSize: 10, // Smaller oplog size in MB
-            args: [
-              '--nojournal', // Disable journaling for speed
-              //'--noprealloc', // Avoid file preallocation
-              //'--smallfiles', // Use small files to save disk space (if applicable)
-              '--syncdelay', '0' // Disable periodic flushing
-            ],
-            instanceOpts: [
-              {
-                storageEngine: 'inMemory', // Ensure each instance uses in-memory storage
-                //socketTimeoutMS: 5000, // Reduce socket timeout
-                //connectTimeoutMS: 5000, // Reduce connection timeout
-                // Other options specific to instances can be set here
-              },
-            ],
+            count: 1,
           },
         };
 
@@ -79,6 +59,7 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
         uri = process.env.MONGODB_TEST_URI;
         // now set the uri to point to a randomally generated database name
         // this is so that we can run tests in parallel
+        console.warn('MONGODB_TEST_URI is set. Using this instead of creating a new mongo memory server');
         const randomDbName = 'test_' + new Types.ObjectId().toString();
 
         uri = uri.replace('/?', '/' + randomDbName + '?');
