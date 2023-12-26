@@ -5,6 +5,7 @@ import { GameType } from '@root/constants/Games';
 import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import useRouterQuery from '@root/hooks/useRouterQuery';
+import cleanUser from '@root/lib/cleanUser';
 import debounce from 'debounce';
 import { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
@@ -216,6 +217,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         $project: {
           _id: 1,
           avatarUpdatedAt: 1,
+          hideStatus: 1,
           followerCount: '$followers.count',
           last_visited_at: {
             $cond: {
@@ -288,6 +290,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
     users.forEach((user, index) => {
       user.index = index + 1 + skip;
+      cleanUser(user);
     });
 
     return {
