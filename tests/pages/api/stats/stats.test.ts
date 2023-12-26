@@ -34,14 +34,16 @@ let USER_B: User;
 describe('Testing stats api', () => {
   // setup by creating a new userConfig
   test('Create another userconfig profile for another game', async () => {
+    await LevelModel.deleteMany({});
+    await UserConfigModel.deleteMany({});
     await Promise.all([
-      LevelModel.insertMany([
+      LevelModel.create([
         genTestLevel({
           _id: new Types.ObjectId(TestId.LEVEL),
           userId: new Types.ObjectId(TestId.USER) as never,
         }),
       ]),
-      UserModel.insertMany([
+      UserModel.create([
         await genTestUser({
           _id: new Types.ObjectId(TestId.USER),
         }),
@@ -54,11 +56,11 @@ describe('Testing stats api', () => {
         await genTestUser({
           _id: new Types.ObjectId(TestId.USER_GUEST),
         })
-      ]),
+      ], { validateBeforeSave: true } as never),
 
     ]);
     console.log('all users');
-    console.log(await UserModel.find({}));
+    console.log(await UserModel.find({}, { 'email': 1 }));
     await Promise.all([
       createAnotherGameConfig(TestId.USER, DEFAULT_GAME_ID),
       createAnotherGameConfig(TestId.USER, GameId.SOKOBAN),
