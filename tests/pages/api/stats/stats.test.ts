@@ -22,6 +22,7 @@ beforeAll(async () => {
   console.log('Before dbconnect');
   await dbConnect({ ignoreInitializeLocalDb: true });
   console.log('After dbconnect');
+  console.log('sample query ', await UserModel.find());
   await Promise.all([
 
     LevelModel.insertMany([
