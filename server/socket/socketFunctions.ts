@@ -193,6 +193,7 @@ export async function broadcastMatch(gameId: GameId, emitter: Emitter, matchId: 
     const matchClone = JSON.parse(JSON.stringify(match));
 
     enrichMultiplayerMatch(matchClone, player._id.toString());
+    // check if emitter is connected
     emitter?.to(player._id.toString()).emit('match', matchClone);
   }
 

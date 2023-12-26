@@ -19,8 +19,6 @@ import unpublishLevelHandler from '../../../../pages/api/unpublish/[id]';
 
 beforeAll(async () => {
   await dbConnect();
-
-  await StatModel.deleteMany({});
 });
 afterAll(async () => {
   await dbDisconnect();
@@ -48,13 +46,14 @@ const defaultReq: any = {
   },
 };
 
-describe('matchCreateJoinAndPlay', () => {
+describe('matchUnpublishLevelInMatch', () => {
   let matchId = '';
   const jan1 = new Date('2022-01-01T00:00:00.000Z');
 
   MockDate.set(jan1);
 
   test('create match', async () => {
+    await StatModel.deleteMany({}); // clear stats
     const levelsUpdated = await LevelModel.updateMany({ isDeleted: { $ne: true }, isDraft: false }, { $set: { calc_reviews_score_laplace: 0.7, leastMoves: 10, calc_difficulty_estimate: 40, calc_reviews_count: 5 } }); // setting the level score to 0.7 so they get selected
 
     expect(levelsUpdated.modifiedCount).toBe(3);

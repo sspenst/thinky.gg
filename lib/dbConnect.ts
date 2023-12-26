@@ -51,25 +51,34 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
           replSet: {
             count: 1,
           },
-        };
 
+        };
+        const s = Date.now();
+
+        options.minPoolSize = 100;
+        options.maxPoolSize = 100;
         cached.mongoMemoryServer = await MongoMemoryReplSet.create(replSetOptions);
+        console.log('MongoMemoryReplSet.create took ' + (Date.now() - s) + 'ms');
         uri = cached.mongoMemoryServer.getUri();
       } else {
         uri = process.env.MONGODB_TEST_URI;
         // now set the uri to point to a randomally generated database name
         // this is so that we can run tests in parallel
-        console.warn('MONGODB_TEST_URI is set. Using this instead of creating a new mongo memory server');
-        const randomDbName = 'test_' + new Types.ObjectId().toString();
+
+        const randomDbName = 't_' + new Types.ObjectId().toString();
 
         uri = uri.replace('/?', '/' + randomDbName + '?');
+        // console.warn('MONGODB_TEST_URI is set. Using ' + uri + ' instead of creating a new mongo memory server');
       }
     } else {
       uri = process.env.MONGODB_URI;
     }
 
-    cached.promise = mongoose.connect(uri, options).then((mongoose) => {
+    cached.promise = mongoose.connect(uri as string, options).then((mongoose) => {
       return mongoose;
+    }).catch((e) => {
+      logger.error('Error connecting to DB', e);
+      throw e;
     });
   }
 
