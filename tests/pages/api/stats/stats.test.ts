@@ -19,20 +19,14 @@ import unpublishLevelHandler from '../../../../pages/api/unpublish/[id]';
 import { createAnotherGameConfig } from '../helper';
 
 beforeAll(async () => {
-  console.log('BEFORE DB');
   await dbConnect({ ignoreInitializeLocalDb: true });
-  // drop db
+  // drop db... For some reason github is caching things between runs... very bizare
   await mongoose.connection.db.dropDatabase();
-  console.log('AFTER DB');
-  console.log('QUERYING SAMPLE');
-  console.log(await UserModel.find());
-  console.log('DONE QUERYING SAMPLE');
 });
 afterEach(() => {
   jest.restoreAllMocks();
 });
 afterAll(async () => {
-  console.log('AfterAll called');
   await dbDisconnect();
 });
 enableFetchMocks();
@@ -42,19 +36,14 @@ let USER_B: User;
 describe('Testing stats api', () => {
   // setup by creating a new userConfig
   test('Create another userconfig profile for another game', async () => {
-    console.log('THE F?');
-    await LevelModel.deleteMany({});
-    console.log('DONE DELETING MODEL');
-    await UserConfigModel.deleteMany({});
-    console.log('DONE DELETING');
     await Promise.all([
-      LevelModel.create([
+      LevelModel.insertMany([
         genTestLevel({
           _id: new Types.ObjectId(TestId.LEVEL),
           userId: new Types.ObjectId(TestId.USER) as never,
         }),
       ]),
-      UserModel.create([
+      UserModel.insertMany([
         await genTestUser({
           _id: new Types.ObjectId(TestId.USER),
         }),
@@ -70,8 +59,6 @@ describe('Testing stats api', () => {
       ], { validateBeforeSave: true } as never),
 
     ]);
-    console.log('all users');
-    console.log(await UserModel.find({}, { 'email': 1 }));
     await Promise.all([
       createAnotherGameConfig(TestId.USER, DEFAULT_GAME_ID),
       createAnotherGameConfig(TestId.USER, GameId.SOKOBAN),
