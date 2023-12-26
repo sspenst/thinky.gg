@@ -19,12 +19,8 @@ import unpublishLevelHandler from '../../../../pages/api/unpublish/[id]';
 import { createAnotherGameConfig } from '../helper';
 
 beforeAll(async () => {
-  console.log('Before dbconnect');
   await dbConnect({ ignoreInitializeLocalDb: true });
-  console.log('After dbconnect');
-  console.log('sample query ', await UserModel.find());
   await Promise.all([
-
     LevelModel.insertMany([
       genTestLevel({
         _id: new Types.ObjectId(TestId.LEVEL),
@@ -45,11 +41,6 @@ beforeAll(async () => {
         _id: new Types.ObjectId(TestId.USER_GUEST),
       })
     ]),
-    createAnotherGameConfig(TestId.USER, GameId.PATHOLOGY),
-    createAnotherGameConfig(TestId.USER_B, GameId.PATHOLOGY),
-    createAnotherGameConfig(TestId.USER_C, GameId.PATHOLOGY),
-    createAnotherGameConfig(TestId.USER, GameId.SOKOBAN),
-    createAnotherGameConfig(TestId.USER_GUEST, DEFAULT_GAME_ID),
 
   ]);
 });
@@ -66,6 +57,14 @@ let USER_B: User;
 describe('Testing stats api', () => {
   // setup by creating a new userConfig
   test('Create another userconfig profile for another game', async () => {
+    await Promise.all([
+      createAnotherGameConfig(TestId.USER, GameId.PATHOLOGY),
+      createAnotherGameConfig(TestId.USER_B, GameId.PATHOLOGY),
+      createAnotherGameConfig(TestId.USER_C, GameId.PATHOLOGY),
+      createAnotherGameConfig(TestId.USER, GameId.SOKOBAN),
+      createAnotherGameConfig(TestId.USER_GUEST, DEFAULT_GAME_ID),
+
+    ]);
     const u = await UserConfigModel.find({ userId: TestId.USER });
 
     expect(u.length).toBe(2);
