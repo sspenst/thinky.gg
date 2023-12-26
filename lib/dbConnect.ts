@@ -62,7 +62,6 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
         uri = process.env.MONGODB_TEST_URI;
         // now set the uri to point to a randomally generated database name
         // this is so that we can run tests in parallel
-
         const randomDbName = 't_' + new Types.ObjectId().toString();
 
         uri = uri.replace('/?', '/' + randomDbName + '?');
