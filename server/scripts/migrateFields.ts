@@ -9,13 +9,13 @@ import { rawDbConnect, rawDbDisconnect } from './rawDbconnect';
  * @param {Object} fieldsToMigrate - Object mapping source field names to target field names.
  */
 export async function migrateFields(sourceModel: any, targetModel: any, fieldsToMigrate: any, localField: string, foreignField: string, matchQuery: any = {}) {
-  console.log('Starting the database connection...');
+  console.log('\tStarting the database connection...');
   const conn = await rawDbConnect();
 
-  console.log('Database connected.');
+  console.log('\tDatabase connected.');
 
-  console.log('Starting the aggregation pipeline...');
-  console.log('Migrating the fields \'' + Object.keys(fieldsToMigrate).join(', ') + '\' from the \'' + sourceModel.collection.name + '\' collection to the \'' + targetModel.collection.name + '\' collection.');
+  console.log('\tStarting the aggregation pipeline...');
+  console.log('\tMigrating the fields \'' + Object.keys(fieldsToMigrate).join(', ') + '\' from the \'' + sourceModel.collection.name + '\' collection to the \'' + targetModel.collection.name + '\' collection.');
   const startTime = Date.now();
 
   const pipelinePrev = [
@@ -40,7 +40,7 @@ export async function migrateFields(sourceModel: any, targetModel: any, fieldsTo
 
   const preview = await sourceModel.aggregate(pipelinePrev);
 
-  console.log(preview.length + ' documents will be migrated.');
+  console.log('\t' + preview.length + ' documents will be migrated.');
 
   const pipeline = [
     { $match: {} }, // Adjust this match condition if needed
@@ -72,11 +72,11 @@ export async function migrateFields(sourceModel: any, targetModel: any, fieldsTo
 
   const timeTakenSeconds = ((Date.now() - startTime) / 1000).toFixed(2);
 
-  console.log('Aggregation pipeline completed in ' + timeTakenSeconds + ' seconds.');
+  console.log('\tAggregation pipeline completed in ' + timeTakenSeconds + ' seconds.');
 
-  console.log('Closing the database connection...');
+  console.log('\tClosing the database connection...');
   await rawDbDisconnect(conn);
-  console.log('Database disconnected.');
+  console.log('\tDatabase disconnected.');
 
-  console.log('Migration completed successfully.');
+  console.log('\tMigration completed successfully.');
 }
