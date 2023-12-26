@@ -8,6 +8,7 @@ import { GameId } from './GameId';
 import Theme from './theme';
 
 export enum GameType {
+  COMPLETE_AND_SHORTEST = 'COMPLETE_AND_SHORTEST',
   SHORTEST_PATH = 'SHORTEST_PATH',
   NONE = 'NONE'
 }
@@ -64,7 +65,7 @@ export const Games: Record<GameId, Game> = {
     SEODescription: 'The goal of the puzzle game Sokoban is simple. Push the boxes onto the goals. Sounds easy right? Yet, this sokoban style game is one of the most mind-bending puzzle games you will find. The boxes can only be pushed, never pulled, and only one can be pushed at a time.',
     shortDescription: 'Push the boxes onto the goals',
     subtitle: 'Push the boxes',
-    type: GameType.SHORTEST_PATH,
+    type: GameType.COMPLETE_AND_SHORTEST,
     videoDemo: 'https://i.imgur.com/7qGspht.mp4',
     gameStateIsSolveFunction: sokobanSolveState,
     validateSolutionFunction: validateSokobanSolution,
