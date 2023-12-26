@@ -174,7 +174,7 @@ export default function ThinkyHomePage() {
         backgroundColor: 'var(--color-3)',
 
       }} />
-      <div className='feature-card md:w-100 rounded-xl p-3 m-4 border border-color-4 bg-gray-800' style={{}}>
+      <div className='feature-card md:w-80 rounded-xl p-3 m-4 border border-color-4 bg-gray-800' style={{}}>
         <div className='font-bold text-lg'>{title}</div>
         <div className='text-sm'>
           {description}
