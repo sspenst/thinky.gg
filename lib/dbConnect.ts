@@ -82,7 +82,7 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
     logger.error('Mongoose connection error (b) ' + mongoose.connection.readyState);
   }
 
-  if (!process.env.MONGODB_URI || process.env.NODE_ENV === 'test' && !ignoreInitializeLocalDb) {
+  if ((!process.env.MONGODB_URI || process.env.NODE_ENV === 'test') && !ignoreInitializeLocalDb) {
     console.log('value of ignoreInitializeLocalDb', ignoreInitializeLocalDb);
     await initializeLocalDb();
   }
