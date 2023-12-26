@@ -144,33 +144,24 @@ export default function ThinkyHomePage() {
     ),
   };
 
-  function FeatureCard({ title, description, index, image }: {title: string, description: string | JSX.Element, index: number, image?: string}) {
-    const totalItems = 8;
-    const gridWidth = 1;
-    const gridHeight = 7;
+  function FeatureCardComp({ title, description, index, video }: {title: string, description: string | JSX.Element, index: number, video?: string}) {
+    return <Parallax
+      opacity={[0, 1]}
+      translateX={[-100, 0]}
+      startScroll={650 + index * 100}
+      endScroll={1000 + index * 100}
 
-    const positionX = index % gridWidth;
-    const positionY = Math.floor(index / gridWidth);
-
-    const translateY = (positionY / gridHeight) * 70;
-
-    const indexConverted = Math.sqrt(index);
-    const banner: BannerLayer = {
-      translateX: [10, index % 2 === 0 ? 5 : 55],
-      translateY: [0, indexConverted * 35],
-      opacity: [0, 1],
-      startScroll: 650,
-      endScroll: 1000,
-
-      shouldAlwaysCompleteAnimation: true,
-      children: <div className='h-40 w-40 rounded-xl p-4 border border-color-4 bg-gray-800' style={{}}>
+    >
+      <div className='md:w-100 rounded-xl p-3 m-4 border border-color-4 bg-gray-800' style={{}}>
         <div className='font-bold text-lg'>{title}</div>
         <div className='text-sm'>
           {description}
+          <div className='justify-center flex p-2'>
+            <video autoPlay loop muted className='rounded-lg h-60 text-center' src={video} />
+          </div>
         </div>
-      </div> };
-
-    return banner;
+      </div>
+    </Parallax>;
   }
 
   return (
@@ -191,7 +182,7 @@ export default function ThinkyHomePage() {
 
       }}
     >
-      <div className='flex flex-col justify-center items-center h-full'>
+      <div className='flex flex-col justify-center items-center h-full '>
         <ParallaxProvider>
           <ParallaxBanner layers={[headline]} className='bg-gray-900' style={{
             height: '100vh',
@@ -203,72 +194,69 @@ export default function ThinkyHomePage() {
 
             }}
           />
-          <div className='flex flex-col p-3 ' />
-          <ParallaxBanner className='bg-gray-900 ' style={{
-            height: '200vh',
-          }}
-          layers={[
-            FeatureCard({
-              title: 'Level Editor',
-              index: 0,
-              description: (<div className='text-sm'>
+          <div className='flex flex-col gap-3 ' />
+          {FeatureCardComp({
+            title: 'Level Editor',
+            index: 0,
+
+            description: (
+              <div className='text-sm'>
               Create your <span className='font-bold'>own</span> levels and share them with the world.
               </div>),
-            }),
-            FeatureCard({
+            video: 'https://i.imgur.com/uc6ndtx.mp4',
+          })}
+          {
+            FeatureCardComp({
               title: 'Leaderboards',
               index: 1,
-              description: (<div className='text-sm'>
-              Compete with others in challenges.
-              </div>),
-            }),
 
-            FeatureCard({
+              description: (<div className='text-sm'>
+                Compete with others in challenges.
+              </div>),
+              video: 'https://i.imgur.com/xWwF1XK.mp4',
+            })
+          }
+          {
+            FeatureCardComp({
               title: 'Reviews',
               index: 2,
-              description: (<div className='text-sm'>
-              Rate and review levels.
-              </div>),
-            })
-            ,
 
-            FeatureCard({
-              title: 'Multiplayer',
-              index: 3,
               description: (<div className='text-sm'>
-              Play with friends in real-time.
+                Rate and review levels.
               </div>),
+              video: 'https://i.imgur.com/kbIOV9w.mp4',
             })
-            ,
-
-            FeatureCard({
-              title: 'Advanced Search',
-              index: 4,
-              description: (<div className='text-sm'>
-              Search for levels by name, creator, or tags.
-              </div>),
-            })
-            ,
-
-            FeatureCard({
-              title: 'Automatic difficulty',
-              index: 5,
-              description: (<div className='text-sm'>
+          }
+          {FeatureCardComp({
+            title: 'Multiplayer',
+            index: 3,
+            description: (<div className='text-sm'>
+            Play with friends in real-time.
+            </div>),
+          })}
+          {FeatureCardComp({
+            title: 'Advanced Search',
+            video: 'https://i.imgur.com/GqCi1vV.mp4',
+            index: 4,
+            description: (<div className='text-sm'>
+            Search for levels by name, creator, or tags.
+            </div>),
+          })}
+          {FeatureCardComp({
+            title: 'Automatic difficulty',
+            index: 5,
+            description: (<div className='text-sm'>
               Levels are automatically rated by difficulty.
-              </div>),
-            })
-            ,
-
-            FeatureCard({
-              title: 'Pro',
-              index: 6,
-              description: (<div className='text-sm'>
-              Unlock <span className='font-bold'>advanced</span> analytics, checkpoint saving, and tons more.
-              </div>),
-            })
-            ,
-          ]}
-          />
+            </div>),
+            video: 'https://i.imgur.com/y5M6nGk.mp4'
+          })}
+          {FeatureCardComp({
+            title: 'Pro',
+            index: 6,
+            description: (<div className='text-sm'>
+            Unlock <span className='font-bold'>advanced</span> analytics, checkpoint saving, and tons more.
+            </div>),
+          })}
           <Footer />
         </ParallaxProvider>
 
