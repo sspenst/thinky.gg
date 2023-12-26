@@ -20,8 +20,6 @@ import { createAnotherGameConfig } from '../helper';
 
 beforeAll(async () => {
   await dbConnect({ ignoreInitializeLocalDb: true });
-  // drop db... For some reason github is caching things between runs... very bizare
-  await mongoose.connection.db.dropDatabase();
 });
 afterEach(() => {
   jest.restoreAllMocks();
