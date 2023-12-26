@@ -4,7 +4,7 @@ import { genTestLevel, genTestUser } from '@root/lib/initializeLocalDb';
 import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
 import { enableFetchMocks } from 'jest-fetch-mock';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
@@ -21,6 +21,8 @@ import { createAnotherGameConfig } from '../helper';
 beforeAll(async () => {
   console.log('BEFORE DB');
   await dbConnect({ ignoreInitializeLocalDb: true });
+  // drop db
+  await mongoose.connection.db.dropDatabase();
   console.log('AFTER DB');
   console.log('QUERYING SAMPLE');
   console.log(await UserModel.find());

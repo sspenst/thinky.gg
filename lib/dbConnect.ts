@@ -81,6 +81,7 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
   }
 
   if (!process.env.MONGODB_URI || process.env.NODE_ENV === 'test' && !ignoreInitializeLocalDb) {
+    console.log('initializing?');
     await initializeLocalDb();
   }
 
