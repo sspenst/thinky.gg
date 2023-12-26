@@ -86,7 +86,7 @@ export default function ThinkyHomePage() {
           Thinky.gg
         </h1>
         <div className='flex justify-center'>
-          <div className='flex flex-row justify-center m-6 gap-24'>
+          <div className='flex flex-col md:flex-row justify-center m-6 gap-24'>
             {Object.values(Games).map(game => {
               if (game.id === GameId.THINKY) {
                 return null;
@@ -143,16 +143,38 @@ export default function ThinkyHomePage() {
       <div className='absolute inset-0 bg-gradient-to-t from-gray-100 to-blue-900' />
     ),
   };
+  const [targetElements, setTargetElements] = React.useState<HTMLElement[]>([]);
+
+  React.useEffect(() => {
+    const elements = document.querySelectorAll('.feature-line');
+    const arr = Array.from(elements) as HTMLElement[];
+
+    // append footer
+    arr.push(document.querySelector('footer') as HTMLElement);
+    setTargetElements(arr);
+  }, []);
 
   function FeatureCardComp({ title, description, index, video }: {title: string, description: string | JSX.Element, index: number, video?: string}) {
-    return <Parallax
-      opacity={[0, 1]}
-      translateX={[-100, 0]}
-      startScroll={650 + index * 100}
-      endScroll={1000 + index * 100}
+    const targetElement = targetElements[index] ?? targetElements[index];
 
+    return <Parallax
+
+      translateX={['-200%', '0']}
+      targetElement={targetElement}
+      //startScroll={650 + index * 350}
+      //endScroll={1000 + index * 350}
     >
-      <div className='md:w-100 rounded-xl p-3 m-4 border border-color-4 bg-gray-800' style={{}}>
+      <div className='feature-line' style={{
+        position: 'absolute',
+        top: -400,
+        left: 50,
+        width: 10,
+        height: 100,
+        zIndex: 100,
+        backgroundColor: 'var(--color-3)',
+
+      }} />
+      <div className='feature-card md:w-100 rounded-xl p-3 m-4 border border-color-4 bg-gray-800' style={{}}>
         <div className='font-bold text-lg'>{title}</div>
         <div className='text-sm'>
           {description}
@@ -189,16 +211,15 @@ export default function ThinkyHomePage() {
           }} />
           <ParallaxBanner
             layers={[background, foreground, gradientOverlay, subtext]}
-            className='bg-gray-900' style={{
+            className='middle-section bg-gray-900' style={{
               height: '50vh',
 
             }}
           />
-          <div className='flex flex-col gap-3 ' />
+          <div className='flex flex-col gap-3 feature-area' />
           {FeatureCardComp({
             title: 'Level Editor',
             index: 0,
-
             description: (
               <div className='text-sm'>
               Create your <span className='font-bold'>own</span> levels and share them with the world.
