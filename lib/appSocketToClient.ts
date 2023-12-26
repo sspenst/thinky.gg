@@ -11,6 +11,10 @@ export function GenMongoWSEmitter(mongooseConnection: Mongoose) {
     return null;
   }
 
+  if (process.env.NODE_ENV === 'test') {
+    return null;
+  }
+
   const db = mongooseConnection.connection.db;
   const collection = db.collection('socket.io-adapter-events');
 
@@ -20,7 +24,7 @@ export function GenMongoWSEmitter(mongooseConnection: Mongoose) {
 }
 
 export async function requestBroadcastPrivateAndInvitedMatches(gameId: GameId, userId: Types.ObjectId) {
-  if (!global.MongoEmitter) {
+  if (!global.MongoEmitter && process.env.NODE_ENV !== 'test') {
     logger.warn('App Server asked itself to broadcast private and invited matches but MongoEmitter is not created');
 
     return;
@@ -30,7 +34,7 @@ export async function requestBroadcastPrivateAndInvitedMatches(gameId: GameId, u
 }
 
 export async function requestBroadcastMatches(gameId: GameId ) {
-  if (!global.MongoEmitter) {
+  if (!global.MongoEmitter && process.env.NODE_ENV !== 'test') {
     logger.warn('App Server asked itself to broadcast matches but MongoEmitter is not created');
 
     return;
@@ -40,7 +44,7 @@ export async function requestBroadcastMatches(gameId: GameId ) {
 }
 
 export async function requestBroadcastMatch(gameId: GameId, matchId: string) {
-  if (!global.MongoEmitter) {
+  if (!global.MongoEmitter && process.env.NODE_ENV !== 'test') {
     logger.warn('App Server asked itself to broadcast match but MongoEmitter is not created');
 
     return;
@@ -50,7 +54,7 @@ export async function requestBroadcastMatch(gameId: GameId, matchId: string) {
 }
 
 export async function requestScheduleBroadcastMatch(gameId: GameId, matchId: string) {
-  if (!global.MongoEmitter) {
+  if (!global.MongoEmitter && process.env.NODE_ENV !== 'test') {
     logger.warn('App Server asked itself to schedule broadcast match but MongoEmitter is not created');
   }
 
@@ -58,7 +62,7 @@ export async function requestScheduleBroadcastMatch(gameId: GameId, matchId: str
 }
 
 export async function requestClearBroadcastMatchSchedule(matchId: string) {
-  if (!global.MongoEmitter) {
+  if (!global.MongoEmitter && process.env.NODE_ENV !== 'test') {
     logger.warn('App Server asked itself to clear broadcast match schedule but MongoEmitter is not created');
   }
 
@@ -66,8 +70,7 @@ export async function requestClearBroadcastMatchSchedule(matchId: string) {
 }
 
 export async function requestBroadcastNotifications(gameId: GameId, userId: Types.ObjectId) {
-  if (!global.MongoEmitter) {
-    console.trace();
+  if (!global.MongoEmitter && process.env.NODE_ENV !== 'test') {
     logger.warn('App Server asked itself to broadcast notifications but MongoEmitter is not created');
 
     return;
@@ -77,7 +80,7 @@ export async function requestBroadcastNotifications(gameId: GameId, userId: Type
 }
 
 export async function requestKillSocket(userId: Types.ObjectId) {
-  if (!global.MongoEmitter) {
+  if (!global.MongoEmitter && process.env.NODE_ENV !== 'test') {
     logger.warn('App Server asked itself to kill socket but MongoEmitter is not created');
 
     return;

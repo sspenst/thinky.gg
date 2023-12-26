@@ -29,6 +29,7 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
   const resTrack = { status: 500, json: { error: 'Internal server error' } as any };
   const ts = TimerUtil.getTs();
   const session = await mongoose.startSession();
+
   const userId = user._id;
 
   try {
@@ -92,6 +93,8 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
 
         return resTrack;
       }
+
+      // log if session has been ended
 
       // track the new personal best in a stat
       if (!stat) {
