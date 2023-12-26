@@ -29,8 +29,8 @@ export async function genTestUser(props?: Partial<User>) {
   const ts = TimerUtil.getTs();
 
   return {
-    email: 'test@gmail.com',
-    name: 'test',
+    email: 'test' + (Math.random() * 1000000).toFixed(0) + '@gmail.com',
+    name: 'test' + (Math.random() * 1000000).toFixed(0),
     emailConfirmed: true,
     ts: ts,
     last_visited_at: ts,
