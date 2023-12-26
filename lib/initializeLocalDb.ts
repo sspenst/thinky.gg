@@ -61,8 +61,6 @@ export function genTestLevel(props?: Partial<Level>) {
 }
 
 export default async function initializeLocalDb() {
-  console.log('INITIALIZING LOCAL DB!');
-  console.trace();
   const ts = TimerUtil.getTs() - 60;
 
   // USER
