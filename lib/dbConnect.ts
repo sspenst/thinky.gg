@@ -24,6 +24,8 @@ interface DBConnectProperties {
 }
 
 export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectProperties = {}) {
+  console.log('dbconnect called with ' + ignoreInitializeLocalDb);
+
   if (cached.conn) {
     /* istanbul ignore next */
     if (mongoose.connection.readyState !== 1) {
@@ -81,7 +83,7 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
   }
 
   if (!process.env.MONGODB_URI || process.env.NODE_ENV === 'test' && !ignoreInitializeLocalDb) {
-    console.log('initializing?');
+    console.log('value of ignoreInitializeLocalDb', ignoreInitializeLocalDb);
     await initializeLocalDb();
   }
 
