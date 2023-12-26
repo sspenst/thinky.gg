@@ -1,8 +1,9 @@
 import FormattedDate from '@root/components/formatted/formattedDate';
 import MultiplayerRating from '@root/components/multiplayer/multiplayerRating';
 import MultiSelectUser from '@root/components/page/multiSelectUser';
+import { GameType } from '@root/constants/Games';
 import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
-import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import useRouterQuery from '@root/hooks/useRouterQuery';
 import debounce from 'debounce';
 import { GetServerSidePropsContext } from 'next';
@@ -61,6 +62,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
   const gameId = getGameIdFromReq(context.req);
+  const game = getGameFromId(gameId);
+
+  DEFAULT_QUERY.sortBy = game.type === GameType.SHORTEST_PATH ? 'config.calcLevelsSolvedCount' : 'config.calcLevelsCompletedCount';
   const searchQuery = { ...DEFAULT_QUERY };
 
   if (context.query && (Object.keys(context.query).length > 0)) {
@@ -374,6 +378,12 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
       id: 'config.calcLevelsSolvedCount',
       name: 'Solves',
       selector: row => row.config?.calcLevelsSolvedCount,
+      sortable: true,
+    },
+    {
+      id: 'config.calcLevelsCompletedCount',
+      name: 'Completed',
+      selector: row => row.config?.calcLevelsCompletedCount,
       sortable: true,
     },
     {
