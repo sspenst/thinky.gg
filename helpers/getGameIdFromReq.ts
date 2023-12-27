@@ -8,7 +8,9 @@ export function getGameIdFromReq(req?: NextApiRequest | IncomingMessage): GameId
   const field = req?.headers?.host;
   const subdomain = field?.split('.')[0];
 
-  return Games[subdomain as GameId]?.id || DEFAULT_GAME_ID;
+  const gameId = Games[subdomain as GameId]?.id || DEFAULT_GAME_ID;
+
+  return gameId;
 }
 
 export function getGameFromId(gameId: GameId | undefined) {
