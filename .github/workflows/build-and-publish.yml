@@ -3,11 +3,12 @@ name: Build and Publish
 on:
   push:
     paths-ignore:
-    - 'tests/**'
-    branches: [main]
+      - 'tests/**'
+    branches: [main, platform_part_2] # Include 'platform_part_2' branch
   pull_request:
     paths-ignore:
-    - 'tests/**'
+      - 'tests/**'
+    branches: [main, platform_part_2] # Include 'platform_part_2' branch
 
 jobs:
   build-and-push-docker-image:
@@ -31,7 +32,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Login to DockerHub
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/platform_part_2'
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -57,25 +58,25 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/pathology-socket:latest 
             ${{ secrets.DOCKERHUB_USERNAME }}/pathology-socket:${{ steps.vars.outputs.sha_short }}
             ${{ secrets.DOCKERHUB_USERNAME }}/pathology-socket:${{ steps.docker_build_version.outputs.version }}
-          push: ${{ github.ref == 'refs/heads/main' }}
+          push: ${{ github.ref == 'refs/heads/main' }} || ${{ github.ref == 'refs/heads/platform_part_2' }}
 
   config:
     name: Config
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/platform_part_2'
     runs-on: ubuntu-latest
     outputs:
       get-server-ip-list: ${{ steps.get-server-ip-list.outputs.get-server-ip-list }}
     steps:
       - id: get-server-ip-list
         name: Get Server IP List
-        run: echo "get-server-ip-list=$(dig +short app-servers.pathology.gg TXT | jq -cr 'split(",")')" >> $GITHUB_OUTPUT
+        run: echo "get-server-ip-list=$(dig +short app-servers.pathology.gg TXT | jq -cr 'split(\",\")')" >> $GITHUB_OUTPUT
       - name: print output
         run: |
-          echo "${{ steps.get-server-ip-list.outputs.get-server-ip-list }}"        
+          echo "${{ steps.get-server-ip-list.outputs.get-server-ip-list }}"
 
   deploy-to-staging:
     name: Deploy to Staging
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/platform_part_2'
     runs-on: ubuntu-latest
     needs: [build-and-push-docker-image, config]
     strategy:
