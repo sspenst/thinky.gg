@@ -1,8 +1,8 @@
+/* istanbul ignore file */
 import TileType, { TileTypeDefaultVisited } from '@root/constants/tileType';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import { Bitmap } from 'pureimage';
 
-/* istanbul ignore next */
 export default function generateLevelCanvas(canvas: Bitmap | HTMLCanvasElement, levelData: string) {
   const levelRows = levelData.split('\n');
   const height = levelRows.length;

@@ -49,8 +49,9 @@ export default apiWrapper({ GET: {
         pngData = levelImage.image;
         res.setHeader('Content-Length', pngData.length);
       } else {
-        logger.warn(`Image not found for level ${levelId}`);
-        throw new Error('Image not found');
+        return res.status(404).json({
+          error: 'Image not found for level',
+        });
       }
     });
     session.endSession();
