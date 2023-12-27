@@ -6,6 +6,7 @@ on:
       - 'tests/**'
     branches:
       - main
+      - platform_part_2 # Add this line
   pull_request:
     paths-ignore:
       - 'tests/**'
