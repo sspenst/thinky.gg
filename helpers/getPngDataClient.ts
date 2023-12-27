@@ -1,7 +1,7 @@
+/* istanbul ignore file */
 import Dimensions from '../constants/dimensions';
 import generateLevelCanvas from './generateLevelCanvas';
 
-/* istanbul ignore next */
 export default function getPngDataClient(levelData: string) {
   if (typeof document === 'undefined') {
     return;

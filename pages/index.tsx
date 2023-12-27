@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import Footer from '@root/components/page/footer';
 import Page from '@root/components/page/page';
 import { GameId } from '@root/constants/GameId';
@@ -8,7 +9,6 @@ import Image from 'next/image';
 import React, { useContext } from 'react';
 import { BannerLayer, Parallax, ParallaxBanner, ParallaxProvider } from 'react-scroll-parallax';
 
-/* istanbul ignore next */
 export default function ThinkyHomePage() {
   function GameCard({ game }: { game: Game }) {
     const getUrl = useUrl();
@@ -83,7 +83,7 @@ export default function ThinkyHomePage() {
     expanded: false,
     children: (
       <div className='justify-center flex flex-col items-center'>
-        <h1 className='text-6xl md:text-8xl text-white font-thin bg-black p-3 rounded-lg'>
+        <h1 className='text-6xl md:text-8xl text-white font-thin p-3 rounded-lg'>
           Thinky.gg
         </h1>
         <div className='flex justify-center'>

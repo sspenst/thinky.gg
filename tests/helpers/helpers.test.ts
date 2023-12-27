@@ -1,4 +1,5 @@
 import StatFilter from '@root/constants/statFilter';
+import { generatePassword } from '@root/helpers/generatePassword';
 import TestId from '../../constants/testId';
 import statFilterOptions from '../../helpers/filterSelectOptions';
 import getDifficultyEstimate from '../../helpers/getDifficultyEstimate';
@@ -151,6 +152,11 @@ describe('helpers/*.ts', () => {
 
     expect(getDifficultyEstimate(level, 10)).toBe(0);
   });
+  test('generatePassword', async () => {
+    const password = generatePassword();
+
+    expect(password.length).toBeGreaterThan(0);
+  });
 });
 
-export {};
+export { };

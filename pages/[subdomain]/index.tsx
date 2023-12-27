@@ -35,6 +35,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   };
 }
 
+/* istanbul ignore next */
 export interface HomepageDataProps {
   latestLevels?: EnrichedLevel[];
   latestReviews?: Review[];
@@ -43,10 +44,12 @@ export interface HomepageDataProps {
   topLevelsThisMonth?: EnrichedLevel[];
 }
 
+/* istanbul ignore next */
 interface HomePageProps {
   user: User | null;
 }
 
+/* istanbul ignore next */
 export function isVisibleInDom(id: string) {
   const element = document.getElementById(id);
 

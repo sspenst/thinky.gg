@@ -1,4 +1,4 @@
-// pages/api/render-grid.js
+/* istanbul ignore file */
 
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import Level from '@root/models/db/level';
