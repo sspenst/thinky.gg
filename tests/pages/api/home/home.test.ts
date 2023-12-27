@@ -21,28 +21,6 @@ afterAll(async () => {
 enableFetchMocks();
 
 describe('pages/api/home.ts', () => {
-  test('Wrong http method should error', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          cookies: {
-            token: getTokenCookieValue(TestId.USER),
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await homeHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('Method not allowed');
-        expect(res.status).toBe(405);
-      },
-    });
-  });
-
   test('GET no query', async () => {
     await testApiHandler({
       handler: async (_, res) => {

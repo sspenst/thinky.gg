@@ -98,6 +98,11 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
 export async function dbDisconnect(log: boolean = false) {
   log && console.log('in dbdisconnect');
 
+  if (process.env.NODE_ENV === 'test') {
+    // drop db
+    await mongoose.connection.db?.dropDatabase();
+  }
+
   if (cached.conn) {
     log && console.log('in dbdisconnect. cached.conn exists');
 

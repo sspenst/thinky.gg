@@ -16,7 +16,7 @@ afterEach(() => {
 //enableFetchMocks()
 
 describe('pages/index page', () => {
-  test('getStaticProps with no params', async () => {
+  test('getServerSideProps with no params', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     const context = {
       query: {
