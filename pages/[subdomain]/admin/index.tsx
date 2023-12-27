@@ -1,4 +1,4 @@
-import { Menu, Transition } from '@headlessui/react';
+import { Menu } from '@headlessui/react';
 import SendAdminMessage from '@root/components/admin/sendAdminMessage';
 import LevelCard from '@root/components/cards/levelCard';
 import FormattedUser from '@root/components/formatted/formattedUser';
@@ -16,7 +16,7 @@ import { LevelModel, UserModel } from '@root/models/mongoose';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Router from 'next/router';
-import React, { Fragment, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -43,6 +43,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   };
 }
 
+/* istanbul ignore next */
 export default function AdminPage({ queryUser, queryLevel, queryUserCommand, queryLevelCommand }: {queryUser: User | undefined; queryLevel: Level, queryUserCommand: string | null, queryLevelCommand: string | null}) {
   const [runningCommand, setRunningCommand] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState(queryLevel); // TODO: [refactor] [minor

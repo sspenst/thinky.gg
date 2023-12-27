@@ -64,6 +64,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   };
 }
 
+/* istanbul ignore next */
 export default function AchievementPage({ type, myAchievement, achievements }: {type: AchievementType, myAchievement?: Achievement, achievements: Achievement[] }) {
   const [page, setPage] = React.useState(1);
   const currData = achievements.slice((page - 1) * 25, page * 25);

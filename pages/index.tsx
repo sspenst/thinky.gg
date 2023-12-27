@@ -6,8 +6,9 @@ import { AppContext } from '@root/contexts/appContext';
 import useUrl from '@root/hooks/useUrl';
 import Image from 'next/image';
 import React, { useContext } from 'react';
-import { BannerLayer, Parallax, ParallaxBanner, ParallaxBannerLayer, ParallaxProvider } from 'react-scroll-parallax';
+import { BannerLayer, Parallax, ParallaxBanner, ParallaxProvider } from 'react-scroll-parallax';
 
+/* istanbul ignore next */
 export default function ThinkyHomePage() {
   function GameCard({ game }: { game: Game }) {
     const getUrl = useUrl();

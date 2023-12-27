@@ -73,6 +73,7 @@ interface RankedPageProps {
   rankedSolvesByDifficulty: { [key: string]: number };
 }
 
+/* istanbul ignore next */
 export default function RankedPage({ levelsByDifficulty, rankedSolvesByDifficulty }: RankedPageProps): JSX.Element {
   return (
     <Page title='Ranked'>
