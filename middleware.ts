@@ -1,6 +1,7 @@
 // middleware.ts
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { GameId } from './constants/GameId';
 import { Game, Games } from './constants/Games';
 
 export const getValidSubdomain = (host?: string | null) => {
@@ -37,7 +38,11 @@ const whiteList = {
   'notifications': 1,
 
 } as Record<string, number>;
-const validSubdomain = Object.values(Games).map((game: Game) => game.id as string);
+const validSubdomain = Object.values(Games).reduce((acc, game) => {
+  acc[game.id as string] = true;
+
+  return acc;
+}, {} as Record<string, boolean>) as Record<string, boolean>;
 
 // https://medium.com/@jfbaraky/using-subdomains-as-paths-on-next-js-e5aab5c28c28
 export async function middleware(req: NextRequest) {
@@ -51,7 +56,7 @@ export async function middleware(req: NextRequest) {
   const subdomain = getValidSubdomain(host);
   const folder = url.pathname.split('/')[1];
 
-  if (folder === 'api' || subdomain !== null && !validSubdomain.includes(subdomain)) {
+  if (folder === 'api' || subdomain !== null && !validSubdomain[subdomain]) {
     return;
   }
 
