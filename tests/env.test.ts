@@ -1,6 +1,5 @@
 import { NextApiRequest } from 'next';
 import cookieOptions from '../lib/cookieOptions';
-import { dbDisconnect } from '../lib/dbConnect';
 import { getTokenCookieValue } from '../lib/getTokenCookie';
 import { getUserFromToken } from '../lib/withAuth';
 
@@ -11,7 +10,7 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 afterAll(async () => {
-  await dbDisconnect();
+  //await dbDisconnect();
 });
 beforeAll(async () => {
   // await dbConnect();

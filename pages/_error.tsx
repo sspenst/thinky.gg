@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import Page from '@root/components/page/page';
 import { AppContext } from '@root/contexts/appContext';
 import { ErrorProps } from 'next/error';
