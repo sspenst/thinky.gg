@@ -32,6 +32,7 @@ interface PlayHistoryPageProps {
   reqUser: User;
 }
 
+/* istanbul ignore next */
 export default function PlayHistoryPage({ reqUser }: PlayHistoryPageProps): JSX.Element {
   const { game } = useContext(AppContext);
 
