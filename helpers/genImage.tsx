@@ -46,12 +46,24 @@ export default async function genImage(lvl: Level) {
   const game = getGameFromId(lvl.gameId);
 
   try {
+    let start = Date.now();
     const url = game.baseUrl + '/level-shim/' + lvl?._id;
 
+    console.log((Date.now() - start) + 'ms to get url: ' + url);
+    start = Date.now();
     await page.goto(url);
+    console.log((Date.now() - start) + 'ms to goto url: ' + url);
+    start = Date.now();
+    await page.setViewport({ width: 800, height: 600 });
+    console.log((Date.now() - start) + 'ms to set viewport: ' + url);
+    start = Date.now();
     await page.waitForSelector('#grid-' + lvl?._id.toString());
+    console.log((Date.now() - start) + 'ms to wait for selector: ' + url);
+    start = Date.now();
     // Select the div element using its CSS selector
     const divElement = await page.$('#grid-' + lvl?._id.toString()); // Replace '#myDiv' with your actual selector
+
+    console.log((Date.now() - start) + 'ms to get div element: ' + url);
 
     if (!divElement) {
       throw new Error('divElement not found');
@@ -59,7 +71,7 @@ export default async function genImage(lvl: Level) {
 
     // execute document.documentElement.style.setProperty('--level-grid-text', 'rgba(0, 0, 0, 0)');
     // and document.documentElement.style.setProperty('--player-grid-text', 'rgba(0, 0, 0, 0)');
-
+    start = Date.now();
     await page.evaluate(() => {
       document.querySelectorAll('.tile-type-4').forEach(element => {
         element.childNodes.forEach(child => {
@@ -76,13 +88,17 @@ export default async function genImage(lvl: Level) {
         });
       });
     } );
-
+    console.log((Date.now() - start) + 'ms to remove text nodes: ' + url);
+    start = Date.now();
     const screenshotBuffer = await divElement.screenshot({ encoding: 'binary' });
 
+    console.log((Date.now() - start) + 'ms to take screenshot: ' + url);
+    start = Date.now();
     const bitmapBuffer = await sharp(screenshotBuffer)
       .toFormat('png')
       .toBuffer();
 
+    console.log((Date.now() - start) + 'ms to convert to png: ' + url);
     await ImageModel.findOneAndUpdate(
       { documentId: lvl._id },
       {
@@ -94,10 +110,12 @@ export default async function genImage(lvl: Level) {
         upsert: true,
       },
     );
+
     await page.close();
 
     return bitmapBuffer;
   } catch (e) {
     logger.error(e);
+    await page?.close();
   }
 }
