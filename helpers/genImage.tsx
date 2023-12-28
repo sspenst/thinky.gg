@@ -8,12 +8,12 @@ import sharp from 'sharp';
 import { TimerUtil } from './getTs';
 import { logger } from './logger';
 
-export default async function genImage(lvl: Level) {
-  if (process.env.NODE_ENV === 'test') {
-    return;
+async function getPuppetPage() {
+  if (global.puppetBrowserPage) {
+    return global.puppetBrowserPage;
   }
 
-  const browser = await puppeteer.launch({
+  const browser = global.puppetBrowser ?? (await puppeteer.launch({
     /// headless true
     headless: 'new',
     // using chromium
@@ -24,7 +24,9 @@ export default async function genImage(lvl: Level) {
       '--disable-setuid-sandbox',
 
     ],
-  });
+  }));
+
+  global.puppetBrowser = browser;
   const page = await browser.newPage();
 
   await page.setRequestInterception(true);
@@ -36,7 +38,17 @@ export default async function genImage(lvl: Level) {
       req.continue();
     }
   });
+  global.puppetBrowserPage = page;
 
+  return page;
+}
+
+export default async function genImage(lvl: Level) {
+  if (process.env.NODE_ENV === 'test') {
+    return;
+  }
+
+  const page = await getPuppetPage();
   const game = getGameFromId(lvl.gameId);
 
   try {
@@ -88,7 +100,7 @@ export default async function genImage(lvl: Level) {
         upsert: true,
       },
     );
-    await browser.close();
+    //  await browser.close();
 
     return bitmapBuffer;
   } catch (e) {

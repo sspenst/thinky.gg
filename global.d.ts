@@ -4,6 +4,7 @@ import { Emitter } from '@socket.io/mongo-emitter';
 import admin from 'firebase-admin';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
+import { Browser, Page } from 'puppeteer';
 
 declare global {
   var db: {
@@ -13,6 +14,8 @@ declare global {
   };
   var firebaseApp: admin.app.App;
   var MongoEmitter: Emitter;
+  var puppetBrowser: Browser;
+  var puppetBrowserPage: Page;
   interface Array<T> {
     findLastIndex(
       predicate: (value: T, index: number, obj: T[]) => unknown,
