@@ -51,7 +51,7 @@ export default async function genImage(lvl: Level) {
 
     console.log((Date.now() - start) + 'ms to get url: ' + url);
     start = Date.now();
-    await page.goto(url);
+    await page.goto(url, { waitUntil: 'networkidle0' });
     console.log((Date.now() - start) + 'ms to goto url: ' + url);
     start = Date.now();
     await page.setViewport({ width: 800, height: 600 });
