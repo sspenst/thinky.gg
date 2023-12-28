@@ -22,12 +22,6 @@ export default async function genImage(lvl: Level) {
       // https://stackoverflow.com/questions/58488138/how-to-improve-puppeteer-startup-performance-during-tests
       '--no-sandbox',
       '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-accelerated-2d-canvas',
-      '--no-first-run',
-      '--no-zygote',
-      '--single-process',
-      '--disable-gpu'
     ],
   });
   const page = await browser.newPage();
