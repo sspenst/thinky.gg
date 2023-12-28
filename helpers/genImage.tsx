@@ -36,7 +36,7 @@ export default async function genImage(lvl: Level) {
   await page.setRequestInterception(true);
 
   page.on('request', (req) => {
-    if (req.resourceType() == 'stylesheet' || req.resourceType() == 'font' || req.resourceType() == 'image' || req.resourceType() == 'media' || req.resourceType() == 'fetch' || req.resourceType() === 'other' || req.resourceType() === 'manifest') {
+    if (req.resourceType() == 'stylesheet' || req.resourceType() == 'font' || req.resourceType() == 'image' /*|| req.resourceType() == 'media' || req.resourceType() == 'fetch' || req.resourceType() === 'other' || req.resourceType() === 'manifest' */) {
       req.abort();
     } else {
       req.continue();
