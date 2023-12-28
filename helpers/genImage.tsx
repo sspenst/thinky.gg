@@ -17,8 +17,16 @@ export default async function genImage(lvl: Level) {
     /// headless true
     headless: 'new',
     // using chromium
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
 
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-web-security', // disabling CORS
+      '--disable-site-isolation-trials',
+      '--disable-notifications', // to disable native notification window on Mac OS
+      '--no-zygote', // Seems to help avoid zombies https://github.com/puppeteer/puppeteer/issues/1825
+    ],
   });
   const page = await browser.newPage();
 
@@ -27,7 +35,7 @@ export default async function genImage(lvl: Level) {
   try {
     const url = game.baseUrl + '/level/' + lvl?.slug;
 
-    await page.goto(url, { waitUntil: 'networkidle2' });
+    await page.goto(url, { waitUntil: 'domcontentloaded' });
 
     // Select the div element using its CSS selector
     const divElement = await page.$('#grid-' + lvl?._id.toString()); // Replace '#myDiv' with your actual selector
