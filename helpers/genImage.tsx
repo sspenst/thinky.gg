@@ -105,6 +105,5 @@ export default async function genImage(lvl: Level) {
     return bitmapBuffer;
   } catch (e) {
     logger.error(e);
-    await browser.close();
   }
 }
