@@ -8,9 +8,9 @@ import sharp from 'sharp';
 import { TimerUtil } from './getTs';
 import { logger } from './logger';
 
-async function getPuppetPage() {
-  if (global.puppetBrowserPage) {
-    return global.puppetBrowserPage;
+export default async function genImage(lvl: Level) {
+  if (process.env.NODE_ENV === 'test') {
+    return;
   }
 
   const browser = global.puppetBrowser ?? (await puppeteer.launch({
@@ -38,17 +38,7 @@ async function getPuppetPage() {
       req.continue();
     }
   });
-  global.puppetBrowserPage = page;
 
-  return page;
-}
-
-export default async function genImage(lvl: Level) {
-  if (process.env.NODE_ENV === 'test') {
-    return;
-  }
-
-  const page = await getPuppetPage();
   const game = getGameFromId(lvl.gameId);
 
   try {
@@ -100,7 +90,7 @@ export default async function genImage(lvl: Level) {
         upsert: true,
       },
     );
-    //  await browser.close();
+    await page.close();
 
     return bitmapBuffer;
   } catch (e) {
