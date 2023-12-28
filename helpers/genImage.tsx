@@ -35,7 +35,7 @@ export default async function genImage(lvl: Level) {
   const game = getGameFromId(lvl.gameId);
 
   try {
-    const url = game.baseUrl + '/level/' + lvl?.slug;
+    const url = game.baseUrl + '/level-shim/' + lvl?._id;
 
     await page.goto(url);
     await page.waitForSelector('#grid-' + lvl?._id.toString());
