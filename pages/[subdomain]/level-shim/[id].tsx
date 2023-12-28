@@ -17,7 +17,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  const lvl = await LevelModel.findById(id, { data: 1 });
+  const lvl = await LevelModel.findById(id, { data: 1 }, { lean: true });
 
   if (!lvl) {
     return {
@@ -33,7 +33,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 export default function LevelShim({ level }: { level: Level }) {
-  console.log('level', level);
   const gameState = initGameState(level.data);
 
   return <main className='grow h-full'>
