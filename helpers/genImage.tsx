@@ -22,9 +22,20 @@ export default async function genImage(lvl: Level) {
       // https://stackoverflow.com/questions/58488138/how-to-improve-puppeteer-startup-performance-during-tests
       '--no-sandbox',
       '--disable-setuid-sandbox',
+
     ],
   });
   const page = await browser.newPage();
+
+  await page.setRequestInterception(true);
+
+  page.on('request', (req) => {
+    if (req.resourceType() == 'stylesheet' || req.resourceType() == 'font' || req.resourceType() == 'image' || req.resourceType() == 'media' || req.resourceType() == 'fetch' || req.resourceType() === 'other' || req.resourceType() === 'manifest') {
+      req.abort();
+    } else {
+      req.continue();
+    }
+  });
 
   const game = getGameFromId(lvl.gameId);
 
