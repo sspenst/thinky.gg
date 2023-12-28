@@ -35,8 +35,8 @@ export default async function genImage(lvl: Level) {
   try {
     const url = game.baseUrl + '/level/' + lvl?.slug;
 
-    await page.goto(url, { waitUntil: 'domcontentloaded' });
-
+    await page.goto(url);
+    await page.waitForSelector('#grid-' + lvl?._id.toString());
     // Select the div element using its CSS selector
     const divElement = await page.$('#grid-' + lvl?._id.toString()); // Replace '#myDiv' with your actual selector
 
