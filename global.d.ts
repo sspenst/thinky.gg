@@ -14,7 +14,7 @@ declare global {
   };
   var firebaseApp: admin.app.App;
   var MongoEmitter: Emitter;
-  var puppetBrowser: Browser;
+  var puppetBrowser: Browser | undefined;
   var puppetBrowserPage: Page;
   interface Array<T> {
     findLastIndex(

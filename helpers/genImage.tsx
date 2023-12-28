@@ -13,6 +13,10 @@ export default async function genImage(lvl: Level) {
     return;
   }
 
+  if (!global.puppetBrowser?.connected) {
+    global.puppetBrowser = undefined;
+  }
+
   const browser = global.puppetBrowser ?? (await puppeteer.launch({
     /// headless true
     headless: 'new',
