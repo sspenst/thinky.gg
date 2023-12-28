@@ -17,7 +17,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  const lvl = await LevelModel.findById(id, { });
+  const lvl = await LevelModel.findById(id, { data: 1 });
 
   if (!lvl) {
     return {
