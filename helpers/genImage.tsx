@@ -19,13 +19,15 @@ export default async function genImage(lvl: Level) {
     // using chromium
 
     args: [
+      // https://stackoverflow.com/questions/58488138/how-to-improve-puppeteer-startup-performance-during-tests
       '--no-sandbox',
       '--disable-setuid-sandbox',
       '--disable-dev-shm-usage',
-      '--disable-web-security', // disabling CORS
-      '--disable-site-isolation-trials',
-      '--disable-notifications', // to disable native notification window on Mac OS
-      '--no-zygote', // Seems to help avoid zombies https://github.com/puppeteer/puppeteer/issues/1825
+      '--disable-accelerated-2d-canvas',
+      '--no-first-run',
+      '--no-zygote',
+      '--single-process',
+      '--disable-gpu'
     ],
   });
   const page = await browser.newPage();
