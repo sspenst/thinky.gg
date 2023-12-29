@@ -13,13 +13,15 @@ export default async function genImage(lvl: Level) {
     return;
   }
 
-  if (!global.puppetBrowser?.connected) {
-    global.puppetBrowser = undefined;
-  }
+  await ImageModel.deleteOne(
+    { documentId: lvl._id },
 
-  const browser = global.puppetBrowser ?? (await puppeteer.launch({
+  );
+
+  const browser = await puppeteer.launch({
     /// headless true
     headless: 'new',
+
     // using chromium
 
     args: [
@@ -28,15 +30,19 @@ export default async function genImage(lvl: Level) {
       '--disable-setuid-sandbox',
 
     ],
-  }));
+  });
 
   global.puppetBrowser = browser;
   const page = await browser.newPage();
 
+  console.log('Number of pages opened is ', (await browser.pages()).length);
+
   await page.setRequestInterception(true);
 
   page.on('request', (req) => {
-    if (req.resourceType() == 'stylesheet' || req.resourceType() == 'font' || req.resourceType() == 'image' /*|| req.resourceType() == 'media' || req.resourceType() == 'fetch' || req.resourceType() === 'other' || req.resourceType() === 'manifest' */) {
+    console.log(req.resourceType(), req.url());
+
+    if (req.resourceType() == 'stylesheet' || req.resourceType() == 'font' || req.resourceType() == 'image' || req.resourceType() == 'media' || req.resourceType() == 'fetch' || req.resourceType() === 'other' || req.resourceType() === 'manifest') {
       req.abort();
     } else {
       req.continue();
@@ -44,19 +50,17 @@ export default async function genImage(lvl: Level) {
   });
 
   const game = getGameFromId(lvl.gameId);
+  const url = game.baseUrl + '/level-shim/' + lvl?._id;
 
   try {
     let start = Date.now();
-    const url = game.baseUrl + '/level-shim/' + lvl?._id;
 
-    console.log((Date.now() - start) + 'ms to get url: ' + url);
-    start = Date.now();
-    await page.goto(url, { waitUntil: 'networkidle0' });
-    console.log((Date.now() - start) + 'ms to goto url: ' + url);
-    start = Date.now();
-    await page.setViewport({ width: 800, height: 600 });
     console.log((Date.now() - start) + 'ms to set viewport: ' + url);
     start = Date.now();
+
+    await page.goto(url, { waitUntil: 'networkidle0' });
+    console.log((Date.now() - start) + 'ms to goto url: ' + url);
+
     await page.waitForSelector('#grid-' + lvl?._id.toString());
     console.log((Date.now() - start) + 'ms to wait for selector: ' + url);
     start = Date.now();
@@ -72,7 +76,7 @@ export default async function genImage(lvl: Level) {
     // execute document.documentElement.style.setProperty('--level-grid-text', 'rgba(0, 0, 0, 0)');
     // and document.documentElement.style.setProperty('--player-grid-text', 'rgba(0, 0, 0, 0)');
     start = Date.now();
-    await page.evaluate(() => {
+    /*await page.evaluate(() => {
       document.querySelectorAll('.tile-type-4').forEach(element => {
         element.childNodes.forEach(child => {
           if (child.nodeType === Node.TEXT_NODE) {
@@ -87,10 +91,11 @@ export default async function genImage(lvl: Level) {
           }
         });
       });
-    } );
+    } );*/
     console.log((Date.now() - start) + 'ms to remove text nodes: ' + url);
     start = Date.now();
-    const screenshotBuffer = await divElement.screenshot({ encoding: 'binary' });
+
+    const screenshotBuffer = await page.screenshot({ encoding: 'binary' });
 
     console.log((Date.now() - start) + 'ms to take screenshot: ' + url);
     start = Date.now();
@@ -111,11 +116,11 @@ export default async function genImage(lvl: Level) {
       },
     );
 
-    await page.close();
+    await browser.close();
 
     return bitmapBuffer;
   } catch (e) {
     logger.error(e);
-    await page?.close();
+    await browser?.close();
   }
 }
