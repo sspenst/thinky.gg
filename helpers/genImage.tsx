@@ -88,23 +88,6 @@ export default async function genImage(lvl: Level) {
       throw new Error('divElement not found');
     }
 
-    await page.evaluate(() => {
-      document.querySelectorAll('.tile-type-4').forEach(element => {
-        element.childNodes.forEach(child => {
-          if (child.nodeType === Node.TEXT_NODE) {
-            element.removeChild(child);
-          }
-        });
-      });
-      document.querySelectorAll('.tile-type-3').forEach(element => {
-        element.childNodes.forEach(child => {
-          if (child.nodeType === Node.TEXT_NODE) {
-            element.removeChild(child);
-          }
-        });
-      });
-    } );
-
     tempStart = Date.now();
     const screenshotBuffer = await divElement.screenshot({ encoding: 'binary' });
 

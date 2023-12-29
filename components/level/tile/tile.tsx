@@ -15,6 +15,7 @@ interface TileProps {
   className?: string | undefined;
   disableAnimation?: boolean;
   handleClick?: (rightClick: boolean) => void;
+  hideText?: boolean;
   inHole?: boolean;
   pos: Position;
   text?: number | undefined;
