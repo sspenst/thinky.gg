@@ -1,11 +1,8 @@
 /* istanbul ignore file */
 
-import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import Level from '@root/models/db/level';
 import { ImageModel } from '@root/models/mongoose';
-import level from '@root/pages/api/level';
-import puppeteer from 'puppeteer';
-import sharp from 'sharp';
+import { getGameFromId } from './getGameIdFromReq';
 import { TimerUtil } from './getTs';
 import { logger } from './logger';
 
@@ -18,101 +15,39 @@ export default async function genImage(lvl: Level) {
     { documentId: lvl._id },
 
   );
-  const start = Date.now();
+  const fetchUrl = process.env.GEN_IMAGE_URL; // includes a query parameter already so assume more than 1
+  const game = getGameFromId(lvl.gameId);
+  const baseUrl = game.baseUrl;
 
-  console.log('start img gen');
-  let tempStart;
-  let browser;
+  const path = baseUrl + '/level-shim/' + lvl._id.toString() + '&random=' + Math.random(); // add random to avoid cloudflare caching
+  const pathEncoded = path;
+  const fullUrl = fetchUrl + '&url=' + pathEncoded;
+  const query = await fetch(fullUrl, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+)
+  if (!query.ok) {
+    logger.error(query.status + ' returned for ' + fullUrl);
 
-  try {
-    if (global.puppetBrowser?.connected === false) {
-      console.log('browser disconnected');
-      global.puppetBrowser = undefined;
-    }
-
-    browser = global.puppetBrowser || await puppeteer.launch({
-    /// headless true
-      headless: 'new',
-      // using chromium
-
-      args: [
-      // https://stackoverflow.com/questions/58488138/how-to-improve-puppeteer-startup-performance-during-tests
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--single-process',
-        '--disable-gpu'
-
-      ],
-    });
-    global.puppetBrowser = browser;
-
-    console.log('done with launch puppeteer', Date.now() - start);
-    tempStart = Date.now();
-
-    const page = await browser.newPage();
-
-    console.log('done with new page', Date.now() - tempStart, 'total', Date.now() - start);
-    const game = getGameFromId(lvl.gameId);
-    const url = game.baseUrl + '/level-shim/' + lvl?._id.toString();
-
-    await page.setRequestInterception(true);
-
-    page.on('request', (req) => {
-      if ( req.resourceType() == 'font' || req.resourceType() == 'image' || req.resourceType() == 'media' || req.resourceType() == 'fetch') {
-        req.abort();
-      } else {
-        req.continue();
-      }
-    });
-
-    tempStart = Date.now();
-    await page.goto(url, { waitUntil: 'networkidle0' });
-    console.log('done with goto', Date.now() - tempStart, 'total', Date.now() - start);
-    tempStart = Date.now();
-    await page.setViewport({ width: 800, height: 600 });
-    console.log('done with setViewport', Date.now() - tempStart, 'total', Date.now() - start);
-    tempStart = Date.now();
-
-    console.log('done with setRequestInterception', Date.now() - tempStart, 'total', Date.now() - start);
-
-    await page.waitForSelector('#grid-' + lvl._id.toString());
-
-    console.log('done with waitForSelector', Date.now() - tempStart, 'total', Date.now() - start);
-    const divElement = await page.$('#grid-' + lvl._id.toString());
-
-    if (!divElement) {
-      throw new Error('divElement not found');
-    }
-
-    tempStart = Date.now();
-    const screenshotBuffer = await divElement.screenshot({ encoding: 'binary' });
-
-    console.log('done with screenshot', Date.now() - tempStart, 'total', Date.now() - start);
-    tempStart = Date.now();
-    await page.close();
-    console.log('done with page.close', Date.now() - tempStart, 'total', Date.now() - start);
-
-    const bitmapBuffer = await sharp(screenshotBuffer)
-      .toFormat('png')
-      .toBuffer();
-
-    await ImageModel.findOneAndUpdate(
-      { documentId: lvl._id },
-      {
-        documentId: lvl._id,
-        image: bitmapBuffer,
-        ts: TimerUtil.getTs(),
-      },
-      {
-        upsert: true,
-      },
-    );
-  } catch (e) {
-    console.error(e);
-    await browser?.close();
+    return;
   }
+
+  // the response should be an image
+  const buffer = await query.arrayBuffer();
+  const bitmapBuffer = Buffer.from(buffer);
+
+  await ImageModel.findOneAndUpdate(
+    { documentId: lvl._id },
+    {
+      documentId: lvl._id,
+      image: bitmapBuffer,
+      ts: TimerUtil.getTs(),
+    },
+    {
+      upsert: true,
+    },
+  );
 }
