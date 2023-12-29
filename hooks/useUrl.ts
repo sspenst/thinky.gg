@@ -1,5 +1,6 @@
 import { GameId } from '@root/constants/GameId';
 import { AppContext } from '@root/contexts/appContext';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import { useContext } from 'react';
 
 const LinksThatCarryOver = [
@@ -18,17 +19,7 @@ const LinksThatCarryOver = [
 ];
 
 export default function useUrl() {
-  const { host, protocol } = useContext(AppContext);
-
   function getUrl(gameId?: GameId, path?: string) {
-    function getSubdomain() {
-      if (!gameId || gameId === GameId.THINKY) {
-        return '';
-      }
-
-      return `${gameId.toLowerCase()}.`;
-    }
-
     function getPath() {
       if (path) {
         return path;
@@ -43,7 +34,9 @@ export default function useUrl() {
       return (carryOver ? window.location.pathname : '/');
     }
 
-    return `${protocol}//${getSubdomain()}${host}${getPath()}`;
+    const game = getGameFromId(gameId);
+
+    return game.baseUrl + getPath();
   }
 
   return getUrl;
