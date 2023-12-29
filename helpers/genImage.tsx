@@ -39,6 +39,12 @@ export default async function genImage(lvl: Level) {
       // https://stackoverflow.com/questions/58488138/how-to-improve-puppeteer-startup-performance-during-tests
         '--no-sandbox',
         '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--single-process',
+        '--disable-gpu'
 
       ],
     });
@@ -64,7 +70,7 @@ export default async function genImage(lvl: Level) {
     });
 
     tempStart = Date.now();
-    await page.goto(url);
+    await page.goto(url, { waitUntil: 'networkidle0' });
     console.log('done with goto', Date.now() - tempStart, 'total', Date.now() - start);
     tempStart = Date.now();
     await page.setViewport({ width: 800, height: 600 });
@@ -82,7 +88,6 @@ export default async function genImage(lvl: Level) {
       throw new Error('divElement not found');
     }
 
-    tempStart = Date.now();
     await page.evaluate(() => {
       document.querySelectorAll('.tile-type-4').forEach(element => {
         element.childNodes.forEach(child => {
@@ -99,7 +104,7 @@ export default async function genImage(lvl: Level) {
         });
       });
     } );
-    console.log('done with evaluate', Date.now() - tempStart, 'total', Date.now() - start);
+
     tempStart = Date.now();
     const screenshotBuffer = await divElement.screenshot({ encoding: 'binary' });
 
@@ -107,13 +112,11 @@ export default async function genImage(lvl: Level) {
     tempStart = Date.now();
     await page.close();
     console.log('done with page.close', Date.now() - tempStart, 'total', Date.now() - start);
-    tempStart = Date.now();
 
     const bitmapBuffer = await sharp(screenshotBuffer)
       .toFormat('png')
       .toBuffer();
 
-    console.log('done with sharp', Date.now() - tempStart, 'total', Date.now() - start);
     await ImageModel.findOneAndUpdate(
       { documentId: lvl._id },
       {
