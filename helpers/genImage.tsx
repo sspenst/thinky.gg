@@ -3,6 +3,7 @@
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import Level from '@root/models/db/level';
 import { ImageModel } from '@root/models/mongoose';
+import level from '@root/pages/api/level';
 import puppeteer from 'puppeteer';
 import sharp from 'sharp';
 import { TimerUtil } from './getTs';
@@ -17,66 +18,72 @@ export default async function genImage(lvl: Level) {
     { documentId: lvl._id },
 
   );
+  const start = Date.now();
 
-  const browser = await puppeteer.launch({
-    /// headless true
-    headless: 'new',
-
-    // using chromium
-
-    args: [
-      // https://stackoverflow.com/questions/58488138/how-to-improve-puppeteer-startup-performance-during-tests
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-
-    ],
-  });
-
-  global.puppetBrowser = browser;
-  const page = await browser.newPage();
-
-  console.log('Number of pages opened is ', (await browser.pages()).length);
-
-  await page.setRequestInterception(true);
-
-  page.on('request', (req) => {
-    console.log(req.resourceType(), req.url());
-
-    if (req.resourceType() == 'stylesheet' || req.resourceType() == 'font' || req.resourceType() == 'image' || req.resourceType() == 'media' || req.resourceType() == 'fetch' || req.resourceType() === 'other' || req.resourceType() === 'manifest') {
-      req.abort();
-    } else {
-      req.continue();
-    }
-  });
-
-  const game = getGameFromId(lvl.gameId);
-  const url = game.baseUrl + '/level-shim/' + lvl?._id;
+  console.log('start img gen');
+  let tempStart;
+  let browser;
 
   try {
-    let start = Date.now();
+    if (global.puppetBrowser?.connected === false) {
+      console.log('browser disconnected');
+      global.puppetBrowser = undefined;
+    }
 
-    console.log((Date.now() - start) + 'ms to set viewport: ' + url);
-    start = Date.now();
+    browser = global.puppetBrowser || await puppeteer.launch({
+    /// headless true
+      headless: 'new',
+      // using chromium
 
-    await page.goto(url, { waitUntil: 'networkidle0' });
-    console.log((Date.now() - start) + 'ms to goto url: ' + url);
+      args: [
+      // https://stackoverflow.com/questions/58488138/how-to-improve-puppeteer-startup-performance-during-tests
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
 
-    await page.waitForSelector('#grid-' + lvl?._id.toString());
-    console.log((Date.now() - start) + 'ms to wait for selector: ' + url);
-    start = Date.now();
-    // Select the div element using its CSS selector
-    const divElement = await page.$('#grid-' + lvl?._id.toString()); // Replace '#myDiv' with your actual selector
+      ],
+    });
+    global.puppetBrowser = browser;
 
-    console.log((Date.now() - start) + 'ms to get div element: ' + url);
+    console.log('done with launch puppeteer', Date.now() - start);
+    tempStart = Date.now();
+
+    const page = await browser.newPage();
+
+    console.log('done with new page', Date.now() - tempStart, 'total', Date.now() - start);
+    const game = getGameFromId(lvl.gameId);
+    const url = game.baseUrl + '/level-shim/' + lvl?._id.toString();
+
+    await page.setRequestInterception(true);
+
+    page.on('request', (req) => {
+      if ( req.resourceType() == 'font' || req.resourceType() == 'image' || req.resourceType() == 'media' || req.resourceType() == 'fetch') {
+        req.abort();
+      } else {
+        req.continue();
+      }
+    });
+
+    tempStart = Date.now();
+    await page.goto(url);
+    console.log('done with goto', Date.now() - tempStart, 'total', Date.now() - start);
+    tempStart = Date.now();
+    await page.setViewport({ width: 800, height: 600 });
+    console.log('done with setViewport', Date.now() - tempStart, 'total', Date.now() - start);
+    tempStart = Date.now();
+
+    console.log('done with setRequestInterception', Date.now() - tempStart, 'total', Date.now() - start);
+
+    await page.waitForSelector('#grid-' + lvl._id.toString());
+
+    console.log('done with waitForSelector', Date.now() - tempStart, 'total', Date.now() - start);
+    const divElement = await page.$('#grid-' + lvl._id.toString());
 
     if (!divElement) {
       throw new Error('divElement not found');
     }
 
-    // execute document.documentElement.style.setProperty('--level-grid-text', 'rgba(0, 0, 0, 0)');
-    // and document.documentElement.style.setProperty('--player-grid-text', 'rgba(0, 0, 0, 0)');
-    start = Date.now();
-    /*await page.evaluate(() => {
+    tempStart = Date.now();
+    await page.evaluate(() => {
       document.querySelectorAll('.tile-type-4').forEach(element => {
         element.childNodes.forEach(child => {
           if (child.nodeType === Node.TEXT_NODE) {
@@ -91,19 +98,22 @@ export default async function genImage(lvl: Level) {
           }
         });
       });
-    } );*/
-    console.log((Date.now() - start) + 'ms to remove text nodes: ' + url);
-    start = Date.now();
+    } );
+    console.log('done with evaluate', Date.now() - tempStart, 'total', Date.now() - start);
+    tempStart = Date.now();
+    const screenshotBuffer = await divElement.screenshot({ encoding: 'binary' });
 
-    const screenshotBuffer = await page.screenshot({ encoding: 'binary' });
+    console.log('done with screenshot', Date.now() - tempStart, 'total', Date.now() - start);
+    tempStart = Date.now();
+    await page.close();
+    console.log('done with page.close', Date.now() - tempStart, 'total', Date.now() - start);
+    tempStart = Date.now();
 
-    console.log((Date.now() - start) + 'ms to take screenshot: ' + url);
-    start = Date.now();
     const bitmapBuffer = await sharp(screenshotBuffer)
       .toFormat('png')
       .toBuffer();
 
-    console.log((Date.now() - start) + 'ms to convert to png: ' + url);
+    console.log('done with sharp', Date.now() - tempStart, 'total', Date.now() - start);
     await ImageModel.findOneAndUpdate(
       { documentId: lvl._id },
       {
@@ -115,12 +125,8 @@ export default async function genImage(lvl: Level) {
         upsert: true,
       },
     );
-
-    await browser.close();
-
-    return bitmapBuffer;
   } catch (e) {
-    logger.error(e);
+    console.error(e);
     await browser?.close();
   }
 }
