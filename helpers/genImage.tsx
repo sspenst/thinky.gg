@@ -28,7 +28,7 @@ export default async function genImage(lvl: Level) {
       'Content-Type': 'application/json',
     },
   });
-)
+
   if (!query.ok) {
     logger.error(query.status + ' returned for ' + fullUrl);
 
