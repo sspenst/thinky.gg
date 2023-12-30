@@ -1,5 +1,7 @@
 import { GameId } from '@root/constants/GameId';
+import { AppContext } from '@root/contexts/appContext';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
+import { useContext } from 'react';
 
 const LinksThatCarryOver = [
   '^/profile',
@@ -17,6 +19,8 @@ const LinksThatCarryOver = [
 ];
 
 export default function useUrl() {
+  const { protocol, host } = useContext(AppContext);
+
   function getUrl(gameId?: GameId, path?: string) {
     function getPath() {
       if (path) {
@@ -32,9 +36,11 @@ export default function useUrl() {
       return (carryOver ? window.location.pathname : '/');
     }
 
+    // can't use game.baseUrl because this function is client side and we NEXT_PUBLIC isn't working at the moment
     const game = getGameFromId(gameId);
+    const baseUrl = protocol + '//' + game.subdomain + '.' + host;
 
-    return game.baseUrl + getPath();
+    return baseUrl + getPath();
   }
 
   return getUrl;

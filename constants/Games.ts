@@ -18,6 +18,7 @@ export const Games: Record<GameId, Game> = {
   [GameId.THINKY]: {
     id: GameId.THINKY,
     baseUrl: process.env.NODE_ENV !== 'development' ? `https://${APP_DOMAIN}` : 'http://localhost:3000',
+    subdomain: 'www',
     defaultTheme: Theme.Dark,
     displayName: 'Thinky.gg',
     disableCampaign: true,
@@ -43,6 +44,7 @@ export const Games: Record<GameId, Game> = {
     favicon: '/logos/pathology/pathology.svg',
     logo: '/logos/pathology/pathology.svg',
     subtitle: 'Find the way',
+    subdomain: 'pathology',
     SEOTitle: 'Pathology - Shortest Path Puzzle Game',
     SEODescription: 'The goal of Pathology is simple. Get to the exit in the least number of moves. Sounds easy right? Yet, this sokoban style game is one of the most mind-bending puzzle games you will find. Different blocks stand in your way to the exit, and your job is to figure out the optimal route',
     shortDescription: 'Get to the exit in the least number of moves',
@@ -66,6 +68,7 @@ export const Games: Record<GameId, Game> = {
     SEODescription: 'The goal of the puzzle game Sokoban is simple. Push the boxes onto the goals. Sounds easy right? Yet, this sokoban style game is one of the most mind-bending puzzle games you will find. The boxes can only be pushed, never pulled, and only one can be pushed at a time.',
     shortDescription: 'Push the boxes onto the goals',
     subtitle: 'Push the boxes',
+    subdomain: 'sokoban',
     type: GameType.COMPLETE_AND_SHORTEST,
     videoDemo: 'https://i.imgur.com/7qGspht.mp4',
     gameStateIsSolveFunction: sokobanSolveState,
@@ -90,6 +93,7 @@ export interface Game {
   SEOTitle: string;
   SEODescription: string;
   shortDescription?: string;
+  subdomain: string;
   type: GameType;
   videoDemo?: string;
   gameStateIsSolveFunction: (gameState: GameState) => boolean;
