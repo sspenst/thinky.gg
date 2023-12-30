@@ -1,6 +1,4 @@
-import GameLayout from '@root/components/level/gameLayout';
 import Grid from '@root/components/level/grid';
-import Page from '@root/components/page/page';
 import { initGameState } from '@root/helpers/gameStateHelpers';
 import Level from '@root/models/db/level';
 import { LevelModel } from '@root/models/mongoose';
@@ -39,7 +37,7 @@ export default function LevelShim({ level }: { level: Level }) {
     <div className='flex flex-col justify-center text-center w-full' style={{
       height: '50vh',
     }}>
-      <Grid disableAnimation hideText={true} id={level._id.toString()} leastMoves={0} gameState={gameState} />
+      <Grid disableAnimation hideText id={level._id.toString()} leastMoves={0} gameState={gameState} />
     </div>
   </main>;
 }

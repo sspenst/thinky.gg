@@ -2,7 +2,7 @@ import { AchievementCategory } from '@root/constants/achievements/achievementInf
 import Discord from '@root/constants/discord';
 import { GameId } from '@root/constants/GameId';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
-import genLevelImage from '@root/helpers/genImage';
+import genLevelImage from '@root/helpers/genLevelImage';
 import { getEnrichNotificationPipelineStages } from '@root/helpers/getEnrichNotificationPipelineStages';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import isGuest from '@root/helpers/isGuest';

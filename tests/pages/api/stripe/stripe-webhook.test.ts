@@ -206,7 +206,9 @@ describe('pages/api/stripe-webhook/index.ts', () => {
   test('some valid user subscribes', async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(stripeReal.subscriptions, 'search').mockResolvedValue({ data: [], } as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(stripeReal.checkout.sessions, 'listLineItems').mockResolvedValue({ data: [{ price: { product: 'test' } }], } as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(stripeReal.products, 'retrieve').mockResolvedValue({ name: 'Pathology Yearly' } as any);
     await runStripeWebhookTest({
       eventType: 'checkout.session.completed',
@@ -264,7 +266,9 @@ describe('pages/api/stripe-webhook/index.ts', () => {
   test('resubscribe', async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(stripeReal.subscriptions, 'search').mockResolvedValue({ data: [], } as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(stripeReal.checkout.sessions, 'listLineItems').mockResolvedValue({ data: [{ price: { product: 'test' } }], } as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(stripeReal.products, 'retrieve').mockResolvedValue({ name: 'Pathology Yearly' } as any);
     await runStripeWebhookTest({
       eventType: 'checkout.session.completed',
@@ -296,7 +300,9 @@ describe('pages/api/stripe-webhook/index.ts', () => {
     });
   });
   test('gifting subscription', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(stripeReal.checkout.sessions, 'listLineItems').mockResolvedValue({ data: [{ price: { product: 'test' } }], } as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(stripeReal.products, 'retrieve').mockResolvedValue({ name: 'Pathology Yearly' } as any);
     await runStripeWebhookTest({
       eventType: 'customer.subscription.created',
@@ -318,7 +324,9 @@ describe('pages/api/stripe-webhook/index.ts', () => {
     });
   });
   test('regifting should not work since user is already on pro', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(stripeReal.checkout.sessions, 'listLineItems').mockResolvedValue({ data: [{ price: { product: 'test' } }], } as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(stripeReal.products, 'retrieve').mockResolvedValue({ name: 'Pathology Yearly' } as any);
     await runStripeWebhookTest({
       eventType: 'customer.subscription.created',

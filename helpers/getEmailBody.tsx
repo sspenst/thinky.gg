@@ -1,6 +1,5 @@
 //* istanbul ignore file */
 
-import GameLogoAndLabel from '@root/components/gameLogoAndLabel';
 import { GameId } from '@root/constants/GameId';
 import { Games } from '@root/constants/Games';
 import React from 'react';

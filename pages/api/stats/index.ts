@@ -22,7 +22,7 @@ import Level, { EnrichedLevel } from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
 import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserConfigModel } from '../../../models/mongoose';
-import { queueGenLevelImage, queueRefreshAchievements, queueRefreshIndexCalcs } from '../internal-jobs/worker';
+import { queueRefreshAchievements, queueRefreshIndexCalcs } from '../internal-jobs/worker';
 
 export async function putStat(user: User, directions: Direction[], levelId: string, matchId?: string) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -239,7 +239,6 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
             { session: session },
           ),
           queueDiscordWebhook(Discord.Levels, `**${game.displayName}** - **${user.name}** set a new record: [${level.name}](${getGameFromId(level.gameId).baseUrl}/level/${level.slug}?ts=${ts}) - ${moves} moves`, { session: session }),
-          queueGenLevelImage(level._id, false, { session: session }),
         ]);
       }
 

@@ -1,6 +1,5 @@
 import { GameId } from '@root/constants/GameId';
 import { postPlayAttempt } from '@root/helpers/play-attempts/postPlayAttempt';
-import { ObjectId } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { ValidEnum, ValidObjectId } from '../../../helpers/apiWrapper';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';

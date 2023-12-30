@@ -1,5 +1,4 @@
 import { DEFAULT_GAME_ID } from '@root/constants/GameId';
-import * as search from '@root/pages/api/search';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext } from 'next';
 import { Logger } from 'winston';

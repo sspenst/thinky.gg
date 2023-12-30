@@ -6,7 +6,7 @@ import { GameId } from '@root/constants/GameId';
 import { AppContext } from '@root/contexts/appContext';
 import { UserAndSum } from '@root/contexts/levelContext';
 import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
-import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import cleanUser from '@root/lib/cleanUser';
 import { getUserFromToken } from '@root/lib/withAuth';
 import User from '@root/models/db/user';
@@ -112,7 +112,6 @@ async function getDifficultyLeaderboard(gameId: GameId, index: DIFFICULTY_INDEX)
       $limit: 100
     },
     ...getEnrichUserConfigPipelineStage(gameId),
-
   ]) as UserAndSum[];
 
   // clean each one

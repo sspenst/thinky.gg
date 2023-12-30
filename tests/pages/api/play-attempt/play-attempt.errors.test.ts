@@ -97,7 +97,16 @@ describe('play-attempt.errors.test.ts', () => {
     const unsolvedUserId = new Types.ObjectId();
 
     // create a playattempt for the 10th unique user
-    const [pa, unsolvedUsr] = await Promise.all([
+    const [unsolvedUsr] = await Promise.all([
+      UserModel.create({
+        _id: unsolvedUserId,
+        email: 'unsolved@gmail.com',
+        last_visited_at: 0,
+        name: 'unsolved',
+        password: 'unsolved',
+        score: 0,
+        ts: 0,
+      }),
       PlayAttemptModel.create({
         _id: new Types.ObjectId(),
         attemptContext: AttemptContext.UNSOLVED,
@@ -107,15 +116,6 @@ describe('play-attempt.errors.test.ts', () => {
         startTime: 0,
         updateCount: 0,
         userId: unsolvedUserId,
-      }),
-      UserModel.create({
-        _id: unsolvedUserId,
-        email: 'unsolved@gmail.com',
-        last_visited_at: 0,
-        name: 'unsolved',
-        password: 'unsolved',
-        score: 0,
-        ts: 0,
       }),
     ]);
 

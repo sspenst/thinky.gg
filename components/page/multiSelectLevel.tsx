@@ -3,7 +3,6 @@ import Level from '@root/models/db/level';
 import React, { useState } from 'react';
 import AsyncSelect from 'react-select/async';
 import { debounce } from 'throttle-debounce';
-import FormattedLevelLink from '../formatted/formattedLevelLink';
 
 interface MultiSelectLevelProps {
   controlStyles?: any;
@@ -41,7 +40,7 @@ export default function MultiSelectLevel({ controlStyles, defaultValue, onSelect
       IndicatorSeparator: null,
     }}
     formatOptionLabel={(option: Level) => (
-      <FormattedLevelLink disableHover id={option._id.toString()} level={option} />
+      <span>{option.name}</span>
     )}
     getOptionLabel={(option: any) => option.name}
     getOptionValue={(option: any) => option._id.toString()}

@@ -8,7 +8,7 @@ import TestId from '../../../../constants/testId';
 import { TimerUtil } from '../../../../helpers/getTs';
 import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
-import { EmailLogModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
+import { EmailLogModel, UserModel } from '../../../../models/mongoose';
 import { EmailState } from '../../../../models/schemas/emailLogSchema';
 import handler from '../../../../pages/api/internal-jobs/email-digest';
 
