@@ -20,8 +20,8 @@ export default async function genImage(lvl: Level) {
   const baseUrl = game.baseUrl;
 
   const path = baseUrl + '/level-shim/' + lvl._id.toString() + '&random=' + Math.random(); // add random to avoid cloudflare caching
-  const pathEncoded = path;
-  const fullUrl = fetchUrl + '&url=' + pathEncoded;
+
+  const fullUrl = fetchUrl + '&url=' + path;
   const query = await fetch(fullUrl, {
     method: 'GET',
     headers: {
