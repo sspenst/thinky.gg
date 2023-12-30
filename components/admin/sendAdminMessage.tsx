@@ -4,7 +4,7 @@ import Role from '@root/constants/role';
 import { IAdminCommand } from '@root/pages/[subdomain]/admin';
 import React, { Fragment, useState } from 'react';
 import toast from 'react-hot-toast';
-import TextareaAutosize from 'react-textarea-autosize';
+import ReactTextareaAutosize from 'react-textarea-autosize';
 
 interface SendAdminMessageProps {
   runningCommand: boolean;
@@ -59,13 +59,13 @@ export default function SendAdminMessage({ runningCommand, selectedUserCommand, 
       <h2 className='text-2xl font-medium'>
         Send Admin Message
       </h2>
-      <TextareaAutosize
+      <ReactTextareaAutosize
         className='bg-inherit block py-1 -mt-2 w-96 max-w-full border-b border-neutral-500 disabled:text-neutral-500 transition resize-none placeholder:text-neutral-500 focus:outline-0 rounded-none focus:border-black focus:dark:border-white'
         onChange={(e) => setAdminMessage(e.currentTarget.value)}
         placeholder='Admin message...'
         value={adminMessage}
       />
-      <TextareaAutosize
+      <ReactTextareaAutosize
         className='bg-inherit block py-1 -mt-2 w-96 max-w-full border-b border-neutral-500 disabled:text-neutral-500 transition resize-none placeholder:text-neutral-500 focus:outline-0 rounded-none focus:border-black focus:dark:border-white'
         onChange={(e) => setAdminHref(e.currentTarget.value)}
         placeholder='Href (eg: "/settings/pro")...'

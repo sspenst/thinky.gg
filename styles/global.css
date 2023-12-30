@@ -597,6 +597,10 @@ body {
   border-color: var(--bg-color-4);
 }
 
+.hover-color:hover {
+  color: var(--color);
+}
+
 .gray {
   color: var(--color-gray);
 }
