@@ -1,7 +1,5 @@
 import { GameId } from '@root/constants/GameId';
-import { AppContext } from '@root/contexts/appContext';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
-import { useContext } from 'react';
 
 const LinksThatCarryOver = [
   '^/profile',
