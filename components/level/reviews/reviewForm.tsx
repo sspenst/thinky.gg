@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Rating } from 'react-simple-star-rating';
-import TextareaAutosize from 'react-textarea-autosize';
+import ReactTextareaAutosize from 'react-textarea-autosize';
 import { AppContext } from '../../../contexts/appContext';
 import { LevelContext } from '../../../contexts/levelContext';
 import { PageContext } from '../../../contexts/pageContext';
@@ -120,7 +120,7 @@ export default function ReviewForm({ inModal, review }: ReviewFormProps) {
           </button>
         }
       </div>
-      <TextareaAutosize
+      <ReactTextareaAutosize
         className='bg-inherit block py-1 -mt-2 w-full border-b border-neutral-500 disabled:text-neutral-500 transition resize-none placeholder:text-neutral-500 focus:outline-0 rounded-none focus:border-black focus:dark:border-white'
         disabled={isUpdating}
         onBlur={() => {
@@ -143,7 +143,8 @@ export default function ReviewForm({ inModal, review }: ReviewFormProps) {
           <button
             className='bg-blue-500 enabled:hover:bg-blue-700 text-white font-medium px-3 py-2 rounded-full text-sm disabled:opacity-50 w-fit'
             disabled={isUpdating || (rating === 0 && reviewBody.length === 0)}
-            onClick={() => onUpdateReview()}>
+            onClick={() => onUpdateReview()}
+          >
             Save
           </button>
           <button
@@ -154,7 +155,8 @@ export default function ReviewForm({ inModal, review }: ReviewFormProps) {
               setIsEditing(!review);
               setRating(review?.score || 0);
               setReviewBody(review?.text || '');
-            }}>
+            }}
+          >
             Cancel
           </button>
         </div>
