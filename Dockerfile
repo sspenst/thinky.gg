@@ -23,7 +23,7 @@ RUN npm install --platform=linux --arch=x64 sharp
 RUN npm install --platform=linuxmusl
 #RUN chown -R node:node node_modules/
 
-#COPY --chown=node:node . .
+COPY --chown=node:node . .
 
 # for web app
 RUN npm run build --omit=dev
