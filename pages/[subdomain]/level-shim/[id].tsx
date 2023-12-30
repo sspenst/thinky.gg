@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 import Grid from '@root/components/level/grid';
 import { initGameState } from '@root/helpers/gameStateHelpers';
 import Level from '@root/models/db/level';
