@@ -6,7 +6,7 @@
       "dynamicImport": true,
       "preserveAllComments": true
     },
-    "target": "es5",
+    "target": "es2022",
     "transform": {
       "react": {
         "runtime": "automatic"
