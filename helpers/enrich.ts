@@ -107,7 +107,9 @@ export async function enrichNotifications(notifications: Notification[], reqUser
 
     // NB: no existing notification types have the user as a target
     // should remove this ignore statment once these notification types are added
-    /* istanbul ignore next */
+    /* istanbul ignore next 
+// Newline placeholder needed for swc: https://github.com/swc-project/jest/issues/119#issuecomment-1872581999
+*/
     if (notification.targetModel === 'User') {
       cleanUser(notification.target as User);
     }

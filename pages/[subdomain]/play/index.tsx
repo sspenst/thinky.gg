@@ -30,7 +30,9 @@ interface PlayPageProps {
   reqUser: User;
 }
 
-/* istanbul ignore next */
+/* istanbul ignore next
+// Newline placeholder needed for swc: https://github.com/swc-project/jest/issues/119#issuecomment-1872581999
+*/
 export default function PlayPage({ reqUser }: PlayPageProps) {
   const { game } = useContext(AppContext);
   const chapterUnlocked = reqUser.config?.chapterUnlocked ?? 1;

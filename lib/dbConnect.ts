@@ -25,7 +25,9 @@ interface DBConnectProperties {
 
 export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectProperties = {}) {
   if (cached.conn) {
-    /* istanbul ignore next */
+    /* istanbul ignore next 
+// Newline placeholder needed for swc: https://github.com/swc-project/jest/issues/119#issuecomment-1872581999
+*/
     if (mongoose.connection.readyState !== 1) {
       logger.warn('Mongoose connection error ' + mongoose.connection.readyState);
     }
@@ -81,7 +83,9 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
 
   cached.conn = await cached.promise;
 
-  /* istanbul ignore next */
+  /* istanbul ignore next 
+// Newline placeholder needed for swc: https://github.com/swc-project/jest/issues/119#issuecomment-1872581999
+*/
   if (mongoose.connection.readyState !== 1) {
     logger.error('Mongoose connection error (b) ' + mongoose.connection.readyState);
   }

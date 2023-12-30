@@ -14,7 +14,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   return await redirectToHome(context, { recaptchaPublicKey: process.env.RECAPTCHA_PUBLIC_KEY || '' });
 }
 
-/* istanbul ignore next */
+/* istanbul ignore next
+// Newline placeholder needed for swc: https://github.com/swc-project/jest/issues/119#issuecomment-1872581999
+*/
 export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?: string}) {
   const { cache } = useSWRConfig();
   const { userConfig, mutateUser, setShouldAttemptAuth } = useContext(AppContext);
