@@ -2,15 +2,10 @@ FROM  node:20
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# needed for puppet image gen
-RUN apt-get update \
-    && apt-get install -y chromium
 WORKDIR /pathology_app
 
 COPY --chown=node:node package*.json tsconfig-socket.json ./
 
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
-ENV PUPPETEER_EXECUTABLE_PATH /usr/bin/chromium
 
 RUN npm install
 
@@ -24,7 +19,6 @@ COPY --chown=node:node . .
 # RUN tsc -p tsconfig-socket.json
 
 # for dev you don't need to run tsc
-
 
 # Uncomment the following line if you want to run the app as a non-root user
 # USER node
