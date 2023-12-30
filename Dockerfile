@@ -32,6 +32,6 @@ RUN npm run build --omit=dev
 # for socket server
 RUN tsc -p tsconfig-socket.json
 
-#USER node
+USER node
 
 CMD ["npm","start"]
