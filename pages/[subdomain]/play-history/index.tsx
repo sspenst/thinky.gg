@@ -32,7 +32,9 @@ interface PlayHistoryPageProps {
   reqUser: User;
 }
 
-/* istanbul ignore next */
+/* istanbul ignore next
+// Newline placeholder needed for swc: https://github.com/swc-project/jest/issues/119#issuecomment-1872581999
+*/
 export default function PlayHistoryPage({ reqUser }: PlayHistoryPageProps): JSX.Element {
   const { game } = useContext(AppContext);
 

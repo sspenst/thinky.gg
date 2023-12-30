@@ -102,7 +102,9 @@ interface AdminPageProps {
   user: User | null;
 }
 
-/* istanbul ignore next */
+/* istanbul ignore next
+// Newline placeholder needed for swc: https://github.com/swc-project/jest/issues/119#issuecomment-1872581999
+*/
 export default function AdminPage({ adminQuery, level, user }: AdminPageProps) {
   const routerQuery = useRouterQuery();
   const [runningCommand, setRunningCommand] = useState(false);

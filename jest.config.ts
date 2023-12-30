@@ -48,12 +48,17 @@ export default {
     }],
   },*/
   transform: {
-    '^.+\\.(t|j)sx?$': '@swc/jest',
+    '^.+\\.(t|j)sx?$': ['@swc/jest', {
+      configFile: '.swcrc',
+    }],
   },
   // An array of regexp pattern strings used to skip coverage collection
   // coveragePathIgnorePatterns: [
   //   "/node_modules/"
   // ],
+  coveragePathIgnorePatterns: [
+    '/components',
+  ],
 
   // Indicates which provider should be used to instrument code for coverage
   coverageProvider: 'babel',

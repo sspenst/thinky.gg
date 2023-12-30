@@ -3,14 +3,16 @@
     "parser": {
       "syntax": "typescript",
       "tsx": true,
-      "dynamicImport": true
+      "dynamicImport": true,
+      "preserveAllComments": true
     },
-    "target": "es2015",
+    "target": "es5",
     "transform": {
       "react": {
         "runtime": "automatic"
       }
-    }
+    },
+    
   },
   "module": {
     "type": "commonjs"

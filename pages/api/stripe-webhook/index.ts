@@ -317,7 +317,9 @@ async function splitPaymentIntent(paymentIntentId: string): Promise<string | und
 }
 
 //create a small class with createStripeSigned as a member function makes it easier to mock
-/* istanbul ignore next */
+/* istanbul ignore next 
+// Newline placeholder needed for swc: https://github.com/swc-project/jest/issues/119#issuecomment-1872581999
+*/
 export class StripeWebhookHelper {
   public static async createStripeSigned(req: NextApiRequest) {
     const sig = req.headers['stripe-signature'] as string;

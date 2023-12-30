@@ -29,7 +29,9 @@ interface TabProps {
   value: string;
 }
 
-/* istanbul ignore next */
+/* istanbul ignore next 
+// Newline placeholder needed for swc: https://github.com/swc-project/jest/issues/119#issuecomment-1872581999
+*/
 function Tab({ activeTab, className, label, value }: TabProps) {
   const router = useRouter();
 
@@ -106,7 +108,9 @@ interface SettingsProps {
   userConfig: UserConfig | null;
 }
 
-/* istanbul ignore next */
+/* istanbul ignore next 
+// Newline placeholder needed for swc: https://github.com/swc-project/jest/issues/119#issuecomment-1872581999
+*/
 export default function Settings({
   stripeCustomerPortalLink,
   stripePaymentLink,

@@ -110,7 +110,9 @@ export async function getLevelByUrlPath(gameId: GameId, username: string, slugNa
     cleanUser(level.archivedBy);
 
     return level;
-  } catch (err) /* istanbul ignore next */ {
+  } catch (err) /* istanbul ignore next 
+// Newline placeholder needed for swc: https://github.com/swc-project/jest/issues/119#issuecomment-1872581999
+*/ {
     logger.error(err);
 
     return null;

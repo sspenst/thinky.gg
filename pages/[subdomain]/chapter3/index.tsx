@@ -83,7 +83,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   return { props: props };
 }
 
-/* istanbul ignore next */
+/* istanbul ignore next
+// Newline placeholder needed for swc: https://github.com/swc-project/jest/issues/119#issuecomment-1872581999
+*/
 export default function Chapter3Page({ enrichedCollections, solvedLevels, totalLevels }: CampaignProps) {
   return (
     <Page folders={[new LinkInfo('Play', '/play')]} title={'Chapter 3'}>

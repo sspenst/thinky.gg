@@ -313,7 +313,9 @@ interface PlayersProps {
   users: UserWithStats[];
 }
 
-/* istanbul ignore next */
+/* istanbul ignore next
+// Newline needed for istanbul next to work
+*/
 export default function PlayersPage({ searchQuery, totalRows, users }: PlayersProps) {
   const [data, setData] = useState<UserWithStats[]>();
   const { game, user } = useContext(AppContext);
