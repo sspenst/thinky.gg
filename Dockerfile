@@ -19,7 +19,6 @@ WORKDIR /pathology_app
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 ENV PUPPETEER_EXECUTABLE_PATH /usr/bin/chromium
 
-
 # ts-node / tspath is needed for other scripts right now. module-alias is used for socket server production
 # ideally all would use package module alias and we would not need ts-node / tspath. but that's a TODO
 RUN npm install -g ts-node typescript module-alias
@@ -31,6 +30,15 @@ RUN npm install --platform=linuxmusl
 RUN chown -R node:node node_modules/
 
 COPY --chown=node:node . .
+
+ARG NEXT_PUBLIC_GROWTHBOOK_API_HOST
+ENV NEXT_PUBLIC_GROWTHBOOK_API_HOST=$NEXT_PUBLIC_GROWTHBOOK_API_HOST
+
+ARG NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY
+ENV NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY=$NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY
+
+ARG NEXT_PUBLIC_APP_DOMAIN
+ENV NEXT_PUBLIC_APP_DOMAIN=$NEXT_PUBLIC_APP_DOMAIN
 
 # for web app
 RUN npm run build --omit=dev
