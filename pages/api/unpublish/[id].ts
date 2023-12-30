@@ -73,10 +73,19 @@ export default withAuth({ POST: {
         }, {
           session: session,
         }).lean<MultiplayerMatch[]>(),
-        StatModel.find({ levelId: id, complete: true }, 'userId', { session: session }).lean<Stat[]>(),
+        StatModel.find({ levelId: id }, 'complete userId', { session: session }).lean<Stat[]>(),
       ]);
 
-      const userIds = stats.map(stat => stat.userId);
+      const userIdsSolved = [];
+      const userIdsCompleted = [];
+
+      for (const stat of stats) {
+        if (stat.complete) {
+          userIdsSolved.push(stat.userId);
+        } else {
+          userIdsCompleted.push(stat.userId);
+        }
+      }
 
       if (!levelClone) {
         throw new Error('Level not found');
@@ -98,7 +107,8 @@ export default withAuth({ POST: {
         RecordModel.updateMany({ levelId: id }, { $set: { isDeleted: true } }, { session: session }),
         ReviewModel.updateMany({ levelId: id }, { $set: { isDeleted: true } }, { session: session }),
         StatModel.updateMany({ levelId: id }, { $set: { isDeleted: true } }, { session: session }),
-        UserConfigModel.updateMany({ userId: { $in: userIds }, gameId: level.gameId }, { $inc: { calcLevelsSolvedCount: -1, calcLevelsCompletedCount: -1 } }, { session: session }),
+        UserConfigModel.updateMany({ userId: { $in: userIdsSolved }, gameId: level.gameId }, { $inc: { calcLevelsSolvedCount: -1, calcLevelsCompletedCount: -1 } }, { session: session }),
+        UserConfigModel.updateMany({ userId: { $in: userIdsCompleted }, gameId: level.gameId }, { $inc: { calcLevelsCompletedCount: -1 } }, { session: session }),
         // NB: deleted levels are pulled from all collections, so we never need to filter for deleted levels within collections
         CollectionModel.updateMany({ levels: id }, { $pull: { levels: id } }, { session: session }),
         clearNotifications(undefined, undefined, level._id, undefined, { session: session }),

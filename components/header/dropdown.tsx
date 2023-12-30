@@ -1,4 +1,5 @@
 import { Menu, Transition } from '@headlessui/react';
+import { GameType } from '@root/constants/Games';
 import isGuest from '@root/helpers/isGuest';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -16,7 +17,7 @@ import DismissToast from '../toasts/dismissToast';
 import MusicIcon from './musicIcon';
 
 export default function Dropdown() {
-  const { forceUpdate, mutateUser, setShouldAttemptAuth, user } = useContext(AppContext);
+  const { forceUpdate, game, mutateUser, setShouldAttemptAuth, user } = useContext(AppContext);
   const [isMusicModalOpen, setIsMusicModalOpen] = useState(false);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const router = useRouter();
@@ -87,32 +88,34 @@ export default function Dropdown() {
         }}>
           <div className='px-1 py-1'>
             {user && <>
-              <div className='flex justify-center gap-2 items-center sm:hidden py-1.5 px-3'>
-                <Link
-                  className='flex justify-center'
-                  data-tooltip-content='Ranked Solves'
-                  data-tooltip-id='ranked-solves-dropdown'
-                  href='/ranked'
-                  id='levelsSolvedBtn'
-                >
-                  <span className='font-bold'>{user.config.calcRankedSolves} 🏅</span>
-                  <StyledTooltip id='ranked-solves-dropdown' />
-                </Link>
-                <div className='h-6 w-px bg-neutral-500' />
-                <Link
-                  className='ml-1'
-                  data-tooltip-content='Levels Solved'
-                  data-tooltip-id='levels-solves-dropdown'
-                  href='/users'
-                  id='levelsSolvedBtn'
-                >
-                  <span className='font-bold'>{user.config.calcLevelsSolvedCount}</span>
-                  <StyledTooltip id='levels-solves-dropdown' />
-                </Link>
-              </div>
-              <div className='block sm:hidden'>
-                <Divider />
-              </div>
+              {!game.disableGames && <>
+                <div className='flex justify-center gap-2 items-center sm:hidden py-1.5 px-3'>
+                  <Link
+                    className='flex justify-center'
+                    data-tooltip-content='Ranked Solves'
+                    data-tooltip-id='ranked-solves-dropdown'
+                    href='/ranked'
+                    id='levelsSolvedBtn'
+                  >
+                    <span className='font-bold'>{user.config.calcRankedSolves} 🏅</span>
+                    <StyledTooltip id='ranked-solves-dropdown' />
+                  </Link>
+                  <div className='h-6 w-px bg-neutral-500' />
+                  <Link
+                    className='ml-1'
+                    data-tooltip-content={game.type === GameType.COMPLETE_AND_SHORTEST ? 'Levels Completed' : 'Levels Solved'}
+                    data-tooltip-id='levels-solves-dropdown'
+                    href='/users'
+                    id='levelsSolvedBtn'
+                  >
+                    <span className='font-bold'>{game.type === GameType.COMPLETE_AND_SHORTEST ? user.config.calcLevelsCompletedCount : user.config.calcLevelsSolvedCount}</span>
+                    <StyledTooltip id='levels-solves-dropdown' />
+                  </Link>
+                </div>
+                <div className='block sm:hidden'>
+                  <Divider />
+                </div>
+              </>}
               <Menu.Item>
                 {({ active }) => (
                   <Link href={getProfileSlug(user)} passHref>

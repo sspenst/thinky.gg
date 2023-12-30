@@ -1,3 +1,4 @@
+import Direction from '@root/constants/direction';
 import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
@@ -15,6 +16,7 @@ import { CollectionModel, LevelModel, StatModel, UserConfigModel } from '../../.
 import updateCollectionHandler from '../../../../pages/api/collection/[id]';
 import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
 import updateLevelHandler from '../../../../pages/api/level/[id]';
+import statsHandler from '../../../../pages/api/stats/index';
 import unpublishLevelHandler from '../../../../pages/api/unpublish/[id]';
 
 beforeAll(async () => {
@@ -350,5 +352,121 @@ describe('Testing unpublish', () => {
         expect((userACollection?.levels as Types.ObjectId[]).includes(new Types.ObjectId(newLevelId))).toBe(false);
       },
     });
+  });
+  test('Unpublishing a level should update calc fields correctly', async () => {
+    let userA = await UserConfigModel.findOne({ userId: TestId.USER, gameId: DEFAULT_GAME_ID });
+
+    const initCompletedA = userA.calcLevelsCompletedCount;
+    const initSolvedA = userA.calcLevelsSolvedCount;
+
+    let userB = await UserConfigModel.findOne({ userId: TestId.USER_B, gameId: DEFAULT_GAME_ID });
+
+    const initCompletedB = userB.calcLevelsCompletedCount;
+    const initSolvedB = userB.calcLevelsSolvedCount;
+
+    // optimal solve for user A
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            directions: [Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.DOWN, Direction.DOWN, Direction.DOWN],
+            levelId: userALevel2._id,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await statsHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        await processQueueMessages();
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+      },
+    });
+
+    // suboptimal solve for user B
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_B),
+          },
+          body: {
+            directions: [Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.LEFT, Direction.RIGHT, Direction.DOWN, Direction.DOWN, Direction.DOWN, Direction.DOWN],
+            levelId: userALevel2._id,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await statsHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        await processQueueMessages();
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+      },
+    });
+
+    userA = await UserConfigModel.findOne({ userId: TestId.USER, gameId: DEFAULT_GAME_ID });
+
+    expect(userA.calcLevelsCompletedCount).toBe(initCompletedA + 1);
+    expect(userA.calcLevelsSolvedCount).toBe(initSolvedA + 1);
+
+    userB = await UserConfigModel.findOne({ userId: TestId.USER_B, gameId: DEFAULT_GAME_ID });
+
+    expect(userB.calcLevelsCompletedCount).toBe(initCompletedB + 1);
+    expect(userB.calcLevelsSolvedCount).toBe(initSolvedB);
+
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: userALevel2._id,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await unpublishLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        await processQueueMessages();
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+      },
+    });
+
+    userA = await UserConfigModel.findOne({ userId: TestId.USER, gameId: DEFAULT_GAME_ID });
+
+    expect(userA.calcLevelsCompletedCount).toBe(initCompletedA);
+    expect(userA.calcLevelsSolvedCount).toBe(initSolvedA);
+
+    userB = await UserConfigModel.findOne({ userId: TestId.USER_B, gameId: DEFAULT_GAME_ID });
+
+    expect(userB.calcLevelsCompletedCount).toBe(initCompletedB);
+    expect(userB.calcLevelsSolvedCount).toBe(initSolvedB);
   });
 });

@@ -134,16 +134,16 @@ export default withAuth({ POST: {
 
   try {
     await session.withTransaction(async () => {
-      const [user, updatedLevel] = await Promise.all([
-        UserConfigModel.findOneAndUpdate({ userId: req.userId, gameId: level.gameId }, {
-          $inc: { calcLevelsSolvedCount: 1, calcLevelsCompletedCount: 1 },
-        }, { session: session }).lean<User>(),
+      const [updatedLevel] = await Promise.all([
         LevelModel.findOneAndUpdate<Level>({ _id: id, isDraft: true }, {
           $set: {
             isDraft: false,
             ts: ts,
           },
         }, { session: session, new: true }),
+        UserConfigModel.findOneAndUpdate({ userId: req.userId, gameId: level.gameId }, {
+          $inc: { calcLevelsSolvedCount: 1, calcLevelsCompletedCount: 1 },
+        }, { session: session }).lean<User>(),
         RecordModel.create([{
           _id: new Types.ObjectId(),
           gameId: level.gameId,

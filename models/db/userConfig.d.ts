@@ -5,12 +5,12 @@ import User from './user';
 
 interface UserConfig {
   _id: Types.ObjectId;
-  calcRankedSolves: number;
+  calcLevelsCompletedCount: number;
   calcLevelsCreatedCount: number;
+  calcLevelsSolvedCount: number;
+  calcRankedSolves: number;
   calcRecordsCount: number;
   chapterUnlocked: number;
-  calcLevelsCompletedCount: number;
-  calcLevelsSolvedCount: number;
   gameId: GameId;
   giftSubscriptions: string[]; // gift subscriptions this user has given out
   mobileDeviceTokens: string[];

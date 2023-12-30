@@ -179,11 +179,11 @@ export function getEnrichUserConfigPipelineStage(gameId: GameId, { localField, e
   }
 
   const includeCalcsObject = !excludeCalcs ? {
-    calcRecordsCount: 1,
-    calcLevelsSolvedCount: 1,
     calcLevelsCompletedCount: 1,
     calcLevelsCreatedCount: 1,
+    calcLevelsSolvedCount: 1,
     calcRankedSolves: 1,
+    calcRecordsCount: 1,
   } : {};
   const includeChapterObject = includeChapter ? {
     chapterUnlocked: 1,

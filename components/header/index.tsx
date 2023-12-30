@@ -1,4 +1,5 @@
 import { Menu, Transition } from '@headlessui/react';
+import { GameType } from '@root/constants/Games';
 import { ScreenSize } from '@root/hooks/useDeviceCheck';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -115,11 +116,11 @@ export default function Header({
               <div className='hidden sm:block h-6 w-px bg-neutral-500' />
               <Link
                 className='hidden sm:block ml-1'
-                data-tooltip-content='Levels Solved'
+                data-tooltip-content={game.type === GameType.COMPLETE_AND_SHORTEST ? 'Levels Completed' : 'Levels Solved'}
                 data-tooltip-id='levels-solved-header'
                 href='/users'
               >
-                <span className='font-bold'>{user.config.calcLevelsSolvedCount}</span>
+                <span className='font-bold'>{game.type === GameType.COMPLETE_AND_SHORTEST ? user.config.calcLevelsCompletedCount : user.config.calcLevelsSolvedCount}</span>
                 <StyledTooltip id='levels-solved-header' />
               </Link>
             </>}

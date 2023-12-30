@@ -65,7 +65,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const gameId = getGameIdFromReq(context.req);
   const game = getGameFromId(gameId);
 
-  DEFAULT_QUERY.sortBy = game.type === GameType.SHORTEST_PATH ? 'config.calcLevelsSolvedCount' : 'config.calcLevelsCompletedCount';
+  DEFAULT_QUERY.sortBy = game.type === GameType.COMPLETE_AND_SHORTEST ? 'config.calcLevelsCompletedCount' : 'config.calcLevelsSolvedCount';
   const searchQuery = { ...DEFAULT_QUERY };
 
   if (context.query && (Object.keys(context.query).length > 0)) {
