@@ -12,7 +12,8 @@ export enum GameType {
   SHORTEST_PATH = 'SHORTEST_PATH',
   NONE = 'NONE'
 }
-export const APP_DOMAIN = process.env.APP_DOMAIN || 'thinky.gg';
+export const APP_DOMAIN = process.env.NEXT_PUBLIC_APP_DOMAIN || 'thinky.gg';
+
 export const Games: Record<GameId, Game> = {
   [GameId.THINKY]: {
     id: GameId.THINKY,
