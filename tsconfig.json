@@ -111,6 +111,7 @@
   ],
   "exclude": [
     "node_modules",
-    "pathology-react-native"
+    "pathology-react-native",
+    "server/gen_img"
   ]
 }
