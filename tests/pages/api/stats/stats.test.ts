@@ -4,7 +4,7 @@ import { genTestLevel, genTestUser } from '@root/lib/initializeLocalDb';
 import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
 import { enableFetchMocks } from 'jest-fetch-mock';
-import mongoose, { Types } from 'mongoose';
+import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';

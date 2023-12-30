@@ -6,9 +6,8 @@ import UserConfig from '../db/userConfig';
 
 const UserConfigSchema = new mongoose.Schema<UserConfig>(
   {
-    calcRankedSolves: {
+    calcLevelsCompletedCount: {
       type: Number,
-      required: true,
       default: 0,
     },
     calcLevelsCreatedCount: {
@@ -19,8 +18,9 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       type: Number,
       default: 0,
     },
-    calcLevelsCompletedCount: {
+    calcRankedSolves: {
       type: Number,
+      required: true,
       default: 0,
     },
     calcRecordsCount: {

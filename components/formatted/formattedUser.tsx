@@ -122,6 +122,12 @@ export default function FormattedUser({ className, hideAvatar, id, noLinks, noTo
                   <span className='gray'>{userExtendedData.user.config?.calcLevelsSolvedCount}</span>
                 </div>
                 }
+                {!game.disableGames &&
+                <div className='flex gap-1'>
+                  <span className='font-medium'>Levels Completed:</span>
+                  <span className='gray'>{userExtendedData.user.config?.calcLevelsCompletedCount}</span>
+                </div>
+                }
                 {!user.hideStatus &&
                   <div className='flex gap-1'>
                     <span className='font-medium'>Last Seen:</span> <FormattedDate ts={user.last_visited_at ? user.last_visited_at : user.ts} />

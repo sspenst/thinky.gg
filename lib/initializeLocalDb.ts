@@ -138,9 +138,9 @@ export default async function initializeLocalDb() {
 
   promises.push(UserConfigModel.insertMany([
     getNewUserConfig(DEFAULT_GAME_ID, 0, new Types.ObjectId(TestId.USER), {
-      calcRecordsCount: 2,
-      calcLevelsSolvedCount: 2,
       calcLevelsCompletedCount: 2,
+      calcLevelsSolvedCount: 2,
+      calcRecordsCount: 2,
     }),
 
     getNewUserConfig(DEFAULT_GAME_ID, 0, new Types.ObjectId(TestId.USER_B), {
@@ -148,10 +148,9 @@ export default async function initializeLocalDb() {
 
     }),
     getNewUserConfig(DEFAULT_GAME_ID, 0, new Types.ObjectId(TestId.USER_C), {
-      calcRecordsCount: 1,
-      calcLevelsSolvedCount: 1,
       calcLevelsCompletedCount: 1,
-
+      calcLevelsSolvedCount: 1,
+      calcRecordsCount: 1,
     }),
     getNewUserConfig(DEFAULT_GAME_ID, 0, new Types.ObjectId(TestId.USER_GUEST), {
       calcRecordsCount: 0,
