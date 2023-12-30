@@ -13,13 +13,12 @@ import StyledTooltip from '../page/styledTooltip';
 interface EnrichedLevelLinkProps {
   // NB: this id should not contain the level id
   id: string;
-  disableHover?: boolean;
   gameId?: GameId;
   level: EnrichedLevel;
   onClick?: () => void;
 }
 
-export default function FormattedLevelLink({ id, disableHover, gameId, level, onClick }: EnrichedLevelLinkProps) {
+export default function FormattedLevelLink({ id, gameId, level, onClick }: EnrichedLevelLinkProps) {
   const { game } = useContext(AppContext);
   const getUrl = useUrl();
   const href = getUrl(gameId || game.id, `/level/${level.slug}`);
@@ -52,6 +51,6 @@ export default function FormattedLevelLink({ id, disableHover, gameId, level, on
       <span className='truncate'>{level.name}</span>
       {isSolved && <Solved className='-mr-1' />}
     </Link>
-    {!disableHover && <StyledTooltip id={tooltipId} />}
+    <StyledTooltip id={tooltipId} />
   </>);
 }

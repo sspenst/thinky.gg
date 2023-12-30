@@ -7,17 +7,29 @@ import MultiSelectUser from '@root/components/page/multiSelectUser';
 import Page from '@root/components/page/page';
 import AdminCommand from '@root/constants/adminCommand';
 import Role from '@root/constants/role';
-import useLevelBySlug from '@root/hooks/useLevelBySlug';
+import useRouterQuery from '@root/hooks/useRouterQuery';
 import dbConnect from '@root/lib/dbConnect';
 import { getUserFromToken } from '@root/lib/withAuth';
 import Level from '@root/models/db/level';
 import User from '@root/models/db/user';
 import { LevelModel, UserModel } from '@root/models/mongoose';
+import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Router from 'next/router';
-import React, { useEffect, useState } from 'react';
+import { ParsedUrlQuery } from 'querystring';
+import React, { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+
+interface AdminQuery extends ParsedUrlQuery {
+  levelId?: string;
+  userId?: string;
+}
+
+const DefaultQuery: AdminQuery = {
+  levelId: undefined,
+  userId: undefined,
+};
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
@@ -31,56 +43,104 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  const { queryUser, queryLevel, queryUserCommand, queryLevelCommand } = context.query;
+  const adminQuery: AdminQuery = { ...DefaultQuery };
+
+  if (context.query && (Object.keys(context.query).length > 0)) {
+    for (const q in context.query as AdminQuery) {
+      adminQuery[q] = context.query[q];
+    }
+  }
+
+  const level = adminQuery.levelId ? (await LevelModel.aggregate([
+    {
+      $match: {
+        _id: new Types.ObjectId(adminQuery.levelId),
+      },
+    },
+    {
+      $lookup: {
+        from: UserModel.collection.name,
+        localField: 'userId',
+        foreignField: '_id',
+        as: 'userId',
+        pipeline: [
+          {
+            $project: {
+              ...USER_DEFAULT_PROJECTION,
+            }
+          }
+        ]
+      }
+    },
+    {
+      $unwind: {
+        path: '$userId',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+  ]))[0] : null;
+  const user = adminQuery.userId ? await UserModel.findById(new Types.ObjectId(adminQuery.userId)) : null;
 
   return {
     props: {
-      queryLevel: queryLevel && queryLevel !== 'undefined' ? JSON.parse(JSON.stringify(await LevelModel.findById(new Types.ObjectId(queryLevel as string)))) : null,
-      queryUser: queryUser && queryUser !== 'undefiend' ? JSON.parse(JSON.stringify(await UserModel.findOne({ name: queryUser }))) : null,
-      queryUserCommand: queryUserCommand || null,
-      queryLevelCommand: queryLevelCommand || null,
+      adminQuery: JSON.parse(JSON.stringify(adminQuery)),
+      level: JSON.parse(JSON.stringify(level)),
+      user: JSON.parse(JSON.stringify(user)),
     },
   };
 }
 
-/* istanbul ignore next */
-export default function AdminPage({ queryUser, queryLevel, queryUserCommand, queryLevelCommand }: {queryUser: User | undefined; queryLevel: Level, queryUserCommand: string | null, queryLevelCommand: string | null}) {
-  const [runningCommand, setRunningCommand] = useState(false);
-  const [selectedLevel, setSelectedLevel] = useState(queryLevel); // TODO: [refactor] [minor
-  const [selectedUser, setSelectedUser] = useState(queryUser);
+export interface IAdminCommand {
+  command: string;
+  confirm?: boolean;
+  label: string;
+}
 
-  const commandsUser = [
+interface AdminPageProps {
+  adminQuery: AdminQuery;
+  level: Level | null;
+  user: User | null;
+}
+
+/* istanbul ignore next */
+export default function AdminPage({ adminQuery, level, user }: AdminPageProps) {
+  const routerQuery = useRouterQuery();
+  const [runningCommand, setRunningCommand] = useState(false);
+  const [selectedLevel, setSelectedLevel] = useState(level);
+  const [selectedUser, setSelectedUser] = useState(user);
+
+  useEffect(() => {
+    setSelectedLevel(level);
+  }, [level]);
+
+  useEffect(() => {
+    setSelectedUser(user);
+  }, [user]);
+
+  const commandsUser: IAdminCommand[] = [
     { label: 'Refresh Achievements', command: AdminCommand.RefreshAchievements },
     { label: 'Delete Achievements', command: AdminCommand.DeleteAchievements, confirm: true },
   ];
 
-  const commandsLevel = [
+  const commandsLevel: IAdminCommand[] = [
     { label: 'Refresh Play Attempts', command: AdminCommand.RefreshPlayAttempts },
     { label: 'Refresh Index Calculations', command: AdminCommand.RefreshIndexCalcs },
     { label: 'Switch isRanked', command: AdminCommand.SwitchIsRanked },
     { label: 'Regen image', command: AdminCommand.RegenImage },
   ];
-  const selectedUserCommandFromQuery = commandsUser.find((cmd) => cmd.command === queryUserCommand);
 
-  const [selectedUserCommand, setSelectedUserCommand] = useState<{ label: string; command: string; confirm?: boolean } | null>(selectedUserCommandFromQuery || null);
+  const [selectedLevelCommand, setSelectedLevelCommand] = useState<IAdminCommand>();
+  const [selectedUserCommand, setSelectedUserCommand] = useState<IAdminCommand>();
 
-  const selectedLevelCommandFromQuery = commandsLevel.find((cmd) => cmd.command === queryLevelCommand);
-
-  const [selectedLevelCommand, setSelectedLevelCommand] = useState<{ label: string; command: string; confirm?: boolean } | null>(selectedLevelCommandFromQuery || null);
-
-  const { level: levelPreview } = useLevelBySlug(selectedLevel?.slug);
-
-  useEffect(() => {
-    const newUrl = `${window.location.pathname}?queryLevel=${selectedLevel?._id}&queryLevelCommand=${selectedLevelCommand?.command}&queryUser=${selectedUser?.name}&queryUserCommand=${selectedUserCommand?.command}`;
-
-    const currentFullURL = `${window.location.pathname}${window.location.search}`;
-
-    if (currentFullURL !== newUrl) {
-      Router.push(newUrl);
-    }
-  }, [selectedUser, selectedUserCommand, selectedLevel?._id, selectedLevelCommand?.command]);
+  const updateQuery = useCallback((update: Partial<AdminQuery>) => {
+    routerQuery({ ...adminQuery, ...update }, DefaultQuery);
+  }, [adminQuery, routerQuery]);
 
   async function runCommandUser() {
+    if (!selectedUser) {
+      return;
+    }
+
     if (selectedUserCommand?.confirm && !window.confirm('Are you sure you want to proceed?')) return;
 
     setRunningCommand(true);
@@ -94,7 +154,7 @@ export default function AdminPage({ queryUser, queryLevel, queryUserCommand, que
       },
       body: JSON.stringify({
         command: selectedUserCommand?.command,
-        targetId: selectedUser?._id,
+        targetId: selectedUser._id,
       }),
     });
 
@@ -111,6 +171,10 @@ export default function AdminPage({ queryUser, queryLevel, queryUserCommand, que
   }
 
   async function runCommandLevel() {
+    if (!selectedLevel) {
+      return;
+    }
+
     if (selectedLevelCommand?.confirm && !window.confirm('Are you sure you want to proceed?')) return;
 
     setRunningCommand(true);
@@ -124,7 +188,7 @@ export default function AdminPage({ queryUser, queryLevel, queryUserCommand, que
       },
       body: JSON.stringify({
         command: selectedLevelCommand?.command,
-        targetId: selectedLevel?._id,
+        targetId: selectedLevel._id,
       }),
     });
 
@@ -190,8 +254,8 @@ export default function AdminPage({ queryUser, queryLevel, queryUserCommand, que
         </h2>
         <div className='flex flex-row items-center justify-center p-2 gap-2'>
           <p className='text-xl'>Run command on user:</p>
-          <MultiSelectUser key={'search-' + selectedUser?._id} defaultValue={selectedUser} onSelect={(selected: User) => {
-            setSelectedUser(selected);
+          <MultiSelectUser defaultValue={selectedUser} onSelect={(selected?: User) => {
+            updateQuery({ userId: !selected ? undefined : selected._id.toString() });
           }} />
           <Menu as='div' className='relative inline-block text-left'>
             <div>
@@ -226,11 +290,9 @@ export default function AdminPage({ queryUser, queryLevel, queryUserCommand, que
           <div className='flex flex-col items-center justify-center p-2 gap-2'>
             <FormattedUser id='admin' user={selectedUser} />
             <div className='flex flex-row items-center justify-center p-2 gap-2'>
-              {selectedUser && (
-                <div className='flex flex-col gap-2'>
-                  {display('User', selectedUser)}
-                </div>
-              )}
+              <div className='flex flex-col gap-2'>
+                {display('User', selectedUser)}
+              </div>
             </div>
           </div>
         }
@@ -239,8 +301,8 @@ export default function AdminPage({ queryUser, queryLevel, queryUserCommand, que
         </h2>
         <div className='flex flex-row items-center justify-center p-2 gap-2'>
           <p className='text-xl'>Run command on level:</p>
-          <MultiSelectLevel key={'search-' + selectedLevel?._id} defaultValue={selectedLevel} onSelect={(selected: Level) => {
-            setSelectedLevel(selected);
+          <MultiSelectLevel defaultValue={selectedLevel} onSelect={(selected?: Level) => {
+            updateQuery({ levelId: !selected ? undefined : selected._id.toString() });
           }} />
           <Menu as='div' className='relative inline-block text-left'>
             <div>
@@ -271,8 +333,8 @@ export default function AdminPage({ queryUser, queryLevel, queryUserCommand, que
             Run
           </button>
         </div>
-        {levelPreview && <div className='p-4'>
-          <LevelCard id='admin' level={levelPreview} />
+        {selectedLevel && <div className='p-4'>
+          <LevelCard id='admin' level={selectedLevel} />
         </div>}
         <div className='flex flex-row items-center justify-center gap-2'>
           {selectedLevel && (

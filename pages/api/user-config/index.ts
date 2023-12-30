@@ -4,7 +4,7 @@ import isGuest from '@root/helpers/isGuest';
 import { logger } from '@root/helpers/logger';
 import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
-import mongoose, { Types } from 'mongoose';
+import mongoose from 'mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidArray, ValidNumber, ValidType } from '../../../helpers/apiWrapper';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';

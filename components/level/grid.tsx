@@ -1,4 +1,3 @@
-import { hide } from '@popperjs/core';
 import TileType from '@root/constants/tileType';
 import { AppContext } from '@root/contexts/appContext';
 import { GridContext } from '@root/contexts/gridContext';
@@ -15,14 +14,14 @@ import Tile from './tile/tile';
 interface GridProps {
   cellClassName?: (x: number, y: number) => string | undefined;
   disableAnimation?: boolean;
-  hideText?: boolean;
   gameState: GameState;
+  hideText?: boolean;
   id: string;
   leastMoves: number;
   onCellClick?: (x: number, y: number, rightClick: boolean) => void;
 }
 
-export default function Grid({ cellClassName, disableAnimation, hideText, gameState, id, leastMoves, onCellClick }: GridProps) {
+export default function Grid({ cellClassName, disableAnimation, gameState, hideText, id, leastMoves, onCellClick }: GridProps) {
   const { game } = useContext(AppContext);
   const { theme } = useTheme();
   const classic = theme === Theme.Classic;
@@ -86,7 +85,6 @@ export default function Grid({ cellClassName, disableAnimation, hideText, gameSt
           pos={new Position(x, y)}
           text={hideText ? undefined : text}
           tileType={tileType}
-
         />
       );
 

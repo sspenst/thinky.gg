@@ -155,6 +155,7 @@ describe('pages/api/user-config', () => {
         const response = await res.json();
 
         expect(res.status).toBe(200);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const config = response as { [k: string]: any};
 
         expect(config.emailDigest).toBe(EmailDigestSettingType.DAILY);

@@ -8,7 +8,6 @@ import Role from '@root/constants/role';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import EmailLog from '@root/models/db/emailLog';
 import { EnrichedLevel } from '@root/models/db/level';
-import UserConfig from '@root/models/db/userConfig';
 import { convert } from 'html-to-text';
 import { Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
@@ -22,7 +21,7 @@ import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
 import isLocal from '../../../../lib/isLocal';
 import User from '../../../../models/db/user';
-import { EmailLogModel, NotificationModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
+import { EmailLogModel, NotificationModel, UserModel } from '../../../../models/mongoose';
 import { EmailState } from '../../../../models/schemas/emailLogSchema';
 import { getLevelOfDay } from '../../level-of-day';
 
@@ -342,6 +341,7 @@ export async function runEmailDigest(limitNum: number) {
   const batchId = new Types.ObjectId(); // Creating a new batch ID for this email batch
 
   let emailDigestResult;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const resTrack = { status: 500, json: { error: 'Error sending email digest' } as any };
 
   try {

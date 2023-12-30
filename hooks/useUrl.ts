@@ -19,7 +19,7 @@ const LinksThatCarryOver = [
 ];
 
 export default function useUrl() {
-  const { protocol, host } = useContext(AppContext);
+  const { host, protocol } = useContext(AppContext);
 
   function getUrl(gameId?: GameId, path?: string) {
     function getPath() {

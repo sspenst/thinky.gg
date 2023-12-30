@@ -33,9 +33,10 @@ export default function DeleteCollectionModal({ collection, closeModal, isOpen }
       } else {
         throw res.text();
       }
-    }).catch(err => {
+    }).catch(async err => {
+      console.error(err);
       toast.dismiss();
-      toast.error('Error deleting collection');
+      toast.error(JSON.parse(await err)?.error ?? 'Error deleting collection');
     }).finally(() => {
       toast.dismiss();
       toast.success('Deleted');

@@ -95,7 +95,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
-  const searchQuery = { ...DefaultQuery };
+  const searchQuery: SearchQuery = { ...DefaultQuery };
   const gameId = getGameIdFromReq(context.req);
 
   if (context.query && (Object.keys(context.query).length > 0)) {
