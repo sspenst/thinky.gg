@@ -4,6 +4,7 @@
       "syntax": "typescript",
       "tsx": true,
       "dynamicImport": true,
+      "preserveAllComments": true
     },
     "preserveAllComments": true,
     "minify": {},
