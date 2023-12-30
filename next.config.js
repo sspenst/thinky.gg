@@ -30,6 +30,13 @@ module.exports = {
       },
     ];
   },
+  publicRuntimeConfig: {
+    NEXT_PUBLIC_APP_DOMAIN: process.env.NEXT_PUBLIC_APP_DOMAIN,
+    NEXT_PUBLIC_GROWTHBOOK_API_HOST:
+      process.env.NEXT_PUBLIC_GROWTHBOOK_API_HOST,
+    NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY:
+      process.env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY,
+  },
   images: {
     remotePatterns: [
       {
