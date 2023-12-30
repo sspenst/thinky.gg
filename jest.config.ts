@@ -50,7 +50,7 @@ export default {
   transform: {
     '^.+\\.(t|j)sx?$': ['@swc/jest', {
       configFile: '.swcrc',
-      sourceMaps: true,
+
     }],
   },
   // An array of regexp pattern strings used to skip coverage collection

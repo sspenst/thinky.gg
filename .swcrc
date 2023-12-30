@@ -4,18 +4,16 @@
       "syntax": "typescript",
       "tsx": true,
       "dynamicImport": true,
-      "preserveAllComments": true
     },
+    "preserveAllComments": true,
+    "minify": {},
     "target": "es2022",
     "transform": {
       "react": {
         "runtime": "automatic"
       }
-    },
-    
+    },    
   },
-  "module": {
-    "type": "commonjs"
-  }
+  
 }
 
