@@ -10,9 +10,9 @@ import React, { useContext } from 'react';
 import { BannerLayer, Parallax, ParallaxBanner, ParallaxProvider } from 'react-scroll-parallax';
 
 export default function ThinkyHomePage() {
-  function GameCard({ game }: { game: Game }) {
-    const getUrl = useUrl();
+  const getUrl = useUrl();
 
+  function GameCard({ game }: { game: Game }) {
     return (
       <a suppressHydrationWarning href={getUrl(game.id)} className='flex flex-col gap-3 items-center justify-center w-full h-full p-4 border border-color-3 rounded-lg hover-bg-3 hover:scale-105 transition h-min w-min'>
         <Image src={game.logo} alt={game.displayName} width='128' height='128' className='w-32 h-32' style={{ minWidth: 128 }} />
@@ -21,7 +21,6 @@ export default function ThinkyHomePage() {
     );
   }
 
-  const getUrl = useUrl();
   const { userConfig, setShowNav } = useContext(AppContext);
 
   setShowNav(false);
