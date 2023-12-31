@@ -260,9 +260,7 @@ interface SearchProps {
   totalRows: number;
 }
 
-/* istanbul ignore next 
-// Newline placeholder needed for swc: https://github.com/swc-project/jest/issues/119#issuecomment-1872581999
-*/
+/* istanbul ignore next */
 export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQuery, totalRows }: SearchProps) {
   const [data, setData] = useState<EnrichedLevel[]>(enrichedLevels);
   const { game, setTempCollection } = useContext(AppContext);

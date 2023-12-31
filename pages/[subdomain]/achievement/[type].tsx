@@ -64,9 +64,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   };
 }
 
-/* istanbul ignore next
-// Newline placeholder needed for swc: https://github.com/swc-project/jest/issues/119#issuecomment-1872581999
-*/
+/* istanbul ignore next */
 export default function AchievementPage({ type, myAchievement, achievements }: {type: AchievementType, myAchievement?: Achievement, achievements: Achievement[] }) {
   const [page, setPage] = React.useState(1);
   const currData = achievements.slice((page - 1) * 25, page * 25);

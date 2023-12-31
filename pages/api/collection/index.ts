@@ -52,9 +52,7 @@ export default withAuth({
     });
 
     session.endSession();
-  } catch (err) /* istanbul ignore next 
-// Newline placeholder needed for swc: https://github.com/swc-project/jest/issues/119#issuecomment-1872581999
-*/ {
+  } catch (err) /* istanbul ignore next */ {
     session.endSession();
     logger.error(err);
 

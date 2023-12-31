@@ -49,9 +49,7 @@ const transporter = isLocal() ? nodemailer.createTransport({
 });
 
 export async function sendMail(gameId: GameId, batchId: Types.ObjectId, type: EmailType | NotificationType, user: User, subject: string, body: string) {
-  /* istanbul ignore next 
-// Newline placeholder needed for swc: https://github.com/swc-project/jest/issues/119#issuecomment-1872581999
-*/
+  /* istanbul ignore next */
   const textVersion = convert(body, {
     wordwrap: 130,
   });
@@ -264,9 +262,7 @@ export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
 
     //
     const todaysDatePretty = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    /* istanbul ignore next 
-// Newline placeholder needed for swc: https://github.com/swc-project/jest/issues/119#issuecomment-1872581999
-*/
+    /* istanbul ignore next */
     const EmailTextTable: { [key: string]: { title: string, message: string, subject: string, featuredLevelsLabel: string } } = {
       [EmailType.EMAIL_DIGEST]: {
         title: 'Welcome to the Thinky.gg Levels of the Day for ' + todaysDatePretty + '.',
