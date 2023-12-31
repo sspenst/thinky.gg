@@ -82,22 +82,22 @@ export default function ThinkyHomePage() {
     shouldAlwaysCompleteAnimation: true,
     expanded: false,
     children: (
-      <div className='justify-center flex flex-col items-center'>
-        <h1 className='text-6xl md:text-8xl text-white font-thin p-3 rounded-lg'>
+      <div className='justify-center flex flex-col md:flex-row items-center'>
+        <h1 className='text-6xl md:text-8xl text-white font-thin p-3 rounded-lg mt-10'>
           Thinky.gg
         </h1>
         <div className='flex justify-center'>
-          <div className='flex flex-col md:flex-row justify-center m-6 gap-24'>
+          <div className='flex flex-row justify-center p-10 md:mt-20 gap-1'>
             {Object.values(Games).map(game => {
               if (game.id === GameId.THINKY) {
                 return null;
               }
 
               return (
-                <div className='flex flex-col items-center gap-6' key={`game-${game.id}`}>
+                <div className='flex flex-col items-center gap-4' key={`game-${game.id}`}>
                   <GameCard game={game} />
-                  <video autoPlay loop muted className='rounded-lg w-40 text-center fadeIn' src={game.videoDemo} />
-                  <div className='p-2 w-auto text-center text-xl fadeIn'>
+                  <video autoPlay loop muted className='rounded-lg w-40 text-center' src={game.videoDemo} />
+                  <div className='p-2 h-20 text-center text-md fadeIn trun'>
                     {game.shortDescription}
                   </div>
                   <a
@@ -208,7 +208,7 @@ export default function ThinkyHomePage() {
       <div className='flex flex-col justify-center items-center h-full '>
         <ParallaxProvider>
           <ParallaxBanner layers={[headline]} className='bg-gray-900' style={{
-            height: '100vh',
+            height: '820px',
           }} />
           <ParallaxBanner
             layers={[background, foreground, gradientOverlay, subtext]}
