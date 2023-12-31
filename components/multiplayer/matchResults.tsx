@@ -77,7 +77,7 @@ export default function MatchResults({ match, recap, showViewLink }: MatchResult
         <div className='flex flex-col gap-1 truncate pr-0.5'>
           {sortedPlayers.map((player) => (
             <div
-              className='flex gap-1 items-center'
+              className='flex gap-0 items-left'
               key={player._id.toString()}
             >
               {player._id.toString() in match.scoreTable &&
