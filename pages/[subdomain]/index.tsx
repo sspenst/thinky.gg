@@ -35,9 +35,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   };
 }
 
-/* istanbul ignore next
-// Newline placeholder needed for swc: https://github.com/swc-project/jest/issues/119#issuecomment-1872581999
-*/
+/* istanbul ignore next */
 export interface HomepageDataProps {
   latestLevels?: EnrichedLevel[];
   latestReviews?: Review[];
@@ -46,16 +44,12 @@ export interface HomepageDataProps {
   topLevelsThisMonth?: EnrichedLevel[];
 }
 
-/* istanbul ignore next
-// Newline placeholder needed for swc: https://github.com/swc-project/jest/issues/119#issuecomment-1872581999
-*/
+/* istanbul ignore next */
 interface HomePageProps {
   user: User | null;
 }
 
-/* istanbul ignore next
-// Newline placeholder needed for swc: https://github.com/swc-project/jest/issues/119#issuecomment-1872581999
-*/
+/* istanbul ignore next */
 export function isVisibleInDom(id: string) {
   const element = document.getElementById(id);
 
@@ -69,9 +63,7 @@ export function isVisibleInDom(id: string) {
   return !(rect.bottom < 0 || rect.top - viewHeight >= 0);
 }
 
-/* istanbul ignore next
-// Newline placeholder needed for swc: https://github.com/swc-project/jest/issues/119#issuecomment-1872581999
-*/
+/* istanbul ignore next */
 export default function HomePage({ user }: HomePageProps) {
   const { game } = useContext(AppContext);
   const [loadLatestLevels, setLoadLatestLevels] = useState(false);

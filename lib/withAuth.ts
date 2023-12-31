@@ -137,9 +137,7 @@ export default function withAuth(
         );
       }
 
-      /* istanbul ignore next 
-// Newline placeholder needed for swc: https://github.com/swc-project/jest/issues/119#issuecomment-1872581999
-*/
+      /* istanbul ignore next */
       return handler(req, res).catch((error: Error) => {
         logger.error('API Handler Error Caught', error);
 

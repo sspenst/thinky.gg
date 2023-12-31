@@ -61,9 +61,7 @@ interface CollectionEditProps {
   reqUser: User;
 }
 
-/* istanbul ignore next 
-// Newline placeholder needed for swc: https://github.com/swc-project/jest/issues/119#issuecomment-1872581999
-*/
+/* istanbul ignore next */
 export default function CollectionEdit({ collection, reqUser }: CollectionEditProps) {
   const levels = collection.levels as EnrichedLevel[];
   const showAuthor = levels.some(level => level.userId._id !== collection.userId._id);

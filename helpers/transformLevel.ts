@@ -119,9 +119,7 @@ export function trimLevel(level: string) {
   return exportLevel(loadedLevel);
 }
 
-/* istanbul ignore next 
-// Newline placeholder needed for swc: https://github.com/swc-project/jest/issues/119#issuecomment-1872581999
-*/
+/* istanbul ignore next */
 // rotate a block 90 degrees counterclockwise
 function rotateBlockCCW(block: string) {
   switch (block) {
@@ -158,9 +156,7 @@ function rotateBlockCCW(block: string) {
   return block;
 }
 
-/* istanbul ignore next 
-// Newline placeholder needed for swc: https://github.com/swc-project/jest/issues/119#issuecomment-1872581999
-*/
+/* istanbul ignore next */
 // flip a block vertically
 function flipBlockY(block: string) {
   switch (block) {

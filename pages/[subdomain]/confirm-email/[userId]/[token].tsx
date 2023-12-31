@@ -46,9 +46,7 @@ interface ConfirmEmailProps {
   emailConfirmed: boolean;
 }
 
-/* istanbul ignore next 
-// Newline placeholder needed for swc: https://github.com/swc-project/jest/issues/119#issuecomment-1872581999
-*/
+/* istanbul ignore next */
 export default function ConfirmEmail({ emailConfirmed }: ConfirmEmailProps) {
   const router = useRouter();
 
