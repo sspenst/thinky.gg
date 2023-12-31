@@ -48,28 +48,11 @@ export default {
     }],
   },*/
 
-  /*
   transform: {
     '^.+\\.(t|j)sx?$': ['@swc/jest', {
       configFile: '.swcrc',
 
     }],
-  },*/
-
-  transform: {
-    '^.+\\.[tj]sx?$': [
-      './wrap-swc-transformer.js',
-      {
-        sourceMaps: true,
-        jsc: {
-          parser: {
-            syntax: 'typescript',
-          },
-          transform: {},
-          target: 'es5',
-        },
-      },
-    ],
   },
 
   // An array of regexp pattern strings used to skip coverage collection
