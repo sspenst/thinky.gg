@@ -346,7 +346,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       ),
       sortable: true,
       style: {
-        minWidth: '150px',
+        minWidth: '225px',
       },
     },
     {
