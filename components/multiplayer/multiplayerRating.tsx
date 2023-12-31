@@ -1,4 +1,6 @@
-import React from 'react';
+import { AppContext } from '@root/contexts/appContext';
+import { ScreenSize } from '@root/hooks/useDeviceCheck';
+import React, { useContext } from 'react';
 import { getMatchCountFromProfile, getMatchTypeNameFromMatchType, getRatingFromProfile, isProvisional, MUTLIPLAYER_PROVISIONAL_GAME_LIMIT } from '../../helpers/multiplayerHelperFunctions';
 import { MultiplayerMatchType } from '../../models/constants/multiplayer';
 import MultiplayerProfile from '../../models/db/multiplayerProfile';
@@ -13,6 +15,8 @@ export interface MultiplayerRatingProps {
 }
 
 export default function MultiplayerRating({ hideType, profile, record, type }: MultiplayerRatingProps) {
+  const { deviceInfo } = useContext(AppContext);
+
   if (profile && !isProvisional(type, profile) && getRatingFromProfile(profile, type)) {
     return (
       <div className='flex flex-col items-center'>
@@ -39,7 +43,7 @@ export default function MultiplayerRating({ hideType, profile, record, type }: M
         {!hideType && <span className={'text-xs match-type-text-' + type}>{getMatchTypeNameFromMatchType(type)}</span>}
         <span data-tooltip-id='unrated' data-tooltip-content={`${matchesRemaining} match${matchesRemaining === 1 ? '' : 'es'} remaining`} className='text-xs italic' style={{
 
-        }}>Unrated</span>
+        }}>{deviceInfo.screenSize < ScreenSize.MD ? '⏳' : 'Unrated'}</span>
         {record && (
           <div className='text-xs'>
           ({record.wins}-{record.draws}-{record.losses})
