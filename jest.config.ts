@@ -49,9 +49,17 @@ export default {
   },*/
 
   transform: {
-    '^.+\\.(t|j)sx?$': ['@swc/jest', {
+    '^.+\\.ts$': ['@swc/jest', {
       configFile: '.swcrc',
-
+    }],
+    'node_modules/(react-dnd|dnd-core|@react-dnd|react-dnd-html5-backend)/.+\\.(j|t)sx?$': 'ts-jest',
+    '^.+\\.tsx$': ['ts-jest', {
+      isolatedModules: true,
+      tsconfig: {
+        // Got this below snippet from https://github.com/kulshekhar/ts-jest/issues/2805
+        // This is necessary because next.js forces { "jsx": "preserve" }, but ts-jest appears to require { "jsx": "react" }
+        jsx: 'react',
+      },
     }],
   },
 
