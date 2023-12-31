@@ -78,6 +78,9 @@ export const Games: Record<GameId, Game> = {
 
 export interface Game {
   id: GameId;
+  /**
+     * Base URL for the game - only available on server side until we get NEXT_PUBLIC_APP_DOMAIN working
+  */
   baseUrl: string;
   defaultTheme: Theme;
   displayName: string;
