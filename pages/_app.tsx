@@ -150,12 +150,12 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
   useEffect(() => {
     // if port is not 80 or 443, include it in the hostname
     // also hostname needs to strip out subdomain
-    const hostname = window.location.port === '80' || window.location.port === '443' ?
+    const hostname = window.location.port === '' || window.location.port === '80' || window.location.port === '443' ?
       window.location.hostname :
       `${window.location.hostname}:${window.location.port}`;
     const dots = hostname.split('.');
 
-    const hostnameStrippedOfFirstSubdomain = dots.length === 2 ?
+    const hostnameStrippedOfFirstSubdomain = dots.length === 3 ?
       dots.slice(1).join('.') : hostname;
 
     setHost(hostnameStrippedOfFirstSubdomain);

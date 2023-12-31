@@ -38,6 +38,7 @@ export default function useUrl() {
 
     // can't use game.baseUrl because this function is client side and we NEXT_PUBLIC isn't working at the moment
     const game = getGameFromId(gameId);
+
     const hostTLD = host?.split('.').slice(-2).join('.');
     const baseUrl = protocol + '//' + game.subdomain + '.' + hostTLD;
 
