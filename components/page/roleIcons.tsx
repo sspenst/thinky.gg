@@ -52,7 +52,13 @@ interface RoleIconsProps {
 }
 
 export default function RoleIcons({ id, size, user }: RoleIconsProps) {
+  // combine user.roles and user.config.roles
+
+  const roles = user.roles || [];
+  const configRoles = user.config?.roles || [];
+  const dedupeRoles = Array.from(new Set([...roles, ...configRoles]));
+
   return (<>
-    {user.config?.roles?.map(role => <RoleIcon id={id} key={`role-icon-${user._id.toString()}-${role.toString()}`} role={role} size={size} />)}
+    {dedupeRoles?.map(role => <RoleIcon id={id} key={`role-icon-${user._id.toString()}-${role.toString()}`} role={role} size={size} />)}
   </>);
 }

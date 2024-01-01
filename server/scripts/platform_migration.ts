@@ -31,7 +31,7 @@ async function Go() {
     calcRecordsCount: '$calc_records',
     chapterUnlocked: '$chapterUnlocked',
     calcLevelsSolvedCount: '$score',
-  // roles: '$roles',
+    roles: '$roles',
   }, '_id', 'userId', { 'target.gameId': 'pathology' });
 
   /* Prompt user to confirm they want to remove all roles except admin from UserModel */
