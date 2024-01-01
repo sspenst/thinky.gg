@@ -11,8 +11,10 @@ export const getValidSubdomain = (host?: string | null) => {
     host = window.location.host;
   }
 
-  if (host && host.includes('.')) {
-    const candidate = host.split('.')[0];
+  const hostSplit = host?.split('.');
+
+  if (host && hostSplit && hostSplit.length > 2) {
+    const candidate = hostSplit[0];
 
     if (candidate && !candidate.includes('localhost')) {
       // Valid candidate
@@ -54,12 +56,6 @@ export async function middleware(req: NextRequest) {
   const host = req.headers.get('host');
   const subdomain = getValidSubdomain(host);
   const folder = url.pathname.split('/')[1];
-
-  console.log('URL ', url);
-  console.log('HOST ', host);
-  console.log('SUBDOMAIN ', subdomain);
-  console.log('FOLDER ', folder);
-  console.log('is whitelist ', whiteList[folder]);
 
   if (folder === 'api' || (subdomain !== null && !validSubdomain[subdomain])) {
     return;
