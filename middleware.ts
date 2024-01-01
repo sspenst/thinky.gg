@@ -55,7 +55,11 @@ export async function middleware(req: NextRequest) {
   const subdomain = getValidSubdomain(host);
   const folder = url.pathname.split('/')[1];
 
-  console.log(url, host, subdomain, folder);
+  console.log('URL ', url);
+  console.log('HOST ', host);
+  console.log('SUBDOMAIN ', subdomain);
+  console.log('FOLDER ', folder);
+  console.log('is whitelist ', whiteList[folder]);
 
   if (folder === 'api' || (subdomain !== null && !validSubdomain[subdomain])) {
     return;
