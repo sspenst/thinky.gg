@@ -19,23 +19,24 @@ export function parseSubdomain(url: string): string | null {
 }
 
 export function getOnlyHostname(url: string): string | null {
-  if (!url) {
-    return null;
-  }
+  if (!url) return null;
 
-  // Remove protocol, port, and path
-  const hostname = url.replace(/https?:\/\//, '').split(/[/:]/)[0];
+  // Remove protocol, if present
+  let hostname = url.replace(/https?:\/\//, '').split('/')[0];
+
+  // Remove port number, if present
+  hostname = hostname.split(':')[0];
 
   // Special handling for 'localhost'
   if (hostname.endsWith('.localhost') || hostname === 'localhost') {
     return 'localhost';
   }
 
-  // Extract the main domain part
+  // Split hostname into parts and extract only the main domain
   const parts = hostname.split('.');
 
   if (parts.length >= 2) {
-    return parts[parts.length - 2];
+    return parts.slice(-2).join('.');
   }
 
   return null;
