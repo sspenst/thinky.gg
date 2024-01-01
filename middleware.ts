@@ -2,6 +2,7 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { Games } from './constants/Games';
+import { parseSubdomain } from './helpers/parseSubdomain';
 
 export const getValidSubdomain = (host?: string | null) => {
   let subdomain: string | null = null;
@@ -13,10 +14,10 @@ export const getValidSubdomain = (host?: string | null) => {
 
   const hostSplit = host?.split('.');
 
-  if (host && hostSplit && hostSplit.length > 2) {
-    const candidate = hostSplit[0];
+  if (host && hostSplit) {
+    const candidate = parseSubdomain(host);
 
-    if (candidate && !candidate.includes('localhost')) {
+    if (candidate) {
       // Valid candidate
       subdomain = candidate;
     }
@@ -29,6 +30,11 @@ export const getValidSubdomain = (host?: string | null) => {
 const PUBLIC_FILE = /\.(.*)$/; // Files
 const whiteList = {
   'api': 1,
+  'drafts': 1,
+  'edit': 1,
+  'new': 1,
+  'ranked': 1,
+  'play-history': 1,
   'forgot-password': 1,
   'login': 1,
   'play-as-guest': 1,

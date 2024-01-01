@@ -8,6 +8,7 @@ import { Game, Games } from '@root/constants/Games';
 import MusicContextProvider from '@root/contexts/musicContext';
 import getFontFromGameId from '@root/helpers/getFont';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import { getOnlyHostname } from '@root/helpers/parseSubdomain';
 import useDeviceCheck from '@root/hooks/useDeviceCheck';
 import Collection from '@root/models/db/collection';
 import MultiplayerProfile from '@root/models/db/multiplayerProfile';
@@ -153,12 +154,9 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
     const hostname = window.location.port === '' || window.location.port === '80' || window.location.port === '443' ?
       window.location.hostname :
       `${window.location.hostname}:${window.location.port}`;
-    const dots = hostname.split('.');
+    const hostnameStrippedOfFirstSubdomain = getOnlyHostname(hostname);
 
-    const hostnameStrippedOfFirstSubdomain = dots.length === 3 ?
-      dots.slice(1).join('.') : hostname;
-
-    setHost(hostnameStrippedOfFirstSubdomain);
+    setHost(hostnameStrippedOfFirstSubdomain || 'thinky.gg');
   }, []);
 
   // initialize sessionStorage values

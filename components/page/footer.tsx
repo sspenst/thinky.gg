@@ -72,7 +72,7 @@ export default function Footer() {
         </div>
       </div>
       <div className='text-center text-sm' style={{ color: 'var(--color-gray)' }}>
-        © {(new Date()).getFullYear()} <ExternalLink href='https://thinky.gg'>
+        © 2024 <ExternalLink href='https://thinky.gg'>
           thinky.gg
         </ExternalLink>
       </div>
