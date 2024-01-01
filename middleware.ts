@@ -1,8 +1,7 @@
 // middleware.ts
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { GameId } from './constants/GameId';
-import { Game, Games } from './constants/Games';
+import { Games } from './constants/Games';
 
 export const getValidSubdomain = (host?: string | null) => {
   let subdomain: string | null = null;
@@ -56,7 +55,9 @@ export async function middleware(req: NextRequest) {
   const subdomain = getValidSubdomain(host);
   const folder = url.pathname.split('/')[1];
 
-  if (folder === 'api' || subdomain !== null && !validSubdomain[subdomain]) {
+  console.log(url, host, subdomain, folder);
+
+  if (folder === 'api' || (subdomain !== null && !validSubdomain[subdomain])) {
     return;
   }
 
