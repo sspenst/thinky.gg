@@ -168,9 +168,9 @@ describe('helpers/*.ts', () => {
     expect(parseSubdomain('')).toBe(null);
   });
   test('getOnlyHostname', async () => {
-    expect(getOnlyHostname('https://asdf.test.com')).toBe('test');
-    expect(getOnlyHostname('https://asdf.vahh.test.com')).toBe('test');
-    expect(getOnlyHostname('https://test.com')).toBe('test');
+    expect(getOnlyHostname('https://asdf.test.com')).toBe('test.com');
+    expect(getOnlyHostname('https://asdf.vahh.test.com')).toBe('test.com');
+    expect(getOnlyHostname('https://test.com')).toBe('test.com');
     expect(getOnlyHostname('http://test.localhost')).toBe('localhost');
     expect(getOnlyHostname('http://blah.test.localhost')).toBe('localhost');
     expect(getOnlyHostname('http://test.localhost:3000')).toBe('localhost');
