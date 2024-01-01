@@ -45,7 +45,8 @@ describe('pages/api/level/index.ts', () => {
 
   test('cookieOptions', async () => {
     process.env.LOCAL = undefined;
-    expect(cookieOptions('host').domain).toBe('.host');
+    expect(cookieOptions('localhost').domain).toBe('.localhost');
+    expect(cookieOptions('es.com').domain).toBe('.es.com');
     expect(cookieOptions(undefined).domain).toBe('.thinky.gg');
   });
 });
