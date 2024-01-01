@@ -1,5 +1,6 @@
 import GameLogoAndLabel from '@root/components/gameLogoAndLabel';
 import { GameId } from '@root/constants/GameId';
+import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
 import React from 'react';
@@ -8,6 +9,21 @@ import Page from '../../../components/page/page';
 import redirectToHome from '../../../helpers/redirectToHome';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const gameId = getGameIdFromReq(context.req);
+
+  if (gameId !== GameId.THINKY) {
+    // redirect always to thinky.gg
+    const game = getGameFromId(GameId.THINKY);
+    const existingRedirect = context.query.redirect ? context.query.redirect as string : '';
+
+    return {
+      redirect: {
+        destination: game.baseUrl + '/login' + (context.resolvedUrl ? '?redirect=' + encodeURIComponent(existingRedirect) : ''),
+        permanent: false,
+      },
+    };
+  }
+
   return await redirectToHome(context);
 }
 

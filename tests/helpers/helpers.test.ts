@@ -1,5 +1,6 @@
 import StatFilter from '@root/constants/statFilter';
 import { generatePassword } from '@root/helpers/generatePassword';
+import { getOnlyHostname, parseSubdomain } from '@root/helpers/parseSubdomain';
 import TestId from '../../constants/testId';
 import statFilterOptions from '../../helpers/filterSelectOptions';
 import getDifficultyEstimate from '../../helpers/getDifficultyEstimate';
@@ -156,6 +157,26 @@ describe('helpers/*.ts', () => {
     const password = generatePassword();
 
     expect(password.length).toBeGreaterThan(0);
+  });
+  test('parseSubdomain', async () => {
+    expect(parseSubdomain('https://asdf.test.com')).toBe('asdf');
+    expect(parseSubdomain('https://test.com')).toBe(null);
+    expect(parseSubdomain('http://test.localhost')).toBe('test');
+    expect(parseSubdomain('http://test.localhost:3000')).toBe('test');
+    expect(parseSubdomain('test.localhost')).toBe('test');
+    expect(parseSubdomain('localhost')).toBe(null);
+    expect(parseSubdomain('')).toBe(null);
+  });
+  test('getOnlyHostname', async () => {
+    expect(getOnlyHostname('https://asdf.test.com')).toBe('test');
+    expect(getOnlyHostname('https://asdf.vahh.test.com')).toBe('test');
+    expect(getOnlyHostname('https://test.com')).toBe('test');
+    expect(getOnlyHostname('http://test.localhost')).toBe('localhost');
+    expect(getOnlyHostname('http://blah.test.localhost')).toBe('localhost');
+    expect(getOnlyHostname('http://test.localhost:3000')).toBe('localhost');
+    expect(getOnlyHostname('test.localhost')).toBe('localhost');
+    expect(getOnlyHostname('localhost')).toBe('localhost');
+    expect(getOnlyHostname('')).toBe(null);
   });
 });
 
