@@ -151,6 +151,10 @@ interface NavProps {
 
 export default function Nav({ isDropdown }: NavProps) {
   const { game, multiplayerSocket, playLater, user } = useContext(AppContext);
+
+  const router = useRouter();
+  const [showSearchUsers, setShowSearchUsers] = useState(false);
+
   const { connectedPlayersCount, matches, socket } = multiplayerSocket;
 
   const proNavLink = <NavLink
@@ -287,8 +291,9 @@ export default function Nav({ isDropdown }: NavProps) {
     label='Leaderboards'
   />;
 
-  const usersNavLink = <>
-    <NavLink
+  const usersNavLink =
+
+    <><div className='flex flex-row items-center'><NavLink
       href='/users'
       icon={
         <svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' className='w-5 h-5' viewBox='0 0 16 16'>
@@ -298,13 +303,32 @@ export default function Nav({ isDropdown }: NavProps) {
       }
       label='Users'
     />
-    <MultiSelectUser
+    {<button style={{
+      justifyContent: 'flex-end',
+    }}
+    className={classNames(
+      'flex  items-center rounded-md cursor-pointer px-3 py-2 gap-5',
+    )}
+    onClick={() => {
+      setShowSearchUsers(!showSearchUsers);
+    }}
+    >
+      <svg xmlns='http://www.w3.org/2000/svg' className='w-5 h-5' fill='none' viewBox='0 0 24 24'
+        stroke='currentColor'>
+        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2'
+          d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
+      </svg>
+    </button> }
+
+    </div>
+    {showSearchUsers && <MultiSelectUser
       className='w-full'
       onSelect={(user: User) => {
         router.push('/profile/' + user.name);
       }}
-    />
-  </>;
+    />}
+    </>
+;
 
   const levelSearchNavLink = <NavLink
     href='/search'
@@ -315,7 +339,7 @@ export default function Nav({ isDropdown }: NavProps) {
           d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
       </svg>
     }
-    label='Search'
+    label='Levels'
   />;
 
   const homeNavLink = <NavLink
@@ -367,8 +391,6 @@ export default function Nav({ isDropdown }: NavProps) {
     }
     label='Play History'
   />;
-
-  const router = useRouter();
 
   return (
     <nav
