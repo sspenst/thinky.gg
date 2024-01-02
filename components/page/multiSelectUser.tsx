@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import User from '@root/models/db/user';
+import classNames from 'classnames';
 import React, { useState } from 'react';
 import AsyncSelect from 'react-select/async';
 import { debounce } from 'throttle-debounce';
@@ -7,13 +8,14 @@ import Dimensions from '../../constants/dimensions';
 import FormattedUser from '../formatted/formattedUser';
 
 interface MultiSelectUserProps {
+  className?: string;
   controlStyles?: any;
   defaultValue?: User | null;
   onSelect?: (selectedList: any, selectedItem: any) => void;
   placeholder?: string
 }
 
-export default function MultiSelectUser({ controlStyles, defaultValue, onSelect, placeholder }: MultiSelectUserProps) {
+export default function MultiSelectUser({ className, controlStyles, defaultValue, onSelect, placeholder }: MultiSelectUserProps) {
   const [options, setOptions] = useState([]);
   const [value, setValue] = useState(defaultValue);
 
@@ -36,7 +38,7 @@ export default function MultiSelectUser({ controlStyles, defaultValue, onSelect,
 
   return <AsyncSelect
     backspaceRemovesValue={true}
-    className='text-left text-base'
+    className={classNames('text-left text-base', className)}
     components={{
       DropdownIndicator: null,
       IndicatorSeparator: null,
@@ -67,7 +69,7 @@ export default function MultiSelectUser({ controlStyles, defaultValue, onSelect,
       }
     }}
     options={options} // Options to display in the dropdown
-    placeholder={placeholder ? placeholder : 'Search profile...'}
+    placeholder={placeholder ? placeholder : 'Search users...'}
     // https://react-select.com/styles
     styles={{
       control: (provided: any, state: any) => ({
