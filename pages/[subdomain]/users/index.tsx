@@ -1,6 +1,5 @@
 import FormattedDate from '@root/components/formatted/formattedDate';
 import MultiplayerRating from '@root/components/multiplayer/multiplayerRating';
-import MultiSelectUser from '@root/components/page/multiSelectUser';
 import { GameType } from '@root/constants/Games';
 import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
@@ -8,7 +7,6 @@ import useRouterQuery from '@root/hooks/useRouterQuery';
 import cleanUser from '@root/lib/cleanUser';
 import debounce from 'debounce';
 import { GetServerSidePropsContext } from 'next';
-import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
@@ -319,9 +317,7 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
   const { game, user } = useContext(AppContext);
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState(searchQuery);
-  const router = useRouter();
   const routerQuery = useRouterQuery();
-  const [selectedUser, setSelectedUser] = useState<User | undefined>();
 
   useEffect(() => {
     setData(users);
@@ -538,27 +534,18 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
         subHeader
         subHeaderAlign={Alignment.CENTER}
         subHeaderComponent={<div className='flex flex-col m-2 gap-2'>
-          <div className='flex flex-wrap gap-2'>
-            <input
-              className='form-control relative min-w-0 block w-52 px-3 py-1.5 h-10 bg-clip-padding border border-color-4 rounded-md transition ease-in-out m-0 focus:border-blue-600 focus:outline-none'
-              key='search-level-input'
-              onChange={e => {
-                setQueryHelper({
-                  search: e.target.value,
-                });
-              } }
-              placeholder='Filter users...'
-              type='search'
-              value={query.search}
-            />
-            <MultiSelectUser defaultValue={selectedUser} onSelect={(user: User) => {
-              setSelectedUser(user);
-
-              if (user) {
-                router.push('/profile/' + user.name);
-              }
-            }} />
-          </div>
+          <input
+            className='form-control relative min-w-0 block w-52 px-3 py-1.5 h-10 bg-clip-padding border border-color-4 rounded-md transition ease-in-out m-0 focus:border-blue-600 focus:outline-none'
+            key='search-level-input'
+            onChange={e => {
+              setQueryHelper({
+                search: e.target.value,
+              });
+            } }
+            placeholder='Filter users...'
+            type='search'
+            value={query.search}
+          />
           <div className='flex flex-row gap-2 justify-center text-sm'>
             <input
               checked={query.showOnline === 'true'}
