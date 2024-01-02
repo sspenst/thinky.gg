@@ -10,7 +10,6 @@ export default {
 
   // Stop running tests after `n` failures
   // bail: 0,
-  bail: 1,
 
   // The directory where Jest should store its cached dependency information
   // cacheDirectory: "/private/var/folders/tf/wdj2w8mx781dyz3rvbf1z6dm0000gn/T/jest_dx",

@@ -1,7 +1,7 @@
 // launch with:
 //       node app.js
 const { chromium } = require('playwright');
-
+const express = require('express');
 const app = express();
 const port = 3000;
 const expectedSecret = process.env.GEN_IMG_SECRET; // The expected secret value
