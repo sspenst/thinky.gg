@@ -1,7 +1,7 @@
 import SettingsAccount from '@root/components/settings/settingsAccount';
 import SettingsNotifications from '@root/components/settings/settingsNotifications';
 import { AppContext } from '@root/contexts/appContext';
-import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
 import classNames from 'classnames';
@@ -87,11 +87,13 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     userConfig = await getUserConfig(gameId, reqUser);
   }
 
+  const game = getGameFromId(gameId);
+
   return {
     props: {
       stripeCustomerPortalLink: process.env.STRIPE_CUSTOMER_PORTAL,
-      stripePaymentLink: process.env.STRIPE_PAYMENT_LINK,
-      stripePaymentYearlyLink: process.env.STRIPE_PAYMENT_LINK_YEARLY,
+      stripePaymentLink: game.stripePaymentLinkMonthly,
+      stripePaymentYearlyLink: game.stripePaymentLinkYearly,
       user: JSON.parse(JSON.stringify(reqUser)),
       userConfig: JSON.parse(JSON.stringify(userConfig)),
     },

@@ -93,7 +93,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   const profileTab = !tab ? ProfileTab.Profile : tab[0] as ProfileTab;
-  const users = await getUsersWithMultiplayerProfile(gameId, { name: name }, { bio: 1, ts: 1 });
+
+  const users = await getUsersWithMultiplayerProfile(gameId, { name: name }, { bio: 1, ts: 1, config: 1 });
 
   if (!users || users.length !== 1) {
     return {
