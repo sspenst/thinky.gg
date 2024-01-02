@@ -253,7 +253,6 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
     });
 
     socketConn.on('matches', (matches: MultiplayerMatch[]) => {
-      console.log('received matches', matches);
       setMultiplayerSocket(prevMultiplayerSocket => {
         return {
           connectedPlayers: prevMultiplayerSocket.connectedPlayers,
@@ -298,9 +297,11 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
   useEffect(() => {
     for (const match of matches) {
       // if match is active and includes user, then redirect to match page /match/[matchId]
+      console.log('match', match, router.pathname);
+
       if (match.state === MultiplayerMatchState.ACTIVE && match.players.some((player: User) => player?._id?.toString() === user?._id?.toString())) {
         // match sure current url isn't this
-        if (router.pathname === '/match/[matchId]' && router.query.matchId === match.matchId) {
+        if (router.pathname === '/[subdomain]/match/[matchId]' && router.query.matchId === match.matchId) {
           return;
         }
 
