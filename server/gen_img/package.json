@@ -1,14 +1,14 @@
 {
-    "name": "gen_img",
-    "version": "1.0.0",
-    "description": "API to take screenshots using Playwright",
-    "main": "app.js",
-    "scripts": {
-      "start": "node app.js"
-    },
-    "dependencies": {
-      "express": "^4.18.2",
-      "playwright": "^1.40.1"
-    },
-    "author": "k2xl"
-  }
+  "name": "gen_img",
+  "version": "1.0.0",
+  "description": "API to take screenshots using Playwright",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "playwright": "^1.40.1"
+  },
+  "author": "k2xl"
+}
