@@ -2,7 +2,7 @@
 
 import { createPopper, Instance, Placement } from '@popperjs/core';
 import styles from '@root/components/level/Controls.module.css';
-import { directionToVector } from '@root/constants/direction';
+import { GameId } from '@root/constants/GameId';
 import TileType from '@root/constants/tileType';
 import { GameState } from '@root/helpers/gameStateHelpers';
 import classNames from 'classnames';
@@ -14,7 +14,7 @@ import { AppContext } from '../../contexts/appContext';
 import { TimerUtil } from '../../helpers/getTs';
 import Control from '../../models/control';
 import Level from '../../models/db/level';
-import Position from '../../models/position';
+import GameLogo from '../gameLogo';
 import BasicLayout from '../level/basicLayout';
 import Controls from '../level/controls';
 import Game from '../level/game';
@@ -81,9 +81,8 @@ export default function TutorialSokoban() {
   const LEVEL_1_ONLY_BLOCK = '00000\n00000\n00230\n00000\n00000';
   const LEVEL_1 = '00040\n00000\n00230\n00000\n00000';
   const WALL_INTRO = '00000\n00102\n40100\n00103\n00000';
-  const MULTIPLE_ENDS = '41300\n01200\n30000\n20320\n00000';
-  const MOVABLE_EXPLAIN = '410100\n002200\n010103\n000110';
-  const MOVABLE_EXPLAIN_END_COVER = '00400\n10K00\n02000\n01300\n00000';
+  const MOVABLE_EXPLAIN = '41310\n00223\n01010\n00011';
+  const MOVABLE_EXPLAIN_END_COVER = '0000\n4K30\n0210\n0400';
 
   useEffect(() => {
     const sessionStorageTutorialStep = sessionStorage.getItem('tutorialStep');
@@ -212,7 +211,6 @@ export default function TutorialSokoban() {
       </span>
     </div>,
     disabled,
-    !disabled,
   ), []);
 
   const nextControl = useCallback((disabled = false) => new Control(
@@ -235,6 +233,7 @@ export default function TutorialSokoban() {
       {
         hasNext: true,
         header: <>
+          <GameLogo gameId={GameId.SOKOBAN} id='tutorial' size={32} />
           <div className='text-3xl fadeIn'>Welcome to the Sokoban tutorial!</div>
           <div className='text-xl fadeIn' style={{
             animationDelay: '1s',
@@ -244,7 +243,7 @@ export default function TutorialSokoban() {
       {
         editorGrid: true,
         gameClasses: 'fadeIn',
-        header: <div key='tutorial-blank-grid-header' className='text-3xl fadeIn'>Sokoban is a grid-based puzzle game.</div>,
+        header: <div key='tutorial-blank-grid-header' className='text-3xl fadeIn'><span className='font-medium'>Sokoban</span> is a grid-based puzzle game.</div>,
         key: 'tutorial-blank-grid',
         level: getLevel(BLANK_GRID),
       },
@@ -413,7 +412,7 @@ export default function TutorialSokoban() {
         gameClasses: 'fadeIn',
         header: <>
           <div className='text-3xl'>This is a box.</div>
-          <div className='text-xl'>Your goal is to push boxes into exit squares.</div>
+          <div className='text-xl'>Your goal is to push boxes onto exit squares.</div>
         </>,
         key: 'tutorial-level-1-only-block',
         level: getLevel(LEVEL_1_ONLY_BLOCK, { leastMoves: 5 }),
@@ -421,27 +420,10 @@ export default function TutorialSokoban() {
       },
       {
         gameGrid: true,
-        header: <><div key='tutorial-level-1-header' className='text-3xl fadeIn'>Try solving your first level!</div><div className='text-xl'>Push the box into the exit square.</div></>,
+        header: <><div key='tutorial-level-1-header' className='text-3xl fadeIn'>Try solving your first level!</div><div className='text-xl'>Push the box onto the exit square.</div></>,
         key: 'tutorial-level-1',
         level: getLevel(LEVEL_1, { leastMoves: 5 }),
-        onMove: (gameState: GameState) => {
-          const undoButton = document.getElementById('btn-undo') as HTMLButtonElement;
-
-          // NB: advanced undo notification for the very first level
-          // notify the user to undo if they have gone past the exit (too far right or down)
-          // or if they have gone left or up at any point
-          if (gameState.pos.x > 4 || gameState.pos.y > 3 || gameState.moves.some(move => {
-            const pos = directionToVector(move.direction);
-
-            return pos.equals(new Position(-1, 0)) || pos.equals(new Position(0, -1));
-          })) {
-            undoButton?.classList.add(styles['highlight-red']);
-          } else {
-            undoButton?.classList.remove(styles['highlight-red']);
-          }
-        },
         onSolve: niceJob,
-        tooltip: { canClose: true, target: '.tile-type-4', title: <div>Your player</div>, dir: 'top' },
       },
       {
         gameClasses: 'fadeIn',
@@ -455,31 +437,23 @@ export default function TutorialSokoban() {
       {
         gameClasses: 'fadeIn',
         gameGrid: true,
-        header: <><div key='tutorial-level-1-multipleexits' className='text-3xl fadeIn'>Levels can have multiple exit squares</div><div className='text-xl'>To win, put a box on each exit square.</div></>,
-        key: 'tutorial-ends',
-        level: getLevel(MULTIPLE_ENDS, { leastMoves: 15 }),
-        onSolve: niceJob,
-      },
-      {
-        gameClasses: 'fadeIn',
-        gameGrid: true,
-        header: <div key='tutorial-movable-explain-header' className='text-3xl fadeIn'>You can only push one block at a time.</div>,
+        header: <div key='tutorial-movable-explain-header' className='text-3xl fadeIn'>You can only push one box at a time.</div>,
         key: 'tutorial-movable-explain',
-        level: getLevel(MOVABLE_EXPLAIN, { leastMoves: 12 }),
+        level: getLevel(MOVABLE_EXPLAIN, { leastMoves: 8 }),
         onSolve: niceJob,
       },
       {
         gameClasses: 'fadeIn',
         gameGrid: true,
-        header: <><div key='tutorial-level-1-coverexit' className='text-3xl fadeIn'>Boxes can cover exit squares</div><div className='text-xl'>Try this tricky level!</div></>,
+        header: <><div key='tutorial-level-1-coverexit' className='text-3xl fadeIn'>Complete the final level of the tutorial!</div></>,
         key: 'tutorial-movable-explain-end-cover',
-        level: getLevel(MOVABLE_EXPLAIN_END_COVER, { leastMoves: 18 }),
+        level: getLevel(MOVABLE_EXPLAIN_END_COVER, { leastMoves: 9 }),
         onSolve: niceJob,
       },
       {
         header: <div>
           <div className='text-3xl mb-6 fadeIn'>Congratulations on completing the tutorial!</div>
-          <div className='text-xl mb-6 fadeIn' style={{
+          <div className='text-xl fadeIn' style={{
             animationDelay: '1s',
           }}>There is a lot more to Sokoban than just this:<br />An active community, level editor, and thousands of levels to explore.</div>
           {isLoggedIn ?
@@ -589,12 +563,12 @@ export default function TutorialSokoban() {
   const tutorialStep = getTutorialSteps()[tutorialStepIndex];
 
   useEffect(() => {
-    setTimeout( () => {
+    setTimeout(() => {
       const nextId = document.getElementById('control-next') as HTMLButtonElement;
 
       // if nextId doesn't have class pointer-events-none
-      if (nextId && !nextId.classList.contains('pointer-events-none')) {
-        if (!isNextButtonDisabled || (!tutorialStep.isNextButtonDisabled && tutorialStep.gameGrid && tutorialStepIndex === tutorialStepIndexMax)) {
+      if (nextId) {
+        if (!nextId.classList.contains('pointer-events-none')) {
           setTimeout(() => {
             nextId.classList.add('bg-orange-700');
             nextId.classList.add('bounce');
@@ -617,7 +591,11 @@ export default function TutorialSokoban() {
   }
 
   if (tutorialStepIndex !== getTutorialSteps().length - 1) {
-    controls.push(nextControl(isNextButtonDisabled || (!tutorialStep.isNextButtonDisabled && tutorialStep.gameGrid && tutorialStepIndex === tutorialStepIndexMax)));
+    // when you are the furthest you have been in the tutorial (tutorialStepIndexMax) and it is a level, you must complete the level to continue and so the next button is disabled
+    // if you come back to this step after beating the level the next button should be enabled
+    const atIncompleteLevel = !tutorialStep.isNextButtonDisabled && tutorialStep.gameGrid && tutorialStepIndex === tutorialStepIndexMax;
+
+    controls.push(nextControl(isNextButtonDisabled || atIncompleteLevel));
     controls.push(skipControl());
   } else {
     controls.push(new Control(
@@ -629,20 +607,10 @@ export default function TutorialSokoban() {
       },
       <button onClick={() => setTutorialStepIndex(0)}>Restart Tutorial</button>,
       false,
-      true,
     ));
-    const btn = isLoggedIn && !game.disableCampaign ?
+
+    controls.push(!isLoggedIn ?
       new Control(
-        'control-campaign',
-        () => {
-          router.push('/play');
-        },
-        <>Campaign</>,
-        false,
-        true,
-      )
-      :
-      (!isLoggedIn && new Control(
         'control-sign-up',
         () => {
           router.push('/signup');
@@ -653,9 +621,28 @@ export default function TutorialSokoban() {
         false,
         true,
       )
-      );
-
-    btn && controls.push(btn);
+      :
+      !game.disableCampaign ?
+        new Control(
+          'control-campaign',
+          () => {
+            router.push('/play');
+          },
+          <>Campaign</>,
+          false,
+          true,
+        )
+        :
+        new Control(
+          'control-home',
+          () => {
+            router.push('/');
+          },
+          <>Home</>,
+          false,
+          true,
+        )
+    );
   }
 
   return (
@@ -720,8 +707,10 @@ export default function TutorialSokoban() {
             />
           </div>
         )}
-        <div className={classNames('p-8 w-full text-center flex flex-col gap-6', { 'invisible': showNiceJob })}>
-          {tutorialStep.header}
+        <div className={classNames('w-full text-center', { 'invisible': showNiceJob })}>
+          <div className='flex flex-col items-center gap-6 p-8'>
+            {tutorialStep.header}
+          </div>
           {!tutorialStep.editorGrid && !tutorialStep.gameGrid &&
             <div>
               <Controls controls={controls} />
@@ -735,6 +724,7 @@ export default function TutorialSokoban() {
           role='tooltip'
           style={{
             animationDelay: '0.5s',
+            display: tooltip ? 'block' : 'none',
           }}
         >
           {!!tooltip &&

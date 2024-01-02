@@ -3,6 +3,7 @@
 import { createPopper, Instance, Placement } from '@popperjs/core';
 import styles from '@root/components/level/Controls.module.css';
 import { directionToVector } from '@root/constants/direction';
+import { GameId } from '@root/constants/GameId';
 import TileType from '@root/constants/tileType';
 import { GameState } from '@root/helpers/gameStateHelpers';
 import classNames from 'classnames';
@@ -15,6 +16,7 @@ import { TimerUtil } from '../../helpers/getTs';
 import Control from '../../models/control';
 import Level from '../../models/db/level';
 import Position from '../../models/position';
+import GameLogo from '../gameLogo';
 import BasicLayout from '../level/basicLayout';
 import Controls from '../level/controls';
 import Game from '../level/game';
@@ -216,7 +218,6 @@ export default function TutorialPathology() {
       </span>
     </div>,
     disabled,
-    !disabled,
   ), []);
 
   const nextControl = useCallback((disabled = false) => new Control(
@@ -239,6 +240,7 @@ export default function TutorialPathology() {
       {
         hasNext: true,
         header: <>
+          <GameLogo gameId={GameId.PATHOLOGY} id='tutorial' size={32} />
           <div className='text-3xl fadeIn'>Welcome to the Pathology tutorial!</div>
           <div className='text-xl fadeIn' style={{
             animationDelay: '1s',
@@ -248,7 +250,7 @@ export default function TutorialPathology() {
       {
         editorGrid: true,
         gameClasses: 'fadeIn',
-        header: <div key='tutorial-blank-grid-header' className='text-3xl fadeIn'>Pathology is a grid-based puzzle game.</div>,
+        header: <div key='tutorial-blank-grid-header' className='text-3xl fadeIn'><span className='font-medium'>Pathology</span> is a grid-based puzzle game.</div>,
         key: 'tutorial-blank-grid',
         level: getLevel(BLANK_GRID),
       },
@@ -514,7 +516,7 @@ export default function TutorialPathology() {
       {
         header: <div>
           <div className='text-3xl mb-6 fadeIn'>Congratulations on completing the tutorial!</div>
-          <div className='text-xl mb-6 fadeIn' style={{
+          <div className='text-xl fadeIn' style={{
             animationDelay: '1s',
           }}>There is a lot more to Pathology than just this:<br />An active community, level editor, and thousands of levels to explore.</div>
           {isLoggedIn ?
@@ -622,12 +624,12 @@ export default function TutorialPathology() {
   const tutorialStep = getTutorialSteps()[tutorialStepIndex];
 
   useEffect(() => {
-    setTimeout( () => {
+    setTimeout(() => {
       const nextId = document.getElementById('control-next') as HTMLButtonElement;
 
       // if nextId doesn't have class pointer-events-none
-      if (nextId && !nextId.classList.contains('pointer-events-none')) {
-        if (!isNextButtonDisabled || (!tutorialStep.isNextButtonDisabled && tutorialStep.gameGrid && tutorialStepIndex === tutorialStepIndexMax)) {
+      if (nextId) {
+        if (!nextId.classList.contains('pointer-events-none')) {
           setTimeout(() => {
             nextId.classList.add('bg-orange-700');
             nextId.classList.add('bounce');
@@ -650,7 +652,11 @@ export default function TutorialPathology() {
   }
 
   if (tutorialStepIndex !== getTutorialSteps().length - 1) {
-    controls.push(nextControl(isNextButtonDisabled || (!tutorialStep.isNextButtonDisabled && tutorialStep.gameGrid && tutorialStepIndex === tutorialStepIndexMax)));
+    // when you are the furthest you have been in the tutorial (tutorialStepIndexMax) and it is a level, you must complete the level to continue and so the next button is disabled
+    // if you come back to this step after beating the level the next button should be enabled
+    const atIncompleteLevel = !tutorialStep.isNextButtonDisabled && tutorialStep.gameGrid && tutorialStepIndex === tutorialStepIndexMax;
+
+    controls.push(nextControl(isNextButtonDisabled || atIncompleteLevel));
     controls.push(skipControl());
   } else {
     controls.push(new Control(
@@ -662,7 +668,6 @@ export default function TutorialPathology() {
       },
       <button onClick={() => setTutorialStepIndex(0)}>Restart Tutorial</button>,
       false,
-      true,
     ));
 
     controls.push(isLoggedIn ?
@@ -752,8 +757,10 @@ export default function TutorialPathology() {
             />
           </div>
         )}
-        <div className={classNames('p-8 w-full text-center flex flex-col gap-6', { 'invisible': showNiceJob })}>
-          {tutorialStep.header}
+        <div className={classNames('w-full text-center', { 'invisible': showNiceJob })}>
+          <div className='flex flex-col items-center gap-6 p-8'>
+            {tutorialStep.header}
+          </div>
           {!tutorialStep.editorGrid && !tutorialStep.gameGrid &&
             <div>
               <Controls controls={controls} />
@@ -767,6 +774,7 @@ export default function TutorialPathology() {
           role='tooltip'
           style={{
             animationDelay: '0.5s',
+            display: tooltip ? 'block' : 'none',
           }}
         >
           {!!tooltip &&
