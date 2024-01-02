@@ -90,7 +90,7 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
     await initializeLocalDb();
   }
 
-  wsConnect();
+  await wsConnect();
 
   return cached.conn;
 }

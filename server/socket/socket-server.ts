@@ -182,7 +182,7 @@ export default async function startSocketIOServer(server: Server) {
         socket?.emit('matchNotFound');
       }
     } else {
-      socket.join('LOBBY');
+      socket.join('LOBBY-' + gameId);
       await Promise.all([
         broadcastMatches(gameId, mongoEmitter),
         broadcastPrivateAndInvitedMatches(gameId, mongoEmitter, reqUser._id),

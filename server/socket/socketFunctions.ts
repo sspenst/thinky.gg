@@ -54,7 +54,7 @@ export async function broadcastMatches(gameId: GameId, emitter: Emitter) {
   matches.forEach(match => {
     enrichMultiplayerMatch(match);
   });
-  emitter?.to('LOBBY').emit('matches', matches);
+  emitter?.to('LOBBY-' + gameId).emit('matches', matches);
 }
 
 /**

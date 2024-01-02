@@ -253,6 +253,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
     });
 
     socketConn.on('matches', (matches: MultiplayerMatch[]) => {
+      console.log('received matches', matches);
       setMultiplayerSocket(prevMultiplayerSocket => {
         return {
           connectedPlayers: prevMultiplayerSocket.connectedPlayers,
