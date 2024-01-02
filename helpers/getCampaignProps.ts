@@ -9,6 +9,7 @@ import User from '../models/db/user';
 import { CampaignModel, CollectionModel, LevelModel, UserModel } from '../models/mongoose';
 import { USER_DEFAULT_PROJECTION } from '../models/schemas/userSchema';
 import { getEnrichLevelsPipelineSteps } from './enrich';
+import { getGameFromId } from './getGameIdFromReq';
 import { logger } from './logger';
 
 export interface CampaignProps {
@@ -19,6 +20,18 @@ export interface CampaignProps {
 }
 
 export default async function getCampaignProps(gameId: GameId, reqUser: User, slug: string) {
+  const game = getGameFromId(gameId);
+
+  if (game.disableCampaign) {
+    return {
+      props: undefined,
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+
   const campaignAgg = await CampaignModel.aggregate([
     {
       $match: {

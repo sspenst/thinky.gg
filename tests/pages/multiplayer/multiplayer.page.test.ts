@@ -36,7 +36,10 @@ describe('pages/multiplayer page', () => {
       req: {
         cookies: {
           token: getTokenCookieValue(TestId.USER),
-        }
+        },
+        headers: {
+          host: 'pathology.localhost',
+        },
       },
     };
 
@@ -45,5 +48,25 @@ describe('pages/multiplayer page', () => {
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
     expect(ret.redirect).toBeUndefined();
+  });
+  test('getServerProps with params for a non game', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    const context = {
+      req: {
+        cookies: {
+          token: getTokenCookieValue(TestId.USER),
+        },
+        headers: {
+          host: 'thinky.localhost',
+        },
+      },
+    };
+
+    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
+
+    expect(ret).toBeDefined();
+    expect(ret.props).toBeUndefined();
+    expect(ret.redirect).toBeDefined();
+    expect(ret.redirect?.destination).toBe('/');
   });
 });
