@@ -1,4 +1,6 @@
 import { AppContext } from '@root/contexts/appContext';
+import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import { redirectToLogin } from '@root/helpers/redirectToLogin';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { NextSeo } from 'next-seo';
 import React, { useContext } from 'react';
@@ -9,20 +11,20 @@ import { getUserFromToken } from '../../../lib/withAuth';
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
+  const gameId = getGameIdFromReq(context.req as NextApiRequest);
+  const game = getGameFromId(gameId);
 
-  if (!reqUser) {
-    // redirect to login page
+  if (game.disableMultiplayer) {
     return {
+      props: undefined,
       redirect: {
-        destination: '/login' + (context.resolvedUrl ? '?redirect=' + encodeURIComponent(context.resolvedUrl) : ''),
+        destination: '/',
         permanent: false,
       },
     };
   }
 
-  return {
-    props: {},
-  };
+  return redirectToLogin(() => !reqUser, context, {});
 }
 
 /* istanbul ignore next */

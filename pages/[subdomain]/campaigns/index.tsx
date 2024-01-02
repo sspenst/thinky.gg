@@ -1,6 +1,6 @@
 import TestId from '@root/constants/testId';
 import { AppContext } from '@root/contexts/appContext';
-import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { PipelineStage, Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Image from 'next/image';
@@ -52,10 +52,20 @@ const campaignInfos: CampaignInfo[] = process.env.NODE_ENV !== 'test' ? [
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
-
   const token = context.req?.cookies?.token;
-  const gameId = getGameIdFromReq(context.req);
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
+  const gameId = getGameIdFromReq(context.req as NextApiRequest);
+  const game = getGameFromId(gameId);
+
+  if (game.disableCommunityCampaigns) {
+    return {
+      props: undefined,
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
 
   const campaignsAgg = await CampaignModel.aggregate([
     {

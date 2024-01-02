@@ -55,6 +55,26 @@ describe('pages/chapter1 page', () => {
     expect(ret.props?.enrichedCollections).toBeDefined();
     expect(ret.props?.enrichedCollections[0]._id).toBe(TestId.COLLECTION);
   });
+  test('getServerSideProps logged in but on game with no campaign', async () => {
+    // Created from initialize db file
+    const context = {
+      req: {
+        cookies: {
+          token: getTokenCookieValue(TestId.USER)
+        },
+        headers: {
+          host: 'thinky.localhost',
+        },
+      },
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext) as any;
+
+    expect(ret).toBeDefined();
+    expect(ret.props).toBeUndefined();
+    expect(ret.redirect).toBeDefined();
+    expect(ret.redirect?.destination).toBe('/');
+  });
   test('getServerSideProps logged in no collection exists', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await CampaignModel.deleteOne({ 'slug': 'chapter1' });
