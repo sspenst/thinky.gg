@@ -48,6 +48,10 @@ export const Games: Record<GameId, Game> = {
     SEOTitle: 'Pathology - Shortest Path Puzzle Game',
     SEODescription: 'The goal of Pathology is simple. Get to the exit in the least number of moves. Sounds easy right? Yet, this sokoban style game is one of the most mind-bending puzzle games you will find. Different blocks stand in your way to the exit, and your job is to figure out the optimal route',
     shortDescription: 'Get to the exit in the least number of moves',
+    stripePaymentLinkMonthly: process.env.STRIPE_PAYMENT_LINK,
+    stripePaymentLinkYearly: process.env.STRIPE_PAYMENT_LINK_YEARLY,
+    stripeGiftPriceIdMonthly: process.env.STRIPE_GIFT_MONTHLY_PRICE_ID,
+    stripeGiftPriceIdYearly: process.env.STRIPE_GIFT_YEARLY_PRICE_ID,
     type: GameType.SHORTEST_PATH,
     videoDemo: 'https://i.imgur.com/bZpBEUW.mp4',
     gameStateIsSolveFunction: pathologySolveState,
@@ -69,6 +73,10 @@ export const Games: Record<GameId, Game> = {
     shortDescription: 'Push the boxes onto the goals',
     subtitle: 'Push the boxes',
     subdomain: 'sokoban',
+    stripePaymentLinkMonthly: process.env.STRIPE_PAYMENT_LINK_SOKOBAN,
+    stripePaymentLinkYearly: process.env.STRIPE_PAYMENT_LINK_YEARLY_SOKOBAN,
+    stripeGiftPriceIdMonthly: process.env.STRIPE_GIFT_MONTHLY_PRICE_ID_SOKOBAN,
+    stripeGiftPriceIdYearly: process.env.STRIPE_GIFT_YEARLY_PRICE_ID_SOKOBAN,
     type: GameType.COMPLETE_AND_SHORTEST,
     videoDemo: 'https://i.imgur.com/7qGspht.mp4',
     gameStateIsSolveFunction: sokobanSolveState,
@@ -96,6 +104,10 @@ export interface Game {
   SEOTitle: string;
   SEODescription: string;
   shortDescription?: string;
+  stripePaymentLinkMonthly?: string;
+  stripePaymentLinkYearly?: string;
+  stripeGiftPriceIdMonthly?: string;
+  stripeGiftPriceIdYearly?: string;
   subdomain: string;
   type: GameType;
   videoDemo?: string;

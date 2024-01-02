@@ -28,6 +28,8 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
 
   const session = await mongoose.startSession();
 
+  const { gameId, productName } = await getGameFromSubscription(subscription);
+
   try {
     await session.withTransaction(async () => {
       const promises = [
@@ -35,7 +37,7 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
         UserConfigModel.findOneAndUpdate(
           {
             userId: userToDowngrade._id,
-            // TODO: Get GameId
+            gameId: gameId,
           },
           {
             stripeCustomerId: null,
@@ -47,7 +49,7 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
             session: session
           },
         ),
-        queueDiscordWebhook(Discord.DevPriv, `🥹 [${userToDowngrade.name}](https://thinky.gg/profile/${userToDowngrade.name}) was just unsubscribed.`),
+        queueDiscordWebhook(Discord.DevPriv, `🥹 [${userToDowngrade.name}](https://thinky.gg/profile/${userToDowngrade.name}) was just unsubscribed from ` + productName),
       ];
 
       // NB: metadata should normally be defined but it isn't mocked in the tests
@@ -59,7 +61,7 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
           UserConfigModel.findOneAndUpdate(
             {
               userId: new Types.ObjectId(giftFromId),
-              // TODO: Get GameId
+              gameId: gameId,
             },
             {
               $pull: {
@@ -85,23 +87,53 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
   }
 }
 
-async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscription: Stripe.Subscription): Promise<string | undefined> {
-  let error: string | undefined;
-  const giftToUserConfig = await UserConfigModel.findOne({ userId: giftToUser._id });
+function getGameIdFromProductName(productName: string): GameId {
+  let gameId: GameId = GameId.THINKY;
 
-  if (isPro(giftToUserConfig)) {
-    // TODO: create a coupon and apply it to the existing subscription..
-    // https://stripe.com/docs/api/coupons/create
-
-    error = `${giftFromUser.name} is already a pro subscriber. Error applying gift. Please contact support.`;
+  if (productName.match(/pathology/i)) {
+    gameId = GameId.PATHOLOGY;
+  } else if (productName.match(/sokoban/i)) {
+    gameId = GameId.SOKOBAN;
   }
 
+  return gameId;
+}
+
+async function getGameFromSubscription(subscription: Stripe.Subscription): Promise<{ gameId: GameId, productName: string }> {
+  let productName = 'unknown';
+
+  try {
+    // Check if subscription items exist
+    if (subscription.items.data.length > 0) {
+      // Assuming the first item represents the main product
+      const productId = subscription.items.data[0].price?.product;
+
+      if (productId) {
+        // Retrieve the product details
+        const product = await stripe.products.retrieve(productId as string);
+
+        productName = product.name;
+      } else {
+        console.error('Error fetching product details: no product id');
+      }
+    }
+  } catch (err: any) {
+    console.error(`Error fetching product details: ${err.message}`);
+  }
+
+  console.info(`Product name dealing with: ${productName}`);
+  const gameId: GameId = getGameIdFromProductName(productName);
+
+  return { gameId: gameId, productName: productName };
+}
+
+async function getGameFromSession(session: Stripe.Checkout.Session): Promise<{ gameId: GameId, productName: string }> {
   // Extract product name from properties, if available
   let productName = 'unknown';
 
   // Fetch line items for the session
   try {
-    const lineItems = await stripe.checkout.sessions.listLineItems(subscription.id);
+    const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
 
     if (lineItems.data.length > 0) {
       // Assuming the first line item represents the product purchased
@@ -120,16 +152,28 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
     logger.error(`Error fetching product details: ${err.message}`);
   }
 
-  logger.info(`Product name purchasing: ${productName}`);
+  logger.info(`Product name dealing with: ${productName}`);
 
-  let gameId: GameId = GameId.THINKY;
+  const gameId: GameId = getGameIdFromProductName(productName);
 
-  // TODO: test this
-  if (productName.match(/pathology/i)) {
-    gameId = GameId.PATHOLOGY;
-  } else if (productName.match(/sokoban/i)) {
-    gameId = GameId.SOKOBAN;
+  return { gameId: gameId, productName: productName };
+}
+
+async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscription: Stripe.Subscription): Promise<string | undefined> {
+  let error: string | undefined;
+
+  // get product name from subscription
+  const { gameId } = await getGameFromSubscription(subscription);
+  const giftToUserConfig = await UserConfigModel.findOne({ userId: giftToUser._id, gameId: gameId });
+
+  if (isPro(giftToUserConfig)) {
+    // TODO: create a coupon and apply it to the existing subscription..
+    // https://stripe.com/docs/api/coupons/create
+
+    error = `${giftFromUser.name} is already a pro subscriber for this game. Error applying gift. Please contact support.`;
   }
+
+  // Extract product name from properties, if available
 
   if (!error) {
     const session = await mongoose.startSession();
@@ -144,15 +188,16 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
             {
               userId: giftToUser._id,
               gameId: gameId,
-              // TODO: Get GameId
             },
             {
               // add to set gift subscriptions
+              userId: giftToUser._id,
               $addToSet: {
                 roles: Role.PRO
               },
             },
             {
+              upsert: true,
               session: session
             },
           ),
@@ -160,7 +205,6 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
             {
               userId: giftFromUser._id,
               gameId: gameId,
-              // TODO: Get GameId
             },
             {
               // add to set gift subscriptions
@@ -192,46 +236,14 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
 async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.Checkout.Session): Promise<string | undefined> {
   logger.info(`checkoutSessionComplete - ${userToUpgrade.name} (${userToUpgrade._id.toString()})`);
 
-  // Extract product name from properties, if available
-  let productName = 'unknown';
-
-  // Fetch line items for the session
-  try {
-    const lineItems = await stripe.checkout.sessions.listLineItems(properties.id);
-
-    if (lineItems.data.length > 0) {
-      // Assuming the first line item represents the product purchased
-      const productId = lineItems.data[0].price?.product;
-
-      if (productId) {
-        const product = await stripe.products.retrieve(productId as string);
-
-        productName = product.name;
-      } else {
-        logger.error('Error fetching product details: no product id');
-      }
-    }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (err: any) {
-    logger.error(`Error fetching product details: ${err.message}`);
-  }
-
-  logger.info(`Product name purchasing: ${productName}`);
-
-  let gameId: GameId = GameId.THINKY;
-
-  if (productName.match(/pathology/i)) {
-    gameId = GameId.PATHOLOGY;
-  } else if (productName.match(/sokoban/i)) {
-    gameId = GameId.SOKOBAN;
-  }
+  const { gameId, productName } = await getGameFromSession(properties);
 
   const customerId = properties.customer;
 
   let error: string | undefined;
 
   // if the user is already a pro subscriber, we don't want to do anything
-  const userToUpgradeConfig = await UserConfigModel.findOne({ userId: userToUpgrade._id });
+  const userToUpgradeConfig = await UserConfigModel.findOne({ userId: userToUpgrade._id, gameId: gameId });
 
   if (isPro(userToUpgradeConfig)) {
     // we want to log the error
@@ -410,10 +422,11 @@ export default apiWrapper({
     } else if (!customerId) {
       error = 'No customerId';
     } else {
+      const { gameId } = await getGameFromSubscription(subscription);
       const userConfigAgg = await UserConfigModel.aggregate<UserConfig>([
         {
-          $match: { stripeCustomerId: customerId },
-          // TODO: Get GameId
+          $match: { stripeCustomerId: customerId, gameId: gameId },
+
         },
         {
           $lookup: {

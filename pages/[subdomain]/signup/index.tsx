@@ -20,8 +20,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     },
   };
 }
-/* istanbul ignore next */
 
+/* istanbul ignore next */
 export default function SignUp({ recaptchaPublicKey }: {recaptchaPublicKey?: string}) {
   return (
     <Page title={'Sign Up'}>

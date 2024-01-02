@@ -77,7 +77,7 @@ export async function getUserFromToken(
     },
     { new: true, projection: '+email +bio +emailConfirmed' },
   ).lean<User>(),
-  UserConfigModel.findOne({ userId: userId, gameId: gameId }, { gameId: 1, calcRankedSolves: 1, calcLevelsCreatedCount: 1, calcLevelsSolveCount: 1, chapterUnlocked: 1 }).lean<UserConfig>()
+  UserConfigModel.findOne({ userId: userId, gameId: gameId }, { gameId: 1, calcRankedSolves: 1, calcLevelsCreatedCount: 1, calcLevelsSolveCount: 1, chapterUnlocked: 1, roles: 1 }).lean<UserConfig>()
   ]);
 
   if (user && !isLocal()) {

@@ -118,7 +118,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
           {hasAPaymentMethod && (
             <div className='flex flex-col sm:flex-row gap-4 items-center'>
               <div className='flex flex-col items-center gap-2'>
-                <MultiSelectUser placeholder='Gift Pro to a user' onSelect={setGiftUserSelected} />
+                <MultiSelectUser placeholder={`Gift ${game.displayName} Pro to user`} onSelect={setGiftUserSelected} />
                 {paymentMethodsDropdown}
                 <div className='flex gap-2 items-center'>
                   <select
@@ -156,7 +156,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                 className='bg-green-300 hover:bg-green-500 text-black font-bold py-2 px-4 rounded-2xl focus:outline-none focus:shadow-outline cursor-pointer w-fit h-fit text-center disabled:opacity-50 disabled:cursor-not-allowed'
                 disabled={!giftUserSelected || !giftUserPaymentMethod}
                 onClick={() => {
-                  if (!confirm(`Are you sure you want to gift Pro to ${giftUserSelected?.name}? You will be billed ${giftInterval}ly for ${giftQuantity} ${giftInterval}${giftQuantity === 1 ? '' : 's'}.`)) {
+                  if (!confirm(`Are you sure you want to gift ${game.displayName} Pro to ${giftUserSelected?.name}? You will be billed ${giftInterval}ly for ${giftQuantity} ${giftInterval}${giftQuantity === 1 ? '' : 's'}.`)) {
                     return;
                   }
 

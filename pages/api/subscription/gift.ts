@@ -1,4 +1,5 @@
 import { ValidEnum, ValidNumber, ValidObjectId, ValidType } from '@root/helpers/apiWrapper';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import isPro from '@root/helpers/isPro';
 import { logger } from '@root/helpers/logger';
 import User from '@root/models/db/user';
@@ -77,6 +78,7 @@ export default withAuth({
     const { type, giftTo, quantity, paymentMethodId } = req.body as { type: GiftType, giftTo: string, quantity: number, paymentMethodId: string };
 
     // make sure this user is on Pro
+
     if (!isPro(req.user)) {
       return res.status(400).json({ error: 'You must be a Pro user to gift a subscription.' });
     }
@@ -95,9 +97,11 @@ export default withAuth({
       return res.status(400).json({ error: 'You cannot gift a subscription to ' + userToGift.name + ' because they are already on Pro.' });
     }
 
+    const gameId = req.gameId;
+    const game = getGameFromId(gameId);
     const paymentPriceIdTable = {
-      [GiftType.Monthly]: process.env.STRIPE_GIFT_MONTHLY_PRICE_ID,
-      [GiftType.Yearly]: process.env.STRIPE_GIFT_YEARLY_PRICE_ID,
+      [GiftType.Monthly]: game.stripeGiftPriceIdMonthly,
+      [GiftType.Yearly]: game.stripeGiftPriceIdYearly,
     };
 
     try {
