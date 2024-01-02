@@ -18,7 +18,7 @@ export function parseSubdomain(url: string): string | null {
   return null;
 }
 
-export function getOnlyHostname(url: string): string | null {
+export function parseHostname(url: string): string | null {
   if (!url) return null;
 
   // Remove protocol, if present
