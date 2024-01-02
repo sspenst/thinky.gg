@@ -1,3 +1,4 @@
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import UserConfig from '@root/models/db/userConfig';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
@@ -122,7 +123,7 @@ async function runStripeWebhookTest({
 
 async function expectUserStatus(userId: string, role: Role | null, stripeCustomerId: string | null | undefined, stripeGiftCustomerId?: string | null | undefined) {
   const [userConfig] = await Promise.all([
-    UserConfigModel.findOne<UserConfig>({ userId: userId }, { roles: 1, stripeCustomerId: 1, giftSubscriptions: 1, gameId: 1 }),
+    UserConfigModel.findOne<UserConfig>({ userId: userId, gameId: DEFAULT_GAME_ID }, { roles: 1, stripeCustomerId: 1, giftSubscriptions: 1, gameId: 1 }),
   ]);
 
   if (role) {
@@ -238,23 +239,39 @@ describe('pages/api/stripe-webhook/index.ts', () => {
   test('some valid but unknown user unsubscribes', async () => {
     const fakeCustomerId = 'fake_object_id_123';
 
+    jest.spyOn(stripeReal.products, 'retrieve').mockResolvedValue({ name: 'Pathology Yearly' } as any);
     await runStripeWebhookTest({
       eventType: 'customer.subscription.deleted',
       payloadData: {
         id: 'cs_test_123',
         customer: fakeCustomerId,
+        items: {
+          data: [{
+            price: {
+              product: 'pathology product',
+            },
+          }],
+        }
       },
-      expectedError: 'UserConfig with customer id ' + fakeCustomerId + ' does not exist',
+      expectedError: 'UserConfig with customer id ' + fakeCustomerId + ' for game pathology does not exist',
       expectedStatus: 400,
     });
   });
   test('some valid unsubscribes', async () => {
+    jest.spyOn(stripeReal.products, 'retrieve').mockResolvedValue({ name: 'Pathology Yearly' } as any);
     await runStripeWebhookTest({
       eventType: 'customer.subscription.deleted',
       payloadData: {
         id: 'cs_test_123',
         client_reference_id: TestId.USER,
         customer: 'customer_id_123',
+        items: {
+          data: [{
+            price: {
+              product: 'pathology product',
+            },
+          }],
+        }
       },
       expectedError: undefined,
       expectedStatus: 200,
@@ -276,6 +293,13 @@ describe('pages/api/stripe-webhook/index.ts', () => {
         id: 'cs_test_123',
         client_reference_id: TestId.USER,
         customer: 'customer_id_123',
+        items: {
+          data: [{
+            price: {
+              product: 'pathology product',
+            },
+          }],
+        }
       },
       expectedError: undefined,
       expectedStatus: 200,
@@ -285,6 +309,8 @@ describe('pages/api/stripe-webhook/index.ts', () => {
     });
   });
   test('resubscribe again should error saying you are already a pro subscriber', async () => {
+    jest.spyOn(stripeReal.checkout.sessions, 'listLineItems').mockResolvedValue({ data: [{ price: { product: 'plan_id' } }], } as any);
+    jest.spyOn(stripeReal.products, 'retrieve').mockResolvedValue({ name: 'Pathology Yearly' } as any);
     await runStripeWebhookTest({
       eventType: 'checkout.session.completed',
       payloadData: {
@@ -301,7 +327,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
   });
   test('gifting subscription', async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    jest.spyOn(stripeReal.checkout.sessions, 'listLineItems').mockResolvedValue({ data: [{ price: { product: 'test' } }], } as any);
+    jest.spyOn(stripeReal.checkout.sessions, 'listLineItems').mockResolvedValue({ data: [{ price: { product: 'pathology' } }], } as any);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(stripeReal.products, 'retrieve').mockResolvedValue({ name: 'Pathology Yearly' } as any);
     await runStripeWebhookTest({
@@ -314,6 +340,13 @@ describe('pages/api/stripe-webhook/index.ts', () => {
           giftFromId: TestId.USER,
           giftToId: TestId.USER_B,
         },
+        items: {
+          data: [{
+            price: {
+              product: 'pathology product',
+            },
+          }],
+        }
       },
       expectedError: undefined,
       expectedStatus: 200,
@@ -325,9 +358,10 @@ describe('pages/api/stripe-webhook/index.ts', () => {
   });
   test('regifting should not work since user is already on pro', async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    jest.spyOn(stripeReal.checkout.sessions, 'listLineItems').mockResolvedValue({ data: [{ price: { product: 'test' } }], } as any);
+    jest.spyOn(stripeReal.checkout.sessions, 'listLineItems').mockResolvedValue({ data: [{ price: { product: 'plan_id' } }], } as any);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(stripeReal.products, 'retrieve').mockResolvedValue({ name: 'Pathology Yearly' } as any);
+
     await runStripeWebhookTest({
       eventType: 'customer.subscription.created',
       payloadData: {
@@ -338,8 +372,15 @@ describe('pages/api/stripe-webhook/index.ts', () => {
           giftFromId: TestId.USER,
           giftToId: TestId.USER_B,
         },
+        items: {
+          data: [{
+            price: {
+              product: 'pathology product',
+            },
+          }],
+        }
       },
-      expectedError: 'test is already a pro subscriber. Error applying gift. Please contact support.',
+      expectedError: 'test is already a pro subscriber for this game. Error applying gift. Please contact support.',
       expectedStatus: 400,
       additionalAssertions: async () => {
         await expectUserStatus(TestId.USER_B, Role.PRO, undefined);
@@ -357,17 +398,33 @@ describe('pages/api/stripe-webhook/index.ts', () => {
       payloadData: {
         id: 'cs_test_123',
         customer: undefined,
+        items: {
+          data: [{
+            price: {
+              product: 'pathology product',
+            },
+          }],
+        }
       },
       expectedError: undefined,
       expectedStatus: 200,
     });
   });
   test('customer.subscription.deleted but db error should cause user to stay on pro plan', async () => {
+    jest.spyOn(stripeReal.products, 'retrieve').mockResolvedValue({ name: 'Pathology Yearly' } as any);
+
     await runStripeWebhookTest({
       eventType: 'customer.subscription.deleted',
       payloadData: {
         id: 'invoice_test_123',
         customer: 'customer_id_123',
+        items: {
+          data: [{
+            price: {
+              product: 'pathology product',
+            },
+          }],
+        }
       },
       expectedError: 'mock error',
       expectedStatus: 400,
@@ -378,11 +435,20 @@ describe('pages/api/stripe-webhook/index.ts', () => {
     });
   });
   test('customer.subscription.deleted successfully', async () => {
+    jest.spyOn(stripeReal.products, 'retrieve').mockResolvedValue({ name: 'Pathology Yearly' } as any);
+
     await runStripeWebhookTest({
       eventType: 'customer.subscription.deleted',
       payloadData: {
         id: 'invoice_test_123',
         customer: 'customer_id_123',
+        items: {
+          data: [{
+            price: {
+              product: 'pathology product',
+            },
+          }],
+        }
       },
       expectedError: undefined,
       expectedStatus: 200,
