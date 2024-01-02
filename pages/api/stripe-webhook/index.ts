@@ -110,19 +110,19 @@ async function getGameFromSubscription(subscription: Stripe.Subscription): Promi
 
       if (productId) {
         // Retrieve the product details
+
         const product = await stripe.products.retrieve(productId as string);
 
         productName = product.name;
       } else {
-        console.error('Error fetching product details: no product id');
+        logger.error('Error fetching product details: no product id');
       }
     }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
-    console.error(`Error fetching product details: ${err.message}`);
+    logger.error(`Error fetching product details: ${err.message}`);
   }
 
-  console.info(`Product name dealing with: ${productName}`);
   const gameId: GameId = getGameIdFromProductName(productName);
 
   return { gameId: gameId, productName: productName };
@@ -236,7 +236,6 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
 
 async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.Checkout.Session): Promise<string | undefined> {
   logger.info(`checkoutSessionComplete - ${userToUpgrade.name} (${userToUpgrade._id.toString()})`);
-
   const { gameId, productName } = await getGameFromSession(properties);
 
   const customerId = properties.customer;
@@ -444,7 +443,7 @@ export default apiWrapper({
 
       if (userConfigAgg.length === 0) {
         // there must be a matching userconfig in this case, so we need to return an error here
-        error = `UserConfig with customer id ${customerId} does not exist`;
+        error = `UserConfig with customer id ${customerId} for game ${gameId} does not exist`;
       } else {
         // we need to check if this is a gift subscription so we can downgrade the appropriate user
         // looks like a regular downgrade subscription of pro
