@@ -120,7 +120,7 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
           }
           <div className={classNames('flex flex-col gap-0.5 overflow-hidden break-words', { 'pl-2': level.isDraft })}>
             <Link
-              className='font-bold overflow-hidden'
+              className='font-bold overflow-hidden w-fit'
               href={href ?? `/level/${level.slug}`}
               onClick={onClick}
               style={{
