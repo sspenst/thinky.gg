@@ -307,7 +307,7 @@ export default function Nav({ isDropdown }: NavProps) {
       justifyContent: 'flex-end',
     }}
     className={classNames(
-      'flex  items-center rounded-md cursor-pointer px-3 py-2 gap-5',
+      'flex  items-center rounded-md cursor-pointer px-3 py-2 gap-5 bg-1 hover-bg-3',
     )}
     onClick={() => {
       setShowSearchUsers(!showSearchUsers);
