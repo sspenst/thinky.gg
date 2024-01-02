@@ -482,12 +482,14 @@ export default function TutorialSokoban() {
           <div className='text-xl mb-6 fadeIn' style={{
             animationDelay: '1s',
           }}>There is a lot more to Sokoban than just this:<br />An active community, level editor, and thousands of levels to explore.</div>
-          {isLoggedIn && !game.disableCampaign ?
+          {isLoggedIn ?
             <div className='text-xl fadeIn' style={{
               pointerEvents: 'all',
               animationDelay: '2s',
             }}>
+              {!game.disableCampaign && <>
               Continue your Sokoban journey with the <span className='font-bold'>Campaign</span>!
+              </>}
             </div>
             :
             <div className='flex flex-col gap-3'>
