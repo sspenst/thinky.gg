@@ -22,6 +22,17 @@ export default function useUrl() {
   const { host, protocol } = useContext(AppContext);
 
   function getUrl(gameId?: GameId, path?: string) {
+    function getSubdomain() {
+      // can't use game.baseUrl because this function is client side and we NEXT_PUBLIC isn't working at the moment
+      const game = getGameFromId(gameId);
+
+      if (!game.subdomain) {
+        return '';
+      }
+
+      return `${game.subdomain}.`;
+    }
+
     function getPath() {
       if (path) {
         return path;
@@ -36,13 +47,7 @@ export default function useUrl() {
       return (carryOver ? window.location.pathname : '/');
     }
 
-    // can't use game.baseUrl because this function is client side and we NEXT_PUBLIC isn't working at the moment
-    const game = getGameFromId(gameId);
-
-    const hostTLD = host?.split('.').slice(-2).join('.');
-    const baseUrl = protocol + '//' + game.subdomain + '.' + hostTLD;
-
-    return baseUrl + getPath();
+    return `${protocol}//${getSubdomain()}${host}${getPath()}`;
   }
 
   return getUrl;

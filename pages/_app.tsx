@@ -8,7 +8,7 @@ import { Game, Games } from '@root/constants/Games';
 import MusicContextProvider from '@root/contexts/musicContext';
 import getFontFromGameId from '@root/helpers/getFont';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
-import { getOnlyHostname } from '@root/helpers/parseSubdomain';
+import { parseHostname } from '@root/helpers/parseUrl';
 import useDeviceCheck from '@root/hooks/useDeviceCheck';
 import Collection from '@root/models/db/collection';
 import MultiplayerProfile from '@root/models/db/multiplayerProfile';
@@ -149,14 +149,14 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
   }, []);
 
   useEffect(() => {
-    // if port is not 80 or 443, include it in the hostname
-    // also hostname needs to strip out subdomain
-    const hostname = window.location.port === '' || window.location.port === '80' || window.location.port === '443' ?
-      window.location.hostname :
-      `${window.location.hostname}:${window.location.port}`;
-    const hostnameStrippedOfFirstSubdomain = getOnlyHostname(hostname);
+    let hostname = parseHostname(window.location.hostname);
 
-    setHost(hostnameStrippedOfFirstSubdomain || 'thinky.gg');
+    // if port is not 80 or 443, include it in the hostname
+    if (hostname && window.location.port !== '' && window.location.port !== '80' && window.location.port !== '443') {
+      hostname += `:${window.location.port}`;
+    }
+
+    setHost(hostname || 'thinky.gg');
   }, []);
 
   // initialize sessionStorage values
