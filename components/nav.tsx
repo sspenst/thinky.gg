@@ -5,13 +5,15 @@ import { AppContext } from '@root/contexts/appContext';
 import getProfileSlug from '@root/helpers/getProfileSlug';
 import isPro from '@root/helpers/isPro';
 import useUrl from '@root/hooks/useUrl';
+import User from '@root/models/db/user';
 import classNames from 'classnames';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
+import { Router, useRouter } from 'next/router';
 import React, { Fragment, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import GameLogoAndLabel from './gameLogoAndLabel';
+import MultiSelectUser from './page/multiSelectUser';
 
 function NavDivider() {
   return (
@@ -358,6 +360,8 @@ export default function Nav({ isDropdown }: NavProps) {
     label='Play History'
   />;
 
+  const router = useRouter();
+
   return (
     <nav
       className={classNames(
@@ -393,6 +397,20 @@ export default function Nav({ isDropdown }: NavProps) {
         <NavDivider />
       </>}
       {usersNavLink}
+      <div className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-5'>
+        <div className='flex items-center gap-5'>
+          <svg xmlns='http://www.w3.org/2000/svg' className='w-5 h-5' fill='none' viewBox='0 0 24 24'
+            stroke='currentColor'>
+            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2'
+              d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
+          </svg>
+          <MultiSelectUser onSelect={(user: User) => {
+            router.push('/profile/' + user.name);
+          }} controlStyles={{
+            minWidth: '10em'
+          }} />
+        </div>
+      </div>
       {campaignNavLink}
       {leaderboardNavLink}
       {tutorialNavLink}

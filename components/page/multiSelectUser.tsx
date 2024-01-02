@@ -67,7 +67,7 @@ export default function MultiSelectUser({ controlStyles, defaultValue, onSelect,
       }
     }}
     options={options} // Options to display in the dropdown
-    placeholder={placeholder ? placeholder : 'Search for profile...'}
+    placeholder={placeholder ? placeholder : 'Search profile...'}
     // https://react-select.com/styles
     styles={{
       control: (provided: any, state: any) => ({
@@ -80,7 +80,7 @@ export default function MultiSelectUser({ controlStyles, defaultValue, onSelect,
         cursor: 'text',
         height: '2.5rem',
         maxWidth: '100%',
-        width: '13rem',
+        minWidth: '13rem',
         ...controlStyles,
       }),
       container: (provided: any) => ({
