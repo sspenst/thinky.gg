@@ -90,17 +90,19 @@ export default function Dropdown() {
             {user && <>
               {!game.disableGames && <>
                 <div className='flex justify-center gap-2 items-center sm:hidden py-1.5 px-3'>
-                  <Link
-                    className='flex justify-center'
-                    data-tooltip-content='Ranked Solves'
-                    data-tooltip-id='ranked-solves-dropdown'
-                    href='/ranked'
-                    id='levelsSolvedBtn'
-                  >
-                    <span className='font-bold'>{user.config.calcRankedSolves} 🏅</span>
-                    <StyledTooltip id='ranked-solves-dropdown' />
-                  </Link>
-                  <div className='h-6 w-px bg-neutral-500' />
+                  {!game.disableRanked && <>
+                    <Link
+                      className='flex justify-center'
+                      data-tooltip-content='Ranked Solves'
+                      data-tooltip-id='ranked-solves-dropdown'
+                      href='/ranked'
+                      id='levelsSolvedBtn'
+                    >
+                      <span className='font-bold'>{user.config.calcRankedSolves} 🏅</span>
+                      <StyledTooltip id='ranked-solves-dropdown' />
+                    </Link>
+                    <div className='h-6 w-px bg-neutral-500' />
+                  </>}
                   <Link
                     className='ml-1'
                     data-tooltip-content={game.type === GameType.COMPLETE_AND_SHORTEST ? 'Levels Completed' : 'Levels Solved'}

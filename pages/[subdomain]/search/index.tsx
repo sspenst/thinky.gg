@@ -631,23 +631,25 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
         </Menu>
         <TimeRangeMenu onTimeRangeClick={onTimeRangeClick} timeRange={query.timeRange} />
       </div>
-      <div className='flex items-center gap-1 border border-color-4 rounded-md px-2 py-1'>
-        <input
-          checked={query.isRanked === 'true'}
-          id='ranked_checkbox'
-          onChange={() => {
-            fetchLevels({
-              ...query,
-              isRanked: query.isRanked === 'true' ? 'false' : 'true',
-              page: '1',
-            });
-          }}
-          type='checkbox'
-        />
-        <label className='text-sm font-medium' htmlFor='ranked_checkbox'>
-          🏅 Ranked
-        </label>
-      </div>
+      {!game.disableRanked &&
+        <div className='flex items-center gap-1 border border-color-4 rounded-md px-2 py-1'>
+          <input
+            checked={query.isRanked === 'true'}
+            id='ranked_checkbox'
+            onChange={() => {
+              fetchLevels({
+                ...query,
+                isRanked: query.isRanked === 'true' ? 'false' : 'true',
+                page: '1',
+              });
+            }}
+            type='checkbox'
+          />
+          <label className='text-sm font-medium' htmlFor='ranked_checkbox'>
+            🏅 Ranked
+          </label>
+        </div>
+      }
       <div className='flex items-center justify-center py-0.5'>
         <label htmlFor='min-step' className='text-xs font-medium pr-1'>Min steps</label>
         <input
