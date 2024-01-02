@@ -4,7 +4,7 @@ const { chromium } = require('playwright');
 
 const app = express();
 const port = 3000;
-const expectedSecret = 'fBxoTpE24HV.nWtH'; // The expected secret value
+const expectedSecret = process.env.GEN_IMG_SECRET; // The expected secret value
 
 app.get('/screenshot', async (req, res) => {
   const { url, secret } = req.query;
