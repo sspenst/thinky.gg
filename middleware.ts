@@ -2,7 +2,7 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { Games } from './constants/Games';
-import { parseSubdomain } from './helpers/parseSubdomain';
+import { parseSubdomain } from './helpers/parseUrl';
 
 export const getValidSubdomain = (host?: string | null) => {
   let subdomain: string | null = null;
