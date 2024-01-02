@@ -24,6 +24,7 @@ export const Games: Record<GameId, Game> = {
     disableGames: true,
     disableMultiplayer: true,
     disableRanked: true,
+    disableTour: true,
     disableTutorial: true,
     displayName: 'Thinky.gg',
     favicon: '/logos/thinky/thinky.svg',
@@ -65,6 +66,7 @@ export const Games: Record<GameId, Game> = {
     disableCommunityCampaigns: true,
     disableMultiplayer: true,
     disableRanked: true,
+    disableTour: true,
     displayName: 'Sokoban',
     favicon: '/logos/sokoban/sokoban.webp',
     logo: '/logos/sokoban/sokoban.webp',
@@ -91,13 +93,14 @@ export interface Game {
    */
   baseUrl: string;
   defaultTheme: Theme;
-  displayName: string;
   disableCampaign?: boolean;
   disableCommunityCampaigns?: boolean;
   disableGames?: boolean;
   disableMultiplayer?: boolean;
   disableRanked?: boolean;
+  disableTour?: boolean;
   disableTutorial?: boolean;
+  displayName: string;
   favicon?: string;
   logo: string;
   subtitle: string;

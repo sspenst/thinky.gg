@@ -2,7 +2,7 @@ import FormattedDifficulty, { difficultyList, getDifficultyColor } from '@root/c
 import Page from '@root/components/page/page';
 import { ProfileQueryType } from '@root/constants/profileQueryType';
 import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
-import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import cleanUser from '@root/lib/cleanUser';
 import { getUserFromToken } from '@root/lib/withAuth';
 import { UserModel } from '@root/models/mongoose';
@@ -16,6 +16,16 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
   const gameId = getGameIdFromReq(context.req);
+  const game = getGameFromId(gameId);
+
+  if (game.disableRanked) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
 
   if (!reqUser) {
     return {
