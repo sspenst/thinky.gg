@@ -104,18 +104,20 @@ export default function Header({
           {user && <div className='hidden sm:block h-6 w-px bg-neutral-500' />}
           <div className='flex gap-3 items-center'>
             {user && !game.disableGames && <>
+              {!game.disableRanked && <>
+                <Link
+                  className='hidden sm:block'
+                  data-tooltip-content='Ranked Solves'
+                  data-tooltip-id='ranked-solves-header'
+                  href='/ranked'
+                >
+                  <span className='font-bold leading-none'>{user.config.calcRankedSolves} 🏅</span>
+                  <StyledTooltip id='ranked-solves-header' />
+                </Link>
+                <div className='hidden sm:block h-6 w-px bg-neutral-500 mr-1' />
+              </>}
               <Link
-                className='hidden sm:block'
-                data-tooltip-content='Ranked Solves'
-                data-tooltip-id='ranked-solves-header'
-                href='/ranked'
-              >
-                <span className='font-bold leading-none'>{user.config.calcRankedSolves} 🏅</span>
-                <StyledTooltip id='ranked-solves-header' />
-              </Link>
-              <div className='hidden sm:block h-6 w-px bg-neutral-500' />
-              <Link
-                className='hidden sm:block ml-1'
+                className='hidden sm:block mr-1'
                 data-tooltip-content={game.type === GameType.COMPLETE_AND_SHORTEST ? 'Levels Completed' : 'Levels Solved'}
                 data-tooltip-id='levels-solved-header'
                 href='/users'

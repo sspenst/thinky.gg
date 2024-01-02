@@ -12,7 +12,7 @@ export const TOUR_DATA: { [key in TourType]: Step[] } = {
 };
 
 export default function useTour(path: TourPath, cb?: (data: CallBackProps) => void, disableScrolling = false) {
-  const { mutateUser, userConfig } = useContext(AppContext);
+  const { game, mutateUser, userConfig } = useContext(AppContext);
   const router = useRouter();
   const [run, setRun] = useState(false);
   const stepsRef = useRef<Step[]>([]);
@@ -54,7 +54,7 @@ export default function useTour(path: TourPath, cb?: (data: CallBackProps) => vo
   }, [mutateUser, userConfig]);
 
   useEffect(() => {
-    if (!userConfig) {
+    if (!userConfig || game.disableTour) {
       return;
     }
 
@@ -150,7 +150,7 @@ export default function useTour(path: TourPath, cb?: (data: CallBackProps) => vo
         } as Styles}
       />
     );
-  }, [cb, disableScrolling, path, putFinishedTour, run, userConfig]);
+  }, [cb, disableScrolling, game.disableTour, path, putFinishedTour, run, userConfig]);
 
   return tour;
 }

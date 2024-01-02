@@ -110,7 +110,7 @@ export default function FormattedUser({ className, hideAvatar, id, noLinks, noTo
                     user={user}
                   />
                 </div>}
-                {!game.disableGames &&
+                {!game.disableGames && !game.disableRanked &&
                 <div className='flex gap-1'>
                   <span className='font-medium'>Ranked Solves:</span>
                   <span className='gray'>{userExtendedData.user.config?.calcRankedSolves} 🏅</span>

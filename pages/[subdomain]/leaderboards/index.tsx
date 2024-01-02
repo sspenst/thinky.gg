@@ -6,7 +6,7 @@ import { GameId } from '@root/constants/GameId';
 import { AppContext } from '@root/contexts/appContext';
 import { UserAndSum } from '@root/contexts/levelContext';
 import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
-import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import cleanUser from '@root/lib/cleanUser';
 import { getUserFromToken } from '@root/lib/withAuth';
 import User from '@root/models/db/user';
@@ -126,10 +126,14 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
   const gameId = getGameIdFromReq(context.req);
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
+  const game = getGameFromId(gameId);
 
-  const [gmLeaderboard, rankedLeaderboard, sgmLeaderboard] = await Promise.all([
-    getDifficultyLeaderboard(gameId, DIFFICULTY_INDEX.GRANDMASTER),
-    UserModel.aggregate([
+  async function getRankedLeaderboard() {
+    if (game.disableRanked) {
+      return null;
+    }
+
+    const rankedLeaderboard = await UserModel.aggregate<User>([
       {
         $project: {
           ...USER_DEFAULT_PROJECTION,
@@ -145,13 +149,20 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       {
         $limit: 40,
       },
-    ]),
+    ]);
+
+    rankedLeaderboard.forEach(user => {
+      cleanUser(user);
+    });
+
+    return rankedLeaderboard;
+  }
+
+  const [gmLeaderboard, rankedLeaderboard, sgmLeaderboard] = await Promise.all([
+    getDifficultyLeaderboard(gameId, DIFFICULTY_INDEX.GRANDMASTER),
+    getRankedLeaderboard(),
     getDifficultyLeaderboard(gameId, DIFFICULTY_INDEX.SUPER_GRANDMASTER),
   ]);
-
-  rankedLeaderboard.forEach(user => {
-    cleanUser(user);
-  });
 
   return {
     props: {
@@ -165,21 +176,21 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
 interface LeaderboardsProps {
   gmLeaderboard: UserAndSum[];
-  rankedLeaderboard: User[];
+  rankedLeaderboard: User[] | null;
   reqUser: User | null;
   sgmLeaderboard: UserAndSum[];
 }
 
 export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser, sgmLeaderboard }: LeaderboardsProps) {
-  const [leaderboard, setLeaderboard] = useState('ranked');
   const { game } = useContext(AppContext);
+  const [leaderboard, setLeaderboard] = useState(!game.disableRanked ? 'ranked' : 'sgm');
   const gmRange = getDifficultyRangeByIndex(DIFFICULTY_INDEX.GRANDMASTER);
   const sgmRange = getDifficultyRangeByIndex(DIFFICULTY_INDEX.SUPER_GRANDMASTER);
   const gmColor = getDifficultyColor(gmRange[0]);
   const sgmColor = getDifficultyColor(sgmRange[0]);
 
   const leaderboardStrings = {
-    'ranked': 'Ranked 🏅',
+    ...(!game.disableRanked ? { 'ranked': 'Ranked 🏅' } : {}),
     'sgm': 'Super Grandmasters 🧠',
     'gm': 'Grandmasters 📜',
   } as { [key: string]: string };
@@ -212,12 +223,16 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
 
   function getLeaderboard() {
     if (leaderboard === 'ranked') {
+      if (!game.disableRanked || !rankedLeaderboard) {
+        return null;
+      }
+
       return (
         <div className='flex flex-col text-center gap-6'>
           <div className='flex justify-center'>
             <Link className='font-bold text-2xl hover:underline w-fit' href='/ranked'>Ranked Solves 🏅</Link>
           </div>
-          {getLeaderboardTable(rankedLeaderboard, rankedLeaderboard?.map(user => user.config?.calcRankedSolves || 0))}
+          {getLeaderboardTable(rankedLeaderboard, rankedLeaderboard.map(user => user.config?.calcRankedSolves || 0))}
         </div>
       );
     } else if (leaderboard === 'sgm') {
