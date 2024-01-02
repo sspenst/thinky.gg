@@ -452,7 +452,7 @@ export default function ProfilePage({
                   levelsSolvedByDifficulty ? <PlayerRank levelsSolvedByDifficulty={levelsSolvedByDifficulty} user={user} /> : '...'
                 }
               </h2>}
-              {!game.disableGames && <h2><span className='font-bold'>Ranked Solves:</span> {user.config?.calcRankedSolves} 🏅</h2>}
+              {!game.disableGames && !game.disableRanked && <h2><span className='font-bold'>Ranked Solves:</span> {user.config?.calcRankedSolves} 🏅</h2>}
               {!game.disableGames && <h2><span className='font-bold'>Levels Solved:</span> {user.config?.calcLevelsSolvedCount}</h2>}
               {!game.disableGames && <h2><span className='font-bold'>Levels Completed:</span> {user.config?.calcLevelsCompletedCount}</h2>}
               {!game.disableGames && <h2><span className='font-bold'>Levels Created:</span> {user.config?.calcLevelsCreatedCount}</h2>}
