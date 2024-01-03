@@ -186,7 +186,7 @@ describe('helpers/*.ts', () => {
     const gridWithOnlyOneStart = '00' + TileType.Start;
     const gridWithOneStartAndOneEnd = '00' + TileType.Start + TileType.End;
 
-    expect(validatePathologyLevelValid(emptyGrid).reasons).toMatchObject(['Need start tile', 'Need end tile']);
+    expect(validatePathologyLevelValid(emptyGrid).reasons).toMatchObject(['Must have exactly one start block', 'Need end tile']);
     expect(validatePathologyLevelValid(gridWithOnlyOneStart).reasons).toMatchObject(['Need end tile']);
     expect(validatePathologyLevelValid(gridWithOneStartAndOneEnd).valid).toBe(true);
   });
@@ -196,7 +196,7 @@ describe('helpers/*.ts', () => {
     const gridWithOneStartAndOneEnd = '00' + TileType.Start + TileType.End;
     const gridWithOneStartAndOneEndWithBlockOnTop = '00' + TileType.Start + TileType.BlockOnExit;
 
-    expect(validateSokobanLevelValid(emptyGrid).reasons).toMatchObject(['Must have at least one start', 'Must have at least one end']);
+    expect(validateSokobanLevelValid(emptyGrid).reasons).toMatchObject(['Must have exactly one start block', 'Must have at least one end']);
     expect(validateSokobanLevelValid(gridWithOnlyOneStart).reasons).toMatchObject(['Must have at least one end']);
     expect(validateSokobanLevelValid(gridWithOneStartAndOneEnd).reasons).toMatchObject(['Must have as many blocks as ends']);
     expect(validateSokobanLevelValid(gridWithOneStartAndOneEndWithBlockOnTop).valid).toBe(true);
