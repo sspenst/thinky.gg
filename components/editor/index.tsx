@@ -2,6 +2,7 @@ import { GameId } from '@root/constants/GameId';
 import { AppContext } from '@root/contexts/appContext';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import toast from 'react-hot-toast';
 import TileType from '../../constants/tileType';
 import { PageContext } from '../../contexts/pageContext';
@@ -14,6 +15,7 @@ import EditLevelModal from '../modal/editLevelModal';
 import ModifyModal from '../modal/modifyModal';
 import PublishLevelModal from '../modal/publishLevelModal';
 import SizeModal from '../modal/sizeModal';
+import StyledTooltip from '../page/styledTooltip';
 
 interface EditorProps {
   isDirty: boolean;
@@ -269,6 +271,10 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   }
 
   const editorSelectionLevel = getEditorSelectionLevel();
+  const validateLevelResults = game.validateLevelPlayableFunction ? game.validateLevelPlayableFunction(level.data) : undefined;
+  const isValidLevelIcon = (validateLevelResults?.valid) ? '✅' : '⚠️';
+  const reasonsAtHtml = validateLevelResults?.reasons.map(reason => <li key={'reason-' + reason}>{reason}</li>);
+  const isValidLevelTooltip = (validateLevelResults?.valid) ? <>Level is valid</> : <ul className='flex flex-col items-start text-lg'>{reasonsAtHtml}</ul> ?? <>Level is invalid</>;
 
   return (<>
     <div className='flex flex-col h-full'>
@@ -304,7 +310,9 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
           }, <>Save</>),
           ...(!id ? [] : [
             new Control('btn-edit', () => setIsEditLevelOpen(true), <>Edit</>, isDirty),
-            new Control('btn-test', () => router.push(`/test/${id}`), <>Test</>, isDirty),
+            new Control('btn-test', () => router.push(`/test/${id}`),
+              <><div data-tooltip-id='validLevelMessage' data-tooltip-html={renderToStaticMarkup(isValidLevelTooltip)}>{isValidLevelIcon} Test<StyledTooltip id='validLevelMessage' /></div></>
+              , isDirty),
             new Control('btn-publish', () => setIsPublishLevelOpen(true), <>Publish</>, isDirty || level.leastMoves === 0),
           ]),
         ]}

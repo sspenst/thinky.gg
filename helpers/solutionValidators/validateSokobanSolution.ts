@@ -101,8 +101,8 @@ export function validateSokobanLevelValid(data: string): {valid: boolean, reason
 
   const reasons = [];
 
-  if (startCount < 1) {
-    reasons.push('Must have at least one start');
+  if (startCount !== 1) {
+    reasons.push('Must have exactly one start block');
   }
 
   if (endCount < 1) {

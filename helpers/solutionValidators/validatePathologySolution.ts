@@ -78,12 +78,27 @@ export default function validatePathologySolution(directions: Direction[], level
 export function validatePathologyLevelValid(data: string): { valid: boolean, reasons: string[] } {
   // data must have at least ONE start and ONE end
   const reasons = [];
+  const dataSplit = data.split('');
+  let startCount = 0;
+  let endCount = 0;
 
-  if (data.indexOf(TileType.Start) === -1) {
-    reasons.push('Need start tile');
+  for (let i = 0; i < dataSplit.length; i++) {
+    const tile = dataSplit[i];
+
+    if (tile === TileType.Start) {
+      startCount++;
+    } else {
+      if (tile === TileType.End || tile === TileType.BlockOnExit) {
+        endCount++;
+      }
+    }
   }
 
-  if (data.indexOf(TileType.End) === -1) {
+  if (startCount !== 1) {
+    reasons.push('Must have exactly one start block');
+  }
+
+  if (endCount === 0) {
     reasons.push('Need end tile');
   }
 
