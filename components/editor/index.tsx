@@ -178,10 +178,10 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
         // handle sokoban block on exit cases
         if (game.id === GameId.SOKOBAN) {
           if (prevTileType === TileType.Block && tileType === TileType.End) {
-            return TileType.BlockOnExit;
+            return TileType.BlockOnEnd;
           } else if (prevTileType === TileType.End && tileType === TileType.Block) {
-            return TileType.BlockOnExit;
-          } else if (prevTileType === TileType.BlockOnExit) {
+            return TileType.BlockOnEnd;
+          } else if (prevTileType === TileType.BlockOnEnd) {
             if (tileType === TileType.Block) {
               return TileType.End;
             } else if (tileType === TileType.End) {

@@ -88,7 +88,7 @@ export function validatePathologyLevelValid(data: string): { valid: boolean, rea
     if (tile === TileType.Start) {
       startCount++;
     } else {
-      if (tile === TileType.End || tile === TileType.BlockOnExit) {
+      if (tile === TileType.End || tile === TileType.BlockOnEnd) {
         endCount++;
       }
     }

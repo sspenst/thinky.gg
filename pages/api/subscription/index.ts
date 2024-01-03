@@ -1,11 +1,10 @@
 import { logger } from '@root/helpers/logger';
 import cleanUser from '@root/lib/cleanUser';
 import User from '@root/models/db/user';
-import UserConfig from '@root/models/db/userConfig';
 import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import Stripe from 'stripe';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import { UserConfigModel, UserModel } from '../../../models/mongoose';
+import { UserModel } from '../../../models/mongoose';
 
 const STRIPE_SECRET = process.env.STRIPE_SECRET as string;
 

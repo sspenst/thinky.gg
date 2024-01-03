@@ -194,7 +194,7 @@ describe('helpers/*.ts', () => {
     const emptyGrid = '000';
     const gridWithOnlyOneStart = '00' + TileType.Start;
     const gridWithOneStartAndOneEnd = '00' + TileType.Start + TileType.End;
-    const gridWithOneStartAndOneEndWithBlockOnTop = '00' + TileType.Start + TileType.BlockOnExit;
+    const gridWithOneStartAndOneEndWithBlockOnTop = '00' + TileType.Start + TileType.BlockOnEnd;
 
     expect(validateSokobanLevelValid(emptyGrid).reasons).toMatchObject(['Must have exactly one start block', 'Must have at least one end']);
     expect(validateSokobanLevelValid(gridWithOnlyOneStart).reasons).toMatchObject(['Must have at least one end']);

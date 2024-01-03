@@ -64,16 +64,16 @@ export default function ThinkyHomePage() {
     shouldAlwaysCompleteAnimation: true,
   };
 
-  const background1: BannerLayer = {
-    image:
-      'https://i.imgur.com/h2qnMrV.png',
-    translateY: [0, 50],
+  // const background1: BannerLayer = {
+  //   image:
+  //     'https://i.imgur.com/h2qnMrV.png',
+  //   translateY: [0, 50],
 
-    //opacity: [1, 0.3],
+  //   //opacity: [1, 0.3],
 
-    //scale: [1.0, 1, 'easeOutCubic'],
-    shouldAlwaysCompleteAnimation: true,
-  };
+  //   //scale: [1.0, 1, 'easeOutCubic'],
+  //   shouldAlwaysCompleteAnimation: true,
+  // };
 
   const headline: BannerLayer = {
     translateY: ['0%', '20%'],
@@ -115,13 +115,13 @@ export default function ThinkyHomePage() {
     ),
   };
 
-  const midground: BannerLayer = {
-    image:
-      'https://i.imgur.com/ZMOHZMe.png',
-    translateY: [30, 60, 'easeOutCubic'],
+  // const midground: BannerLayer = {
+  //   image:
+  //     'https://i.imgur.com/ZMOHZMe.png',
+  //   translateY: [30, 60, 'easeOutCubic'],
 
-    shouldAlwaysCompleteAnimation: true,
-  };
+  //   shouldAlwaysCompleteAnimation: true,
+  // };
 
   const foreground: BannerLayer = {
     image:
