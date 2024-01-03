@@ -165,7 +165,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       }
 
       const prevTileType = prevLevel.data.charAt(index);
-
       const level = JSON.parse(JSON.stringify(prevLevel)) as Level;
       let clear = rightClick;
 
@@ -193,13 +192,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       }
 
       const newTileType = clear ? TileType.Default : getNewTileType();
-
-      // when changing start position the old position needs to be removed
-      if (newTileType === TileType.Start) {
-        const startIndex = level.data.indexOf(TileType.Start);
-
-        level.data = level.data.substring(0, startIndex) + TileType.Default + level.data.substring(startIndex + 1);
-      }
 
       level.data = level.data.substring(0, index) + newTileType + level.data.substring(index + 1);
 
