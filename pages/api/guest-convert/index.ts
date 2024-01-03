@@ -44,6 +44,24 @@ export default withAuth({
   user.name = trimmedName;
   user.password = password;
   user.roles = user.roles.filter((role: Role) => role !== Role.GUEST);
+
+  // check if name already exists
+  const existingUsername = await UserModel.countDocuments({ name: trimmedName });
+
+  if (existingUsername) {
+    return res.status(400).json({
+      error: 'Name already taken by another account',
+    });
+  }
+
+  const existingEmail = await UserModel.countDocuments({ email: email.trim() });
+
+  if (existingEmail) {
+    return res.status(400).json({
+      error: 'Email already exists for another account',
+    });
+  }
+
   await user.save();
   const game = getGameFromId(req.gameId);
 
