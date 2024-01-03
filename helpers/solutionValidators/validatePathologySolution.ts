@@ -74,3 +74,18 @@ export default function validatePathologySolution(directions: Direction[], level
 
   return endIndices.includes(pos.y * level.width + pos.x);
 }
+
+export function validatePathologyLevelValid(data: string): { valid: boolean, reasons: string[] } {
+  // data must have at least ONE start and ONE end
+  const reasons = [];
+
+  if (data.indexOf(TileType.Start) === -1) {
+    reasons.push('Need start tile');
+  }
+
+  if (data.indexOf(TileType.End) === -1) {
+    reasons.push('Need end tile');
+  }
+
+  return { valid: reasons.length === 0, reasons };
+}

@@ -1,6 +1,7 @@
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import { GameId } from '@root/constants/GameId';
 import TileType from '@root/constants/tileType';
+import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import isFullAccount from '@root/helpers/isFullAccount';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
@@ -73,16 +74,17 @@ export default withAuth({ POST: {
     });
   }
 
-  if ((level.data.match(new RegExp(TileType.Start, 'g')) || []).length !== 1) {
-    return res.status(400).json({
-      error: 'There must be exactly one start block',
-    });
-  }
+  const gameId = getGameIdFromReq(req);
+  const game = getGameFromId(gameId);
 
-  if ((level.data.match(new RegExp(TileType.End, 'g')) || []).length === 0) {
-    return res.status(400).json({
-      error: 'There must be at least one end block',
-    });
+  if (game.validateLevelPlayableFunction) {
+    const validateLevelResult = game.validateLevelPlayableFunction(level.data);
+
+    if (validateLevelResult.valid === false) {
+      return res.status(400).json({
+        error: validateLevelResult.reasons.join(', '),
+      });
+    }
   }
 
   if (level.leastMoves === 0) {

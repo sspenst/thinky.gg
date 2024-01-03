@@ -1,10 +1,12 @@
 /* istanbul ignore file */
 
-import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
+import { redirect } from 'next/dist/server/api-utils';
 import { useRouter } from 'next/router';
-import React from 'react';
+import React, { useEffect } from 'react';
+import toast from 'react-hot-toast';
 import LinkInfo from '../../../components/formatted/linkInfo';
 import Game from '../../../components/level/game';
 import Page from '../../../components/page/page';
@@ -70,21 +72,37 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const level = levelAgg[0];
 
+  const game = getGameFromId(level.gameId);
+  let validateResult = undefined;
+
+  if (game.validateLevelPlayableFunction) {
+    validateResult = game.validateLevelPlayableFunction(level.data);
+  }
+
   cleanUser(level.userId);
 
   return {
     props: {
       level: JSON.parse(JSON.stringify(level)),
+      validateResult,
     } as TestProps,
   };
 }
 
 interface TestProps {
   level: Level;
+  validateResult?: { valid: boolean; reasons: string[] };
 }
 
-export default function Test({ level }: TestProps) {
+export default function Test({ level, validateResult }: TestProps) {
   const router = useRouter();
+
+  useEffect(() => {
+    if (validateResult?.valid === false) {
+      toast.error(validateResult.reasons.join('\n'));
+      router.replace('/edit/' + level._id);
+    }
+  }, [level._id, router, validateResult]);
 
   return (
     <Page

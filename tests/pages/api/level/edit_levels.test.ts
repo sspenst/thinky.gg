@@ -488,8 +488,8 @@ describe('Editing levels should work correctly', () => {
   });
   test('Try publishing invalid levels', async () => {
     const invalidLevels = [
-      [{ data: '00000' }, 'There must be exactly one start block'],
-      [{ data: '40000' }, 'There must be at least one end block'],
+      [{ data: '00000' }, 'Need start tile, Need end tile'],
+      [{ data: '40000' }, 'Need end tile'],
       [{ data: '40003', leastMoves: 40000 }, 'Move count cannot be greater than 2500']
     ];
 
