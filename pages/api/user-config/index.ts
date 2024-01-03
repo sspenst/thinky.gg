@@ -106,8 +106,8 @@ export default withAuth({
 
       try {
         await session.withTransaction(async () => {
-          await UserConfigModel.updateOne({ userId: req.userId, gameId: req.gameId }, { $set: setObj, $addToSet: { mobileDeviceTokens: deviceToken } }, { session: session });
-          await UserModel.updateOne({ _id: req.userId }, { $set: setObjUser }, { session: session });
+          await UserConfigModel.updateOne({ userId: req.userId, gameId: req.gameId }, { $set: setObj, }, { session: session });
+          await UserModel.updateOne({ _id: req.userId }, { $set: setObjUser, $addToSet: { mobileDeviceTokens: deviceToken } }, { session: session });
         });
       } catch (err) {
         logger.error(err);
