@@ -72,7 +72,7 @@ export default function Modal({
             leaveFrom='opacity-100 scale-100'
             leaveTo='opacity-0 scale-95'
           >
-            <Dialog.Panel className={classNames('py-3 px-4 my-8 text-left align-middle transition-all transform shadow-xl rounded-xl flex flex-col gap-4 border bg-1 border-color-3 max-w-3xl', getFontFromGameId(game.id))}>
+            <Dialog.Panel style={{ maxWidth: '100vw', width: 'auto' }} className={classNames('py-3 px-4 my-8 text-left align-middle transition-all transform shadow-xl rounded-xl flex flex-col gap-4 border bg-1 border-color-3 max-w-3xl', getFontFromGameId(game.id))}>
               <Dialog.Title as='div' className='flex gap-4 text-center'>
                 <span className='w-6' />
                 <span className='grow text-xl font-bold truncate'>{title}</span>
