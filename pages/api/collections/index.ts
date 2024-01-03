@@ -18,6 +18,7 @@ export default withAuth({
     {
       $match: {
         userId: req.user._id,
+        gameId: req.gameId,
       },
     },
     {

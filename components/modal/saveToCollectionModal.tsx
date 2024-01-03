@@ -17,7 +17,7 @@ interface SaveToCollectionModalProps {
 export default function SaveToCollectionModal({ closeModal, isOpen, level }: SaveToCollectionModalProps) {
   const [collections, setCollections] = useState<CollectionWithLevel[]>();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { shouldAttemptAuth, user } = useContext(AppContext);
+  const { game, shouldAttemptAuth, user } = useContext(AppContext);
 
   const getCollections = useCallback(() => {
     if (isOpen && shouldAttemptAuth) {
@@ -108,7 +108,7 @@ export default function SaveToCollectionModal({ closeModal, isOpen, level }: Sav
           :
           collections.length === 0 ?
             <div className='flex flex-col items-center gap-3'>
-              <span className='text-center text-xl'>You don&apos;t have any collections!</span>
+              <span className='text-center text-xl'>You don&apos;t have any {game.displayName} level collections!</span>
               <span className='text-center'><span className='font-bold'>Collections</span> are sets of levels. They are a great way to organize and share level series, favorites, or group your levels.</span>
               {user && <Link href={`/profile/${user.name}/collections` } className='text-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer w-fit'>Create your first collection</Link>}
             </div>
