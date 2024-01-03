@@ -34,13 +34,23 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
     await session.withTransaction(async () => {
       const promises = [
         // NB: gift recipients do not have a stripe customer id
+        UserModel.findOneAndUpdate(
+          {
+            _id: userToDowngrade._id,
+          },
+          {
+            stripeCustomerId: null,
+          },
+          {
+            session: session
+          },
+        ),
         UserConfigModel.findOneAndUpdate(
           {
             userId: userToDowngrade._id,
             gameId: gameId,
           },
           {
-            stripeCustomerId: null,
             $pull: {
               roles: Role.PRO
             }
@@ -58,14 +68,13 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
       if (giftFromId) {
         // pull the gift subscription id if it was gifted
         promises.push(
-          UserConfigModel.findOneAndUpdate(
+          UserModel.findOneAndUpdate(
             {
               userId: new Types.ObjectId(giftFromId),
-              gameId: gameId,
             },
             {
               $pull: {
-                giftSubscriptions: subscription.id,
+                stripeGiftSubscriptions: subscription.id,
               },
             },
             {
@@ -185,33 +194,28 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
         const type = subscription.metadata?.type as GiftType;
 
         await Promise.all([
-          UserConfigModel.findOneAndUpdate(
+          UserModel.findOneAndUpdate(
             {
-              userId: giftToUser._id,
-              gameId: gameId,
+              _id: giftFromUser._id,
             },
             {
-              // add to set gift subscriptions
-              userId: giftToUser._id,
               $addToSet: {
-                roles: Role.PRO
+                stripeGiftSubscriptions: subscription.id,
               },
             },
             {
-              upsert: true,
               session: session
             },
           ),
           UserConfigModel.findOneAndUpdate(
             {
-              userId: giftFromUser._id,
+              userId: giftToUser._id,
               gameId: gameId,
             },
             {
-              // add to set gift subscriptions
               $addToSet: {
-                giftSubscriptions: subscription.id,
-              },
+                roles: Role.PRO
+              }
             },
             {
               session: session
@@ -223,6 +227,7 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
         ]);
       });
       session.endSession();
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       logger.error(err);
@@ -258,6 +263,18 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
     try {
       await session.withTransaction(async () => {
         await Promise.all([
+          UserModel.findOneAndUpdate(
+            {
+              _id: userToUpgrade._id,
+            },
+            {
+              stripeCustomerId: customerId,
+            },
+            {
+              session: session,
+              new: true,
+            },
+          ),
           UserConfigModel.findOneAndUpdate(
             {
               userId: userToUpgrade._id,
@@ -265,7 +282,6 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
               // TODO: Get GameId
             },
             {
-              stripeCustomerId: customerId,
               $addToSet: {
                 roles: Role.PRO
               }
@@ -423,31 +439,15 @@ export default apiWrapper({
       error = 'No customerId';
     } else {
       const { gameId } = await getGameFromSubscription(subscription);
-      const userConfigAgg = await UserConfigModel.aggregate<UserConfig>([
-        {
-          $match: { stripeCustomerId: customerId, gameId: gameId },
+      const user = await UserModel.findOne({ stripeCustomerId: customerId }).lean<User>();
 
-        },
-        {
-          $lookup: {
-            from: UserModel.collection.name,
-            localField: 'userId',
-            foreignField: '_id',
-            as: 'userId',
-          },
-        },
-        {
-          $unwind: '$userId',
-        }
-      ]);
-
-      if (userConfigAgg.length === 0) {
+      if (!user) {
         // there must be a matching userconfig in this case, so we need to return an error here
-        error = `UserConfig with customer id ${customerId} for game ${gameId} does not exist`;
+        error = `User with customer id ${customerId} for game ${gameId} does not exist`;
       } else {
         // we need to check if this is a gift subscription so we can downgrade the appropriate user
         // looks like a regular downgrade subscription of pro
-        error = await subscriptionDeleted(userConfigAgg[0].userId as User, subscription);
+        error = await subscriptionDeleted(user, subscription);
       }
     }
   } else if (event.type === 'customer.subscription.created') {

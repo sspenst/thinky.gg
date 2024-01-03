@@ -10,10 +10,6 @@ interface User {
   _id: Types.ObjectId;
   avatarUpdatedAt?: number;
   bio?: string;
-  //calcRankedSolves: number;
-  //calc_levels_created_count: number;
- // calc_records: number;
- // chapterUnlocked?: number; // chapter unlocked in the campaign
   disallowedEmailNotifications: NotificationType[];
   disallowedPushNotifications: NotificationType[];
   email: string;
@@ -24,13 +20,17 @@ interface User {
   ip_addresses_used: string[];
   lastGame?: GameId;
   last_visited_at?: number; // last time user visited website
+  mobileDeviceTokens: string[];
   name: string;
   password?: string;
   roles: Role[];
-  //score: number;
+  stripeCustomerId: string;
+  stripeGiftSubscriptions: string[]; // gift subscriptions this user has given out
   ts?: number; // created timestamp
-
-  // virtual field
+  //
+  //
+  //
+  // virtual field - not stored in schema
   config?: UserConfig;
 }
 

@@ -68,6 +68,7 @@ const UserSchema = new mongoose.Schema<User>({
     default: false,
     select: false,
   },
+
   hideStatus: {
     type: Boolean,
   },
@@ -78,6 +79,13 @@ const UserSchema = new mongoose.Schema<User>({
     type: String,
     enum: GameId,
     required: false,
+  },
+  mobileDeviceTokens: {
+    type: [String],
+    required: false,
+    select: false,
+    default: [],
+    maxlength: 100, // max 100 devices @TODO: should probably 'rotate' this list and remove oldest device tokens on push of new one
   },
   ip_addresses_used: {
     type: [String],
@@ -105,6 +113,17 @@ const UserSchema = new mongoose.Schema<User>({
   roles: {
     type: [String],
     enum: Role,
+    default: [],
+  },
+  stripeCustomerId: {
+    type: String,
+    required: false,
+    select: false,
+  },
+  stripeGiftSubscriptions: {
+    type: [String],
+    required: false,
+    select: false,
     default: [],
   },
   ts: {

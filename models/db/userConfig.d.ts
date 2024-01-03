@@ -12,11 +12,11 @@ interface UserConfig {
   calcRecordsCount: number;
   chapterUnlocked: number;
   gameId: GameId;
-  giftSubscriptions: string[]; // gift subscriptions this user has given out
-  mobileDeviceTokens: string[];
   roles: Role[];
+  mobileDeviceTokens: string[];
   showPlayStats: boolean;
   stripeCustomerId: string;
+  stripeGiftSubscriptions: string[]; // gift subscriptions this user has given out
   theme: string;
   toursCompleted: TourType[];
   tutorialCompletedAt: number; // represents the timestamp they completed the tutorial

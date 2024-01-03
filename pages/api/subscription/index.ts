@@ -27,14 +27,14 @@ export interface SubscriptionData {
 
 export async function getSubscriptions(req: NextApiRequestWithAuth): Promise<[number, { error: string } | SubscriptionData[]]> {
   const userId = req.userId;
-  const userConfig = await UserConfigModel.findOne({ userId: userId, gameId: req.gameId }, { stripeCustomerId: 1 }).lean<UserConfig>();
+  const user = await UserModel.findOne({ _id: userId }, { stripeCustomerId: 1 }).lean<User>();
 
   let subscriptionsNormal: Stripe.Response<Stripe.ApiList<Stripe.Subscription>> | undefined;
   let subscriptionsGifts: Stripe.Response<Stripe.ApiSearchResult<Stripe.Subscription>>;
 
   try {
     [subscriptionsNormal, subscriptionsGifts] = await Promise.all([
-      userConfig?.stripeCustomerId ? stripe.subscriptions.list({ customer: userConfig.stripeCustomerId }) : undefined,
+      user?.stripeCustomerId ? stripe.subscriptions.list({ customer: user.stripeCustomerId }) : undefined,
       stripe.subscriptions.search({
       // (giftFromId is req.userId OR customerId is userConfig.stripeCustomerId) AND status is active
         query: `metadata["giftFromId"]:"${req.userId}" AND status:"active"`,
@@ -95,16 +95,16 @@ export async function getSubscriptions(req: NextApiRequestWithAuth): Promise<[nu
 export async function cancelSubscription(req: NextApiRequestWithAuth): Promise<[number, { error: string } | { message: string }]> {
   const userId = req.userId;
   // TODO: figure out gameId
-  const userConfig = await UserConfigModel.findOne({ userId: userId }, { stripeCustomerId: 1 }).lean<UserConfig>();
+  const user = await UserModel.findOne({ _id: userId }, { stripeCustomerId: 1 }).lean<User>();
 
-  if (!userConfig?.stripeCustomerId) {
+  if (!user?.stripeCustomerId) {
     return [404, { error: 'No subscription found for this user.' }];
   }
 
   let subscriptions: Stripe.Response<Stripe.ApiList<Stripe.Subscription>>;
 
   try {
-    subscriptions = await stripe.subscriptions.list({ customer: userConfig.stripeCustomerId });
+    subscriptions = await stripe.subscriptions.list({ customer: user.stripeCustomerId });
   } catch (e) {
     logger.error(e);
 
