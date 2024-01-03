@@ -1,6 +1,9 @@
 import StatFilter from '@root/constants/statFilter';
+import TileType from '@root/constants/tileType';
 import { generatePassword } from '@root/helpers/generatePassword';
 import { parseHostname, parseSubdomain } from '@root/helpers/parseUrl';
+import { validatePathologyLevelValid } from '@root/helpers/solutionValidators/validatePathologySolution';
+import { validateSokobanLevelValid } from '@root/helpers/solutionValidators/validateSokobanSolution';
 import TestId from '../../constants/testId';
 import statFilterOptions from '../../helpers/filterSelectOptions';
 import getDifficultyEstimate from '../../helpers/getDifficultyEstimate';
@@ -177,6 +180,26 @@ describe('helpers/*.ts', () => {
     expect(parseHostname('test.localhost')).toBe('localhost');
     expect(parseHostname('localhost')).toBe('localhost');
     expect(parseHostname('')).toBe(null);
+  });
+  test('validatePathologyLevelValid', async () => {
+    const emptyGrid = '000';
+    const gridWithOnlyOneStart = '00' + TileType.Start;
+    const gridWithOneStartAndOneEnd = '00' + TileType.Start + TileType.End;
+
+    expect(validatePathologyLevelValid(emptyGrid).reasons).toMatchObject(['Need start tile', 'Need end tile']);
+    expect(validatePathologyLevelValid(gridWithOnlyOneStart).reasons).toMatchObject(['Need end tile']);
+    expect(validatePathologyLevelValid(gridWithOneStartAndOneEnd).valid).toBe(true);
+  });
+  test('validiateSokobanLevelValid', async () => {
+    const emptyGrid = '000';
+    const gridWithOnlyOneStart = '00' + TileType.Start;
+    const gridWithOneStartAndOneEnd = '00' + TileType.Start + TileType.End;
+    const gridWithOneStartAndOneEndWithBlockOnTop = '00' + TileType.Start + TileType.BlockOnExit;
+
+    expect(validateSokobanLevelValid(emptyGrid).reasons).toMatchObject(['Must have at least one start', 'Must have at least one end']);
+    expect(validateSokobanLevelValid(gridWithOnlyOneStart).reasons).toMatchObject(['Must have at least one end']);
+    expect(validateSokobanLevelValid(gridWithOneStartAndOneEnd).reasons).toMatchObject(['Must have as many blocks as ends']);
+    expect(validateSokobanLevelValid(gridWithOneStartAndOneEndWithBlockOnTop).valid).toBe(true);
   });
 });
 

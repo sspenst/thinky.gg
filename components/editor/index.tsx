@@ -166,17 +166,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
 
       const prevTileType = prevLevel.data.charAt(index);
 
-      // there always has to be a start position
-      if (prevTileType === TileType.Start) {
-        return prevLevel;
-      }
-
-      // there always has to be an end position
-      if (prevTileType === TileType.End &&
-        (prevLevel.data.match(new RegExp(TileType.End, 'g')) || []).length === 1) {
-        return prevLevel;
-      }
-
       const level = JSON.parse(JSON.stringify(prevLevel)) as Level;
       let clear = rightClick;
 

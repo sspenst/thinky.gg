@@ -1,7 +1,7 @@
 import { pathologySolveState, sokobanSolveState } from '@root/components/level/solutionStates/helpers';
 import { GameState } from '@root/helpers/gameStateHelpers';
-import validatePathologySolution from '@root/helpers/solutionValidators/validatePathologySolution';
-import validateSokobanSolution from '@root/helpers/solutionValidators/validateSokobanSolution';
+import validatePathologySolution, { validatePathologyLevelValid } from '@root/helpers/solutionValidators/validatePathologySolution';
+import validateSokobanSolution, { validateSokobanLevelValid } from '@root/helpers/solutionValidators/validateSokobanSolution';
 import Level from '@root/models/db/level';
 import Direction from './direction';
 import { GameId } from './GameId';
@@ -57,6 +57,7 @@ export const Games: Record<GameId, Game> = {
     videoDemo: 'https://i.imgur.com/bZpBEUW.mp4',
     gameStateIsSolveFunction: pathologySolveState,
     validateSolutionFunction: validatePathologySolution,
+    validateLevelPlayableFunction: validatePathologyLevelValid
   },
   [GameId.SOKOBAN]: {
     id: GameId.SOKOBAN,
@@ -83,6 +84,8 @@ export const Games: Record<GameId, Game> = {
     videoDemo: 'https://i.imgur.com/7qGspht.mp4',
     gameStateIsSolveFunction: sokobanSolveState,
     validateSolutionFunction: validateSokobanSolution,
+    validateLevelPlayableFunction: validateSokobanLevelValid
+
   },
 };
 
@@ -116,4 +119,5 @@ export interface Game {
   videoDemo?: string;
   gameStateIsSolveFunction: (gameState: GameState) => boolean;
   validateSolutionFunction: (directions: Direction[], level: Level) => boolean;
+  validateLevelPlayableFunction?: (data: string) => { valid: boolean, reasons: string[]};
 }

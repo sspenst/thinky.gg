@@ -75,3 +75,43 @@ export default function validateSokobanSolution(directions: Direction[], level: 
     return TileTypeHelper.canMove(data[y * level.width + x]);
   });
 }
+
+export function validateSokobanLevelValid(data: string): {valid: boolean, reasons: string[]} {
+  // Must have at least ONE start and at least ONE end (or blockonend) and at least the same number of blocks as ends
+  const dataSplit = data.split('');
+  let startCount = 0;
+  let endCount = 0;
+  let blockCount = 0;
+
+  for (let i = 0; i < dataSplit.length; i++) {
+    const tile = dataSplit[i];
+
+    if (tile === TileType.Start) {
+      startCount++;
+    } else {
+      if (tile === TileType.End || tile === TileType.BlockOnExit) {
+        endCount++;
+      }
+
+      if (tile === TileType.Block || tile === TileType.BlockOnExit) {
+        blockCount++;
+      }
+    }
+  }
+
+  const reasons = [];
+
+  if (startCount < 1) {
+    reasons.push('Must have at least one start');
+  }
+
+  if (endCount < 1) {
+    reasons.push('Must have at least one end');
+  }
+
+  if (blockCount !== endCount) {
+    reasons.push('Must have as many blocks as ends');
+  }
+
+  return { valid: reasons.length === 0, reasons };
+}
