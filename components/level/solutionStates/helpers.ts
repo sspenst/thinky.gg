@@ -17,7 +17,7 @@ export function sokobanSolveState(gameState: GameState) {
   const endTilePositions = gameState.board
     .map((row, y) => row.map((tile, x) => ({ tile, x, y })))
     .flat()
-    .filter(({ tile }) => (tile.tileType === TileType.End || tile.tileType === TileType.BlockOnExit));
+    .filter(({ tile }) => (tile.tileType === TileType.End || tile.tileType === TileType.BlockOnEnd));
 
   // check that each end tile has a Block on it
   return endTilePositions.length > 0 && endTilePositions.every(({ x, y }) => {

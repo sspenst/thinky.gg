@@ -241,6 +241,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
   test('some valid but unknown user unsubscribes', async () => {
     const fakeCustomerId = 'fake_object_id_123';
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(stripeReal.products, 'retrieve').mockResolvedValue({ name: 'Pathology Yearly' } as any);
     await runStripeWebhookTest({
       eventType: 'customer.subscription.deleted',
@@ -260,6 +261,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
     });
   });
   test('some valid unsubscribes', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(stripeReal.products, 'retrieve').mockResolvedValue({ name: 'Pathology Yearly' } as any);
     await runStripeWebhookTest({
       eventType: 'customer.subscription.deleted',
@@ -311,7 +313,9 @@ describe('pages/api/stripe-webhook/index.ts', () => {
     });
   });
   test('resubscribe again should error saying you are already a pro subscriber', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(stripeReal.checkout.sessions, 'listLineItems').mockResolvedValue({ data: [{ price: { product: 'plan_id' } }], } as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(stripeReal.products, 'retrieve').mockResolvedValue({ name: 'Pathology Yearly' } as any);
     await runStripeWebhookTest({
       eventType: 'checkout.session.completed',
@@ -413,6 +417,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
     });
   });
   test('customer.subscription.deleted but db error should cause user to stay on pro plan', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(stripeReal.products, 'retrieve').mockResolvedValue({ name: 'Pathology Yearly' } as any);
 
     await runStripeWebhookTest({
@@ -437,6 +442,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
     });
   });
   test('customer.subscription.deleted successfully', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(stripeReal.products, 'retrieve').mockResolvedValue({ name: 'Pathology Yearly' } as any);
 
     await runStripeWebhookTest({

@@ -38,7 +38,7 @@ export default function BasicLayout({ cellClassName, controls, id, level, onClic
         tileType === TileType.Hole ||
         tileType === TileType.Start) {
         board[y][x].tileType = tileType;
-      } else if (tileType === TileType.BlockOnExit) {
+      } else if (tileType === TileType.BlockOnEnd) {
         board[y][x].tileType = TileType.End;
         board[y][x].block = {
           id: blockId++,

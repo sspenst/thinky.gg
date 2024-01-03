@@ -1,4 +1,5 @@
 import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import User from '@root/models/db/user';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
@@ -12,7 +13,6 @@ import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import UserConfig from '../../../../models/db/userConfig';
 import { UserConfigModel, UserModel } from '../../../../models/mongoose';
 import handler from '../../../../pages/api/user-config/index';
-import userConfig from '../../../../pages/api/user-config/index';
 
 beforeAll(async () => {
   await dbConnect();

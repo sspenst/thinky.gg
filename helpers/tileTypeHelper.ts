@@ -4,7 +4,7 @@ import TileType from '../constants/tileType';
 export default class TileTypeHelper {
   static canMove(tileType: TileType) {
     return tileType === TileType.Block ||
-      tileType === TileType.BlockOnExit ||
+      tileType === TileType.BlockOnEnd ||
       this.canMoveRestricted(tileType);
   }
 
@@ -27,7 +27,7 @@ export default class TileTypeHelper {
 
   static canMoveLeft(tileType: TileType) {
     return tileType === TileType.Block ||
-      tileType === TileType.BlockOnExit ||
+      tileType === TileType.BlockOnEnd ||
       tileType === TileType.Left ||
       tileType === TileType.UpLeft ||
       tileType === TileType.DownLeft ||
@@ -39,7 +39,7 @@ export default class TileTypeHelper {
 
   static canMoveUp(tileType: TileType) {
     return tileType === TileType.Block ||
-      tileType === TileType.BlockOnExit ||
+      tileType === TileType.BlockOnEnd ||
       tileType === TileType.Up ||
       tileType === TileType.UpLeft ||
       tileType === TileType.UpRight ||
@@ -51,7 +51,7 @@ export default class TileTypeHelper {
 
   static canMoveRight(tileType: TileType) {
     return tileType === TileType.Block ||
-      tileType === TileType.BlockOnExit ||
+      tileType === TileType.BlockOnEnd ||
       tileType === TileType.Right ||
       tileType === TileType.UpRight ||
       tileType === TileType.DownRight ||
@@ -63,7 +63,7 @@ export default class TileTypeHelper {
 
   static canMoveDown(tileType: TileType) {
     return tileType === TileType.Block ||
-      tileType === TileType.BlockOnExit ||
+      tileType === TileType.BlockOnEnd ||
       tileType === TileType.Down ||
       tileType === TileType.DownLeft ||
       tileType === TileType.DownRight ||
