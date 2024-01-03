@@ -10,8 +10,9 @@ import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import UserConfig from '../../../../models/db/userConfig';
-import { UserConfigModel } from '../../../../models/mongoose';
+import { UserConfigModel, UserModel } from '../../../../models/mongoose';
 import handler from '../../../../pages/api/user-config/index';
+import userConfig from '../../../../pages/api/user-config/index';
 
 beforeAll(async () => {
   await dbConnect();
@@ -118,7 +119,7 @@ describe('pages/api/user-config', () => {
           method: 'PUT',
           body: {
             emailDigest: EmailDigestSettingType.DAILY,
-            theme: Theme.Light,
+            theme: Theme.Halloween,
             tutorialCompletedAt: Date.now(),
             deviceToken: 'mymobiletoken'
           },
@@ -135,6 +136,16 @@ describe('pages/api/user-config', () => {
 
         expect(res.status).toBe(200);
         expect(response.updated).toBe(true);
+
+        const [user, config] = await Promise.all([
+          UserModel.findById(TestId.USER_C, { mobileDeviceTokens: 1, emailDigest: 1, tutorialCompleted: 1 }).lean<User>(),
+          UserConfigModel.findOne({ userId: TestId.USER_C, gameId: DEFAULT_GAME_ID }).lean<UserConfig>()
+        ]);
+
+        expect(user?.mobileDeviceTokens).toContain('mymobiletoken');
+        expect(user?.emailDigest).toBe(EmailDigestSettingType.DAILY);
+        expect(config?.theme).toBe(Theme.Halloween);
+        expect(config?.tutorialCompletedAt).toBeGreaterThan(Date.now() - 1000);
       },
     });
   });
@@ -159,11 +170,11 @@ describe('pages/api/user-config', () => {
         const config = response as { [k: string]: any};
 
         expect(config.emailDigest).toBe(EmailDigestSettingType.DAILY);
-        expect(config.theme).toBe(Theme.Light);
+        expect(config.theme).toBe(Theme.Halloween);
         expect(config.tutorialCompletedAt).toBeGreaterThan(Date.now() - 1000);
         expect(config.userId).toBe(TestId.USER_C);
         expect(config.gameId).toBe(DEFAULT_GAME_ID);
-      },
+      }
     });
   });
 });
