@@ -240,8 +240,10 @@ export default function TutorialPathology() {
       {
         hasNext: true,
         header: <>
-          <GameLogo gameId={GameId.PATHOLOGY} id='tutorial' size={32} />
-          <div className='text-3xl fadeIn'>Welcome to the Pathology tutorial!</div>
+          <div className='flex flex-col gap-6 items-center text-3xl fadeIn'>
+            <GameLogo gameId={GameId.PATHOLOGY} id='tutorial' size={32} />
+            <span>Welcome to the Pathology tutorial!</span>
+          </div>
           <div className='text-xl fadeIn' style={{
             animationDelay: '1s',
           }}>In this tutorial you will be walked through the basics of the game.</div>

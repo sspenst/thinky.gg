@@ -253,7 +253,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
             <span className='font-bold text-left whitespace-pre-wrap truncate'>{collection.name}</span>
           </button>
         }
-        <div className='px-4 py-3 overflow-y-auto'>
+        <div className='px-4 py-3 overflow-y-auto h-full'>
           <FormattedLevelInfo level={level} />
         </div>
       </div>

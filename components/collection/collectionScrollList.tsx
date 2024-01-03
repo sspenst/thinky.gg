@@ -172,7 +172,7 @@ export default function CollectionScrollList({ collection, id, isHidden, onLoadi
   }
 
   return (
-    <div className='overflow-y-auto max-w-full' onScroll={e => onScroll(e)}>
+    <div className='overflow-y-auto max-w-full h-full' onScroll={e => onScroll(e)}>
       {isLoading === 'before' &&
         <div className='justify-center items-center pt-3'>
           <LoadingSpinner />
