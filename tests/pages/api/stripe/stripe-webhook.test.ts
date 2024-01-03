@@ -1,4 +1,5 @@
 import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
@@ -10,7 +11,7 @@ import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { UserConfigModel } from '../../../../models/mongoose';
+import { UserConfigModel, UserModel } from '../../../../models/mongoose';
 import handler, { StripeWebhookHelper } from '../../../../pages/api/stripe-webhook/index';
 import { stripe as stripeReal } from '../../../../pages/api/subscription';
 
@@ -122,8 +123,9 @@ async function runStripeWebhookTest({
 }
 
 async function expectUserStatus(userId: string, role: Role | null, stripeCustomerId: string | null | undefined, stripeGiftCustomerId?: string | null | undefined) {
-  const [userConfig] = await Promise.all([
-    UserConfigModel.findOne<UserConfig>({ userId: userId, gameId: DEFAULT_GAME_ID }, { roles: 1, stripeCustomerId: 1, giftSubscriptions: 1, gameId: 1 }),
+  const [user, userConfig] = await Promise.all([
+    UserModel.findOne<User>({ _id: userId }, { stripeCustomerId: 1, stripeGiftSubscriptions: 1 }),
+    UserConfigModel.findOne<UserConfig>({ userId: userId, gameId: DEFAULT_GAME_ID }, { roles: 1, gameId: 1 }),
   ]);
 
   if (role) {
@@ -132,10 +134,10 @@ async function expectUserStatus(userId: string, role: Role | null, stripeCustome
     expect(userConfig?.roles).not.toContain(Role.PRO);
   }
 
-  expect(userConfig?.stripeCustomerId).toBe(stripeCustomerId);
+  expect(user?.stripeCustomerId).toBe(stripeCustomerId);
 
   if (stripeGiftCustomerId) {
-    expect(userConfig?.giftSubscriptions).toContain(stripeGiftCustomerId);
+    expect(user?.stripeGiftSubscriptions).toContain(stripeGiftCustomerId);
   }
 }
 
@@ -253,7 +255,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
           }],
         }
       },
-      expectedError: 'UserConfig with customer id ' + fakeCustomerId + ' for game pathology does not exist',
+      expectedError: 'User with customer id ' + fakeCustomerId + ' for game pathology does not exist',
       expectedStatus: 400,
     });
   });

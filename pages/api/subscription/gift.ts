@@ -108,8 +108,8 @@ export default withAuth({
       const price = paymentPriceIdTable[type];
 
       // check if customer id exists for this req.user
-      const userConfig = await UserConfigModel.findOne({ userId: req.userId, gameId: req.gameId }, { stripeCustomerId: 1 }).lean<UserConfig>();
-      const customerId = userConfig?.stripeCustomerId;
+      const user = await UserModel.findOne({ _id: req.userId }, { stripeCustomerId: 1 }).lean<User>();
+      const customerId = user?.stripeCustomerId;
 
       if (!customerId) {
         return res.status(404).json({ error: 'No subscription found for this user.' });

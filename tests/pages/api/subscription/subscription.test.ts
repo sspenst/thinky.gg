@@ -3,7 +3,7 @@ import { logger } from '@root/helpers/logger';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { getTokenCookieValue } from '@root/lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '@root/lib/withAuth';
-import { UserConfigModel } from '@root/models/mongoose';
+import { UserModel } from '@root/models/mongoose';
 import giftHandler, { GiftType } from '@root/pages/api/subscription/gift';
 import handler, { stripe } from '@root/pages/api/subscription/index';
 import { enableFetchMocks } from 'jest-fetch-mock';
@@ -164,7 +164,7 @@ describe('api/subscription', () => {
     });
   });
   test('test stripe library throwing error', async () => {
-    await UserConfigModel.updateOne({ userId: TestId.USER }, { stripeCustomerId: mockSubscription.customer });
+    await UserModel.updateOne({ _id: TestId.USER }, { stripeCustomerId: mockSubscription.customer });
     (stripe.subscriptions.list as jest.Mock).mockImplementationOnce(() => {
       throw new Error('Stripe error');
     });

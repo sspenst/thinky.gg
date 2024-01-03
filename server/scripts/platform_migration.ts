@@ -22,7 +22,10 @@ async function Go() {
   await migrateFields(UserConfigModel, UserModel, {
     emailDigest: '$emailDigest',
     disallowedEmailNotifications: '$disallowedEmailNotifications',
-    disallowedPushNotifications: '$disallowedPushNotifications'
+    disallowedPushNotifications: '$disallowedPushNotifications',
+    stripeCustomerId: '$stripeCustomerId',
+    stripeGiftSubscriptions: '$giftSubscriptions',
+    mobileDeviceTokens: '$mobileDeviceTokens',
   }, 'userId', '_id', { 'target.emailDigest': { $exists: false } });
 
   await migrateFields(UserModel, UserConfigModel, {

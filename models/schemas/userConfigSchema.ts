@@ -36,19 +36,6 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       enum: GameId,
       required: true,
     },
-    giftSubscriptions: {
-      type: [String],
-      required: false,
-      select: false,
-      default: [],
-    },
-    mobileDeviceTokens: {
-      type: [String],
-      required: false,
-      select: false,
-      default: [],
-      maxlength: 100, // max 100 devices @TODO: should probably 'rotate' this list and remove oldest device tokens on push of new one
-    },
     roles: {
       type: [String],
       enum: Role,
@@ -57,11 +44,6 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
     showPlayStats: {
       type: Boolean,
       default: false,
-    },
-    stripeCustomerId: {
-      type: String,
-      required: false,
-      select: false,
     },
     theme: {
       type: String,
