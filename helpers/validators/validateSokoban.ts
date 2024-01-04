@@ -110,7 +110,7 @@ export function validateSokobanLevel(data: string): {valid: boolean, reasons: st
   }
 
   if (goalCount < 1) {
-    reasons.push('Must have at least one open goal');
+    reasons.push('Must have at least one goal');
   }
 
   if (blockCount < goalCount) {

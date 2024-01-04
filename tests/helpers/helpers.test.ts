@@ -186,8 +186,8 @@ describe('helpers/*.ts', () => {
     const gridWithOnlyOneStart = '00' + TileType.Player;
     const gridWithOneStartAndOneEnd = '00' + TileType.Player + TileType.Exit;
 
-    expect(validatePathologyLevelValid(emptyGrid).reasons).toMatchObject(['Must have exactly one start block', 'Need end tile']);
-    expect(validatePathologyLevelValid(gridWithOnlyOneStart).reasons).toMatchObject(['Need end tile']);
+    expect(validatePathologyLevelValid(emptyGrid).reasons).toMatchObject(['Must have exactly one player', 'Must have at least one exit']);
+    expect(validatePathologyLevelValid(gridWithOnlyOneStart).reasons).toMatchObject(['Must have at least one exit']);
     expect(validatePathologyLevelValid(gridWithOneStartAndOneEnd).valid).toBe(true);
   });
   test('validiateSokobanLevelValid', async () => {
@@ -196,10 +196,10 @@ describe('helpers/*.ts', () => {
     const gridWithOneStartAndOneEnd = '00' + TileType.Player + TileType.Exit;
     const gridWithOneStartAndOneEndWithBlockOnTop = '00' + TileType.Player + TileType.BlockOnExit;
 
-    expect(validateSokobanLevel(emptyGrid).reasons).toMatchObject(['Must have exactly one start block', 'Must have at least one end']);
-    expect(validateSokobanLevel(gridWithOnlyOneStart).reasons).toMatchObject(['Must have at least one end']);
-    expect(validateSokobanLevel(gridWithOneStartAndOneEnd).reasons).toMatchObject(['Must have as many blocks as ends']);
-    expect(validateSokobanLevel(gridWithOneStartAndOneEndWithBlockOnTop).valid).toBe(true);
+    expect(validateSokobanLevel(emptyGrid).reasons).toMatchObject(['Must have exactly one player', 'Must have at least one goal']);
+    expect(validateSokobanLevel(gridWithOnlyOneStart).reasons).toMatchObject(['Must have at least one goal']);
+    expect(validateSokobanLevel(gridWithOneStartAndOneEnd).reasons).toMatchObject(['Must have as many boxes as goals']);
+    expect(validateSokobanLevel(gridWithOneStartAndOneEndWithBlockOnTop).valid).toBe(false);
   });
 });
 
