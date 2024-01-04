@@ -118,12 +118,14 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
             }
           },
         ], { session: session });
+        const calcPlaytimeBeforeCreation = (sumDurationBeforeComplete && sumDurationBeforeComplete[0])?.sumDuration ?? 0;
 
         await Promise.all([
+          LevelModel.updateOne({ _id: level._id }, { $inc: { calc_playattempts_duration_before_stat_sum: calcPlaytimeBeforeCreation } }, { session: session }),
           StatModel.create([{
             _id: new Types.ObjectId(),
             attempts: 1,
-            calcSumDurationBeforeComplete: sumDurationBeforeComplete[0]?.sumDuration ?? 0,
+            calcPlaytimeBeforeCreation: calcPlaytimeBeforeCreation,
             complete: complete,
             gameId: level.gameId,
             levelId: level._id,
