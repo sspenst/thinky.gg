@@ -4,18 +4,23 @@ import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import Level from '../../models/db/level';
 import Position from '../../models/position';
 
-export default function validateSokobanSolution(directions: Direction[], level: Level) {
+export default function validatePathologySolution(directions: Direction[], level: Level) {
   const data = level.data.replace(/\n/g, '').split('') as TileType[];
   const endIndices = [];
-  const posIndex = data.indexOf(TileType.Start);
+  const posIndex = data.indexOf(TileType.Player);
   let pos = new Position(posIndex % level.width, Math.floor(posIndex / level.width));
   let endIndex = -1;
 
-  while ((endIndex = data.indexOf(TileType.End, endIndex + 1)) != -1) {
+  while ((endIndex = data.indexOf(TileType.Exit, endIndex + 1)) != -1) {
     endIndices.push(endIndex);
   }
 
   for (let i = 0; i < directions.length; i++) {
+    // cannot continue moving if already on an exit
+    if (data[pos.y * level.width + pos.x] === TileType.Exit) {
+      return false;
+    }
+
     const direction = directions[i];
 
     // validate and update position with direction
@@ -67,50 +72,38 @@ export default function validateSokobanSolution(directions: Direction[], level: 
     }
   }
 
-  // check if all exits are covered
-  return endIndices.every((index) => {
-    const x = index % level.width;
-    const y = Math.floor(index / level.width);
-
-    return TileTypeHelper.canMove(data[y * level.width + x]);
-  });
+  return endIndices.includes(pos.y * level.width + pos.x);
 }
 
-export function validateSokobanLevelValid(data: string): {valid: boolean, reasons: string[]} {
-  // Must have at least ONE start and at least ONE end (or blockonend) and at least the same number of blocks as ends
-  const dataSplit = data.split('');
+export function validatePathologyLevelValid(data: string): { valid: boolean, reasons: string[] } {
+  // data must have at least ONE start and ONE end
+  const reasons = [];
+  const dataSplit = data.split('\n');
+  const height = dataSplit.length;
+  const width = dataSplit[0].length;
   let startCount = 0;
   let endCount = 0;
-  let blockCount = 0;
 
-  for (let i = 0; i < dataSplit.length; i++) {
-    const tile = dataSplit[i];
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const tileType = dataSplit[y][x] as TileType;
 
-    if (tile === TileType.Start) {
-      startCount++;
-    } else {
-      if (tile === TileType.End || tile === TileType.BlockOnEnd) {
-        endCount++;
-      }
-
-      if (tile === TileType.Block || tile === TileType.BlockOnEnd) {
-        blockCount++;
+      if (tileType === TileType.Player) {
+        startCount++;
+      } else {
+        if (tileType === TileType.Exit) {
+          endCount++;
+        }
       }
     }
   }
 
-  const reasons = [];
-
   if (startCount !== 1) {
-    reasons.push('Must have exactly one start block');
+    reasons.push('Must have exactly one player');
   }
 
   if (endCount < 1) {
-    reasons.push('Must have at least one end');
-  }
-
-  if (blockCount !== endCount) {
-    reasons.push('Must have as many blocks as ends');
+    reasons.push('Must have at least one exit');
   }
 
   return { valid: reasons.length === 0, reasons };

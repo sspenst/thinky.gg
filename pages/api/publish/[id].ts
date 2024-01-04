@@ -76,8 +76,8 @@ export default withAuth({ POST: {
   const gameId = getGameIdFromReq(req);
   const game = getGameFromId(gameId);
 
-  if (game.validateLevelPlayableFunction) {
-    const validateLevelResult = game.validateLevelPlayableFunction(level.data);
+  if (game.validateLevel) {
+    const validateLevelResult = game.validateLevel(level.data);
 
     if (validateLevelResult.valid === false) {
       return res.status(400).json({

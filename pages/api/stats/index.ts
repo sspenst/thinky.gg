@@ -52,9 +52,9 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
         randomRotateLevelDataViaMatchHash(level, matchId);
       }
 
-      const validateSolutionFunction = Games[level.gameId].validateSolutionFunction;
+      const validateSolution = Games[level.gameId].validateSolution;
 
-      if (!validateSolutionFunction(directions, level)) {
+      if (validateSolution && !validateSolution(directions, level)) {
         resTrack.status = 400;
         resTrack.json.error = `Invalid solution provided for level ${levelId}`;
         throw new Error(resTrack.json.error);

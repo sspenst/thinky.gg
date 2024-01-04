@@ -38,10 +38,10 @@ export default function generateLevelCanvas(canvas: Bitmap | HTMLCanvasElement, 
       case TileType.Wall:
         // skip since it's the same color as the background
         continue;
-      case TileType.End:
+      case TileType.Exit:
         context.fillStyle = 'rgb(255, 255, 255)';
         break;
-      case TileType.Start:
+      case TileType.Player:
         context.fillStyle = 'rgb(244, 114, 182)';
         break;
       case TileType.Hole:

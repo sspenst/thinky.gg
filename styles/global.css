@@ -187,13 +187,15 @@ body {
 }
 
 .tile-sokoban {
-  --level-block: rgb(255, 250, 200, 0);
+  /* --level-block: rgb(255, 250, 200, 0); */
 }
 
 .tile-sokoban {
   /** make the borders have a cool effect */
-  border: 0px ridge; /* other options are dotted, double, groove, ridge, inset, outset */
-  border-radius: 5px;
+  /* other options are dotted, double, groove, ridge, inset, outset */
+  /* border: 0px ridge; */
+  /* border-radius: 5px; */
+  /* --level-block-border: rgb(150, 50, 50); */
 }
 
 @property --border-angle {
@@ -203,7 +205,7 @@ body {
 }
 .tile-sokoban.tile-type-3 {
 
-  --border-size: 3px;
+  /* --border-size: 3px;
   --border-angle: 0turn;
   --level-grid-text: rgb(200, 215, 255);
 
@@ -221,7 +223,7 @@ body {
   background-repeat: no-repeat;
 
   
-  animation: bg-spin 7s linear infinite;
+  animation: bg-spin 7s linear infinite; */
 
 }
 
@@ -231,12 +233,9 @@ body {
   }
 }
 
-
 .tile-sokoban.tile-type-5 {
   /** make the borders have a cool effect */
-  border: 0px inset;
-
-
+  /* border: 0px inset; */
 }
 
 .theme-boss {
@@ -548,7 +547,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  border: 2px solid rgb(230, 50, 50);
+  border: 3px solid rgb(230, 50, 50);
   pointer-events: none;
   z-index: 30;
 }

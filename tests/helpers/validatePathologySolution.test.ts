@@ -1,5 +1,5 @@
 import Direction from '@root/constants/direction';
-import validatePathologySolution from '@root/helpers/solutionValidators/validatePathologySolution';
+import validatePathologySolution from '@root/helpers/validators/validatePathology';
 import Level from '@root/models/db/level';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 

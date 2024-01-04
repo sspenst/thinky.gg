@@ -1,4 +1,4 @@
-import { GameId } from '@root/constants/GameId';
+import { GameType } from '@root/constants/Games';
 import TileType from '@root/constants/tileType';
 import { AppContext } from '@root/contexts/appContext';
 import { GridContext } from '@root/contexts/gridContext';
@@ -11,11 +11,11 @@ import styles from './Block.module.css';
 
 interface BlockProps {
   inHole: boolean;
-  tileType: TileType;
   onTopOf?: TileType;
+  tileType: TileType;
 }
 
-export default function Block({ inHole, tileType, onTopOf }: BlockProps) {
+export default function Block({ inHole, onTopOf, tileType }: BlockProps) {
   const { borderWidth, innerTileSize } = useContext(GridContext);
   const { game } = useContext(AppContext);
   const { theme } = useTheme();
@@ -23,14 +23,9 @@ export default function Block({ inHole, tileType, onTopOf }: BlockProps) {
   const innerBorderWidth = Math.round(innerTileSize / 4.5);
 
   function getBackgroundColor() {
-    // For level editor, it'll be a blockOnExit. For regular game it'll have an onTopOf end
-    // if (game.id === GameId.SOKOBAN && onTopOf === TileType.End || tileType === TileType.BlockOnExit) {
-    //   return 'var(--level-end)';
-    // } else {
     const fillCenter = classic && tileType === TileType.Block;
 
     return fillCenter ? 'var(--level-block-border)' : 'var(--level-block)';
-    // }
   }
 
   return (
@@ -40,12 +35,12 @@ export default function Block({ inHole, tileType, onTopOf }: BlockProps) {
         'tile-type-' + tileType,
         'tile-' + game.id,
         inHole ? styles['in-hole'] : undefined,
-        { 'on-exit': onTopOf === TileType.End },
+        { 'on-exit': onTopOf === TileType.Exit },
       )}
       style={{
         backgroundColor: getBackgroundColor(),
         borderBottomWidth: TileTypeHelper.canMoveUp(tileType) ? innerBorderWidth : 0,
-        borderColor: onTopOf === TileType.End && game.id === GameId.SOKOBAN ? 'var(--color-complete)' : 'var(--level-block-border)',
+        borderColor: onTopOf === TileType.Exit && game.type === GameType.COMPLETE_AND_SHORTEST ? 'var(--level-end)' : 'var(--level-block-border)',
         borderLeftWidth: TileTypeHelper.canMoveRight(tileType) ? innerBorderWidth : 0,
         borderRightWidth: TileTypeHelper.canMoveLeft(tileType) ? innerBorderWidth : 0,
         borderTopWidth: TileTypeHelper.canMoveDown(tileType) ? innerBorderWidth : 0,
