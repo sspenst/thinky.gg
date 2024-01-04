@@ -728,6 +728,7 @@ describe('Testing stats api', () => {
         $set: {
           calc_difficulty_estimate: -1,
           calc_playattempts_duration_sum: 0,
+          calc_playattempts_duration_before_stat_sum: 0,
           calc_playattempts_just_beaten_count: 0,
           calc_playattempts_unique_users: [],
           calc_stats_players_beaten: 0,
@@ -742,6 +743,7 @@ describe('Testing stats api', () => {
       expect(resetLvl).toBeDefined();
       expect(resetLvl.calc_playattempts_just_beaten_count).toBe(0);
       expect(resetLvl.calc_playattempts_duration_sum).toBe(0);
+      expect(resetLvl.calc_playattempts_duration_before_stat_sum).toBe(0);
       expect(resetLvl.calc_playattempts_unique_users.length).toBe(0);
       expect(resetLvl.calc_stats_players_beaten).toBe(0);
       expect(resetLvl.calc_difficulty_estimate).toBe(-1);
@@ -760,6 +762,10 @@ describe('Testing stats api', () => {
       expect(lvlAfterResync.calc_playattempts_duration_sum).toBe(
         lvlBeforeResync.calc_playattempts_duration_sum
       );
+      expect(lvlAfterResync.calc_playattempts_duration_before_stat_sum).toBe(
+        lvlBeforeResync.calc_playattempts_duration_before_stat_sum
+      );
+
       expect(lvlAfterResync.calc_difficulty_estimate).toBe(
         lvlBeforeResync.calc_difficulty_estimate
       );

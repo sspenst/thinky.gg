@@ -349,6 +349,7 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
     resTrack.status = 200;
     resTrack.json = { success: true };
   } catch (err) {
+    console.trace();
     logger.error('Error in api/stats', err);
   }
 

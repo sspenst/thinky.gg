@@ -1,4 +1,4 @@
-import { ValidEnum, ValidNumber, ValidType } from '@root/helpers/apiWrapper';
+import { ValidEnum, ValidType } from '@root/helpers/apiWrapper';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import isPro from '@root/helpers/isPro';
 import { logger } from '@root/helpers/logger';
