@@ -18,14 +18,14 @@ interface SelectCardProps {
 
 export default function SelectCard({ option, prefetch }: SelectCardProps) {
   const [backgroundImage, setBackgroundImage] = useState<string>();
+  const { game, user } = useContext(AppContext);
   const [isSaveToCollectionModalOpen, setIsSaveToCollectionModalOpen] = useState(false);
-  const { user } = useContext(AppContext);
 
   useEffect(() => {
     if (option.level && option.level.data) {
-      setBackgroundImage(getPngDataClient(option.level.data));
+      setBackgroundImage(getPngDataClient(game, option.level.data));
     }
-  }, [option.level]);
+  }, [game, option.level]);
 
   const color = option.disabled ? 'var(--bg-color-4)' :
     option.stats?.getColor('var(--color)') ?? 'var(--color)';

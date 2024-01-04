@@ -43,7 +43,7 @@ export default function Square({ text, tileType }: SquareProps) {
 
   function getBorderWidth(direction: Direction) {
     if (game.type === GameType.COMPLETE_AND_SHORTEST && tileType === TileType.Exit) {
-      return Math.round(tileSize * 0.38);
+      return Math.round(tileSize / 3);
     }
 
     return tileType === TileType.Hole || TileTypeHelper.canMoveInDirection(tileType, direction) ? innerBorderWidth : 0;
