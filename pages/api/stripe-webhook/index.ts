@@ -4,7 +4,6 @@ import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import isPro from '@root/helpers/isPro';
 import { createNewProUserNotification } from '@root/helpers/notificationHelper';
 import dbConnect from '@root/lib/dbConnect';
-import UserConfig from '@root/models/db/userConfig';
 import { buffer } from 'micro';
 import mongoose, { Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';

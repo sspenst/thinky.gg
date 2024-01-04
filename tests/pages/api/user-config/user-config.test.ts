@@ -13,7 +13,6 @@ import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import UserConfig from '../../../../models/db/userConfig';
 import { UserConfigModel, UserModel } from '../../../../models/mongoose';
 import handler from '../../../../pages/api/user-config/index';
-import userConfig from '../../../../pages/api/user-config/index';
 
 beforeAll(async () => {
   await dbConnect();
