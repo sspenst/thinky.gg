@@ -91,7 +91,7 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
         style={{
           aspectRatio: '40 / 21',
           // backgroundImage: backgroundImage ? 'url("' + backgroundImage + '")' : 'none',
-          backgroundImage: `/api/level/image/${level._id.toString()}.png`,
+          backgroundImage: `url(/api/level/image/${level._id.toString()}.png)`,
           borderColor: getColor(),
         }}
       >
