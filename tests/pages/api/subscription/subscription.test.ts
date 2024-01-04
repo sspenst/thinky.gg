@@ -5,7 +5,7 @@ import { getTokenCookieValue } from '@root/lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '@root/lib/withAuth';
 import { UserModel } from '@root/models/mongoose';
 import giftHandler, { GiftType } from '@root/pages/api/subscription/gift';
-import handler, { stripe } from '@root/pages/api/subscription/index';
+import handler, { ProSubscriptionType, stripe } from '@root/pages/api/subscription/index';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
@@ -79,6 +79,70 @@ describe('api/subscription', () => {
 
         expect(response).toHaveLength(1);
         expect(response[0].subscriptionId).toBe(mockSubscription.id);
+      },
+    });
+  });
+  test('POST api/subscription for pathology', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_PRO)
+          },
+          body: {
+            type: ProSubscriptionType.Monthly,
+            paymentMethodId: 'test',
+          },
+          headers: {
+            'content-type': 'application/json',
+            'host': 'pathology.localhost',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(res.status).toBe(400);
+        expect(response.error).toBe('You are already subscribed to Pathology Pro');
+      },
+    });
+  });
+  test('POST api/subscription for sokoban', async () => {
+    (stripe.customers.retrieve as jest.Mock).mockResolvedValue({
+      id: 'rerieve_test',
+    });
+    (stripe.subscriptions.create as jest.Mock).mockResolvedValue({
+      data: [mockSubscription],
+    });
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_PRO)
+          },
+          body: {
+            type: ProSubscriptionType.Monthly,
+            paymentMethodId: 'test',
+          },
+          headers: {
+            'content-type': 'application/json',
+            'host': 'sokoban.localhost',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(res.status).toBe(200);
+        expect(response.subscription.data[0].id).toBe(mockSubscription.id);
       },
     });
   });

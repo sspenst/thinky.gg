@@ -120,7 +120,6 @@ export default async function initializeLocalDb() {
       name: 'Pro',
       password: await bcrypt.hash('pro', PASSWORD_SALTROUNDS),
       emailDigest: EmailDigestSettingType.NONE,
-      roles: [Role.PRO],
       stripeCustomerId: 'cus_123',
       ts: ts,
     },
@@ -158,6 +157,7 @@ export default async function initializeLocalDb() {
     }),
     getNewUserConfig(DEFAULT_GAME_ID, 0, new Types.ObjectId(TestId.USER_PRO), {
       calcRecordsCount: 1,
+      roles: [Role.PRO],
     }),
 
   ], { ordered: false }));

@@ -1,4 +1,5 @@
 import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import User from '@root/models/db/user';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
