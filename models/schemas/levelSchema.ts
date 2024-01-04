@@ -209,61 +209,20 @@ async function calcStats(lvl: Level) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {}) {
-  const playAttemptAgg = await PlayAttemptModel.aggregate([
-    // query for levelId
-    {
-      $match: {
-        levelId: levelId,
-      }
-    },
-    // group by userId
-    {
-      $group: {
-        _id: '$userId',
-      }
-    },
-    // lookup statModel for that user and level id
-    {
-      $lookup: {
-        from: 'stats',
-        let: {
-          userId: '$_id',
-          levelId: levelId,
-        },
-        pipeline: [
-          {
-            $match: {
-              $expr: {
-                $and: [
-                  {
-                    $eq: ['$userId', '$$userId'],
-                  },
-                  {
-                    $eq: ['$levelId', '$$levelId'],
-                  },
-                ],
-              },
-            },
-          },
-        ],
-        as: 'stat',
-      },
-    },
-    // unwind stat
-    {
-      $unwind: {
-        path: '$stat',
-        preserveNullAndEmptyArrays: true,
-      },
-    },
-  ], options) as { _id: Types.ObjectId, stat: Stat}[];
+  const stats = await StatModel.find({
+    levelId: levelId,
+  }, {
+    _id: 1,
+    createdAt: 1,
+  }, {
+    ...options,
+  }).lean<Stat[]>();
 
   // for each user, we want to sum the playAttempts
-  for (let i = 0; i < playAttemptAgg.length; i++) {
-    const playAttempt = playAttemptAgg[i];
+  for (let i = 0; i < stats.length; i++) {
+    const stat = stats[i];
 
-    const userId = playAttempt._id;
-    const stat = playAttempt.stat as Stat;
+    const userId = stat.userId;
 
     const sumDurationBeforeComplete = await PlayAttemptModel.aggregate([
       /** sum all play attempts durations for this user */
