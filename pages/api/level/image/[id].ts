@@ -33,10 +33,7 @@ export default apiWrapper({ GET: {
     });
   }
 
-  res.setHeader('Content-Type', 'image/png');
   // set cache for 2 weeks
-  res.setHeader('Cache-Control', 'public, max-age=1209600');
-  res.setHeader('Expires', new Date(Date.now() + 1209600000).toUTCString());
 
   const session = await mongoose.startSession();
   let pngData: Buffer | undefined;
@@ -47,8 +44,13 @@ export default apiWrapper({ GET: {
 
       if (levelImage) {
         pngData = levelImage.image;
+        res.setHeader('Content-Type', 'image/png');
+        res.setHeader('Cache-Control', 'public, max-age=1209600');
+        res.setHeader('Expires', new Date(Date.now() + 1209600000).toUTCString());
         res.setHeader('Content-Length', pngData.length);
       } else {
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+
         return res.status(404).json({
           error: 'Image not found for level',
         });
@@ -58,6 +60,9 @@ export default apiWrapper({ GET: {
   } catch (err) {
     logger.error(err);
     session.endSession();
+
+    // set cache headers to not cache this
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
 
     return res.status(500).json({
       error: `Error getting level image for id ${levelId}`,
