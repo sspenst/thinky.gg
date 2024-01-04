@@ -31,6 +31,10 @@ const LevelSchema = new mongoose.Schema<Level>(
       type: Number,
       default: 0,
     },
+    calc_playattempts_duration_before_stat_sum: {
+      type: Number,
+      default: 0,
+    },
     calc_playattempts_just_beaten_count: {
       type: Number,
       default: 0,
