@@ -71,13 +71,13 @@ export default function SizeModal({ closeModal, historyPush, isOpen, level, setI
       }
 
       // there must always be a start
-      if (data.indexOf(TileType.Start) === -1) {
-        data = TileType.Start + data.substring(1, data.length);
+      if (data.indexOf(TileType.Player) === -1) {
+        data = TileType.Player + data.substring(1, data.length);
       }
 
       // there must always be an end
-      if (data.indexOf(TileType.End) === -1) {
-        data = data.substring(0, data.length - 1) + TileType.End;
+      if (data.indexOf(TileType.Exit) === -1) {
+        data = data.substring(0, data.length - 1) + TileType.Exit;
       }
 
       level.data = data;

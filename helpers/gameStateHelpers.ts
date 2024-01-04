@@ -170,16 +170,16 @@ export function initGameState(levelData: string) {
       const tileType = data[y][x] as TileType;
 
       if (tileType === TileType.Wall ||
-        tileType === TileType.End ||
+        tileType === TileType.Exit ||
         tileType === TileType.Hole) {
         board[y][x].tileType = tileType;
-      } else if (tileType === TileType.BlockOnEnd) {
-        board[y][x].tileType = TileType.End;
+      } else if (TileTypeHelper.isOnExit(tileType)) {
+        board[y][x].tileType = TileType.Exit;
         board[y][x].block = {
           id: blockId++,
-          tileType: TileType.Block,
+          tileType: TileTypeHelper.getExitSibilingTileType(tileType),
         } as BlockState;
-      } else if (tileType === TileType.Start) {
+      } else if (tileType === TileType.Player) {
         pos = new Position(x, y);
       } else if (TileTypeHelper.canMove(tileType)) {
         board[y][x].block = {

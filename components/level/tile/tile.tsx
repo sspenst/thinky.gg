@@ -1,3 +1,4 @@
+import { GameType } from '@root/constants/Games';
 import Theme from '@root/constants/theme';
 import { AppContext } from '@root/contexts/appContext';
 import { GridContext } from '@root/contexts/gridContext';
@@ -17,10 +18,11 @@ interface TileProps {
   handleClick?: (rightClick: boolean) => void;
   hideText?: boolean;
   inHole?: boolean;
+  onTopOf?: TileType;
   pos: Position;
+  style?: React.CSSProperties;
   text?: number | undefined;
   tileType: TileType;
-  onTopOf?: TileType;
 }
 
 export default function Tile({
@@ -29,12 +31,13 @@ export default function Tile({
   disableAnimation,
   handleClick,
   inHole,
+  onTopOf,
   pos,
+  style,
   text,
   tileType,
-  onTopOf
 }: TileProps) {
-  const { borderWidth, innerTileSize, tileSize } = useContext(GridContext);
+  const { borderWidth, hideText, innerTileSize, tileSize } = useContext(GridContext);
   const { game } = useContext(AppContext);
   // initialize the block at the starting position to avoid an animation from the top left
   const [initPos] = useState(new Position(pos.x, pos.y));
@@ -58,7 +61,7 @@ export default function Tile({
   }
 
   const tile = useMemo(() => {
-    if (tileType === TileType.Start) {
+    if (tileType === TileType.Player) {
       return (
         <Player
           atEnd={atEnd}
@@ -69,12 +72,12 @@ export default function Tile({
 
     if (tileType === TileType.Default ||
       tileType === TileType.Wall ||
-      tileType === TileType.End ||
+      tileType === TileType.Exit ||
       tileType === TileType.Hole
     ) {
       return (
         <Square
-          text={text}
+          text={hideText || game.type === GameType.COMPLETE_AND_SHORTEST ? undefined : text}
           tileType={tileType}
         />
       );
@@ -83,11 +86,11 @@ export default function Tile({
     return (
       <Block
         inHole={inHole ?? false}
-        tileType={tileType}
         onTopOf={onTopOf}
+        tileType={tileType}
       />
     );
-  }, [atEnd, inHole, onTopOf, text, tileType]);
+  }, [atEnd, game.type, hideText, inHole, onTopOf, text, tileType]);
 
   return (
     <div
@@ -96,13 +99,14 @@ export default function Tile({
       onContextMenu={onClick}
       onTouchEnd={onTouch}
       style={{
-        backgroundColor: tileType === TileType.Start ? 'var(--bg-color)' : undefined,
+        backgroundColor: tileType === TileType.Player ? 'var(--bg-color)' : undefined,
         height: classic ? tileSize : innerTileSize,
         left: tileSize * initPos.x + (classic ? 0 : borderWidth),
         top: tileSize * initPos.y + (classic ? 0 : borderWidth),
         transform: `translate(${(pos.x - initPos.x) * tileSize}px, ${(pos.y - initPos.y) * tileSize}px)`,
         transition: !disableAnimation ? 'transform 0.1s' : undefined,
         width: classic ? tileSize : innerTileSize,
+        ...style,
       }}
     >
       {tile}

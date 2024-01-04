@@ -8,11 +8,11 @@ import classNames from 'classnames';
 import { useTheme } from 'next-themes';
 import React, { useContext, useEffect, useState } from 'react';
 import Theme from '../../constants/theme';
-import { getSolveStateFunction } from './solutionStates/helpers';
 import Tile from './tile/tile';
 
 interface GridProps {
   cellClassName?: (x: number, y: number) => string | undefined;
+  cellStyle?: (x: number, y: number) => React.CSSProperties | undefined;
   disableAnimation?: boolean;
   gameState: GameState;
   hideText?: boolean;
@@ -21,7 +21,7 @@ interface GridProps {
   onCellClick?: (x: number, y: number, rightClick: boolean) => void;
 }
 
-export default function Grid({ cellClassName, disableAnimation, gameState, hideText, id, leastMoves, onCellClick }: GridProps) {
+export default function Grid({ cellClassName, cellStyle, disableAnimation, gameState, hideText, id, leastMoves, onCellClick }: GridProps) {
   const { game } = useContext(AppContext);
   const { theme } = useTheme();
   const classic = theme === Theme.Classic;
@@ -71,8 +71,8 @@ export default function Grid({ cellClassName, disableAnimation, gameState, hideT
       const tileState = gameState.board[y][x];
       const tileType = tileState.tileType;
 
-      const text = tileType === TileType.Start ? 0 :
-        tileType === TileType.End ? leastMoves :
+      const text = tileType === TileType.Player ? 0 :
+        tileType === TileType.Exit ? leastMoves :
           tileState.text.length === 0 ? undefined :
             tileState.text[tileState.text.length - 1];
 
@@ -83,7 +83,8 @@ export default function Grid({ cellClassName, disableAnimation, gameState, hideT
           handleClick={onCellClick ? (rightClick: boolean) => onCellClick(x, y, rightClick) : undefined}
           key={`tile-${y}-${x}`}
           pos={new Position(x, y)}
-          text={hideText ? undefined : text}
+          style={cellStyle ? cellStyle(x, y) : undefined}
+          text={text}
           tileType={tileType}
         />
       );
@@ -97,9 +98,10 @@ export default function Grid({ cellClassName, disableAnimation, gameState, hideT
             disableAnimation={disableAnimation}
             handleClick={onCellClick ? (rightClick: boolean) => onCellClick(x, y, rightClick) : undefined}
             key={`block-${tileState.block.id}`}
-            pos={new Position(x, y)}
-            tileType={tileState.block.tileType}
             onTopOf={tileAtPosition.tileType}
+            pos={new Position(x, y)}
+            style={cellStyle ? cellStyle(x, y) : undefined}
+            tileType={tileState.block.tileType}
           />
         );
       }
@@ -113,6 +115,7 @@ export default function Grid({ cellClassName, disableAnimation, gameState, hideT
             inHole={true}
             key={`block-${tileState.blockInHole.id}`}
             pos={new Position(x, y)}
+            style={cellStyle ? cellStyle(x, y) : undefined}
             tileType={tileState.blockInHole.tileType}
           />
         );
@@ -125,6 +128,7 @@ export default function Grid({ cellClassName, disableAnimation, gameState, hideT
       {tileSize !== 0 &&
         <GridContext.Provider value={{
           borderWidth: borderWidth,
+          hideText: hideText,
           innerTileSize: innerTileSize,
           leastMoves: leastMoves,
           tileSize: tileSize,
@@ -140,13 +144,14 @@ export default function Grid({ cellClassName, disableAnimation, gameState, hideT
             {Object.values(blocks)}
             {gameState.pos &&
               <Tile
-                atEnd={getSolveStateFunction(game)(gameState)}
+                atEnd={game.isSolved(gameState)}
                 className={cellClassName ? cellClassName(gameState.pos.x, gameState.pos.y) : undefined}
                 disableAnimation={disableAnimation}
                 handleClick={onCellClick ? (rightClick: boolean) => onCellClick(gameState.pos.x, gameState.pos.y, rightClick) : undefined}
                 pos={gameState.pos}
+                style={cellStyle ? cellStyle(gameState.pos.x, gameState.pos.y) : undefined}
                 text={gameState.moves.length}
-                tileType={TileType.Start}
+                tileType={TileType.Player}
               />
             }
           </div>

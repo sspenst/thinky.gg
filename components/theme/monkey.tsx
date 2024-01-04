@@ -398,8 +398,8 @@ function Grass({ text, size }: ThemeIconProps) {
 }
 
 export const MONKEY_THEME_ICONS: Partial<Record<TileType, (props: ThemeIconProps) => JSX.Element>> = {
-  [TileType.Start]: Monkey,
-  [TileType.End]: Banana,
+  [TileType.Player]: Monkey,
+  [TileType.Exit]: Banana,
   //[TileType.Block]: Rock,
   [TileType.Default]: Grass,
 };

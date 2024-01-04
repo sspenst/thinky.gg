@@ -1,5 +1,6 @@
-import { GameId } from '@root/constants/GameId';
+import { GameType, ValidateLevelResponse } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
+import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -37,6 +38,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   const { preventKeyDownEvent } = useContext(PageContext);
   const router = useRouter();
   const [tileType, setTileType] = useState<TileType>(TileType.Default);
+  const [validateLevelResponse, setValidateLevelResponse] = useState<ValidateLevelResponse>();
   const { id } = router.query;
 
   const undo = useCallback(() => {
@@ -71,10 +73,10 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       setTileType(TileType.Block);
       break;
     case 'Digit3':
-      setTileType(TileType.End);
+      setTileType(TileType.Exit);
       break;
     case 'Digit4':
-      setTileType(TileType.Start);
+      setTileType(TileType.Player);
       break;
     case 'Digit5':
       setTileType(TileType.Hole);
@@ -166,7 +168,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
         return prevLevel;
       }
 
-      const prevTileType = prevLevel.data.charAt(index);
+      const prevTileType = prevLevel.data.charAt(index) as TileType;
       const level = JSON.parse(JSON.stringify(prevLevel)) as Level;
       let clear = rightClick;
 
@@ -175,18 +177,19 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       }
 
       function getNewTileType() {
-        // handle sokoban block on exit cases
-        if (game.id === GameId.SOKOBAN) {
-          if (prevTileType === TileType.Block && tileType === TileType.End) {
-            return TileType.BlockOnEnd;
-          } else if (prevTileType === TileType.End && tileType === TileType.Block) {
-            return TileType.BlockOnEnd;
-          } else if (prevTileType === TileType.BlockOnEnd) {
-            if (tileType === TileType.Block) {
-              return TileType.End;
-            } else if (tileType === TileType.End) {
-              return TileType.Block;
+        if (game.allowMovableOnExit) {
+          // place movable on exit or replace movable on exit
+          if ((prevTileType === TileType.Exit || TileTypeHelper.isOnExit(prevTileType)) && TileTypeHelper.getExitSibilingTileType(tileType) !== undefined) {
+            const exitSiblingTileType = TileTypeHelper.getExitSibilingTileType(tileType);
+
+            if (prevTileType === exitSiblingTileType) {
+              return TileType.Exit;
+            } else {
+              return exitSiblingTileType;
             }
+          // place exit on movable or remove exit from movable
+          } else if (TileTypeHelper.getExitSibilingTileType(prevTileType) !== undefined && tileType === TileType.Exit) {
+            return TileTypeHelper.getExitSibilingTileType(prevTileType);
           }
         }
 
@@ -194,6 +197,15 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       }
 
       const newTileType = clear ? TileType.Default : getNewTileType();
+
+      // when changing start position the old position needs to be removed
+      if (newTileType === TileType.Player) {
+        const startIndex = level.data.indexOf(TileType.Player);
+
+        if (startIndex !== -1) {
+          level.data = level.data.substring(0, startIndex) + TileType.Default + level.data.substring(startIndex + 1);
+        }
+      }
 
       level.data = level.data.substring(0, index) + newTileType + level.data.substring(index + 1);
 
@@ -245,23 +257,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   }
 
   function getEditorSelectionLevel() {
-    if (game.id === GameId.SOKOBAN) {
-      const data = [
-        TileType.Default,
-        TileType.Wall,
-        TileType.Block,
-        TileType.End,
-        TileType.Start,
-      ].map(tileType => tileType.toString()).join('');
-
-      return {
-        data: data,
-        height: 1,
-        leastMoves: 0,
-        width: data.length,
-      } as Level;
-    }
-
     return {
       data: '0123456789\nABCDEFGHIJ',
       height: 2,
@@ -271,10 +266,18 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   }
 
   const editorSelectionLevel = getEditorSelectionLevel();
-  const validateLevelResults = game.validateLevelPlayableFunction ? game.validateLevelPlayableFunction(level.data) : undefined;
-  const isValidLevelIcon = (validateLevelResults?.valid) ? '✅' : '⚠️';
-  const reasonsAtHtml = validateLevelResults?.reasons.map(reason => <li key={'reason-' + reason}>{reason}</li>);
-  const isValidLevelTooltip = (validateLevelResults?.valid) ? <>Level is valid</> : <ul className='flex flex-col items-start text-lg'>{reasonsAtHtml}</ul> ?? <>Level is invalid</>;
+
+  useEffect(() => {
+    setValidateLevelResponse(game.validateLevel ? game.validateLevel(level.data) : undefined);
+  }, [game, level.data]);
+
+  const isValid = !validateLevelResponse || validateLevelResponse.valid;
+  const btnTestTooltip = !isValid ?
+    renderToStaticMarkup(
+      <div className='flex flex-col items-start'>
+        {validateLevelResponse.reasons.map(reason => <div key={'reason-' + reason}>{reason}</div>)}
+      </div>
+    ) : isDirty ? 'Save before testing' : null;
 
   return (<>
     <div className='flex flex-col h-full'>
@@ -284,11 +287,12 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
         <BasicLayout
           cellClassName={(index) => {
             if (editorSelectionLevel.data[index] !== tileType) {
-              return 'opacity-50 hover:opacity-100 transition cursor-pointer';
+              return 'hover:scale-110 transition cursor-pointer';
             } else {
               return 'editor-selected';
             }
           }}
+          hideText={game.type === GameType.COMPLETE_AND_SHORTEST}
           id='editor-selection'
           level={editorSelectionLevel}
           onClick={(index) => setTileType(editorSelectionLevel.data[index] as TileType)}
@@ -310,12 +314,31 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
           }, <>Save</>),
           ...(!id ? [] : [
             new Control('btn-edit', () => setIsEditLevelOpen(true), <>Edit</>, isDirty),
-            new Control('btn-test', () => router.push(`/test/${id}`),
-              <><div data-tooltip-id='validLevelMessage' data-tooltip-html={renderToStaticMarkup(isValidLevelTooltip)}>{isValidLevelIcon} Test<StyledTooltip id='validLevelMessage' /></div></>
-              , isDirty),
-            new Control('btn-publish', () => setIsPublishLevelOpen(true), <>Publish</>, isDirty || level.leastMoves === 0),
+            new Control(
+              'btn-test',
+              () => router.push(`/test/${id}`),
+              <>
+                <div data-tooltip-id='btn-test-tooltip' data-tooltip-html={btnTestTooltip}>
+                  {!isValid && '⚠️ '}Test
+                </div>
+                <StyledTooltip id='btn-test-tooltip' />
+              </>,
+              isDirty || !isValid,
+            ),
+            new Control(
+              'btn-publish',
+              () => setIsPublishLevelOpen(true),
+              <>
+                <div data-tooltip-id='btn-publish-tooltip' data-tooltip-html={isDirty ? 'Save and test before publishing' : level.leastMoves === 0 ? 'Test before publishing' : null}>
+                  Publish
+                </div>
+                <StyledTooltip id='btn-publish-tooltip' />
+              </>,
+              isDirty || level.leastMoves === 0,
+            ),
           ]),
         ]}
+        hideText={game.type === GameType.COMPLETE_AND_SHORTEST}
         id={level._id?.toString() ?? 'new'}
         level={level}
         onClick={onClick}

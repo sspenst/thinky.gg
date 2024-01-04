@@ -9,13 +9,15 @@ import Grid from './grid';
 
 interface BasicLayoutProps {
   cellClassName?: (index: number) => string | undefined;
+  cellStyle?: (index: number) => React.CSSProperties | undefined;
   controls?: Control[];
+  hideText?: boolean;
   id: string;
   level: Level;
   onClick?: (index: number, rightClick: boolean) => void;
 }
 
-export default function BasicLayout({ cellClassName, controls, id, level, onClick }: BasicLayoutProps) {
+export default function BasicLayout({ cellClassName, cellStyle, controls, hideText, id, level, onClick }: BasicLayoutProps) {
   const data = level.data.split('\n');
   const height = data.length;
   const width = data[0].length;
@@ -34,15 +36,15 @@ export default function BasicLayout({ cellClassName, controls, id, level, onClic
       const tileType = data[y][x] as TileType;
 
       if (tileType === TileType.Wall ||
-        tileType === TileType.End ||
+        tileType === TileType.Exit ||
         tileType === TileType.Hole ||
-        tileType === TileType.Start) {
+        tileType === TileType.Player) {
         board[y][x].tileType = tileType;
-      } else if (tileType === TileType.BlockOnEnd) {
-        board[y][x].tileType = TileType.End;
+      } else if (TileTypeHelper.isOnExit(tileType)) {
+        board[y][x].tileType = TileType.Exit;
         board[y][x].block = {
           id: blockId++,
-          tileType: TileType.Block,
+          tileType: TileTypeHelper.getExitSibilingTileType(tileType),
         } as BlockState;
       } else if (TileTypeHelper.canMove(tileType)) {
         board[y][x].block = {
@@ -57,8 +59,10 @@ export default function BasicLayout({ cellClassName, controls, id, level, onClic
     <>
       <Grid
         cellClassName={(x, y) => cellClassName ? cellClassName(y * (level.width + 1) + x) : undefined}
+        cellStyle={(x, y) => cellStyle ? cellStyle(y * (level.width + 1) + x) : undefined}
         disableAnimation
         gameState={{ board: board } as GameState}
+        hideText={hideText}
         id={id}
         leastMoves={level.leastMoves}
         onCellClick={(x, y, rightClick) => onClick ? onClick(y * (level.width + 1) + x, rightClick) : undefined}
