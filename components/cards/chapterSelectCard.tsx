@@ -1,7 +1,8 @@
 import Dimensions from '@root/constants/dimensions';
+import { AppContext } from '@root/contexts/appContext';
 import classNames from 'classnames';
 import Link from 'next/link';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import getPngDataClient from '../../helpers/getPngDataClient';
 import styles from './SelectCard.module.css';
 
@@ -27,10 +28,11 @@ function ChapterSelectCardBase({
   title,
 }: ChapterSelectCardBaseProps) {
   const [backgroundImage, setBackgroundImage] = useState<string>();
+  const { game } = useContext(AppContext);
 
   useEffect(() => {
-    setBackgroundImage(getPngDataClient(levelData));
-  }, [levelData]);
+    setBackgroundImage(getPngDataClient(game, levelData));
+  }, [game, levelData]);
 
   return (<>
     <div className='overflow-hidden relative inline-block align-middle max-w-full' style={{

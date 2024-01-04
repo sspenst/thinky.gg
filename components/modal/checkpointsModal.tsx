@@ -1,10 +1,12 @@
 import Direction from '@root/constants/direction';
+import { GameType } from '@root/constants/Games';
 import TileType, { TileTypeDefaultVisited } from '@root/constants/tileType';
 import { AppContext } from '@root/contexts/appContext';
 import { GameContext } from '@root/contexts/gameContext';
 import { directionsToGameState } from '@root/helpers/checkpointHelpers';
 import getPngDataClient from '@root/helpers/getPngDataClient';
 import isPro from '@root/helpers/isPro';
+import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import Link from 'next/link';
 import React, { useContext, useEffect, useState } from 'react';
@@ -40,6 +42,7 @@ interface CheckpointModalItemProps {
 function CheckpointModalItem({ checkpoint, closeModal, index }: CheckpointModalItemProps) {
   const [backgroundImage, setBackgroundImage] = useState<string>();
   const { deleteCheckpoint, level, loadCheckpoint, saveCheckpoint } = useContext(GameContext);
+  const { game } = useContext(AppContext);
 
   useEffect(() => {
     if (!checkpoint) {
@@ -58,11 +61,15 @@ function CheckpointModalItem({ checkpoint, closeModal, index }: CheckpointModalI
 
     const data = gameState.board.map(row => row.map(tileState => {
       if (tileState.block) {
+        if (game.type === GameType.COMPLETE_AND_SHORTEST && tileState.tileType === TileType.Exit) {
+          return TileTypeHelper.getExitSibilingTileType(tileState.block.tileType) ?? tileState.block.tileType;
+        }
+
         return tileState.block.tileType;
       }
 
       // show darker green for visited tiles
-      if (tileState.tileType === TileType.Default && tileState.text.length > 0) {
+      if (tileState.tileType === TileType.Default && tileState.text.length > 0 && game.showVisitedTiles) {
         return TileTypeDefaultVisited;
       }
 
@@ -76,8 +83,8 @@ function CheckpointModalItem({ checkpoint, closeModal, index }: CheckpointModalI
 
     const joinedData = data.map(row => row.join('')).join('\n');
 
-    setBackgroundImage(getPngDataClient(joinedData));
-  }, [checkpoint, level.data]);
+    setBackgroundImage(getPngDataClient(game, joinedData));
+  }, [checkpoint, game, level.data]);
 
   return (
     <div className='flex flex-col gap-2 w-80 max-w-full items-center'>
@@ -90,11 +97,10 @@ function CheckpointModalItem({ checkpoint, closeModal, index }: CheckpointModalI
         }
       </div>
       <div
-        className='background rounded-md bg-cover bg-center w-full'
+        className='background rounded-md bg-cover bg-center w-full bg-1 border-color-2 border'
         style={{
-          backgroundColor: 'var(--bg-color)',
-          backgroundImage: backgroundImage ? 'url("' + backgroundImage + '")' : 'none',
           aspectRatio: '40 / 21',
+          backgroundImage: backgroundImage ? 'url("' + backgroundImage + '")' : 'none',
         }}
       />
       <div className='flex gap-4'>

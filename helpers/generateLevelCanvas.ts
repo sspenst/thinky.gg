@@ -1,9 +1,10 @@
 /* istanbul ignore file */
+import { Game, GameType } from '@root/constants/Games';
 import TileType, { TileTypeDefaultVisited } from '@root/constants/tileType';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import { Bitmap } from 'pureimage';
 
-export default function generateLevelCanvas(canvas: Bitmap | HTMLCanvasElement, levelData: string) {
+export default function generateLevelCanvas(canvas: Bitmap | HTMLCanvasElement, game: Game, levelData: string) {
   const levelRows = levelData.split('\n');
   const height = levelRows.length;
   const width = levelRows[0].length;
@@ -13,6 +14,7 @@ export default function generateLevelCanvas(canvas: Bitmap | HTMLCanvasElement, 
   const yOffset = Math.floor((canvas.height - height * cellSize) / 2);
   const cellMargin = Math.round(cellSize / 40) || 1;
   const borderWidth = Math.round(cellSize / 5);
+  const goalBorderWidth = Math.round(cellSize / 3);
   const context = canvas.getContext('2d');
 
   if (!context) {
@@ -29,7 +31,6 @@ export default function generateLevelCanvas(canvas: Bitmap | HTMLCanvasElement, 
 
       switch (tileType) {
       case TileType.Default:
-        // TODO: if visited, different color
         context.fillStyle = 'rgb(14, 168, 117)';
         break;
       case TileTypeDefaultVisited:
@@ -39,7 +40,7 @@ export default function generateLevelCanvas(canvas: Bitmap | HTMLCanvasElement, 
         // skip since it's the same color as the background
         continue;
       case TileType.Exit:
-        context.fillStyle = 'rgb(255, 255, 255)';
+        context.fillStyle = game.type === GameType.COMPLETE_AND_SHORTEST ? 'rgb(14, 168, 117)' : 'rgb(255, 255, 255)';
         break;
       case TileType.Player:
         context.fillStyle = 'rgb(244, 114, 182)';
@@ -51,6 +52,7 @@ export default function generateLevelCanvas(canvas: Bitmap | HTMLCanvasElement, 
         context.fillStyle = 'rgb(0, 0, 0)';
       }
 
+      // draw main background color for this cell
       context.fillRect(
         xOffset + x * cellSize + cellMargin,
         yOffset + y * cellSize + cellMargin,
@@ -62,8 +64,23 @@ export default function generateLevelCanvas(canvas: Bitmap | HTMLCanvasElement, 
         continue;
       }
 
-      context.fillStyle = tileType === TileType.Hole ? 'rgb(106, 106, 106)' : 'rgb(183, 119, 57)';
+      // draw dot for goal
+      if (game.type === GameType.COMPLETE_AND_SHORTEST && tileType === TileType.Exit) {
+        context.fillStyle = 'rgb(255, 255, 255)';
 
+        context.fillRect(
+          xOffset + x * cellSize + cellMargin + goalBorderWidth,
+          yOffset + y * cellSize + cellMargin + goalBorderWidth,
+          cellSize - 2 * (cellMargin + goalBorderWidth),
+          cellSize - 2 * (cellMargin + goalBorderWidth),
+        );
+
+        continue;
+      }
+
+      context.fillStyle = tileType === TileType.Hole ? 'rgb(106, 106, 106)' : TileTypeHelper.isOnExit(tileType) ? 'rgb(255, 255, 255)' : 'rgb(183, 119, 57)';
+
+      // draw directional borders for movables and holes
       if (TileTypeHelper.canMoveLeft(tileType) || tileType === TileType.Hole) {
         context.fillRect(
           xOffset + (x + 1) * cellSize - cellMargin - borderWidth,

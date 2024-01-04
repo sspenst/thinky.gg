@@ -1,4 +1,3 @@
-import { GameType } from '@root/constants/Games';
 import Theme from '@root/constants/theme';
 import { AppContext } from '@root/contexts/appContext';
 import { GridContext } from '@root/contexts/gridContext';
@@ -77,7 +76,7 @@ export default function Tile({
     ) {
       return (
         <Square
-          text={hideText || game.type === GameType.COMPLETE_AND_SHORTEST ? undefined : text}
+          text={hideText || !game.showVisitedTiles ? undefined : text}
           tileType={tileType}
         />
       );
@@ -90,7 +89,7 @@ export default function Tile({
         tileType={tileType}
       />
     );
-  }, [atEnd, game.type, hideText, inHole, onTopOf, text, tileType]);
+  }, [atEnd, game.showVisitedTiles, hideText, inHole, onTopOf, text, tileType]);
 
   return (
     <div
