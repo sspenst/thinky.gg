@@ -2,6 +2,7 @@ import Direction from '@root/constants/direction';
 import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { postPlayAttempt } from '@root/helpers/play-attempts/postPlayAttempt';
 import User from '@root/models/db/user';
+import { stat } from 'fs';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import TestId from '../../../../constants/testId';
@@ -83,6 +84,8 @@ const tests = [
         new Types.ObjectId(TestId.USER),
       ]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(0);
+      expect(statDocs).toHaveLength(1);
+      expect((statDocs[0] as Stat).calcPlaytimeBeforeCreation).toBe(0);
     },
   },
   {
@@ -104,6 +107,7 @@ const tests = [
       expect(playAttemptDocs[0].updateCount).toBe(0);
       expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(playAttemptDocs[1].updateCount).toBe(1);
+      expect(statDocs).toHaveLength(0);
     },
   },
   {
@@ -144,6 +148,7 @@ const tests = [
         new Types.ObjectId(TestId.USER),
       ]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(0);
+      expect(statDocs).toHaveLength(0);
     },
   },
   {
@@ -183,6 +188,10 @@ const tests = [
       expect(playAttemptDocs[2].attemptContext).toBe(
         AttemptContext.JUST_SOLVED
       );
+      expect(statDocs).toHaveLength(1);
+
+      expect(statDocs[0].calcPlaytimeBeforeCreation).toBe(3 * MINUTE);
+
       expect(playAttemptDocs[3].updateCount).toBe(2);
       expect(playAttemptDocs[3].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(playAttemptDocs[4].updateCount).toBe(2);
@@ -209,6 +218,10 @@ const tests = [
     ) => {
       expect(lvl.calc_playattempts_duration_sum).toBe(1 * MINUTE);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
+      expect(statDocs).toHaveLength(1);
+
+      expect(statDocs[0].calcPlaytimeBeforeCreation).toBe(1 * MINUTE);
+
       expect(playAttemptDocs.length).toBe(2);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.SOLVED);
       expect(playAttemptDocs[0].updateCount).toBe(0);
@@ -246,6 +259,11 @@ const tests = [
         AttemptContext.JUST_SOLVED
       );
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
+
+      expect(statDocs).toHaveLength(1);
+
+      expect(statDocs[0].calcPlaytimeBeforeCreation).toBe(1 * MINUTE);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(1 * MINUTE);
     },
   },
   {
@@ -253,6 +271,7 @@ const tests = [
     name: 'win right away but then a record comes in way later',
     list: [
       ['play', 0, 'created'],
+      ['play', 0.1 * MINUTE, 'updated'],
       ['win_10', 0.1 * MINUTE, 'ok'],
       ['b_win_8', 100 * MINUTE, ''],
     ],
@@ -267,7 +286,7 @@ const tests = [
         AttemptContext.JUST_SOLVED
       );
       expect(playAttemptDocs[0].userId._id.toString()).toBe(TestId.USER_B);
-      expect(playAttemptDocs[1].updateCount).toBe(1);
+      expect(playAttemptDocs[1].updateCount).toBe(2);
       expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(playAttemptDocs[1].userId._id.toString()).toBe(TestId.USER);
       expect(lvl.calc_playattempts_unique_users).toStrictEqual([
@@ -275,6 +294,10 @@ const tests = [
         new Types.ObjectId(TestId.USER_B),
       ]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1); // other person solved
+      expect(statDocs).toHaveLength(2);
+
+      expect(statDocs[1].calcPlaytimeBeforeCreation).toBe(0);
+      expect(statDocs[0].calcPlaytimeBeforeCreation).toBe(0.1 * MINUTE);
     },
   },
   {
@@ -282,7 +305,10 @@ const tests = [
     name: 'win right away but then a record comes in way later then you match the record',
     list: [
       ['play', 0, 'created'],
+      ['play', 0.1, 'updated'],
       ['win_10', 0.1 * MINUTE, 'ok'],
+      ['b_play', 0.1 * MINUTE, 'created'],
+      ['b_play', 1 * MINUTE, 'updated'],
       ['b_win_8', 1 * MINUTE, ''],
       ['play', 2 * MINUTE, 'updated'],
       ['win_8', 3 * MINUTE, ''],
@@ -293,17 +319,23 @@ const tests = [
       lvl: Level
     ) => {
       expect(playAttemptDocs.length).toBe(2);
-      expect(playAttemptDocs[0].updateCount).toBe(0);
+      expect(playAttemptDocs[0].updateCount).toBe(2);
       expect(playAttemptDocs[0].attemptContext).toBe(
         AttemptContext.JUST_SOLVED
       );
       expect(playAttemptDocs[0].userId.toString()).toBe(TestId.USER_B);
-      expect(playAttemptDocs[1].updateCount).toBe(3);
+      expect(playAttemptDocs[1].updateCount).toBe(4);
       expect(playAttemptDocs[1].attemptContext).toBe(
         AttemptContext.JUST_SOLVED
       );
       expect(playAttemptDocs[1].userId.toString()).toBe(TestId.USER);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(2);
+
+      expect(statDocs).toHaveLength(2);
+      expect(statDocs[1].calcPlaytimeBeforeCreation).toBe(0.1);
+      expect(statDocs[0].calcPlaytimeBeforeCreation).toBe((1 - 0.1) * MINUTE);
+
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(0.1 + (1 - 0.1) * MINUTE); // 54+6
     },
   },
   {
@@ -374,6 +406,9 @@ const tests = [
       expect(lvl.calc_playattempts_unique_users).toHaveLength(2);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(2);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(2); // both of us solved it
+      expect(statDocs).toHaveLength(2);
+      expect(statDocs[1].calcPlaytimeBeforeCreation).toBe(5 * MINUTE);
+      expect(statDocs[0].calcPlaytimeBeforeCreation).toBe(0);
     },
   },
   {
@@ -552,6 +587,9 @@ const tests = [
         new Types.ObjectId(TestId.USER),
       ]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
+
+      expect(statDocs).toHaveLength(1);
+      expect(statDocs[0].calcPlaytimeBeforeCreation).toBe(30);
     },
   },
   {
@@ -588,6 +626,8 @@ const tests = [
         new Types.ObjectId(TestId.USER),
       ]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
+      expect(statDocs).toHaveLength(1);
+      expect(statDocs[0].calcPlaytimeBeforeCreation).toBe(30);
     },
   },
   {
@@ -639,6 +679,15 @@ describe('Testing stats api', () => {
 
           if (action === 'play') {
             const res = await postPlayAttempt(new Types.ObjectId(TestId.USER), t.levelId);
+            const status = res.status;
+            const response = res.json;
+
+            expect(status).toBe(200);
+            expect(response.message).toBe(expected);
+          }
+
+          if (action === 'b_play') {
+            const res = await postPlayAttempt(new Types.ObjectId(TestId.USER_B), t.levelId);
             const status = res.status;
             const response = res.json;
 
