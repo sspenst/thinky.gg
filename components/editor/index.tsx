@@ -122,11 +122,11 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       setTileType(TileType.UpDown);
       break;
     case 'KeyZ':
-      undo();
-      break;
     case 'KeyU':
+    case 'Backspace':
       undo();
       break;
+    case 'KeyY':
     case 'KeyR':
       redo();
       break;
