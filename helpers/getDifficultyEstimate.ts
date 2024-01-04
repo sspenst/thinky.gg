@@ -27,3 +27,27 @@ export default function getDifficultyEstimate(
 
   return level.calc_playattempts_duration_sum / solveCount * solveCountFactor;
 }
+
+export function getDifficultyCompletionEstimate(
+  level: Level | EnrichedLevel | Partial<Level>,
+  uniqueUsersCount: number,
+) {
+  if (!level || uniqueUsersCount < 10 || level.calc_playattempts_duration_before_stat_sum === undefined) {
+    return -1;
+  }
+
+  // when we have 10 unique users, we want to return a non-zero value
+  const solveCount = !level.calc_stats_players_beaten ? 1 : level.calc_stats_players_beaten;
+
+  // calculate a scaling factor based on how many people have solved the problem
+  // Base curve: logistic function
+  // m: number of people cleared for the halfway point
+  // t: stretch factor
+  // k: maximum multiplier
+  const m = DIFFICULTY_LOGISTIC_M;
+  const t = DIFFICULTY_LOGISTIC_T;
+  const k = DIFFICULTY_LOGISTIC_K;
+  const solveCountFactor = ((k - 1) / (1 + Math.exp(t * (solveCount - m)))) + 1;
+
+  return level.calc_playattempts_duration_before_stat_sum / solveCount * solveCountFactor;
+}

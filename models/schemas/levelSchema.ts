@@ -1,7 +1,8 @@
 import { GameId } from '@root/constants/GameId';
 import mongoose, { Types } from 'mongoose';
-import getDifficultyEstimate from '../../helpers/getDifficultyEstimate';
+import getDifficultyEstimate, { getDifficultyCompletionEstimate } from '../../helpers/getDifficultyEstimate';
 import Level from '../db/level';
+import Stat from '../db/stat';
 import { LevelModel, PlayAttemptModel, ReviewModel, StatModel } from '../mongoose';
 import { AttemptContext } from './playAttemptSchema';
 
@@ -21,6 +22,10 @@ const LevelSchema = new mongoose.Schema<Level>(
     calc_difficulty_estimate: {
       type: Number,
       default: -1,
+    },
+    calc_difficulty_completion_estimate: {
+      type: Number,
+      default: -1
     },
     calc_playattempts_duration_sum: {
       type: Number,
@@ -204,6 +209,111 @@ async function calcStats(lvl: Level) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {}) {
+  const playAttemptAgg = await PlayAttemptModel.aggregate([
+    // query for levelId
+    {
+      $match: {
+        levelId: levelId,
+      }
+    },
+    // group by userId
+    {
+      $group: {
+        _id: '$userId',
+      }
+    },
+    // lookup statModel for that user and level id
+    {
+      $lookup: {
+        from: 'stats',
+        let: {
+          userId: '$_id',
+          levelId: levelId,
+        },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  {
+                    $eq: ['$userId', '$$userId'],
+                  },
+                  {
+                    $eq: ['$levelId', '$$levelId'],
+                  },
+                ],
+              },
+            },
+          },
+        ],
+        as: 'stat',
+      },
+    },
+    // unwind stat
+    {
+      $unwind: {
+        path: '$stat',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+  ], options) as { _id: Types.ObjectId, stat: Stat}[];
+
+  // for each user, we want to sum the playAttempts
+  for (let i = 0; i < playAttemptAgg.length; i++) {
+    const playAttempt = playAttemptAgg[i];
+
+    const userId = playAttempt._id;
+    const stat = playAttempt.stat as Stat;
+
+    const sumDurationBeforeComplete = await PlayAttemptModel.aggregate([
+      /** sum all play attempts durations for this user */
+      {
+        $match: {
+          userId: userId,
+          levelId: levelId,
+          // where endTime is less than stat.createdAt
+          endTime: {
+            $lt: stat.createdAt,
+          }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          sumDuration: {
+            $sum: {
+              $subtract: ['$endTime', '$startTime']
+            }
+          }
+        }
+      },
+    ], options);
+
+    await PlayAttemptModel.updateOne({
+      _id: stat._id,
+    }, {
+      $set: {
+        calcPlaytimeBeforeCreation: sumDurationBeforeComplete[0]?.sumDuration ?? 0,
+      }
+    }, options);
+  }
+
+  const statModelAgg = await StatModel.aggregate([
+    {
+      $match: {
+        levelId: levelId,
+      }
+    },
+
+    {
+      $group: {
+        _id: null,
+        sumDurationBeforeStat: { $sum: '$calcPlaytimeBeforeCreation' },
+      }
+    }
+  ], options) as { _id: null, sumDurationBeforeStat: number }[];
+
+  const sumDurationBeforeComplete = statModelAgg[0]?.sumDurationBeforeStat ?? 0;
   const bigQ = await PlayAttemptModel.aggregate([
     {
       $match: {
@@ -282,12 +392,14 @@ export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {
 
   const update = {
     calc_playattempts_duration_sum: sumDuration ?? 0,
+    calc_playattempts_duration_before_stat_sum: sumDurationBeforeComplete ?? 0,
     calc_playattempts_just_beaten_count: countJustSolved,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     calc_playattempts_unique_users: uniqueUsersList.map((u: any) => u?.userId.toString()),
   } as Partial<Level>;
 
   update.calc_difficulty_estimate = getDifficultyEstimate(update, uniqueUsersList.length);
+  update.calc_difficulty_completion_estimate = getDifficultyCompletionEstimate(update, uniqueUsersList.length);
 
   return await LevelModel.findByIdAndUpdate<Level>(levelId, {
     $set: update,
