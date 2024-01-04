@@ -7,11 +7,13 @@ interface Stat {
   _id: Types.ObjectId;
   attempts: number;
   complete: boolean;
+  createdAt: Date;
   gameId: GameId;
   isDeleted: boolean;
   levelId: Types.ObjectId & Level;
   moves: number;
   ts: number;
+  updatedAt: Date;
   userId: Types.ObjectId & User;
 }
 

@@ -41,6 +41,9 @@ const StatSchema = new mongoose.Schema<Stat>({
     ref: 'User',
     required: true,
   },
+},
+{
+  timestamps: true
 });
 
 StatSchema.index({ complete: 1 });
