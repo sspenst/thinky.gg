@@ -1,11 +1,12 @@
 import { AppContext } from '@root/contexts/appContext';
+import getPngDataClient from '@root/helpers/getPngDataClient';
 import getProfileSlug from '@root/helpers/getProfileSlug';
 import { EnrichedLevel } from '@root/models/db/level';
 import User from '@root/models/db/user';
 import classNames from 'classnames';
 import { Types } from 'mongoose';
 import Link from 'next/link';
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import FormattedDifficulty from '../formatted/formattedDifficulty';
 import FormattedUser from '../formatted/formattedUser';
@@ -24,7 +25,14 @@ interface LevelCardProps {
 }
 
 export default function LevelCard({ href, id, level, onClick }: LevelCardProps) {
-  const { user: reqUser } = useContext(AppContext);
+  const [backgroundImage, setBackgroundImage] = useState<string>();
+  const { game, user: reqUser } = useContext(AppContext);
+
+  useEffect(() => {
+    if (level && level.data) {
+      setBackgroundImage(getPngDataClient(game, level.data));
+    }
+  }, [game, level]);
 
   if (level === undefined) {
     return <LoadingCard />;
@@ -82,7 +90,7 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
         onClick={onClick}
         style={{
           aspectRatio: '40 / 21',
-          backgroundImage: `url(/api/level/image/${level._id.toString()}.png)`,
+          backgroundImage: backgroundImage ? 'url("' + backgroundImage + '")' : 'none',
           borderColor: getColor(),
         }}
       >

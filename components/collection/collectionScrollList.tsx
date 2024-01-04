@@ -172,7 +172,7 @@ export default function CollectionScrollList({ collection, id, isHidden, onLoadi
   }
 
   return (
-    <div className='overflow-y-auto max-w-full h-full' onScroll={e => onScroll(e)}>
+    <div className='overflow-y-auto max-w-full h-full flex flex-col gap-2' onScroll={e => onScroll(e)}>
       {isLoading === 'before' &&
         <div className='justify-center items-center pt-3'>
           <LoadingSpinner />
@@ -194,7 +194,7 @@ export default function CollectionScrollList({ collection, id, isHidden, onLoadi
         const href = `/level/${levelInCollection.slug}${windowSearch}`;
 
         return (
-          <div className={classNames('pt-2 px-2', { 'bg-2': isCurrentLevel }, { 'rounded-xl': id === 'modal' })} id={anchorId} key={anchorId}>
+          <div className={classNames('px-2', { 'bg-2': isCurrentLevel }, { 'rounded-xl': id === 'modal' })} id={anchorId} key={anchorId}>
             <LevelCard
               href={href}
               id={id}
