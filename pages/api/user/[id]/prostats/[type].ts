@@ -5,7 +5,7 @@ import User from '@root/models/db/user';
 import mongoose, { PipelineStage, Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { ValidEnum } from '../../../../../helpers/apiWrapper';
-import { DIFFICULTY_LOGISTIC_K, DIFFICULTY_LOGISTIC_M, DIFFICULTY_LOGISTIC_T } from '../../../../../helpers/getDifficultyEstimate';
+import { getSolveCountFactor } from '../../../../../helpers/getDifficultyEstimate';
 import isPro from '../../../../../helpers/isPro';
 import { ProStatsUserType } from '../../../../../hooks/useProStatsUser';
 import cleanUser from '../../../../../lib/cleanUser';
@@ -248,24 +248,12 @@ async function getDifficultyDataComparisons(gameId: GameId, userId: string) {
   ]);
 
   // loop through all the levels and manipulate difficulty
-  /*
-  const m = 20;
-  const t = 0.2;
-  const k = 1.5;
-  const solveCountFactor = ((k - 1) / (1 + Math.exp(t * (solveCount - m)))) + 1;
-  */
-  const m = DIFFICULTY_LOGISTIC_M;
-  const t = DIFFICULTY_LOGISTIC_T;
-  const k = DIFFICULTY_LOGISTIC_K;
-
   for (let i = 0; i < difficultyData.length; i++) {
     const level = difficultyData[i];
     const solveCount = !level.calc_playattempts_just_beaten_count ? 1 : level.calc_playattempts_just_beaten_count;
 
-    const solveCountFactor = ((k - 1) / (1 + Math.exp(t * (solveCount - m)))) + 1;
-
     if (level.averageDuration) {
-      level.difficultyAdjusted = level.difficulty / solveCountFactor;
+      level.difficultyAdjusted = level.difficulty / getSolveCountFactor(solveCount);
     }
   }
 
