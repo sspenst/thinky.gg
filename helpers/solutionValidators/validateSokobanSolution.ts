@@ -89,11 +89,11 @@ export function validateSokobanLevelValid(data: string): {valid: boolean, reason
     if (tile === TileType.Start) {
       startCount++;
     } else {
-      if (tile === TileType.End || tile === TileType.BlockOnExit) {
+      if (tile === TileType.End || tile === TileType.BlockOnEnd) {
         endCount++;
       }
 
-      if (tile === TileType.Block || tile === TileType.BlockOnExit) {
+      if (tile === TileType.Block || tile === TileType.BlockOnEnd) {
         blockCount++;
       }
     }

@@ -2,7 +2,7 @@ import TestId from '@root/constants/testId';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { getTokenCookieValue } from '@root/lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '@root/lib/withAuth';
-import { UserConfigModel, UserModel } from '@root/models/mongoose';
+import { UserModel } from '@root/models/mongoose';
 import { cancelSubscription, stripe } from '@root/pages/api/subscription';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import mongoose from 'mongoose';
