@@ -9,13 +9,26 @@ interface Level {
   authorNote?: string;
   calc_difficulty_estimate: number;
   calc_difficulty_completion_estimate: number;
+  /**
+   * Total playtime by users before they complete the level for the first time
+   */
   calc_playattempts_duration_before_stat_sum: number;
+  /**
+   * Total playtime by users before they solve the level for the first time
+   */
   calc_playattempts_duration_sum: number;
   calc_playattempts_just_beaten_count: number;
   calc_playattempts_unique_users: Types.ObjectId[];
   calc_reviews_count: number;
   calc_reviews_score_avg: number;
   calc_reviews_score_laplace: number;
+  /**
+   * Number of users that have completed this level (StatModel exists)
+   */
+  calc_stats_completed_count: number;
+  /**
+   * Number of users that have solved this level (StatModel has moves === level.leastMoves)
+   */
   calc_stats_players_beaten: number;
   data: string;
   gameId: GameId;

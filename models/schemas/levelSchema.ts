@@ -58,6 +58,11 @@ const LevelSchema = new mongoose.Schema<Level>(
       required: false,
       default: 0.67
     },
+    calc_stats_completed_count: {
+      type: Number,
+      required: false,
+      default: 0
+    },
     calc_stats_players_beaten: {
       type: Number,
       required: false,
@@ -179,36 +184,19 @@ async function calcReviews(lvl: Level) {
     calc_reviews_count: reviews.length,
     calc_reviews_score_avg: reviewsScoreAvg,
     calc_reviews_score_laplace: reviewsScoreLaplace,
-  };
+  } as Partial<Level>;
 }
 
-async function calcStats(lvl: Level) {
-  // get last record with levelId: id
-  // group by userId
-  const aggs = [
-    {
-      $match: {
-        levelId: lvl._id,
-        moves: lvl.leastMoves
-      }
-    },
-    {
-      $group: {
-        _id: '$userId',
-        count: {
-          $sum: 1,
-        },
-      }
-    }
-  ];
-
-  const q = await StatModel.aggregate(aggs);
-
-  const solves = q.length;
+async function calcStats(level: Level) {
+  const stats = await StatModel.find({
+    isDeleted: { $ne: true },
+    levelId: level._id,
+  }, 'moves').lean<Stat[]>();
 
   return {
-    calc_stats_players_beaten: solves
-  };
+    calc_stats_completed_count: stats.length,
+    calc_stats_players_beaten: stats.filter((stat) => stat.moves === level.leastMoves).length,
+  } as Partial<Level>;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
