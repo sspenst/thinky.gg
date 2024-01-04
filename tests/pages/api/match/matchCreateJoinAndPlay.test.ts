@@ -244,7 +244,7 @@ describe('matchCreateJoinAndPlay', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        Games[DEFAULT_GAME_ID].validateSolutionFunction = () => true;
+        Games[DEFAULT_GAME_ID].validateSolution = () => true;
         await statHandler(req, res);
       },
       test: async ({ fetch }) => {

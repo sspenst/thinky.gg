@@ -402,8 +402,8 @@ export default function TutorialSokoban() {
         editorGrid: true,
         gameClasses: 'fadeIn',
         header: <>
-          <div className='text-3xl'>This is an exit square.</div>
-          <div className='text-xl'>Some levels have multiple exit squares.</div>
+          <div className='text-3xl'>This is a goal.</div>
+          <div className='text-xl'>Some levels have multiple goals.</div>
         </>,
         key: 'tutorial-level-1-only-end',
         level: getLevel(LEVEL_1_ONLY_END, { leastMoves: 5 }),
@@ -414,7 +414,7 @@ export default function TutorialSokoban() {
         gameClasses: 'fadeIn',
         header: <>
           <div className='text-3xl'>This is a box.</div>
-          <div className='text-xl'>Your goal is to push boxes onto exit squares.</div>
+          <div className='text-xl'>Your goal is to push boxes onto goals.</div>
         </>,
         key: 'tutorial-level-1-only-block',
         level: getLevel(LEVEL_1_ONLY_BLOCK, { leastMoves: 5 }),
@@ -422,7 +422,7 @@ export default function TutorialSokoban() {
       },
       {
         gameGrid: true,
-        header: <><div key='tutorial-level-1-header' className='text-3xl fadeIn'>Try solving your first level!</div><div className='text-xl'>Push the box onto the exit square.</div></>,
+        header: <><div key='tutorial-level-1-header' className='text-3xl fadeIn'>Try solving your first level!</div><div className='text-xl'>Push the box onto the goal.</div></>,
         key: 'tutorial-level-1',
         level: getLevel(LEVEL_1, { leastMoves: 5 }),
         onSolve: niceJob,
@@ -684,7 +684,7 @@ export default function TutorialSokoban() {
                 const restartButton = document.getElementById('btn-restart') as HTMLButtonElement;
 
                 // show restart notification if they have reached the exit in too many moves
-                if (gameState.board[gameState.pos.y][gameState.pos.x].tileType === TileType.End && gameState.moves.length > (tutorialStep.level?.leastMoves ?? 0)) {
+                if (gameState.board[gameState.pos.y][gameState.pos.x].tileType === TileType.Exit && gameState.moves.length > (tutorialStep.level?.leastMoves ?? 0)) {
                   restartButton?.classList.add(styles['highlight-red']);
                 } else {
                   restartButton?.classList.remove(styles['highlight-red']);

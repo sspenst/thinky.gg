@@ -33,8 +33,6 @@ export default apiWrapper({ GET: {
     });
   }
 
-  // set cache for 2 weeks
-
   const session = await mongoose.startSession();
   let pngData: Buffer | undefined;
 
@@ -45,6 +43,7 @@ export default apiWrapper({ GET: {
       if (levelImage) {
         pngData = levelImage.image;
         res.setHeader('Content-Type', 'image/png');
+        // set cache for 2 weeks
         res.setHeader('Cache-Control', 'public, max-age=1209600');
         res.setHeader('Expires', new Date(Date.now() + 1209600000).toUTCString());
         res.setHeader('Content-Length', pngData.length);

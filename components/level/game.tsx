@@ -18,7 +18,6 @@ import { PageContext } from '../../contexts/pageContext';
 import Control from '../../models/control';
 import Level, { EnrichedLevel } from '../../models/db/level';
 import GameLayout from './gameLayout';
-import { getSolveStateFunction } from './solutionStates/helpers';
 
 interface SessionCheckpoint {
   _id: Types.ObjectId;
@@ -58,7 +57,7 @@ export default function Game({
 }: GameProps) {
   const levelContext = useContext(LevelContext);
   const { game, deviceInfo, mutateUser, shouldAttemptAuth, user } = useContext(AppContext);
-  const isSolved = getSolveStateFunction(game);
+  const isSolved = game.isSolved;
   const { preventKeyDownEvent } = useContext(PageContext);
 
   const mutateCollection = levelContext?.mutateCollection;

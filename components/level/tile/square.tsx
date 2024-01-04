@@ -1,3 +1,5 @@
+import Direction from '@root/constants/direction';
+import { GameType } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
 import { GridContext } from '@root/contexts/gridContext';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
@@ -8,7 +10,7 @@ import TileType from '../../../constants/tileType';
 
 interface SquareProps {
   text?: number;
-  tileType: TileType.Default | TileType.Wall | TileType.End | TileType.Hole;
+  tileType: TileType.Default | TileType.Wall | TileType.Exit | TileType.Hole;
 }
 
 export default function Square({ text, tileType }: SquareProps) {
@@ -20,7 +22,7 @@ export default function Square({ text, tileType }: SquareProps) {
   const fontSizeRatio = text === undefined || String(text).length <= 3 ?
     2 : (1 + (String(text).length - 1) / 2);
   const fontSize = innerTileSize / fontSizeRatio * (classic ? 1.5 : 1);
-  const overStepped = text !== undefined && leastMoves !== 0 && text > leastMoves;
+  const overStepped = game.type === GameType.SHORTEST_PATH && text !== undefined && leastMoves !== 0 && text > leastMoves;
   const textColor = overStepped ?
     'var(--level-player-extra)' : 'var(--level-grid-text)';
 
@@ -30,13 +32,33 @@ export default function Square({ text, tileType }: SquareProps) {
       return text !== undefined ? 'var(--level-grid-used)' : 'var(--level-grid)';
     case TileType.Wall:
       return 'var(--level-wall)';
-    case TileType.End:
+    case TileType.Exit:
       return 'var(--level-end)';
     case TileType.Hole:
       return 'var(--level-hole)';
     default:
       return undefined;
     }
+  }
+
+  function getBorderWidth(direction: Direction) {
+    if (game.type === GameType.COMPLETE_AND_SHORTEST && tileType === TileType.Exit) {
+      return Math.round(tileSize * 0.38);
+    }
+
+    return tileType === TileType.Hole || TileTypeHelper.canMoveInDirection(tileType, direction) ? innerBorderWidth : 0;
+  }
+
+  function getBorderColor() {
+    if (game.type === GameType.COMPLETE_AND_SHORTEST && tileType === TileType.Exit) {
+      return 'var(--level-grid)';
+    }
+
+    if (tileType === TileType.Hole) {
+      return 'var(--level-hole-border)';
+    }
+
+    return 'var(--level-block-border)';
   }
 
   const icon = getIconFromTheme(game, theme, tileType);
@@ -46,11 +68,11 @@ export default function Square({ text, tileType }: SquareProps) {
       className={`select-none tile-${game.id} tile-type-${tileType} flex items-center justify-center relative`}
       style={{
         backgroundColor: getBackgroundColor(),
-        borderBottomWidth: tileType === TileType.Hole || TileTypeHelper.canMoveUp(tileType) ? innerBorderWidth : 0,
-        borderColor: tileType === TileType.Hole ? 'var(--level-hole-border)' : 'var(--level-block-border)',
-        borderLeftWidth: tileType === TileType.Hole || TileTypeHelper.canMoveRight(tileType) ? innerBorderWidth : 0,
-        borderRightWidth: tileType === TileType.Hole || TileTypeHelper.canMoveLeft(tileType) ? innerBorderWidth : 0,
-        borderTopWidth: tileType === TileType.Hole || TileTypeHelper.canMoveDown(tileType) ? innerBorderWidth : 0,
+        borderBottomWidth: getBorderWidth(Direction.UP),
+        borderColor: getBorderColor(),
+        borderLeftWidth: getBorderWidth(Direction.RIGHT),
+        borderRightWidth: getBorderWidth(Direction.LEFT),
+        borderTopWidth: getBorderWidth(Direction.DOWN),
         boxShadow: !classic ? `0 0 0 ${borderWidth}px var(--bg-color)` :
           TileTypeHelper.isRaised(tileType) ?
             `-${2 * borderWidth}px ${2 * borderWidth}px 0 0 var(--bg-color)` :
