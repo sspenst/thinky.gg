@@ -5,9 +5,8 @@ import User from '@root/models/db/user';
 import classNames from 'classnames';
 import { Types } from 'mongoose';
 import Link from 'next/link';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import Dimensions from '../../constants/dimensions';
-import getPngDataClient from '../../helpers/getPngDataClient';
 import FormattedDifficulty from '../formatted/formattedDifficulty';
 import FormattedUser from '../formatted/formattedUser';
 import LevelDropdown from '../level/info/levelDropdown';
@@ -25,14 +24,7 @@ interface LevelCardProps {
 }
 
 export default function LevelCard({ href, id, level, onClick }: LevelCardProps) {
-  const [backgroundImage, setBackgroundImage] = useState<string>();
   const { user: reqUser } = useContext(AppContext);
-
-  useEffect(() => {
-    if (level && level.data) {
-      setBackgroundImage(getPngDataClient(level.data));
-    }
-  }, [level]);
 
   if (level === undefined) {
     return <LoadingCard />;
@@ -90,7 +82,6 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
         onClick={onClick}
         style={{
           aspectRatio: '40 / 21',
-          // backgroundImage: backgroundImage ? 'url("' + backgroundImage + '")' : 'none',
           backgroundImage: `url(/api/level/image/${level._id.toString()}.png)`,
           borderColor: getColor(),
         }}

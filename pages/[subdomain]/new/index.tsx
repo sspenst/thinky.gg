@@ -1,7 +1,8 @@
 /* istanbul ignore file */
 
+import { AppContext } from '@root/contexts/appContext';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import Editor from '../../../components/editor';
 import LinkInfo from '../../../components/formatted/linkInfo';
 import Page from '../../../components/page/page';
@@ -28,12 +29,19 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 export default function New() {
+  const { game } = useContext(AppContext);
   const [isDirty, setIsDirty] = useState(false);
+
+  const data = game.newLevelData ?? '';
+  const dataSplit = data.split('\n');
+  const width = dataSplit[0].length;
+  const height = dataSplit.length;
+
   const [level, setLevel] = useState({
-    data: '4000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000003',
-    height: 10,
+    data: data,
+    height: height,
     leastMoves: 0,
-    width: 10,
+    width: width,
   } as Level);
 
   useNavigatePrompt(isDirty);

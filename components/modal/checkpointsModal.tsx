@@ -70,8 +70,8 @@ function CheckpointModalItem({ checkpoint, closeModal, index }: CheckpointModalI
     }));
 
     // hide player if the level is finished
-    if (data[gameState.pos.y][gameState.pos.x] !== TileType.End) {
-      data[gameState.pos.y][gameState.pos.x] = TileType.Start;
+    if (data[gameState.pos.y][gameState.pos.x] !== TileType.Exit) {
+      data[gameState.pos.y][gameState.pos.x] = TileType.Player;
     }
 
     const joinedData = data.map(row => row.join('')).join('\n');

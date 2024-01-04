@@ -43,7 +43,6 @@ export default function DataModal({ closeModal, historyPush, isOpen, level, setI
     }
 
     let start = 0;
-    let end = 0;
 
     for (let i = 0; i < height; i++) {
       if (rows[i].length != width) {
@@ -61,22 +60,14 @@ export default function DataModal({ closeModal, historyPush, isOpen, level, setI
           return;
         }
 
-        if (rows[i][j] === TileType.Start) {
+        if (rows[i][j] === TileType.Player) {
           start += 1;
-        } else if (rows[i][j] === TileType.End) {
-          end += 1;
         }
       }
     }
 
-    if (start !== 1) {
-      setError('There must be exactly one start position');
-
-      return;
-    }
-
-    if (end === 0) {
-      setError('There must be an end position');
+    if (start > 1) {
+      setError('There cannot be more than one player');
 
       return;
     }

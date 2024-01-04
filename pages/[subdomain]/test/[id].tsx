@@ -4,8 +4,7 @@ import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq'
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
-import React, { useEffect } from 'react';
-import toast from 'react-hot-toast';
+import React from 'react';
 import LinkInfo from '../../../components/formatted/linkInfo';
 import Game from '../../../components/level/game';
 import Page from '../../../components/page/page';
@@ -70,12 +69,20 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   const level = levelAgg[0];
-
   const game = getGameFromId(level.gameId);
   let validateResult = undefined;
 
-  if (game.validateLevelPlayableFunction) {
-    validateResult = game.validateLevelPlayableFunction(level.data);
+  if (game.validateLevel) {
+    validateResult = game.validateLevel(level.data);
+
+    if (!validateResult.valid) {
+      return {
+        redirect: {
+          destination: '/edit/' + level._id,
+          permanent: false,
+        },
+      };
+    }
   }
 
   cleanUser(level.userId);
@@ -83,25 +90,16 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   return {
     props: {
       level: JSON.parse(JSON.stringify(level)),
-      validateResult,
     } as TestProps,
   };
 }
 
 interface TestProps {
   level: Level;
-  validateResult?: { valid: boolean; reasons: string[] };
 }
 
-export default function Test({ level, validateResult }: TestProps) {
+export default function Test({ level }: TestProps) {
   const router = useRouter();
-
-  useEffect(() => {
-    if (validateResult?.valid === false) {
-      toast.error(validateResult.reasons.join('\n'));
-      router.replace('/edit/' + level._id);
-    }
-  }, [level._id, router, validateResult]);
 
   return (
     <Page

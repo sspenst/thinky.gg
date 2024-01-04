@@ -1,5 +1,5 @@
 import Direction from '@root/constants/direction';
-import validateSokobanSolution from '@root/helpers/solutionValidators/validateSokobanSolution';
+import validateSokobanSolution from '@root/helpers/validators/validateSokoban';
 import Level from '@root/models/db/level';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 
