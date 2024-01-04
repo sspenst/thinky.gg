@@ -1,3 +1,6 @@
+import { ValidEnum, ValidNumber, ValidType } from '@root/helpers/apiWrapper';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
+import isPro from '@root/helpers/isPro';
 import { logger } from '@root/helpers/logger';
 import cleanUser from '@root/lib/cleanUser';
 import User from '@root/models/db/user';
@@ -140,12 +143,76 @@ export async function cancelSubscription(req: NextApiRequestWithAuth): Promise<[
   return [200, { message: 'Subscription will be canceled at the end of the current billing period.' }];
 }
 
+export enum ProSubscriptionType {
+  Monthly = 'monthly',
+  Yearly = 'yearly',
+}
+
 export default withAuth({
   GET: {},
+  POST: {
+    body: {
+      type: ValidEnum(Object.values(ProSubscriptionType), true),
+      paymentMethodId: ValidType('string', true),
+    }
+  },
 }, async (req, res) => {
   if (req.method === 'GET') {
     const [code, data] = await getSubscriptions(req);
 
     return res.status(code).json(data);
+  } else if (req.method === 'POST') {
+    const { type, paymentMethodId } = req.body as { type: ProSubscriptionType, paymentMethodId: string };
+
+    const game = getGameFromId(req.gameId);
+
+    if (isPro(req.user)) {
+      return res.status(400).json({ error: 'You are already subscribed to ' + game.displayName + ' Pro' });
+    }
+
+    const paymentPriceIdTable = {
+      [ProSubscriptionType.Monthly]: game.stripePriceIdMonthly,
+      [ProSubscriptionType.Yearly]: game.stripePriceIdYearly,
+    };
+
+    try {
+      const price = paymentPriceIdTable[type];
+
+      // check if customer id exists for this req.user
+      const user = await UserModel.findOne({ _id: req.userId }, { stripeCustomerId: 1 }).lean<User>();
+      const customerId = user?.stripeCustomerId;
+
+      if (!customerId) {
+        return res.status(404).json({ error: 'No subscription found for this user.' });
+      }
+
+      const customer = await stripe.customers.retrieve(customerId);
+
+      if (!customer) {
+        return res.status(404).json({ error: 'No customer found for this user.' });
+      }
+
+      const subscription = await stripe.subscriptions.create({
+        customer: customerId,
+        items: [
+          // quantity needs to be ONE here so we are only billed for one subscription. the cancel_at is where the length of the subscription is set
+          { price: price },
+        ],
+        default_payment_method: paymentMethodId,
+        metadata: {
+          userId: req.userId,
+          type: type,
+        },
+      });
+
+      // Respond with the client secret
+      res.status(200).json({
+        subscription
+      });
+    } catch (error) {
+      // Log the error and respond with a generic message
+      logger.error(error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
   }
 });
