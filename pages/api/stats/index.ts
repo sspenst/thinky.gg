@@ -96,10 +96,34 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
 
       // track the first completion
       if (!stat) {
+        // This code block only happens once per user per level
+
+        const sumDurationBeforeComplete = await PlayAttemptModel.aggregate([
+          /** sum all play attempts durations for this user */
+          {
+            $match: {
+              userId: userId,
+              levelId: level._id,
+              //attemptContext: AttemptContext.UNSOLVED,
+            }
+          },
+          {
+            $group: {
+              _id: null,
+              sumDuration: {
+                $sum: {
+                  $subtract: ['$endTime', '$startTime']
+                }
+              }
+            }
+          },
+        ], { session: session });
+
         await Promise.all([
           StatModel.create([{
             _id: new Types.ObjectId(),
             attempts: 1,
+            calcSumDurationBeforeComplete: sumDurationBeforeComplete[0]?.sumDuration ?? 0,
             complete: complete,
             gameId: level.gameId,
             levelId: level._id,

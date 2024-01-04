@@ -8,6 +8,8 @@ interface Level {
   archivedTs?: number;
   authorNote?: string;
   calc_difficulty_estimate: number;
+  calc_difficulty_completion_estimate: number;
+  calc_playattempts_duration_before_stat_sum: number;
   calc_playattempts_duration_sum: number;
   calc_playattempts_just_beaten_count: number;
   calc_playattempts_unique_users: Types.ObjectId[];

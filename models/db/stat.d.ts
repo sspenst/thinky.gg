@@ -6,6 +6,7 @@ import User from './user';
 interface Stat {
   _id: Types.ObjectId;
   attempts: number;
+  calcPlaytimeBeforeCreation: number;
   complete: boolean;
   createdAt: Date;
   gameId: GameId;

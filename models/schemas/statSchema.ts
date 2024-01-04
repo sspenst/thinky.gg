@@ -11,6 +11,10 @@ const StatSchema = new mongoose.Schema<Stat>({
     type: Number,
     required: true,
   },
+  calcPlaytimeBeforeCreation: {
+    type: Number,
+    default: 0,
+  },
   complete: {
     type: Boolean,
     required: true,
@@ -32,6 +36,7 @@ const StatSchema = new mongoose.Schema<Stat>({
     type: Number,
     required: true,
   },
+
   ts: {
     type: Number,
     required: true,
