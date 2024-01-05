@@ -1,4 +1,3 @@
-import { GameType } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
 import { GridContext } from '@root/contexts/gridContext';
 import classNames from 'classnames';
@@ -22,7 +21,7 @@ export default function Player({ atEnd, moveCount }: PlayerProps) {
   const { theme } = useTheme();
   const classic = theme === Theme.Classic;
   const icon = getIconFromTheme(game, theme, TileType.Player);
-  const overstepped = game.type === GameType.SHORTEST_PATH && leastMoves !== 0 && moveCount > leastMoves;
+  const overstepped = leastMoves !== 0 && moveCount > leastMoves;
 
   return (
     <div
