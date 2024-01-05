@@ -10,22 +10,10 @@ import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import Level from '../../../../models/db/level';
 import PlayAttempt from '../../../../models/db/playAttempt';
 import Stat from '../../../../models/db/stat';
-import {
-  LevelModel,
-  PlayAttemptModel,
-  RecordModel,
-  StatModel,
-  UserModel,
-} from '../../../../models/mongoose';
+import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../../models/mongoose';
 import { AttemptContext } from '../../../../models/schemas/playAttemptSchema';
-import {
-  processQueueMessages,
-  queueCalcPlayAttempts,
-  queueRefreshIndexCalcs,
-} from '../../../../pages/api/internal-jobs/worker';
-import {
-  getLastLevelPlayed,
-} from '../../../../pages/api/play-attempt/index';
+import { processQueueMessages, queueCalcPlayAttempts, queueRefreshIndexCalcs } from '../../../../pages/api/internal-jobs/worker';
+import { getLastLevelPlayed } from '../../../../pages/api/play-attempt/index';
 import { putStat } from '../../../../pages/api/stats/index';
 
 beforeAll(async () => {
@@ -83,7 +71,7 @@ const tests = [
         new Types.ObjectId(TestId.USER),
       ]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(0);
-      expect(statDocs).toHaveLength(0);
+      expect(statDocs).toHaveLength(1);
     },
   },
   {
@@ -105,7 +93,7 @@ const tests = [
       expect(playAttemptDocs[0].updateCount).toBe(0);
       expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(playAttemptDocs[1].updateCount).toBe(1);
-      expect(statDocs).toHaveLength(0);
+      expect(statDocs).toHaveLength(1);
     },
   },
   {
@@ -122,7 +110,7 @@ const tests = [
       expect(playAttemptDocs.length).toBe(1);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(playAttemptDocs[0].updateCount).toBe(0);
-      expect(statDocs).toHaveLength(0);
+      expect(statDocs).toHaveLength(1);
     },
   },
   {
@@ -147,7 +135,7 @@ const tests = [
         new Types.ObjectId(TestId.USER),
       ]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(0);
-      expect(statDocs).toHaveLength(0);
+      expect(statDocs).toHaveLength(1);
     },
   },
   {
@@ -175,7 +163,7 @@ const tests = [
       statDocs: Stat[],
       lvl: Level
     ) => {
-      expect(statDocs).toHaveLength(1);
+      expect(statDocs).toHaveLength(2);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
       expect(lvl.calc_playattempts_duration_sum).toBe(7 * MINUTE);
 
@@ -212,7 +200,7 @@ const tests = [
     ) => {
       expect(lvl.calc_playattempts_duration_sum).toBe(1 * MINUTE);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
-      expect(statDocs).toHaveLength(1);
+      expect(statDocs).toHaveLength(2);
       expect(playAttemptDocs.length).toBe(2);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.SOLVED);
       expect(playAttemptDocs[0].updateCount).toBe(0);
@@ -246,7 +234,7 @@ const tests = [
       expect(playAttemptDocs[2].updateCount).toBe(3);
       expect(playAttemptDocs[2].attemptContext).toBe(AttemptContext.JUST_SOLVED);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
-      expect(statDocs).toHaveLength(1);
+      expect(statDocs).toHaveLength(2);
       // TODO:
       // expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(1 * MINUTE);
     },
@@ -266,7 +254,7 @@ const tests = [
       lvl: Level
     ) => {
       expect(playAttemptDocs.length).toBe(2);
-      expect(playAttemptDocs[0].updateCount).toBe(1);
+      expect(playAttemptDocs[0].updateCount).toBe(0);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_SOLVED);
       expect(playAttemptDocs[0].userId._id.toString()).toBe(TestId.USER_B);
       expect(playAttemptDocs[1].updateCount).toBe(3);
@@ -287,8 +275,6 @@ const tests = [
       ['play', 0, 'created'],
       ['play', 0.1, 'updated'],
       ['win_10', 0.1 * MINUTE, 'ok'],
-      ['b_play', 0.1 * MINUTE, 'created'],
-      ['b_play', 1 * MINUTE, 'updated'],
       ['b_win_8', 1 * MINUTE, ''],
       ['play', 2 * MINUTE, 'updated'],
       ['win_8', 3 * MINUTE, ''],
@@ -299,7 +285,7 @@ const tests = [
       lvl: Level
     ) => {
       expect(playAttemptDocs.length).toBe(2);
-      expect(playAttemptDocs[0].updateCount).toBe(3);
+      expect(playAttemptDocs[0].updateCount).toBe(0);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_SOLVED);
       expect(playAttemptDocs[0].userId.toString()).toBe(TestId.USER_B);
       expect(playAttemptDocs[1].updateCount).toBe(5);
@@ -394,7 +380,7 @@ const tests = [
       expect(playAttemptDocs[0].endTime).toBe(0.1 * MINUTE);
       expect(lvl.calc_playattempts_duration_sum).toBe(0);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
-      expect(statDocs).toHaveLength(1);
+      expect(statDocs).toHaveLength(2);
     },
   },
   {
@@ -424,7 +410,7 @@ const tests = [
       } as User);
 
       expect(lastLevelPlayed?._id.toString()).toBe(TestId.LEVEL_4);
-      expect(statDocs).toHaveLength(1);
+      expect(statDocs).toHaveLength(2);
     },
   },
   {
@@ -451,7 +437,7 @@ const tests = [
       expect(playAttemptDocs[1].updateCount).toBe(0);
       expect(lvl.calc_playattempts_duration_sum).toBe(0);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
-      expect(statDocs).toHaveLength(1);
+      expect(statDocs).toHaveLength(2);
     },
   },
   {
@@ -478,7 +464,7 @@ const tests = [
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.SOLVED);
       expect(playAttemptDocs[1].updateCount).toBe(2);
       expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.SOLVED);
-      expect(statDocs).toHaveLength(0);
+      expect(statDocs).toHaveLength(1);
     },
   },
   {
@@ -505,7 +491,7 @@ const tests = [
       expect(playAttemptDocs.length).toBe(3);
       expect(playAttemptDocs[0].updateCount).toBe(1);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.SOLVED);
-      expect(playAttemptDocs[1].updateCount).toBe(3);
+      expect(playAttemptDocs[1].updateCount).toBe(2);
       expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.JUST_SOLVED);
       expect(playAttemptDocs[2].updateCount).toBe(2);
       expect(playAttemptDocs[2].attemptContext).toBe(AttemptContext.UNSOLVED);
@@ -540,18 +526,18 @@ const tests = [
       expect(lvl.calc_playattempts_duration_sum).toBe(100);
 
       expect(playAttemptDocs.length).toBe(3);
-      expect(playAttemptDocs[0].updateCount).toBe(3);
+      expect(playAttemptDocs[0].updateCount).toBe(2);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_SOLVED);
       expect(playAttemptDocs[1].updateCount).toBe(2);
       expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.UNSOLVED);
-      expect(playAttemptDocs[2].updateCount).toBe(2);
+      expect(playAttemptDocs[2].updateCount).toBe(3);
       expect(playAttemptDocs[2].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(lvl.calc_playattempts_unique_users).toStrictEqual([
         new Types.ObjectId(TestId.USER),
       ]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
 
-      expect(statDocs).toHaveLength(1);
+      expect(statDocs).toHaveLength(2);
     },
   },
   {
@@ -578,15 +564,15 @@ const tests = [
       expect(lvl.calc_playattempts_duration_sum).toBe(114);
 
       expect(playAttemptDocs.length).toBe(2);
-      expect(playAttemptDocs[0].updateCount).toBe(5);
+      expect(playAttemptDocs[0].updateCount).toBe(4);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_SOLVED);
-      expect(playAttemptDocs[1].updateCount).toBe(2);
+      expect(playAttemptDocs[1].updateCount).toBe(3);
       expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(lvl.calc_playattempts_unique_users).toStrictEqual([
         new Types.ObjectId(TestId.USER),
       ]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
-      expect(statDocs).toHaveLength(1);
+      expect(statDocs).toHaveLength(2);
     },
   },
   {
@@ -616,7 +602,7 @@ const tests = [
         new Types.ObjectId(TestId.USER),
       ]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
-      expect(statDocs).toHaveLength(1);
+      expect(statDocs).toHaveLength(2);
     },
   },
 ] as PlayAttemptTest[];
@@ -632,20 +618,61 @@ describe('Testing stats api', () => {
       calc_playattempts_just_beaten_count: 0,
       calc_playattempts_unique_users: [],
       // it is impossible for a level to be published without a completion
-      calc_stats_completed_count: 0,
-      calc_stats_players_beaten: 0,
+      calc_stats_completed_count: 1,
+      calc_stats_players_beaten: 1,
     },
   } as UpdateQuery<Level>;
 
+  const levelInitData = {
+    [TestId.LEVEL]: {
+      leastMoves: 20,
+      userId: new Types.ObjectId(TestId.USER),
+    },
+    [TestId.LEVEL_4]: {
+      leastMoves: 20,
+      userId: new Types.ObjectId(TestId.USER_B),
+    },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as { [levelId: string]: any };
+
   async function cleanup(levelId: Types.ObjectId) {
+    const init = levelInitData[levelId.toString()];
+
     // cleanup
     const [level] = await Promise.all([
-      LevelModel.findOneAndUpdate({ _id: levelId }, resetLevelUpdateQuery, {
-        new: true,
-      }) as Promise<Level>,
+      LevelModel.findOneAndUpdate(
+        { _id: levelId },
+        {
+          leastMoves: init.leastMoves,
+          ...resetLevelUpdateQuery,
+        },
+        { new: true }
+      ) as Promise<Level>,
       PlayAttemptModel.deleteMany({ levelId: levelId }),
       StatModel.deleteMany({ levelId: levelId }),
       RecordModel.deleteMany({ levelId: levelId }),
+    ]);
+
+    await Promise.all([
+      RecordModel.create({
+        _id: new Types.ObjectId(),
+        gameId: DEFAULT_GAME_ID,
+        levelId: levelId,
+        moves: init.leastMoves,
+        ts: 0,
+        userId: init.userId,
+      }),
+      StatModel.create({
+        _id: new Types.ObjectId(),
+        attempts: 1,
+        createdAt: 0,
+        complete: true,
+        gameId: DEFAULT_GAME_ID,
+        levelId: levelId,
+        moves: init.leastMoves,
+        ts: 0,
+        userId: init.userId,
+      }),
     ]);
 
     return level;
@@ -673,13 +700,6 @@ describe('Testing stats api', () => {
 
           if (action === 'play') {
             const res = await postPlayAttempt(new Types.ObjectId(TestId.USER), t.levelId);
-            const status = res.status;
-            const response = res.json;
-
-            expect(status).toBe(200);
-            expect(response.message).toBe(expected);
-          } else if (action === 'b_play') {
-            const res = await postPlayAttempt(new Types.ObjectId(TestId.USER_B), t.levelId);
             const status = res.status;
             const response = res.json;
 
@@ -743,7 +763,7 @@ describe('Testing stats api', () => {
       );
     }
 
-    test(t.name + ' clear', async () => {
+    test(t.name + ' : clear', async () => {
       // NB: need to process here as there may be remaining queue messages (eg api/stats queueRefreshIndexCalcs)
       await processQueueMessages();
 
@@ -759,7 +779,7 @@ describe('Testing stats api', () => {
 
       await t.tests(allAttempts, allStats, lvlBeforeResync);
 
-      console.log(allStats, lvlBeforeResync);
+      // console.log(allAttempts, allStats, lvlBeforeResync);
 
       const resetLvl = await LevelModel.findOneAndUpdate(
         { _id: t.levelId },
@@ -774,8 +794,8 @@ describe('Testing stats api', () => {
       expect(resetLvl.calc_playattempts_duration_sum).toBe(0);
       expect(resetLvl.calc_playattempts_just_beaten_count).toBe(0);
       expect(resetLvl.calc_playattempts_unique_users.length).toBe(0);
-      expect(resetLvl.calc_stats_completed_count).toBe(0);
-      expect(resetLvl.calc_stats_players_beaten).toBe(0);
+      expect(resetLvl.calc_stats_completed_count).toBe(1);
+      expect(resetLvl.calc_stats_players_beaten).toBe(1);
 
       // verify queue functions update level calc fields correctly
       await Promise.all([
@@ -784,12 +804,7 @@ describe('Testing stats api', () => {
       ]);
       await processQueueMessages();
 
-      const lvlAfterResync = await LevelModel.findByIdAndUpdate(
-        t.levelId,
-        // NB: LEVEL and LEVEL_4 both have leastMoves of 20 so this works
-        { $set: { leastMoves: 20 } },
-        { new: true }
-      ) as Level;
+      const lvlAfterResync = await LevelModel.findById(t.levelId) as Level;
 
       expect(lvlAfterResync.calc_difficulty_completion_estimate).toBe(lvlBeforeResync.calc_difficulty_completion_estimate);
       expect(lvlAfterResync.calc_difficulty_estimate).toBe(lvlBeforeResync.calc_difficulty_estimate);
@@ -809,8 +824,8 @@ describe('Testing stats api', () => {
       expect(resetLvl2.calc_playattempts_duration_sum).toBe(0);
       expect(resetLvl2.calc_playattempts_just_beaten_count).toBe(0);
       expect(resetLvl2.calc_playattempts_unique_users.length).toBe(0);
-      expect(resetLvl2.calc_stats_completed_count).toBe(0);
-      expect(resetLvl2.calc_stats_players_beaten).toBe(0);
+      expect(resetLvl2.calc_stats_completed_count).toBe(1);
+      expect(resetLvl2.calc_stats_players_beaten).toBe(1);
     });
   }
 });

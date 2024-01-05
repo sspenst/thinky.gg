@@ -69,7 +69,7 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
           }, { session: session });
         }
 
-        return resTrack;
+        return;
       }
 
       const complete = moves <= level.leastMoves;
@@ -90,7 +90,7 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
       if (stat && moves >= stat.moves) {
         await StatModel.updateOne({ _id: stat._id }, { $inc: { attempts: 1 } }, { session: session });
 
-        return resTrack;
+        return;
       }
 
       // const prevStatComplete = stat?.complete;
@@ -183,7 +183,7 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
         };
 
         if (process.env.NODE_ENV === 'test') {
-          // manually set createdAt for so tests can mock the date
+          // manually set createdAt so tests can mock the date
           newStat.createdAt = new Date(ts * 1000);
         }
 
@@ -206,7 +206,7 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
 
       // if the level was not completed optimally, nothing more to be done
       if (!complete) {
-        return resTrack;
+        return;
       }
 
       // if the level was previously incomplete, increment score
