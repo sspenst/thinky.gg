@@ -165,6 +165,10 @@ export default withAuth({
   if (req.method === 'GET') {
     const [code, data, paymentMethods] = await getSubscriptions(req);
 
+    if (code !== 200) {
+      return res.status(code).json({ error: (data as { error: string })?.error });
+    }
+
     return res.status(code).json({ subscriptions: data, paymentMethods: paymentMethods });
   } else if (req.method === 'POST') {
     const { type, paymentMethodId } = req.body as { type: ProSubscriptionType, paymentMethodId: string };
