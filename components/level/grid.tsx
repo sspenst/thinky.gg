@@ -1,3 +1,4 @@
+import { Game } from '@root/constants/Games';
 import TileType from '@root/constants/tileType';
 import { AppContext } from '@root/contexts/appContext';
 import { GridContext } from '@root/contexts/gridContext';
@@ -11,6 +12,8 @@ import Theme from '../../constants/theme';
 import Tile from './tile/tile';
 
 interface GridProps {
+  gameOverride?: Game;
+  themeOverride?: Theme;
   cellClassName?: (x: number, y: number) => string | undefined;
   cellStyle?: (x: number, y: number) => React.CSSProperties | undefined;
   disableAnimation?: boolean;
@@ -21,9 +24,11 @@ interface GridProps {
   onCellClick?: (x: number, y: number, rightClick: boolean) => void;
 }
 
-export default function Grid({ cellClassName, cellStyle, disableAnimation, gameState, hideText, id, leastMoves, onCellClick }: GridProps) {
-  const { game } = useContext(AppContext);
-  const { theme } = useTheme();
+export default function Grid({ cellClassName, cellStyle, disableAnimation, gameOverride, gameState, hideText, id, leastMoves, onCellClick, themeOverride }: GridProps) {
+  const { game: appGame } = useContext(AppContext);
+  const { theme: appTheme } = useTheme();
+  const game = (gameOverride || appGame);
+  const theme = (themeOverride || appTheme);
   const classic = theme === Theme.Classic;
   const height = gameState.board.length;
   const width = gameState.board[0].length;
@@ -86,6 +91,9 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameS
           style={cellStyle ? cellStyle(x, y) : undefined}
           text={text}
           tileType={tileType}
+          game={game}
+          theme={theme as Theme}
+          visited={tileState.text.length > 0}
         />
       );
 
@@ -102,6 +110,8 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameS
             pos={new Position(x, y)}
             style={cellStyle ? cellStyle(x, y) : undefined}
             tileType={tileState.block.tileType}
+            game={game}
+            theme={theme as Theme}
           />
         );
       }
@@ -117,6 +127,8 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameS
             pos={new Position(x, y)}
             style={cellStyle ? cellStyle(x, y) : undefined}
             tileType={tileState.blockInHole.tileType}
+            game={game}
+            theme={theme as Theme}
           />
         );
       }
@@ -124,7 +136,7 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameS
   }
 
   return (
-    <div className={classNames('grow flex items-center justify-center overflow-hidden', { [teko.className]: classic })} id={gridId}>
+    <div className={classNames('grow flex items-center justify-center overflow-hidden ' + theme, { [teko.className]: classic })} id={gridId}>
       {tileSize !== 0 &&
         <GridContext.Provider value={{
           borderWidth: borderWidth,
@@ -152,6 +164,8 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameS
                 style={cellStyle ? cellStyle(gameState.pos.x, gameState.pos.y) : undefined}
                 text={gameState.moves.length}
                 tileType={TileType.Player}
+                game={game}
+                theme={theme as Theme}
               />
             }
           </div>

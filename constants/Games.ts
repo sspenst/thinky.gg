@@ -32,7 +32,6 @@ export const Games: Record<GameId, Game> = {
     logo: '/logos/thinky/thinky.svg',
     SEOTitle: 'Thinky Puzzle Games',
     SEODescription: 'Thinky Games is a collection of puzzle games',
-    showVisitedTiles: true,
     subdomain: undefined,
     subtitle: 'Thinky Games',
     type: GameType.NONE,
@@ -50,7 +49,6 @@ export const Games: Record<GameId, Game> = {
     SEOTitle: 'Pathology - Shortest Path Puzzle Game',
     SEODescription: 'The goal of Pathology is simple. Get to the exit in the least number of moves. Sounds easy right? Yet, this sokoban style game is one of the most mind-bending puzzle games you will find. Different blocks stand in your way to the exit, and your job is to figure out the optimal route',
     shortDescription: 'Get to the exit in the least number of moves',
-    showVisitedTiles: true,
     stripeGiftPriceIdMonthly: process.env.STRIPE_GIFT_MONTHLY_PRICE_ID,
     stripeGiftPriceIdYearly: process.env.STRIPE_GIFT_YEARLY_PRICE_ID,
     stripePriceIdMonthly: process.env.STRIPE_MONTHLY_PRICE_ID_PATHOLOGY,
@@ -60,7 +58,6 @@ export const Games: Record<GameId, Game> = {
     subdomain: 'pathology',
     subtitle: 'Find the way',
     type: GameType.SHORTEST_PATH,
-    videoDemo: 'https://i.imgur.com/bZpBEUW.mp4',
     isSolved: isSolvedPathology,
     validateLevel: validatePathologyLevel,
     validateSolution: validatePathologySolution,
@@ -82,7 +79,6 @@ export const Games: Record<GameId, Game> = {
     SEOTitle: 'Sokoban - Push the boxes puzzle game',
     SEODescription: 'The goal of the puzzle game Sokoban is simple. Push the boxes onto the goals. Sounds easy right? Yet, this sokoban style game is one of the most mind-bending puzzle games you will find. The boxes can only be pushed, never pulled, and only one can be pushed at a time.',
     shortDescription: 'Push the boxes onto the goals',
-    showVisitedTiles: false,
     stripeGiftPriceIdMonthly: process.env.STRIPE_GIFT_MONTHLY_PRICE_ID_SOKOBAN,
     stripeGiftPriceIdYearly: process.env.STRIPE_GIFT_YEARLY_PRICE_ID_SOKOBAN,
     stripePriceIdMonthly: process.env.STRIPE_MONTHLY_PRICE_ID_SOKOBAN,
@@ -92,7 +88,6 @@ export const Games: Record<GameId, Game> = {
     subdomain: 'sokoban',
     subtitle: 'Push the boxes',
     type: GameType.COMPLETE_AND_SHORTEST,
-    videoDemo: 'https://i.imgur.com/7qGspht.mp4',
     isSolved: isSolvedSokoban,
     validateLevel: validateSokobanLevel,
     validateSolution: validateSokobanSolution,
@@ -130,7 +125,6 @@ export interface Game {
   SEOTitle: string;
   SEODescription: string;
   shortDescription?: string;
-  showVisitedTiles: boolean;
   stripePaymentLinkMonthly?: string;
   stripePaymentLinkYearly?: string;
   stripePriceIdMonthly?: string;
@@ -139,7 +133,6 @@ export interface Game {
   stripeGiftPriceIdYearly?: string;
   subdomain: string | undefined;
   type: GameType;
-  videoDemo?: string;
   isSolved: (gameState: GameState) => boolean;
   validateLevel?: (data: string) => ValidateLevelResponse;
   validateSolution?: (directions: Direction[], level: Level) => boolean;

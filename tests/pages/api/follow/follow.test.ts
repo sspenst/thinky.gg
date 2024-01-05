@@ -30,6 +30,7 @@ jest.mock('stripe', () => {
       },
       paymentMethods: {
         retrieve: jest.fn(),
+        list: jest.fn(),
       },
       subscriptions: {
         list: jest.fn().mockReturnValue({ data: [] }),
