@@ -5,16 +5,6 @@ import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import { Bitmap } from 'pureimage';
 
 export default function generateLevelCanvas(canvas: Bitmap | HTMLCanvasElement, game: Game, levelData: string) {
-  const levelRows = levelData.split('\n');
-  const height = levelRows.length;
-  const width = levelRows[0].length;
-  const cellSize = width / height > canvas.width / canvas.height ?
-    Math.floor(canvas.width / width) : Math.floor(canvas.height / height);
-  const xOffset = Math.floor((canvas.width - width * cellSize) / 2);
-  const yOffset = Math.floor((canvas.height - height * cellSize) / 2);
-  const cellMargin = Math.round(cellSize / 40) || 1;
-  const borderWidth = Math.round(cellSize / 5);
-  const goalBorderWidth = Math.round(cellSize / 3);
   const context = canvas.getContext('2d');
 
   if (!context) {
@@ -24,6 +14,19 @@ export default function generateLevelCanvas(canvas: Bitmap | HTMLCanvasElement, 
   context.imageSmoothingEnabled = false;
   context.fillStyle = 'rgb(38, 38, 38)';
   context.fillRect(0, 0, canvas.width, canvas.height); // fyi...this costs 400ms
+
+  const levelRows = levelData.split('\n');
+  const height = levelRows.length;
+  const width = levelRows[0].length;
+
+  const tileSize = width / height > canvas.width / canvas.height ?
+    Math.floor(canvas.width / width) : Math.floor(canvas.height / height);
+  const borderWidth = Math.round(tileSize / 40) || 1;
+  const innerTileSize = tileSize - 2 * borderWidth;
+  const innerBorderWidth = Math.round(innerTileSize / 4.5);
+
+  const xOffset = Math.floor((canvas.width - width * tileSize) / 2);
+  const yOffset = Math.floor((canvas.height - height * tileSize) / 2);
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
@@ -54,10 +57,10 @@ export default function generateLevelCanvas(canvas: Bitmap | HTMLCanvasElement, 
 
       // draw main background color for this cell
       context.fillRect(
-        xOffset + x * cellSize + cellMargin,
-        yOffset + y * cellSize + cellMargin,
-        cellSize - 2 * cellMargin,
-        cellSize - 2 * cellMargin,
+        xOffset + x * tileSize + borderWidth,
+        yOffset + y * tileSize + borderWidth,
+        tileSize - 2 * borderWidth,
+        tileSize - 2 * borderWidth,
       );
 
       if (tileType === TileTypeDefaultVisited) {
@@ -69,10 +72,10 @@ export default function generateLevelCanvas(canvas: Bitmap | HTMLCanvasElement, 
         context.fillStyle = 'rgb(255, 255, 255)';
 
         context.fillRect(
-          xOffset + x * cellSize + cellMargin + goalBorderWidth,
-          yOffset + y * cellSize + cellMargin + goalBorderWidth,
-          cellSize - 2 * (cellMargin + goalBorderWidth),
-          cellSize - 2 * (cellMargin + goalBorderWidth),
+          xOffset + x * tileSize + borderWidth + innerBorderWidth,
+          yOffset + y * tileSize + borderWidth + innerBorderWidth,
+          tileSize - 2 * (borderWidth + innerBorderWidth),
+          tileSize - 2 * (borderWidth + innerBorderWidth),
         );
 
         continue;
@@ -83,37 +86,37 @@ export default function generateLevelCanvas(canvas: Bitmap | HTMLCanvasElement, 
       // draw directional borders for movables and holes
       if (TileTypeHelper.canMoveLeft(tileType) || tileType === TileType.Hole) {
         context.fillRect(
-          xOffset + (x + 1) * cellSize - cellMargin - borderWidth,
-          yOffset + y * cellSize + cellMargin,
-          borderWidth,
-          cellSize - 2 * cellMargin,
+          xOffset + (x + 1) * tileSize - borderWidth - innerBorderWidth,
+          yOffset + y * tileSize + borderWidth,
+          innerBorderWidth,
+          tileSize - 2 * borderWidth,
         );
       }
 
       if (TileTypeHelper.canMoveUp(tileType) || tileType === TileType.Hole) {
         context.fillRect(
-          xOffset + x * cellSize + cellMargin,
-          yOffset + (y + 1) * cellSize - cellMargin - borderWidth,
-          cellSize - 2 * cellMargin,
-          borderWidth
+          xOffset + x * tileSize + borderWidth,
+          yOffset + (y + 1) * tileSize - borderWidth - innerBorderWidth,
+          tileSize - 2 * borderWidth,
+          innerBorderWidth
         );
       }
 
       if (TileTypeHelper.canMoveRight(tileType) || tileType === TileType.Hole) {
         context.fillRect(
-          xOffset + x * cellSize + cellMargin,
-          yOffset + y * cellSize + cellMargin,
-          borderWidth,
-          cellSize - 2 * cellMargin,
+          xOffset + x * tileSize + borderWidth,
+          yOffset + y * tileSize + borderWidth,
+          innerBorderWidth,
+          tileSize - 2 * borderWidth,
         );
       }
 
       if (TileTypeHelper.canMoveDown(tileType) || tileType === TileType.Hole) {
         context.fillRect(
-          xOffset + x * cellSize + cellMargin,
-          yOffset + y * cellSize + cellMargin,
-          cellSize - 2 * cellMargin,
-          borderWidth,
+          xOffset + x * tileSize + borderWidth,
+          yOffset + y * tileSize + borderWidth,
+          tileSize - 2 * borderWidth,
+          innerBorderWidth,
         );
       }
     }
