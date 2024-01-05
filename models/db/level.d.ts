@@ -7,8 +7,14 @@ interface Level {
   archivedBy?: Types.ObjectId & User;
   archivedTs?: number;
   authorNote?: string;
-  calc_difficulty_estimate: number;
+  /**
+   * An estimated difficulty to complete this level for the first time
+   */
   calc_difficulty_completion_estimate: number;
+  /**
+   * An estimated difficulty to solve this level optimally
+   */
+  calc_difficulty_estimate: number;
   /**
    * Total playtime by users before they complete the level for the first time
    */
