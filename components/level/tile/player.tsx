@@ -1,4 +1,4 @@
-import { GameType } from '@root/constants/Games';
+import { Game, GameType } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
 import { GridContext } from '@root/contexts/gridContext';
 import classNames from 'classnames';
@@ -9,17 +9,18 @@ import TileType from '../../../constants/tileType';
 import styles from './Player.module.css';
 
 interface PlayerProps {
+  game: Game
   atEnd?: boolean;
   moveCount: number;
+  theme: Theme;
 }
 
-export default function Player({ atEnd, moveCount }: PlayerProps) {
+export default function Player({ atEnd, game, moveCount, theme }: PlayerProps) {
   const { borderWidth, hideText, innerTileSize, leastMoves, tileSize } = useContext(GridContext);
   const text = hideText ? '' : String(moveCount);
   const fontSizeRatio = text.length <= 3 ? 2 : (1 + (text.length - 1) / 2);
   const fontSize = innerTileSize / fontSizeRatio;
-  const { game } = useContext(AppContext);
-  const { theme } = useTheme();
+
   const classic = theme === Theme.Classic;
   const icon = getIconFromTheme(game, theme, TileType.Player);
   const overstepped = game.type === GameType.SHORTEST_PATH && leastMoves !== 0 && moveCount > leastMoves;

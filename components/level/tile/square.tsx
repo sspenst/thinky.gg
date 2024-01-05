@@ -1,22 +1,21 @@
 import Direction from '@root/constants/direction';
-import { GameType } from '@root/constants/Games';
-import { AppContext } from '@root/contexts/appContext';
+import { Game, GameType } from '@root/constants/Games';
 import { GridContext } from '@root/contexts/gridContext';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
-import { useTheme } from 'next-themes';
 import React, { useContext } from 'react';
 import Theme, { getIconFromTheme } from '../../../constants/theme';
 import TileType from '../../../constants/tileType';
 
 interface SquareProps {
+  game: Game;
   text?: number;
+  theme: Theme;
   tileType: TileType.Default | TileType.Wall | TileType.Exit | TileType.Hole;
 }
 
-export default function Square({ text, tileType }: SquareProps) {
+export default function Square({ game, text, tileType, theme }: SquareProps) {
   const { borderWidth, innerTileSize, leastMoves, tileSize } = useContext(GridContext);
-  const { game } = useContext(AppContext);
-  const { theme } = useTheme();
+
   const classic = theme === Theme.Classic;
   const innerBorderWidth = Math.round(innerTileSize / 4.5);
   const fontSizeRatio = text === undefined || String(text).length <= 3 ?
