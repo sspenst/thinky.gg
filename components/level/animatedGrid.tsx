@@ -30,11 +30,13 @@ export default function AnimatedGrid({ animationInstructions, id, game, theme, l
     setGameState(initGameState(levelData));
     let timer: NodeJS.Timeout;
     const act = () => {
-      if (animationInstructions[animationIndex] === Direction.NONE) {
+      const currentMove = animationInstructions[animationIndex];
+
+      if (currentMove === Direction.NONE) {
         // reset
         setGameState(initGameState(levelData));
       } else {
-        makeMove(gameStateRef.current, animationInstructions[animationIndex]);
+        makeMove(gameStateRef.current, currentMove);
         setGameState({ ...gameStateRef.current });
       }
 
@@ -44,9 +46,14 @@ export default function AnimatedGrid({ animationInstructions, id, game, theme, l
       if (animationIndex < animationInstructions.length) {
         // check if the next move is a reset, if it is we want to wait a bit longer before executing it
         const nextMove = animationInstructions[animationIndex];
-        const wait = nextMove === Direction.NONE ? 1000 : 100;
+        const wait = nextMove === Direction.NONE ? 1000 : 120;
 
-        waitPlusSomeVariation = wait + Math.random() * 150;
+        waitPlusSomeVariation = wait + Math.random() * 200;
+
+        if (currentMove === nextMove) {
+          // make it faster if it's the same move
+          waitPlusSomeVariation /= 2;
+        }
       } else {
         animationIndex = 0;
       }
