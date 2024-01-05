@@ -200,146 +200,218 @@ async function calcStats(level: Level, options?: QueryOptions) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {}) {
-  // await StatModel.updateMany({
-  //   levelId: levelId,
-  // }, [
-  //   // lookup playattempts where levelId matches the stat levelId, userId matches the stat userId, and startTime is less than ts
-  //   {
-  //     $lookup: {
-  //       from: 'playattempts',
-  //       let: {
-  //         userId: '$userId',
-  //         levelId: '$levelId',
-  //         createdAt: '$createdAt',
-  //       },
-  //       pipeline: [
-  //         {
-  //           $match: {
-  //             $expr: {
-  //               $and: [
-  //                 {
-  //                   $eq: ['$userId', '$$userId'],
-  //                 },
-  //                 {
-  //                   $eq: ['$levelId', '$$levelId'],
-  //                 },
-  //                 // a playattempt may span the stat.createdAt time, so we have to subtract from min(endTime, createdAt)
-  //                 {
-  //                   $lt: ['$startTime', '$$createdAt'],
-  //                 },
-  //               ],
-  //             },
-  //           },
-  //         },
-  //       ],
-  //       as: 'playAttempts',
-  //     },
-  //   },
-  //   // sum min(endTime, ts) - startTime for each playAttempt
-  //   {
-  //     $addFields: {
-  //       playAttempts: {
-  //         $map: {
-  //           input: '$playAttempts',
-  //           as: 'playAttempt',
-  //           in: {
-  //             $subtract: [
-  //               {
-  //                 $min: ['$playAttempt.endTime', '$$createdAt'],
-  //               },
-  //               '$$playAttempt.startTime',
-  //             ],
-  //           },
-  //         },
-  //       },
-  //     },
-  //   },
-  //   // set calcPlaytimeBeforeCreation for each stat grouped by user
-  //   {
-  //     $group: {
-  //       _id: '$userId',
-  //       playAttempts: {
-  //         $push: '$playAttempts',
-  //       },
-  //     },
-  //   },
-  // ]);
-
-  const stats = await StatModel.find({
-    levelId: levelId,
-  }, {
-    _id: 1,
-    createdAt: 1,
-    userId: 1,
-  }, {
-    ...options,
-  }).lean<Stat[]>();
-
-  console.log(stats);
-
-  // for each user, we want to sum the playAttempts
-  for (let i = 0; i < stats.length; i++) {
-    const stat = stats[i];
-    const userId = stat.userId;
-    const createdTime = Math.floor(stat.createdAt.getTime() / 1000);
-
-    // sum all playattempts before completion for this user
-    const sumDurationBeforeComplete = await PlayAttemptModel.aggregate([
-      {
-        $match: {
-          userId: userId,
-          levelId: levelId,
-          // a playattempt may span the stat.createdAt time, so we have to subtract from min(endTime, createdAt)
-          startTime: {
-            $lt: createdTime,
-          }
-        }
-      },
-      {
-        $group: {
-          _id: null,
-          sumDuration: {
-            $sum: {
-              $subtract: [
-                {
-                  $min: ['$endTime', stat.createdAt],
-                },
-                '$startTime'
-              ]
-            }
-          }
-        }
-      },
-    ], options);
-
-    console.log(sumDurationBeforeComplete);
-
-    await StatModel.updateOne({
-      _id: stat._id,
-    }, {
-      $set: {
-        calcPlaytimeBeforeCreation: sumDurationBeforeComplete[0]?.sumDuration ?? 0,
-      }
-    }, options);
-  }
-
-  const statModelAgg = await StatModel.aggregate([
+  const playtimeBeforeCompletionAgg = await PlayAttemptModel.aggregate([
+    // match levelId
     {
       $match: {
         levelId: levelId,
       }
     },
+    // group by userId
+    {
+      $group: {
+        _id: '$userId',
+        // group by levelId
+        playAttempts: {
+          $push: '$$ROOT',
+        },
+      }
+    },
+    // for each group, look up the corresponding stat model based on userId and levelId
+    {
+      $lookup: {
+        from: 'stats',
+        let: {
+          userId: '$_id',
+          levelId: levelId,
+        },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  {
+                    $eq: ['$userId', '$$userId'],
+                  },
+                  {
+                    $eq: ['$levelId', '$$levelId'],
+                  },
+                ],
+              },
+            },
+          },
+        ],
+        as: 'stat',
+      }
+    },
+    // unwind stat
+    {
+      $unwind: {
+        path: '$stat',
+        preserveNullAndEmptyArrays: true,
+      }
+    },
+    {
+      $addFields: {
+        createdAt: {
+          $cond: [
+            '$stat',
+            {
+              $floor: {
+                $divide: [
+                  { $toLong: '$stat.createdAt' },
+                  1000
+                ]
+              }
+            },
+            Number.MAX_SAFE_INTEGER,
+          ]
+        }
+      }
+    },
+    // filter out playattempts with startTime > createdAt
+    {
+      $addFields: {
+        playAttempts: {
+          $filter: {
+            input: '$playAttempts',
+            as: 'playAttempt',
+            cond: {
+              $lt: ['$$playAttempt.startTime', '$createdAt'],
+            }
+          }
+        }
+      }
+    },
+    // sum min(endTime, createdAt) - startTime for each playAttempt
+    {
+      $addFields: {
+        playAttempts: {
+          $map: {
+            input: '$playAttempts',
+            as: 'playAttempt',
+            in: {
+              $subtract: [
+                {
+                  $min: ['$createdAt', '$$playAttempt.endTime'],
+                },
+                '$$playAttempt.startTime',
+              ],
+            },
+          },
+        },
+      },
+    },
+    // sum all playattempts
+    {
+      $addFields: {
+        playtimePerUserBeforeCompletion: {
+          $reduce: {
+            input: '$playAttempts',
+            initialValue: 0,
+            in: {
+              $add: ['$$value', '$$this'],
+            },
+          },
+        },
+      },
+    },
+    // filter playtimePerUserBeforeCompletion of 0
+    {
+      $match: {
+        playtimePerUserBeforeCompletion: {
+          $gt: 0,
+        },
+      },
+    },
+    // sum all playattempts
     {
       $group: {
         _id: null,
-        sumDurationBeforeStat: { $sum: '$calcPlaytimeBeforeCreation' },
-      }
-    }
-  ], options) as { _id: null, sumDurationBeforeStat: number }[];
+        calcPlayattemptsDurationBeforeStatSum: {
+          $sum: '$playtimePerUserBeforeCompletion',
+        },
+        userCount: {
+          $sum: 1,
+        },
+      },
+    },
+  ]);
 
-  const sumDurationBeforeComplete = statModelAgg[0]?.sumDurationBeforeStat ?? 0;
+  console.log(playtimeBeforeCompletionAgg);
 
-  console.log(sumDurationBeforeComplete);
+  const calcPlayattemptsDurationBeforeStatSum = playtimeBeforeCompletionAgg[0].calcPlayattemptsDurationBeforeStatSum ?? 0;
+  const usersAttempted = playtimeBeforeCompletionAgg[0].userCount ?? 0;
+
+  // const stats = await StatModel.find({
+  //   levelId: levelId,
+  // }, {
+  //   _id: 1,
+  //   createdAt: 1,
+  //   userId: 1,
+  // }, {
+  //   ...options,
+  // }).lean<Stat[]>();
+
+  // // for each user, we want to sum the playAttempts
+  // for (let i = 0; i < stats.length; i++) {
+  //   const stat = stats[i];
+  //   const userId = stat.userId;
+  //   const createdTime = Math.floor(stat.createdAt.getTime() / 1000);
+
+  //   // sum all playattempts before completion for this user
+  //   const sumDurationBeforeComplete = await PlayAttemptModel.aggregate([
+  //     {
+  //       $match: {
+  //         userId: userId,
+  //         levelId: levelId,
+  //         // a playattempt may span the stat.createdAt time, so we have to subtract from min(endTime, createdAt)
+  //         startTime: {
+  //           $lt: createdTime,
+  //         }
+  //       }
+  //     },
+  //     {
+  //       $group: {
+  //         _id: null,
+  //         sumDuration: {
+  //           $sum: {
+  //             $subtract: [
+  //               {
+  //                 $min: ['$endTime', stat.createdAt],
+  //               },
+  //               '$startTime'
+  //             ]
+  //           }
+  //         }
+  //       }
+  //     },
+  //   ], options);
+
+  //   await StatModel.updateOne({
+  //     _id: stat._id,
+  //   }, {
+  //     $set: {
+  //       calcPlaytimeBeforeCreation: sumDurationBeforeComplete[0]?.sumDuration ?? 0,
+  //     }
+  //   }, options);
+  // }
+
+  // const statModelAgg = await StatModel.aggregate([
+  //   {
+  //     $match: {
+  //       levelId: levelId,
+  //     }
+  //   },
+  //   {
+  //     $group: {
+  //       _id: null,
+  //       sumDurationBeforeStat: { $sum: '$calcPlaytimeBeforeCreation' },
+  //     }
+  //   }
+  // ], options) as { _id: null, sumDurationBeforeStat: number }[];
+
+  // const sumDurationBeforeComplete = statModelAgg[0]?.sumDurationBeforeStat ?? 0;
 
   const bigQ = await PlayAttemptModel.aggregate([
     {
@@ -399,7 +471,6 @@ export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {
               preserveNullAndEmptyArrays: true,
             },
           },
-
         ]
       }
     },
@@ -417,9 +488,10 @@ export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {
   const sumDuration = result?.sumDuration ?? 0;
   const uniqueUsersList = result?.uniqueUsersList ?? [];
 
+  // TODO: need to update calc_stats_completed_count here
   const update = {
     calc_playattempts_duration_sum: sumDuration ?? 0,
-    calc_playattempts_duration_before_stat_sum: sumDurationBeforeComplete ?? 0,
+    calc_playattempts_duration_before_stat_sum: calcPlayattemptsDurationBeforeStatSum,
     calc_playattempts_just_beaten_count: countJustSolved,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     calc_playattempts_unique_users: uniqueUsersList.map((u: any) => u?.userId.toString()),

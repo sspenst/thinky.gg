@@ -38,7 +38,7 @@ export function getDifficultyCompletionEstimate(
   }
 
   // when we have 10 unique users, we want to return a non-zero value
-  const solveCount = !level.calc_stats_completed_count ? 1 : level.calc_stats_completed_count;
+  const completedCount = !level.calc_stats_completed_count ? 1 : level.calc_stats_completed_count;
 
-  return level.calc_playattempts_duration_before_stat_sum / solveCount * getSolveCountFactor(solveCount);
+  return level.calc_playattempts_duration_before_stat_sum / completedCount * getSolveCountFactor(completedCount);
 }
