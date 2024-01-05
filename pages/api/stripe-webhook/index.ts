@@ -32,18 +32,6 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
   try {
     await session.withTransaction(async () => {
       const promises = [
-        /* // NO NEED TO DELETE STRIPE CUSTOMER ID EVEN IF THEY DELETE SUBSCRIPTION
-        UserModel.findOneAndUpdate(
-          {
-            _id: userToDowngrade._id,
-          },
-          {
-            // stripeCustomerId: null,
-          },
-          {
-            session: session
-          },
-        ),*/
         UserConfigModel.findOneAndUpdate(
           {
             userId: userToDowngrade._id,
