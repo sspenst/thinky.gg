@@ -1,9 +1,11 @@
 /* istanbul ignore file */
+import Grid from '@root/components/level/grid';
 import Footer from '@root/components/page/footer';
 import Page from '@root/components/page/page';
 import { GameId } from '@root/constants/GameId';
 import { Game, Games } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
+import { initGameState } from '@root/helpers/gameStateHelpers';
 import useUrl from '@root/hooks/useUrl';
 import Image from 'next/image';
 import React, { useContext } from 'react';
@@ -95,7 +97,10 @@ export default function ThinkyHomePage() {
               return (
                 <div className='flex flex-col items-center gap-4' key={`game-${game.id}`}>
                   <GameCard game={game} />
-                  <video autoPlay loop muted className='rounded-lg w-40 text-center' src={game.videoDemo} />
+                  {/*<video autoPlay loop muted className='rounded-lg w-40 text-center' src={game.videoDemo} />*/}
+                  <div className='flex h-40 w-40'>
+                    <Grid gameOverride={game} themeOverride={game.defaultTheme} leastMoves={0} disableAnimation hideText id={'level-preview-' + game.id} gameState={initGameState('000\n230\n040'.trim())} />
+                  </div>
                   <div className='p-2 h-20 text-center text-md fadeIn trun'>
                     {game.shortDescription}
                   </div>

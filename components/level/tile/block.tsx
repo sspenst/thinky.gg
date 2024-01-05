@@ -1,24 +1,23 @@
-import { GameType } from '@root/constants/Games';
+import { Game, GameType } from '@root/constants/Games';
 import TileType from '@root/constants/tileType';
-import { AppContext } from '@root/contexts/appContext';
 import { GridContext } from '@root/contexts/gridContext';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import classNames from 'classnames';
-import { useTheme } from 'next-themes';
 import React, { useContext } from 'react';
 import Theme from '../../../constants/theme';
 import styles from './Block.module.css';
 
 interface BlockProps {
+  game: Game;
+  theme: Theme;
   inHole: boolean;
   onTopOf?: TileType;
   tileType: TileType;
 }
 
-export default function Block({ inHole, onTopOf, tileType }: BlockProps) {
+export default function Block({ game, inHole, onTopOf, theme, tileType }: BlockProps) {
   const { borderWidth, innerTileSize } = useContext(GridContext);
-  const { game } = useContext(AppContext);
-  const { theme } = useTheme();
+
   const classic = theme === Theme.Classic;
   const innerBorderWidth = Math.round(innerTileSize / 4.5);
 
