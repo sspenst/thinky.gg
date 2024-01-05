@@ -1,3 +1,4 @@
+import { ProSubscriptionType } from '@root/constants/ProSubscriptionType';
 import TestId from '@root/constants/testId';
 import { logger } from '@root/helpers/logger';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
@@ -5,7 +6,7 @@ import { getTokenCookieValue } from '@root/lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '@root/lib/withAuth';
 import { UserModel } from '@root/models/mongoose';
 import giftHandler, { GiftType } from '@root/pages/api/subscription/gift';
-import handler, { ProSubscriptionType, stripe } from '@root/pages/api/subscription/index';
+import handler, { stripe } from '@root/pages/api/subscription/index';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';

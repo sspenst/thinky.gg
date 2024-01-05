@@ -1,4 +1,9 @@
+<<<<<<< Updated upstream
 import { ValidEnum, ValidNumber, ValidType } from '@root/helpers/apiWrapper';
+=======
+import { ProSubscriptionType } from '@root/constants/ProSubscriptionType';
+import { ValidEnum, ValidType } from '@root/helpers/apiWrapper';
+>>>>>>> Stashed changes
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import isPro from '@root/helpers/isPro';
 import { logger } from '@root/helpers/logger';
@@ -27,7 +32,7 @@ export interface SubscriptionData {
   subscriptionId: string;
 }
 
-export async function getSubscriptions(req: NextApiRequestWithAuth): Promise<[number, { error: string } | SubscriptionData[]]> {
+export async function getSubscriptions(req: NextApiRequestWithAuth): Promise<[number, { error: string } | SubscriptionData[], paymentMethods?: Stripe.PaymentMethod[]]> {
   const userId = req.userId;
   const user = await UserModel.findOne({ _id: userId }, { stripeCustomerId: 1 }).lean<User>();
 
@@ -90,6 +95,16 @@ export async function getSubscriptions(req: NextApiRequestWithAuth): Promise<[nu
     });
   }
 
+  // query payment methods on file
+  const paymentMethods = await stripe.paymentMethods.list({
+    customer: user?.stripeCustomerId,
+    type: 'card',
+  });
+
+  if (paymentMethods) {
+    return [200, subscriptionData, paymentMethods.data];
+  }
+
   return [200, subscriptionData];
 }
 
@@ -142,11 +157,6 @@ export async function cancelSubscription(req: NextApiRequestWithAuth): Promise<[
   return [200, { message: 'Subscription will be canceled at the end of the current billing period.' }];
 }
 
-export enum ProSubscriptionType {
-  Monthly = 'monthly',
-  Yearly = 'yearly',
-}
-
 export default withAuth({
   GET: {},
   POST: {
@@ -157,9 +167,9 @@ export default withAuth({
   },
 }, async (req, res) => {
   if (req.method === 'GET') {
-    const [code, data] = await getSubscriptions(req);
+    const [code, data, paymentMethods] = await getSubscriptions(req);
 
-    return res.status(code).json(data);
+    return res.status(code).json({ subscriptions: data, paymentMethods: paymentMethods });
   } else if (req.method === 'POST') {
     const { type, paymentMethodId } = req.body as { type: ProSubscriptionType, paymentMethodId: string };
 
@@ -200,6 +210,7 @@ export default withAuth({
         default_payment_method: paymentMethodId,
         metadata: {
           userId: req.userId,
+          gameId: req.gameId,
           type: type,
         },
       });
