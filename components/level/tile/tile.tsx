@@ -1,9 +1,8 @@
+import { Game, GameType } from '@root/constants/Games';
 import Theme from '@root/constants/theme';
-import { AppContext } from '@root/contexts/appContext';
 import { GridContext } from '@root/contexts/gridContext';
 import Position from '@root/models/position';
 import classNames from 'classnames';
-import { useTheme } from 'next-themes';
 import React, { useContext, useMemo, useState } from 'react';
 import TileType from '../../../constants/tileType';
 import Block from './block';
@@ -14,6 +13,7 @@ interface TileProps {
   atEnd?: boolean;
   className?: string | undefined;
   disableAnimation?: boolean;
+  game: Game;
   handleClick?: (rightClick: boolean) => void;
   hideText?: boolean;
   inHole?: boolean;
@@ -21,26 +21,31 @@ interface TileProps {
   pos: Position;
   style?: React.CSSProperties;
   text?: number | undefined;
+  theme: Theme;
   tileType: TileType;
+  visited?: boolean;
 }
 
 export default function Tile({
   atEnd,
   className,
   disableAnimation,
+  game,
   handleClick,
   inHole,
   onTopOf,
   pos,
   style,
   text,
+  theme,
   tileType,
+  visited,
 }: TileProps) {
   const { borderWidth, hideText, innerTileSize, tileSize } = useContext(GridContext);
-  const { game } = useContext(AppContext);
+
   // initialize the block at the starting position to avoid an animation from the top left
   const [initPos] = useState(new Position(pos.x, pos.y));
-  const { theme } = useTheme();
+
   const classic = theme === Theme.Classic;
 
   function onClick(e: React.MouseEvent<HTMLDivElement>) {
@@ -63,8 +68,10 @@ export default function Tile({
     if (tileType === TileType.Player) {
       return (
         <Player
+          game={game}
           atEnd={atEnd}
           moveCount={text ?? 0}
+          theme={theme}
         />
       );
     }
@@ -76,8 +83,11 @@ export default function Tile({
     ) {
       return (
         <Square
-          text={hideText || !game.showVisitedTiles ? undefined : text}
+          game={game}
+          text={hideText || game.type === GameType.COMPLETE_AND_SHORTEST && tileType === TileType.Exit ? undefined : text}
+          theme={theme}
           tileType={tileType}
+          visited={visited}
         />
       );
     }
@@ -87,9 +97,11 @@ export default function Tile({
         inHole={inHole ?? false}
         onTopOf={onTopOf}
         tileType={tileType}
+        game={game}
+        theme={theme}
       />
     );
-  }, [atEnd, game.showVisitedTiles, hideText, inHole, onTopOf, text, tileType]);
+  }, [atEnd, game, hideText, inHole, onTopOf, text, theme, tileType, visited]);
 
   return (
     <div

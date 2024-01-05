@@ -21,6 +21,7 @@ jest.mock('stripe', () => {
       },
       paymentMethods: {
         retrieve: jest.fn(),
+        list: jest.fn(),
       },
       subscriptions: {
         list: jest.fn(),
@@ -43,6 +44,7 @@ describe('pages/api/collection/index.ts', () => {
 
   test('Deleting a user that has a subscription should not work', async () => {
     await UserModel.updateOne({ _id: TestId.USER }, { stripeCustomerId: mockSubscription.id });
+
     (stripe.subscriptions.list as jest.Mock).mockResolvedValue({
       data: [mockSubscription],
     });
@@ -54,6 +56,10 @@ describe('pages/api/collection/index.ts', () => {
     });
     (stripe.products.retrieve as jest.Mock).mockResolvedValue({
       name: 'test product',
+    });
+    // mock stripe.paymentMethods.list
+    (stripe.paymentMethods.list as jest.Mock).mockResolvedValue({
+      data: [{}],
     });
 
     await testApiHandler({
@@ -100,6 +106,9 @@ describe('pages/api/collection/index.ts', () => {
     } as unknown as NextApiRequestWithAuth);
 
     mockSubscription.cancel_at_period_end = true;
+    (stripe.paymentMethods.list as jest.Mock).mockResolvedValue({
+      data: [],
+    });
 
     (stripe.subscriptions.list as jest.Mock).mockResolvedValue({
       data: [mockSubscription],

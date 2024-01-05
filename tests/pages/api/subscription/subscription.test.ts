@@ -9,6 +9,7 @@ import giftHandler, { GiftType } from '@root/pages/api/subscription/gift';
 import handler, { stripe } from '@root/pages/api/subscription/index';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { list } from 'postcss';
 import { Logger } from 'winston';
 import mockSubscription from './mockSubscription';
 
@@ -26,6 +27,7 @@ jest.mock('stripe', () => {
       },
       paymentMethods: {
         retrieve: jest.fn(),
+        list: jest.fn(),
       },
       subscriptions: {
         create: jest.fn(),
@@ -58,6 +60,7 @@ describe('api/subscription', () => {
     (stripe.products.retrieve as jest.Mock).mockResolvedValue({
       name: 'test product',
     });
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -77,9 +80,9 @@ describe('api/subscription', () => {
         const response = await res.json();
 
         expect(res.status).toBe(200);
-
-        expect(response).toHaveLength(1);
-        expect(response[0].subscriptionId).toBe(mockSubscription.id);
+        expect(response).toBeDefined();
+        expect(response.subscriptions).toHaveLength(1);
+        expect(response.subscriptions[0].subscriptionId).toBe(mockSubscription.id);
       },
     });
   });
@@ -253,7 +256,6 @@ describe('api/subscription', () => {
         const response = await res.json();
 
         expect(res.status).toBe(500);
-
         expect(response.error).toBe('Stripe error looking up subscriptions.');
       },
     });
