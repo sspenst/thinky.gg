@@ -1,5 +1,5 @@
 import { GameId } from '@root/constants/GameId';
-import mongoose, { Types } from 'mongoose';
+import mongoose, { QueryOptions, Types } from 'mongoose';
 import getDifficultyEstimate, { getDifficultyCompletionEstimate } from '../../helpers/getDifficultyEstimate';
 import Level from '../db/level';
 import Stat from '../db/stat';
@@ -19,19 +19,19 @@ const LevelSchema = new mongoose.Schema<Level>(
       type: String,
       maxlength: 1024 * 5, // 5 kb limit seems reasonable
     },
-    calc_difficulty_estimate: {
-      type: Number,
-      default: -1,
-    },
     calc_difficulty_completion_estimate: {
       type: Number,
       default: -1
     },
-    calc_playattempts_duration_sum: {
+    calc_difficulty_estimate: {
+      type: Number,
+      default: -1,
+    },
+    calc_playattempts_duration_before_stat_sum: {
       type: Number,
       default: 0,
     },
-    calc_playattempts_duration_before_stat_sum: {
+    calc_playattempts_duration_sum: {
       type: Number,
       default: 0,
     },
@@ -187,11 +187,10 @@ async function calcReviews(lvl: Level) {
   } as Partial<Level>;
 }
 
-async function calcStats(level: Level) {
+async function calcStats(level: Level, options?: QueryOptions) {
   const stats = await StatModel.find({
-    isDeleted: { $ne: true },
     levelId: level._id,
-  }, 'moves').lean<Stat[]>();
+  }, 'moves', options).lean<Stat[]>();
 
   return {
     calc_stats_completed_count: stats.length,
@@ -201,30 +200,98 @@ async function calcStats(level: Level) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {}) {
+  // await StatModel.updateMany({
+  //   levelId: levelId,
+  // }, [
+  //   // lookup playattempts where levelId matches the stat levelId, userId matches the stat userId, and startTime is less than ts
+  //   {
+  //     $lookup: {
+  //       from: 'playattempts',
+  //       let: {
+  //         userId: '$userId',
+  //         levelId: '$levelId',
+  //         createdAt: '$createdAt',
+  //       },
+  //       pipeline: [
+  //         {
+  //           $match: {
+  //             $expr: {
+  //               $and: [
+  //                 {
+  //                   $eq: ['$userId', '$$userId'],
+  //                 },
+  //                 {
+  //                   $eq: ['$levelId', '$$levelId'],
+  //                 },
+  //                 // a playattempt may span the stat.createdAt time, so we have to subtract from min(endTime, createdAt)
+  //                 {
+  //                   $lt: ['$startTime', '$$createdAt'],
+  //                 },
+  //               ],
+  //             },
+  //           },
+  //         },
+  //       ],
+  //       as: 'playAttempts',
+  //     },
+  //   },
+  //   // sum min(endTime, ts) - startTime for each playAttempt
+  //   {
+  //     $addFields: {
+  //       playAttempts: {
+  //         $map: {
+  //           input: '$playAttempts',
+  //           as: 'playAttempt',
+  //           in: {
+  //             $subtract: [
+  //               {
+  //                 $min: ['$playAttempt.endTime', '$$createdAt'],
+  //               },
+  //               '$$playAttempt.startTime',
+  //             ],
+  //           },
+  //         },
+  //       },
+  //     },
+  //   },
+  //   // set calcPlaytimeBeforeCreation for each stat grouped by user
+  //   {
+  //     $group: {
+  //       _id: '$userId',
+  //       playAttempts: {
+  //         $push: '$playAttempts',
+  //       },
+  //     },
+  //   },
+  // ]);
+
   const stats = await StatModel.find({
     levelId: levelId,
   }, {
     _id: 1,
     createdAt: 1,
+    userId: 1,
   }, {
     ...options,
   }).lean<Stat[]>();
 
+  console.log(stats);
+
   // for each user, we want to sum the playAttempts
   for (let i = 0; i < stats.length; i++) {
     const stat = stats[i];
-
     const userId = stat.userId;
+    const createdTime = Math.floor(stat.createdAt.getTime() / 1000);
 
+    // sum all playattempts before completion for this user
     const sumDurationBeforeComplete = await PlayAttemptModel.aggregate([
-      /** sum all play attempts durations for this user */
       {
         $match: {
           userId: userId,
           levelId: levelId,
-          // where endTime is less than stat.createdAt
-          endTime: {
-            $lt: stat.createdAt,
+          // a playattempt may span the stat.createdAt time, so we have to subtract from min(endTime, createdAt)
+          startTime: {
+            $lt: createdTime,
           }
         }
       },
@@ -233,14 +300,21 @@ export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {
           _id: null,
           sumDuration: {
             $sum: {
-              $subtract: ['$endTime', '$startTime']
+              $subtract: [
+                {
+                  $min: ['$endTime', stat.createdAt],
+                },
+                '$startTime'
+              ]
             }
           }
         }
       },
     ], options);
 
-    await PlayAttemptModel.updateOne({
+    console.log(sumDurationBeforeComplete);
+
+    await StatModel.updateOne({
       _id: stat._id,
     }, {
       $set: {
@@ -255,7 +329,6 @@ export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {
         levelId: levelId,
       }
     },
-
     {
       $group: {
         _id: null,
@@ -265,6 +338,9 @@ export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {
   ], options) as { _id: null, sumDurationBeforeStat: number }[];
 
   const sumDurationBeforeComplete = statModelAgg[0]?.sumDurationBeforeStat ?? 0;
+
+  console.log(sumDurationBeforeComplete);
+
   const bigQ = await PlayAttemptModel.aggregate([
     {
       $match: {
