@@ -32,6 +32,8 @@ export function directionToVector(direction: Direction) {
     return new Position(1, 0);
   case Direction.DOWN:
     return new Position(0, 1);
+  default:
+    return new Position(0, 0);
   }
 }
 
