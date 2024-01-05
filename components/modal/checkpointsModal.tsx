@@ -69,7 +69,7 @@ function CheckpointModalItem({ checkpoint, closeModal, index }: CheckpointModalI
       }
 
       // show darker green for visited tiles
-      if (tileState.tileType === TileType.Default && tileState.text.length > 0 && game.showVisitedTiles) {
+      if (tileState.tileType === TileType.Default && tileState.text.length > 0) {
         return TileTypeDefaultVisited;
       }
 

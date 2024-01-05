@@ -1,3 +1,4 @@
+import { GameType } from '@root/constants/Games';
 import Theme from '@root/constants/theme';
 import { AppContext } from '@root/contexts/appContext';
 import { GridContext } from '@root/contexts/gridContext';
@@ -22,6 +23,7 @@ interface TileProps {
   style?: React.CSSProperties;
   text?: number | undefined;
   tileType: TileType;
+  visited?: boolean;
 }
 
 export default function Tile({
@@ -35,6 +37,7 @@ export default function Tile({
   style,
   text,
   tileType,
+  visited,
 }: TileProps) {
   const { borderWidth, hideText, innerTileSize, tileSize } = useContext(GridContext);
   const { game } = useContext(AppContext);
@@ -76,8 +79,9 @@ export default function Tile({
     ) {
       return (
         <Square
-          text={hideText || !game.showVisitedTiles ? undefined : text}
+          text={hideText || game.type === GameType.COMPLETE_AND_SHORTEST && tileType === TileType.Exit ? undefined : text}
           tileType={tileType}
+          visited={visited}
         />
       );
     }
@@ -89,7 +93,7 @@ export default function Tile({
         tileType={tileType}
       />
     );
-  }, [atEnd, game.showVisitedTiles, hideText, inHole, onTopOf, text, tileType]);
+  }, [atEnd, game.type, hideText, inHole, onTopOf, text, tileType, visited]);
 
   return (
     <div

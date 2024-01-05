@@ -11,14 +11,14 @@ import TileType from '../../../constants/tileType';
 interface SquareProps {
   text?: number;
   tileType: TileType.Default | TileType.Wall | TileType.Exit | TileType.Hole;
+  visited?: boolean;
 }
 
-export default function Square({ text, tileType }: SquareProps) {
+export default function Square({ text, tileType, visited }: SquareProps) {
   const { borderWidth, innerTileSize, leastMoves, tileSize } = useContext(GridContext);
   const { game } = useContext(AppContext);
   const { theme } = useTheme();
   const classic = theme === Theme.Classic;
-  const innerBorderWidth = Math.round(innerTileSize / 4.5);
   const fontSizeRatio = text === undefined || String(text).length <= 3 ?
     2 : (1 + (String(text).length - 1) / 2);
   const fontSize = innerTileSize / fontSizeRatio * (classic ? 1.5 : 1);
@@ -29,7 +29,7 @@ export default function Square({ text, tileType }: SquareProps) {
   function getBackgroundColor() {
     switch (tileType) {
     case TileType.Default:
-      return text !== undefined ? 'var(--level-grid-used)' : 'var(--level-grid)';
+      return visited ? 'var(--level-grid-used)' : 'var(--level-grid)';
     case TileType.Wall:
       return 'var(--level-wall)';
     case TileType.Exit:
@@ -42,16 +42,20 @@ export default function Square({ text, tileType }: SquareProps) {
   }
 
   function getBorderWidth(direction: Direction) {
-    if (game.type === GameType.COMPLETE_AND_SHORTEST && tileType === TileType.Exit) {
-      return Math.round(tileSize / 3);
+    if (
+      (game.type === GameType.COMPLETE_AND_SHORTEST && tileType === TileType.Exit) ||
+      tileType === TileType.Hole ||
+      TileTypeHelper.canMoveInDirection(tileType, direction)
+    ) {
+      return Math.round(innerTileSize / 4.5);
     }
 
-    return tileType === TileType.Hole || TileTypeHelper.canMoveInDirection(tileType, direction) ? innerBorderWidth : 0;
+    return 0;
   }
 
   function getBorderColor() {
     if (game.type === GameType.COMPLETE_AND_SHORTEST && tileType === TileType.Exit) {
-      return 'var(--level-grid)';
+      return visited ? 'var(--level-grid-used)' : 'var(--level-grid)';
     }
 
     if (tileType === TileType.Hole) {
