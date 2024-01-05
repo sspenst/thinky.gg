@@ -79,7 +79,7 @@ export async function postPlayAttempt(userId: Types.ObjectId, levelId: string) {
         resTrack.status = 200;
         resTrack.json = { message: 'created', playAttempt: resp[0]._id };
 
-        return resTrack;
+        return;
       }
 
       if (latestPlayAttempt.endTime > (now - 3 * 60) && latestPlayAttempt.attemptContext !== AttemptContext.JUST_SOLVED) {
@@ -149,7 +149,7 @@ export async function postPlayAttempt(userId: Types.ObjectId, levelId: string) {
         resTrack.status = 200;
         resTrack.json = { message: 'updated', playAttempt: latestPlayAttempt._id };
 
-        return resTrack;
+        return;
       }
 
       const resp = await PlayAttemptModel.create([{
