@@ -1,7 +1,7 @@
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import Direction from '@root/constants/direction';
 import { Games } from '@root/constants/Games';
-import getDifficultyEstimate from '@root/helpers/getDifficultyEstimate';
+import getDifficultyEstimate, { getDifficultyCompletionEstimate } from '@root/helpers/getDifficultyEstimate';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import { matchMarkCompleteLevel } from '@root/helpers/match/matchMarkCompleteLevel';
 import { randomRotateLevelDataViaMatchHash } from '@root/helpers/randomRotateLevelDataViaMatchHash';
@@ -29,7 +29,6 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
   const resTrack = { status: 500, json: { error: 'Internal server error' } as any };
   const ts = TimerUtil.getTs();
   const session = await mongoose.startSession();
-
   const userId = user._id;
 
   try {
@@ -98,38 +97,83 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
 
       // track the first completion
       if (!stat) {
-        // TODO: playattempt adjustments here potentially
-        // This code block only happens once per user per level
+        // extend the user's recent UNSOLVED playattempt up to current ts
+        const found = await PlayAttemptModel.findOneAndUpdate({
+          levelId: level._id,
+          userId: userId,
+          endTime: { $gt: ts - 3 * 60 },
+        }, {
+          $set: {
+            endTime: ts,
+          },
+          $inc: { updateCount: 1 }
+        }, {
+          new: false,
+          session: session,
+          sort: {
+            endTime: -1,
+            // NB: if end time is identical, we want to get the highest attempt context (JUST_SOLVED over UNSOLVED)
+            attemptContext: -1,
+          },
+        }).lean<PlayAttempt>();
 
-        // const sumDurationBeforeComplete = await PlayAttemptModel.aggregate([
-        //   /** sum all play attempts durations for this user */
-        //   {
-        //     $match: {
-        //       userId: userId,
-        //       levelId: level._id,
-        //       //attemptContext: AttemptContext.UNSOLVED,
-        //     }
-        //   },
-        //   {
-        //     $group: {
-        //       _id: null,
-        //       sumDuration: {
-        //         $sum: {
-        //           $subtract: ['$endTime', '$startTime']
-        //         }
-        //       }
-        //     }
-        //   },
-        // ], { session: session });
-        // TODO: this
-        // const calcPlaytimeBeforeCreation = (sumDurationBeforeComplete && sumDurationBeforeComplete[0])?.sumDuration ?? 0;
+        if (!found) {
+          // create one if it did not exist... rare but possible
+          await PlayAttemptModel.create([{
+            _id: new Types.ObjectId(),
+            attemptContext: AttemptContext.UNSOLVED,
+            endTime: ts,
+            gameId: level.gameId,
+            levelId: level._id,
+            startTime: ts,
+            updateCount: 0,
+            userId: userId,
+          }], { session: session });
+        } else {
+          const enrichedLevel = await LevelModel.findByIdAndUpdate(
+            level._id,
+            {
+              $addToSet: {
+                calc_playattempts_unique_users: userId,
+              },
+              $inc: {
+                calc_playattempts_duration_before_stat_sum: ts - found.endTime,
+                calc_playattempts_duration_sum: ts - found.endTime,
+                calc_stats_completed_count: 1,
+              },
+            },
+            {
+              new: true,
+              projection: {
+                calc_playattempts_duration_before_stat_sum: 1,
+                calc_playattempts_duration_sum: 1,
+                calc_playattempts_just_beaten_count: 1,
+                calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' },
+                calc_stats_completed_count: 1,
+              },
+              session: session,
+            },
+          ).lean<EnrichedLevel>();
+
+          // should be impossible, but need this check for typescript to be happy
+          if (!enrichedLevel) {
+            throw new Error('Level ' + levelId + ' not found within transaction');
+          }
+
+          const uniqueUsersCount = enrichedLevel.calc_playattempts_unique_users_count ?? 0;
+
+          await LevelModel.findByIdAndUpdate(level._id, {
+            $set: {
+              calc_difficulty_completion_estimate: getDifficultyCompletionEstimate(enrichedLevel, uniqueUsersCount),
+              calc_difficulty_estimate: getDifficultyEstimate(enrichedLevel, uniqueUsersCount),
+            },
+          }, { session: session });
+        }
 
         await Promise.all([
-          // LevelModel.updateOne({ _id: level._id }, { $inc: { calc_playattempts_duration_before_stat_sum: calcPlaytimeBeforeCreation } }, { session: session }),
           StatModel.create([{
             _id: new Types.ObjectId(),
             attempts: 1,
-            // calcPlaytimeBeforeCreation: calcPlaytimeBeforeCreation,
             complete: complete,
             gameId: level.gameId,
             levelId: level._id,
@@ -316,8 +360,6 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
         },
         $inc: {
           calc_playattempts_duration_sum: incPlayattemptsDurationSum,
-          // TODO: set a flag for this
-          calc_playattempts_duration_before_stat_sum: incPlayattemptsDurationSum,
         },
       };
 
@@ -357,7 +399,6 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
     resTrack.status = 200;
     resTrack.json = { success: true };
   } catch (err) {
-    console.trace();
     logger.error('Error in api/stats', err);
   }
 

@@ -240,7 +240,6 @@ async function getDifficultyDataComparisons(gameId: GameId, userId: string) {
         slug: 1,
         ts: 1,
         calc_playattempts_just_beaten_count: 1,
-
         otherPlayattemptsAverageDuration: { $divide: ['$otherplayattempts.sumDuration', { $size: '$players_with_just_solved_playattempt' }] },
         calc_playattempts_duration_sum: 1,
       },

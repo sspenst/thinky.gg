@@ -61,6 +61,14 @@ interface PlayAttemptTest {
  */
 
 const tests = [
+  // NB: dummy test because there are still remaining documents from initializeLocalDb that have not been cleaned up
+  // this test forces the cleanup to run so the remaining tests are accurate
+  {
+    levelId: TestId.LEVEL_4,
+    name: 'dummy',
+    list: [],
+    tests: async () => {},
+  },
   {
     levelId: TestId.LEVEL_4,
     name: 'play at 5 min for 4 min',
@@ -83,8 +91,7 @@ const tests = [
         new Types.ObjectId(TestId.USER),
       ]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(0);
-      expect(statDocs).toHaveLength(1);
-      expect((statDocs[0] as Stat).calcPlaytimeBeforeCreation).toBe(0);
+      expect(statDocs).toHaveLength(0);
     },
   },
   {
@@ -123,6 +130,7 @@ const tests = [
       expect(playAttemptDocs.length).toBe(1);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(playAttemptDocs[0].updateCount).toBe(0);
+      expect(statDocs).toHaveLength(0);
     },
   },
   {
@@ -188,9 +196,6 @@ const tests = [
         AttemptContext.JUST_SOLVED
       );
       expect(statDocs).toHaveLength(1);
-
-      expect(statDocs[0].calcPlaytimeBeforeCreation).toBe(3 * MINUTE);
-
       expect(playAttemptDocs[3].updateCount).toBe(2);
       expect(playAttemptDocs[3].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(playAttemptDocs[4].updateCount).toBe(2);
@@ -218,9 +223,6 @@ const tests = [
       expect(lvl.calc_playattempts_duration_sum).toBe(1 * MINUTE);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
       expect(statDocs).toHaveLength(1);
-
-      expect(statDocs[0].calcPlaytimeBeforeCreation).toBe(1 * MINUTE);
-
       expect(playAttemptDocs.length).toBe(2);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.SOLVED);
       expect(playAttemptDocs[0].updateCount).toBe(0);
@@ -258,10 +260,7 @@ const tests = [
         AttemptContext.JUST_SOLVED
       );
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
-
       expect(statDocs).toHaveLength(1);
-
-      expect(statDocs[0].calcPlaytimeBeforeCreation).toBe(1 * MINUTE);
       expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(1 * MINUTE);
     },
   },
@@ -294,9 +293,6 @@ const tests = [
       ]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1); // other person solved
       expect(statDocs).toHaveLength(2);
-
-      expect(statDocs[1].calcPlaytimeBeforeCreation).toBe(0);
-      expect(statDocs[0].calcPlaytimeBeforeCreation).toBe(0.1 * MINUTE);
     },
   },
   {
@@ -329,11 +325,7 @@ const tests = [
       );
       expect(playAttemptDocs[1].userId.toString()).toBe(TestId.USER);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(2);
-
       expect(statDocs).toHaveLength(2);
-      expect(statDocs[1].calcPlaytimeBeforeCreation).toBe(0.1);
-      expect(statDocs[0].calcPlaytimeBeforeCreation).toBe((1 - 0.1) * MINUTE);
-
       expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(0.1 + (1 - 0.1) * MINUTE); // 54+6
     },
   },
@@ -405,9 +397,8 @@ const tests = [
       expect(lvl.calc_playattempts_unique_users).toHaveLength(2);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(2);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(2); // both of us solved it
+
       expect(statDocs).toHaveLength(2);
-      expect(statDocs[1].calcPlaytimeBeforeCreation).toBe(5 * MINUTE);
-      expect(statDocs[0].calcPlaytimeBeforeCreation).toBe(0);
     },
   },
   {
@@ -427,6 +418,7 @@ const tests = [
       expect(playAttemptDocs[0].endTime).toBe(0.1 * MINUTE);
       expect(lvl.calc_playattempts_duration_sum).toBe(0);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
+      expect(statDocs).toHaveLength(1);
     },
   },
   {
@@ -458,6 +450,7 @@ const tests = [
       } as User);
 
       expect(lastLevelPlayed?._id.toString()).toBe(TestId.LEVEL_4);
+      expect(statDocs).toHaveLength(1);
     },
   },
   {
@@ -486,6 +479,7 @@ const tests = [
       expect(playAttemptDocs[1].updateCount).toBe(0);
       expect(lvl.calc_playattempts_duration_sum).toBe(0);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
+      expect(statDocs).toHaveLength(1);
     },
   },
   {
@@ -512,6 +506,7 @@ const tests = [
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.SOLVED);
       expect(playAttemptDocs[1].updateCount).toBe(2);
       expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.SOLVED);
+      expect(statDocs).toHaveLength(0);
     },
   },
   {
@@ -548,6 +543,7 @@ const tests = [
         new Types.ObjectId(TestId.USER),
       ]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
+      expect(statDocs).toHaveLength(1);
     },
   },
   {
@@ -588,7 +584,6 @@ const tests = [
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
 
       expect(statDocs).toHaveLength(1);
-      expect(statDocs[0].calcPlaytimeBeforeCreation).toBe(30);
     },
   },
   {
@@ -626,7 +621,6 @@ const tests = [
       ]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
       expect(statDocs).toHaveLength(1);
-      expect(statDocs[0].calcPlaytimeBeforeCreation).toBe(30);
     },
   },
   {
@@ -658,6 +652,7 @@ const tests = [
         new Types.ObjectId(TestId.USER),
       ]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
+      expect(statDocs).toHaveLength(1);
     },
   },
 ] as PlayAttemptTest[];
@@ -683,9 +678,7 @@ describe('Testing stats api', () => {
 
             expect(status).toBe(200);
             expect(response.message).toBe(expected);
-          }
-
-          if (action === 'b_play') {
+          } else if (action === 'b_play') {
             const res = await postPlayAttempt(new Types.ObjectId(TestId.USER_B), t.levelId);
             const status = res.status;
             const response = res.json;
