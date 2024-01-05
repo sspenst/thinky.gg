@@ -170,17 +170,25 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
           }, { session: session });
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const newStat: any = {
+          _id: new Types.ObjectId(),
+          attempts: 1,
+          complete: complete,
+          gameId: level.gameId,
+          levelId: level._id,
+          moves: moves,
+          ts: ts,
+          userId: userId,
+        };
+
+        if (process.env.NODE_ENV === 'test') {
+          // manually set createdAt for so tests can mock the date
+          newStat.createdAt = new Date(ts * 1000);
+        }
+
         await Promise.all([
-          StatModel.create([{
-            _id: new Types.ObjectId(),
-            attempts: 1,
-            complete: complete,
-            gameId: level.gameId,
-            levelId: level._id,
-            moves: moves,
-            ts: ts,
-            userId: userId,
-          }], { session: session }),
+          StatModel.create([newStat], { session: session }),
           UserConfigModel.updateOne({ userId: userId, gameId: level.gameId }, { $inc: { calcLevelsCompletedCount: 1 } }, { session: session }),
         ]);
       } else {
