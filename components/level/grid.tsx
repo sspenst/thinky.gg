@@ -93,6 +93,7 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
           tileType={tileType}
           game={game}
           theme={theme as Theme}
+          visited={tileState.text.length > 0}
         />
       );
 

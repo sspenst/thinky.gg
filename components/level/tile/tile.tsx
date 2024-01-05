@@ -1,4 +1,4 @@
-import { Game } from '@root/constants/Games';
+import { Game, GameType } from '@root/constants/Games';
 import Theme from '@root/constants/theme';
 import { GridContext } from '@root/contexts/gridContext';
 import Position from '@root/models/position';
@@ -23,6 +23,7 @@ interface TileProps {
   text?: number | undefined;
   theme: Theme;
   tileType: TileType;
+  visited?: boolean;
 }
 
 export default function Tile({
@@ -38,6 +39,7 @@ export default function Tile({
   text,
   theme,
   tileType,
+  visited,
 }: TileProps) {
   const { borderWidth, hideText, innerTileSize, tileSize } = useContext(GridContext);
 
@@ -82,9 +84,10 @@ export default function Tile({
       return (
         <Square
           game={game}
-          text={hideText || !game.showVisitedTiles ? undefined : text}
+          text={hideText || game.type === GameType.COMPLETE_AND_SHORTEST && tileType === TileType.Exit ? undefined : text}
           theme={theme}
           tileType={tileType}
+          visited={visited}
         />
       );
     }
@@ -98,7 +101,7 @@ export default function Tile({
         theme={theme}
       />
     );
-  }, [atEnd, game, hideText, inHole, onTopOf, text, theme, tileType]);
+  }, [atEnd, game, hideText, inHole, onTopOf, text, theme, tileType, visited]);
 
   return (
     <div
