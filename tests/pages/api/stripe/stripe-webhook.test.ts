@@ -280,7 +280,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
       expectedError: undefined,
       expectedStatus: 200,
       additionalAssertions: async () => {
-        await expectUserStatus(TestId.USER, null, null);
+        await expectUserStatus(TestId.USER, null, 'customer_id_123'); // keep their customer id around
       },
     });
   });
@@ -461,7 +461,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
       expectedError: undefined,
       expectedStatus: 200,
       additionalAssertions: async () => {
-        await expectUserStatus(TestId.USER, null, null);
+        await expectUserStatus(TestId.USER, null, 'customer_id_123');
       },
     });
   });
@@ -476,7 +476,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
       expectedError: 'mock error',
       expectedStatus: 400,
       additionalAssertions: async () => {
-        await expectUserStatus(TestId.USER, null, null);
+        await expectUserStatus(TestId.USER, null, 'customer_id_123');
       },
       mockDbError: true,
     });
@@ -515,6 +515,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
   });
 
   test('payment_intent.succeeded', async () => {
+    process.env.STRIPE_CONNECTED_ACCOUNT_ID = 'blah';
     jest.spyOn(stripeReal.paymentIntents, 'retrieve').mockImplementation(async () => {
       return {
         amount: 300,
