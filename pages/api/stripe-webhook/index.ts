@@ -32,18 +32,18 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
   try {
     await session.withTransaction(async () => {
       const promises = [
-        // NB: gift recipients do not have a stripe customer id
+        /* // NO NEED TO DELETE STRIPE CUSTOMER ID EVEN IF THEY DELETE SUBSCRIPTION
         UserModel.findOneAndUpdate(
           {
             _id: userToDowngrade._id,
           },
           {
-            stripeCustomerId: null,
+            // stripeCustomerId: null,
           },
           {
             session: session
           },
-        ),
+        ),*/
         UserConfigModel.findOneAndUpdate(
           {
             userId: userToDowngrade._id,
@@ -333,6 +333,10 @@ async function splitPaymentIntent(paymentIntentId: string): Promise<string | und
   const split = Math.round(net / 2);
 
   // https://stripe.com/docs/connect/separate-charges-and-transfers#transfer-availability
+  if (process.env.STRIPE_CONNECTED_ACCOUNT_ID === undefined) {
+    return `splitPaymentIntent(${paymentIntentId}): missing STRIPE_CONNECTED_ACCOUNT_ID`;
+  }
+
   await stripe.transfers.create({
     amount: split,
     currency: 'usd',
@@ -466,6 +470,28 @@ export default apiWrapper({
         giftToUser,
         subscription
       );
+    } else {
+      // this is a regular subscription from someone who has already been a pro subscriber for another game
+      const subscription = dataObject as Stripe.Subscription;
+      const metadata = subscription.metadata;
+
+      // we should have a userId in metadata
+      const userId = metadata.userId;
+      const gameId = metadata.gameId;
+
+      if (!userId || !gameId) {
+        // we want to log the error
+        error = 'Need both userId and gameId in metadata';
+      } else {
+        const userTarget = await UserModel.findById(userId);
+
+        if (!userTarget) {
+          // this would be super rare... like someone paying then right away deleting their user account in between
+          error = `User with id ${userId} does not exist`;
+        } else {
+          await UserConfigModel.updateOne({ userId: userId, gameId: gameId }, { userId: userId, gameId: gameId, $addToSet: { roles: Role.PRO } }, { upsert: true });
+        }
+      }
     }
   } else if (event.type === 'payment_intent.succeeded') {
     error = await splitPaymentIntent(dataObject.id);
