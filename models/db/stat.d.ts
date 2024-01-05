@@ -6,10 +6,6 @@ import User from './user';
 interface Stat {
   _id: Types.ObjectId;
   attempts: number;
-  /**
-   * Total playtime for this user before they complete the level for the first time
-   */
-  calcPlaytimeBeforeCreation: number;
   complete: boolean;
   createdAt: Date;
   gameId: GameId;
