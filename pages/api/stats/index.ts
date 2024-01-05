@@ -94,38 +94,42 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
         return resTrack;
       }
 
+      // const prevStatComplete = stat?.complete;
+
       // track the first completion
       if (!stat) {
+        // TODO: playattempt adjustments here potentially
         // This code block only happens once per user per level
 
-        const sumDurationBeforeComplete = await PlayAttemptModel.aggregate([
-          /** sum all play attempts durations for this user */
-          {
-            $match: {
-              userId: userId,
-              levelId: level._id,
-              //attemptContext: AttemptContext.UNSOLVED,
-            }
-          },
-          {
-            $group: {
-              _id: null,
-              sumDuration: {
-                $sum: {
-                  $subtract: ['$endTime', '$startTime']
-                }
-              }
-            }
-          },
-        ], { session: session });
-        const calcPlaytimeBeforeCreation = (sumDurationBeforeComplete && sumDurationBeforeComplete[0])?.sumDuration ?? 0;
+        // const sumDurationBeforeComplete = await PlayAttemptModel.aggregate([
+        //   /** sum all play attempts durations for this user */
+        //   {
+        //     $match: {
+        //       userId: userId,
+        //       levelId: level._id,
+        //       //attemptContext: AttemptContext.UNSOLVED,
+        //     }
+        //   },
+        //   {
+        //     $group: {
+        //       _id: null,
+        //       sumDuration: {
+        //         $sum: {
+        //           $subtract: ['$endTime', '$startTime']
+        //         }
+        //       }
+        //     }
+        //   },
+        // ], { session: session });
+        // TODO: this
+        // const calcPlaytimeBeforeCreation = (sumDurationBeforeComplete && sumDurationBeforeComplete[0])?.sumDuration ?? 0;
 
         await Promise.all([
-          LevelModel.updateOne({ _id: level._id }, { $inc: { calc_playattempts_duration_before_stat_sum: calcPlaytimeBeforeCreation } }, { session: session }),
+          // LevelModel.updateOne({ _id: level._id }, { $inc: { calc_playattempts_duration_before_stat_sum: calcPlaytimeBeforeCreation } }, { session: session }),
           StatModel.create([{
             _id: new Types.ObjectId(),
             attempts: 1,
-            calcPlaytimeBeforeCreation: calcPlaytimeBeforeCreation,
+            // calcPlaytimeBeforeCreation: calcPlaytimeBeforeCreation,
             complete: complete,
             gameId: level.gameId,
             levelId: level._id,
@@ -312,6 +316,8 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
         },
         $inc: {
           calc_playattempts_duration_sum: incPlayattemptsDurationSum,
+          // TODO: set a flag for this
+          calc_playattempts_duration_before_stat_sum: incPlayattemptsDurationSum,
         },
       };
 

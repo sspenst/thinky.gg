@@ -2,7 +2,6 @@ import Direction from '@root/constants/direction';
 import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { postPlayAttempt } from '@root/helpers/play-attempts/postPlayAttempt';
 import User from '@root/models/db/user';
-import { stat } from 'fs';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import TestId from '../../../../constants/testId';
