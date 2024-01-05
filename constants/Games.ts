@@ -58,7 +58,6 @@ export const Games: Record<GameId, Game> = {
     subdomain: 'pathology',
     subtitle: 'Find the way',
     type: GameType.SHORTEST_PATH,
-    videoDemo: 'https://i.imgur.com/bZpBEUW.mp4',
     isSolved: isSolvedPathology,
     validateLevel: validatePathologyLevel,
     validateSolution: validatePathologySolution,
@@ -89,7 +88,6 @@ export const Games: Record<GameId, Game> = {
     subdomain: 'sokoban',
     subtitle: 'Push the boxes',
     type: GameType.COMPLETE_AND_SHORTEST,
-    videoDemo: 'https://i.imgur.com/7qGspht.mp4',
     isSolved: isSolvedSokoban,
     validateLevel: validateSokobanLevel,
     validateSolution: validateSokobanSolution,
@@ -135,7 +133,6 @@ export interface Game {
   stripeGiftPriceIdYearly?: string;
   subdomain: string | undefined;
   type: GameType;
-  videoDemo?: string;
   isSolved: (gameState: GameState) => boolean;
   validateLevel?: (data: string) => ValidateLevelResponse;
   validateSolution?: (directions: Direction[], level: Level) => boolean;
