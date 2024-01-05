@@ -405,22 +405,24 @@ export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {
   ]);
 
   const calcPlayattemptsDurationBeforeStatSum = playAttemptCompletionAgg[0]?.calcPlayattemptsDurationBeforeStatSum ?? 0;
-  const calcPlayAttemptsJustBeatenCount = playAttemptAgg[0]?.calcPlayAttemptsJustBeatenCount ?? 0;
   const calcPlayAttemptsDurationSum = playAttemptAgg[0]?.calcPlayAttemptsDurationSum ?? 0;
+  const calcPlayAttemptsJustBeatenCount = playAttemptAgg[0]?.calcPlayAttemptsJustBeatenCount ?? 0;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const calcPlayAttemptsUniqueUsers = (playAttemptAgg[0]?.uniqueUsersList ?? []).map((u: any) => u?.userId.toString());
 
   const update = {
-    calc_playattempts_duration_sum: calcPlayAttemptsDurationSum,
     calc_playattempts_duration_before_stat_sum: calcPlayattemptsDurationBeforeStatSum,
+    calc_playattempts_duration_sum: calcPlayAttemptsDurationSum,
     calc_playattempts_just_beaten_count: calcPlayAttemptsJustBeatenCount,
     calc_playattempts_unique_users: calcPlayAttemptsUniqueUsers,
     calc_stats_completed_count: stats.calc_stats_completed_count,
     calc_stats_players_beaten: stats.calc_stats_players_beaten,
   } as Partial<Level>;
 
-  update.calc_difficulty_estimate = getDifficultyEstimate(update, calcPlayAttemptsUniqueUsers.length);
-  update.calc_difficulty_completion_estimate = getDifficultyCompletionEstimate(update, calcPlayAttemptsUniqueUsers.length);
+  const uniqueUsersCount = calcPlayAttemptsUniqueUsers.length;
+
+  update.calc_difficulty_completion_estimate = getDifficultyCompletionEstimate(update, uniqueUsersCount);
+  update.calc_difficulty_estimate = getDifficultyEstimate(update, uniqueUsersCount);
 
   return await LevelModel.findByIdAndUpdate<Level>(levelId, {
     $set: update,
