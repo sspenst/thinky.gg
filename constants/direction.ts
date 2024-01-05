@@ -5,6 +5,7 @@ enum Direction {
   UP,
   RIGHT,
   DOWN,
+  NONE
 }
 
 export function getDirectionFromCode(code: string) {

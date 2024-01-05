@@ -1,9 +1,12 @@
 /* istanbul ignore file */
+import AnimatedGrid from '@root/components/level/animatedGrid';
 import Grid from '@root/components/level/grid';
 import Footer from '@root/components/page/footer';
 import Page from '@root/components/page/page';
+import Direction from '@root/constants/direction';
 import { GameId } from '@root/constants/GameId';
 import { Game, Games } from '@root/constants/Games';
+import Theme from '@root/constants/theme';
 import { AppContext } from '@root/contexts/appContext';
 import { initGameState } from '@root/helpers/gameStateHelpers';
 import useUrl from '@root/hooks/useUrl';
@@ -76,7 +79,27 @@ export default function ThinkyHomePage() {
   //   //scale: [1.0, 1, 'easeOutCubic'],
   //   shouldAlwaysCompleteAnimation: true,
   // };
-
+  const strMap = {
+    'u': Direction.UP,
+    'd': Direction.DOWN,
+    'l': Direction.LEFT,
+    'r': Direction.RIGHT,
+    'X': Direction.NONE,
+  } as {[key: string]: Direction};
+  const gameInstr = {
+    [GameId.SOKOBAN]: {
+      data: '0000\n0130\n0220\n0003',
+      leastMoves: 14,
+      theme: Theme.Winter,
+      instructions: 'ddddrrudllurrlluurrrddXrrdduullddrdruX'.split('').map(x => strMap[x]),
+    },
+    [GameId.PATHOLOGY]: {
+      data: '0004\n2221\n0001\n1013\n0000',
+      leastMoves: 13,
+      instructions: 'lllldurrdldddrruXldulldrdddrruX'.split('').map(x => strMap[x]),
+      theme: Theme.Classic
+    },
+  };
   const headline: BannerLayer = {
     translateY: ['0%', '20%'],
     scale: [1, 1.05, 'easeOutCubic'],
@@ -97,9 +120,8 @@ export default function ThinkyHomePage() {
               return (
                 <div className='flex flex-col items-center gap-4' key={`game-${game.id}`}>
                   <GameCard game={game} />
-                  {/*<video autoPlay loop muted className='rounded-lg w-40 text-center' src={game.videoDemo} />*/}
                   <div className='flex h-40 w-40'>
-                    <Grid gameOverride={game} themeOverride={game.defaultTheme} leastMoves={0} disableAnimation hideText id={'level-preview-' + game.id} gameState={initGameState('000\n230\n040'.trim())} />
+                    <AnimatedGrid leastMoves={gameInstr[game.id].leastMoves} animationInstructions={gameInstr[game.id].instructions} game={game} theme={gameInstr[game.id].theme} id={'level-preview-' + game.id} levelData={gameInstr[game.id].data} />
                   </div>
                   <div className='p-2 h-20 text-center text-md fadeIn trun'>
                     {game.shortDescription}
