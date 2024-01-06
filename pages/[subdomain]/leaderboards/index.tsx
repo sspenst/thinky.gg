@@ -238,7 +238,7 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
     } else if (leaderboard === 'sgm') {
       return (
         <div className='flex flex-col items-center text-center gap-4'>
-          <span className='font-bold italic text-lg' style={{ color: sgmColor }}>Pathology Super Grandmasters</span>
+          <span className='font-bold italic text-lg' style={{ color: sgmColor }}>{game.displayName} Super Grandmasters</span>
           <span className='text-sm'>Super Grandmasters have solved at minimum 7 Super Grandmaster levels</span>
           {getLeaderboardTable(sgmLeaderboard.map(userAndSum => userAndSum.user), sgmLeaderboard.map(userAndSum => userAndSum.sum))}
         </div>
@@ -246,7 +246,7 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
     } else if (leaderboard === 'gm') {
       return (
         <div className='flex flex-col items-center text-center gap-4'>
-          <span className='font-bold italic text-lg' style={{ color: gmColor }}>Pathology Grandmasters</span>
+          <span className='font-bold italic text-lg' style={{ color: gmColor }}>{game.displayName} Grandmasters</span>
           <span className='text-sm'>Grandmasters have solved at minimum 7 Grandmaster (or harder) levels</span>
           {getLeaderboardTable(gmLeaderboard.map(userAndSum => userAndSum.user), gmLeaderboard.map(userAndSum => userAndSum.sum))}
         </div>

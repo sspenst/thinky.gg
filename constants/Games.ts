@@ -29,6 +29,7 @@ export const Games: Record<GameId, Game> = {
     disableTutorial: true,
     displayName: 'Thinky.gg',
     favicon: '/logos/thinky/thinky.svg',
+    hasPro: false,
     logo: '/logos/thinky/thinky.svg',
     SEOTitle: 'Thinky Puzzle Games',
     SEODescription: 'Thinky Games is a collection of puzzle games',
@@ -44,6 +45,7 @@ export const Games: Record<GameId, Game> = {
     defaultTheme: Theme.Modern,
     displayName: 'Pathology',
     favicon: '/logos/pathology/pathology.svg',
+    hasPro: true,
     logo: '/logos/pathology/pathology.svg',
     newLevelData: '4000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000003',
     SEOTitle: 'Pathology - Shortest Path Puzzle Game',
@@ -74,6 +76,7 @@ export const Games: Record<GameId, Game> = {
     disableTour: true,
     displayName: 'Sokoban',
     favicon: '/logos/sokoban/sokoban.svg',
+    hasPro: true,
     logo: '/logos/sokoban/sokoban.svg',
     newLevelData: '40000\n00000\n00200\n00000\n00003',
     SEOTitle: 'Sokoban - Push the boxes puzzle game',
@@ -119,6 +122,7 @@ export interface Game {
   disableTutorial?: boolean;
   displayName: string;
   favicon?: string;
+  hasPro: boolean;
   logo: string;
   newLevelData?: string;
   subtitle: string;

@@ -80,32 +80,45 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  let userConfig: UserConfig | null = null;
   const gameId = getGameIdFromReq(context.req);
-
-  if (tab === SettingsTab.Account || tab === SettingsTab.Notifications) {
-    userConfig = await getUserConfig(gameId, reqUser);
-  }
-
   const game = getGameFromId(gameId);
 
+  if (tab === SettingsTab.Pro && !game.hasPro) {
+    return {
+      redirect: {
+        destination: '/settings',
+        permanent: false,
+      },
+    };
+  }
+
+  const settingsProps = {
+    user: JSON.parse(JSON.stringify(reqUser)),
+  } as SettingsProps;
+
+  if (tab === SettingsTab.Account || tab === SettingsTab.Notifications) {
+    const userConfig = await getUserConfig(gameId, reqUser);
+
+    settingsProps.userConfig = JSON.parse(JSON.stringify(userConfig));
+  }
+
+  if (tab === SettingsTab.Pro) {
+    settingsProps.stripeCustomerPortalLink = process.env.STRIPE_CUSTOMER_PORTAL;
+    settingsProps.stripePaymentLink = game.stripePaymentLinkMonthly;
+    settingsProps.stripePaymentYearlyLink = game.stripePaymentLinkYearly;
+  }
+
   return {
-    props: {
-      stripeCustomerPortalLink: process.env.STRIPE_CUSTOMER_PORTAL,
-      stripePaymentLink: game.stripePaymentLinkMonthly,
-      stripePaymentYearlyLink: game.stripePaymentLinkYearly,
-      user: JSON.parse(JSON.stringify(reqUser)),
-      userConfig: JSON.parse(JSON.stringify(userConfig)),
-    },
+    props: settingsProps,
   };
 }
 
 interface SettingsProps {
-  stripeCustomerPortalLink: string;
-  stripePaymentLink: string;
-  stripePaymentYearlyLink: string;
+  stripeCustomerPortalLink?: string;
+  stripePaymentLink?: string;
+  stripePaymentYearlyLink?: string;
   user: User;
-  userConfig: UserConfig | null;
+  userConfig?: UserConfig | null;
 }
 
 /* istanbul ignore next */
@@ -165,16 +178,18 @@ export default function Settings({
             label='Notifications'
             value={SettingsTab.Notifications}
           />
-          <Tab
-            activeTab={tab}
-            label={
-              <div className='flex flex-row items-center gap-2'>
-                <Image alt='pro' src='/pro.svg' width='16' height='16' />
-                <span>{game.displayName} Pro</span>
-              </div>
-            }
-            value={SettingsTab.Pro}
-          />
+          {game.hasPro &&
+            <Tab
+              activeTab={tab}
+              label={
+                <div className='flex flex-row items-center gap-2'>
+                  <Image alt='pro' src='/pro.svg' width='16' height='16' />
+                  <span>{game.displayName} Pro</span>
+                </div>
+              }
+              value={SettingsTab.Pro}
+            />
+          }
         </div>
         <div>
           {getTabContent()}
