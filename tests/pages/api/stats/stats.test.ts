@@ -105,7 +105,7 @@ describe('Testing stats api', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Invalid direction provided: 5');
+        expect(response.error).toBe('Invalid direction provided: 6000');
         expect(res.status).toBe(400);
       },
     });
