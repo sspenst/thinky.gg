@@ -123,6 +123,7 @@ export async function postPlayAttempt(userId: Types.ObjectId, levelId: string) {
               calc_playattempts_duration_sum: 1,
               calc_playattempts_just_beaten_count: 1,
               calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' },
+              calc_playattempts_unique_users_count_excluding_author: { $size: { $setDifference: ['$calc_playattempts_unique_users', [userId]] } },
               calc_stats_completed_count: 1,
             },
             session: session,
@@ -134,12 +135,10 @@ export async function postPlayAttempt(userId: Types.ObjectId, levelId: string) {
             throw new Error(resTrack.json.error);
           }
 
-          const uniqueUsersCount = updatedLevel.calc_playattempts_unique_users_count ?? 0;
-
           await LevelModel.updateOne({ _id: levelObjectId }, {
             $set: {
-              calc_difficulty_completion_estimate: getDifficultyCompletionEstimate(updatedLevel, uniqueUsersCount),
-              calc_difficulty_estimate: getDifficultyEstimate(updatedLevel, uniqueUsersCount),
+              calc_difficulty_completion_estimate: getDifficultyCompletionEstimate(updatedLevel, updatedLevel.calc_playattempts_unique_users_count_excluding_author ?? 0),
+              calc_difficulty_estimate: getDifficultyEstimate(updatedLevel, updatedLevel.calc_playattempts_unique_users_count ?? 0),
             },
           }, {
             session: session,

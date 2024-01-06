@@ -15,6 +15,11 @@ export function getSolveCountFactor(solveCount: number) {
   return ((k - 1) / (1 + Math.exp(t * (solveCount - m)))) + 1;
 }
 
+/**
+ * estimate the difficulty to solve the level
+ * @param level requires calc_playattempts_duration_sum and calc_playattempts_just_beaten_count
+ * @param uniqueUsersCount { $size: '$calc_playattempts_unique_users' }
+ */
 export default function getDifficultyEstimate(
   level: Level | EnrichedLevel | Partial<Level>,
   uniqueUsersCount: number,
@@ -23,29 +28,32 @@ export default function getDifficultyEstimate(
     return -1;
   }
 
-  // when we have 10 unique users, we want to return a non-zero value
+  // ensure a non-zero solveCount
   const solveCount = !level.calc_playattempts_just_beaten_count ? 1 : level.calc_playattempts_just_beaten_count;
 
   return level.calc_playattempts_duration_sum / solveCount * getSolveCountFactor(solveCount);
 }
 
+/**
+ * estimate the difficulty to complete the level
+ * @param level requires calc_playattempts_duration_before_stat_sum and calc_stats_completed_count
+ * @param uniqueUsersCount { $size: { $setDifference: ['$calc_playattempts_unique_users', [userId]] } }
+ */
 export function getDifficultyCompletionEstimate(
   level: Level | EnrichedLevel | Partial<Level>,
   uniqueUsersCount: number,
 ) {
-  // NB: for completion games, the level author always has a 0 second solve since they published the level having completed it
-  // uniqueUsersCount always includes the author, so we need to subtract 1 to account for this
-  if (!level || (uniqueUsersCount - 1) < 10 || level.calc_playattempts_duration_before_stat_sum === undefined) {
+  if (!level || uniqueUsersCount < 10 || level.calc_playattempts_duration_before_stat_sum === undefined) {
     return -1;
   }
 
   function getCompletedCount() {
-    // need to make sure we return a non-zero value
+    // make sure we return a non-zero value
     if (!level.calc_stats_completed_count) {
       return 1;
     }
 
-    // similarly to above, we need to subtract 1 from calc_stats_completed_count to account for the author which has 0 playtime
+    // subtract 1 from calc_stats_completed_count to account for the author which has 0 playtime
     const completedCount = level.calc_stats_completed_count - 1;
 
     if (completedCount < 1) {

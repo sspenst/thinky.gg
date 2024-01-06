@@ -200,7 +200,7 @@ async function calcStats(level: Level, options?: QueryOptions) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {}) {
-  const level = await LevelModel.findById(levelId, 'leastMoves', options) as Level;
+  const level = await LevelModel.findById(levelId, 'leastMoves userId', options) as Level;
 
   const [stats, playAttemptCompletionAgg, playAttemptAgg] = await Promise.all([
     calcStats(level, options),
@@ -420,8 +420,9 @@ export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {
   } as Partial<Level>;
 
   const uniqueUsersCount = calcPlayAttemptsUniqueUsers.length;
+  const uniqueUsersCountExcludingAuthor = calcPlayAttemptsUniqueUsers.filter((u: string) => u !== level.userId.toString()).length;
 
-  update.calc_difficulty_completion_estimate = getDifficultyCompletionEstimate(update, uniqueUsersCount);
+  update.calc_difficulty_completion_estimate = getDifficultyCompletionEstimate(update, uniqueUsersCountExcludingAuthor);
   update.calc_difficulty_estimate = getDifficultyEstimate(update, uniqueUsersCount);
 
   return await LevelModel.findByIdAndUpdate<Level>(levelId, {

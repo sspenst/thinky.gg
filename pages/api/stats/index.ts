@@ -93,20 +93,16 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
         return;
       }
 
-      // const prevStatComplete = stat?.complete;
-
       // track the first completion
       if (!stat) {
         // extend the user's recent UNSOLVED playattempt up to current ts
-        const found = await PlayAttemptModel.findOneAndUpdate({
+        const playAttempt = await PlayAttemptModel.findOneAndUpdate({
           levelId: level._id,
           userId: userId,
           endTime: { $gt: ts - 3 * 60 },
         }, {
-          $set: {
-            endTime: ts,
-          },
-          $inc: { updateCount: 1 }
+          $set: { endTime: ts },
+          $inc: { updateCount: 1 },
         }, {
           new: false,
           session: session,
@@ -117,7 +113,7 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
           },
         }).lean<PlayAttempt>();
 
-        if (!found) {
+        if (!playAttempt) {
           // create one if it did not exist... rare but possible
           await PlayAttemptModel.create([{
             _id: new Types.ObjectId(),
@@ -137,8 +133,8 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
                 calc_playattempts_unique_users: userId,
               },
               $inc: {
-                calc_playattempts_duration_before_stat_sum: ts - found.endTime,
-                calc_playattempts_duration_sum: ts - found.endTime,
+                calc_playattempts_duration_before_stat_sum: ts - playAttempt.endTime,
+                calc_playattempts_duration_sum: ts - playAttempt.endTime,
                 calc_stats_completed_count: 1,
               },
             },
@@ -149,6 +145,7 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
                 calc_playattempts_duration_sum: 1,
                 calc_playattempts_just_beaten_count: 1,
                 calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' },
+                calc_playattempts_unique_users_count_excluding_author: { $size: { $setDifference: ['$calc_playattempts_unique_users', [userId]] } },
                 calc_stats_completed_count: 1,
               },
               session: session,
@@ -160,12 +157,10 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
             throw new Error('Level ' + levelId + ' not found within transaction');
           }
 
-          const uniqueUsersCount = enrichedLevel.calc_playattempts_unique_users_count ?? 0;
-
           await LevelModel.findByIdAndUpdate(level._id, {
             $set: {
-              calc_difficulty_completion_estimate: getDifficultyCompletionEstimate(enrichedLevel, uniqueUsersCount),
-              calc_difficulty_estimate: getDifficultyEstimate(enrichedLevel, uniqueUsersCount),
+              calc_difficulty_completion_estimate: getDifficultyCompletionEstimate(enrichedLevel, enrichedLevel.calc_playattempts_unique_users_count_excluding_author ?? 0),
+              calc_difficulty_estimate: getDifficultyEstimate(enrichedLevel, enrichedLevel.calc_playattempts_unique_users_count ?? 0),
             },
           }, { session: session });
         }
@@ -325,7 +320,7 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
       }
 
       // extend the user's recent playattempt up to current ts
-      const found = await PlayAttemptModel.findOneAndUpdate({
+      const playAttempt = await PlayAttemptModel.findOneAndUpdate({
         levelId: level._id,
         userId: userId,
         endTime: { $gt: ts - 3 * 60 },
@@ -334,7 +329,7 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
           attemptContext: AttemptContext.JUST_SOLVED,
           endTime: ts,
         },
-        $inc: { updateCount: 1 }
+        $inc: { updateCount: 1 },
       }, {
         new: false,
         session: session,
@@ -345,7 +340,7 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
         },
       }).lean<PlayAttempt>();
 
-      if (!found) {
+      if (!playAttempt) {
         // create one if it did not exist... rare but possible
         await PlayAttemptModel.create([{
           _id: new Types.ObjectId(),
@@ -358,7 +353,7 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
           userId: userId,
         }], { session: session });
       } else {
-        incPlayattemptsDurationSum += ts - found.endTime;
+        incPlayattemptsDurationSum += ts - playAttempt.endTime;
       }
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
