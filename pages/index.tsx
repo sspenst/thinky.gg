@@ -1,17 +1,17 @@
 /* istanbul ignore file */
 import AnimatedGrid from '@root/components/level/animatedGrid';
-import Grid from '@root/components/level/grid';
 import Footer from '@root/components/page/footer';
 import Page from '@root/components/page/page';
+import StyledTooltip from '@root/components/page/styledTooltip';
+import Dimensions from '@root/constants/dimensions';
 import Direction from '@root/constants/direction';
 import { GameId } from '@root/constants/GameId';
 import { Game, Games } from '@root/constants/Games';
 import Theme from '@root/constants/theme';
 import { AppContext } from '@root/contexts/appContext';
-import { initGameState } from '@root/helpers/gameStateHelpers';
 import useUrl from '@root/hooks/useUrl';
 import Image from 'next/image';
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 
 export default function ThinkyHomePage() {
   const getUrl = useUrl();
@@ -24,6 +24,7 @@ export default function ThinkyHomePage() {
         }}>
         <Image src={game.logo} alt={game.displayName} width='128' height='128' className='w-32 h-32' style={{ minWidth: 128 }} />
         <span className='font-bold text-2xl'>{game.displayName}</span>
+
       </a>
     );
   }
@@ -64,25 +65,17 @@ export default function ThinkyHomePage() {
     },
   };
   const ThinkyH1Text = (
-    <h1 className='text-6xl md:text-8xl text-white font-thin p-3 rounded-lg mt-10 text-center'>
+    <h1 className='text-6xl md:text-8xl text-white font-thin p-3 rounded-lg mt-6 text-center font-bold'
+      style={{
+        textShadow: '0 0 10px rgba(255,255,255,1)',
+        animation: 'textShadow 1s ease-in-out infinite alternate, blurToClear 1s ease-in-out forwards',
+        filter: 'blur(2px)',
+      }}>
           Thinky.gg
     </h1>
   );
 
-  const [targetElements, setTargetElements] = React.useState<HTMLElement[]>([]);
-
-  React.useEffect(() => {
-    const elements = document.querySelectorAll('.feature-line');
-    const arr = Array.from(elements) as HTMLElement[];
-
-    // append footer
-    arr.push(document.querySelector('footer') as HTMLElement);
-    setTargetElements(arr);
-  }, []);
-
-  function FeatureCardComp({ title, description, index, video }: {title: string, description: string | JSX.Element, index: number, video?: string}) {
-  //  const targetElement = targetElements[index] ?? targetElements[index];
-
+  function FeatureCardComp({ title, description, video }: {title: string, description: string | JSX.Element, index: number, video?: string}) {
     return <div className='feature-card md:w-80 rounded-xl p-3 m-4 border border-color-4 bg-gray-800' style={{}}>
       <div className='font-bold text-lg'>{title}</div>
       <div className='text-sm'>
@@ -94,44 +87,64 @@ export default function ThinkyHomePage() {
     </div>;
   }
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const featuresSection = document.querySelector('.features-section') as HTMLElement;
+      const { y } = featuresSection.getBoundingClientRect();
+
+      // Adjust these values as needed
+      const translateYValue = Math.max(0, 100 - (window.scrollY - y) / 5);
+
+      featuresSection.style.transform = `translateY(${translateYValue}px)`;
+    };
+
+    window.addEventListener('scroll', handleScroll);
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <Page title='Thinky.gg'
       hideFooter
       style={{
-        backgroundImage: 'url(https://i.imgur.com/h2qnMrV.png)',
+        backgroundImage: 'url(https://i.imgur.com/kylvauN.png)',
         // height: '100vh',
         // center
         backgroundPosition: 'center',
+        // slightly offset the y position
+        backgroundPositionY: 'calc(50% + ' + Dimensions.MenuHeight + 'px)',
 
         backgroundSize: 'cover',
 
         backgroundAttachment: 'fixed',
-        backgroundBlendMode: 'multiply',
-        background: 'linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0), rgba(0,0,0,0.7)), url(https://i.imgur.com/h2qnMrV.png)',
 
         backgroundRepeat: 'no-repeat',
 
       }}
     >
-      <div className='flex flex-col justify-center items-center  '>
+      <div className='flex flex-col justify-center items-center  '
+      >
 
         <div className='justify-center flex flex-col md:flex-row items-center'>
           <div className='flex flex-col justify-center'>
             {ThinkyH1Text}
-            <div className='flex flex-row justify-center p-4 gap-1'>
+            <div className='flex flex-row justify-center p-4 gap-5'
+              style={{
+                animation: 'textShadow 1s ease-in-out infinite alternate, blurToClear 0.5s ease-in-out forwards',
+                filter: 'blur(2px)',
+              }}
+            >
               {Object.values(Games).map(game => {
                 if (game.id === GameId.THINKY) {
                   return null;
                 }
 
                 return (
-                  <div className='flex flex-col items-center gap-4' key={`game-${game.id}`}>
+                  <div className='flex flex-col items-center gap-6' key={`game-${game.id}`}>
                     <GameCard game={game} />
-                    <div className='flex h-40 w-40 bg-1 p-3 rounded-md'>
+                    <div className='flex h-40 w-40 bg-1 p-3 rounded-md' data-tooltip-id={'description-' + game.id} data-tooltip-content={game.shortDescription}>
                       <AnimatedGrid leastMoves={gameInstr[game.id].leastMoves} animationInstructions={gameInstr[game.id].instructions} game={game} theme={gameInstr[game.id].theme} id={'level-preview-' + game.id} levelData={gameInstr[game.id].data} />
-                    </div>
-                    <div className='p-2 text-center text-lg fadeIn trun '>
-                      {game.shortDescription}
+                      <StyledTooltip id={'description-' + game.id} />
                     </div>
                     <a
                       className='text-2xl font-bold px-4 py-3 border-2 border-color-3 rounded-lg hover-bg-3 hover:scale-110 transition'
@@ -149,71 +162,82 @@ export default function ThinkyHomePage() {
             </div>
           </div>
         </div>
-        <div className='flex flex-wrap md:ml-40 md:mr-40 justify-center' style={{
-        }}>
-          {FeatureCardComp({
-            title: 'Level Editor',
-            index: 0,
-            description: (
-              <div className='text-sm'>
+        <div className='features-section'>
+          <h1 className='text-4xl md:text-6xl text-white font-thin p-3 rounded-lg text-center w-full'
+            style={{
+              backgroundColor: 'rgba(0,0,0,0.666)',
+
+            }}>
+          Features
+          </h1>
+          <div className='flex flex-wrap md:ml-40 md:mr-40 justify-center ' style={{
+          }}>
+            {FeatureCardComp({
+              title: 'Level Editor',
+              index: 0,
+              description: (
+                <div className='text-sm'>
               Create your <span className='font-bold'>own</span> levels and share them with the world.
-              </div>),
-            video: 'https://i.imgur.com/uc6ndtx.mp4',
-          })}
-          {
-            FeatureCardComp({
-              title: 'Leaderboards',
-              index: 1,
+                </div>),
+              video: 'https://i.imgur.com/uc6ndtx.mp4',
+            })}
+            {
+              FeatureCardComp({
+                title: 'Leaderboards',
+                index: 1,
 
-              description: (<div className='text-sm'>
+                description: (<div className='text-sm'>
                 Compete with others in challenges.
-              </div>),
-              video: 'https://i.imgur.com/xWwF1XK.mp4',
-            })
-          }
-          {
-            FeatureCardComp({
-              title: 'Reviews',
-              index: 2,
+                </div>),
+                video: 'https://i.imgur.com/xWwF1XK.mp4',
+              })
+            }
+            {
+              FeatureCardComp({
+                title: 'Reviews',
+                index: 2,
 
-              description: (<div className='text-sm'>
+                description: (<div className='text-sm'>
                 Rate and review levels.
-              </div>),
-              video: 'https://i.imgur.com/kbIOV9w.mp4',
-            })
-          }
-          {FeatureCardComp({
-            title: 'Multiplayer',
-            index: 3,
-            description: (<div className='text-sm'>
+                </div>),
+                video: 'https://i.imgur.com/kbIOV9w.mp4',
+              })
+            }
+            {FeatureCardComp({
+              title: 'Multiplayer',
+              index: 3,
+              description: (<div className='text-sm'>
             Play with friends in real-time.
-            </div>),
-          })}
-          {FeatureCardComp({
-            title: 'Advanced Search',
-            video: 'https://i.imgur.com/GqCi1vV.mp4',
-            index: 4,
-            description: (<div className='text-sm'>
+              </div>),
+            })}
+            {FeatureCardComp({
+              title: 'Advanced Search',
+              video: 'https://i.imgur.com/GqCi1vV.mp4',
+              index: 4,
+              description: (<div className='text-sm'>
             Search for levels by name, creator, or tags.
-            </div>),
-          })}
-          {FeatureCardComp({
-            title: 'Automatic difficulty',
-            index: 5,
-            description: (<div className='text-sm'>
+              </div>),
+            })}
+            {FeatureCardComp({
+              title: 'Automatic difficulty',
+              index: 5,
+              description: (<div className='text-sm'>
               Levels are automatically rated by difficulty.
-            </div>),
-            video: 'https://i.imgur.com/y5M6nGk.mp4'
-          })}
-          {FeatureCardComp({
-            title: 'Pro',
-            index: 6,
-            description: (<div className='text-sm'>
+              </div>),
+              video: 'https://i.imgur.com/y5M6nGk.mp4'
+            })}
+            {FeatureCardComp({
+              title: 'Pro',
+              index: 6,
+              description: (<div className='text-sm'>
             Unlock <span className='font-bold'>advanced</span> analytics, checkpoint saving, and tons more.
-            </div>),
-          })}
+              </div>),
+            })}
+          </div>
         </div>
-        <Footer />
+        <div className='bg-1 w-full'>
+          <Footer />
+        </div>
 
       </div>
     </Page>
