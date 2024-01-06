@@ -64,6 +64,7 @@ const tests = [
       lvl: Level
     ) => {
       expect(lvl.calc_playattempts_duration_sum).toBe(4 * MINUTE);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(4 * MINUTE);
       expect(playAttemptDocs.length).toBe(1);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(playAttemptDocs[0].updateCount).toBe(3);
@@ -88,6 +89,7 @@ const tests = [
       lvl: Level
     ) => {
       expect(lvl.calc_playattempts_duration_sum).toBe(2 * MINUTE);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(2 * MINUTE);
       expect(playAttemptDocs.length).toBe(2);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(playAttemptDocs[0].updateCount).toBe(0);
@@ -106,6 +108,7 @@ const tests = [
       lvl: Level
     ) => {
       expect(lvl.calc_playattempts_duration_sum).toBe(0);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(0);
       expect(lvl.calc_playattempts_unique_users).toStrictEqual([]);
       expect(playAttemptDocs.length).toBe(1);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.UNSOLVED);
@@ -131,9 +134,8 @@ const tests = [
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(playAttemptDocs[0].updateCount).toBe(3);
       expect(lvl.calc_playattempts_duration_sum).toBe(3 * MINUTE);
-      expect(lvl.calc_playattempts_unique_users).toStrictEqual([
-        new Types.ObjectId(TestId.USER),
-      ]);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(3 * MINUTE);
+      expect(lvl.calc_playattempts_unique_users).toStrictEqual([new Types.ObjectId(TestId.USER)]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(0);
       expect(statDocs).toHaveLength(1);
     },
@@ -166,6 +168,7 @@ const tests = [
       expect(statDocs).toHaveLength(2);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
       expect(lvl.calc_playattempts_duration_sum).toBe(7 * MINUTE);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(4 * MINUTE);
 
       expect(playAttemptDocs.length).toBe(5);
       expect(playAttemptDocs[0].updateCount).toBe(2);
@@ -199,6 +202,7 @@ const tests = [
       lvl: Level
     ) => {
       expect(lvl.calc_playattempts_duration_sum).toBe(1 * MINUTE);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(1 * MINUTE);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
       expect(statDocs).toHaveLength(2);
       expect(playAttemptDocs.length).toBe(2);
@@ -226,6 +230,7 @@ const tests = [
       lvl: Level
     ) => {
       expect(lvl.calc_playattempts_duration_sum).toBe(2 * MINUTE);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(2 * MINUTE);
       expect(playAttemptDocs.length).toBe(3);
       expect(playAttemptDocs[0].updateCount).toBe(1);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.SOLVED);
@@ -235,8 +240,6 @@ const tests = [
       expect(playAttemptDocs[2].attemptContext).toBe(AttemptContext.JUST_SOLVED);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
       expect(statDocs).toHaveLength(2);
-      // TODO:
-      // expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(1 * MINUTE);
     },
   },
   {
@@ -244,8 +247,8 @@ const tests = [
     name: 'win right away but then a record comes in way later',
     list: [
       ['play', 0, 'created'],
-      ['play', 0.1 * MINUTE, 'updated'],
-      ['win_10', 0.1 * MINUTE, 'ok'],
+      ['play', 6, 'updated'],
+      ['win_10', 6, 'ok'],
       ['b_win_8', 100 * MINUTE, ''],
     ],
     tests: async (
@@ -264,6 +267,8 @@ const tests = [
         new Types.ObjectId(TestId.USER),
         new Types.ObjectId(TestId.USER_B),
       ]);
+      expect(lvl.calc_playattempts_duration_sum).toBe(6);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(6);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1); // other person solved
       expect(statDocs).toHaveLength(2);
     },
@@ -274,7 +279,7 @@ const tests = [
     list: [
       ['play', 0, 'created'],
       ['play', 0.1, 'updated'],
-      ['win_10', 0.1 * MINUTE, 'ok'],
+      ['win_10', 6, 'ok'],
       ['b_win_8', 1 * MINUTE, ''],
       ['play', 2 * MINUTE, 'updated'],
       ['win_8', 3 * MINUTE, ''],
@@ -291,10 +296,11 @@ const tests = [
       expect(playAttemptDocs[1].updateCount).toBe(5);
       expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.JUST_SOLVED);
       expect(playAttemptDocs[1].userId.toString()).toBe(TestId.USER);
+
+      expect(lvl.calc_playattempts_duration_sum).toBe(3 * MINUTE);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(6);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(2);
       expect(statDocs).toHaveLength(2);
-      // TODO:
-      // expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(0.1 + (1 - 0.1) * MINUTE); // 54+6
     },
   },
   {
@@ -358,6 +364,7 @@ const tests = [
       expect(playAttemptDocs[6].startTime).toBe(0);
 
       expect(lvl.calc_playattempts_duration_sum).toBe(13.5 * MINUTE); // see comments above on how this is calculated
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(5 * MINUTE);
       expect(lvl.calc_playattempts_unique_users).toHaveLength(2);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(2);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(2); // both of us solved it
@@ -376,9 +383,10 @@ const tests = [
     ) => {
       expect(playAttemptDocs.length).toBe(1);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_SOLVED);
-      expect(playAttemptDocs[0].startTime).toBe(0.1 * MINUTE);
-      expect(playAttemptDocs[0].endTime).toBe(0.1 * MINUTE);
+      expect(playAttemptDocs[0].startTime).toBe(6);
+      expect(playAttemptDocs[0].endTime).toBe(6);
       expect(lvl.calc_playattempts_duration_sum).toBe(0);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(0);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
       expect(statDocs).toHaveLength(2);
     },
@@ -403,6 +411,7 @@ const tests = [
       expect(playAttemptDocs[1].startTime).toBe(MINUTE);
       expect(playAttemptDocs[1].endTime).toBe(MINUTE);
       expect(lvl.calc_playattempts_duration_sum).toBe(0);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(0);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
 
       const lastLevelPlayed = await getLastLevelPlayed(DEFAULT_GAME_ID, {
@@ -436,6 +445,7 @@ const tests = [
       expect(playAttemptDocs[1].endTime).toBe(0);
       expect(playAttemptDocs[1].updateCount).toBe(0);
       expect(lvl.calc_playattempts_duration_sum).toBe(0);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(0);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
       expect(statDocs).toHaveLength(2);
     },
@@ -457,6 +467,7 @@ const tests = [
     ) => {
       expect(lvl.calc_playattempts_just_beaten_count).toBe(0);
       expect(lvl.calc_playattempts_duration_sum).toBe(0);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(0);
       expect(lvl.calc_playattempts_unique_users).toStrictEqual([]);
 
       expect(playAttemptDocs.length).toBe(2);
@@ -487,6 +498,7 @@ const tests = [
     ) => {
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
       expect(lvl.calc_playattempts_duration_sum).toBe(4 * MINUTE);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(0);
 
       expect(playAttemptDocs.length).toBe(3);
       expect(playAttemptDocs[0].updateCount).toBe(1);
@@ -524,6 +536,7 @@ const tests = [
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
       // 0-30, 41-89, 103-125
       expect(lvl.calc_playattempts_duration_sum).toBe(100);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(30);
 
       expect(playAttemptDocs.length).toBe(3);
       expect(playAttemptDocs[0].updateCount).toBe(2);
@@ -562,6 +575,7 @@ const tests = [
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
       // 0-30, 41-125
       expect(lvl.calc_playattempts_duration_sum).toBe(114);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(30);
 
       expect(playAttemptDocs.length).toBe(2);
       expect(playAttemptDocs[0].updateCount).toBe(4);
@@ -593,6 +607,7 @@ const tests = [
     ) => {
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
       expect(lvl.calc_playattempts_duration_sum).toBe(50);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(30);
 
       expect(playAttemptDocs.length).toBe(1);
       expect(playAttemptDocs[0].gameId).toBe(DEFAULT_GAME_ID);
