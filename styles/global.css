@@ -345,6 +345,19 @@ body {
     background-color: inherit;
   }
 }
+.features-section {
+  transform: translateY(100vh); /* Starts off-screen */
+  transition: transform 0.1s ease-out;
+}
+
+@keyframes blurToClear {
+  0% {
+    filter: blur(20px);
+  }
+  100% {
+    filter: blur(0px);
+  }
+}
 
 .fadeIn {
   animation-name: fadeIn;
