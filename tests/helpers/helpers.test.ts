@@ -196,8 +196,8 @@ describe('helpers/*.ts', () => {
     const gridWithOneStartAndOneEnd = '00' + TileType.Player + TileType.Exit;
     const gridWithOneStartAndOneEndWithBlockOnTop = '00' + TileType.Player + TileType.BlockOnExit;
 
-    expect(validateSokobanLevel(emptyGrid).reasons).toMatchObject(['Must have exactly one player', 'Must have at least one goal']);
-    expect(validateSokobanLevel(gridWithOnlyOneStart).reasons).toMatchObject(['Must have at least one goal']);
+    expect(validateSokobanLevel(emptyGrid).reasons).toMatchObject(['Must have exactly one player', 'Must have at least one uncovered goal']);
+    expect(validateSokobanLevel(gridWithOnlyOneStart).reasons).toMatchObject(['Must have at least one uncovered goal']);
     expect(validateSokobanLevel(gridWithOneStartAndOneEnd).reasons).toMatchObject(['Must have as many boxes as goals']);
     expect(validateSokobanLevel(gridWithOneStartAndOneEndWithBlockOnTop).valid).toBe(false);
   });
