@@ -33,6 +33,7 @@ export interface GameProps {
   extraControls?: Control[];
   level: Level;
   matchId?: string;
+  onComplete?: () => void;
   onMove?: (gameState: GameState) => void;
   onNext?: () => void;
   onPrev?: () => void;
@@ -49,6 +50,7 @@ export default function Game({
   extraControls,
   level,
   matchId,
+  onComplete,
   onMove,
   onNext,
   onPrev,
@@ -57,7 +59,7 @@ export default function Game({
 }: GameProps) {
   const levelContext = useContext(LevelContext);
   const { game, deviceInfo, mutateUser, shouldAttemptAuth, user } = useContext(AppContext);
-  const isSolved = game.isSolved;
+  const isComplete = game.isComplete;
   const { preventKeyDownEvent } = useContext(PageContext);
 
   const mutateCollection = levelContext?.mutateCollection;
@@ -456,7 +458,7 @@ export default function Game({
       }
 
       // lock movement once you reach the finish
-      if (isSolved(newGameState)) {
+      if (isComplete(newGameState)) {
         return prevGameState;
       }
 
@@ -464,7 +466,11 @@ export default function Game({
         return prevGameState;
       }
 
-      if (isSolved(newGameState)) {
+      if (isComplete(newGameState)) {
+        if (onComplete) {
+          onComplete();
+        }
+
         if (newGameState.moves.length <= level.leastMoves && onSolve) {
           onSolve();
         }
@@ -478,14 +484,14 @@ export default function Game({
 
       return onSuccessfulMove(newGameState);
     });
-  }, [allowFreeUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, game.displayName, isSolved, level._id, level.data, level.leastMoves, loadCheckpoint, onMove, onNext, onPrev, onSolve, pro, saveCheckpoint, saveSessionToSessionStorage, trackStats]);
+  }, [allowFreeUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, game.displayName, isComplete, level._id, level.data, level.leastMoves, loadCheckpoint, onComplete, onMove, onNext, onPrev, onSolve, pro, saveCheckpoint, saveSessionToSessionStorage, trackStats]);
 
   useEffect(() => {
     if (disableCheckpoints || !pro || !checkpoints) {
       return;
     }
 
-    const atEnd = isSolved(gameState);
+    const atEnd = isComplete(gameState);
 
     const bestCheckpoint = checkpoints[BEST_CHECKPOINT_INDEX];
 
@@ -500,7 +506,7 @@ export default function Game({
     if (atEnd && newBest()) {
       saveCheckpoint(BEST_CHECKPOINT_INDEX);
     }
-  }, [checkpoints, disableCheckpoints, enrichedLevel.userMoves, gameState, isSolved, pro, saveCheckpoint]);
+  }, [checkpoints, disableCheckpoints, enrichedLevel.userMoves, gameState, isComplete, pro, saveCheckpoint]);
 
   const touchXDown = useRef<number>(0);
   const touchYDown = useRef<number>(0);

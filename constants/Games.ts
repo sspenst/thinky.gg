@@ -1,5 +1,5 @@
 import { GameState } from '@root/helpers/gameStateHelpers';
-import { isSolvedPathology, isSolvedSokoban } from '@root/helpers/validators/isSolved';
+import { isCompletePathology, isCompleteSokoban } from '@root/helpers/validators/isComplete';
 import validatePathologySolution, { validatePathologyLevelValid as validatePathologyLevel } from '@root/helpers/validators/validatePathology';
 import validateSokobanSolution, { validateSokobanLevel } from '@root/helpers/validators/validateSokoban';
 import Level from '@root/models/db/level';
@@ -35,7 +35,7 @@ export const Games: Record<GameId, Game> = {
     subdomain: undefined,
     subtitle: 'Thinky Games',
     type: GameType.NONE,
-    isSolved: () => false,
+    isComplete: () => false,
   },
   [GameId.PATHOLOGY]: {
     id: GameId.PATHOLOGY,
@@ -58,7 +58,7 @@ export const Games: Record<GameId, Game> = {
     subdomain: 'pathology',
     subtitle: 'Find the way',
     type: GameType.SHORTEST_PATH,
-    isSolved: isSolvedPathology,
+    isComplete: isCompletePathology,
     validateLevel: validatePathologyLevel,
     validateSolution: validatePathologySolution,
   },
@@ -88,7 +88,7 @@ export const Games: Record<GameId, Game> = {
     subdomain: 'sokoban',
     subtitle: 'Push the boxes',
     type: GameType.COMPLETE_AND_SHORTEST,
-    isSolved: isSolvedSokoban,
+    isComplete: isCompleteSokoban,
     validateLevel: validateSokobanLevel,
     validateSolution: validateSokobanSolution,
   },
@@ -133,7 +133,7 @@ export interface Game {
   stripeGiftPriceIdYearly?: string;
   subdomain: string | undefined;
   type: GameType;
-  isSolved: (gameState: GameState) => boolean;
+  isComplete: (gameState: GameState) => boolean;
   validateLevel?: (data: string) => ValidateLevelResponse;
   validateSolution?: (directions: Direction[], level: Level) => boolean;
 }

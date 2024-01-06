@@ -156,7 +156,7 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
             {Object.values(blocks)}
             {gameState.pos &&
               <Tile
-                atEnd={game.isSolved(gameState)}
+                atEnd={game.isComplete(gameState)}
                 className={cellClassName ? cellClassName(gameState.pos.x, gameState.pos.y) : undefined}
                 disableAnimation={disableAnimation}
                 handleClick={onCellClick ? (rightClick: boolean) => onCellClick(gameState.pos.x, gameState.pos.y, rightClick) : undefined}

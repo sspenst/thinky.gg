@@ -1,9 +1,7 @@
 /* istanbul ignore file */
 
 import { createPopper, Instance, Placement } from '@popperjs/core';
-import styles from '@root/components/level/Controls.module.css';
 import { GameId } from '@root/constants/GameId';
-import TileType from '@root/constants/tileType';
 import { GameState } from '@root/helpers/gameStateHelpers';
 import classNames from 'classnames';
 import { Types } from 'mongoose';
@@ -36,6 +34,7 @@ interface TutorialStep {
   isNextButtonDisabled?: boolean;
   key?: string;
   level?: Level;
+  onComplete?: () => void;
   onMove?: (gameState: GameState) => void;
   onSolve?: () => void;
   // number of steps back using the previous button
@@ -406,34 +405,33 @@ export default function TutorialSokoban() {
           <div className='text-xl'>Some levels have multiple goals.</div>
         </>,
         key: 'tutorial-level-1-only-end',
-        level: getLevel(LEVEL_1_ONLY_END, { leastMoves: 5 }),
+        level: getLevel(LEVEL_1_ONLY_END),
         tooltip: { target: '.tile-type-3', title: <div>Exit</div>, dir: 'top' },
       },
       {
         editorGrid: true,
-        gameClasses: 'fadeIn',
         header: <>
           <div className='text-3xl'>This is a box.</div>
           <div className='text-xl'>Your goal is to push boxes onto goals.</div>
         </>,
         key: 'tutorial-level-1-only-block',
-        level: getLevel(LEVEL_1_ONLY_BLOCK, { leastMoves: 5 }),
+        level: getLevel(LEVEL_1_ONLY_BLOCK),
         tooltip: { target: '.tile-type-2', title: <div>Box</div>, dir: 'top' },
       },
       {
         gameGrid: true,
         header: <><div key='tutorial-level-1-header' className='text-3xl fadeIn'>Try solving your first level!</div><div className='text-xl'>Push the box onto the goal.</div></>,
         key: 'tutorial-level-1',
-        level: getLevel(LEVEL_1, { leastMoves: 5 }),
-        onSolve: niceJob,
+        level: getLevel(LEVEL_1),
+        onComplete: niceJob,
       },
       {
         gameClasses: 'fadeIn',
         gameGrid: true,
         header: <div key='tutorial-wall-header' className='text-3xl fadeIn'>Try getting to the exit now.</div>,
         key: 'tutorial-wall',
-        level: getLevel(WALL_INTRO, { leastMoves: 8 }),
-        onSolve: niceJob,
+        level: getLevel(WALL_INTRO),
+        onComplete: niceJob,
         tooltip: { canClose: true, target: '.tile-type-1', title: <div>You are not able to go through walls</div> },
       },
       {
@@ -441,16 +439,16 @@ export default function TutorialSokoban() {
         gameGrid: true,
         header: <div key='tutorial-movable-explain-header' className='text-3xl fadeIn'>You can only push one box at a time.</div>,
         key: 'tutorial-movable-explain',
-        level: getLevel(MOVABLE_EXPLAIN, { leastMoves: 8 }),
-        onSolve: niceJob,
+        level: getLevel(MOVABLE_EXPLAIN),
+        onComplete: niceJob,
       },
       {
         gameClasses: 'fadeIn',
         gameGrid: true,
         header: <><div key='tutorial-level-1-coverexit' className='text-3xl fadeIn'>Complete the final level of the tutorial!</div></>,
         key: 'tutorial-movable-explain-end-cover',
-        level: getLevel(MOVABLE_EXPLAIN_END_COVER, { leastMoves: 9 }),
-        onSolve: niceJob,
+        level: getLevel(MOVABLE_EXPLAIN_END_COVER),
+        onComplete: niceJob,
       },
       {
         header: <div>
@@ -680,27 +678,8 @@ export default function TutorialSokoban() {
               extraControls={controls}
               key={tutorialStep.key}
               level={tutorialStep.level}
+              onComplete={tutorialStep.onComplete}
               onMove={(gameState: GameState) => {
-                const restartButton = document.getElementById('btn-restart') as HTMLButtonElement;
-
-                // show restart notification if they have reached the exit in too many moves
-                if (gameState.board[gameState.pos.y][gameState.pos.x].tileType === TileType.Exit && gameState.moves.length > (tutorialStep.level?.leastMoves ?? 0)) {
-                  restartButton?.classList.add(styles['highlight-red']);
-                } else {
-                  restartButton?.classList.remove(styles['highlight-red']);
-                }
-
-                if (tutorialStep.key !== 'tutorial-player-intro') {
-                  const undoButton = document.getElementById('btn-undo') as HTMLButtonElement;
-
-                  // show undo notification if they have made too many moves
-                  if (gameState.moves.length > (tutorialStep.level?.leastMoves ?? 0)) {
-                    undoButton?.classList.add(styles['highlight-red']);
-                  } else {
-                    undoButton?.classList.remove(styles['highlight-red']);
-                  }
-                }
-
                 if (tutorialStep.onMove) {
                   tutorialStep.onMove(gameState);
                 }
