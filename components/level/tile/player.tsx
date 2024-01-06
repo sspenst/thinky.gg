@@ -7,8 +7,8 @@ import TileType from '../../../constants/tileType';
 import styles from './Player.module.css';
 
 interface PlayerProps {
-  game: Game
   atEnd?: boolean;
+  game: Game;
   moveCount: number;
   theme: Theme;
 }

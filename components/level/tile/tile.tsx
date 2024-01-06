@@ -68,8 +68,8 @@ export default function Tile({
     if (tileType === TileType.Player) {
       return (
         <Player
-          game={game}
           atEnd={atEnd}
+          game={game}
           moveCount={text ?? 0}
           theme={theme}
         />
