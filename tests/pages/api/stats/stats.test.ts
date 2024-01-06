@@ -91,7 +91,7 @@ describe('Testing stats api', () => {
             token: getTokenCookieValue(TestId.USER),
           },
           body: {
-            directions: [5, Direction.RIGHT],
+            directions: [6000, Direction.RIGHT],
             levelId: levelId,
           },
           headers: {
