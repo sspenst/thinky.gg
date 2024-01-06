@@ -1,9 +1,10 @@
-import getDifficultyEstimate from '@root/helpers/getDifficultyEstimate';
+import getDifficultyEstimate, { getDifficultyCompletionEstimate } from '@root/helpers/getDifficultyEstimate';
 import { TimerUtil } from '@root/helpers/getTs';
 import { logger } from '@root/helpers/logger';
-import { EnrichedLevel } from '@root/models/db/level';
+import Level, { EnrichedLevel } from '@root/models/db/level';
 import PlayAttempt from '@root/models/db/playAttempt';
-import { LevelModel, PlayAttemptModel } from '@root/models/mongoose';
+import Stat from '@root/models/db/stat';
+import { LevelModel, PlayAttemptModel, StatModel } from '@root/models/mongoose';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
 import mongoose, { Types } from 'mongoose';
 
@@ -78,7 +79,7 @@ export async function postPlayAttempt(userId: Types.ObjectId, levelId: string) {
         resTrack.status = 200;
         resTrack.json = { message: 'created', playAttempt: resp[0]._id };
 
-        return resTrack;
+        return;
       }
 
       if (latestPlayAttempt.endTime > (now - 3 * 60) && latestPlayAttempt.attemptContext !== AttemptContext.JUST_SOLVED) {
@@ -96,19 +97,34 @@ export async function postPlayAttempt(userId: Types.ObjectId, levelId: string) {
         if (latestPlayAttempt.attemptContext === AttemptContext.UNSOLVED) {
           const newPlayDuration = now - latestPlayAttempt.endTime;
 
+          const levelInc = {
+            calc_playattempts_duration_sum: newPlayDuration,
+          } as Partial<Level>;
+
+          const stat = await StatModel.findOne({
+            levelId: levelObjectId,
+            userId: userId,
+          }, '_id', { session: session }).lean<Stat>();
+
+          // if the level has not yet been beaten, increment calc_playattempts_duration_before_stat_sum
+          if (!stat) {
+            levelInc.calc_playattempts_duration_before_stat_sum = newPlayDuration;
+          }
+
           const updatedLevel = await LevelModel.findByIdAndUpdate(levelObjectId, {
-            $inc: {
-              calc_playattempts_duration_sum: newPlayDuration,
-            },
+            $inc: levelInc,
             $addToSet: {
               calc_playattempts_unique_users: userId,
             },
           }, {
             new: true,
             projection: {
+              calc_playattempts_duration_before_stat_sum: 1,
               calc_playattempts_duration_sum: 1,
               calc_playattempts_just_beaten_count: 1,
               calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' },
+              calc_playattempts_unique_users_count_excluding_author: { $size: { $setDifference: ['$calc_playattempts_unique_users', [userId]] } },
+              calc_stats_completed_count: 1,
             },
             session: session,
           }).lean<EnrichedLevel>();
@@ -121,6 +137,7 @@ export async function postPlayAttempt(userId: Types.ObjectId, levelId: string) {
 
           await LevelModel.updateOne({ _id: levelObjectId }, {
             $set: {
+              calc_difficulty_completion_estimate: getDifficultyCompletionEstimate(updatedLevel, updatedLevel.calc_playattempts_unique_users_count_excluding_author ?? 0),
               calc_difficulty_estimate: getDifficultyEstimate(updatedLevel, updatedLevel.calc_playattempts_unique_users_count ?? 0),
             },
           }, {
@@ -131,7 +148,7 @@ export async function postPlayAttempt(userId: Types.ObjectId, levelId: string) {
         resTrack.status = 200;
         resTrack.json = { message: 'updated', playAttempt: latestPlayAttempt._id };
 
-        return resTrack;
+        return;
       }
 
       const resp = await PlayAttemptModel.create([{
