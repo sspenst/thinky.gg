@@ -21,7 +21,7 @@ function ExternalLink({ children, href }: ExternalLinkProps) {
 
 export default function Footer() {
   return (
-    <footer className='footer flex flex-col p-10 gap-10' style={{
+    <footer className='footer flex flex-col p-10 gap-10 w-full' style={{
       borderTop: '1px solid var(--bg-color-3)',
     }}>
       <div className='flex justify-center gap-6 text-sm text-center'>
