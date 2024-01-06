@@ -138,6 +138,8 @@ export default withAuth({ POST: {
       const [updatedLevel] = await Promise.all([
         LevelModel.findOneAndUpdate<Level>({ _id: id, isDraft: true }, {
           $set: {
+            calc_stats_completed_count: 1,
+            calc_stats_players_beaten: 1,
             isDraft: false,
             ts: ts,
           },

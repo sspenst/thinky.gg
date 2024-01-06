@@ -207,31 +207,34 @@ export default function AdminPage({ adminQuery, level, user }: AdminPageProps) {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function display(title: string, obj: any) {
+  function display(obj: any) {
     return (
       <div>
-        <h1 className='text-2xl font-bold mb-4'>{title}</h1>
         {obj && (
-          <div className='grid grid-cols-4 gap-4'>
-            {Object.keys(obj).map((value) => {
+          <div className='flex flex-col gap-2 font-mono text-sm'>
+            {Object.keys(obj).sort().map((value) => {
               const key = value;
-              const str = obj[key]?.toString() ?? '';
+              let str = obj[key];
+
+              if (typeof str === 'object') {
+                str = JSON.stringify(str);
+              }
 
               return (
                 <div key={key} className='flex items-center'>
                   <div className='flex-none font-bold pr-2'>
-                    <label>{key}:</label>
+                    <label>{key}</label>
                   </div>
                   <div className='flex-grow'>
                     <input
-                      type='text'
-                      readOnly
-                      value={str}
+                      className='p-1 rounded-md w-full'
                       onClick={(e) => {
                         (e.target as HTMLInputElement).select();
                         navigator.clipboard.writeText(str);
                       }}
-                      className='p-1 rounded-md w-full'
+                      readOnly
+                      type='text'
+                      value={str}
                     />
                   </div>
                 </div>
@@ -291,7 +294,7 @@ export default function AdminPage({ adminQuery, level, user }: AdminPageProps) {
             <FormattedUser id='admin' user={selectedUser} />
             <div className='flex flex-row items-center justify-center p-2 gap-2'>
               <div className='flex flex-col gap-2'>
-                {display('User', selectedUser)}
+                {display(selectedUser)}
               </div>
             </div>
           </div>
@@ -339,7 +342,7 @@ export default function AdminPage({ adminQuery, level, user }: AdminPageProps) {
         <div className='flex flex-row items-center justify-center gap-2'>
           {selectedLevel && (
             <div className='flex flex-col gap-2'>
-              {display('Level', selectedLevel)}
+              {display(selectedLevel)}
             </div>
           )}
         </div>
