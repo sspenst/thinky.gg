@@ -10,7 +10,7 @@ import SettingsAccountRegular from './settingsAccountRegular';
 
 interface SettingsAccountProps {
   user: User;
-  userConfig: UserConfig | null;
+  userConfig?: UserConfig | null;
 }
 
 export default function SettingsAccount({ user, userConfig }: SettingsAccountProps) {

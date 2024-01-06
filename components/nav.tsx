@@ -304,7 +304,7 @@ export default function Nav({ isDropdown }: NavProps) {
         label='Users'
       />
       <button
-        className='rounded-md px-3 bg-1 hover-bg-3 h-full'
+        className='rounded-md px-3 bg-1 hover-bg-3 h-10'
         onClick={() => setShowSearchUsers(s => !s)}
       >
         <svg xmlns='http://www.w3.org/2000/svg' className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>

@@ -41,9 +41,9 @@ function ProFeature({ description, icon, title }: ProFeatureProps) {
 }
 
 interface SettingsProProps {
-  stripeCustomerPortalLink: string;
-  stripePaymentLink: string;
-  stripePaymentYearlyLink: string;
+  stripeCustomerPortalLink?: string;
+  stripePaymentLink?: string;
+  stripePaymentYearlyLink?: string;
 }
 
 export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLink, stripePaymentYearlyLink }: SettingsProProps) {
