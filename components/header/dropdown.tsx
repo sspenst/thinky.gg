@@ -53,6 +53,7 @@ export default function Dropdown() {
       mutateUser(undefined);
       setShouldAttemptAuth(false);
       router.push('/');
+      router.reload();
       forceUpdate();
     });
   }
