@@ -4,7 +4,7 @@
     "slug": "thinky",
     "scheme": "com.pathology",
     "version": "2.0",
-    "icon": "../public/logo_pfp.png",
+    "icon": "./AppIcons/playstore.png",
     "userInterfaceStyle": "automatic",
     "plugins": [
       [
@@ -24,7 +24,7 @@
         "expo-notifications",
         {
           "color": "#000000",
-          "icon": "../public/logo_pfp.png"
+          "icon": "./AppIcons/playstore.png"
         }
       ],
       [
@@ -40,9 +40,9 @@
       "@react-native-firebase/app"
     ],
     "splash": {
-      "image": "./AppIcons/appstore.png",
+      "image": "./AppIcons/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#000000"
+      "backgroundColor": "#13033d"
     },
     "updates": {
       "fallbackToCacheTimeout": 0,
@@ -74,7 +74,12 @@
       },
       "bundleIdentifier": "com.pathology",
       "buildNumber": "10",
-      "associatedDomains": ["applinks:pathology.gg", "applinks:thinky.gg", "applinks:sokoban.pathology.gg", "applinks:pathology.thinky.gg"]
+      "associatedDomains": [
+        "applinks:pathology.gg",
+        "applinks:thinky.gg",
+        "applinks:sokoban.pathology.gg",
+        "applinks:pathology.thinky.gg"
+      ]
     },
     "android": {
       "intentFilters": [
@@ -94,6 +99,11 @@
             },
             {
               "scheme": "https",
+              "host": "*.thinky.gg",
+              "pathPattern": ".*"
+            },
+            {
+              "scheme": "https",
               "host": "sokoban.pathology.gg",
               "pathPattern": ".*"
             },
@@ -103,7 +113,10 @@
               "pathPattern": ".*"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ],
       "googleServicesFile": "./google-services.json",
@@ -119,10 +132,12 @@
     },
     "extra": {
       "eas": {
-        "projectId": "e480f464-4092-46c9-8730-55d2bee70c9b"
+        "projectId": "0c502376-1b02-47bb-bc4a-35eb67bbe8f7"
       }
     },
     "owner": "sspenst",
-    "runtimeVersion": "1.0.0"
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    }
   }
 }
