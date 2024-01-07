@@ -141,7 +141,7 @@ async function onRemoteMessage(message: FirebaseMessagingTypes.RemoteMessage) {
 function App() {
   const linkingUrl = Linking.useURL();
   const webViewRef = useRef<WebView>();
-  const [webViewUrl, setWebViewUrl] = useState(`${host}?platform=${Platform.OS}&version=2.0`);
+  const [webViewUrl, setWebViewUrl] = useState(`${host}?platform=${Platform.OS}&version=2.0.0`);
 
   useEffect(() => {
     if (linkingUrl) {
@@ -273,22 +273,23 @@ function App() {
             webViewRef.current.reload();
           }
         }}
-        onNavigationStateChange={(navState) => {
-          console.log('NAV STATE CHANGE', navState.url);
+        onMessage={(event) => {
+          const data = JSON.parse(event.nativeEvent.data);
 
-          // TODO: need to find another way to do this
-          if (navState.url.includes('/')) {
-            // if we make it to this page we are logged in, so register the device for push notifications
+          console.log('onMessage', data);
+
+          if (data.loggedIn) {
             registerDeviceToken();
-          } else if (navState.url === host || navState.url === `${host}/`) {
-            // after logout you arrive back at the base url, so unregister the device
+          } else {
             unregisterDeviceToken();
           }
+        }}
+        onNavigationStateChange={(navState) => {
+          console.log('onNavigationStateChange', navState.url);
         }}
         originWhitelist={[
           'https://pathology.gg*',
           'https://thinky.gg*',
-          // also subdomains
           'https://*.thinky.gg*',
           'https://discord.com*',
           'https://www.google.com/recaptcha/*',
