@@ -177,7 +177,6 @@ export default withAuth({ POST: {
         queueRefreshIndexCalcs(level._id, { session: session }),
         queueCalcPlayAttempts(level._id, { session: session }),
         queueCalcCreatorCounts(level.gameId, req.user._id, { session: session }),
-        createNewLevelNotifications(level.gameId, new Types.ObjectId(req.userId), level._id, undefined, { session: session }),
         queueGenLevelImage(level._id, true, { session: session }),
       ]);
     });
