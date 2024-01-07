@@ -33,9 +33,7 @@
           "initialOrientation": "DEFAULT"
         }
       ],
-      [
-        "@notifee/react-native"
-      ],
+
       "react-native-background-fetch",
       "@react-native-firebase/app"
     ],
