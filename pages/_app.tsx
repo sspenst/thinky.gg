@@ -355,6 +355,14 @@ export default function MyApp({ Component, pageProps, userAgent }: AppProps & { 
   }, [router.events, router.pathname, user]);
   // }, [GA_ClientID, router.events, router.pathname, user]);
 
+  useEffect(() => {
+    if (window.ReactNativeWebView) {
+      const loggedIn = user !== undefined;
+
+      window.ReactNativeWebView.postMessage(JSON.stringify({ loggedIn: loggedIn }));
+    }
+  }, [user]);
+
   const isEU = Intl.DateTimeFormat().resolvedOptions().timeZone.startsWith('Europe');
 
   return (<>
