@@ -4,7 +4,7 @@
     "slug": "thinky",
     "scheme": "com.pathology",
     "version": "2.0.0",
-    "icon": "../public/logo_pfp.png",
+    "icon": "../public/logos/thinky/thinky_pfp.png",
     "userInterfaceStyle": "automatic",
     "plugins": [
       [
@@ -24,7 +24,7 @@
         "expo-notifications",
         {
           "color": "#000000",
-          "icon": "../public/logo_pfp.png"
+          "icon": "../public/logos/thinky/thinky_pfp.png"
         }
       ],
       [
@@ -40,7 +40,7 @@
       "@react-native-firebase/app"
     ],
     "splash": {
-      "image": "../public/logo_splash.png",
+      "image": "../public/logos/thinky/thinky_splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#13033d"
     },
@@ -121,14 +121,14 @@
       ],
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
-        "foregroundImage": "../public/logo_pfp.png",
+        "foregroundImage": "../public/logos/thinky/thinky_pfp.png",
         "backgroundColor": "#000000"
       },
       "package": "com.pathology.gg",
       "versionCode": "6"
     },
     "web": {
-      "favicon": "../public/logo.png"
+      "favicon": "../public/logos/thinky/thinky.png"
     },
     "extra": {
       "eas": {
