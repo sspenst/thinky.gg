@@ -206,6 +206,7 @@ export default function ThinkyHomePage() {
             {FeatureCardComp({
               title: 'Multiplayer',
               index: 3,
+              video: 'https://i.imgur.com/S1QJFso.mp4',
               description: (<div className='text-sm'>
             Play with friends in real-time.
               </div>),
@@ -228,6 +229,7 @@ export default function ThinkyHomePage() {
             })}
             {FeatureCardComp({
               title: 'Pro',
+              video: 'https://i.imgur.com/nOJRkX1.mp4',
               index: 6,
               description: (<div className='text-sm'>
             Unlock <span className='font-bold'>advanced</span> analytics, checkpoint saving, and tons more.
