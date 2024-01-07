@@ -3,8 +3,8 @@
     "name": "Thinky",
     "slug": "thinky",
     "scheme": "com.pathology",
-    "version": "2.0",
-    "icon": "./AppIcons/playstore.png",
+    "version": "2.0.0",
+    "icon": "./icons/playstore.png",
     "userInterfaceStyle": "automatic",
     "plugins": [
       [
@@ -24,7 +24,7 @@
         "expo-notifications",
         {
           "color": "#000000",
-          "icon": "./AppIcons/playstore.png"
+          "icon": "./icons/playstore.png"
         }
       ],
       [
@@ -33,14 +33,11 @@
           "initialOrientation": "DEFAULT"
         }
       ],
-      [
-        "@notifee/react-native"
-      ],
       "react-native-background-fetch",
       "@react-native-firebase/app"
     ],
     "splash": {
-      "image": "./AppIcons/splash.png",
+      "image": "./icons/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#13033d"
     },
@@ -73,7 +70,7 @@
         "NSPhotoLibraryUsageDescription": "Enabling photo library access will allow you to choose a picture to use as your avatar."
       },
       "bundleIdentifier": "com.pathology",
-      "buildNumber": "10",
+      "buildNumber": "11",
       "associatedDomains": [
         "applinks:pathology.gg",
         "applinks:thinky.gg",
@@ -121,14 +118,14 @@
       ],
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
-        "foregroundImage": "./AppIcons/appstore.png",
+        "foregroundImage": "./icons/appstore.png",
         "backgroundColor": "#000000"
       },
       "package": "com.pathology.gg",
-      "versionCode": "5"
+      "versionCode": "6"
     },
     "web": {
-      "favicon": "./AppIcons/playstore.png"
+      "favicon": "./icons/playstore.png"
     },
     "extra": {
       "eas": {
