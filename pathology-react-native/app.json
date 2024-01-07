@@ -71,7 +71,7 @@
         "NSPhotoLibraryUsageDescription": "Enabling photo library access will allow you to choose a picture to use as your avatar."
       },
       "bundleIdentifier": "com.pathology",
-      "buildNumber": "12",
+      "buildNumber": "13",
       "associatedDomains": [
         "applinks:pathology.gg",
         "applinks:thinky.gg",
@@ -123,7 +123,7 @@
         "backgroundColor": "#13033d"
       },
       "package": "com.pathology.gg",
-      "versionCode": "6"
+      "versionCode": "7"
     },
     "web": {
       "favicon": "../public/logos/thinky/thinky.png"
