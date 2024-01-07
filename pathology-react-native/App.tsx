@@ -18,7 +18,7 @@ interface MobileNotification {
   url: string;
 }
 
-const host = 'https://pathology.gg';
+const host = 'https://thinky.gg';
 
 let isDeviceTokenRegistered = false;
 let onMessageUnsubscribe: () => void;
@@ -116,7 +116,7 @@ async function onRemoteMessage(message: FirebaseMessagingTypes.RemoteMessage) {
       ...(mobileNotification.notificationId && { notificationId: mobileNotification.notificationId }),
     },
     ios: {
-      summaryArgument: 'Pathology',
+      summaryArgument: 'Thinky',
       summaryArgumentCount: mobileNotification.badgeCount,
       ...(mobileNotification.imageUrl && { attachments: [{ url: mobileNotification.imageUrl }] }),
     },
@@ -141,7 +141,7 @@ async function onRemoteMessage(message: FirebaseMessagingTypes.RemoteMessage) {
 function App() {
   const linkingUrl = Linking.useURL();
   const webViewRef = useRef<WebView>();
-  const [webViewUrl, setWebViewUrl] = useState(`${host}/home?platform=${Platform.OS}&version=1.1`);
+  const [webViewUrl, setWebViewUrl] = useState(`${host}?platform=${Platform.OS}&version=2.0.0`);
 
   useEffect(() => {
     if (linkingUrl) {
@@ -286,6 +286,8 @@ function App() {
         }}
         originWhitelist={[
           'https://pathology.gg*',
+          'https://thinky.gg*',
+          'https://*.thinky.gg*',
           'https://discord.com*',
           'https://www.google.com/recaptcha/*',
           'https://www.gstatic.com/recaptcha/*',
