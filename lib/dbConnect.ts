@@ -44,9 +44,9 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
     let uri = undefined;
 
     /* istanbul ignore else */
-    if (process.env.NODE_ENV === 'test' || !process.env.MONGODB_URI) {
+    if (process.env.NODE_ENV === 'test' || !process.env.MONGODB_TEST_URI_COUNT) {
       // create with replica
-      if (!process.env.MONGODB_TEST_URI) {
+      if (!process.env.MONGODB_TEST_URI_COUNT) {
         const replSetOptions = {
           replSet: {
             count: 1,
@@ -59,7 +59,9 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
         console.log('MongoMemoryReplSet.create took ' + (Date.now() - s) + 'ms');
         uri = cached.mongoMemoryServer.getUri();
       } else {
-        uri = process.env.MONGODB_TEST_URI;
+        const count = parseInt(process.env.MONGODB_TEST_URI_COUNT);
+
+        uri = process.env['MONGODB_TEST_URI_' + Math.floor(Math.random() * count)] as string;
         // now set the uri to point to a randomally generated database name
         // this is so that we can run tests in parallel
         const randomDbName = 't_' + new Types.ObjectId().toString();
