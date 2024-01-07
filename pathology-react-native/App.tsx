@@ -273,16 +273,17 @@ function App() {
             webViewRef.current.reload();
           }
         }}
-        onNavigationStateChange={(navState) => {
-          console.log('NAV STATE CHANGE', navState.url);
+        onMessage={(event) => {
+          const data = JSON.parse(event.nativeEvent.data);
 
-          if (navState.url.includes('/home')) {
-            // if we make it to this page we are logged in, so register the device for push notifications
+          if (data.loggedIn) {
             registerDeviceToken();
-          } else if (navState.url === host || navState.url === `${host}/`) {
-            // after logout you arrive back at the base url, so unregister the device
+          } else {
             unregisterDeviceToken();
           }
+        }}
+        onNavigationStateChange={(navState) => {
+          console.log('NAV STATE CHANGE', navState.url);
         }}
         originWhitelist={[
           'https://pathology.gg*',
