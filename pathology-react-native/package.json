@@ -17,7 +17,7 @@
     "expo-build-properties": "^0.4.1",
     "expo-dev-client": "~2.0.1",
     "expo-device": "~5.0.0",
-    "expo-linking": "^3.3.0",
+    "expo-linking": "~3.3.1",
     "expo-notifications": "^0.17.0",
     "expo-permissions": "^14.0.0",
     "expo-screen-orientation": "^5.0.1",
@@ -32,7 +32,7 @@
     "react-native": "0.70.8",
     "react-native-background-fetch": "^4.1.8",
     "react-native-push-notification": "^8.1.1",
-    "react-native-webview": "^11.26.1"
+    "react-native-webview": "11.23.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.12",

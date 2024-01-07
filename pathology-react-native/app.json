@@ -23,7 +23,7 @@
       [
         "expo-notifications",
         {
-          "color": "#000000",
+          "color": "#13033d",
           "icon": "../public/logos/thinky/thinky_pfp.png"
         }
       ],
@@ -33,7 +33,6 @@
           "initialOrientation": "DEFAULT"
         }
       ],
-
       "react-native-background-fetch",
       "@react-native-firebase/app"
     ],
@@ -120,7 +119,7 @@
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "../public/logos/thinky/thinky_pfp.png",
-        "backgroundColor": "#000000"
+        "backgroundColor": "#13033d"
       },
       "package": "com.pathology.gg",
       "versionCode": "6"
@@ -134,6 +133,8 @@
       }
     },
     "owner": "sspenst",
-    "runtimeVersion": "1.0.0"
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    }
   }
 }
