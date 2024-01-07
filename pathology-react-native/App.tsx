@@ -276,6 +276,8 @@ function App() {
         onMessage={(event) => {
           const data = JSON.parse(event.nativeEvent.data);
 
+          console.log('onMessage', data);
+
           if (data.loggedIn) {
             registerDeviceToken();
           } else {
@@ -283,7 +285,7 @@ function App() {
           }
         }}
         onNavigationStateChange={(navState) => {
-          console.log('NAV STATE CHANGE', navState.url);
+          console.log('onNavigationStateChange', navState.url);
         }}
         originWhitelist={[
           'https://pathology.gg*',

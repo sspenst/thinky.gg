@@ -32,7 +32,6 @@
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="com.pathology"/>
         <data android:scheme="com.pathology.gg"/>
-        <data android:scheme="exp+pathology"/>
         <data android:scheme="exp+thinky"/>
       </intent-filter>
       <intent-filter android:autoVerify="true" data-generated="true">
