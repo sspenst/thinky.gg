@@ -30,7 +30,7 @@ declare global {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ReactNativeWebView: any;
   }
-  var __MONGOSERVER__: MongoMemoryReplSet;
+  var __MONGOSERVER__: MongoMemoryReplSet[];
 }
 
 export {};
