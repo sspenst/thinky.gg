@@ -24,6 +24,8 @@ declare global {
     // TODO: install @types/gtag.js or similar for this
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     gtag: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ReactNativeWebView: any;
   }
   var __MONGOSERVER__: MongoMemoryReplSet;
 }
