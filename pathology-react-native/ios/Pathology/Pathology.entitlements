@@ -7,6 +7,9 @@
     <key>com.apple.developer.associated-domains</key>
     <array>
       <string>applinks:pathology.gg</string>
+      <string>applinks:thinky.gg</string>
+      <string>applinks:sokoban.pathology.gg</string>
+      <string>applinks:pathology.thinky.gg</string>
     </array>
   </dict>
 </plist>

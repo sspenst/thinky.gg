@@ -17,7 +17,7 @@
     <meta-data android:name="expo.modules.notifications.default_notification_color" android:resource="@color/notification_icon_color"/>
     <meta-data android:name="expo.modules.notifications.default_notification_icon" android:resource="@drawable/notification_icon"/>
     <meta-data android:name="expo.modules.updates.ENABLED" android:value="true"/>
-    <meta-data android:name="expo.modules.updates.EXPO_RUNTIME_VERSION" android:value="1.0.0"/>
+    <meta-data android:name="expo.modules.updates.EXPO_RUNTIME_VERSION" android:value="exposdk:47.0.0"/>
     <meta-data android:name="expo.modules.updates.EXPO_UPDATES_CHECK_ON_LAUNCH" android:value="ALWAYS"/>
     <meta-data android:name="expo.modules.updates.EXPO_UPDATES_LAUNCH_WAIT_MS" android:value="0"/>
     <meta-data android:name="expo.modules.updates.EXPO_UPDATE_URL" android:value="https://u.expo.dev/e480f464-4092-46c9-8730-55d2bee70c9b"/>
@@ -33,10 +33,15 @@
         <data android:scheme="com.pathology"/>
         <data android:scheme="com.pathology.gg"/>
         <data android:scheme="exp+pathology"/>
+        <data android:scheme="exp+thinky"/>
       </intent-filter>
       <intent-filter android:autoVerify="true" data-generated="true">
         <action android:name="android.intent.action.VIEW"/>
         <data android:scheme="https" android:host="pathology.gg" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="thinky.gg" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="*.thinky.gg" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="sokoban.thinky.gg" android:pathPattern=".*"/>
+        <data android:scheme="https" android:host="pathology.thinky.gg" android:pathPattern=".*"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <category android:name="android.intent.category.DEFAULT"/>
       </intent-filter>
