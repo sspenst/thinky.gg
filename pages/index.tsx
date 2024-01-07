@@ -107,7 +107,7 @@ export default function ThinkyHomePage() {
     <Page title='Thinky.gg'
       hideFooter
       style={{
-        backgroundImage: 'url(https://i.imgur.com/kylvauN.png)',
+        backgroundImage: 'url(https://i.imgur.com/iYIoTCx.png)',
         // height: '100vh',
         // center
         backgroundPosition: 'center',
