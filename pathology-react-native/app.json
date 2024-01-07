@@ -64,7 +64,6 @@
         ],
         "UISupportedInterfaceOrientations": [
           "UIInterfaceOrientationPortrait",
-          "UIInterfaceOrientationPortraitUpsideDown",
           "UIInterfaceOrientationLandscapeLeft",
           "UIInterfaceOrientationLandscapeRight"
         ],
@@ -81,8 +80,6 @@
       ]
     },
     "android": {
-      "softwareKeyboardLayoutMode": "pan",
-      "screenOrientation": "unspecified",
       "intentFilters": [
         {
           "action": "VIEW",
