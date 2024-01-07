@@ -24,7 +24,7 @@ export default function Header({
   const { user, userLoading } = useContext(AppContext);
 
   useEffect(() => {
-    setBackground(window.location.hostname !== 'pathology.gg' ?
+    setBackground(!['pathology.gg', 'thinky.gg'].includes(window.location.hostname) ?
       'linear-gradient(45deg, darkred 20%, var(--bg-color-4) 20%, var(--bg-color-4) 40%, var(--bg-color-2) 40%, var(--bg-color-2) 60%, var(--bg-color-4) 60%, var(--bg-color-4) 80%, var(--bg-color-2) 80%, var(--bg-color-2) 100%'
       : 'var(--bg-color-2)');
   }, []);
