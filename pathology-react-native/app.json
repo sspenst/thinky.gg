@@ -3,8 +3,8 @@
     "name": "Thinky",
     "slug": "thinky",
     "scheme": "com.pathology",
-    "version": "2.0.0",
-    "icon": "./icons/playstore.png",
+    "version": "1.3",
+    "icon": "../public/logo_pfp.png",
     "userInterfaceStyle": "automatic",
     "plugins": [
       [
@@ -13,7 +13,8 @@
           "android": {
             "compileSdkVersion": 33,
             "targetSdkVersion": 33,
-            "buildToolsVersion": "33.0.0"
+            "buildToolsVersion": "33.0.0",
+            "extraMavenRepos": ["$rootDir/../../../node_modules/@notifee/react-native/android/libs"]
           },
           "ios": {
             "deploymentTarget": "13.0"
@@ -24,7 +25,7 @@
         "expo-notifications",
         {
           "color": "#000000",
-          "icon": "./icons/playstore.png"
+          "icon": "../public/logo_pfp.png"
         }
       ],
       [
@@ -37,7 +38,7 @@
       "@react-native-firebase/app"
     ],
     "splash": {
-      "image": "./icons/splash.png",
+      "image": "../public/logo_splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#13033d"
     },
@@ -70,13 +71,8 @@
         "NSPhotoLibraryUsageDescription": "Enabling photo library access will allow you to choose a picture to use as your avatar."
       },
       "bundleIdentifier": "com.pathology",
-      "buildNumber": "11",
-      "associatedDomains": [
-        "applinks:pathology.gg",
-        "applinks:thinky.gg",
-        "applinks:sokoban.pathology.gg",
-        "applinks:pathology.thinky.gg"
-      ]
+      "buildNumber": "10",
+      "associatedDomains": ["applinks:pathology.gg"]
     },
     "android": {
       "intentFilters": [
@@ -88,26 +84,6 @@
               "scheme": "https",
               "host": "pathology.gg",
               "pathPattern": ".*"
-            },
-            {
-              "scheme": "https",
-              "host": "thinky.gg",
-              "pathPattern": ".*"
-            },
-            {
-              "scheme": "https",
-              "host": "*.thinky.gg",
-              "pathPattern": ".*"
-            },
-            {
-              "scheme": "https",
-              "host": "sokoban.pathology.gg",
-              "pathPattern": ".*"
-            },
-            {
-              "scheme": "https",
-              "host": "pathology.thinky.gg",
-              "pathPattern": ".*"
             }
           ],
           "category": [
@@ -118,14 +94,14 @@
       ],
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
-        "foregroundImage": "./icons/appstore.png",
+        "foregroundImage": "../public/logo_pfp.png",
         "backgroundColor": "#000000"
       },
       "package": "com.pathology.gg",
       "versionCode": "6"
     },
     "web": {
-      "favicon": "./icons/playstore.png"
+      "favicon": "../public/logo.png"
     },
     "extra": {
       "eas": {
