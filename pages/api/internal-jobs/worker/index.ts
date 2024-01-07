@@ -6,6 +6,7 @@ import genLevelImage from '@root/helpers/genLevelImage';
 import { getEnrichNotificationPipelineStages } from '@root/helpers/getEnrichNotificationPipelineStages';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import isGuest from '@root/helpers/isGuest';
+import { createNewLevelNotifications } from '@root/helpers/notificationHelper';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
 import Level from '@root/models/db/level';
 import User from '@root/models/db/user';
@@ -276,6 +277,9 @@ async function processQueueMessage(queueMessage: QueueMessage) {
 
         await queueDiscordWebhook(Discord.Levels, `**${game.displayName}** - **${lvl.userId?.name}** published a new level: [${lvl.name}](${game.baseUrl}/level/${lvl.slug}?ts=${lvl.ts})`);
       }
+
+      // Need to create the new level notification because technically the image needs to be generated beforehand...
+      await createNewLevelNotifications(lvl.gameId, new Types.ObjectId(lvl.userId._id), lvl._id, undefined);
     }
   } else {
     log = `Unknown queue message type ${queueMessage.type}`;
