@@ -26,7 +26,7 @@ function FeatureCard({ description, title, video }: FeatureCardProps) {
       <div className='text-sm'>
         {description}
       </div>
-      <video autoPlay loop muted className='rounded-lg text-center' src={video} />
+      <video autoPlay loop muted playsInline className='rounded-lg text-center' src={video} />
     </div>
   );
 }
@@ -70,7 +70,7 @@ export default function ThinkyHomePage() {
       }}
       title='Thinky.gg'
     >
-      <div className='flex flex-col justify-center items-center my-12 mx-6 gap-20'>
+      <div className='flex flex-col justify-center items-center my-12 mx-6 gap-16'>
         <h1
           className='text-6xl sm:text-8xl text-white rounded-lg text-center'
           style={{
