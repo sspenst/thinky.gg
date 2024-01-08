@@ -89,7 +89,7 @@ export default function Dropdown() {
         }}>
           <div className='px-1 py-1'>
             {user && <>
-              {!game.disableGames && <>
+              {!game.isNotAGame && <>
                 <div className='flex justify-center gap-2 items-center sm:hidden py-1.5 px-3'>
                   {!game.disableRanked && <>
                     <Link

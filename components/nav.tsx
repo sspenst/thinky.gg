@@ -323,6 +323,7 @@ export default function Nav({ isDropdown }: NavProps) {
   </>;
 
   const levelSearchNavLink = <NavLink
+    hidden={game.isNotAGame}
     href='/search'
     icon={
       <svg xmlns='http://www.w3.org/2000/svg' className='w-5 h-5' fill='none' viewBox='0 0 24 24'
@@ -406,23 +407,27 @@ export default function Nav({ isDropdown }: NavProps) {
       <NavDivider />
       {user && <>
         {profileNavLink}
-        {newNavLink}
-        {draftsNavLink}
-        {yourLevelsNavLink}
-        {yourCollectionsNavLink}
-        {!isPro(user) && <>
-          <NavDivider />
-          {proNavLink}
+        {!game.isNotAGame && <>
+          {newNavLink}
+          {draftsNavLink}
+          {yourLevelsNavLink}
+          {yourCollectionsNavLink}
+          {!isPro(user) && <>
+            <NavDivider />
+            {proNavLink}
+          </>}
+          {playLaterNavLink}
+          {playHistoryNavLink}
         </>}
-        {playLaterNavLink}
-        {playHistoryNavLink}
         <NavDivider />
       </>}
-      {usersNavLink}
-      {campaignNavLink}
-      {leaderboardNavLink}
-      {tutorialNavLink}
-      <NavDivider />
+      {!game.isNotAGame && <>
+        {usersNavLink}
+        {campaignNavLink}
+        {leaderboardNavLink}
+        {tutorialNavLink}
+        <NavDivider />
+      </>}
       {discordNavLink}
     </nav>
   );

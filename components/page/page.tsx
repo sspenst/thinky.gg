@@ -2,6 +2,7 @@ import Nav from '@root/components/nav';
 import { AppContext } from '@root/contexts/appContext';
 import { ScreenSize } from '@root/hooks/useDeviceCheck';
 import classNames from 'classnames';
+import { useRouter } from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { PageContext } from '../../contexts/pageContext';
@@ -34,10 +35,11 @@ export default function Page({
 }: PageProps) {
   const { deviceInfo, game, showNav } = useContext(AppContext);
   const [preventKeyDownEvent, setPreventKeyDownEvent] = useState(false);
+  const router = useRouter();
   const [showHeader, setShowHeader] = useState(true);
 
   const isNavDropdown = deviceInfo.screenSize < ScreenSize.XL || isFullScreen;
-  const isNavOnPage = !isNavDropdown && showNav && !game.disableGames;
+  const isNavOnPage = !isNavDropdown && showNav && (!game.isNotAGame || router.asPath !== '/');
 
   useEffect(() => {
     if (isFullScreen) {

@@ -122,16 +122,16 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     reviewsReceivedCount,
     reviewsWrittenCount,
   ] = await Promise.all([
-    !game.disableGames && profileTab === ProfileTab.Achievements ? AchievementModel.find<Achievement>({ userId: userId, gameId: gameId }) : [] as Achievement[],
-    !game.disableGames && AchievementModel.countDocuments({ userId: userId, gameId: gameId }),
-    !game.disableGames && CollectionModel.countDocuments({
+    !game.isNotAGame && profileTab === ProfileTab.Achievements ? AchievementModel.find<Achievement>({ userId: userId, gameId: gameId }) : [] as Achievement[],
+    !game.isNotAGame && AchievementModel.countDocuments({ userId: userId, gameId: gameId }),
+    !game.isNotAGame && CollectionModel.countDocuments({
       gameId: gameId,
       userId: userId,
       ...(!viewingOwnProfile && { isPrivate: { $ne: true } }),
     }),
     getFollowData(user._id.toString(), reqUser),
-    !game.disableGames && LevelModel.countDocuments({ isDeleted: { $ne: true }, isDraft: false, userId: userId, gameId: gameId }),
-    !game.disableGames && profileTab === ProfileTab.Levels && reqUser ? LevelModel.aggregate([
+    !game.isNotAGame && LevelModel.countDocuments({ isDeleted: { $ne: true }, isDraft: false, userId: userId, gameId: gameId }),
+    !game.isNotAGame && profileTab === ProfileTab.Levels && reqUser ? LevelModel.aggregate([
       { $match: {
         gameId: gameId,
         isDeleted: { $ne: true },
@@ -152,11 +152,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       { $match: { 'stats.0': { $exists: true } } },
       { $count: 'count' },
     ]) : undefined,
-    !game.disableGames && MultiplayerMatchModel.countDocuments({ players: userId, state: MultiplayerMatchState.FINISHED, rated: true, gameId: gameId }),
-    !game.disableGames && profileTab === ProfileTab.ReviewsReceived ? getReviewsForUserId(gameId, userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
-    !game.disableGames && profileTab === ProfileTab.ReviewsWritten ? getReviewsByUserId(gameId, userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
-    !game.disableGames && getReviewsForUserIdCount(gameId, userId),
-    !game.disableGames && getReviewsByUserIdCount(gameId, userId),
+    !game.isNotAGame && MultiplayerMatchModel.countDocuments({ players: userId, state: MultiplayerMatchState.FINISHED, rated: true, gameId: gameId }),
+    !game.isNotAGame && profileTab === ProfileTab.ReviewsReceived ? getReviewsForUserId(gameId, userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
+    !game.isNotAGame && profileTab === ProfileTab.ReviewsWritten ? getReviewsByUserId(gameId, userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
+    !game.isNotAGame && getReviewsForUserIdCount(gameId, userId),
+    !game.isNotAGame && getReviewsByUserIdCount(gameId, userId),
   ]);
 
   const levelsSolved = levelsSolvedAgg?.at(0)?.count ?? 0;
@@ -439,7 +439,7 @@ export default function ProfilePage({
         <div className='flex flex-wrap justify-center text-left gap-12 m-4'>
           <div className='flex flex-col gap-6 max-w-sm w-full'>
             <div>
-              {!game.disableGames && <h2 className='flex gap-2'>
+              {!game.isNotAGame && <h2 className='flex gap-2'>
                 <span
                   className='font-bold'
                   data-tooltip-content='Highest unlocked Skill achievement'
@@ -452,17 +452,17 @@ export default function ProfilePage({
                   levelsSolvedByDifficulty ? <PlayerRank levelsSolvedByDifficulty={levelsSolvedByDifficulty} user={user} /> : '...'
                 }
               </h2>}
-              {!game.disableGames && !game.disableRanked && <h2><span className='font-bold'>Ranked Solves:</span> {user.config?.calcRankedSolves} 🏅</h2>}
-              {!game.disableGames && <h2><span className='font-bold'>Levels Solved:</span> {user.config?.calcLevelsSolvedCount}</h2>}
-              {!game.disableGames && <h2><span className='font-bold'>Levels Completed:</span> {user.config?.calcLevelsCompletedCount}</h2>}
-              {!game.disableGames && <h2><span className='font-bold'>Levels Created:</span> {user.config?.calcLevelsCreatedCount}</h2>}
+              {!game.isNotAGame && !game.disableRanked && <h2><span className='font-bold'>Ranked Solves:</span> {user.config?.calcRankedSolves} 🏅</h2>}
+              {!game.isNotAGame && <h2><span className='font-bold'>Levels Solved:</span> {user.config?.calcLevelsSolvedCount}</h2>}
+              {!game.isNotAGame && <h2><span className='font-bold'>Levels Completed:</span> {user.config?.calcLevelsCompletedCount}</h2>}
+              {!game.isNotAGame && <h2><span className='font-bold'>Levels Created:</span> {user.config?.calcLevelsCreatedCount}</h2>}
               {!user.hideStatus && <>
                 <h2><span className='font-bold'>Last Seen:</span> <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.last_visited_at ? user.last_visited_at : user.ts} /></h2>
               </>}
               <h2><span className='font-bold'>Registered:</span> <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.ts} /></h2>
               <h2><span className='font-bold'>Followers:</span> {followerCount}</h2>
             </div>
-            {!game.disableGames &&
+            {!game.isNotAGame &&
               <div>
                 <h2><span className='font-bold'>Levels Solved by Difficulty:</span></h2>
                 {levelsSolvedByDifficulty ?
@@ -720,7 +720,7 @@ export default function ProfilePage({
             ],
           }}
         />
-        {!game.disableGames && <div className='flex flex-wrap text-sm text-center gap-2 mt-2 justify-center items-center'>
+        {!game.isNotAGame && <div className='flex flex-wrap text-sm text-center gap-2 mt-2 justify-center items-center'>
           <Link
             className={getTabClassNames(ProfileTab.Profile)}
             href={`/profile/${user.name}`}

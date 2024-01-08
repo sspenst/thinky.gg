@@ -1,6 +1,7 @@
 /* istanbul ignore file */
 
 import { AppContext } from '@root/contexts/appContext';
+import { getGameFromReq } from '@root/helpers/getGameIdFromReq';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import React, { useContext, useState } from 'react';
 import Editor from '../../../components/editor';
@@ -13,6 +14,17 @@ import Level from '../../../models/db/level';
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
+
+  const game = getGameFromReq(context.req);
+
+  if (game.isNotAGame) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
 
   if (!reqUser) {
     return {
