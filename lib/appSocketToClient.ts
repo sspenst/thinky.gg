@@ -2,7 +2,7 @@ import { GameId } from '@root/constants/GameId';
 import { Emitter } from '@socket.io/mongo-emitter';
 import { Mongoose, Types } from 'mongoose';
 import { logger } from '../helpers/logger';
-import { broadcastKillSocket, broadcastMatch, broadcastMatches, broadcastNotifications, broadcastPrivateAndInvitedMatches, clearBroadcastMatchSchedule, scheduleBroadcastMatch } from '../server/socket/socketFunctions';
+import { broadcastKillSocket, broadcastMatch, broadcastMatches, broadcastNotifications, broadcastPrivateAndInvitedMatches, broadcastReloadPage, clearBroadcastMatchSchedule, scheduleBroadcastMatch } from '../server/socket/socketFunctions';
 
 export function GenMongoWSEmitter(mongooseConnection: Mongoose) {
   if (global.MongoEmitter) {
@@ -88,4 +88,14 @@ export async function requestKillSocket(userId: Types.ObjectId) {
   }
 
   await broadcastKillSocket(global.MongoEmitter, userId);
+}
+
+export async function requestReloadPage() {
+  if (!global.MongoEmitter || process.env.NODE_ENV === 'test') {
+    process.env.NODE_ENV !== 'test' && logger.warn('App Server asked itself to reload page but MongoEmitter is not created');
+
+    return;
+  }
+
+  await broadcastReloadPage(global.MongoEmitter);
 }

@@ -23,7 +23,7 @@ import nProgress from 'nprogress';
 import React, { useCallback, useEffect, useState } from 'react';
 import CookieConsent from 'react-cookie-consent';
 import TagManager, { TagManagerArgs } from 'react-gtm-module';
-import { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 import { io, Socket } from 'socket.io-client';
 import Theme from '../constants/theme';
@@ -226,6 +226,13 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
     socketConn.on('notifications', (notifications: Notification[]) => {
       setNotifications(notifications);
     });
+    socketConn.on('reloadPage', () => {
+      toast.dismiss();
+      toast.loading('There is a new version of the site! Reloading page in 15 seconds...');
+      setTimeout(() => {
+        window.location.reload();
+      }, 15000);
+    } );
     socketConn.on('killSocket', () => {
       console.log('killSocket');
       socketConn.disconnect();
@@ -290,6 +297,9 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
       socketConn.off('connectedPlayers');
       socketConn.off('matches');
       socketConn.off('privateAndInvitedMatches');
+      socketConn.off('notifications');
+      socketConn.off('reloadPage');
+      socketConn.off('killSocket');
       socketConn.disconnect();
     };
   }, [selectedGame.id, user?._id]);

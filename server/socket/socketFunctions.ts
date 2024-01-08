@@ -205,3 +205,7 @@ export async function broadcastMatch(gameId: GameId, emitter: Emitter, matchId: 
 export async function broadcastKillSocket(emitter: Emitter, userId: Types.ObjectId) {
   emitter?.to(userId.toString()).emit('killSocket');
 }
+
+export async function broadcastReloadPage(emitter: Emitter) {
+  emitter?.emit('reloadPage');
+}
