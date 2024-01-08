@@ -381,7 +381,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
         </div>
       }
       <div className='text-xs'>
-        For questions please contact <Link className='text-blue-300' href='mailto:help@pathology.gg'>help@pathology.gg</Link>.
+        For questions please contact <Link className='text-blue-300' href='mailto:help@thinky.gg'>help@thinky.gg</Link>.
       </div>
       <div className='flex flex-col xl:flex-row items-center gap-4 justify-center'>
         <div className='p-2'>
