@@ -71,6 +71,8 @@ export default apiWrapper({ GET: {
       } else {
         pngData = await upsertLevelImage(level, { session: session });
       }
+
+      res.setHeader('Content-Length', pngData.length);
     });
     session.endSession();
   } catch (err) {
