@@ -30,7 +30,7 @@ const ses = new aws.SES({
   credentials: defaultProvider(),
 });
 
-const pathologyEmail = 'pathology.do.not.reply@thinky.gg';
+const thinkyEmail = 'thinky.do.not.reply@thinky.gg';
 
 const transporter = isLocal() ? nodemailer.createTransport({
   host: 'smtp.mailtrap.io',
@@ -55,7 +55,7 @@ export async function sendMail(gameId: GameId, batchId: Types.ObjectId, type: Em
   });
   const game = Games[gameId];
   const mailOptions = {
-    from: `${game.displayName} Puzzles <${pathologyEmail}>`,
+    from: `${game.displayName} Puzzles <${thinkyEmail}>`,
     to: user.name + ' <' + user.email + '>',
     subject: subject,
     html: body,
