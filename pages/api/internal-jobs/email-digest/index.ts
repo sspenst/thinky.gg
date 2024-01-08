@@ -53,9 +53,8 @@ export async function sendMail(gameId: GameId, batchId: Types.ObjectId, type: Em
   const textVersion = convert(body, {
     wordwrap: 130,
   });
-  const game = Games[gameId];
   const mailOptions = {
-    from: `${game.displayName} Puzzles <${thinkyEmail}>`,
+    from: `Thinky Puzzles Games <${thinkyEmail}>`,
     to: user.name + ' <' + user.email + '>',
     subject: subject,
     html: body,
