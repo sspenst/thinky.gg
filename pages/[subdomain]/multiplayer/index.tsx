@@ -24,7 +24,14 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  return redirectToLogin(() => !reqUser, context, {});
+  if (!reqUser) {
+    return redirectToLogin(context);
+  }
+
+  return {
+    props: {
+    },
+  };
 }
 
 /* istanbul ignore next */

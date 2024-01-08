@@ -1,6 +1,7 @@
 import LevelCard from '@root/components/cards/levelCard';
 import TimeRange from '@root/constants/timeRange';
 import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import { redirectToLogin } from '@root/helpers/redirectToLogin';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import React from 'react';
@@ -26,12 +27,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   if (!reqUser) {
-    return {
-      redirect: {
-        destination: '/login' + (context.resolvedUrl ? '?redirect=' + encodeURIComponent(context.resolvedUrl) : ''),
-        permanent: false,
-      },
-    };
+    return redirectToLogin(context);
   }
 
   const levels = await LevelModel.find<Level>({

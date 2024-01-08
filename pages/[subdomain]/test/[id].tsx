@@ -1,6 +1,7 @@
 /* istanbul ignore file */
 
 import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import { redirectToLogin } from '@root/helpers/redirectToLogin';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
@@ -21,12 +22,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { id } = context.query;
 
   if (!reqUser || typeof id !== 'string') {
-    return {
-      redirect: {
-        destination: '/login' + (context.resolvedUrl ? '?redirect=' + encodeURIComponent(context.resolvedUrl) : ''),
-        permanent: false,
-      },
-    };
+    return redirectToLogin(context);
   }
 
   // LevelModel aggregate the level with the user's data.

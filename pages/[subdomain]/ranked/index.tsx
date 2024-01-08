@@ -3,6 +3,7 @@ import Page from '@root/components/page/page';
 import { ProfileQueryType } from '@root/constants/profileQueryType';
 import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import { redirectToLogin } from '@root/helpers/redirectToLogin';
 import cleanUser from '@root/lib/cleanUser';
 import { getUserFromToken } from '@root/lib/withAuth';
 import { UserModel } from '@root/models/mongoose';
@@ -28,12 +29,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   if (!reqUser) {
-    return {
-      redirect: {
-        destination: '/login' + (context.resolvedUrl ? '?redirect=' + encodeURIComponent(context.resolvedUrl) : ''),
-        permanent: false,
-      },
-    };
+    return redirectToLogin(context);
   }
 
   const [profileQuery, users] = await Promise.all([

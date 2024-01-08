@@ -2,6 +2,7 @@
 
 import { AppContext } from '@root/contexts/appContext';
 import { getGameFromReq } from '@root/helpers/getGameIdFromReq';
+import { redirectToLogin } from '@root/helpers/redirectToLogin';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import React, { useContext, useState } from 'react';
 import Editor from '../../../components/editor';
@@ -26,17 +27,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   if (!reqUser) {
-    return {
-      redirect: {
-        destination: '/login' + (context.resolvedUrl ? '?redirect=' + encodeURIComponent(context.resolvedUrl) : ''),
-        permanent: false,
-      },
-    };
+    return redirectToLogin(context);
   }
-
-  return {
-    props: {},
-  };
 }
 
 export default function New() {

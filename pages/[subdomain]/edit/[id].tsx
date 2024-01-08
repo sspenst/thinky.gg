@@ -1,5 +1,6 @@
 /* istanbul ignore file */
 
+import { redirectToLogin } from '@root/helpers/redirectToLogin';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import React, { useState } from 'react';
 import Editor from '../../../components/editor';
@@ -16,12 +17,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { id } = context.query;
 
   if (!reqUser || typeof id !== 'string') {
-    return {
-      redirect: {
-        destination: '/login' + (context.resolvedUrl ? '?redirect=' + encodeURIComponent(context.resolvedUrl) : ''),
-        permanent: false,
-      },
-    };
+    return redirectToLogin(context);
   }
 
   const level = await LevelModel.findOne({
