@@ -44,7 +44,7 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
     let uri = undefined;
 
     /* istanbul ignore else */
-    if (process.env.NODE_ENV === 'test' || !process.env.MONGODB_TEST_URI_COUNT) {
+    if (process.env.NODE_ENV === 'test' || !process.env.MONGODB_URI) {
       // create with replica
       if (!process.env.MONGODB_TEST_URI_COUNT) {
         const replSetOptions = {
