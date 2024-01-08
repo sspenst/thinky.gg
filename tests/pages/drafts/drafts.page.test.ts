@@ -23,7 +23,7 @@ describe('pages/drafts page', () => {
     const context = {
     };
 
-    const ret = await getServerSideProps(context as GetServerSidePropsContext);
+    const ret = await getServerSideProps(context as GetServerSidePropsContext) as any;
 
     expect(ret).toBeDefined();
     expect(ret.props).toBeUndefined();

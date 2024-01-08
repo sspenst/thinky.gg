@@ -25,7 +25,7 @@ describe('pages/collection/edit/[id] page', () => {
       query: {}
     };
 
-    const ret = await getServerSideProps(context as GetServerSidePropsContext);
+    const ret = await getServerSideProps(context as GetServerSidePropsContext) as any;
 
     expect(ret).toBeDefined();
     expect(ret.props).toBeUndefined();
@@ -45,7 +45,7 @@ describe('pages/collection/edit/[id] page', () => {
       },
     };
 
-    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
+    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext) as any;
 
     expect(ret).toBeDefined();
     expect(ret.props).toBeUndefined();
@@ -64,7 +64,7 @@ describe('pages/collection/edit/[id] page', () => {
       },
     };
 
-    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
+    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext) as any;
 
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
