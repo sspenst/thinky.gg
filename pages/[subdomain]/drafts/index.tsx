@@ -1,6 +1,6 @@
 import LevelCard from '@root/components/cards/levelCard';
 import TimeRange from '@root/constants/timeRange';
-import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import React from 'react';
@@ -14,6 +14,16 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
   const gameId = getGameIdFromReq(context.req);
+  const game = getGameFromId(gameId);
+
+  if (game.isNotAGame) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
 
   if (!reqUser) {
     return {

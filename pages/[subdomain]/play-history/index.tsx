@@ -1,6 +1,7 @@
 import Page from '@root/components/page/page';
 import PlayHistory from '@root/components/profile/playHistory';
 import { AppContext } from '@root/contexts/appContext';
+import { getGameFromReq } from '@root/helpers/getGameIdFromReq';
 import isPro from '@root/helpers/isPro';
 import { getUserFromToken } from '@root/lib/withAuth';
 import User from '@root/models/db/user';
@@ -11,6 +12,16 @@ import React, { useContext } from 'react';
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
+  const game = getGameFromReq(context.req);
+
+  if (game.isNotAGame) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
 
   if (!reqUser) {
     return {
