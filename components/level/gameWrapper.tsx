@@ -184,7 +184,6 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
           />
         </div>
         <Game
-          allowFreeUndo={true}
           disablePlayAttempts={!user}
           disableStats={!user}
           enableSessionCheckpoint={true}

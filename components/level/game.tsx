@@ -25,7 +25,7 @@ interface SessionCheckpoint {
 }
 
 export interface GameProps {
-  allowFreeUndo?: boolean;
+  disableAutoUndo?: boolean;
   disableCheckpoints?: boolean;
   disablePlayAttempts?: boolean;
   disableStats?: boolean;
@@ -42,7 +42,7 @@ export interface GameProps {
 }
 
 export default function Game({
-  allowFreeUndo,
+  disableAutoUndo,
   disableCheckpoints,
   disablePlayAttempts,
   disableStats,
@@ -462,7 +462,7 @@ export default function Game({
         return prevGameState;
       }
 
-      if (!makeMove(newGameState, direction, allowFreeUndo)) {
+      if (!makeMove(newGameState, direction, !disableAutoUndo)) {
         return prevGameState;
       }
 
@@ -484,7 +484,7 @@ export default function Game({
 
       return onSuccessfulMove(newGameState);
     });
-  }, [allowFreeUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, game.displayName, isComplete, level._id, level.data, level.leastMoves, loadCheckpoint, onComplete, onMove, onNext, onPrev, onSolve, pro, saveCheckpoint, saveSessionToSessionStorage, trackStats]);
+  }, [disableAutoUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, game.displayName, isComplete, level._id, level.data, level.leastMoves, loadCheckpoint, onComplete, onMove, onNext, onPrev, onSolve, pro, saveCheckpoint, saveSessionToSessionStorage, trackStats]);
 
   useEffect(() => {
     if (disableCheckpoints || !pro || !checkpoints) {

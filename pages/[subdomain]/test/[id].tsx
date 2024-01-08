@@ -111,7 +111,6 @@ export default function Test({ level }: TestProps) {
           {level.name}
         </h2>
         <Game
-          allowFreeUndo={true}
           disablePlayAttempts={true}
           level={level}
           onStatsSuccess={() => router.replace(router.asPath)}

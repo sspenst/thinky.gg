@@ -74,12 +74,12 @@ export default function TutorialSokoban() {
   const [tutorialStepIndexMax, setTutorialStepIndexMax] = useState(0);
   const isLoggedIn = !!user;
 
-  const BLANK_GRID = '0000000\n0000000\n0000000\n0000000\n0000000';
-  const GRID_WITH_PLAYER = '00000\n00400\n00000\n00000\n00000';
+  const BLANK_GRID = '00000\n00000\n00000\n00000\n00000';
+  const GRID_WITH_PLAYER = '00000\n00000\n00400\n00000\n00000';
   const LEVEL_1_ONLY_END = '00000\n00000\n00030\n00000\n00000';
   const LEVEL_1_ONLY_BLOCK = '00000\n00000\n00230\n00000\n00000';
   const LEVEL_1 = '00040\n00000\n00230\n00000\n00000';
-  const WALL_INTRO = '00000\n00102\n40100\n00103\n00000';
+  const WALL_INTRO = '0000\n0100\n4200\n0030';
   const MOVABLE_EXPLAIN = '41310\n00223\n01010\n00011';
   const MOVABLE_EXPLAIN_END_COVER = '0000\n4K30\n0210\n0400';
 
@@ -420,7 +420,7 @@ export default function TutorialSokoban() {
       },
       {
         gameGrid: true,
-        header: <><div key='tutorial-level-1-header' className='text-3xl fadeIn'>Try solving your first level!</div><div className='text-xl'>Push the box onto the goal.</div></>,
+        header: <><div key='tutorial-level-1-header' className='text-3xl fadeIn'>Try to complete your first level!</div><div className='text-xl'>Push the box onto the goal.</div></>,
         key: 'tutorial-level-1',
         level: getLevel(LEVEL_1),
         onComplete: niceJob,
@@ -428,7 +428,7 @@ export default function TutorialSokoban() {
       {
         gameClasses: 'fadeIn',
         gameGrid: true,
-        header: <div key='tutorial-wall-header' className='text-3xl fadeIn'>Try getting to the exit now.</div>,
+        header: <div key='tutorial-wall-header' className='text-3xl fadeIn'>Try completing another level.</div>,
         key: 'tutorial-wall',
         level: getLevel(WALL_INTRO),
         onComplete: niceJob,

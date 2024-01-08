@@ -509,8 +509,6 @@ export default function Match() {
             {activeLevel && (
               <div className='grow h-full w-full' key={'div-' + activeLevel._id.toString()}>
                 <Game
-
-                  allowFreeUndo={true}
                   disableCheckpoints={true}
                   enableSessionCheckpoint={false}
                   extraControls={[skipControl(usedSkip)]}
