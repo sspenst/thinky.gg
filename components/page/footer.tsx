@@ -73,7 +73,7 @@ export default function Footer() {
       </div>
       <div className='text-center text-sm' style={{ color: 'var(--color-gray)' }}>
         © 2024 <ExternalLink href='https://thinky.gg'>
-          thinky.gg
+          Thinky.gg
         </ExternalLink>
       </div>
     </footer>

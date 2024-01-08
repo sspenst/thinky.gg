@@ -47,7 +47,7 @@ export default function Header({
       }}
     >
       <div className='flex items-center truncate z-20 gap-4'>
-        {game.disableGames ? null :
+        {game.isNotAGame ? null :
           isNavDropdown ?
             <Menu>
               <Menu.Button className='w-full'>
@@ -103,7 +103,7 @@ export default function Header({
           <HeaderControls />
           {user && <div className='hidden sm:block h-6 w-px bg-neutral-500' />}
           <div className='flex gap-3 items-center'>
-            {user && !game.disableGames && <>
+            {user && !game.isNotAGame && <>
               {!game.disableRanked && <>
                 <Link
                   className='hidden sm:block'

@@ -22,7 +22,6 @@ export const Games: Record<GameId, Game> = {
     defaultTheme: Theme.Dark,
     disableCampaign: true,
     disableCommunityCampaigns: true,
-    disableGames: true,
     disableMultiplayer: true,
     disableRanked: true,
     disableTour: true,
@@ -30,6 +29,7 @@ export const Games: Record<GameId, Game> = {
     displayName: 'Thinky.gg',
     favicon: '/logos/thinky/thinky.svg',
     hasPro: false,
+    isNotAGame: true,
     logo: '/logos/thinky/thinky.svg',
     SEOTitle: 'Thinky Puzzle Games',
     SEODescription: 'Thinky Games is a collection of puzzle games',
@@ -115,7 +115,6 @@ export interface Game {
   defaultTheme: Theme;
   disableCampaign?: boolean;
   disableCommunityCampaigns?: boolean;
-  disableGames?: boolean;
   disableMultiplayer?: boolean;
   disableRanked?: boolean;
   disableTour?: boolean;
@@ -123,6 +122,7 @@ export interface Game {
   displayName: string;
   favicon?: string;
   hasPro: boolean;
+  isNotAGame?: boolean;
   logo: string;
   newLevelData?: string;
   subtitle: string;

@@ -325,7 +325,7 @@ export async function getlevelsOfDay() {
   const promises = [];
 
   for (const game of Object.values(Games)) {
-    if (!game.disableGames) {
+    if (!game.isNotAGame) {
       promises.push(getLevelOfDay(game.id));
     }
   }

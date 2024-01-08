@@ -102,7 +102,7 @@ export default function FormattedUser({ className, hideAvatar, id, noLinks, noTo
                     <GameLogoAndLabel gameId={userExtendedData.user.lastGame ?? GameId.THINKY} id={id} size={20} />
                   </div>
                 }
-                {!game.disableGames &&
+                {!game.isNotAGame &&
                 <div className='flex gap-1'>
                   <span className='font-medium'>Rank:</span>
                   <PlayerRank
@@ -110,19 +110,19 @@ export default function FormattedUser({ className, hideAvatar, id, noLinks, noTo
                     user={user}
                   />
                 </div>}
-                {!game.disableGames && !game.disableRanked &&
+                {!game.isNotAGame && !game.disableRanked &&
                 <div className='flex gap-1'>
                   <span className='font-medium'>Ranked Solves:</span>
                   <span className='gray'>{userExtendedData.user.config?.calcRankedSolves} 🏅</span>
                 </div>
                 }
-                {!game.disableGames &&
+                {!game.isNotAGame &&
                 <div className='flex gap-1'>
                   <span className='font-medium'>Levels Solved:</span>
                   <span className='gray'>{userExtendedData.user.config?.calcLevelsSolvedCount}</span>
                 </div>
                 }
-                {!game.disableGames &&
+                {!game.isNotAGame &&
                 <div className='flex gap-1'>
                   <span className='font-medium'>Levels Completed:</span>
                   <span className='gray'>{userExtendedData.user.config?.calcLevelsCompletedCount}</span>

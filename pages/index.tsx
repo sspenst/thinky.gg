@@ -29,9 +29,7 @@ export default function ThinkyHomePage() {
     );
   }
 
-  const { userConfig, setShowNav } = useContext(AppContext);
-
-  setShowNav(false);
+  const { userConfig } = useContext(AppContext);
 
   // const background1: BannerLayer = {
   //   image:

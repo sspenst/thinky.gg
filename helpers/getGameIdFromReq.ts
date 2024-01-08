@@ -13,6 +13,10 @@ export function getGameIdFromReq(req?: NextApiRequest | IncomingMessage): GameId
   return gameId;
 }
 
+export function getGameFromReq(req?: NextApiRequest | IncomingMessage) {
+  return Games[getGameIdFromReq(req)];
+}
+
 export function getGameFromId(gameId: GameId | undefined) {
   return Games[gameId || DEFAULT_GAME_ID];
 }
