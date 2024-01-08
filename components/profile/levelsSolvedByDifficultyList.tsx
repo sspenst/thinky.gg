@@ -15,7 +15,7 @@ export default function LevelsSolvedByDifficultyList({ data: levelsSolvedByDiffi
         <div className='w-10 text-right mr-2'>
           {levelsSolved}
         </div>
-        <FormattedDifficulty difficultyEstimate={difficulty.value} id={difficulty.name} />
+        <FormattedDifficulty difficulty={difficulty} id='level-solved-by-difficulty-list' />
       </div>
     );
   }).reverse();

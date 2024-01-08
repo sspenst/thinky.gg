@@ -95,7 +95,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
             <FormattedDate ts={level.ts} />
           </div>
           <div className='text-sm flex pt-0.5'>
-            <FormattedDifficulty difficultyEstimate={level.calc_difficulty_estimate} id={level._id.toString()} uniqueUsers={level.calc_playattempts_unique_users_count} />
+            <FormattedDifficulty id='formatted-level-info' level={level} />
           </div>
         </div>
         <div className='flex flex-col items-center gap-3 mt-1'>

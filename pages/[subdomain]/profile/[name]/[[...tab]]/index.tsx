@@ -234,12 +234,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
     searchQuery.searchAuthorId = user._id.toString();
 
-    const query = await doQuery(gameId, searchQuery, reqUser, {
-      ...LEVEL_DEFAULT_PROJECTION,
-      data: 1,
-      width: 1,
-      height: 1,
-    });
+    const query = await doQuery(gameId, searchQuery, reqUser, { ...LEVEL_DEFAULT_PROJECTION });
 
     if (!query) {
       throw new Error('Error finding Levels');

@@ -24,7 +24,7 @@ function getPlayerRank(levelsSolvedByDifficulty?: { [key: string]: number }) {
 
   const difficulty = difficultyList[req.difficultyIndex];
 
-  return <FormattedDifficulty difficultyEstimate={difficulty.value} id={difficulty.name} />;
+  return <FormattedDifficulty difficulty={difficulty} id='player-rank' />;
 }
 
 interface PlayerRankProps {

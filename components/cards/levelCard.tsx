@@ -143,13 +143,7 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
             }
             {!level.isDraft &&
               <div className='flex text-xs items-center gap-1 pt-0.5'>
-                <FormattedDifficulty
-                  difficultyEstimate={level.calc_difficulty_estimate}
-                  id={`${id}-${level._id}`}
-                  uniqueUsers={level.calc_playattempts_unique_users_count !== undefined ?
-                    level.calc_playattempts_unique_users_count :
-                    level.calc_playattempts_unique_users.length}
-                />
+                <FormattedDifficulty id={id} level={level} />
               </div>
             }
           </div>

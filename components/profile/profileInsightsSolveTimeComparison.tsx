@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import React, { useState } from 'react';
 import { Brush, ReferenceArea, ReferenceLine, ResponsiveContainer, Scatter, ScatterChart, Symbols, Tooltip, XAxis, YAxis } from 'recharts';
 import User from '../../models/db/user';
-import { difficultyList, getDifficultyColor, getDifficultyFromValue } from '../formatted/formattedDifficulty';
+import { difficultyList, getDifficultyColor, getDifficultyFromEstimate } from '../formatted/formattedDifficulty';
 import StyledTooltip from '../page/styledTooltip';
 
 export interface DifficultyLevelComparison {
@@ -172,7 +172,7 @@ export default function ProfileInsightsSolveTimeComparison({ user }: { user: Use
 
                   return (
                     <div className='p-2 bg-gray-800 text-sm'>
-                      <span className='font-bold'>{`${name} (${getDifficultyFromValue(difficulty).name})`}</span>
+                      <span className='font-bold'>{`${name} (${getDifficultyFromEstimate(difficulty).name})`}</span>
                       <div className='flex flex-col'>
                         <span>You: <span className='font-bold'>{timeTakenToSolve}</span></span>
                         <span>Others: <span className='font-bold'>{timeTakenForOthersToSolve}</span></span>

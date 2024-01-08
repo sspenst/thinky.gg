@@ -24,13 +24,7 @@ export default function SelectCardContent({ option }: SelectCardContentProps) {
         {option.author && <div className='pt-1 italic truncate'>{option.author}</div>}
         {!option.hideDifficulty && option.level &&
           <div className='pt-1'>
-            <FormattedDifficulty
-              difficultyEstimate={option.level.calc_difficulty_estimate}
-              id={option.id}
-              uniqueUsers={option.level.calc_playattempts_unique_users_count !== undefined ?
-                option.level.calc_playattempts_unique_users_count :
-                option.level.calc_playattempts_unique_users.length}
-            />
+            <FormattedDifficulty id={option.id} level={option.level} />
           </div>
         }
         {!option.hideStats && option.stats && <div className='pt-1 italic'>{option.stats.getText()}</div>}
