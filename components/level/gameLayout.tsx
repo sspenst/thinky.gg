@@ -51,7 +51,7 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
           }
         }}
       />
-      <div className='gap-2 mx-3 z-20 transition-opacity flex'>
+      <div className='gap-2 mx-3 transition-opacity flex'>
         {!disableCheckpoints && !fullScreen ?
           <>
             <button
