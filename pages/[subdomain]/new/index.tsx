@@ -29,6 +29,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   if (!reqUser) {
     return redirectToLogin(context);
   }
+
+  return {
+    props: {
+    }
+  };
 }
 
 export default function New() {
