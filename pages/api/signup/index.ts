@@ -47,16 +47,12 @@ async function createUser({ gameId, email, name, password, tutorialCompletedAt, 
       score: 0,
       ts: TimerUtil.getTs(),
     }], queryOptions),
-    UserConfigModel.create([
-      {
-
-        gameId: gameId,
-        theme: getGameFromId(gameId).defaultTheme,
-        tutorialCompletedAt: tutorialCompletedAt,
-        userId: id,
-      }
-
-    ], queryOptions),
+    UserConfigModel.create([{
+      gameId: gameId,
+      theme: getGameFromId(gameId).defaultTheme,
+      tutorialCompletedAt: tutorialCompletedAt,
+      userId: id,
+    }], queryOptions),
   ]);
 
   const user = userCreated[0] as User;

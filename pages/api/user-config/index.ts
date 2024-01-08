@@ -15,12 +15,10 @@ export async function getUserConfig(gameId: GameId, user: User) {
 
   if (!userConfig) {
     userConfig = await UserConfigModel.create({
-
       gameId: gameId,
       theme: getGameFromId(gameId).defaultTheme,
       tutorialCompletedAt: 0,
       userId: user._id,
-
     });
   }
 

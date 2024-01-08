@@ -58,7 +58,7 @@ export default withAuth({ POST: {
       // update calc_records if the record was set by a different user
       if (record && record.userId.toString() !== level.userId.toString()) {
         // NB: await to avoid multiple user updates in parallel
-        await UserConfigModel.updateOne({ userId: record.userId }, { $inc: { calcRecordsCount: -1 } }, { session: session });
+        await UserConfigModel.updateOne({ userId: record.userId, gameId: level.gameId }, { $inc: { calcRecordsCount: -1 } }, { session: session });
       }
 
       const [levelClone, matchesToRebroadcast, stats] = await Promise.all([
