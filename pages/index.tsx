@@ -19,12 +19,7 @@ interface FeatureCardProps {
 
 function FeatureCard({ description, title, video }: FeatureCardProps) {
   return (
-    <div
-      className='w-80 max-w-full rounded-xl p-4 flex flex-col gap-3 items-center text-center border border-color-4'
-      style={{
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-      }}
-    >
+    <div className='w-80 max-w-full rounded-xl p-4 flex flex-col gap-3 items-center text-center border border-color-4 bg-1'>
       <div className='font-semibold text-2xl'>
         {title}
       </div>
@@ -38,7 +33,7 @@ function FeatureCard({ description, title, video }: FeatureCardProps) {
 
 export default function ThinkyHomePage() {
   const getUrl = useUrl();
-  const { userConfig } = useContext(AppContext);
+  const { user } = useContext(AppContext);
 
   const strMap = {
     'u': Direction.UP,
@@ -67,10 +62,7 @@ export default function ThinkyHomePage() {
     <Page
       style={{
         backgroundImage: 'url(https://i.imgur.com/iYIoTCx.png)',
-        // height: '100vh',
-        // center
         backgroundPosition: 'center',
-        // slightly offset the y position
         backgroundPositionY: 'calc(50% + ' + Dimensions.MenuHeight + 'px)',
         backgroundSize: 'cover',
         backgroundAttachment: 'fixed',
@@ -103,32 +95,21 @@ export default function ThinkyHomePage() {
             return (
               <div className='flex flex-col items-center gap-6 max-w-full' key={`game-${game.id}`}>
                 <a
-                  className='flex gap-3 items-center justify-center w-full py-4 px-5 border border-color-3 rounded-xl hover:scale-105 transition'
+                  className='flex gap-3 items-center justify-center w-full py-4 px-5 border border-color-3 rounded-xl hover:scale-105 transition bg-1'
                   href={getUrl(game.id)}
-                  style={{
-                    backgroundColor: 'rgba(0, 0, 0, 0.666)',
-                  }}
                 >
                   <GameLogo gameId={game.id} id={game.id} size={36} />
                   <span className='font-semibold text-4xl'>{game.displayName}</span>
                 </a>
-                <div
-                  className='flex flex-col items-center gap-3 text-center p-5 w-[280px] max-w-full rounded-xl h-full'
-                  style={{
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                  }}
-                >
+                <div className='flex flex-col items-center gap-3 text-center p-5 w-[280px] max-w-full rounded-xl h-full bg-1'>
                   <div className='flex h-60 w-60 max-w-full'>
                     <AnimatedGrid leastMoves={gameInstr[game.id].leastMoves} animationInstructions={gameInstr[game.id].instructions} game={game} theme={gameInstr[game.id].theme} id={'level-preview-' + game.id} levelData={gameInstr[game.id].data} />
                   </div>
                   <span>{game.shortDescription}</span>
                 </div>
                 <a
-                  className='text-2xl font-bold px-5 py-3 border-2 border-color-3 rounded-xl hover:scale-105 transition w-fit text-center'
-                  style={{
-                    backgroundColor: 'rgba(0, 0, 0, 0.666)',
-                  }}
-                  href={userConfig?.tutorialCompletedAt ? getUrl(game.id, '/play') : getUrl(game.id, '/tutorial')}
+                  className='text-2xl font-bold px-5 py-3 border-2 border-color-3 rounded-xl hover:scale-105 transition w-fit text-center bg-1'
+                  href={user ? getUrl(game.id, '/') : getUrl(game.id, '/tutorial')}
                   role='button'
                 >
                   Play Now
@@ -173,6 +154,25 @@ export default function ThinkyHomePage() {
             title='Pro'
             video='https://i.imgur.com/nOJRkX1.mp4'
           />
+        </div>
+        <div className='flex flex-col gap-8 items-center'>
+          {Object.values(Games).map(game => {
+            if (game.id === GameId.THINKY) {
+              return null;
+            }
+
+            return (
+              <a
+                className='flex items-center gap-3 text-2xl font-bold px-5 py-3 border-2 border-color-3 rounded-xl hover:scale-105 transition w-fit text-center bg-1'
+                key={`game-${game.id}`}
+                href={user ? getUrl(game.id, '/') : getUrl(game.id, '/tutorial')}
+                role='button'
+              >
+                <GameLogo gameId={game.id} id={game.id} size={28} />
+                <span>Play {game.displayName}</span>
+              </a>
+            );
+          })}
         </div>
       </div>
     </Page>
