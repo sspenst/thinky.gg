@@ -1,10 +1,10 @@
-# <img src="public/logo.svg"> [Pathology](https://thinky.gg)
+# <img src="public/logos/thinky/thinky.svg"> [Thinky.gg](https://thinky.gg)
 
 [![codecov](https://codecov.io/gh/sspenst/pathology/branch/main/graph/badge.svg?token=BX0RSQ9R57)](https://codecov.io/gh/sspenst/pathology)
 ![Tests](https://github.com/sspenst/pathology/actions/workflows/node.js.yml/badge.svg)
 [![](https://dcbadge.vercel.app/api/server/j6RxRdqq4A?style=flat&theme=default-inverted)](https://discord.gg/j6RxRdqq4A)
 
-Shortest path puzzle game. Get to the exit in the least number of moves.
+Thinky is a platform dedicated to high-quality puzzle games. Solve and optimize puzzles, or create your own for everyone to play!
 
 ## Dev Environment
 
