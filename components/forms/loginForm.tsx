@@ -1,3 +1,5 @@
+import { GameId } from '@root/constants/GameId';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useContext, useState } from 'react';
@@ -9,7 +11,7 @@ import FormTemplate from './formTemplate';
 export default function LoginForm() {
   const { cache } = useSWRConfig();
   const [errorMessage, setErrorMessage] = useState<string>('');
-  const { mutateUser, setShouldAttemptAuth } = useContext(AppContext);
+  const { host, mutateUser, setShouldAttemptAuth } = useContext(AppContext);
   const [name, setName] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const router = useRouter();
