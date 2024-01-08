@@ -9,7 +9,6 @@ import giftHandler, { GiftType } from '@root/pages/api/subscription/gift';
 import handler, { stripe } from '@root/pages/api/subscription/index';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
-import { list } from 'postcss';
 import { Logger } from 'winston';
 import mockSubscription from './mockSubscription';
 
