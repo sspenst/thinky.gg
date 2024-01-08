@@ -145,7 +145,7 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
                 calc_playattempts_duration_sum: 1,
                 calc_playattempts_just_beaten_count: 1,
                 calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' },
-                calc_playattempts_unique_users_count_excluding_author: { $size: { $setDifference: ['$calc_playattempts_unique_users', [userId]] } },
+                calc_playattempts_unique_users_count_excluding_author: { $size: { $setDifference: ['$calc_playattempts_unique_users', ['$userId']] } },
                 calc_stats_completed_count: 1,
               },
               session: session,

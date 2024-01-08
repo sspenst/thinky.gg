@@ -9,7 +9,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import Card from '../cards/card';
 import ChapterSelectCard from '../cards/chapterSelectCard';
 import LevelCardWithTitle from '../cards/levelCardWithTitle';
-import { getDifficultyFromValue } from '../formatted/formattedDifficulty';
+import { getDifficultyFromEstimate } from '../formatted/formattedDifficulty';
 import FormattedLevelReviews from '../level/reviews/formattedLevelReviews';
 import ShareBar from '../social/shareBar';
 import Modal from '.';
@@ -61,7 +61,7 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
   }, []);
 
   const url = `${game.baseUrl}/level/${level.slug}`;
-  const quote = 'Just completed ' + game.displayName + ' puzzle "' + level.name + '" (Difficulty: ' + getDifficultyFromValue(level.calc_difficulty_estimate).name + ')';
+  const quote = 'Just completed ' + game.displayName + ' puzzle "' + level.name + '" (Difficulty: ' + getDifficultyFromEstimate(level.calc_difficulty_estimate).name + ')';
 
   function nextActionCard() {
     if (nextLevel) {

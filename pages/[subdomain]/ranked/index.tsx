@@ -127,7 +127,7 @@ export default function RankedPage({ levelsByDifficulty, rankedSolvesByDifficult
                   }}
                   key={`${difficulty.name}-levels-solved`}
                 >
-                  <FormattedDifficulty difficultyEstimate={difficulty.value} id={difficulty.name} />
+                  <FormattedDifficulty difficulty={difficulty} id='ranked' />
                   <span className='gray whitespace-nowrap' style={{
                     color: levelsSolved === levels ? getDifficultyColor(difficulty.value) : undefined,
                   }}>{levelsSolved} / {levels}</span>

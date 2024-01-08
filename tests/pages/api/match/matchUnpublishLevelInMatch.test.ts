@@ -184,7 +184,7 @@ describe('matchUnpublishLevelInMatch', () => {
         expect(response.winners).toHaveLength(0);
         expect(response.timeUntilStart).toBe(-1000);
         expect(response.levels).toHaveLength(1); // should have level for this user now
-        expect(Object.keys(response.levels[0]).sort()).toEqual(['_id', 'calc_playattempts_unique_users', 'calc_playattempts_unique_users_count', 'calc_difficulty_estimate', 'complete', 'gameId', 'userId', 'data', 'width', 'height', 'leastMoves', 'name', 'slug', 'isRanked'].sort());
+        expect(Object.keys(response.levels[0]).sort()).toEqual(['_id', 'calc_difficulty_completion_estimate', 'calc_playattempts_unique_users', 'calc_playattempts_unique_users_count', 'calc_playattempts_unique_users_count_excluding_author', 'calc_difficulty_estimate', 'complete', 'gameId', 'userId', 'data', 'width', 'height', 'leastMoves', 'name', 'slug', 'isRanked'].sort());
       }
 
     });

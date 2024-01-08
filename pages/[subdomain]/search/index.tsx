@@ -397,11 +397,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       id: 'calcDifficultyEstimate',
       name: 'Difficulty',
       selector: (row: EnrichedLevel) => (
-        <FormattedDifficulty
-          difficultyEstimate={row.calc_difficulty_estimate}
-          id={row._id.toString()}
-          uniqueUsers={row.calc_playattempts_unique_users_count}
-        />
+        <FormattedDifficulty id='search-row' level={row} />
       ),
       sortable: true,
       style: {
