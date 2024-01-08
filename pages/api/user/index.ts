@@ -234,7 +234,7 @@ export default withAuth({
             { target: req.userId },
             { userId: req.userId },
           ] }, { session: session }),
-          UserConfigModel.deleteOne({ userId: req.userId }, { session: session }),
+          UserConfigModel.deleteMany({ userId: req.userId }, { session: session }),
           UserModel.deleteOne({ _id: req.userId }, { session: session }), // TODO, should make this soft delete...
         ]);
 

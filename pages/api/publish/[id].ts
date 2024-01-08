@@ -7,7 +7,6 @@ import type { NextApiResponse } from 'next';
 import { ValidObjectId } from '../../../helpers/apiWrapper';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
-import { createNewLevelNotifications } from '../../../helpers/notificationHelper';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';

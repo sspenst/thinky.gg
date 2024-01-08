@@ -266,7 +266,6 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
             {
               userId: userToUpgrade._id,
               gameId: gameId,
-              // TODO: Get GameId
             },
             {
               $addToSet: {

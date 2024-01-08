@@ -168,7 +168,7 @@ async function integrityCheckRankedScore(gameId: GameId) {
   for (const user of allUsers) {
     const calcRankedSolves = rankedSolvesTable[user._id.toString()] ?? 0;
 
-    await UserConfigModel.updateOne({ userId: user._id, gameId }, { $set: { calcRankedSolves: calcRankedSolves } });
+    await UserConfigModel.updateOne({ userId: user._id, gameId: gameId }, { $set: { calcRankedSolves: calcRankedSolves } });
 
     // const userBefore = await UserModel.findOneAndUpdate({ _id: user._id }, { $set: { calcRankedSolves: calcRankedSolves } }, { new: false });
 
