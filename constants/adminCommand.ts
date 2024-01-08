@@ -12,7 +12,7 @@ enum AdminCommand {
   // admin
   SendAdminMessage = 'sendAdminMessage',
   RunEmailDigest = 'runEmailDigest',
-
+  SendReloadPageToUsers = 'sendReloadPageToUsers',
 }
 
 export default AdminCommand;

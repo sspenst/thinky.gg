@@ -7,6 +7,7 @@ import genLevelImage from '@root/helpers/genLevelImage';
 import { logger } from '@root/helpers/logger';
 import { createNewAdminMessageNotifications } from '@root/helpers/notificationHelper';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
+import { requestBroadcastReloadPage } from '@root/lib/appSocketToClient';
 import withAuth, { NextApiRequestWithAuth } from '@root/lib/withAuth';
 import Level from '@root/models/db/level';
 import { AchievementModel, LevelModel, NotificationModel, StatModel, UserConfigModel, UserModel } from '@root/models/mongoose';
@@ -58,6 +59,11 @@ export default withAuth({ POST: {
     case AdminCommand.RefreshPlayAttempts:
       await calcPlayAttempts(new Types.ObjectId(targetId as string));
       break;
+
+    case AdminCommand.SendReloadPageToUsers: {
+      await requestBroadcastReloadPage();
+      break;
+    }
 
     case AdminCommand.RegenImage: {
       const lvl = await LevelModel.findById<Level>(new Types.ObjectId(targetId as string));

@@ -129,12 +129,49 @@ export default function AdminPage({ adminQuery, level, user }: AdminPageProps) {
     { label: 'Regen image', command: AdminCommand.RegenImage },
   ];
 
+  const commandsGeneral: IAdminCommand[] = [
+    { label: 'Force Reload Page to Everyone', command: AdminCommand.SendReloadPageToUsers },
+  ];
   const [selectedLevelCommand, setSelectedLevelCommand] = useState<IAdminCommand>();
   const [selectedUserCommand, setSelectedUserCommand] = useState<IAdminCommand>();
+  const [selectedGenericCommand, setSelectedGenericCommand] = useState<IAdminCommand>();
 
   const updateQuery = useCallback((update: Partial<AdminQuery>) => {
     routerQuery({ ...adminQuery, ...update }, DefaultQuery);
   }, [adminQuery, routerQuery]);
+
+  async function runCommandGeneric() {
+    if (!selectedGenericCommand) {
+      return;
+    }
+
+    if (selectedGenericCommand?.confirm && !window.confirm('Are you sure you want to proceed?')) return;
+
+    setRunningCommand(true);
+    toast.dismiss();
+    toast.loading('Running command...');
+    const resp = await fetch('/api/admin', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        command: selectedGenericCommand?.command,
+      }),
+    });
+
+    setRunningCommand(false);
+    const json = await resp.json();
+
+    toast.dismiss();
+
+    if (json.error) {
+      toast.error(json.error);
+    } else {
+      toast.success('Command ran successfully');
+    }
+  }
 
   async function runCommandUser() {
     if (!selectedUser) {
@@ -345,6 +382,39 @@ export default function AdminPage({ adminQuery, level, user }: AdminPageProps) {
               {display(selectedLevel)}
             </div>
           )}
+        </div>
+      </div>
+      <div>
+        <h2 className='flex flex-col items-center justify-center text-2xl font-medium'> General </h2>
+        <div className='flex flex-row items-center justify-center p-2 gap-2'>
+          <Menu as='div' className='relative inline-block text-left'>
+            <div>
+              <Menu.Button className='border border-gray-300 bg-gray rounded-md shadow-sm px-4 py-2 text-sm flex flex-row items-center justify-center gap-2'>
+                {selectedGenericCommand?.label || 'Select Command'}
+              </Menu.Button>
+            </div>
+            <Menu.Items className='origin-top-right absolute right-0 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10'>
+              {commandsGeneral.map((cmd) => (
+                <Menu.Item key={cmd.command}>
+                  {({ active }) => (
+                    <button
+                      className={`${active ? 'bg-blue-600 text-white rounded-md' : 'text-gray-900'} block px-4 py-2 text-sm w-full`}
+                      onClick={() => setSelectedGenericCommand(cmd)}
+                    >
+                      {cmd.label}
+                    </button>
+                  )}
+                </Menu.Item>
+              ))}
+            </Menu.Items>
+          </Menu>
+          <button
+            className={`bg-blue-500 hover:enabled:bg-blue-700 text-white font-bold py-2 px-4 rounded ${runningCommand ? 'bg-gray-500 cursor-not-allowed' : ''}`}
+            disabled={runningCommand}
+            onClick={runCommandGeneric}
+          >
+            Run
+          </button>
         </div>
       </div>
       <div className='flex flex-col items-center justify-center'>
