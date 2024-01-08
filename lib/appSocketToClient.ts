@@ -90,7 +90,7 @@ export async function requestKillSocket(userId: Types.ObjectId) {
   await broadcastKillSocket(global.MongoEmitter, userId);
 }
 
-export async function requestReloadPage() {
+export async function requestBroadcastReloadPage() {
   if (!global.MongoEmitter || process.env.NODE_ENV === 'test') {
     process.env.NODE_ENV !== 'test' && logger.warn('App Server asked itself to reload page but MongoEmitter is not created');
 

@@ -228,7 +228,9 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
     });
     socketConn.on('reloadPage', () => {
       toast.dismiss();
-      toast.loading('There is a new version of the site! Reloading page in 15 seconds...');
+      toast.loading('There is a new version of the site! Reloading page in 15 seconds...', {
+        duration: 15000,
+      });
       setTimeout(() => {
         window.location.reload();
       }, 15000);
