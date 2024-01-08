@@ -5,7 +5,7 @@ export function redirectToLogin(context: GetServerSidePropsContext) {
 
   return {
     redirect: {
-      destination: `/login${redirect ? `?redirect=${redirect}` : ''}`,
+      destination: `/login${redirect ? `?redirect=${encodeURIComponent(redirect)}` : ''}`,
       permanent: false,
     },
   };
