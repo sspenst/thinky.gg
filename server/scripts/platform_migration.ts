@@ -11,7 +11,7 @@ dotenv.config();
 async function pullAllRolesInUserModelExceptAdmin() {
   console.log('pulling all roles except admin from UserModel');
   const pulled = await UserModel.updateMany({}, {
-    $pullAll: { roles: [ Role.GUEST, Role.PRO, Role.CURATOR] }
+    $pullAll: { roles: [ Role.PRO, Role.CURATOR] }
   });
 
   console.log('pulled', pulled);
@@ -37,27 +37,8 @@ async function Go() {
     roles: '$roles',
   }, '_id', 'userId', { 'target.gameId': 'pathology' });
 
-  /* Prompt user to confirm they want to remove all roles except admin from UserModel */
-
-  console.log('This script will remove all roles except admin from UserModel. This is NOT idempotent so please be careful. Basically after you run this no turning back and you should not run this script again.');
-  console.log('type confirm to continue');
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-  });
-
-  if (await new Promise((resolve) => {
-    rl.question('', (answer) => {
-      resolve(answer === 'confirm');
-    });
-  }) === false) {
-    console.log('Exiting');
-    process.exit(0);
-  }
-
   await pullAllRolesInUserModelExceptAdmin();
-  rl.close();
-  console.log('Closing readline');
+
   console.log('Done');
   process.exit(0);
 
