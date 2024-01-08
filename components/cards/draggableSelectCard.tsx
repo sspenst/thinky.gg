@@ -26,9 +26,9 @@ export default function DraggableSelectCard({
 
   useEffect(() => {
     if (option.level) {
-      setBackgroundImage(getPngDataClient(game, option.level.data));
+      setBackgroundImage(getPngDataClient(game.id, option.level.data));
     }
-  }, [game, option.level]);
+  }, [game.id, option.level]);
 
   const color = option.stats?.getColor('var(--color)') ?? 'var(--color)';
 

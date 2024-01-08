@@ -23,9 +23,9 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
 
   useEffect(() => {
     if (option.level && option.level.data) {
-      setBackgroundImage(getPngDataClient(game, option.level.data));
+      setBackgroundImage(getPngDataClient(game.id, option.level.data));
     }
-  }, [game, option.level]);
+  }, [game.id, option.level]);
 
   const color = option.disabled ? 'var(--bg-color-4)' :
     option.stats?.getColor('var(--color)') ?? 'var(--color)';
