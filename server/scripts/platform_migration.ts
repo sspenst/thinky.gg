@@ -2,7 +2,6 @@
 import Role from '@root/constants/role';
 import { UserConfigModel, UserModel } from '@root/models/mongoose';
 import dotenv from 'dotenv';
-import * as readline from 'readline';
 import { migrateFields } from './migrateFields';
 
 dotenv.config();
