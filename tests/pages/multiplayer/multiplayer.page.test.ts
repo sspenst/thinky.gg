@@ -23,7 +23,7 @@ describe('pages/multiplayer page', () => {
     const context = {
     };
 
-    const ret = await getServerSideProps(context as GetServerSidePropsContext);
+    const ret = await getServerSideProps(context as GetServerSidePropsContext) as any;
 
     expect(ret).toBeDefined();
     expect(ret.props).toBeUndefined();
@@ -43,7 +43,7 @@ describe('pages/multiplayer page', () => {
       },
     };
 
-    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
+    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext)as any;
 
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
@@ -62,7 +62,7 @@ describe('pages/multiplayer page', () => {
       },
     };
 
-    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
+    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext)as any;
 
     expect(ret).toBeDefined();
     expect(ret.props).toBeUndefined();
