@@ -1,3 +1,6 @@
+import TileType from '@root/constants/tileType';
+import TileTypeHelper from './tileTypeHelper';
+
 // convert raw level data into array of arrays
 function loadLevel(level: string) {
   const loadedLevel = level.split('\n');
@@ -120,77 +123,83 @@ export function trimLevel(level: string) {
 }
 
 /* istanbul ignore next */
-// rotate a block 90 degrees counterclockwise
-function rotateBlockCCW(block: string) {
-  switch (block) {
-  case '6':
-    return '9';
-  case '7':
-    return '6';
-  case '8':
-    return '7';
-  case '9':
-    return '8';
-  case 'A':
-    return 'D';
-  case 'B':
-    return 'A';
-  case 'C':
-    return 'B';
-  case 'D':
-    return 'C';
-  case 'E':
-    return 'H';
-  case 'F':
-    return 'E';
-  case 'G':
-    return 'F';
-  case 'H':
-    return 'G';
-  case 'I':
-    return 'J';
-  case 'J':
-    return 'I';
+// rotate a tile 90 degrees counterclockwise
+function rotateTileTypeCCW(tileType: TileType) {
+  function baseRotateTileTypeCCW(tileType: TileType) {
+    switch (tileType) {
+    case TileType.Left:
+      return TileType.Down;
+    case TileType.Up:
+      return TileType.Left;
+    case TileType.Right:
+      return TileType.Up;
+    case TileType.Down:
+      return TileType.Right;
+    case TileType.UpLeft:
+      return TileType.DownLeft;
+    case TileType.UpRight:
+      return TileType.UpLeft;
+    case TileType.DownRight:
+      return TileType.UpRight;
+    case TileType.DownLeft:
+      return TileType.DownRight;
+    case TileType.NotLeft:
+      return TileType.NotDown;
+    case TileType.NotUp:
+      return TileType.NotLeft;
+    case TileType.NotRight:
+      return TileType.NotUp;
+    case TileType.NotDown:
+      return TileType.NotRight;
+    case TileType.LeftRight:
+      return TileType.UpDown;
+    case TileType.UpDown:
+      return TileType.LeftRight;
+    default:
+      return tileType;
+    }
   }
 
-  return block;
+  const isOnExit = TileTypeHelper.isOnExit(tileType);
+  const tileToRotate = isOnExit ? TileTypeHelper.getExitSibilingTileType(tileType) as TileType : tileType;
+  const baseRotatedTileType = baseRotateTileTypeCCW(tileToRotate) as TileType;
+  const rotatedTileType = isOnExit ? TileTypeHelper.getExitSibilingTileType(baseRotatedTileType) as TileType : baseRotatedTileType;
+
+  return rotatedTileType;
 }
 
 /* istanbul ignore next */
-// flip a block vertically
-function flipBlockY(block: string) {
-  switch (block) {
-  case '6':
-    return '6';
-  case '7':
-    return '9';
-  case '8':
-    return '8';
-  case '9':
-    return '7';
-  case 'A':
-    return 'D';
-  case 'B':
-    return 'C';
-  case 'C':
-    return 'B';
-  case 'D':
-    return 'A';
-  case 'E':
-    return 'E';
-  case 'F':
-    return 'H';
-  case 'G':
-    return 'G';
-  case 'H':
-    return 'F';
-  case 'I':
-    return 'I';
-  case 'J':
-    return 'J';
+// flip a tile vertically
+function filpTileTypeY(tileType: TileType) {
+  function baseFlipTileTypeY(tileType: TileType) {
+    switch (tileType) {
+    case TileType.Up:
+      return TileType.Down;
+    case TileType.Down:
+      return TileType.Up;
+    case TileType.UpLeft:
+      return TileType.DownLeft;
+    case TileType.UpRight:
+      return TileType.DownRight;
+    case TileType.DownRight:
+      return TileType.UpRight;
+    case TileType.DownLeft:
+      return TileType.UpLeft;
+    case TileType.NotUp:
+      return TileType.NotDown;
+    case TileType.NotDown:
+      return TileType.NotUp;
+    default:
+      return tileType;
+    }
   }
 
-  return block;
+  const isOnExit = TileTypeHelper.isOnExit(tileType);
+  const tileToFlip = isOnExit ? TileTypeHelper.getExitSibilingTileType(tileType) as TileType : tileType;
+  const baseFlippedTileType = baseFlipTileTypeY(tileToFlip) as TileType;
+  const flippedTileType = isOnExit ? TileTypeHelper.getExitSibilingTileType(baseFlippedTileType) as TileType : baseFlippedTileType;
+
+  return flippedTileType;
 }
 
 // rotate level 90 degrees counterclockwise
@@ -207,7 +216,7 @@ export function rotateLevelCCW(level: string) {
 
   for (let k = 0; k < height; k++) {
     for (let j = 0; j < width; j++) {
-      newLevel[width - 1 - j][k] = rotateBlockCCW(loadedLevel[k][j]);
+      newLevel[width - 1 - j][k] = rotateTileTypeCCW(loadedLevel[k][j] as TileType);
     }
   }
 
@@ -233,7 +242,7 @@ export function flipLevelY(level: string) {
 
   for (let k = 0; k < height; k++) {
     for (let j = 0; j < width; j++) {
-      newLevel[height - 1 - k][j] = flipBlockY(loadedLevel[k][j]);
+      newLevel[height - 1 - k][j] = filpTileTypeY(loadedLevel[k][j] as TileType);
     }
   }
 
