@@ -1,15 +1,19 @@
 /* istanbul ignore file */
-import { Game, GameType } from '@root/constants/Games';
+import { GameId } from '@root/constants/GameId';
+import { GameType } from '@root/constants/Games';
 import TileType, { TileTypeDefaultVisited } from '@root/constants/tileType';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import { Bitmap } from 'pureimage';
+import { getGameFromId } from './getGameIdFromReq';
 
-export default function generateLevelCanvas(canvas: Bitmap | HTMLCanvasElement, game: Game, levelData: string) {
+export default function generateLevelCanvas(canvas: Bitmap | HTMLCanvasElement, gameId: GameId, levelData: string) {
   const context = canvas.getContext('2d');
 
   if (!context) {
     return canvas;
   }
+
+  const game = getGameFromId(gameId);
 
   context.imageSmoothingEnabled = false;
   context.fillStyle = 'rgb(38, 38, 38)';

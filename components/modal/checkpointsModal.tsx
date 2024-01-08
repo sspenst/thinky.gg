@@ -83,7 +83,7 @@ function CheckpointModalItem({ checkpoint, closeModal, index }: CheckpointModalI
 
     const joinedData = data.map(row => row.join('')).join('\n');
 
-    setBackgroundImage(getPngDataClient(game, joinedData));
+    setBackgroundImage(getPngDataClient(game.id, joinedData));
   }, [checkpoint, game, level.data]);
 
   return (

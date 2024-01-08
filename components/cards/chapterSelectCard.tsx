@@ -31,8 +31,8 @@ function ChapterSelectCardBase({
   const { game } = useContext(AppContext);
 
   useEffect(() => {
-    setBackgroundImage(getPngDataClient(game, levelData));
-  }, [game, levelData]);
+    setBackgroundImage(getPngDataClient(game.id, levelData));
+  }, [game.id, levelData]);
 
   return (<>
     <div className='overflow-hidden relative inline-block align-middle max-w-full' style={{

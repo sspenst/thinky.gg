@@ -30,9 +30,9 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
 
   useEffect(() => {
     if (level && level.data) {
-      setBackgroundImage(getPngDataClient(game, level.data));
+      setBackgroundImage(getPngDataClient(game.id, level.data));
     }
-  }, [game, level]);
+  }, [game.id, level]);
 
   if (level === undefined) {
     return <LoadingCard />;
