@@ -30,7 +30,7 @@ const ses = new aws.SES({
   credentials: defaultProvider(),
 });
 
-const thinkyEmail = 'thinky.do.not.reply@thinky.gg';
+const thinkyEmail = 'do.not.reply@thinky.gg';
 
 const transporter = isLocal() ? nodemailer.createTransport({
   host: 'smtp.mailtrap.io',

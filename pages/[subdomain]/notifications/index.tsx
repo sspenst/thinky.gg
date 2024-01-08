@@ -1,4 +1,5 @@
 import { GameId } from '@root/constants/GameId';
+import { redirectToLogin } from '@root/helpers/redirectToLogin';
 import useRouterQuery from '@root/hooks/useRouterQuery';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
@@ -39,12 +40,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   //const gameId = getGameIdFromReq(context.req);
 
   if (!reqUser) {
-    return {
-      redirect: {
-        destination: '/login' + (context.resolvedUrl ? '?redirect=' + encodeURIComponent(context.resolvedUrl) : ''),
-        permanent: false,
-      },
-    };
+    return redirectToLogin(context);
   }
 
   const { filter, page } = context.query;

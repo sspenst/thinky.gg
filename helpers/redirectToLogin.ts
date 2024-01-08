@@ -1,7 +1,7 @@
 import { GetServerSidePropsContext } from 'next';
 import { getGameIdFromReq } from './getGameIdFromReq';
 
-export function redirectToLogin(checkFunction: () => boolean, context: GetServerSidePropsContext, props = {}) {
+export function redirectToLogin(context: GetServerSidePropsContext) {
   const gameId = getGameIdFromReq(context.req);
 
   const redirectParams = new URLSearchParams({
@@ -9,16 +9,12 @@ export function redirectToLogin(checkFunction: () => boolean, context: GetServer
     gameId: gameId,
   });
 
-  if (checkFunction()) {
-    return {
-      redirect: {
-        destination: `/login${context.resolvedUrl ? '?' + encodeURIComponent(redirectParams.toString()) : ''}`,
-        permanent: false,
-      },
-    };
-  }
+  const redirectParamsString = redirectParams.toString(); // ?redirect=...&gameId=...
 
   return {
-    props: props,
+    redirect: {
+      destination: `/login${context.resolvedUrl ? '?' + encodeURIComponent(redirectParamsString) : ''}`,
+      permanent: false,
+    },
   };
 }
