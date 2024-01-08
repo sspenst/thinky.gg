@@ -1,6 +1,7 @@
 import Dimensions from '@root/constants/dimensions';
 import { GameId } from '@root/constants/GameId';
 import { AppContext } from '@root/contexts/appContext';
+import getLevelCompleteColor from '@root/helpers/getLevelCompleteColor';
 import useUrl from '@root/hooks/useUrl';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -43,7 +44,7 @@ export default function FormattedLevelLink({ id, gameId, level, onClick }: Enric
       passHref
       prefetch={false}
       style={{
-        color: level.userMoves ? (isSolved ? 'var(--color-complete)' : 'var(--color-incomplete)') : undefined,
+        color: getLevelCompleteColor(level),
         // to handle zero width level names
         minWidth: 10,
       }}
