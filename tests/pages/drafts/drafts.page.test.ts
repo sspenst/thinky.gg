@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { GetServerSidePropsContext } from 'next';
 import { Logger } from 'winston';
 import TestId from '../../../constants/testId';

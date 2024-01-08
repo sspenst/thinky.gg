@@ -32,10 +32,10 @@ export default function Footer() {
           <ExternalLink href='https://discord.gg/j6RxRdqq4A'>
             Discord
           </ExternalLink>
-          <ExternalLink href='https://twitter.com/pathologygame'>
+          <ExternalLink href='https://twitter.com/thinkygg'>
             Twitter
           </ExternalLink>
-          <ExternalLink href='https://www.instagram.com/pathologygame'>
+          <ExternalLink href='https://www.instagram.com/thinkypuzzlegames'>
             Instagram
           </ExternalLink>
         </div>
@@ -43,7 +43,7 @@ export default function Footer() {
           <h3 className='font-medium'>
             Mobile
           </h3>
-          <ExternalLink href='https://apps.apple.com/app/thinky-puzzle-games/id1668925562'>
+          <ExternalLink href='https://apps.apple.com/app/pathology-block-pushing-game/id1668925562'>
             App Store
           </ExternalLink>
           <ExternalLink href='https://play.google.com/store/apps/details?id=com.pathology.gg'>

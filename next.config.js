@@ -6,11 +6,7 @@ module.exports = {
         has: [
           {
             type: 'host',
-            value: 'thinky.gg',
-          },
-          {
-            type: 'host',
-            value: 'www.thinky.gg',
+            value: 'pathology.gg',
           },
           {
             type: 'host',
@@ -18,11 +14,7 @@ module.exports = {
           },
           {
             type: 'host',
-            value: 'pathology.k2xl.com',
-          },
-          {
-            type: 'host',
-            value: 'www.pathology.k2xl.com',
+            value: 'www.thinky.gg',
           },
         ],
         destination: 'https://thinky.gg/:path*',

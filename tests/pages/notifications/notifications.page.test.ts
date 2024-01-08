@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import MockDate from 'mockdate';
 import { Types } from 'mongoose';

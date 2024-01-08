@@ -196,7 +196,6 @@ export default async function startSocketIOServer(server: Server) {
 process.env.NODE_ENV !== 'test' && startSocketIOServer(new Server(3001, {
   path: '/api/socket',
   cors: {
-    // allow pathology.gg and localhost:3000
     origin: ['http://localhost:3000', 'https://pathology.gg', 'https://thinky.gg'],
     methods: ['GET', 'POST'],
     credentials: true,
