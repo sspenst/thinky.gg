@@ -1,6 +1,7 @@
 import Dimensions from '@root/constants/dimensions';
 import { MusicContext } from '@root/contexts/musicContext';
 import { PageContext } from '@root/contexts/pageContext';
+import getLevelCompleteColor from '@root/helpers/getLevelCompleteColor';
 import classNames from 'classnames';
 import Link from 'next/link';
 import React, { Dispatch, SetStateAction, useCallback, useContext, useEffect, useRef, useState } from 'react';
@@ -154,7 +155,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
               setPreventKeyDownEvent(true);
             }}
             style={{
-              color: level.userMoves ? (level.userMoves === level.leastMoves ? 'var(--color-complete)' : 'var(--color-incomplete)') : 'var(--color)',
+              color: getLevelCompleteColor(level) ?? 'var(--color)',
             }}
           >
             <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' width='16' height='16' style={{

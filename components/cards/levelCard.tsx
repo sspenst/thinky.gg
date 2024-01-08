@@ -1,4 +1,5 @@
 import { AppContext } from '@root/contexts/appContext';
+import getLevelCompleteColor from '@root/helpers/getLevelCompleteColor';
 import getPngDataClient from '@root/helpers/getPngDataClient';
 import getProfileSlug from '@root/helpers/getProfileSlug';
 import { EnrichedLevel } from '@root/models/db/level';
@@ -42,18 +43,6 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
     return null;
   }
 
-  function getColor() {
-    if (level?.userMoves === undefined) {
-      return undefined;
-    }
-
-    if (level.userMoves === level.leastMoves) {
-      return 'var(--color-complete)';
-    }
-
-    return 'var(--color-incomplete)';
-  }
-
   /**
    * get User object from level userId property (which can either be a User or an ObjectId)
    * @returns the full User object if possible, otherwise null
@@ -82,6 +71,8 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
     return null;
   }
 
+  const color = getLevelCompleteColor(level);
+
   return (
     <div className='pb-3 rounded-lg flex flex-col gap-2 w-64 max-w-full h-fit hover-bg-2 transition p-1 text-left'>
       <Link
@@ -91,13 +82,13 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
         style={{
           aspectRatio: '40 / 21',
           backgroundImage: backgroundImage ? 'url("' + backgroundImage + '")' : 'none',
-          borderColor: getColor(),
+          borderColor: color,
         }}
       >
         <div
           className='text-xs absolute bottom-0 right-0 px-1 bg-black font-bold'
           style={{
-            color: getColor() ?? 'white',
+            color: color ?? 'white',
           }}
         >
           {`${level.userMoves === undefined ? '' : level.userMoves}/${level.leastMoves}`}
@@ -124,7 +115,7 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
               href={href ?? `/level/${level.slug}`}
               onClick={onClick}
               style={{
-                color: getColor(),
+                color: color,
                 display: '-webkit-box',
                 WebkitBoxOrient: 'vertical',
                 WebkitLineClamp: 2,
