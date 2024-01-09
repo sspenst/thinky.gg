@@ -1,6 +1,9 @@
+import { GameId } from '@root/constants/GameId';
 import StatFilter from '@root/constants/statFilter';
 import TileType from '@root/constants/tileType';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import isPro from '@root/helpers/isPro';
+import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { Aggregate, FilterQuery, PipelineStage, Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getDifficultyRangeFromName } from '../../../components/formatted/formattedDifficulty';
@@ -14,9 +17,8 @@ import { getUserFromToken } from '../../../lib/withAuth';
 import { EnrichedLevel } from '../../../models/db/level';
 import User from '../../../models/db/user';
 import { LevelModel, StatModel, UserModel } from '../../../models/mongoose';
-import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
-import { BlockFilterMask, SearchQuery } from '../../search';
+import { BlockFilterMask, SearchQuery } from '../../[subdomain]/search';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getDimensionLimits(query: SearchQuery, searchObj: FilterQuery<any>) {
@@ -106,7 +108,7 @@ export type SearchResult = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function doQuery(query: SearchQuery, reqUser?: User | null, projection: any = LEVEL_SEARCH_DEFAULT_PROJECTION) {
+export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User | null, projection: any = LEVEL_SEARCH_DEFAULT_PROJECTION) {
   await dbConnect();
 
   // filter out pro query options from non-pro users
@@ -121,6 +123,7 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
   const searchObj = {
     isDeleted: { $ne: true },
     isDraft: false,
+    gameId: gameId,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as FilterQuery<any>;
   const userId = reqUser?._id;
@@ -414,6 +417,7 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
         {
           $match: {
             userId: new Types.ObjectId(userId),
+            gameId: gameId,
             ...statMatchQuery,
           }
         },
@@ -495,8 +499,9 @@ export async function doQuery(query: SearchQuery, reqUser?: User | null, project
 export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
   await dbConnect();
   const token = req?.cookies?.token;
+  const gameId = getGameIdFromReq(req);
   const reqUser = token ? await getUserFromToken(token, req) : null;
-  const query = await doQuery(req.query as SearchQuery, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, ...{ data: 1, width: 1, height: 1 } });
+  const query = await doQuery(gameId, req.query as SearchQuery, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION });
 
   if (!query) {
     return res.status(500).json({

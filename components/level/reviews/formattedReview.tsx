@@ -1,6 +1,8 @@
+import { GameType } from '@root/constants/Games';
+import { AppContext } from '@root/contexts/appContext';
 import classNames from 'classnames';
 import moment from 'moment';
-import React from 'react';
+import React, { useContext } from 'react';
 import { EnrichedLevel } from '../../../models/db/level';
 import { ReviewWithStats } from '../../../models/db/review';
 import User from '../../../models/db/user';
@@ -20,7 +22,7 @@ interface StarProps {
 export function Star({ empty, half }: StarProps) {
   return (
     <svg
-      className={'w-5 h-5 inline text-yellow-400'}
+      className='w-5 h-5 inline text-yellow-400'
       fill='currentColor'
       style={{
         paddingLeft: 2,
@@ -75,14 +77,11 @@ interface FormattedReviewProps {
 }
 
 export default function FormattedReview({ hideBorder, inModal, level, onEditClick, review, user }: FormattedReviewProps) {
+  const { game } = useContext(AppContext);
+
   return (
     <div className='flex align-center justify-center text-left break-words'>
-      <div
-        className={classNames('block max-w-3xl w-full', { 'py-2 px-3 rounded-lg border': !hideBorder })}
-        style={{
-          borderColor: 'var(--bg-color-4)',
-        }}
-      >
+      <div className={classNames('block max-w-3xl w-full', { 'py-2 px-3 rounded-lg border border-color-3': !hideBorder })}>
         <div className='flex gap-x-2 items-center flex-wrap'>
           <div className='flex justify-between w-full items-center'>
             <div className='flex gap-x-2 items-center truncate'>
@@ -112,7 +111,7 @@ export default function FormattedReview({ hideBorder, inModal, level, onEditClic
               data-tooltip-id={`review-stat-${user?._id.toString() ?? 'deleted'}`}
             >
               <span className='font-bold' style={{
-                color: review.stat.complete ? 'var(--color-complete)' : 'var(--color-incomplete)',
+                color: !review.stat.complete && game.type === GameType.SHORTEST_PATH ? 'var(--color-incomplete)' : 'var(--color-complete)',
                 textShadow: '1px 1px black',
               }}>
                 {review.stat.moves}

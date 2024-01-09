@@ -1,7 +1,7 @@
 import { skillRequirements } from '@root/constants/achievements/AchievementRulesSkill';
 import { getDifficultyRollingSum } from '@root/helpers/playerRankHelper';
 import User from '@root/models/db/user';
-import { ProfileTab } from '@root/pages/profile/[name]/[[...tab]]';
+import { ProfileTab } from '@root/pages/[subdomain]/profile/[name]/[[...tab]]';
 import Link from 'next/link';
 import React from 'react';
 import FormattedDifficulty, { difficultyList } from '../formatted/formattedDifficulty';
@@ -24,7 +24,7 @@ function getPlayerRank(levelsSolvedByDifficulty?: { [key: string]: number }) {
 
   const difficulty = difficultyList[req.difficultyIndex];
 
-  return <FormattedDifficulty difficultyEstimate={difficulty.value} id={difficulty.name} />;
+  return <FormattedDifficulty difficulty={difficulty} id='player-rank' />;
 }
 
 interface PlayerRankProps {

@@ -38,7 +38,7 @@ export default withAuth({
   }
 
   if (req.method === 'GET') {
-    const checkpoint = await KeyValueModel.findOne({ key: checkpointKey });
+    const checkpoint = await KeyValueModel.findOne({ key: checkpointKey }); // don't need gameId since the key has the level id
     const checkpointArr = [];
 
     for (let i = 0; i < 11; i++) {

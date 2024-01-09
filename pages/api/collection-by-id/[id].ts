@@ -1,5 +1,6 @@
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import cleanUser from '@root/lib/cleanUser';
-import { LEVEL_DEFAULT_PROJECTION, LEVEL_SEARCH_DEFAULT_PROJECTION } from '@root/models/schemas/levelSchema';
+import { LEVEL_DEFAULT_PROJECTION, LEVEL_SEARCH_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import { FilterQuery, PipelineStage, Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
@@ -20,9 +21,10 @@ export default apiWrapper({
   } }, async (req: NextApiRequest, res: NextApiResponse) => {
   const { id, populateLevelCursor, populateLevelDirection } = req.query;
   const token = req.cookies?.token;
+  const gameId = getGameIdFromReq(req);
   const reqUser = token ? await getUserFromToken(token, req) : null;
   const collection = await getCollection({
-    matchQuery: { _id: new Types.ObjectId(id as string) },
+    matchQuery: { _id: new Types.ObjectId(id as string), gameId: gameId },
     ...(populateLevelCursor ? { populateLevelCursor: new Types.ObjectId(populateLevelCursor as string) } : {}),
     ...(populateLevelDirection ? { populateLevelDirection: populateLevelDirection as 'before' | 'after' | 'around' } : {}),
     reqUser,

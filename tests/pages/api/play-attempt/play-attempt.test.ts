@@ -1,37 +1,20 @@
 import Direction from '@root/constants/direction';
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import { postPlayAttempt } from '@root/helpers/play-attempts/postPlayAttempt';
 import User from '@root/models/db/user';
 import { enableFetchMocks } from 'jest-fetch-mock';
-import { Types } from 'mongoose';
-import { testApiHandler } from 'next-test-api-route-handler';
-import { Logger } from 'winston';
+import { Types, UpdateQuery } from 'mongoose';
 import TestId from '../../../../constants/testId';
 import { TimerUtil } from '../../../../helpers/getTs';
-import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
-import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
-import { initLevel } from '../../../../lib/initializeLocalDb';
-import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Level from '../../../../models/db/level';
 import PlayAttempt from '../../../../models/db/playAttempt';
 import Stat from '../../../../models/db/stat';
-import {
-  LevelModel,
-  PlayAttemptModel,
-  RecordModel,
-  StatModel,
-  UserModel,
-} from '../../../../models/mongoose';
+import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../../models/mongoose';
 import { AttemptContext } from '../../../../models/schemas/playAttemptSchema';
-import {
-  processQueueMessages,
-  queueCalcPlayAttempts,
-  queueRefreshIndexCalcs,
-} from '../../../../pages/api/internal-jobs/worker';
-import handler, {
-  getLastLevelPlayed,
-} from '../../../../pages/api/play-attempt/index';
-import statsHandler from '../../../../pages/api/stats/index';
+import { processQueueMessages, queueCalcPlayAttempts, queueRefreshIndexCalcs } from '../../../../pages/api/internal-jobs/worker';
+import { getLastLevelPlayed } from '../../../../pages/api/play-attempt/index';
+import { putStat } from '../../../../pages/api/stats/index';
 
 beforeAll(async () => {
   await dbConnect();
@@ -81,6 +64,7 @@ const tests = [
       lvl: Level
     ) => {
       expect(lvl.calc_playattempts_duration_sum).toBe(4 * MINUTE);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(4 * MINUTE);
       expect(playAttemptDocs.length).toBe(1);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(playAttemptDocs[0].updateCount).toBe(3);
@@ -88,6 +72,7 @@ const tests = [
         new Types.ObjectId(TestId.USER),
       ]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(0);
+      expect(statDocs).toHaveLength(1);
     },
   },
   {
@@ -104,11 +89,13 @@ const tests = [
       lvl: Level
     ) => {
       expect(lvl.calc_playattempts_duration_sum).toBe(2 * MINUTE);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(2 * MINUTE);
       expect(playAttemptDocs.length).toBe(2);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(playAttemptDocs[0].updateCount).toBe(0);
       expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(playAttemptDocs[1].updateCount).toBe(1);
+      expect(statDocs).toHaveLength(1);
     },
   },
   {
@@ -121,10 +108,12 @@ const tests = [
       lvl: Level
     ) => {
       expect(lvl.calc_playattempts_duration_sum).toBe(0);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(0);
       expect(lvl.calc_playattempts_unique_users).toStrictEqual([]);
       expect(playAttemptDocs.length).toBe(1);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(playAttemptDocs[0].updateCount).toBe(0);
+      expect(statDocs).toHaveLength(1);
     },
   },
   {
@@ -145,10 +134,10 @@ const tests = [
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(playAttemptDocs[0].updateCount).toBe(3);
       expect(lvl.calc_playattempts_duration_sum).toBe(3 * MINUTE);
-      expect(lvl.calc_playattempts_unique_users).toStrictEqual([
-        new Types.ObjectId(TestId.USER),
-      ]);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(3 * MINUTE);
+      expect(lvl.calc_playattempts_unique_users).toStrictEqual([new Types.ObjectId(TestId.USER)]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(0);
+      expect(statDocs).toHaveLength(1);
     },
   },
   {
@@ -176,8 +165,10 @@ const tests = [
       statDocs: Stat[],
       lvl: Level
     ) => {
+      expect(statDocs).toHaveLength(2);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
       expect(lvl.calc_playattempts_duration_sum).toBe(7 * MINUTE);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(4 * MINUTE);
 
       expect(playAttemptDocs.length).toBe(5);
       expect(playAttemptDocs[0].updateCount).toBe(2);
@@ -185,10 +176,8 @@ const tests = [
       expect(playAttemptDocs[1].updateCount).toBe(1);
       expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.SOLVED);
       expect(playAttemptDocs[2].updateCount).toBe(3);
-      expect(playAttemptDocs[2].attemptContext).toBe(
-        AttemptContext.JUST_SOLVED
-      );
-      expect(playAttemptDocs[3].updateCount).toBe(2);
+      expect(playAttemptDocs[2].attemptContext).toBe(AttemptContext.JUST_SOLVED);
+      expect(playAttemptDocs[3].updateCount).toBe(3);
       expect(playAttemptDocs[3].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(playAttemptDocs[4].updateCount).toBe(2);
       expect(playAttemptDocs[4].attemptContext).toBe(AttemptContext.UNSOLVED);
@@ -213,14 +202,14 @@ const tests = [
       lvl: Level
     ) => {
       expect(lvl.calc_playattempts_duration_sum).toBe(1 * MINUTE);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(1 * MINUTE);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
+      expect(statDocs).toHaveLength(2);
       expect(playAttemptDocs.length).toBe(2);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.SOLVED);
       expect(playAttemptDocs[0].updateCount).toBe(0);
-      expect(playAttemptDocs[1].attemptContext).toBe(
-        AttemptContext.JUST_SOLVED
-      );
-      expect(playAttemptDocs[1].updateCount).toBe(2);
+      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.JUST_SOLVED);
+      expect(playAttemptDocs[1].updateCount).toBe(3);
     },
   },
   {
@@ -241,16 +230,16 @@ const tests = [
       lvl: Level
     ) => {
       expect(lvl.calc_playattempts_duration_sum).toBe(2 * MINUTE);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(2 * MINUTE);
       expect(playAttemptDocs.length).toBe(3);
       expect(playAttemptDocs[0].updateCount).toBe(1);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.SOLVED);
       expect(playAttemptDocs[1].updateCount).toBe(1);
       expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.SOLVED);
-      expect(playAttemptDocs[2].updateCount).toBe(2);
-      expect(playAttemptDocs[2].attemptContext).toBe(
-        AttemptContext.JUST_SOLVED
-      );
+      expect(playAttemptDocs[2].updateCount).toBe(3);
+      expect(playAttemptDocs[2].attemptContext).toBe(AttemptContext.JUST_SOLVED);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
+      expect(statDocs).toHaveLength(2);
     },
   },
   {
@@ -258,7 +247,8 @@ const tests = [
     name: 'win right away but then a record comes in way later',
     list: [
       ['play', 0, 'created'],
-      ['win_10', 0.1 * MINUTE, 'ok'],
+      ['play', 6, 'updated'],
+      ['win_10', 6, 'ok'],
       ['b_win_8', 100 * MINUTE, ''],
     ],
     tests: async (
@@ -268,18 +258,19 @@ const tests = [
     ) => {
       expect(playAttemptDocs.length).toBe(2);
       expect(playAttemptDocs[0].updateCount).toBe(0);
-      expect(playAttemptDocs[0].attemptContext).toBe(
-        AttemptContext.JUST_SOLVED
-      );
+      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_SOLVED);
       expect(playAttemptDocs[0].userId._id.toString()).toBe(TestId.USER_B);
-      expect(playAttemptDocs[1].updateCount).toBe(1);
+      expect(playAttemptDocs[1].updateCount).toBe(3);
       expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(playAttemptDocs[1].userId._id.toString()).toBe(TestId.USER);
       expect(lvl.calc_playattempts_unique_users).toStrictEqual([
         new Types.ObjectId(TestId.USER),
         new Types.ObjectId(TestId.USER_B),
       ]);
+      expect(lvl.calc_playattempts_duration_sum).toBe(6);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(6);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1); // other person solved
+      expect(statDocs).toHaveLength(2);
     },
   },
   {
@@ -287,7 +278,8 @@ const tests = [
     name: 'win right away but then a record comes in way later then you match the record',
     list: [
       ['play', 0, 'created'],
-      ['win_10', 0.1 * MINUTE, 'ok'],
+      ['play', 0.1, 'updated'],
+      ['win_10', 6, 'ok'],
       ['b_win_8', 1 * MINUTE, ''],
       ['play', 2 * MINUTE, 'updated'],
       ['win_8', 3 * MINUTE, ''],
@@ -299,16 +291,16 @@ const tests = [
     ) => {
       expect(playAttemptDocs.length).toBe(2);
       expect(playAttemptDocs[0].updateCount).toBe(0);
-      expect(playAttemptDocs[0].attemptContext).toBe(
-        AttemptContext.JUST_SOLVED
-      );
+      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_SOLVED);
       expect(playAttemptDocs[0].userId.toString()).toBe(TestId.USER_B);
-      expect(playAttemptDocs[1].updateCount).toBe(3);
-      expect(playAttemptDocs[1].attemptContext).toBe(
-        AttemptContext.JUST_SOLVED
-      );
+      expect(playAttemptDocs[1].updateCount).toBe(5);
+      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.JUST_SOLVED);
       expect(playAttemptDocs[1].userId.toString()).toBe(TestId.USER);
+
+      expect(lvl.calc_playattempts_duration_sum).toBe(3 * MINUTE);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(6);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(2);
+      expect(statDocs).toHaveLength(2);
     },
   },
   {
@@ -343,13 +335,9 @@ const tests = [
     ) => {
       expect(playAttemptDocs.length).toBe(7);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.SOLVED);
-      expect(playAttemptDocs[1].attemptContext).toBe(
-        AttemptContext.JUST_SOLVED
-      );
+      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.JUST_SOLVED);
       expect(playAttemptDocs[2].attemptContext).toBe(AttemptContext.UNSOLVED);
-      expect(playAttemptDocs[3].attemptContext).toBe(
-        AttemptContext.JUST_SOLVED
-      );
+      expect(playAttemptDocs[3].attemptContext).toBe(AttemptContext.JUST_SOLVED);
       expect(playAttemptDocs[4].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(playAttemptDocs[5].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(playAttemptDocs[6].attemptContext).toBe(AttemptContext.UNSOLVED);
@@ -376,9 +364,12 @@ const tests = [
       expect(playAttemptDocs[6].startTime).toBe(0);
 
       expect(lvl.calc_playattempts_duration_sum).toBe(13.5 * MINUTE); // see comments above on how this is calculated
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(5 * MINUTE);
       expect(lvl.calc_playattempts_unique_users).toHaveLength(2);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(2);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(2); // both of us solved it
+
+      expect(statDocs).toHaveLength(2);
     },
   },
   {
@@ -391,13 +382,13 @@ const tests = [
       lvl: Level
     ) => {
       expect(playAttemptDocs.length).toBe(1);
-      expect(playAttemptDocs[0].attemptContext).toBe(
-        AttemptContext.JUST_SOLVED
-      );
-      expect(playAttemptDocs[0].startTime).toBe(0.1 * MINUTE);
-      expect(playAttemptDocs[0].endTime).toBe(0.1 * MINUTE);
+      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_SOLVED);
+      expect(playAttemptDocs[0].startTime).toBe(6);
+      expect(playAttemptDocs[0].endTime).toBe(6);
       expect(lvl.calc_playattempts_duration_sum).toBe(0);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(0);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
+      expect(statDocs).toHaveLength(2);
     },
   },
   {
@@ -416,19 +407,19 @@ const tests = [
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.SOLVED);
       expect(playAttemptDocs[0].startTime).toBe(MINUTE);
       expect(playAttemptDocs[0].endTime).toBe(MINUTE);
-      expect(playAttemptDocs[1].attemptContext).toBe(
-        AttemptContext.JUST_SOLVED
-      );
+      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.JUST_SOLVED);
       expect(playAttemptDocs[1].startTime).toBe(MINUTE);
       expect(playAttemptDocs[1].endTime).toBe(MINUTE);
       expect(lvl.calc_playattempts_duration_sum).toBe(0);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(0);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
 
-      const lastLevelPlayed = await getLastLevelPlayed({
+      const lastLevelPlayed = await getLastLevelPlayed(DEFAULT_GAME_ID, {
         _id: new Types.ObjectId(TestId.USER),
       } as User);
 
       expect(lastLevelPlayed?._id.toString()).toBe(TestId.LEVEL_4);
+      expect(statDocs).toHaveLength(2);
     },
   },
   {
@@ -443,20 +434,20 @@ const tests = [
       statDocs: Stat[],
       lvl: Level
     ) => {
-      expect(playAttemptDocs[0].attemptContext).toBe(
-        AttemptContext.JUST_SOLVED
-      );
+      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_SOLVED);
       expect(playAttemptDocs.length).toBe(2);
 
       expect(playAttemptDocs[0].startTime).toBe(3600);
       expect(playAttemptDocs[0].endTime).toBe(3600);
-      expect(playAttemptDocs[0].updateCount).toBe(0);
+      expect(playAttemptDocs[0].updateCount).toBe(1);
 
       expect(playAttemptDocs[1].startTime).toBe(0);
       expect(playAttemptDocs[1].endTime).toBe(0);
       expect(playAttemptDocs[1].updateCount).toBe(0);
       expect(lvl.calc_playattempts_duration_sum).toBe(0);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(0);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
+      expect(statDocs).toHaveLength(2);
     },
   },
   {
@@ -476,6 +467,7 @@ const tests = [
     ) => {
       expect(lvl.calc_playattempts_just_beaten_count).toBe(0);
       expect(lvl.calc_playattempts_duration_sum).toBe(0);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(0);
       expect(lvl.calc_playattempts_unique_users).toStrictEqual([]);
 
       expect(playAttemptDocs.length).toBe(2);
@@ -483,6 +475,7 @@ const tests = [
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.SOLVED);
       expect(playAttemptDocs[1].updateCount).toBe(2);
       expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.SOLVED);
+      expect(statDocs).toHaveLength(1);
     },
   },
   {
@@ -505,20 +498,20 @@ const tests = [
     ) => {
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
       expect(lvl.calc_playattempts_duration_sum).toBe(4 * MINUTE);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(0);
 
       expect(playAttemptDocs.length).toBe(3);
       expect(playAttemptDocs[0].updateCount).toBe(1);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.SOLVED);
       expect(playAttemptDocs[1].updateCount).toBe(2);
-      expect(playAttemptDocs[1].attemptContext).toBe(
-        AttemptContext.JUST_SOLVED
-      );
+      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.JUST_SOLVED);
       expect(playAttemptDocs[2].updateCount).toBe(2);
       expect(playAttemptDocs[2].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(lvl.calc_playattempts_unique_users).toStrictEqual([
         new Types.ObjectId(TestId.USER),
       ]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
+      expect(statDocs).toHaveLength(1);
     },
   },
   {
@@ -543,20 +536,21 @@ const tests = [
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
       // 0-30, 41-89, 103-125
       expect(lvl.calc_playattempts_duration_sum).toBe(100);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(30);
 
       expect(playAttemptDocs.length).toBe(3);
       expect(playAttemptDocs[0].updateCount).toBe(2);
-      expect(playAttemptDocs[0].attemptContext).toBe(
-        AttemptContext.JUST_SOLVED
-      );
+      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_SOLVED);
       expect(playAttemptDocs[1].updateCount).toBe(2);
       expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.UNSOLVED);
-      expect(playAttemptDocs[2].updateCount).toBe(2);
+      expect(playAttemptDocs[2].updateCount).toBe(3);
       expect(playAttemptDocs[2].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(lvl.calc_playattempts_unique_users).toStrictEqual([
         new Types.ObjectId(TestId.USER),
       ]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
+
+      expect(statDocs).toHaveLength(2);
     },
   },
   {
@@ -581,18 +575,18 @@ const tests = [
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
       // 0-30, 41-125
       expect(lvl.calc_playattempts_duration_sum).toBe(114);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(30);
 
       expect(playAttemptDocs.length).toBe(2);
       expect(playAttemptDocs[0].updateCount).toBe(4);
-      expect(playAttemptDocs[0].attemptContext).toBe(
-        AttemptContext.JUST_SOLVED
-      );
-      expect(playAttemptDocs[1].updateCount).toBe(2);
+      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_SOLVED);
+      expect(playAttemptDocs[1].updateCount).toBe(3);
       expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.UNSOLVED);
       expect(lvl.calc_playattempts_unique_users).toStrictEqual([
         new Types.ObjectId(TestId.USER),
       ]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
+      expect(statDocs).toHaveLength(2);
     },
   },
   {
@@ -613,22 +607,100 @@ const tests = [
     ) => {
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
       expect(lvl.calc_playattempts_duration_sum).toBe(50);
+      expect(lvl.calc_playattempts_duration_before_stat_sum).toBe(30);
 
       expect(playAttemptDocs.length).toBe(1);
-      expect(playAttemptDocs[0].gameId).toBe(GameId.PATHOLOGY);
-      expect(playAttemptDocs[0].updateCount).toBe(5);
-      expect(playAttemptDocs[0].attemptContext).toBe(
-        AttemptContext.JUST_SOLVED
-      );
+      expect(playAttemptDocs[0].gameId).toBe(DEFAULT_GAME_ID);
+      expect(playAttemptDocs[0].updateCount).toBe(6);
+      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_SOLVED);
       expect(lvl.calc_playattempts_unique_users).toStrictEqual([
         new Types.ObjectId(TestId.USER),
       ]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
+      expect(statDocs).toHaveLength(2);
     },
   },
 ] as PlayAttemptTest[];
+let USER: User, USER_B: User;
 
 describe('Testing stats api', () => {
+  const resetLevelUpdateQuery = {
+    $set: {
+      calc_difficulty_completion_estimate: -1,
+      calc_difficulty_estimate: -1,
+      calc_playattempts_duration_before_stat_sum: 0,
+      calc_playattempts_duration_sum: 0,
+      calc_playattempts_just_beaten_count: 0,
+      calc_playattempts_unique_users: [],
+      // it is impossible for a level to be published without a completion
+      calc_stats_completed_count: 1,
+      calc_stats_players_beaten: 1,
+    },
+  } as UpdateQuery<Level>;
+
+  const levelInitData = {
+    [TestId.LEVEL]: {
+      leastMoves: 20,
+      userId: new Types.ObjectId(TestId.USER),
+    },
+    [TestId.LEVEL_4]: {
+      leastMoves: 20,
+      userId: new Types.ObjectId(TestId.USER_B),
+    },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as { [levelId: string]: any };
+
+  async function cleanup(levelId: Types.ObjectId) {
+    const init = levelInitData[levelId.toString()];
+
+    // cleanup
+    const [level] = await Promise.all([
+      LevelModel.findOneAndUpdate(
+        { _id: levelId },
+        {
+          leastMoves: init.leastMoves,
+          ...resetLevelUpdateQuery,
+        },
+        { new: true }
+      ) as Promise<Level>,
+      PlayAttemptModel.deleteMany({ levelId: levelId }),
+      StatModel.deleteMany({ levelId: levelId }),
+      RecordModel.deleteMany({ levelId: levelId }),
+    ]);
+
+    await Promise.all([
+      RecordModel.create({
+        _id: new Types.ObjectId(),
+        gameId: DEFAULT_GAME_ID,
+        levelId: levelId,
+        moves: init.leastMoves,
+        ts: 0,
+        userId: init.userId,
+      }),
+      StatModel.create({
+        _id: new Types.ObjectId(),
+        attempts: 1,
+        createdAt: 0,
+        complete: true,
+        gameId: DEFAULT_GAME_ID,
+        levelId: levelId,
+        moves: init.leastMoves,
+        ts: 0,
+        userId: init.userId,
+      }),
+    ]);
+
+    return level;
+  }
+
+  test('initial cleanup', async () => {
+  // cleanup all levels used in this file before continuing
+    await Promise.all([
+      cleanup(new Types.ObjectId(TestId.LEVEL)),
+      cleanup(new Types.ObjectId(TestId.LEVEL_4)),
+    ]);
+  });
+
   for (const t of tests) {
     for (const [action, timestamp, expected] of t.list) {
       // delete all playattempts
@@ -637,159 +709,76 @@ describe('Testing stats api', () => {
         async () => {
           jest.spyOn(TimerUtil, 'getTs').mockReturnValue(timestamp as number);
 
+          if (!USER) {
+            [USER, USER_B] = await Promise.all([UserModel.findById(TestId.USER), UserModel.findById(TestId.USER_B)]);
+          }
+
           if (action === 'play') {
-            await testApiHandler({
-              handler: async (_, res) => {
-                const req: NextApiRequestWithAuth = {
-                  method: 'POST',
-                  cookies: {
-                    token: getTokenCookieValue(TestId.USER),
-                  },
-                  body: {
-                    levelId: t.levelId,
-                  },
-                  headers: {
-                    'content-type': 'application/json',
-                  },
-                } as unknown as NextApiRequestWithAuth;
+            const res = await postPlayAttempt(new Types.ObjectId(TestId.USER), t.levelId);
+            const status = res.status;
+            const response = res.json;
 
-                await handler(req, res);
-              },
-              test: async ({ fetch }) => {
-                const res = await fetch();
-                const response = await res.json();
-
-                expect(res.status).toBe(200);
-                expect(response.message).toBe(expected);
-              },
-            });
+            expect(status).toBe(200);
+            expect(response.message).toBe(expected);
           } else if (action === 'win_20') {
-            await testApiHandler({
-              handler: async (_, res) => {
-                const req: NextApiRequestWithAuth = {
-                  method: 'PUT',
-                  cookies: {
-                    token: getTokenCookieValue(TestId.USER),
-                  },
-                  body: {
-                    levelId: t.levelId,
-                    directions: [
-                      Direction.RIGHT,
-                      Direction.RIGHT,
-                      Direction.RIGHT,
-                      Direction.RIGHT,
-                      Direction.DOWN,
-                      Direction.DOWN,
-                      Direction.DOWN,
-                      Direction.UP,
-                      Direction.DOWN,
-                      Direction.UP,
-                      Direction.DOWN,
-                      Direction.UP,
-                      Direction.DOWN,
-                      Direction.UP,
-                      Direction.DOWN,
-                      Direction.UP,
-                      Direction.DOWN,
-                      Direction.UP,
-                      Direction.DOWN,
-                      Direction.DOWN,
-                    ],
-                  },
-                  headers: {
-                    'content-type': 'application/json',
-                  },
-                } as unknown as NextApiRequestWithAuth;
+            const res = await putStat(USER, [
+              Direction.RIGHT,
+              Direction.RIGHT,
+              Direction.RIGHT,
+              Direction.RIGHT,
+              Direction.DOWN,
+              Direction.DOWN,
+              Direction.DOWN,
+              Direction.UP,
+              Direction.DOWN,
+              Direction.UP,
+              Direction.DOWN,
+              Direction.UP,
+              Direction.DOWN,
+              Direction.UP,
+              Direction.DOWN,
+              Direction.UP,
+              Direction.DOWN,
+              Direction.UP,
+              Direction.DOWN,
+              Direction.DOWN,
+            ], t.levelId);
 
-                await statsHandler(req, res);
-              },
-              test: async ({ fetch }) => {
-                const res = await fetch();
-                const response = await res.json();
-
-                expect(response.error).toBeUndefined();
-              },
-            });
+            expect(res.json.error).toBeUndefined();
           } else if (action === 'win_10') {
-            await testApiHandler({
-              handler: async (_, res) => {
-                const req: NextApiRequestWithAuth = {
-                  method: 'PUT',
-                  cookies: {
-                    token: getTokenCookieValue(TestId.USER),
-                  },
-                  body: {
-                    levelId: t.levelId,
-                    directions: [
-                      Direction.RIGHT,
-                      Direction.RIGHT,
-                      Direction.RIGHT,
-                      Direction.RIGHT,
-                      Direction.DOWN,
-                      Direction.DOWN,
-                      Direction.DOWN,
-                      Direction.UP,
-                      Direction.DOWN,
-                      Direction.DOWN,
-                    ],
-                  },
-                  headers: {
-                    'content-type': 'application/json',
-                  },
-                } as unknown as NextApiRequestWithAuth;
+            const res = await putStat(USER, [
+              Direction.RIGHT,
+              Direction.RIGHT,
+              Direction.RIGHT,
+              Direction.RIGHT,
+              Direction.DOWN,
+              Direction.DOWN,
+              Direction.DOWN,
+              Direction.UP,
+              Direction.DOWN,
+              Direction.DOWN,
+            ], t.levelId);
 
-                await statsHandler(req, res);
-              },
-              test: async ({ fetch }) => {
-                const res = await fetch();
-                const response = await res.json();
-
-                expect(response.error).toBeUndefined();
-              },
-            });
+            expect(res.json.error).toBeUndefined();
           } else if (action === 'win_8' || action === 'b_win_8') {
-            const usrId = action === 'win_8' ? TestId.USER : TestId.USER_B;
+            const res = await putStat(action === 'win_8' ? USER : USER_B, [
+              Direction.RIGHT,
+              Direction.RIGHT,
+              Direction.RIGHT,
+              Direction.RIGHT,
+              Direction.DOWN,
+              Direction.DOWN,
+              Direction.DOWN,
+              Direction.DOWN,
+            ], t.levelId);
 
-            await testApiHandler({
-              handler: async (_, res) => {
-                const req: NextApiRequestWithAuth = {
-                  method: 'PUT',
-                  cookies: {
-                    token: getTokenCookieValue(usrId),
-                  },
-                  body: {
-                    levelId: t.levelId,
-                    directions: [
-                      Direction.RIGHT,
-                      Direction.RIGHT,
-                      Direction.RIGHT,
-                      Direction.RIGHT,
-                      Direction.DOWN,
-                      Direction.DOWN,
-                      Direction.DOWN,
-                      Direction.DOWN,
-                    ],
-                  },
-                  headers: {
-                    'content-type': 'application/json',
-                  },
-                } as unknown as NextApiRequestWithAuth;
-
-                await statsHandler(req, res);
-              },
-              test: async ({ fetch }) => {
-                const res = await fetch();
-                const response = await res.json();
-
-                expect(response.error).toBeUndefined();
-              },
-            });
+            expect(res.json.error).toBeUndefined();
           }
         }
       );
     }
 
-    test(t.name + ' clear', async () => {
+    test(t.name + ' : clear', async () => {
       // NB: need to process here as there may be remaining queue messages (eg api/stats queueRefreshIndexCalcs)
       await processQueueMessages();
 
@@ -800,37 +789,28 @@ describe('Testing stats api', () => {
           { sort: { _id: -1 } }
         ),
         StatModel.find({ levelId: t.levelId }, {}, { sort: { ts: 1 } }),
-        // NB: LEVEL and LEVEL_4 both have leastMoves of 20 so this works
-        LevelModel.findByIdAndUpdate(
-          t.levelId,
-          { $set: { leastMoves: 20 } },
-          { new: true }
-        ),
+        LevelModel.findById(t.levelId),
       ]);
 
       await t.tests(allAttempts, allStats, lvlBeforeResync);
 
-      const resetArr = {
-        $set: {
-          calc_difficulty_estimate: -1,
-          calc_playattempts_duration_sum: 0,
-          calc_playattempts_just_beaten_count: 0,
-          calc_playattempts_unique_users: [],
-          calc_stats_players_beaten: 0,
-        },
-      };
+      // console.log(allAttempts, allStats, lvlBeforeResync);
+
       const resetLvl = await LevelModel.findOneAndUpdate(
         { _id: t.levelId },
-        resetArr,
+        resetLevelUpdateQuery,
         { new: true }
-      );
+      ) as Level;
 
       expect(resetLvl).toBeDefined();
-      expect(resetLvl.calc_playattempts_just_beaten_count).toBe(0);
-      expect(resetLvl.calc_playattempts_duration_sum).toBe(0);
-      expect(resetLvl.calc_playattempts_unique_users.length).toBe(0);
-      expect(resetLvl.calc_stats_players_beaten).toBe(0);
+      expect(resetLvl.calc_difficulty_completion_estimate).toBe(-1);
       expect(resetLvl.calc_difficulty_estimate).toBe(-1);
+      expect(resetLvl.calc_playattempts_duration_before_stat_sum).toBe(0);
+      expect(resetLvl.calc_playattempts_duration_sum).toBe(0);
+      expect(resetLvl.calc_playattempts_just_beaten_count).toBe(0);
+      expect(resetLvl.calc_playattempts_unique_users.length).toBe(0);
+      expect(resetLvl.calc_stats_completed_count).toBe(1);
+      expect(resetLvl.calc_stats_players_beaten).toBe(1);
 
       // verify queue functions update level calc fields correctly
       await Promise.all([
@@ -838,442 +818,29 @@ describe('Testing stats api', () => {
         queueRefreshIndexCalcs(lvlBeforeResync._id),
       ]);
       await processQueueMessages();
-      const lvlAfterResync = await LevelModel.findById(t.levelId);
 
-      expect(lvlAfterResync.calc_playattempts_just_beaten_count).toBe(
-        lvlBeforeResync.calc_playattempts_just_beaten_count
-      );
-      expect(lvlAfterResync.calc_playattempts_duration_sum).toBe(
-        lvlBeforeResync.calc_playattempts_duration_sum
-      );
-      expect(lvlAfterResync.calc_difficulty_estimate).toBe(
-        lvlBeforeResync.calc_difficulty_estimate
-      );
-      expect(lvlAfterResync.calc_stats_players_beaten.length).toBe(
-        lvlBeforeResync.calc_stats_players_beaten.length
-      );
-      expect(
-        lvlAfterResync.calc_playattempts_unique_users.sort()
-      ).toStrictEqual(lvlBeforeResync.calc_playattempts_unique_users.sort());
+      const lvlAfterResync = await LevelModel.findById(t.levelId) as Level;
 
-      // cleanup
-      const [resetLvl2] = await Promise.all([
-        LevelModel.findOneAndUpdate({ _id: t.levelId }, resetArr, {
-          new: true,
-        }),
-        PlayAttemptModel.deleteMany({ levelId: t.levelId }),
-        StatModel.deleteMany({ levelId: t.levelId }),
-        RecordModel.deleteMany({ levelId: t.levelId }),
-      ]);
+      expect(lvlAfterResync.calc_difficulty_completion_estimate).toBe(lvlBeforeResync.calc_difficulty_completion_estimate);
+      expect(lvlAfterResync.calc_difficulty_estimate).toBe(lvlBeforeResync.calc_difficulty_estimate);
+      expect(lvlAfterResync.calc_playattempts_duration_before_stat_sum).toBe(lvlBeforeResync.calc_playattempts_duration_before_stat_sum);
+      expect(lvlAfterResync.calc_playattempts_duration_sum).toBe(lvlBeforeResync.calc_playattempts_duration_sum);
+      expect(lvlAfterResync.calc_playattempts_just_beaten_count).toBe(lvlBeforeResync.calc_playattempts_just_beaten_count);
+      expect(lvlAfterResync.calc_playattempts_unique_users.sort()).toStrictEqual(lvlBeforeResync.calc_playattempts_unique_users.sort());
+      expect(lvlAfterResync.calc_stats_completed_count).toBe(lvlBeforeResync.calc_stats_completed_count);
+      expect(lvlAfterResync.calc_stats_players_beaten).toBe(lvlBeforeResync.calc_stats_players_beaten);
+
+      const resetLvl2 = await cleanup(new Types.ObjectId(t.levelId));
 
       expect(resetLvl2).toBeDefined();
-      expect(resetLvl2.calc_playattempts_just_beaten_count).toBe(0);
-      expect(resetLvl2.calc_playattempts_duration_sum).toBe(0);
-      expect(resetLvl2.calc_playattempts_unique_users.length).toBe(0);
-      expect(resetLvl2.calc_stats_players_beaten).toBe(0);
+      expect(resetLvl2.calc_difficulty_completion_estimate).toBe(-1);
       expect(resetLvl2.calc_difficulty_estimate).toBe(-1);
+      expect(resetLvl2.calc_playattempts_duration_before_stat_sum).toBe(0);
+      expect(resetLvl2.calc_playattempts_duration_sum).toBe(0);
+      expect(resetLvl2.calc_playattempts_just_beaten_count).toBe(0);
+      expect(resetLvl2.calc_playattempts_unique_users.length).toBe(0);
+      expect(resetLvl2.calc_stats_completed_count).toBe(1);
+      expect(resetLvl2.calc_stats_players_beaten).toBe(1);
     });
   }
-
-  test('Doing a POST with an invalid level should error', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    const levelId = new Types.ObjectId();
-
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'POST',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER),
-          },
-          body: {
-            levelId: levelId,
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe(`Level ${levelId} not found`);
-        expect(res.status).toBe(404);
-      },
-    });
-  });
-  test('calcDifficultyEstimate', async () => {
-    const level = await initLevel(
-      TestId.USER,
-      'calcDifficultyEstimate',
-      {},
-      false
-    );
-    const promises = [];
-
-    for (let i = 0; i < 9; i++) {
-      promises.push(
-        PlayAttemptModel.create({
-          _id: new Types.ObjectId(),
-          // half solved
-          attemptContext:
-            i % 2 === 0 ? AttemptContext.JUST_SOLVED : AttemptContext.UNSOLVED,
-          endTime: i + 10,
-          gameId: GameId.PATHOLOGY,
-          levelId: level._id,
-          startTime: 0,
-          updateCount: 0,
-          userId: new Types.ObjectId(),
-        })
-      );
-    }
-
-    promises.push(queueCalcPlayAttempts(level._id));
-    await Promise.all(promises);
-
-    await processQueueMessages();
-
-    const levelUpdated = await LevelModel.findById(level._id);
-
-    expect(levelUpdated).toBeDefined();
-    expect(levelUpdated?.calc_difficulty_estimate).toBe(-1);
-    expect(levelUpdated?.calc_playattempts_duration_sum).toBe(126);
-    expect(levelUpdated?.calc_playattempts_just_beaten_count).toBe(5);
-    expect(levelUpdated?.calc_playattempts_unique_users?.length).toBe(9);
-
-    const unsolvedUserId = new Types.ObjectId();
-
-    // create a playattempt for the 10th unique user
-    await Promise.all([
-      PlayAttemptModel.create({
-        _id: new Types.ObjectId(),
-        attemptContext: AttemptContext.UNSOLVED,
-        endTime: 20,
-        gameId: GameId.PATHOLOGY,
-        levelId: level._id,
-        startTime: 0,
-        updateCount: 0,
-        userId: unsolvedUserId,
-      }),
-      UserModel.create({
-        _id: unsolvedUserId,
-        calc_records: 0,
-        email: 'unsolved@gmail.com',
-        last_visited_at: 0,
-        name: 'unsolved',
-        password: 'unsolved',
-        score: 0,
-        ts: 0,
-      }),
-    ]);
-
-    await queueCalcPlayAttempts(level._id);
-    await processQueueMessages();
-
-    const levelUpdated2 = await LevelModel.findById(level._id);
-
-    expect(levelUpdated2).toBeDefined();
-    expect(levelUpdated2?.calc_difficulty_estimate).toBeCloseTo(29.2 * 1.47629);
-    expect(levelUpdated2?.calc_playattempts_duration_sum).toBe(146);
-    expect(levelUpdated2?.calc_playattempts_just_beaten_count).toBe(5);
-    expect(levelUpdated2?.calc_playattempts_unique_users?.length).toBe(10);
-
-    jest.spyOn(TimerUtil, 'getTs').mockReturnValue(30);
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'POST',
-          cookies: {
-            token: getTokenCookieValue(unsolvedUserId.toString()),
-          },
-          body: {
-            levelId: level._id,
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.message).toBe('updated');
-        expect(res.status).toBe(200);
-      },
-    });
-
-    const levelUpdated3 = await LevelModel.findById<Level>(level._id);
-
-    expect(levelUpdated3).toBeDefined();
-    expect(levelUpdated3?.calc_difficulty_estimate).toBeCloseTo(31.2 * 1.47629);
-    expect(levelUpdated3?.calc_playattempts_duration_sum).toBe(156);
-    expect(levelUpdated3?.calc_playattempts_just_beaten_count).toBe(5);
-    expect(levelUpdated3?.calc_playattempts_unique_users?.length).toBe(10);
-
-    jest.spyOn(TimerUtil, 'getTs').mockReturnValue(40);
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'PUT',
-          cookies: {
-            token: getTokenCookieValue(unsolvedUserId.toString()),
-          },
-          body: {
-            levelId: level._id,
-            directions: [
-              Direction.RIGHT,
-              Direction.RIGHT,
-              Direction.RIGHT,
-              Direction.RIGHT,
-              Direction.DOWN,
-              Direction.UP,
-              Direction.DOWN,
-              Direction.UP,
-              Direction.DOWN,
-              Direction.UP,
-              Direction.DOWN,
-              Direction.UP,
-              Direction.DOWN,
-              Direction.UP,
-              Direction.DOWN,
-              Direction.UP,
-              Direction.DOWN,
-              Direction.DOWN,
-              Direction.DOWN,
-              Direction.DOWN,
-            ],
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await statsHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-
-        expect(res.status).toBe(200);
-      },
-    });
-
-    const levelUpdated4 = await LevelModel.findById<Level>(level._id);
-
-    expect(levelUpdated4).toBeDefined();
-    expect(levelUpdated4?.calc_difficulty_estimate).toBeCloseTo(
-      (166 / 6) * 1.47134
-    );
-    expect(levelUpdated4?.calc_playattempts_duration_sum).toBe(166);
-    expect(levelUpdated4?.calc_playattempts_just_beaten_count).toBe(6);
-    expect(levelUpdated4?.calc_playattempts_unique_users?.length).toBe(10);
-  });
-  // 1. no recent unsolved
-  // 2. play
-  // 3. get recent unsolved
-  test('GET recent_unsolved', async () => {
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'GET',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER),
-          },
-          query: {
-            context: 'recent_unsolved',
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response).toBeNull();
-        expect(res.status).toBe(200);
-      },
-    });
-
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'POST',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER),
-          },
-          body: {
-            levelId: TestId.LEVEL_4,
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.message).toBe('created');
-        expect(res.status).toBe(200);
-      },
-    });
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'POST',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER),
-          },
-          body: {
-            levelId: TestId.LEVEL_4,
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.message).toBe('updated');
-        expect(res.status).toBe(200);
-      },
-    });
-
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'GET',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER),
-          },
-          query: {
-            context: 'recent_unsolved',
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response._id).toBe(TestId.LEVEL_4);
-        expect(res.status).toBe(200);
-      },
-    });
-  });
-  test('POST with transaction error', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    jest.spyOn(PlayAttemptModel, 'findOne').mockImplementationOnce(() => {
-      throw new Error('Test error');
-    });
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'POST',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER),
-          },
-          body: {
-            levelId: TestId.LEVEL_4,
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('Error in POST play-attempt');
-        expect(res.status).toBe(500);
-      },
-    });
-  });
-  test('playAttempts should not sort by _id', async () => {
-    const playAttemptId1 = new Types.ObjectId();
-    const playAttempt1 = {
-      _id: playAttemptId1,
-      attemptContext: AttemptContext.UNSOLVED,
-      endTime: 10,
-      gameId: GameId.PATHOLOGY,
-      levelId: new Types.ObjectId(TestId.LEVEL),
-      startTime: 1,
-      userId: new Types.ObjectId(TestId.USER),
-    } as PlayAttempt;
-
-    const playAttemptId2 = new Types.ObjectId();
-    const playAttempt2 = {
-      _id: playAttemptId2,
-      attemptContext: AttemptContext.UNSOLVED,
-      endTime: 30,
-      gameId: GameId.PATHOLOGY,
-      levelId: new Types.ObjectId(TestId.LEVEL),
-      startTime: 21,
-      userId: new Types.ObjectId(TestId.USER),
-    } as PlayAttempt;
-
-    const playAttemptId3 = new Types.ObjectId();
-    const playAttempt3 = {
-      _id: playAttemptId3,
-      attemptContext: AttemptContext.UNSOLVED,
-      endTime: 20,
-      gameId: GameId.PATHOLOGY,
-      levelId: new Types.ObjectId(TestId.LEVEL),
-      startTime: 11,
-      userId: new Types.ObjectId(TestId.USER),
-    } as PlayAttempt;
-
-    await PlayAttemptModel.create([playAttempt1, playAttempt2, playAttempt3]);
-
-    jest.spyOn(TimerUtil, 'getTs').mockReturnValue(40);
-
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'POST',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER),
-          },
-          body: {
-            levelId: TestId.LEVEL,
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(res.status).toBe(200);
-        expect(response.message).toBe('updated');
-        expect(response.playAttempt).toBe(playAttemptId2.toString());
-      },
-    });
-  });
 });

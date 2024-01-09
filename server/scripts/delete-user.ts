@@ -36,13 +36,14 @@ async function unpublishLevel(level: Level) {
   // update calc_records if the record was set by a different user
   if (record && record.userId.toString() !== level.userId.toString()) {
     // NB: await to avoid multiple user updates in parallel
-    await UserModel.updateOne({ _id: record.userId }, { $inc: { calc_records: -1 } });
+    await UserConfigModel.updateOne({ userId: record.userId }, { $inc: { calcRecordsCount: -1 } });
   }
 
   const [matchesToRebroadcast, stats] = await Promise.all([
     MultiplayerMatchModel.find({
       state: MultiplayerMatchState.ACTIVE,
       levels: level._id,
+      gameId: level.gameId, // probably unnecessary
     }, {
       _id: 1,
       matchId: 1
@@ -56,17 +57,18 @@ async function unpublishLevel(level: Level) {
     ImageModel.deleteOne({ documentId: level._id }),
     // NB: set slug to unique id to avoid duplicate key error
     LevelModel.updateOne({ _id: level._id }, { $set: { isDeleted: true, slug: level._id } }),
-    PlayAttemptModel.updateMany({ levelId: level._id }, { $set: { isDeleted: true } }),
-    RecordModel.updateMany({ levelId: level._id }, { $set: { isDeleted: true } }),
-    ReviewModel.updateMany({ levelId: level._id }, { $set: { isDeleted: true } }),
-    StatModel.updateMany({ levelId: level._id }, { $set: { isDeleted: true } }),
-    UserModel.updateMany({ _id: { $in: userIds } }, { $inc: { score: -1 } }),
+    PlayAttemptModel.updateMany({ levelId: level._id, gameId: level.gameId }, { $set: { isDeleted: true } }),
+    RecordModel.updateMany({ levelId: level._id, gameId: level.gameId }, { $set: { isDeleted: true } }),
+    ReviewModel.updateMany({ levelId: level._id, gameId: level.gameId }, { $set: { isDeleted: true } }),
+    StatModel.updateMany({ levelId: level._id, gameId: level.gameId }, { $set: { isDeleted: true } }),
+    UserConfigModel.updateMany({ userId: { $in: userIds }, gameId: level.gameId }, { $inc: { score: -1 } }),
     // NB: deleted levels are pulled from all collections, so we never need to filter for deleted levels within collections
-    CollectionModel.updateMany({ levels: level._id }, { $pull: { levels: level._id } }),
+    CollectionModel.updateMany({ levels: level._id, gameId: level.gameId }, { $pull: { levels: level._id } }),
     clearNotifications(undefined, undefined, level._id, undefined),
     MultiplayerMatchModel.updateMany({
       state: MultiplayerMatchState.ACTIVE,
       levels: level._id,
+      gameId: level.gameId
     },
     {
       state: MultiplayerMatchState.ABORTED,
@@ -80,7 +82,7 @@ async function unpublishLevel(level: Level) {
   ]);
 
   await Promise.all([
-    ...matchesToRebroadcast.map(match => requestBroadcastMatch(match.matchId)),
+    ...matchesToRebroadcast.map(match => requestBroadcastMatch(match.gameId, match.matchId)),
   ]);
 }
 

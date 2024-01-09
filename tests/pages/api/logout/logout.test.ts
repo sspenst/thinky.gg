@@ -1,4 +1,4 @@
-import { NextApiRequestGuest } from '@root/helpers/apiWrapper';
+import { NextApiRequestWrapper } from '@root/helpers/apiWrapper';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
@@ -31,7 +31,7 @@ describe('Testing logout api', () => {
             'host': 'localhost:3000'
           },
           body: JSON.stringify(credsJSON)
-        } as unknown as NextApiRequestGuest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },

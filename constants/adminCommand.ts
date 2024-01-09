@@ -7,9 +7,12 @@ enum AdminCommand {
   RefreshIndexCalcs = 'refreshIndexCalcs',
   RefreshPlayAttempts = 'calcPlayAttempts',
   SwitchIsRanked = 'switchIsRanked',
+  RegenImage = 'regenImage',
 
   // admin
   SendAdminMessage = 'sendAdminMessage',
+  RunEmailDigest = 'runEmailDigest',
+  SendReloadPageToUsers = 'sendReloadPageToUsers',
 }
 
 export default AdminCommand;

@@ -2,6 +2,7 @@ import classNames from 'classnames';
 import { Types } from 'mongoose';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
+import ReactTextareaAutosize from 'react-textarea-autosize';
 import { KeyedMutator } from 'swr';
 import { AppContext } from '../../../contexts/appContext';
 import { COMMENT_QUERY_LIMIT } from '../../../models/constants/comment';
@@ -201,32 +202,29 @@ export default function CommentThread({ className, comment, mutateComments, onSe
       <span className='break-words'>{comment.text}</span>
       {!user ? null : !reply ?
         <button
-          className='font-semibold underline w-fit text-xs ml-auto'
+          className='gray hover-color w-fit text-xs ml-auto'
           onClick={() => setReply(true)}
         >
           Reply
         </button>
         :
         <div className='flex flex-col gap-2'>
-          <textarea
-            className='block p-1 w-full rounded-lg border disabled:opacity-25 focus:ring-blue-500 focus:border-blue-500 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600'
-            disabled={isUpdating}
+          <ReactTextareaAutosize
+            className='bg-inherit block py-1 w-96 max-w-full border-b border-neutral-500 disabled:text-neutral-500 transition resize-none placeholder:text-neutral-500 focus:outline-0 rounded-none focus:border-black focus:dark:border-white'
             onChange={(e) => setText(e.currentTarget.value)}
             placeholder='Reply...'
-            minLength={1}
-            rows={1}
             value={text}
           />
-          <div className='flex flex-row gap-2'>
+          <div className='flex gap-2'>
             <button
-              className='bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 w-fit rounded-lg text-xs focus:bg-blue-800 disabled:opacity-25'
+              className='bg-blue-500 enabled:hover:bg-blue-700 text-white font-medium px-3 py-2 rounded-full text-sm disabled:opacity-50 w-fit'
               disabled={isUpdating || (text.length === 0 || text.length > 500)}
               onClick={onReplyComment}
             >
               Reply
             </button>
             <button
-              className='font-semibold underline w-fit text-sm'
+              className='enabled:hover:bg-neutral-500 font-medium px-3 py-2 mr-2 rounded-full text-sm disabled:opacity-50 w-fit'
               onClick={() => {
                 setReply(false);
                 setText('');
@@ -234,7 +232,6 @@ export default function CommentThread({ className, comment, mutateComments, onSe
             >
               Cancel
             </button>
-            <span className='text-xs my-2'>{text.length > 500 ? text.length + '/500 characters' : ''}</span>
           </div>
         </div>
       }

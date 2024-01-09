@@ -1,16 +1,20 @@
-import { GameId } from '@root/constants/GameId';
-import { NextApiRequestGuest } from '@root/helpers/apiWrapper';
+import Dimensions from '@root/constants/dimensions';
+import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
+import TestId from '@root/constants/testId';
+import { NextApiRequestWrapper } from '@root/helpers/apiWrapper';
+import { TimerUtil } from '@root/helpers/getTs';
+import { getTokenCookieValue } from '@root/lib/getTokenCookie';
+import { NextApiRequestWithAuth } from '@root/lib/withAuth';
+import { LevelModel } from '@root/models/mongoose';
+import { processQueueMessages } from '@root/pages/api/internal-jobs/worker';
+import getLevelImageHandler from '@root/pages/api/level/image/[id]';
+import publishLevelHandler from '@root/pages/api/publish/[id]';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
-import Dimensions from '../../../../constants/dimensions';
-import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
-import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
-import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import getLevelImageHandler from '../../../../pages/api/level/image/[id]';
 import createLevelHandler from '../../../../pages/api/level/index';
 
 beforeAll(async () => {
@@ -36,13 +40,13 @@ describe('pages/api/level/image/[id]', () => {
     expect(Dimensions.LevelCanvasWidth).toBe(1);
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequestGuest = {
+        const req: NextApiRequestWrapper = {
           gameId: GameId.PATHOLOGY,
           method: 'GET',
           query: {
             id: TestId.LEVEL,
           },
-        } as unknown as NextApiRequestGuest;
+        } as unknown as NextApiRequestWrapper;
 
         await getLevelImageHandler(req, res);
       },
@@ -61,13 +65,13 @@ describe('pages/api/level/image/[id]', () => {
   test('GET a second time to get the cached image', async () => {
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequestGuest = {
+        const req: NextApiRequestWrapper = {
           gameId: GameId.PATHOLOGY,
           method: 'GET',
           query: {
             id: TestId.LEVEL,
           },
-        } as unknown as NextApiRequestGuest;
+        } as unknown as NextApiRequestWrapper;
 
         await getLevelImageHandler(req, res);
       },
@@ -86,13 +90,13 @@ describe('pages/api/level/image/[id]', () => {
   test('Requesting an image for a level that doesn\'t exist should 404', async () => {
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequestGuest = {
+        const req: NextApiRequestWrapper = {
           gameId: GameId.PATHOLOGY,
           method: 'GET',
           query: {
             id: new Types.ObjectId().toString(),
           },
-        } as unknown as NextApiRequestGuest;
+        } as unknown as NextApiRequestWrapper;
 
         await getLevelImageHandler(req, res);
       },
@@ -142,13 +146,13 @@ describe('pages/api/level/image/[id]', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequestGuest = {
+        const req: NextApiRequestWrapper = {
           gameId: GameId.PATHOLOGY,
           method: 'GET',
           query: {
             id: draftLevelId,
           },
-        } as unknown as NextApiRequestGuest;
+        } as unknown as NextApiRequestWrapper;
 
         await getLevelImageHandler(req, res);
       },
@@ -168,13 +172,13 @@ describe('pages/api/level/image/[id]', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequestGuest = {
+        const req: NextApiRequestWrapper = {
           gameId: GameId.PATHOLOGY,
           method: 'GET',
           query: {
             id: '[home]',
           },
-        } as unknown as NextApiRequestGuest;
+        } as unknown as NextApiRequestWrapper;
 
         await getLevelImageHandler(req, res);
       },
@@ -190,4 +194,50 @@ describe('pages/api/level/image/[id]', () => {
       },
     });
   }, 30000);
+  test('Publish a level then getting the level image should error saying no image', async () => {
+    const lvl = await LevelModel.create({
+      userId: TestId.USER,
+      width: 1,
+      height: 1,
+      ts: TimerUtil.getTs(),
+      slug: 'test/test-level-x',
+      name: 'test level x',
+      leastMoves: 1,
+      isDraft: true, // important,
+      isRanked: false,
+      gameId: DEFAULT_GAME_ID,
+      data: '43'
+    });
+    // call the publish endpoint
+
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: lvl._id,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await publishLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+      },
+    });
+  });
+  test('processQueueMessages to generate image...', async () => {
+    await processQueueMessages();
+    // Note - we do not generate the image during test since we don't have an actual local server running to run puppet against.
+  });
 });

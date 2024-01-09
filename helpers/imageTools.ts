@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 // https://gist.github.com/dcollien/312bce1270a5f511bf4a?permalink_comment_id=2265490#gistcomment-2265490
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const hasBlobConstructor = typeof (Blob) !== 'undefined' && (function () {

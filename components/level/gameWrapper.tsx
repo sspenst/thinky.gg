@@ -1,6 +1,7 @@
 import Dimensions from '@root/constants/dimensions';
 import { MusicContext } from '@root/contexts/musicContext';
 import { PageContext } from '@root/contexts/pageContext';
+import getLevelCompleteColor from '@root/helpers/getLevelCompleteColor';
 import classNames from 'classnames';
 import Link from 'next/link';
 import React, { Dispatch, SetStateAction, useCallback, useContext, useEffect, useRef, useState } from 'react';
@@ -154,7 +155,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
               setPreventKeyDownEvent(true);
             }}
             style={{
-              color: level.userMoves ? (level.userMoves === level.leastMoves ? 'var(--color-complete)' : 'var(--color-incomplete)') : 'var(--color)',
+              color: getLevelCompleteColor(level) ?? 'var(--color)',
             }}
           >
             <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' width='16' height='16' style={{
@@ -184,7 +185,6 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
           />
         </div>
         <Game
-          allowFreeUndo={true}
           disablePlayAttempts={!user}
           disableStats={!user}
           enableSessionCheckpoint={true}
@@ -221,7 +221,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
       </div>
       {collection &&
         <div className={classNames(
-          'hidden flex-col items-center border-l border-color-4 w-60',
+          'hidden flex-col items-center border-l border-color-3 w-60',
           // NB: we want to keep this component in the DOM when it is hidden by the user
           // this allows updating the collection level list on level change to continue running behind the scenes
           { 'xl:flex': !isCollectionViewHidden },
@@ -237,7 +237,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
           {getCollectionLevelList('sidebar')}
         </div>
       }
-      <div className='hidden xl:flex flex-col border-l border-color-4 break-words z-10 h-full w-100'>
+      <div className='hidden xl:flex flex-col border-l border-color-3 break-words z-10 h-full w-100'>
         {collection && isCollectionViewHidden &&
           <button
             className='flex items-center gap-4 w-full border-b border-color-4 hover-bg-3 transition px-4 py-3'
@@ -253,7 +253,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
             <span className='font-bold text-left whitespace-pre-wrap truncate'>{collection.name}</span>
           </button>
         }
-        <div className='px-4 py-3 overflow-y-auto'>
+        <div className='px-4 py-3 overflow-y-auto h-full'>
           <FormattedLevelInfo level={level} />
         </div>
       </div>

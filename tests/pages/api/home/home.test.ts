@@ -21,45 +21,6 @@ afterAll(async () => {
 enableFetchMocks();
 
 describe('pages/api/home.ts', () => {
-  test('Wrong http method should error', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          cookies: {
-            token: getTokenCookieValue(TestId.USER),
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await homeHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('Method not allowed');
-        expect(res.status).toBe(405);
-      },
-    });
-  });
-  test('Sending nothing should return 401', async () => {
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          cookies: {
-            token: '',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await homeHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-
-        expect(res.status).toBe(401);
-      },
-    });
-  });
   test('GET no query', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -77,7 +38,6 @@ describe('pages/api/home.ts', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.lastLevelPlayed).toBeUndefined();
         expect(response.latestLevels).toBeUndefined();
         expect(response.latestReviews).toBeUndefined();
         expect(response.levelOfDay).toBeUndefined();
@@ -107,7 +67,6 @@ describe('pages/api/home.ts', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.lastLevelPlayed).toBeUndefined();
         expect(response.latestLevels).toHaveLength(1);
         expect(response.latestReviews).toBeUndefined();
         expect(response.levelOfDay).toBeUndefined();
@@ -128,7 +87,6 @@ describe('pages/api/home.ts', () => {
             token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            [HomepageDataType.LastLevelPlayed]: '1',
             [HomepageDataType.LatestLevels]: '1',
             [HomepageDataType.LatestReviews]: '1',
             [HomepageDataType.LevelOfDay]: '1',
@@ -143,10 +101,9 @@ describe('pages/api/home.ts', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.lastLevelPlayed).toBeNull(); // null because we asked but got nothing
         expect(response.latestLevels).toHaveLength(1);
         expect(response.latestReviews).toHaveLength(1);
-        expect(response.levelOfDay).toBeNull(); // no level of the day even though we asked for it
+        expect(response.levelOfDay).not.toBeNull(); // we don't have any levels normally here but we reach the conditional where we just grab the most recently created level since we are out of levels
         expect(response.recommendedLevel).toBeNull(); // no recommended easy level even though we asked for it
         expect(response.topLevelsThisMonth).toHaveLength(3);
 

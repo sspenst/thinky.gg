@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 
 interface SettingsAccountProps {
   user: User;
-  userConfig: UserConfig | null;
+  userConfig?: UserConfig | null;
 }
 
 export default function SettingsAccountRegular({ user, userConfig }: SettingsAccountProps) {

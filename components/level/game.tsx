@@ -12,7 +12,6 @@ import NProgress from 'nprogress';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { debounce, throttle } from 'throttle-debounce';
-import TileType from '../../constants/tileType';
 import { AppContext } from '../../contexts/appContext';
 import { LevelContext } from '../../contexts/levelContext';
 import { PageContext } from '../../contexts/pageContext';
@@ -25,8 +24,8 @@ interface SessionCheckpoint {
   directions: Direction[];
 }
 
-interface GameProps {
-  allowFreeUndo?: boolean;
+export interface GameProps {
+  disableAutoUndo?: boolean;
   disableCheckpoints?: boolean;
   disablePlayAttempts?: boolean;
   disableStats?: boolean;
@@ -34,6 +33,7 @@ interface GameProps {
   extraControls?: Control[];
   level: Level;
   matchId?: string;
+  onComplete?: () => void;
   onMove?: (gameState: GameState) => void;
   onNext?: () => void;
   onPrev?: () => void;
@@ -42,7 +42,7 @@ interface GameProps {
 }
 
 export default function Game({
-  allowFreeUndo,
+  disableAutoUndo,
   disableCheckpoints,
   disablePlayAttempts,
   disableStats,
@@ -50,6 +50,7 @@ export default function Game({
   extraControls,
   level,
   matchId,
+  onComplete,
   onMove,
   onNext,
   onPrev,
@@ -57,7 +58,8 @@ export default function Game({
   onStatsSuccess,
 }: GameProps) {
   const levelContext = useContext(LevelContext);
-  const { deviceInfo, mutateUser, shouldAttemptAuth, user } = useContext(AppContext);
+  const { game, deviceInfo, mutateUser, shouldAttemptAuth, user } = useContext(AppContext);
+  const isComplete = game.isComplete;
   const { preventKeyDownEvent } = useContext(PageContext);
 
   const mutateCollection = levelContext?.mutateCollection;
@@ -360,7 +362,7 @@ export default function Game({
       if (!pro) {
         toast.dismiss();
         toast.error(
-          <div>Upgrade to <Link href='/settings/pro' className='text-blue-500'>Pathology Pro</Link> to unlock checkpoints!</div>,
+          <div>Upgrade to <Link href='/settings/pro' className='text-blue-500'>{game.displayName} Pro</Link> to unlock checkpoints!</div>,
           {
             duration: 3000,
             icon: <Image alt='pro' src='/pro.svg' width='16' height='16' />,
@@ -438,7 +440,7 @@ export default function Game({
       if (redo && !pro) {
         toast.dismiss();
         toast.error(
-          <div>Upgrade to <Link href='/settings/pro' className='text-blue-500'>Pathology Pro</Link> to unlock redo!</div>,
+          <div>Upgrade to <Link href='/settings/pro' className='text-blue-500'>{game.displayName} Pro</Link> to unlock redo!</div>,
           {
             duration: 3000,
             icon: <Image alt='pro' src='/pro.svg' width='16' height='16' />,
@@ -455,11 +457,20 @@ export default function Game({
         return prevGameState;
       }
 
-      if (!makeMove(newGameState, direction, allowFreeUndo)) {
+      // lock movement once you reach the finish
+      if (isComplete(newGameState)) {
         return prevGameState;
       }
 
-      if (newGameState.board[newGameState.pos.y][newGameState.pos.x].tileType === TileType.End) {
+      if (!makeMove(newGameState, direction, !disableAutoUndo)) {
+        return prevGameState;
+      }
+
+      if (isComplete(newGameState)) {
+        if (onComplete) {
+          onComplete();
+        }
+
         if (newGameState.moves.length <= level.leastMoves && onSolve) {
           onSolve();
         }
@@ -473,14 +484,15 @@ export default function Game({
 
       return onSuccessfulMove(newGameState);
     });
-  }, [allowFreeUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, level._id, level.data, level.leastMoves, loadCheckpoint, onMove, onNext, onPrev, onSolve, pro, saveCheckpoint, saveSessionToSessionStorage, trackStats]);
+  }, [disableAutoUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, game.displayName, isComplete, level._id, level.data, level.leastMoves, loadCheckpoint, onComplete, onMove, onNext, onPrev, onSolve, pro, saveCheckpoint, saveSessionToSessionStorage, trackStats]);
 
   useEffect(() => {
     if (disableCheckpoints || !pro || !checkpoints) {
       return;
     }
 
-    const atEnd = gameState.board[gameState.pos.y][gameState.pos.x].tileType === TileType.End;
+    const atEnd = isComplete(gameState);
+
     const bestCheckpoint = checkpoints[BEST_CHECKPOINT_INDEX];
 
     function newBest() {
@@ -494,7 +506,7 @@ export default function Game({
     if (atEnd && newBest()) {
       saveCheckpoint(BEST_CHECKPOINT_INDEX);
     }
-  }, [checkpoints, disableCheckpoints, enrichedLevel.userMoves, gameState, pro, saveCheckpoint]);
+  }, [checkpoints, disableCheckpoints, enrichedLevel.userMoves, gameState, isComplete, pro, saveCheckpoint]);
 
   const touchXDown = useRef<number>(0);
   const touchYDown = useRef<number>(0);

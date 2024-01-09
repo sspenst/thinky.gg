@@ -1,15 +1,20 @@
-/* istanbul ignore file */
+//* istanbul ignore file */
 
+import { GameId } from '@root/constants/GameId';
+import { Games } from '@root/constants/Games';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { EnrichedLevel } from '../models/db/level';
 import User from '../models/db/user';
+import { getGameFromId } from './getGameIdFromReq';
 
 // good place to test the output:
 // https://htmlemail.io/inline/
 
 interface EmailBodyProps {
-  levelOfDay?: EnrichedLevel | null;
+  gameId: GameId
+  featuredLevelsLabel?: string;
+  featuredLevels?: EnrichedLevel[];
   linkHref?: string;
   linkText?: string;
   message?: string;
@@ -19,7 +24,9 @@ interface EmailBodyProps {
 }
 
 export default function getEmailBody({
-  levelOfDay,
+  gameId,
+  featuredLevelsLabel,
+  featuredLevels,
   linkHref,
   linkText,
   message,
@@ -27,6 +34,8 @@ export default function getEmailBody({
   title,
   user,
 }: EmailBodyProps) {
+  const game = Games[gameId];
+
   return renderToStaticMarkup(
     <html>
       <body>
@@ -57,14 +66,16 @@ export default function getEmailBody({
                       padding: 20,
                       textAlign: 'center',
                     }}>
-                      <a href='https://pathology.gg'>
+                      <a href={`${game.baseUrl}`}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src='https://i.imgur.com/fD1SUrZ.png' alt='Pathology' />
+                        <img src={`${game.baseUrl}${game.logo}`} width='75' alt={game.displayName} />
                       </a>
                       <h1>Hi {user.name},</h1>
-                      <p>{title}</p>
+                      <p style={{
+                        fontSize: '24px',
+                      }}>{title}</p>
                       {notificationsCount > 0 && (
-                        <p>You have <a href='https://pathology.gg/notifications?source=email-digest&filter=unread' style={{
+                        <p>You have <a href={game.baseUrl + '/notifications?source=email-digest&filter=unread'} style={{
                           color: '#4890ce',
                           textDecoration: 'none',
                         }}>{notificationsCount} unread notification{notificationsCount !== 1 ? 's' : ''}</a></p>
@@ -88,44 +99,67 @@ export default function getEmailBody({
                           {linkText}
                         </a>
                       }
-                      {levelOfDay &&
+                      {featuredLevels &&
                         <div>
-                          <h2>Check out the level of the day:</h2>
-                          <div style={{
-                            textAlign: 'center',
+                          <h2 style={{
+                            margin: '20px 0',
+                          }}
+                          >{featuredLevelsLabel}</h2>
+                          <table role='presentation' cellPadding='0' cellSpacing='0' style={{
+                            width: '100%',
                           }}>
-                            <a href={`https://pathology.gg/level/${levelOfDay.slug}`} style={{
-                              color: '#4890ce',
-                              textDecoration: 'none',
-                            }}>
-                              {levelOfDay.name}
-                            </a>
-                            {' by '}
-                            <a href={`https://pathology.gg/profile/${encodeURI(levelOfDay.userId.name)}`} style={{
-                              color: '#4890ce',
-                              textDecoration: 'none',
-                            }}>
-                              {levelOfDay.userId.name}
-                            </a>
-                            <div style={{
-                              padding: 20,
-                            }}>
-                              <a href={`https://pathology.gg/level/${levelOfDay.slug}`} style={{
-                                color: '#4890ce',
-                                textDecoration: 'none',
-                              }}>
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={`https://pathology.gg/api/level/image/${levelOfDay._id}.png`} width='100%' alt={levelOfDay.name} />
-                              </a>
-                            </div>
-                          </div>
+                            <tr>
+                              {featuredLevels.filter(level => level).map((level) => (
+                                <td key={level._id.toString()}>
+                                  <div style={{
+                                    textAlign: 'center',
+                                  }}>
+                                    <table role='presentation' cellPadding='0' cellSpacing='0' style={{
+                                      margin: '15 auto',
+                                    }}>
+                                      <tr>
+                                        <td>
+                                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                                          <img style={{ borderRadius: 10 }} src={`${Games[level.gameId].baseUrl}${Games[level.gameId].logo}`} width='50' alt={Games[level.gameId].displayName} />
+                                        </td>
+                                        <td>{Games[level.gameId].displayName}</td>
+                                      </tr>
+                                    </table>
+                                    <a href={`${getGameFromId(level.gameId).baseUrl}/level/${level.slug}`} style={{
+                                      color: '#4890ce',
+                                      textDecoration: 'none',
+                                    }}>
+                                      {level.name}
+                                    </a>
+                                    {' by '}
+                                    <a href={`${getGameFromId(level.gameId).baseUrl}/profile/${encodeURI(level.userId.name)}`} style={{
+                                      color: '#4890ce',
+                                      textDecoration: 'none',
+                                    }} />
+                                    <div style={{
+                                      padding: 20,
+                                    }}>
+                                      <a href={`${getGameFromId(level.gameId).baseUrl}/level/${level.slug}`} style={{
+                                        color: '#4890ce',
+                                        textDecoration: 'none',
+                                      }}>
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img src={`${getGameFromId(level.gameId).baseUrl}/api/level/image/${level._id}.png`} width='100%' alt={level.name} />
+                                      </a>
+                                    </div>
+                                  </div>
+                                </td>
+                              ))}
+                            </tr>
+                          </table>
                         </div>
+
                       }
                       <p>
-                        Thanks for playing <a href='https://pathology.gg' style={{
+                        Thanks for playing <a href={`${game.baseUrl}`} style={{
                           color: '#4890ce',
                           textDecoration: 'none',
-                        }}>Pathology</a>!
+                        }}>{game.displayName}</a>!
                       </p>
                       <div id='footer' style={{
                         fontSize: '10px',
@@ -135,8 +169,8 @@ export default function getEmailBody({
                         <p>Join the <a href='https://discord.gg/kpfdRBt43v' style={{
                           color: '#4890ce',
                           textDecoration: 'none',
-                        }}>Pathology Discord</a> to chat with other players and the developers!</p>
-                        <p><a href='https://pathology.gg/settings/notifications' style={{
+                        }}>Thinky.gg Discord</a> to chat with other players and the developers!</p>
+                        <p><a href={`${game.baseUrl}/settings/notifications`} style={{
                           color: '#4890ce',
                           textDecoration: 'none',
                         }}>Manage your email notification settings</a></p>

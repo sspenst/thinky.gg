@@ -1,4 +1,5 @@
 import { RadioGroup } from '@headlessui/react';
+import { ProSubscriptionType } from '@root/constants/ProSubscriptionType';
 import isPro from '@root/helpers/isPro';
 import User from '@root/models/db/user';
 import { SubscriptionGiftData } from '@root/pages/api/subscription/gift';
@@ -6,8 +7,9 @@ import classNames from 'classnames';
 import moment from 'moment';
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
+import Stripe from 'stripe';
 import { AppContext } from '../../contexts/appContext';
 import useSWRHelper from '../../hooks/useSWRHelper';
 import { SubscriptionData } from '../../pages/api/subscription';
@@ -39,28 +41,35 @@ function ProFeature({ description, icon, title }: ProFeatureProps) {
 }
 
 interface SettingsProProps {
-  stripeCustomerPortalLink: string;
-  stripePaymentLink: string;
-  stripePaymentYearlyLink: string;
+  stripeCustomerPortalLink?: string;
+  stripePaymentLink?: string;
+  stripePaymentYearlyLink?: string;
 }
 
 export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLink, stripePaymentYearlyLink }: SettingsProProps) {
-  const { mutateUser, user, userLoading } = useContext(AppContext);
+  const { game, mutateUser, user } = useContext(AppContext);
   const [plan, setPlan] = useState('year');
   const [shouldContinouslyFetch, setShouldContinouslyFetch] = useState(false);
-  const { data: subscriptions, isLoading: subscriptionsLoading, mutate: refreshGifts } = useSWRHelper<SubscriptionData[]>('/api/subscription');
+  const { data, isLoading: subscriptionsLoading, mutate: refreshSubscriptions } = useSWRHelper<{subscriptions: SubscriptionData[], paymentMethods: Stripe.PaymentMethod[]}>('/api/subscription');
   const { data: giftsReceived, isLoading: giftsLoading } = useSWRHelper<SubscriptionGiftData[]>('/api/subscription/gift');
+  const { subscriptions, paymentMethods } = data || {};
 
   useEffect(() => {
     const confirmQueryString = window.location.search.includes('confirm=1');
 
     setShouldContinouslyFetch(confirmQueryString);
   }, []);
+  const timesToFetch = useRef(5);
 
   useEffect(() => {
     if (shouldContinouslyFetch) {
       const interval = setInterval(() => {
         mutateUser();
+        timesToFetch.current--;
+
+        if (timesToFetch.current <= 0) {
+          setShouldContinouslyFetch(false);
+        }
       }, 1000);
 
       return () => clearInterval(interval);
@@ -70,9 +79,10 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
   const [giftInterval, setGiftInterval] = useState<string>('month');
   const [giftQuantity, setGiftQuantity] = useState<number>(1);
   const [giftUserSelected, setGiftUserSelected] = useState<User>();
-  const [giftUserPaymentMethod, setGiftUserPaymentMethod] = useState<string>();
-  const paymentMethods = subscriptions?.map((subscriptionData) => subscriptionData.paymentMethod);
+
+  //const paymentMethods = subscriptions?.map((subscriptionData) => subscriptionData.paymentMethod);
   const seenIds = new Set();
+
   const paymentMethodOptions = paymentMethods?.map((paymentMethod) => {
     if (seenIds.has(paymentMethod.id)) {
       return null;
@@ -90,8 +100,9 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
       className='border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent p-1 w-fit'
       id='paymentMethod'
       name='paymentMethod'
+      defaultValue={paymentMethodOptions?.[0]?.props.value}
       onChange={(e) => {
-        setGiftUserPaymentMethod(e.target.value);
+        setPaymentMethod(e.target.value);
       }}
       style={{
         borderColor: 'var(--bg-color-4)',
@@ -101,24 +112,86 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
       {paymentMethodOptions}
     </select>
   );
-
+  const [paymentMethod, setPaymentMethod] = useState<string>(paymentMethodOptions?.[0]?.props.value);
   const hasAPaymentMethod = paymentMethods && paymentMethods?.length > 0;
+
+  useEffect(() => {
+    if (paymentMethods && paymentMethods.length > 0 ) {
+      setPaymentMethod(paymentMethods[0].id);
+    }
+  }, [paymentMethods]);
+  const subscribeButtonComponent = hasAPaymentMethod ?
+
+    <div className='flex flex-col gap-2'>
+      { paymentMethodsDropdown }
+      <button
+        className='bg-green-300 hover:bg-green-500 text-black font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline cursor-pointer w-full text-center'
+        onClick={() => {
+          if (!confirm(`Are you sure you want to subscribe to ${game.displayName} Pro? You will be billed ${plan}ly.`)) {
+            return;
+          }
+
+          toast.dismiss();
+          toast.loading('Upgrading to Pro...');
+
+          const type = plan === 'month' ? ProSubscriptionType.Monthly : ProSubscriptionType.Yearly;
+
+          fetch('/api/subscription/', {
+            method: 'POST',
+            body: JSON.stringify({
+              type: type,
+              paymentMethodId: paymentMethod,
+            }),
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }).then(async (res) => {
+            if (res.status === 200) {
+              toast.success('Successfully upgraded to Pro!');
+              refreshSubscriptions();
+              mutateUser();
+              setShouldContinouslyFetch(true);
+            } else {
+              console.error(res);
+              const resp = await res.json();
+
+              toast.error(resp.error, { duration: 3000 });
+            }
+          });
+        }
+        }
+      >
+              Add { game.displayName } Pro
+      </button>
+
+    </div>
+
+    : (
+      <Link
+        className='bg-green-300 hover:bg-green-500 text-black font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline cursor-pointer w-full text-center'
+        href={`${plan === 'year' ? stripePaymentYearlyLink : stripePaymentLink}?client_reference_id=${user?._id}&prefilled_email=${user?.email}`}
+        rel='noreferrer'
+        target='_blank'
+      >
+              Subscribe
+      </Link>
+    );
 
   return (
     <div className='flex flex-col justify-center items-center gap-6'>
       <div className='flex gap-4'>
         <Image alt='pro' src='/pro.svg' width='24' height='24' />
-        <h2 className='font-bold text-2xl'>Pathology Pro</h2>
+        <h2 className='font-bold text-2xl'>{game.displayName} Pro</h2>
       </div>
       {isPro(user) &&
         <div className='flex flex-col gap-4 text-center justify-center items-center'>
           <div>
-            You have Pathology Pro! Thank you for your support!
+            You have {game.displayName} Pro! Thank you for your support!
           </div>
           {hasAPaymentMethod && (
             <div className='flex flex-col sm:flex-row gap-4 items-center'>
               <div className='flex flex-col items-center gap-2'>
-                <MultiSelectUser placeholder='Gift Pro to a user' onSelect={setGiftUserSelected} />
+                <MultiSelectUser placeholder={`Gift ${game.displayName} Pro to user`} onSelect={setGiftUserSelected} />
                 {paymentMethodsDropdown}
                 <div className='flex gap-2 items-center'>
                   <select
@@ -154,9 +227,9 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
               </div>
               <button
                 className='bg-green-300 hover:bg-green-500 text-black font-bold py-2 px-4 rounded-2xl focus:outline-none focus:shadow-outline cursor-pointer w-fit h-fit text-center disabled:opacity-50 disabled:cursor-not-allowed'
-                disabled={!giftUserSelected || !giftUserPaymentMethod}
+                disabled={!giftUserSelected || !paymentMethod}
                 onClick={() => {
-                  if (!confirm(`Are you sure you want to gift Pro to ${giftUserSelected?.name}? You will be billed ${giftInterval}ly for ${giftQuantity} ${giftInterval}${giftQuantity === 1 ? '' : 's'}.`)) {
+                  if (!confirm(`Are you sure you want to gift ${game.displayName} Pro to ${giftUserSelected?.name}? You will be billed ${giftInterval}ly for ${giftQuantity} ${giftInterval}${giftQuantity === 1 ? '' : 's'}.`)) {
                     return;
                   }
 
@@ -170,7 +243,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                     body: JSON.stringify({
                       type: type,
                       quantity: giftQuantity,
-                      paymentMethodId: giftUserPaymentMethod,
+                      paymentMethodId: paymentMethod,
                       giftTo: giftUserSelected?._id,
                     }),
                     headers: {
@@ -179,7 +252,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                   }).then(async (res) => {
                     if (res.status === 200) {
                       toast.success('Successfully gifted Pro!');
-                      refreshGifts();
+                      refreshSubscriptions();
                     } else {
                       console.error(res);
                       const resp = await res.json();
@@ -257,7 +330,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
         </div>
       )}
       {subscriptionsLoading ? <LoadingSpinner /> : null}
-      {!userLoading && !isPro(user) &&
+      {user !== undefined && !isPro(user) &&
         <div className='flex flex-col items-center justify-center gap-4'>
           <div className='flex flex-col gap-3 w-fit items-center mt-3'>
             <RadioGroup value={plan} onChange={setPlan} className='flex flex-wrap justify-center gap-3'>
@@ -298,14 +371,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                 )}
               </RadioGroup.Option>
             </RadioGroup>
-            <Link
-              className='bg-green-300 hover:bg-green-500 text-black font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline cursor-pointer w-full text-center'
-              href={`${plan === 'year' ? stripePaymentYearlyLink : stripePaymentLink}?client_reference_id=${user?._id}&prefilled_email=${user?.email}`}
-              rel='noreferrer'
-              target='_blank'
-            >
-              Subscribe
-            </Link>
+            { subscribeButtonComponent}
           </div>
           <p className='text-xs text-center'>
               By clicking Subscribe, you agree to our <a className='text-blue-300' href='https://docs.google.com/document/d/e/2PACX-1vR4E-RcuIpXSrRtR3T3y9begevVF_yq7idcWWx1A-I9w_VRcHhPTkW1A7DeUx2pGOcyuKifEad3Qokn/pub' rel='noreferrer' target='_blank'>
@@ -315,7 +381,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
         </div>
       }
       <div className='text-xs'>
-        For questions please contact <Link className='text-blue-300' href='mailto:help@pathology.gg'>help@pathology.gg</Link>.
+        For questions please contact <Link className='text-blue-300' href='mailto:help@thinky.gg'>help@thinky.gg</Link>.
       </div>
       <div className='flex flex-col xl:flex-row items-center gap-4 justify-center'>
         <div className='p-2'>

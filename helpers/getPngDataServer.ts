@@ -1,13 +1,14 @@
+import { GameId } from '@root/constants/GameId';
 import * as PImage from 'pureimage';
 import { PassThrough } from 'stream';
 import Dimensions from '../constants/dimensions';
 import Level from '../models/db/level';
 import generateLevelCanvas from './generateLevelCanvas';
 
-export default async function getPngDataServer(level: Level): Promise<Buffer> {
+export default async function getPngDataServer(gameId: GameId, level: Level | {data: string}): Promise<Buffer> {
   let canvas = PImage.make(Dimensions.LevelCanvasWidth, Dimensions.LevelCanvasHeight);
 
-  canvas = generateLevelCanvas(canvas, level.data) as PImage.Bitmap;
+  canvas = generateLevelCanvas(canvas, gameId, level.data) as PImage.Bitmap;
 
   const stream = new PassThrough();
   const chunks: Uint8Array[] = [];

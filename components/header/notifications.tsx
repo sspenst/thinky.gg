@@ -49,12 +49,8 @@ export default function Notifications() {
         leaveTo='transform opacity-0 scale-95'
       >
         <Menu.Items
-          className='absolute right-0 m-1 w-96 max-w-fit z-10 origin-top-right rounded-md shadow-lg border overflow-y-auto'
+          className='fixed right-0 m-1 w-96 max-w-fit z-10 origin-top-right rounded-md shadow-lg border overflow-y-auto bg-1 border-color-3 h-fit'
           style={{
-            backgroundColor: 'var(--bg-color-2)',
-            borderColor: 'var(--bg-color-4)',
-            color: 'var(--color)',
-            height: 'fit-content',
             // NB: hardcoded value accounting for header + menu margin
             maxHeight: 'calc(100% - 56px)',
             top: Dimensions.MenuHeight,

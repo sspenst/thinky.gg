@@ -1,63 +1,55 @@
 import { GameId } from '@root/constants/GameId';
-import NotificationType from '@root/constants/notificationType';
+import Role from '@root/constants/role';
 import TourType from '@root/constants/tourType';
 import mongoose from 'mongoose';
-import { EmailDigestSettingTypes } from '../../constants/emailDigest';
 import UserConfig from '../db/userConfig';
 
 const UserConfigSchema = new mongoose.Schema<UserConfig>(
   {
-    _id: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
+    calcLevelsCompletedCount: {
+      type: Number,
+      default: 0,
     },
-    disallowedEmailNotifications: {
-      type: [{ type: String, enum: NotificationType }],
-      required: true,
-      default: [],
+    calcLevelsCreatedCount: {
+      type: Number,
+      default: 0,
     },
-    disallowedPushNotifications: {
-      type: [{ type: String, enum: NotificationType }],
+    calcLevelsSolvedCount: {
+      type: Number,
+      default: 0,
+    },
+    calcRankedSolves: {
+      type: Number,
       required: true,
-      default: [],
+      default: 0,
+    },
+    calcRecordsCount: {
+      type: Number,
+      default: 0,
+    },
+    chapterUnlocked: {
+      type: Number,
+      default: 1,
     },
     gameId: {
       type: String,
       enum: GameId,
       required: true,
     },
-    emailDigest: {
-      type: String,
-      required: true,
-      enum: EmailDigestSettingTypes,
-      default: EmailDigestSettingTypes.DAILY,
-    },
-    giftSubscriptions: {
+    roles: {
       type: [String],
-      required: false,
-      select: false,
+      enum: Role,
       default: [],
-    },
-    mobileDeviceTokens: {
-      type: [String],
-      required: false,
-      select: false,
-      default: [],
-      maxlength: 100, // max 100 devices @TODO: should probably 'rotate' this list and remove oldest device tokens on push of new one
     },
     showPlayStats: {
       type: Boolean,
       default: false,
     },
-    stripeCustomerId: {
-      type: String,
-      required: false,
-      select: false,
-    },
     theme: {
       type: String,
       required: true,
     },
+    /** TODO: MOVE TO user? */
     toursCompleted: {
       type: [{ type: String, enum: TourType }],
       required: false,

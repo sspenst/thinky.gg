@@ -1,4 +1,4 @@
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { logger } from '@root/helpers/logger';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
@@ -12,7 +12,7 @@ import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { LevelModel } from '../../../../models/mongoose';
 import updateCollectionHandler from '../../../../pages/api/collection/[id]';
 import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
-import saveLevelToHandler from '../../../../pages/api/save-level-to/[id]';
+import saveToCollectionHandler from '../../../../pages/api/save-to-collection/[id]';
 
 afterAll(async() => {
   await dbDisconnect();
@@ -38,7 +38,7 @@ describe('Testing updating collection data', () => {
         _id: levels[i],
         authorNote: 'test level 1 author note',
         data: '40010\n12000\n05000\n67890\nABCD3',
-        gameId: GameId.PATHOLOGY,
+        gameId: DEFAULT_GAME_ID,
         height: 5,
         isDraft: false,
         isRanked: false,
@@ -366,7 +366,7 @@ describe('Testing updating collection data', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await saveLevelToHandler(req, res);
+        await saveToCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();

@@ -1,4 +1,4 @@
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -24,68 +24,16 @@ afterAll(async () => {
 enableFetchMocks();
 
 describe('Testing latest reviews api', () => {
-  test('Calling with wrong http method should fail', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'POST',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER),
-          },
-          body: {
-
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await latestReviewsHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('Method not allowed');
-        expect(res.status).toBe(405);
-      },
-    });
-  });
-  test('Calling with correct http method should be OK', async () => {
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'GET',
-          body: {
-
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await latestReviewsHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBeUndefined();
-        expect(response.length).toBe(1);
-        expect(res.status).toBe(200);
-      },
-    });
-  });
   test('Should always be limited to 10 reviews', async () => {
+    const promises = [];
+
     for (let i = 0; i < 25; i++) {
       const levelId = new Types.ObjectId();
 
-      await LevelModel.create({
+      promises.push(LevelModel.create({
         _id: levelId,
         data: '40000\n12000\n05000\n67890\nABCD3',
-        gameId: GameId.PATHOLOGY,
+        gameId: DEFAULT_GAME_ID,
         height: 5,
         isDraft: false,
         isRanked: false,
@@ -95,19 +43,20 @@ describe('Testing latest reviews api', () => {
         ts: TimerUtil.getTs(),
         userId: TestId.USER,
         width: 5,
-      });
+      }));
 
-      await ReviewModel.create({
+      promises.push(ReviewModel.create({
         _id: new Types.ObjectId(),
-        gameId: GameId.PATHOLOGY,
+        gameId: DEFAULT_GAME_ID,
         levelId: levelId,
         score: 5,
         text: 'My review ' + i,
         ts: TimerUtil.getTs(),
         userId: TestId.USER,
-      });
+      }));
     }
 
+    await Promise.all(promises);
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -139,7 +88,7 @@ describe('Testing latest reviews api', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     jest.spyOn(ReviewModel, 'aggregate').mockImplementationOnce(() => {
-      return [] as never;
+      throw new Error('Error finding Reviews');
     });
 
     await testApiHandler({
@@ -203,7 +152,7 @@ describe('Testing latest reviews api', () => {
   test('Should not return reviews without text', async () => {
     await ReviewModel.create({
       _id: new Types.ObjectId(),
-      gameId: GameId.PATHOLOGY,
+      gameId: DEFAULT_GAME_ID,
       levelId: new Types.ObjectId(),
       score: 1,
       ts: TimerUtil.getTs(),

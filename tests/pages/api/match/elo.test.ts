@@ -1,4 +1,4 @@
-import { calculateEloChange } from '../../../../pages/api/match';
+import { calculateEloChange } from '@root/pages/api/match';
 
 describe('elo testing', () => {
   test('elo same rating testing regular', async () => {

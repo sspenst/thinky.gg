@@ -170,10 +170,16 @@ export function initGameState(levelData: string) {
       const tileType = data[y][x] as TileType;
 
       if (tileType === TileType.Wall ||
-        tileType === TileType.End ||
+        tileType === TileType.Exit ||
         tileType === TileType.Hole) {
         board[y][x].tileType = tileType;
-      } else if (tileType === TileType.Start) {
+      } else if (TileTypeHelper.isOnExit(tileType)) {
+        board[y][x].tileType = TileType.Exit;
+        board[y][x].block = {
+          id: blockId++,
+          tileType: TileTypeHelper.getExitSibilingTileType(tileType),
+        } as BlockState;
+      } else if (tileType === TileType.Player) {
         pos = new Position(x, y);
       } else if (TileTypeHelper.canMove(tileType)) {
         board[y][x].block = {
@@ -241,13 +247,8 @@ function checkForFreeUndo(gameState: GameState, direction: Direction): boolean {
  * update a gameState in-place with a new move
  * @returns if the move was valid
  */
-export function makeMove(gameState: GameState, direction: Direction, allowFreeUndo = false): boolean {
+export function makeMove(gameState: GameState, direction: Direction, allowFreeUndo = true): boolean {
   const posTileState = gameState.board[gameState.pos.y][gameState.pos.x];
-
-  // lock movement once you reach the finish
-  if (posTileState.tileType === TileType.End) {
-    return false;
-  }
 
   // before making a move, check if undo is a better choice
   if (allowFreeUndo && checkForFreeUndo(gameState, direction)) {

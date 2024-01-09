@@ -1,11 +1,12 @@
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import { Games } from '@root/constants/Games';
 import { GetServerSidePropsContext } from 'next';
 import { Logger } from 'winston';
 import TestId from '../../../constants/testId';
 import { logger } from '../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
-import { getServerSideProps } from '../../../pages/campaign/[slug]';
+import { getServerSideProps } from '../../../pages/[subdomain]/campaign/[slug]';
 
 beforeAll(async () => {
   await dbConnect();
@@ -43,11 +44,11 @@ describe('pages/campaign/[slug] page', () => {
     expect(ret.redirect?.destination).toBe('/');
     expect(ret.redirect?.permanent).toBe(false);
   });
-  test('getServerSideProps not logged in and with pathology slug', async () => {
+  test('getServerSideProps not logged in and with game id slug', async () => {
     // Created from initialize db file
     const context = {
       params: {
-        slug: 'pathology',
+        slug: Games[DEFAULT_GAME_ID].id,
       },
     };
     const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
@@ -74,7 +75,7 @@ describe('pages/campaign/[slug] page', () => {
     expect(ret.props?.campaign._id).toBe(TestId.CAMPAIGN_OFFICIAL);
     expect(ret.props?.enrichedCollections).toBeDefined();
     expect(ret.props?.enrichedCollections[0]._id).toBe(TestId.COLLECTION);
-    expect(ret.props?.enrichedCollections[0].gameId).toBe(GameId.PATHOLOGY);
+    expect(ret.props?.enrichedCollections[0].gameId).toBe(DEFAULT_GAME_ID);
   });
   test('getServerSideProps logged in and with valid params', async () => {
     // Created from initialize db file

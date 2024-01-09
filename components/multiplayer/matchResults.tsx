@@ -1,3 +1,4 @@
+import Dimensions from '@root/constants/dimensions';
 import { multiplayerMatchTypeToText } from '@root/helpers/multiplayerHelperFunctions';
 import { MatchLogDataGameRecap, MultiplayerMatchState } from '@root/models/constants/multiplayer';
 import MultiplayerMatch from '@root/models/db/multiplayerMatch';
@@ -52,7 +53,7 @@ export default function MatchResults({ match, recap, showViewLink }: MatchResult
       <div className='flex gap-2 items-center max-w-full'>
         {showViewLink &&
           <Link
-            className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2'
+            className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-1 md:py-2 md:px-4 rounded mr-1 md:mr-2'
             href={`/match/${match.matchId}`}
           >
             View
@@ -76,15 +77,15 @@ export default function MatchResults({ match, recap, showViewLink }: MatchResult
         <div className='flex flex-col gap-1 truncate pr-0.5'>
           {sortedPlayers.map((player) => (
             <div
-              className='flex gap-2 items-center'
+              className='flex gap-0 items-left'
               key={player._id.toString()}
             >
               {player._id.toString() in match.scoreTable &&
-                <span className='font-bold text-2xl w-10 text-center' style={{ minWidth: 40 }}>
+                <span className='font-bold text-2xl min-w-10 text-center'>
                   {match.scoreTable[player._id.toString()]}
                 </span>
               }
-              <FormattedUser id='match-result' user={player} />
+              <FormattedUser size={Dimensions.AvatarSizeSmall} id='match-result' user={player} />
               <MultiplayerRating hideType profile={player.multiplayerProfile} type={match.type} />
               {recap?.winner?.userId.toString() === player._id.toString() &&
                 <span className='text-xs italic' style={{

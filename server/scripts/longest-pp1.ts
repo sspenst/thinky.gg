@@ -20,7 +20,7 @@ async function init() {
   for (let i = 2; i <= 30; i++) {
     const level = await LevelModel.findOne({ isDraft: false, data: { $regex: new RegExp(`^(${mustNotContainRegex}[0-9A-J\n]+)$`, 'g') }, width: { $lte: i }, height: { $lte: i } }, 'slug leastMoves', { sort: { leastMoves: -1 } });
 
-    console.log(`${i}x${i} - ${level.leastMoves}: https://pathology.gg/level/${level.slug}`);
+    console.log(`${i}x${i} - ${level.leastMoves}: https://thinky.gg/level/${level.slug}`);
   }
 
   return;

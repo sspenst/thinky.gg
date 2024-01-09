@@ -39,7 +39,6 @@ const ReviewSchema = new mongoose.Schema<Review>({
   },
 });
 
-ReviewSchema.index({ levelId: 1 });
 ReviewSchema.index({ levelId: 1, userId: 1, gameId: 1 }, { unique: true });
 ReviewSchema.index({ ts: -1 });
 ReviewSchema.index({ userId: 1 });

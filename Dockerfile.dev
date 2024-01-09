@@ -1,10 +1,12 @@
-FROM node:20
+FROM  node:20
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
 WORKDIR /pathology_app
 
 COPY --chown=node:node package*.json tsconfig-socket.json ./
+
+
 RUN npm install
 
 # ts-node / tspath is needed for other scripts right now. module-alias is used for socket server production
@@ -17,7 +19,6 @@ COPY --chown=node:node . .
 # RUN tsc -p tsconfig-socket.json
 
 # for dev you don't need to run tsc
-
 
 # Uncomment the following line if you want to run the app as a non-root user
 # USER node

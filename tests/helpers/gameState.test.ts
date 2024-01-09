@@ -80,7 +80,7 @@ describe('helpers/gameStateHelpers.ts', () => {
     expect(gameState.moves.length).toBe(10);
 
     // try to move off the exit
-    expect(makeMove(gameState, Direction.RIGHT)).toBeFalsy();
+    expect(makeMove(gameState, Direction.RIGHT)).toBeTruthy(); // No reason to not allow this - makes it easier for other game types to not restrict within the gamestate
 
     const matchGameState: MatchGameState = { ...gameState, leastMoves: 10 };
 

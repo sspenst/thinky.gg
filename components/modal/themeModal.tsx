@@ -12,7 +12,7 @@ interface ThemeModalProps {
 }
 
 export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
-  const { mutateUser, userConfig } = useContext(AppContext);
+  const { game, mutateUser, userConfig } = useContext(AppContext);
   const { setTheme, theme } = useTheme();
 
   // override theme with userConfig theme
@@ -67,7 +67,7 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
       <div className='flex flex-col gap-1'>
         {Object.keys(Theme).map(themeTextStr => {
           const themeText = themeTextStr as keyof typeof Theme;
-          const icon = getIconFromTheme(Theme[themeText], TileType.Start);
+          const icon = getIconFromTheme(game, Theme[themeText], TileType.Player);
           const id = `theme-${Theme[themeText]}`;
 
           return (

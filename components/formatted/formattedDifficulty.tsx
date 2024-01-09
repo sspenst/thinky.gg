@@ -1,3 +1,6 @@
+import { GameType } from '@root/constants/Games';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
+import { EnrichedLevel } from '@root/models/db/level';
 import React from 'react';
 import StyledTooltip from '../page/styledTooltip';
 
@@ -111,9 +114,9 @@ export function getDifficultyRangeFromName(name: string) {
   return [difficultyList[difficultyList.length - 1].value, Number.MAX_SAFE_INTEGER];
 }
 
-export function getDifficultyFromValue(value: number) {
+export function getDifficultyFromEstimate(estimate: number) {
   for (let i = difficultyList.length - 1; i >= 1; i--) {
-    if (value >= difficultyList[i].value) {
+    if (estimate >= difficultyList[i].value) {
       return difficultyList[i];
     }
   }
@@ -136,29 +139,60 @@ export function getDifficultyColor(value: number, light = 50) {
 }
 
 interface FormattedDifficultyProps {
-  difficultyEstimate: number;
+  difficulty?: Difficulty;
   id: string;
-  uniqueUsers?: number;
+  level?: EnrichedLevel;
 }
 
-export default function FormattedDifficulty({ difficultyEstimate, id, uniqueUsers }: FormattedDifficultyProps) {
+export default function FormattedDifficulty({ difficulty, id, level }: FormattedDifficultyProps) {
+  let difficultyEstimate = difficulty?.value;
+
+  let uniqueUsers: number | undefined = undefined;
+
+  if (level) {
+    const game = getGameFromId(level.gameId);
+
+    if (game.type === GameType.COMPLETE_AND_SHORTEST) {
+      difficultyEstimate = level.calc_difficulty_completion_estimate;
+
+      if (level.calc_playattempts_unique_users_count_excluding_author !== undefined) {
+        uniqueUsers = level.calc_playattempts_unique_users_count_excluding_author;
+      } else {
+        uniqueUsers = level.calc_playattempts_unique_users?.filter(user => user._id.toString() !== level.userId.toString() && user._id.toString() !== level.userId?._id?.toString()).length;
+      }
+    } else {
+      difficultyEstimate = level.calc_difficulty_estimate;
+
+      if (level.calc_playattempts_unique_users_count !== undefined) {
+        uniqueUsers = level.calc_playattempts_unique_users_count;
+      } else {
+        uniqueUsers = level.calc_playattempts_unique_users?.length;
+      }
+    }
+  }
+
+  // must provide one of difficulty or level props for FormattedDifficulty to return a value
+  if (difficultyEstimate === undefined) {
+    return null;
+  }
+
   const color = getDifficultyColor(difficultyEstimate);
-  const difficulty = getDifficultyFromValue(difficultyEstimate);
+  const difficultyFromEstimate = getDifficultyFromEstimate(difficultyEstimate);
   const pendingRemainingUsers = 10 - (uniqueUsers ?? 0);
-  const showPendingUsers = difficulty.name === 'Pending' && uniqueUsers !== undefined;
+  const showPendingUsers = difficultyFromEstimate.name === 'Pending' && uniqueUsers !== undefined;
   const tooltip = showPendingUsers ?
     `Waiting for ${pendingRemainingUsers} more player${pendingRemainingUsers === 1 ? '' : 's'}` :
-    difficulty.description;
+    difficultyFromEstimate.description;
 
   return (
     <div className='flex justify-center difficultyText truncate'>
       <div className='truncate' data-tooltip-id={`difficulty-${id}`} data-tooltip-content={tooltip}>
-        <span className='pr-1'>{difficulty.emoji}</span>
+        <span className='pr-1'>{difficultyFromEstimate.emoji}</span>
         <span className='italic pr-1' style={{
           color: color,
           textShadow: '1px 1px black',
         }}>
-          {difficulty.name}
+          {difficultyFromEstimate.name}
           {showPendingUsers && ` (${pendingRemainingUsers})`}
         </span>
       </div>

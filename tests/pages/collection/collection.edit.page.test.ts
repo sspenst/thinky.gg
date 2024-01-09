@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext } from 'next';
 import { Logger } from 'winston';
@@ -5,7 +6,7 @@ import TestId from '../../../constants/testId';
 import { logger } from '../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
-import { getServerSideProps } from '../../../pages/edit/collection/[id]';
+import { getServerSideProps } from '../../../pages/[subdomain]/edit/collection/[id]';
 
 beforeAll(async () => {
   await dbConnect();
@@ -25,7 +26,7 @@ describe('pages/collection/edit/[id] page', () => {
       query: {}
     };
 
-    const ret = await getServerSideProps(context as GetServerSidePropsContext);
+    const ret = await getServerSideProps(context as GetServerSidePropsContext) as any;
 
     expect(ret).toBeDefined();
     expect(ret.props).toBeUndefined();
@@ -45,7 +46,7 @@ describe('pages/collection/edit/[id] page', () => {
       },
     };
 
-    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
+    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext) as any;
 
     expect(ret).toBeDefined();
     expect(ret.props).toBeUndefined();
@@ -64,7 +65,7 @@ describe('pages/collection/edit/[id] page', () => {
       },
     };
 
-    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
+    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext) as any;
 
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();

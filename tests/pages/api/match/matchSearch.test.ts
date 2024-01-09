@@ -1,4 +1,4 @@
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import TestId from '@root/constants/testId';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { getTokenCookieValue } from '@root/lib/getTokenCookie';
@@ -17,7 +17,7 @@ beforeAll(async () => {
   await dbConnect();
   await MultiplayerMatchModel.create({
     createdBy: TestId.USER,
-    gameId: GameId.PATHOLOGY,
+    gameId: DEFAULT_GAME_ID,
     matchId: 'abc',
     players: [new Types.ObjectId(TestId.USER), new Types.ObjectId(TestId.USER_B)],
     private: false,
@@ -28,7 +28,7 @@ beforeAll(async () => {
   });
   await MultiplayerMatchModel.create({
     createdBy: TestId.USER_B,
-    gameId: GameId.PATHOLOGY,
+    gameId: DEFAULT_GAME_ID,
     matchId: 'def',
     players: [TestId.USER_B, TestId.USER_C],
     private: false,

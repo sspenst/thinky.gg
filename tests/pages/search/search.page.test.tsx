@@ -5,7 +5,7 @@ import { logger } from '../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
 import { LevelModel } from '../../../models/mongoose';
-import { getServerSideProps } from '../../../pages/search/index';
+import { getServerSideProps } from '../../../pages/[subdomain]/search/index';
 
 beforeAll(async () => {
   await dbConnect();

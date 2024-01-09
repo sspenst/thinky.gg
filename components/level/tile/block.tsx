@@ -1,34 +1,45 @@
+import { Game, GameType } from '@root/constants/Games';
 import TileType from '@root/constants/tileType';
 import { GridContext } from '@root/contexts/gridContext';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import classNames from 'classnames';
-import { useTheme } from 'next-themes';
 import React, { useContext } from 'react';
 import Theme from '../../../constants/theme';
 import styles from './Block.module.css';
 
 interface BlockProps {
+  game: Game;
+  theme: Theme;
   inHole: boolean;
+  onTopOf?: TileType;
   tileType: TileType;
 }
 
-export default function Block({ inHole, tileType }: BlockProps) {
+export default function Block({ game, inHole, onTopOf, theme, tileType }: BlockProps) {
   const { borderWidth, innerTileSize } = useContext(GridContext);
-  const { theme } = useTheme();
+
   const classic = theme === Theme.Classic;
-  const fillCenter = classic && tileType === TileType.Block;
   const innerBorderWidth = Math.round(innerTileSize / 4.5);
+
+  function getBackgroundColor() {
+    const fillCenter = classic && tileType === TileType.Block;
+
+    return fillCenter ? 'var(--level-block-border)' : 'var(--level-block)';
+  }
 
   return (
     <div
       className={classNames(
         'select-none relative z-20',
+        'tile-type-' + tileType,
+        'tile-' + game.id,
         inHole ? styles['in-hole'] : undefined,
+        { 'on-exit': onTopOf === TileType.Exit },
       )}
       style={{
-        backgroundColor: fillCenter ? 'var(--level-block-border)' : 'var(--level-block)',
+        backgroundColor: getBackgroundColor(),
         borderBottomWidth: TileTypeHelper.canMoveUp(tileType) ? innerBorderWidth : 0,
-        borderColor: 'var(--level-block-border)',
+        borderColor: onTopOf === TileType.Exit && game.type === GameType.COMPLETE_AND_SHORTEST ? 'var(--level-end)' : 'var(--level-block-border)',
         borderLeftWidth: TileTypeHelper.canMoveRight(tileType) ? innerBorderWidth : 0,
         borderRightWidth: TileTypeHelper.canMoveLeft(tileType) ? innerBorderWidth : 0,
         borderTopWidth: TileTypeHelper.canMoveDown(tileType) ? innerBorderWidth : 0,

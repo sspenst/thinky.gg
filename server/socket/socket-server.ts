@@ -1,5 +1,7 @@
 // ts-node --transpile-only --files server/socket/socket-server.ts
 import { isValidMatchGameState } from '@root/helpers/gameStateHelpers';
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import { getMatch } from '@root/helpers/match/getMatch';
 import { createAdapter } from '@socket.io/mongo-adapter';
 import { Emitter } from '@socket.io/mongo-emitter';
 import dotenv from 'dotenv';
@@ -11,7 +13,6 @@ import { getUserFromToken } from '../../lib/withAuth';
 import { MultiplayerMatchState } from '../../models/constants/multiplayer';
 import { MultiplayerMatchModel } from '../../models/mongoose';
 import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
-import { getMatch } from '../../pages/api/match/[matchId]';
 import { broadcastConnectedPlayers, broadcastCountOfUsersInRoom, broadcastMatches, broadcastMatchGameState, broadcastNotifications, broadcastPrivateAndInvitedMatches, scheduleBroadcastMatch } from './socketFunctions';
 
 'use strict';
@@ -117,15 +118,14 @@ export default async function startSocketIOServer(server: Server) {
 
   logger.info('Server Booted');
 
-  // TODO - need to schedule existing matches...
-
   // on connect we need to go through all the active levels and broadcast them... also scheduling messages for start and end
 
+  // TODO: May want to prevent a user to be in multiple matches across multiple games at once
   const activeMatches = await MultiplayerMatchModel.find({ state: MultiplayerMatchState.ACTIVE });
 
   activeMatches.map(async (match) => {
     logger.info('Rescheduling broadcasts for active match ' + match.matchId);
-    await scheduleBroadcastMatch(MongoEmitter, match.matchId.toString());
+    await scheduleBroadcastMatch(match.gameId, MongoEmitter, match.matchId.toString());
   });
 
   GlobalSocketIO.use(authenticateSocket);
@@ -133,6 +133,7 @@ export default async function startSocketIOServer(server: Server) {
   GlobalSocketIO.on('connection', async socket => {
     // get cookies from socket
     const reqUser = socket.data.user;
+    const gameId = getGameIdFromReq(socket.request);
 
     socket.on('matchGameState', async (data) => {
       const userId = socket.data.userId as Types.ObjectId | undefined;
@@ -140,7 +141,7 @@ export default async function startSocketIOServer(server: Server) {
 
       if (userId && isValidMatchGameState(matchGameState)) {
         await broadcastMatchGameState(mongoEmitter, userId, matchId, matchGameState);
-        await broadcastCountOfUsersInRoom(adapted, matchId); // TODO: probably worth finding a better place to put this
+        await broadcastCountOfUsersInRoom(gameId, adapted, matchId); // TODO: probably worth finding a better place to put this
       }
     });
     socket.on('disconnect', async () => {
@@ -151,8 +152,8 @@ export default async function startSocketIOServer(server: Server) {
       }
 
       await Promise.all([
-        broadcastConnectedPlayers(adapted),
-        broadcastMatches(mongoEmitter),
+        broadcastConnectedPlayers(gameId, adapted),
+        broadcastMatches(gameId, mongoEmitter),
       ]);
     });
 
@@ -162,41 +163,40 @@ export default async function startSocketIOServer(server: Server) {
       userId: reqUser._id,
     };
     socket.join(reqUser._id.toString());
-    broadcastNotifications(mongoEmitter, reqUser._id);
+    broadcastNotifications(gameId, mongoEmitter, reqUser._id);
     // note socket on the same computer will have the same id
     const matchId = socket.handshake.query.matchId as string;
 
     if (matchId) {
       socket.join(matchId);
-      const match = await getMatch(matchId as string);
+      const match = await getMatch(gameId, matchId as string);
 
       if (match) {
         const matchClone = JSON.parse(JSON.stringify(match));
 
         enrichMultiplayerMatch(matchClone, reqUser._id.toString());
         socket?.emit('match', matchClone);
-        broadcastCountOfUsersInRoom(adapted, matchId);
+        broadcastCountOfUsersInRoom(gameId, adapted, matchId);
       } else {
         // TODO: emit only to matchId? or can we just show a 404 here?
         socket?.emit('matchNotFound');
       }
     } else {
-      socket.join('LOBBY');
+      socket.join('LOBBY-' + gameId);
       await Promise.all([
-        broadcastMatches(mongoEmitter),
-        broadcastPrivateAndInvitedMatches(mongoEmitter, reqUser._id),
+        broadcastMatches(gameId, mongoEmitter),
+        broadcastPrivateAndInvitedMatches(gameId, mongoEmitter, reqUser._id),
       ]);
     }
 
-    await broadcastConnectedPlayers(adapted);
+    await broadcastConnectedPlayers(gameId, adapted);
   });
 }
 
 process.env.NODE_ENV !== 'test' && startSocketIOServer(new Server(3001, {
   path: '/api/socket',
   cors: {
-    // allow pathology.gg and localhost:3000
-    origin: ['http://localhost:3000', 'https://pathology.gg'],
+    origin: ['http://localhost:3000', 'https://pathology.gg', 'https://thinky.gg'],
     methods: ['GET', 'POST'],
     credentials: true,
   },

@@ -1,22 +1,23 @@
+import { GameId } from '@root/constants/GameId';
 import { ProfileQueryType, UserExtendedData } from '@root/constants/profileQueryType';
-import apiWrapper, { ValidCommaSeparated, ValidEnum } from '@root/helpers/apiWrapper';
+import apiWrapper, { NextApiRequestWrapper, ValidCommaSeparated, ValidEnum } from '@root/helpers/apiWrapper';
 import { getLevelsByDifficultyTable } from '@root/helpers/getLevelsByDifficultyTable';
 import { getSolvesByDifficultyTable } from '@root/helpers/getSolvesByDifficultyTable';
 import { Types } from 'mongoose';
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextApiResponse } from 'next';
 import { getUserById } from '../../user-by-id/[id]';
 
-export async function getProfileQuery(userId: string, types: ProfileQueryType[]) {
+export async function getProfileQuery(gameId: GameId, userId: string, types: ProfileQueryType[]) {
   const [
     levelsByDifficulty,
     levelsSolvedByDifficulty,
     rankedSolvesByDifficulty,
     user,
   ] = await Promise.all([
-    types.includes(ProfileQueryType.LevelsByDifficulty) ? getLevelsByDifficultyTable({ isRanked: true }) : null,
-    types.includes(ProfileQueryType.LevelsSolvedByDifficulty) ? getSolvesByDifficultyTable(new Types.ObjectId(userId)) : null,
-    types.includes(ProfileQueryType.RankedSolvesByDifficulty) ? getSolvesByDifficultyTable(new Types.ObjectId(userId), {}, { isRanked: true }) : null,
-    types.includes(ProfileQueryType.User) ? getUserById(userId) : null,
+    types.includes(ProfileQueryType.LevelsByDifficulty) ? getLevelsByDifficultyTable(gameId, { isRanked: true }) : null,
+    types.includes(ProfileQueryType.LevelsSolvedByDifficulty) ? getSolvesByDifficultyTable(gameId, new Types.ObjectId(userId)) : null,
+    types.includes(ProfileQueryType.RankedSolvesByDifficulty) ? getSolvesByDifficultyTable(gameId, new Types.ObjectId(userId), {}, { isRanked: true }) : null,
+    types.includes(ProfileQueryType.User) ? getUserById(userId, gameId) : null,
   ]);
 
   return {
@@ -33,10 +34,10 @@ export default apiWrapper({
       type: ValidCommaSeparated(true, ValidEnum(Object.values(ProfileQueryType))),
     }
   }
-}, async (req: NextApiRequest, res: NextApiResponse) => {
+}, async (req: NextApiRequestWrapper, res: NextApiResponse) => {
   const { id: userId, type } = req.query as { id: string, type: string };
   const types = type.split(',') as ProfileQueryType[];
-  const json = await getProfileQuery(userId, types);
+  const json = await getProfileQuery(req.gameId, userId, types);
 
   return res.status(200).json(json);
 });
