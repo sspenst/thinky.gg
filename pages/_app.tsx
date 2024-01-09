@@ -200,6 +200,9 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
           socketConn.off('connectedPlayers');
           socketConn.off('matches');
           socketConn.off('privateAndInvitedMatches');
+          socketConn.off('notifications');
+          socketConn.off('reloadPage');
+          socketConn.off('killSocket');
           socketConn.disconnect();
         }
 
