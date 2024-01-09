@@ -1,3 +1,5 @@
+import { GameId } from '@root/constants/GameId';
+import { LEVEL_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { PipelineStage, Types } from 'mongoose';
 import cleanUser from '../lib/cleanUser';
 import Campaign from '../models/db/campaign';
@@ -5,9 +7,9 @@ import { EnrichedCollection } from '../models/db/collection';
 import Level, { EnrichedLevel } from '../models/db/level';
 import User from '../models/db/user';
 import { CampaignModel, CollectionModel, LevelModel, UserModel } from '../models/mongoose';
-import { LEVEL_DEFAULT_PROJECTION } from '../models/schemas/levelSchema';
 import { USER_DEFAULT_PROJECTION } from '../models/schemas/userSchema';
 import { getEnrichLevelsPipelineSteps } from './enrich';
+import { getGameFromId } from './getGameIdFromReq';
 import { logger } from './logger';
 
 export interface CampaignProps {
@@ -17,11 +19,24 @@ export interface CampaignProps {
   totalLevels: number;
 }
 
-export default async function getCampaignProps(reqUser: User, slug: string) {
+export default async function getCampaignProps(gameId: GameId, reqUser: User, slug: string) {
+  const game = getGameFromId(gameId);
+
+  if (game.disableCampaign) {
+    return {
+      props: undefined,
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+
   const campaignAgg = await CampaignModel.aggregate([
     {
       $match: {
         slug: slug,
+        gameId: gameId,
       },
     },
     {

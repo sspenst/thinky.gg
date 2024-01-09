@@ -1,3 +1,6 @@
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import User from '@root/models/db/user';
+import UserConfig from '@root/models/db/userConfig';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -119,19 +122,23 @@ async function runStripeWebhookTest({
   });
 }
 
-async function expectUserStatus(userId: string, role: Role | null, stripeCustomerId: string | null) {
+async function expectUserStatus(userId: string, role: Role | null, stripeCustomerId: string | null | undefined, stripeGiftCustomerId?: string | null | undefined) {
   const [user, userConfig] = await Promise.all([
-    UserModel.findById(userId),
-    UserConfigModel.findOne({ userId }, { stripeCustomerId: 1, gameId: 1 }),
+    UserModel.findOne<User>({ _id: userId }, { stripeCustomerId: 1, stripeGiftSubscriptions: 1 }),
+    UserConfigModel.findOne<UserConfig>({ userId: userId, gameId: DEFAULT_GAME_ID }, { roles: 1, gameId: 1 }),
   ]);
 
   if (role) {
-    expect(user.roles).toContain(role);
+    expect(userConfig?.roles).toContain(role);
   } else {
-    expect(user.roles).not.toContain(Role.PRO);
+    expect(userConfig?.roles).not.toContain(Role.PRO);
   }
 
-  expect(userConfig.stripeCustomerId).toBe(stripeCustomerId);
+  expect(user?.stripeCustomerId).toBe(stripeCustomerId);
+
+  if (stripeGiftCustomerId) {
+    expect(user?.stripeGiftSubscriptions).toContain(stripeGiftCustomerId);
+  }
 }
 
 describe('pages/api/stripe-webhook/index.ts', () => {
@@ -202,6 +209,10 @@ describe('pages/api/stripe-webhook/index.ts', () => {
   test('some valid user subscribes', async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(stripeReal.subscriptions, 'search').mockResolvedValue({ data: [], } as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(stripeReal.checkout.sessions, 'listLineItems').mockResolvedValue({ data: [{ price: { product: 'test' } }], } as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(stripeReal.products, 'retrieve').mockResolvedValue({ name: 'Pathology Yearly' } as any);
     await runStripeWebhookTest({
       eventType: 'checkout.session.completed',
       payloadData: {
@@ -230,40 +241,69 @@ describe('pages/api/stripe-webhook/index.ts', () => {
   test('some valid but unknown user unsubscribes', async () => {
     const fakeCustomerId = 'fake_object_id_123';
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(stripeReal.products, 'retrieve').mockResolvedValue({ name: 'Pathology Yearly' } as any);
     await runStripeWebhookTest({
       eventType: 'customer.subscription.deleted',
       payloadData: {
         id: 'cs_test_123',
         customer: fakeCustomerId,
+        items: {
+          data: [{
+            price: {
+              product: 'pathology product',
+            },
+          }],
+        }
       },
-      expectedError: 'UserConfig with customer id ' + fakeCustomerId + ' does not exist',
+      expectedError: 'User with customer id ' + fakeCustomerId + ' for game pathology does not exist',
       expectedStatus: 400,
     });
   });
   test('some valid unsubscribes', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(stripeReal.products, 'retrieve').mockResolvedValue({ name: 'Pathology Yearly' } as any);
     await runStripeWebhookTest({
       eventType: 'customer.subscription.deleted',
       payloadData: {
         id: 'cs_test_123',
         client_reference_id: TestId.USER,
         customer: 'customer_id_123',
+        items: {
+          data: [{
+            price: {
+              product: 'pathology product',
+            },
+          }],
+        }
       },
       expectedError: undefined,
       expectedStatus: 200,
       additionalAssertions: async () => {
-        await expectUserStatus(TestId.USER, null, null);
+        await expectUserStatus(TestId.USER, null, 'customer_id_123'); // keep their customer id around
       },
     });
   });
   test('resubscribe', async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(stripeReal.subscriptions, 'search').mockResolvedValue({ data: [], } as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(stripeReal.checkout.sessions, 'listLineItems').mockResolvedValue({ data: [{ price: { product: 'test' } }], } as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(stripeReal.products, 'retrieve').mockResolvedValue({ name: 'Pathology Yearly' } as any);
     await runStripeWebhookTest({
       eventType: 'checkout.session.completed',
       payloadData: {
         id: 'cs_test_123',
         client_reference_id: TestId.USER,
         customer: 'customer_id_123',
+        items: {
+          data: [{
+            price: {
+              product: 'pathology product',
+            },
+          }],
+        }
       },
       expectedError: undefined,
       expectedStatus: 200,
@@ -273,6 +313,10 @@ describe('pages/api/stripe-webhook/index.ts', () => {
     });
   });
   test('resubscribe again should error saying you are already a pro subscriber', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(stripeReal.checkout.sessions, 'listLineItems').mockResolvedValue({ data: [{ price: { product: 'plan_id' } }], } as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(stripeReal.products, 'retrieve').mockResolvedValue({ name: 'Pathology Yearly' } as any);
     await runStripeWebhookTest({
       eventType: 'checkout.session.completed',
       payloadData: {
@@ -287,6 +331,69 @@ describe('pages/api/stripe-webhook/index.ts', () => {
       },
     });
   });
+  test('gifting subscription', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(stripeReal.checkout.sessions, 'listLineItems').mockResolvedValue({ data: [{ price: { product: 'pathology' } }], } as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(stripeReal.products, 'retrieve').mockResolvedValue({ name: 'Pathology Yearly' } as any);
+    await runStripeWebhookTest({
+      eventType: 'customer.subscription.created',
+      payloadData: {
+        id: 'cs_test_123',
+        client_reference_id: TestId.USER,
+        customer: 'customer_id_123',
+        metadata: {
+          giftFromId: TestId.USER,
+          giftToId: TestId.USER_B,
+        },
+        items: {
+          data: [{
+            price: {
+              product: 'pathology product',
+            },
+          }],
+        }
+      },
+      expectedError: undefined,
+      expectedStatus: 200,
+      additionalAssertions: async () => {
+        await expectUserStatus(TestId.USER_B, Role.PRO, undefined);
+        await expectUserStatus(TestId.USER, Role.PRO, 'customer_id_123', 'cs_test_123');
+      },
+    });
+  });
+  test('regifting should not work since user is already on pro', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(stripeReal.checkout.sessions, 'listLineItems').mockResolvedValue({ data: [{ price: { product: 'plan_id' } }], } as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(stripeReal.products, 'retrieve').mockResolvedValue({ name: 'Pathology Yearly' } as any);
+
+    await runStripeWebhookTest({
+      eventType: 'customer.subscription.created',
+      payloadData: {
+        id: 'cs_test_123',
+        client_reference_id: TestId.USER,
+        customer: 'customer_id_123',
+        metadata: {
+          giftFromId: TestId.USER,
+          giftToId: TestId.USER_B,
+        },
+        items: {
+          data: [{
+            price: {
+              product: 'pathology product',
+            },
+          }],
+        }
+      },
+      expectedError: 'test is already a pro subscriber for this game. Error applying gift. Please contact support.',
+      expectedStatus: 400,
+      additionalAssertions: async () => {
+        await expectUserStatus(TestId.USER_B, Role.PRO, undefined);
+        await expectUserStatus(TestId.USER, Role.PRO, 'customer_id_123', 'cs_test_123');
+      },
+    });
+  });
   test('invoice.payment_failed should always return 200', async () => {
     // NOTE: failed payments will not remove your pro subscription
     // stripe has retry logic when a payment fails and if all retries fail,
@@ -297,17 +404,34 @@ describe('pages/api/stripe-webhook/index.ts', () => {
       payloadData: {
         id: 'cs_test_123',
         customer: undefined,
+        items: {
+          data: [{
+            price: {
+              product: 'pathology product',
+            },
+          }],
+        }
       },
       expectedError: undefined,
       expectedStatus: 200,
     });
   });
   test('customer.subscription.deleted but db error should cause user to stay on pro plan', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(stripeReal.products, 'retrieve').mockResolvedValue({ name: 'Pathology Yearly' } as any);
+
     await runStripeWebhookTest({
       eventType: 'customer.subscription.deleted',
       payloadData: {
         id: 'invoice_test_123',
         customer: 'customer_id_123',
+        items: {
+          data: [{
+            price: {
+              product: 'pathology product',
+            },
+          }],
+        }
       },
       expectedError: 'mock error',
       expectedStatus: 400,
@@ -318,16 +442,26 @@ describe('pages/api/stripe-webhook/index.ts', () => {
     });
   });
   test('customer.subscription.deleted successfully', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(stripeReal.products, 'retrieve').mockResolvedValue({ name: 'Pathology Yearly' } as any);
+
     await runStripeWebhookTest({
       eventType: 'customer.subscription.deleted',
       payloadData: {
         id: 'invoice_test_123',
         customer: 'customer_id_123',
+        items: {
+          data: [{
+            price: {
+              product: 'pathology product',
+            },
+          }],
+        }
       },
       expectedError: undefined,
       expectedStatus: 200,
       additionalAssertions: async () => {
-        await expectUserStatus(TestId.USER, null, null);
+        await expectUserStatus(TestId.USER, null, 'customer_id_123');
       },
     });
   });
@@ -342,7 +476,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
       expectedError: 'mock error',
       expectedStatus: 400,
       additionalAssertions: async () => {
-        await expectUserStatus(TestId.USER, null, null);
+        await expectUserStatus(TestId.USER, null, 'customer_id_123');
       },
       mockDbError: true,
     });
@@ -381,6 +515,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
   });
 
   test('payment_intent.succeeded', async () => {
+    process.env.STRIPE_CONNECTED_ACCOUNT_ID = 'blah';
     jest.spyOn(stripeReal.paymentIntents, 'retrieve').mockImplementation(async () => {
       return {
         amount: 300,

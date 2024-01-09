@@ -1,8 +1,8 @@
+import getPngDataServer from '@root/helpers/getPngDataServer';
+import { TimerUtil } from '@root/helpers/getTs';
 import mongoose, { QueryOptions } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidObjectIdPNG } from '../../../../helpers/apiWrapper';
-import getPngDataServer from '../../../../helpers/getPngDataServer';
-import { TimerUtil } from '../../../../helpers/getTs';
 import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
 import Image from '../../../../models/db/image';
@@ -10,7 +10,7 @@ import Level from '../../../../models/db/level';
 import { ImageModel, LevelModel } from '../../../../models/mongoose';
 
 export async function upsertLevelImage(level: Level, queryOptions?: QueryOptions) {
-  const pngData = await getPngDataServer(level);
+  const pngData = await getPngDataServer(level.gameId, level);
 
   await ImageModel.findOneAndUpdate(
     { documentId: level._id },
@@ -71,25 +71,21 @@ export default apiWrapper({ GET: {
       } else {
         pngData = await upsertLevelImage(level, { session: session });
       }
+
+      res.setHeader('Content-Length', pngData.length);
     });
     session.endSession();
   } catch (err) {
     logger.error(err);
     session.endSession();
 
+    // set cache headers to not cache this
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+
     return res.status(500).json({
       error: `Error getting level image for id ${levelId}`,
     });
   }
-
-  // should never happen but need to do this because typescript
-  if (!pngData) {
-    return res.status(500).json({
-      error: `Error getting pngData for id ${levelId}`,
-    });
-  }
-
-  res.setHeader('Content-Length', pngData.length);
 
   return res.status(200).send(pngData);
 });

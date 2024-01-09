@@ -1,3 +1,5 @@
+import Direction from '@root/constants/direction';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -10,10 +12,11 @@ import { initCollection, initLevel } from '../../../../lib/initializeLocalDb';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Collection from '../../../../models/db/collection';
 import Level from '../../../../models/db/level';
-import { CollectionModel, LevelModel, StatModel, UserModel } from '../../../../models/mongoose';
+import { CollectionModel, LevelModel, StatModel, UserConfigModel } from '../../../../models/mongoose';
 import updateCollectionHandler from '../../../../pages/api/collection/[id]';
 import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
 import updateLevelHandler from '../../../../pages/api/level/[id]';
+import statsHandler from '../../../../pages/api/stats/index';
 import unpublishLevelHandler from '../../../../pages/api/unpublish/[id]';
 
 beforeAll(async () => {
@@ -33,10 +36,10 @@ beforeAll(async () => {
   [userACollection, userBCollection, userALevel1, userALevel2, userBLevel1, userBLevel2] = await Promise.all([
     initCollection(TestId.USER, 'user A collection'),
     initCollection(TestId.USER_B, 'user B collection'),
-    initLevel(TestId.USER, 'user A level 1'),
-    initLevel(TestId.USER, 'user A level 2'),
-    initLevel(TestId.USER_B, 'user B level 1'),
-    initLevel(TestId.USER_B, 'user B level 2')
+    initLevel(DEFAULT_GAME_ID, TestId.USER, 'user A level 1'),
+    initLevel(DEFAULT_GAME_ID, TestId.USER, 'user A level 2'),
+    initLevel(DEFAULT_GAME_ID, TestId.USER_B, 'user B level 1'),
+    initLevel(DEFAULT_GAME_ID, TestId.USER_B, 'user B level 2')
   ]);
 });
 enableFetchMocks();
@@ -44,6 +47,7 @@ describe('Testing unpublish', () => {
   // set up levels
   // Create two collections. one owned by TestId.USER and one owned by TestId.USER_B
   // in each collection add three levels, two owns by the collection owner and one owned by the other user
+
   test('Test wrong method for unpublish method', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
@@ -200,9 +204,9 @@ describe('Testing unpublish', () => {
         expect(res.status).toBe(200);
         expect(response.updated).toBe(true);
 
-        const user = await UserModel.findById(TestId.USER);
+        const userConfig = await UserConfigModel.findOne({ userId: TestId.USER });
 
-        expect(user?.calc_levels_created_count).toEqual(3);
+        expect(userConfig?.calcLevelsCreatedCount).toEqual(3);
 
         const levelDeleted = await LevelModel.findOne({ _id: userALevel1._id });
 
@@ -348,5 +352,121 @@ describe('Testing unpublish', () => {
         expect((userACollection?.levels as Types.ObjectId[]).includes(new Types.ObjectId(newLevelId))).toBe(false);
       },
     });
+  });
+  test('Unpublishing a level should update calc fields correctly', async () => {
+    let userA = await UserConfigModel.findOne({ userId: TestId.USER, gameId: DEFAULT_GAME_ID });
+
+    const initCompletedA = userA.calcLevelsCompletedCount;
+    const initSolvedA = userA.calcLevelsSolvedCount;
+
+    let userB = await UserConfigModel.findOne({ userId: TestId.USER_B, gameId: DEFAULT_GAME_ID });
+
+    const initCompletedB = userB.calcLevelsCompletedCount;
+    const initSolvedB = userB.calcLevelsSolvedCount;
+
+    // optimal solve for user A
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            directions: [Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.DOWN, Direction.DOWN, Direction.DOWN],
+            levelId: userALevel2._id,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await statsHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        await processQueueMessages();
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+      },
+    });
+
+    // suboptimal solve for user B
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_B),
+          },
+          body: {
+            directions: [Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.RIGHT, Direction.LEFT, Direction.RIGHT, Direction.DOWN, Direction.DOWN, Direction.DOWN, Direction.DOWN],
+            levelId: userALevel2._id,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await statsHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        await processQueueMessages();
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+      },
+    });
+
+    userA = await UserConfigModel.findOne({ userId: TestId.USER, gameId: DEFAULT_GAME_ID });
+
+    expect(userA.calcLevelsCompletedCount).toBe(initCompletedA + 1);
+    expect(userA.calcLevelsSolvedCount).toBe(initSolvedA + 1);
+
+    userB = await UserConfigModel.findOne({ userId: TestId.USER_B, gameId: DEFAULT_GAME_ID });
+
+    expect(userB.calcLevelsCompletedCount).toBe(initCompletedB + 1);
+    expect(userB.calcLevelsSolvedCount).toBe(initSolvedB);
+
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: userALevel2._id,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await unpublishLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        await processQueueMessages();
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+      },
+    });
+
+    userA = await UserConfigModel.findOne({ userId: TestId.USER, gameId: DEFAULT_GAME_ID });
+
+    expect(userA.calcLevelsCompletedCount).toBe(initCompletedA);
+    expect(userA.calcLevelsSolvedCount).toBe(initSolvedA);
+
+    userB = await UserConfigModel.findOne({ userId: TestId.USER_B, gameId: DEFAULT_GAME_ID });
+
+    expect(userB.calcLevelsCompletedCount).toBe(initCompletedB);
+    expect(userB.calcLevelsSolvedCount).toBe(initSolvedB);
   });
 });

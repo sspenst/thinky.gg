@@ -1,4 +1,5 @@
-import { GameId } from '@root/constants/GameId';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import MockDate from 'mockdate';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext } from 'next';
@@ -6,18 +7,18 @@ import TestId from '../../../constants/testId';
 import { createNewReviewOnYourLevelNotification } from '../../../helpers/notificationHelper';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
-import { getServerSideProps } from '../../../pages/notifications/index';
+import { getServerSideProps } from '../../../pages/[subdomain]/notifications/index';
 
 beforeAll(async () => {
   await dbConnect();
 
   for (let i = 0; i < 30; i++) {
     MockDate.set(Date.now() + 1);
-    await createNewReviewOnYourLevelNotification(GameId.PATHOLOGY, new Types.ObjectId(TestId.USER), new Types.ObjectId(TestId.USER_B), new Types.ObjectId(), 'id ' + i, true);
+    await createNewReviewOnYourLevelNotification(DEFAULT_GAME_ID, new Types.ObjectId(TestId.USER), new Types.ObjectId(TestId.USER_B), new Types.ObjectId(), 'id ' + i, true);
   }
 
   MockDate.set(Date.now() + 1);
-  await createNewReviewOnYourLevelNotification(GameId.PATHOLOGY, new Types.ObjectId(TestId.USER), new Types.ObjectId(TestId.USER_B), TestId.LEVEL, 'test level id');
+  await createNewReviewOnYourLevelNotification(DEFAULT_GAME_ID, new Types.ObjectId(TestId.USER), new Types.ObjectId(TestId.USER_B), TestId.LEVEL, 'test level id');
 });
 afterEach(() => {
   jest.restoreAllMocks();
@@ -35,7 +36,7 @@ describe('pages/notifications page', () => {
 
       }
     };
-    const ret = await getServerSideProps(context as GetServerSidePropsContext);
+    const ret = await getServerSideProps(context as GetServerSidePropsContext) as any;
 
     expect(ret).toBeDefined();
     expect(ret.redirect).toBeDefined();
@@ -55,7 +56,7 @@ describe('pages/notifications page', () => {
 
       }
     };
-    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
+    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext) as any;
 
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
@@ -76,7 +77,7 @@ describe('pages/notifications page', () => {
         filter: 'unread'
       }
     };
-    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
+    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext) as any;
 
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
@@ -99,7 +100,7 @@ describe('pages/notifications page', () => {
         filter: 'unread'
       }
     };
-    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
+    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext) as any;
 
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();

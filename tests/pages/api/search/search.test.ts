@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import Role from '@root/constants/role';
 import StatFilter from '@root/constants/statFilter';
 import TileType from '@root/constants/tileType';
@@ -16,8 +16,8 @@ import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { initLevel } from '../../../../lib/initializeLocalDb';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { LevelModel, StatModel, UserModel } from '../../../../models/mongoose';
+import { BlockFilterMask } from '../../../../pages/[subdomain]/search';
 import handler from '../../../../pages/api/search';
-import { BlockFilterMask } from '../../../../pages/search';
 
 afterEach(() => {
   jest.restoreAllMocks();
@@ -54,11 +54,11 @@ beforeAll(async () => {
     const id = new Types.ObjectId();
     const leastMvs = (100 + i);
 
-    promises.push(initLevel(usr,
+    promises.push(initLevel(DEFAULT_GAME_ID, usr,
       animalNames[(i * i + 171) % animalNames.length] + ' ' + animalNames[i % animalNames.length],
       {
         _id: id,
-        gameId: GameId.PATHOLOGY,
+        gameId: DEFAULT_GAME_ID,
         leastMoves: leastMvs,
         ts: TimerUtil.getTs() - offset,
         calc_playattempts_unique_users: Array.from({ length: 11 }, () => {return new Types.ObjectId() as mongoose.Types.ObjectId;}),
@@ -74,7 +74,7 @@ beforeAll(async () => {
         _id: new Types.ObjectId(),
         attempts: 1,
         complete: true,
-        gameId: GameId.PATHOLOGY,
+        gameId: DEFAULT_GAME_ID,
         levelId: id.toString(),
         moves: leastMvs,
         ts: TimerUtil.getTs() + i,
@@ -85,7 +85,7 @@ beforeAll(async () => {
         _id: new Types.ObjectId(),
         attempts: 1,
         complete: false,
-        gameId: GameId.PATHOLOGY,
+        gameId: DEFAULT_GAME_ID,
         levelId: id.toString(),
         moves: leastMvs + 2,
         ts: TimerUtil.getTs() + i,

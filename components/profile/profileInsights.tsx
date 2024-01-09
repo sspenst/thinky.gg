@@ -1,6 +1,7 @@
+import { AppContext } from '@root/contexts/appContext';
 import isPro from '@root/helpers/isPro';
 import Link from 'next/link';
-import React from 'react';
+import React, { useContext } from 'react';
 import User from '../../models/db/user';
 import ProfileInsightsLevelPlayLog from './profileInsightsLevelPlayLog';
 import ProfileInsightsMostSolves from './profileInsightsMostSolves';
@@ -14,11 +15,13 @@ interface ProfileInsightsProps {
 }
 
 export default function ProfileInsights({ reqUser, user }: ProfileInsightsProps) {
+  const { game } = useContext(AppContext);
+
   if (!isPro(reqUser)) {
     return (
       <div className='text-center text-lg break-words'>
         Get <Link href='/settings/pro' className='text-blue-300'>
-          Pathology Pro
+          {game.displayName} Pro
         </Link> to unlock additional insights for {user.name}.
       </div>
     );

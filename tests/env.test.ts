@@ -1,6 +1,5 @@
 import { NextApiRequest } from 'next';
 import cookieOptions from '../lib/cookieOptions';
-import dbConnect, { dbDisconnect } from '../lib/dbConnect';
 import { getTokenCookieValue } from '../lib/getTokenCookie';
 import { getUserFromToken } from '../lib/withAuth';
 
@@ -11,10 +10,10 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 afterAll(async () => {
-  await dbDisconnect();
+  //await dbDisconnect();
 });
 beforeAll(async () => {
-  await dbConnect();
+  // await dbConnect();
 });
 beforeEach(() => {
   jest.resetModules(); // Most important - it clears the cache
@@ -46,9 +45,10 @@ describe('pages/api/level/index.ts', () => {
 
   test('cookieOptions', async () => {
     process.env.LOCAL = undefined;
-    expect(cookieOptions('host').domain).toBe('host');
-    expect(cookieOptions(undefined).domain).toBe('pathology.gg');
+    expect(cookieOptions('localhost').domain).toBe('.localhost');
+    expect(cookieOptions('es.com').domain).toBe('.es.com');
+    expect(cookieOptions(undefined).domain).toBe('.thinky.gg');
   });
 });
 
-export {};
+export { };

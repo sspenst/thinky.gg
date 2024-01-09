@@ -15,7 +15,7 @@ import OnlineUsers from './onlineUsers';
 
 export default function Multiplayer() {
   const [isCreateMatchModalOpen, setIsCreateMatchModalOpen] = useState(false);
-  const { multiplayerSocket, user } = useContext(AppContext);
+  const { game, multiplayerSocket, user } = useContext(AppContext);
   const router = useRouter();
   const { connectedPlayers, matches, privateAndInvitedMatches } = multiplayerSocket;
 
@@ -84,7 +84,7 @@ export default function Multiplayer() {
       <div className='flex flex-col items-center justify-center gap-4'>
         <h1 className='text-4xl font-bold'>Multiplayer</h1>
         <OnlineUsers />
-        <div>Play against other Pathology players in a realtime multiplayer match:</div>
+        <div>Play against other {game.displayName} players in a realtime multiplayer match:</div>
         <ul>
           <li>Solve as many levels as you can</li>
           <li>Levels get progressively harder</li>

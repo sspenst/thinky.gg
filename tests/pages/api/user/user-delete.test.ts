@@ -2,7 +2,7 @@ import TestId from '@root/constants/testId';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { getTokenCookieValue } from '@root/lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '@root/lib/withAuth';
-import { UserConfigModel } from '@root/models/mongoose';
+import { UserModel } from '@root/models/mongoose';
 import { cancelSubscription, stripe } from '@root/pages/api/subscription';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import mongoose from 'mongoose';
@@ -21,6 +21,7 @@ jest.mock('stripe', () => {
       },
       paymentMethods: {
         retrieve: jest.fn(),
+        list: jest.fn(),
       },
       subscriptions: {
         list: jest.fn(),
@@ -42,7 +43,8 @@ describe('pages/api/collection/index.ts', () => {
   const cookie = getTokenCookieValue(TestId.USER);
 
   test('Deleting a user that has a subscription should not work', async () => {
-    await UserConfigModel.updateOne({ userId: TestId.USER }, { stripeCustomerId: mockSubscription.id });
+    await UserModel.updateOne({ _id: TestId.USER }, { stripeCustomerId: mockSubscription.id });
+
     (stripe.subscriptions.list as jest.Mock).mockResolvedValue({
       data: [mockSubscription],
     });
@@ -54,6 +56,10 @@ describe('pages/api/collection/index.ts', () => {
     });
     (stripe.products.retrieve as jest.Mock).mockResolvedValue({
       name: 'test product',
+    });
+    // mock stripe.paymentMethods.list
+    (stripe.paymentMethods.list as jest.Mock).mockResolvedValue({
+      data: [{}],
     });
 
     await testApiHandler({
@@ -74,13 +80,13 @@ describe('pages/api/collection/index.ts', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('You must cancel all subscriptions before deleting your account. Contact help@pathology.gg if you are still experiencing issues');
+        expect(response.error).toBe('You must cancel all subscriptions before deleting your account. Contact help@thinky.gg if you are still experiencing issues');
         expect(res.status).toBe(400);
       },
     });
   });
   test('Deleting a user should work once they downgrade', async () => {
-    await UserConfigModel.updateOne({ userId: TestId.USER }, { stripeCustomerId: mockSubscription.id });
+    await UserModel.updateOne({ _id: TestId.USER }, { stripeCustomerId: mockSubscription.id });
     // Inside your test
     (stripe.subscriptions.list as jest.Mock).mockResolvedValue({
       data: [mockSubscription],
@@ -100,6 +106,9 @@ describe('pages/api/collection/index.ts', () => {
     } as unknown as NextApiRequestWithAuth);
 
     mockSubscription.cancel_at_period_end = true;
+    (stripe.paymentMethods.list as jest.Mock).mockResolvedValue({
+      data: [],
+    });
 
     (stripe.subscriptions.list as jest.Mock).mockResolvedValue({
       data: [mockSubscription],

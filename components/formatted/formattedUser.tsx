@@ -1,11 +1,15 @@
 import Dimensions from '@root/constants/dimensions';
+import { GameId } from '@root/constants/GameId';
 import { ProfileQueryType, UserExtendedData } from '@root/constants/profileQueryType';
+import { AppContext } from '@root/contexts/appContext';
+import isOnline from '@root/helpers/isOnline';
 import classNames from 'classnames';
 import Link from 'next/link';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import getProfileSlug from '../../helpers/getProfileSlug';
 import User from '../../models/db/user';
+import GameLogoAndLabel from '../gameLogoAndLabel';
 import LoadingSpinner from '../page/loadingSpinner';
 import RoleIcons from '../page/roleIcons';
 import StyledTooltip from '../page/styledTooltip';
@@ -15,6 +19,7 @@ import FormattedDate from './formattedDate';
 
 interface FormattedUserProps {
   className?: string;
+  hideAvatar?: boolean;
   // NB: this id should not contain the user id
   id: string;
   noLinks?: boolean;
@@ -26,7 +31,8 @@ interface FormattedUserProps {
 
 const cache = {} as { [key: string]: UserExtendedData };
 
-export default function FormattedUser({ className, id, noLinks, noTooltip, onClick, size = Dimensions.AvatarSize, user }: FormattedUserProps) {
+export default function FormattedUser({ className, hideAvatar, id, noLinks, noTooltip, onClick, size = Dimensions.AvatarSize, user }: FormattedUserProps) {
+  const { game } = useContext(AppContext);
   const [showTooltip, setShowTooltip] = useState(false);
   const [userExtendedData, setUserExtendedData] = useState<UserExtendedData>();
   const setTimer = useRef<NodeJS.Timeout>();
@@ -65,7 +71,7 @@ export default function FormattedUser({ className, id, noLinks, noTooltip, onCli
 
   return (<>
     <div
-      className={classNames('flex items-center gap-2 truncate w-fit max-w-full', className)}
+      className={classNames('flex items-center gap-2 truncate w-fit max-w-full font-bold', className)}
       onMouseOut={() => {
         if (setTimer.current) {
           clearTimeout(setTimer.current);
@@ -88,23 +94,40 @@ export default function FormattedUser({ className, id, noLinks, noTooltip, onCli
         data-tooltip-html={renderToStaticMarkup(
           <div className='flex flex-col gap-0.5 p-1 items-start text-sm truncate'>
             {!userExtendedData ? <LoadingSpinner /> : <>
-              <span className='font-bold text-base'>{userExtendedData.user.name}</span>
-              {!userExtendedData.user.ts ? <span>Unregistered</span> : <>
+              <span className='font-bold text-base'>{userExtendedData.user?.name}</span>
+              {!userExtendedData.user?.ts ? <span>Unregistered for {game.displayName}</span> : <>
+                {isOnline(userExtendedData.user) &&
+                  <div className='flex gap-1 items-center'>
+                    <span className='font-medium'>Currently Playing:</span>
+                    <GameLogoAndLabel gameId={userExtendedData.user.lastGame ?? GameId.THINKY} id={id} size={20} />
+                  </div>
+                }
+                {!game.isNotAGame &&
                 <div className='flex gap-1'>
                   <span className='font-medium'>Rank:</span>
                   <PlayerRank
-                    levelsSolvedByDifficulty={userExtendedData.levelsSolvedByDifficulty}
+                    levelsSolvedByDifficulty={userExtendedData?.levelsSolvedByDifficulty}
                     user={user}
                   />
-                </div>
+                </div>}
+                {!game.isNotAGame && !game.disableRanked &&
                 <div className='flex gap-1'>
                   <span className='font-medium'>Ranked Solves:</span>
-                  <span className='gray'>{userExtendedData.user.calcRankedSolves} 🏅</span>
+                  <span className='gray'>{userExtendedData.user.config?.calcRankedSolves} 🏅</span>
                 </div>
+                }
+                {!game.isNotAGame &&
                 <div className='flex gap-1'>
                   <span className='font-medium'>Levels Solved:</span>
-                  <span className='gray'>{userExtendedData.user.score}</span>
+                  <span className='gray'>{userExtendedData.user.config?.calcLevelsSolvedCount}</span>
                 </div>
+                }
+                {!game.isNotAGame &&
+                <div className='flex gap-1'>
+                  <span className='font-medium'>Levels Completed:</span>
+                  <span className='gray'>{userExtendedData.user.config?.calcLevelsCompletedCount}</span>
+                </div>
+                }
                 {!user.hideStatus &&
                   <div className='flex gap-1'>
                     <span className='font-medium'>Last Seen:</span> <FormattedDate ts={user.last_visited_at ? user.last_visited_at : user.ts} />
@@ -112,7 +135,7 @@ export default function FormattedUser({ className, id, noLinks, noTooltip, onCli
                 }
                 <div className='flex gap-1'>
                   <span className='font-medium'>Registered:</span>
-                  <FormattedDate ts={userExtendedData.user.ts} />
+                  <FormattedDate ts={userExtendedData.user?.ts} />
                 </div>
               </>}
             </>}
@@ -122,16 +145,18 @@ export default function FormattedUser({ className, id, noLinks, noTooltip, onCli
       >
         {noLinks ?
           <>
-            <ProfileAvatar size={size} user={user} />
+            {!hideAvatar && <ProfileAvatar size={size} user={user} />}
             <span className='truncate'>{user.name}</span>
           </>
           :
           <>
-            <Link href={getProfileSlug(user)} passHref>
-              <ProfileAvatar size={size} user={user} />
-            </Link>
+            {!hideAvatar &&
+              <Link href={getProfileSlug(user)} passHref>
+                <ProfileAvatar size={size} user={user} />
+              </Link>
+            }
             <Link
-              className='font-bold hover:underline truncate'
+              className='hover:underline truncate'
               href={getProfileSlug(user)}
               onClick={onClick}
               passHref

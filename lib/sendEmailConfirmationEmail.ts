@@ -12,7 +12,6 @@ export default async function sendEmailConfirmationEmail(req: NextApiRequest, us
   const token = user.emailConfirmationToken;
   const url = `${req.headers.origin}/confirm-email/${user._id}/${token}`;
   const gameId = getGameIdFromReq(req);
-
   const lastSent = await EmailLogModel.findOne<EmailLog>({
     userId: user._id,
     type: EmailType.EMAIL_CONFIRM_EMAIL,
@@ -35,6 +34,7 @@ export default async function sendEmailConfirmationEmail(req: NextApiRequest, us
     user,
     `Confirm Email - ${user.name}`,
     getEmailBody({
+      gameId: gameId,
       linkHref: url,
       linkText: 'Confirm Email',
       message: 'Hello there ' + user.name + ', please confirm your email to access more features!',

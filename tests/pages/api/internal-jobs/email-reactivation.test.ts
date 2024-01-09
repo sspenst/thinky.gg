@@ -1,5 +1,5 @@
-import { GameId } from '@root/constants/GameId';
-import { NextApiRequestGuest } from '@root/helpers/apiWrapper';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import { NextApiRequestWrapper } from '@root/helpers/apiWrapper';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
@@ -49,7 +49,10 @@ describe('Email reactivation', () => {
     // setup
     await dbConnect();
     sendMailRefMock.ref = rejectMock;
-    await UserModel.findByIdAndUpdate(TestId.USER, {
+    await UserModel.updateMany({
+      // id in   TestId.USER, TestId.USER_B, or TestId.USER_C
+      _id: { $in: [TestId.USER, TestId.USER_B, TestId.USER_C] },
+    }, {
       // make user last active 8 days ago
       last_visited_at: TimerUtil.getTs() - (8 * 24 * 60 * 60),
     });
@@ -59,8 +62,8 @@ describe('Email reactivation', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequestGuest = {
-          gameId: GameId.PATHOLOGY,
+        const req: NextApiRequestWrapper = {
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
@@ -71,7 +74,7 @@ describe('Email reactivation', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequestGuest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },
@@ -80,12 +83,12 @@ describe('Email reactivation', () => {
         const response = await res.json();
         const emailLogs = await EmailLogModel.find({}, {}, { sort: { createdAt: -1 } });
 
-        expect(emailLogs).toHaveLength(3);
+        expect(emailLogs).toHaveLength(4);
+
         expect(emailLogs[2].state).toBe(EmailState.FAILED);
         expect(emailLogs[2].error).toBe('rejected Test rejection');
         expect(emailLogs[2].type).toBe(EmailType.EMAIL_7D_REACTIVATE);
-        expect(response.emailReactivationFailed).toHaveLength(1);
-        expect(response.emailReactivationFailed[0]).toBe('test@gmail.com');
+        expect(response.failed[EmailType.EMAIL_7D_REACTIVATE].sort()).toMatchObject(['admin@admin.com', 'test@gmail.com', 'bbb@gmail.com', 'the_curator@gmail.com'].sort());
         expect(res.status).toBe(200);
       },
     });
@@ -99,12 +102,12 @@ describe('Email reactivation', () => {
     await dbConnect();
     // clear out the attempted email log from the previous test...
 
-    await EmailLogModel.deleteMany({ type: EmailType.EMAIL_7D_REACTIVATE, state: EmailState.FAILED, userId: TestId.USER });
+    //await EmailLogModel.deleteMany({ type: EmailType.EMAIL_7D_REACTIVATE, state: EmailState.FAILED });
     sendMailRefMock.ref = acceptMock;
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequestGuest = {
-          gameId: GameId.PATHOLOGY,
+        const req: NextApiRequestWrapper = {
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
@@ -115,21 +118,22 @@ describe('Email reactivation', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequestGuest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         const emailLogs = await EmailLogModel.find({}, {}, { sort: { createdAt: -1 } });
 
-        expect(emailLogs).toHaveLength(4);
-        expect(emailLogs[1].state).toBe(EmailState.SENT);
-        expect(emailLogs[1].error).toBeNull();
-        expect(emailLogs[1].type).toBe(EmailType.EMAIL_7D_REACTIVATE);
-        expect(response.emailReactivationSent).toHaveLength(1);
-        expect(response.emailReactivationSent[0]).toBe('test@gmail.com');
+        expect(emailLogs).toHaveLength(8);
+
+        expect(emailLogs[2].state).toBe(EmailState.SENT);
+        expect(emailLogs[2].error).toBeNull();
+        expect(emailLogs[2].type).toBe(EmailType.EMAIL_7D_REACTIVATE);
+        expect(response.sent[EmailType.EMAIL_7D_REACTIVATE].sort()).toMatchObject(['admin@admin.com', 'test@gmail.com', 'bbb@gmail.com', 'the_curator@gmail.com'].sort());
         expect(res.status).toBe(200);
       },
     });
@@ -142,8 +146,8 @@ describe('Email reactivation', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequestGuest = {
-          gameId: GameId.PATHOLOGY,
+        const req: NextApiRequestWrapper = {
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
@@ -154,7 +158,7 @@ describe('Email reactivation', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequestGuest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },
@@ -164,9 +168,9 @@ describe('Email reactivation', () => {
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        expect(response.emailDigestFailed).toHaveLength(0);
-        expect(response.emailDigestSent).toHaveLength(1);
-        expect(response.emailReactivationSent).toHaveLength(0);
+        expect(response.sent[EmailType.EMAIL_DIGEST]).toHaveLength(0);
+        expect(response.sent[EmailType.EMAIL_7D_REACTIVATE]).toHaveLength(0);
+        expect(response.sent[EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE]).toHaveLength(0);
       },
     });
   }, 10000);
@@ -183,8 +187,8 @@ describe('Email reactivation', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequestGuest = {
-          gameId: GameId.PATHOLOGY,
+        const req: NextApiRequestWrapper = {
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
@@ -195,7 +199,7 @@ describe('Email reactivation', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequestGuest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },

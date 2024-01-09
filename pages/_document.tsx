@@ -73,13 +73,11 @@ class MyDocument extends Document<DocumentProps> {
 
     return initialProps;
   }
-
   render() {
     return (
       <Html lang='en'>
         <Head>
           <link href='/manifest.json' rel='manifest' />
-          <link href='/logo.svg' rel='icon' />
           <script
             dangerouslySetInnerHTML={{ __html: this.props.browserTimingHeader }}
             type='text/javascript'

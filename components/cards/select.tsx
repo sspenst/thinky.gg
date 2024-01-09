@@ -75,13 +75,7 @@ export default function Select({ onChange, options, prefetch }: SelectProps) {
   }, [dropCard, moveCard, onChange, prefetch, selectOptions]);
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        justifyContent: 'center',
-      }}
-    >
+    <div className='flex flex-wrap justify-center gap-2'>
       <DndProvider backend={HTML5Backend}>{getSelectCards()}</DndProvider>
     </div>
   );

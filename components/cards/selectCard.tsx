@@ -5,7 +5,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import getPngDataClient from '../../helpers/getPngDataClient';
 import SelectOption from '../../models/selectOption';
-import SaveLevelToModal from '../modal/saveLevelToModal';
+import SaveToCollectionModal from '../modal/saveToCollectionModal';
 import StyledTooltip from '../page/styledTooltip';
 import { PlayLaterToggleButton } from './playLaterToggleButton';
 import styles from './SelectCard.module.css';
@@ -18,18 +18,18 @@ interface SelectCardProps {
 
 export default function SelectCard({ option, prefetch }: SelectCardProps) {
   const [backgroundImage, setBackgroundImage] = useState<string>();
-  const [isSaveLevelToModalOpen, setIsSaveLevelToModalOpen] = useState(false);
-  const { user } = useContext(AppContext);
+  const { game, user } = useContext(AppContext);
+  const [isSaveToCollectionModalOpen, setIsSaveToCollectionModalOpen] = useState(false);
 
   useEffect(() => {
     if (option.level && option.level.data) {
-      setBackgroundImage(getPngDataClient(option.level.data));
+      setBackgroundImage(getPngDataClient(game.id, option.level.data));
     }
-  }, [option.level]);
+  }, [game.id, option.level]);
 
   const color = option.disabled ? 'var(--bg-color-4)' :
     option.stats?.getColor('var(--color)') ?? 'var(--color)';
-  const tooltipId = `save-level-to-${option.id}`;
+  const tooltipId = `save-to-collection-${option.id}`;
 
   return (
     <div
@@ -110,16 +110,16 @@ export default function SelectCard({ option, prefetch }: SelectCardProps) {
             className='absolute bottom-2 right-2 select-card-button'
             data-tooltip-content='Save Level To...'
             data-tooltip-id={tooltipId}
-            onClick={() => setIsSaveLevelToModalOpen(true)}
+            onClick={() => setIsSaveToCollectionModalOpen(true)}
           >
             <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6' style={{ minWidth: 24, minHeight: 24 }}>
               <path strokeLinecap='round' strokeLinejoin='round' d='M12 10.5v6m3-3H9m4.06-7.19l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z' />
             </svg>
           </button>
           <StyledTooltip id={tooltipId} />
-          <SaveLevelToModal
-            closeModal={() => setIsSaveLevelToModalOpen(false)}
-            isOpen={isSaveLevelToModalOpen}
+          <SaveToCollectionModal
+            closeModal={() => setIsSaveToCollectionModalOpen(false)}
+            isOpen={isSaveToCollectionModalOpen}
             level={option.level}
           />
         </>}

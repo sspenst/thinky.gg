@@ -86,7 +86,7 @@ export default withAuth({
           const trimmedName = name.trim();
 
           setObj.name = trimmedName;
-          setObj.slug = await generateCollectionSlug(req.user.name, trimmedName, id as string, { session: session });
+          setObj.slug = await generateCollectionSlug(req.gameId, req.user.name, trimmedName, id as string, { session: session });
 
           if (setObj.slug.endsWith('/play-later')) {
             errorCode = 400;
@@ -98,6 +98,7 @@ export default withAuth({
         collection = await CollectionModel.findOneAndUpdate({
           _id: id,
           userId: req.userId,
+          // gameId unnecessary because we are querying by id
         }, {
           $set: setObj,
         }, {

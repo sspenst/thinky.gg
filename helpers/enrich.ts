@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import { PipelineStage } from 'mongoose';
 import cleanUser from '../lib/cleanUser';
@@ -7,7 +8,7 @@ import Level, { EnrichedLevel } from '../models/db/level';
 import Notification from '../models/db/notification';
 import Stat from '../models/db/stat';
 import User, { ReqUser } from '../models/db/user';
-import { NotificationModel, StatModel, UserModel } from '../models/mongoose';
+import { NotificationModel, StatModel, UserConfigModel, UserModel } from '../models/mongoose';
 import { getEnrichNotificationPipelineStages } from './getEnrichNotificationPipelineStages';
 
 export async function enrichCampaign(campaign: Campaign, reqUser: User | null) {
@@ -136,11 +137,11 @@ export async function enrichNotifications(notifications: Notification[], reqUser
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function enrichReqUser(reqUser: User, filters?: any): Promise<ReqUser> {
+export async function enrichReqUser(gameId: GameId, reqUser: User, filters?: any): Promise<ReqUser> {
   const enrichedReqUser: ReqUser = JSON.parse(JSON.stringify(reqUser)) as ReqUser;
 
   const notificationAgg = await NotificationModel.aggregate<Notification>([
-    { $match: { userId: reqUser._id, ...filters } },
+    { $match: { userId: reqUser._id, /*gameId: gameId,*/ ...filters } }, // Not adding gameId on purpose so we can get all notifications for all games
     { $sort: { createdAt: -1 } },
     { $limit: 5 },
     ...getEnrichNotificationPipelineStages(reqUser._id)
@@ -159,6 +160,61 @@ export async function enrichReqUser(reqUser: User, filters?: any): Promise<ReqUs
   enrichedReqUser.notifications = notificationAgg;
 
   return enrichedReqUser;
+}
+
+interface EnrichUserConfigOptions {
+  localField?: string;
+  excludeCalcs?: boolean;
+  includeChapter?: boolean;
+  project?: Record<string, unknown>;
+}
+
+export function getEnrichUserConfigPipelineStage(gameId: GameId, { localField, excludeCalcs, includeChapter, project }: EnrichUserConfigOptions = {}): PipelineStage[] {
+  if (!localField) {
+    localField = '_id';
+  }
+
+  if (!project) {
+    project = {};
+  }
+
+  const includeCalcsObject = !excludeCalcs ? {
+    calcLevelsCompletedCount: 1,
+    calcLevelsCreatedCount: 1,
+    calcLevelsSolvedCount: 1,
+    calcRankedSolves: 1,
+    calcRecordsCount: 1,
+  } : {};
+  const includeChapterObject = includeChapter ? {
+    chapterUnlocked: 1,
+  } : {};
+
+  return [{
+    $lookup: {
+      from: UserConfigModel.collection.name,
+      localField: localField,
+      foreignField: 'userId',
+      as: 'config',
+      pipeline: [
+        { $match: { gameId: gameId } },
+        { $project: {
+          gameId: 1,
+          roles: 1,
+          ...includeCalcsObject,
+          ...includeChapterObject,
+          ...project
+        } }
+      ]
+    },
+  },
+  {
+    $unwind: {
+      path: '$config',
+      preserveNullAndEmptyArrays: true,
+    }
+  },
+
+  ];
 }
 
 export function getEnrichUserIdPipelineSteps(userIdField = 'userId', outputToField = 'userId') {

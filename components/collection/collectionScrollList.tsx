@@ -1,11 +1,9 @@
-import Dimensions from '@root/constants/dimensions';
 import { CollectionType } from '@root/models/constants/collection';
 import Collection, { EnrichedCollection } from '@root/models/db/collection';
 import { EnrichedLevel } from '@root/models/db/level';
-import SelectOptionStats from '@root/models/selectOptionStats';
 import classNames from 'classnames';
 import React, { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
-import SelectCard from '../cards/selectCard';
+import LevelCard from '../cards/levelCard';
 import LoadingSpinner from '../page/loadingSpinner';
 
 interface Props {
@@ -174,7 +172,7 @@ export default function CollectionScrollList({ collection, id, isHidden, onLoadi
   }
 
   return (
-    <div className='overflow-y-auto max-w-full' onScroll={e => onScroll(e)}>
+    <div className='overflow-y-auto max-w-full h-full flex flex-col gap-2' onScroll={e => onScroll(e)}>
       {isLoading === 'before' &&
         <div className='justify-center items-center pt-3'>
           <LoadingSpinner />
@@ -196,17 +194,12 @@ export default function CollectionScrollList({ collection, id, isHidden, onLoadi
         const href = `/level/${levelInCollection.slug}${windowSearch}`;
 
         return (
-          <div className={classNames({ 'bg-3': isCurrentLevel }, { 'rounded-xl': id === 'modal' })} id={anchorId} key={anchorId}>
-            <SelectCard option={{
-              author: levelInCollection.userId?.name,
-              height: Dimensions.OptionHeightMedium,
-              href: href,
-              id: `${id}-${levelInCollection._id.toString()}`,
-              level: levelInCollection,
-              stats: new SelectOptionStats(levelInCollection.leastMoves, (levelInCollection as EnrichedLevel)?.userMoves),
-              text: levelInCollection.name,
-              width: 216,
-            }} />
+          <div className={classNames('px-2', { 'bg-2': isCurrentLevel }, { 'rounded-xl': id === 'modal' })} id={anchorId} key={anchorId}>
+            <LevelCard
+              href={href}
+              id={id}
+              level={levelInCollection}
+            />
           </div>
         );
       })}

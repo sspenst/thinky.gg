@@ -1,6 +1,8 @@
+import Dimensions from '@root/constants/dimensions';
+import { AppContext } from '@root/contexts/appContext';
 import classNames from 'classnames';
 import Link from 'next/link';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import getPngDataClient from '../../helpers/getPngDataClient';
 import styles from './SelectCard.module.css';
 
@@ -11,7 +13,7 @@ interface ChapterSelectCardBaseProps {
   href: string;
   id: string;
   levelData: string;
-  subtitle: string;
+  subtitle?: string;
   title: string;
 }
 
@@ -26,14 +28,19 @@ function ChapterSelectCardBase({
   title,
 }: ChapterSelectCardBaseProps) {
   const [backgroundImage, setBackgroundImage] = useState<string>();
+  const { game } = useContext(AppContext);
 
   useEffect(() => {
-    setBackgroundImage(getPngDataClient(levelData));
-  }, [levelData]);
+    setBackgroundImage(getPngDataClient(game.id, levelData));
+  }, [game.id, levelData]);
 
   return (<>
-    <div className='overflow-hidden relative inline-block align-middle w-100 max-w-full'>
-      <div className='wrapper rounded-md overflow-hidden relative h-40 w-full'>
+    <div className='overflow-hidden relative inline-block align-middle max-w-full' style={{
+      width: 360,
+    }}>
+      <div className='wrapper rounded-md overflow-hidden relative w-full' style={{
+        height: Dimensions.OptionHeightLarge,
+      }}>
         <div
           className='absolute background rounded-md bg-cover bg-center h-full w-full'
           style={{
@@ -59,9 +66,11 @@ function ChapterSelectCardBase({
             <div className='text-3xl'>
               {title}
             </div>
-            <div className='text-xl'>
-              {subtitle}
-            </div>
+            {subtitle &&
+              <div className='text-xl'>
+                {subtitle}
+              </div>
+            }
           </div>
         </Link>
       </div>
@@ -82,13 +91,22 @@ interface ChapterSelectCardProps {
 
 export default function ChapterSelectCard({ chapter, chapterUnlocked, href }: ChapterSelectCardProps) {
   switch (chapter) {
+  case 0:
+    return (
+      <ChapterSelectCardBase
+        href={href ?? '/tutorial'}
+        id='tutorial'
+        levelData={'00000000\n00000000\n00000000\n00000000'}
+        title={'Start'}
+      />
+    );
   case 1:
     return (
       <ChapterSelectCardBase
         complete={!!chapterUnlocked && chapterUnlocked > 1}
         href={href ?? '/chapter1'}
         id='chapter1'
-        levelData={'00000000\n00000000\n00000000\n00000000'}
+        levelData={'50000000\n00000100\n02000000\n00000020'}
         subtitle={'Grassroots'}
         title={'Chapter 1'}
       />

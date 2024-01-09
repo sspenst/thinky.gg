@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { GetServerSidePropsContext } from 'next';
 import { Logger } from 'winston';
 import TestId from '../../../constants/testId';
 import { logger } from '../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
-import { getServerSideProps } from '../../../pages/multiplayer/index';
+import { getServerSideProps } from '../../../pages/[subdomain]/multiplayer/index';
 
 beforeAll(async () => {
   await dbConnect();
@@ -23,7 +24,7 @@ describe('pages/multiplayer page', () => {
     const context = {
     };
 
-    const ret = await getServerSideProps(context as GetServerSidePropsContext);
+    const ret = await getServerSideProps(context as GetServerSidePropsContext) as any;
 
     expect(ret).toBeDefined();
     expect(ret.props).toBeUndefined();
@@ -36,14 +37,37 @@ describe('pages/multiplayer page', () => {
       req: {
         cookies: {
           token: getTokenCookieValue(TestId.USER),
-        }
+        },
+        headers: {
+          host: 'pathology.localhost',
+        },
       },
     };
 
-    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
+    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext)as any;
 
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
     expect(ret.redirect).toBeUndefined();
+  });
+  test('getServerProps with params for a non game', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    const context = {
+      req: {
+        cookies: {
+          token: getTokenCookieValue(TestId.USER),
+        },
+        headers: {
+          host: 'thinky.localhost',
+        },
+      },
+    };
+
+    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext)as any;
+
+    expect(ret).toBeDefined();
+    expect(ret.props).toBeUndefined();
+    expect(ret.redirect).toBeDefined();
+    expect(ret.redirect?.destination).toBe('/');
   });
 });

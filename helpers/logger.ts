@@ -35,7 +35,7 @@ async function makeLogger() {
   };
   let options = devLoggerOptions;
 
-  if (!isLocal() && process.env.NODE_ENV !== 'test') {
+  if (!isLocal() && (process.env.NODE_ENV && process.env.NODE_ENV !== 'test')) {
     options = {
       ...devLoggerOptions,
       level: 'info',

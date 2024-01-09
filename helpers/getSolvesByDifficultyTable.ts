@@ -1,9 +1,10 @@
 import { difficultyList } from '@root/components/formatted/formattedDifficulty';
+import { GameId } from '@root/constants/GameId';
 import Level from '@root/models/db/level';
 import { LevelModel, StatModel } from '@root/models/mongoose';
 import { FilterQuery, SaveOptions, Types } from 'mongoose';
 
-export async function getSolvesByDifficultyTable(
+export async function getSolvesByDifficultyTable(gameId: GameId,
   userId: Types.ObjectId,
   options: SaveOptions = {},
   levelMatch: FilterQuery<Level> = {},
@@ -15,6 +16,7 @@ export async function getSolvesByDifficultyTable(
         userId: userId,
         complete: true,
         isDeleted: { $ne: true },
+        gameId: gameId,
       },
     },
     {

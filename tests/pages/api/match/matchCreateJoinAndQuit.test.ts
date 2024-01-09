@@ -1,4 +1,5 @@
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import { UserWithMultiplayerProfile } from '@root/models/db/user';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
@@ -24,7 +25,7 @@ afterEach(() => {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const defaultReq: any = {
   method: 'PUT',
-  gameId: GameId.PATHOLOGY,
+  gameId: DEFAULT_GAME_ID,
   cookies: {
     token: getTokenCookieValue(TestId.USER),
   },
@@ -99,7 +100,19 @@ describe('matchCreateJoinAndQuit', () => {
         expect(response.players).toHaveLength(2);
 
         for (const player of response.players) {
-          expect(Object.keys(player).sort()).toEqual(['__v', '_id', 'calcRankedSolves', 'calc_levels_created_count', 'calc_records', 'chapterUnlocked', 'last_visited_at', 'name', 'roles', 'score', 'ts'].sort());
+          expect(Object.keys(player).sort()).toEqual(['_id', 'config', 'last_visited_at', 'name', 'roles'].sort());
+          expect(player.config).toBeDefined();
+          const keys = Object.keys(player?.config || []);
+
+          expect(keys.sort()).toEqual(['_id', 'gameId', 'calcRankedSolves', 'calcLevelsCreatedCount', 'calcLevelsCompletedCount', 'calcLevelsSolvedCount', 'calcRecordsCount', 'roles'].sort());
+        }
+
+        for (const winner of response.winners as UserWithMultiplayerProfile[]) {
+          expect(Object.keys(winner).sort()).toEqual(['_id', 'config', 'last_visited_at', 'name', 'roles'].sort());
+          expect(winner.config).toBeDefined();
+          const keys = Object.keys(winner?.config || []);
+
+          expect(keys.sort()).toEqual(['_id', 'gameId', 'calcRankedSolves', 'calcLevelsCompletedCount', 'calcLevelsSolvedCount', 'calcRecordsCount'].sort());
         }
 
         expect(response.gameTable).toBeUndefined();
@@ -144,7 +157,7 @@ describe('matchCreateJoinAndQuit', () => {
         expect(response.matchLog && response.matchLog[2].type).toBe(MatchAction.QUIT);
         expect(response.state).toBe(MultiplayerMatchState.ABORTED);
         expect(response.type).toBe(MultiplayerMatchType.RushBullet);
-        expect(response.levels).toHaveLength(0);
+        expect(response.levels).toHaveLength(3); // NOTE - On 12/4 when introducing the platform we made it so that multiplayer will select pending levels if there is not enough levels in the ecosystem that are not "pending"
         expect(response.winners).toHaveLength(0);
         expect(response.timeUntilStart).toBeGreaterThan(500);
         expect(response.timeUntilEnd).toBeGreaterThan(15000);

@@ -2,8 +2,8 @@ enum TileType {
   Default = '0',
   Wall = '1',
   Block = '2',
-  End = '3',
-  Start = '4',
+  Exit = '3',
+  Player = '4',
   Hole = '5',
   Left = '6',
   Up = '7',
@@ -19,9 +19,24 @@ enum TileType {
   NotDown = 'H',
   LeftRight = 'I',
   UpDown = 'J',
+  BlockOnExit = 'K',
+  LeftOnExit = 'L',
+  UpOnExit = 'M',
+  RightOnExit = 'N',
+  DownOnExit = 'O',
+  UpLeftOnExit = 'P',
+  UpRightOnExit = 'Q',
+  DownRightOnExit = 'R',
+  DownLeftOnExit = 'S',
+  NotLeftOnExit = 'T',
+  NotUpOnExit = 'U',
+  NotRightOnExit = 'V',
+  NotDownOnExit = 'W',
+  LeftRightOnExit = 'X',
+  UpDownOnExit = 'Y',
 }
 
 export default TileType;
 
 // special variable for marking visited tiles in checkpoint images
-export const TileTypeDefaultVisited = 'X';
+export const TileTypeDefaultVisited = '_';

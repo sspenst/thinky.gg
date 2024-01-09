@@ -3,15 +3,18 @@ import AdminCommand from '@root/constants/adminCommand';
 import NotificationType from '@root/constants/notificationType';
 import Role from '@root/constants/role';
 import { ValidEnum, ValidObjectId, ValidType } from '@root/helpers/apiWrapper';
+import genLevelImage from '@root/helpers/genLevelImage';
 import { logger } from '@root/helpers/logger';
 import { createNewAdminMessageNotifications } from '@root/helpers/notificationHelper';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
+import { requestBroadcastReloadPage } from '@root/lib/appSocketToClient';
 import withAuth, { NextApiRequestWithAuth } from '@root/lib/withAuth';
 import Level from '@root/models/db/level';
-import { AchievementModel, LevelModel, NotificationModel, StatModel, UserModel } from '@root/models/mongoose';
+import { AchievementModel, LevelModel, NotificationModel, StatModel, UserConfigModel, UserModel } from '@root/models/mongoose';
 import { calcPlayAttempts, refreshIndexCalcs } from '@root/models/schemas/levelSchema';
 import mongoose, { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
+import { runEmailDigest } from '../internal-jobs/email-digest';
 import { processQueueMessages } from '../internal-jobs/worker';
 
 interface AdminBodyProps {
@@ -46,8 +49,8 @@ export default withAuth({ POST: {
       break;
     case AdminCommand.DeleteAchievements:
       resp = await Promise.all([
-        AchievementModel.deleteMany({ userId: new Types.ObjectId(targetId as string) }),
-        NotificationModel.deleteMany({ userId: new Types.ObjectId(targetId as string), type: NotificationType.NEW_ACHIEVEMENT }),
+        AchievementModel.deleteMany({ userId: new Types.ObjectId(targetId as string), gameId: req.gameId }),
+        NotificationModel.deleteMany({ userId: new Types.ObjectId(targetId as string), type: NotificationType.NEW_ACHIEVEMENT, gameId: req.gameId }),
       ]);
       break;
     case AdminCommand.RefreshIndexCalcs:
@@ -56,6 +59,23 @@ export default withAuth({ POST: {
     case AdminCommand.RefreshPlayAttempts:
       await calcPlayAttempts(new Types.ObjectId(targetId as string));
       break;
+
+    case AdminCommand.SendReloadPageToUsers: {
+      await requestBroadcastReloadPage();
+      break;
+    }
+
+    case AdminCommand.RegenImage: {
+      const lvl = await LevelModel.findById<Level>(new Types.ObjectId(targetId as string));
+
+      if (lvl) {
+        await genLevelImage(lvl);
+      } else {
+        throw new Error('Level not found');
+      }
+
+      break;
+    }
 
     case AdminCommand.SwitchIsRanked: {
       const levelId = new Types.ObjectId(targetId as string);
@@ -76,7 +96,7 @@ export default withAuth({ POST: {
           const stats = await StatModel.find({ levelId: levelId, complete: true }, 'userId', { session: session });
           const userIds = stats.map(stat => stat.userId);
 
-          await UserModel.updateMany({ _id: { $in: userIds } }, { $inc: { calcRankedSolves: newIsRanked ? 1 : -1 } }, { session: session });
+          await UserConfigModel.updateMany({ userId: { $in: userIds }, gameId: req.gameId }, { $inc: { calcRankedSolves: newIsRanked ? 1 : -1 } }, { session: session });
         });
 
         session.endSession();
@@ -87,6 +107,13 @@ export default withAuth({ POST: {
         return res.status(500).json({ error: 'Error switching isRanked' });
       }
 
+      break;
+    }
+
+    case AdminCommand.RunEmailDigest: {
+      const { limit } = JSON.parse(req.body.payload);
+
+      await runEmailDigest(limit);
       break;
     }
 
@@ -124,6 +151,8 @@ export default withAuth({ POST: {
     }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
+    logger.error(e);
+
     return res.status(500).json({
       error: e.message
     });

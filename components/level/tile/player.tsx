@@ -1,6 +1,6 @@
+import { Game } from '@root/constants/Games';
 import { GridContext } from '@root/contexts/gridContext';
 import classNames from 'classnames';
-import { useTheme } from 'next-themes';
 import React, { useContext } from 'react';
 import Theme, { getIconFromTheme } from '../../../constants/theme';
 import TileType from '../../../constants/tileType';
@@ -8,23 +8,26 @@ import styles from './Player.module.css';
 
 interface PlayerProps {
   atEnd?: boolean;
+  game: Game;
   moveCount: number;
+  theme: Theme;
 }
 
-export default function Player({ atEnd, moveCount }: PlayerProps) {
-  const { borderWidth, innerTileSize, leastMoves, tileSize } = useContext(GridContext);
-  const text = String(moveCount);
+export default function Player({ atEnd, game, moveCount, theme }: PlayerProps) {
+  const { borderWidth, hideText, innerTileSize, leastMoves, tileSize } = useContext(GridContext);
+  const text = hideText ? '' : String(moveCount);
   const fontSizeRatio = text.length <= 3 ? 2 : (1 + (text.length - 1) / 2);
   const fontSize = innerTileSize / fontSizeRatio;
-  const { theme } = useTheme();
+
   const classic = theme === Theme.Classic;
-  const icon = getIconFromTheme(theme, TileType.Start);
+  const icon = getIconFromTheme(game, theme, TileType.Player);
   const overstepped = leastMoves !== 0 && moveCount > leastMoves;
 
   return (
     <div
       className={classNames(
-        'select-none z-20 flex items-center justify-center relative',
+        'select-none z-20 flex items-center justify-center relative tile-type-4',
+        'tile-' + game.id,
         overstepped ? styles.extra : undefined,
         !atEnd ? undefined : overstepped ? styles.lose :
           classic ? styles['win-classic'] : styles.win,
@@ -48,7 +51,7 @@ export default function Player({ atEnd, moveCount }: PlayerProps) {
       }}
     >
       {icon ?
-        <span className={`${theme}-${TileType.Start}`}>
+        <span className={`${theme}-${TileType.Player}`}>
           {icon({
             fontSize: fontSize,
             overstepped: overstepped,

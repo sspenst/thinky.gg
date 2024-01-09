@@ -1,4 +1,4 @@
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext } from 'next';
 import { Logger } from 'winston';
@@ -6,15 +6,15 @@ import TestId from '../../../constants/testId';
 import { logger } from '../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
-import { CampaignModel, UserModel } from '../../../models/mongoose';
-import { getServerSideProps } from '../../../pages/chapter3';
+import { CampaignModel, UserConfigModel } from '../../../models/mongoose';
+import { getServerSideProps } from '../../../pages/[subdomain]/chapter3';
 
 beforeAll(async () => {
   await dbConnect();
   await CampaignModel.create({
     _id: new Types.ObjectId(),
     collections: [new Types.ObjectId(TestId.COLLECTION)],
-    gameId: GameId.PATHOLOGY,
+    gameId: DEFAULT_GAME_ID,
     name: 'Chapter 1',
     slug: 'chapter3',
   });
@@ -54,7 +54,7 @@ describe('pages/chapter3 page', () => {
   });
   test('getServerSideProps logged in chapterUnlocked 2', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    await UserModel.updateOne({ _id: new Types.ObjectId(TestId.USER) }, { $set: { chapterUnlocked: 2 } });
+    await UserConfigModel.updateOne({ userId: new Types.ObjectId(TestId.USER) }, { $set: { chapterUnlocked: 2 } });
     // Created from initialize db file
 
     const context = {
@@ -71,7 +71,7 @@ describe('pages/chapter3 page', () => {
     expect(ret.redirect?.destination).toBe('/play');
   });
   test('getServerSideProps logged in chapterUnlocked 3', async () => {
-    await UserModel.updateOne({ _id: new Types.ObjectId(TestId.USER) }, { $set: { chapterUnlocked: 3 } });
+    await UserConfigModel.updateOne({ userId: new Types.ObjectId(TestId.USER) }, { $set: { chapterUnlocked: 3 } });
 
     // Created from initialize db file
     const context = {

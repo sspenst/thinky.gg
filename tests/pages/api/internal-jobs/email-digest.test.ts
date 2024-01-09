@@ -1,9 +1,9 @@
-import { GameId } from '@root/constants/GameId';
-import { NextApiRequestGuest } from '@root/helpers/apiWrapper';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import { NextApiRequestWrapper } from '@root/helpers/apiWrapper';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
-import { EmailDigestSettingTypes, EmailType } from '../../../../constants/emailDigest';
+import { EmailDigestSettingType, EmailType } from '../../../../constants/emailDigest';
 import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
 import { createNewRecordOnALevelYouSolvedNotifications } from '../../../../helpers/notificationHelper';
@@ -42,8 +42,8 @@ describe('Email digest', () => {
   test('send with an invalid process.env var', async () => {
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequestGuest = {
-          gameId: GameId.PATHOLOGY,
+        const req: NextApiRequestWrapper = {
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             secret: 'abc'
@@ -54,7 +54,7 @@ describe('Email digest', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequestGuest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },
@@ -75,12 +75,10 @@ describe('Email digest', () => {
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
 
-    await createNewRecordOnALevelYouSolvedNotifications(GameId.PATHOLOGY, [TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah');
-
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequestGuest = {
-          gameId: GameId.PATHOLOGY,
+        const req: NextApiRequestWrapper = {
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST,
@@ -92,15 +90,13 @@ describe('Email digest', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequestGuest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
-
-        expect(response.emailDigestFailed).toHaveLength(1);
 
         expect(res.status).toBe(200);
 
@@ -109,6 +105,8 @@ describe('Email digest', () => {
         expect(emailLogs).toHaveLength(1);
         expect(emailLogs[0].state).toBe(EmailState.FAILED);
         expect(emailLogs[0].error).toBe('Error: Mock email error');
+
+        expect(response.failed[EmailType.EMAIL_DIGEST]).toHaveLength(1);
       },
     });
   }, 10000);
@@ -120,12 +118,10 @@ describe('Email digest', () => {
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
 
-    await createNewRecordOnALevelYouSolvedNotifications(GameId.PATHOLOGY, [TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah');
-
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequestGuest = {
-          gameId: GameId.PATHOLOGY,
+        const req: NextApiRequestWrapper = {
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST,
@@ -136,7 +132,7 @@ describe('Email digest', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequestGuest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },
@@ -144,13 +140,14 @@ describe('Email digest', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.emailDigestFailed).toHaveLength(2);
-        expect(response.emailDigestFailed[0]).toBe('bbb@gmail.com');
+        // TestId.USER has a last_visited_at while the other two don't
+        expect(response.failed[EmailType.EMAIL_DIGEST].sort()).toMatchObject(['test@gmail.com'].sort());
+        expect(response.failed[EmailType.EMAIL_7D_REACTIVATE].sort()).toMatchObject(['admin@admin.com', 'bbb@gmail.com', 'the_curator@gmail.com'].sort());
         expect(res.status).toBe(200);
 
         const emailLogs = await EmailLogModel.find({}, {}, { sort: { createdAt: -1 } });
 
-        expect(emailLogs).toHaveLength(3);
+        expect(emailLogs).toHaveLength(5);
         expect(emailLogs[0].state).toBe(EmailState.FAILED);
         expect(emailLogs[0].error).toBe('Error: Mock email error');
       },
@@ -158,7 +155,7 @@ describe('Email digest', () => {
   }, 10000);
   test('User set email setting to never', async () => {
     // setup
-    await UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.NONE }, {});
+    await UserModel.findOneAndUpdate({ _id: TestId.USER }, { emailDigest: EmailDigestSettingType.NONE }, {});
     sendMailRefMock.ref = acceptMock;
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
@@ -166,13 +163,10 @@ describe('Email digest', () => {
 
     await dbConnect();
 
-    await Promise.all([createNewRecordOnALevelYouSolvedNotifications(GameId.PATHOLOGY, [TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah'),
-      createNewRecordOnALevelYouSolvedNotifications(GameId.PATHOLOGY, [TestId.USER_C], TestId.USER, TestId.LEVEL_2, 'blah2')]);
-
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequestGuest = {
-          gameId: GameId.PATHOLOGY,
+        const req: NextApiRequestWrapper = {
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
@@ -183,7 +177,7 @@ describe('Email digest', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequestGuest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },
@@ -193,16 +187,17 @@ describe('Email digest', () => {
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        expect(response.emailDigestSent).toHaveLength(1);
-        expect(response.emailDigestFailed).toHaveLength(0);
-        expect(response.emailReactivationSent).toHaveLength(0);
-        expect(response.emailReactivationFailed).toHaveLength(0);
+
+        expect(response.sent[EmailType.EMAIL_7D_REACTIVATE].sort()).toMatchObject(['admin@admin.com', 'bbb@gmail.com', 'the_curator@gmail.com'].sort());
+        expect(response.sent[EmailType.EMAIL_DIGEST]).toHaveLength(0);
+        expect(response.failed[EmailType.EMAIL_DIGEST]).toHaveLength(0);
+        expect(response.failed[EmailType.EMAIL_7D_REACTIVATE]).toHaveLength(0);
       },
     });
   }, 10000);
   test('Run it once OK', async () => {
     // setup
-    await UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.DAILY }, {});
+    await UserModel.findOneAndUpdate({ _id: TestId.USER }, { emailDigest: EmailDigestSettingType.DAILY }, {});
     sendMailRefMock.ref = acceptMock;
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
@@ -210,13 +205,10 @@ describe('Email digest', () => {
 
     await dbConnect();
 
-    await Promise.all([createNewRecordOnALevelYouSolvedNotifications(GameId.PATHOLOGY, [TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah'),
-      createNewRecordOnALevelYouSolvedNotifications(GameId.PATHOLOGY, [TestId.USER_C], TestId.USER, TestId.LEVEL_2, 'blah2')]);
-
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequestGuest = {
-          gameId: GameId.PATHOLOGY,
+        const req: NextApiRequestWrapper = {
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
@@ -227,7 +219,7 @@ describe('Email digest', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequestGuest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },
@@ -237,15 +229,15 @@ describe('Email digest', () => {
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        expect(response.emailDigestSent).toHaveLength(1); // TEST USER C has no UserConfig so we skip this user, and TEST USER B has no notifications in the last 24 hrs
-        expect(response.emailDigestSent[0]).toBe('test@gmail.com');
-        expect(response.emailReactivationSent).toHaveLength(0);
+        expect(response.sent[EmailType.EMAIL_DIGEST]).toHaveLength(1); // TEST USER C has no UserConfig so we skip this user, and TEST USER B has no notifications in the last 24 hrs
+        expect(response.sent[EmailType.EMAIL_DIGEST][0]).toBe('test@gmail.com');
+        expect(response.sent[EmailType.EMAIL_7D_REACTIVATE]).toHaveLength(0);
       },
     });
   }, 10000);
-  test('Run it again for another user who set settings to daily but has no notificaitons', async () => {
+  test('Clear emails. Run it again for user who set settings to daily but has no notificaitons', async () => {
     // setup
-    await Promise.all([UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.DAILY }, {}),
+    await Promise.all([UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingType.DAILY }, {}),
       EmailLogModel.deleteMany({}),
       NotificationModel.deleteMany({})
     ]);
@@ -258,8 +250,8 @@ describe('Email digest', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequestGuest = {
-          gameId: GameId.PATHOLOGY,
+        const req: NextApiRequestWrapper = {
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
@@ -270,7 +262,7 @@ describe('Email digest', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequestGuest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },
@@ -280,10 +272,8 @@ describe('Email digest', () => {
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        expect(response.emailDigestSent).toHaveLength(2); // TEST USER C has no UserConfig so we skip this user, and TEST USER B has no notifications in the last 24 hrs
-        expect(response.emailDigestSent[0]).toBe('bbb@gmail.com');
-        expect(response.emailDigestSent[1]).toBe('test@gmail.com');
-        expect(response.emailReactivationSent).toHaveLength(0);
+        expect(response.sent[EmailType.EMAIL_DIGEST].sort()).toMatchObject(['test@gmail.com'].sort());
+        expect(response.sent[EmailType.EMAIL_7D_REACTIVATE]).toHaveLength(3); // since we cleared the emails from the previous test, we should send reactivation emails to the other two users
       },
     });
   }, 10000);
@@ -297,8 +287,8 @@ describe('Email digest', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequestGuest = {
-          gameId: GameId.PATHOLOGY,
+        const req: NextApiRequestWrapper = {
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
@@ -309,7 +299,7 @@ describe('Email digest', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequestGuest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },
@@ -319,8 +309,8 @@ describe('Email digest', () => {
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        expect(response.emailDigestSent).toHaveLength(0);
-        expect(response.emailReactivationSent).toHaveLength(0);
+        expect(response.sent[EmailType.EMAIL_DIGEST]).toHaveLength(0);
+        expect(response.sent[EmailType.EMAIL_7D_REACTIVATE]).toHaveLength(0);
       },
     });
   }, 10000);
@@ -328,7 +318,7 @@ describe('Email digest', () => {
     // delete user config
     await Promise.all([UserModel.findByIdAndDelete(TestId.USER),
       EmailLogModel.deleteMany({ type: EmailType.EMAIL_DIGEST, userId: TestId.USER }),
-      createNewRecordOnALevelYouSolvedNotifications(GameId.PATHOLOGY, [TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah')]);
+      createNewRecordOnALevelYouSolvedNotifications(DEFAULT_GAME_ID, [TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah')]);
 
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
@@ -337,8 +327,8 @@ describe('Email digest', () => {
 
     await testApiHandler({
       handler: async (_, res) => {
-        const req: NextApiRequestGuest = {
-          gameId: GameId.PATHOLOGY,
+        const req: NextApiRequestWrapper = {
+          gameId: DEFAULT_GAME_ID,
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
@@ -349,7 +339,7 @@ describe('Email digest', () => {
           headers: {
             'content-type': 'application/json',
           },
-        } as unknown as NextApiRequestGuest;
+        } as unknown as NextApiRequestWrapper;
 
         await handler(req, res);
       },
@@ -358,10 +348,10 @@ describe('Email digest', () => {
         const response = await res.json();
 
         expect(response.error).toBeUndefined();
-        expect(response.emailDigestSent).toHaveLength(0);
-        expect(response.emailDigestFailed).toHaveLength(0);
-        expect(response.emailReactivationSent).toHaveLength(0);
-        expect(response.emailReactivationFailed).toHaveLength(0);
+        expect(response.sent[EmailType.EMAIL_DIGEST]).toHaveLength(0);
+        expect(response.failed[EmailType.EMAIL_DIGEST]).toHaveLength(0);
+        expect(response.sent[EmailType.EMAIL_7D_REACTIVATE]).toHaveLength(0);
+        expect(response.sent[EmailType.EMAIL_7D_REACTIVATE]).toHaveLength(0);
         expect(res.status).toBe(200);
       },
     });

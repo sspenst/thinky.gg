@@ -1,7 +1,11 @@
 import Dimensions from '@root/constants/dimensions';
+import { GameId } from '@root/constants/GameId';
+import { AppContext } from '@root/contexts/appContext';
+import getLevelCompleteColor from '@root/helpers/getLevelCompleteColor';
+import useUrl from '@root/hooks/useUrl';
 import Image from 'next/image';
 import Link from 'next/link';
-import React from 'react';
+import React, { useContext } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { EnrichedLevel } from '../../models/db/level';
 import Solved from '../level/info/solved';
@@ -10,11 +14,15 @@ import StyledTooltip from '../page/styledTooltip';
 interface EnrichedLevelLinkProps {
   // NB: this id should not contain the level id
   id: string;
+  gameId?: GameId;
   level: EnrichedLevel;
   onClick?: () => void;
 }
 
-export default function FormattedLevelLink({ id, level, onClick }: EnrichedLevelLinkProps) {
+export default function FormattedLevelLink({ id, gameId, level, onClick }: EnrichedLevelLinkProps) {
+  const { game } = useContext(AppContext);
+  const getUrl = useUrl();
+  const href = getUrl(gameId || game.id, `/level/${level.slug}`);
   const isSolved = level.userMoves === level.leastMoves;
   const tooltipId = `formatted-level-link-${level._id.toString()}-${id}`;
 
@@ -31,12 +39,12 @@ export default function FormattedLevelLink({ id, level, onClick }: EnrichedLevel
         />
       )}
       data-tooltip-id={tooltipId}
-      href={`/level/${level.slug}`}
+      href={href}
       onClick={onClick}
       passHref
       prefetch={false}
       style={{
-        color: level.userMoves ? (isSolved ? 'var(--color-complete)' : 'var(--color-incomplete)') : undefined,
+        color: getLevelCompleteColor(level),
         // to handle zero width level names
         minWidth: 10,
       }}

@@ -1,5 +1,6 @@
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import Theme from '@root/constants/theme';
+import { processQueueMessages } from '@root/pages/api/internal-jobs/worker';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -30,6 +31,7 @@ jest.mock('stripe', () => {
       },
       paymentMethods: {
         retrieve: jest.fn(),
+        list: jest.fn(),
       },
       subscriptions: {
         list: jest.fn().mockReturnValue({ data: [] }),
@@ -258,19 +260,19 @@ describe('api/follow', () => {
 
     // USER is still following USER_C, so we're getting USER_C to publish a level
     const [level, ] = await Promise.all([
-      initLevel(TestId.USER_C, 'notif', {
+      initLevel(DEFAULT_GAME_ID, TestId.USER_C, 'notif', {
         data: '43',
         height: 1,
         isDraft: true,
         leastMoves: 1,
         width: 2,
       }),
-      // set emailConfirmed for UserC. User C has no user config
-      await UserConfigModel.create({
-        _id: new Types.ObjectId(),
-        gameId: GameId.PATHOLOGY,
-        theme: Theme.Modern,
+
+      await UserConfigModel.findOneAndUpdate({
         userId: new Types.ObjectId(TestId.USER_C),
+        gameId: DEFAULT_GAME_ID,
+      }, {
+        theme: Theme.Modern,
       })
 
     ]);
@@ -302,7 +304,7 @@ describe('api/follow', () => {
         const lvl = await LevelModel.findById(level._id);
 
         expect(lvl.isDraft).toBe(false);
-
+        await processQueueMessages();
         const notifs = await NotificationModel.find({ userId: TestId.USER, type: NotificationType.NEW_LEVEL });
 
         expect(notifs).toHaveLength(1);

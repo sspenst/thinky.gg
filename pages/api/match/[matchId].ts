@@ -1,283 +1,24 @@
 import Discord from '@root/constants/discord';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
+import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
+import { generateLevels } from '@root/helpers/match/generateLevels';
+import { getMatch } from '@root/helpers/match/getMatch';
+import { matchMarkSkipLevel } from '@root/helpers/match/matchMarkSkipLevel';
+import { quitMatch } from '@root/helpers/match/quitMatch';
 import { multiplayerMatchTypeToText } from '@root/helpers/multiplayerHelperFunctions';
-import { Types } from 'mongoose';
+import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
+import { PipelineStage } from 'mongoose';
 import { NextApiResponse } from 'next';
-import { DIFFICULTY_INDEX, getDifficultyRangeByIndex } from '../../../components/formatted/formattedDifficulty';
+import { DIFFICULTY_INDEX } from '../../../components/formatted/formattedDifficulty';
 import { ValidEnum } from '../../../helpers/apiWrapper';
-import { logger } from '../../../helpers/logger';
-import { requestBroadcastMatch, requestBroadcastMatches, requestBroadcastPrivateAndInvitedMatches, requestClearBroadcastMatchSchedule, requestScheduleBroadcastMatch } from '../../../lib/appSocketToClient';
+import { requestBroadcastMatch, requestBroadcastMatches, requestBroadcastPrivateAndInvitedMatches, requestScheduleBroadcastMatch } from '../../../lib/appSocketToClient';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { MatchAction, MultiplayerMatchState, MultiplayerMatchType, MultiplayerMatchTypeDurationMap } from '../../../models/constants/multiplayer';
 import Level from '../../../models/db/level';
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
-import User from '../../../models/db/user';
-import { LevelModel, MultiplayerMatchModel } from '../../../models/mongoose';
-import { enrichMultiplayerMatch, generateMatchLog, SKIP_MATCH_LEVEL_ID } from '../../../models/schemas/multiplayerMatchSchema';
-import { finishMatch, getAllMatches } from '.';
-
-export async function abortMatch(matchId: string, userId: Types.ObjectId) {
-  await requestClearBroadcastMatchSchedule(matchId);
-  const log = generateMatchLog(MatchAction.ABORTED, {
-    userId: userId,
-  });
-  const updatedMatch = await MultiplayerMatchModel.updateOne(
-    {
-      matchId: matchId,
-      state: MultiplayerMatchState.ACTIVE,
-    },
-    {
-      state: MultiplayerMatchState.ABORTED,
-      $push: {
-        matchLog: log,
-      },
-    },
-  );
-
-  return updatedMatch.modifiedCount > 0;
-}
-
-export async function quitMatch(matchId: string, userId: Types.ObjectId) {
-  const log = generateMatchLog(MatchAction.QUIT, {
-    userId: userId,
-  });
-
-  let updatedMatch = await MultiplayerMatchModel.findOneAndUpdate(
-    {
-      matchId: matchId,
-      players: userId,
-      $or: [
-        {
-          startTime: { $gte: Date.now() },
-          state: MultiplayerMatchState.ACTIVE,
-        },
-        {
-          state: MultiplayerMatchState.OPEN,
-        },
-      ]
-    },
-    {
-      $pull: {
-        players: userId,
-      },
-      $push: {
-        matchLog: log,
-      },
-      state: MultiplayerMatchState.ABORTED,
-    },
-    { new: true, populate: ['players', 'winners', 'levels'] }
-  ).lean<MultiplayerMatch>();
-
-  if (!updatedMatch) {
-    updatedMatch = await MultiplayerMatchModel.findOne({ matchId: matchId, players: userId, state: MultiplayerMatchState.ACTIVE }).lean<MultiplayerMatch>();
-
-    if (!updatedMatch) {
-      logger.error('Could not find match ' + matchId);
-
-      return null;
-    }
-
-    await finishMatch(updatedMatch, userId.toString());
-  }
-
-  enrichMultiplayerMatch(updatedMatch, userId.toString());
-  await requestBroadcastMatch(matchId as string);
-  await requestBroadcastMatches();
-  await requestClearBroadcastMatchSchedule(
-    updatedMatch.matchId,
-  );
-  await requestClearBroadcastMatchSchedule(
-    updatedMatch.matchId,
-  );
-
-  return updatedMatch;
-}
-
-export async function matchMarkSkipLevel(
-  userId: Types.ObjectId,
-  matchId: string,
-  levelId: Types.ObjectId,
-) {
-  const skipId = new Types.ObjectId(SKIP_MATCH_LEVEL_ID);
-
-  const updated = await MultiplayerMatchModel.updateOne(
-    {
-      matchId: matchId,
-      players: userId,
-      // check if scoreTable.{req.userId} is set
-      [`gameTable.${userId.toString()}`]: { $exists: true },
-      [`gameTable.${userId.toString()}`]: { $ne: skipId },
-      // check if game is active
-      state: MultiplayerMatchState.ACTIVE,
-
-      // check endTime is before now
-      endTime: { $gte: new Date() },
-    },
-    {
-      // add all zeros to mark skipped
-      $addToSet: { [`gameTable.${userId.toString()}`]: skipId },
-      $push: {
-        matchLog: generateMatchLog(MatchAction.SKIP_LEVEL, {
-          userId: userId,
-          levelId: levelId,
-        }),
-      },
-    }
-  );
-
-  await requestBroadcastMatch(matchId);
-  await requestBroadcastMatches();
-
-  return updated;
-}
-
-export async function matchMarkCompleteLevel(
-  userId: Types.ObjectId,
-  matchId: string,
-  levelId: Types.ObjectId,
-) {
-  const updated = await MultiplayerMatchModel.findOneAndUpdate(
-    {
-      matchId: matchId,
-      players: userId,
-      // check if scoreTable.{req.userId} is set
-      [`gameTable.${userId.toString()}`]: { $exists: true },
-      // make sure this level is in the levels array
-      levels: levelId,
-      // check if game is active
-      state: MultiplayerMatchState.ACTIVE,
-      // check endTime is before now
-      endTime: { $gte: new Date() },
-    },
-    {
-      // increment the scoreTable.{req.userId} by 1
-      $addToSet: { [`gameTable.${userId}`]: levelId },
-      $push: {
-        matchLog: generateMatchLog(MatchAction.COMPLETE_LEVEL, {
-          userId: userId,
-          levelId: levelId,
-        }),
-      },
-    }
-  ) as MultiplayerMatch;
-  /*
-// TODO later
-  let maxLength = 0;
-
-  for (const entry in updated.gameTable) {
-    maxLength = Math.max(maxLength, updated.gameTable[entry.length].length);
-  }
-
-  const len = updated.levels.length;
-
-  if (maxLength >= len) {
-    // generate another 30 levels
-
-  }*/
-
-  await Promise.all([requestBroadcastMatch(matchId), requestBroadcastMatches()]);
-
-  return updated;
-}
-
-export async function getMatch(matchId: string, reqUser?: User) {
-  // populate players, winners, and levels
-  const matches = await getAllMatches(reqUser, { matchId: matchId });
-
-  if (matches.length === 0) {
-    return null;
-  }
-
-  return matches[0];
-}
-
-/**
- *
- * @param minDifficultyIndex
- * @param maxDifficultyIndex Pass the same value as min to make it a single difficulty
- * @param levelCount
- * @returns
- */
-export async function generateLevels(
-  minDifficultyIndex: DIFFICULTY_INDEX,
-  maxDifficultyIndex: DIFFICULTY_INDEX,
-  options: {
-    minSteps?: number;
-    maxSteps?: number;
-    minLaplace?: number;
-    maxWidth?: number;
-    maxHeight?: number;
-  },
-  levelCount: number,
-) {
-  // generate a new level based on criteria...
-  const MIN_STEPS = options.minSteps || 8;
-  const MAX_STEPS = options.maxSteps || 100;
-  const MAX_WIDTH = options.maxWidth || 25;
-  const MAX_HEIGHT = options.maxHeight || 25;
-  const MIN_REVIEWS = 3;
-  const MIN_LAPLACE = options.minLaplace || 0.3;
-  const [minDifficultyRange] = getDifficultyRangeByIndex(minDifficultyIndex);
-  const [, maxDifficultyRange] = getDifficultyRangeByIndex(maxDifficultyIndex);
-
-  const levels = await LevelModel.aggregate<Level>([
-    {
-      $match: {
-        isDeleted: { $ne: true },
-        isDraft: false,
-        leastMoves: {
-          // least moves between 10 and 100
-          $gte: MIN_STEPS,
-          $lte: MAX_STEPS,
-        },
-        calc_difficulty_estimate: {
-          $gte: minDifficultyRange,
-          $lt: maxDifficultyRange,
-          $exists: true,
-        },
-        calc_reviews_count: {
-          // at least 3 reviews
-          $gte: MIN_REVIEWS,
-        },
-        calc_reviews_score_laplace: {
-          $gte: MIN_LAPLACE,
-        },
-        width: {
-          $lte: MAX_WIDTH,
-        },
-        height: {
-          $lte: MAX_HEIGHT,
-        }
-      },
-    },
-    {
-      $addFields: {
-        tmpOrder: { $rand: {} },
-      },
-    },
-    {
-      $sort: {
-        tmpOrder: 1,
-      },
-    },
-    {
-      $limit: levelCount,
-    },
-    {
-      $sort: {
-        calc_difficulty_estimate: 1,
-      },
-    },
-    {
-      $project: {
-        _id: 1,
-        leastMoves: 1
-      },
-    },
-  ]);
-
-  return levels;
-}
+import { LevelModel, MultiplayerMatchModel, UserModel } from '../../../models/mongoose';
+import { enrichMultiplayerMatch, generateMatchLog } from '../../../models/schemas/multiplayerMatchSchema';
 
 export default withAuth(
   {
@@ -297,7 +38,7 @@ export default withAuth(
     const { matchId } = req.query;
 
     if (req.method === 'GET') {
-      const match = await getMatch(matchId as string, req.user);
+      const match = await getMatch(req.gameId, matchId as string, req.user);
 
       if (!match) {
         return res.status(404).json({ error: 'Match not found' });
@@ -308,7 +49,7 @@ export default withAuth(
       const { action, levelId } = req.body;
 
       if (action === MatchAction.MARK_READY) {
-        const updateMatch = await MultiplayerMatchModel.updateOne(
+        const updateMatch = await MultiplayerMatchModel.findOneAndUpdate(
           {
             matchId: matchId,
             players: req.user._id,
@@ -319,16 +60,17 @@ export default withAuth(
           },
           {
             $addToSet: { markedReady: req.user._id },
-          }
+          },
+          { new: true }
         );
 
-        if (updateMatch.modifiedCount === 0) {
+        if (updateMatch.length === 0) {
           return res.status(400).json({
             error: 'Cannot mark yourself ready in this match',
           });
         }
 
-        await requestBroadcastMatch(matchId as string);
+        await requestBroadcastMatch(updateMatch.gameId, matchId as string);
 
         return res.status(200).json({ success: true });
       } else if (action === MatchAction.JOIN) {
@@ -339,6 +81,7 @@ export default withAuth(
             state: {
               $in: [MultiplayerMatchState.ACTIVE, MultiplayerMatchState.OPEN],
             },
+            gameId: req.gameId,
           },
         ).lean<MultiplayerMatch>();
 
@@ -381,8 +124,10 @@ export default withAuth(
             endTime: Date.now() + 15000 + MultiplayerMatchTypeDurationMap[match.type as MultiplayerMatchType], // end 3 minute after start
             state: MultiplayerMatchState.ACTIVE,
           },
-          { new: true, populate: ['players', 'winners', 'levels'] }
+          { new: true }
         ).lean<MultiplayerMatch>();
+
+        //populate: ['players', 'winners', 'levels']
 
         if (!updatedMatch) {
           res
@@ -392,8 +137,59 @@ export default withAuth(
           return;
         }
 
-        if (updatedMatch.players.length === 2) {
+        const matchPopulated = await MultiplayerMatchModel.aggregate<MultiplayerMatch>([
+          {
+            $match: {
+              matchId: matchId,
+            },
+          },
+          {
+            $lookup: {
+              from: UserModel.collection.name,
+              localField: 'players',
+              foreignField: '_id',
+              as: 'players',
+              pipeline: [
+                {
+                  $project: USER_DEFAULT_PROJECTION
+                },
+                ...getEnrichUserConfigPipelineStage(updatedMatch.gameId) as PipelineStage.Lookup[],
+              ]
+            },
+          },
+          {
+            $lookup: {
+              from: UserModel.collection.name,
+              localField: 'winners',
+              foreignField: '_id',
+              as: 'winners',
+              pipeline: [
+                {
+                  $project: USER_DEFAULT_PROJECTION
+                },
+                ...getEnrichUserConfigPipelineStage(updatedMatch.gameId) as PipelineStage.Lookup[],
+              ]
+            },
+          },
+          {
+            $lookup: {
+              from: LevelModel.collection.name,
+              localField: 'levels',
+              foreignField: '_id',
+              as: 'levels',
+            },
+          },
+        ]);
+
+        if (matchPopulated.length === 0) {
+          return res.status(500).json({ error: 'Error populating match' });
+        }
+
+        const populatedMatch = matchPopulated[0];
+
+        if (populatedMatch.players.length === 2) {
           const level0s = generateLevels(
+            populatedMatch.gameId,
             DIFFICULTY_INDEX.KINDERGARTEN,
             DIFFICULTY_INDEX.ELEMENTARY,
             {
@@ -404,23 +200,27 @@ export default withAuth(
             10
           );
           const level1s = generateLevels(
+            populatedMatch.gameId,
             DIFFICULTY_INDEX.JUNIOR_HIGH,
             DIFFICULTY_INDEX.HIGH_SCHOOL,
             {},
             20
           );
           const level2s = generateLevels(
+            populatedMatch.gameId,
             DIFFICULTY_INDEX.BACHELORS,
             DIFFICULTY_INDEX.PROFESSOR,
             {},
             5
           );
           const level3s = generateLevels(
+            populatedMatch.gameId,
             DIFFICULTY_INDEX.PHD,
             DIFFICULTY_INDEX.SUPER_GRANDMASTER,
             {},
             5
           );
+
           const [l0, l1, l2, l3] = await Promise.all([
             level0s,
             level1s,
@@ -431,9 +231,21 @@ export default withAuth(
           // dedupe these level ids, just in case though it should be extremely rare
           const dedupedLevels = new Set([...l0, ...l1, ...l2, ...l3]);
 
+          if (dedupedLevels.size < 40) {
+            // we don't have enough levels, so try and query any levels at all...
+            // @TODO: Remove this when games have enough levels
+            const level4s = await LevelModel.find<Level[]>({
+              isDraft: { $ne: true },
+              isDeleted: { $ne: true },
+              gameId: populatedMatch.gameId }, { _id: 1 }, { limit: 40 - dedupedLevels.size }).lean<Level[]>();
+
+            level4s.forEach(level => dedupedLevels.add(level));
+          }
+
           // add levels to match
           const matchUrl = `${req.headers.origin}/match/${matchId}`;
-          const discordMessage = `*${multiplayerMatchTypeToText(match.type)}* match starting between ${updatedMatch.players?.map(p => `**${p.name}**`).join(' and ')}! [Spectate here](<${matchUrl}>)`;
+          const game = getGameFromId(populatedMatch.gameId);
+          const discordMessage = `**${game.displayName}** - *${multiplayerMatchTypeToText(match.type)}* match starting between ${populatedMatch.players?.map(p => `**${p.name}**`).join(' and ')}! [Spectate here](<${matchUrl}>)`;
 
           Promise.all([
             MultiplayerMatchModel.updateOne(
@@ -441,8 +253,8 @@ export default withAuth(
               {
                 levels: [...dedupedLevels].map((level: Level) => level._id),
                 gameTable: {
-                  [updatedMatch.players[0]._id.toString()]: [],
-                  [updatedMatch.players[1]._id.toString()]: [],
+                  [populatedMatch.players[0]._id.toString()]: [],
+                  [populatedMatch.players[1]._id.toString()]: [],
                 },
               }
             ),
@@ -450,16 +262,16 @@ export default withAuth(
           ]);
         }
 
-        enrichMultiplayerMatch(updatedMatch, req.userId);
+        enrichMultiplayerMatch(populatedMatch, req.userId);
 
         await Promise.all([
-          requestBroadcastMatches(),
-          requestBroadcastPrivateAndInvitedMatches(req.user._id),
-          requestBroadcastMatch(updatedMatch.matchId),
-          requestScheduleBroadcastMatch(updatedMatch.matchId),
+          requestBroadcastMatches(populatedMatch.gameId),
+          requestBroadcastPrivateAndInvitedMatches(populatedMatch.gameId, req.user._id),
+          requestBroadcastMatch(populatedMatch.gameId, populatedMatch.matchId),
+          requestScheduleBroadcastMatch(populatedMatch.gameId, populatedMatch.matchId),
         ]);
 
-        return res.status(200).json(updatedMatch);
+        return res.status(200).json(populatedMatch);
       } else if (action === MatchAction.QUIT) {
         const updatedMatch = await quitMatch(matchId as string, req.user._id);
 
@@ -467,7 +279,7 @@ export default withAuth(
           return res.status(400).json({ error: 'Match not found' });
         }
 
-        await requestBroadcastPrivateAndInvitedMatches(req.user._id);
+        await requestBroadcastPrivateAndInvitedMatches(updatedMatch.gameId, req.user._id);
 
         return res.status(200).json(updatedMatch);
       } else if (action === MatchAction.SKIP_LEVEL) {
@@ -478,7 +290,7 @@ export default withAuth(
           levelId,
         );
 
-        return result.modifiedCount === 1
+        return result
           ? res.status(200).json({ success: true })
           : res.status(400).json({ error: 'Already used skip' });
       }

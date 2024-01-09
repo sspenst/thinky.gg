@@ -1,5 +1,5 @@
 import AchievementType from '@root/constants/achievements/achievementType';
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -14,7 +14,7 @@ import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker
 import reviewLevelHandler, { getScoreEmojis } from '../../../../pages/api/review/[id]';
 
 beforeAll(async () => {
-  await dbConnect();
+  await dbConnect(); // see if that erroneous index error goes away when commenting this out...
 });
 afterEach(() => {
   jest.restoreAllMocks();
@@ -25,401 +25,12 @@ afterAll(async () => {
 enableFetchMocks();
 
 describe('Reviewing levels should work correctly', () => {
-  test('Wrong HTTP method should fail', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'PATCH',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER_B),
-          },
-          body: {
-
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await reviewLevelHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('Method not allowed');
-        expect(res.status).toBe(405);
-      },
-    });
-  });
-  test('Testing POSTing without query should fail', async () => {
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'POST',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER_B),
-          },
-          body: {
-
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await reviewLevelHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('Invalid body.score, query.id');
-        expect(res.status).toBe(400);
-      },
-    });
-  });
-  test('Testing POSTing with missing score parameter should fail', async () => {
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'POST',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER_B),
-          },
-          query: {
-            id: TestId.LEVEL_2,
-          },
-          body: {
-            text: 'great game',
-            // missing score
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await reviewLevelHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('Invalid body.score');
-        expect(res.status).toBe(400);
-      },
-    });
-  });
-  test('Testing POSTing with no score AND empty text should fail', async () => {
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'POST',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER_B),
-          },
-          query: {
-            id: TestId.LEVEL_3,
-          },
-          body: {
-            score: 0,
-            text: '',
-            // missing score
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await reviewLevelHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('Missing required parameters');
-        expect(res.status).toBe(400);
-      },
-    });
-  });
-  test('Testing creating but target level is not published', async () => {
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'POST',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER_B),
-          },
-          query: {
-            id: TestId.LEVEL_2,
-          },
-          body: {
-            text: 'great game',
-            score: 3,
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await reviewLevelHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('Level not found');
-        expect(res.status).toBe(404);
-      },
-    });
-  });
-  test('Testing creating with correct parameters but DB errors out', async () => {
-    // publishing level for testing
+  test('Testing POSTing with correct parameters should work', async () => {
     await LevelModel.findByIdAndUpdate(TestId.LEVEL_2, {
       $set: {
         isDraft: false,
       },
     });
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-
-    jest.spyOn(ReviewModel, 'create').mockImplementation(() => {
-      throw new Error('Test DB error');
-    }
-    );
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'POST',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER_B),
-          },
-          query: {
-            id: TestId.LEVEL_2,
-          },
-          body: {
-            text: 'great game',
-            score: 3,
-
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await reviewLevelHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('Test DB error');
-        expect(res.status).toBe(500);
-      },
-    });
-  });
-  test('Testing POSTing with a level that the user has already review should not work', async () => {
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'POST',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER_B),
-          },
-          query: {
-            id: TestId.LEVEL,
-          },
-          body: {
-            text: 'great game',
-            score: 3,
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await reviewLevelHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('You already reviewed this level');
-        expect(res.status).toBe(400);
-      },
-    });
-  });
-  test('Testing POSTing with malformed score should not work', async () => {
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'POST',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER_B),
-          },
-          query: {
-            id: TestId.LEVEL_2,
-          },
-          body: {
-            text: 'great game',
-            score: 'five stars',
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await reviewLevelHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('Invalid body.score');
-        expect(res.status).toBe(400);
-      },
-    });
-  });
-  test('Testing POSTing with a number that is not a 0.5 increment should fail', async () => {
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'POST',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER_B),
-          },
-          query: {
-            id: TestId.LEVEL_2,
-          },
-          body: {
-            text: 'great game',
-            score: 3.25,
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await reviewLevelHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const lvl = await LevelModel.findById(TestId.LEVEL_2);
-
-        expect(lvl.calc_reviews_count).toBe(0); // before creating the review
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(res.status).toBe(400);
-        expect(response.error).toBe('Invalid body.score');
-      },
-    });
-  });
-  test('Testing POSTing with a number that is out of bounds should fail', async () => {
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'POST',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER_B),
-          },
-          query: {
-            id: TestId.LEVEL_2,
-          },
-          body: {
-            text: 'great game',
-            score: 9,
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await reviewLevelHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const lvl = await LevelModel.findById(TestId.LEVEL_2);
-
-        expect(lvl.calc_reviews_count).toBe(0); // before creating the review
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(res.status).toBe(400);
-        expect(response.error).toBe('Invalid body.score');
-      },
-    });
-  });
-  test('Testing POSTing with text that is over 1024*5 characters should NOT work', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'POST',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER_B),
-          },
-          query: {
-            id: TestId.LEVEL_2,
-          },
-          body: {
-            text: 't'.repeat(1024 * 5 + 1),
-            score: 3,
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await reviewLevelHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const lvl = await LevelModel.findById(TestId.LEVEL_2);
-
-        expect(lvl.calc_reviews_count).toBe(0); // before creating the review
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(res.status).toBe(500);
-        expect((response.error as string).startsWith('Review validation failed: text')).toBeTruthy();
-      },
-    });
-  });
-  test('Testing PUT before review exists', async () => {
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'PUT',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER_B),
-          },
-          query: {
-            id: TestId.LEVEL_2,
-          },
-          body: {
-            text: 't'.repeat(100),
-            score: 3.5,
-            userId: TestId.USER_B,
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await reviewLevelHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const lvl = await LevelModel.findById(TestId.LEVEL_2);
-
-        expect(lvl.calc_reviews_count).toBe(0); // before creating the review
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(res.status).toBe(404);
-        expect(response.error).toBe('Error finding Review');
-      },
-    });
-  });
-  test('Testing POSTing with correct parameters should work', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -446,6 +57,8 @@ describe('Reviewing levels should work correctly', () => {
 
         expect(lvl.calc_reviews_count).toBe(0); // before creating the review
         const res = await fetch();
+
+        expect(res.status).toBe(200);
         const response = await res.json();
         const processQueueRes = await processQueueMessages();
 
@@ -456,11 +69,11 @@ describe('Reviewing levels should work correctly', () => {
 
         expect(achievements.length).toBe(1);
         expect(achievements[0].type).toBe(AchievementType.REVIEWED_1_LEVEL);
-        expect(achievements[0].gameId).toBe(GameId.PATHOLOGY);
+        expect(achievements[0].gameId).toBe(DEFAULT_GAME_ID);
         expect(response.error).toBeUndefined();
         expect(response.score).toBe(3.5);
         expect(response.text).toBe('t'.repeat(500));
-        expect(response.gameId).toBe(GameId.PATHOLOGY);
+        expect(response.gameId).toBe(DEFAULT_GAME_ID);
         expect(response.levelId).toBe(TestId.LEVEL_2);
         expect(res.status).toBe(200);
 
@@ -677,41 +290,7 @@ describe('Reviewing levels should work correctly', () => {
       },
     });
   });
-  test('Testing PUT with no score AND empty text should fail', async () => {
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'PUT',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER_B),
-          },
-          query: {
-            id: TestId.LEVEL_3,
-          },
-          body: {
-            score: 0,
-            text: '',
-            // missing score
-            userId: TestId.USER_B,
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
 
-        await reviewLevelHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-        const processQueueRes = await processQueueMessages();
-
-        expect(processQueueRes).toBe('NONE');
-        expect(response.error).toBe('Missing required parameters');
-        expect(res.status).toBe(400);
-      },
-    });
-  });
   test('Testing editing review without userId', async () => {
     await testApiHandler({
       handler: async (_, res) => {

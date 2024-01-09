@@ -1,7 +1,7 @@
+import { GameId } from '@root/constants/GameId';
 import Record from '@root/models/db/record';
 import User from '@root/models/db/user';
 import { PipelineStage, Types } from 'mongoose';
-import dbConnect from '../lib/dbConnect';
 import Level from '../models/db/level';
 import Review from '../models/db/review';
 import { LevelModel, RecordModel, ReviewModel } from '../models/mongoose';
@@ -12,7 +12,7 @@ export interface LevelWithRecordHistory extends Level {
     records: Record[];
 }
 
-export async function getRecordsByUserId(userId: Types.ObjectId, reqUser?: User): Promise<LevelWithRecordHistory[]> {
+export async function getRecordsByUserId(gameId: GameId, userId: Types.ObjectId, reqUser?: User): Promise<LevelWithRecordHistory[]> {
   const lookupPipelineUser = reqUser ? getEnrichLevelsPipelineSteps(reqUser, '_id', '') : [];
 
   const records = await RecordModel.aggregate([
@@ -20,6 +20,7 @@ export async function getRecordsByUserId(userId: Types.ObjectId, reqUser?: User)
       $match: {
         isDeleted: { $ne: true },
         userId: userId,
+        gameId: gameId,
       },
     },
     // in case they have multiple records on the same level, we want to grab the  one with minimal moves
@@ -117,11 +118,9 @@ export async function getRecordsByUserId(userId: Types.ObjectId, reqUser?: User)
   return records;
 }
 
-export async function getReviewsForUserIdCount(id: string | string[] | undefined) {
-  await dbConnect();
-
+export async function getReviewsForUserIdCount(gameId: GameId, id: string | string[] | undefined) {
   try {
-    const levelsByUser = await LevelModel.find<Level>({ isDeleted: { $ne: true }, isDraft: false, userId: id }, '_id');
+    const levelsByUser = await LevelModel.find<Level>({ isDeleted: { $ne: true }, isDraft: false, userId: id, gameId: gameId }, '_id');
     const reviews = await ReviewModel.find<Review>({
       levelId: { $in: levelsByUser.map(level => level._id) },
     }).countDocuments();

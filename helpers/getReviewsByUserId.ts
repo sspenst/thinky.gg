@@ -1,28 +1,60 @@
-import dbConnect from '../lib/dbConnect';
+import { GameId } from '@root/constants/GameId';
+import cleanUser from '@root/lib/cleanUser';
+import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '@root/models/constants/projections';
+import { PipelineStage, QueryOptions, Types } from 'mongoose';
 import Review from '../models/db/review';
 import User from '../models/db/user';
-import { ReviewModel } from '../models/mongoose';
-import { enrichLevels } from './enrich';
+import { LevelModel, ReviewModel } from '../models/mongoose';
+import { getEnrichLevelsPipelineSteps } from './enrich';
 import { logger } from './logger';
 
-export async function getReviewsByUserId(id: string | string[] | undefined, reqUser: User | null = null, queryOptions = {}) {
-  await dbConnect();
-
+export async function getReviewsByUserId(gameId: GameId, id: string | string[] | undefined, reqUser: User | null = null, queryOptions: QueryOptions = {}) {
   try {
-    const reviews = await ReviewModel.find<Review>({ userId: id, isDeleted: { $ne: true } }, {}, queryOptions)
-      .populate('levelId', 'name slug leastMoves').sort({ ts: -1 });
-    const levels = reviews.map(review => review.levelId).filter(level => level);
-    const enrichedLevels = await enrichLevels(levels, reqUser);
+    const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPipelineSteps(reqUser);
 
-    return reviews.map(review => {
-      const newReview = JSON.parse(JSON.stringify(review)) as Review;
-      const enrichedLevel = enrichedLevels.find(level => level._id.toString() === review.levelId._id.toString());
+    const levelsByUserAgg = await ReviewModel.aggregate(([
+      {
+        $match:
+        {
+          isDeleted: { $ne: true },
+          userId: new Types.ObjectId(id?.toString()),
+          gameId: gameId
+        }
+      },
+      {
+        $sort: {
+          ts: -1,
+        },
+      },
+      {
+        $skip: queryOptions?.skip || 0
+      },
+      {
+        $limit: queryOptions?.limit || 10,
+      },
+      // Do not need to populate the userId of the reviewer since the reviews page will already have the user's info
+      {
+        $lookup: {
+          from: LevelModel.collection.name,
+          localField: 'levelId', //
+          foreignField: '_id',
+          as: 'levelId',
+          pipeline: [{
+            $project: LEVEL_SEARCH_DEFAULT_PROJECTION,
+          },
+          ],
+        },
+      },
+      {
+        $unwind: '$levelId',
+      },
 
-      if (enrichedLevel) {
-        newReview.levelId = enrichedLevel;
-      }
+    ] as PipelineStage[]).concat(lookupPipelineUser));
 
-      return newReview;
+    return levelsByUserAgg.map(review => {
+      cleanUser(review.userId);
+
+      return review;
     });
   } catch (err) {
     logger.error(err);
@@ -31,11 +63,9 @@ export async function getReviewsByUserId(id: string | string[] | undefined, reqU
   }
 }
 
-export async function getReviewsByUserIdCount(id: string | string[] | undefined) {
-  await dbConnect();
-
+export async function getReviewsByUserIdCount(gameId: GameId, id: string | string[] | undefined) {
   try {
-    const reviews = await ReviewModel.find<Review>({ userId: id, isDeleted: { $ne: true } }).countDocuments();
+    const reviews = await ReviewModel.find<Review>({ userId: id, isDeleted: { $ne: true }, gameId: gameId }).countDocuments();
 
     return reviews;
   } catch (err) {

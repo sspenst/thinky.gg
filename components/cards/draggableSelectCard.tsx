@@ -1,5 +1,6 @@
+import { AppContext } from '@root/contexts/appContext';
 import classNames from 'classnames';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
 import Dimensions from '../../constants/dimensions';
 import getPngDataClient from '../../helpers/getPngDataClient';
@@ -21,12 +22,13 @@ export default function DraggableSelectCard({
   option,
 }: DraggableSelectCardProps) {
   const [backgroundImage, setBackgroundImage] = useState<string>();
+  const { game } = useContext(AppContext);
 
   useEffect(() => {
     if (option.level) {
-      setBackgroundImage(getPngDataClient(option.level.data));
+      setBackgroundImage(getPngDataClient(game.id, option.level.data));
     }
-  }, [option.level]);
+  }, [game.id, option.level]);
 
   const color = option.stats?.getColor('var(--color)') ?? 'var(--color)';
 

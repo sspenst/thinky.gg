@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import User from '@root/models/db/user';
+import classNames from 'classnames';
 import React, { useState } from 'react';
 import AsyncSelect from 'react-select/async';
 import { debounce } from 'throttle-debounce';
@@ -7,13 +8,14 @@ import Dimensions from '../../constants/dimensions';
 import FormattedUser from '../formatted/formattedUser';
 
 interface MultiSelectUserProps {
+  className?: string;
   controlStyles?: any;
   defaultValue?: User | null;
   onSelect?: (selectedList: any, selectedItem: any) => void;
   placeholder?: string
 }
 
-export default function MultiSelectUser({ controlStyles, defaultValue, onSelect, placeholder }: MultiSelectUserProps) {
+export default function MultiSelectUser({ className, controlStyles, defaultValue, onSelect, placeholder }: MultiSelectUserProps) {
   const [options, setOptions] = useState([]);
   const [value, setValue] = useState(defaultValue);
 
@@ -36,7 +38,7 @@ export default function MultiSelectUser({ controlStyles, defaultValue, onSelect,
 
   return <AsyncSelect
     backspaceRemovesValue={true}
-    className='text-left text-base'
+    className={classNames('text-left text-base', className)}
     components={{
       DropdownIndicator: null,
       IndicatorSeparator: null,
@@ -72,42 +74,47 @@ export default function MultiSelectUser({ controlStyles, defaultValue, onSelect,
     styles={{
       control: (provided: any, state: any) => ({
         ...provided,
-        backgroundColor: 'white',
-        borderColor: state.isFocused ? 'rgb(37 99 235)' : 'rgb(209 213 219)',
+        backgroundColor: 'var(--bg-color-2)',
+        borderColor: state.isFocused ? 'rgb(37 99 235)' : 'var(--bg-color-4)',
         borderRadius: '0.375rem',
         borderWidth: '1px',
         boxShadow: 'none',
         cursor: 'text',
         height: '2.5rem',
-        width: '13rem',
+        maxWidth: '100%',
+        minWidth: '13rem',
         ...controlStyles,
+      }),
+      container: (provided: any) => ({
+        ...provided,
+        maxWidth: '100%',
       }),
       dropdownIndicator: (provided: any) => ({
         ...provided,
-        color: 'black',
+        color: 'var(--color)',
         // change to search icon
         '&:hover': {
-          color: 'gray',
+          color: 'var(--color)',
         },
       }),
       input: (provided: any) => ({
         ...provided,
-        color: 'rgb(55 65 81)',
+        color: 'var(--color)',
       }),
       menu: (provided: any) => ({
         ...provided,
-        borderColor: 'rgb(209 213 219)',
+        backgroundColor: 'var(--bg-color-2)',
+        borderColor: 'var(--bg-color-4)',
         borderRadius: '0.375rem',
         borderWidth: '1px',
-        boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
         marginTop: '2px',
       }),
       option: (provided: any, state: any) => ({
         ...provided,
-        backgroundColor: state.isSelected ? '#e2e8f0' : 'white',
-        color: 'black',
+        backgroundColor: state.isSelected ? '#e2e8f0' : 'var(--bg-color-2)',
+        color: 'var(--color)',
         '&:hover': {
-          backgroundColor: '#e2e8f0',
+          backgroundColor: 'var(--bg-color-3)',
         },
         overflow: 'hidden',
         textOverflow: 'ellipsis',
@@ -115,11 +122,11 @@ export default function MultiSelectUser({ controlStyles, defaultValue, onSelect,
       }),
       placeholder: (provided: any) => ({
         ...provided,
-        color: 'rgb(156 163 175)',
+        color: 'var(--color-gray)',
       }),
       singleValue: (provided: any) => ({
         ...provided,
-        color: 'black',
+        color: 'var(--color)',
       }),
     }}
     value={value}

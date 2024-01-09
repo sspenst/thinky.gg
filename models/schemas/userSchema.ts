@@ -1,8 +1,12 @@
+import { EmailDigestSettingType } from '@root/constants/emailDigest';
+import { GameId } from '@root/constants/GameId';
+import NotificationType from '@root/constants/notificationType';
 import bcrypt from 'bcryptjs';
 import mongoose, { Types } from 'mongoose';
+import { PASSWORD_SALTROUNDS } from '../../constants/passwordSaltRounds';
 import Role from '../../constants/role';
 import User from '../db/user';
-import { LevelModel, UserModel } from '../mongoose';
+import { LevelModel, UserConfigModel } from '../mongoose';
 
 export const USER_DEFAULT_PROJECTION = {
   _id: 1,
@@ -27,22 +31,15 @@ const UserSchema = new mongoose.Schema<User>({
     maxlength: 256,
     select: false
   },
-  calcRankedSolves: {
-    type: Number,
+  disallowedEmailNotifications: {
+    type: [{ type: String, enum: NotificationType }],
     required: true,
-    default: 0,
+    default: [],
   },
-  calc_levels_created_count: {
-    type: Number,
-    default: 0,
-  },
-  calc_records: {
-    type: Number,
-    default: 0,
-  },
-  chapterUnlocked: {
-    type: Number,
-    default: 1,
+  disallowedPushNotifications: {
+    type: [{ type: String, enum: NotificationType }],
+    required: true,
+    default: [],
   },
   email: {
     type: String,
@@ -56,6 +53,12 @@ const UserSchema = new mongoose.Schema<User>({
       }
     }
   },
+  emailDigest: {
+    type: String,
+    required: true,
+    enum: EmailDigestSettingType,
+    default: EmailDigestSettingType.DAILY,
+  },
   emailConfirmationToken: {
     type: String,
     select: false,
@@ -65,11 +68,24 @@ const UserSchema = new mongoose.Schema<User>({
     default: false,
     select: false,
   },
+
   hideStatus: {
     type: Boolean,
   },
   last_visited_at: {
     type: Number,
+  },
+  lastGame: {
+    type: String,
+    enum: GameId,
+    required: false,
+  },
+  mobileDeviceTokens: {
+    type: [String],
+    required: false,
+    select: false,
+    default: [],
+    maxlength: 100, // max 100 devices @TODO: should probably 'rotate' this list and remove oldest device tokens on push of new one
   },
   ip_addresses_used: {
     type: [String],
@@ -98,10 +114,16 @@ const UserSchema = new mongoose.Schema<User>({
     enum: Role,
     default: [],
   },
-  score: {
-    type: Number,
-    required: true,
-    default: 0,
+  stripeCustomerId: {
+    type: String,
+    required: false,
+    select: false,
+  },
+  stripeGiftSubscriptions: {
+    type: [String],
+    required: false,
+    select: false,
+    default: [],
   },
   ts: {
     type: Number,
@@ -113,14 +135,10 @@ const UserSchema = new mongoose.Schema<User>({
   },
 });
 
-UserSchema.index({ calcRankedSolves: -1 });
+//UserSchema.index({ calcRankedSolves: -1 });
 UserSchema.index({ score: -1 });
 UserSchema.index({ name: 1 }, { unique: true });
 UserSchema.index({ email: 1 }, { unique: true });
-UserSchema.index({ calc_records: -1 });
-
-export const PASSWORD_SALTROUNDS = process.env.NODE_ENV !== 'test' ? 10 : 1;
-
 UserSchema.pre('save', function(next) {
   // Check if document is new or a new password has been set
   if (this.isNew || this.isModified('password')) {
@@ -144,15 +162,23 @@ UserSchema.pre('save', function(next) {
   }
 });
 
-export async function calcCreatorCounts(userId: Types.ObjectId, session?: mongoose.ClientSession) {
+export async function calcCreatorCounts(gameId: GameId, userId: Types.ObjectId, session?: mongoose.ClientSession) {
   const levelsCreatedCountAgg = await LevelModel.aggregate([
-    { $match: { isDeleted: { $ne: true }, isDraft: false, userId: userId } },
+    {
+      $match:
+      {
+        isDeleted: { $ne: true },
+        isDraft: false,
+        userId: userId,
+        gameId: gameId
+      }
+    },
     { $count: 'count' },
   ], { session: session });
   const levelsCreatedCount = levelsCreatedCountAgg.length > 0 ? levelsCreatedCountAgg[0].count : 0;
 
-  await UserModel.updateOne({ _id: userId }, {
-    calc_levels_created_count: levelsCreatedCount,
+  await UserConfigModel.updateOne({ userId: userId, gameId: gameId }, {
+    calcLevelsCreatedCount: levelsCreatedCount,
   }, { session: session });
 }
 

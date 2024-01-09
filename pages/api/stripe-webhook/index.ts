@@ -4,7 +4,6 @@ import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import isPro from '@root/helpers/isPro';
 import { createNewProUserNotification } from '@root/helpers/notificationHelper';
 import dbConnect from '@root/lib/dbConnect';
-import UserConfig from '@root/models/db/userConfig';
 import { buffer } from 'micro';
 import mongoose, { Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
@@ -28,11 +27,16 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
 
   const session = await mongoose.startSession();
 
+  const { gameId, productName } = await getGameFromSubscription(subscription);
+
   try {
     await session.withTransaction(async () => {
       const promises = [
-        UserModel.findByIdAndUpdate(
-          userToDowngrade._id,
+        UserConfigModel.findOneAndUpdate(
+          {
+            userId: userToDowngrade._id,
+            gameId: gameId,
+          },
           {
             $pull: {
               roles: Role.PRO
@@ -42,19 +46,7 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
             session: session
           },
         ),
-        // NB: gift recipients do not have a stripe customer id
-        UserConfigModel.findOneAndUpdate(
-          {
-            userId: userToDowngrade._id,
-          },
-          {
-            stripeCustomerId: null,
-          },
-          {
-            session: session
-          },
-        ),
-        queueDiscordWebhook(Discord.DevPriv, `🥹 [${userToDowngrade.name}](https://pathology.gg/profile/${userToDowngrade.name}) was just unsubscribed.`),
+        queueDiscordWebhook(Discord.DevPriv, `🥹 [${userToDowngrade.name}](https://thinky.gg/profile/${userToDowngrade.name}) was just unsubscribed from ` + productName),
       ];
 
       // NB: metadata should normally be defined but it isn't mocked in the tests
@@ -63,13 +55,13 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
       if (giftFromId) {
         // pull the gift subscription id if it was gifted
         promises.push(
-          UserConfigModel.findOneAndUpdate(
+          UserModel.findOneAndUpdate(
             {
               userId: new Types.ObjectId(giftFromId),
             },
             {
               $pull: {
-                giftSubscriptions: subscription.id,
+                stripeGiftSubscriptions: subscription.id,
               },
             },
             {
@@ -91,14 +83,94 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
   }
 }
 
+function getGameIdFromProductName(productName: string): GameId {
+  let gameId: GameId = GameId.THINKY;
+
+  if (productName.match(/pathology/i)) {
+    gameId = GameId.PATHOLOGY;
+  } else if (productName.match(/sokoban/i)) {
+    gameId = GameId.SOKOBAN;
+  }
+
+  return gameId;
+}
+
+async function getGameFromSubscription(subscription: Stripe.Subscription): Promise<{ gameId: GameId, productName: string }> {
+  let productName = 'unknown';
+
+  try {
+    // Check if subscription items exist
+    if (subscription.items.data.length > 0) {
+      // Assuming the first item represents the main product
+      const productId = subscription.items.data[0].price?.product;
+
+      if (productId) {
+        // Retrieve the product details
+
+        const product = await stripe.products.retrieve(productId as string);
+
+        productName = product.name;
+      } else {
+        logger.error('Error fetching product details: no product id');
+      }
+    }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (err: any) {
+    logger.error(`Error fetching product details: ${err.message}`);
+  }
+
+  const gameId: GameId = getGameIdFromProductName(productName);
+
+  return { gameId: gameId, productName: productName };
+}
+
+async function getGameFromSession(session: Stripe.Checkout.Session): Promise<{ gameId: GameId, productName: string }> {
+  // Extract product name from properties, if available
+  let productName = 'unknown';
+
+  // Fetch line items for the session
+  try {
+    const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
+
+    if (lineItems.data.length > 0) {
+      // Assuming the first line item represents the product purchased
+      const productId = lineItems.data[0].price?.product;
+
+      if (productId) {
+        const product = await stripe.products.retrieve(productId as string);
+
+        productName = product.name;
+      } else {
+        logger.error('Error fetching product details: no product id');
+      }
+    }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (err: any) {
+    logger.error(`Error fetching product details: ${err.message}`);
+  }
+
+  logger.info(`Product name dealing with: ${productName}`);
+
+  const gameId: GameId = getGameIdFromProductName(productName);
+
+  return { gameId: gameId, productName: productName };
+}
+
 async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscription: Stripe.Subscription): Promise<string | undefined> {
   let error: string | undefined;
 
-  if (isPro(giftToUser)) {
+  // get product name from subscription
+  const { gameId } = await getGameFromSubscription(subscription);
+  const giftToUserConfig = await UserConfigModel.findOne({ userId: giftToUser._id, gameId: gameId });
+
+  if (isPro(giftToUserConfig)) {
     // TODO: create a coupon and apply it to the existing subscription..
     // https://stripe.com/docs/api/coupons/create
-    error = `${giftToUser.name} is already a pro subscriber. Error applying gift. Please contact support.`;
+
+    error = `${giftFromUser.name} is already a pro subscriber for this game. Error applying gift. Please contact support.`;
   }
+
+  // Extract product name from properties, if available
 
   if (!error) {
     const session = await mongoose.startSession();
@@ -109,8 +181,24 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
         const type = subscription.metadata?.type as GiftType;
 
         await Promise.all([
-          UserModel.findByIdAndUpdate(
-            giftToUser._id,
+          UserModel.findOneAndUpdate(
+            {
+              _id: giftFromUser._id,
+            },
+            {
+              $addToSet: {
+                stripeGiftSubscriptions: subscription.id,
+              },
+            },
+            {
+              session: session
+            },
+          ),
+          UserConfigModel.findOneAndUpdate(
+            {
+              userId: giftToUser._id,
+              gameId: gameId,
+            },
             {
               $addToSet: {
                 roles: Role.PRO
@@ -120,26 +208,13 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
               session: session
             },
           ),
-          UserConfigModel.findOneAndUpdate(
-            {
-              userId: giftFromUser._id,
-            },
-            {
-              // add to set gift subscriptions
-              $addToSet: {
-                giftSubscriptions: subscription.id,
-              },
-            },
-            {
-              session: session
-            },
-          ),
           // TODO: Figure a way to get the game ID from the subscription object since each game should be different, but for now this is fine
-          createNewProUserNotification(GameId.GLOBAL, giftToUser._id, giftFromUser._id),
-          queueDiscordWebhook(Discord.DevPriv, `💸 [${giftFromUser.name}](https://pathology.gg/profile/${giftFromUser.name}) just gifted ${quantity} ${type === GiftType.Yearly ? 'year' : 'month'}${quantity === 1 ? '' : 's'} of Pro to [${giftToUser.name}](https://pathology.gg/profile/${giftToUser.name})`)
+          createNewProUserNotification(gameId, giftToUser._id, giftFromUser._id),
+          queueDiscordWebhook(Discord.DevPriv, `💸 [${giftFromUser.name}](https://thinky.gg/profile/${giftFromUser.name}) just gifted ${quantity} ${type === GiftType.Yearly ? 'year' : 'month'}${quantity === 1 ? '' : 's'} of Pro to [${giftToUser.name}](https://thinky.gg/profile/${giftToUser.name})`)
         ]);
       });
       session.endSession();
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       logger.error(err);
@@ -153,13 +228,16 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
 
 async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.Checkout.Session): Promise<string | undefined> {
   logger.info(`checkoutSessionComplete - ${userToUpgrade.name} (${userToUpgrade._id.toString()})`);
+  const { gameId, productName } = await getGameFromSession(properties);
 
   const customerId = properties.customer;
 
   let error: string | undefined;
 
   // if the user is already a pro subscriber, we don't want to do anything
-  if (isPro(userToUpgrade)) {
+  const userToUpgradeConfig = await UserConfigModel.findOne({ userId: userToUpgrade._id, gameId: gameId });
+
+  if (isPro(userToUpgradeConfig)) {
     // we want to log the error
     error = `User with id ${userToUpgrade._id} is already a pro subscriber`;
   }
@@ -172,32 +250,38 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
     try {
       await session.withTransaction(async () => {
         await Promise.all([
-          UserModel.findByIdAndUpdate(
-            userToUpgrade._id,
+          UserModel.findOneAndUpdate(
+            {
+              _id: userToUpgrade._id,
+            },
+            {
+              stripeCustomerId: customerId,
+            },
+            {
+              session: session,
+              new: true,
+            },
+          ),
+          UserConfigModel.findOneAndUpdate(
+            {
+              userId: userToUpgrade._id,
+              gameId: gameId,
+            },
             {
               $addToSet: {
                 roles: Role.PRO
               }
             },
             {
-              session: session
+              session: session,
+              new: true,
             },
           ),
-          UserConfigModel.findOneAndUpdate(
-            {
-              userId: userToUpgrade._id
-            },
-            {
-              stripeCustomerId: customerId
-            },
-            {
-              session: session
-            },
-          ),
-          createNewProUserNotification(GameId.GLOBAL, userToUpgrade._id),
-          queueDiscordWebhook(Discord.DevPriv, `💸 [${userToUpgrade.name}](https://pathology.gg/profile/${userToUpgrade.name}) just subscribed!`),
+          createNewProUserNotification(gameId, userToUpgrade._id),
+          queueDiscordWebhook(Discord.DevPriv, `💸 [${userToUpgrade.name}](https://thinky.gg/profile/${userToUpgrade.name}) just subscribed to ${productName}!`),
         ]);
       });
+
       session.endSession();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
@@ -236,6 +320,10 @@ async function splitPaymentIntent(paymentIntentId: string): Promise<string | und
   const split = Math.round(net / 2);
 
   // https://stripe.com/docs/connect/separate-charges-and-transfers#transfer-availability
+  if (process.env.STRIPE_CONNECTED_ACCOUNT_ID === undefined) {
+    return `splitPaymentIntent(${paymentIntentId}): missing STRIPE_CONNECTED_ACCOUNT_ID`;
+  }
+
   await stripe.transfers.create({
     amount: split,
     currency: 'usd',
@@ -340,30 +428,16 @@ export default apiWrapper({
     } else if (!customerId) {
       error = 'No customerId';
     } else {
-      const userConfigAgg = await UserConfigModel.aggregate<UserConfig>([
-        {
-          $match: { stripeCustomerId: customerId },
-        },
-        {
-          $lookup: {
-            from: UserModel.collection.name,
-            localField: 'userId',
-            foreignField: '_id',
-            as: 'userId',
-          },
-        },
-        {
-          $unwind: '$userId',
-        }
-      ]);
+      const { gameId } = await getGameFromSubscription(subscription);
+      const user = await UserModel.findOne({ stripeCustomerId: customerId }).lean<User>();
 
-      if (userConfigAgg.length === 0) {
+      if (!user) {
         // there must be a matching userconfig in this case, so we need to return an error here
-        error = `UserConfig with customer id ${customerId} does not exist`;
+        error = `User with customer id ${customerId} for game ${gameId} does not exist`;
       } else {
         // we need to check if this is a gift subscription so we can downgrade the appropriate user
         // looks like a regular downgrade subscription of pro
-        error = await subscriptionDeleted(userConfigAgg[0].userId as User, subscription);
+        error = await subscriptionDeleted(user, subscription);
       }
     }
   } else if (event.type === 'customer.subscription.created') {
@@ -383,6 +457,28 @@ export default apiWrapper({
         giftToUser,
         subscription
       );
+    } else {
+      // this is a regular subscription from someone who has already been a pro subscriber for another game
+      const subscription = dataObject as Stripe.Subscription;
+      const metadata = subscription.metadata;
+
+      // we should have a userId in metadata
+      const userId = metadata.userId;
+      const gameId = metadata.gameId;
+
+      if (!userId || !gameId) {
+        // we want to log the error
+        error = 'Need both userId and gameId in metadata';
+      } else {
+        const userTarget = await UserModel.findById(userId);
+
+        if (!userTarget) {
+          // this would be super rare... like someone paying then right away deleting their user account in between
+          error = `User with id ${userId} does not exist`;
+        } else {
+          await UserConfigModel.updateOne({ userId: userId, gameId: gameId }, { userId: userId, gameId: gameId, $addToSet: { roles: Role.PRO } }, { upsert: true });
+        }
+      }
     }
   } else if (event.type === 'payment_intent.succeeded') {
     error = await splitPaymentIntent(dataObject.id);

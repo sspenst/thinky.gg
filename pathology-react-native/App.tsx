@@ -106,7 +106,7 @@ async function onRemoteMessage(message: FirebaseMessagingTypes.RemoteMessage) {
     name: 'General notifications',
   });
 
-  // create a notification, link to pathology.gg/notifications
+  // create a notification, link to thinky.gg/notifications
   await notifee.displayNotification({
     title: mobileNotification.title,
     body: mobileNotification.body,

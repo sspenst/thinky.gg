@@ -1,12 +1,10 @@
-import Dimensions from '@root/constants/dimensions';
 import useSWRHelper from '@root/hooks/useSWRHelper';
 import { EnrichedLevel } from '@root/models/db/level';
 import PlayAttempt from '@root/models/db/playAttempt';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
-import SelectOptionStats from '@root/models/selectOptionStats';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import SelectCard from '../cards/selectCard';
+import LevelCard from '../cards/levelCard';
 import LoadingSpinner from '../page/loadingSpinner';
 
 export default function PlayHistory() {
@@ -83,7 +81,7 @@ export default function PlayHistory() {
       <div className='flex flex-col items-start gap-1'>
         <label className='font-semibold'>Go to Date and Time</label>
         <input
-          className='p-2 border rounded'
+          className='p-2 border border-color-4 rounded'
           min='2020-01-01T00:00'
           max={moment().format('YYYY-MM-DDTHH:mm')}
           onBlur={() => {
@@ -135,7 +133,7 @@ export default function PlayHistory() {
         </div>
       </div>
       <div className='flex items-center gap-2'>
-        <label className='font-semibold truncate' htmlFor='solvedOnly'>Solved Only</label>
+        <label className='font-semibold truncate' htmlFor='solvedOnly'>Show Solved</label>
         <input
           checked={filterSolved}
           id='solvedOnly'
@@ -188,24 +186,14 @@ export default function PlayHistory() {
                 <div className='flex items-center gap-4'>
                   <div className='w-4 h-full flex justify-center relative'>
                     <div className='w-0.5 h-full rounded-full' style={{
-                      backgroundColor: 'var(--color-gray)',
+                      backgroundColor: 'var(--bg-color-3)',
                     }} />
                   </div>
-                  <div className='flex flex-col sm:flex-row items-start sm:items-center'>
-                    <SelectCard option={{
-                      author: level.userId?.name,
-                      height: Dimensions.OptionHeightLarge,
-                      href: `/level/${level.slug}`,
-                      id: playAttempt.levelId._id.toString() + '-' + playAttempt._id.toString(),
-                      level: level,
-                      stats: new SelectOptionStats(level.leastMoves, level.userMoves),
-                      text: level.name,
-                    }} />
-                    <span className='px-3 py-1'>
-                      {moment.unix(playAttempt.startTime).local().format('h:mma')}
-                      <br />
-                      Played for {moment.duration(playAttempt.endTime - playAttempt.startTime, 'seconds').humanize()} {playAttempt.attemptContext === AttemptContext.JUST_SOLVED && 'and solved'}
+                  <div className='flex flex-col items-start gap-2'>
+                    <span className='p-1 italic'>
+                      {moment.unix(playAttempt.startTime).local().format('h:mma')} - Played for {moment.duration(playAttempt.endTime - playAttempt.startTime, 'seconds').humanize()} {playAttempt.attemptContext === AttemptContext.JUST_SOLVED && 'and solved'}
                     </span>
+                    <LevelCard id='play-history' level={level} />
                   </div>
                 </div>
               </div>

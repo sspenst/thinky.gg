@@ -1,7 +1,10 @@
+import { GameId } from '@root/constants/GameId';
+import cleanUser from '@root/lib/cleanUser';
+import { LEVEL_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import KeyValue from '@root/models/db/keyValue';
 import { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
-import apiWrapper, { NextApiRequestGuest } from '../../../helpers/apiWrapper';
+import apiWrapper, { NextApiRequestWrapper } from '../../../helpers/apiWrapper';
 import { enrichLevels, getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
@@ -10,7 +13,6 @@ import { getUserFromToken } from '../../../lib/withAuth';
 import Level, { EnrichedLevel } from '../../../models/db/level';
 import User from '../../../models/db/user';
 import { KeyValueModel, LevelModel, UserModel } from '../../../models/mongoose';
-import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 
 export const KV_LEVEL_OF_DAY_KEY_PREFIX = 'level-of-day-';
@@ -20,11 +22,10 @@ export function getLevelOfDayKVKey() {
   return KV_LEVEL_OF_DAY_KEY_PREFIX + new Date(TimerUtil.getTs() * 1000).toISOString().slice(0, 10);
 }
 
-export async function getLevelOfDay(reqUser?: User | null) {
+export async function getLevelOfDay(gameId: GameId, reqUser?: User | null) {
   await dbConnect();
-
   const key = getLevelOfDayKVKey();
-  const levelKV = await KeyValueModel.findOne({ key: key }).lean<KeyValue>();
+  const levelKV = await KeyValueModel.findOne({ key: key, gameId: gameId }).lean<KeyValue>();
 
   if (levelKV) {
     const levelAgg = await LevelModel.aggregate([
@@ -32,6 +33,7 @@ export async function getLevelOfDay(reqUser?: User | null) {
         $match: {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           _id: new Types.ObjectId(levelKV.value as any),
+          gameId: gameId,
         }
       },
       {
@@ -64,6 +66,8 @@ export async function getLevelOfDay(reqUser?: User | null) {
     ]);
 
     if (levelAgg && levelAgg.length > 0) {
+      cleanUser(levelAgg[0].userId);
+
       return levelAgg[0] as EnrichedLevel;
     } else {
       logger.error(`Level of the day ${levelKV.value} not found. Could it have been deleted?`);
@@ -81,6 +85,7 @@ export async function getLevelOfDay(reqUser?: User | null) {
   const levels = await LevelModel.find<Level>({
     isDeleted: { $ne: true },
     isDraft: false,
+    gameId: gameId,
     leastMoves: {
       // least moves between 10 and 100
       $gte: MIN_STEPS,
@@ -128,9 +133,25 @@ export async function getLevelOfDay(reqUser?: User | null) {
   }
 
   if (!genLevel) {
-    logger.error('Could not generate a new level of the day as there are no candidates left to choose from');
+    logger.warn('Could not generate a new level of the day as there are no candidates left to choose from');
+    logger.warn('Going to choose the last level published as the level of the day');
 
-    return null;
+    genLevel = await LevelModel.findOne<Level>({
+      isDeleted: { $ne: true },
+      isDraft: false,
+      gameId: gameId,
+    }, '_id gameId name userId slug width height data leastMoves calc_difficulty_estimate', {
+      // sort by calculated difficulty estimate and then by id
+      sort: {
+        _id: -1,
+      },
+    }).lean<Level>() as Level;
+
+    if (!genLevel) {
+      logger.error('Could not even find a level to choose from for ' + gameId + '. This is a serious error');
+
+      return null;
+    }
   }
 
   // Create a new mongodb transaction and update levels-of-the-day value and also add another key value for this level
@@ -140,14 +161,14 @@ export async function getLevelOfDay(reqUser?: User | null) {
     await session.withTransaction(async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (previouslySelected?.value as any)?.push(genLevel._id);
-      await KeyValueModel.updateOne({ key: 'level-of-day-list' }, {
+      await KeyValueModel.updateOne({ key: 'level-of-day-list', gameId: gameId }, {
         $set: {
           gameId: genLevel.gameId,
           value: previouslySelected?.value || [genLevel._id],
         }
       }, { session: session, upsert: true });
 
-      await KeyValueModel.updateOne({ key: key }, {
+      await KeyValueModel.updateOne({ key: key, gameId: gameId }, {
         $set: {
           gameId: genLevel.gameId,
           value: new Types.ObjectId(genLevel._id),
@@ -163,16 +184,19 @@ export async function getLevelOfDay(reqUser?: User | null) {
 
   const enriched = await enrichLevels([genLevel], reqUser || null);
 
+  cleanUser(enriched[0].userId);
+
   return enriched[0];
 }
 
 export default apiWrapper({
   GET: {},
-}, async (req: NextApiRequestGuest, res: NextApiResponse) => {
+}, async (req: NextApiRequestWrapper, res: NextApiResponse) => {
   const token = req.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, req) : null;
+
   // Then query the database for the official level of the day collection
-  const levelOfDay = await getLevelOfDay(reqUser);
+  const levelOfDay = await getLevelOfDay(req.gameId, reqUser);
 
   if (!levelOfDay) {
     return res.status(500).json({

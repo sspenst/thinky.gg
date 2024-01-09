@@ -1,11 +1,14 @@
+import { ProSubscriptionType } from '@root/constants/ProSubscriptionType';
+import { ValidEnum, ValidType } from '@root/helpers/apiWrapper';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
+import isPro from '@root/helpers/isPro';
 import { logger } from '@root/helpers/logger';
 import cleanUser from '@root/lib/cleanUser';
 import User from '@root/models/db/user';
-import UserConfig from '@root/models/db/userConfig';
 import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import Stripe from 'stripe';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import { UserConfigModel, UserModel } from '../../../models/mongoose';
+import { UserModel } from '../../../models/mongoose';
 
 const STRIPE_SECRET = process.env.STRIPE_SECRET as string;
 
@@ -25,16 +28,16 @@ export interface SubscriptionData {
   subscriptionId: string;
 }
 
-export async function getSubscriptions(req: NextApiRequestWithAuth): Promise<[number, { error: string } | SubscriptionData[]]> {
+export async function getSubscriptions(req: NextApiRequestWithAuth): Promise<[number, { error: string } | SubscriptionData[], paymentMethods?: Stripe.PaymentMethod[]]> {
   const userId = req.userId;
-  const userConfig = await UserConfigModel.findOne({ userId: userId }, { stripeCustomerId: 1 }).lean<UserConfig>();
+  const user = await UserModel.findOne({ _id: userId }, { stripeCustomerId: 1 }).lean<User>();
 
   let subscriptionsNormal: Stripe.Response<Stripe.ApiList<Stripe.Subscription>> | undefined;
   let subscriptionsGifts: Stripe.Response<Stripe.ApiSearchResult<Stripe.Subscription>>;
 
   try {
     [subscriptionsNormal, subscriptionsGifts] = await Promise.all([
-      userConfig?.stripeCustomerId ? stripe.subscriptions.list({ customer: userConfig.stripeCustomerId }) : undefined,
+      user?.stripeCustomerId ? stripe.subscriptions.list({ customer: user.stripeCustomerId }) : undefined,
       stripe.subscriptions.search({
       // (giftFromId is req.userId OR customerId is userConfig.stripeCustomerId) AND status is active
         query: `metadata["giftFromId"]:"${req.userId}" AND status:"active"`,
@@ -88,22 +91,33 @@ export async function getSubscriptions(req: NextApiRequestWithAuth): Promise<[nu
     });
   }
 
+  // query payment methods on file
+  const paymentMethods = await stripe.paymentMethods.list({
+    customer: user?.stripeCustomerId,
+    type: 'card',
+  });
+
+  if (paymentMethods) {
+    return [200, subscriptionData, paymentMethods.data];
+  }
+
   return [200, subscriptionData];
 }
 
 // TODO: can delete this
 export async function cancelSubscription(req: NextApiRequestWithAuth): Promise<[number, { error: string } | { message: string }]> {
   const userId = req.userId;
-  const userConfig = await UserConfigModel.findOne({ userId: userId }, { stripeCustomerId: 1 }).lean<UserConfig>();
+  // TODO: figure out gameId
+  const user = await UserModel.findOne({ _id: userId }, { stripeCustomerId: 1 }).lean<User>();
 
-  if (!userConfig?.stripeCustomerId) {
+  if (!user?.stripeCustomerId) {
     return [404, { error: 'No subscription found for this user.' }];
   }
 
   let subscriptions: Stripe.Response<Stripe.ApiList<Stripe.Subscription>>;
 
   try {
-    subscriptions = await stripe.subscriptions.list({ customer: userConfig.stripeCustomerId });
+    subscriptions = await stripe.subscriptions.list({ customer: user.stripeCustomerId });
   } catch (e) {
     logger.error(e);
 
@@ -141,10 +155,74 @@ export async function cancelSubscription(req: NextApiRequestWithAuth): Promise<[
 
 export default withAuth({
   GET: {},
+  POST: {
+    body: {
+      type: ValidEnum(Object.values(ProSubscriptionType), true),
+      paymentMethodId: ValidType('string', true),
+    }
+  },
 }, async (req, res) => {
   if (req.method === 'GET') {
-    const [code, data] = await getSubscriptions(req);
+    const [code, data, paymentMethods] = await getSubscriptions(req);
 
-    return res.status(code).json(data);
+    if (code !== 200) {
+      return res.status(code).json({ error: (data as { error: string })?.error });
+    }
+
+    return res.status(code).json({ subscriptions: data, paymentMethods: paymentMethods });
+  } else if (req.method === 'POST') {
+    const { type, paymentMethodId } = req.body as { type: ProSubscriptionType, paymentMethodId: string };
+
+    const game = getGameFromId(req.gameId);
+
+    if (isPro(req.user)) {
+      return res.status(400).json({ error: 'You are already subscribed to ' + game.displayName + ' Pro' });
+    }
+
+    const paymentPriceIdTable = {
+      [ProSubscriptionType.Monthly]: game.stripePriceIdMonthly,
+      [ProSubscriptionType.Yearly]: game.stripePriceIdYearly,
+    };
+
+    try {
+      const price = paymentPriceIdTable[type];
+
+      // check if customer id exists for this req.user
+      const user = await UserModel.findOne({ _id: req.userId }, { stripeCustomerId: 1 }).lean<User>();
+      const customerId = user?.stripeCustomerId;
+
+      if (!customerId) {
+        return res.status(404).json({ error: 'No subscription found for this user.' });
+      }
+
+      const customer = await stripe.customers.retrieve(customerId);
+
+      if (!customer) {
+        return res.status(404).json({ error: 'No customer found for this user.' });
+      }
+
+      const subscription = await stripe.subscriptions.create({
+        customer: customerId,
+        items: [
+          // quantity needs to be ONE here so we are only billed for one subscription. the cancel_at is where the length of the subscription is set
+          { price: price },
+        ],
+        default_payment_method: paymentMethodId,
+        metadata: {
+          userId: req.userId,
+          gameId: req.gameId,
+          type: type,
+        },
+      });
+
+      // Respond with the client secret
+      res.status(200).json({
+        subscription
+      });
+    } catch (error) {
+      // Log the error and respond with a generic message
+      logger.error(error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
   }
 });

@@ -1,16 +1,24 @@
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
+import Discord from '@root/constants/discord';
 import { GameId } from '@root/constants/GameId';
+import queueDiscordWebhook from '@root/helpers/discordWebhook';
+import genLevelImage from '@root/helpers/genLevelImage';
 import { getEnrichNotificationPipelineStages } from '@root/helpers/getEnrichNotificationPipelineStages';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
+import isGuest from '@root/helpers/isGuest';
+import { createNewLevelNotifications } from '@root/helpers/notificationHelper';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
+import Level from '@root/models/db/level';
+import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
 import mongoose, { ClientSession, QueryOptions, Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
 import { logger } from '../../../../helpers/logger';
-import dbConnect from '../../../../lib/dbConnect';
+import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import Notification from '../../../../models/db/notification';
 import QueueMessage from '../../../../models/db/queueMessage';
-import { NotificationModel, QueueMessageModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
+import { LevelModel, NotificationModel, QueueMessageModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
 import { calcPlayAttempts, refreshIndexCalcs } from '../../../../models/schemas/levelSchema';
 import { QueueMessageState, QueueMessageType } from '../../../../models/schemas/queueMessageSchema';
 import { calcCreatorCounts, USER_DEFAULT_PROJECTION } from '../../../../models/schemas/userSchema';
@@ -124,11 +132,20 @@ export async function queueCalcPlayAttempts(levelId: Types.ObjectId, options?: Q
   );
 }
 
-export async function queueCalcCreatorCounts(userId: Types.ObjectId, options?: QueryOptions) {
+export async function queueCalcCreatorCounts(gameId: GameId, userId: Types.ObjectId, options?: QueryOptions) {
   await queue(
     userId.toString(),
     QueueMessageType.CALC_CREATOR_COUNTS,
-    JSON.stringify({ userId: userId.toString() }),
+    JSON.stringify({ userId: userId.toString(), gameId: gameId }),
+    options,
+  );
+}
+
+export async function queueGenLevelImage(levelId: Types.ObjectId, postToDiscord: boolean, options?: QueryOptions) {
+  await queue(
+    levelId.toString() + '-queueGenLevelImage-' + postToDiscord,
+    QueueMessageType.GEN_LEVEL_IMAGE,
+    JSON.stringify({ levelId: levelId.toString(), postToDiscord: postToDiscord }),
     options,
   );
 }
@@ -173,6 +190,9 @@ async function processQueueMessage(queueMessage: QueueMessage) {
                 $project: {
                   ...USER_DEFAULT_PROJECTION,
                   email: 1,
+                  emailConfirmed: 1,
+                  disallowedEmailNotifications: 1,
+                  disallowedPushNotifications: 1,
                 }
               }
             ]
@@ -190,23 +210,27 @@ async function processQueueMessage(queueMessage: QueueMessage) {
         log = `Notification ${notificationId} not sent: not found`;
       } else {
         const notification = notificationAgg[0];
-        const userConfig = await UserConfigModel.findOne<UserConfig>({ userId: notification.userId._id }).lean<UserConfig>();
+
+        const userConfig = await UserConfigModel.findOne<UserConfig>({ userId: notification.userId._id, gameId: notification.gameId }).lean<UserConfig>();
 
         if (userConfig === null) {
           log = `Notification ${notificationId} not sent: user config not found`;
           error = true;
+        } else if (isGuest(notification.userId as User)) {
+          log = `Notification ${notificationId} not sent: user is guest`;
+          error = true;
         } else {
           const whereSend = queueMessage.type === QueueMessageType.PUSH_NOTIFICATION ? sendPushNotification : sendEmailNotification;
 
-          const disallowedEmail = userConfig.disallowedEmailNotifications.includes(notification.type);
-          const disallowedPush = userConfig.disallowedPushNotifications.includes(notification.type);
+          const disallowedEmail = (notification.userId as User).disallowedEmailNotifications.includes(notification.type);
+          const disallowedPush = (notification.userId as User).disallowedPushNotifications.includes(notification.type);
 
           if (whereSend === sendEmailNotification && disallowedEmail) {
             log = `Notification ${notificationId} not sent: ${notification.type} not allowed by user (email)`;
           } else if (whereSend === sendPushNotification && disallowedPush) {
             log = `Notification ${notificationId} not sent: ${notification.type} not allowed by user (push)`;
           } else {
-            log = await whereSend(notification);
+            log = await whereSend(userConfig.gameId, notification);
           }
         }
       }
@@ -226,16 +250,37 @@ async function processQueueMessage(queueMessage: QueueMessage) {
     log = `calcPlayAttempts for ${levelId}`;
     await calcPlayAttempts(new Types.ObjectId(levelId));
   } else if (queueMessage.type === QueueMessageType.CALC_CREATOR_COUNTS) {
-    const { userId } = JSON.parse(queueMessage.message) as { userId: string };
+    const { userId, gameId } = JSON.parse(queueMessage.message) as { userId: string, gameId: GameId };
 
     log = `calcCreatorCounts for ${userId}`;
-    await calcCreatorCounts(new Types.ObjectId(userId));
+    await calcCreatorCounts(gameId, new Types.ObjectId(userId));
   } else if (queueMessage.type === QueueMessageType.REFRESH_ACHIEVEMENTS) {
     const { gameId, userId, categories } = JSON.parse(queueMessage.message) as {gameId: GameId, userId: string, categories: AchievementCategory[]};
 
     const achievementsEarned = await refreshAchievements(gameId, new Types.ObjectId(userId), categories);
 
     log = `refreshAchievements game ${gameId} for ${userId} created ${achievementsEarned} achievements`;
+  } else if (queueMessage.type === QueueMessageType.GEN_LEVEL_IMAGE) {
+    const { levelId, postToDiscord } = JSON.parse(queueMessage.message) as { levelId: string, postToDiscord: boolean };
+
+    log = `genLevelImage for ${levelId}`;
+    const lvl = await LevelModel.findOne({ _id: new Types.ObjectId(levelId) }).populate('userId').lean<Level>();
+
+    if (!lvl) {
+      log = `genLevelImage for ${levelId} failed: level not found`;
+      error = true;
+    } else {
+      await genLevelImage(lvl);
+
+      if (postToDiscord) {
+        const game = getGameFromId(lvl.gameId);
+
+        await queueDiscordWebhook(Discord.Levels, `**${game.displayName}** - **${lvl.userId?.name}** published a new level: [${lvl.name}](${game.baseUrl}/level/${lvl.slug}?ts=${lvl.ts})`);
+      }
+
+      // Need to create the new level notification because technically the image needs to be generated beforehand...
+      await createNewLevelNotifications(lvl.gameId, new Types.ObjectId(lvl.userId._id), lvl._id, undefined);
+    }
   } else {
     log = `Unknown queue message type ${queueMessage.type}`;
     error = true;
@@ -269,13 +314,43 @@ export async function processQueueMessages() {
   await dbConnect();
 
   // this would handle if the server crashed while processing a message
-  await QueueMessageModel.updateMany({
-    state: QueueMessageState.PENDING,
-    isProcessing: true,
-    processingStartedAt: { $lt: new Date(Date.now() - 1000 * 60 * 5) }, // 5 minutes
-  }, {
-    isProcessing: false,
-  });
+  try {
+    await QueueMessageModel.updateMany({
+      state: QueueMessageState.PENDING,
+      isProcessing: true,
+      processingStartedAt: { $lt: new Date(Date.now() - 1000 * 60 * 5) }, // 5 minutes
+    }, {
+      isProcessing: false,
+    });
+  } catch (e: unknown) {
+    console.log('CAUGHT IT!!!');
+    logger.error(e);
+    console.log('About to try catch');
+
+    try {
+      const db = mongoose.connection.db;
+
+      // reconnect to db
+      console.log('disconnecting');
+      await dbDisconnect(true);
+      console.log('disconnected. connecting');
+      await dbConnect();
+      console.log('connected. validating');
+      const whatever = await db.command({ validate: QueueMessageModel.collection.name });
+
+      console.log('] VALIDATE DONE. PRINTING [');
+      console.log(whatever);
+    } catch (e: unknown) {
+      //const allMessages = await QueueMessageModel.find().lean<QueueMessage[]>();
+
+      console.log('VALIDATE FAILED. PRINTING', e);
+      //console.log(allMessages.map(x => x.message));
+      //console.log(e);
+    }
+
+    console.log('] PRINTING DONE.');
+    console.trace('WHAT THE HELL');
+  }
 
   const genJobRunId = new Types.ObjectId();
   // grab all PENDING messages

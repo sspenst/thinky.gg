@@ -1,23 +1,24 @@
+import UserConfig from '@root/models/db/userConfig';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 // https://github.com/newrelic/node-newrelic/issues/956#issuecomment-962729137
 import type { NextApiRequest, NextApiResponse } from 'next';
 import requestIp from 'request-ip';
 import { GameId } from '../constants/GameId';
-import { parseReq, ReqValidator } from '../helpers/apiWrapper';
+import { NextApiRequestWrapper, parseReq, ReqValidator } from '../helpers/apiWrapper';
 import { getGameIdFromReq } from '../helpers/getGameIdFromReq';
 import { TimerUtil } from '../helpers/getTs';
 import { logger } from '../helpers/logger';
 import User from '../models/db/user';
-import { UserModel } from '../models/mongoose';
+import { UserConfigModel, UserModel } from '../models/mongoose';
 import dbConnect from './dbConnect';
 import getTokenCookie from './getTokenCookie';
 import isLocal from './isLocal';
 
-export type NextApiRequestWithAuth = NextApiRequest & {
+export interface NextApiRequestWithAuth extends NextApiRequestWrapper {
   gameId: GameId;
   user: User;
   userId: string;
-};
+}
 
 export async function getUserFromToken(
   token: string | undefined,
@@ -52,7 +53,6 @@ export async function getUserFromToken(
   }
 
   await dbConnect();
-
   // Update meta data from user
   const last_visited_ts = TimerUtil.getTs();
   const detectedIp = req ? requestIp.getClientIp(req) : undefined;
@@ -62,22 +62,30 @@ export async function getUserFromToken(
     },
   };
 
-  const user = await UserModel.findByIdAndUpdate(
+  const gameId = getGameIdFromReq(req);
+  const [user, config] = await Promise.all([UserModel.findByIdAndUpdate(
     userId,
     {
       // Update last visited only if dontUpdateLastSeen is false
       ...(dontUpdateLastSeen ? {} : {
         $set: {
           last_visited_at: last_visited_ts,
+          lastGame: gameId
         },
       }),
       ...ipData,
     },
     { new: true, projection: '+email +bio +emailConfirmed' },
-  ).lean<User>();
+  ).lean<User>(),
+  UserConfigModel.findOne({ userId: userId, gameId: gameId }, { gameId: 1, calcRankedSolves: 1, calcLevelsCreatedCount: 1, calcLevelsSolveCount: 1, chapterUnlocked: 1, roles: 1 }).lean<UserConfig>()
+  ]);
 
   if (user && !isLocal()) {
     newrelic?.addCustomAttribute && newrelic.addCustomAttribute('userName', user.name);
+  }
+
+  if (user && config) {
+    user.config = config as UserConfig;
   }
 
   return user;

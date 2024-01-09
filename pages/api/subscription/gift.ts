@@ -1,12 +1,12 @@
 import { ValidEnum, ValidNumber, ValidObjectId, ValidType } from '@root/helpers/apiWrapper';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import isPro from '@root/helpers/isPro';
 import { logger } from '@root/helpers/logger';
 import User from '@root/models/db/user';
-import UserConfig from '@root/models/db/userConfig';
 import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import Stripe from 'stripe';
 import withAuth from '../../../lib/withAuth';
-import { UserConfigModel, UserModel } from '../../../models/mongoose';
+import { UserModel } from '../../../models/mongoose';
 import { stripe } from '.';
 
 export interface SubscriptionGiftData {
@@ -77,6 +77,7 @@ export default withAuth({
     const { type, giftTo, quantity, paymentMethodId } = req.body as { type: GiftType, giftTo: string, quantity: number, paymentMethodId: string };
 
     // make sure this user is on Pro
+
     if (!isPro(req.user)) {
       return res.status(400).json({ error: 'You must be a Pro user to gift a subscription.' });
     }
@@ -95,17 +96,19 @@ export default withAuth({
       return res.status(400).json({ error: 'You cannot gift a subscription to ' + userToGift.name + ' because they are already on Pro.' });
     }
 
+    const gameId = req.gameId;
+    const game = getGameFromId(gameId);
     const paymentPriceIdTable = {
-      [GiftType.Monthly]: process.env.STRIPE_GIFT_MONTHLY_PRICE_ID,
-      [GiftType.Yearly]: process.env.STRIPE_GIFT_YEARLY_PRICE_ID,
+      [GiftType.Monthly]: game.stripeGiftPriceIdMonthly,
+      [GiftType.Yearly]: game.stripeGiftPriceIdYearly,
     };
 
     try {
       const price = paymentPriceIdTable[type];
 
       // check if customer id exists for this req.user
-      const userConfig = await UserConfigModel.findOne({ userId: req.userId }, { stripeCustomerId: 1 }).lean<UserConfig>();
-      const customerId = userConfig?.stripeCustomerId;
+      const user = await UserModel.findOne({ _id: req.userId }, { stripeCustomerId: 1 }).lean<User>();
+      const customerId = user?.stripeCustomerId;
 
       if (!customerId) {
         return res.status(404).json({ error: 'No subscription found for this user.' });

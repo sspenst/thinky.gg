@@ -124,7 +124,7 @@ describe('api/user/[id]/checkpoints', () => {
         },
         body: {
           index: 0,
-          directions: [5],
+          directions: [1000],
         },
       },
       expectedStatus: 400,
@@ -349,7 +349,7 @@ describe('checkpiontHelpers.ts', () => {
   test('isValidDirections', () => {
     expect(isValidDirections(undefined)).toBe(false);
     expect(isValidDirections('checkpoint')).toBe(false);
-    expect(isValidDirections([1, 2, 3, 4, 5])).toBe(false);
+    expect(isValidDirections([1, 2, 3, 4, 3910191039])).toBe(false);
     expect(isValidDirections([1, 2, 3, 4])).toBe(true);
   });
   test('directionsToGameState', () => {

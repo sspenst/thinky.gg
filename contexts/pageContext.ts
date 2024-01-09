@@ -2,14 +2,14 @@ import { createContext } from 'react';
 
 interface PageContextInterface {
   preventKeyDownEvent: boolean;
-  setShowHeader: React.Dispatch<React.SetStateAction<boolean>>;
   setPreventKeyDownEvent: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowHeader: React.Dispatch<React.SetStateAction<boolean>>;
   showHeader: boolean;
 }
 
 export const PageContext = createContext<PageContextInterface>({
   preventKeyDownEvent: false,
-  setShowHeader: () => { return; },
-  setPreventKeyDownEvent: () => { return; },
+  setPreventKeyDownEvent: () => {},
+  setShowHeader: () => {},
   showHeader: true,
 });

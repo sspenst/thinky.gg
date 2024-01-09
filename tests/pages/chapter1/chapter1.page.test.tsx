@@ -1,4 +1,4 @@
-import { GameId } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext } from 'next';
 import { Logger } from 'winston';
@@ -7,14 +7,14 @@ import { logger } from '../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
 import { CampaignModel } from '../../../models/mongoose';
-import { getServerSideProps } from '../../../pages/chapter1';
+import { getServerSideProps } from '../../../pages/[subdomain]/chapter1';
 
 beforeAll(async () => {
   await dbConnect();
   await CampaignModel.create({
     _id: new Types.ObjectId(),
     collections: [new Types.ObjectId(TestId.COLLECTION)],
-    gameId: GameId.PATHOLOGY,
+    gameId: DEFAULT_GAME_ID,
     name: 'Chapter 1',
     slug: 'chapter1',
   });
@@ -54,6 +54,26 @@ describe('pages/chapter1 page', () => {
     expect(ret.props).toBeDefined();
     expect(ret.props?.enrichedCollections).toBeDefined();
     expect(ret.props?.enrichedCollections[0]._id).toBe(TestId.COLLECTION);
+  });
+  test('getServerSideProps logged in but on game with no campaign', async () => {
+    // Created from initialize db file
+    const context = {
+      req: {
+        cookies: {
+          token: getTokenCookieValue(TestId.USER)
+        },
+        headers: {
+          host: 'thinky.localhost',
+        },
+      },
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext) as any;
+
+    expect(ret).toBeDefined();
+    expect(ret.props).toBeUndefined();
+    expect(ret.redirect).toBeDefined();
+    expect(ret.redirect?.destination).toBe('/');
   });
   test('getServerSideProps logged in no collection exists', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));

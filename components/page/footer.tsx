@@ -21,7 +21,7 @@ function ExternalLink({ children, href }: ExternalLinkProps) {
 
 export default function Footer() {
   return (
-    <footer className='flex flex-col p-10 gap-10' style={{
+    <footer className='footer flex flex-col p-10 gap-10 w-full bg-1' style={{
       borderTop: '1px solid var(--bg-color-3)',
     }}>
       <div className='flex justify-center gap-6 text-sm text-center'>
@@ -32,10 +32,10 @@ export default function Footer() {
           <ExternalLink href='https://discord.gg/j6RxRdqq4A'>
             Discord
           </ExternalLink>
-          <ExternalLink href='https://twitter.com/pathologygame'>
+          <ExternalLink href='https://twitter.com/thinkygg'>
             Twitter
           </ExternalLink>
-          <ExternalLink href='https://www.instagram.com/pathologygame'>
+          <ExternalLink href='https://www.instagram.com/thinkypuzzlegames'>
             Instagram
           </ExternalLink>
         </div>
@@ -54,7 +54,7 @@ export default function Footer() {
           <h3 className='font-medium'>
             Resources
           </h3>
-          <ExternalLink href='mailto:help@pathology.gg'>
+          <ExternalLink href='mailto:help@thinky.gg'>
             Contact
           </ExternalLink>
           <ExternalLink href='https://github.com/sspenst/pathology'>
@@ -72,7 +72,9 @@ export default function Footer() {
         </div>
       </div>
       <div className='text-center text-sm' style={{ color: 'var(--color-gray)' }}>
-        © {(new Date()).getFullYear()} Pathology.gg
+        © 2024 <ExternalLink href='https://thinky.gg'>
+          Thinky.gg
+        </ExternalLink>
       </div>
     </footer>
   );

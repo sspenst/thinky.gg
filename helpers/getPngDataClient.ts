@@ -1,8 +1,9 @@
+/* istanbul ignore file */
+import { GameId } from '@root/constants/GameId';
 import Dimensions from '../constants/dimensions';
 import generateLevelCanvas from './generateLevelCanvas';
 
-/* istanbul ignore next */
-export default function getPngDataClient(levelData: string) {
+export default function getPngDataClient(gameId: GameId, levelData: string) {
   if (typeof document === 'undefined') {
     return;
   }
@@ -12,7 +13,7 @@ export default function getPngDataClient(levelData: string) {
   canvas.height = Dimensions.LevelCanvasHeight / 2;
   canvas.width = Dimensions.LevelCanvasWidth / 2;
 
-  canvas = generateLevelCanvas(canvas, levelData) as HTMLCanvasElement;
+  canvas = generateLevelCanvas(canvas, gameId, levelData) as HTMLCanvasElement;
 
   return canvas.toDataURL();
 }
