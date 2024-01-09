@@ -29,7 +29,6 @@ COPY --chown=node:node . .
 RUN npm run build --omit=dev
 # we may need the following to prevent `Failed to write image to cache` errors
 RUN chown -R node:node .next/
-RUN chown -R nextjs:nodejs ./.next
 
 
 # for socket server
