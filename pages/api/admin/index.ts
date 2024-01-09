@@ -49,8 +49,8 @@ export default withAuth({ POST: {
       break;
     case AdminCommand.DeleteAchievements:
       resp = await Promise.all([
-        AchievementModel.deleteMany({ userId: new Types.ObjectId(targetId as string) }),
-        NotificationModel.deleteMany({ userId: new Types.ObjectId(targetId as string), type: NotificationType.NEW_ACHIEVEMENT }),
+        AchievementModel.deleteMany({ userId: new Types.ObjectId(targetId as string), gameId: req.gameId }),
+        NotificationModel.deleteMany({ userId: new Types.ObjectId(targetId as string), type: NotificationType.NEW_ACHIEVEMENT, gameId: req.gameId }),
       ]);
       break;
     case AdminCommand.RefreshIndexCalcs:
