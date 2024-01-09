@@ -188,7 +188,7 @@ export default withAuth({
       const price = paymentPriceIdTable[type];
 
       // check if customer id exists for this req.user
-      const user = await UserModel.findOne({ _id: req.userId }, { stripeCustomerId: 1 }).lean<User>();
+      const user = await UserModel.findOne({ _id: req.user._id }, { stripeCustomerId: 1 }).lean<User>();
       const customerId = user?.stripeCustomerId;
 
       if (!customerId) {
