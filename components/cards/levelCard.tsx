@@ -55,7 +55,7 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
     // user is an ObjectId
     if (!Object.prototype.hasOwnProperty.call(level.userId, 'name')) {
       // try to get user from reqUser
-      if (reqUser && reqUser._id.toString() === (level.userId as Types.ObjectId).toString()) {
+      if (reqUser && reqUser._id.toString() === (level.userId as Types.ObjectId)?.toString()) {
         return reqUser;
       } else {
         return null;

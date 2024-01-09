@@ -41,7 +41,7 @@ export default function PlayHistory() {
     if (playHistory) {
       setAccumulatedPlayHistory(prev => [...prev, ...playHistory].filter((playAttempt, index, self) => {
         return index === self.findIndex((t) => (
-          t._id.toString() === playAttempt._id.toString()
+          t._id?.toString() === playAttempt._id?.toString()
         ));
       }));
     }
