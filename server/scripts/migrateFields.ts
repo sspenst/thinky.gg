@@ -1,4 +1,3 @@
-import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { rawDbConnect, rawDbDisconnect } from './rawDbconnect';
 
 /**
@@ -8,6 +7,7 @@ import { rawDbConnect, rawDbDisconnect } from './rawDbconnect';
  * @param {mongoose.Model} targetModel - The target Mongoose model.
  * @param {Object} fieldsToMigrate - Object mapping source field names to target field names.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function migrateFields(sourceModel: any, targetModel: any, fieldsToMigrate: any, localField: string, foreignField: string, matchQuery: any = {}) {
   console.log('\tStarting the database connection...');
   const conn = await rawDbConnect();
