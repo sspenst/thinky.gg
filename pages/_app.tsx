@@ -16,6 +16,7 @@ import Notification from '@root/models/db/notification';
 import { NextPageContext } from 'next';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
+import Link from 'next/link';
 import { Router, useRouter } from 'next/router';
 import { DefaultSeo } from 'next-seo';
 import { ThemeProvider } from 'next-themes';
@@ -305,6 +306,24 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
       socketConn.disconnect();
     };
   }, [selectedGame.id, user?._id]);
+
+  useEffect(() => {
+  // check if redirect_type querystring parameter is set, and if it is equal to "patholoygg" console log hello
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirectType = urlParams.get('redirect_type');
+
+    if (redirectType === 'pathologygg') {
+      setTimeout(() => {
+        toast.dismiss();
+        toast.success(<div className='flex flex-col gap-3'>
+          <span>Welcome to Thinky.gg!</span><span>We&apos;ve redirected you from Pathology.gg.</span><span>Please login again and update your bookmarks.</span><span>Click <Link className='underline' href='https://thinky.gg'>here</Link> to learn more.</span>
+        </div>, {
+          duration: 10000,
+          icon: '👋',
+        });
+      }, 1000);
+    }
+  }, []);
 
   useEffect(() => {
     for (const match of matches) {
