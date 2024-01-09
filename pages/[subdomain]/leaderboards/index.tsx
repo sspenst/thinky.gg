@@ -223,7 +223,7 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
 
   function getLeaderboard() {
     if (leaderboard === 'ranked') {
-      if (!game.disableRanked || !rankedLeaderboard) {
+      if (game.disableRanked || !rankedLeaderboard) {
         return null;
       }
 
