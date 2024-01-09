@@ -197,7 +197,7 @@ interface FormattedNotificationProps {
 }
 
 export default function FormattedNotification({ close, notification, onMarkAsRead }: FormattedNotificationProps) {
-  const { game } = useContext(AppContext);
+  const game = getGameFromId(notification.gameId);
 
   return (
     <div
