@@ -302,7 +302,7 @@ export default function ProfilePage({
   const [collectionFilterText, setCollectionFilterText] = useState('');
   const [followerCount, setFollowerCount] = useState<number>();
   const [isAddCollectionOpen, setIsAddCollectionOpen] = useState(false);
-  const ownProfile = reqUser?._id.toString() === user._id.toString();
+  const ownProfile = reqUser?._id.toString() === user?._id.toString();
   const [page, setPage] = useState(pageProp);
   const router = useRouter();
   const [searchLevelText, setSearchLevelText] = useState('');
@@ -467,7 +467,7 @@ export default function ProfilePage({
                 }
               </div>
             }
-            {reqUser && reqUser._id.toString() === user._id.toString() && reqUserFollowing &&
+            {reqUser && reqUser._id.toString() === user?._id.toString() && reqUserFollowing &&
               <div>
                 <div className='font-bold text-xl mt-4 mb-2 justify-center flex'>{`${reqUserFollowing.length} following:`}</div>
                 <FollowingList graphs={reqUserFollowing} />
