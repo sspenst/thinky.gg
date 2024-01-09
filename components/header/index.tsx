@@ -32,7 +32,7 @@ export default function Header({
   const isNavDropdown = deviceInfo.screenSize < ScreenSize.XL || isFullScreen;
 
   useEffect(() => {
-    if (window.location.hostname.includes('thinky.gg')) {
+    if (!window.location.hostname.includes('thinky.gg')) {
       setBackground('linear-gradient(45deg, darkred 20%, var(--bg-color-2) 20%, var(--bg-color-2) 40%, var(--bg-color) 40%, var(--bg-color) 60%, var(--bg-color-2) 60%, var(--bg-color-2) 80%, var(--bg-color) 80%, var(--bg-color) 100%');
     }
   }, []);
