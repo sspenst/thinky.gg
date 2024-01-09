@@ -47,7 +47,7 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
             session: session
           },
         ),
-        queueDiscordWebhook(Discord.DevPriv, `🥹 [${userToDowngrade.name}](https://thinky.gg/profile/${userToDowngrade.name}) was just unsubscribed from ` + productName),
+        queueDiscordWebhook(Discord.DevPriv, `🥹 UNSUBSCRIBED. [${userToDowngrade.name}](https://thinky.gg/profile/${userToDowngrade.name}) was just unsubscribed from ` + productName),
       ];
 
       // NB: metadata should normally be defined but it isn't mocked in the tests
@@ -279,7 +279,7 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
             },
           ),
           createNewProUserNotification(gameId, userToUpgrade._id),
-          queueDiscordWebhook(Discord.DevPriv, `💸 [${userToUpgrade.name}](https://thinky.gg/profile/${userToUpgrade.name}) just subscribed to ${productName}!`),
+          queueDiscordWebhook(Discord.DevPriv, `💸 NEW SUBSCRIBER! [${userToUpgrade.name}](https://thinky.gg/profile/${userToUpgrade.name}) just subscribed to ${productName}!`),
         ]);
       });
 
@@ -482,7 +482,7 @@ export default apiWrapper({
           await Promise.all([
             UserConfigModel.updateOne({ userId: userTarget._id, gameId: gameId }, { userId: userId, gameId: gameId, $addToSet: { roles: Role.PRO } }, { upsert: true }),
             createNewProUserNotification(gameId as GameId, userTarget._id),
-            queueDiscordWebhook(Discord.DevPriv, `💸 [${userTarget.name}](https://thinky.gg/profile/${userTarget.name}) just subscribed to ${game.displayName} ${metadata?.type}!`)
+            queueDiscordWebhook(Discord.DevPriv, `💸 NEW SUBSCRIBER! [${userTarget.name}](https://thinky.gg/profile/${userTarget.name}) just subscribed to ${game.displayName} ${metadata?.type}!`)
           ]);
         }
       }
