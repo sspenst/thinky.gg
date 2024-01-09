@@ -73,7 +73,7 @@ jobs:
     steps:
       - id: get-server-ip-list
         name: Get Server IP List
-        run: echo "get-server-ip-list=$(dig +short app-servers.pathology.gg TXT | jq -cr 'split(\",\")')" >> $GITHUB_OUTPUT
+        run: echo "get-server-ip-list=$(dig +short app-servers.pathology.gg TXT | jq -cr 'split(",")')" >> $GITHUB_OUTPUT
       - name: print output
         run: |
           echo "${{ steps.get-server-ip-list.outputs.get-server-ip-list }}"
