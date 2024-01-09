@@ -3,7 +3,7 @@
     "name": "Thinky",
     "slug": "thinky",
     "scheme": "com.pathology",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "icon": "../public/logos/thinky/thinky_pfp.png",
     "userInterfaceStyle": "automatic",
     "plugins": [
@@ -14,7 +14,9 @@
             "compileSdkVersion": 33,
             "targetSdkVersion": 33,
             "buildToolsVersion": "33.0.0",
-            "extraMavenRepos": ["$rootDir/../../../node_modules/@notifee/react-native/android/libs"]
+            "extraMavenRepos": [
+              "$rootDir/../../../node_modules/@notifee/react-native/android/libs"
+            ]
           },
           "ios": {
             "deploymentTarget": "13.0"
@@ -71,7 +73,7 @@
         "NSPhotoLibraryUsageDescription": "Enabling photo library access will allow you to choose a picture to use as your avatar."
       },
       "bundleIdentifier": "com.pathology",
-      "buildNumber": "13",
+      "buildNumber": "15",
       "associatedDomains": [
         "applinks:pathology.gg",
         "applinks:thinky.gg",
