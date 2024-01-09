@@ -319,6 +319,8 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
   const [query, setQuery] = useState(searchQuery);
   const routerQuery = useRouterQuery();
 
+  DEFAULT_QUERY.sortBy = game.type === GameType.COMPLETE_AND_SHORTEST ? 'config.calcLevelsCompletedCount' : 'config.calcLevelsSolvedCount';
+
   useEffect(() => {
     setData(users);
     setLoading(false);
