@@ -106,7 +106,7 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
         const collectionTemp = {
           createdAt: ts,
           isPrivate: true,
-          levels: resp, _id: new Types.ObjectId(),
+          levels: resp,
           name: 'Search',
           slug: searchQuery,
           type: CollectionType.InMemory,
