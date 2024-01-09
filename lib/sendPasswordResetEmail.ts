@@ -12,7 +12,7 @@ import getResetPasswordToken from './getResetPasswordToken';
 
 export default async function sendPasswordResetEmail(req: NextApiRequest, user: User) {
   const token = getResetPasswordToken(user);
-  const url = `${req.headers.origin}/reset-password/${user._id}/${token}`;
+  const url = `${req.headers.origin}/reset-password/${user._id}?token=${encodeURIComponent(token)}`;
   const gameId = getGameIdFromReq(req);
   const game = Games[gameId];
 
