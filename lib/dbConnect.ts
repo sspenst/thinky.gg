@@ -35,10 +35,10 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
 
   if (!cached.promise) {
     const options: ConnectOptions = {
-      /*connectTimeoutMS: 10000,
+      connectTimeoutMS: 10000,
       heartbeatFrequencyMS: 30000,
       serverSelectionTimeoutMS: 10000,
-      socketTimeoutMS: 20000,*/
+      socketTimeoutMS: 20000,
     };
 
     let uri = undefined;
