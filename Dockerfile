@@ -27,7 +27,9 @@ COPY --chown=node:node . .
 
 # for web app
 RUN npm run build --omit=dev
-#RUN chown -R node:node .next/
+# we may need the following to prevent `Failed to write image to cache` errors
+RUN chown -R node:node .next/
+
 
 # for socket server
 RUN tsc -p tsconfig-socket.json
