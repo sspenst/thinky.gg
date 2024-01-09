@@ -123,6 +123,7 @@ export default async function startSocketIOServer(server: Server) {
   // TODO: May want to prevent a user to be in multiple matches across multiple games at once
   const activeMatches = await MultiplayerMatchModel.find({ state: MultiplayerMatchState.ACTIVE });
 
+  logger.info('Found ' + activeMatches.length + ' active matches. Rescheduling broadcasts');
   activeMatches.map(async (match) => {
     logger.info('Rescheduling broadcasts for active match ' + match.matchId);
     await scheduleBroadcastMatch(match.gameId, MongoEmitter, match.matchId.toString());
