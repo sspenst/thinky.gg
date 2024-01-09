@@ -1,6 +1,7 @@
 import Discord from '@root/constants/discord';
 import { GameId } from '@root/constants/GameId';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import isPro from '@root/helpers/isPro';
 import { createNewProUserNotification } from '@root/helpers/notificationHelper';
 import dbConnect from '@root/lib/dbConnect';
@@ -476,7 +477,13 @@ export default apiWrapper({
           // this would be super rare... like someone paying then right away deleting their user account in between
           error = `User with id ${userId} does not exist`;
         } else {
-          await UserConfigModel.updateOne({ userId: userId, gameId: gameId }, { userId: userId, gameId: gameId, $addToSet: { roles: Role.PRO } }, { upsert: true });
+          const game = getGameFromId(gameId as GameId);
+
+          await Promise.all([
+            UserConfigModel.updateOne({ userId: userTarget._id, gameId: gameId }, { userId: userId, gameId: gameId, $addToSet: { roles: Role.PRO } }, { upsert: true }),
+            createNewProUserNotification(gameId as GameId, userTarget._id),
+            queueDiscordWebhook(Discord.DevPriv, `💸 [${userTarget.name}](https://thinky.gg/profile/${userTarget.name}) just subscribed to ${game.displayName} ${metadata?.type}!`)
+          ]);
         }
       }
     }
