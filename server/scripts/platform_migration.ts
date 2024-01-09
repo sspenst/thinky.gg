@@ -19,20 +19,20 @@ async function pullAllRolesInUserModelExceptAdmin() {
 async function Go() {
   console.log('Starting migration script');
   await migrateFields(UserConfigModel, UserModel, {
-    emailDigest: '$emailDigest',
     disallowedEmailNotifications: '$disallowedEmailNotifications',
     disallowedPushNotifications: '$disallowedPushNotifications',
+    emailDigest: '$emailDigest',
+    mobileDeviceTokens: '$mobileDeviceTokens',
     stripeCustomerId: '$stripeCustomerId',
     stripeGiftSubscriptions: '$giftSubscriptions',
-    mobileDeviceTokens: '$mobileDeviceTokens',
   }, 'userId', '_id', { 'target.emailDigest': { $exists: false } });
 
   await migrateFields(UserModel, UserConfigModel, {
-    calcRankedSolves: '$calcRankedSolves',
     calcLevelsCreatedCount: '$calc_levels_created_count',
+    calcLevelsSolvedCount: '$score',
+    calcRankedSolves: '$calcRankedSolves',
     calcRecordsCount: '$calc_records',
     chapterUnlocked: '$chapterUnlocked',
-    calcLevelsSolvedCount: '$score',
     roles: '$roles',
   }, '_id', 'userId', { 'target.gameId': 'pathology' });
 

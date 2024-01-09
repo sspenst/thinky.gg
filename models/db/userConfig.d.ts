@@ -13,10 +13,7 @@ interface UserConfig {
   chapterUnlocked: number;
   gameId: GameId;
   roles: Role[];
-  mobileDeviceTokens: string[];
   showPlayStats: boolean;
-  stripeCustomerId: string;
-  stripeGiftSubscriptions: string[]; // gift subscriptions this user has given out
   theme: string;
   toursCompleted: TourType[];
   tutorialCompletedAt: number; // represents the timestamp they completed the tutorial
