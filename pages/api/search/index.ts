@@ -1,7 +1,8 @@
 import { GameId } from '@root/constants/GameId';
+import { GameType } from '@root/constants/Games';
 import StatFilter from '@root/constants/statFilter';
 import TileType from '@root/constants/tileType';
-import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import isPro from '@root/helpers/isPro';
 import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { Aggregate, FilterQuery, PipelineStage, Types } from 'mongoose';
@@ -226,7 +227,10 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
         // sort by unique users
         sortObj.push(['calc_playattempts_unique_users_count', sortDirection * -1]);
       } else {
-        sortObj.push(['calc_difficulty_estimate', sortDirection]);
+        const game = getGameFromId(gameId);
+        const field = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_completion_estimate' : 'calc_difficulty_estimate';
+
+        sortObj.push([field, sortDirection]);
         // don't show pending levels when sorting by difficulty
         searchObj['calc_difficulty_estimate'] = { $gte: 0 };
       }
