@@ -10,9 +10,9 @@ services:
         - NEW_RELIC_LICENSE_KEY=dummy
         - NEW_RELIC_APP_NAME=dummy
     volumes:
-      - ./:/pathology_app
-      - /pathology_app/node_modules
-      - /pathology_app/.next    
+      - ./:/thinky_app
+      - /thinky_app/node_modules
+      - /thinky_app/.next    
     networks:
       - dev-network
     ports:
@@ -27,9 +27,9 @@ services:
           - NEW_RELIC_LICENSE_KEY=dummy
           - NEW_RELIC_APP_NAME=dummy
     volumes:
-        - ./:/pathology_app
-        - /pathology_app/node_modules
-        - /pathology_app/.next 
+        - ./:/thinky_app
+        - /thinky_app/node_modules
+        - /thinky_app/.next 
     networks:
         - dev-network
         # for prod `node -r module-alias/register dist/server/socket/socket-server.js`

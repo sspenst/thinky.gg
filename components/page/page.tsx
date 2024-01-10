@@ -39,7 +39,7 @@ export default function Page({
   const [showHeader, setShowHeader] = useState(true);
 
   const isNavDropdown = deviceInfo.screenSize < ScreenSize.XL || isFullScreen;
-  const isNavOnPage = !isNavDropdown && showNav && (!game.isNotAGame || router.asPath !== '/');
+  const isNavOnPage = !isNavDropdown && showNav && (!game.isNotAGame || router.pathname !== '/');
 
   useEffect(() => {
     if (isFullScreen) {

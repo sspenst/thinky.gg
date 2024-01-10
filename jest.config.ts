@@ -26,8 +26,8 @@ export default {
     '!components/**', // ignore pure tsx files
     '!contexts/**',
     '!hooks/**',
-    '!pathology-react-native/**',
     '!server/**',
+    '!thinky-react-native/**',
     '!**/*.d.ts',
     '!*.ts', // ignore ts files in the root directory
   ],

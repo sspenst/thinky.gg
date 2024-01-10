@@ -111,7 +111,7 @@
   ],
   "exclude": [
     "node_modules",
-    "pathology-react-native",
-    "server/gen_img"
+    "server/gen_img",
+    "thinky-react-native"
   ]
 }

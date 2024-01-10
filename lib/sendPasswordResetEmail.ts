@@ -41,7 +41,7 @@ export default async function sendPasswordResetEmail(req: NextApiRequest, user: 
       gameId: gameId,
       linkHref: url,
       linkText: 'Reset Password',
-      message: 'Someone requested a password reset for your Pathology account',
+      message: 'Someone requested a password reset for your Thinky account',
       title: 'Forgot Password',
       user: user,
     }),
