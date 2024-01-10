@@ -1,10 +1,11 @@
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
+import { GameId } from '@root/constants/GameId';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import isCurator from '@root/helpers/isCurator';
 import isFullAccount from '@root/helpers/isFullAccount';
 import { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
-import Discord from '../../../constants/discord';
+import DiscordChannel from '../../../constants/discordChannel';
 import NotificationType from '../../../constants/notificationType';
 import { ValidNumber, ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
 import queueDiscordWebhook from '../../../helpers/discordWebhook';
@@ -45,9 +46,10 @@ function generateDiscordWebhook(
   // Remove any links from the text. So anything starting with anything:// we should just remove the anything://
   const contentCleaned = slicedText.replace(/\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*/g, '[link]');
   const game = getGameFromId(level.gameId);
-  const discordTxt = `**${game.displayName}** - ${score ? getScoreEmojis(score) + ' - ' : ''}**${req.user?.name}** wrote a review for ${level.userId.name}'s [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}):\n${contentCleaned}`;
+  const discordChannel = game.id === GameId.SOKOBAN ? DiscordChannel.SokobanNotifs : DiscordChannel.PathologyNotifs;
+  const discordTxt = `${score ? getScoreEmojis(score) + ' - ' : ''}**${req.user?.name}** wrote a review for ${level.userId.name}'s [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}):\n${contentCleaned}`;
 
-  return queueDiscordWebhook(Discord.Notifs, discordTxt);
+  return queueDiscordWebhook(discordChannel, discordTxt);
 }
 
 export default withAuth({

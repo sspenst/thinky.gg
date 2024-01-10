@@ -1,5 +1,5 @@
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
-import Discord from '@root/constants/discord';
+import DiscordChannel from '@root/constants/discordChannel';
 import { GameId } from '@root/constants/GameId';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
@@ -330,8 +330,6 @@ async function createMatch(req: NextApiRequestWithAuth) {
   const matchId = makeId(11);
   const matchUrl = `${req.headers.origin}/match/${matchId}`;
 
-  const discordMessage = `**${game.displayName}** - New *${multiplayerMatchTypeToText(type)}* match created by **${reqUser.name}**! [Join here](<${matchUrl}>)`;
-
   const match = await MultiplayerMatchModel.create({
     createdBy: reqUser._id,
     gameId: req.gameId,
@@ -349,7 +347,10 @@ async function createMatch(req: NextApiRequestWithAuth) {
   });
 
   if (!match.private) {
-    await queueDiscordWebhook(Discord.Multiplayer, discordMessage);
+    const discordChannel = game.id === GameId.SOKOBAN ? DiscordChannel.SokobanMultiplayer : DiscordChannel.PathologyMultiplayer;
+    const discordMessage = `New *${multiplayerMatchTypeToText(type)}* match created by **${reqUser.name}**! [Join here](<${matchUrl}>)`;
+
+    await queueDiscordWebhook(discordChannel, discordMessage);
   }
 
   enrichMultiplayerMatch(match, reqUser._id.toString());

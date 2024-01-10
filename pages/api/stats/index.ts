@@ -1,5 +1,6 @@
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import Direction from '@root/constants/direction';
+import { GameId } from '@root/constants/GameId';
 import { Games } from '@root/constants/Games';
 import getDifficultyEstimate, { getDifficultyCompletionEstimate } from '@root/helpers/getDifficultyEstimate';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
@@ -11,7 +12,7 @@ import UserConfig from '@root/models/db/userConfig';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
-import Discord from '../../../constants/discord';
+import DiscordChannel from '../../../constants/discordChannel';
 import { ValidArray, ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
 import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
@@ -308,6 +309,7 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
 
         // reset all playattempts to unsolved
         const game = getGameFromId(level.gameId);
+        const discordChannel = game.id === GameId.SOKOBAN ? DiscordChannel.Sokoban : DiscordChannel.Pathology;
 
         await Promise.all([
           PlayAttemptModel.updateMany(
@@ -315,7 +317,7 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
             { $set: { attemptContext: AttemptContext.UNSOLVED } },
             { session: session },
           ),
-          queueDiscordWebhook(Discord.Levels, `**${game.displayName}** - **${user.name}** set a new record: [${level.name}](${getGameFromId(level.gameId).baseUrl}/level/${level.slug}?ts=${ts}) - ${moves} moves`, { session: session }),
+          queueDiscordWebhook(discordChannel, `**${user.name}** set a new record: [${level.name}](${getGameFromId(level.gameId).baseUrl}/level/${level.slug}?ts=${ts}) - ${moves} moves`, { session: session }),
         ]);
       }
 

@@ -1,6 +1,6 @@
 import * as aws from '@aws-sdk/client-ses';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
-import Discord from '@root/constants/discord';
+import DiscordChannel from '@root/constants/discordChannel';
 import { GameId } from '@root/constants/GameId';
 import { Games } from '@root/constants/Games';
 import NotificationType from '@root/constants/notificationType';
@@ -361,7 +361,7 @@ export async function runEmailDigest(limitNum: number) {
     }
   }
 
-  await queueDiscordWebhook(Discord.DevPriv, `📧 **Email Digest**\n${digestSummary}`);
+  await queueDiscordWebhook(DiscordChannel.DevPriv, `📧 **Email Digest**\n${digestSummary}`);
   resTrack.status = 200;
   resTrack.json = { success: true, sent: emailDigestResult.sentListByEmailDigestType, failed: emailDigestResult.failedListByEmailDigestType };
 

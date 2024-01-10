@@ -1,4 +1,5 @@
-import Discord from '@root/constants/discord';
+import DiscordChannel from '@root/constants/discordChannel';
+import { GameId } from '@root/constants/GameId';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
@@ -245,7 +246,8 @@ export default withAuth(
           // add levels to match
           const matchUrl = `${req.headers.origin}/match/${matchId}`;
           const game = getGameFromId(populatedMatch.gameId);
-          const discordMessage = `**${game.displayName}** - *${multiplayerMatchTypeToText(match.type)}* match starting between ${populatedMatch.players?.map(p => `**${p.name}**`).join(' and ')}! [Spectate here](<${matchUrl}>)`;
+          const discordChannel = game.id === GameId.SOKOBAN ? DiscordChannel.SokobanMultiplayer : DiscordChannel.PathologyMultiplayer;
+          const discordMessage = `*${multiplayerMatchTypeToText(match.type)}* match starting between ${populatedMatch.players?.map(p => `**${p.name}**`).join(' and ')}! [Spectate here](<${matchUrl}>)`;
 
           Promise.all([
             MultiplayerMatchModel.updateOne(
@@ -258,7 +260,7 @@ export default withAuth(
                 },
               }
             ),
-            !match.private && queueDiscordWebhook(Discord.Multiplayer, discordMessage),
+            !match.private && queueDiscordWebhook(discordChannel, discordMessage),
           ]);
         }
 

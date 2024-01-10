@@ -1,7 +1,8 @@
+import { GameId } from '@root/constants/GameId';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
-import Discord from '../../../constants/discord';
+import DiscordChannel from '../../../constants/discordChannel';
 import TestId from '../../../constants/testId';
 import { ValidObjectId } from '../../../helpers/apiWrapper';
 import queueDiscordWebhook from '../../../helpers/discordWebhook';
@@ -49,12 +50,14 @@ export default withAuth({ POST: {
         slug: slug,
         userId: new Types.ObjectId(TestId.ARCHIVE),
       } }, { new: true, session: session });
+
       const game = getGameFromId(level.gameId);
+      const discordChannel = game.id === GameId.SOKOBAN ? DiscordChannel.Sokoban : DiscordChannel.Pathology;
 
       await Promise.all([
         queueCalcCreatorCounts(level.gameId, new Types.ObjectId(TestId.ARCHIVE), { session: session }),
         queueCalcCreatorCounts(level.gameId, level.userId, { session: session }),
-        queueDiscordWebhook(Discord.Levels, `**${game.displayName}** - **${req.user.name}** archived a level: [${level.name}](${req.headers.origin}/level/${slug}?ts=${ts})`, { session: session }),
+        queueDiscordWebhook(discordChannel, `**${req.user.name}** archived a level: [${level.name}](${req.headers.origin}/level/${slug}?ts=${ts})`, { session: session }),
       ]);
     });
 

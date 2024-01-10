@@ -1,7 +1,8 @@
+import { GameId } from '@root/constants/GameId';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import mongoose from 'mongoose';
 import type { NextApiResponse } from 'next';
-import Discord from '../../../constants/discord';
+import DiscordChannel from '../../../constants/discordChannel';
 import { ValidObjectId } from '../../../helpers/apiWrapper';
 import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import isCurator from '../../../helpers/isCurator';
@@ -133,13 +134,14 @@ export default withAuth({ POST: {
       await LevelModel.insertMany([levelClone], { session: session });
 
       const game = getGameFromId(level.gameId);
+      const discordChannel = game.id === GameId.SOKOBAN ? DiscordChannel.Sokoban : DiscordChannel.Pathology;
 
       // need to wait for the level to get inserted before we update the stats
       await Promise.all([
         queueRefreshIndexCalcs(levelClone._id, { session: session }),
         queueCalcPlayAttempts(levelClone._id, { session: session }),
         queueCalcCreatorCounts(level.gameId, level.userId, { session: session }),
-        queueDiscordWebhook(Discord.Levels, `**${game.displayName}** - **${req.user.name}** unpublished a level: ${level.name}`, { session: session }),
+        queueDiscordWebhook(discordChannel, `**${req.user.name}** unpublished a level: ${level.name}`, { session: session }),
         ...matchesToRebroadcast.map(match => requestBroadcastMatch(level.gameId, match.matchId)),
       ]);
     });
