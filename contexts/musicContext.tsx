@@ -1,3 +1,5 @@
+import { GameId } from '@root/constants/GameId';
+import useUrl from '@root/hooks/useUrl';
 import React, { createContext, useCallback, useEffect, useRef, useState } from 'react';
 
 export interface MusicContextInterface {
@@ -161,6 +163,8 @@ export default function MusicContextProvider({ children }: { children: React.Rea
   const [songMetadata, setSongMetdata] = useState<SongMetadata>();
   const [volume, setVolume] = useState(0.66);
 
+  const getUrl = useUrl();
+
   useEffect(() => {
     const audio = new Audio();
     const canPlayOgg = audio.canPlayType('audio/ogg') !== '';
@@ -260,9 +264,9 @@ export default function MusicContextProvider({ children }: { children: React.Rea
       };
 
       if (isDynamicSupported) {
-        const ambient = new Audio(song.ambient);
-        const original = new Audio(song.original);
-        const thud = new Audio(song.thud);
+        const ambient = new Audio(getUrl(GameId.THINKY, song.ambient));
+        const original = new Audio(getUrl(GameId.THINKY, song.original));
+        const thud = new Audio(getUrl(GameId.THINKY, song.thud));
 
         ambient.preload = 'auto';
         original.preload = 'auto';
@@ -351,7 +355,7 @@ export default function MusicContextProvider({ children }: { children: React.Rea
         return newSongMetadata;
       });
     });
-  }, [isDynamicSupported, isHot, isPlaying, volume]);
+  }, [getUrl, isDynamicSupported, isHot, isPlaying, volume]);
 
   const seek = useCallback((offset: number, playOriginal = isHot) => {
     // add songs.length to account for negative offset
