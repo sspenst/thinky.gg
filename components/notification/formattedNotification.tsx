@@ -1,12 +1,11 @@
 import { AchievementRulesCombined } from '@root/constants/achievements/achievementInfo';
 import { GameId } from '@root/constants/GameId';
-import { AppContext } from '@root/contexts/appContext';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import Collection from '@root/models/db/collection';
 import classNames from 'classnames';
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useContext } from 'react';
+import React from 'react';
 import Dimensions from '../../constants/dimensions';
 import NotificationType from '../../constants/notificationType';
 import getProfileSlug from '../../helpers/getProfileSlug';

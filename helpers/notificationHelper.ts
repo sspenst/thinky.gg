@@ -327,7 +327,8 @@ export async function clearNotifications(userId?: string | Types.ObjectId, sourc
 
   const deleted = await NotificationModel.deleteMany({
     ...obj,
-  }, options);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  }, options as any);
 
   // TODO: should we loop through all queuemessages with the deletedIds and remove them? Maybe not necessary...
 
