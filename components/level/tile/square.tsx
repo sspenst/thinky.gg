@@ -21,7 +21,7 @@ export default function Square({ game, text, tileType, visited, theme }: SquareP
   const fontSizeRatio = text === undefined || String(text).length <= 3 ?
     2 : (1 + (String(text).length - 1) / 2);
   const fontSize = innerTileSize / fontSizeRatio * (classic ? 1.5 : 1);
-  const overStepped = game.type === GameType.SHORTEST_PATH && text !== undefined && leastMoves !== 0 && text > leastMoves;
+  const overStepped = text !== undefined && leastMoves !== 0 && text > leastMoves;
   const textColor = overStepped ?
     'var(--level-player-extra)' : 'var(--level-grid-text)';
 
