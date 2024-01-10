@@ -1,6 +1,6 @@
 import { AchievementCategory, AchievementCategoryMapping } from '@root/constants/achievements/achievementInfo';
 import AchievementType from '@root/constants/achievements/achievementType';
-import Discord from '@root/constants/discord';
+import DiscordChannel from '@root/constants/discordChannel';
 import { GameId } from '@root/constants/GameId';
 import { Games } from '@root/constants/Games';
 import { getSolvesByDifficultyTable } from '@root/helpers/getSolvesByDifficultyTable';
@@ -108,10 +108,10 @@ export async function refreshAchievements(gameId: GameId, userId: Types.ObjectId
           const userLinkDiscord = `[${userName}](${userHref})`;
           const achievementHref = game.baseUrl + '/achievement/' + achievementType;
           const achievementLinkDiscord = `[${achievementInfo.name}](${achievementHref})`;
-          // message should also include emoji
-          const message = `**${game.displayName}** - ${userLinkDiscord} just unlocked the ${achievementLinkDiscord} ${achievementInfo.emoji} achievement!`;
+          const message = `${userLinkDiscord} just unlocked the ${achievementLinkDiscord} ${achievementInfo.emoji} achievement!`;
+          const discordChannel = game.id === GameId.SOKOBAN ? DiscordChannel.Sokoban : DiscordChannel.Pathology;
 
-          achievementsCreatedPromises.push(queueDiscordWebhook(Discord.General, message));
+          achievementsCreatedPromises.push(queueDiscordWebhook(discordChannel, message));
         }
       }
     }

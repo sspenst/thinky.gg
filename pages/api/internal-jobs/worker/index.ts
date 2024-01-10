@@ -1,5 +1,5 @@
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
-import Discord from '@root/constants/discord';
+import DiscordChannel from '@root/constants/discordChannel';
 import { GameId } from '@root/constants/GameId';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import genLevelImage from '@root/helpers/genLevelImage';
@@ -40,7 +40,8 @@ export async function queue(dedupeKey: string, type: QueueMessageType, message: 
     type: type,
   }, {
     upsert: true,
-    ...options,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ...options as any,
   });
 }
 
@@ -274,8 +275,9 @@ async function processQueueMessage(queueMessage: QueueMessage) {
 
       if (postToDiscord) {
         const game = getGameFromId(lvl.gameId);
+        const discordChannel = game.id === GameId.SOKOBAN ? DiscordChannel.Sokoban : DiscordChannel.Pathology;
 
-        await queueDiscordWebhook(Discord.Levels, `**${game.displayName}** - **${lvl.userId?.name}** published a new level: [${lvl.name}](${game.baseUrl}/level/${lvl.slug}?ts=${lvl.ts})`);
+        await queueDiscordWebhook(discordChannel, `**${lvl.userId?.name}** published a new level: [${lvl.name}](${game.baseUrl}/level/${lvl.slug}?ts=${lvl.ts})`);
       }
 
       // Need to create the new level notification because technically the image needs to be generated beforehand...

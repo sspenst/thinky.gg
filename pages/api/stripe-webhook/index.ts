@@ -1,4 +1,4 @@
-import Discord from '@root/constants/discord';
+import DiscordChannel from '@root/constants/discordChannel';
 import { GameId } from '@root/constants/GameId';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
@@ -47,7 +47,7 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
             session: session
           },
         ),
-        queueDiscordWebhook(Discord.DevPriv, `🥹 UNSUBSCRIBED. [${userToDowngrade.name}](https://thinky.gg/profile/${userToDowngrade.name}) was just unsubscribed from ` + productName),
+        queueDiscordWebhook(DiscordChannel.DevPriv, `🥹 UNSUBSCRIBED. [${userToDowngrade.name}](https://thinky.gg/profile/${userToDowngrade.name}) was just unsubscribed from ` + productName),
       ];
 
       // NB: metadata should normally be defined but it isn't mocked in the tests
@@ -211,7 +211,7 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
           ),
           // TODO: Figure a way to get the game ID from the subscription object since each game should be different, but for now this is fine
           createNewProUserNotification(gameId, giftToUser._id, giftFromUser._id),
-          queueDiscordWebhook(Discord.DevPriv, `💸 [${giftFromUser.name}](https://thinky.gg/profile/${giftFromUser.name}) just gifted ${quantity} ${type === GiftType.Yearly ? 'year' : 'month'}${quantity === 1 ? '' : 's'} of Pro to [${giftToUser.name}](https://thinky.gg/profile/${giftToUser.name})`)
+          queueDiscordWebhook(DiscordChannel.DevPriv, `💸 [${giftFromUser.name}](https://thinky.gg/profile/${giftFromUser.name}) just gifted ${quantity} ${type === GiftType.Yearly ? 'year' : 'month'}${quantity === 1 ? '' : 's'} of Pro to [${giftToUser.name}](https://thinky.gg/profile/${giftToUser.name})`)
         ]);
       });
       session.endSession();
@@ -279,7 +279,7 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
             },
           ),
           createNewProUserNotification(gameId, userToUpgrade._id),
-          queueDiscordWebhook(Discord.DevPriv, `💸 NEW SUBSCRIBER! [${userToUpgrade.name}](https://thinky.gg/profile/${userToUpgrade.name}) just subscribed to ${productName}!`),
+          queueDiscordWebhook(DiscordChannel.DevPriv, `💸 NEW SUBSCRIBER! [${userToUpgrade.name}](https://thinky.gg/profile/${userToUpgrade.name}) just subscribed to ${productName}!`),
         ]);
       });
 
@@ -482,7 +482,7 @@ export default apiWrapper({
           await Promise.all([
             UserConfigModel.updateOne({ userId: userTarget._id, gameId: gameId }, { userId: userId, gameId: gameId, $addToSet: { roles: Role.PRO } }, { upsert: true }),
             createNewProUserNotification(gameId as GameId, userTarget._id),
-            queueDiscordWebhook(Discord.DevPriv, `💸 NEW SUBSCRIBER! [${userTarget.name}](https://thinky.gg/profile/${userTarget.name}) just subscribed to ${game.displayName} ${metadata?.type}!`)
+            queueDiscordWebhook(DiscordChannel.DevPriv, `💸 NEW SUBSCRIBER! [${userTarget.name}](https://thinky.gg/profile/${userTarget.name}) just subscribed to ${game.displayName} ${metadata?.type}!`)
           ]);
         }
       }

@@ -11,7 +11,7 @@ import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmationEmail';
 import UserConfig from '@root/models/db/userConfig';
 import mongoose, { QueryOptions, Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
-import Discord from '../../../constants/discord';
+import DiscordChannel from '../../../constants/discordChannel';
 import apiWrapper, { NextApiRequestWrapper, ValidNumber, ValidType } from '../../../helpers/apiWrapper';
 import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import getProfileSlug from '../../../helpers/getProfileSlug';
@@ -150,11 +150,10 @@ export default apiWrapper({ POST: {
       }
 
       id = user._id;
-      const game = getGameFromId(req.gameId);
 
       await Promise.all([
         !guest && sendEmailConfirmationEmail(req, user),
-        queueDiscordWebhook(Discord.NewUsers, `**${game.displayName}** - **${trimmedName}** just registered! Welcome them on their [profile](${req.headers.origin}${getProfileSlug(user)})!`, { session: session }),
+        queueDiscordWebhook(DiscordChannel.NewUsers, `**${trimmedName}** just registered! Welcome them on their [profile](${req.headers.origin}${getProfileSlug(user)})!`, { session: session }),
       ]);
     });
     session.endSession();
