@@ -459,7 +459,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
               </svg>}
             title='Play History'
           />
-          <span className='text-sm ml-12'><Link className='underline' href={'https://github.com/sspenst/pathology/wiki/Pathology-Pro-Features'}>View full list</Link> of Pro Features</span>
+          <span className='text-sm ml-12'><Link className='underline' href={'https://github.com/sspenst/pathology/wiki/Pro-Features'}>View full list</Link> of Pro Features</span>
         </div>
       </div>
     </div>

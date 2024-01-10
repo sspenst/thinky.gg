@@ -2,7 +2,7 @@ FROM  node:20
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
-WORKDIR /pathology_app
+WORKDIR /thinky_app
 
 COPY --chown=node:node package*.json tsconfig-socket.json ./
 

@@ -1,5 +1,5 @@
 FROM node:20
-WORKDIR /pathology_app
+WORKDIR /thinky_app
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NEW_RELIC_LOG_ENABLED=false
@@ -11,7 +11,7 @@ ARG OFFLINE_BUILD=true
 
 RUN npm config set fund false
 
-WORKDIR /pathology_app
+WORKDIR /thinky_app
 
 # ts-node / tspath is needed for other scripts right now. module-alias is used for socket server production
 # ideally all would use package module alias and we would not need ts-node / tspath. but that's a TODO

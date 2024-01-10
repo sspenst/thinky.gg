@@ -3,6 +3,7 @@ import 'react-tooltip/dist/react-tooltip.css';
 import '../styles/global.css';
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react';
 import { Portal } from '@headlessui/react';
+import DismissToast from '@root/components/toasts/dismissToast';
 import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
 import { Game, Games } from '@root/constants/Games';
 import MusicContextProvider from '@root/contexts/musicContext';
@@ -318,12 +319,18 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
     if (redirectType === 'pathologygg') {
       setTimeout(() => {
         toast.dismiss();
-        toast.success(<div className='flex flex-col gap-3'>
-          <span>Welcome to Thinky.gg!</span><span>We&apos;ve redirected you from Pathology.gg.</span><span>Please login again and update your bookmarks.</span><span>Click <Link className='underline' href='https://thinky.gg'>here</Link> to learn more.</span>
-        </div>, {
-          duration: 10000,
-          icon: '👋',
-        });
+        toast.success(
+          <div className='flex'>
+            <div className='flex flex-col gap-3'>
+              <span>Welcome to Thinky.gg!</span><span>We&apos;ve redirected you from pathology.gg.</span><span>Please login again and update your bookmarks.</span><span>Click <Link className='underline' href='https://thinky.gg'>here</Link> to learn more.</span>
+            </div>
+            <DismissToast />
+          </div>,
+          {
+            duration: 10000,
+            icon: '👋',
+          }
+        );
       }, 1000);
     }
   }, []);
