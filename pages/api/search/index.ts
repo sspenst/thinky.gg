@@ -216,7 +216,6 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
       sortObj.push(['ts', sortDirection]);
     } else if (query.sortBy === 'reviewScore') {
       sortObj.push(['calc_reviews_score_laplace', sortDirection], ['calc_reviews_score_avg', sortDirection], ['calc_reviews_count', sortDirection]);
-
       searchObj['calc_reviews_score_avg'] = { $gte: 0 };
     } else if (query.sortBy === 'total_reviews') {
       sortObj.push(['calc_reviews_count', sortDirection]);
