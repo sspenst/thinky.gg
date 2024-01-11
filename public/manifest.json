@@ -1,15 +1,18 @@
 {
-  "short_name": "Pathology",
-  "name": "Pathology",
+  "name": "Thinky Puzzle Games",
+  "short_name": "Thinky.gg",
+  "description": "A platform dedicated to high-quality puzzle games",
   "icons": [
     {
-      "src": "logo.svg",
-      "sizes": "96x96 64x64 32x32 24x24 16x16",
+      "src": "logos/thinky/thinky.svg",
+      "sizes": "512x512 192x192 96x96 64x64 32x32 24x24 16x16",
       "type": "image/svg+xml"
     }
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#000000"
+  "orientation": "any",
+  "theme_color": "#13033d",
+  "background_color": "#13033d",
+  "lang": "en"
 }
