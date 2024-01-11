@@ -28,6 +28,10 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
   function onSubmitPrep(event: React.FormEvent) {
     event.preventDefault();
 
+    if (!recaptchaPublicKey) {
+      return submitFormData();
+    }
+
     if (recaptchaRef.current) {
       recaptchaRef.current.execute();
     } else {
