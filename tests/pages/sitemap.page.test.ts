@@ -1,10 +1,10 @@
+import { getServerSideProps } from '@root/pages/[subdomain]/sitemap';
 import { ServerResponse } from 'http';
 import { GetServerSidePropsContext } from 'next';
 import { Logger } from 'winston';
 import { logger } from '../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 import { UserModel } from '../../models/mongoose';
-import { getServerSideProps } from '../../pages/[subdomain]/sitemap/sitemap.xml';
 
 beforeAll(async () => {
   await dbConnect();
