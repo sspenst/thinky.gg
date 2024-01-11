@@ -26,9 +26,9 @@ export default function Footer() {
     }}>
       <div className='flex justify-center gap-6 text-sm text-center'>
         <div className='flex flex-col gap-4 text-left w-32'>
-          <h3 className='font-medium'>
+          <span className='font-medium'>
             Social
-          </h3>
+          </span>
           <ExternalLink href='https://discord.gg/j6RxRdqq4A'>
             Discord
           </ExternalLink>
@@ -40,9 +40,9 @@ export default function Footer() {
           </ExternalLink>
         </div>
         <div className='flex flex-col gap-4 text-left w-32'>
-          <h3 className='font-medium'>
+          <span className='font-medium'>
             Mobile
-          </h3>
+          </span>
           <ExternalLink href='https://apps.apple.com/app/pathology-block-pushing-game/id1668925562'>
             App Store
           </ExternalLink>
@@ -51,9 +51,9 @@ export default function Footer() {
           </ExternalLink>
         </div>
         <div className='flex flex-col gap-4 text-left w-32'>
-          <h3 className='font-medium'>
+          <span className='font-medium'>
             Resources
-          </h3>
+          </span>
           <ExternalLink href='mailto:help@thinky.gg'>
             Contact
           </ExternalLink>
