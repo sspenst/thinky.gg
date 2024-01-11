@@ -460,8 +460,8 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
         <link href={selectedGame.favicon || '/logo.svg'} rel='icon' />
       </Head>
       <DefaultSeo
-        defaultTitle={selectedGame.displayName + ' - Shortest Path Puzzle Game'}
-        description={selectedGame.SEODescription}
+        defaultTitle={selectedGame.seoTitle}
+        description={selectedGame.seoDescription}
         canonical={`${selectedGame.baseUrl}'`}
         openGraph={{
           type: 'website',
@@ -470,7 +470,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
         }}
         twitter={{
           handle: '@thinkygg',
-          site: '' + selectedGame.baseUrl,
+          site: selectedGame.baseUrl,
           cardType: 'summary_large_image'
         }}
       />

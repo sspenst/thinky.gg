@@ -31,8 +31,8 @@ export const Games: Record<GameId, Game> = {
     hasPro: false,
     isNotAGame: true,
     logo: '/logos/thinky/thinky.svg',
-    SEOTitle: 'Thinky Puzzle Games',
-    SEODescription: 'Thinky Games is a collection of puzzle games',
+    seoDescription: 'A platform dedicated to high-quality puzzle games',
+    seoTitle: 'Thinky Puzzle Games',
     subdomain: undefined,
     subtitle: 'Thinky Games',
     type: GameType.NONE,
@@ -48,8 +48,8 @@ export const Games: Record<GameId, Game> = {
     hasPro: true,
     logo: '/logos/pathology/pathology.svg',
     newLevelData: '4000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000003',
-    SEOTitle: 'Pathology - Shortest Path Puzzle Game',
-    SEODescription: 'The goal of Pathology is simple. Get to the exit in the least number of moves. Sounds easy right? Yet, this sokoban style game is one of the most mind-bending puzzle games you will find. Different blocks stand in your way to the exit, and your job is to figure out the optimal route',
+    seoDescription: 'The goal of Pathology is simple. Get to the exit in the least number of moves. Sounds easy right? Yet, this sokoban style game is one of the most mind-bending puzzle games you will find. Different blocks stand in your way to the exit, and your job is to figure out the optimal route.',
+    seoTitle: 'Pathology - Shortest Path Puzzle Game',
     shortDescription: 'Get to the exit in the least number of moves',
     stripeGiftPriceIdMonthly: process.env.STRIPE_GIFT_MONTHLY_PRICE_ID,
     stripeGiftPriceIdYearly: process.env.STRIPE_GIFT_YEARLY_PRICE_ID,
@@ -79,8 +79,8 @@ export const Games: Record<GameId, Game> = {
     hasPro: true,
     logo: '/logos/sokoban/sokoban.svg',
     newLevelData: '40000\n00000\n00200\n00000\n00003',
-    SEOTitle: 'Sokoban - Push the boxes puzzle game',
-    SEODescription: 'The goal of the puzzle game Sokoban is simple. Push the boxes onto the goals. Sounds easy right? Yet, this sokoban style game is one of the most mind-bending puzzle games you will find. The boxes can only be pushed, never pulled, and only one can be pushed at a time.',
+    seoDescription: 'The goal of the puzzle game Sokoban is simple. Push the boxes onto the goals. Sounds easy right? Yet, this is one of the most mind-bending puzzle games you will find.',
+    seoTitle: 'Sokoban - Push the Boxes Puzzle Game',
     shortDescription: 'Push the boxes onto the goals',
     stripeGiftPriceIdMonthly: process.env.STRIPE_GIFT_MONTHLY_PRICE_ID_SOKOBAN,
     stripeGiftPriceIdYearly: process.env.STRIPE_GIFT_YEARLY_PRICE_ID_SOKOBAN,
@@ -125,9 +125,8 @@ export interface Game {
   isNotAGame?: boolean;
   logo: string;
   newLevelData?: string;
-  subtitle: string;
-  SEOTitle: string;
-  SEODescription: string;
+  seoDescription: string;
+  seoTitle: string;
   shortDescription?: string;
   stripePaymentLinkMonthly?: string;
   stripePaymentLinkYearly?: string;
@@ -136,6 +135,7 @@ export interface Game {
   stripeGiftPriceIdMonthly?: string;
   stripeGiftPriceIdYearly?: string;
   subdomain: string | undefined;
+  subtitle: string;
   type: GameType;
   isComplete: (gameState: GameState) => boolean;
   validateLevel?: (data: string) => ValidateLevelResponse;

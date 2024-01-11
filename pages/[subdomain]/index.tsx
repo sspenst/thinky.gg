@@ -149,17 +149,17 @@ export default function HomePage({ user }: HomePageProps) {
   return (
     <Page title='Home'>
       <NextSeo
-        title={game.SEOTitle}
+        title={game.seoTitle}
         openGraph={{
-          title: game.SEOTitle,
-          description: game.SEODescription,
+          title: game.seoTitle,
+          description: game.seoDescription,
           images: [
             {
               url: game.baseUrl + game.logo,
               width: 128,
               height: 128,
               alt: game.displayName + ' Logo',
-              type: 'image/png',
+              type: 'image/svg+xml',
             },
           ],
         }}
