@@ -4,7 +4,7 @@ import { Logger } from 'winston';
 import { logger } from '../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 import { UserModel } from '../../models/mongoose';
-import { getServerSideProps } from '../../pages/[subdomain]/sitemap.xml';
+import { getServerSideProps } from '../../pages/[subdomain]/sitemap/sitemap.xml';
 
 beforeAll(async () => {
   await dbConnect();
