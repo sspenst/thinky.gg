@@ -25,15 +25,18 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
 
   const redirectFeatureFlag = useFeatureIsOn('post-tutorial-redirect-to-home');
 
-  function onRecaptchaChange(value: string | null) {
-    if (value) {
-      setRecaptchaToken(value);
+  function onSubmitPrep(event: React.FormEvent) {
+    event.preventDefault();
+
+    if (recaptchaRef.current) {
+      recaptchaRef.current.execute();
+    } else {
+    // Handle case where reCAPTCHA is not properly loaded
+      toast.error('reCAPTCHA not loaded. Please try again.');
     }
   }
 
-  function onSubmit(event: React.FormEvent) {
-    event.preventDefault();
-
+  function submitFormData() {
     if (password !== password2) {
       toast.dismiss();
       toast.error('Passwords do not match');
@@ -126,9 +129,16 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
     });
   }
 
+  function onRecaptchaChange(value: string | null) {
+    if (value) {
+      setRecaptchaToken(value);
+      submitFormData(); // Call the form submission logic here
+    }
+  }
+
   return (
     <FormTemplate>
-      <form className='flex flex-col gap-4' onSubmit={onSubmit}>
+      <form className='flex flex-col gap-4' onSubmit={onSubmitPrep}>
         <div>
           <label className='block text-sm font-bold mb-2 ' htmlFor='username'>
             Username

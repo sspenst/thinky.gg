@@ -5,7 +5,7 @@ import redirectToHome from '@root/helpers/redirectToHome';
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { useContext, useRef, useState } from 'react';
+import React, { MouseEvent, MouseEventHandler, useContext, useRef, useState } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { toast } from 'react-hot-toast';
 import { useSWRConfig } from 'swr';
@@ -28,6 +28,7 @@ export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?
   function onRecaptchaChange(value: string | null) {
     if (value) {
       setRecaptchaToken(value);
+      submit();
     }
   }
 
@@ -131,7 +132,7 @@ export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?
           sitekey={recaptchaPublicKey ?? ''}
         />
       )}
-      <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer' onClick={fetchSignup}>
+      <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer' onClick={onSubmitPrep}>
         Play
       </button>
       <Link className='font-bold text-sm text-blue-500 hover:text-blue-400' href='/signup'>
@@ -139,7 +140,19 @@ export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?
       </Link>
     </div>;
 
-  async function fetchSignup() {
+  // button event
+  function onSubmitPrep(e: MouseEvent<HTMLButtonElement>) {
+    e.preventDefault();
+
+    if (recaptchaPublicKey) {
+      recaptchaRef.current?.execute();
+    } else {
+      // Handle case where reCAPTCHA is not properly loaded
+      toast.error('reCAPTCHA not loaded. Please try again.');
+    }
+  }
+
+  async function submit() {
     const tutorialCompletedAt = window.localStorage.getItem('tutorialCompletedAt') || '0';
 
     toast.dismiss();
