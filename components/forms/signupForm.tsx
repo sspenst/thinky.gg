@@ -170,7 +170,6 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
         <div className='w-full pt-2'>
           {recaptchaPublicKey && (
             <ReCAPTCHA
-              size='invisible'
               onChange={onRecaptchaChange}
               ref={recaptchaRef}
               sitekey={recaptchaPublicKey ?? ''}
