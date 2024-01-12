@@ -49,10 +49,14 @@ export default function FormattedUser({ className, hideAvatar, id, noLinks, noTo
     }
 
     fetch(`/api/user/${user._id}?type=${Object.values(ProfileQueryType).join(',')}`).then(async res => {
+      if (!user) {
+        console.warn('User was null when fetching user data');
+      }
+
       const data = await res.json() as UserExtendedData;
 
       setUserExtendedData(data);
-      cache[user._id.toString()] = data;
+      cache[user?._id.toString()] = data;
     });
   }, [showTooltip, user, userExtendedData]);
 
