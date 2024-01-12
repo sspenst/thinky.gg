@@ -125,7 +125,7 @@ export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?
       </ul>
       { recaptchaPublicKey && (
         <ReCAPTCHA
-          size='invisible'
+          size='normal'
           onChange={onRecaptchaChange}
           ref={recaptchaRef}
           sitekey={recaptchaPublicKey ?? ''}
