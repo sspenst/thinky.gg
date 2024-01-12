@@ -1,39 +1,34 @@
 import Page from '@root/components/page/page';
-import { getUserFromToken } from '@root/lib/withAuth';
 import User from '@root/models/db/user';
 import { UserModel } from '@root/models/mongoose';
-import { GetServerSidePropsContext, NextApiRequest } from 'next';
+import { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
 import React, { useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const cookieToken = context.req?.cookies?.token;
-  const reqUser = cookieToken ? await getUserFromToken(cookieToken, context.req as NextApiRequest) : null;
   const { userId, token } = context.query;
   let emailConfirmed = false;
 
-  if (reqUser?._id.toString() === userId?.toString()) {
-    const user = await UserModel.findOneAndUpdate<User>(
-      {
-        emailConfirmationToken: token,
-        _id: userId,
+  const user = await UserModel.findOneAndUpdate<User>(
+    {
+      emailConfirmationToken: token,
+      _id: userId,
+    },
+    {
+      emailConfirmationToken: null,
+      emailConfirmed: true,
+    },
+    {
+      new: true,
+      projection: {
+        emailConfirmationToken: 1,
+        emailConfirmed: 1,
       },
-      {
-        emailConfirmationToken: null,
-        emailConfirmed: true,
-      },
-      {
-        new: true,
-        projection: {
-          emailConfirmationToken: 1,
-          emailConfirmed: 1,
-        },
-      },
-    );
+    },
+  );
 
-    emailConfirmed = !!user?.emailConfirmed;
-  }
+  emailConfirmed = !!user?.emailConfirmed;
 
   return {
     props: {
