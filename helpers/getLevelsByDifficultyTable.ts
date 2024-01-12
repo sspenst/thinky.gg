@@ -13,7 +13,7 @@ export async function getLevelsByDifficultyTable(
 ) {
   const difficultyListValues = difficultyList.map((d) => d.value);
   const game = getGameFromId(gameId);
-  const difficultyField = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_estimate_completion' : 'calc_difficulty_estimate';
+  const difficultyField = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_completion_estimate' : 'calc_difficulty_estimate';
 
   const levelsByDifficultyTable = await LevelModel.aggregate([
     {
