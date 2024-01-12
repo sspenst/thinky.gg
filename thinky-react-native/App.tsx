@@ -288,12 +288,7 @@ function App() {
           console.log('onNavigationStateChange', navState.url);
         }}
         originWhitelist={[
-          'https://pathology.gg*',
-          'https://thinky.gg*',
-          'https://*.thinky.gg*',
-          'https://discord.com*',
-          'https://www.google.com/recaptcha/*',
-          'https://www.gstatic.com/recaptcha/*',
+          '*',
         ]}
         pullToRefreshEnabled={true}
         ref={webViewRef}
