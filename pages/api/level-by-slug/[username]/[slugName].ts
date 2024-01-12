@@ -93,6 +93,7 @@ export async function getLevelByUrlPath(gameId: GameId, username: string, slugNa
             archivedTs: 1,
             authorNote: 1,
             calc_difficulty_estimate: 1,
+            calc_difficulty_completion_estimate: 1,
             calc_playattempts_just_beaten_count: 1,
             ts: 1,
           }

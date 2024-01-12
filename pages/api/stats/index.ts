@@ -394,6 +394,7 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
 
       await LevelModel.findByIdAndUpdate(level._id, {
         $set: {
+          calc_difficulty_completion_estimate: getDifficultyCompletionEstimate(enrichedLevel, enrichedLevel.calc_playattempts_unique_users_count_excluding_author ?? 0),
           calc_difficulty_estimate: getDifficultyEstimate(enrichedLevel, enrichedLevel.calc_playattempts_unique_users_count ?? 0),
         },
       }, { session: session });

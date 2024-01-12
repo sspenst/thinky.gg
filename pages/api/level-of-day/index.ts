@@ -1,4 +1,6 @@
 import { GameId } from '@root/constants/GameId';
+import { GameType } from '@root/constants/Games';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import cleanUser from '@root/lib/cleanUser';
 import { LEVEL_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import KeyValue from '@root/models/db/keyValue';
@@ -76,6 +78,8 @@ export async function getLevelOfDay(gameId: GameId, reqUser?: User | null) {
     }
   }
 
+  const game = getGameFromId(gameId);
+  const estimateToUse = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_completion_estimate' : 'calc_difficulty_estimate';
   const previouslySelected = await KeyValueModel.findOne({ key: KV_LEVEL_OF_DAY_LIST }).lean<KeyValue>();
   // generate a new level based on criteria...
   const MIN_STEPS = 12;
@@ -91,7 +95,7 @@ export async function getLevelOfDay(gameId: GameId, reqUser?: User | null) {
       $gte: MIN_STEPS,
       $lte: MAX_STEPS,
     },
-    calc_difficulty_estimate: { $gte: 0, $exists: true },
+    [estimateToUse]: { $gte: 0, $exists: true },
     calc_reviews_count: {
       // at least 3 reviews
       $gte: MIN_REVIEWS,
@@ -102,10 +106,10 @@ export async function getLevelOfDay(gameId: GameId, reqUser?: User | null) {
     _id: {
       $nin: previouslySelected?.value || [],
     },
-  }, '_id gameId name slug width height data leastMoves calc_difficulty_estimate', {
+  }, '_id gameId name slug width height data leastMoves calc_difficulty_estimate calc_difficulty_completion_estimate', {
     // sort by calculated difficulty estimate and then by id
     sort: {
-      calc_difficulty_estimate: 1,
+      [estimateToUse]: 1,
       _id: 1,
     },
   }).lean<Level[]>();
@@ -140,7 +144,7 @@ export async function getLevelOfDay(gameId: GameId, reqUser?: User | null) {
       isDeleted: { $ne: true },
       isDraft: false,
       gameId: gameId,
-    }, '_id gameId name userId slug width height data leastMoves calc_difficulty_estimate', {
+    }, '_id gameId name userId slug width height data leastMoves calc_difficulty_estimate calc_difficulty_completion_estimate', {
       // sort by calculated difficulty estimate and then by id
       sort: {
         _id: -1,
