@@ -1,8 +1,7 @@
 import Page from '@root/components/page/page';
-import { getUserFromToken } from '@root/lib/withAuth';
 import User from '@root/models/db/user';
 import { UserModel } from '@root/models/mongoose';
-import { GetServerSidePropsContext, NextApiRequest } from 'next';
+import { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
 import React, { useEffect } from 'react';
 import { toast } from 'react-hot-toast';
