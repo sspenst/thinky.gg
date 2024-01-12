@@ -144,10 +144,6 @@ export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?
   function onSubmitPrep(e: MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
 
-    if (!recaptchaPublicKey) {
-      return submit();
-    }
-
     if (recaptchaPublicKey) {
       recaptchaRef.current?.execute();
     } else {
