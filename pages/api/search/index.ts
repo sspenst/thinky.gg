@@ -203,6 +203,8 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
   const sortObj = [] as [string, number][];
   let lookupUserBeforeSort = false;
   let byStat = false;
+  const game = getGameFromId(gameId);
+  const difficultyEstimate = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_completion_estimate' : 'calc_difficulty_estimate';
 
   if (query.sortBy) {
     if (query.sortBy === 'userId') {
@@ -223,15 +225,14 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
       sortObj.push(['calc_stats_players_beaten', sortDirection]);
     } else if (query.sortBy === 'calcDifficultyEstimate') {
       if (query.difficultyFilter === 'Pending') {
-        // sort by unique users
-        sortObj.push(['calc_playattempts_unique_users_count', sortDirection * -1]);
-      } else {
-        const game = getGameFromId(gameId);
-        const field = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_completion_estimate' : 'calc_difficulty_estimate';
+        const playAttemptCountField = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_playattempts_unique_users_count_excluding_author' : 'calc_playattempts_unique_users_count';
 
-        sortObj.push([field, sortDirection]);
+        // sort by unique users
+        sortObj.push([playAttemptCountField, sortDirection * -1]);
+      } else {
+        sortObj.push([difficultyEstimate, sortDirection]);
         // don't show pending levels when sorting by difficulty
-        searchObj['calc_difficulty_estimate'] = { $gte: 0 };
+        searchObj[difficultyEstimate] = { $gte: 0 };
       }
     } else if (query.sortBy === 'completed' && isPro(reqUser)) {
       sortObj.push(['userMovesTs', sortDirection]);
@@ -310,13 +311,13 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
 
   if (query.difficultyFilter) {
     if (query.difficultyFilter === 'Pending') {
-      searchObj['calc_difficulty_estimate'] = { $eq: -1 };
+      searchObj[difficultyEstimate] = { $eq: -1 };
     } else {
       const difficulty = getDifficultyRangeFromName(query.difficultyFilter);
       const minValue = difficulty[0] as number;
       const maxValue = difficulty[1] as number;
 
-      searchObj['calc_difficulty_estimate'] = {
+      searchObj[difficultyEstimate] = {
         $gte: minValue,
         $lt: maxValue,
       };
@@ -324,14 +325,14 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
   }
 
   if (query.minDifficulty || query.maxDifficulty) {
-    searchObj['calc_difficulty_estimate'] = {};
+    searchObj[difficultyEstimate] = {};
 
     if (query.minDifficulty) {
-      searchObj['calc_difficulty_estimate']['$gte'] = parseInt(query.minDifficulty);
+      searchObj[difficultyEstimate]['$gte'] = parseInt(query.minDifficulty);
     }
 
     if (query.maxDifficulty) {
-      searchObj['calc_difficulty_estimate']['$lte'] = parseInt(query.maxDifficulty);
+      searchObj[difficultyEstimate]['$lte'] = parseInt(query.maxDifficulty);
     }
   }
 

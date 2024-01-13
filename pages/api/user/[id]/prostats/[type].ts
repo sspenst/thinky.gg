@@ -1,5 +1,7 @@
 import { GameId } from '@root/constants/GameId';
+import { GameType } from '@root/constants/Games';
 import { getEnrichLevelsPipelineSteps } from '@root/helpers/enrich';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import { getRecordsByUserId } from '@root/helpers/getRecordsByUserId';
 import User from '@root/models/db/user';
 import mongoose, { PipelineStage, Types } from 'mongoose';
@@ -16,6 +18,8 @@ import { USER_DEFAULT_PROJECTION } from '../../../../../models/schemas/userSchem
 
 async function getDifficultyDataComparisons(gameId: GameId, userId: string) {
   /** TODO: Store this in a K/V store with an expiration of like 1 day... */
+  const game = getGameFromId(gameId);
+  const difficultyEstimate = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_completion_estimate' : 'calc_difficulty_estimate';
   const difficultyData = await StatModel.aggregate([
     {
       $match: {
@@ -48,13 +52,14 @@ async function getDifficultyDataComparisons(gameId: GameId, userId: string) {
         pipeline: [
           {
             $match: {
-              calc_difficulty_estimate: { $gte: 0 },
+              [difficultyEstimate]: { $gte: 0 },
             }
           },
           {
             $project: {
               _id: 1,
               name: 1,
+              calc_difficulty_completion_estimate: 1,
               calc_difficulty_estimate: 1,
               calc_playattempts_just_beaten_count: 1,
               slug: 1
@@ -126,7 +131,7 @@ async function getDifficultyDataComparisons(gameId: GameId, userId: string) {
       $project: {
         _id: '$level._id',
         name: '$level.name',
-        difficulty: '$level.calc_difficulty_estimate',
+        difficulty: '$level.' + difficultyEstimate,
         ts: 1,
         slug: '$level.slug',
         calc_playattempts_just_beaten_count: '$level.calc_playattempts_just_beaten_count',

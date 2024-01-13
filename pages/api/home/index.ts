@@ -1,5 +1,7 @@
 import { GameId } from '@root/constants/GameId';
+import { GameType } from '@root/constants/Games';
 import StatFilter from '@root/constants/statFilter';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import Level from '@root/models/db/level';
 import { LevelModel, StatModel } from '@root/models/mongoose';
@@ -28,6 +30,8 @@ async function getTopLevelsThisMonth(gameId: GameId, reqUser: User | null) {
 }
 
 async function getRecentAverageDifficulty(gameId: GameId, reqUser: User, numResults = 1) {
+  const game = getGameFromId(gameId);
+  const difficultyEstimate = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_completion_estimate' : 'calc_difficulty_estimate';
   const query = await StatModel.aggregate([
     { $match: { userId: reqUser._id, complete: true, gameId: gameId } },
     { $sort: { ts: -1 } },
@@ -41,6 +45,7 @@ async function getRecentAverageDifficulty(gameId: GameId, reqUser: User, numResu
         pipeline: [
           {
             $project: {
+              calc_difficulty_completion_estimate: 1,
               calc_difficulty_estimate: 1,
             }
           }
@@ -56,7 +61,7 @@ async function getRecentAverageDifficulty(gameId: GameId, reqUser: User, numResu
     { $replaceRoot: { newRoot: '$levelId' } },
   ]) as Level[];
 
-  return query.length === 0 ? 0 : query.reduce((acc, level) => acc + level.calc_difficulty_estimate, 0) / query.length;
+  return query.length === 0 ? 0 : query.reduce((acc, level) => acc + level[difficultyEstimate], 0) / query.length;
 }
 
 async function getRecommendedLevel(gameId: GameId, reqUser: User) {

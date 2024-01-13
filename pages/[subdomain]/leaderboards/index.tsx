@@ -3,6 +3,7 @@ import { DIFFICULTY_INDEX, getDifficultyColor, getDifficultyRangeByIndex } from 
 import FormattedUser from '@root/components/formatted/formattedUser';
 import Page from '@root/components/page/page';
 import { GameId } from '@root/constants/GameId';
+import { GameType } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
 import { UserAndSum } from '@root/contexts/levelContext';
 import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
@@ -19,6 +20,8 @@ import React, { Fragment, useContext, useState } from 'react';
 
 async function getDifficultyLeaderboard(gameId: GameId, index: DIFFICULTY_INDEX) {
   const difficultyRange = getDifficultyRangeByIndex(index);
+  const game = getGameFromId(gameId);
+  const difficultyEstimate = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_completion_estimate' : 'calc_difficulty_estimate';
   const agg = await LevelModel.aggregate([
     {
       $match: {
@@ -27,7 +30,7 @@ async function getDifficultyLeaderboard(gameId: GameId, index: DIFFICULTY_INDEX)
           $ne: true,
         },
         gameId: gameId,
-        calc_difficulty_estimate: {
+        [difficultyEstimate]: {
           $gte: difficultyRange[0],
         },
       }
