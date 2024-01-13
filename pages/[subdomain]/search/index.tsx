@@ -6,11 +6,9 @@ import StyledTooltip from '@root/components/page/styledTooltip';
 import DataTable, { TableColumn } from '@root/components/tables/dataTable';
 import Dimensions from '@root/constants/dimensions';
 import StatFilter from '@root/constants/statFilter';
-import TileType from '@root/constants/tileType';
 import { AppContext } from '@root/contexts/appContext';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import isPro from '@root/helpers/isPro';
-import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import useRouterQuery from '@root/hooks/useRouterQuery';
 import { CollectionType } from '@root/models/constants/collection';
 import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '@root/models/constants/projections';
@@ -153,7 +151,7 @@ const filterStringAll = {
   },
 } as Record<string, string>;
 
-function getFilterDisplay(filter: string, query: Record<string, string>) {
+function getFilterDisplay(filter: string, query: SearchQuery) {
   if (filter === 'maxDimension1') {
     return `Max width: ${query.maxDimension1}`;
   } else if (filter === 'minDimension1') {
@@ -171,7 +169,7 @@ function getFilterDisplay(filter: string, query: Record<string, string>) {
       '3': 'Only restricted blocks',
       '2': 'No holes',
       '1': 'No blocks',
-    }[query.blockFilter] || query.blockFilter;
+    }[query.blockFilter as string] || query.blockFilter;
   } else if (filter === 'minSteps') {
     return `Min Steps: ${query.minSteps}`;
   } else if (filter === 'maxSteps') {
@@ -184,7 +182,7 @@ function getFilterDisplay(filter: string, query: Record<string, string>) {
     return `Level name: ${query.search}`;
   }
 
-  return filterStringAll[query[filter]] || query[filter];
+  return filterStringAll[query[filter] as string] || query[filter];
 }
 
 function TimeRangeMenu({ onTimeRangeClick, timeRange }: TimeRangeMenuProps) {
