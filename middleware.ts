@@ -30,20 +30,20 @@ export const getValidSubdomain = (host?: string | null) => {
 const PUBLIC_FILE = /\.(.*)$/; // Files
 const whiteList = {
   'api': 1,
+  'confirm-email': 1,
   'drafts': 1,
   'edit': 1,
-  'new': 1,
-  'ranked': 1,
-  'play-history': 1,
   'forgot-password': 1,
   'login': 1,
+  'new': 1,
+  'notifications': 1,
   'play-as-guest': 1,
+  'play-history': 1,
   'profile': 1,
+  'ranked': 1,
   'reset-password': 1,
   'settings': 1,
   'signup': 1,
-  'notifications': 1,
-
 } as Record<string, number>;
 const validSubdomain = Object.values(Games).reduce((acc, game) => {
   acc[game.id as string] = true;

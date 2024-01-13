@@ -10,7 +10,7 @@ import { sendMail } from '../pages/api/internal-jobs/email-digest';
 
 export default async function sendEmailConfirmationEmail(req: NextApiRequest, user: User) {
   const token = user.emailConfirmationToken;
-  const url = `${req.headers.origin}/confirm-email/${user._id}/${token}`;
+  const url = `${req.headers.origin}/confirm-email/${user._id}?token=${encodeURIComponent(token)}`;
   const gameId = getGameIdFromReq(req);
   const lastSent = await EmailLogModel.findOne<EmailLog>({
     userId: user._id,
