@@ -1,8 +1,10 @@
 import { difficultyList } from '@root/components/formatted/formattedDifficulty';
 import { GameId } from '@root/constants/GameId';
+import { GameType } from '@root/constants/Games';
 import Level from '@root/models/db/level';
 import { LevelModel } from '@root/models/mongoose';
 import { FilterQuery, SaveOptions } from 'mongoose';
+import { getGameFromId } from './getGameIdFromReq';
 
 export async function getLevelsByDifficultyTable(
   gameId: GameId,
@@ -10,6 +12,9 @@ export async function getLevelsByDifficultyTable(
   options: SaveOptions = {},
 ) {
   const difficultyListValues = difficultyList.map((d) => d.value);
+  const game = getGameFromId(gameId);
+  const difficultyField = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_completion_estimate' : 'calc_difficulty_estimate';
+
   const levelsByDifficultyTable = await LevelModel.aggregate([
     {
       $match: {
@@ -22,12 +27,13 @@ export async function getLevelsByDifficultyTable(
     {
       $project: {
         _id: 0,
-        calc_difficulty_estimate: 1
+        calc_difficulty_completion_estimate: 1,
+        calc_difficulty_estimate: 1,
       }
     },
     {
       $bucket: {
-        groupBy: '$calc_difficulty_estimate',
+        groupBy: `$${difficultyField}`,
         boundaries: difficultyListValues,
         default: difficultyListValues[difficultyListValues.length - 1],
         output: {

@@ -1,4 +1,5 @@
 import DidYouKnowTip from '@root/components/page/didYouKnowTip';
+import { GameType } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
 import useHomePageData, { HomepageDataType } from '@root/hooks/useHomePageData';
 import Collection from '@root/models/db/collection';
@@ -61,7 +62,8 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
   }, []);
 
   const url = `${game.baseUrl}/level/${level.slug}`;
-  const quote = 'Just completed ' + game.displayName + ' puzzle "' + level.name + '" (Difficulty: ' + getDifficultyFromEstimate(level.calc_difficulty_estimate).name + ')';
+  const difficultyEstimate = game.type === GameType.COMPLETE_AND_SHORTEST ? level.calc_difficulty_completion_estimate : level.calc_difficulty_estimate;
+  const quote = 'Just completed ' + game.displayName + ' puzzle "' + level.name + '" (Difficulty: ' + getDifficultyFromEstimate(difficultyEstimate).name + ')';
 
   function nextActionCard() {
     if (nextLevel) {
