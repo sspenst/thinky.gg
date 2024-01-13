@@ -7,12 +7,12 @@ import React, { useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const { userId, token } = context.query;
-  let emailConfirmed = false;
+  const { token, userId } = context.query;
+  const decodedToken = typeof token === 'string' ? decodeURIComponent(token) : null;
 
   const user = await UserModel.findOneAndUpdate<User>(
     {
-      emailConfirmationToken: token,
+      emailConfirmationToken: decodedToken,
       _id: userId,
     },
     {
@@ -28,7 +28,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     },
   );
 
-  emailConfirmed = !!user?.emailConfirmed;
+  const emailConfirmed = !!user?.emailConfirmed;
 
   return {
     props: {
@@ -55,7 +55,7 @@ export default function ConfirmEmail({ emailConfirmed }: ConfirmEmailProps) {
         toast.success('Email confirmed!');
         router.push('/');
       }
-    }, 100);
+    }, 1000);
 
     return () => {
       clearTimeout(ts);
@@ -64,9 +64,14 @@ export default function ConfirmEmail({ emailConfirmed }: ConfirmEmailProps) {
 
   return (
     <Page title={'Confirm Email'}>
-      <div className='flex flex-col items-center justify-center'>
-        <h1>Email is {emailConfirmed ? 'confirmed' : 'not confirmed'}</h1>
-        <span>Redirecting...</span>
+
+      <div className='flex flex-col items-center gap-4 py-24 px-4'>
+        <h2 className='text-2xl font-medium'>
+          Email is {emailConfirmed ? 'confirmed' : 'not confirmed'}
+        </h2>
+        <span>
+          Redirecting...
+        </span>
       </div>
     </Page>
   );
