@@ -27,7 +27,8 @@ export async function getLevelsByDifficultyTable(
     {
       $project: {
         _id: 0,
-        calc_difficulty_estimate: 1
+        calc_difficulty_completion_estimate: 1,
+        calc_difficulty_estimate: 1,
       }
     },
     {

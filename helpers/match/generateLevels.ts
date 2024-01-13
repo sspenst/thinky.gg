@@ -1,7 +1,9 @@
 import { DIFFICULTY_INDEX, getDifficultyRangeByIndex } from '@root/components/formatted/formattedDifficulty';
 import { GameId } from '@root/constants/GameId';
+import { GameType } from '@root/constants/Games';
 import Level from '@root/models/db/level';
 import { LevelModel } from '@root/models/mongoose';
+import { getGameFromId } from '../getGameIdFromReq';
 
 /**
  *
@@ -34,6 +36,8 @@ export async function generateLevels(
   const MIN_LAPLACE = options.minLaplace || 0.3;
   const [minDifficultyRange] = getDifficultyRangeByIndex(minDifficultyIndex);
   const [, maxDifficultyRange] = getDifficultyRangeByIndex(maxDifficultyIndex);
+  const game = getGameFromId(gameId);
+  const difficultyField = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_completion_estimate' : 'calc_difficulty_estimate';
 
   const levels = await LevelModel.aggregate<Level>([
     {
@@ -46,7 +50,7 @@ export async function generateLevels(
           $gte: MIN_STEPS,
           $lte: MAX_STEPS,
         },
-        calc_difficulty_estimate: {
+        [difficultyField]: {
           $gte: minDifficultyRange,
           $lt: maxDifficultyRange,
           $exists: true,
@@ -81,6 +85,7 @@ export async function generateLevels(
     },
     {
       $sort: {
+        calc_difficulty_completion_estimate: 1,
         calc_difficulty_estimate: 1,
       },
     },

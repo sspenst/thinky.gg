@@ -158,7 +158,7 @@ export default function FormattedDifficulty({ difficulty, id, level }: Formatted
       if (level.calc_playattempts_unique_users_count_excluding_author !== undefined) {
         uniqueUsers = level.calc_playattempts_unique_users_count_excluding_author;
       } else {
-        uniqueUsers = level.calc_playattempts_unique_users?.filter(user => user._id.toString() !== level.userId.toString() && user._id.toString() !== level.userId?._id?.toString()).length;
+        uniqueUsers = level.calc_playattempts_unique_users?.filter(userId => userId.toString() !== level.userId.toString() && userId.toString() !== level.userId?._id?.toString()).length;
       }
     } else {
       difficultyEstimate = level.calc_difficulty_estimate;

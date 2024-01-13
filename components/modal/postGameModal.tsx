@@ -62,8 +62,8 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
   }, []);
 
   const url = `${game.baseUrl}/level/${level.slug}`;
-  const estimateToUse = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_completion_estimate' : 'calc_difficulty_estimate';
-  const quote = 'Just completed ' + game.displayName + ' puzzle "' + level.name + '" (Difficulty: ' + getDifficultyFromEstimate(level[estimateToUse]).name + ')';
+  const difficultyEstimate = game.type === GameType.COMPLETE_AND_SHORTEST ? level.calc_difficulty_completion_estimate : level.calc_difficulty_estimate;
+  const quote = 'Just completed ' + game.displayName + ' puzzle "' + level.name + '" (Difficulty: ' + getDifficultyFromEstimate(difficultyEstimate).name + ')';
 
   function nextActionCard() {
     if (nextLevel) {

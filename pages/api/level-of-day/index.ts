@@ -79,7 +79,7 @@ export async function getLevelOfDay(gameId: GameId, reqUser?: User | null) {
   }
 
   const game = getGameFromId(gameId);
-  const estimateToUse = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_completion_estimate' : 'calc_difficulty_estimate';
+  const difficultyEstimate = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_completion_estimate' : 'calc_difficulty_estimate';
   const previouslySelected = await KeyValueModel.findOne({ key: KV_LEVEL_OF_DAY_LIST }).lean<KeyValue>();
   // generate a new level based on criteria...
   const MIN_STEPS = 12;
@@ -95,7 +95,7 @@ export async function getLevelOfDay(gameId: GameId, reqUser?: User | null) {
       $gte: MIN_STEPS,
       $lte: MAX_STEPS,
     },
-    [estimateToUse]: { $gte: 0, $exists: true },
+    [difficultyEstimate]: { $gte: 0, $exists: true },
     calc_reviews_count: {
       // at least 3 reviews
       $gte: MIN_REVIEWS,
@@ -109,7 +109,7 @@ export async function getLevelOfDay(gameId: GameId, reqUser?: User | null) {
   }, '_id gameId name slug width height data leastMoves calc_difficulty_estimate calc_difficulty_completion_estimate', {
     // sort by calculated difficulty estimate and then by id
     sort: {
-      [estimateToUse]: 1,
+      [difficultyEstimate]: 1,
       _id: 1,
     },
   }).lean<Level[]>();
