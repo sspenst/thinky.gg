@@ -215,7 +215,7 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
 
         await Promise.all([
           UserConfigModel.updateOne({ userId: userId, gameId: level.gameId }, { $inc: userConfigInc }, { session: session }),
-          queueRefreshAchievements(level.gameId, userId, [AchievementCategory.SKILL, AchievementCategory.USER], { session: session })
+          queueRefreshAchievements(level.gameId, userId, [AchievementCategory.SKILL, AchievementCategory.PROGRESS], { session: session })
         ]);
       }
 
