@@ -14,7 +14,7 @@ export interface IAchievementInfo {
 }
 
 export enum AchievementCategory {
-  USER = 'USER',
+  PROGRESS = 'USER',
   CREATOR = 'CREATOR',
   SKILL = 'LEVEL_COMPLETION',
   REVIEWER = 'REVIEWER',
@@ -22,7 +22,7 @@ export enum AchievementCategory {
 }
 
 export const AchievementCategoryMapping = {
-  [AchievementCategory.USER]: AchievementRulesProgress,
+  [AchievementCategory.PROGRESS]: AchievementRulesProgress,
   [AchievementCategory.CREATOR]: AchievementRulesCreator,
   [AchievementCategory.SKILL]: AchievementRulesSkill,
   [AchievementCategory.REVIEWER]: AchievementRulesReviewer,

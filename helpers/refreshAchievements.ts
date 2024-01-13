@@ -12,16 +12,16 @@ import MultiplayerMatch from '@root/models/db/multiplayerMatch';
 import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import Review from '@root/models/db/review';
 import User from '@root/models/db/user';
-import { AchievementModel, LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, ReviewModel, UserModel } from '@root/models/mongoose';
+import { AchievementModel, LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, ReviewModel, UserConfigModel, UserModel } from '@root/models/mongoose';
 import { Types } from 'mongoose';
 import queueDiscordWebhook from './discordWebhook';
 import { getRecordsByUserId } from './getRecordsByUserId';
 
 const AchievementCategoryFetch = {
-  [AchievementCategory.USER]: async (gameId: GameId, userId: Types.ObjectId) => {
-    const user = await UserModel.findById(userId).lean<User>();
+  [AchievementCategory.PROGRESS]: async (gameId: GameId, userId: Types.ObjectId) => {
+    const userConfig = await UserConfigModel.findOne({ userId: userId, gameId: gameId }).lean<User>();
 
-    return { user: user };
+    return { userConfig: userConfig };
   },
   [AchievementCategory.REVIEWER]: async (gameId: GameId, userId: Types.ObjectId) => {
     const reviewsCreated = await ReviewModel.find({ userId: userId, isDeleted: { $ne: true }, gameId: gameId }).lean<Review[]>();
