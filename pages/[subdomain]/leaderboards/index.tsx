@@ -21,7 +21,7 @@ import React, { Fragment, useContext, useState } from 'react';
 async function getDifficultyLeaderboard(gameId: GameId, index: DIFFICULTY_INDEX) {
   const difficultyRange = getDifficultyRangeByIndex(index);
   const game = getGameFromId(gameId);
-  const estimateToUse = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_completion_estimate' : 'calc_difficulty_estimate';
+  const difficultyEstimate = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_completion_estimate' : 'calc_difficulty_estimate';
   const agg = await LevelModel.aggregate([
     {
       $match: {
@@ -30,7 +30,7 @@ async function getDifficultyLeaderboard(gameId: GameId, index: DIFFICULTY_INDEX)
           $ne: true,
         },
         gameId: gameId,
-        [estimateToUse]: {
+        [difficultyEstimate]: {
           $gte: difficultyRange[0],
         },
       }

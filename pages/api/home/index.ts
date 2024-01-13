@@ -31,7 +31,7 @@ async function getTopLevelsThisMonth(gameId: GameId, reqUser: User | null) {
 
 async function getRecentAverageDifficulty(gameId: GameId, reqUser: User, numResults = 1) {
   const game = getGameFromId(gameId);
-  const estimateToUse = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_completion_estimate' : 'calc_difficulty_estimate';
+  const difficultyEstimate = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_completion_estimate' : 'calc_difficulty_estimate';
   const query = await StatModel.aggregate([
     { $match: { userId: reqUser._id, complete: true, gameId: gameId } },
     { $sort: { ts: -1 } },
@@ -45,8 +45,8 @@ async function getRecentAverageDifficulty(gameId: GameId, reqUser: User, numResu
         pipeline: [
           {
             $project: {
-              calc_difficulty_estimate: 1,
               calc_difficulty_completion_estimate: 1,
+              calc_difficulty_estimate: 1,
             }
           }
         ]
@@ -61,7 +61,7 @@ async function getRecentAverageDifficulty(gameId: GameId, reqUser: User, numResu
     { $replaceRoot: { newRoot: '$levelId' } },
   ]) as Level[];
 
-  return query.length === 0 ? 0 : query.reduce((acc, level) => acc + level[estimateToUse], 0) / query.length;
+  return query.length === 0 ? 0 : query.reduce((acc, level) => acc + level[difficultyEstimate], 0) / query.length;
 }
 
 async function getRecommendedLevel(gameId: GameId, reqUser: User) {
