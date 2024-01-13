@@ -6,9 +6,11 @@ import StyledTooltip from '@root/components/page/styledTooltip';
 import DataTable, { TableColumn } from '@root/components/tables/dataTable';
 import Dimensions from '@root/constants/dimensions';
 import StatFilter from '@root/constants/statFilter';
+import TileType from '@root/constants/tileType';
 import { AppContext } from '@root/contexts/appContext';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import isPro from '@root/helpers/isPro';
+import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import useRouterQuery from '@root/hooks/useRouterQuery';
 import { CollectionType } from '@root/models/constants/collection';
 import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '@root/models/constants/projections';
@@ -125,16 +127,67 @@ interface TimeRangeMenuProps {
   onTimeRangeClick: (timeRangeKey: string) => void;
   timeRange: string;
 }
+const timeRangeStrings = {
+  [TimeRange[TimeRange.Day]]: 'Today',
+  [TimeRange[TimeRange.Week]]: 'This Week',
+  [TimeRange[TimeRange.Month]]: 'This Month',
+  [TimeRange[TimeRange.Year]]: 'This Year',
+  [TimeRange[TimeRange.All]]: 'All Time',
+};
+const statFilterStrings = {
+  [StatFilter.All]: 'All Levels',
+  [StatFilter.HideSolved]: 'Hide Solved',
+  [StatFilter.Solved]: 'Solved',
+} as Record<string, string>;
+
+const filterStringAll = {
+  ...statFilterStrings,
+  ...timeRangeStrings,
+  ...{
+    [StatFilter.InProgress]: 'In Progress',
+    [StatFilter.Unattempted]: 'Unattempted',
+    'calcDifficultyEstimate': 'Difficulty',
+    'calc_stats_players_beaten': 'Solves',
+    'maxSteps': 'Max Steps',
+    'minSteps': 'Min Steps',
+  },
+} as Record<string, string>;
+
+function getFilterDisplay(filter: string, query: Record<string, string>) {
+  if (filter === 'maxDimension1') {
+    return `Max width: ${query.maxDimension1}`;
+  } else if (filter === 'minDimension1') {
+    return `Min width: ${query.minDimension1}`;
+  } else if (filter === 'maxDimension2') {
+    return `Max height: ${query.maxDimension2}`;
+  } else if (filter === 'minDimension2') {
+    return `Min height: ${query.minDimension2}`;
+  } else if (filter === 'blockFilter') {
+    return {
+      '7': 'Maze levels',
+      '6': 'No restricted blocks or holes',
+      '5': 'Maze levels',
+      '4': 'No restricted blocks',
+      '3': 'Only restricted blocks',
+      '2': 'No holes',
+      '1': 'No blocks',
+    }[query.blockFilter] || query.blockFilter;
+  } else if (filter === 'minSteps') {
+    return `Min Steps: ${query.minSteps}`;
+  } else if (filter === 'maxSteps') {
+    return `Max Steps: ${query.maxSteps}`;
+  } else if (filter === 'isRanked') {
+    return query.isRanked === 'true' ? 'Ranked' : 'Unranked';
+  } else if (filter === 'searchAuthor') {
+    return `Author: ${query.searchAuthor}`;
+  } else if (filter === 'search') {
+    return `Level name: ${query.search}`;
+  }
+
+  return filterStringAll[query[filter]] || query[filter];
+}
 
 function TimeRangeMenu({ onTimeRangeClick, timeRange }: TimeRangeMenuProps) {
-  const timeRangeStrings = {
-    [TimeRange[TimeRange.Day]]: 'Today',
-    [TimeRange[TimeRange.Week]]: 'This Week',
-    [TimeRange[TimeRange.Month]]: 'This Month',
-    [TimeRange[TimeRange.Year]]: 'This Year',
-    [TimeRange[TimeRange.All]]: 'All Time',
-  };
-
   return (
     <Menu as='div' className='relative inline-block text-left'>
       <Menu.Button
@@ -191,12 +244,6 @@ interface StatFilterMenuProps {
 }
 
 function StatFilterMenu({ onStatFilterClick, query }: StatFilterMenuProps) {
-  const statFilterStrings = {
-    [StatFilter.All]: 'All Levels',
-    [StatFilter.HideSolved]: 'Hide Solved',
-    [StatFilter.Solved]: 'Solved',
-  } as Record<string, string>;
-
   if (query.sortBy !== 'completed') {
     statFilterStrings[StatFilter.InProgress] = 'In Progress';
     statFilterStrings[StatFilter.Unattempted] = 'Unattempted';
@@ -294,6 +341,16 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
     }, 500),
     []
   );
+
+  const filtersSelected = [];
+
+  for (const key in query) {
+    if (key === 'subdomain') { continue;}
+
+    if (query[key] && query[key] !== DefaultQuery[key]) {
+      filtersSelected.push(key);
+    }
+  }
 
   const queryDebounceHelper = useCallback((update: Partial<SearchQuery>) => {
     setQuery(q => {
@@ -815,15 +872,33 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
         <span className='w-5' />
       </div>
       <div className='flex justify-center'>
-        <button
-          className='italic underline text-sm'
-          onClick={() => {
-            setQuery({ ...DefaultQuery });
-            fetchLevels({ ...DefaultQuery });
-          }}
-        >
-          Reset search filters
-        </button>
+        { filtersSelected.length > 0 &&
+        filtersSelected.map((filter, i) => (
+          <div className='flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-md bg-3 text-white mr-1' key={`filter-${i}`}>
+            <button
+              className=''
+
+              onClick={() => {
+                const update = {
+                  [filter]: DefaultQuery[filter],
+                } as Partial<SearchQuery>;
+
+                if (filter === 'statFilter') {
+                  update.statFilter = StatFilter.All;
+                }
+
+                fetchLevels({
+                  ...query,
+                  ...update,
+                });
+              }}
+            >
+            x
+            </button>
+            <span className='ml-1'>{getFilterDisplay(filter, query)}</span>
+          </div>
+        ))}
+
       </div>
     </div>
   );
