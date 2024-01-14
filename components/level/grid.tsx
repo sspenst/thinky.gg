@@ -76,6 +76,10 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
       const tileState = gameState.board[y][x];
       const tileType = tileState.tileType;
 
+      if (tileType === TileType.Default && tileState.block === undefined && tileState.blockInHole === undefined && tileState.text.length === 0) {
+        continue;
+      }
+
       const text = tileType === TileType.Player ? 0 :
         tileType === TileType.Exit ? leastMoves :
           tileState.text.length === 0 ? undefined :
@@ -135,6 +139,23 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
     }
   }
 
+  const solidBg = (
+    <div
+      className='absolute overlay-grid'
+      style={{
+        backgroundColor: 'var(--level-grid)',
+        backgroundSize: `${tileSize}px ${tileSize}px`,
+        backgroundImage: `
+          linear-gradient(to right, black ${borderWidth }px, transparent ${borderWidth }px),
+          linear-gradient(to bottom, black ${borderWidth}px, transparent ${borderWidth }px)
+        `,
+
+        height: tileSize * height,
+        width: tileSize * width,
+      }}
+    />
+  );
+
   return (
     <div className={classNames('grow flex items-center justify-center overflow-hidden ' + theme, { [teko.className]: classic })} id={gridId}>
       {tileSize !== 0 &&
@@ -152,6 +173,7 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
               width: tileSize * width,
             }}
           >
+            {solidBg}
             {tiles}
             {Object.values(blocks)}
             {gameState.pos &&
