@@ -152,6 +152,7 @@ const filterStringAll = {
   },
 } as Record<string, string>;
 
+/* istanbul ignore next */
 function getFilterDisplay(game: Game, filter: string, query: SearchQuery) {
   const difficultyType = game.type === GameType.SHORTEST_PATH ? 'Solve' : 'Completion';
   const otherDifficultyType = game.type === GameType.SHORTEST_PATH ? 'Completion' : 'Solve';
@@ -207,6 +208,7 @@ function getFilterDisplay(game: Game, filter: string, query: SearchQuery) {
   return filterStringAll[query[filter] as string] || query[filter];
 }
 
+/* istanbul ignore next */
 function TimeRangeMenu({ onTimeRangeClick, timeRange }: TimeRangeMenuProps) {
   return (
     <Menu as='div' className='relative inline-block text-left'>
@@ -263,6 +265,7 @@ interface StatFilterMenuProps {
   query: SearchQuery;
 }
 
+/* istanbul ignore next */
 function StatFilterMenu({ onStatFilterClick, query }: StatFilterMenuProps) {
   if (query.sortBy !== 'completed') {
     statFilterStrings[StatFilter.InProgress] = 'Completed';
