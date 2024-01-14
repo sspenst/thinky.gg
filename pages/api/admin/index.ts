@@ -59,7 +59,11 @@ export default withAuth({ POST: {
 
     case AdminCommand.RunBatchRefreshPlayAttempts: {
       // Query all levels into memory
-      const allLevels = await LevelModel.find({ gameId: req.gameId }, '_id');
+      const allLevels = await LevelModel.find({
+        isDraft: false,
+        isDeleted: { $ne: true },
+        gameId: req.gameId
+      }, '_id');
       // for each level, add a message to the queue
       // we want to spread out the messages so we don't overload the queue with just these messages
       // so let's interleave them by having each message run at a different time... Divide 1 hour by the number of levels
