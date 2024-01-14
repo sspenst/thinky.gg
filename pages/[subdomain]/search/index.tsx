@@ -135,6 +135,7 @@ const timeRangeStrings = {
 const statFilterStrings = {
   [StatFilter.All]: 'All Levels',
   [StatFilter.HideSolved]: 'Hide Solved',
+  [StatFilter.HideCompleted]: 'Hide Completed',
   [StatFilter.Solved]: 'Solved',
 } as Record<string, string>;
 
