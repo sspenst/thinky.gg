@@ -14,7 +14,7 @@ export default function LevelsSolvedByDifficultyList({ data: levelsSolvedByDiffi
       return null;
     }
 
-    const statFilterType = game.type === GameType.COMPLETE_AND_SHORTEST ? 'inProgress' : 'solved';
+    const statFilterType = game?.type === GameType.COMPLETE_AND_SHORTEST ? 'inProgress' : 'solved';
 
     return (
       <div className={'flex text-sm ' + (linksToSearch ? 'cursor-pointer' : '')}

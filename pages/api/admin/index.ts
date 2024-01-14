@@ -15,7 +15,7 @@ import { calcPlayAttempts, refreshIndexCalcs } from '@root/models/schemas/levelS
 import mongoose, { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { runEmailDigest } from '../internal-jobs/email-digest';
-import { processQueueMessages } from '../internal-jobs/worker';
+import { bulkQueueRefreshIndexCalcs, processQueueMessages, queueCalcPlayAttempts } from '../internal-jobs/worker';
 
 interface AdminBodyProps {
   targetId: string;
@@ -56,6 +56,25 @@ export default withAuth({ POST: {
     case AdminCommand.RefreshIndexCalcs:
       await refreshIndexCalcs(new Types.ObjectId(targetId as string));
       break;
+
+    case AdminCommand.RunBatchRefreshPlayAttempts: {
+      // Query all levels into memory
+      const allLevels = await LevelModel.find({
+        isDraft: false,
+        isDeleted: { $ne: true },
+        gameId: req.gameId
+      }, '_id');
+
+      // for each level, add a message to the queue
+      // we want to spread out the messages so we don't overload the queue with just these messages
+      // so let's interleave them by having each message run at a different time... Divide 1 hour by the number of levels
+      const oneHourSeconds = 60 * 60;
+
+      await bulkQueueRefreshIndexCalcs(allLevels.map(lvl => lvl._id), undefined, oneHourSeconds);
+
+      break;
+    }
+
     case AdminCommand.RefreshPlayAttempts:
       await calcPlayAttempts(new Types.ObjectId(targetId as string));
       break;
