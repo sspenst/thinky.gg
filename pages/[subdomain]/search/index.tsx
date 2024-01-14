@@ -143,7 +143,7 @@ const filterStringAll = {
   ...statFilterStrings,
   ...timeRangeStrings,
   ...{
-    [StatFilter.InProgress]: 'In Progress',
+    [StatFilter.InProgress]: 'Completed',
     [StatFilter.Unattempted]: 'Unattempted',
     'calcDifficultyEstimate': 'Difficulty',
     'calc_stats_players_beaten': 'Solves',
@@ -244,7 +244,7 @@ interface StatFilterMenuProps {
 
 function StatFilterMenu({ onStatFilterClick, query }: StatFilterMenuProps) {
   if (query.sortBy !== 'completed') {
-    statFilterStrings[StatFilter.InProgress] = 'In Progress';
+    statFilterStrings[StatFilter.InProgress] = 'Completed';
     statFilterStrings[StatFilter.Unattempted] = 'Unattempted';
   }
 
