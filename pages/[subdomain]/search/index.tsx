@@ -182,9 +182,23 @@ function getFilterDisplay(filter: string, query: SearchQuery) {
   } else if (filter === 'search') {
     return `Level name: ${query.search}`;
   } else if (filter === 'sortBy') {
+    console.log(query[filter]);
+
+    if (query[filter] === 'userId') {
+      return 'Sort by author name';
+    } else if (query[filter] === 'name') {
+      return 'Sort by level name';
+    } else if (query[filter] === 'calcDifficultyEstimate') {
+      return 'Sort by difficulty';
+    } else if (query[filter] === 'ts') {
+      return 'Sort by date created';
+    } else if (query[filter] === 'leastMoves') {
+      return 'Sort by minimum steps';
+    }
+
     return 'Sort by: ' + query[filter];
   } else if (filter === 'sortDir') {
-    return 'Sort direction: ' + query[filter];
+    return query[filter];
   }
 
   return filterStringAll[query[filter] as string] || query[filter];
