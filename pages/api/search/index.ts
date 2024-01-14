@@ -207,6 +207,11 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
   const difficultyEstimate = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_completion_estimate' : 'calc_difficulty_estimate';
   const otherDifficultyEstimate = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_estimate' : 'calc_difficulty_completion_estimate';
 
+  if (!isPro(reqUser)) {
+  // strip other difficulty estimate from projection
+    delete projection[otherDifficultyEstimate];
+  }
+
   if (query.sortBy) {
     if (query.sortBy === 'userId') {
       sortObj.push(['userId.name', sortDirection]);
