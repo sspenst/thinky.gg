@@ -279,9 +279,15 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
       $match: { 'stat.complete': true },
     });
   } else if (query.statFilter === StatFilter.InProgress) {
-    statLookupAndMatchStage.push({
-      $match: { 'stat.complete': false },
-    });
+    if (game.type === GameType.COMPLETE_AND_SHORTEST) {
+      statLookupAndMatchStage.push({
+        $match: { 'stat.complete': { $exists: true } },
+      });
+    } else {
+      statLookupAndMatchStage.push({
+        $match: { 'stat.complete': false },
+      });
+    }
   } else if (query.statFilter === StatFilter.Unattempted) {
     projection['calc_playattempts_unique_users'] = 1;
 

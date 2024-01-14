@@ -15,6 +15,7 @@ export async function getSolvesByDifficultyTable(
   const difficultyListValues = difficultyList.map((d) => d.value);
   const game = getGameFromId(gameId);
   const difficultyField = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_completion_estimate' : 'calc_difficulty_estimate';
+
   const levelsSolvedByDifficultyData = await StatModel.aggregate([
     {
       $match: {
