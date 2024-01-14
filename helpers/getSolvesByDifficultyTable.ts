@@ -20,7 +20,9 @@ export async function getSolvesByDifficultyTable(
     {
       $match: {
         userId: userId,
-        complete: true,
+        ...(game.type === GameType.SHORTEST_PATH ? {
+          complete: true,
+        } : {}),
         isDeleted: { $ne: true },
         gameId: gameId,
       },
