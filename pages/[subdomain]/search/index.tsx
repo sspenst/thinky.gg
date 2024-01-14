@@ -414,14 +414,22 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
           <FormattedLevelLink onClick={() => {
             const ts = new Date();
 
+            // convert router.query to a querystring ?var=1&var=2
+            const queryString = Object.keys(router.query).map(key => {
+              if (key === 'subdomain') { return; }
+
+              return `${key}=${router.query[key]}`;
+            } ).filter(Boolean).join('&');
+
             // TODO: temp collection is a hack (doesn't represent a real collection so there are other UX problems)
             // should make a new collection class to be used on the level page (with an href property, isInMemory, etc.)
+
             const collectionTemp = {
               createdAt: ts,
               isPrivate: true,
               levels: data, _id: new Types.ObjectId(),
               name: 'Search',
-              slug: router.query.toString(),
+              slug: '/search?' + queryString,
               type: CollectionType.InMemory,
               updatedAt: ts,
               userId: { _id: new Types.ObjectId() } as Types.ObjectId & User,

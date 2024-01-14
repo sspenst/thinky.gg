@@ -2,6 +2,7 @@ import Dimensions from '@root/constants/dimensions';
 import { MusicContext } from '@root/contexts/musicContext';
 import { PageContext } from '@root/contexts/pageContext';
 import getLevelCompleteColor from '@root/helpers/getLevelCompleteColor';
+import { CollectionType } from '@root/models/constants/collection';
 import classNames from 'classnames';
 import Link from 'next/link';
 import React, { Dispatch, SetStateAction, useCallback, useContext, useEffect, useRef, useState } from 'react';
@@ -91,7 +92,11 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
       return null;
     }
 
-    const href = chapter ? `/chapter${chapter}` : `/collection/${collection.slug}`;
+    let href = chapter ? `/chapter${chapter}` : `/collection/${collection.slug}`;
+
+    if (collection.type === CollectionType.InMemory) {
+      href = collection.slug;
+    }
 
     return (
       <Link className='text-xl font-bold hover:underline overflow-hidden break-words' href={href}>
