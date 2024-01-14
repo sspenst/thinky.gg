@@ -103,6 +103,7 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
 
       if (res.ok) {
         const resp = await res.json();
+
         const collectionTemp = {
           createdAt: ts,
           isPrivate: true,
@@ -264,7 +265,9 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
       folders.push(new LinkInfo(user.name, `/profile/${user.name}/collections`));
     }
 
-    folders.push(new LinkInfo(collection.name, `/collection/${collection.slug}`));
+    const collectionUrl = (collection.type !== CollectionType.InMemory) ? `/collection/${collection.slug}` : `${collection.slug}`;
+
+    folders.push(new LinkInfo(collection.name, collectionUrl));
   } else {
     // otherwise we can only give a link to the author's levels
     folders.push(new LinkInfo(level.userId.name, `/profile/${level.userId.name}/levels`));
