@@ -131,6 +131,7 @@ export default function AdminPage({ adminQuery, level, user }: AdminPageProps) {
 
   const commandsGeneral: IAdminCommand[] = [
     { label: 'Force Reload Page to Everyone', command: AdminCommand.SendReloadPageToUsers },
+    { label: 'Refresh Level Playattempt Calcs (spread over 1 hr)', command: AdminCommand.RunBatchRefreshPlayAttempts },
   ];
   const [selectedLevelCommand, setSelectedLevelCommand] = useState<IAdminCommand>();
   const [selectedUserCommand, setSelectedUserCommand] = useState<IAdminCommand>();

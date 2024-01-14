@@ -131,7 +131,9 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
     const subdomain = window.location.hostname.split('.')[0];
     const game: Game = Games[subdomain as GameId] || initGame;
 
-    setSelectedGame(game);
+    if (game !== undefined) {
+      setSelectedGame(game);
+    }
   }, [initGame]);
 
   useEffect(() => {
