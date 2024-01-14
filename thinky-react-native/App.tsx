@@ -273,11 +273,6 @@ function App() {
             webViewRef.current.reload();
           }
         }}
-        onShouldStartLoadWithRequest={(request) => {
-          console.log('onShouldStartLoadWithRequest', request.url);
-
-          return true;
-        }}
         onMessage={(event) => {
           const data = JSON.parse(event.nativeEvent.data);
 
@@ -292,6 +287,11 @@ function App() {
         onNavigationStateChange={(navState) => {
           console.log('onNavigationStateChange', navState.url);
         }}
+        onShouldStartLoadWithRequest={(request) => {
+          console.log('onShouldStartLoadWithRequest', request.url);
+
+          return true;
+        }}
         originWhitelist={[
           'https://pathology.gg*',
           'https://thinky.gg*',
@@ -302,7 +302,6 @@ function App() {
           'https://www.gstatic.com/recaptcha*',
           'https://*.google.com*', // note, https://*.google.com/* is not enough
           'https://*.cdn.growthbook.io*',
-
         ]}
         pullToRefreshEnabled={true}
         ref={webViewRef}
