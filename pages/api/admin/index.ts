@@ -15,7 +15,7 @@ import { calcPlayAttempts, refreshIndexCalcs } from '@root/models/schemas/levelS
 import mongoose, { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { runEmailDigest } from '../internal-jobs/email-digest';
-import { processQueueMessages, queueCalcPlayAttempts } from '../internal-jobs/worker';
+import { bulkQueueRefreshIndexCalcs, processQueueMessages, queueCalcPlayAttempts } from '../internal-jobs/worker';
 
 interface AdminBodyProps {
   targetId: string;
@@ -64,14 +64,13 @@ export default withAuth({ POST: {
         isDeleted: { $ne: true },
         gameId: req.gameId
       }, '_id');
+
       // for each level, add a message to the queue
       // we want to spread out the messages so we don't overload the queue with just these messages
       // so let's interleave them by having each message run at a different time... Divide 1 hour by the number of levels
-      const timeBetweenLevels = 60 * 60 * 1000 / allLevels.length;
+      const oneHourSeconds = 60 * 60;
 
-      for (const level of allLevels) {
-        await queueCalcPlayAttempts(level._id, undefined, new Date(Date.now() + timeBetweenLevels));
-      }
+      await bulkQueueRefreshIndexCalcs(allLevels.map(lvl => lvl._id), undefined, oneHourSeconds);
 
       break;
     }
