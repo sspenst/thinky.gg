@@ -65,6 +65,7 @@ beforeAll(async () => {
         calc_playattempts_duration_sum: 1000,
         calc_playattempts_just_beaten_count: i,
         calc_difficulty_estimate: 1000 / i,
+        calc_difficulty_completion_estimate: 500 / i,
       }
     ));
 
@@ -201,6 +202,17 @@ testRuns = testRuns.concat([
 
       for (let i = 1; i < response.levels.length; i++) {
         expect(response.levels[i].calc_difficulty_estimate).toBeGreaterThanOrEqual(response.levels[i - 1].calc_difficulty_estimate);
+      }
+    }
+  },
+  {
+    query: '?sortBy=calcOtherDifficultyEstimate&sortDir=asc',
+    test: async (response: any) => {
+      expect(response.totalRows).toBe(25);
+      expect(response.levels.length).toBe(20);
+
+      for (let i = 1; i < response.levels.length; i++) {
+        expect(response.levels[i].calc_difficulty_completion_estimate).toBeGreaterThanOrEqual(response.levels[i - 1].calc_difficulty_completion_estimate);
       }
     }
   },
