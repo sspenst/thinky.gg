@@ -269,6 +269,11 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
         ],
       },
     });
+  } else if (query.statFilter === StatFilter.HideCompleted) {
+    statLookupAndMatchStage.push({
+      $match:
+          { 'stat.complete': { $exists: false } },
+    });
   } else if (query.statFilter === StatFilter.Solved) {
     statLookupAndMatchStage.push({
       $match: { 'stat.complete': true },
