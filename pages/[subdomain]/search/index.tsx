@@ -181,6 +181,10 @@ function getFilterDisplay(filter: string, query: SearchQuery) {
     return `Author: ${query.searchAuthor}`;
   } else if (filter === 'search') {
     return `Level name: ${query.search}`;
+  } else if (filter === 'sortBy') {
+    return 'Sort by: ' + query[filter];
+  } else if (filter === 'sortDir') {
+    return 'Sort direction: ' + query[filter];
   }
 
   return filterStringAll[query[filter] as string] || query[filter];
