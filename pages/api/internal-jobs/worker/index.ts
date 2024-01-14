@@ -27,13 +27,14 @@ import { sendPushNotification } from './sendPushNotification';
 
 const MAX_PROCESSING_ATTEMPTS = 3;
 
-export async function queue(dedupeKey: string, type: QueueMessageType, message: string, options?: QueryOptions) {
+export async function queue(dedupeKey: string, type: QueueMessageType, message: string, options?: QueryOptions, runAt?: Date) {
   await QueueMessageModel.updateOne<QueueMessage>({
     dedupeKey: dedupeKey,
     message: message,
     state: QueueMessageState.PENDING,
     type: type,
   }, {
+    runAt: runAt || new Date(),
     dedupeKey: dedupeKey,
     message: message,
     state: QueueMessageState.PENDING,
@@ -124,12 +125,13 @@ export async function queueRefreshIndexCalcs(levelId: Types.ObjectId, options?: 
   );
 }
 
-export async function queueCalcPlayAttempts(levelId: Types.ObjectId, options?: QueryOptions) {
+export async function queueCalcPlayAttempts(levelId: Types.ObjectId, options?: QueryOptions, runAt?: Date) {
   await queue(
     levelId.toString(),
     QueueMessageType.CALC_PLAY_ATTEMPTS,
     JSON.stringify({ levelId: levelId.toString() }),
     options,
+    runAt,
   );
 }
 
@@ -363,6 +365,11 @@ export async function processQueueMessages() {
   try {
     await session.withTransaction(async () => {
       queueMessages = await QueueMessageModel.find({
+        // where runAt is in the past (or undefined)
+        $or: [
+          { runAt: { $lte: new Date() } },
+          { runAt: { $exists: false } }, // TODO: can delete this after a few moments after first deploy since all future messages will have runAt
+        ],
         state: QueueMessageState.PENDING,
         processingAttempts: {
           $lt: MAX_PROCESSING_ATTEMPTS

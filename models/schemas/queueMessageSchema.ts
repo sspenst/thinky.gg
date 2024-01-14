@@ -56,6 +56,10 @@ const QueueMessageSchema = new mongoose.Schema<QueueMessage>({
     type: Date,
     required: false,
   },
+  runAt: {
+    type: Date,
+    required: true,
+  },
   state: {
     type: String,
     required: true,
