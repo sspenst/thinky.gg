@@ -3,7 +3,7 @@
     "name": "Thinky",
     "slug": "thinky",
     "scheme": "com.pathology",
-    "version": "2.0.1",
+    "version": "2.0.2",
     "icon": "../public/logos/thinky/thinky_pfp.png",
     "userInterfaceStyle": "automatic",
     "plugins": [
@@ -73,7 +73,7 @@
         "NSPhotoLibraryUsageDescription": "Enabling photo library access will allow you to choose a picture to use as your avatar."
       },
       "bundleIdentifier": "com.pathology",
-      "buildNumber": "15",
+      "buildNumber": "16",
       "associatedDomains": [
         "applinks:pathology.gg",
         "applinks:thinky.gg",
