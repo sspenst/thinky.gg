@@ -142,9 +142,10 @@ interface FormattedDifficultyProps {
   difficulty?: Difficulty;
   id: string;
   level?: EnrichedLevel;
+  difficultyField?: 'calc_difficulty_completion_estimate' | 'calc_difficulty_estimate';
 }
 
-export default function FormattedDifficulty({ difficulty, id, level }: FormattedDifficultyProps) {
+export default function FormattedDifficulty({ difficulty, id, level, difficultyField }: FormattedDifficultyProps) {
   let difficultyEstimate = difficulty?.value;
 
   let uniqueUsers: number | undefined = undefined;
@@ -152,7 +153,9 @@ export default function FormattedDifficulty({ difficulty, id, level }: Formatted
   if (level) {
     const game = getGameFromId(level.gameId);
 
-    if (game.type === GameType.COMPLETE_AND_SHORTEST) {
+    if (difficultyField) {
+      difficultyEstimate = level[difficultyField];
+    } else if (game.type === GameType.COMPLETE_AND_SHORTEST) {
       difficultyEstimate = level.calc_difficulty_completion_estimate;
 
       if (level.calc_playattempts_unique_users_count_excluding_author !== undefined) {
