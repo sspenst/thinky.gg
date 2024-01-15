@@ -140,22 +140,21 @@ export function getDifficultyColor(value: number, light = 50) {
 
 interface FormattedDifficultyProps {
   difficulty?: Difficulty;
+  difficultyField?: 'calc_difficulty_completion_estimate' | 'calc_difficulty_estimate';
   id: string;
   level?: EnrichedLevel;
-  difficultyField?: 'calc_difficulty_completion_estimate' | 'calc_difficulty_estimate';
 }
 
-export default function FormattedDifficulty({ difficulty, id, level, difficultyField }: FormattedDifficultyProps) {
+export default function FormattedDifficulty({ difficulty, difficultyField, id, level }: FormattedDifficultyProps) {
   let difficultyEstimate = difficulty?.value;
 
   let uniqueUsers: number | undefined = undefined;
 
   if (level) {
     const game = getGameFromId(level.gameId);
+    const resolvedDifficultyField = difficultyField ?? (game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_completion_estimate' : 'calc_difficulty_estimate');
 
-    if (difficultyField) {
-      difficultyEstimate = level[difficultyField];
-    } else if (game.type === GameType.COMPLETE_AND_SHORTEST) {
+    if (resolvedDifficultyField === 'calc_difficulty_completion_estimate') {
       difficultyEstimate = level.calc_difficulty_completion_estimate;
 
       if (level.calc_playattempts_unique_users_count_excluding_author !== undefined) {
