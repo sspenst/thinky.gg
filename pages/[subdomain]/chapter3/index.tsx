@@ -8,7 +8,7 @@ import LinkInfo from '../../../components/formatted/linkInfo';
 import Page from '../../../components/page/page';
 import getCampaignProps, { CampaignProps } from '../../../helpers/getCampaignProps';
 import { getUserFromToken } from '../../../lib/withAuth';
-import { UserModel } from '../../../models/mongoose';
+import { UserConfigModel, UserModel } from '../../../models/mongoose';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
@@ -57,7 +57,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       };
     }
 
-    await UserModel.updateOne({ _id: reqUser._id }, { $set: { chapterUnlocked: 3 } });
+    await UserConfigModel.updateOne({ userId: reqUser._id, gameId: gameId }, { $set: { chapterUnlocked: 3 } });
     // TODO: unlock achievement here for completing chapter 2
   }
 
