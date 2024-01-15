@@ -16,6 +16,7 @@ import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import Notification from '@root/models/db/notification';
 import { NextPageContext } from 'next';
 import type { AppProps } from 'next/app';
+import { init } from 'next/dist/compiled/webpack/webpack';
 import Head from 'next/head';
 import Link from 'next/link';
 import { Router, useRouter } from 'next/router';
@@ -87,7 +88,7 @@ MyApp.getInitialProps = async ({ ctx }: { ctx: NextPageContext }) => {
 export default function MyApp({ Component, pageProps, userAgent, initGame }: AppProps & { userAgent: string, initGame: Game }) {
   const deviceInfo = useDeviceCheck(userAgent);
   const forceUpdate = useForceUpdate();
-  const [host, setHost] = useState<string>();
+  const [host, setHost] = useState<string>('thinky.gg');
   const { isLoading, mutateUser, user } = useUser();
   const [multiplayerSocket, setMultiplayerSocket] = useState<MultiplayerSocket>({
     connectedPlayers: [],
