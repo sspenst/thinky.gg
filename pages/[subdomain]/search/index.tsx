@@ -796,74 +796,78 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
         <Link href='/settings/pro' passHref>
           <Image alt='pro' src='/pro.svg' width='20' height='20' />
         </Link>
-        <div className='flex flex-col items-center justify-center w-fit border p-2 rounded-md gap-2 border-cyan-200'>
-          <div className='flex items-center justify-center'>
+        <div className='flex flex-col md:flex-row items-center justify-center w-fit border p-2 rounded-md gap-2 border-cyan-200'>
+          <div className='flex md:flex-col items-center justify-center'>
             <span className='text-xs font-medium pr-1'>Min dimensions:</span>
-            <input
-              className='form-range pl-2 w-12 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
-              disabled={!isPro(reqUser)}
-              max='40'
-              min='1'
-              onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                queryDebounceHelper({
-                  minDimension1: (e.target as HTMLInputElement).value,
-                  page: '1',
-                });
-              }}
-              step='1'
-              type='number'
-              value={query.minDimension1}
-            />
-            <span className='text-xs font-medium px-1'>x</span>
-            <input
-              className='form-range pl-2 w-12 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
-              disabled={!isPro(reqUser)}
-              max='40'
-              min='1'
-              onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                queryDebounceHelper({
-                  minDimension2: (e.target as HTMLInputElement).value,
-                  page: '1',
-                });
-              }}
-              step='1'
-              type='number'
-              value={query.minDimension2}
-            />
+            <div>
+              <input
+                className='form-range pl-2 w-10 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
+                disabled={!isPro(reqUser)}
+                max='40'
+                min='1'
+                onChange={(e: React.FormEvent<HTMLInputElement>) => {
+                  queryDebounceHelper({
+                    minDimension1: (e.target as HTMLInputElement).value,
+                    page: '1',
+                  });
+                }}
+                step='1'
+                type='number'
+                value={query.minDimension1}
+              />
+              <span className='text-xs font-medium px-1'>x</span>
+              <input
+                className='form-range pl-2 w-10 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
+                disabled={!isPro(reqUser)}
+                max='40'
+                min='1'
+                onChange={(e: React.FormEvent<HTMLInputElement>) => {
+                  queryDebounceHelper({
+                    minDimension2: (e.target as HTMLInputElement).value,
+                    page: '1',
+                  });
+                }}
+                step='1'
+                type='number'
+                value={query.minDimension2}
+              />
+            </div>
           </div>
-          <div className='flex items-center justify-center'>
+          <div className='flex md:flex-col items-center justify-center'>
             <span className='text-xs font-medium pr-1'>Max dimensions:</span>
-            <input
-              className='form-range pl-2 w-12 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
-              disabled={!isPro(reqUser)}
-              max='40'
-              min='1'
-              onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                queryDebounceHelper({
-                  maxDimension1: (e.target as HTMLInputElement).value,
-                  page: '1',
-                });
-              }}
-              step='1'
-              type='number'
-              value={query.maxDimension1}
-            />
-            <span className='text-xs font-medium px-1'>x</span>
-            <input
-              className='form-range pl-2 w-12 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
-              disabled={!isPro(reqUser)}
-              max='40'
-              min='1'
-              onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                queryDebounceHelper({
-                  maxDimension2: (e.target as HTMLInputElement).value,
-                  page: '1',
-                });
-              }}
-              step='1'
-              type='number'
-              value={query.maxDimension2}
-            />
+            <div>
+              <input
+                className='form-range pl-2 w-10 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
+                disabled={!isPro(reqUser)}
+                max='40'
+                min='1'
+                onChange={(e: React.FormEvent<HTMLInputElement>) => {
+                  queryDebounceHelper({
+                    maxDimension1: (e.target as HTMLInputElement).value,
+                    page: '1',
+                  });
+                }}
+                step='1'
+                type='number'
+                value={query.maxDimension1}
+              />
+              <span className='text-xs font-medium px-1'>x</span>
+              <input
+                className='form-range pl-2 w-10 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
+                disabled={!isPro(reqUser)}
+                max='40'
+                min='1'
+                onChange={(e: React.FormEvent<HTMLInputElement>) => {
+                  queryDebounceHelper({
+                    maxDimension2: (e.target as HTMLInputElement).value,
+                    page: '1',
+                  });
+                }}
+                step='1'
+                type='number'
+                value={query.maxDimension2}
+              />
+            </div>
           </div>
           <div className='flex items-center justify-center' role='group'>
             <FilterButton
