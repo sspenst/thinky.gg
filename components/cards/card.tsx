@@ -12,7 +12,7 @@ export default function Card({ children, id, title, tooltip }: CardProps) {
   const tooltipId = `card-tooltip-${id}`;
 
   return (
-    <div className='flex flex-col items-center max-w-full h-fit gap-4'
+    <section className='flex flex-col items-center max-w-full h-fit gap-4'
       id={id}
     >
       <h2 className='text-xl font-bold' data-tooltip-id={tooltipId} data-tooltip-content={tooltip}>
@@ -20,6 +20,6 @@ export default function Card({ children, id, title, tooltip }: CardProps) {
       </h2>
       <StyledTooltip id={tooltipId} />
       {children}
-    </div>
+    </section>
   );
 }

@@ -20,7 +20,7 @@ export default function LevelCardWithTitle({ href, id, level, onClick, title, to
   const tooltipId = `recommended-level-${id}`;
 
   return (
-    <div className='flex flex-col items-center gap-3 max-w-full' id={id}>
+    <section className='flex flex-col items-center gap-3 max-w-full' id={id}>
       <h2
         className='px-1 text-xl font-bold'
         data-tooltip-id={tooltipId}
@@ -35,6 +35,6 @@ export default function LevelCardWithTitle({ href, id, level, onClick, title, to
         level={level}
       />
       <StyledTooltip id={tooltipId} />
-    </div>
+    </section>
   );
 }
