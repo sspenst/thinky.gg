@@ -122,7 +122,7 @@ export async function queueFetch(url: string, options: RequestInit, dedupeKey?: 
  * @param options
  * @param spreadRunAtDuration How long to spread out the runAt times (in seconds).
  */
-export async function bulkQueueRefreshIndexCalcs(levelIds: Types.ObjectId[], options?: QueryOptions, spreadRunAtDuration: number = 0) {
+export async function bulkQueueCalcPlayAttempts(levelIds: Types.ObjectId[], options?: QueryOptions, spreadRunAtDuration: number = 0) {
   const queueMessages = [];
   const now = new Date();
   const timeBetweenLevels = spreadRunAtDuration > 0 ? spreadRunAtDuration * 1000 / levelIds.length : 0;
@@ -135,7 +135,7 @@ export async function bulkQueueRefreshIndexCalcs(levelIds: Types.ObjectId[], opt
       dedupeKey: levelId.toString(),
       message: JSON.stringify({ levelId: levelId.toString() }),
       state: QueueMessageState.PENDING,
-      type: QueueMessageType.REFRESH_INDEX_CALCULATIONS,
+      type: QueueMessageType.CALC_PLAY_ATTEMPTS,
       runAt: runAtTime,
     });
   }
