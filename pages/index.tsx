@@ -9,6 +9,7 @@ import { Games } from '@root/constants/Games';
 import Theme from '@root/constants/theme';
 import { AppContext } from '@root/contexts/appContext';
 import useUrl from '@root/hooks/useUrl';
+import { NextSeo } from 'next-seo';
 import React, { useContext } from 'react';
 
 interface FeatureCardProps {
@@ -20,9 +21,9 @@ interface FeatureCardProps {
 function FeatureCard({ description, title, video }: FeatureCardProps) {
   return (
     <div className='w-80 max-w-full rounded-xl p-4 flex flex-col gap-3 items-center text-center border border-color-4 bg-1'>
-      <div className='font-semibold text-2xl'>
+      <h2 className='font-semibold text-2xl'>
         {title}
-      </div>
+      </h2>
       <div className='text-sm'>
         {description}
       </div>
@@ -59,122 +60,134 @@ export default function ThinkyHomePage() {
   };
 
   return (
-    <Page
-      style={{
-        backgroundImage: 'url(https://i.imgur.com/iYIoTCx.png)',
-        backgroundPosition: 'center',
-        backgroundPositionY: 'calc(50% + ' + Dimensions.MenuHeight + 'px)',
-        backgroundSize: 'cover',
-        backgroundAttachment: 'fixed',
-        backgroundRepeat: 'no-repeat',
-      }}
-      title='Thinky.gg'
-    >
-      <div className='flex flex-col justify-center items-center my-12 mx-6 gap-16'>
-        <h1
-          className='text-6xl sm:text-8xl text-white rounded-lg text-center'
-          style={{
-            textShadow: '0 0 10px rgba(255,255,255,1)',
-            animation: 'textShadow 0.5s ease-in-out infinite alternate, blurToClear 0.5s ease-in-out forwards',
-            filter: 'blur(2px)',
-          }}
-        >
+    <>
+      <NextSeo
+        title={'Thinky.gg - Solve Thinking Puzzle Games'}
+        description='Thinky is a platform dedicated to high-quality puzzle games. Solve and optimize puzzles, or create your own for everyone to play!'
+        canonical={'https://thinky.gg'}
+        openGraph={{
+          title: 'Thinky.gg - Solve Thinking Puzzle Games',
+          type: 'website',
+          url: 'https://thinky.gg',
+        }}
+      />
+      <Page
+        style={{
+          backgroundImage: 'url(https://i.imgur.com/iYIoTCx.png)',
+          backgroundPosition: 'center',
+          backgroundPositionY: 'calc(50% + ' + Dimensions.MenuHeight + 'px)',
+          backgroundSize: 'cover',
+          backgroundAttachment: 'fixed',
+          backgroundRepeat: 'no-repeat',
+        }}
+        title='Thinky.gg'
+      >
+        <div className='flex flex-col justify-center items-center my-12 mx-6 gap-16'>
+          <h1
+            className='text-6xl sm:text-8xl text-white rounded-lg text-center'
+            style={{
+              textShadow: '0 0 10px rgba(255,255,255,1)',
+              animation: 'textShadow 0.5s ease-in-out infinite alternate, blurToClear 0.5s ease-in-out forwards',
+              filter: 'blur(2px)',
+            }}
+          >
           Thinky.gg
-        </h1>
-        <div className='flex flex-wrap justify-center gap-20 max-w-full'
-          style={{
-            animation: 'textShadow 1s ease-in-out infinite alternate, blurToClear 1s ease-in-out forwards',
-            filter: 'blur(2px)',
-          }}
-        >
-          {Object.values(Games).map(game => {
-            if (game.id === GameId.THINKY) {
-              return null;
-            }
+          </h1>
+          <div className='flex flex-wrap justify-center gap-20 max-w-full'
+            style={{
+              animation: 'textShadow 1s ease-in-out infinite alternate, blurToClear 1s ease-in-out forwards',
+              filter: 'blur(2px)',
+            }}
+          >
+            {Object.values(Games).map(game => {
+              if (game.id === GameId.THINKY) {
+                return null;
+              }
 
-            return (
-              <div className='flex flex-col items-center gap-6 max-w-full' key={`game-${game.id}`}>
-                <a
-                  className='flex gap-3 items-center justify-center w-full py-4 px-5 border border-color-3 rounded-xl hover:scale-105 transition bg-1'
-                  href={getUrl(game.id)}
-                >
-                  <GameLogo gameId={game.id} id={game.id} size={36} />
-                  <span className='font-semibold text-4xl'>{game.displayName}</span>
-                </a>
-                <div className='flex flex-col items-center gap-3 text-center p-5 w-[280px] max-w-full rounded-xl h-full bg-1'>
-                  <div className='flex h-60 w-60 max-w-full'>
-                    <AnimatedGrid leastMoves={gameInstr[game.id].leastMoves} animationInstructions={gameInstr[game.id].instructions} game={game} theme={gameInstr[game.id].theme} id={'level-preview-' + game.id} levelData={gameInstr[game.id].data} />
+              return (
+                <div className='flex flex-col items-center gap-6 max-w-full' key={`game-${game.id}`}>
+                  <a
+                    className='flex gap-3 items-center justify-center w-full py-4 px-5 border border-color-3 rounded-xl hover:scale-105 transition bg-1'
+                    href={getUrl(game.id)}
+                  >
+                    <GameLogo gameId={game.id} id={game.id} size={36} />
+                    <span className='font-semibold text-4xl'>{game.displayName}</span>
+                  </a>
+                  <div className='flex flex-col items-center gap-3 text-center p-5 w-[280px] max-w-full rounded-xl h-full bg-1'>
+                    <div className='flex h-60 w-60 max-w-full'>
+                      <AnimatedGrid leastMoves={gameInstr[game.id].leastMoves} animationInstructions={gameInstr[game.id].instructions} game={game} theme={gameInstr[game.id].theme} id={'level-preview-' + game.id} levelData={gameInstr[game.id].data} />
+                    </div>
+                    <span>{game.shortDescription}</span>
                   </div>
-                  <span>{game.shortDescription}</span>
+                  <a
+                    className='text-2xl font-bold px-5 py-3 border-2 border-color-3 rounded-xl hover:scale-105 transition w-fit text-center bg-1'
+                    href={user ? getUrl(game.id, '/') : getUrl(game.id, '/tutorial')}
+                    role='button'
+                  >
+                  Play Now
+                  </a>
                 </div>
+              );
+            })}
+          </div>
+          <div className='flex flex-wrap gap-12 mt-6 justify-center'>
+            <FeatureCard
+              description={<span>Create your <span className='font-bold'>own</span> levels and share them with the world.</span>}
+              title='Level Editor'
+              video='https://i.imgur.com/uc6ndtx.mp4'
+            />
+            <FeatureCard
+              description='Compete against others.'
+              title='Leaderboards'
+              video='https://i.imgur.com/xWwF1XK.mp4'
+            />
+            <FeatureCard
+              description='Rate and review levels.'
+              title='Reviews'
+              video='https://i.imgur.com/kbIOV9w.mp4'
+            />
+            <FeatureCard
+              description='Play with friends in real-time.'
+              title='Multiplayer'
+              video='https://i.imgur.com/S1QJFso.mp4'
+            />
+            <FeatureCard
+              description='Search, filter, and sort levels.'
+              title='Advanced Search'
+              video='https://i.imgur.com/GqCi1vV.mp4'
+            />
+            <FeatureCard
+              description='Levels are automatically rated by difficulty.'
+              title='Automatic Difficulty'
+              video='https://i.imgur.com/y5M6nGk.mp4'
+            />
+            <FeatureCard
+              description={<span>Unlock <span className='font-bold'>advanced</span> analytics, checkpoint saving, and tons more.</span>}
+              title='Pro'
+              video='https://i.imgur.com/nOJRkX1.mp4'
+            />
+          </div>
+          <div className='flex flex-col gap-8 items-center'>
+            {Object.values(Games).map(game => {
+              if (game.id === GameId.THINKY) {
+                return null;
+              }
+
+              return (
                 <a
-                  className='text-2xl font-bold px-5 py-3 border-2 border-color-3 rounded-xl hover:scale-105 transition w-fit text-center bg-1'
+                  className='flex items-center gap-3 text-2xl font-bold px-5 py-3 border-2 border-color-3 rounded-xl hover:scale-105 transition w-fit text-center bg-1'
+                  key={`game-${game.id}`}
                   href={user ? getUrl(game.id, '/') : getUrl(game.id, '/tutorial')}
                   role='button'
                 >
-                  Play Now
+                  <GameLogo gameId={game.id} id={game.id} size={28} />
+                  <span>Play {game.displayName}</span>
                 </a>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-        <div className='flex flex-wrap gap-12 mt-6 justify-center'>
-          <FeatureCard
-            description={<span>Create your <span className='font-bold'>own</span> levels and share them with the world.</span>}
-            title='Level Editor'
-            video='https://i.imgur.com/uc6ndtx.mp4'
-          />
-          <FeatureCard
-            description='Compete against others.'
-            title='Leaderboards'
-            video='https://i.imgur.com/xWwF1XK.mp4'
-          />
-          <FeatureCard
-            description='Rate and review levels.'
-            title='Reviews'
-            video='https://i.imgur.com/kbIOV9w.mp4'
-          />
-          <FeatureCard
-            description='Play with friends in real-time.'
-            title='Multiplayer'
-            video='https://i.imgur.com/S1QJFso.mp4'
-          />
-          <FeatureCard
-            description='Search, filter, and sort levels.'
-            title='Advanced Search'
-            video='https://i.imgur.com/GqCi1vV.mp4'
-          />
-          <FeatureCard
-            description='Levels are automatically rated by difficulty.'
-            title='Automatic Difficulty'
-            video='https://i.imgur.com/y5M6nGk.mp4'
-          />
-          <FeatureCard
-            description={<span>Unlock <span className='font-bold'>advanced</span> analytics, checkpoint saving, and tons more.</span>}
-            title='Pro'
-            video='https://i.imgur.com/nOJRkX1.mp4'
-          />
-        </div>
-        <div className='flex flex-col gap-8 items-center'>
-          {Object.values(Games).map(game => {
-            if (game.id === GameId.THINKY) {
-              return null;
-            }
-
-            return (
-              <a
-                className='flex items-center gap-3 text-2xl font-bold px-5 py-3 border-2 border-color-3 rounded-xl hover:scale-105 transition w-fit text-center bg-1'
-                key={`game-${game.id}`}
-                href={user ? getUrl(game.id, '/') : getUrl(game.id, '/tutorial')}
-                role='button'
-              >
-                <GameLogo gameId={game.id} id={game.id} size={28} />
-                <span>Play {game.displayName}</span>
-              </a>
-            );
-          })}
-        </div>
-      </div>
-    </Page>
+      </Page>
+    </>
   );
 }
