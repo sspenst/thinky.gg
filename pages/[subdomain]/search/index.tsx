@@ -5,6 +5,7 @@ import FormattedUser from '@root/components/formatted/formattedUser';
 import StyledTooltip from '@root/components/page/styledTooltip';
 import DataTable, { TableColumn } from '@root/components/tables/dataTable';
 import Dimensions from '@root/constants/dimensions';
+import { Game, GameType } from '@root/constants/Games';
 import StatFilter from '@root/constants/statFilter';
 import { AppContext } from '@root/contexts/appContext';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
@@ -143,16 +144,19 @@ const filterStringAll = {
   ...statFilterStrings,
   ...timeRangeStrings,
   ...{
-    [StatFilter.InProgress]: 'Completed',
+    [StatFilter.Completed]: 'Completed',
     [StatFilter.Unattempted]: 'Unattempted',
-    'calcDifficultyEstimate': 'Difficulty',
     'calc_stats_players_beaten': 'Solves',
     'maxSteps': 'Max Steps',
     'minSteps': 'Min Steps',
   },
 } as Record<string, string>;
 
-function getFilterDisplay(filter: string, query: SearchQuery) {
+/* istanbul ignore next */
+function getFilterDisplay(game: Game, filter: string, query: SearchQuery) {
+  const difficultyType = game.type === GameType.SHORTEST_PATH ? 'Solve' : 'Completion';
+  const otherDifficultyType = game.type === GameType.SHORTEST_PATH ? 'Completion' : 'Solve';
+
   if (filter === 'maxDimension1') {
     return `Max width: ${query.maxDimension1}`;
   } else if (filter === 'minDimension1') {
@@ -182,14 +186,14 @@ function getFilterDisplay(filter: string, query: SearchQuery) {
   } else if (filter === 'search') {
     return `Level name: ${query.search}`;
   } else if (filter === 'sortBy') {
-    console.log(query[filter]);
-
     if (query[filter] === 'userId') {
       return 'Sort by author name';
     } else if (query[filter] === 'name') {
       return 'Sort by level name';
     } else if (query[filter] === 'calcDifficultyEstimate') {
-      return 'Sort by difficulty';
+      return 'Sort by ' + difficultyType.toLowerCase() + ' difficulty';
+    } else if (query[filter] === 'calcOtherDifficultyEstimate') {
+      return 'Sort by ' + otherDifficultyType.toLowerCase() + ' difficulty';
     } else if (query[filter] === 'ts') {
       return 'Sort by date created';
     } else if (query[filter] === 'leastMoves') {
@@ -204,6 +208,7 @@ function getFilterDisplay(filter: string, query: SearchQuery) {
   return filterStringAll[query[filter] as string] || query[filter];
 }
 
+/* istanbul ignore next */
 function TimeRangeMenu({ onTimeRangeClick, timeRange }: TimeRangeMenuProps) {
   return (
     <Menu as='div' className='relative inline-block text-left'>
@@ -260,9 +265,11 @@ interface StatFilterMenuProps {
   query: SearchQuery;
 }
 
+/* istanbul ignore next */
 function StatFilterMenu({ onStatFilterClick, query }: StatFilterMenuProps) {
   if (query.sortBy !== 'completed') {
-    statFilterStrings[StatFilter.InProgress] = 'Completed';
+    statFilterStrings[StatFilter.Completed] = 'Completed';
+    statFilterStrings[StatFilter.Unoptimized] = 'Unoptimized';
     statFilterStrings[StatFilter.Unattempted] = 'Unattempted';
   }
 
@@ -332,6 +339,10 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
   const [query, setQuery] = useState(searchQuery);
   const router = useRouter();
   const routerQuery = useRouterQuery();
+  const difficultyType = game.type === GameType.SHORTEST_PATH ? 'Solve' : 'Completion';
+  const otherDifficultyType = game.type === GameType.SHORTEST_PATH ? 'Completion' : 'Solve';
+  const difficultyField = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_completion_estimate' : 'calc_difficulty_estimate';
+  const otherDifficultyField = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_estimate' : 'calc_difficulty_completion_estimate';
 
   useEffect(() => {
     setData(enrichedLevels);
@@ -477,16 +488,29 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
     },
     {
       id: 'calcDifficultyEstimate',
-      name: 'Difficulty',
+      name: <span className='text-xs md:text-md'>{difficultyType + ' Difficulty'}</span>,
       selector: (row: EnrichedLevel) => (
-        <FormattedDifficulty id='search-row' level={row} />
+        <FormattedDifficulty id='search-row' level={row} difficultyField={difficultyField} />
       ),
       sortable: true,
       style: {
         fontSize: '13px',
-        minWidth: '150px',
+        minWidth: '178px',
       },
     },
+    ...(isPro(reqUser) ?
+      [{
+        id: 'calcOtherDifficultyEstimate',
+        name: <div className='flex gap-1 flex-row align-center items-center'><span className='text-xs md:text-md'>{otherDifficultyType + ' Difficulty'}</span><Image alt='pro' className='mr-0.5' src='/pro.svg' width='16' height='16' /></div>,
+        selector: (row: EnrichedLevel) => (
+          <FormattedDifficulty id='search-row-other' level={row} difficultyField={otherDifficultyField} />
+        ),
+        style: {
+          fontSize: '13px',
+          minWidth: '178px',
+        },
+        sortable: isPro(reqUser),
+      }] : []),
     {
       id: 'ts',
       name: 'Created',
@@ -499,6 +523,9 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       name: 'Steps',
       selector: (row: EnrichedLevel) => `${row.userMoves !== undefined && row.userMoves !== row.leastMoves ? `${row.userMoves}/` : ''}${row.leastMoves}`,
       sortable: true,
+      style: {
+        minWidth: '80px',
+      }
     },
     {
       id: 'solves',
@@ -506,7 +533,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       selector: (row: EnrichedLevel) => row.calc_stats_players_beaten || 0,
       sortable: true,
       style: {
-        minWidth: '105px',
+        minWidth: '80px',
       }
     },
     {
@@ -523,14 +550,17 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
         return (100 * Math.floor(row.calc_reviews_score_laplace * 1000) / 1000).toFixed(1);
       },
       sortable: true,
+      style: {
+        minWidth: '80px',
+      }
     },
     ...(!reqUser ? [] : [{
       id: 'completed',
       style: {
-        minWidth: '135px',
+        minWidth: '132px',
       },
       name: (
-        <div className='flex gap-2'>
+        <div className='flex gap-1 items-center align-center'>
           <span>Completed</span>
           <Image alt='pro' className='mr-0.5' src='/pro.svg' width='16' height='16' />
         </div>
@@ -624,7 +654,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
             }}
           >
             {!difficulty ?
-              <span>All Difficulties</span> :
+              <span>All {difficultyType} Difficulties</span> :
               <>
                 <span>{difficulty.emoji}</span>
                 <span>{difficulty.name}</span>
@@ -659,7 +689,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                         backgroundColor: active ? 'rgb(200, 200, 200)' : '',
                       }}
                     >
-                      All Difficulties
+                      All {difficultyType} Difficulties
                     </button>
                   )}
                 </Menu.Item>
@@ -766,74 +796,78 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
         <Link href='/settings/pro' passHref>
           <Image alt='pro' src='/pro.svg' width='20' height='20' />
         </Link>
-        <div className='flex flex-col items-center justify-center w-fit border p-2 rounded-md gap-2 border-cyan-200'>
-          <div className='flex items-center justify-center'>
+        <div className='flex flex-col md:flex-row items-center justify-center w-fit border p-2 rounded-md gap-2 border-cyan-200'>
+          <div className='flex md:flex-col items-center justify-center'>
             <span className='text-xs font-medium pr-1'>Min dimensions:</span>
-            <input
-              className='form-range pl-2 w-12 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
-              disabled={!isPro(reqUser)}
-              max='40'
-              min='1'
-              onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                queryDebounceHelper({
-                  minDimension1: (e.target as HTMLInputElement).value,
-                  page: '1',
-                });
-              }}
-              step='1'
-              type='number'
-              value={query.minDimension1}
-            />
-            <span className='text-xs font-medium px-1'>x</span>
-            <input
-              className='form-range pl-2 w-12 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
-              disabled={!isPro(reqUser)}
-              max='40'
-              min='1'
-              onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                queryDebounceHelper({
-                  minDimension2: (e.target as HTMLInputElement).value,
-                  page: '1',
-                });
-              }}
-              step='1'
-              type='number'
-              value={query.minDimension2}
-            />
+            <div>
+              <input
+                className='form-range pl-2 w-10 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
+                disabled={!isPro(reqUser)}
+                max='40'
+                min='1'
+                onChange={(e: React.FormEvent<HTMLInputElement>) => {
+                  queryDebounceHelper({
+                    minDimension1: (e.target as HTMLInputElement).value,
+                    page: '1',
+                  });
+                }}
+                step='1'
+                type='number'
+                value={query.minDimension1}
+              />
+              <span className='text-xs font-medium px-1'>x</span>
+              <input
+                className='form-range pl-2 w-10 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
+                disabled={!isPro(reqUser)}
+                max='40'
+                min='1'
+                onChange={(e: React.FormEvent<HTMLInputElement>) => {
+                  queryDebounceHelper({
+                    minDimension2: (e.target as HTMLInputElement).value,
+                    page: '1',
+                  });
+                }}
+                step='1'
+                type='number'
+                value={query.minDimension2}
+              />
+            </div>
           </div>
-          <div className='flex items-center justify-center'>
+          <div className='flex md:flex-col items-center justify-center'>
             <span className='text-xs font-medium pr-1'>Max dimensions:</span>
-            <input
-              className='form-range pl-2 w-12 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
-              disabled={!isPro(reqUser)}
-              max='40'
-              min='1'
-              onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                queryDebounceHelper({
-                  maxDimension1: (e.target as HTMLInputElement).value,
-                  page: '1',
-                });
-              }}
-              step='1'
-              type='number'
-              value={query.maxDimension1}
-            />
-            <span className='text-xs font-medium px-1'>x</span>
-            <input
-              className='form-range pl-2 w-12 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
-              disabled={!isPro(reqUser)}
-              max='40'
-              min='1'
-              onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                queryDebounceHelper({
-                  maxDimension2: (e.target as HTMLInputElement).value,
-                  page: '1',
-                });
-              }}
-              step='1'
-              type='number'
-              value={query.maxDimension2}
-            />
+            <div>
+              <input
+                className='form-range pl-2 w-10 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
+                disabled={!isPro(reqUser)}
+                max='40'
+                min='1'
+                onChange={(e: React.FormEvent<HTMLInputElement>) => {
+                  queryDebounceHelper({
+                    maxDimension1: (e.target as HTMLInputElement).value,
+                    page: '1',
+                  });
+                }}
+                step='1'
+                type='number'
+                value={query.maxDimension1}
+              />
+              <span className='text-xs font-medium px-1'>x</span>
+              <input
+                className='form-range pl-2 w-10 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
+                disabled={!isPro(reqUser)}
+                max='40'
+                min='1'
+                onChange={(e: React.FormEvent<HTMLInputElement>) => {
+                  queryDebounceHelper({
+                    maxDimension2: (e.target as HTMLInputElement).value,
+                    page: '1',
+                  });
+                }}
+                step='1'
+                type='number'
+                value={query.maxDimension2}
+              />
+            </div>
           </div>
           <div className='flex items-center justify-center' role='group'>
             <FilterButton
@@ -920,7 +954,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
             >
             x
             </button>
-            <span className='ml-1'>{getFilterDisplay(filter, query)}</span>
+            <span className='ml-1'>{getFilterDisplay(game, filter, query)}</span>
           </div>
         ))}
 
@@ -976,7 +1010,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
             }
 
             // move off of invalid stat filter option when sorting by completed
-            if (columnId === 'completed' && (query.statFilter === StatFilter.InProgress || query.statFilter === StatFilter.Unattempted)) {
+            if (columnId === 'completed' && (query.statFilter === StatFilter.Completed || query.statFilter === StatFilter.Unattempted)) {
               update.statFilter = StatFilter.All;
             }
 
