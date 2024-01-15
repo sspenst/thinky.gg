@@ -144,7 +144,7 @@ const filterStringAll = {
   ...statFilterStrings,
   ...timeRangeStrings,
   ...{
-    [StatFilter.InProgress]: 'Completed',
+    [StatFilter.Completed]: 'Completed',
     [StatFilter.Unattempted]: 'Unattempted',
     'calc_stats_players_beaten': 'Solves',
     'maxSteps': 'Max Steps',
@@ -268,7 +268,8 @@ interface StatFilterMenuProps {
 /* istanbul ignore next */
 function StatFilterMenu({ onStatFilterClick, query }: StatFilterMenuProps) {
   if (query.sortBy !== 'completed') {
-    statFilterStrings[StatFilter.InProgress] = 'Completed';
+    statFilterStrings[StatFilter.Completed] = 'Completed';
+    statFilterStrings[StatFilter.Unoptimized] = 'Unoptimized';
     statFilterStrings[StatFilter.Unattempted] = 'Unattempted';
   }
 
@@ -1005,7 +1006,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
             }
 
             // move off of invalid stat filter option when sorting by completed
-            if (columnId === 'completed' && (query.statFilter === StatFilter.InProgress || query.statFilter === StatFilter.Unattempted)) {
+            if (columnId === 'completed' && (query.statFilter === StatFilter.Completed || query.statFilter === StatFilter.Unattempted)) {
               update.statFilter = StatFilter.All;
             }
 

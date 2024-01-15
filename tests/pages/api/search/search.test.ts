@@ -240,7 +240,7 @@ testRuns = testRuns.concat([
     }
   },
   {
-    query: `?statFilter=${StatFilter.InProgress}`,
+    query: `?statFilter=${StatFilter.Completed}`,
     test: async (response: any) => {
       expect(response.totalRows).toBe(3);
       expect(response.levels.length).toBe(3);
