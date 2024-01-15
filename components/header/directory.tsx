@@ -53,7 +53,7 @@ export default function Directory({ folders, subtitle, title }: DirectoryProps) 
     <div className='gap-2 items-center hidden xl:flex truncate'>
       {folderLinks}
       <FolderDivider />
-      <h1 className='text-lg align-middle truncate font-medium' style={{ minWidth: 32 }}>
+      <span className='text-lg align-middle truncate font-medium' style={{ minWidth: 32 }}>
         {title?.toElement()}
         {!subtitle ? null :
           <>
@@ -61,7 +61,7 @@ export default function Directory({ folders, subtitle, title }: DirectoryProps) 
             {subtitle.toElement()}
           </>
         }
-      </h1>
+      </span>
     </div>
   </>);
 }

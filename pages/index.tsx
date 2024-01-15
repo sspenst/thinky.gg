@@ -62,11 +62,11 @@ export default function ThinkyHomePage() {
   return (
     <>
       <NextSeo
-        title={'Thinky.gg - Solve Thinking Puzzle Games'}
+        title={'Thinky.gg - Play Thinking Puzzle Games Like Sokoban and Pathology'}
         description='Thinky is a platform dedicated to high-quality puzzle games. Solve and optimize puzzles, or create your own for everyone to play!'
         canonical={'https://thinky.gg'}
         openGraph={{
-          title: 'Thinky.gg - Solve Thinking Puzzle Games',
+          title: 'Thinky.gg - Play Thinking Puzzle Games Like Sokoban and Pathology',
           type: 'website',
           url: 'https://thinky.gg',
         }}
