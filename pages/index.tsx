@@ -81,7 +81,7 @@ export default function ThinkyHomePage() {
           backgroundAttachment: 'fixed',
           backgroundRepeat: 'no-repeat',
         }}
-        title='Thinky.gg'
+        title='Thinky Puzzle Gaming'
       >
         <div className='flex flex-col justify-center items-center my-12 mx-6 gap-16'>
           <span
