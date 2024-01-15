@@ -128,7 +128,7 @@ describe('helpers/*.ts', () => {
     expect(options.length).toBe(3);
     expect(options[0].text).toBe('in progress');
 
-    options = statFilterOptions(selectOptions, StatFilter.InProgress, '');
+    options = statFilterOptions(selectOptions, StatFilter.Completed, '');
 
     expect(options.length).toBe(1);
     expect(options[0].text).toBe('in progress');
