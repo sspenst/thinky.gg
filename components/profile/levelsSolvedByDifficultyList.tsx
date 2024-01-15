@@ -1,4 +1,5 @@
 import { Game, GameType } from '@root/constants/Games';
+import StatFilter from '@root/constants/statFilter';
 import { useRouter } from 'next/router';
 import React from 'react';
 import FormattedDifficulty, { difficultyList } from '../formatted/formattedDifficulty';
@@ -14,7 +15,7 @@ export default function LevelsSolvedByDifficultyList({ data: levelsSolvedByDiffi
       return null;
     }
 
-    const statFilterType = game?.type === GameType.COMPLETE_AND_SHORTEST ? 'inProgress' : 'solved';
+    const statFilterType = game?.type === GameType.COMPLETE_AND_SHORTEST ? StatFilter.Completed : StatFilter.Solved;
 
     return (
       <div className={'flex text-sm ' + (linksToSearch ? 'cursor-pointer' : '')}
