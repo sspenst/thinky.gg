@@ -497,18 +497,19 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
         minWidth: '178px',
       },
     },
-    {
-      id: 'calcOtherDifficultyEstimate',
-      name: <div className='flex gap-1 flex-row align-center items-center'><span className='text-xs md:text-md'>{otherDifficultyType + ' Difficulty'}</span><Image alt='pro' className='mr-0.5' src='/pro.svg' width='16' height='16' /></div>,
-      selector: (row: EnrichedLevel) => (
-        <FormattedDifficulty id='search-row' level={row} difficultyField={otherDifficultyField} />
-      ),
-      style: {
-        fontSize: '13px',
-        minWidth: '178px',
-      },
-      sortable: isPro(reqUser),
-    },
+    ...(isPro(reqUser) ?
+      [{
+        id: 'calcOtherDifficultyEstimate',
+        name: <div className='flex gap-1 flex-row align-center items-center'><span className='text-xs md:text-md'>{otherDifficultyType + ' Difficulty'}</span><Image alt='pro' className='mr-0.5' src='/pro.svg' width='16' height='16' /></div>,
+        selector: (row: EnrichedLevel) => (
+          <FormattedDifficulty id='search-row-other' level={row} difficultyField={otherDifficultyField} />
+        ),
+        style: {
+          fontSize: '13px',
+          minWidth: '178px',
+        },
+        sortable: isPro(reqUser),
+      }] : []),
     {
       id: 'ts',
       name: 'Created',
@@ -652,7 +653,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
             }}
           >
             {!difficulty ?
-              <span>{difficultyType} Difficulties</span> :
+              <span>All {difficultyType} Difficulties</span> :
               <>
                 <span>{difficulty.emoji}</span>
                 <span>{difficulty.name}</span>
@@ -687,7 +688,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                         backgroundColor: active ? 'rgb(200, 200, 200)' : '',
                       }}
                     >
-                      All Difficulties
+                      All {difficultyType} Difficulties
                     </button>
                   )}
                 </Menu.Item>

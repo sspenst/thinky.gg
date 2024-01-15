@@ -108,19 +108,20 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
             <FormattedDate ts={level.ts} />
           </div>
           <div className='text-sm flex pt-0.5 gap-2 items-center'>
-            <span data-tooltip-id='difficulty-tooltip' data-tooltip-content={tooltipTable[difficultyType]} className='text-xs'>{difficultyType} difficulty:</span>
             <FormattedDifficulty id='formatted-level-info' level={level} difficultyField={difficultyField} />
             <StyledTooltip id='difficulty-tooltip' />
+            <span data-tooltip-id='difficulty-tooltip' data-tooltip-content={tooltipTable[difficultyType]} className='text-xs italic'>{difficultyType} Difficulty</span>
           </div>
           <div className='text-sm flex pt-0.5 gap-2 items-center'>
-            <span data-tooltip-id='difficulty-tooltip-other' data-tooltip-content={tooltipTable[otherDifficultyType]} className='text-xs'>{otherDifficultyType} difficulty:</span>
-            { isPro(user) ? <FormattedDifficulty id='formatted-level-info-other' level={level} difficultyField={otherDifficultyField} /> :
-
-              <Link className='flex gap-1 italic' href={'/settings/pro'}>Unlock Pro
+            {isPro(user) ?
+              <FormattedDifficulty id='formatted-level-info-other' level={level} difficultyField={otherDifficultyField} />
+              :
+              <Link className='flex gap-2 italic' href={'/settings/pro'}>
+                <span>Unlock Pro</span>
                 <Image alt='pro' src='/pro.svg' width='16' height='16' />
               </Link>
-
             }
+            <span data-tooltip-id='difficulty-tooltip-other' data-tooltip-content={tooltipTable[otherDifficultyType]} className='text-xs italic'>{otherDifficultyType} Difficulty</span>
             <StyledTooltip id='difficulty-tooltip-other' />
           </div>
         </div>
