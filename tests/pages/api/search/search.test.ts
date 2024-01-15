@@ -240,10 +240,17 @@ testRuns = testRuns.concat([
     }
   },
   {
-    query: `?statFilter=${StatFilter.Completed}`,
+    query: `?statFilter=${StatFilter.Unoptimized}`,
     test: async (response: any) => {
       expect(response.totalRows).toBe(3);
       expect(response.levels.length).toBe(3);
+    }
+  },
+  {
+    query: `?statFilter=${StatFilter.Completed}`,
+    test: async (response: any) => {
+      expect(response.totalRows).toBe(14);
+      expect(response.levels.length).toBe(14);
     }
   },
   {
