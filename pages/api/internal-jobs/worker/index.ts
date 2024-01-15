@@ -128,13 +128,15 @@ export async function bulkQueueRefreshIndexCalcs(levelIds: Types.ObjectId[], opt
   const timeBetweenLevels = spreadRunAtDuration > 0 ? spreadRunAtDuration * 1000 / levelIds.length : 0;
 
   for (const levelId of levelIds) {
+    const runAtTime: Date = new Date(now.getTime() + timeBetweenLevels * queueMessages.length);
+
     queueMessages.push({
       _id: new Types.ObjectId(),
       dedupeKey: levelId.toString(),
       message: JSON.stringify({ levelId: levelId.toString() }),
       state: QueueMessageState.PENDING,
       type: QueueMessageType.REFRESH_INDEX_CALCULATIONS,
-      runAt: new Date(now.getTime() + timeBetweenLevels),
+      runAt: runAtTime,
     });
   }
 

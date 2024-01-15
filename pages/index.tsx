@@ -20,15 +20,15 @@ interface FeatureCardProps {
 
 function FeatureCard({ description, title, video }: FeatureCardProps) {
   return (
-    <div className='w-80 max-w-full rounded-xl p-4 flex flex-col gap-3 items-center text-center border border-color-4 bg-1'>
-      <h2 className='font-semibold text-2xl'>
+    <section className='w-80 max-w-full rounded-xl p-4 flex flex-col gap-3 items-center text-center border border-color-4 bg-1'>
+      <h3 className='font-semibold text-2xl'>
         {title}
-      </h2>
+      </h3>
       <div className='text-sm'>
         {description}
       </div>
       <video autoPlay loop muted playsInline className='rounded-lg text-center' src={video} />
-    </div>
+    </section>
   );
 }
 
@@ -62,11 +62,12 @@ export default function ThinkyHomePage() {
   return (
     <>
       <NextSeo
-        title={'Thinky.gg - Solve Thinking Puzzle Games'}
-        description='Thinky is a platform dedicated to high-quality puzzle games. Solve and optimize puzzles, or create your own for everyone to play!'
+        title={'Thinky.gg - Play Thinking Puzzle Games Like Sokoban and Pathology'}
+        description='Thinky is a platform dedicated to high-quality puzzle games. Solve and optimize puzzles, search thousands of levels, or create your own for everyone to play!'
         canonical={'https://thinky.gg'}
         openGraph={{
-          title: 'Thinky.gg - Solve Thinking Puzzle Games',
+          title: 'Thinky.gg - Play Thinking Puzzle Games Like Sokoban and Pathology',
+          description: 'Thinky is a platform dedicated to high-quality puzzle games. Solve and optimize puzzles, search thousands of levels, or create your own for everyone to play!',
           type: 'website',
           url: 'https://thinky.gg',
         }}
@@ -83,7 +84,7 @@ export default function ThinkyHomePage() {
         title='Thinky.gg'
       >
         <div className='flex flex-col justify-center items-center my-12 mx-6 gap-16'>
-          <h1
+          <span
             className='text-6xl sm:text-8xl text-white rounded-lg text-center'
             style={{
               textShadow: '0 0 10px rgba(255,255,255,1)',
@@ -92,7 +93,7 @@ export default function ThinkyHomePage() {
             }}
           >
           Thinky.gg
-          </h1>
+          </span>
           <div className='flex flex-wrap justify-center gap-20 max-w-full'
             style={{
               animation: 'textShadow 1s ease-in-out infinite alternate, blurToClear 1s ease-in-out forwards',
@@ -105,13 +106,13 @@ export default function ThinkyHomePage() {
               }
 
               return (
-                <div className='flex flex-col items-center gap-6 max-w-full' key={`game-${game.id}`}>
+                <section className='flex flex-col items-center gap-6 max-w-full' key={`game-${game.id}`}>
                   <a
                     className='flex gap-3 items-center justify-center w-full py-4 px-5 border border-color-3 rounded-xl hover:scale-105 transition bg-1'
                     href={getUrl(game.id)}
                   >
                     <GameLogo gameId={game.id} id={game.id} size={36} />
-                    <span className='font-semibold text-4xl'>{game.displayName}</span>
+                    <h2 className='font-semibold text-4xl'>{game.displayName}</h2>
                   </a>
                   <div className='flex flex-col items-center gap-3 text-center p-5 w-[280px] max-w-full rounded-xl h-full bg-1'>
                     <div className='flex h-60 w-60 max-w-full'>
@@ -126,7 +127,7 @@ export default function ThinkyHomePage() {
                   >
                   Play Now
                   </a>
-                </div>
+                </section>
               );
             })}
           </div>
