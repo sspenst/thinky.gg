@@ -15,7 +15,7 @@ import { calcPlayAttempts, refreshIndexCalcs } from '@root/models/schemas/levelS
 import mongoose, { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { runEmailDigest } from '../internal-jobs/email-digest';
-import { bulkQueueRefreshIndexCalcs, processQueueMessages, queueCalcPlayAttempts } from '../internal-jobs/worker';
+import { bulkQueueCalcPlayAttempts, processQueueMessages, queueCalcPlayAttempts } from '../internal-jobs/worker';
 
 interface AdminBodyProps {
   targetId: string;
@@ -70,7 +70,7 @@ export default withAuth({ POST: {
       // so let's interleave them by having each message run at a different time... Divide 1 hour by the number of levels
       const oneHourSeconds = 60 * 60;
 
-      await bulkQueueRefreshIndexCalcs(allLevels.map(lvl => lvl._id), undefined, oneHourSeconds);
+      await bulkQueueCalcPlayAttempts(allLevels.map(lvl => lvl._id), undefined, oneHourSeconds);
 
       break;
     }
