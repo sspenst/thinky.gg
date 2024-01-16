@@ -735,10 +735,12 @@ export default function ProfilePage({
             {
               url: game.baseUrl,
               name: game.displayName,
+              position: 1,
             },
             {
               url: game.baseUrl + getProfileSlug(user),
               name: user.name,
+              position: 2,
             },
           ]}
 
