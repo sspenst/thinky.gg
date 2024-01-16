@@ -9,7 +9,7 @@ import { Games } from '@root/constants/Games';
 import Theme from '@root/constants/theme';
 import { AppContext } from '@root/contexts/appContext';
 import useUrl from '@root/hooks/useUrl';
-import { NextSeo } from 'next-seo';
+import { CarouselJsonLd, NextSeo, SoftwareAppJsonLd } from 'next-seo';
 import React, { useContext } from 'react';
 
 interface FeatureCardProps {
@@ -71,6 +71,12 @@ export default function ThinkyHomePage() {
           type: 'website',
           url: 'https://thinky.gg',
         }}
+      />
+      <SoftwareAppJsonLd
+        name='Thinky'
+        price='0'
+        priceCurrency='USD'
+        applicationCategory='Game'
       />
       <Page
         style={{
