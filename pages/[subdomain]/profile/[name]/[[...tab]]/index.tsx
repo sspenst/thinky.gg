@@ -25,7 +25,7 @@ import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { NextSeo } from 'next-seo';
+import { NextSeo, ProfilePageJsonLd } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import FollowButton from '../../../../../components/buttons/followButton';
@@ -715,6 +715,33 @@ export default function ProfilePage({
               },
             ],
           }}
+        />
+        <ProfilePageJsonLd
+          type='ProfilePage'
+          dateCreated={user.ts && new Date(user.ts * 1000).toISOString()}
+          mainEntity={{
+            '@type': 'Person',
+            name: user.name,
+            identifier: user._id.toString(),
+            interactionStatistic: {
+              '@type': 'InteractionCounter',
+              interactionType: 'http://schema.org/FollowAction',
+              userInteractionCount: followerCount,
+            },
+            description: user.bio,
+            image: user.avatarUpdatedAt ? `/api/avatar/${user._id}.png` : '/avatar_default.png',
+          }}
+          breadcrumb={[
+            {
+              url: game.baseUrl,
+              name: game.displayName,
+            },
+            {
+              url: game.baseUrl + getProfileSlug(user),
+              name: user.name,
+            },
+          ]}
+
         />
         {!game.isNotAGame && <div className='flex flex-wrap text-sm text-center gap-2 mt-2 justify-center items-center'>
           <Link
