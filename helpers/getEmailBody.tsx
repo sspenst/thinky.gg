@@ -70,7 +70,7 @@ export default function getEmailBody({
                     }}>
                       <a href={`${game.baseUrl}`}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={`${game.baseUrl}${game.logo}?ts=${ts}`} width='75' alt={game.displayName} />
+                        <img src={`${game.baseUrl}${game.logoPng}`} width='75' alt={game.displayName} />
                       </a>
                       <h1>Hi {user.name},</h1>
                       <p style={{
@@ -122,7 +122,7 @@ export default function getEmailBody({
                                       <tr>
                                         <td>
                                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                                          <img style={{ borderRadius: 10 }} src={`${Games[level.gameId].baseUrl}${Games[level.gameId].logo}?ts=${ts}`} width='50' alt={Games[level.gameId].displayName} />
+                                          <img style={{ borderRadius: 10 }} src={`${Games[level.gameId].baseUrl}${Games[level.gameId].logoPng}`} width='50' alt={Games[level.gameId].displayName} />
                                         </td>
                                         <td>{Games[level.gameId].displayName}</td>
                                       </tr>
