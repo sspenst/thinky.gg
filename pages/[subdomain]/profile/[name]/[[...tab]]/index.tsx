@@ -733,14 +733,14 @@ export default function ProfilePage({
           }}
           breadcrumb={[
             {
-              url: game.baseUrl,
               name: game.displayName,
               position: 1,
+              item: game.baseUrl,
             },
             {
-              url: game.baseUrl + getProfileSlug(user),
               name: user.name,
               position: 2,
+              item: game.baseUrl + getProfileSlug(user),
             },
           ]}
 
