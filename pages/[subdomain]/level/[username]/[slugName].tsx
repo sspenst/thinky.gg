@@ -7,7 +7,7 @@ import { getCollection } from '@root/pages/api/collection-by-id/[id]';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
-import { NextSeo } from 'next-seo';
+import { ArticleJsonLd, NextSeo, VideoGameJsonLd } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -301,6 +301,38 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
             },
           ],
         }}
+      />
+      <ArticleJsonLd
+        title={level.name}
+        url={ogUrl}
+        description={authorNote}
+        images={[ogImageUrl]}
+        authorName={level.userId.name}
+        author={{
+          name: level.userId.name,
+          url: `${game.baseUrl}/profile/${level.userId.name}`,
+        }}
+        applicationCategory={game.displayName}
+        producerName='Thinky Games'
+        platformName={game.displayName}
+        publisherLogo={`${game.baseUrl}/${game.logoPng}`}
+        aggregateRating={{
+          '@type': 'AggregateRating',
+          itemReviewed: {
+            name: level.name,
+            description: authorNote,
+            url: ogUrl,
+            image: ogImageUrl,
+            type: 'Game',
+          },
+          bestRating: 1,
+          worstRating: 0,
+          ratingValue: level.calc_reviews_score_laplace,
+          ratingCount: level.calc_reviews_count,
+        }}
+
+        datePublished={level.ts && new Date(level.ts * 1000).toISOString() || ''}
+
       />
       <LevelContext.Provider value={{
         getReviews: getReviews,
