@@ -693,13 +693,17 @@ export default function ProfilePage({
     );
   }, [tab]);
 
+  const fullUrl = game.baseUrl + getProfileSlug(user) + '/' + profileTab;
+  // should not have trailing slash
+  const canonical = fullUrl.replace(/\/$/, '');
+
   return (
     <Page title={user.name}>
       <>
         <NextSeo
           title={`${user.name} - ${game.displayName}`}
           description={`${user.name}'s profile`}
-          canonical={game.baseUrl + getProfileSlug(user) + '/' + profileTab}
+          canonical={canonical}
           openGraph={{
             title: `${user.name} - ${game.displayName}}`,
             description: `${user.name}'s profile`,
