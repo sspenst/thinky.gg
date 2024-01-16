@@ -8,6 +8,7 @@ import LevelsSolvedByDifficultyList from '@root/components/profile/levelsSolvedB
 import PlayerRank from '@root/components/profile/playerRank';
 import { ProfileAchievments } from '@root/components/profile/profileAchievements';
 import ProfileMultiplayer from '@root/components/profile/profileMultiplayer';
+import { GameType } from '@root/constants/Games';
 import StatFilter from '@root/constants/statFilter';
 import { AppContext } from '@root/contexts/appContext';
 import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
@@ -409,7 +410,7 @@ export default function ProfilePage({
   const { data: profileDataFetched } = useSWRHelper<{levelsSolvedByDifficulty: {[key: string]: number}}>('/api/user/' + user._id + '?type=levelsSolvedByDifficulty', {}, {}, tab !== ProfileTab.Profile);
 
   const levelsSolvedByDifficulty = profileDataFetched?.levelsSolvedByDifficulty;
-
+  const difficultyType = game.type === GameType.COMPLETE_AND_SHORTEST ? 'Completed' : 'Solved';
   // create an array of objects with the id, trigger element (eg. button), and the content element
   const tabsContent = {
     [ProfileTab.Profile]: (user.ts ?
@@ -459,7 +460,7 @@ export default function ProfilePage({
             </div>
             {!game.isNotAGame &&
               <div>
-                <h2><span className='font-bold'>Levels Solved by Difficulty:</span></h2>
+                <h2><span className='font-bold'>Levels {difficultyType} by Difficulty:</span></h2>
                 {levelsSolvedByDifficulty ?
                   <LevelsSolvedByDifficultyList game={game} linksToSearch={ownProfile} data={levelsSolvedByDifficulty} />
                   :
