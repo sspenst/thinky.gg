@@ -277,7 +277,9 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
   const showSubtitle = collection && (collection.userId._id !== level.userId._id);
   const ogImageUrl = `${game.baseUrl}/api/level/image/${level._id.toString()}.png${ts ? `?ts=${ts}` : ''}`;
   const ogUrl = `${game.baseUrl}/level/${level.slug}`;
-  const ogFullUrl = `${game.baseUrl}${ogUrl}`;
+  const ogFullUrl = `${ogUrl}`;
+  // canonical should not have trailing slash from ogUrl
+  const canonical = ogFullUrl.endsWith('/') ? ogFullUrl.slice(0, -1) : ogFullUrl;
   const authorNote = level.authorNote ? level.authorNote : `${level.name} by ${level.userId.name}`;
 
   return (
@@ -285,7 +287,7 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
       <NextSeo
         title={`${level.name} - ${game.displayName}`}
         description={authorNote}
-        canonical={ogFullUrl}
+        canonical={canonical}
         openGraph={{
           title: `${level.name} - ${game.displayName}`,
           description: authorNote,
