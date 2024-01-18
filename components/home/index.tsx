@@ -153,8 +153,10 @@ export default function Home({
     }
     <div className='flex justify-center m-6'>
       <div className='flex flex-col items-center gap-3 w-full max-w-screen-2xl'>
-        { user && <FormattedUser className='text-2xl' id='home' size={40} user={user} />}
-        {buttonsSection}
+        { user &&
+        <><FormattedUser className='text-2xl' id='home' size={40} user={user} />
+          {buttonsSection}</>
+        }
         {getSuggestedAction()}
         <div className='flex flex-wrap justify-center gap-6 max-w-full'>
           <LevelCardWithTitle
@@ -169,7 +171,7 @@ export default function Home({
             title='Try this Level'
             tooltip={'This is a quality level with similar difficulty to levels you\'ve played recently.'}
           />
-          <LevelCardWithTitle
+          { user && <LevelCardWithTitle
             id='last-level-played'
             level={lastLevelPlayed}
             title={
@@ -183,7 +185,7 @@ export default function Home({
               </div>
             }
             tooltip='Resume your last play. Click to see your play history.'
-          />
+          />}
         </div>
         {buttonsSections2}
         <div className={classNames(
