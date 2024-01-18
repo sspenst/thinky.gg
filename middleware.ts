@@ -67,6 +67,13 @@ export async function middleware(req: NextRequest) {
     return;
   }
 
+  if (folder === 'home') {
+    // redirect to /
+    url.pathname = '/';
+
+    return NextResponse.redirect(url);
+  }
+
   if (subdomain || whiteList[folder]) {
     url.pathname = `/${subdomain}${url.pathname}`;
   }
