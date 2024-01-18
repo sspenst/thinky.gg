@@ -60,7 +60,7 @@ export default function New() {
         new LinkInfo('Drafts', '/drafts'),
       ]}
       isFullScreen={true}
-      title={`New level${isDirty ? '*' : ''}`}
+      title={`New Level${isDirty ? '*' : ''}`}
     >
       <Editor
         isDirty={isDirty}
