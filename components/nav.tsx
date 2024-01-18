@@ -5,7 +5,6 @@ import { AppContext } from '@root/contexts/appContext';
 import getProfileSlug from '@root/helpers/getProfileSlug';
 import isPro from '@root/helpers/isPro';
 import useUrl from '@root/hooks/useUrl';
-import User from '@root/models/db/user';
 import classNames from 'classnames';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -13,7 +12,6 @@ import { useRouter } from 'next/router';
 import React, { Fragment, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import GameLogoAndLabel from './gameLogoAndLabel';
-import MultiSelectUser from './page/multiSelectUser';
 
 function NavDivider() {
   return (
@@ -151,10 +149,6 @@ interface NavProps {
 
 export default function Nav({ isDropdown }: NavProps) {
   const { game, multiplayerSocket, playLater, user } = useContext(AppContext);
-
-  const router = useRouter();
-  const [showSearchUsers, setShowSearchUsers] = useState(false);
-
   const { connectedPlayersCount, matches, socket } = multiplayerSocket;
 
   const proNavLink = <NavLink
@@ -191,13 +185,13 @@ export default function Nav({ isDropdown }: NavProps) {
   />;
 
   const newNavLink = <NavLink
-    href='/new'
+    href='/create'
     icon={
       <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='2 2 20 20' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
         <path strokeLinecap='round' strokeLinejoin='round' d='M12 4.5v15m7.5-7.5h-15' />
       </svg>
     }
-    label='New Level'
+    label='Create Level'
   />;
 
   const draftsNavLink = <NavLink
@@ -291,36 +285,16 @@ export default function Nav({ isDropdown }: NavProps) {
     label='Leaderboards'
   />;
 
-  const usersNavLink = <>
-    <div className='flex'>
-      <NavLink
-        href='/users'
-        icon={
-          <svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' className='w-5 h-5' viewBox='0 0 16 16'>
-            <path fillRule='evenodd' d='M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5z' />
-            <path d='M1.713 11.865v-.474H2c.217 0 .363-.137.363-.317 0-.185-.158-.31-.361-.31-.223 0-.367.152-.373.31h-.59c.016-.467.373-.787.986-.787.588-.002.954.291.957.703a.595.595 0 0 1-.492.594v.033a.615.615 0 0 1 .569.631c.003.533-.502.8-1.051.8-.656 0-1-.37-1.008-.794h.582c.008.178.186.306.422.309.254 0 .424-.145.422-.35-.002-.195-.155-.348-.414-.348h-.3zm-.004-4.699h-.604v-.035c0-.408.295-.844.958-.844.583 0 .96.326.96.756 0 .389-.257.617-.476.848l-.537.572v.03h1.054V9H1.143v-.395l.957-.99c.138-.142.293-.304.293-.508 0-.18-.147-.32-.342-.32a.33.33 0 0 0-.342.338v.041zM2.564 5h-.635V2.924h-.031l-.598.42v-.567l.629-.443h.635V5z' />
-          </svg>
-        }
-        label='Users'
-      />
-      <button
-        className='rounded-md px-3 bg-1 hover-bg-3 h-10'
-        onClick={() => setShowSearchUsers(s => !s)}
-      >
-        <svg xmlns='http://www.w3.org/2000/svg' className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
-        </svg>
-      </button>
-    </div>
-    {showSearchUsers &&
-      <MultiSelectUser
-        className='w-full'
-        onSelect={(user: User) => {
-          router.push('/profile/' + user.name);
-        }}
-      />
+  const usersNavLink = <NavLink
+    href='/users'
+    icon={
+      <svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' className='w-5 h-5' viewBox='0 0 16 16'>
+        <path fillRule='evenodd' d='M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5z' />
+        <path d='M1.713 11.865v-.474H2c.217 0 .363-.137.363-.317 0-.185-.158-.31-.361-.31-.223 0-.367.152-.373.31h-.59c.016-.467.373-.787.986-.787.588-.002.954.291.957.703a.595.595 0 0 1-.492.594v.033a.615.615 0 0 1 .569.631c.003.533-.502.8-1.051.8-.656 0-1-.37-1.008-.794h.582c.008.178.186.306.422.309.254 0 .424-.145.422-.35-.002-.195-.155-.348-.414-.348h-.3zm-.004-4.699h-.604v-.035c0-.408.295-.844.958-.844.583 0 .96.326.96.756 0 .389-.257.617-.476.848l-.537.572v.03h1.054V9H1.143v-.395l.957-.99c.138-.142.293-.304.293-.508 0-.18-.147-.32-.342-.32a.33.33 0 0 0-.342.338v.041zM2.564 5h-.635V2.924h-.031l-.598.42v-.567l.629-.443h.635V5z' />
+      </svg>
     }
-  </>;
+    label='Users'
+  />;
 
   const levelSearchNavLink = <NavLink
     hidden={game.isNotAGame}
