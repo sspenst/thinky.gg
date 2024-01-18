@@ -17,9 +17,9 @@ export default async function queueDiscordWebhook(id: DiscordChannel, content: s
     [DiscordChannel.Pathology]: process.env.DISCORD_WEBHOOK_TOKEN_PATHOLOGY,
     [DiscordChannel.PathologyMultiplayer]: process.env.DISCORD_WEBHOOK_TOKEN_PATHOLOGY_MULTIPLAYER,
     [DiscordChannel.PathologyNotifs]: process.env.DISCORD_WEBHOOK_TOKEN_PATHOLOGY_NOTIFS,
-    [DiscordChannel.Sokoban]: process.env.DISCORD_WEBHOOK_TOKEN_SOKOBAN,
-    [DiscordChannel.SokobanMultiplayer]: process.env.DISCORD_WEBHOOK_TOKEN_SOKOBAN_MULTIPLAYER,
-    [DiscordChannel.SokobanNotifs]: process.env.DISCORD_WEBHOOK_TOKEN_SOKOBAN_NOTIFS,
+    [DiscordChannel.Pathoban]: process.env.DISCORD_WEBHOOK_TOKEN_SOKOBAN,
+    [DiscordChannel.PathobanMultiplayer]: process.env.DISCORD_WEBHOOK_TOKEN_SOKOBAN_MULTIPLAYER,
+    [DiscordChannel.PathobanNotifs]: process.env.DISCORD_WEBHOOK_TOKEN_SOKOBAN_NOTIFS,
   } as Record<string, string | undefined>;
 
   const token = tokenToIdMap[id as string];

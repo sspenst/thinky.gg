@@ -114,7 +114,7 @@ describe('api/subscription', () => {
       },
     });
   });
-  test('POST api/subscription for sokoban', async () => {
+  test('POST api/subscription for pathoban', async () => {
     (stripe.customers.retrieve as jest.Mock).mockResolvedValue({
       id: 'rerieve_test',
     });
@@ -134,7 +134,7 @@ describe('api/subscription', () => {
           },
           headers: {
             'content-type': 'application/json',
-            'host': 'sokoban.localhost',
+            'host': 'pathoban.localhost',
           },
         } as unknown as NextApiRequestWithAuth;
 

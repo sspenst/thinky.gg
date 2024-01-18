@@ -77,7 +77,7 @@
       "associatedDomains": [
         "applinks:pathology.gg",
         "applinks:thinky.gg",
-        "applinks:sokoban.thinky.gg",
+        "applinks:pathoban.thinky.gg",
         "applinks:pathology.thinky.gg"
       ]
     },
@@ -104,7 +104,7 @@
             },
             {
               "scheme": "https",
-              "host": "sokoban.thinky.gg",
+              "host": "pathoban.thinky.gg",
               "pathPattern": ".*"
             },
             {

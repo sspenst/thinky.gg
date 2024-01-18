@@ -347,7 +347,7 @@ async function createMatch(req: NextApiRequestWithAuth) {
   });
 
   if (!match.private) {
-    const discordChannel = game.id === GameId.SOKOBAN ? DiscordChannel.SokobanMultiplayer : DiscordChannel.PathologyMultiplayer;
+    const discordChannel = game.id === GameId.PATHOBAN ? DiscordChannel.PathobanMultiplayer : DiscordChannel.PathologyMultiplayer;
     const discordMessage = `New *${multiplayerMatchTypeToText(type)}* match created by **${reqUser.name}**! [Join here](<${matchUrl}>)`;
 
     await queueDiscordWebhook(discordChannel, discordMessage);

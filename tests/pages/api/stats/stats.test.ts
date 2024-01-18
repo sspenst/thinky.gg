@@ -59,7 +59,7 @@ describe('Testing stats api', () => {
     ]);
     await Promise.all([
       createAnotherGameConfig(TestId.USER, DEFAULT_GAME_ID),
-      createAnotherGameConfig(TestId.USER, GameId.SOKOBAN),
+      createAnotherGameConfig(TestId.USER, GameId.PATHOBAN),
       createAnotherGameConfig(TestId.USER_B, DEFAULT_GAME_ID),
       createAnotherGameConfig(TestId.USER_C, DEFAULT_GAME_ID),
       createAnotherGameConfig(TestId.USER_GUEST, DEFAULT_GAME_ID),
@@ -467,7 +467,7 @@ describe('Testing stats api', () => {
         expect(records[0].moves).toBe(12);
 
         // get user
-        const [u, b] = await Promise.all([UserConfigModel.findOne({ userId: TestId.USER }), UserConfigModel.findOne({ userId: TestId.USER_B })]);
+        const [u, b] = await Promise.all([UserConfigModel.findOne({ userId: TestId.USER, gameId: GameId.PATHOLOGY }), UserConfigModel.findOne({ userId: TestId.USER_B, gameId: GameId.PATHOLOGY })]);
 
         expect(u.calcLevelsSolvedCount).toBe(1);
         expect(b.calcLevelsSolvedCount).toBe(1);
@@ -633,7 +633,7 @@ describe('Testing stats api', () => {
     });
   });
   test('after everything, expect that the userconfig for the other game has not changed values', async () => {
-    const u = await UserConfigModel.findOne({ userId: TestId.USER, gameId: GameId.SOKOBAN });
+    const u = await UserConfigModel.findOne({ userId: TestId.USER, gameId: GameId.PATHOBAN });
 
     expect(u?.calcLevelsCreatedCount).toEqual(0);
     expect(u?.calcRecordsCount).toEqual(0);
