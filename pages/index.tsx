@@ -9,6 +9,7 @@ import { Games } from '@root/constants/Games';
 import Theme from '@root/constants/theme';
 import { AppContext } from '@root/contexts/appContext';
 import useUrl from '@root/hooks/useUrl';
+import { useRouter } from 'next/router';
 import { CarouselJsonLd, NextSeo, SoftwareAppJsonLd } from 'next-seo';
 import React, { useContext } from 'react';
 
@@ -58,6 +59,7 @@ export default function ThinkyHomePage() {
       theme: Theme.Winter,
     },
   };
+  const router = useRouter();
 
   return (
     <>
@@ -94,18 +96,11 @@ export default function ThinkyHomePage() {
             className='text-6xl sm:text-8xl text-white rounded-lg text-center'
             style={{
               textShadow: '0 0 10px rgba(255,255,255,1)',
-              animation: 'textShadow 0.5s ease-in-out infinite alternate, blurToClear 0.5s ease-in-out forwards',
-              filter: 'blur(2px)',
             }}
           >
           Thinky.gg
           </span>
-          <div className='flex flex-wrap justify-center gap-20 max-w-full'
-            style={{
-              animation: 'textShadow 1s ease-in-out infinite alternate, blurToClear 1s ease-in-out forwards',
-              filter: 'blur(2px)',
-            }}
-          >
+          <div className='flex flex-wrap justify-center gap-20 max-w-full'>
             {Object.values(Games).map(game => {
               if (game.id === GameId.THINKY) {
                 return null;
@@ -121,7 +116,9 @@ export default function ThinkyHomePage() {
                     <h2 className='font-semibold text-4xl'>{game.displayName}</h2>
                   </a>
                   <div className='flex flex-col items-center gap-3 text-center p-5 w-[280px] max-w-full rounded-xl h-full bg-1'>
-                    <div className='flex h-60 w-60 max-w-full'>
+                    <div className='flex h-60 w-60 max-w-full cursor-pointer' onClick={() => {
+                      router.push(getUrl(game.id));
+                    }}>
                       <AnimatedGrid leastMoves={gameInstr[game.id].leastMoves} animationInstructions={gameInstr[game.id].instructions} game={game} theme={gameInstr[game.id].theme} id={'level-preview-' + game.id} levelData={gameInstr[game.id].data} />
                     </div>
                     <span>{game.shortDescription}</span>
