@@ -7,7 +7,7 @@ import LinkInfo from '../../../components/formatted/linkInfo';
 import Page from '../../../components/page/page';
 import getCampaignProps, { CampaignProps } from '../../../helpers/getCampaignProps';
 import { getUserFromToken } from '../../../lib/withAuth';
-import { UserConfigModel, UserModel } from '../../../models/mongoose';
+import { UserConfigModel } from '../../../models/mongoose';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;

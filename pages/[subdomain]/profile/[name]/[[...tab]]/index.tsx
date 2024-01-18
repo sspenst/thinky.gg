@@ -462,7 +462,7 @@ export default function ProfilePage({
               <div>
                 <h2><span className='font-bold'>Levels {difficultyType} by Difficulty:</span></h2>
                 {levelsSolvedByDifficulty ?
-                  <LevelsSolvedByDifficultyList game={game} linksToSearch={ownProfile} data={levelsSolvedByDifficulty} />
+                  <LevelsSolvedByDifficultyList levelsSolvedByDifficulty={levelsSolvedByDifficulty} linksToSearch={ownProfile} />
                   :
                   <div className='p-2'><LoadingSpinner /></div>
                 }

@@ -15,7 +15,7 @@ import { calcPlayAttempts, refreshIndexCalcs } from '@root/models/schemas/levelS
 import mongoose, { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { runEmailDigest } from '../internal-jobs/email-digest';
-import { bulkQueueCalcPlayAttempts, processQueueMessages, queueCalcPlayAttempts } from '../internal-jobs/worker';
+import { bulkQueueCalcPlayAttempts, processQueueMessages } from '../internal-jobs/worker';
 
 interface AdminBodyProps {
   targetId: string;

@@ -7,7 +7,7 @@ import { getCollection } from '@root/pages/api/collection-by-id/[id]';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
-import { ArticleJsonLd, NextSeo, VideoGameJsonLd } from 'next-seo';
+import { ArticleJsonLd, NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';

@@ -1,6 +1,6 @@
 import { Menu, Transition } from '@headlessui/react';
 import GameLogo from '@root/components/gameLogo';
-import { Game, Games, GameType } from '@root/constants/Games';
+import { Game, Games } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
 import getProfileSlug from '@root/helpers/getProfileSlug';
 import isPro from '@root/helpers/isPro';
@@ -324,7 +324,7 @@ export default function Nav({ isDropdown }: NavProps) {
 
   const levelSearchNavLink = <NavLink
     hidden={game.isNotAGame}
-    href={'/search'}
+    href='/search'
     icon={
       <svg xmlns='http://www.w3.org/2000/svg' className='w-5 h-5' fill='none' viewBox='0 0 24 24'
         stroke='currentColor'>

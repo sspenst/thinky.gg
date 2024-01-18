@@ -4,7 +4,6 @@ import { QueueMessageState, QueueMessageType } from '../schemas/queueMessageSche
 interface QueueMessage {
   _id: Types.ObjectId;
   createdAt: Date; // when the message was created
-  runAt: Date; // when the message should be run
   dedupeKey?: string;
   isProcessing: boolean;
   jobRunId: Types.ObjectId; // which job run it belongs to
@@ -14,6 +13,7 @@ interface QueueMessage {
   processingAttempts: number; // how many times the message has been attempted
   processingCompletedAt: Date; // when the message was completed
   processingStartedAt: Date;
+  runAt: Date; // when the message should be run
   state: QueueMessageState;
   type: QueueMessageType; // which queue it belongs to
   updatedAt: Date; // when the message was last updated

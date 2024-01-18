@@ -10,7 +10,7 @@ import Theme from '@root/constants/theme';
 import { AppContext } from '@root/contexts/appContext';
 import useUrl from '@root/hooks/useUrl';
 import { useRouter } from 'next/router';
-import { CarouselJsonLd, NextSeo, SoftwareAppJsonLd } from 'next-seo';
+import { NextSeo, SoftwareAppJsonLd } from 'next-seo';
 import React, { useContext } from 'react';
 
 interface FeatureCardProps {
@@ -89,7 +89,7 @@ export default function ThinkyHomePage() {
           backgroundAttachment: 'fixed',
           backgroundRepeat: 'no-repeat',
         }}
-        title='Thinky Puzzle Gaming'
+        title='Thinky Puzzle Games'
       >
         <div className='flex flex-col justify-center items-center my-12 mx-6 gap-16'>
           <span
