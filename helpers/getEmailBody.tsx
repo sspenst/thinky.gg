@@ -36,8 +36,6 @@ export default function getEmailBody({
 }: EmailBodyProps) {
   const game = Games[gameId];
 
-  const ts = Date.now();
-
   return renderToStaticMarkup(
     <html>
       <body>

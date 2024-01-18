@@ -1,4 +1,4 @@
-import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
+import { GameId } from '@root/constants/GameId';
 import { Game, Games } from '@root/constants/Games';
 import { DeviceInfo, ScreenSize } from '@root/hooks/useDeviceCheck';
 import Collection from '@root/models/db/collection';

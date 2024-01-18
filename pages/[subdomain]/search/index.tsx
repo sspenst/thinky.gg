@@ -458,7 +458,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
               isPrivate: true,
               levels: data, _id: new Types.ObjectId(),
               name: 'Search',
-              slug: '/search?' + queryString,
+              slug: `/search${queryString.length > 0 ? `?${queryString}` : ''}`,
               type: CollectionType.InMemory,
               updatedAt: ts,
               userId: { _id: new Types.ObjectId() } as Types.ObjectId & User,

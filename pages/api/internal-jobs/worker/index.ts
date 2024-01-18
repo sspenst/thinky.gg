@@ -140,6 +140,7 @@ export async function bulkQueueCalcPlayAttempts(levelIds: Types.ObjectId[], opti
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await QueueMessageModel.insertMany(queueMessages, { ...options as any });
 }
 

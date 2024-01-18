@@ -1,10 +1,17 @@
-import { Game, GameType } from '@root/constants/Games';
+import { GameType } from '@root/constants/Games';
 import StatFilter from '@root/constants/statFilter';
+import { AppContext } from '@root/contexts/appContext';
 import { useRouter } from 'next/router';
-import React from 'react';
+import React, { useContext } from 'react';
 import FormattedDifficulty, { difficultyList } from '../formatted/formattedDifficulty';
 
-export default function LevelsSolvedByDifficultyList({ data: levelsSolvedByDifficulty, game, linksToSearch }: {data: {[key: string]: number}, game: Game, linksToSearch: boolean}) {
+interface LevelsSolvedByDifficultyListProps {
+  levelsSolvedByDifficulty: {[key: string]: number};
+  linksToSearch: boolean;
+}
+
+export default function LevelsSolvedByDifficultyList({ levelsSolvedByDifficulty, linksToSearch }: LevelsSolvedByDifficultyListProps) {
+  const { game } = useContext(AppContext);
   const router = useRouter();
 
   return difficultyList.map(difficulty => {

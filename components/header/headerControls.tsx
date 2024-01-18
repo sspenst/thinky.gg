@@ -1,4 +1,3 @@
-import { GameType } from '@root/constants/Games';
 import { ScreenSize } from '@root/hooks/useDeviceCheck';
 import Link from 'next/link';
 import React, { useContext, useState } from 'react';

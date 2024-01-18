@@ -16,7 +16,6 @@ import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import Notification from '@root/models/db/notification';
 import { NextPageContext } from 'next';
 import type { AppProps } from 'next/app';
-import { init } from 'next/dist/compiled/webpack/webpack';
 import Head from 'next/head';
 import Link from 'next/link';
 import { Router, useRouter } from 'next/router';
