@@ -405,6 +405,13 @@ export default function Nav({ isDropdown }: NavProps) {
       <NavDivider />
       <NavGameMenu />
       <NavDivider />
+      {!game.isNotAGame && <>
+        {usersNavLink}
+        {campaignNavLink}
+        {leaderboardNavLink}
+        {tutorialNavLink}
+        <NavDivider />
+      </>}
       {user && <>
         {profileNavLink}
         {!game.isNotAGame && <>
@@ -419,13 +426,6 @@ export default function Nav({ isDropdown }: NavProps) {
           {playLaterNavLink}
           {playHistoryNavLink}
         </>}
-        <NavDivider />
-      </>}
-      {!game.isNotAGame && <>
-        {usersNavLink}
-        {campaignNavLink}
-        {leaderboardNavLink}
-        {tutorialNavLink}
         <NavDivider />
       </>}
       {discordNavLink}
