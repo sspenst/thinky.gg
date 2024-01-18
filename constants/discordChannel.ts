@@ -5,7 +5,7 @@ export default class DiscordChannel {
   static readonly Pathology = '975953104581296128';
   static readonly PathologyMultiplayer = '1098041219193516144';
   static readonly PathologyNotifs = '997639287313022976';
-  static readonly Sokoban = '1194753412206694451';
-  static readonly SokobanMultiplayer = '1194753526350479390';
-  static readonly SokobanNotifs = '1194754391132082196';
+  static readonly Pathoban = '1194753412206694451';
+  static readonly PathobanMultiplayer = '1194753526350479390';
+  static readonly PathobanNotifs = '1194754391132082196';
 }

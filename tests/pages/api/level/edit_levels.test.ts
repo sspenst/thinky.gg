@@ -40,7 +40,7 @@ enableFetchMocks();
 
 describe('Editing levels should work correctly', () => {
   test('Create another userconfig profile for another game', async () => {
-    await createAnotherGameConfig(TestId.USER, GameId.SOKOBAN);
+    await createAnotherGameConfig(TestId.USER, GameId.PATHOBAN);
   });
   test('Creating 3 levels where 1 is draft should only show 2 in collection', async () => {
     await testApiHandler({
@@ -826,7 +826,7 @@ describe('Editing levels should work correctly', () => {
   });
 
   test('after everything, expect that the userconfig for the other game has not changed values', async () => {
-    let u = await UserConfigModel.findOne({ userId: TestId.USER, gameId: GameId.SOKOBAN });
+    let u = await UserConfigModel.findOne({ userId: TestId.USER, gameId: GameId.PATHOBAN });
 
     expect(u).toBeDefined();
     expect(u?.calcLevelsCreatedCount).toEqual(0);

@@ -1,5 +1,5 @@
 import Direction from '@root/constants/direction';
-import validateSokobanSolution from '@root/helpers/validators/validateSokoban';
+import validatePathobanSolution from '@root/helpers/validators/validatePathoban';
 import Level from '@root/models/db/level';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 
@@ -9,9 +9,9 @@ beforeAll(async () => {
 afterAll(async () => {
   await dbDisconnect();
 });
-describe('validateSokobanSolution.ts', () => {
+describe('validatePathobanSolution.ts', () => {
   test('valid solution', async () => {
-    expect(validateSokobanSolution([
+    expect(validatePathobanSolution([
       Direction.LEFT,
     ], {
       data: '324',
@@ -20,7 +20,7 @@ describe('validateSokobanSolution.ts', () => {
     } as Level)).toBeTruthy();
   });
   test('OOB', async () => {
-    expect(validateSokobanSolution([
+    expect(validatePathobanSolution([
       Direction.UP,
       Direction.DOWN,
       Direction.LEFT,
@@ -32,7 +32,7 @@ describe('validateSokobanSolution.ts', () => {
   });
 
   test('valid solution 2', async () => {
-    expect(validateSokobanSolution([
+    expect(validatePathobanSolution([
       Direction.RIGHT,
     ], {
       data: '423\n010\n050',
@@ -41,7 +41,7 @@ describe('validateSokobanSolution.ts', () => {
     } as Level)).toBeTruthy();
   });
   test('move onto wall', async () => {
-    expect(validateSokobanSolution([
+    expect(validatePathobanSolution([
       Direction.DOWN,
       Direction.RIGHT,
       Direction.LEFT,
@@ -54,7 +54,7 @@ describe('validateSokobanSolution.ts', () => {
     } as Level)).toBeFalsy();
   });
   test('move onto hole', async () => {
-    expect(validateSokobanSolution([
+    expect(validatePathobanSolution([
       Direction.DOWN,
       Direction.DOWN,
       Direction.RIGHT,
@@ -70,7 +70,7 @@ describe('validateSokobanSolution.ts', () => {
   });
 
   test('valid solution 3', async () => {
-    expect(validateSokobanSolution([
+    expect(validatePathobanSolution([
       Direction.RIGHT,
       Direction.LEFT,
       Direction.DOWN,
@@ -86,7 +86,7 @@ describe('validateSokobanSolution.ts', () => {
     } as Level)).toBeTruthy();
   });
   test('only complete one exit', async () => {
-    expect(validateSokobanSolution([
+    expect(validatePathobanSolution([
       Direction.RIGHT,
     ], {
       data: '423\n320\n000',
