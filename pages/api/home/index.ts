@@ -142,7 +142,7 @@ export default apiWrapper({
     precommendedLevel,
     ptopLevelsThisMonth
   ] = await Promise.all([
-    lastLevelPlayed ? getLastLevelPlayed(req.gameId, reqUser as User) : undefined,
+    lastLevelPlayed && reqUser ? getLastLevelPlayed(req.gameId, reqUser) : undefined,
     latestLevels ? getLatestLevels(req.gameId, reqUser) : undefined,
     latestReviews ? getLatestReviews(req.gameId, reqUser) : undefined,
     levelOfDay ? getLevelOfDay(req.gameId, reqUser) : undefined,
