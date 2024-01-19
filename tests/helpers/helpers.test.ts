@@ -3,7 +3,7 @@ import TileType from '@root/constants/tileType';
 import { generatePassword } from '@root/helpers/generatePassword';
 import { parseHostname, parseSubdomain } from '@root/helpers/parseUrl';
 import { validatePathologyLevelValid } from '@root/helpers/validators/validatePathology';
-import { validatePathobanLevel } from '@root/helpers/validators/validatePathoban';
+import { validateSokopathLevel } from '@root/helpers/validators/validateSokopath';
 import TestId from '../../constants/testId';
 import statFilterOptions from '../../helpers/filterSelectOptions';
 import getDifficultyEstimate from '../../helpers/getDifficultyEstimate';
@@ -190,16 +190,16 @@ describe('helpers/*.ts', () => {
     expect(validatePathologyLevelValid(gridWithOnlyOneStart).reasons).toMatchObject(['Must have at least one exit']);
     expect(validatePathologyLevelValid(gridWithOneStartAndOneEnd).valid).toBe(true);
   });
-  test('validiatePathobanLevelValid', async () => {
+  test('validiateSokopathLevelValid', async () => {
     const emptyGrid = '000';
     const gridWithOnlyOneStart = '00' + TileType.Player;
     const gridWithOneStartAndOneEnd = '00' + TileType.Player + TileType.Exit;
     const gridWithOneStartAndOneEndWithBlockOnTop = '00' + TileType.Player + TileType.BlockOnExit;
 
-    expect(validatePathobanLevel(emptyGrid).reasons).toMatchObject(['Must have exactly one player', 'Must have at least one uncovered goal']);
-    expect(validatePathobanLevel(gridWithOnlyOneStart).reasons).toMatchObject(['Must have at least one uncovered goal']);
-    expect(validatePathobanLevel(gridWithOneStartAndOneEnd).reasons).toMatchObject(['Must have as many boxes as goals']);
-    expect(validatePathobanLevel(gridWithOneStartAndOneEndWithBlockOnTop).valid).toBe(false);
+    expect(validateSokopathLevel(emptyGrid).reasons).toMatchObject(['Must have exactly one player', 'Must have at least one uncovered goal']);
+    expect(validateSokopathLevel(gridWithOnlyOneStart).reasons).toMatchObject(['Must have at least one uncovered goal']);
+    expect(validateSokopathLevel(gridWithOneStartAndOneEnd).reasons).toMatchObject(['Must have as many boxes as goals']);
+    expect(validateSokopathLevel(gridWithOneStartAndOneEndWithBlockOnTop).valid).toBe(false);
   });
 });
 
