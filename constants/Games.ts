@@ -1,7 +1,7 @@
 import { GameState } from '@root/helpers/gameStateHelpers';
-import { isCompleteSokopath, isCompletePathology } from '@root/helpers/validators/isComplete';
-import validateSokopathSolution, { validateSokopathLevel } from '@root/helpers/validators/validateSokopath';
+import { isCompletePathology, isCompleteSokopath } from '@root/helpers/validators/isComplete';
 import validatePathologySolution, { validatePathologyLevelValid as validatePathologyLevel } from '@root/helpers/validators/validatePathology';
+import validateSokopathSolution, { validateSokopathLevel } from '@root/helpers/validators/validateSokopath';
 import Level from '@root/models/db/level';
 import Direction from './direction';
 import { GameId } from './GameId';
@@ -66,8 +66,8 @@ export const Games: Record<GameId, Game> = {
     validateLevel: validatePathologyLevel,
     validateSolution: validatePathologySolution,
   },
-  [GameId.PATHOBAN]: {
-    id: GameId.PATHOBAN,
+  [GameId.SOKOPATH]: {
+    id: GameId.SOKOPATH,
     allowMovableOnExit: true,
     baseUrl: process.env.NODE_ENV !== 'development' ? `https://sokopath.${APP_DOMAIN}` : 'http://sokopath.localhost:3000',
     defaultTheme: Theme.Winter,

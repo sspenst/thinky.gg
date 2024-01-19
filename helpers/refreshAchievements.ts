@@ -109,7 +109,7 @@ export async function refreshAchievements(gameId: GameId, userId: Types.ObjectId
           const achievementHref = game.baseUrl + '/achievement/' + achievementType;
           const achievementLinkDiscord = `[${achievementInfo.name}](${achievementHref})`;
           const message = `${userLinkDiscord} just unlocked the ${achievementLinkDiscord} ${achievementInfo.emoji} achievement!`;
-          const discordChannel = game.id === GameId.PATHOBAN ? DiscordChannel.Sokopath : DiscordChannel.Pathology;
+          const discordChannel = game.id === GameId.SOKOPATH ? DiscordChannel.Sokopath : DiscordChannel.Pathology;
 
           achievementsCreatedPromises.push(queueDiscordWebhook(discordChannel, message));
         }
