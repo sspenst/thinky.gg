@@ -2,7 +2,7 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { Games } from './constants/Games';
-import { parseSubdomain } from './helpers/parseUrl';
+import { parseHostname, parseSubdomain } from './helpers/parseUrl';
 
 export const getValidSubdomain = (host?: string | null) => {
   let subdomain: string | null = null;
@@ -62,6 +62,14 @@ export async function middleware(req: NextRequest) {
   const host = req.headers.get('host');
   const subdomain = getValidSubdomain(host);
   const folder = url.pathname.split('/')[1];
+
+  if (subdomain === 'sokoban') {
+    // redirect to sokopath.<host>
+    // TODO: remove this after some time...
+    const parsed = parseHostname(host || '');
+
+    return NextResponse.redirect('http://sokopath.' + parsed + url.pathname);
+  }
 
   if (folder === 'api' || (subdomain !== null && !validSubdomain[subdomain])) {
     return;
