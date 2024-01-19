@@ -5,7 +5,7 @@ import React from 'react';
 import StyledTooltip from './page/styledTooltip';
 
 interface GameLogoProps {
-  gameId: GameId;
+  gameId?: GameId;
   id: string;
 
   size?: number;
@@ -13,6 +13,10 @@ interface GameLogoProps {
 }
 
 export default function GameLogo({ gameId, id, size = 28, tooltip = false }: GameLogoProps) {
+  if (!gameId) {
+    return null;
+  }
+
   const game = getGameFromId(gameId);
   const tooltipId = `${game.id}-tooltip-${id}`;
   const src = game.logo;
