@@ -45,8 +45,11 @@ const whiteList = {
   'settings': 1,
   'signup': 1,
 } as Record<string, number>;
+
 const validSubdomain = Object.values(Games).reduce((acc, game) => {
-  acc[game.id as string] = true;
+  if (game.subdomain) {
+    acc[game.subdomain] = true;
+  }
 
   return acc;
 }, {} as Record<string, boolean>) as Record<string, boolean>;
