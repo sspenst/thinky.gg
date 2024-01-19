@@ -5,7 +5,7 @@ export function isCompletePathology(gameState: GameState) {
   return gameState.board[gameState.pos.y][gameState.pos.x].tileType === TileType.Exit;
 }
 
-export function isCompletePathoban(gameState: GameState) {
+export function isCompleteSokopath(gameState: GameState) {
   let exitCount = 0;
 
   // loop through all tiles

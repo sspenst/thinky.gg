@@ -1,7 +1,7 @@
 import { GameState } from '@root/helpers/gameStateHelpers';
-import { isCompletePathology, isCompletePathoban } from '@root/helpers/validators/isComplete';
+import { isCompleteSokopath, isCompletePathology } from '@root/helpers/validators/isComplete';
+import validateSokopathSolution, { validateSokopathLevel } from '@root/helpers/validators/validateSokopath';
 import validatePathologySolution, { validatePathologyLevelValid as validatePathologyLevel } from '@root/helpers/validators/validatePathology';
-import validatePathobanSolution, { validatePathobanLevel } from '@root/helpers/validators/validatePathoban';
 import Level from '@root/models/db/level';
 import Direction from './direction';
 import { GameId } from './GameId';
@@ -50,7 +50,7 @@ export const Games: Record<GameId, Game> = {
     logo: '/logos/pathology/pathology.svg',
     logoPng: '/logos/pathology/pathology.png',
     newLevelData: '4000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000003',
-    seoDescription: 'The goal of Pathology is simple. Get to the exit in the least number of moves. Sounds easy right? Yet, this pathoban style game is one of the most mind-bending puzzle games you will find.',
+    seoDescription: 'The goal of Pathology is simple. Get to the exit in the least number of moves. Sounds easy right? Yet, this sokopath style game is one of the most mind-bending puzzle games you will find.',
     seoTitle: 'Pathology - The Shortest Path Puzzle Game',
     shortDescription: 'Get to the exit in the least number of moves',
     stripeGiftPriceIdMonthly: process.env.STRIPE_GIFT_MONTHLY_PRICE_ID,
@@ -69,21 +69,21 @@ export const Games: Record<GameId, Game> = {
   [GameId.PATHOBAN]: {
     id: GameId.PATHOBAN,
     allowMovableOnExit: true,
-    baseUrl: process.env.NODE_ENV !== 'development' ? `https://pathoban.${APP_DOMAIN}` : 'http://pathoban.localhost:3000',
+    baseUrl: process.env.NODE_ENV !== 'development' ? `https://sokopath.${APP_DOMAIN}` : 'http://sokopath.localhost:3000',
     defaultTheme: Theme.Winter,
     disableCampaign: true,
     disableCommunityCampaigns: true,
     disableMultiplayer: true,
     disableRanked: true,
     disableTour: true,
-    displayName: 'Pathoban',
-    favicon: '/logos/pathoban/pathoban.svg',
+    displayName: 'Sokopath',
+    favicon: '/logos/sokopath/sokopath.svg',
     hasPro: true,
-    logo: '/logos/pathoban/pathoban.svg',
-    logoPng: '/logos/pathoban/pathoban.png',
+    logo: '/logos/sokopath/sokopath.svg',
+    logoPng: '/logos/sokopath/sokopath.png',
     newLevelData: '40000\n00000\n00200\n00000\n00003',
-    seoDescription: 'The goal of the puzzle game Pathoban is simple. Push the boxes onto the goals. Sounds easy right? Yet, this is one of the most mind-bending puzzle games you will find.',
-    seoTitle: 'Pathoban - Push the Boxes Puzzle Game',
+    seoDescription: 'The goal of the puzzle game Sokopath is simple. Push the boxes onto the goals. Sounds easy right? Yet, this is one of the most mind-bending puzzle games you will find.',
+    seoTitle: 'Sokopath - Push the Boxes Puzzle Game',
     shortDescription: 'Push the boxes onto the goals',
     stripeGiftPriceIdMonthly: process.env.STRIPE_GIFT_MONTHLY_PRICE_ID_SOKOBAN,
     stripeGiftPriceIdYearly: process.env.STRIPE_GIFT_YEARLY_PRICE_ID_SOKOBAN,
@@ -91,12 +91,12 @@ export const Games: Record<GameId, Game> = {
     stripePriceIdYearly: process.env.STRIPE_YEARLY_PRICE_ID_SOKOBAN,
     stripePaymentLinkMonthly: process.env.STRIPE_PAYMENT_LINK_SOKOBAN,
     stripePaymentLinkYearly: process.env.STRIPE_PAYMENT_LINK_YEARLY_SOKOBAN,
-    subdomain: 'pathoban',
+    subdomain: 'sokopath',
     subtitle: 'Push the boxes',
     type: GameType.COMPLETE_AND_SHORTEST,
-    isComplete: isCompletePathoban,
-    validateLevel: validatePathobanLevel,
-    validateSolution: validatePathobanSolution,
+    isComplete: isCompleteSokopath,
+    validateLevel: validateSokopathLevel,
+    validateSolution: validateSokopathSolution,
   },
 };
 

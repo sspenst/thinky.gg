@@ -42,7 +42,7 @@ interface TutorialStep {
   tooltip?: Tooltip;
 }
 
-export default function TutorialPathoban() {
+export default function TutorialSokopath() {
   function getLevel(data: string, override: Partial<Level> = {}): Level {
     const sp = data.split('\n');
     const width = sp[0].length;
@@ -234,7 +234,7 @@ export default function TutorialPathoban() {
         header: <>
           <div className='flex flex-col gap-6 items-center text-3xl fadeIn'>
             <GameLogo gameId={GameId.PATHOBAN} id='tutorial' size={32} />
-            <span>Welcome to the Pathoban tutorial!</span>
+            <span>Welcome to the Sokopath tutorial!</span>
           </div>
           <div className='text-xl fadeIn' style={{
             animationDelay: '1s',
@@ -244,7 +244,7 @@ export default function TutorialPathoban() {
       {
         editorGrid: true,
         gameClasses: 'fadeIn',
-        header: <div key='tutorial-blank-grid-header' className='text-3xl fadeIn'><span className='font-medium'>Pathoban</span> is a grid-based puzzle game.</div>,
+        header: <div key='tutorial-blank-grid-header' className='text-3xl fadeIn'><span className='font-medium'>Sokopath</span> is a grid-based puzzle game.</div>,
         key: 'tutorial-blank-grid',
         level: getLevel(BLANK_GRID),
       },
@@ -455,14 +455,14 @@ export default function TutorialPathoban() {
           <div className='text-3xl mb-6 fadeIn'>Congratulations on completing the tutorial!</div>
           <div className='text-xl fadeIn' style={{
             animationDelay: '1s',
-          }}>There is a lot more to Pathoban than just this:<br />An active community, level editor, and thousands of levels to explore.</div>
+          }}>There is a lot more to Sokopath than just this:<br />An active community, level editor, and thousands of levels to explore.</div>
           {isLoggedIn ?
             <div className='text-xl fadeIn' style={{
               pointerEvents: 'all',
               animationDelay: '2s',
             }}>
               {!game.disableCampaign && <>
-              Continue your Pathoban journey with the <span className='font-bold'>Campaign</span>!
+              Continue your Sokopath journey with the <span className='font-bold'>Campaign</span>!
               </>}
             </div>
             :
@@ -471,7 +471,7 @@ export default function TutorialPathoban() {
                 pointerEvents: 'all',
                 animationDelay: '2s'
               }}>
-                Now <Link href='/signup' className='font-bold text-blue-500 hover:text-blue-400'>sign up</Link> for free to explore the world of Pathoban (and other puzzle games!)
+                Now <Link href='/signup' className='font-bold text-blue-500 hover:text-blue-400'>sign up</Link> for free to explore the world of Sokopath (and other puzzle games!)
               </div>
               <div className='fadeIn' style={{
                 pointerEvents: 'all',
