@@ -59,7 +59,7 @@ describe('Testing stats api', () => {
     ]);
     await Promise.all([
       createAnotherGameConfig(TestId.USER, DEFAULT_GAME_ID),
-      createAnotherGameConfig(TestId.USER, GameId.PATHOBAN),
+      createAnotherGameConfig(TestId.USER, GameId.SOKOPATH),
       createAnotherGameConfig(TestId.USER_B, DEFAULT_GAME_ID),
       createAnotherGameConfig(TestId.USER_C, DEFAULT_GAME_ID),
       createAnotherGameConfig(TestId.USER_GUEST, DEFAULT_GAME_ID),
@@ -633,7 +633,7 @@ describe('Testing stats api', () => {
     });
   });
   test('after everything, expect that the userconfig for the other game has not changed values', async () => {
-    const u = await UserConfigModel.findOne({ userId: TestId.USER, gameId: GameId.PATHOBAN });
+    const u = await UserConfigModel.findOne({ userId: TestId.USER, gameId: GameId.SOKOPATH });
 
     expect(u?.calcLevelsCreatedCount).toEqual(0);
     expect(u?.calcRecordsCount).toEqual(0);

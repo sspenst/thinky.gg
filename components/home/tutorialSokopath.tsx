@@ -233,7 +233,7 @@ export default function TutorialSokopath() {
         hasNext: true,
         header: <>
           <div className='flex flex-col gap-6 items-center text-3xl fadeIn'>
-            <GameLogo gameId={GameId.PATHOBAN} id='tutorial' size={32} />
+            <GameLogo gameId={GameId.SOKOPATH} id='tutorial' size={32} />
             <span>Welcome to the Sokopath tutorial!</span>
           </div>
           <div className='text-xl fadeIn' style={{

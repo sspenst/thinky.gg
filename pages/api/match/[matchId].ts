@@ -246,7 +246,7 @@ export default withAuth(
           // add levels to match
           const matchUrl = `${req.headers.origin}/match/${matchId}`;
           const game = getGameFromId(populatedMatch.gameId);
-          const discordChannel = game.id === GameId.PATHOBAN ? DiscordChannel.SokopathMultiplayer : DiscordChannel.PathologyMultiplayer;
+          const discordChannel = game.id === GameId.SOKOPATH ? DiscordChannel.SokopathMultiplayer : DiscordChannel.PathologyMultiplayer;
           const discordMessage = `*${multiplayerMatchTypeToText(match.type)}* match starting between ${populatedMatch.players?.map(p => `**${p.name}**`).join(' and ')}! [Spectate here](<${matchUrl}>)`;
 
           Promise.all([

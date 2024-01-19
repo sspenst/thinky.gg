@@ -305,7 +305,7 @@ async function processQueueMessage(queueMessage: QueueMessage) {
 
       if (postToDiscord) {
         const game = getGameFromId(lvl.gameId);
-        const discordChannel = game.id === GameId.PATHOBAN ? DiscordChannel.Sokopath : DiscordChannel.Pathology;
+        const discordChannel = game.id === GameId.SOKOPATH ? DiscordChannel.Sokopath : DiscordChannel.Pathology;
 
         await queueDiscordWebhook(discordChannel, `**${lvl.userId?.name}** published a new level: [${lvl.name}](${game.baseUrl}/level/${lvl.slug}?ts=${lvl.ts})`);
       }

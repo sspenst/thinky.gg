@@ -52,7 +52,7 @@ export default function ThinkyHomePage() {
       leastMoves: 8,
       theme: Theme.Modern,
     },
-    [GameId.PATHOBAN]: {
+    [GameId.SOKOPATH]: {
       data: '0000\n0130\n0220\n0003',
       instructions: 'ddddrrudllurrlluurrrddXrrdduullddrdruX'.split('').map(x => strMap[x]),
       leastMoves: 14,

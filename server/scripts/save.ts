@@ -390,7 +390,7 @@ async function init() {
   console.log('connecting to db...');
   await dbConnect();
   console.log('connected');
-  const allGameIds = [GameId.PATHOBAN]; //Object.values(GameId);
+  const allGameIds = [GameId.SOKOPATH]; //Object.values(GameId);
 
   if (runLevels) {
     await integrityCheckLevels(chunks, chunkIndex);

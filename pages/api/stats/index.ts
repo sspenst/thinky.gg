@@ -309,7 +309,7 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
 
         // reset all playattempts to unsolved
         const game = getGameFromId(level.gameId);
-        const discordChannel = game.id === GameId.PATHOBAN ? DiscordChannel.Sokopath : DiscordChannel.Pathology;
+        const discordChannel = game.id === GameId.SOKOPATH ? DiscordChannel.Sokopath : DiscordChannel.Pathology;
 
         await Promise.all([
           PlayAttemptModel.updateMany(
