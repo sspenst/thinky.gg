@@ -36,7 +36,7 @@ export default function TutorialPage() {
       canonical={`${game.baseUrl}/tutorial`}
       openGraph={{
         title: 'Tutorial - ' + game.displayName,
-        description: 'Learn how to play ' + game.displayName + ' - The sokopath style mind-bending puzzle game',
+        description: 'Learn how to play ' + game.displayName + ' - The sokoban style mind-bending puzzle game',
         type: 'article',
         url: '/tutorial',
       }}
