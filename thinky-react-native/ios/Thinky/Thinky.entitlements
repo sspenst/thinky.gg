@@ -8,8 +8,7 @@
     <array>
       <string>applinks:pathology.gg</string>
       <string>applinks:thinky.gg</string>
-      <string>applinks:sokopath.thinky.gg</string>
-      <string>applinks:pathology.thinky.gg</string>
+      <string>applinks:*.thinky.gg</string>
     </array>
   </dict>
 </plist>
