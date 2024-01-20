@@ -141,7 +141,7 @@ async function onRemoteMessage(message: FirebaseMessagingTypes.RemoteMessage) {
 function App() {
   const linkingUrl = Linking.useURL();
   const webViewRef = useRef<WebView>();
-  const [webViewUrl, setWebViewUrl] = useState(`${host}?platform=${Platform.OS}&version=2.0.0`);
+  const [webViewUrl, setWebViewUrl] = useState(`${host}?platform=${Platform.OS}&version=2.0.3`);
 
   useEffect(() => {
     if (linkingUrl) {
