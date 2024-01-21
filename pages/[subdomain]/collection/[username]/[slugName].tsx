@@ -1,14 +1,17 @@
 import LevelCard from '@root/components/cards/levelCard';
 import FormattedUser from '@root/components/formatted/formattedUser';
 import StatFilter from '@root/constants/statFilter';
+import TimeRange from '@root/constants/timeRange';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { CollectionType } from '@root/models/constants/collection';
 import { getCollection } from '@root/pages/api/collection-by-id/[id]';
+import { doQuery } from '@root/pages/api/search';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import SelectFilter from '../../../../components/cards/selectFilter';
 import FormattedAuthorNote from '../../../../components/formatted/formattedAuthorNote';
 import LinkInfo from '../../../../components/formatted/linkInfo';
@@ -17,11 +20,10 @@ import DeleteCollectionModal from '../../../../components/modal/deleteCollection
 import Page from '../../../../components/page/page';
 import Dimensions from '../../../../constants/dimensions';
 import { AppContext } from '../../../../contexts/appContext';
-import statFilterOptions from '../../../../helpers/filterSelectOptions';
 import dbConnect from '../../../../lib/dbConnect';
 import { getUserFromToken } from '../../../../lib/withAuth';
 import { EnrichedCollection } from '../../../../models/db/collection';
-import { EnrichedLevel } from '../../../../models/db/level';
+import Level, { EnrichedLevel } from '../../../../models/db/level';
 import SelectOption from '../../../../models/selectOption';
 import SelectOptionStats from '../../../../models/selectOptionStats';
 
@@ -55,13 +57,15 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
+  const gameId = getGameIdFromReq(context.req);
+  const { search, page, statFilter } = context.query;
 
   const collection = await getCollection({
     matchQuery: {
-      gameId: getGameIdFromReq(context.req),
+      gameId: gameId,
       slug: username + '/' + slugName,
     },
-    reqUser,
+    reqUser: reqUser,
   });
 
   if (!collection && reqUser?.name === username && slugName === 'play-later') {
@@ -79,19 +83,35 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
+  const levelIds = collection.levels as Level[];
+  const levelIdsAsStrings = levelIds.map(level => level._id.toString()).join(',');
+  const queryResult = await doQuery(gameId, {
+    includeLevelIds: levelIdsAsStrings,
+    page: page ? '' + ( 1 + parseInt(page.toString())) : '1',
+    search: search ? search.toString() : '',
+    statFilter: statFilter ? statFilter.toString() as StatFilter : StatFilter.All,
+    timeRange: TimeRange[TimeRange.All],
+    sortBy: 'ts',
+    sortDir: 'asc',
+  }, reqUser);
+
+  collection.levels = queryResult?.levels ?? [];
+
   return {
     props: {
       collection: JSON.parse(JSON.stringify(collection)),
+      numLevels: queryResult?.totalRows ?? 0,
     } as CollectionProps
   };
 }
 
 interface CollectionProps {
   collection: EnrichedCollection;
+  numLevels: number;
 }
 
 /* istanbul ignore next */
-export default function CollectionPage({ collection }: CollectionProps) {
+export default function CollectionPage({ collection, numLevels }: CollectionProps) {
   const [filterText, setFilterText] = useState('');
   const [isAddCollectionOpen, setIsAddCollectionOpen] = useState(false);
   const [isDeleteCollectionOpen, setIsDeleteCollectionOpen] = useState(false);
@@ -120,14 +140,62 @@ export default function CollectionPage({ collection }: CollectionProps) {
   }, [collection]);
 
   const getFilteredOptions = useCallback(() => {
-    return statFilterOptions(getOptions(), statFilter, filterText);
-  }, [filterText, getOptions, statFilter]);
+    //return statFilterOptions(getOptions(), statFilter, filterText);
+    return getOptions();
+  }, [getOptions]);
 
   const onFilterClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     const value = e.currentTarget.value as StatFilter;
 
     setStatFilter(statFilter === value ? StatFilter.All : value);
   };
+
+  const [page, setPage] = useState<number>(0);
+  const filteredLevels = getFilteredOptions();
+  // how many levels are in front of the current page
+  const levelsInFront = numLevels - (page + 1) * 10 - filteredLevels.length;
+  const router = useRouter();
+  const firstLoad = useRef(true);
+
+  useEffect(() => {
+    if (firstLoad.current) {
+      firstLoad.current = false;
+
+      return;
+    }
+
+    // update the url with the new page based on the current page and search
+    const url = new URL(window.location.href);
+
+    if (page.toString() !== url.searchParams.get('page')) {
+      url.searchParams.set('page', page.toString());
+    }
+
+    if (filterText !== url.searchParams.get('search')) {
+      url.searchParams.set('search', filterText);
+    }
+
+    if (statFilter !== url.searchParams.get('statFilter')) {
+      url.searchParams.set('statFilter', statFilter.toString());
+    }
+
+    if (page === 0) {
+      url.searchParams.delete('page');
+    }
+
+    if (filterText === '') {
+      url.searchParams.delete('search');
+    }
+
+    if (statFilter === StatFilter.All) {
+      url.searchParams.delete('statFilter');
+    }
+
+    // only replace if the url has changed
+    if (url.toString() !== window.location.href) {
+      router.replace(url.toString());
+    }
+  }, [page, filterText, router, statFilter]);
 
   return (<>
     <NextSeo
@@ -216,7 +284,10 @@ export default function CollectionPage({ collection }: CollectionProps) {
         <SelectFilter
           filter={statFilter}
           onFilterClick={onFilterClick}
-          placeholder={`Search ${getFilteredOptions().length} level${getFilteredOptions().length !== 1 ? 's' : ''}...`}
+          onChange={() => {
+            setPage(0);
+          }}
+          placeholder={`Search ${numLevels} level${numLevels !== 1 ? 's' : ''}...`}
           searchText={filterText}
           setSearchText={setFilterText}
         />
@@ -231,7 +302,7 @@ export default function CollectionPage({ collection }: CollectionProps) {
           </div>
         }
         <div className='flex flex-wrap justify-center gap-4'>
-          {getFilteredOptions().map(option => {
+          {filteredLevels.map(option => {
             if (!option.level) {
               return null;
             }
@@ -247,6 +318,31 @@ export default function CollectionPage({ collection }: CollectionProps) {
           })}
         </div>
       </div>
+      <div className='flex flex-row gap-4 text-center justify-center items-center'>
+        <button
+          className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
+          id='prevPage'
+          style={{
+            visibility: page === 0 ? 'hidden' : 'visible',
+          }}
+
+          onClick={() => setPage(page - 1)}
+        >
+              Prev
+        </button>
+        <button
+          className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
+          id='nextPage'
+          style={{
+            visibility: levelsInFront === 0 ? 'hidden' : 'visible', // TODO: we don't return the total results... so we don't know if there are more pages if it is exactly 5 left
+          }}
+
+          onClick={() => setPage(page + 1)}
+        >
+              Next
+        </button>
+      </div>
+
     </Page>
   </>);
 }
