@@ -52,7 +52,7 @@ export default function ThinkyHomePage() {
       leastMoves: 8,
       theme: Theme.Modern,
     },
-    [GameId.SOKOBAN]: {
+    [GameId.SOKOPATH]: {
       data: '0000\n0130\n0220\n0003',
       instructions: 'ddddrrudllurrlluurrrddXrrdduullddrdruX'.split('').map(x => strMap[x]),
       leastMoves: 14,
@@ -64,11 +64,11 @@ export default function ThinkyHomePage() {
   return (
     <>
       <NextSeo
-        title={'Thinky - Play Thinking Puzzle Games Like Sokoban and Pathology'}
+        title={'Thinky - Play Thinky Puzzle Games Like Pathology and Sokopath'}
         description='Thinky is a platform dedicated to high-quality puzzle games. Solve and optimize puzzles, search thousands of levels, or create your own for everyone to play!'
         canonical={'https://thinky.gg'}
         openGraph={{
-          title: 'Thinky - Play Thinking Puzzle Games Like Sokoban and Pathology',
+          title: 'Thinky - Play Thinky Puzzle Games Like Pathology and Sokopath',
           description: 'Thinky is a platform dedicated to high-quality puzzle games. Solve and optimize puzzles, search thousands of levels, or create your own for everyone to play!',
           type: 'website',
           url: 'https://thinky.gg',

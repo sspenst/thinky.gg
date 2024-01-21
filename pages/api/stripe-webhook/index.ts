@@ -89,8 +89,8 @@ function getGameIdFromProductName(productName: string): GameId {
 
   if (productName.match(/pathology/i)) {
     gameId = GameId.PATHOLOGY;
-  } else if (productName.match(/sokoban/i)) {
-    gameId = GameId.SOKOBAN;
+  } else if (productName.match(/soko/i)) {
+    gameId = GameId.SOKOPATH;
   }
 
   return gameId;

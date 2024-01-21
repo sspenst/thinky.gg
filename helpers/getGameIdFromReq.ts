@@ -6,7 +6,11 @@ import { DEFAULT_GAME_ID, GameId } from '../constants/GameId';
 export function getGameIdFromReq(req?: NextApiRequest | IncomingMessage): GameId {
   // need to use referrer because we're inside a docker container
   const field = req?.headers?.host;
-  const subdomain = field?.split('.')[0];
+  let subdomain = field?.split('.')[0];
+
+  if (subdomain === 'sokopath') {
+    subdomain = 'sokoban';
+  }
 
   const gameId = Games[subdomain as GameId]?.id || DEFAULT_GAME_ID;
 

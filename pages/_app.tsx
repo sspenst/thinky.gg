@@ -128,7 +128,12 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
 
   useEffect(() => {
     // get selected game from the subdomain
-    const subdomain = window.location.hostname.split('.')[0];
+    let subdomain = window.location.hostname.split('.')[0];
+
+    if (subdomain === 'sokopath') {
+      subdomain = 'sokoban';
+    }
+
     const game: Game = Games[subdomain as GameId] || initGame;
 
     if (game !== undefined) {
