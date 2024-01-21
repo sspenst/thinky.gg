@@ -487,13 +487,7 @@ export default function ProfilePage({
     [ProfileTab.Multiplayer]: <ProfileMultiplayer user={user} />,
     [ProfileTab.Collections]: (
       <div className='flex flex-col gap-2 justify-center'>
-        <SelectFilter
-          filter={showCollectionFilter}
-          onFilterClick={onFilterCollectionClick}
-          placeholder={`Search ${collectionsAsOptions.length} collection${collectionsAsOptions.length !== 1 ? 's' : ''}...`}
-          searchText={collectionFilterText}
-          setSearchText={setCollectionFilterText}
-        />
+
         {reqUser?._id === user._id &&
           <div className='text-center'>
             <button
