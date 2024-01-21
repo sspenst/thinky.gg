@@ -15,11 +15,13 @@ export default async function queueDiscordWebhook(id: DiscordChannel, content: s
     [DiscordChannel.General]: process.env.DISCORD_WEBHOOK_TOKEN_GENERAL,
     [DiscordChannel.NewUsers]: process.env.DISCORD_WEBHOOK_TOKEN_NEW_USERS,
     [DiscordChannel.Pathology]: process.env.DISCORD_WEBHOOK_TOKEN_PATHOLOGY,
+    [DiscordChannel.PathologyLevels]: process.env.DISCORD_WEBHOOK_TOKEN_PATHOLOGY_LEVELS,
     [DiscordChannel.PathologyMultiplayer]: process.env.DISCORD_WEBHOOK_TOKEN_PATHOLOGY_MULTIPLAYER,
     [DiscordChannel.PathologyNotifs]: process.env.DISCORD_WEBHOOK_TOKEN_PATHOLOGY_NOTIFS,
-    [DiscordChannel.Sokopath]: process.env.DISCORD_WEBHOOK_TOKEN_SOKOBAN,
-    [DiscordChannel.SokopathMultiplayer]: process.env.DISCORD_WEBHOOK_TOKEN_SOKOBAN_MULTIPLAYER,
-    [DiscordChannel.SokopathNotifs]: process.env.DISCORD_WEBHOOK_TOKEN_SOKOBAN_NOTIFS,
+    [DiscordChannel.Sokopath]: process.env.DISCORD_WEBHOOK_TOKEN_SOKOPATH,
+    [DiscordChannel.SokopathLevels]: process.env.DISCORD_WEBHOOK_TOKEN_SOKOPATH_LEVELS,
+    [DiscordChannel.SokopathMultiplayer]: process.env.DISCORD_WEBHOOK_TOKEN_SOKOPATH_MULTIPLAYER,
+    [DiscordChannel.SokopathNotifs]: process.env.DISCORD_WEBHOOK_TOKEN_SOKOPATH_NOTIFS,
   } as Record<string, string | undefined>;
 
   const token = tokenToIdMap[id as string];

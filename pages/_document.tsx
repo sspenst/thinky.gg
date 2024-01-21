@@ -23,7 +23,7 @@ if (process.env.NO_LOGS !== 'true') {
 
   const outputs = [
     [ true, 'NODE_ENV', (v: string) => (v) ],
-    [ false, 'DISCORD_WEBHOOK_TOKEN_PATHOLOGY', (v: string) => (v.length > 0) ],
+    [ false, 'DISCORD_WEBHOOK_TOKEN_PATHOLOGY_LEVELS', (v: string) => (v.length > 0) ],
     [ false, 'DISCORD_WEBHOOK_TOKEN_PATHOLOGY_NOTIFS', (v: string) => (v.length > 0) ],
     [ true, 'JWT_SECRET', (v: string) => (v.length > 0) ],
     [ true, 'REVALIDATE_SECRET', (v: string) => (v.length > 0)],

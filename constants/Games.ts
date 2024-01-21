@@ -53,12 +53,12 @@ export const Games: Record<GameId, Game> = {
     seoDescription: 'The goal of Pathology is simple. Get to the exit in the least number of moves. Sounds easy right? Yet, this sokoban style game is one of the most mind-bending puzzle games you will find.',
     seoTitle: 'Pathology - The Shortest Path Puzzle Game',
     shortDescription: 'Get to the exit in the least number of moves',
-    stripeGiftPriceIdMonthly: process.env.STRIPE_GIFT_MONTHLY_PRICE_ID,
-    stripeGiftPriceIdYearly: process.env.STRIPE_GIFT_YEARLY_PRICE_ID,
-    stripePriceIdMonthly: process.env.STRIPE_MONTHLY_PRICE_ID_PATHOLOGY,
-    stripePriceIdYearly: process.env.STRIPE_YEARLY_PRICE_ID_PATHOLOGY,
-    stripePaymentLinkMonthly: process.env.STRIPE_PAYMENT_LINK,
-    stripePaymentLinkYearly: process.env.STRIPE_PAYMENT_LINK_YEARLY,
+    stripePaymentLinkMonthly: process.env.STRIPE_PATHOLOGY_PAYMENT_LINK_MONTHLY,
+    stripePaymentLinkYearly: process.env.STRIPE_PATHOLOGY_PAYMENT_LINK_YEARLY,
+    stripePriceIdGiftMonthly: process.env.STRIPE_PATHOLOGY_PRICE_ID_GIFT_MONTHLY,
+    stripePriceIdGiftYearly: process.env.STRIPE_PATHOLOGY_PRICE_ID_GIFT_YEARLY,
+    stripePriceIdMonthly: process.env.STRIPE_PATHOLOGY_PRICE_ID_MONTHLY,
+    stripePriceIdYearly: process.env.STRIPE_PATHOLOGY_PRICE_ID_YEARLY,
     subdomain: 'pathology',
     subtitle: 'Find the way',
     type: GameType.SHORTEST_PATH,
@@ -85,12 +85,12 @@ export const Games: Record<GameId, Game> = {
     seoDescription: 'The goal of the puzzle game Sokopath is simple. Push the boxes onto the goals. Sounds easy right? Yet, this sokoban style game is one of the most mind-bending puzzle games you will find.',
     seoTitle: 'Sokopath - Push the Boxes Puzzle Game',
     shortDescription: 'Push the boxes onto the goals',
-    stripeGiftPriceIdMonthly: process.env.STRIPE_GIFT_MONTHLY_PRICE_ID_SOKOBAN,
-    stripeGiftPriceIdYearly: process.env.STRIPE_GIFT_YEARLY_PRICE_ID_SOKOBAN,
-    stripePriceIdMonthly: process.env.STRIPE_MONTHLY_PRICE_ID_SOKOBAN,
-    stripePriceIdYearly: process.env.STRIPE_YEARLY_PRICE_ID_SOKOBAN,
-    stripePaymentLinkMonthly: process.env.STRIPE_PAYMENT_LINK_SOKOBAN,
-    stripePaymentLinkYearly: process.env.STRIPE_PAYMENT_LINK_YEARLY_SOKOBAN,
+    stripePaymentLinkMonthly: process.env.STRIPE_SOKOPATH_PAYMENT_LINK_MONTHLY,
+    stripePaymentLinkYearly: process.env.STRIPE_SOKOPATH_PAYMENT_LINK_YEARLY,
+    stripePriceIdGiftMonthly: process.env.STRIPE_SOKOPATH_PRICE_ID_GIFT_MONTHLY,
+    stripePriceIdGiftYearly: process.env.STRIPE_SOKOPATH_PRICE_ID_GIFT_YEARLY,
+    stripePriceIdMonthly: process.env.STRIPE_SOKOPATH_PRICE_ID_MONTHLY,
+    stripePriceIdYearly: process.env.STRIPE_SOKOPATH_PRICE_ID_YEARLY,
     subdomain: 'sokopath',
     subtitle: 'Push the boxes',
     type: GameType.COMPLETE_AND_SHORTEST,
@@ -134,10 +134,10 @@ export interface Game {
   shortDescription?: string;
   stripePaymentLinkMonthly?: string;
   stripePaymentLinkYearly?: string;
+  stripePriceIdGiftMonthly?: string;
+  stripePriceIdGiftYearly?: string;
   stripePriceIdMonthly?: string;
   stripePriceIdYearly?: string;
-  stripeGiftPriceIdMonthly?: string;
-  stripeGiftPriceIdYearly?: string;
   subdomain: string | undefined;
   subtitle: string;
   type: GameType;
