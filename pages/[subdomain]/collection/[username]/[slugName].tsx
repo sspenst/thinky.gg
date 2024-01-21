@@ -58,7 +58,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
   const gameId = getGameIdFromReq(context.req);
-  const { search, page, statFilter } = context.query;
+
+  const queryParams = context.query || { search: '', page: 0, statFilter: StatFilter.All };
+  const { search, page, statFilter } = queryParams;
 
   const collection = await getCollection({
     matchQuery: {
@@ -165,7 +167,7 @@ export default function CollectionPage({ collection, numLevels }: CollectionProp
       const statFilter = url.searchParams.get('statFilter');
 
       if (statFilter) {
-        setStatFilter(statFilter);
+        setStatFilter(statFilter as StatFilter);
       }
 
       return;
