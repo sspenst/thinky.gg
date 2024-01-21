@@ -45,8 +45,11 @@ const whiteList = {
   'settings': 1,
   'signup': 1,
 } as Record<string, number>;
+
 const validSubdomain = Object.values(Games).reduce((acc, game) => {
-  acc[game.id as string] = true;
+  if (game.subdomain) {
+    acc[game.subdomain] = true;
+  }
 
   return acc;
 }, {} as Record<string, boolean>) as Record<string, boolean>;
@@ -62,6 +65,12 @@ export async function middleware(req: NextRequest) {
   const host = req.headers.get('host');
   const subdomain = getValidSubdomain(host);
   const folder = url.pathname.split('/')[1];
+
+  // redirect to sokopath.<host>
+  // TODO: remove this after some time...
+  if (subdomain === 'sokoban') {
+    return NextResponse.redirect(`${url.protocol}//sokopath.${url.host}${url.pathname}`);
+  }
 
   if (folder === 'api' || (subdomain !== null && !validSubdomain[subdomain])) {
     return;
