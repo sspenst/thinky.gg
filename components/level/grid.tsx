@@ -143,9 +143,11 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
       onClick={(e: React.MouseEvent<HTMLDivElement>) => {
         const x = Math.floor(e.nativeEvent.offsetX / tileSize);
         const y = Math.floor(e.nativeEvent.offsetY / tileSize);
+        const rightClick = e.button === 2;
 
-        onCellClick && onCellClick(x, y, false);
+        onCellClick && onCellClick(x, y, rightClick);
       }}
+
       className='absolute overlay-grid'
       style={{
         backgroundColor: 'var(--level-grid)',
