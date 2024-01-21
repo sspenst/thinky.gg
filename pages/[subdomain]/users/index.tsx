@@ -473,8 +473,6 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
     },
   ] as TableColumn<UserWithStats>[];
 
-  if (searchQuery === undefined) return (<>Loading...</>);
-
   return (<>
     <NextSeo
       title={'Users - ' + game.displayName}

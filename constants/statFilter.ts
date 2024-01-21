@@ -3,7 +3,8 @@ enum StatFilter {
   HideSolved = 'hideSolved',
   HideCompleted = 'hideCompleted',
   Solved = 'solved',
-  InProgress = 'inProgress',
+  Completed = 'completed',
+  Unoptimized = 'unoptimized',
   Unattempted = 'unattempted',
 }
 

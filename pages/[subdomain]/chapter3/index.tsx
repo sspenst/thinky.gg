@@ -8,7 +8,7 @@ import LinkInfo from '../../../components/formatted/linkInfo';
 import Page from '../../../components/page/page';
 import getCampaignProps, { CampaignProps } from '../../../helpers/getCampaignProps';
 import { getUserFromToken } from '../../../lib/withAuth';
-import { UserModel } from '../../../models/mongoose';
+import { UserConfigModel } from '../../../models/mongoose';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
@@ -57,7 +57,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       };
     }
 
-    await UserModel.updateOne({ _id: reqUser._id }, { $set: { chapterUnlocked: 3 } });
+    await UserConfigModel.updateOne({ userId: reqUser._id, gameId: gameId }, { $set: { chapterUnlocked: 3 } });
     // TODO: unlock achievement here for completing chapter 2
   }
 
@@ -77,7 +77,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     // TODO: unlock achievement here for completing chapter 2
 
     if (isChapter3Complete) {
-      await UserModel.updateOne({ _id: reqUser._id }, { $set: { chapterUnlocked: 4 } });
+      await UserConfigModel.updateOne({ userId: reqUser._id, gameId: gameId }, { $set: { chapterUnlocked: 4 } });
     }
   }
 
@@ -101,7 +101,7 @@ export default function Chapter3Page({ enrichedCollections, solvedLevels, totalL
               <>browsing the <Link className='font-bold text-blue-500 hover:text-blue-400 transition' href='/search' passHref>Search</Link> page</> :
               <>playing <Link className='font-bold text-blue-500 hover:text-blue-400 transition' href='/ranked' passHref>Ranked 🏅</Link> levels</>
             } next, or try a campaign from the <Link className='font-bold text-blue-500 hover:text-blue-400 transition' href='/campaigns' passHref>Campaigns</Link> page.</div>
-            <div>You could also try <Link className='font-bold text-blue-500 hover:text-blue-400 transition' href='/new' passHref>creating a level of your own</Link>.</div>
+            <div>You could also try <Link className='font-bold text-blue-500 hover:text-blue-400 transition' href='/create' passHref>creating a level of your own</Link>.</div>
             <div>We hope you&apos;re enjoying Pathology!</div>
           </div>
         }

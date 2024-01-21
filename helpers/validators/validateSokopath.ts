@@ -4,7 +4,7 @@ import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import Level from '../../models/db/level';
 import Position from '../../models/position';
 
-export default function validateSokobanSolution(directions: Direction[], level: Level) {
+export default function validateSokopathSolution(directions: Direction[], level: Level) {
   const data = level.data.replace(/\n/g, '').split('') as TileType[];
   const endIndices = [];
   const posIndex = data.indexOf(TileType.Player);
@@ -76,7 +76,7 @@ export default function validateSokobanSolution(directions: Direction[], level: 
   });
 }
 
-export function validateSokobanLevel(data: string): {valid: boolean, reasons: string[]} {
+export function validateSokopathLevel(data: string): {valid: boolean, reasons: string[]} {
   // Must have at least ONE start and at least ONE end (or blockonend) and at least the same number of blocks as ends
   const dataSplit = data.split('\n');
   const height = dataSplit.length;

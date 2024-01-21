@@ -99,8 +99,8 @@ export default withAuth({
     const gameId = req.gameId;
     const game = getGameFromId(gameId);
     const paymentPriceIdTable = {
-      [GiftType.Monthly]: game.stripeGiftPriceIdMonthly,
-      [GiftType.Yearly]: game.stripeGiftPriceIdYearly,
+      [GiftType.Monthly]: game.stripePriceIdGiftMonthly,
+      [GiftType.Yearly]: game.stripePriceIdGiftYearly,
     };
 
     try {

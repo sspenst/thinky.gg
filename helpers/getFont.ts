@@ -11,7 +11,7 @@ export default function getFontFromGameId(gameId: GameId) {
   // switch (gameId) {
   // case GameId.PATHOLOGY:
   //   return rubik.className;
-  // case GameId.SOKOBAN:
+  // case GameId.SOKOPATH:
   //   return nunitoSans.className;
   // default:
   //   return onest.className;

@@ -1,3 +1,4 @@
+import { GameType } from '@root/constants/Games';
 import { UserAndSum } from '@root/contexts/levelContext';
 import React, { useContext } from 'react';
 import DataTable from 'react-data-table-component-sspenst';
@@ -10,15 +11,17 @@ import FormattedUser from '../formatted/formattedUser';
 
 export default function ProfileInsightsMostSolves({ user }: {user: User}) {
   const { proStatsUser } = useProStatsUser(user, ProStatsUserType.MostSolvesForUserLevels);
-  const { user: reqUser } = useContext(AppContext);
+  const { user: reqUser, game } = useContext(AppContext);
 
   if (!proStatsUser || !proStatsUser[ProStatsUserType.MostSolvesForUserLevels]) {
     return <span>Loading...</span>;
   }
 
+  const difficultyType = game.type === GameType.SHORTEST_PATH ? 'Solve' : 'Completion';
+
   return (
     <div className='flex flex-col gap-1'>
-      <h2 className='text-xl font-bold break-words max-w-full'>Most Solves of {user.name}&apos;s Levels</h2>
+      <h2 className='text-xl font-bold break-words max-w-full'>Most {difficultyType}s of {user.name}&apos;s Levels</h2>
       <div className='w-full max-w-md'>
         <DataTable
           columns={[

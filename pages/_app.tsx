@@ -87,7 +87,7 @@ MyApp.getInitialProps = async ({ ctx }: { ctx: NextPageContext }) => {
 export default function MyApp({ Component, pageProps, userAgent, initGame }: AppProps & { userAgent: string, initGame: Game }) {
   const deviceInfo = useDeviceCheck(userAgent);
   const forceUpdate = useForceUpdate();
-  const [host, setHost] = useState<string>();
+  const [host, setHost] = useState<string>('thinky.gg');
   const { isLoading, mutateUser, user } = useUser();
   const [multiplayerSocket, setMultiplayerSocket] = useState<MultiplayerSocket>({
     connectedPlayers: [],
@@ -128,10 +128,17 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
 
   useEffect(() => {
     // get selected game from the subdomain
-    const subdomain = window.location.hostname.split('.')[0];
+    let subdomain = window.location.hostname.split('.')[0];
+
+    if (subdomain === 'sokopath') {
+      subdomain = 'sokoban';
+    }
+
     const game: Game = Games[subdomain as GameId] || initGame;
 
-    setSelectedGame(game);
+    if (game !== undefined) {
+      setSelectedGame(game);
+    }
   }, [initGame]);
 
   useEffect(() => {

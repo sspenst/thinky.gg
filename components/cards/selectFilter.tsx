@@ -41,8 +41,8 @@ export default function SelectFilter({
             <FilterButton
               element='In Progress'
               last={true} onClick={onFilterClick}
-              selected={filter === StatFilter.InProgress}
-              value={StatFilter.InProgress}
+              selected={filter === StatFilter.Completed}
+              value={StatFilter.Completed}
             />
           </div>
         }

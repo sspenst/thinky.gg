@@ -134,7 +134,7 @@ export default withAuth({ POST: {
       await LevelModel.insertMany([levelClone], { session: session });
 
       const game = getGameFromId(level.gameId);
-      const discordChannel = game.id === GameId.SOKOBAN ? DiscordChannel.Sokoban : DiscordChannel.Pathology;
+      const discordChannel = game.id === GameId.SOKOPATH ? DiscordChannel.SokopathLevels : DiscordChannel.PathologyLevels;
 
       // need to wait for the level to get inserted before we update the stats
       await Promise.all([

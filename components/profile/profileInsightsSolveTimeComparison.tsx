@@ -1,7 +1,9 @@
+import { GameType } from '@root/constants/Games';
+import { AppContext } from '@root/contexts/appContext';
 import useProStatsUser, { ProStatsUserType } from '@root/hooks/useProStatsUser';
 import moment from 'moment';
 import { useRouter } from 'next/router';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Brush, ReferenceArea, ReferenceLine, ResponsiveContainer, Scatter, ScatterChart, Symbols, Tooltip, XAxis, YAxis } from 'recharts';
 import User from '../../models/db/user';
 import { difficultyList, getDifficultyColor, getDifficultyFromEstimate } from '../formatted/formattedDifficulty';
@@ -33,6 +35,7 @@ export default function ProfileInsightsSolveTimeComparison({ user }: { user: Use
   const router = useRouter();
   const [hideAnomalies, setHideAnomalies] = useState(false);
   const [percentile, setPercentile] = useState(0.01);
+  const { game } = useContext(AppContext);
 
   if (!difficultyComparisonData || !difficultyComparisonData[ProStatsUserType.DifficultyLevelsComparisons]) {
     return <span>Loading...</span>;
@@ -69,11 +72,13 @@ export default function ProfileInsightsSolveTimeComparison({ user }: { user: Use
     max = difficultyList[difficultiesToDisplay + 1]?.value || difficultyList[difficultyList.length - 1].value;
   }
 
+  const difficutlyType = game.type === GameType.SHORTEST_PATH ? 'Solve' : 'Completion';
+
   return (<>
     <div className='flex flex-col gap-2 max-w-full'>
-      <h2 className='text-xl font-bold'>Solve Time Comparisons</h2>
+      <h2 className='text-xl font-bold'>{difficutlyType} Time Comparisons</h2>
       <p className='text-sm break-words'>
-        This chart shows solve time vs average solve time for the levels {user.name} has solved in the last 6 months (max 500).
+        This chart shows solve time vs average {difficutlyType.toLowerCase()} time for the levels {user.name} has solved in the last 6 months (max 500).
         <br />
         Green indicates it took {user.name} less time to solve the level than the average user.
       </p>

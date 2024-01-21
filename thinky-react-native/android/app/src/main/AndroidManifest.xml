@@ -39,8 +39,6 @@
         <data android:scheme="https" android:host="pathology.gg" android:pathPattern=".*"/>
         <data android:scheme="https" android:host="thinky.gg" android:pathPattern=".*"/>
         <data android:scheme="https" android:host="*.thinky.gg" android:pathPattern=".*"/>
-        <data android:scheme="https" android:host="sokoban.thinky.gg" android:pathPattern=".*"/>
-        <data android:scheme="https" android:host="pathology.thinky.gg" android:pathPattern=".*"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <category android:name="android.intent.category.DEFAULT"/>
       </intent-filter>

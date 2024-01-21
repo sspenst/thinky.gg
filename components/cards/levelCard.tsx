@@ -74,7 +74,7 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
   const color = getLevelCompleteColor(level);
 
   return (
-    <div className='pb-3 rounded-lg flex flex-col gap-2 w-64 max-w-full h-fit hover-bg-2 transition p-1 text-left'>
+    <section className='pb-3 rounded-lg flex flex-col gap-2 w-64 max-w-full h-fit hover-bg-2 transition p-1 text-left'>
       <Link
         className='border-2 border-color-2 background rounded-md bg-cover bg-center w-full relative overflow-hidden'
         href={href ?? `/level/${level.slug}`}
@@ -109,7 +109,7 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
               <ProfileAvatar user={user} />
             </Link>
           }
-          <div className={classNames('flex flex-col gap-0.5 overflow-hidden break-words', { 'pl-2': level.isDraft })}>
+          <h2 className={classNames('flex flex-col gap-0.5 overflow-hidden break-words', { 'pl-2': level.isDraft })}>
             <Link
               className='font-bold overflow-hidden w-fit'
               href={href ?? `/level/${level.slug}`}
@@ -137,7 +137,7 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
                 <FormattedDifficulty id={id} level={level} />
               </div>
             }
-          </div>
+          </h2>
         </div>
         {/* prevent clicking parent level link */}
         <div className='flex flex-col items-center gap-2'>
@@ -157,6 +157,6 @@ export default function LevelCard({ href, id, level, onClick }: LevelCardProps) 
           </>}
         </div>
       </div>
-    </div>
+    </section>
   );
 }

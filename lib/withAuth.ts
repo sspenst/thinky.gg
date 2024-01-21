@@ -63,29 +63,30 @@ export async function getUserFromToken(
   };
 
   const gameId = getGameIdFromReq(req);
-  const [user, config] = await Promise.all([UserModel.findByIdAndUpdate(
-    userId,
-    {
+  const [user, userConfig] = await Promise.all([
+    UserModel.findByIdAndUpdate(
+      userId,
+      {
       // Update last visited only if dontUpdateLastSeen is false
-      ...(dontUpdateLastSeen ? {} : {
-        $set: {
-          last_visited_at: last_visited_ts,
-          lastGame: gameId
-        },
-      }),
-      ...ipData,
-    },
-    { new: true, projection: '+email +bio +emailConfirmed' },
-  ).lean<User>(),
-  UserConfigModel.findOne({ userId: userId, gameId: gameId }, { gameId: 1, calcRankedSolves: 1, calcLevelsCreatedCount: 1, calcLevelsSolveCount: 1, chapterUnlocked: 1, roles: 1 }).lean<UserConfig>()
+        ...(dontUpdateLastSeen ? {} : {
+          $set: {
+            last_visited_at: last_visited_ts,
+            lastGame: gameId
+          },
+        }),
+        ...ipData,
+      },
+      { new: true, projection: '+email +bio +emailConfirmed' },
+    ).lean<User>(),
+    UserConfigModel.findOne({ userId: userId, gameId: gameId }, { gameId: 1, calcRankedSolves: 1, calcLevelsCreatedCount: 1, calcLevelsSolveCount: 1, chapterUnlocked: 1, roles: 1 }).lean<UserConfig>(),
   ]);
 
   if (user && !isLocal()) {
     newrelic?.addCustomAttribute && newrelic.addCustomAttribute('userName', user.name);
   }
 
-  if (user && config) {
-    user.config = config as UserConfig;
+  if (user && userConfig) {
+    user.config = userConfig as UserConfig;
   }
 
   return user;

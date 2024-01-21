@@ -52,7 +52,7 @@ export default withAuth({ POST: {
       } }, { new: true, session: session });
 
       const game = getGameFromId(level.gameId);
-      const discordChannel = game.id === GameId.SOKOBAN ? DiscordChannel.Sokoban : DiscordChannel.Pathology;
+      const discordChannel = game.id === GameId.SOKOPATH ? DiscordChannel.SokopathLevels : DiscordChannel.PathologyLevels;
 
       await Promise.all([
         queueCalcCreatorCounts(level.gameId, new Types.ObjectId(TestId.ARCHIVE), { session: session }),

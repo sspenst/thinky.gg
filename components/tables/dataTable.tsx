@@ -144,7 +144,7 @@ export default function DataTable<T>({
             }}
           >
             <div
-              className={classNames('flex font-semibold text-sm truncate', { 'cursor-pointer hover:opacity-50': column.sortable })}
+              className={classNames('flex items-center font-semibold text-sm truncate', { 'cursor-pointer hover:opacity-50': column.sortable })}
               onClick={() => column.sortable ? onSort(column.id) : undefined}
             >
               <div>{column.name}</div>

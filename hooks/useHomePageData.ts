@@ -2,6 +2,7 @@ import { HomepageDataProps } from '../pages/[subdomain]';
 import useSWRHelper from './useSWRHelper';
 
 export enum HomepageDataType {
+  LastLevelPlayed = 'lastLevelPlayed',
   LatestLevels = 'latestLevels',
   LatestReviews = 'latestReviews',
   LevelOfDay = 'levelOfDay',

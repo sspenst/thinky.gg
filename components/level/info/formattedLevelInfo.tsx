@@ -3,6 +3,9 @@ import FormattedDate from '@root/components/formatted/formattedDate';
 import Solved from '@root/components/level/info/solved';
 import FormattedLevelReviews from '@root/components/level/reviews/formattedLevelReviews';
 import StyledTooltip from '@root/components/page/styledTooltip';
+import { GameType } from '@root/constants/Games';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
+import isPro from '@root/helpers/isPro';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useContext, useState } from 'react';
@@ -71,7 +74,7 @@ interface FormattedLevelInfoProps {
 }
 
 export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
-  const { userConfig } = useContext(AppContext);
+  const { user, userConfig } = useContext(AppContext);
   const stat = new SelectOptionStats(level.leastMoves, level.userMoves);
 
   function Divider() {
@@ -82,6 +85,16 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
       }} />
     );
   }
+
+  const game = getGameFromId(level.gameId);
+  const difficultyType = game.type === GameType.SHORTEST_PATH ? 'Solve' : 'Completion';
+  const otherDifficultyType = game.type === GameType.SHORTEST_PATH ? 'Completion' : 'Solve';
+  const difficultyField = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_completion_estimate' : 'calc_difficulty_estimate';
+  const otherDifficultyField = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_estimate' : 'calc_difficulty_completion_estimate';
+  const tooltipTable = {
+    'Solve': 'Completing a level optimally.',
+    'Completion': 'Completing a level.',
+  };
 
   return (<>
     <div className='flex flex-col gap-4'>
@@ -94,8 +107,22 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
             <FormattedUser id='author' size={Dimensions.AvatarSizeSmall} user={level.userId} />
             <FormattedDate ts={level.ts} />
           </div>
-          <div className='text-sm flex pt-0.5'>
-            <FormattedDifficulty id='formatted-level-info' level={level} />
+          <div className='text-sm flex pt-0.5 gap-2 items-center'>
+            <FormattedDifficulty id='formatted-level-info' level={level} difficultyField={difficultyField} />
+            <StyledTooltip id='difficulty-tooltip' />
+            <span data-tooltip-id='difficulty-tooltip' data-tooltip-content={tooltipTable[difficultyType]} className='text-xs italic'>{difficultyType} Difficulty</span>
+          </div>
+          <div className='text-sm flex pt-0.5 gap-2 items-center'>
+            {isPro(user) ?
+              <FormattedDifficulty id='formatted-level-info-other' level={level} difficultyField={otherDifficultyField} />
+              :
+              <Link className='flex gap-2 italic' href={'/settings/pro'}>
+                <span>Unlock Pro</span>
+                <Image alt='pro' src='/pro.svg' width='16' height='16' />
+              </Link>
+            }
+            <span data-tooltip-id='difficulty-tooltip-other' data-tooltip-content={tooltipTable[otherDifficultyType]} className='text-xs italic'>{otherDifficultyType} Difficulty</span>
+            <StyledTooltip id='difficulty-tooltip-other' />
           </div>
         </div>
         <div className='flex flex-col items-center gap-3 mt-1'>
