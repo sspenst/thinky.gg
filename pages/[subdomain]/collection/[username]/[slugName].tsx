@@ -160,6 +160,13 @@ export default function CollectionPage({ collection, numLevels }: CollectionProp
   useEffect(() => {
     if (firstLoad.current) {
       firstLoad.current = false;
+      // set stat filter from url
+      const url = new URL(window.location.href);
+      const statFilter = url.searchParams.get('statFilter');
+
+      if (statFilter) {
+        setStatFilter(statFilter);
+      }
 
       return;
     }
