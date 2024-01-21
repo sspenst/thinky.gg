@@ -67,7 +67,6 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
       resizeObserver.unobserve(el);
     };
   }, [gridId, height, width]);
-
   const tiles = [];
   const blocks: { [id: number]: JSX.Element } = {};
 
@@ -141,13 +140,20 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
 
   const solidBg = (
     <div
+      onClick={(e: React.MouseEvent<HTMLDivElement>) => {
+        const x = Math.floor(e.nativeEvent.offsetX / tileSize);
+        const y = Math.floor(e.nativeEvent.offsetY / tileSize);
+
+        onCellClick && onCellClick(x, y, false);
+      }}
       className='absolute overlay-grid'
       style={{
         backgroundColor: 'var(--level-grid)',
         backgroundSize: `${tileSize}px ${tileSize}px`,
+        backgroundPosition: `${-borderWidth}px ${-borderWidth}px`,
         backgroundImage: `
-          linear-gradient(to right, black ${borderWidth }px, transparent ${borderWidth }px),
-          linear-gradient(to bottom, black ${borderWidth}px, transparent ${borderWidth }px)
+          linear-gradient(to right, black ${borderWidth * 2 }px, transparent ${borderWidth * 2 }px),
+          linear-gradient(to bottom, black ${borderWidth * 2}px, transparent ${borderWidth * 2 }px)
         `,
 
         height: tileSize * height,
