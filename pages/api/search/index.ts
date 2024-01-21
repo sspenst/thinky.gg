@@ -167,6 +167,12 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
     searchObj['_id'] = { $nin: excludeLevelIds.map((id) => new Types.ObjectId(id)) };
   }
 
+  if (query.includeLevelIds) {
+    const includeLevelIds = query.includeLevelIds.split(',');
+
+    searchObj['_id'] = { $in: includeLevelIds.map((id) => new Types.ObjectId(id)) };
+  }
+
   if (query.minSteps && query.maxSteps) {
     searchObj['leastMoves'] = {
       $gte: parseInt(query.minSteps),
