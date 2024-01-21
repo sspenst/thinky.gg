@@ -386,13 +386,6 @@ export default function ProfilePage({
       });
     }, 500), [showLevelFilter, tab]);
 
-  const onFilterCollectionClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const value = e.currentTarget.value as StatFilter;
-
-    setShowCollectionFilter(showCollectionFilter === value ? StatFilter.All : value);
-    setPage(1);
-  };
-
   const onFilterLevelClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     const value = e.currentTarget.value as StatFilter;
 
