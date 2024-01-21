@@ -69,7 +69,10 @@ export async function middleware(req: NextRequest) {
   // redirect to sokopath.<host>
   // TODO: remove this after some time...
   if (subdomain === 'sokoban') {
-    return NextResponse.redirect(`${url.protocol}//sokopath.${url.host}${url.pathname}`);
+    // NB: need to do this because url.host always returns localhost:3000 (even in prod)
+    const hostSuffix = host?.split('.').slice(1).join('.');
+
+    return NextResponse.redirect(`${url.protocol}//sokopath.${hostSuffix}${url.pathname}`);
   }
 
   if (folder === 'api' || (subdomain !== null && !validSubdomain[subdomain])) {
