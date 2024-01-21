@@ -45,8 +45,11 @@ const whiteList = {
   'settings': 1,
   'signup': 1,
 } as Record<string, number>;
+
 const validSubdomain = Object.values(Games).reduce((acc, game) => {
-  acc[game.id as string] = true;
+  if (game.subdomain) {
+    acc[game.subdomain] = true;
+  }
 
   return acc;
 }, {} as Record<string, boolean>) as Record<string, boolean>;
@@ -63,8 +66,24 @@ export async function middleware(req: NextRequest) {
   const subdomain = getValidSubdomain(host);
   const folder = url.pathname.split('/')[1];
 
+  // redirect to sokopath.<host>
+  // TODO: remove this after some time...
+  if (subdomain === 'sokoban') {
+    // NB: need to do this because url.host always returns localhost:3000 (even in prod)
+    const hostSuffix = host?.split('.').slice(1).join('.');
+
+    return NextResponse.redirect(`${url.protocol}//sokopath.${hostSuffix}${url.pathname}`);
+  }
+
   if (folder === 'api' || (subdomain !== null && !validSubdomain[subdomain])) {
     return;
+  }
+
+  if (folder === 'home') {
+    // redirect to /
+    url.pathname = '/';
+
+    return NextResponse.redirect(url);
   }
 
   if (subdomain || whiteList[folder]) {

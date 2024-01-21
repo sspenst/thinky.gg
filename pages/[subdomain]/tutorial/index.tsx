@@ -1,7 +1,7 @@
 /* istanbul ignore file */
 
 import TutorialPathology from '@root/components/home/tutorialPathology';
-import TutorialSokoban from '@root/components/home/tutorialSokoban';
+import TutorialSokopath from '@root/components/home/tutorialSokopath';
 import { GameId } from '@root/constants/GameId';
 import { Games } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
@@ -41,6 +41,6 @@ export default function TutorialPage() {
         url: '/tutorial',
       }}
     />
-    {game.id === GameId.SOKOBAN ? <TutorialSokoban /> : <TutorialPathology />}
+    {game.id === GameId.SOKOPATH ? <TutorialSokopath /> : <TutorialPathology />}
   </>);
 }

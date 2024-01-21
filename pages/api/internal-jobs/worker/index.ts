@@ -27,13 +27,14 @@ import { sendPushNotification } from './sendPushNotification';
 
 const MAX_PROCESSING_ATTEMPTS = 3;
 
-export async function queue(dedupeKey: string, type: QueueMessageType, message: string, options?: QueryOptions) {
+export async function queue(dedupeKey: string, type: QueueMessageType, message: string, options?: QueryOptions, runAt?: Date) {
   await QueueMessageModel.updateOne<QueueMessage>({
     dedupeKey: dedupeKey,
     message: message,
     state: QueueMessageState.PENDING,
     type: type,
   }, {
+    runAt: runAt || new Date(),
     dedupeKey: dedupeKey,
     message: message,
     state: QueueMessageState.PENDING,
@@ -115,6 +116,34 @@ export async function queueFetch(url: string, options: RequestInit, dedupeKey?: 
   );
 }
 
+/**
+ *
+ * @param levelIds
+ * @param options
+ * @param spreadRunAtDuration How long to spread out the runAt times (in seconds).
+ */
+export async function bulkQueueCalcPlayAttempts(levelIds: Types.ObjectId[], options?: QueryOptions, spreadRunAtDuration: number = 0) {
+  const queueMessages = [];
+  const now = new Date();
+  const timeBetweenLevels = spreadRunAtDuration > 0 ? spreadRunAtDuration * 1000 / levelIds.length : 0;
+
+  for (const levelId of levelIds) {
+    const runAtTime: Date = new Date(now.getTime() + timeBetweenLevels * queueMessages.length);
+
+    queueMessages.push({
+      _id: new Types.ObjectId(),
+      dedupeKey: levelId.toString(),
+      message: JSON.stringify({ levelId: levelId.toString() }),
+      state: QueueMessageState.PENDING,
+      type: QueueMessageType.CALC_PLAY_ATTEMPTS,
+      runAt: runAtTime,
+    });
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await QueueMessageModel.insertMany(queueMessages, { ...options as any });
+}
+
 export async function queueRefreshIndexCalcs(levelId: Types.ObjectId, options?: QueryOptions) {
   await queue(
     levelId.toString(),
@@ -124,12 +153,13 @@ export async function queueRefreshIndexCalcs(levelId: Types.ObjectId, options?: 
   );
 }
 
-export async function queueCalcPlayAttempts(levelId: Types.ObjectId, options?: QueryOptions) {
+export async function queueCalcPlayAttempts(levelId: Types.ObjectId, options?: QueryOptions, runAt?: Date) {
   await queue(
     levelId.toString(),
     QueueMessageType.CALC_PLAY_ATTEMPTS,
     JSON.stringify({ levelId: levelId.toString() }),
     options,
+    runAt,
   );
 }
 
@@ -275,7 +305,7 @@ async function processQueueMessage(queueMessage: QueueMessage) {
 
       if (postToDiscord) {
         const game = getGameFromId(lvl.gameId);
-        const discordChannel = game.id === GameId.SOKOBAN ? DiscordChannel.Sokoban : DiscordChannel.Pathology;
+        const discordChannel = game.id === GameId.SOKOPATH ? DiscordChannel.SokopathLevels : DiscordChannel.PathologyLevels;
 
         await queueDiscordWebhook(discordChannel, `**${lvl.userId?.name}** published a new level: [${lvl.name}](${game.baseUrl}/level/${lvl.slug}?ts=${lvl.ts})`);
       }
@@ -363,6 +393,11 @@ export async function processQueueMessages() {
   try {
     await session.withTransaction(async () => {
       queueMessages = await QueueMessageModel.find({
+        // where runAt is in the past (or undefined)
+        $or: [
+          { runAt: { $lte: new Date() } },
+          { runAt: { $exists: false } }, // TODO: can delete this after a few moments after first deploy since all future messages will have runAt
+        ],
         state: QueueMessageState.PENDING,
         processingAttempts: {
           $lt: MAX_PROCESSING_ATTEMPTS

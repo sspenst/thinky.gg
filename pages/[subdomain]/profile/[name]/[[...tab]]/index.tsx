@@ -8,6 +8,7 @@ import LevelsSolvedByDifficultyList from '@root/components/profile/levelsSolvedB
 import PlayerRank from '@root/components/profile/playerRank';
 import { ProfileAchievments } from '@root/components/profile/profileAchievements';
 import ProfileMultiplayer from '@root/components/profile/profileMultiplayer';
+import { GameType } from '@root/constants/Games';
 import StatFilter from '@root/constants/statFilter';
 import { AppContext } from '@root/contexts/appContext';
 import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
@@ -24,7 +25,7 @@ import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { NextSeo } from 'next-seo';
+import { NextSeo, ProfilePageJsonLd } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import FollowButton from '../../../../../components/buttons/followButton';
@@ -406,10 +407,10 @@ export default function ProfilePage({
   };
 
   // TODO: no SWR here
-  const { data: profileDataFetched } = useSWRHelper<{levelsSolvedByDifficulty: {[key: string]: number}}>('/api/user/' + user._id + '?type=levelsSolvedByDifficulty', {}, {}, tab !== ProfileTab.Profile);
+  const { data: profileDataFetched } = useSWRHelper<{levelsSolvedByDifficulty: {[key: string]: number}}>('/api/user/' + user?._id + '?type=levelsSolvedByDifficulty', {}, {}, tab !== ProfileTab.Profile);
 
   const levelsSolvedByDifficulty = profileDataFetched?.levelsSolvedByDifficulty;
-
+  const difficultyType = game.type === GameType.COMPLETE_AND_SHORTEST ? 'Completed' : 'Solved';
   // create an array of objects with the id, trigger element (eg. button), and the content element
   const tabsContent = {
     [ProfileTab.Profile]: (user.ts ?
@@ -459,9 +460,9 @@ export default function ProfilePage({
             </div>
             {!game.isNotAGame &&
               <div>
-                <h2><span className='font-bold'>Levels Solved by Difficulty:</span></h2>
+                <h2><span className='font-bold'>Levels {difficultyType} by Difficulty:</span></h2>
                 {levelsSolvedByDifficulty ?
-                  <LevelsSolvedByDifficultyList game={game} linksToSearch={ownProfile} data={levelsSolvedByDifficulty} />
+                  <LevelsSolvedByDifficultyList levelsSolvedByDifficulty={levelsSolvedByDifficulty} linksToSearch={ownProfile} />
                   :
                   <div className='p-2'><LoadingSpinner /></div>
                 }
@@ -546,10 +547,13 @@ export default function ProfilePage({
         />
         {reqUser?._id === user._id &&
           <Link
-            className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer block w-fit'
-            href='/new'
+            className='flex items-center gap-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer block w-fit'
+            href='/create'
           >
-            New Level
+            <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='2 2 20 20' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
+              <path strokeLinecap='round' strokeLinejoin='round' d='M12 4.5v15m7.5-7.5h-15' />
+            </svg>
+            <span className='text-lg font-bold'>Create Level</span>
           </Link>
         }
         <Link
@@ -692,13 +696,17 @@ export default function ProfilePage({
     );
   }, [tab]);
 
+  const fullUrl = game.baseUrl + getProfileSlug(user) + '/' + profileTab;
+  // should not have trailing slash
+  const canonical = fullUrl.replace(/\/$/, '');
+
   return (
     <Page title={user.name}>
       <>
         <NextSeo
           title={`${user.name} - ${game.displayName}`}
           description={`${user.name}'s profile`}
-          canonical={game.baseUrl + getProfileSlug(user) + '/' + profileTab}
+          canonical={canonical}
           openGraph={{
             title: `${user.name} - ${game.displayName}}`,
             description: `${user.name}'s profile`,
@@ -714,6 +722,35 @@ export default function ProfilePage({
               },
             ],
           }}
+        />
+        <ProfilePageJsonLd
+          type='ProfilePage'
+          dateCreated={user.ts && new Date(user.ts * 1000).toISOString()}
+          mainEntity={{
+            '@type': 'Person',
+            name: user.name,
+            identifier: user._id.toString(),
+            interactionStatistic: {
+              '@type': 'InteractionCounter',
+              interactionType: 'http://schema.org/FollowAction',
+              userInteractionCount: followerCount,
+            },
+            description: user.bio,
+            image: user.avatarUpdatedAt ? `/api/avatar/${user._id}.png` : '/avatar_default.png',
+          }}
+          breadcrumb={[
+            {
+              name: game.displayName,
+              position: 1,
+              item: game.baseUrl,
+            },
+            {
+              name: user.name,
+              position: 2,
+              item: game.baseUrl + getProfileSlug(user),
+            },
+          ]}
+
         />
         {!game.isNotAGame && <div className='flex flex-wrap text-sm text-center gap-2 mt-2 justify-center items-center'>
           <Link

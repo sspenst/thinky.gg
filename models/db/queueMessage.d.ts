@@ -13,6 +13,7 @@ interface QueueMessage {
   processingAttempts: number; // how many times the message has been attempted
   processingCompletedAt: Date; // when the message was completed
   processingStartedAt: Date;
+  runAt: Date; // when the message should be run
   state: QueueMessageState;
   type: QueueMessageType; // which queue it belongs to
   updatedAt: Date; // when the message was last updated

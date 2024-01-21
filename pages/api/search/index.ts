@@ -205,6 +205,12 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
   let byStat = false;
   const game = getGameFromId(gameId);
   const difficultyEstimate = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_completion_estimate' : 'calc_difficulty_estimate';
+  const otherDifficultyEstimate = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_estimate' : 'calc_difficulty_completion_estimate';
+
+  if (!isPro(reqUser)) {
+  // strip other difficulty estimate from projection
+    delete projection[otherDifficultyEstimate];
+  }
 
   if (query.sortBy) {
     if (query.sortBy === 'userId') {
@@ -233,6 +239,17 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
         sortObj.push([difficultyEstimate, sortDirection]);
         // don't show pending levels when sorting by difficulty
         searchObj[difficultyEstimate] = { $gte: 0 };
+      }
+    } else if (query.sortBy === 'calcOtherDifficultyEstimate') {
+      if (query.difficultyFilter === 'Pending') {
+        const playAttemptCountField = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_playattempts_unique_users_count' : 'calc_playattempts_unique_users_count_excluding_author';
+
+        // sort by unique users
+        sortObj.push([playAttemptCountField, sortDirection * -1]);
+      } else {
+        sortObj.push([otherDifficultyEstimate, sortDirection]);
+        // don't show pending levels when sorting by difficulty
+        searchObj[otherDifficultyEstimate] = { $gte: 0 };
       }
     } else if (query.sortBy === 'completed' && isPro(reqUser)) {
       sortObj.push(['userMovesTs', sortDirection]);
@@ -278,16 +295,14 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
     statLookupAndMatchStage.push({
       $match: { 'stat.complete': true },
     });
-  } else if (query.statFilter === StatFilter.InProgress) {
-    if (game.type === GameType.COMPLETE_AND_SHORTEST) {
-      statLookupAndMatchStage.push({
-        $match: { 'stat.complete': { $exists: true } },
-      });
-    } else {
-      statLookupAndMatchStage.push({
-        $match: { 'stat.complete': false },
-      });
-    }
+  } else if (query.statFilter === StatFilter.Completed) {
+    statLookupAndMatchStage.push({
+      $match: { 'stat.complete': { $exists: true } },
+    });
+  } else if (query.statFilter === StatFilter.Unoptimized) {
+    statLookupAndMatchStage.push({
+      $match: { 'stat.complete': false },
+    });
   } else if (query.statFilter === StatFilter.Unattempted) {
     projection['calc_playattempts_unique_users'] = 1;
 

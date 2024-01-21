@@ -1,0 +1,15 @@
+<svg xmlns='http://www.w3.org/2000/svg' version='1.1' height='512' width='512' viewBox='-16 -16 64 64'>
+  <!-- background -->
+  <rect x='-16' y='-16' fill='rgb(38, 38, 38)' width='64' height='64' />
+  <!-- player -->
+  <rect x='1' y='1' fill='rgb(244, 114, 182)' width='14' height='14' />
+  <!-- top right block -->
+  <rect x='17' y='1' fill='rgb(183, 119, 57)' width='14' height='14' />
+  <rect x='17' y='4' fill='rgb(0, 0, 0)' width='11' height='11' />
+  <!-- bottom left block -->
+  <rect x='1' y='17' fill='rgb(183, 119, 57)' width='14' height='14' />
+  <rect x='4' y='17' fill='rgb(0, 0, 0)' width='11' height='11' />
+  <!-- box on goal -->
+  <rect x='17' y='17' fill='rgb(255, 255, 255)' width='14' height='14' />
+  <rect x='20' y='20' fill='rgb(0, 0, 0)' width='8' height='8' />
+</svg>

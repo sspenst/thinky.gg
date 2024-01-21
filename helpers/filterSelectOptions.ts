@@ -10,7 +10,7 @@ export default function filterSelectOptions(
     options = options.filter((option: SelectOption) => option.stats?.userTotal !== option.stats?.total);
   } else if (statFilter === StatFilter.Solved) {
     options = options.filter((option: SelectOption) => option.stats && option.stats?.userTotal === option.stats?.total);
-  } else if (statFilter === StatFilter.InProgress) {
+  } else if (statFilter === StatFilter.Completed) {
     options = options.filter((option: SelectOption) => option.stats?.userTotal && option.stats.userTotal !== option.stats.total);
   }
 

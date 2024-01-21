@@ -1,4 +1,4 @@
-import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import { GameId } from '@root/constants/GameId';
 import { Game, Games } from '@root/constants/Games';
 import { DeviceInfo, ScreenSize } from '@root/hooks/useDeviceCheck';
 import Collection from '@root/models/db/collection';
@@ -44,7 +44,7 @@ export const AppContext = createContext<AppContextInterface>({
     screenSize: ScreenSize.SM,
   },
   forceUpdate: () => {},
-  game: Games[DEFAULT_GAME_ID],
+  game: Games[GameId.THINKY],
   host: undefined,
   multiplayerSocket: {
     connectedPlayers: [],

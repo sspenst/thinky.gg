@@ -3,7 +3,7 @@ import TileType from '@root/constants/tileType';
 import { generatePassword } from '@root/helpers/generatePassword';
 import { parseHostname, parseSubdomain } from '@root/helpers/parseUrl';
 import { validatePathologyLevelValid } from '@root/helpers/validators/validatePathology';
-import { validateSokobanLevel } from '@root/helpers/validators/validateSokoban';
+import { validateSokopathLevel } from '@root/helpers/validators/validateSokopath';
 import TestId from '../../constants/testId';
 import statFilterOptions from '../../helpers/filterSelectOptions';
 import getDifficultyEstimate from '../../helpers/getDifficultyEstimate';
@@ -128,7 +128,7 @@ describe('helpers/*.ts', () => {
     expect(options.length).toBe(3);
     expect(options[0].text).toBe('in progress');
 
-    options = statFilterOptions(selectOptions, StatFilter.InProgress, '');
+    options = statFilterOptions(selectOptions, StatFilter.Completed, '');
 
     expect(options.length).toBe(1);
     expect(options[0].text).toBe('in progress');
@@ -190,16 +190,16 @@ describe('helpers/*.ts', () => {
     expect(validatePathologyLevelValid(gridWithOnlyOneStart).reasons).toMatchObject(['Must have at least one exit']);
     expect(validatePathologyLevelValid(gridWithOneStartAndOneEnd).valid).toBe(true);
   });
-  test('validiateSokobanLevelValid', async () => {
+  test('validiateSokopathLevelValid', async () => {
     const emptyGrid = '000';
     const gridWithOnlyOneStart = '00' + TileType.Player;
     const gridWithOneStartAndOneEnd = '00' + TileType.Player + TileType.Exit;
     const gridWithOneStartAndOneEndWithBlockOnTop = '00' + TileType.Player + TileType.BlockOnExit;
 
-    expect(validateSokobanLevel(emptyGrid).reasons).toMatchObject(['Must have exactly one player', 'Must have at least one uncovered goal']);
-    expect(validateSokobanLevel(gridWithOnlyOneStart).reasons).toMatchObject(['Must have at least one uncovered goal']);
-    expect(validateSokobanLevel(gridWithOneStartAndOneEnd).reasons).toMatchObject(['Must have as many boxes as goals']);
-    expect(validateSokobanLevel(gridWithOneStartAndOneEndWithBlockOnTop).valid).toBe(false);
+    expect(validateSokopathLevel(emptyGrid).reasons).toMatchObject(['Must have exactly one player', 'Must have at least one uncovered goal']);
+    expect(validateSokopathLevel(gridWithOnlyOneStart).reasons).toMatchObject(['Must have at least one uncovered goal']);
+    expect(validateSokopathLevel(gridWithOneStartAndOneEnd).reasons).toMatchObject(['Must have as many boxes as goals']);
+    expect(validateSokopathLevel(gridWithOneStartAndOneEndWithBlockOnTop).valid).toBe(false);
   });
 });
 
