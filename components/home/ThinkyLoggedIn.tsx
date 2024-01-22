@@ -27,11 +27,11 @@ export function ThinkyHomePageLoggedIn({ user }: {user: User}) {
       }
 
       return (
-        <Card id='campaign' title={game.displayName + ' Tutorial'}>
-          <ChapterSelectCard chapter={0}
-            href={getUrl(game.id, '/tutorial')}
-          />
-        </Card>
+
+        <ChapterSelectCard titleOverride={game.displayName + ' Tutorial'} chapter={0}
+          href={getUrl(game.id, '/tutorial')}
+        />
+
       );
     }
 
@@ -72,7 +72,7 @@ export function ThinkyHomePageLoggedIn({ user }: {user: User}) {
           return (
             <section className='flex flex-col items-center gap-6 max-w-full' key={`game-${game.id}`}>
               <a
-                className='flex gap-3 items-center justify-center w-full py-4 px-5 border border-color-3 rounded-xl hover:scale-105 transition bg-1'
+                className='flex gap-3 items-center justify-center py-4 px-5 border border-color-3 rounded-xl hover:scale-105 transition bg-1'
                 href={getUrl(game.id)}
               >
                 <GameLogo gameId={game.id} id={game.id} size={36} />
