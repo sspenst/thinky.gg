@@ -36,7 +36,14 @@ export async function getStreaks(userId: Types.ObjectId) {
           }
         }
       }
-    }, {
+    },
+    {
+      // sort by date
+      $sort: {
+        _id: -1
+      }
+    },
+    {
       // change _id to date
       $project: {
         date: '$_id',
@@ -46,26 +53,22 @@ export async function getStreaks(userId: Types.ObjectId) {
 
     }
   ]);
-
-  const streaks = [];
   let streak = 0;
-  let lastDay = null;
+  const currentDate = new Date();
 
-  for (const playAttempt of playAttemptAgg) {
-    if (lastDay === null) {
-      streak = 1;
+  for (let i = 0; i < playAttemptAgg.length; i++) {
+    const playAttempt = playAttemptAgg[i];
+    const date = new Date(playAttempt.date);
+    const dateDiff = Math.floor((currentDate.getTime() - date.getTime()) / (1000 * 3600 * 24));
+
+    // if the date diff is more than 24h, then the streak is broken
+    if (dateDiff > 1) {
+      break;
     } else {
-      const diff = new Date(lastDay).getTime() - new Date(playAttempt._id).getTime();
-
-      if (diff === 86400000) {
-        streak++;
-      } else {
-        streaks.push(streak);
-        streak = 1;
-      }
+      streak++;
     }
 
-    lastDay = playAttempt._id;
+    currentDate.setDate(date.getDate());
   }
 
   return {
@@ -83,6 +86,7 @@ export default withAuth({
 
   res.status(200).json({
     currentStreak,
-    calendar
+    calendar,
+
   });
 });
