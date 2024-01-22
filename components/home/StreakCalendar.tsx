@@ -24,19 +24,25 @@ export function StreakCalendar() {
           start: new Date(new Date().setMonth(new Date().getMonth() - 1)),
           highlight: [new Date()],
         },
+
         range: 2,
         scale: {
           color: {
-            type: 'linear',
-            scheme: 'PRGn',
-            domain: [0, 12],
+            type: 'threshold',
+            scheme: 'Purples',
+            domain: [-100, 0],
           },
         },
         domain: {
           type: 'month',
+          gutter: 10,
+          dynamicDimension: false,
         },
 
-        subDomain: { type: 'day', radius: 6 },
+        subDomain: {
+          type: 'xDay',
+          radius: 6,
+        },
         itemSelector: '#cal-heatmap',
       },
 
