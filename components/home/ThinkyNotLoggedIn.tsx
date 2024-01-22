@@ -1,8 +1,6 @@
 /* istanbul ignore file */
 import GameLogo from '@root/components/gameLogo';
 import AnimatedGrid from '@root/components/level/animatedGrid';
-import Page from '@root/components/page/page';
-import Dimensions from '@root/constants/dimensions';
 import Direction from '@root/constants/direction';
 import { GameId } from '@root/constants/GameId';
 import { Games } from '@root/constants/Games';
@@ -10,7 +8,6 @@ import Theme from '@root/constants/theme';
 import { AppContext } from '@root/contexts/appContext';
 import useUrl from '@root/hooks/useUrl';
 import { useRouter } from 'next/router';
-import { NextSeo, SoftwareAppJsonLd } from 'next-seo';
 import React, { useContext } from 'react';
 
 interface FeatureCardProps {
