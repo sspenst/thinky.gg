@@ -37,6 +37,14 @@ export async function getStreaks(userId: Types.ObjectId) {
         }
       }
     },
+    // filter out zero values
+    {
+      $match: {
+        value: {
+          $gt: 0
+        }
+      }
+    },
     {
       // sort by date
       $sort: {
