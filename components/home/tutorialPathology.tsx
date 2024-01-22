@@ -658,8 +658,8 @@ export default function TutorialPathology() {
     // if you come back to this step after beating the level the next button should be enabled
     const atIncompleteLevel = !tutorialStep.isNextButtonDisabled && tutorialStep.gameGrid && tutorialStepIndex === tutorialStepIndexMax;
 
-    controls.push(nextControl(isNextButtonDisabled || atIncompleteLevel));
     controls.push(skipControl());
+    controls.push(nextControl(isNextButtonDisabled || atIncompleteLevel));
   } else {
     controls.push(new Control(
       'restart',
