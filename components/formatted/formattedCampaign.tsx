@@ -55,7 +55,7 @@ export default function FormattedCampaign({
   title,
   totalLevels,
 }: FormattedCampaignProps) {
-  const [filter, setFilter] = React.useState<string>('SHOW_ALL');
+  const [filter, setFilter] = React.useState<string>('HIDE_SOLVED');
 
   const getLevelOptions = useCallback((enrichedCollection: EnrichedCollection) => {
     const levelOptions: JSX.Element[] = [];
