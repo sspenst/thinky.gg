@@ -19,6 +19,7 @@ export const Games: Record<GameId, Game> = {
     id: GameId.THINKY,
     allowMovableOnExit: false,
     baseUrl: process.env.NODE_ENV !== 'development' ? `https://${APP_DOMAIN}` : 'http://localhost:3000',
+    chapterCount: 0,
     defaultTheme: Theme.Dark,
     disableCampaign: true,
     disableCommunityCampaigns: true,
@@ -43,6 +44,7 @@ export const Games: Record<GameId, Game> = {
     id: GameId.PATHOLOGY,
     allowMovableOnExit: false,
     baseUrl: process.env.NODE_ENV !== 'development' ? `https://pathology.${APP_DOMAIN}` : 'http://pathology.localhost:3000',
+    chapterCount: 4,
     defaultTheme: Theme.Modern,
     displayName: 'Pathology',
     favicon: '/logos/pathology/pathology.svg',
@@ -70,6 +72,7 @@ export const Games: Record<GameId, Game> = {
     id: GameId.SOKOPATH,
     allowMovableOnExit: true,
     baseUrl: process.env.NODE_ENV !== 'development' ? `https://sokopath.${APP_DOMAIN}` : 'http://sokopath.localhost:3000',
+    chapterCount: 0,
     defaultTheme: Theme.Winter,
     disableCampaign: true,
     disableCommunityCampaigns: true,
@@ -115,6 +118,7 @@ export interface Game {
    * Base URL for the game - only available on server side until we get NEXT_PUBLIC_APP_DOMAIN working
    */
   baseUrl: string;
+  chapterCount?: number; // campaign chapters
   defaultTheme: Theme;
   disableCampaign?: boolean;
   disableCommunityCampaigns?: boolean;

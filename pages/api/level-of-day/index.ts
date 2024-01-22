@@ -199,6 +199,25 @@ export default apiWrapper({
   const token = req.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, req) : null;
 
+  if (req.gameId === GameId.THINKY) {
+    // batch get all the levels of the day for all games
+    const allGames = Object.values(GameId).filter(gameId => gameId !== GameId.THINKY);
+    const promises = allGames.map(gameId => getLevelOfDay(gameId, reqUser));
+    const levels = await Promise.all(promises);
+    // make it a map with gameId as key
+    const levelsMap = levels.reduce((acc, level) => {
+      if (!level) {
+        return acc;
+      }
+
+      acc[level.gameId] = level;
+
+      return acc;
+    }, {} as { [gameId: string]: EnrichedLevel | null });
+
+    return res.status(200).json(levelsMap);
+  }
+
   // Then query the database for the official level of the day collection
   const levelOfDay = await getLevelOfDay(req.gameId, reqUser);
 
