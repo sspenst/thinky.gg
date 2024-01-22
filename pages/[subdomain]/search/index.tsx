@@ -48,8 +48,8 @@ export interface SearchQuery extends ParsedUrlQuery {
   blockFilter?: string;
   difficultyFilter?: string;
   disableCount?: string;
-  includeLevelIds?: string;
   excludeLevelIds?: string;
+  includeLevelIds?: string;
   isRanked?: string;
   maxDifficulty?: string;
   maxDimension1?: string;

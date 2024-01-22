@@ -5,8 +5,8 @@ import FilterButton from '../buttons/filterButton';
 
 interface SelectFilterProps {
   filter: StatFilter;
-  onFilterClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
   onChange?: () => void;
+  onFilterClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
   placeholder: string;
   searchText: string;
   setSearchText: (searchText: string) => void;
@@ -67,10 +67,20 @@ export default function SelectFilter({
           </div>
         }
         <div className='p-2'>
-          <input key={'search_levels'} id='search-levels' type='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal bg-clip-padding border border-solid border-color-4 rounded transition ease-in-out m-0 focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={placeholder} onChange={e => {
-            setSearchText(e.target.value);
-            onChange && onChange();
-          }} value={searchText} />
+          <input
+            aria-describedby='button-addon2'
+            aria-label='Search'
+            className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal bg-clip-padding border border-solid border-color-4 rounded transition ease-in-out m-0 focus:border-blue-600 focus:outline-none'
+            id='search-levels'
+            key='search_levels'
+            onChange={e => {
+              setSearchText(e.target.value);
+              onChange && onChange();
+            }}
+            placeholder={placeholder}
+            type='search'
+            value={searchText}
+          />
         </div>
       </div>
     </div>
