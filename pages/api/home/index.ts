@@ -2,7 +2,6 @@ import { GameId } from '@root/constants/GameId';
 import { GameType } from '@root/constants/Games';
 import StatFilter from '@root/constants/statFilter';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
-import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import Level from '@root/models/db/level';
 import { LevelModel, StatModel } from '@root/models/mongoose';
 import TimeRange from '../../../constants/timeRange';
@@ -25,7 +24,7 @@ async function getTopLevelsThisMonth(gameId: GameId, reqUser: User | null) {
     timeRange: TimeRange[TimeRange.Month],
   } as SearchQuery;
 
-  const result = await doQuery(gameId, query, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, data: 1, height: 1, width: 1 });
+  const result = await doQuery(gameId, query, reqUser);
 
   return result?.levels;
 }
@@ -85,7 +84,7 @@ async function getRecommendedLevel(gameId: GameId, reqUser: User) {
     timeRange: TimeRange[TimeRange.All],
   } as SearchQuery;
 
-  const result = await doQuery(gameId, query, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, data: 1, height: 1, width: 1 });
+  const result = await doQuery(gameId, query, reqUser);
   let levels = result?.levels;
 
   if (!levels || levels.length === 0) {
@@ -104,7 +103,7 @@ async function getRecommendedLevel(gameId: GameId, reqUser: User) {
       timeRange: TimeRange[TimeRange.All],
     } as SearchQuery;
 
-    const result = await doQuery(gameId, query, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, data: 1, height: 1, width: 1 });
+    const result = await doQuery(gameId, query, reqUser);
 
     levels = result?.levels;
   }

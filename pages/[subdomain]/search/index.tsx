@@ -12,7 +12,6 @@ import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import isPro from '@root/helpers/isPro';
 import useRouterQuery from '@root/hooks/useRouterQuery';
 import { CollectionType } from '@root/models/constants/collection';
-import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { EnrichedCollection } from '@root/models/db/collection';
 import classNames from 'classnames';
 import debounce from 'debounce';
@@ -106,7 +105,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }
   }
 
-  const query = await doQuery(gameId, searchQuery, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, ...{ width: 1, data: 1, height: 1 } });
+  const query = await doQuery(gameId, searchQuery, reqUser);
 
   if (!query) {
     throw new Error('Error querying Levels');

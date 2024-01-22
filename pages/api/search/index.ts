@@ -109,8 +109,11 @@ export type SearchResult = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User | null, projection: any = LEVEL_SEARCH_DEFAULT_PROJECTION) {
+export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User | null, _projection: any = LEVEL_SEARCH_DEFAULT_PROJECTION) {
   await dbConnect();
+
+  // NB: need to clone projection because we modify it below
+  const projection = { ..._projection };
 
   // filter out pro query options from non-pro users
   if (!isPro(reqUser)) {
@@ -537,7 +540,7 @@ export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiR
   const token = req?.cookies?.token;
   const gameId = getGameIdFromReq(req);
   const reqUser = token ? await getUserFromToken(token, req) : null;
-  const query = await doQuery(gameId, req.query as SearchQuery, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION });
+  const query = await doQuery(gameId, req.query as SearchQuery, reqUser);
 
   if (!query) {
     return res.status(500).json({
