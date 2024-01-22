@@ -1,7 +1,6 @@
-import { AppContext } from '@root/contexts/appContext';
 import useSWRHelper from '@root/hooks/useSWRHelper';
 import CalHeatmap from 'cal-heatmap';
-import React, { useContext, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 export function StreakCalendar() {
   // type is {currentStreak:number, calendar:[{key:string: count:number}

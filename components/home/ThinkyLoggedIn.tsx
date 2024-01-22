@@ -7,7 +7,6 @@ import useUrl from '@root/hooks/useUrl';
 import Level from '@root/models/db/level';
 import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
-import CalHeatmap from 'cal-heatmap';
 import React from 'react';
 import ChapterSelectCard, { ChapterSelectCardBase } from '../cards/chapterSelectCard';
 import FormattedUser from '../formatted/formattedUser';
