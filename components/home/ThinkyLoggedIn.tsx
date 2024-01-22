@@ -28,7 +28,8 @@ export function ThinkyHomePageLoggedIn({ user }: {user: User}) {
 
       return (
 
-        <ChapterSelectCard titleOverride={game.displayName + ' Tutorial'} chapter={0}
+        <ChapterSelectCardBase title={game.displayName + ' Tutorial'} game={game} id={game.id + '-tutorial'} levelData={'00000000\n00400000\n00020300\n00000000'}
+
           href={getUrl(game.id, '/tutorial')}
         />
 
