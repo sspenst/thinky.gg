@@ -1,3 +1,5 @@
+// Optionally import the CSS
+import 'cal-heatmap/cal-heatmap.css';
 import { GameId } from '@root/constants/GameId';
 import { Game, Games } from '@root/constants/Games';
 import useSWRHelper from '@root/hooks/useSWRHelper';
@@ -5,13 +7,13 @@ import useUrl from '@root/hooks/useUrl';
 import Level from '@root/models/db/level';
 import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
+import CalHeatmap from 'cal-heatmap';
 import React from 'react';
-import Card from '../cards/card';
 import ChapterSelectCard, { ChapterSelectCardBase } from '../cards/chapterSelectCard';
-import LevelCardWithTitle from '../cards/levelCardWithTitle';
 import FormattedUser from '../formatted/formattedUser';
 import GameLogo from '../gameLogo';
 import LoadingSpinner from '../page/loadingSpinner';
+import { StreakCalendar } from './StreakCalendar';
 
 export function ThinkyHomePageLoggedIn({ user }: {user: User}) {
   const getUrl = useUrl();
@@ -55,7 +57,10 @@ export function ThinkyHomePageLoggedIn({ user }: {user: User}) {
   return (
 
     <div className='flex flex-col gap-6 items-center'>
-      <FormattedUser id={user._id.toString()} user={user} />
+      <div className='flex flex-row max-w-full justify-center gap-6'>
+        <FormattedUser id={user._id.toString()} user={user} />
+        <StreakCalendar />
+      </div>
       <div className='flex flex-wrap justify-center gap-20 max-w-full'>
         {Object.values(Games).map(game => {
           const userConfig = userConfigs && userConfigs[game.id];
