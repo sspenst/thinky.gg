@@ -59,9 +59,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
   const gameId = getGameIdFromReq(context.req);
 
-  const queryParams = context.query || { search: '', page: 0, statFilter: StatFilter.All };
-  const { search, page, statFilter } = queryParams;
-
   const collection = await getCollection({
     matchQuery: {
       gameId: gameId,
@@ -85,6 +82,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
+  const queryParams = context.query || { search: '', page: 0, statFilter: StatFilter.All };
+  const { page, search, statFilter } = queryParams;
   const levelIds = collection.levels as Level[];
   const levelIdsAsStrings = levelIds.map(level => level._id.toString()).join(',');
   const queryResult = await doQuery(gameId, {
@@ -141,11 +140,6 @@ export default function CollectionPage({ collection, numLevels }: CollectionProp
     });
   }, [collection]);
 
-  const getFilteredOptions = useCallback(() => {
-    //return statFilterOptions(getOptions(), statFilter, filterText);
-    return getOptions();
-  }, [getOptions]);
-
   const onFilterClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     const value = e.currentTarget.value as StatFilter;
 
@@ -153,9 +147,9 @@ export default function CollectionPage({ collection, numLevels }: CollectionProp
   };
 
   const [page, setPage] = useState<number>(0);
-  const filteredLevels = getFilteredOptions();
-  // how many levels are in front of the current page
-  const levelsInFront = numLevels - (page + 1) * 10 - filteredLevels.length;
+  const levels = getOptions();
+  const itemsPerPage = 20;
+  const onLastPage = (page + 1) >= Math.ceil(numLevels / itemsPerPage);
   const router = useRouter();
   const firstLoad = useRef(true);
 
@@ -173,6 +167,7 @@ export default function CollectionPage({ collection, numLevels }: CollectionProp
       return;
     }
 
+    // TODO: rewrite this to use DefaultQuery like the search page
     // update the url with the new page based on the current page and search
     const url = new URL(window.location.href);
 
@@ -311,7 +306,7 @@ export default function CollectionPage({ collection, numLevels }: CollectionProp
           </div>
         }
         <div className='flex flex-wrap justify-center gap-4'>
-          {filteredLevels.map(option => {
+          {levels.map(option => {
             if (!option.level) {
               return null;
             }
@@ -331,27 +326,24 @@ export default function CollectionPage({ collection, numLevels }: CollectionProp
         <button
           className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
           id='prevPage'
+          onClick={() => setPage(page - 1)}
           style={{
             visibility: page === 0 ? 'hidden' : 'visible',
           }}
-
-          onClick={() => setPage(page - 1)}
         >
-              Prev
+          Prev
         </button>
         <button
           className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
           id='nextPage'
-          style={{
-            visibility: levelsInFront === 0 ? 'hidden' : 'visible', // TODO: we don't return the total results... so we don't know if there are more pages if it is exactly 5 left
-          }}
-
           onClick={() => setPage(page + 1)}
+          style={{
+            visibility: onLastPage ? 'hidden' : 'visible', // TODO: we don't return the total results... so we don't know if there are more pages if it is exactly 5 left
+          }}
         >
-              Next
+          Next
         </button>
       </div>
-
     </Page>
   </>);
 }
