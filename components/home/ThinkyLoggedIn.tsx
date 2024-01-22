@@ -40,9 +40,6 @@ export function ThinkyHomePageLoggedIn({ user }: {user: User}) {
       return null;
     }
 
-    // if we are at the last chapter, show rank
-    console.log(userConfig?.chapterUnlocked, game.chapterCount);
-
     if (userConfig?.chapterUnlocked === game.chapterCount && !game.disableRanked) {
       return (
         <ChapterSelectCard titleOverride='Rank Mode' chapter={0} href={getUrl(game.id, '/ranked')} />
@@ -68,6 +65,7 @@ export function ThinkyHomePageLoggedIn({ user }: {user: User}) {
 
           const continuePlaying = getSuggestedAction({ userConfig, game });
           const levelOfDay = levelOfDays && levelOfDays[game.id];
+          const todayDateClean = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
           return (
             <section className='flex flex-col items-center gap-6 max-w-full' key={`game-${game.id}`}>
@@ -84,7 +82,7 @@ export function ThinkyHomePageLoggedIn({ user }: {user: User}) {
                 href={getUrl(game.id, '/level-of-the-day')}
                 id={'Level-of-day-' + game.id}
                 levelData={levelOfDay.data}
-                title={'Level of the Day'}
+                title={<div className='flex flex-col'><span>Level of the Day</span><span className='text-sm'>{todayDateClean}</span></div>}
                 subtitle={'by ' + levelOfDay.userId.name}
               />}
             </section>

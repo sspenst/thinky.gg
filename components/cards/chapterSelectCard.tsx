@@ -17,7 +17,7 @@ interface ChapterSelectCardBaseProps {
   id: string;
   levelData: string;
   subtitle?: string;
-  title: string;
+  title: string | JSX.Element;
 }
 
 export function ChapterSelectCardBase({
