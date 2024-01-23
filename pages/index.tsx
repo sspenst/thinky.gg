@@ -49,7 +49,7 @@ export default function ThinkyHomeRouter({ user }: ThinkyHomeRouterProps) {
         applicationCategory='Game'
       />
       <Page
-        style={{
+        style={user ? {} : {
           backgroundImage: 'url(https://i.imgur.com/iYIoTCx.png)',
           backgroundPosition: 'center',
           backgroundPositionY: 'calc(50% + ' + Dimensions.MenuHeight + 'px)',
