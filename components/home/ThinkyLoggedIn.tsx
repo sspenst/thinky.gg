@@ -28,28 +28,28 @@ export function ThinkyHomePageLoggedIn({ user }: {user: User}) {
       }
 
       return (
-
         <ChapterSelectCardBase title={game.displayName + ' Tutorial'} game={game} id={game.id + '-tutorial'} levelData={'00000000\n00400000\n00020300\n00000000'}
-
           href={getUrl(game.id, '/tutorial')}
         />
-
       );
     }
 
     // next suggest the next campaign chapter
-    if (game.disableCampaign) {
-      return null;
-    }
+    if (!game.disableCampaign) {
+      if (userConfig?.chapterUnlocked === game.chapterCount && !game.disableRanked) {
+        return (
+          <ChapterSelectCard titleOverride='Rank Mode' chapter={0} href={getUrl(game.id, '/ranked')} />
+        );
+      }
 
-    if (userConfig?.chapterUnlocked === game.chapterCount && !game.disableRanked) {
       return (
-        <ChapterSelectCard titleOverride='Rank Mode' chapter={0} href={getUrl(game.id, '/ranked')} />
+        <ChapterSelectCard titleOverride={'Continue ' + game.displayName + ' Campaign'} chapter={userConfig?.chapterUnlocked ?? 1} href={getUrl(game.id, '/chapter' + (userConfig?.chapterUnlocked ?? 1))} />
       );
     }
 
+    // if nothing else, just put a card that says Explore
     return (
-      <ChapterSelectCard titleOverride={'Continue ' + game.displayName + ' Campaign'} chapter={userConfig?.chapterUnlocked ?? 1} href={getUrl(game.id, '/chapter' + (userConfig?.chapterUnlocked ?? 1))} />
+      <ChapterSelectCardBase title={'Explore ' + game.displayName} game={game} id={game.id + '-explore'} levelData={'00000000\n00412310\n00506300\n00020000'} href={getUrl(game.id, '/')} />
     );
   }
 
