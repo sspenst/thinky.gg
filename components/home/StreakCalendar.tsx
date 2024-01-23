@@ -42,6 +42,9 @@ export function StreakCalendar() {
         subDomain: {
           type: 'xDay',
           radius: 6,
+          label: 'D',
+          width: 15,
+          height: 15,
         },
         itemSelector: '#cal-heatmap',
       },
@@ -54,7 +57,7 @@ export function StreakCalendar() {
   }, [data?.calendar]);
 
   return (<div className='flex flex-col gap-2 justify-center text-center'>
-    <div className='p-1'>Play Streak: <span className='font-bold'>{data?.currentStreak} day{data?.currentStreak === 1 ? '' : 's'}</span>!</div>
+    <div className='p-1'>Play Streak: <span className='font-bold p-1 bg-purple-700 rounded-full text-white'>{data?.currentStreak}</span> day{data?.currentStreak === 1 ? '' : 's'}!</div>
     { /* put cal-heatmap within a horizontal scrollable div */}
     <div id='cal-heatmap' ref={heatmapRef} className='overflow-x-scroll justify-center flex' />
   </div>
