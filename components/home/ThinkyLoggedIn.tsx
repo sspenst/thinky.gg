@@ -38,7 +38,7 @@ export function ThinkyHomePageLoggedIn({ user }: {user: User}) {
     if (!game.disableCampaign) {
       if (userConfig?.chapterUnlocked === game.chapterCount && !game.disableRanked) {
         return (
-          <ChapterSelectCard titleOverride='Rank Mode' chapter={0} href={getUrl(game.id, '/ranked')} />
+          <ChapterSelectCardBase subtitle='Compete in leaderboards' title='Play Ranked Mode' href={getUrl(game.id, '/ranked')} game={game} id={game.id + '-ranked'} levelData={'22222222\n6789ABCD\n11111111\n555555555'} />
         );
       }
 
