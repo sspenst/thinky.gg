@@ -54,13 +54,12 @@ export function ThinkyHomePageLoggedIn({ user }: {user: User}) {
   }
 
   return (
-
     <div className='flex flex-col gap-6 items-center'>
       <div className='flex flex-row max-w-full justify-center gap-6'>
         <FormattedUser id={user._id.toString()} user={user} />
         <StreakCalendar />
       </div>
-      <div className='flex flex-wrap justify-center gap-20 max-w-full'>
+      <div className='flex flex-wrap justify-center gap-10 max-w-full'>
         {Object.values(Games).map(game => {
           const userConfig = userConfigs && userConfigs[game.id];
 

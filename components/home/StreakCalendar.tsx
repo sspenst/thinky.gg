@@ -56,10 +56,10 @@ export function StreakCalendar() {
     };
   }, [data?.calendar]);
 
-  return (<div className='flex flex-col gap-2 justify-center text-center'>
-    <div className='p-1'>Play Streak: <span className='font-bold p-1 bg-purple-700 rounded-full text-white'>{data?.currentStreak}</span> day{data?.currentStreak === 1 ? '' : 's'}!</div>
+  return (<details className='flex flex-col gap-2 justify-center text-center bg-3 p-1 rounded-lg'>
+    <summary className='p-1'>Play Streak: <span className='font-bold p-1 bg-purple-700 rounded-full text-white'>{data?.currentStreak}</span> day{data?.currentStreak === 1 ? '' : 's'}!</summary>
     { /* put cal-heatmap within a horizontal scrollable div */}
     <div id='cal-heatmap' ref={heatmapRef} className='overflow-x-scroll justify-center flex' />
-  </div>
+  </details>
   );
 }
