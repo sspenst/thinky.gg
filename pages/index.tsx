@@ -59,7 +59,7 @@ export default function ThinkyHomeRouter({ user }: ThinkyHomeRouterProps) {
         }}
         title='Thinky Puzzle Games'
       >
-        <div className='flex flex-col justify-center items-center my-12 mx-6 gap-8'>
+        <div className='flex flex-col justify-center items-center my-10 mx-6 gap-8'>
           <span
             className='text-6xl sm:text-8xl text-white rounded-lg text-center'
             style={{
