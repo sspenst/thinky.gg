@@ -41,7 +41,6 @@ import ProfileInsights from '../../../../../components/profile/profileInsights';
 import Dimensions from '../../../../../constants/dimensions';
 import GraphType from '../../../../../constants/graphType';
 import TimeRange from '../../../../../constants/timeRange';
-import statFilterOptions from '../../../../../helpers/filterSelectOptions';
 import getProfileSlug from '../../../../../helpers/getProfileSlug';
 import { getReviewsByUserId, getReviewsByUserIdCount } from '../../../../../helpers/getReviewsByUserId';
 import { getReviewsForUserId, getReviewsForUserIdCount } from '../../../../../helpers/getReviewsForUserId';
@@ -300,14 +299,12 @@ export default function ProfilePage({
   user,
 }: ProfilePageProps) {
   const { game } = useContext(AppContext);
-  const [collectionFilterText, setCollectionFilterText] = useState('');
   const [followerCount, setFollowerCount] = useState<number>();
   const [isAddCollectionOpen, setIsAddCollectionOpen] = useState(false);
   const ownProfile = reqUser?._id.toString() === user?._id.toString();
   const [page, setPage] = useState(pageProp);
   const router = useRouter();
   const [searchLevelText, setSearchLevelText] = useState('');
-  const [showCollectionFilter, setShowCollectionFilter] = useState(StatFilter.All);
   const [showLevelFilter, setShowLevelFilter] = useState(StatFilter.All);
   const [tab, setTab] = useState(profileTab);
 
@@ -367,11 +364,7 @@ export default function ProfilePage({
     });
   }, [enrichedCollections, ownProfile]);
 
-  const getFilteredCollectionOptions = useCallback(() => {
-    return statFilterOptions(getCollectionOptions(), showCollectionFilter, collectionFilterText);
-  }, [collectionFilterText, getCollectionOptions, showCollectionFilter]);
-
-  const collectionsAsOptions = getFilteredCollectionOptions();
+  const collectionsAsOptions = getCollectionOptions();
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const setSearchLevelTextDebounce = useCallback(
@@ -385,13 +378,6 @@ export default function ProfilePage({
         },
       });
     }, 500), [showLevelFilter, tab]);
-
-  const onFilterCollectionClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const value = e.currentTarget.value as StatFilter;
-
-    setShowCollectionFilter(showCollectionFilter === value ? StatFilter.All : value);
-    setPage(1);
-  };
 
   const onFilterLevelClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     const value = e.currentTarget.value as StatFilter;
@@ -487,13 +473,6 @@ export default function ProfilePage({
     [ProfileTab.Multiplayer]: <ProfileMultiplayer user={user} />,
     [ProfileTab.Collections]: (
       <div className='flex flex-col gap-2 justify-center'>
-        <SelectFilter
-          filter={showCollectionFilter}
-          onFilterClick={onFilterCollectionClick}
-          placeholder={`Search ${collectionsAsOptions.length} collection${collectionsAsOptions.length !== 1 ? 's' : ''}...`}
-          searchText={collectionFilterText}
-          setSearchText={setCollectionFilterText}
-        />
         {reqUser?._id === user._id &&
           <div className='text-center'>
             <button

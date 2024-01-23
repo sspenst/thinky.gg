@@ -55,7 +55,7 @@ export default function FormattedCampaign({
   title,
   totalLevels,
 }: FormattedCampaignProps) {
-  const [filter, setFilter] = React.useState<string>('SHOW_ALL');
+  const [filter, setFilter] = React.useState<string>('HIDE_SOLVED');
 
   const getLevelOptions = useCallback((enrichedCollection: EnrichedCollection) => {
     const levelOptions: JSX.Element[] = [];
@@ -96,6 +96,7 @@ export default function FormattedCampaign({
       }
 
       const stats = new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userSolvedCount);
+      const levels = getLevelOptions(enrichedCollection);
 
       options.push(
         <div
@@ -118,7 +119,7 @@ export default function FormattedCampaign({
                 {stats.getText()}
               </div>
               <div className='flex flex-wrap justify-center items-start gap-4'>
-                {getLevelOptions(enrichedCollection)}
+                {levels.length > 0 ? levels : <span className='italic'>You have solved all levels for this section!</span>}
               </div>
             </>
           }

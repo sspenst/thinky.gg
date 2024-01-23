@@ -1,7 +1,6 @@
 import { GameId } from '@root/constants/GameId';
 import StatFilter from '@root/constants/statFilter';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
-import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import TimeRange from '../../../constants/timeRange';
 import apiWrapper from '../../../helpers/apiWrapper';
@@ -36,12 +35,7 @@ export async function getLatestLevels(gameId: GameId, reqUser: User | null = nul
     sortDir: 'desc',
     statFilter: StatFilter.HideSolved,
     timeRange: TimeRange[TimeRange.All],
-  }, reqUser, {
-    ...LEVEL_SEARCH_DEFAULT_PROJECTION,
-    width: 1,
-    height: 1,
-    data: 1,
-  });
+  }, reqUser);
 
   return query?.levels;
 }

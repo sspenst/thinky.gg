@@ -224,7 +224,7 @@ export default function TutorialPathology() {
     'control-next',
     () => setTutorialStepIndex(i => i + 1),
     <div className='flex justify-center'>
-      <span className='pl-2 self-center'>
+      <span className='pl-2 self-center text-black'>
         Next
       </span>
       <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='currentColor' className='bi bi-arrow-right-short' viewBox='0 0 16 16'>
@@ -633,14 +633,14 @@ export default function TutorialPathology() {
       if (nextId) {
         if (!nextId.classList.contains('pointer-events-none')) {
           setTimeout(() => {
-            nextId.classList.add('bg-orange-700');
+            nextId.classList.add('bg-orange-300');
             nextId.classList.add('bounce');
             // have nextId delay animation by 1s
             nextId.style.animationDelay = '3s';
           }, 1);
         } else {
           // remove
-          nextId.classList.remove('bg-orange-700');
+          nextId.classList.remove('bg-orange-300');
           nextId.classList.remove('bounce');
         }
       }
@@ -658,8 +658,8 @@ export default function TutorialPathology() {
     // if you come back to this step after beating the level the next button should be enabled
     const atIncompleteLevel = !tutorialStep.isNextButtonDisabled && tutorialStep.gameGrid && tutorialStepIndex === tutorialStepIndexMax;
 
-    controls.push(nextControl(isNextButtonDisabled || atIncompleteLevel));
     controls.push(skipControl());
+    controls.push(nextControl(isNextButtonDisabled || atIncompleteLevel));
   } else {
     controls.push(new Control(
       'restart',
