@@ -41,26 +41,34 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
     }
   }
 
-  const { game } = useContext(AppContext);
   const { data } = useHomePageData([HomepageDataType.RecommendedLevel], !isOpen || nextLevel !== undefined);
+  const { game } = useContext(AppContext);
+  const jsConfettiCanvas = useRef<HTMLCanvasElement>(null);
   const [queryParams, setQueryParams] = useState<URLSearchParams>();
   const [recommendedLevel, setRecommendedLevel] = useState<EnrichedLevel>();
-  const jsConfetti = useRef<JSConfetti>();
 
   useEffect(() => {
     const newRecommendedLevel = data && data[HomepageDataType.RecommendedLevel];
-    const canvas = document.getElementById('confetti') as HTMLCanvasElement;
-
-    if (!jsConfetti.current && canvas) {
-      jsConfetti.current = new JSConfetti({ canvas });
-
-      jsConfetti.current.addConfetti();
-    }
 
     if (newRecommendedLevel) {
       setRecommendedLevel(newRecommendedLevel);
     }
   }, [data]);
+
+  useEffect(() => {
+    if (isOpen) {
+      // NB: setTimeout is a hack to wait for jsConfettiCanvas.current to be set after the modal is opened
+      setTimeout(() => {
+        if (!jsConfettiCanvas.current) {
+          return;
+        }
+
+        const jsConfetti = new JSConfetti({ canvas: jsConfettiCanvas.current });
+
+        jsConfetti.addConfetti();
+      }, 200);
+    }
+  }, [isOpen]);
 
   // NB: this useEffect only runs when entering the level page
   // (moving between levels within a collection does not remount this component)
@@ -121,8 +129,7 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
         </div>
       }
     >
-      <canvas className='absolute top-0 left-0 w-full h-full pointer-events-none'
-        id='confetti' />
+      <canvas className='absolute top-0 left-0 w-full h-full pointer-events-none' ref={jsConfettiCanvas} />
       <div className='flex flex-col gap-2 justify-center items-center'>
         {!reqUser ?
           <div className='text-center'>
