@@ -1,5 +1,6 @@
 import { AchievementRulesCombined } from '@root/constants/achievements/achievementInfo';
 import AchievementType from '@root/constants/achievements/achievementType';
+import { Game } from '@root/constants/Games';
 import classNames from 'classnames';
 import Link from 'next/link';
 import React from 'react';
@@ -8,11 +9,12 @@ import FormattedDate from './formattedDate';
 
 interface FormattedAchievementProps {
   achievementType: AchievementType;
+  game: Game;
   createdAt?: Date;
   unlocked?: boolean;
 }
 
-export default function FormattedAchievement({ achievementType, createdAt, unlocked }: FormattedAchievementProps) {
+export default function FormattedAchievement({ achievementType, createdAt, game, unlocked }: FormattedAchievementProps) {
   const locked = !createdAt && !unlocked;
   const achievement = AchievementRulesCombined[achievementType];
 
@@ -43,7 +45,7 @@ export default function FormattedAchievement({ achievementType, createdAt, unloc
           data-tooltip-content={achievement.tooltip}
           data-tooltip-id={`achievement-description-${achievementType}`}
         >
-          {achievement.description}
+          {achievement.getDescription(game)}
         </span>
         {achievement.tooltip && <StyledTooltip id={`achievement-description-${achievementType}`} />}
         {!locked && <FormattedDate className='w-fit' date={createdAt} />}
