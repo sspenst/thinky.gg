@@ -97,7 +97,7 @@ export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
   const userAgg = UserModel.aggregate<UserWithNotificationsCount>([
     {
       $match: {
-        emailDigest: EmailDigestSettingType.DAILY,
+        emailDigest: { $ne: EmailDigestSettingType.NONE },
         roles: {
           $ne: Role.GUEST,
         },
