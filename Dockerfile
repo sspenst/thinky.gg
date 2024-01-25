@@ -1,4 +1,4 @@
-FROM node:20
+FROM node:20-slim
 WORKDIR /thinky_app
 
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -9,24 +9,24 @@ ARG NEW_RELIC_APP_NAME=dummy
 # avoid using the db when building pages
 ARG OFFLINE_BUILD=true
 
-RUN npm config set fund false
+RUN npm install -g pnpm && pnpm config set fund false
 
 WORKDIR /thinky_app
 
 # ts-node / tspath is needed for other scripts right now. module-alias is used for socket server production
 # ideally all would use package module alias and we would not need ts-node / tspath. but that's a TODO
-RUN npm install -g ts-node typescript module-alias
+RUN pnpm install -g ts-node typescript module-alias
 
 COPY --chown=node:node package*.json ./
 
-RUN npm install --platform=linux --arch=x64 sharp
-RUN npm install --platform=linuxmusl
+RUN pnpm install --platform=linux --arch=x64 sharp
+RUN pnpm install --platform=linuxmusl
 #RUN chown -R node:node node_modules/
 
 COPY --chown=node:node . .
 
 # for web app
-RUN npm run build --omit=dev
+RUN pnpm run build --omit=dev
 # we may need the following to prevent `Failed to write image to cache` errors
 RUN chown -R node:node .next/
 

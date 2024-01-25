@@ -1,4 +1,4 @@
-FROM  node:20
+FROM  node:20-slim
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
@@ -7,11 +7,11 @@ WORKDIR /thinky_app
 COPY --chown=node:node package*.json tsconfig-socket.json ./
 
 
-RUN npm install
+RUN pnpm install
 
 # ts-node / tspath is needed for other scripts right now. module-alias is used for socket server production
 # ideally all would use package module alias and we would not need ts-node / tspath. but that's a TODO
-RUN npm install -g typescript ts-node tspath
+RUN pnpm install -g typescript ts-node tspath
 
 COPY --chown=node:node . .
 
@@ -24,4 +24,4 @@ COPY --chown=node:node . .
 # USER node
 
 
-CMD ["npm","run", "dev"]
+CMD ["pnpm","run", "dev"]
