@@ -141,8 +141,8 @@ describe('Email digest', () => {
         const response = await res.json();
 
         // TestId.USER has a last_visited_at while the other two don't
-        expect(response.failed[EmailType.EMAIL_DIGEST].sort()).toMatchObject(['test@gmail.com'].sort());
-        expect(response.failed[EmailType.EMAIL_7D_REACTIVATE].sort()).toMatchObject(['admin@admin.com', 'bbb@gmail.com', 'the_curator@gmail.com'].sort());
+        expect(response.failed[EmailType.EMAIL_DIGEST].sort()).toMatchObject(['admin@admin.com', 'bbb@gmail.com', 'test@gmail.com', 'the_curator@gmail.com'].sort());
+        expect(response.failed[EmailType.EMAIL_7D_REACTIVATE].sort()).toMatchObject([].sort());
         expect(res.status).toBe(200);
 
         const emailLogs = await EmailLogModel.find({}, {}, { sort: { createdAt: -1 } });
@@ -188,8 +188,8 @@ describe('Email digest', () => {
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
 
-        expect(response.sent[EmailType.EMAIL_7D_REACTIVATE].sort()).toMatchObject(['admin@admin.com', 'bbb@gmail.com', 'the_curator@gmail.com'].sort());
-        expect(response.sent[EmailType.EMAIL_DIGEST]).toHaveLength(0);
+        expect(response.sent[EmailType.EMAIL_7D_REACTIVATE].sort()).toMatchObject([].sort());
+        expect(response.sent[EmailType.EMAIL_DIGEST]).toHaveLength(3);
         expect(response.failed[EmailType.EMAIL_DIGEST]).toHaveLength(0);
         expect(response.failed[EmailType.EMAIL_7D_REACTIVATE]).toHaveLength(0);
       },
@@ -272,8 +272,8 @@ describe('Email digest', () => {
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        expect(response.sent[EmailType.EMAIL_DIGEST].sort()).toMatchObject(['test@gmail.com'].sort());
-        expect(response.sent[EmailType.EMAIL_7D_REACTIVATE]).toHaveLength(3); // since we cleared the emails from the previous test, we should send reactivation emails to the other two users
+        expect(response.sent[EmailType.EMAIL_DIGEST].sort()).toMatchObject(['test@gmail.com', 'admin@admin.com', 'bbb@gmail.com', 'the_curator@gmail.com'].sort());
+        expect(response.sent[EmailType.EMAIL_7D_REACTIVATE]).toHaveLength(0);
       },
     });
   }, 10000);
