@@ -1,3 +1,4 @@
+import { Game } from '../Games';
 import AchievementRulesCreator from './AchievementRulesCreator';
 import AchievementRulesMultiplayer from './AchievementRulesMultiplayer';
 import AchievementRulesProgress from './AchievementRulesProgress';
@@ -5,7 +6,7 @@ import AchievementRulesReviewer from './AchievementRulesReviewer';
 import AchievementRulesSkill from './AchievementRulesSkill';
 
 export interface IAchievementInfo {
-  description: string;
+  getDescription: (game: Game) => string;
   discordNotification?: boolean;
   emoji?: string;
   name: string;

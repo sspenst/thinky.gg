@@ -149,7 +149,7 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
       const meta = AchievementRulesCombined[achievement.type];
 
       return (<>
-        {`Achievement unlocked! ${meta?.description}`}
+        {`Achievement unlocked! ${meta?.getDescription(game)}`}
       </>);
     }
 
