@@ -101,7 +101,8 @@ export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
         roles: {
           $ne: Role.GUEST,
         },
-        emailConfirmed: true,
+        // check where ts exists
+        ts: { $exists: true },
       },
     }, {
       $project: {
