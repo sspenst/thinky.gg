@@ -586,7 +586,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
         <button
           className={classNames(
             'px-3 py-2.5 text-white font-medium text-xs leading-tight hover:bg-blue-700 active:bg-blue-800 transition duration-150 ease-in-out',
-            query.timeRange === timeRangeKey ? 'bg-blue-800' : 'bg-blue-600',
+            query?.timeRange === timeRangeKey ? 'bg-blue-800' : 'bg-blue-600',
             timeRangeKey === TimeRange[TimeRange.Day] ? 'rounded-tl-lg rounded-bl-lg' : undefined,
             timeRangeKey === TimeRange[TimeRange.All] ? 'rounded-tr-lg rounded-br-lg' : undefined,
           )}
@@ -604,7 +604,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
     fetchLevels({
       ...query,
       page: '1',
-      blockFilter: String(Number(query.blockFilter) ^ Number(e.currentTarget.value)),
+      blockFilter: String(Number(query?.blockFilter) ^ Number(e.currentTarget.value)),
     });
   };
 
@@ -612,11 +612,11 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
     fetchLevels({
       ...query,
       page: '1',
-      statFilter: query.statFilter === statFilterKey ? StatFilter.All : statFilterKey,
+      statFilter: query?.statFilter === statFilterKey ? StatFilter.All : statFilterKey,
     });
   }, [fetchLevels, query]);
 
-  const difficulty = difficultyList.find(d => d.name === query.difficultyFilter);
+  const difficulty = difficultyList.find(d => d.name === query?.difficultyFilter);
 
   const subHeaderComponent = (
     <div className='flex flex-col items-center gap-1 p-1' id='level_search_box'>
@@ -632,7 +632,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
           } }
           placeholder='Search level name...'
           type='search'
-          value={query.search}
+          value={query?.search}
         />
         <MultiSelectUser key={'search-author-input-' + searchAuthor?._id.toString()} placeholder='Search authors...' defaultValue={searchAuthor} onSelect={(user) => {
           queryDebounceHelper({
@@ -737,17 +737,17 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
             </Menu.Items>
           </Transition>
         </Menu>
-        <TimeRangeMenu onTimeRangeClick={onTimeRangeClick} timeRange={query.timeRange} />
+        <TimeRangeMenu onTimeRangeClick={onTimeRangeClick} timeRange={query?.timeRange} />
       </div>
       {!game.disableRanked &&
         <div className='flex items-center gap-1 border border-color-4 rounded-md px-2 py-1'>
           <input
-            checked={query.isRanked === 'true'}
+            checked={query?.isRanked === 'true'}
             id='ranked_checkbox'
             onChange={() => {
               fetchLevels({
                 ...query,
-                isRanked: query.isRanked === 'true' ? 'false' : 'true',
+                isRanked: query?.isRanked === 'true' ? 'false' : 'true',
                 page: '1',
               });
             }}
@@ -773,7 +773,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
           }}
           step='1'
           type='number'
-          value={query.minSteps}
+          value={query?.minSteps}
         />
         <label htmlFor='max-step' className='text-xs font-medium pr-1'>Max steps</label>
         <input
@@ -789,7 +789,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
           }}
           step='1'
           type='number'
-          value={query.maxSteps}
+          value={query?.maxSteps}
         />
       </div>
       <div className='flex justify-center items-center gap-2'>
@@ -813,7 +813,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                 }}
                 step='1'
                 type='number'
-                value={query.minDimension1}
+                value={query?.minDimension1}
               />
               <span className='text-xs font-medium px-1'>x</span>
               <input
@@ -829,7 +829,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                 }}
                 step='1'
                 type='number'
-                value={query.minDimension2}
+                value={query?.minDimension2}
               />
             </div>
           </div>
@@ -849,7 +849,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                 }}
                 step='1'
                 type='number'
-                value={query.maxDimension1}
+                value={query?.maxDimension1}
               />
               <span className='text-xs font-medium px-1'>x</span>
               <input
@@ -865,7 +865,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                 }}
                 step='1'
                 type='number'
-                value={query.maxDimension2}
+                value={query?.maxDimension2}
               />
             </div>
           </div>
@@ -885,7 +885,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
               first={true}
               onClick={onBlockFilterClick}
               proRequired={true}
-              selected={(Number(query.blockFilter) & BlockFilterMask.BLOCK) !== BlockFilterMask.NONE}
+              selected={(Number(query?.blockFilter) & BlockFilterMask.BLOCK) !== BlockFilterMask.NONE}
               transparent={true}
               value={BlockFilterMask.BLOCK.toString()}
             />
@@ -903,7 +903,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
               }
               onClick={onBlockFilterClick}
               proRequired={true}
-              selected={(Number(query.blockFilter) & BlockFilterMask.RESTRICTED) !== BlockFilterMask.NONE}
+              selected={(Number(query?.blockFilter) & BlockFilterMask.RESTRICTED) !== BlockFilterMask.NONE}
               transparent={true}
               value={BlockFilterMask.RESTRICTED.toString()}
             />
@@ -922,7 +922,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
               last={true}
               onClick={onBlockFilterClick}
               proRequired={true}
-              selected={(Number(query.blockFilter) & BlockFilterMask.HOLE) !== BlockFilterMask.NONE}
+              selected={(Number(query?.blockFilter) & BlockFilterMask.HOLE) !== BlockFilterMask.NONE}
               transparent={true}
               value={BlockFilterMask.HOLE.toString()}
             />
@@ -982,7 +982,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
           noDataComponent={
             <div className='flex flex-col items-center p-3 gap-3'>
               <span>No levels found...</span>
-              {query.timeRange !== TimeRange[TimeRange.All] &&
+              {query?.timeRange !== TimeRange[TimeRange.All] &&
                 <span>
                   Try <button className='underline' onClick={() => {onTimeRangeClick(TimeRange[TimeRange.All]);}}>expanding</button> the time range.
                 </span>
@@ -1004,13 +1004,13 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
               sortDir: sortAsc ? 'asc' : 'desc',
             } as Partial<SearchQuery>;
 
-            if (columnId === query.sortBy) {
+            if (columnId === query?.sortBy) {
               // swap sortDir if the same col is clicked
-              update.sortDir = query.sortDir === 'desc' ? 'asc' : 'desc';
+              update.sortDir = query?.sortDir === 'desc' ? 'asc' : 'desc';
             }
 
             // move off of invalid stat filter option when sorting by completed
-            if (columnId === 'completed' && (query.statFilter === StatFilter.Completed || query.statFilter === StatFilter.Unattempted)) {
+            if (columnId === 'completed' && (query?.statFilter === StatFilter.Completed || query?.statFilter === StatFilter.Unattempted)) {
               update.statFilter = StatFilter.All;
             }
 
@@ -1019,9 +1019,9 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
               ...update,
             });
           }}
-          page={Number(query.page ?? '1')}
-          sortBy={query.sortBy}
-          sortDir={query.sortDir}
+          page={Number(query?.page ?? '1')}
+          sortBy={query?.sortBy}
+          sortDir={query?.sortDir}
           totalItems={totalRows}
         />
       </>
