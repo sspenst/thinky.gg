@@ -133,14 +133,19 @@ export default function SizeModal({ closeModal, historyPush, isOpen, level, setI
 
   return (
     <Modal
-      closeModal={closeModal}
+      closeModal={() => { setError(undefined); closeModal(); }}
       isOpen={isOpen}
       onSubmit={onSubmit}
       title={'Set Level Size'}
     >
       <div className='flex flex-row gap-2  max-w-full items-center'>
         <div className='flex flex-col gap-2 items-center'>
-          <div className='flex flex-row gap-2 items-center w-full'>
+          {!error ? null :
+            <div style={{ color: 'var(--color-error)' }}>
+              {error}
+            </div>
+          }
+          <div className='flex flex-row gap-2 items-center'>
             <label className='font-semibold' htmlFor='width'>Width</label>
             <input
               className='p-1 rounded-md border w-20'
@@ -152,7 +157,7 @@ export default function SizeModal({ closeModal, historyPush, isOpen, level, setI
               value={widthStr}
             />
           </div>
-          <div className='flex flex-row gap-2 items-center w-full'>
+          <div className='flex flex-row gap-2 items-center '>
             <label className='font-semibold' htmlFor='height'>Height</label>
             <input
               className='p-1 rounded-md border w-20'
@@ -165,7 +170,7 @@ export default function SizeModal({ closeModal, historyPush, isOpen, level, setI
             />
           </div>
         </div>
-        <div className='flex flex-row gap-2 items-center w-full'>
+        <div className='flex flex-row gap-2 items-center '>
           <div className='flex flex-row gap-1  items-center'>
             <button
               className='px-1 border hover:bg-gray-500'
@@ -258,12 +263,9 @@ export default function SizeModal({ closeModal, historyPush, isOpen, level, setI
             -
             </button>
           </div>
+
         </div>
-        {!error ? null :
-          <div style={{ color: 'var(--color-error)' }}>
-            {error}
-          </div>
-        }
+
       </div>
     </Modal>
   );
