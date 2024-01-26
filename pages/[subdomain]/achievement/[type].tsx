@@ -5,6 +5,7 @@ import Page from '@root/components/page/page';
 import DataTable from '@root/components/tables/dataTable';
 import AchievementType from '@root/constants/achievements/achievementType';
 import Dimensions from '@root/constants/dimensions';
+import { AppContext } from '@root/contexts/appContext';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import cleanUser from '@root/lib/cleanUser';
 import dbConnect from '@root/lib/dbConnect';
@@ -14,7 +15,7 @@ import User from '@root/models/db/user';
 import { AchievementModel, UserModel } from '@root/models/mongoose';
 import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
-import React from 'react';
+import React, { useContext } from 'react';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
@@ -68,11 +69,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 export default function AchievementPage({ type, myAchievement, achievements }: {type: AchievementType, myAchievement?: Achievement, achievements: Achievement[] }) {
   const [page, setPage] = React.useState(1);
   const currData = achievements.slice((page - 1) * 25, page * 25);
+  const { game } = useContext(AppContext);
 
   return (
     <Page title='Viewing Achievement'>
       <div className='flex flex-col items-center justify-center w-full p-3'>
-        <FormattedAchievement achievementType={type} createdAt={myAchievement?.createdAt} unlocked={true} />
+        <FormattedAchievement achievementType={type} game={game} createdAt={myAchievement?.createdAt} unlocked={true} />
         <DataTable
           onSort={() => {}}
           sortBy='createdAt'

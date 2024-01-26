@@ -97,11 +97,12 @@ export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
   const userAgg = UserModel.aggregate<UserWithNotificationsCount>([
     {
       $match: {
-        emailDigest: EmailDigestSettingType.DAILY,
+        emailDigest: { $ne: EmailDigestSettingType.NONE },
         roles: {
           $ne: Role.GUEST,
         },
-        emailConfirmed: true,
+        // check where ts exists
+        ts: { $exists: true },
       },
     }, {
       $project: {
@@ -245,17 +246,21 @@ export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
 
     // Check if they have been inactive for 7 days
 
-    const isInactive = lastVisitedAt <= (Date.now() / 1000) - (7 * 24 * 60 * 60 );
+    const REACTIVATION_ENABLED = false;
 
-    if (isInactive) {
-      if (lastSentEmailLogsGroupedByType[EmailType.EMAIL_7D_REACTIVATE].length > 0) {
+    if (REACTIVATION_ENABLED) {
+      const isInactive = lastVisitedAt <= (Date.now() / 1000) - (7 * 24 * 60 * 60 );
+
+      if (isInactive) {
+        if (lastSentEmailLogsGroupedByType[EmailType.EMAIL_7D_REACTIVATE].length > 0) {
         // This means we've sent them a reactivation email in the past 7 days
 
-        if (lastVisitedAt <= (Date.now() / 1000) - (10 * 24 * 60 * 60 )) {
-          emailTypeToSend = EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE;
+          if (lastVisitedAt <= (Date.now() / 1000) - (10 * 24 * 60 * 60 )) {
+            emailTypeToSend = EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE;
+          }
+        } else {
+          emailTypeToSend = EmailType.EMAIL_7D_REACTIVATE;
         }
-      } else {
-        emailTypeToSend = EmailType.EMAIL_7D_REACTIVATE;
       }
     }
 

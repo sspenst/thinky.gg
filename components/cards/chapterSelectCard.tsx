@@ -1,4 +1,6 @@
 import Dimensions from '@root/constants/dimensions';
+import { GameId } from '@root/constants/GameId';
+import { Game } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
 import classNames from 'classnames';
 import Link from 'next/link';
@@ -11,24 +13,25 @@ interface ChapterSelectCardBaseProps {
   disabled?: boolean;
   disabledStr?: string;
   href: string;
+  game: Game
   id: string;
   levelData: string;
   subtitle?: string;
-  title: string;
+  title: string | JSX.Element;
 }
 
-function ChapterSelectCardBase({
+export function ChapterSelectCardBase({
   complete,
   disabled,
   disabledStr,
   href,
+  game,
   id,
   levelData,
   subtitle,
   title,
 }: ChapterSelectCardBaseProps) {
   const [backgroundImage, setBackgroundImage] = useState<string>();
-  const { game } = useContext(AppContext);
 
   useEffect(() => {
     setBackgroundImage(getPngDataClient(game.id, levelData));
@@ -84,36 +87,42 @@ function ChapterSelectCardBase({
 }
 
 interface ChapterSelectCardProps {
+  titleOverride?: string;
   chapter: number;
   chapterUnlocked?: number;
   href?: string;
 }
 
-export default function ChapterSelectCard({ chapter, chapterUnlocked, href }: ChapterSelectCardProps) {
+export default function ChapterSelectCard({ chapter, chapterUnlocked, href, titleOverride }: ChapterSelectCardProps) {
+  const { game } = useContext(AppContext);
+
   switch (chapter) {
   case 0:
     return (
       <ChapterSelectCardBase
+        game={game}
         href={href ?? '/tutorial'}
         id='tutorial'
         levelData={'00000000\n00000000\n00000000\n00000000'}
-        title={'Start'}
+        title={titleOverride || 'Start'}
       />
     );
   case 1:
     return (
       <ChapterSelectCardBase
+        game={game}
         complete={!!chapterUnlocked && chapterUnlocked > 1}
         href={href ?? '/chapter1'}
         id='chapter1'
         levelData={'50000000\n00000100\n02000000\n00000020'}
         subtitle={'Grassroots'}
-        title={'Chapter 1'}
+        title={titleOverride || 'Chapter 1'}
       />
     );
   case 2:
     return (
       <ChapterSelectCardBase
+        game={game}
         complete={!!chapterUnlocked && chapterUnlocked > 2}
         disabled={chapterUnlocked ? chapterUnlocked < 2 : false}
         disabledStr={'Complete Chapter 1 to unlock Chapter 2!'}
@@ -121,12 +130,13 @@ export default function ChapterSelectCard({ chapter, chapterUnlocked, href }: Ch
         id='chapter2'
         levelData={'005E0C00\n0G070005\n10005010\n005100I0'}
         subtitle={'Into the Depths'}
-        title={'Chapter 2'}
+        title={titleOverride || 'Chapter 2'}
       />
     );
   case 3:
     return (
       <ChapterSelectCardBase
+        game={game}
         complete={!!chapterUnlocked && chapterUnlocked > 3}
         disabled={chapterUnlocked ? chapterUnlocked < 3 : false}
         disabledStr={'Complete Chapter 2 to unlock Chapter 3!'}
@@ -134,18 +144,19 @@ export default function ChapterSelectCard({ chapter, chapterUnlocked, href }: Ch
         id='chapter3'
         levelData={'B519F0G0\n10JH5H52\n75F02J08\n02050B10'}
         subtitle={'Brain Busters'}
-        title={'Chapter 3'}
+        title={titleOverride || 'Chapter 3'}
       />
     );
   case 4:
     return (
       <ChapterSelectCardBase
+        game={game}
         disabled={!href}
         href={href ?? '/play'}
         id='chapter4'
         levelData={'65G9F0G5\nGBJ5GH5I\n50FF25DG\nJ5I5H505'}
         subtitle={'Coming soon...'}
-        title={'Chapter 4'}
+        title={titleOverride || 'Chapter 4'}
       />
     );
   default:

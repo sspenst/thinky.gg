@@ -29,6 +29,7 @@ export const getValidSubdomain = (host?: string | null) => {
 // RegExp for public files
 const PUBLIC_FILE = /\.(.*)$/; // Files
 const whiteList = {
+  'admin': 1,
   'api': 1,
   'confirm-email': 1,
   'drafts': 1,
