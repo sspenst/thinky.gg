@@ -138,32 +138,33 @@ export default function SizeModal({ closeModal, historyPush, isOpen, level, setI
       onSubmit={onSubmit}
       title={'Set Level Size'}
     >
-      <div className='flex flex-col gap-2 w-64 max-w-full'>
-        <div className='flex flex-row gap-2 items-center w-full'>
-          <label className='font-semibold' htmlFor='width'>Width</label>
-          <input
-            className='p-1 rounded-md border w-20'
-            name='width'
-            onChange={onWidthChange}
-            pattern='[0-9]*'
-            required
-            type='number'
-            value={widthStr}
-          />
+      <div className='flex flex-row gap-2  max-w-full items-center'>
+        <div className='flex flex-col gap-2 items-center'>
+          <div className='flex flex-row gap-2 items-center w-full'>
+            <label className='font-semibold' htmlFor='width'>Width</label>
+            <input
+              className='p-1 rounded-md border w-20'
+              name='width'
+              onChange={onWidthChange}
+              pattern='[0-9]*'
+              required
+              type='number'
+              value={widthStr}
+            />
+          </div>
+          <div className='flex flex-row gap-2 items-center w-full'>
+            <label className='font-semibold' htmlFor='height'>Height</label>
+            <input
+              className='p-1 rounded-md border w-20'
+              name='height'
+              onChange={onHeightChange}
+              pattern='[0-9]*'
+              required
+              type='number'
+              value={heightStr}
+            />
+          </div>
         </div>
-        <div className='flex flex-row gap-2 items-center w-full'>
-          <label className='font-semibold' htmlFor='height'>Height</label>
-          <input
-            className='p-1 rounded-md border w-20'
-            name='height'
-            onChange={onHeightChange}
-            pattern='[0-9]*'
-            required
-            type='number'
-            value={heightStr}
-          />
-        </div>
-        { /** create 8 buttons to add or remove rows and columns */}
         <div className='flex flex-row gap-2 items-center w-full'>
           <div className='flex flex-row gap-1  items-center'>
             <button
@@ -210,7 +211,8 @@ export default function SizeModal({ closeModal, historyPush, isOpen, level, setI
             -
               </button>
             </div>
-            <div className='bg-gray-200 w-10 h-20' />
+            { /** The rect */}
+            <div className='border-2 border-gray-200 m-1 w-10 h-16' />
             <div className='flex flex-row gap-1  items-center'>
               <button
                 className='px-1 border hover:bg-gray-500'
