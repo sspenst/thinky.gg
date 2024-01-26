@@ -34,6 +34,8 @@ export default function SizeModal({ closeModal, historyPush, isOpen, level, setI
     setLevel(prevLevel => {
       const level = JSON.parse(JSON.stringify(prevLevel)) as Level;
 
+      setError(undefined);
+
       if (direction === 'up' || direction === 'down') {
         if (level.height + amount < 1 || level.height + amount > 40) {
           setError('Height must be between 1 and 40');
