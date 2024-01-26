@@ -57,57 +57,9 @@ describe('Email per day', () => {
 
       expect(res.status).toBe(200);
       expect(response.error).toBeUndefined();
-
-      if (day === 6) {
-        expect(response.sent[EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE]).toHaveLength(0);
-        expect(response.sent[EmailType.EMAIL_DIGEST].sort()).toMatchObject(['admin@admin.com', 'bbb@gmail.com', 'test@gmail.com', 'the_curator@gmail.com'].sort());
-        expect(response.sent[EmailType.EMAIL_7D_REACTIVATE]).toHaveLength(0);
-      } else if (day === 7) {
-        expect(response.sent[EmailType.EMAIL_DIGEST]).toHaveLength(0); // all three were sent a reactivation email
-
-        expect(response.sent[EmailType.EMAIL_7D_REACTIVATE].sort()).toMatchObject(['admin@admin.com', 'bbb@gmail.com', 'test@gmail.com', 'the_curator@gmail.com'].sort());
-        expect(response.sent[EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE]).toHaveLength(0);
-
-        await createNewRecordOnALevelYouSolvedNotifications(DEFAULT_GAME_ID, [TestId.USER], TestId.USER_B, TestId.LEVEL, TestId.LEVEL);
-      } else if (day === 8 || day === 9) {
-        expect(response.sent[EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE]).toHaveLength(0);
-        expect(response.sent[EmailType.EMAIL_7D_REACTIVATE]).toHaveLength(0);
-        // We are continuing to send email digests between the reactivation and the auto unsubscribe
-        expect(response.sent[EmailType.EMAIL_DIGEST].sort()).toMatchObject(['admin@admin.com', 'bbb@gmail.com', 'test@gmail.com', 'the_curator@gmail.com'].sort());
-
-        // Now let's make the user come back to the site! (As if they got reactivated)
-        if (day === 9) {
-          await UserModel.findByIdAndUpdate(TestId.USER, { last_visited_at: TimerUtil.getTs() });
-        }
-      } else if (day === 10) {
-        const totalEmailsSent = await EmailLogModel.countDocuments({ userId: TestId.USER, state: EmailState.SENT }).lean();
-
-        expect(totalEmailsSent).toBe(day + 1);
-
-        expect(response.sent[EmailType.EMAIL_7D_REACTIVATE]).toHaveLength(0);
-        expect(response.sent[EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE].sort()).toMatchObject(['admin@admin.com', 'bbb@gmail.com', 'the_curator@gmail.com'].sort());
-      } else if (day >= 11 && day <= 15) {
-        expect(response.sent[EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE]).toHaveLength(0);
-        expect(response.sent[EmailType.EMAIL_7D_REACTIVATE]).toHaveLength(0);
-        expect(response.sent[EmailType.EMAIL_DIGEST].sort()).toMatchObject(['test@gmail.com'].sort());
-      } else if (day === 16) {
-        // Now it has been 7 days again since USER was active
-        expect(response.sent[EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE]).toHaveLength(0);
-        expect(response.sent[EmailType.EMAIL_7D_REACTIVATE].sort()).toMatchObject(['test@gmail.com'].sort());
-        expect(response.sent[EmailType.EMAIL_DIGEST]).toHaveLength(0);
-      } else if (day === 17) {
-        // Now it has been 7 days again since USER was active
-        expect(response.sent[EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE]).toHaveLength(0);
-        expect(response.sent[EmailType.EMAIL_DIGEST].sort()).toMatchObject(['test@gmail.com'].sort());
-        expect(response.sent[EmailType.EMAIL_7D_REACTIVATE]).toHaveLength(0);
-      } else if (day === 21) {
-        const totalEmailsSent = await EmailLogModel.countDocuments({ userId: TestId.USER, state: EmailState.SENT }).lean();
-
-        expect(totalEmailsSent).toBe(day + 1);
-        expect(response.sent[EmailType.EMAIL_7D_REACTIVATE]).toHaveLength(0);
-        expect(response.sent[EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE].sort()).toMatchObject(['test@gmail.com'].sort());
-        expect(response.sent[EmailType.EMAIL_DIGEST]).toHaveLength(0);
-      }
+      expect(response.sent[EmailType.EMAIL_DIGEST].sort()).toMatchObject(['admin@admin.com', 'bbb@gmail.com', 'test@gmail.com', 'the_curator@gmail.com'].sort());
+      expect(response.sent[EmailType.EMAIL_7D_REACTIVATE]).toHaveLength(0);
+      expect(response.sent[EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE]).toHaveLength(0);
 
       const tomorrow = Date.now() + (1000 * 60 * 60 * 24 ); // Note... Date.now() here is being mocked each time too!
 

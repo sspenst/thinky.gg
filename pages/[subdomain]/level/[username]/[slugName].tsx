@@ -177,6 +177,10 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
 
     let url = chapter ? `/chapter${chapter}` : `/collection/${collection.slug}`;
 
+    if (collection.type === CollectionType.InMemory) {
+      url = `${collection.slug}`;
+    }
+
     // search for index of level._id in collection.levels
     if (collection.levels) {
       const levelIndex = collection.levels.findIndex((l) => l._id === level._id);

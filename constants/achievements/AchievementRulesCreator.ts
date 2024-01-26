@@ -10,7 +10,7 @@ const AchievementRulesCreator: { [achievementType: string]: IAchievementInfoCrea
   [AchievementType.CREATOR_CREATED_25_HIGH_QUALITY_LEVELS]: {
     name: 'Masterpiece Maker',
     emoji: '🎻',
-    description: 'Created 25 acclaimed levels',
+    getDescription: () => 'Created 25 acclaimed levels',
     tooltip: 'Acclaimed levels have a review score >= 91.0',
     discordNotification: true,
     unlocked: ({ levelsCreated }) => {
@@ -22,7 +22,7 @@ const AchievementRulesCreator: { [achievementType: string]: IAchievementInfoCrea
   [AchievementType.CREATOR_CREATED_10_HIGH_QUALITY_LEVELS]: {
     name: 'Artist',
     emoji: '🎨',
-    description: 'Created 10 acclaimed levels',
+    getDescription: () => 'Created 10 acclaimed levels',
     discordNotification: true,
     tooltip: 'Acclaimed levels have a review score >= 91.0',
     unlocked: ({ levelsCreated }) => {
@@ -34,7 +34,7 @@ const AchievementRulesCreator: { [achievementType: string]: IAchievementInfoCrea
   [AchievementType.CREATOR_CREATED_1_HIGH_QUALITY_LEVEL]: {
     name: 'Stroke of Genius',
     emoji: '🖌️',
-    description: 'Created an acclaimed level',
+    getDescription: () => 'Created an acclaimed level',
     discordNotification: true,
     tooltip: 'Acclaimed levels have a review score >= 91.0',
     unlocked: ({ levelsCreated }) => {
@@ -46,7 +46,7 @@ const AchievementRulesCreator: { [achievementType: string]: IAchievementInfoCrea
   [AchievementType.CREATOR_CREATED_300_LEVELS]: {
     name: 'Visionary Architect',
     emoji: '🏰',
-    description: 'Created 300 quality levels',
+    getDescription: () => 'Created 300 quality levels',
     tooltip: 'Quality levels have a review score >= 80.0',
     discordNotification: true,
     unlocked: ({ levelsCreated }) => {
@@ -59,7 +59,7 @@ const AchievementRulesCreator: { [achievementType: string]: IAchievementInfoCrea
     name: 'Master Architect',
     emoji: '🏯',
     discordNotification: true,
-    description: 'Created 200 quality levels',
+    getDescription: () => 'Created 200 quality levels',
     tooltip: 'Quality levels have a review score >= 80.0',
     unlocked: ({ levelsCreated }) => {
       const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace >= 0.8);
@@ -71,7 +71,7 @@ const AchievementRulesCreator: { [achievementType: string]: IAchievementInfoCrea
     name: 'Architect',
     emoji: '🏛️',
     discordNotification: true,
-    description: 'Created 100 quality levels',
+    getDescription: () => 'Created 100 quality levels',
     tooltip: 'Quality levels have a review score >= 80.0',
     unlocked: ({ levelsCreated }) => {
       const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace >= 0.8);
@@ -83,7 +83,7 @@ const AchievementRulesCreator: { [achievementType: string]: IAchievementInfoCrea
     name: 'Engineer',
     emoji: '📐',
     discordNotification: true,
-    description: 'Created 50 quality levels',
+    getDescription: () => 'Created 50 quality levels',
     tooltip: 'Quality levels have a review score >= 80.0',
     unlocked: ({ levelsCreated }) => {
       const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace >= 0.8);
@@ -95,7 +95,7 @@ const AchievementRulesCreator: { [achievementType: string]: IAchievementInfoCrea
     name: 'Developer',
     emoji: '🏘',
     discordNotification: true,
-    description: 'Created 25 quality levels',
+    getDescription: () => 'Created 25 quality levels',
     tooltip: 'Quality levels have a review score >= 80.0',
     unlocked: ({ levelsCreated }) => {
       const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace >= 0.8);
@@ -107,7 +107,7 @@ const AchievementRulesCreator: { [achievementType: string]: IAchievementInfoCrea
     name: 'Builder',
     emoji: '🏗️',
     discordNotification: true,
-    description: 'Created 10 quality levels',
+    getDescription: () => 'Created 10 quality levels',
     tooltip: 'Quality levels have a review score >= 80.0',
     unlocked: ({ levelsCreated }) => {
       const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace >= 0.8);
@@ -118,7 +118,7 @@ const AchievementRulesCreator: { [achievementType: string]: IAchievementInfoCrea
   [AchievementType.CREATOR_CREATED_5_LEVELS]: {
     name: 'Apprentice',
     emoji: '🛠️',
-    description: 'Created 5 quality levels',
+    getDescription: () => 'Created 5 quality levels',
     tooltip: 'Quality levels have a review score >= 80.0',
     unlocked: ({ levelsCreated }) => {
       const qualityLevels = levelsCreated.filter(l => l.calc_reviews_score_laplace >= 0.8);
@@ -129,7 +129,7 @@ const AchievementRulesCreator: { [achievementType: string]: IAchievementInfoCrea
   [AchievementType.CREATOR_CREATED_1_LEVEL]: {
     name: 'Handyman',
     emoji: '🔧',
-    description: 'Created your first level',
+    getDescription: () => 'Created your first level',
     unlocked: ({ levelsCreated }) => levelsCreated.length >= 1,
   },
 };

@@ -75,7 +75,7 @@ export default function getMobileNotification(gameId: GameId, notification: Noti
     const meta = AchievementRulesCombined[notification.source.type];
 
     if (notification.source) {
-      mobileNotification.body = `${meta?.emoji} Achievement unlocked! ${meta.description}`;
+      mobileNotification.body = `${meta?.emoji} Achievement unlocked! ${meta.getDescription(game)}`;
       mobileNotification.url = `${host}/profile/${user.name}/achievements`;
     } else {
       mobileNotification.body = 'Unknown achievement';
