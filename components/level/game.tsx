@@ -384,7 +384,7 @@ export default function Game({
         loadCheckpoint(BEST_CHECKPOINT_INDEX);
       }
 
-      return false;
+      return;
     }
 
     setGameState(prevGameState => {
