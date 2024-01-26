@@ -347,7 +347,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
   useEffect(() => {
   // focus default-search
     document.getElementById('default-search')?.focus();
-  });
+  }, []);
   useEffect(() => {
     setData(enrichedLevels);
     setLoading(false);
