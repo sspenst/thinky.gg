@@ -30,6 +30,52 @@ export default function SizeModal({ closeModal, historyPush, isOpen, level, setI
     setWidthStr(e.currentTarget.value);
   }
 
+  function expandDirection(direction: 'left' | 'right' | 'up' | 'down', amount: number) {
+    setLevel(prevLevel => {
+      const level = JSON.parse(JSON.stringify(prevLevel)) as Level;
+
+      if (direction === 'up' || direction === 'down') {
+        if (level.height + amount < 1 || level.height + amount > 40) {
+          setError('Height must be between 1 and 40');
+
+          return level;
+        }
+
+        level.height += amount;
+
+        if (amount > 0) {
+          const newRows = Array(level.width + 1).join(TileType.Default).repeat(amount);
+
+          level.data = direction === 'up' ? newRows + '\n' + level.data : level.data + '\n' + newRows;
+        } else {
+          const rows = level.data.split('\n');
+
+          level.data = direction === 'up' ? rows.slice(-amount).join('\n') : rows.slice(0, amount).join('\n');
+        }
+      } else {
+        if (level.width + amount < 1 || level.width + amount > 40) {
+          setError('Width must be between 1 and 40');
+
+          return level;
+        }
+
+        level.width += amount;
+
+        if (amount > 0) {
+          const newColumns = Array(amount + 1).join(TileType.Default);
+
+          level.data = level.data.split('\n').map(row => direction === 'left' ? newColumns + row : row + newColumns).join('\n');
+        } else {
+          level.data = level.data.split('\n').map(row => direction === 'left' ? row.slice(-amount) : row.slice(0, amount)).join('\n');
+        }
+      }
+
+      historyPush(level);
+
+      return level;
+    });
+  }
+
   function onSubmit() {
     setError(undefined);
 
@@ -68,16 +114,6 @@ export default function SizeModal({ closeModal, historyPush, isOpen, level, setI
         if (y !== height - 1) {
           data = data + '\n';
         }
-      }
-
-      // there must always be a start
-      if (data.indexOf(TileType.Player) === -1) {
-        data = TileType.Player + data.substring(1, data.length);
-      }
-
-      // there must always be an end
-      if (data.indexOf(TileType.Exit) === -1) {
-        data = data.substring(0, data.length - 1) + TileType.Exit;
       }
 
       level.data = data;
@@ -124,6 +160,100 @@ export default function SizeModal({ closeModal, historyPush, isOpen, level, setI
             type='number'
             value={heightStr}
           />
+        </div>
+        { /** create 8 buttons to add or remove rows and columns */}
+        <div className='flex flex-row gap-2 items-center w-full'>
+          <div className='flex flex-row gap-1  items-center'>
+            <button
+              className='px-1 border hover:bg-gray-500'
+              onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+                e.preventDefault();
+                expandDirection('left', 1);
+              }
+              }
+            >
+            +
+            </button>
+            <button
+              className='px-1  border hover:bg-gray-500'
+              onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+                e.preventDefault();
+                expandDirection('left', -1);
+              }
+              }
+            >
+            -
+            </button>
+          </div>
+          <div className='flex flex-col gap-1 items-center'>
+            <div className='flex flex-row gap-1  items-center'>
+              <button
+                className='px-1 border hover:bg-gray-500'
+                onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+                  e.preventDefault();
+                  expandDirection('up', 1);
+                }
+                }
+              >
+            +
+              </button>
+              <button
+                className='px-1  border hover:bg-gray-500'
+                onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+                  e.preventDefault();
+                  expandDirection('up', -1);
+                }
+                }
+              >
+            -
+              </button>
+            </div>
+            <div className='bg-gray-200 w-10 h-20' />
+            <div className='flex flex-row gap-1  items-center'>
+              <button
+                className='px-1 border hover:bg-gray-500'
+                onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+                  e.preventDefault();
+                  expandDirection('down', 1);
+                }
+                }
+              >
+            +
+              </button>
+              <button
+                className='px-1  border hover:bg-gray-500'
+                onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+                  e.preventDefault();
+                  expandDirection('down', -1);
+                }
+                }
+              >
+            -
+              </button>
+            </div>
+          </div>
+          <div className='flex flex-row gap-1  items-center'>
+            <button
+              className='px-1 border hover:bg-gray-500'
+              onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+                e.preventDefault();
+                expandDirection('right', 1);
+              }
+              }
+            >
+            +
+            </button>
+            <button
+              className='px-1  border hover:bg-gray-500'
+              onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+                e.preventDefault();
+                expandDirection('right', -1);
+              }
+              }
+            >
+            -
+            </button>
+          </div>
         </div>
         {!error ? null :
           <div style={{ color: 'var(--color-error)' }}>

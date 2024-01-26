@@ -284,6 +284,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       <div className='flex flex-col h-24 py-1' style={{
         height: editorSelectionLevel.height * 48,
       }}>
+
         <BasicLayout
           cellClassName={(index) => {
             if (editorSelectionLevel.data[index] !== tileType) {
