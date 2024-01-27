@@ -17,23 +17,25 @@ export function Confetti() {
     const end = Date.now() + duration;
 
     function frame() {
+      const angle = 25 * Math.cos((Date.now() - end) / duration * Math.PI * 10);
+
       confetti({
         particleCount: 3,
-        angle: 20,
-        spread: 120,
+        angle: 30 + angle,
+        spread: 10,
         origin: { x: -.1 },
-        decay: 0.9,
+        startVelocity: 40 + Math.random() * 15,
       });
       confetti({
         particleCount: 3,
-        angle: 160,
-        spread: 120,
+        angle: 150 + angle,
+        spread: 10,
         origin: { x: 1.1 },
-
+        startVelocity: 40 + Math.random() * 15,
       });
     }
 
-    requestAnimationFrame(function loop(time) {
+    requestAnimationFrame(function loop() {
       if (Date.now() < end) {
         frame();
         requestAnimationFrame(loop);

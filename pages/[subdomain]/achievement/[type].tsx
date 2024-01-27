@@ -1,6 +1,7 @@
 import FormattedAchievement from '@root/components/formatted/formattedAchievement';
 import FormattedDate from '@root/components/formatted/formattedDate';
 import FormattedUser from '@root/components/formatted/formattedUser';
+import { dropConfetti } from '@root/components/page/Confetti';
 import Page from '@root/components/page/page';
 import DataTable from '@root/components/tables/dataTable';
 import AchievementType from '@root/constants/achievements/achievementType';
