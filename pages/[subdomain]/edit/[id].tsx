@@ -58,7 +58,7 @@ export default function Edit({ level }: EditProps) {
         new LinkInfo('Drafts', '/drafts'),
       ]}
       isFullScreen={true}
-      title={`${level.name}${isDirty ? '*' : ''}`}
+      title={`${level?.name}${isDirty ? '*' : ''}`}
     >
       <Editor
         isDirty={isDirty}
