@@ -25,7 +25,7 @@ interface GridProps {
 }
 
 export default function Grid({ cellClassName, cellStyle, disableAnimation, gameOverride, gameState, hideText, id, leastMoves, onCellClick, themeOverride }: GridProps) {
-  const { game: appGame } = useContext(AppContext);
+  const { game: appGame, deviceInfo } = useContext(AppContext);
   const { theme: appTheme } = useTheme();
   const game = (gameOverride || appGame);
   const theme = (themeOverride || appTheme);
@@ -139,6 +139,7 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
   }
 
   const onBgClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
     const x = Math.floor(e.nativeEvent.offsetX / tileSize);
     const y = Math.floor(e.nativeEvent.offsetY / tileSize);
     const rightClick = e.button === 2;
@@ -147,19 +148,12 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
   };
 
   const onBgTouch = (e: React.TouchEvent<HTMLDivElement>) => {
-    e.stopPropagation();
-    const x = Math.floor(e.touches[0].clientX / tileSize);
-    const y = Math.floor(e.touches[0].clientY / tileSize);
 
-    const numTouches = e.touches.length;
-
-    onCellClick && onCellClick(x, y, numTouches > 1);
   };
 
   const solidBg = (
     <div
-      onClick={onBgClick}
-      onTouchStart={onBgTouch}
+      onClick={onBgClick }
 
       className='absolute overlay-grid'
       style={{
