@@ -305,57 +305,74 @@ async function createMatch(req: NextApiRequestWithAuth) {
   const game = getGameFromId(req.gameId);
 
   if (game.disableMultiplayer) {
-    return null;
+    return { match: null, errorCode: 400, errorMessage: 'Multiplayer is disabled for this game' };
   }
 
   const isPrivate: boolean = req.body.private;
   const rated: boolean = req.body.rated;
   const reqUser = req.user;
   const type: MultiplayerMatchType = req.body.type;
+  const session = await mongoose.startSession();
+  let match: MultiplayerMatch | null = null;
+  let errorCode = 500, errorMessage = 'Error creating match';
 
-  const involvedMatch = await MultiplayerMatchModel.findOne(
-    {
-      players: reqUser._id,
-      state: {
-        $in: [MultiplayerMatchState.ACTIVE, MultiplayerMatchState.OPEN],
-      },
-      gameId: req.gameId,
-    },
-  ).lean<MultiplayerMatch>();
+  try {
+    await session.withTransaction(async () => {
+      const involvedMatch = await MultiplayerMatchModel.findOne(
+        {
+          players: reqUser._id,
+          state: {
+            $in: [MultiplayerMatchState.ACTIVE, MultiplayerMatchState.OPEN],
+          },
+          gameId: req.gameId,
+        }, {}, { session: session }
+      ).lean<MultiplayerMatch>();
 
-  if (involvedMatch) {
-    return null;
+      if (involvedMatch) {
+        errorCode = 400;
+        errorMessage = 'You are already involved in a match';
+        throw new Error(errorMessage);
+      }
+
+      const matchId = makeId(11);
+      const matchUrl = `${req.headers.origin}/match/${matchId}`;
+
+      const matchCreate = await MultiplayerMatchModel.create([{
+        createdBy: reqUser._id,
+        gameId: req.gameId,
+        matchId: matchId,
+        matchLog: [
+          generateMatchLog(MatchAction.CREATE, {
+            userId: reqUser._id,
+          }),
+        ],
+        players: [reqUser._id],
+        private: isPrivate,
+        rated: rated,
+        state: MultiplayerMatchState.OPEN,
+        type: type,
+      }], { session: session });
+
+      match = matchCreate[0] as MultiplayerMatch;
+
+      if (!match.private) {
+        const discordChannel = game.id === GameId.SOKOPATH ? DiscordChannel.SokopathMultiplayer : DiscordChannel.PathologyMultiplayer;
+        const discordMessage = `New *${multiplayerMatchTypeToText(type)}* match created by **${reqUser.name}**! [Join here](<${matchUrl}>)`;
+
+        await queueDiscordWebhook(discordChannel, discordMessage);
+      }
+
+      enrichMultiplayerMatch(match, reqUser._id.toString());
+      errorCode = 200;
+      errorMessage = '';
+    });
+    session.endSession();
+  } catch (e) {
+    logger.error(e);
+    session.endSession();
   }
 
-  const matchId = makeId(11);
-  const matchUrl = `${req.headers.origin}/match/${matchId}`;
-
-  const match = await MultiplayerMatchModel.create({
-    createdBy: reqUser._id,
-    gameId: req.gameId,
-    matchId: matchId,
-    matchLog: [
-      generateMatchLog(MatchAction.CREATE, {
-        userId: reqUser._id,
-      }),
-    ],
-    players: [reqUser._id],
-    private: isPrivate,
-    rated: rated,
-    state: MultiplayerMatchState.OPEN,
-    type: type,
-  });
-
-  if (!match.private) {
-    const discordChannel = game.id === GameId.SOKOPATH ? DiscordChannel.SokopathMultiplayer : DiscordChannel.PathologyMultiplayer;
-    const discordMessage = `New *${multiplayerMatchTypeToText(type)}* match created by **${reqUser.name}**! [Join here](<${matchUrl}>)`;
-
-    await queueDiscordWebhook(discordChannel, discordMessage);
-  }
-
-  enrichMultiplayerMatch(match, reqUser._id.toString());
-
-  return match;
+  return { match, errorCode, errorMessage };
 }
 
 /**
@@ -524,7 +541,13 @@ export default withAuth(
       let match;
 
       try {
-        match = await createMatch(req);
+        const { match: cMatch, errorCode, errorMessage } = await createMatch(req);
+
+        match = cMatch as unknown as MultiplayerMatch;
+
+        if (errorCode !== 200) {
+          return res.status(errorCode).json({ error: errorMessage });
+        }
       } catch (e) {
         logger.error(e);
 
@@ -533,8 +556,8 @@ export default withAuth(
 
       if (!match) {
         return res
-          .status(400)
-          .json({ error: 'You are already involved in a match' });
+          .status(500)
+          .json({ error: 'Something went wrong creating the match' });
       }
 
       await requestBroadcastMatches(match.gameId);
