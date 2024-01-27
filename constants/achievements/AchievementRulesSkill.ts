@@ -1,5 +1,6 @@
 import { DIFFICULTY_INDEX, difficultyList } from '@root/components/formatted/formattedDifficulty';
 import { LevelWithRecordHistory } from '@root/helpers/getRecordsByUserId';
+import { Game, GameType } from '../Games';
 import { IAchievementInfo } from './achievementInfo';
 import AchievementType from './achievementType';
 
@@ -72,7 +73,11 @@ skillRequirements.forEach(req => {
   const difficulty = difficultyList[req.difficultyIndex];
 
   AchievementRulesSkill[req.achievementType] = {
-    description: `Solved ${req.levels} levels at ${difficulty.name} difficulty${req.difficultyIndex !== DIFFICULTY_INDEX.SUPER_GRANDMASTER ? ' or higher' : ''}`,
+    getDescription(game: Game) {
+      const verb = game.type === GameType.COMPLETE_AND_SHORTEST ? 'Completed' : 'Solved';
+
+      return `${verb} ${req.levels} levels at ${difficulty.name} difficulty${req.difficultyIndex !== DIFFICULTY_INDEX.SUPER_GRANDMASTER ? ' or higher' : ''}`;
+    },
     emoji: difficulty.emoji,
     name: difficulty.name,
     unlocked: ({ rollingLevelSolvesSum }) => rollingLevelSolvesSum[req.difficultyIndex] >= req.levels,
@@ -84,7 +89,7 @@ skillRequirements.forEach(req => {
 });
 
 AchievementRulesSkill[AchievementType.RECORD_AFTER_1_YEAR] = {
-  description: 'Discovered Record On Level After 1 Year of Level Creation',
+  getDescription: () => 'Discovered Record On Level After 1 Year of Level Creation',
   emoji: '🏜',
   name: 'Buried Treasure',
   discordNotification: true,

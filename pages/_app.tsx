@@ -3,6 +3,7 @@ import 'react-tooltip/dist/react-tooltip.css';
 import '../styles/global.css';
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react';
 import { Portal } from '@headlessui/react';
+import { Confetti } from '@root/components/page/Confetti';
 import DismissToast from '@root/components/toasts/dismissToast';
 import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
 import { Game, Games } from '@root/constants/Games';
@@ -345,7 +346,6 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
   useEffect(() => {
     for (const match of matches) {
       // if match is active and includes user, then redirect to match page /match/[matchId]
-      console.log('match', match, router.pathname);
 
       if (match.state === MultiplayerMatchState.ACTIVE && match.players.some((player: User) => player?._id?.toString() === user?._id?.toString())) {
         // match sure current url isn't this
@@ -532,6 +532,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
              */}
             <Portal>
               <Toaster toastOptions={{ duration: 1500 }} />
+              <Confetti />
             </Portal>
             <MusicContextProvider>
               <Component {...pageProps} />
