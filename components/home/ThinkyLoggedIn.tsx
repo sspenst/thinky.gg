@@ -87,7 +87,7 @@ export function ThinkyHomePageLoggedIn({ user }: {user: User}) {
                 id={'Level-of-day-' + game.id}
                 levelData={levelOfDay.data}
                 title={<div className='flex flex-col'><span>Level of the Day</span><span className='text-sm'>{todayDateClean}</span></div>}
-                subtitle={'by ' + levelOfDay.userId.name}
+                subtitle={'by ' + levelOfDay.userId?.name}
               />}
             </section>
           );
