@@ -162,7 +162,9 @@ export default function Multiplayer() {
     </div>
     <CreateMatchModal
       isOpen={isCreateMatchModalOpen}
-      closeModal={() => setIsCreateMatchModalOpen(false) }
+      closeModal={() => {
+        setIsCreateMatchModalOpen(false);
+      }}
       onConfirm={(matchType: MultiplayerMatchType, isPrivate: boolean, isRated: boolean) => {
         setIsCreateMatchModalOpen(false);
         postNewMatch(matchType, isPrivate, isRated);
