@@ -1,4 +1,6 @@
 module.exports = {
+  productionBrowserSourceMaps: true,
+
   async redirects() {
     return [
       {
