@@ -7,6 +7,7 @@ interface Level {
   archivedBy?: Types.ObjectId & User;
   archivedTs?: number;
   authorNote?: string;
+  backgroundImageUrl?: string;
   /**
    * An estimated difficulty to complete this level for the first time
    */

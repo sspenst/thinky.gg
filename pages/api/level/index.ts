@@ -1,3 +1,5 @@
+import isPro from '@root/helpers/isPro';
+import { validBackgroundImageUrl } from '@root/helpers/validLevelBackgroundImageUrl';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidType } from '../../../helpers/apiWrapper';
@@ -10,6 +12,7 @@ import { LevelModel } from '../../../models/mongoose';
 export default withAuth({ POST: {
   body: {
     authorNote: ValidType('string', false),
+    backgroundImageUrl: ValidType('string', false),
     data: ValidType('string'),
     name: ValidType('string'),
   }
@@ -19,7 +22,16 @@ export default withAuth({ POST: {
 
   try {
     await session.withTransaction(async () => {
-      const { authorNote, data, name } = req.body;
+      const { authorNote, backgroundImageUrl, data, name } = req.body;
+
+      if (backgroundImageUrl && !isPro(req.user)) {
+        return res.status(403).json({ error: 'Background image is a Pro feature' });
+      }
+
+      if (!validBackgroundImageUrl(backgroundImageUrl)) {
+        return res.status(400).json({ error: 'Invalid background image URL' });
+      }
+
       const rows = data.split('\n');
       const trimmedName = name.trim();
       const slug = await generateLevelSlug(req.gameId, req.user.name, trimmedName, undefined, { session: session });
@@ -27,6 +39,7 @@ export default withAuth({ POST: {
       await LevelModel.create([{
         _id: levelId,
         authorNote: authorNote?.trim(),
+        backgroundImageUrl: backgroundImageUrl.trim(),
         data: data,
         gameId: req.gameId,
         height: rows.length,

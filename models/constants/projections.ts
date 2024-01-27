@@ -1,5 +1,6 @@
 export const LEVEL_DEFAULT_PROJECTION = {
   _id: 1,
+  backgroundImageUrl: 1,
   calc_difficulty_completion_estimate: 1,
   calc_difficulty_estimate: 1,
   calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' },

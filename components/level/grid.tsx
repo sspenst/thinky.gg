@@ -147,10 +147,6 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
     onCellClick && onCellClick(x, y, rightClick);
   };
 
-  const onBgTouch = (e: React.TouchEvent<HTMLDivElement>) => {
-
-  };
-
   const solidBg = (
     <div
       onClick={onBgClick }
