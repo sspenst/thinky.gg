@@ -1,3 +1,5 @@
+import SimpleDropdown from '@root/components/SimpleDropdown';
+import { ReviewVisibility } from '@root/constants/reviewVisibility';
 import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Rating } from 'react-simple-star-rating';
@@ -18,6 +20,7 @@ interface ReviewFormProps {
 export default function ReviewForm({ inModal, review }: ReviewFormProps) {
   const [isEditing, setIsEditing] = useState(!review);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [reviewVisibility, setReviewVisibility] = useState(review?.visibility || undefined);
   const levelContext = useContext(LevelContext);
   const [rating, setRating] = useState(review?.score || 0);
   const [reviewBody, setReviewBody] = useState(review?.text || '');
@@ -92,6 +95,12 @@ export default function ReviewForm({ inModal, review }: ReviewFormProps) {
   const authorId = levelContext?.level.archivedBy?.toString() ?? levelContext?.level.userId._id.toString();
   const isOwnLevel = authorId === user._id.toString();
 
+  const visibilityExplanations = {
+    [ReviewVisibility.EVERYONE]: '',
+    [ReviewVisibility.MASKED]: 'Will be marked as a hint and covered by a spoiler mask.',
+    [ReviewVisibility.CONTAINS_SPOILER]: 'Will not be shown to users who have not solved the level.',
+  };
+
   return (
     <div className='block w-full reviewsSection flex flex-col gap-2 mb-2' style={{
       borderColor: 'var(--bg-color-4)',
@@ -138,6 +147,21 @@ export default function ReviewForm({ inModal, review }: ReviewFormProps) {
         placeholder='Optional review...'
         value={reviewBody}
       />
+      <SimpleDropdown items={[
+        { label: 'Everyone', value: undefined },
+        { label: 'May contain hints', value: ReviewVisibility.MASKED },
+        { label: 'Contains spoilers', value: ReviewVisibility.CONTAINS_SPOILER },
+      ]}
+      defaultValue={reviewVisibility}
+      onChange={(item: { label: string; value?: string }) => {
+        setReviewVisibility(item.value as ReviewVisibility);
+      }}
+      />
+      { reviewVisibility &&
+        <div className='text-xs text-neutral-400'>
+          {visibilityExplanations[reviewVisibility]}
+        </div>
+      }
       {!(rating === 0 && reviewBody.length === 0) &&
         <div className='flex gap-2'>
           <button

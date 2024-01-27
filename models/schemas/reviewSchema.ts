@@ -1,4 +1,5 @@
 import { GameId } from '@root/constants/GameId';
+import { ReviewVisibility } from '@root/constants/reviewVisibility';
 import mongoose from 'mongoose';
 import Review from '../db/review';
 
@@ -36,6 +37,11 @@ const ReviewSchema = new mongoose.Schema<Review>({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
+  },
+  visibility: {
+    type: String,
+    required: false,
+    enum: ReviewVisibility,
   },
 });
 

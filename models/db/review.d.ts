@@ -1,4 +1,5 @@
 import { GameId } from '@root/constants/GameId';
+import { ReviewVisibility } from '@root/constants/reviewVisibility';
 import { Types } from 'mongoose';
 import Level, { EnrichedLevel } from './level';
 import User from './user';
@@ -12,6 +13,7 @@ interface Review {
   text?: string;
   ts: number;
   userId: Types.ObjectId & User;
+  visibility?: ReviewVisibility;
 }
 
 export interface ReviewWithStats extends Review {
