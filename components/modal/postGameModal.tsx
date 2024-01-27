@@ -5,8 +5,9 @@ import useHomePageData, { HomepageDataType } from '@root/hooks/useHomePageData';
 import Collection from '@root/models/db/collection';
 import Level, { EnrichedLevel } from '@root/models/db/level';
 import User from '@root/models/db/user';
+import JSConfetti from 'js-confetti';
 import Link from 'next/link';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import Card from '../cards/card';
 import ChapterSelectCard from '../cards/chapterSelectCard';
 import LevelCardWithTitle from '../cards/levelCardWithTitle';
@@ -40,8 +41,9 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
     }
   }
 
-  const { game } = useContext(AppContext);
   const { data } = useHomePageData([HomepageDataType.RecommendedLevel], !isOpen || nextLevel !== undefined);
+  const { game } = useContext(AppContext);
+
   const [queryParams, setQueryParams] = useState<URLSearchParams>();
   const [recommendedLevel, setRecommendedLevel] = useState<EnrichedLevel>();
 

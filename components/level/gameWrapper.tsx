@@ -14,6 +14,7 @@ import FormattedUser from '../formatted/formattedUser';
 import Modal from '../modal';
 import LevelInfoModal from '../modal/levelInfoModal';
 import PostGameModal from '../modal/postGameModal';
+import { dropConfetti } from '../page/Confetti';
 import Game from './game';
 import FormattedLevelInfo from './info/formattedLevelInfo';
 import Solved from './info/solved';
@@ -210,6 +211,8 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
             onPrev();
           } : undefined}
           onSolve={() => {
+            dropConfetti();
+
             if (isDynamicSupported && isDynamic) {
               toggleVersion('hot');
             }

@@ -17,6 +17,7 @@ import { LevelContext } from '../../contexts/levelContext';
 import { PageContext } from '../../contexts/pageContext';
 import Control from '../../models/control';
 import Level, { EnrichedLevel } from '../../models/db/level';
+import { dropConfetti } from '../page/Confetti';
 import GameLayout from './gameLayout';
 
 interface SessionCheckpoint {
