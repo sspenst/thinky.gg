@@ -75,6 +75,7 @@ export default function Modal({
           >
             <form onSubmit={(e) => {
               e.preventDefault();
+              // check if the target is closeBtn, if so return
 
               if (onSubmit) {
                 onSubmit();
@@ -94,7 +95,10 @@ export default function Modal({
                 <Dialog.Title as='div' className='flex gap-4 text-center'>
                   <span className='w-6' />
                   <span className='grow text-xl font-bold truncate'>{title}</span>
-                  <button className='hover:opacity-100 opacity-50' onClick={closeModal} tabIndex={-1}>
+                  <button className='hover:opacity-100 opacity-50 closeBtn' onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+                    e.preventDefault();
+                    closeModal();
+                  }} tabIndex={-1}>
                     <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
                       <path strokeLinecap='round' strokeLinejoin='round' d='M6 18L18 6M6 6l12 12' />
                     </svg>
@@ -110,10 +114,16 @@ export default function Modal({
                     : onSubmit ?
                       <>
                         <ModalButton type='submit' disabled={disabled} onClick={() => {}} text={'Submit'} />
-                        <ModalButton disabled={disabled} onClick={closeModal} text={'Cancel'} />
+                        <ModalButton disabled={disabled} onClick={(e) => {
+                          e?.preventDefault();
+                          closeModal();
+                        }} text={'Cancel'} />
                       </>
                       :
-                      <ModalButton disabled={disabled} onClick={closeModal} text={'Close'} />
+                      <ModalButton disabled={disabled} onClick={(e) => {
+                        e?.preventDefault();
+                        closeModal();
+                      }} text={'Close'} />
                   }
                 </div>
               </Dialog.Panel>
