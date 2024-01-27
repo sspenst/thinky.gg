@@ -575,3 +575,9 @@ body {
   }
 }
 
+
+.overlay-grid {
+  background-image:
+    linear-gradient(to right, black 1px, transparent 1px),
+    linear-gradient(to bottom, black 1px, transparent 1px);
+}
