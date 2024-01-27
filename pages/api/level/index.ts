@@ -39,7 +39,7 @@ export default withAuth({ POST: {
       await LevelModel.create([{
         _id: levelId,
         authorNote: authorNote?.trim(),
-        backgroundImageUrl: backgroundImageUrl.trim(),
+        backgroundImageUrl: backgroundImageUrl?.trim(),
         data: data,
         gameId: req.gameId,
         height: rows.length,
