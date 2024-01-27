@@ -67,7 +67,6 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
       resizeObserver.unobserve(el);
     };
   }, [gridId, height, width]);
-
   const tiles = [];
   const blocks: { [id: number]: JSX.Element } = {};
 
@@ -75,6 +74,10 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
     for (let x = 0; x < gameState.board[y].length; x++) {
       const tileState = gameState.board[y][x];
       const tileType = tileState.tileType;
+
+      if (tileType === TileType.Default && tileState.block === undefined && tileState.blockInHole === undefined && tileState.text.length === 0) {
+        continue;
+      }
 
       const text = tileType === TileType.Player ? 0 :
         tileType === TileType.Exit ? leastMoves :
@@ -135,6 +138,32 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
     }
   }
 
+  const solidBg = (
+    <div
+      onClick={(e: React.MouseEvent<HTMLDivElement>) => {
+        const x = Math.floor(e.nativeEvent.offsetX / tileSize);
+        const y = Math.floor(e.nativeEvent.offsetY / tileSize);
+        const rightClick = e.button === 2;
+
+        onCellClick && onCellClick(x, y, rightClick);
+      }}
+
+      className='absolute overlay-grid'
+      style={{
+        backgroundColor: 'var(--level-grid)',
+        backgroundSize: `${tileSize}px ${tileSize}px`,
+        backgroundPosition: `${-borderWidth}px ${-borderWidth}px`,
+        backgroundImage: `
+          linear-gradient(to right, black ${borderWidth * 2 }px, transparent ${borderWidth * 2 }px),
+          linear-gradient(to bottom, black ${borderWidth * 2}px, transparent ${borderWidth * 2 }px)
+        `,
+
+        height: tileSize * height,
+        width: tileSize * width,
+      }}
+    />
+  );
+
   return (
     <div className={classNames('grow flex items-center justify-center overflow-hidden ' + theme, { [teko.className]: classic })} id={gridId}>
       {tileSize !== 0 &&
@@ -152,6 +181,7 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
               width: tileSize * width,
             }}
           >
+            {solidBg}
             {tiles}
             {Object.values(blocks)}
             {gameState.pos &&
