@@ -101,14 +101,14 @@ export default function Test({ level }: TestProps) {
     <Page
       folders={[
         new LinkInfo('Drafts', '/drafts'),
-        new LinkInfo(level.name, `/edit/${level._id}`),
+        new LinkInfo(level?.name, `/edit/${level._id}`),
       ]}
       isFullScreen={true}
       title='Test'
     >
       <div className='flex flex-col h-full max-w-full'>
         <h2 className='whitespace-nowrap font-bold truncate text-center p-1'>
-          {level.name}
+          {level?.name}
         </h2>
         <Game
           disablePlayAttempts={true}
