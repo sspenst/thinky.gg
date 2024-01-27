@@ -112,7 +112,7 @@ export default withAuth({
           }, {
             $set: {
               authorNote: trimmedAuthorNote,
-              backgroundImageUrl: backgroundImageUrl.trim(),
+              backgroundImageUrl: backgroundImageUrl?.trim(),
               name: trimmedName,
               slug: slug,
             },
