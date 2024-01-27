@@ -104,12 +104,12 @@ export default function Modal({
                 <div className='flex justify-center gap-2 flex-wrap'>
                   {onConfirm ?
                     <>
-                      <ModalButton type='submit' disabled={disabled} onClick={onConfirm} text={'OK'} />
+                      <ModalButton type='submit' disabled={disabled} onClick={() => {}} text={'OK'} />
                       <ModalButton disabled={disabled} onClick={closeModal} text={'Cancel'} />
                     </>
                     : onSubmit ?
                       <>
-                        <ModalButton type='submit' disabled={disabled} onClick={onSubmit} text={'Submit'} />
+                        <ModalButton type='submit' disabled={disabled} onClick={() => {}} text={'Submit'} />
                         <ModalButton disabled={disabled} onClick={closeModal} text={'Cancel'} />
                       </>
                       :
