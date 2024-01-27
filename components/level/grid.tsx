@@ -138,15 +138,28 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
     }
   }
 
+  const onBgClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const x = Math.floor(e.nativeEvent.offsetX / tileSize);
+    const y = Math.floor(e.nativeEvent.offsetY / tileSize);
+    const rightClick = e.button === 2;
+
+    onCellClick && onCellClick(x, y, rightClick);
+  };
+
+  const onBgTouch = (e: React.TouchEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    const x = Math.floor(e.touches[0].clientX / tileSize);
+    const y = Math.floor(e.touches[0].clientY / tileSize);
+
+    const numTouches = e.touches.length;
+
+    onCellClick && onCellClick(x, y, numTouches > 1);
+  };
+
   const solidBg = (
     <div
-      onClick={(e: React.MouseEvent<HTMLDivElement>) => {
-        const x = Math.floor(e.nativeEvent.offsetX / tileSize);
-        const y = Math.floor(e.nativeEvent.offsetY / tileSize);
-        const rightClick = e.button === 2;
-
-        onCellClick && onCellClick(x, y, rightClick);
-      }}
+      onClick={onBgClick}
+      onTouchStart={onBgTouch}
 
       className='absolute overlay-grid'
       style={{
