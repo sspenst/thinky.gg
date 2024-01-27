@@ -41,7 +41,8 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
 
   return (
     <div className='grow flex flex-col max-w-full select-none h-full' id='game-layout' style={{
-      backgroundColor: 'var(--bg-color)',
+      //backgroundColor: 'var(--bg-color)',
+
     }}>
       <Grid
         gameState={gameState}
@@ -53,8 +54,12 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
           }
         }}
       />
-      <div className='gap-2 mx-3 transition-opacity flex'>
-        {!disableCheckpoints && !fullScreen &&
+      <div className='w-full' style={{
+        backgroundColor: 'var(--bg-color)',
+      }}>
+
+        <div className='gap-2 mx-3 transition-opacity flex'>
+          {!disableCheckpoints && !fullScreen &&
           <>
             <button
               data-tooltip-content='Checkpoints'
@@ -79,11 +84,11 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
             />
           </>
 
-        }
-        <div className='grow'>
-          <Controls controls={controls} />
-        </div>
-        {!deviceInfo.isMobile &&
+          }
+          <div className='grow'>
+            <Controls controls={controls} />
+          </div>
+          {!deviceInfo.isMobile &&
         <>
           <button
             data-tooltip-content='Fullscreen'
@@ -118,7 +123,8 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
           </button>
           <StyledTooltip id='fullscreen-tooltip' />
         </>
-        }
+          }
+        </div>
       </div>
     </div>
   );

@@ -280,7 +280,13 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
     ) : isDirty ? 'Save before testing' : null;
 
   return (<>
-    <div className='flex flex-col h-full'>
+    <div className='flex flex-col h-full' style={{
+      ...(level.backgroundImageUrl ? {
+        backgroundImage: `url(${level.backgroundImageUrl})`,
+        backgroundRepeat: 'no-repeat',
+        backgroundSize: 'cover',
+      } : {}) as React.CSSProperties,
+    }}>
       <div className='flex flex-col h-24 py-1' style={{
         height: editorSelectionLevel.height * 48,
       }}>

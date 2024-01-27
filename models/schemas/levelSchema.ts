@@ -1,4 +1,5 @@
 import { GameId } from '@root/constants/GameId';
+import { validBackgroundImageUrl } from '@root/helpers/validLevelBackgroundImageUrl';
 import mongoose, { QueryOptions, Types } from 'mongoose';
 import getDifficultyEstimate, { getDifficultyCompletionEstimate } from '../../helpers/getDifficultyEstimate';
 import Level from '../db/level';
@@ -18,6 +19,20 @@ const LevelSchema = new mongoose.Schema<Level>(
     authorNote: {
       type: String,
       maxlength: 1024 * 5, // 5 kb limit seems reasonable
+    },
+    backgroundImageUrl: {
+      type: String,
+      maxlength: 1024 * 5, // 5 kb limit seems reasonable
+      // validation for url should be only alphanumeric characters
+      validate: {
+        validator: (v: string) => {
+          // only allow imgur urls for now
+          // i.e https://i.imgur.com/T2HuKuY.png
+          return validBackgroundImageUrl(v);
+        },
+        message: (props: { value: string }) => `${props.value} is not a valid url!`,
+      },
+      required: false,
     },
     calc_difficulty_completion_estimate: {
       type: Number,

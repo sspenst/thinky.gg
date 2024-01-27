@@ -1,4 +1,6 @@
+import isPro from '@root/helpers/isPro';
 import { logger } from '@root/helpers/logger';
+import { validBackgroundImageUrl } from '@root/helpers/validLevelBackgroundImageUrl';
 import mongoose from 'mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidObjectId } from '../../../../helpers/apiWrapper';
@@ -63,7 +65,7 @@ export default withAuth({
     }
 
     const { id } = req.query;
-    const { authorNote, name } = req.body;
+    const { authorNote, backgroundImageUrl, name } = req.body;
     const trimmedName = name?.trim();
 
     if (!trimmedName) {
@@ -80,6 +82,22 @@ export default withAuth({
       });
     }
 
+    if (backgroundImageUrl) {
+      if (!isPro(req.user)) {
+        return res.status(401).json({
+          error: 'Background image is a Pro feature',
+        });
+      }
+
+      const valid = validBackgroundImageUrl(backgroundImageUrl);
+
+      if (!valid) {
+        return res.status(400).json({
+          error: 'Invalid background image URL',
+        });
+      }
+    }
+
     if (isCurator(req.user) || req.userId === level.userId.toString()) {
       const session = await mongoose.startSession();
 
@@ -94,6 +112,7 @@ export default withAuth({
           }, {
             $set: {
               authorNote: trimmedAuthorNote,
+              backgroundImageUrl: backgroundImageUrl.trim(),
               name: trimmedName,
               slug: slug,
             },
@@ -109,9 +128,15 @@ export default withAuth({
         });
 
         session.endSession();
-      } catch (err) {
+      } catch (err: any) {
         logger.error(err);
         session.endSession();
+
+        if (err?.message) {
+          return res.status(400).json({
+            error: err.message,
+          });
+        }
 
         return res.status(500).json({
           error: `Error updating slug for level id ${level._id.toString()}`,

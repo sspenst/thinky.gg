@@ -59,7 +59,11 @@ export default function Controls({ controls }: ControlsProps) {
   const mouseDownStartTs = useRef(0);
 
   return (
-    <div className='select-none flex justify-center z-10 min-h-[44px] text-xs sm:text-base'>
+    <div className='select-none flex justify-center z-10 min-h-[44px] text-xs sm:text-base'
+      style={{
+        backgroundColor: 'var(--bg-color)',
+      }}
+    >
       {controls.map((control) => (
         <button
           className={classNames(

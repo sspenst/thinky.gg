@@ -127,7 +127,13 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
 
   return (
     <div className='flex h-full'>
-      <div className='flex flex-col grow max-w-full'>
+      <div className='flex flex-col grow max-w-full' style={{
+        ...(level.backgroundImageUrl ? {
+          backgroundImage: `url(${level.backgroundImageUrl})`,
+          backgroundRepeat: 'no-repeat',
+          backgroundSize: 'cover',
+        } : {}) as React.CSSProperties,
+      }}>
         <div className='flex items-center justify-center py-1 px-2 gap-1 xl:hidden'>
           {collection && <>
             <button className='mr-1' onClick={() => {

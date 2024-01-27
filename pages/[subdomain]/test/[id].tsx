@@ -106,7 +106,13 @@ export default function Test({ level }: TestProps) {
       isFullScreen={true}
       title='Test'
     >
-      <div className='flex flex-col h-full max-w-full'>
+      <div className='flex flex-col h-full max-w-full' style={{
+        ...(level.backgroundImageUrl ? {
+          backgroundImage: `url(${level.backgroundImageUrl})`,
+          backgroundRepeat: 'no-repeat',
+          backgroundSize: 'cover',
+        } : {}) as React.CSSProperties,
+      }}>
         <h2 className='whitespace-nowrap font-bold truncate text-center p-1'>
           {level?.name}
         </h2>
