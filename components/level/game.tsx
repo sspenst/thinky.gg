@@ -613,7 +613,7 @@ export default function Game({
         return;
       }
 
-      if (Math.abs(dx) < tileSize + tileMargin && Math.abs(dy) < tileSize + tileMargin) {
+      if (Math.abs(dx) < tileSize - tileMargin && Math.abs(dy) < tileSize - tileMargin) {
         return;
       }
 
