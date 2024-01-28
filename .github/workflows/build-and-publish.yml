@@ -55,7 +55,7 @@ jobs:
           load: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/thinky_app_base:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/pathology:base
           target: base
           push: true
 
