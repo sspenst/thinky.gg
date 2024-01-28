@@ -20,6 +20,7 @@ import FormattedLevelLink from '../formatted/formattedLevelLink';
 import FormattedUser from '../formatted/formattedUser';
 import GameLogo from '../gameLogo';
 import { Stars } from '../level/reviews/formattedReview';
+import { dropConfetti } from '../page/Confetti';
 
 interface NotificationMessageProps {
   notification: Notification;
@@ -148,9 +149,9 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
 
       const meta = AchievementRulesCombined[achievement.type];
 
-      return (<>
-        {`Achievement unlocked! ${meta?.getDescription(game)}`}
-      </>);
+      return (<div>
+        Achievement unlocked! <Link onClick={dropConfetti} className='underline font-bold' href={getProfileSlug(notification.target as User) + '/achievements/'}>{meta?.getDescription(game)}</Link>
+      </div>);
     }
 
     return (<>
@@ -161,7 +162,7 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
     const comment = notification.message ? JSON.parse(notification.message) as Comment : null;
 
     return (<>
-      posted a <Link onClick={onMarkAsRead} className='underline' href={getProfileSlug(notification.target as User) + '?commentId=' + comment?._id}>message</Link> on your profile.
+      posted a <Link onClick={onMarkAsRead} className='underline font-bold' href={getProfileSlug(notification.target as User) + '?commentId=' + comment?._id}>message</Link> on your profile.
     </>);
   }
 

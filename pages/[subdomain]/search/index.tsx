@@ -345,6 +345,10 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
   const otherDifficultyField = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_estimate' : 'calc_difficulty_completion_estimate';
 
   useEffect(() => {
+  // focus default-search
+    document.getElementById('default-search')?.focus();
+  }, []);
+  useEffect(() => {
     setData(enrichedLevels);
     setLoading(false);
   }, [enrichedLevels]);

@@ -3,6 +3,7 @@ import 'react-tooltip/dist/react-tooltip.css';
 import '../styles/global.css';
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react';
 import { Portal } from '@headlessui/react';
+import { Confetti } from '@root/components/page/Confetti';
 import DismissToast from '@root/components/toasts/dismissToast';
 import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
 import { Game, Games } from '@root/constants/Games';
@@ -531,6 +532,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
              */}
             <Portal>
               <Toaster toastOptions={{ duration: 1500 }} />
+              <Confetti />
             </Portal>
             <MusicContextProvider>
               <Component {...pageProps} />

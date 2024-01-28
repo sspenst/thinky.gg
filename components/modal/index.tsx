@@ -5,18 +5,19 @@ import classNames from 'classnames';
 import React, { Fragment, useContext } from 'react';
 
 interface ModalButtonProps {
+  type?: 'submit' | 'button';
   disabled?: boolean;
   onClick: (event?: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
   text: string;
 }
 
-function ModalButton({ disabled, onClick, text }: ModalButtonProps) {
+function ModalButton({ type, disabled, onClick, text }: ModalButtonProps) {
   return (
     <button
+      type={type || 'button'}
       className={classNames('inline-flex justify-center px-4 py-2 text-sm font-medium border border-transparent rounded-md bg-button')}
       disabled={disabled}
       onClick={onClick}
-      type='button'
     >
       {text}
     </button>
@@ -72,41 +73,65 @@ export default function Modal({
             leaveFrom='opacity-100 scale-100'
             leaveTo='opacity-0 scale-95'
           >
-            <Dialog.Panel
-              className={classNames('py-3 px-4 my-8 text-left align-middle transition-all transform shadow-xl rounded-xl flex flex-col gap-4 border bg-1 border-color-3', getFontFromGameId(game.id))}
-              style={{
-                maxWidth: 'min(100%, 768px)',
-              }}
-            >
-              <Dialog.Title as='div' className='flex gap-4 text-center'>
-                <span className='w-6' />
-                <span className='grow text-xl font-bold truncate'>{title}</span>
-                <button className='hover:opacity-100 opacity-50' onClick={closeModal} tabIndex={-1}>
-                  <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
-                    <path strokeLinecap='round' strokeLinejoin='round' d='M6 18L18 6M6 6l12 12' />
-                  </svg>
-                </button>
-              </Dialog.Title>
-              {children}
-              <div className='flex justify-center gap-2 flex-wrap'>
-                {onConfirm ?
-                  <>
-                    <ModalButton disabled={disabled} onClick={onConfirm} text={'OK'} />
-                    <ModalButton disabled={disabled} onClick={closeModal} text={'Cancel'} />
-                  </>
-                  : onSubmit ?
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              // check if the target is closeBtn, if so return
+
+              if (onSubmit) {
+                onSubmit();
+              }
+
+              if (onConfirm) {
+                onConfirm();
+              }
+            }
+            }>
+              <Dialog.Panel
+                className={classNames('py-3 px-4 my-8 text-left align-middle transition-all transform shadow-xl rounded-xl flex flex-col gap-4 border bg-1 border-color-3', getFontFromGameId(game.id))}
+                style={{
+                  maxWidth: 'min(100%, 768px)',
+                }}
+              >
+                <Dialog.Title as='div' className='flex gap-4 text-center'>
+                  <span className='w-6' />
+                  <span className='grow text-xl font-bold truncate'>{title}</span>
+                  <button className='hover:opacity-100 opacity-50 closeBtn' onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+                    e.preventDefault();
+                    closeModal();
+                  }} tabIndex={-1}>
+                    <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+                      <path strokeLinecap='round' strokeLinejoin='round' d='M6 18L18 6M6 6l12 12' />
+                    </svg>
+                  </button>
+                </Dialog.Title>
+                {children}
+                <div className='flex justify-center gap-2 flex-wrap'>
+                  {onConfirm ?
                     <>
-                      <ModalButton disabled={disabled} onClick={onSubmit} text={'Submit'} />
+                      <ModalButton type='submit' disabled={disabled} onClick={() => {}} text={'OK'} />
                       <ModalButton disabled={disabled} onClick={closeModal} text={'Cancel'} />
                     </>
-                    :
-                    <ModalButton disabled={disabled} onClick={closeModal} text={'Close'} />
-                }
-              </div>
-            </Dialog.Panel>
+                    : onSubmit ?
+                      <>
+                        <ModalButton type='submit' disabled={disabled} onClick={() => {}} text={'Submit'} />
+                        <ModalButton disabled={disabled} onClick={(e) => {
+                          e?.preventDefault();
+                          closeModal();
+                        }} text={'Cancel'} />
+                      </>
+                      :
+                      <ModalButton disabled={disabled} onClick={(e) => {
+                        e?.preventDefault();
+                        closeModal();
+                      }} text={'Close'} />
+                  }
+                </div>
+              </Dialog.Panel>
+            </form>
           </Transition.Child>
         </div>
       </Dialog>
+
     </Transition>
   );
 }

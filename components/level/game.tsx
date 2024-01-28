@@ -17,6 +17,7 @@ import { LevelContext } from '../../contexts/levelContext';
 import { PageContext } from '../../contexts/pageContext';
 import Control from '../../models/control';
 import Level, { EnrichedLevel } from '../../models/db/level';
+import { dropConfetti } from '../page/Confetti';
 import GameLayout from './gameLayout';
 
 interface SessionCheckpoint {
@@ -612,7 +613,7 @@ export default function Game({
         return;
       }
 
-      if (Math.abs(dx) < tileSize + tileMargin && Math.abs(dy) < tileSize + tileMargin) {
+      if (Math.abs(dx) < tileSize - tileMargin && Math.abs(dy) < tileSize - tileMargin) {
         return;
       }
 

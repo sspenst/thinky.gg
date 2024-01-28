@@ -95,7 +95,15 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const sortObj = [[sortBy, sortDir === 'asc' ? 1 : -1]];
 
-  if (sortBy === 'ratingRushBullet' || sortBy === 'ratingRushBlitz' || sortBy === 'ratingRushRapid' || sortBy === 'ratingRushClassical') {
+  // if we are sortting by completion then make the second order sort by solves
+  if (sortBy === 'config.calcLevelsCompletedCount') {
+    sortObj.push(['config.calcLevelsSolvedCount', -1]);
+  } // if we are sortting by solves then make the second order sort by completion
+  else if (sortBy === 'config.calcLevelsSolvedCount') {
+    sortObj.push(['config.calcLevelsCompletedCount', -1]);
+  } // if we are sortting by rating then make the second order sort by total games
+
+  else if (sortBy === 'ratingRushBullet' || sortBy === 'ratingRushBlitz' || sortBy === 'ratingRushRapid' || sortBy === 'ratingRushClassical') {
     // sort by total games
     // replace rating with calc
     const countField = sortBy.replace('rating', 'calc');
@@ -472,6 +480,10 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
       allowOverflow: true,
     },
   ] as TableColumn<UserWithStats>[];
+
+  if (!query) {
+    return null;
+  }
 
   return (<>
     <NextSeo

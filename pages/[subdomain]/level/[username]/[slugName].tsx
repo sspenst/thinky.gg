@@ -331,9 +331,9 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
             image: ogImageUrl,
             type: 'Game',
           },
-          bestRating: 1,
+          bestRating: 100,
           worstRating: 0,
-          ratingValue: level.calc_reviews_score_laplace,
+          ratingValue: Math.round(100 * level.calc_reviews_score_laplace),
           ratingCount: level.calc_reviews_count,
         }}
 

@@ -40,8 +40,9 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
     }
   }
 
-  const { game } = useContext(AppContext);
   const { data } = useHomePageData([HomepageDataType.RecommendedLevel], !isOpen || nextLevel !== undefined);
+  const { game } = useContext(AppContext);
+
   const [queryParams, setQueryParams] = useState<URLSearchParams>();
   const [recommendedLevel, setRecommendedLevel] = useState<EnrichedLevel>();
 

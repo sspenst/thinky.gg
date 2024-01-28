@@ -7,7 +7,7 @@ import useSWRHelper from '@root/hooks/useSWRHelper';
 import { MultiplayerMatchState, MultiplayerMatchType } from '@root/models/constants/multiplayer';
 import MultiplayerMatch from '@root/models/db/multiplayerMatch';
 import { useRouter } from 'next/router';
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useContext, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import MatchResults from './matchResults';
 import MultiplayerRating from './multiplayerRating';
@@ -18,11 +18,16 @@ export default function Multiplayer() {
   const { game, multiplayerSocket, user } = useContext(AppContext);
   const router = useRouter();
   const { connectedPlayers, matches, privateAndInvitedMatches } = multiplayerSocket;
-
+  const isCreatingMatch = useRef(false);
   const postNewMatch = useCallback(async (matchType: MultiplayerMatchType, isPrivate: boolean, isRated: boolean) => {
     toast.dismiss();
     toast.loading('Creating Match...');
 
+    if (isCreatingMatch.current) {
+      return;
+    }
+
+    isCreatingMatch.current = true;
     fetch('/api/match', {
       method: 'POST',
       headers: {
@@ -39,6 +44,7 @@ export default function Multiplayer() {
         throw res.text();
       }
 
+      isCreatingMatch.current = false;
       toast.dismiss();
       toast.success('Created Match');
       const createdMatch = await res.json() as MultiplayerMatch;
@@ -47,6 +53,7 @@ export default function Multiplayer() {
         router.push(`/match/${createdMatch.matchId}`);
       }
     }).catch(async err => {
+      isCreatingMatch.current = false;
       toast.dismiss();
       toast.error(JSON.parse(await err)?.error || 'Failed to create match');
     });
@@ -155,7 +162,9 @@ export default function Multiplayer() {
     </div>
     <CreateMatchModal
       isOpen={isCreateMatchModalOpen}
-      closeModal={() => setIsCreateMatchModalOpen(false) }
+      closeModal={() => {
+        setIsCreateMatchModalOpen(false);
+      }}
       onConfirm={(matchType: MultiplayerMatchType, isPrivate: boolean, isRated: boolean) => {
         setIsCreateMatchModalOpen(false);
         postNewMatch(matchType, isPrivate, isRated);
