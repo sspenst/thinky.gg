@@ -9,7 +9,7 @@ Thinky is a platform dedicated to high-quality puzzle games. Solve and optimize 
 ## Dev Environment
 
 ### Local install
-- Run `npm install`
+- Run `pnpm install`
 - Create a `.env` file in the root directory containing the following:
 ```
 JWT_SECRET=anything
@@ -18,14 +18,14 @@ NEW_RELIC_APP_NAME=dummy
 NEW_RELIC_LICENSE_KEY=dummy
 REVALIDATE_SECRET=whatever
 ```
-- Run `npm run dev` to test changes locally
+- Run `pnpm run dev` to test changes locally
 
 ### Containerized setup
  *Required: Docker installed and running locally.*
  - Run `bash startDevEnv.sh` in the root directory
 
 ## Tests
-- Run `npm test` to run jest tests
+- Run `pnpm test` to run jest tests
 
 ## Contributing
 
