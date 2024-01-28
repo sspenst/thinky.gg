@@ -1,4 +1,6 @@
-FROM node:20
+# First Stage: Setup the base environment
+FROM node:20 AS base
+
 WORKDIR /thinky_app
 
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -21,7 +23,10 @@ COPY --chown=node:node package*.json ./
 
 RUN npm install --platform=linux --arch=x64 sharp
 RUN npm install --platform=linuxmusl
-#RUN chown -R node:node node_modules/
+
+# HERE IS WHERE WE WANT TO END WHERE THE BASE IMAGE IS
+
+FROM base AS final
 
 COPY --chown=node:node . .
 
