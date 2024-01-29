@@ -1,7 +1,8 @@
 import { GameType } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
 import classNames from 'classnames';
-import moment from 'moment';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 import React, { useContext } from 'react';
 import { EnrichedLevel } from '../../../models/db/level';
 import { ReviewWithStats } from '../../../models/db/review';
@@ -13,6 +14,8 @@ import { FolderDivider } from '../../header/directory';
 import StyledTooltip from '../../page/styledTooltip';
 import Solved from '../info/solved';
 import ReviewDropdown from './reviewDropdown';
+
+dayjs.extend(relativeTime);
 
 interface StarProps {
   empty: boolean;
@@ -105,8 +108,8 @@ export default function FormattedReview({ hideBorder, inModal, level, onEditClic
             <div
               className='flex items-center gap-2 flex-wrap'
               data-tooltip-content={review.stat.complete ?
-                `Solved ${moment(new Date(review.stat.ts * 1000)).fromNow()}` :
-                `Completed in ${review.stat.moves} steps ${moment(new Date(review.stat.ts * 1000)).fromNow()}`
+                `Solved ${dayjs(new Date(review.stat.ts * 1000)).fromNow()}` :
+                `Completed in ${review.stat.moves} steps ${dayjs(new Date(review.stat.ts * 1000)).fromNow()}`
               }
               data-tooltip-id={`review-stat-${user?._id.toString() ?? 'deleted'}`}
             >
