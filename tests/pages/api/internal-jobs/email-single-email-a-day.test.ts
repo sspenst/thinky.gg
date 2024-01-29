@@ -1,4 +1,3 @@
-import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';
 import { Logger } from 'winston';
@@ -6,10 +5,8 @@ import { EmailDigestSettingType, EmailType } from '../../../../constants/emailDi
 import TestId from '../../../../constants/testId';
 import { TimerUtil } from '../../../../helpers/getTs';
 import { logger } from '../../../../helpers/logger';
-import { createNewRecordOnALevelYouSolvedNotifications } from '../../../../helpers/notificationHelper';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
-import { EmailLogModel, UserModel } from '../../../../models/mongoose';
-import { EmailState } from '../../../../models/schemas/emailLogSchema';
+import { UserModel } from '../../../../models/mongoose';
 import { runEmailDigest } from '../../../../pages/api/internal-jobs/email-digest';
 
 const acceptMock = () => {

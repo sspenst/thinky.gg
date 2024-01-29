@@ -1,4 +1,5 @@
-import moment from 'moment';
+import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration';
 import React from 'react';
 import DataTable from 'react-data-table-component-sspenst';
 import { DATA_TABLE_CUSTOM_STYLES } from '../../helpers/dataTableCustomStyles';
@@ -6,6 +7,8 @@ import useProStatsUser, { ProStatsUserType } from '../../hooks/useProStatsUser';
 import User from '../../models/db/user';
 import FormattedDate from '../formatted/formattedDate';
 import FormattedLevelLink from '../formatted/formattedLevelLink';
+
+dayjs.extend(duration);
 
 export default function ProfileInsightsRecords({ user }: {user: User}) {
   const { proStatsUser } = useProStatsUser(user, ProStatsUserType.Records);
@@ -42,7 +45,7 @@ export default function ProfileInsightsRecords({ user }: {user: User}) {
             grow: 3,
             name: 'Time Since Creation',
             sortable: true,
-            cell: (row) => row.records[0].ts > row.ts ? moment.duration(((row.records[0].ts - row.ts) * 1000)).humanize() : 'N/A',
+            cell: (row) => row.records[0].ts > row.ts ? dayjs.duration(((row.records[0].ts - row.ts) * 1000)).humanize() : 'N/A',
 
             sortFunction: (a, b) => {
               const aDelta = a.records[0].ts - a.ts;

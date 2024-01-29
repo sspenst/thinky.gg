@@ -25,7 +25,7 @@ interface GridProps {
 }
 
 export default function Grid({ cellClassName, cellStyle, disableAnimation, gameOverride, gameState, hideText, id, leastMoves, onCellClick, themeOverride }: GridProps) {
-  const { game: appGame, deviceInfo } = useContext(AppContext);
+  const { game: appGame } = useContext(AppContext);
   const { theme: appTheme } = useTheme();
   const game = (gameOverride || appGame);
   const theme = (themeOverride || appTheme);
