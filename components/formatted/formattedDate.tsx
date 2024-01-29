@@ -1,7 +1,10 @@
 import classNames from 'classnames';
-import moment from 'moment';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 import React from 'react';
 import StyledTooltip from '../page/styledTooltip';
+
+dayjs.extend(relativeTime);
 
 interface FormattedDateProps {
   className?: string;
@@ -23,7 +26,8 @@ export default function FormattedDate({ className, date, style, ts }: FormattedD
     date = new Date(date);
   }
 
-  moment.relativeTimeRounding(Math.floor);
+  //moment.relativeTimeRounding(Math.floor);
+  // dayjs equivalent to rounding down would be to use Math.floor
 
   return (<>
     <span
@@ -36,7 +40,7 @@ export default function FormattedDate({ className, date, style, ts }: FormattedD
       }}
       suppressHydrationWarning
     >
-      {moment(date).fromNow()}
+      {dayjs(date).fromNow()}
     </span>
     <StyledTooltip id={`date-${ts}`} />
   </>);
