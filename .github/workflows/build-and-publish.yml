@@ -46,19 +46,6 @@ jobs:
           GITHUB_RUN_NUMBER: ${{ github.run_number }}
         run: echo "::set-output name=version::$(date +'%Y-%m-%d').$GITHUB_RUN_NUMBER"
 
-      # - name: Build and Push Base Image
-      #   if: github.ref == 'refs/heads/main'
-      #   uses: docker/build-push-action@v4
-      #   with:
-      #     context: .
-      #     file: Dockerfile
-      #     load: false
-      #     cache-from: type=gha
-      #     cache-to: type=gha,mode=max
-      #     tags: ${{ secrets.DOCKERHUB_USERNAME }}/pathology:base
-      #     target: base
-      #     push: true
-
       - name: Build container image and push to Docker Hub
         uses: docker/build-push-action@v4
         with:
