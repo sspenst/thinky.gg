@@ -2,6 +2,9 @@
 FROM node:20-alpine AS base
 
 WORKDIR /thinky_app
+COPY --chown=node:node package*.json ./
+
+RUN npm install --platform=linux --arch=x64 sharp && npm install --platform=linuxmusl
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NEW_RELIC_LOG_ENABLED=false
@@ -11,18 +14,12 @@ ARG NEW_RELIC_APP_NAME=dummy
 # avoid using the db when building pages
 ARG OFFLINE_BUILD=true
 
-RUN npm config set fund false
-
-WORKDIR /thinky_app
 
 # ts-node / tspath is needed for other scripts right now. module-alias is used for socket server production
 # ideally all would use package module alias and we would not need ts-node / tspath. but that's a TODO
-RUN npm install -g ts-node typescript module-alias
+RUN npm config set fund false && \
+    npm install -g ts-node typescript module-alias
 
-COPY --chown=node:node package*.json ./
-
-RUN npm install --platform=linux --arch=x64 sharp
-RUN npm install --platform=linuxmusl
 
 # HERE IS WHERE WE WANT TO END WHERE THE BASE IMAGE IS
 COPY --chown=node:node . .
