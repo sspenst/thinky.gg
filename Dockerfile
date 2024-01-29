@@ -1,5 +1,5 @@
 # First Stage: Setup the base environment
-FROM node:20 AS base
+FROM node:20-alpine AS base
 
 WORKDIR /thinky_app
 
