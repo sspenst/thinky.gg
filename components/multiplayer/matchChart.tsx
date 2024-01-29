@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import React from 'react';
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { MatchAction, MatchLogDataLevelComplete, MatchLogDataUserLeveId, MultiplayerMatchTypeDurationMap } from '../../models/constants/multiplayer';
@@ -126,7 +126,7 @@ export default function MatchChart({ match }: MatchChartProps) {
           dataKey='time'
           domain={[0, MultiplayerMatchTypeDurationMap[match.type]]}
           interval={0}
-          tickFormatter={timeStr => moment(timeStr).format('m:ss')}
+          tickFormatter={timeStr => dayjs(timeStr).format('m:ss')}
           type='number'
         />
         <YAxis />
@@ -151,7 +151,7 @@ export default function MatchChart({ match }: MatchChartProps) {
                   <div className={classNames('px-2 py-1 border rounded', payloadObj.type === MatchAction.COMPLETE_LEVEL ? 'border-green-500' : 'border-blue-500')} style={{
                     backgroundColor: 'var(--bg-color)',
                   }}>
-                    {`${moment(payloadObj.time).format('m:ss')} [${payloadObj[payloadObj.user]}] ${payloadObj.user}`}  <span className='font-bold'>{payloadObj.type === MatchAction.COMPLETE_LEVEL ? 'completed' : 'skipped'}</span> {`${payloadObj.name}`}
+                    {`${dayjs(payloadObj.time).format('m:ss')} [${payloadObj[payloadObj.user]}] ${payloadObj.user}`}  <span className='font-bold'>{payloadObj.type === MatchAction.COMPLETE_LEVEL ? 'completed' : 'skipped'}</span> {`${payloadObj.name}`}
                   </div>
                 );
               }

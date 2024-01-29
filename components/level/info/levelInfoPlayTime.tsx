@@ -6,7 +6,7 @@ import Role from '@root/constants/role';
 import { AppContext } from '@root/contexts/appContext';
 import isPro from '@root/helpers/isPro';
 import classNames from 'classnames';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import Link from 'next/link';
 import React, { Fragment, useContext } from 'react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
@@ -14,7 +14,7 @@ import ProStatsLevelType from '../../../constants/proStatsLevelType';
 import { CountAndSum, DateAndSum, LevelContext } from '../../../contexts/levelContext';
 
 function getTimePlayedStr(sum: number, short = false) {
-  const duration = moment.duration(sum, 'seconds');
+  const duration = dayjs.duration(sum, 'seconds');
 
   if (duration.asSeconds() < 60) {
     const seconds = duration.seconds();
@@ -95,7 +95,7 @@ export default function LevelInfoPlayTime() {
               {
                 (proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime] as DateAndSum[]).map((d, i) => {
                   return [
-                    <div className='w-full justify-end flex items-center' key={`prostat-playattemptgraph-${i}-1`}>{moment(new Date(d.date)).utc().format('M/D/YY')}</div>,
+                    <div className='w-full justify-end flex items-center' key={`prostat-playattemptgraph-${i}-1`}>{dayjs(new Date(d.date)).utc().format('M/D/YY')}</div>,
                     <div className='text-left text-sm flex items-center' key={`prostat-playattemptgraph-${i}-2`} style={{
                       color: 'var(--color-gray)',
                     }}>{getTimePlayedStr(d.sum)}</div>,
@@ -134,7 +134,7 @@ export default function LevelInfoPlayTime() {
                   angle={-45}
                   interval={0}
                   tick={{ fill: 'var(--color)', fontSize: '0.75rem' }}
-                  tickFormatter={(date) => moment(new Date(date)).format('M/D')}
+                  tickFormatter={(date) => dayjs(new Date(date)).format('M/D')}
                   tickMargin={8}
                 />
                 <YAxis
@@ -157,7 +157,7 @@ export default function LevelInfoPlayTime() {
                           <div className='px-2 py-1 border rounded text-sm' style={{
                             backgroundColor: 'var(--bg-color)',
                           }}>
-                            {`${moment(new Date(payloadObj.date)).format('M/D/YY')} - ${display}`}
+                            {`${dayjs(new Date(payloadObj.date)).format('M/D/YY')} - ${display}`}
                           </div>
                         );
                       }

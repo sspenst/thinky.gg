@@ -1,5 +1,4 @@
 /* istanbul ignore file */
-import FormattedUser from '@root/components/formatted/formattedUser';
 import { ThinkyHomePageLoggedIn } from '@root/components/home/ThinkyLoggedIn';
 import ThinkyHomePageNotLoggedIn from '@root/components/home/ThinkyNotLoggedIn';
 import Page from '@root/components/page/page';

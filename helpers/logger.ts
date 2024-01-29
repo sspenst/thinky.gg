@@ -1,55 +1,50 @@
-/* istanbul ignore file */
-
+// Import necessary modules from 'winston'
 import winston, { createLogger, format, transports } from 'winston';
-import isLocal from '../lib/isLocal';
 
+// Function to format error stack traces
 const errorStackTracerFormat = winston.format(info => {
-  if (info.meta && info.meta instanceof Error) {
-    info.message = `${info.message} ${info.meta.stack}`;
+  if (info instanceof Error) {
+    return {
+      ...info,
+      message: `${info.message} ${info.stack}`,
+    };
   }
 
   return info;
 });
 
-const loggerObj = { logger: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  info: (message: any, meta?: any) => console.info(message, meta),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  error: (message: any, meta?: any) => console.error(message, meta),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  warn: (message: any, meta?: any) => console.warn(message, meta),
-} };
+// Development logger options
+const devLoggerOptions = {
+  level: 'info',
+  format: format.combine(
+    format.errors({ stack: true }),
+    format.colorize(),
+    errorStackTracerFormat(),
+    format.simple(),
+  ),
+  transports: [
+    new transports.Console(),
+  ],
+};
 
-async function makeLogger() {
-  const devLoggerOptions = {
-    level: 'info',
-    format: format.combine(
-      format.errors({ stack: true }),
-      format.colorize(),
-      errorStackTracerFormat(),
-      format.simple(),
-    ),
-    transports: [
-      new transports.Console(),
-    ],
-  };
-  let options = devLoggerOptions;
+// Production logger options
+const prodLoggerOptions = {
+  level: 'info',
+  format: format.combine(
+    format.errors({ stack: true }), // Ensure error stack traces are included
+    errorStackTracerFormat(), // Use custom error stack tracer format
+    format.json() // Format logs as JSON
+  ),
+  transports: [
+    new transports.Console(),
+    // Add additional transports for production if needed
+  ],
+};
 
-  if (!isLocal() && (process.env.NODE_ENV && process.env.NODE_ENV !== 'test')) {
-    options = {
-      ...devLoggerOptions,
-      level: 'info',
-      format: format.combine(
-        winston.format.splat(),
-        format.errors({ stack: true }),
-      ),
-    };
-  }
+// Check if the environment is production and choose the appropriate logger options
+const options = process.env.NODE_ENV === 'production' ? prodLoggerOptions : devLoggerOptions;
 
-  loggerObj.logger = createLogger({
-    ...options
-  });
-}
+// Create the logger
+const logger = createLogger(options);
 
-makeLogger();
-export const logger = loggerObj.logger;
+export { logger };

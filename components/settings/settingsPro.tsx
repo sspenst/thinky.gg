@@ -4,7 +4,7 @@ import isPro from '@root/helpers/isPro';
 import User from '@root/models/db/user';
 import { SubscriptionGiftData } from '@root/pages/api/subscription/gift';
 import classNames from 'classnames';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useContext, useEffect, useRef, useState } from 'react';
@@ -285,8 +285,8 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
               <div className='font-bold'>Received Gifted Pro:</div>
               <div className='text-sm text-left'>
                 <div className='flex gap-1 items-center'>Gifted From: <FormattedUser id={'subscription-' + subscriptionData.subscriptionId} user={subscriptionData.giftFromUser} /></div>
-                <div>Status: <span className='font-bold'>{subscriptionData.cancel_at ? 'Ends ' + moment(new Date(subscriptionData.cancel_at * 1000)).format('MMMM Do, YYYY') : 'Active'}</span></div>
-                {!subscriptionData.cancel_at && subscriptionData.current_period_end && (<div>Renews: {moment(new Date(subscriptionData.current_period_end * 1000)).format('MMMM Do, YYYY')}</div>)}
+                <div>Status: <span className='font-bold'>{subscriptionData.cancel_at ? 'Ends ' + dayjs(new Date(subscriptionData.cancel_at * 1000)).format('MMMM Do, YYYY') : 'Active'}</span></div>
+                {!subscriptionData.cancel_at && subscriptionData.current_period_end && (<div>Renews: {dayjs(new Date(subscriptionData.current_period_end * 1000)).format('MMMM Do, YYYY')}</div>)}
               </div>
             </div>
           )}
@@ -316,8 +316,8 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                   <div className='flex gap-1 items-center'>
                     Gifted to: <FormattedUser id={'subscription-' + subscriptionData.subscriptionId} user={subscriptionData.giftToUser} /></div>
                 )}
-                {!subscriptionData.cancel_at_period_end && subscriptionData.current_period_end && (<div>Renews: <span className='font-bold'>{moment(new Date(subscriptionData.current_period_end * 1000)).format('MMMM Do, YYYY')}</span></div>)}
-                <div>Status: <span className='font-bold'>{subscriptionData.cancel_at ? 'Ends ' + moment(new Date(subscriptionData.cancel_at * 1000)).format('MMMM Do, YYYY') : 'Active'}</span></div>
+                {!subscriptionData.cancel_at_period_end && subscriptionData.current_period_end && (<div>Renews: <span className='font-bold'>{dayjs(new Date(subscriptionData.current_period_end * 1000)).format('MMMM Do, YYYY')}</span></div>)}
+                <div>Status: <span className='font-bold'>{subscriptionData.cancel_at ? 'Ends ' + dayjs(new Date(subscriptionData.cancel_at * 1000)).format('MMMM Do, YYYY') : 'Active'}</span></div>
                 <div>Card Used: {subscriptionData.paymentMethod?.card?.brand} ending in {subscriptionData.paymentMethod?.card?.last4}</div>
                 {subscriptionData.cancel_at_period_end &&
                   <span className='font-bold'>

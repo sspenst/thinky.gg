@@ -119,12 +119,12 @@ export async function getLevelOfDay(gameId: GameId, reqUser?: User | null) {
   const todaysDayOfWeek = new Date(TimerUtil.getTs() * 1000).getUTCDay();
   const dayOfWeekDifficultyMap = [
     40, // sunday
-    80, // monday
-    100, // tuesday
-    120, // wednesday
-    140, // thursday
-    250, // friday
-    300, // saturday
+    115, // monday
+    150, // tuesday
+    250, // wednesday
+    300, // thursday
+    500, // friday
+    600, // saturday
   ];
 
   for (let i = 0; i < levels.length; i++) {

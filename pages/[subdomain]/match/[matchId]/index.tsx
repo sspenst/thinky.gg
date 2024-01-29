@@ -4,7 +4,7 @@ import MatchResults from '@root/components/multiplayer/matchResults';
 import { MatchGameState } from '@root/helpers/gameStateHelpers';
 import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import { UserWithMultiMultiplayerProfile, UserWithMultiplayerProfile } from '@root/models/db/user';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
@@ -311,7 +311,7 @@ export default function Match() {
           </svg>
         </div>
         <div className='text-xs w-8 justify-center flex'>
-          {`+${moment(timestamp).format('m:ss')}`}
+          {`+${dayjs(timestamp).format('m:ss')}`}
         </div>
       </>);
     }
@@ -331,7 +331,7 @@ export default function Match() {
         </div>
         <StyledTooltip id='skipped' />
         <div className='text-xs w-8 justify-center flex'>
-          {`+${moment(timestamp).format('m:ss')}`}
+          {`+${dayjs(timestamp).format('m:ss')}`}
         </div>
       </>);
     }

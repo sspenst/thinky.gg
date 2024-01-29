@@ -1,5 +1,4 @@
 import Dimensions from '@root/constants/dimensions';
-import { GameId } from '@root/constants/GameId';
 import { Game } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
 import classNames from 'classnames';
