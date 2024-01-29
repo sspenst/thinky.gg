@@ -105,7 +105,7 @@ function Pagination({ itemsPerPage, onChangePage, page, totalItems }: Pagination
 
 interface DataTableProps<T> {
   columns: TableColumn<T>[];
-  data: T[];
+  data?: T[];
   itemsPerPage: number;
   noDataComponent: JSX.Element;
   onChangePage: (page: number) => void;
@@ -128,6 +128,8 @@ export default function DataTable<T>({
   sortDir,
   totalItems,
 }: DataTableProps<T>) {
+  if (!data) return (<>Loading...</>);
+
   return (<>
     <div className='grid text-[13px] overflow-x-auto' style={{
       gridTemplateColumns: `repeat(${columns.length}, auto)`,
