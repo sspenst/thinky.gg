@@ -16,3 +16,5 @@ dist
 # Version control
 .git/
 .gitignore
+
+thinky-react-native
