@@ -2,42 +2,41 @@ import { NextApiRequestWrapper } from '@root/helpers/apiWrapper';
 import { dbDisconnect } from '@root/lib/dbConnect';
 import { NextApiRequestWithAuth } from '@root/lib/withAuth';
 import { enableFetchMocks } from 'jest-fetch-mock';
-import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
-import { query } from 'winston';
 import handler from '../../../../pages/api/ses-webhook/index';
 
 const sampleJSON = {
-  'notificationType': 'Bounce',
-  'bounce': {
-    'feedbackId': 'feedbackIdValue',
-    'bounceType': 'Transient',
-    'bounceSubType': 'General',
-    'bouncedRecipients': [
-      {
-        'emailAddress': 'test@test.com',
-        'action': 'failed',
-        'status': '0.0.0',
-        'diagnosticCode': 'blah blah blah'
-      }
-    ],
-    'timestamp': '2024-01-29T02:55:29.000Z',
-    'remoteMtaIp': '999.999.99.99',
-    'reportingMTA': 'dns; SOMETHING.smtp-out.amazonses.com'
-  },
-  'mail': {
-    'timestamp': '2024-01-29T02:55:27.214Z',
-    'source': 'do.not.reply@thinky.gg',
-    'sourceArn': 'sourceArn',
-    'sourceIp': 'sourceIp',
-    'callerIdentity': 'root',
-    'sendingAccountId': 'sendingAccountIdValue',
-    'messageId': 'messageIdValue',
-    'destination': [
-      'test@test.com'
-    ]
+  'Records': [{ 'notificationType': 'Bounce',
+    'bounce': {
+      'feedbackId': 'feedbackIdValue',
+      'bounceType': 'Transient',
+      'bounceSubType': 'General',
+      'bouncedRecipients': [
+        {
+          'emailAddress': 'test@test.com',
+          'action': 'failed',
+          'status': '0.0.0',
+          'diagnosticCode': 'blah blah blah'
+        }
+      ],
+      'timestamp': '2024-01-29T02:55:29.000Z',
+      'remoteMtaIp': '999.999.99.99',
+      'reportingMTA': 'dns; SOMETHING.smtp-out.amazonses.com'
+    },
+    'mail': {
+      'timestamp': '2024-01-29T02:55:27.214Z',
+      'source': 'do.not.reply@thinky.gg',
+      'sourceArn': 'sourceArn',
+      'sourceIp': 'sourceIp',
+      'callerIdentity': 'root',
+      'sendingAccountId': 'sendingAccountIdValue',
+      'messageId': 'messageIdValue',
+      'destination': [
+        'test@test.com'
+      ]
+    }
   }
-};
+  ] };
 
 beforeAll(async () => {
   //await dbConnect(); // see if that erroneous index error goes away when commenting this out...
