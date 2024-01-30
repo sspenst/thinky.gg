@@ -25,10 +25,17 @@ export default apiWrapper({
 
   try {
     const payload = JSON.parse(req.body.payload);
-    const bounce = payload.bounce;
 
-    for (const recipient of bounce.bouncedRecipients) {
-      emailsBounced.push(recipient.emailAddress);
+    if (!payload.Records) {
+      throw new Error('No records found in payload');
+    }
+
+    for (const record of payload.Records) {
+      const bounce = record.bounce;
+
+      for (const recipient of bounce.bouncedRecipients) {
+        emailsBounced.push(recipient.emailAddress);
+      }
     }
   } catch (e) {
     logger.error(e);
