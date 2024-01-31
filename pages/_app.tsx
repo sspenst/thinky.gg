@@ -146,6 +146,15 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
     mutatePlayLater();
   }, [mutatePlayLater]);
 
+  useEffect(() => {
+    if (user?.config.theme === Theme.Custom) {
+      const customTheme = JSON.parse(user.config.customTheme);
+
+      for (const key of Object.keys(customTheme)) {
+        document.documentElement.style.setProperty(key, customTheme[key]);
+      }
+    }
+  }, [user]);
   // preload sounds
   useEffect(() => {
     setSounds({
