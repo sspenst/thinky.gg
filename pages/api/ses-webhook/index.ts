@@ -31,7 +31,14 @@ export default apiWrapper({
     }
 
     for (const record of payload.Records) {
-      const bounce = record.bounce;
+      const sns = record.Sns;
+
+      if (!sns) {
+        throw new Error('No Sns found in record');
+      }
+
+      const message = JSON.parse(sns.Message);
+      const bounce = message.bounce;
 
       for (const recipient of bounce.bouncedRecipients) {
         emailsBounced.push(recipient.emailAddress);
