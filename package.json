@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-ses": "^3.485.0",
-    "@aws-sdk/credential-provider-node": "^3.485.0",
+    "@aws-sdk/credential-provider-node": "^3.490.0",
     "@growthbook/growthbook-react": "^0.21.0",
     "@headlessui/react": "^1.7.18",
     "@headlessui/tailwindcss": "^0.2.0",
