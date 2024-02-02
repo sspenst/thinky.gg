@@ -1,8 +1,11 @@
+import { NotificationType } from '@aws-sdk/client-ses';
 import DiscordChannel from '@root/constants/discordChannel';
+import { EmailDigestSettingType } from '@root/constants/emailDigest';
 import apiWrapper, { ValidType } from '@root/helpers/apiWrapper';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import { logger } from '@root/helpers/logger';
 import dbConnect from '@root/lib/dbConnect';
+import { UserModel } from '@root/models/mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default apiWrapper({
@@ -54,15 +57,15 @@ export default apiWrapper({
   // add all disallowedEmailNotifications for this user
 
   // TODO: uncomment this once we verify things are working
-  /*
+
   await UserModel.updateMany({ email: { $in: emailsBounced } }, {
     $set: {
       emailDigestType: EmailDigestSettingType.NONE,
       disallowedEmailNotifications: Object.values(NotificationType),
     },
-  });*/
+  });
   await queueDiscordWebhook(DiscordChannel.DevPriv,
-    `Emails bounced: ${emailsBounced.join(', ')}. Currently in dry run mode so not unsubscribing.`
+    `Emails bounced: ${emailsBounced.join(', ')}. Unsubscribed these users from all email notifs and set their emailDigestType to NONE..`
   );
 
   return res.status(200).json({ bounced: emailsBounced, success: true });
