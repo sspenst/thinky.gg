@@ -186,6 +186,8 @@ export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?
       sessionStorage.clear();
       const { name, temporaryPassword } = await res.json();
 
+      // Log google conversion
+      window?.gtag && window?.gtag('event', 'conversion', { 'send_to': 'AW-11394062759/C7coCMyv_I0ZEKezjrkq' });
       setName(name);
       setTemporaryPassword(temporaryPassword);
     }
