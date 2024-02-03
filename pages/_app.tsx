@@ -2,6 +2,7 @@
 import 'react-tooltip/dist/react-tooltip.css';
 import '../styles/global.css';
 import { Portal } from '@headlessui/react';
+import { sendGTMEvent } from '@next/third-parties/google';
 import { Confetti } from '@root/components/page/Confetti';
 import DismissToast from '@root/components/toasts/dismissToast';
 import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
@@ -48,8 +49,6 @@ function useForceUpdate() {
 
   return () => setState(!value);
 }
-
-const GTM_TRACKING_ID = 'GTM-WBDLFZ5T';
 
 MyApp.getInitialProps = async ({ ctx }: { ctx: NextPageContext }) => {
   let userAgent;
@@ -370,20 +369,13 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
   // }, []);
 
   useEffect(() => {
-    const gtmId = GTM_TRACKING_ID;
-    // per https://github.com/alinemorelli/react-gtm/issues/14
-    const taskManagerArgs: TagManagerArgs = {
-      gtmId: gtmId,
-    };
-
     if (user?._id) {
-      taskManagerArgs.dataLayer = {
+      sendGTMEvent({
         'event': 'userId_set',
         'user_id': user?._id.toString()
-      };
+      }
+      );
     }
-
-    TagManager.initialize(taskManagerArgs);
   }, [user?._id]);
   // }, [GA_ClientID, user?._id]);
 
