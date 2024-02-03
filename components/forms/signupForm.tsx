@@ -1,4 +1,3 @@
-import { useFeatureIsOn } from '@growthbook/growthbook-react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useContext, useRef, useState } from 'react';
@@ -22,8 +21,6 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
   const [username, setUsername] = useState<string>('');
   const [recaptchaToken, setRecaptchaToken] = useState<string>('');
   const recaptchaRef = useRef<ReCAPTCHA>(null);
-
-  const redirectFeatureFlag = useFeatureIsOn('post-tutorial-redirect-to-home');
 
   function onRecaptchaChange(value: string | null) {
     if (value) {
@@ -106,14 +103,10 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
           setShouldAttemptAuth(true);
           sessionStorage.clear();
 
-          if (redirectFeatureFlag) {
-            router.push('/');
+          if (tutorialCompletedAt !== '0') {
+            router.push('/play');
           } else {
-            if (tutorialCompletedAt !== '0') {
-              router.push('/play');
-            } else {
-              router.push('/tutorial');
-            }
+            router.push('/tutorial');
           }
         }
       } else {
