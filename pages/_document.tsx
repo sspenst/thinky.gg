@@ -102,13 +102,12 @@ class MyDocument extends Document<DocumentProps> {
               `,
             }}
           />
-          <GoogleTagManager gtmId='GTM-WBDLFZ5T' />
-
         </Head>
         <body>
           <Main />
           <NextScript />
         </body>
+        <GoogleTagManager gtmId='GTM-WBDLFZ5T' />
       </Html>
     );
   }
