@@ -1,4 +1,5 @@
 /* istanbul ignore file */
+import { GoogleTagManager } from '@next/third-parties/google';
 import Theme from '@root/constants/theme';
 import User from '@root/models/db/user';
 import { Types } from 'mongoose';
@@ -9,7 +10,6 @@ import { logger } from '../helpers/logger';
 import dbConnect from '../lib/dbConnect';
 import isLocal from '../lib/isLocal';
 import { UserModel } from '../models/mongoose';
-
 // TODO: maybe someday try this again https://newrelic.com/blog/how-to-relic/nextjs-monitor-application-data
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 
@@ -102,6 +102,8 @@ class MyDocument extends Document<DocumentProps> {
               `,
             }}
           />
+          <GoogleTagManager gtmId='GTM-WBDLFZ5T' />
+
         </Head>
         <body>
           <Main />

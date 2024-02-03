@@ -11,6 +11,7 @@
     "@headlessui/react": "^1.7.18",
     "@headlessui/tailwindcss": "^0.2.0",
     "@newrelic/next": "^0.7.0",
+    "@next/third-parties": "^14.1.0",
     "@popperjs/core": "^2.11.8",
     "@socket.io/mongo-adapter": "^0.3.0",
     "@socket.io/mongo-emitter": "^0.2.0",
