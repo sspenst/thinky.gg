@@ -1,7 +1,6 @@
 /* istanbul ignore file */
 import 'react-tooltip/dist/react-tooltip.css';
 import '../styles/global.css';
-import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react';
 import { Portal } from '@headlessui/react';
 import { Confetti } from '@root/components/page/Confetti';
 import DismissToast from '@root/components/toasts/dismissToast';
@@ -50,26 +49,7 @@ function useForceUpdate() {
   return () => setState(!value);
 }
 
-// Create a GrowthBook instance
-const growthbook = new GrowthBook({
-  apiHost: process.env.NEXT_PUBLIC_GROWTHBOOK_API_HOST || 'https://cdn.growthbook.io',
-  clientKey: process.env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY || 'sdk-XUcOzkOQARhQXpCL',
-  enableDevMode: true,
-  trackingCallback: (experiment, result) => {
-    console.log('Viewed Experiment', experiment, result, 'calling window.gtag (which is ', window?.gtag);
-    window?.gtag('event', 'experiment_viewed', {
-      event_category: 'experiment',
-      experiment_id: experiment.key,
-      variation_id: result.variationId,
-    });
-  },
-});
-
 const GTM_TRACKING_ID = 'GTM-WBDLFZ5T';
-
-function updateGrowthBookURL() {
-  growthbook.setURL(window.location.href);
-}
 
 MyApp.getInitialProps = async ({ ctx }: { ctx: NextPageContext }) => {
   let userAgent;
@@ -416,28 +396,12 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
         setTempCollection(undefined);
       }
 
-      updateGrowthBookURL();
       nProgress.done();
     };
 
     Router.events.on('routeChangeStart', () => nProgress.start());
 
     Router.events.on('routeChangeError', () => nProgress.done());
-    growthbook.loadFeatures({ autoRefresh: true });
-
-    // if (GA_ClientID) {
-    //   growthbook.setAttributes({
-    //     id: user?._id || GA_ClientID,
-    //     userId: user?._id,
-    //     clientId: GA_ClientID,
-    //     name: user?.name,
-    //     loggedIn: user !== undefined,
-    //     browser: navigator.userAgent,
-    //     url: router.pathname,
-    //     host: window.location.host,
-    //     roles: user?.roles,
-    //   });
-    // }
 
     router.events.on('routeChangeComplete', handleRouteChange);
 
@@ -497,49 +461,47 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
           </span>
         </CookieConsent>
       )}
-      <GrowthBookProvider growthbook={growthbook}>
-        <AppContext.Provider value={{
-          deviceInfo: deviceInfo,
-          forceUpdate: forceUpdate,
-          game: selectedGame,
-          host: host,
-          multiplayerSocket: multiplayerSocket,
-          mutatePlayLater: mutatePlayLater,
-          mutateUser: mutateUser,
-          notifications: notifications,
-          playLater: playLater,
-          protocol: protocol,
-          setNotifications: setNotifications,
-          setShouldAttemptAuth: setShouldAttemptAuth,
-          setShowNav: setShowNav,
-          setTempCollection: setTempCollection,
-          shouldAttemptAuth: shouldAttemptAuth,
-          showNav: showNav,
-          sounds: sounds,
-          tempCollection,
-          user: isLoading ? undefined : !user ? null : user,
-          userConfig: isLoading ? undefined : !user?.config ? null : user.config,
+      <AppContext.Provider value={{
+        deviceInfo: deviceInfo,
+        forceUpdate: forceUpdate,
+        game: selectedGame,
+        host: host,
+        multiplayerSocket: multiplayerSocket,
+        mutatePlayLater: mutatePlayLater,
+        mutateUser: mutateUser,
+        notifications: notifications,
+        playLater: playLater,
+        protocol: protocol,
+        setNotifications: setNotifications,
+        setShouldAttemptAuth: setShouldAttemptAuth,
+        setShowNav: setShowNav,
+        setTempCollection: setTempCollection,
+        shouldAttemptAuth: shouldAttemptAuth,
+        showNav: showNav,
+        sounds: sounds,
+        tempCollection,
+        user: isLoading ? undefined : !user ? null : user,
+        userConfig: isLoading ? undefined : !user?.config ? null : user.config,
+      }}>
+        <div className={getFontFromGameId(selectedGame.id)} style={{
+          backgroundColor: 'var(--bg-color)',
+          color: 'var(--color)',
         }}>
-          <div className={getFontFromGameId(selectedGame.id)} style={{
-            backgroundColor: 'var(--bg-color)',
-            color: 'var(--color)',
-          }}>
-            {/**
+          {/**
              * NB: using a portal here to mitigate issues clicking toasts with open modals
              * ideally we could have a Toaster component as a child of a modal so that clicking the
              * toast does not close the modal, but react-hot-toast currently does not support this:
              * https://github.com/timolins/react-hot-toast/issues/158
              */}
-            <Portal>
-              <Toaster toastOptions={{ duration: 1500 }} />
-              <Confetti />
-            </Portal>
-            <MusicContextProvider>
-              <Component {...pageProps} />
-            </MusicContextProvider>
-          </div>
-        </AppContext.Provider>
-      </GrowthBookProvider>
+          <Portal>
+            <Toaster toastOptions={{ duration: 1500 }} />
+            <Confetti />
+          </Portal>
+          <MusicContextProvider>
+            <Component {...pageProps} />
+          </MusicContextProvider>
+        </div>
+      </AppContext.Provider>
     </ThemeProvider>
   </>);
 }
