@@ -1,5 +1,4 @@
 /* istanbul ignore file */
-import Analytics from '@root/components/Analytics';
 import Theme from '@root/constants/theme';
 import User from '@root/models/db/user';
 import { Types } from 'mongoose';
@@ -103,18 +102,6 @@ class MyDocument extends Document<DocumentProps> {
               `,
             }}
           />
-        </Head>
-        <body>
-          <Main />
-          <NextScript />
-          <noscript>
-            <iframe
-              src={'https://www.googletagmanager.com/ns.html?id=GTM-WBDLFZ5T'}
-              height='0'
-              width='0'
-              style={{ display: 'none', visibility: 'hidden' }}
-            />
-          </noscript>
           <Script
             id='gtm-script'
             strategy='afterInteractive'
@@ -128,7 +115,18 @@ class MyDocument extends Document<DocumentProps> {
   `,
             }}
           />
-
+        </Head>
+        <body>
+          <Main />
+          <NextScript />
+          <noscript>
+            <iframe
+              src={'https://www.googletagmanager.com/ns.html?id=GTM-WBDLFZ5T'}
+              height='0'
+              width='0'
+              style={{ display: 'none', visibility: 'hidden' }}
+            />
+          </noscript>
         </body>
       </Html>
     );
