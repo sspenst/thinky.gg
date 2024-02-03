@@ -25,7 +25,6 @@ import { ThemeProvider } from 'next-themes';
 import nProgress from 'nprogress';
 import React, { useCallback, useEffect, useState } from 'react';
 import CookieConsent from 'react-cookie-consent';
-import TagManager, { TagManagerArgs } from 'react-gtm-module';
 import toast, { Toaster } from 'react-hot-toast';
 import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 import { io, Socket } from 'socket.io-client';
