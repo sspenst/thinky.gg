@@ -104,9 +104,9 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
           sessionStorage.clear();
 
           if (tutorialCompletedAt !== '0') {
-            router.push('/play');
+            router.push('/play?signedup=true');
           } else {
-            router.push('/tutorial');
+            router.push('/tutorial?signedup=true');
           }
         }
       } else {
