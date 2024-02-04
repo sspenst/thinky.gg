@@ -96,8 +96,7 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
 
           toast.dismiss();
           toast.success('Registered!');
-          // Log google conversion
-          window?.gtag && window?.gtag('event', 'conversion', { 'send_to': 'AW-11394062759/C7coCMyv_I0ZEKezjrkq' });
+
           // clear localstorage value
           window.localStorage.removeItem('tutorialCompletedAt');
           mutateUser();
