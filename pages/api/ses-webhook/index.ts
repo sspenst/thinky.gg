@@ -60,7 +60,7 @@ export default apiWrapper({
 
   await UserModel.updateMany({ email: { $in: emailsBounced } }, {
     $set: {
-      emailDigestType: EmailDigestSettingType.NONE,
+      emailDigest: EmailDigestSettingType.NONE,
       disallowedEmailNotifications: Object.values(NotificationType),
     },
   });
