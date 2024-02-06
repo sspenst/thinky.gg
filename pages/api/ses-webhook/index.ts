@@ -1,6 +1,6 @@
-import { NotificationType } from '@aws-sdk/client-ses';
 import DiscordChannel from '@root/constants/discordChannel';
 import { EmailDigestSettingType } from '@root/constants/emailDigest';
+import NotificationType from '@root/constants/notificationType';
 import apiWrapper, { ValidType } from '@root/helpers/apiWrapper';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import { logger } from '@root/helpers/logger';
