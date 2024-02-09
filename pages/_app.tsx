@@ -355,18 +355,6 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
     }
   }, [matches, privateAndInvitedMatches, router, user]);
 
-  // const [GA_ClientID, setGA_ClientID] = useState<string>();
-
-  // useEffect(() => {
-  //   if (window?.gtag) {
-  //     window.gtag('get', GTM_TRACKING_ID, 'client_id', (clientId: string) => {
-  //       setGA_ClientID(clientId);
-  //     });
-  //   } else {
-  //     console.warn('no gtag... cant get GA ClientID');
-  //   }
-  // }, []);
-
   useEffect(() => {
     if (user?._id) {
       sendGTMEvent({
@@ -376,7 +364,6 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
       );
     }
   }, [user?._id]);
-  // }, [GA_ClientID, user?._id]);
 
   useEffect(() => {
     const handleRouteChange = (url: string) => {

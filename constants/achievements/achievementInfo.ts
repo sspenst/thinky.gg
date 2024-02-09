@@ -6,9 +6,9 @@ import AchievementRulesReviewer from './AchievementRulesReviewer';
 import AchievementRulesSkill from './AchievementRulesSkill';
 
 export interface IAchievementInfo {
-  getDescription: (game: Game) => string;
   discordNotification?: boolean;
   emoji?: string;
+  getDescription: (game: Game) => string;
   name: string;
   secret?: boolean;
   tooltip?: string;
