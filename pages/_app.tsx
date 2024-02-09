@@ -3,7 +3,7 @@ import 'react-tooltip/dist/react-tooltip.css';
 import '../styles/global.css';
 import { Portal } from '@headlessui/react';
 import { sendGTMEvent } from '@next/third-parties/google';
-import { Confetti } from '@root/components/page/Confetti';
+import { Confetti } from '@root/components/page/confetti';
 import DismissToast from '@root/components/toasts/dismissToast';
 import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
 import { Game, Games } from '@root/constants/Games';

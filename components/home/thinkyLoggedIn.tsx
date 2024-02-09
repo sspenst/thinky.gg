@@ -12,7 +12,7 @@ import ChapterSelectCard, { ChapterSelectCardBase } from '../cards/chapterSelect
 import FormattedUser from '../formatted/formattedUser';
 import GameLogo from '../gameLogo';
 import LoadingSpinner from '../page/loadingSpinner';
-import { StreakCalendar } from './StreakCalendar';
+import { StreakCalendar } from './streakCalendar';
 
 export function ThinkyHomePageLoggedIn({ user }: {user: User}) {
   const getUrl = useUrl();
