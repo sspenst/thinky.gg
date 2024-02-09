@@ -13,7 +13,7 @@ export function Confetti() {
   const canvasRef = useRef(null);
 
   confettiInstance = () => {
-    const duration = 1200; // last for 1.2 second
+    const duration = 800;
     const end = Date.now() + duration;
 
     function frame() {
