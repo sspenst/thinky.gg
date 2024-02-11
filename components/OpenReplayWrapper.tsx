@@ -26,8 +26,8 @@ const Openreplay = () => {
         console.log('OpenReplay started');
 
         if (user) {
-          trackerInstance.setUserID(user._id.toString());
-          trackerInstance.setMetadata('name', user.name);
+          trackerInstance.setUserID(user.name);
+          trackerInstance.setMetadata('_id', user._id.toString());
         }
       });
     }
