@@ -366,15 +366,15 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
         __DISABLE_SECURE_MODE: true,
       });
 
-      if (user?._id) {
-        tracker.setUserID(user?._id.toString());
-        tracker.setMetadata('name', user?.name);
-      }
-
       setTracker(tracker as any);
     })();
-  }, [user?._id, user?.name]);
-
+  }, []);
+  useEffect(() => {
+    if (tracker && user?._id) {
+      tracker.setUserID(user?._id.toString());
+      tracker.setMetadata('name', user?.name);
+    }
+  }, [tracker, user?._id, user?.name]);
   useEffect(() => {
     if (user?._id) {
       sendGTMEvent({
