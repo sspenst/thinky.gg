@@ -18,13 +18,20 @@ const trackerInstance = new Tracker({
 });
 
 const Openreplay = () => {
+  const { user } = useContext(AppContext);
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       trackerInstance.start().then(() => {
         console.log('OpenReplay started');
+
+        if (user) {
+          trackerInstance.setUserID(user._id.toString());
+          trackerInstance.setMetadata('name', user.name);
+        }
       });
     }
-  }, []);
+  }, [user]);
 
   return null;
 };
