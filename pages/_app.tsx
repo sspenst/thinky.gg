@@ -36,10 +36,6 @@ import { MultiplayerMatchState } from '../models/constants/multiplayer';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
 import User, { UserWithMultiMultiplayerProfile, UserWithMultiplayerProfile } from '../models/db/user';
 
-const tracker = new Tracker({
-  projectKey: 'GHKiOCFt7Tg49Fi2oyHM',
-});
-
 export interface MultiplayerSocket {
   connectedPlayers: UserWithMultiplayerProfile[];
   connectedPlayersCount: number;
@@ -131,7 +127,6 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
 
   // preload sounds
   useEffect(() => {
-    tracker.start();
     setSounds({
       'start': new Audio('/sounds/start.wav'),
       'warning': new Audio('/sounds/warning.wav'),
@@ -360,11 +355,28 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
       }
     }
   }, [matches, privateAndInvitedMatches, router, user]);
+  const [tracker, setTracker] = React.useState<Tracker>();
+
+  // https://github.com/openreplay/openreplay/issues/1414#issuecomment-1634109942
+  React.useEffect(() => {
+    (async function () {
+      const Tracker = await import('@openreplay/tracker');
+      const tracker = new Tracker.default({
+        projectKey: 'GHKiOCFt7Tg49Fi2oyHM',
+        __DISABLE_SECURE_MODE: true,
+      });
+
+      if (user?._id) {
+        tracker.setUserID(user?._id.toString());
+        tracker.setMetadata('name', user?.name);
+      }
+
+      setTracker(tracker as any);
+    })();
+  }, [user?._id, user?.name]);
 
   useEffect(() => {
     if (user?._id) {
-      tracker.setUserID(user._id.toString());
-      tracker.setMetadata('name', user.name);
       sendGTMEvent({
         'event': 'userId_set',
         'user_id': user?._id.toString()
