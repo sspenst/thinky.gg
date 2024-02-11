@@ -4,6 +4,7 @@ import '../styles/global.css';
 import { Portal } from '@headlessui/react';
 import { sendGTMEvent } from '@next/third-parties/google';
 import Tracker from '@openreplay/tracker/cjs';
+import Openreplay from '@root/components/openReplay';
 import { Confetti } from '@root/components/page/confetti';
 import DismissToast from '@root/components/toasts/dismissToast';
 import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
@@ -355,26 +356,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
       }
     }
   }, [matches, privateAndInvitedMatches, router, user]);
-  const [tracker, setTracker] = React.useState<Tracker>();
 
-  // https://github.com/openreplay/openreplay/issues/1414#issuecomment-1634109942
-  React.useEffect(() => {
-    (async function () {
-      const Tracker = await import('@openreplay/tracker');
-      const tracker = new Tracker.default({
-        projectKey: 'GHKiOCFt7Tg49Fi2oyHM',
-        __DISABLE_SECURE_MODE: true,
-      });
-
-      setTracker(tracker as any);
-    })();
-  }, []);
-  useEffect(() => {
-    if (tracker && user?._id) {
-      tracker.setUserID(user?._id.toString());
-      tracker.setMetadata('name', user?.name);
-    }
-  }, [tracker, user?._id, user?.name]);
   useEffect(() => {
     if (user?._id) {
       sendGTMEvent({
@@ -494,6 +476,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
           <Portal>
             <Toaster toastOptions={{ duration: 1500 }} />
             <Confetti />
+            <Openreplay />
           </Portal>
           <MusicContextProvider>
             <Component {...pageProps} />
