@@ -363,13 +363,15 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
 
   useEffect(() => {
     if (user?._id) {
+      tracker.setUserID(user._id.toString());
+      tracker.setMetadata('name', user.name);
       sendGTMEvent({
         'event': 'userId_set',
         'user_id': user?._id.toString()
       }
       );
     }
-  }, [user?._id]);
+  }, [user?._id, user?.name]);
 
   useEffect(() => {
     const handleRouteChange = (url: string) => {
