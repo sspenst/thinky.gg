@@ -5,19 +5,19 @@ import classNames from 'classnames';
 import React, { Fragment, useContext } from 'react';
 
 interface ModalButtonProps {
-  type?: 'submit' | 'button';
   disabled?: boolean;
   onClick: (event?: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
   text: string;
+  type?: 'submit' | 'button';
 }
 
-function ModalButton({ type, disabled, onClick, text }: ModalButtonProps) {
+function ModalButton({ disabled, onClick, text, type }: ModalButtonProps) {
   return (
     <button
-      type={type || 'button'}
       className={classNames('inline-flex justify-center px-4 py-2 text-sm font-medium border border-transparent rounded-md bg-button')}
       disabled={disabled}
       onClick={onClick}
+      type={type || 'button'}
     >
       {text}
     </button>
@@ -73,19 +73,20 @@ export default function Modal({
             leaveFrom='opacity-100 scale-100'
             leaveTo='opacity-0 scale-95'
           >
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              // check if the target is closeBtn, if so return
+            <form
+              className='flex justify-center'
+              onSubmit={(e) => {
+                e.preventDefault();
 
-              if (onSubmit) {
-                onSubmit();
-              }
+                if (onSubmit) {
+                  onSubmit();
+                }
 
-              if (onConfirm) {
-                onConfirm();
-              }
-            }
-            }>
+                if (onConfirm) {
+                  onConfirm();
+                }
+              }}
+            >
               <Dialog.Panel
                 className={classNames('py-3 px-4 my-8 text-left align-middle transition-all transform shadow-xl rounded-xl flex flex-col gap-4 border bg-1 border-color-3', getFontFromGameId(game.id))}
                 style={{
@@ -108,12 +109,12 @@ export default function Modal({
                 <div className='flex justify-center gap-2 flex-wrap'>
                   {onConfirm ?
                     <>
-                      <ModalButton type='submit' disabled={disabled} onClick={() => {}} text={'OK'} />
-                      <ModalButton disabled={disabled} onClick={closeModal} text={'Cancel'} />
+                      <ModalButton disabled={disabled} onClick={() => {}} text='OK' type='submit' />
+                      <ModalButton disabled={disabled} onClick={closeModal} text='Cancel' />
                     </>
                     : onSubmit ?
                       <>
-                        <ModalButton type='submit' disabled={disabled} onClick={() => {}} text={'Submit'} />
+                        <ModalButton disabled={disabled} onClick={() => {}} text='Submit' type='submit' />
                         <ModalButton disabled={disabled} onClick={(e) => {
                           e?.preventDefault();
                           closeModal();
@@ -131,7 +132,6 @@ export default function Modal({
           </Transition.Child>
         </div>
       </Dialog>
-
     </Transition>
   );
 }

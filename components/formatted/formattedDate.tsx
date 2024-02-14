@@ -26,9 +26,6 @@ export default function FormattedDate({ className, date, style, ts }: FormattedD
     date = new Date(date);
   }
 
-  //moment.relativeTimeRounding(Math.floor);
-  // dayjs equivalent to rounding down would be to use Math.floor
-
   return (<>
     <span
       className={classNames('text-sm whitespace-nowrap truncate', className)}

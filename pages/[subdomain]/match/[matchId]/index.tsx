@@ -448,6 +448,7 @@ export default function Match() {
                             gameState={matchGameState}
                             id={level._id.toString()}
                             leastMoves={matchGameState.leastMoves || 0}
+                            optimizeDom
                           />
                           :
                           <span className='italic'>Waiting for move</span>

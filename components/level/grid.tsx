@@ -7,24 +7,25 @@ import { teko } from '@root/helpers/getFont';
 import Position from '@root/models/position';
 import classNames from 'classnames';
 import { useTheme } from 'next-themes';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import Theme from '../../constants/theme';
 import Tile from './tile/tile';
 
 interface GridProps {
-  gameOverride?: Game;
-  themeOverride?: Theme;
   cellClassName?: (x: number, y: number) => string | undefined;
   cellStyle?: (x: number, y: number) => React.CSSProperties | undefined;
   disableAnimation?: boolean;
+  gameOverride?: Game;
   gameState: GameState;
   hideText?: boolean;
   id: string;
   leastMoves: number;
   onCellClick?: (x: number, y: number, rightClick: boolean) => void;
+  optimizeDom?: boolean;
+  themeOverride?: Theme;
 }
 
-export default function Grid({ cellClassName, cellStyle, disableAnimation, gameOverride, gameState, hideText, id, leastMoves, onCellClick, themeOverride }: GridProps) {
+export default function Grid({ cellClassName, cellStyle, disableAnimation, gameOverride, gameState, hideText, id, leastMoves, onCellClick, optimizeDom, themeOverride }: GridProps) {
   const { game: appGame } = useContext(AppContext);
   const { theme: appTheme } = useTheme();
   const game = (gameOverride || appGame);
@@ -75,30 +76,29 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
       const tileState = gameState.board[y][x];
       const tileType = tileState.tileType;
 
-      if (tileType === TileType.Default && tileState.block === undefined && tileState.blockInHole === undefined && tileState.text.length === 0) {
-        continue;
-      }
-
       const text = tileType === TileType.Player ? 0 :
         tileType === TileType.Exit ? leastMoves :
           tileState.text.length === 0 ? undefined :
             tileState.text[tileState.text.length - 1];
 
-      tiles.push(
-        <Tile
-          className={cellClassName ? cellClassName(x, y) : undefined}
-          disableAnimation={disableAnimation}
-          handleClick={onCellClick ? (rightClick: boolean) => onCellClick(x, y, rightClick) : undefined}
-          key={`tile-${y}-${x}`}
-          pos={new Position(x, y)}
-          style={cellStyle ? cellStyle(x, y) : undefined}
-          text={text}
-          tileType={tileType}
-          game={game}
-          theme={theme as Theme}
-          visited={tileState.text.length > 0}
-        />
-      );
+      // to optimize the DOM we can skip rendering default tiles with no text
+      if (!(optimizeDom && tileType === TileType.Default && text === undefined)) {
+        tiles.push(
+          <Tile
+            className={cellClassName ? cellClassName(x, y) : undefined}
+            disableAnimation={disableAnimation}
+            handleClick={onCellClick ? (rightClick: boolean) => onCellClick(x, y, rightClick) : undefined}
+            key={`tile-${y}-${x}`}
+            pos={new Position(x, y)}
+            style={cellStyle ? cellStyle(x, y) : undefined}
+            text={text}
+            tileType={tileType}
+            game={game}
+            theme={theme as Theme}
+            visited={tileState.text.length > 0}
+          />
+        );
+      }
 
       if (tileState.block) {
         const tileAtPosition = gameState.board[y][x];
@@ -138,34 +138,38 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
     }
   }
 
-  const onBgClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    e.stopPropagation();
-    const x = Math.floor(e.nativeEvent.offsetX / tileSize);
-    const y = Math.floor(e.nativeEvent.offsetY / tileSize);
-    const rightClick = e.button === 2;
+  const getBackground = useCallback(() => {
+    if (!optimizeDom) {
+      return null;
+    }
 
-    onCellClick && onCellClick(x, y, rightClick);
-  };
+    const onBgClick = (e: React.MouseEvent<HTMLDivElement>) => {
+      e.stopPropagation();
+      const x = Math.floor(e.nativeEvent.offsetX / tileSize);
+      const y = Math.floor(e.nativeEvent.offsetY / tileSize);
+      const rightClick = e.button === 2;
 
-  const solidBg = (
-    <div
-      onClick={onBgClick }
+      onCellClick && onCellClick(x, y, rightClick);
+    };
 
-      className='absolute overlay-grid'
-      style={{
-        backgroundColor: 'var(--level-grid)',
-        backgroundSize: `${tileSize}px ${tileSize}px`,
-        backgroundPosition: `${-borderWidth}px ${-borderWidth}px`,
-        backgroundImage: `
-          linear-gradient(to right, black ${borderWidth * 2 }px, transparent ${borderWidth * 2 }px),
-          linear-gradient(to bottom, black ${borderWidth * 2}px, transparent ${borderWidth * 2 }px)
+    return (
+      <div
+        className='absolute'
+        onClick={onBgClick}
+        style={{
+          backgroundColor: 'var(--level-grid)',
+          backgroundImage: `
+          linear-gradient(to right, var(--bg-color) ${borderWidth * 2}px, transparent ${borderWidth * 2}px),
+          linear-gradient(to bottom, var(--bg-color) ${borderWidth * 2}px, transparent ${borderWidth * 2}px)
         `,
-
-        height: tileSize * height,
-        width: tileSize * width,
-      }}
-    />
-  );
+          backgroundPosition: `${-borderWidth}px ${-borderWidth}px`,
+          backgroundSize: `${tileSize}px ${tileSize}px`,
+          height: tileSize * height,
+          width: tileSize * width,
+        }}
+      />
+    );
+  }, [borderWidth, height, onCellClick, optimizeDom, tileSize, width]);
 
   return (
     <div className={classNames('grow flex items-center justify-center overflow-hidden ' + theme, { [teko.className]: classic })} id={gridId}>
@@ -184,7 +188,7 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
               width: tileSize * width,
             }}
           >
-            {solidBg}
+            {getBackground()}
             {tiles}
             {Object.values(blocks)}
             {gameState.pos &&

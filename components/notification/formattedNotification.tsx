@@ -20,7 +20,7 @@ import FormattedLevelLink from '../formatted/formattedLevelLink';
 import FormattedUser from '../formatted/formattedUser';
 import GameLogo from '../gameLogo';
 import { Stars } from '../level/reviews/formattedReview';
-import { dropConfetti } from '../page/Confetti';
+import { dropConfetti } from '../page/confetti';
 
 interface NotificationMessageProps {
   notification: Notification;
