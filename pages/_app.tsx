@@ -3,7 +3,6 @@ import 'react-tooltip/dist/react-tooltip.css';
 import '../styles/global.css';
 import { Portal } from '@headlessui/react';
 import { sendGTMEvent } from '@next/third-parties/google';
-import Tracker from '@openreplay/tracker/cjs';
 import Openreplay from '@root/components/openReplay';
 import { Confetti } from '@root/components/page/confetti';
 import DismissToast from '@root/components/toasts/dismissToast';
@@ -126,15 +125,6 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
     mutatePlayLater();
   }, [mutatePlayLater]);
 
-  useEffect(() => {
-    if (user?.config.theme === Theme.Custom) {
-      const customTheme = JSON.parse(user.config.customTheme);
-
-      for (const key of Object.keys(customTheme)) {
-        document.documentElement.style.setProperty(key, customTheme[key]);
-      }
-    }
-  }, [user]);
   // preload sounds
   useEffect(() => {
     setSounds({

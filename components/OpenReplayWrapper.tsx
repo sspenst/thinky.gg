@@ -1,8 +1,7 @@
 'use client';
 import Tracker from '@openreplay/tracker';
 import { AppContext } from '@root/contexts/appContext';
-import User from '@root/models/db/user';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect } from 'react';
 
 const trackerInstance = new Tracker({
   projectKey: 'GHKiOCFt7Tg49Fi2oyHM',
