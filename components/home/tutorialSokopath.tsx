@@ -215,8 +215,8 @@ export default function TutorialSokopath() {
   const nextControl = useCallback((disabled = false) => new Control(
     'control-next',
     () => setTutorialStepIndex(i => i + 1),
-    <div className='flex justify-center'>
-      <span className='pl-2 self-center text-black'>
+    <div className='flex justify-center text-black'>
+      <span className='pl-2 self-center'>
         Next
       </span>
       <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='currentColor' className='bi bi-arrow-right-short' viewBox='0 0 16 16'>

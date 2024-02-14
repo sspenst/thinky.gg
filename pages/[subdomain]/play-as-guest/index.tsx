@@ -188,6 +188,11 @@ export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?
 
       setName(name);
       setTemporaryPassword(temporaryPassword);
+      // add query parameter to url, call it ?complete=true. for conversion tracking easieness
+      const url = new URL(window.location.href);
+
+      url.searchParams.set('signedup', 'true');
+      window.history.replaceState({}, '', url.toString());
     }
   }
 
