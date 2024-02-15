@@ -86,7 +86,6 @@ export async function getReviewsForUserId(gameId: GameId, id: string | string[] 
           preserveNullAndEmptyArrays: true,
         },
       },
-
       {
         $project: {
           levelId: {

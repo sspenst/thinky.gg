@@ -16,7 +16,7 @@ const trackerInstance = new Tracker({
   }
 });
 
-const Openreplay = () => {
+const OpenReplayWrapper = () => {
   const { user } = useContext(AppContext);
 
   useEffect(() => {
@@ -35,4 +35,4 @@ const Openreplay = () => {
   return null;
 };
 
-export default Openreplay;
+export default OpenReplayWrapper;
