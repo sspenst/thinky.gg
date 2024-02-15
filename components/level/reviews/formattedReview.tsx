@@ -99,7 +99,7 @@ export default function FormattedReview({ hideBorder, inModal, level, onEditClic
               />
             )}
           </div>
-          {level && <FormattedLevelLink id={`review-${user?._id.toString() ?? 'deleted'}`} level={level} />}
+          {level && <FormattedLevelLink id={`review-${user?._id?.toString() ?? 'deleted'}`} level={level} />}
         </div>
         <span className='flex items-center'>
           {review.score ? <Stars stars={review.score} /> : null}
@@ -111,7 +111,7 @@ export default function FormattedReview({ hideBorder, inModal, level, onEditClic
                 `Solved ${dayjs(new Date(review.stat.ts * 1000)).fromNow()}` :
                 `Completed in ${review.stat.moves} steps ${dayjs(new Date(review.stat.ts * 1000)).fromNow()}`
               }
-              data-tooltip-id={`review-stat-${user?._id.toString() ?? 'deleted'}`}
+              data-tooltip-id={`review-stat-${user?._id?.toString() ?? 'deleted'}`}
             >
               <span className='font-bold' style={{
                 color: !review.stat.complete && game.type === GameType.SHORTEST_PATH ? 'var(--color-incomplete)' : 'var(--color-complete)',
@@ -121,7 +121,7 @@ export default function FormattedReview({ hideBorder, inModal, level, onEditClic
               </span>
               {review.stat.complete && <Solved className='-mx-2' />}
             </div>
-            <StyledTooltip id={`review-stat-${user?._id.toString() ?? 'deleted'}`} />
+            <StyledTooltip id={`review-stat-${user?._id?.toString() ?? 'deleted'}`} />
           </>}
         </span>
         <span className='whitespace-pre-wrap'>{review.text}</span>

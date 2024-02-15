@@ -3,7 +3,7 @@ import 'react-tooltip/dist/react-tooltip.css';
 import '../styles/global.css';
 import { Portal } from '@headlessui/react';
 import { sendGTMEvent } from '@next/third-parties/google';
-import Openreplay from '@root/components/openReplay';
+import OpenReplay from '@root/components/openReplay';
 import { Confetti } from '@root/components/page/confetti';
 import DismissToast from '@root/components/toasts/dismissToast';
 import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
@@ -475,7 +475,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
           <Portal>
             <Toaster toastOptions={{ duration: 1500 }} />
             <Confetti />
-            <Openreplay />
+            <OpenReplay />
           </Portal>
           <MusicContextProvider>
             <Component {...pageProps} />
