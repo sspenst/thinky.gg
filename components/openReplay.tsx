@@ -1,8 +1,8 @@
 import dynamic from 'next/dynamic';
 import React from 'react';
 
-const OpenreplayWrapper = dynamic(
-  () => import('./OpenReplayWrapper'),
+const OpenReplayWrapper = dynamic(
+  () => import('./openReplayWrapper'),
   {
     ssr: false,
     loading: () => null
@@ -10,5 +10,5 @@ const OpenreplayWrapper = dynamic(
 );
 
 export default function Openreplay() {
-  return <OpenreplayWrapper />;
+  return <OpenReplayWrapper />;
 }
