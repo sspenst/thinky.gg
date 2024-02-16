@@ -63,17 +63,7 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
   const isProUser = isPro(user);
 
   // TODO: update this when theme is changed? so that when you switch to custom tab it keeps the colors
-  const [colorSettingsMap, setColorSettingsMap] = useState(initColorSettingsMap());
-
-  function initColorSettingsMap() {
-    const colorSettingsMap = {} as Record<string, string>;
-
-    for (const key of Object.keys(varLabelMap)) {
-      colorSettingsMap[key] = getCssVariableValue(key);
-    }
-
-    return colorSettingsMap;
-  }
+  const [customColors, setCustomColors] = useState<Record<string, string>>({});
 
   // override theme with userConfig theme
   useEffect(() => {
@@ -81,13 +71,25 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
       return;
     }
 
-    if (userConfig.theme === Theme.Custom) {
-      const customTheme = JSON.parse(userConfig.customTheme);
+    // use the userConfig custom theme if it exists, otherwise init with the current css variables
+    const customTheme = userConfig?.customTheme ? JSON.parse(userConfig.customTheme) : {};
+    const initCustomColors = {} as Record<string, string>;
 
-      for (const key of Object.keys(customTheme)) {
-        document.documentElement.style.setProperty(key, customTheme[key]);
+    for (const key of Object.keys(varLabelMap)) {
+      let value = getCssVariableValue(key);
+
+      if (customTheme[key]) {
+        value = customTheme[key];
       }
+
+      if (userConfig.theme === Theme.Custom) {
+        document.documentElement.style.setProperty(key, value);
+      }
+
+      initCustomColors[key] = value;
     }
+
+    setCustomColors(initCustomColors);
 
     if (Object.values(Theme).includes(userConfig.theme as Theme) && theme !== userConfig.theme) {
       setTheme(userConfig.theme);
@@ -100,56 +102,27 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
     document.documentElement.setAttribute('data-theme-dark', theme === Theme.Light ? 'false' : 'true');
   }, [theme]);
 
-  // TODO: don't switch to the custom tab, just change the colors. user can go to the custom tab to edit them
-  function switchToCustom() {
-    if (!isPro(user)) {
-      toast.error(`Custom themes require ${game.displayName} Pro`);
-
-      return;
-    }
-
-    // use the userConfig custom theme if it exists, otherwise use colorSettingsMap
-    const customTheme = userConfig?.customTheme ? JSON.parse(userConfig.customTheme) : {};
-
-    for (const key of Object.keys(varLabelMap)) {
-      let value = colorSettingsMap[key];
-
-      if (customTheme[key]) {
-        value = customTheme[key];
+  // set theme while handling custom theme style properties
+  function setThemeWrapper(theme: Theme) {
+    if (theme === Theme.Custom) {
+      for (const key of Object.keys(varLabelMap)) {
+        document.documentElement.style.setProperty(key, customColors[key]);
       }
-
-      document.documentElement.style.setProperty(key, value);
-    }
-
-    setActiveTab('Custom');
-    setTheme(Theme.Custom);
-  }
-
-  function onChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const newTheme = e.currentTarget.value as Theme;
-
-    if (newTheme === Theme.Custom) {
-      switchToCustom();
     } else {
-      // clear custom theme
       for (const key of Object.keys(varLabelMap)) {
         document.documentElement.style.removeProperty(key);
       }
-
-      setTheme(newTheme);
     }
+
+    setTheme(theme);
   }
 
   function putTheme() {
-    const isCustom = activeTab === 'Custom';
-    // TODO: we shouldn't delete the custom theme if you switch to a preset theme
-    const customTheme = isCustom ? JSON.stringify(colorSettingsMap) : undefined;
-
     fetch('/api/user-config', {
       method: 'PUT',
       body: JSON.stringify({
-        customTheme: customTheme,
-        theme: isCustom ? Theme.Custom : theme,
+        customTheme: isProUser ? JSON.stringify(customColors) : undefined,
+        theme: theme,
       }),
       credentials: 'include',
       headers: {
@@ -162,20 +135,14 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
     });
   }
 
-  useEffect(() => {
-    if (activeTab !== 'Custom') return;
-
-    setColorSettingsMap(initColorSettingsMap());
-  }, [activeTab]);
-
   const updateColor = (key: string, value: string) => {
-    setColorSettingsMap(prevColorSettingsMap => {
-      const newColorSettingsMap = { ...prevColorSettingsMap };
+    setCustomColors(prevCustomColors => {
+      const newCustomColors = { ...prevCustomColors };
 
-      newColorSettingsMap[key] = value;
+      newCustomColors[key] = value;
       document.documentElement.style.setProperty(key, value);
 
-      return newColorSettingsMap;
+      return newCustomColors;
     });
   };
 
@@ -198,7 +165,10 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
           </button>
           <button
             className={`px-3 py-1.5 rounded-md tab ${activeTab === 'Custom' ? 'bg-2' : 'bg-1'} focus:outline-none`}
-            onClick={() => switchToCustom()}
+            onClick={() => {
+              setThemeWrapper(Theme.Custom);
+              setActiveTab('Custom');
+            }}
           >
             <div className='flex gap-2'>
               Custom
@@ -220,7 +190,7 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
                   checked={theme === Theme[themeText]}
                   disabled={isProTheme && !isProUser}
                   id={id}
-                  onChange={onChange}
+                  onChange={e => setThemeWrapper(e.currentTarget.value as Theme)}
                   type='radio'
                   value={Theme[themeText]}
                 />
@@ -244,13 +214,13 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
       )}
       {activeTab === 'Custom' && (<>
         <div className='max-h-[350px] overflow-y-auto px-3'>
-          {Object.keys(colorSettingsMap).map((key) => (
+          {Object.keys(customColors).map((key) => (
             <div key={key} className='flex items-center justify-between my-2'>
               <label className='mr-2'>{varLabelMap[key]}</label>
               <input
                 onChange={(e) => updateColor(key, e.target.value)}
                 type='color'
-                value={colorSettingsMap[key]}
+                value={customColors[key]}
               />
             </div>
           ))}
@@ -259,7 +229,7 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
           <button
             className='bg-blue-700 text-white rounded-md px-2 py-1 h-fit'
             onClick={() => {
-              navigator.clipboard.writeText(JSON.stringify(colorSettingsMap));
+              navigator.clipboard.writeText(JSON.stringify(customColors));
               toast.dismiss();
               toast.success('Copied theme to clipboard!');
             }}

@@ -1,5 +1,4 @@
 import { GameId } from '@root/constants/GameId';
-import Theme from '@root/constants/theme';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import isGuest from '@root/helpers/isGuest';
 import isPro from '@root/helpers/isPro';
@@ -79,16 +78,15 @@ export default withAuth({
     }
 
     if (theme !== undefined) {
-      if (theme === Theme.Custom) {
-        if (isPro(req.user)) {
-          setObj['theme'] = theme;
-          setObj['customTheme'] = (customTheme);
-        } else {
-          return res.status(400).json({ error: 'Custom themes are a Pro feature. Upgrade to Pro to use custom themes.' });
-        }
+      setObj['theme'] = theme;
+    }
+
+    if (customTheme !== undefined) {
+      if (!isPro(req.user)) {
+        return res.status(400).json({ error: 'Custom themes are a Pro feature. Upgrade to Pro to use custom themes.' });
       }
 
-      setObj['theme'] = theme;
+      setObj['customTheme'] = customTheme;
     }
 
     if (tutorialCompletedAt) {
