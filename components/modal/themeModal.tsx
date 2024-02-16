@@ -9,6 +9,7 @@ import Theme, { getIconFromTheme } from '../../constants/theme';
 import { AppContext } from '../../contexts/appContext';
 import { ThemeIconProps } from '../theme/monkey';
 import Modal from '.';
+import ImportThemeModal from './importThemeModal';
 
 const varLabelMap = {
   '--bg-color': 'Background',
@@ -57,13 +58,12 @@ interface ThemeModalProps {
 }
 
 export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
+  const [customColors, setCustomColors] = useState<Record<string, string>>({});
   const { game, mutateUser, user, userConfig } = useContext(AppContext);
+  const [isImportOpen, setIsImportOpen] = useState(false);
   const { setTheme, theme } = useTheme();
   const [activeTab, setActiveTab] = useState(theme === Theme.Custom ? 'Custom' : 'Presets');
   const isProUser = isPro(user);
-
-  // TODO: update this when theme is changed? so that when you switch to custom tab it keeps the colors
-  const [customColors, setCustomColors] = useState<Record<string, string>>({});
 
   // override theme with userConfig theme
   useEffect(() => {
@@ -176,7 +176,7 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
           </button>
         </div>
       }
-      {activeTab === 'Presets' && (
+      {activeTab === 'Presets' &&
         <div className='flex flex-col gap-1'>
           {Object.keys(Theme).map(themeTextStr => {
             const themeText = themeTextStr as keyof typeof Theme;
@@ -211,11 +211,11 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
             );
           })}
         </div>
-      )}
-      {activeTab === 'Custom' && (<>
-        <div className='max-h-[350px] overflow-y-auto px-3'>
+      }
+      {activeTab === 'Custom' &&
+        <div className='max-h-[350px] overflow-y-auto px-3 flex flex-col gap-2'>
           {Object.keys(customColors).map((key) => (
-            <div key={key} className='flex items-center justify-between my-2'>
+            <div key={key} className='flex items-center justify-between'>
               <label className='mr-2'>{varLabelMap[key]}</label>
               <input
                 onChange={(e) => updateColor(key, e.target.value)}
@@ -225,65 +225,62 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
             </div>
           ))}
         </div>
-        <div className='flex justify-around min-w-80 text-sm gap-3 p-3'>
+      }
+      {isProUser &&
+        <div className='flex justify-center text-sm gap-3'>
           <button
-            className='bg-blue-700 text-white rounded-md px-2 py-1 h-fit'
+            className='bg-blue-500 hover:bg-blue-700 text-white text-white rounded-md px-3 py-2 w-fit'
             onClick={() => {
-              navigator.clipboard.writeText(JSON.stringify(customColors));
+              const currentColors = {} as Record<string, string>;
+
+              for (const key of Object.keys(varLabelMap)) {
+                currentColors[key] = getCssVariableValue(key);
+              }
+
+              navigator.clipboard.writeText(JSON.stringify(currentColors));
               toast.dismiss();
               toast.success('Copied theme to clipboard!');
             }}
           >
             Export
           </button>
-          <details>
-            <summary className='bg-white text-black rounded-md px-2 py-1'>Import</summary>
-            <textarea
-              className='w-full h-20 bg-white-text-black text-xs'
-              placeholder='Paste exported theme here'
-            />
-            <button
-              className='bg-blue-700 text-white rounded-md px-2 py-1'
-              onClick={() => {
-                if (confirm('Are you sure you want to import this theme? This will override your current theme.')) {
-                  // TODO: reimplement
+          <button
+            className='bg-blue-500 hover:bg-blue-700 text-white text-white rounded-md px-3 py-2 w-fit'
+            onClick={() => setIsImportOpen(true)}
+          >
+            Import
+          </button>
+          <ImportThemeModal
+            closeModal={() => setIsImportOpen(false)}
+            isOpen={isImportOpen}
+            onSubmit={(data) => {
+              try {
+                const newSettings = JSON.parse(data);
 
-                  // try {
-                  //   const el = document.querySelector('.customize-content textarea') as HTMLTextAreaElement;
-                  //   const newSettings = JSON.parse(el?.value || '');
+                for (const key in newSettings) {
+                  if (varLabelMap[key]) {
+                    const color = newSettings[key];
 
-                  //   // only include settings that are in the colorSettings label
-                  //   for (const key in newSettings) {
-                  //     if (colorSettings.find(i => i.varName === key)) {
-                  //       newSettings[key] = newSettings[key].toUpperCase();
-                  //     } else {
-                  //       delete newSettings[key];
-                  //     }
-                  //   }
+                    // make sure this is a color
+                    if (!color.match(/^#[0-9A-Fa-f]{6}$/i)) {
+                      throw new Error('Invalid color');
+                    }
 
-                  //   for (const setting of colorSettings) {
-                  //     const index = colorSettings.findIndex(i => i.varName === setting.varName);
-
-                  //     // make sure this is a color
-                  //     if (!setting.value.match(/^#[0-9A-F]{6}$/i)) {
-                  //       throw new Error('Invalid color');
-                  //     }
-
-                  //     updateColor(setting.varName, setting.value);
-                  //   }
-
-                  //   toast.success('Imported theme successfully');
-                  // } catch (e) {
-                  //   toast.error('Invalid theme');
-                  // }
+                    updateColor(key, newSettings[key]);
+                  }
                 }
-              }}
-            >
-              Import
-            </button>
-          </details>
+
+                setTheme(Theme.Custom);
+                setActiveTab('Custom');
+
+                toast.success('Imported theme successfully');
+              } catch (e) {
+                toast.error('Invalid theme');
+              }
+            }}
+          />
         </div>
-      </>)}
+      }
     </Modal>
   );
 }
