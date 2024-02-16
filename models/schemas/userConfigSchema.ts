@@ -49,7 +49,10 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       type: String,
       required: true,
     },
-    /** TODO: MOVE TO user? */
+    customTheme: {
+      type: String,
+      required: false,
+    },
     toursCompleted: {
       type: [{ type: String, enum: TourType }],
       required: false,
