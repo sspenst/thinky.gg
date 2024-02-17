@@ -35,21 +35,36 @@ const varLabelMap = {
   '--level-wall': 'Level Wall',
 } as Record<string, string>;
 
-const rgbToHex = (rgb: string) => {
-  if (!rgb) return '#000000'; // Default color
-  // if already in hex format, return
-  if (rgb.indexOf('#') === 0) return rgb;
-
-  const [r, g, b] = rgb.match(/\d+/g)?.map(Number) || [];
-
-  return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-};
-
 // Function to fetch current CSS variable value in Hex format
-const getCssVariableValue = (varName: string) => {
-  const rgbValue = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+const getCssPropertyHex = (property: string) => {
+  const value = getComputedStyle(document.documentElement).getPropertyValue(property).trim();
 
-  return rgbToHex(rgbValue);
+  if (!value) {
+    return '#000000';
+  }
+
+  // already in hex format
+  if (value.indexOf('#') === 0) {
+    return value;
+  }
+
+  const nums = value.match(/\d+/g);
+
+  if (nums?.length !== 3) {
+    return '#000000';
+  }
+
+  const [r, g, b] = nums.map(n => {
+    let hex = Number(n).toString(16);
+
+    if (hex.length === 1) {
+      hex = '0' + hex;
+    }
+
+    return hex;
+  });
+
+  return `#${r}${g}${b}`;
 };
 
 interface ThemeModalProps {
@@ -76,7 +91,7 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
     const initCustomColors = {} as Record<string, string>;
 
     for (const key of Object.keys(varLabelMap)) {
-      let value = getCssVariableValue(key);
+      let value = getCssPropertyHex(key);
 
       if (customTheme[key]) {
         value = customTheme[key];
@@ -234,7 +249,7 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
               const currentColors = {} as Record<string, string>;
 
               for (const key of Object.keys(varLabelMap)) {
-                currentColors[key] = getCssVariableValue(key);
+                currentColors[key] = getCssPropertyHex(key);
               }
 
               navigator.clipboard.writeText(JSON.stringify(currentColors));
