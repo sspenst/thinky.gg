@@ -35,22 +35,19 @@ const varLabelMap = {
   '--level-wall': 'Level Wall',
 } as Record<string, string>;
 
-// Function to fetch current CSS variable value in Hex format
-const getCssPropertyHex = (property: string) => {
-  const value = getComputedStyle(document.documentElement).getPropertyValue(property).trim();
+function getCssPropertyHex(property: string) {
+  const tempDiv = document.createElement('div');
 
-  if (!value) {
-    return '#000000';
-  }
+  tempDiv.style.color = getComputedStyle(document.documentElement).getPropertyValue(property).trim();
+  document.body.appendChild(tempDiv);
 
-  // already in hex format
-  if (value.indexOf('#') === 0) {
-    return value;
-  }
+  const colorRgb = getComputedStyle(tempDiv).color;
 
-  const nums = value.match(/\d+/g);
+  document.body.removeChild(tempDiv);
 
-  if (nums?.length !== 3) {
+  const nums = colorRgb.match(/\d+/g);
+
+  if (!nums || nums.length < 3) {
     return '#000000';
   }
 
@@ -65,7 +62,7 @@ const getCssPropertyHex = (property: string) => {
   });
 
   return `#${r}${g}${b}`;
-};
+}
 
 interface ThemeModalProps {
   closeModal: () => void;
