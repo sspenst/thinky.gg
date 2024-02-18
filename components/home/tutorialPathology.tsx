@@ -400,7 +400,7 @@ export default function TutorialPathology() {
                 />
               </svg>
             ) : (
-              <div>Swipe or tap on a neighboring square</div>
+              <div>Swipe up, down, left, or right to move your player</div>
             )}
         </div>
         },
