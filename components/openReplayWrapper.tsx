@@ -23,7 +23,8 @@ const OpenReplayWrapper = () => {
     if (typeof window !== 'undefined') {
       const dateRegistered = user?.ts ? new Date(user?.ts * 1000) : null;
       // if user is anonymous or if date registered is last 3 days, then we should init track
-      const shouldInitTrack = !user || (user && dateRegistered && dateRegistered < new Date(Date.now() - 3 * 24 * 60 * 60 * 1000));
+
+      const shouldInitTrack = !user || (user && user?.ts && dateRegistered && (Date.now() - dateRegistered.getTime()) / (1000 * 60 * 60 * 24) < 3);
 
       if (shouldInitTrack) {
         trackerInstance.start().then(() => {
