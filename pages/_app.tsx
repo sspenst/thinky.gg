@@ -302,6 +302,11 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
   // check if redirect_type querystring parameter is set, and if it is equal to "patholoygg" console log hello
     const urlParams = new URLSearchParams(window.location.search);
     const redirectType = urlParams.get('redirect_type');
+    const utmSource = urlParams.get('utm_source');
+
+    if (utmSource) {
+      window.localStorage.setItem('utm_source', utmSource);
+    }
 
     if (redirectType === 'pathologygg') {
       setTimeout(() => {
