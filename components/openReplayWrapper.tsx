@@ -21,9 +21,10 @@ const OpenReplayWrapper = () => {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const shouldReplaySession = window.localStorage?.getItem('utm_source') !== undefined;
+      const shouldReplaySession = window.localStorage.getItem('utm_source') !== undefined;
 
       if (shouldReplaySession) {
+        console.log('Init OpenReplay');
         trackerInstance.start().then(() => {
           console.log('OpenReplay started');
 
