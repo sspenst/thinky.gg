@@ -68,7 +68,7 @@ export default function TutorialPathology() {
   const globalTimeout = useRef<NodeJS.Timeout | null>(null);
   const [isNextButtonDisabled, setIsNextButtonDisabled] = useState(false);
   const [isPrevButtonDisabled, setIsPrevButtonDisabled] = useState(false);
-  const { mutateUser, user } = useContext(AppContext);
+  const { mutateUser, user, deviceInfo } = useContext(AppContext);
   const [popperInstance, setPopperInstance] = useState<Instance | null>(null);
   const popperUpdateInterval = useRef<NodeJS.Timeout | null>(null);
   const [showNiceJob, setShowNiceJob] = useState(false);
@@ -671,7 +671,7 @@ export default function TutorialPathology() {
   }
 
   return (
-    <Page isFullScreen={!!tutorialStep.editorGrid || !!tutorialStep.gameGrid} title={'Tutorial'}>
+    <Page hideFooter={deviceInfo.isMobile} isFullScreen={!!tutorialStep.editorGrid || !!tutorialStep.gameGrid} title={'Tutorial'}>
       <div className='flex flex-col h-full' id='tutorial-container'>
         <div className='w-full bg-gray-200 h-1 mb-1'>
           <div className='bg-blue-600 h-1' style={{

@@ -1,5 +1,4 @@
 /* istanbul ignore file */
-
 import TutorialPathology from '@root/components/home/tutorialPathology';
 import TutorialSokopath from '@root/components/home/tutorialSokopath';
 import { GameId } from '@root/constants/GameId';
