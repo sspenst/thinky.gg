@@ -21,14 +21,20 @@ const OpenReplayWrapper = () => {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      trackerInstance.start().then(() => {
-        console.log('OpenReplay started');
+      const dateRegistered = user?.ts ? new Date(user?.ts * 1000) : null;
+      // if user is anonymous or if date registered is last 3 days, then we should init track
+      const shouldInitTrack = !user || (user && dateRegistered && dateRegistered < new Date(Date.now() - 3 * 24 * 60 * 60 * 1000));
 
-        if (user) {
-          trackerInstance.setUserID(user.name);
-          trackerInstance.setMetadata('_id', user._id.toString());
-        }
-      });
+      if (shouldInitTrack) {
+        trackerInstance.start().then(() => {
+          console.log('OpenReplay started');
+
+          if (user) {
+            trackerInstance.setUserID(user.name);
+            trackerInstance.setMetadata('_id', user._id.toString());
+          }
+        });
+      }
     }
   }, [user]);
 
