@@ -21,12 +21,9 @@ const OpenReplayWrapper = () => {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const dateRegistered = user?.ts ? new Date(user?.ts * 1000) : null;
-      // if user is anonymous or if date registered is last 3 days, then we should init track
+      const shouldReplaySession = window.localStorage?.getItem('utm_source') !== undefined;
 
-      const shouldInitTrack = !user || (user && user?.ts && dateRegistered && (Date.now() - dateRegistered.getTime()) / (1000 * 60 * 60 * 24) < 3);
-
-      if (shouldInitTrack) {
+      if (shouldReplaySession) {
         trackerInstance.start().then(() => {
           console.log('OpenReplay started');
 
