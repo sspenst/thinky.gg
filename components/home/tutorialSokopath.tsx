@@ -392,7 +392,7 @@ export default function TutorialSokopath() {
                 />
               </svg>
             ) : (
-              <div>Swipe or tap on a neighboring square</div>
+              <div>Swipe up, down, left, or right to move your player</div>
             )}
         </div>
         },

@@ -518,29 +518,26 @@ export default function TutorialPathology() {
       {
         header: <div>
           <div className='text-3xl mb-6 fadeIn'>Congratulations on completing the tutorial!</div>
-          <div className='text-xl fadeIn' style={{
-            animationDelay: '1s',
-          }}>There is a lot more to Pathology than just this:<br />An active community, level editor, and thousands of levels to explore.</div>
           {isLoggedIn ?
             <div className='text-xl fadeIn' style={{
               pointerEvents: 'all',
-              animationDelay: '2s',
+
             }}>
-              Continue your Pathology journey with the <span className='font-bold'>Campaign</span>!
+              Continue your Pathology journey with the <Link href='/play' className='font-bold text-blue-500 hover:text-blue-400'>Campaign</Link>!
             </div>
             :
-            <div className='flex flex-col gap-3'>
+            <div className='flex flex-col gap-3 mt-10'>
               <div className='text-xl fadeIn' style={{
                 pointerEvents: 'all',
-                animationDelay: '2s'
+                animationDelay: '0.5s'
               }}>
-                Now <Link href='/signup' className='font-bold text-blue-500 hover:text-blue-400'>sign up</Link> for free to explore the world of Pathology (and other puzzle games!))
+                Ready to Play?
               </div>
               <div className='fadeIn' style={{
                 pointerEvents: 'all',
-                animationDelay: '2.5s'
+                animationDelay: '1s'
               }}>
-                (or <Link href='/play-as-guest' className='font-bold text-blue-500 hover:text-blue-400'>continue as a guest</Link>)
+                <Link href='/play-as-guest' className='text-4xl font-bold text-blue-500 hover:text-blue-400'>Start Level 1</Link>
               </div>
             </div>
           }
@@ -671,30 +668,6 @@ export default function TutorialPathology() {
       <button onClick={() => setTutorialStepIndex(0)}>Restart Tutorial</button>,
       false,
     ));
-
-    controls.push(isLoggedIn ?
-      new Control(
-        'control-campaign',
-        () => {
-          router.push('/play');
-        },
-        <>Campaign</>,
-        false,
-        true,
-      )
-      :
-      new Control(
-        'control-sign-up',
-        () => {
-          router.push('/signup');
-
-          return;
-        },
-        <>Sign up</>,
-        false,
-        true,
-      )
-    );
   }
 
   return (
