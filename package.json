@@ -12,7 +12,7 @@
     "@headlessui/tailwindcss": "^0.2.0",
     "@newrelic/next": "^0.7.0",
     "@next/third-parties": "^14.1.0",
-    "@openreplay/tracker": "^10.0.4",
+    "@openreplay/tracker": "^12.0.2",
     "@popperjs/core": "^2.11.8",
     "@socket.io/mongo-adapter": "^0.3.2",
     "@socket.io/mongo-emitter": "^0.2.0",
