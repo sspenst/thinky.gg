@@ -8,6 +8,7 @@ import { Browser, Page } from 'puppeteer';
 
 declare global {
   var db: {
+    autoReconnect: boolean;
     conn: typeof mongoose | null;
     mongoMemoryServer: MongoMemoryReplSet | null;
     promise: Promise<typeof mongoose> | null;
