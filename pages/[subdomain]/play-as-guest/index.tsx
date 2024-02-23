@@ -141,6 +141,7 @@ export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?
 
   async function fetchSignup() {
     const tutorialCompletedAt = window.localStorage.getItem('tutorialCompletedAt') || '0';
+    const utm_source = window.localStorage.getItem('utm_source') || '';
 
     toast.dismiss();
     toast.loading('Creating guest account...');
@@ -157,7 +158,8 @@ export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?
         password: 'guest-account',
         recaptchaToken: recaptchaToken,
         guest: true,
-        tutorialCompletedAt: tutorialCompletedAt
+        tutorialCompletedAt: tutorialCompletedAt,
+        utm_source: utm_source
       })
     });
 

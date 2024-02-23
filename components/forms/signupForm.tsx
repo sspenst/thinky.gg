@@ -63,6 +63,7 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
     toast.loading('Registering...');
 
     const tutorialCompletedAt = window.localStorage.getItem('tutorialCompletedAt') || '0';
+    const utm_source = window.localStorage.getItem('utm_source') || '';
 
     fetch('/api/signup', {
       method: 'POST',
@@ -71,7 +72,8 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
         name: username,
         password: password,
         tutorialCompletedAt: parseInt(tutorialCompletedAt),
-        recaptchaToken: recaptchaToken
+        recaptchaToken: recaptchaToken,
+        utm_source: utm_source
       }),
       credentials: 'include',
       headers: {
