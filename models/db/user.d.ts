@@ -27,6 +27,7 @@ interface User {
   stripeCustomerId: string;
   stripeGiftSubscriptions: string[]; // gift subscriptions this user has given out
   ts?: number; // created timestamp
+  utm_source?: string; // how the user found the site
   // virtual field - not stored in schema
   config?: UserConfig;
 }

@@ -125,6 +125,13 @@ const UserSchema = new mongoose.Schema<User>({
     select: false,
     default: [],
   },
+  utm_source: {
+    type: String,
+    required: false,
+    // length limit is 100 characters
+    maxlength: 100,
+    select: false,
+  },
   ts: {
     type: Number,
   },
