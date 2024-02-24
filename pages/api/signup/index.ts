@@ -101,7 +101,7 @@ export default apiWrapper({ POST: {
   let trimmedEmail: string, trimmedName: string, passwordValue: string;
 
   if (guest) {
-    trimmedName = 'Guest-' + Math.floor(Math.random() * 1000000);
+    trimmedName = 'Guest-' + Math.floor(Math.random() * 100000000);
     trimmedEmail = trimmedName + '@guest.com';
     passwordValue = generatePassword();
   } else {
