@@ -537,7 +537,13 @@ export default function TutorialPathology() {
                 pointerEvents: 'all',
                 animationDelay: '1s'
               }}>
-                <Link href='/play-as-guest' className='text-4xl font-bold text-blue-500 hover:text-blue-400'>Start Level 1</Link>
+                <Link href='/signup' className='text-4xl font-bold text-green-500 hover:text-blue-400'>Start Level 1</Link>
+              </div>
+              <div className='fadeIn' style={{
+                pointerEvents: 'all',
+                animationDelay: '1.3s'
+              }}>
+                <Link href='/play-as-guest' className='text-lg font-bold text-blue-500 hover:text-blue-400'>(or start without signing up)</Link>
               </div>
             </div>
           }
