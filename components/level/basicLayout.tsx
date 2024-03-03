@@ -41,11 +41,19 @@ export default function BasicLayout({ cellClassName, cellStyle, controls, hideTe
         tileType === TileType.Player) {
         board[y][x].tileType = tileType;
       } else if (TileTypeHelper.isOnExit(tileType)) {
-        board[y][x].tileType = TileType.Exit;
-        board[y][x].block = {
-          id: blockId++,
-          tileType: TileTypeHelper.getExitSibilingTileType(tileType),
-        } as BlockState;
+        if (tileType === TileType.PlayerOnExit) {
+          board[y][x].tileType = TileType.Exit;
+          board[y][x].block = {
+            id: blockId++,
+            tileType: TileType.Player
+          } as BlockState;
+        } else {
+          board[y][x].tileType = TileType.Exit;
+          board[y][x].block = {
+            id: blockId++,
+            tileType: TileTypeHelper.getExitSibilingTileType(tileType),
+          } as BlockState;
+        }
       } else if (TileTypeHelper.canMove(tileType)) {
         board[y][x].block = {
           id: blockId++,

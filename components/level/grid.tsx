@@ -201,6 +201,7 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
                 style={cellStyle ? cellStyle(gameState.pos.x, gameState.pos.y) : undefined}
                 text={gameState.moves.length}
                 tileType={TileType.Player}
+                onTopOf={gameState.board[gameState.pos.y][gameState.pos.x].tileType}
                 game={game}
                 theme={theme as Theme}
               />

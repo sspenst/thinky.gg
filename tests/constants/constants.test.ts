@@ -11,9 +11,9 @@ describe('constants/*.ts', () => {
     expect(res).toBeUndefined();
   });
   test('getInvalidTileType with valid input', async () => {
-    const res = TileTypeHelper.getInvalidTileType('Z');
+    const res = TileTypeHelper.getInvalidTileType('?');
 
-    expect(res).toBe('Z');
+    expect(res).toBe('?');
   });
 });
 
