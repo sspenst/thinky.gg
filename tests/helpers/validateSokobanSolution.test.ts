@@ -10,6 +10,21 @@ afterAll(async () => {
   await dbDisconnect();
 });
 describe('validateSokopathSolution.ts', () => {
+  test('valid solution, player on start', async () => {
+    expect(validateSokopathSolution([
+      Direction.DOWN,
+      Direction.RIGHT,
+      Direction.RIGHT,
+      Direction.RIGHT,
+      Direction.UP,
+      Direction.LEFT,
+      Direction.LEFT,
+    ], {
+      data: 'Z0200\n00000',
+      height: 2,
+      width: 5,
+    } as Level)).toBeTruthy();
+  });
   test('valid solution', async () => {
     expect(validateSokopathSolution([
       Direction.LEFT,
