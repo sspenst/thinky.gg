@@ -77,6 +77,11 @@ export default class TileTypeHelper {
       directions: [Direction.UP, Direction.DOWN],
       exitSiblingTileType: TileType.UpDownOnExit,
     },
+    [TileType.PlayerOnExit]: {
+      directions: [],
+      exitSiblingTileType: TileType.Exit,
+      isOnExit: true, // Setting to false because this is only on starting position
+    },
     [TileType.BlockOnExit]: {
       directions: [Direction.DOWN, Direction.LEFT, Direction.RIGHT, Direction.UP],
       exitSiblingTileType: TileType.Block,

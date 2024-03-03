@@ -175,10 +175,13 @@ export function initGameState(levelData: string) {
         board[y][x].tileType = tileType;
       } else if (TileTypeHelper.isOnExit(tileType)) {
         board[y][x].tileType = TileType.Exit;
-        board[y][x].block = {
-          id: blockId++,
-          tileType: TileTypeHelper.getExitSibilingTileType(tileType),
-        } as BlockState;
+
+        if (tileType !== TileType.PlayerOnExit) {
+          board[y][x].block = {
+            id: blockId++,
+            tileType: TileTypeHelper.getExitSibilingTileType(tileType),
+          } as BlockState;
+        }
       } else if (tileType === TileType.Player) {
         pos = new Position(x, y);
       } else if (TileTypeHelper.canMove(tileType)) {
