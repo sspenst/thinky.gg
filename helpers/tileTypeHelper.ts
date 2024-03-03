@@ -19,7 +19,10 @@ export default class TileTypeHelper {
       exitSiblingTileType: TileType.BlockOnExit,
     },
     [TileType.Exit]: {},
-    [TileType.Player]: {},
+    [TileType.Player]: {
+      directions: [],
+      exitSiblingTileType: TileType.PlayerOnExit,
+    },
     [TileType.Hole]: {},
     [TileType.Left]: {
       directions: [Direction.LEFT],

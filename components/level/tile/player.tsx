@@ -10,10 +10,11 @@ interface PlayerProps {
   atEnd?: boolean;
   game: Game;
   moveCount: number;
+  onTopOf?: TileType;
   theme: Theme;
 }
 
-export default function Player({ atEnd, game, moveCount, theme }: PlayerProps) {
+export default function Player({ atEnd, game, moveCount, onTopOf, theme }: PlayerProps) {
   const { borderWidth, hideText, innerTileSize, leastMoves, tileSize } = useContext(GridContext);
   const text = hideText ? '' : String(moveCount);
   const fontSizeRatio = text.length <= 3 ? 2 : (1 + (text.length - 1) / 2);
@@ -32,10 +33,11 @@ export default function Player({ atEnd, game, moveCount, theme }: PlayerProps) {
         !atEnd ? undefined : overstepped ? styles.lose :
           classic ? styles['win-classic'] : styles.win,
         classic ? styles.classic : undefined,
+        onTopOf === TileType.Exit ? 'on-exit' : undefined,
       )}
       id='player'
       style={{
-        backgroundColor: 'var(--level-player)',
+        // backgroundColor: 'var(--level-player)',
         borderColor: 'var(--level-player-extra)',
         borderWidth: classic ? 1 : 0,
         boxShadow: classic ?
@@ -48,6 +50,7 @@ export default function Player({ atEnd, game, moveCount, theme }: PlayerProps) {
         lineHeight: innerTileSize + 'px',
         top: 0,
         width: innerTileSize,
+        backgroundColor: onTopOf === TileType.Exit ? 'var(--level-end)' : 'var(--level-player)',
       }}
     >
       {icon ?
