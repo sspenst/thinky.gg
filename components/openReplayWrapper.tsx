@@ -7,6 +7,7 @@ const trackerInstance = new Tracker({
   projectKey: 'GHKiOCFt7Tg49Fi2oyHM',
   //ingestPoint: '****',
   //__DISABLE_SECURE_MODE: true,
+  disableStringDict: true,
   network: {
     capturePayload: true,
     failuresOnly: false,
