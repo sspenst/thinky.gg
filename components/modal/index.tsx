@@ -90,7 +90,7 @@ export default function Modal({
               <Dialog.Panel
                 className={classNames('py-3 px-4 my-8 text-left align-middle transition-all transform shadow-xl rounded-xl flex flex-col gap-4 border bg-1 border-color-3', getFontFromGameId(game.id))}
                 style={{
-                  maxWidth: 'min(100%, 768px)',
+                  maxWidth: '100vw',
                 }}
               >
                 <Dialog.Title as='div' className='flex gap-4 text-center'>
