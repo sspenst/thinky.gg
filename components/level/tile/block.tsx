@@ -34,7 +34,6 @@ export default function Block({ game, inHole, onTopOf, theme, tileType }: BlockP
         'tile-type-' + tileType,
         'tile-' + game.id,
         inHole ? styles['in-hole'] : undefined,
-        { 'on-exit': onTopOf === TileType.Exit },
       )}
       style={{
         backgroundColor: getBackgroundColor(),

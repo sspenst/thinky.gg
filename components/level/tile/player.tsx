@@ -33,24 +33,22 @@ export default function Player({ atEnd, game, moveCount, onTopOf, theme }: Playe
         !atEnd ? undefined : overstepped ? styles.lose :
           classic ? styles['win-classic'] : styles.win,
         classic ? styles.classic : undefined,
-        onTopOf === TileType.Exit ? 'on-exit' : undefined,
       )}
       id='player'
       style={{
-        // backgroundColor: 'var(--level-player)',
+        backgroundColor: 'var(--level-player)',
         borderColor: 'var(--level-player-extra)',
         borderWidth: classic ? 1 : 0,
         boxShadow: classic ?
           `-${2 * borderWidth}px ${2 * borderWidth}px 0 0 var(--bg-color)` :
           `0 0 0 ${borderWidth}px var(--bg-color)`,
-        color: 'var(--level-player-text)',
+        color: onTopOf === TileType.Exit ? 'var(--level-end)' : 'var(--level-player-text)',
         fontSize: fontSize,
         height: innerTileSize,
         left: classic ? 2 * borderWidth : 0,
         lineHeight: innerTileSize + 'px',
         top: 0,
         width: innerTileSize,
-        backgroundColor: onTopOf === TileType.Exit ? 'var(--level-end)' : 'var(--level-player)',
       }}
     >
       {icon ?

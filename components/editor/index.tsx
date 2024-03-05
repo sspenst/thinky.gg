@@ -1,4 +1,4 @@
-import { GameType, ValidateLevelResponse } from '@root/constants/Games';
+import { ValidateLevelResponse } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import { useRouter } from 'next/router';
@@ -176,6 +176,11 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
         clear = true;
       }
 
+      // don't allow removing the player from the board
+      if (tileType === TileType.Player && (prevTileType === TileType.Player || prevTileType === TileType.PlayerOnExit)) {
+        return prevLevel;
+      }
+
       function getNewTileType() {
         if (game.allowMovableOnExit) {
           // place movable on exit or replace movable on exit
@@ -198,12 +203,22 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
 
       const newTileType = clear ? TileType.Default : getNewTileType();
 
-      // when changing start position the old position needs to be removed
-      if (newTileType === TileType.Player) {
-        const startIndex = level.data.indexOf(TileType.Player);
+      // TODO:
+      // - clearing empty tiles moves the start pos to 0,0
+      // - can't clear exit from under player
 
-        if (startIndex !== -1) {
-          level.data = level.data.substring(0, startIndex) + TileType.Default + level.data.substring(startIndex + 1);
+      // when changing start position the old position needs to be removed
+      if (tileType === TileType.Player) {
+        const playerIndex = level.data.indexOf(TileType.Player);
+
+        if (playerIndex !== -1) {
+          level.data = level.data.substring(0, playerIndex) + TileType.Default + level.data.substring(playerIndex + 1);
+        }
+
+        const playerOnExitIndex = level.data.indexOf(TileType.PlayerOnExit);
+
+        if (playerOnExitIndex !== -1) {
+          level.data = level.data.substring(0, playerOnExitIndex) + TileType.Exit + level.data.substring(playerOnExitIndex + 1);
         }
       }
 
@@ -292,7 +307,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
               return 'editor-selected';
             }
           }}
-          hideText={game.type === GameType.COMPLETE_AND_SHORTEST}
           id='editor-selection'
           level={editorSelectionLevel}
           onClick={(index) => setTileType(editorSelectionLevel.data[index] as TileType)}
@@ -338,7 +352,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
             ),
           ]),
         ]}
-        hideText={game.type === GameType.COMPLETE_AND_SHORTEST}
         id={level._id?.toString() ?? 'new'}
         level={level}
         onClick={onClick}

@@ -176,7 +176,9 @@ export function initGameState(levelData: string) {
       } else if (TileTypeHelper.isOnExit(tileType)) {
         board[y][x].tileType = TileType.Exit;
 
-        if (tileType !== TileType.PlayerOnExit) {
+        if (tileType === TileType.PlayerOnExit) {
+          pos = new Position(x, y);
+        } else {
           board[y][x].block = {
             id: blockId++,
             tileType: TileTypeHelper.getExitSibilingTileType(tileType),
