@@ -20,7 +20,6 @@ export default class TileTypeHelper {
     },
     [TileType.Exit]: {},
     [TileType.Player]: {
-      directions: [],
       exitSiblingTileType: TileType.PlayerOnExit,
     },
     [TileType.Hole]: {},
@@ -79,11 +78,6 @@ export default class TileTypeHelper {
     [TileType.UpDown]: {
       directions: [Direction.UP, Direction.DOWN],
       exitSiblingTileType: TileType.UpDownOnExit,
-    },
-    [TileType.PlayerOnExit]: {
-      directions: [],
-      exitSiblingTileType: TileType.Exit,
-      isOnExit: true, // Setting to false because this is only on starting position
     },
     [TileType.BlockOnExit]: {
       directions: [Direction.DOWN, Direction.LEFT, Direction.RIGHT, Direction.UP],
@@ -158,6 +152,10 @@ export default class TileTypeHelper {
     [TileType.UpDownOnExit]: {
       directions: [Direction.UP, Direction.DOWN],
       exitSiblingTileType: TileType.UpDown,
+      isOnExit: true,
+    },
+    [TileType.PlayerOnExit]: {
+      exitSiblingTileType: TileType.Player,
       isOnExit: true,
     },
   };
