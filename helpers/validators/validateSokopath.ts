@@ -8,17 +8,16 @@ export default function validateSokopathSolution(directions: Direction[], level:
   const data = level.data.replace(/\n/g, '').split('') as TileType[];
   const endIndices = [];
   const playerOnExitIndex = data.indexOf(TileType.PlayerOnExit);
-  const posIndex = data.indexOf(TileType.Player) >= 0 ? data.indexOf(TileType.Player) : playerOnExitIndex;
+  const posIndex = playerOnExitIndex === -1 ? data.indexOf(TileType.Player) : playerOnExitIndex;
 
   let pos = new Position(posIndex % level.width, Math.floor(posIndex / level.width));
-  let endIndex = -1;
 
-  while ((endIndex = data.indexOf(TileType.Exit, endIndex + 1)) != -1) {
-    endIndices.push(endIndex);
-  }
+  for (let i = 0; i < data.length; i++) {
+    const tileType = data[i];
 
-  if (playerOnExitIndex >= 0) {
-    endIndices.push(playerOnExitIndex);
+    if (tileType === TileType.Exit || TileTypeHelper.isOnExit(tileType)) {
+      endIndices.push(i);
+    }
   }
 
   for (let i = 0; i < directions.length; i++) {
