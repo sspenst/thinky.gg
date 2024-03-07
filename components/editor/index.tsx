@@ -176,15 +176,20 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
         clear = true;
       }
 
-      // disallow removing the player from the board
+      // handle all cases related to the player
       if (prevTileType === TileType.Player || prevTileType === TileType.PlayerOnExit) {
-        if (clear) {
+        // disallow all changes except for exit when it is allowed
+        if (tileType !== TileType.Exit || !game.allowMovableOnExit) {
           return prevLevel;
         }
 
-        if (tileType === TileType.Player) {
-          return prevLevel;
-        }
+        const newTileType = clear ? TileType.Player : TileTypeHelper.getExitSibilingTileType(prevTileType);
+
+        level.data = level.data.substring(0, index) + newTileType + level.data.substring(index + 1);
+
+        historyPush(level);
+
+        return level;
       }
 
       function getNewTileType() {
