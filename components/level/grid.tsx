@@ -87,14 +87,14 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
           <Tile
             className={cellClassName ? cellClassName(x, y) : undefined}
             disableAnimation={disableAnimation}
+            game={game}
             handleClick={onCellClick ? (rightClick: boolean) => onCellClick(x, y, rightClick) : undefined}
             key={`tile-${y}-${x}`}
             pos={new Position(x, y)}
             style={cellStyle ? cellStyle(x, y) : undefined}
             text={text}
-            tileType={tileType}
-            game={game}
             theme={theme as Theme}
+            tileType={tileType}
             visited={tileState.text.length > 0}
           />
         );
@@ -107,14 +107,14 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
           <Tile
             className={cellClassName ? cellClassName(x, y) : undefined}
             disableAnimation={disableAnimation}
+            game={game}
             handleClick={onCellClick ? (rightClick: boolean) => onCellClick(x, y, rightClick) : undefined}
             key={`block-${tileState.block.id}`}
             onTopOf={tileAtPosition.tileType}
             pos={new Position(x, y)}
             style={cellStyle ? cellStyle(x, y) : undefined}
-            tileType={tileState.block.tileType}
-            game={game}
             theme={theme as Theme}
+            tileType={tileState.block.tileType}
           />
         );
       }
@@ -124,14 +124,14 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
           <Tile
             className={cellClassName ? cellClassName(x, y) : undefined}
             disableAnimation={disableAnimation}
+            game={game}
             handleClick={onCellClick ? (rightClick: boolean) => onCellClick(x, y, rightClick) : undefined}
             inHole={true}
             key={`block-${tileState.blockInHole.id}`}
             pos={new Position(x, y)}
             style={cellStyle ? cellStyle(x, y) : undefined}
-            tileType={tileState.blockInHole.tileType}
-            game={game}
             theme={theme as Theme}
+            tileType={tileState.blockInHole.tileType}
           />
         );
       }
@@ -196,13 +196,14 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
                 atEnd={game.isComplete(gameState)}
                 className={cellClassName ? cellClassName(gameState.pos.x, gameState.pos.y) : undefined}
                 disableAnimation={disableAnimation}
+                game={game}
                 handleClick={onCellClick ? (rightClick: boolean) => onCellClick(gameState.pos.x, gameState.pos.y, rightClick) : undefined}
+                onTopOf={gameState.board[gameState.pos.y][gameState.pos.x].tileType}
                 pos={gameState.pos}
                 style={cellStyle ? cellStyle(gameState.pos.x, gameState.pos.y) : undefined}
                 text={gameState.moves.length}
-                tileType={TileType.Player}
-                game={game}
                 theme={theme as Theme}
+                tileType={TileType.Player}
               />
             }
           </div>

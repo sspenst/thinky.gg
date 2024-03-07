@@ -34,6 +34,7 @@ enum TileType {
   NotDownOnExit = 'W',
   LeftRightOnExit = 'X',
   UpDownOnExit = 'Y',
+  PlayerOnExit = 'Z',
 }
 
 export default TileType;
