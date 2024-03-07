@@ -176,9 +176,15 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
         clear = true;
       }
 
-      // don't allow removing the player from the board
-      if (tileType === TileType.Player && (prevTileType === TileType.Player || prevTileType === TileType.PlayerOnExit)) {
-        return prevLevel;
+      // disallow removing the player from the board
+      if (prevTileType === TileType.Player || prevTileType === TileType.PlayerOnExit) {
+        if (clear) {
+          return prevLevel;
+        }
+
+        if (tileType === TileType.Player) {
+          return prevLevel;
+        }
       }
 
       function getNewTileType() {
@@ -203,12 +209,8 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
 
       const newTileType = clear ? TileType.Default : getNewTileType();
 
-      // TODO:
-      // - clearing empty tiles moves the start pos to 0,0
-      // - can't clear exit from under player
-
       // when changing start position the old position needs to be removed
-      if (tileType === TileType.Player) {
+      if (newTileType === TileType.Player || newTileType === TileType.PlayerOnExit) {
         const playerIndex = level.data.indexOf(TileType.Player);
 
         if (playerIndex !== -1) {

@@ -109,6 +109,29 @@ describe('validateSokopathSolution.ts', () => {
       width: 3,
     } as Level)).toBeFalsy();
   });
+  test('block starting on exit (invalid)', async () => {
+    expect(validateSokopathSolution([
+      Direction.RIGHT,
+    ], {
+      data: '4K3\n020\n000',
+      height: 3,
+      width: 3,
+    } as Level)).toBeFalsy();
+  });
+  test('block starting on exit (valid)', async () => {
+    expect(validateSokopathSolution([
+      Direction.RIGHT,
+      Direction.LEFT,
+      Direction.DOWN,
+      Direction.DOWN,
+      Direction.RIGHT,
+      Direction.UP,
+    ], {
+      data: '4K3\n020\n000',
+      height: 3,
+      width: 3,
+    } as Level)).toBeTruthy();
+  });
 });
 
 export {};
