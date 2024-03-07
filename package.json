@@ -31,7 +31,7 @@
     "mongoose": "^8.1.2",
     "newrelic": "^11.10.4",
     "next": "^14.1.0",
-    "next-seo": "^6.4.0",
+    "next-seo": "^6.5.0",
     "next-themes": "^0.2.1",
     "nodemailer": "^6.9.9",
     "nprogress": "^0.2.0",
