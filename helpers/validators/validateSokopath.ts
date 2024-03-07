@@ -7,12 +7,17 @@ import Position from '../../models/position';
 export default function validateSokopathSolution(directions: Direction[], level: Level) {
   const data = level.data.replace(/\n/g, '').split('') as TileType[];
   const endIndices = [];
-  const posIndex = data.indexOf(TileType.Player);
-  let pos = new Position(posIndex % level.width, Math.floor(posIndex / level.width));
-  let endIndex = -1;
+  const playerOnExitIndex = data.indexOf(TileType.PlayerOnExit);
+  const posIndex = playerOnExitIndex === -1 ? data.indexOf(TileType.Player) : playerOnExitIndex;
 
-  while ((endIndex = data.indexOf(TileType.Exit, endIndex + 1)) != -1) {
-    endIndices.push(endIndex);
+  let pos = new Position(posIndex % level.width, Math.floor(posIndex / level.width));
+
+  for (let i = 0; i < data.length; i++) {
+    const tileType = data[i];
+
+    if (tileType === TileType.Exit || TileTypeHelper.isOnExit(tileType)) {
+      endIndices.push(i);
+    }
   }
 
   for (let i = 0; i < directions.length; i++) {
@@ -89,7 +94,10 @@ export function validateSokopathLevel(data: string): {valid: boolean, reasons: s
     for (let x = 0; x < width; x++) {
       const tileType = dataSplit[y][x] as TileType;
 
-      if (tileType === TileType.Player) {
+      if (tileType === TileType.PlayerOnExit) {
+        startCount++;
+        goalCount++;
+      } else if (tileType === TileType.Player) {
         startCount++;
       } else {
         if (tileType === TileType.Exit) {
