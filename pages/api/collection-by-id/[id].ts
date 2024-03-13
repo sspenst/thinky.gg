@@ -44,7 +44,7 @@ interface GetCollectionProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   matchQuery: FilterQuery<any>;
   populateAroundSlug?: string; // target level
-  populateLevelCursor?: Types.ObjectId | string; // target level
+  populateLevelCursor?: Types.ObjectId; // target level
   populateLevelData?: boolean;
   populateLevelDirection?: 'before' | 'after' | 'around';
   reqUser: User | null;
@@ -212,6 +212,10 @@ export async function getCollections({
       }
     },
     ...(populateLevelCursor || populateAroundSlug ? [
+      // TODO: we should probably pass in an index rather than a level id/slug
+      // no guarantee the level will be in the collection, and if it isn't we have no good way to continue the infinite scroll
+      // BUG: targetLevelIndex can be -1 if the level is not found in the collection,
+      // which will result in an error if we are populating 'before' ($min must be a positive number)
       {
         $addFields: {
           targetLevelIndex: {
