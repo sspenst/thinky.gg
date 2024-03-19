@@ -13,7 +13,7 @@ import { UserModel } from '../../../models/mongoose';
 const STRIPE_SECRET = process.env.STRIPE_SECRET as string;
 
 export const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET as string;
-export const stripe = new Stripe(STRIPE_SECRET, { apiVersion: '2022-11-15' });
+export const stripe = new Stripe(STRIPE_SECRET, { apiVersion: '2023-10-16' });
 
 export interface SubscriptionData {
   cancel_at: number | null;

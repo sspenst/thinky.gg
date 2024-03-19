@@ -6,9 +6,11 @@ const mockSubscription: Stripe.Subscription = {
   application: null,
   application_fee_percent: null,
   automatic_tax: {
-    enabled: false
+    enabled: false,
+    liability: null,
   },
   billing_cycle_anchor: 1690174333,
+  billing_cycle_anchor_config: null,
   billing_thresholds: null,
   cancel_at: null,
   cancel_at_period_end: false,
