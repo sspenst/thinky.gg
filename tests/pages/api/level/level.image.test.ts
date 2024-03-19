@@ -54,7 +54,8 @@ describe('pages/api/level/image/[id]', () => {
         const res = await fetch();
 
         expect(res.status).toBe(200);
-        const body = await res.body.read();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const body = await (res as any).body.read();
 
         // expect header to be image
         expect(res.headers.get('content-type')).toBe('image/png');
@@ -79,7 +80,8 @@ describe('pages/api/level/image/[id]', () => {
         const res = await fetch();
 
         expect(res.status).toBe(200);
-        const body = await res.body.read();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const body = await (res as any).body.read();
 
         // expect header to be image
         expect(res.headers.get('content-type')).toBe('image/png');
