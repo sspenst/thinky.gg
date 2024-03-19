@@ -26,7 +26,7 @@ enableFetchMocks();
 describe('Worker test', () => {
   test('Calling worker with no secret should fail', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           query: {
@@ -53,7 +53,7 @@ describe('Worker test', () => {
   });
   test('Calling worker with no jobs should return 200', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           query: {
@@ -82,7 +82,7 @@ describe('Worker test', () => {
     await queueFetch('sample', {}, 'sampleKey');
     fetchMock.mockOnce(JSON.stringify({ error: 'error' }), { status: 500 });
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           query: {
@@ -122,7 +122,7 @@ describe('Worker test', () => {
     //fetchMock.mockOnce(JSON.stringify({ error: 'error' }), { status: 404 });
     fetchMock.mockRejectOnce(new Error('mock error'));
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           query: {
@@ -161,7 +161,7 @@ describe('Worker test', () => {
     await queueFetch('sample', {}, 'sampleKey'); // should get deduped due to same key
     fetchMock.mockOnce(JSON.stringify({ error: 'error' }), { status: 418 });
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           query: {
@@ -200,7 +200,7 @@ describe('Worker test', () => {
   });
   test('Now should get NONE', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           query: {
@@ -230,7 +230,7 @@ describe('Worker test', () => {
     fetchMock.mockOnce(JSON.stringify({ message: 'success' }), { status: 200 });
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           query: {
@@ -266,7 +266,7 @@ describe('Worker test', () => {
     fetchMock.mockOnce(JSON.stringify({ message: 'error' }), { status: 404 });
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           query: {

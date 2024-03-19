@@ -20,7 +20,7 @@ enableFetchMocks();
 describe('PUT /api/notification-push-token', () => {
   test('should return 200', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           cookies: {
             token: getTokenCookieValue(TestId.USER),
@@ -57,7 +57,7 @@ describe('PUT /api/notification-push-token', () => {
   });
   test('should repeat 200', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           cookies: {
             token: getTokenCookieValue(TestId.USER),
@@ -94,7 +94,7 @@ describe('PUT /api/notification-push-token', () => {
   });
   test('should delete 200', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           cookies: {
             token: getTokenCookieValue(TestId.USER),

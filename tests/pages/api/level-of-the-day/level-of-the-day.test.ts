@@ -72,7 +72,7 @@ describe('GET /api/level-of-day', () => {
     expect(updated2.modifiedCount).toBe(1);
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           ...DefaultReq,
         } as unknown as NextApiRequestWrapper;
@@ -104,7 +104,7 @@ describe('GET /api/level-of-day', () => {
   test('calling it twice should return the same level', async () => {
     MockDate.set(MOCK_DATE);
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           ...DefaultReq,
         } as unknown as NextApiRequestWrapper;
@@ -133,7 +133,7 @@ describe('GET /api/level-of-day', () => {
   test('calling it while authenticated should return the same level but with enriched data', async () => {
     MockDate.set(MOCK_DATE);
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           ...DefaultReq,
           cookies: {
@@ -177,7 +177,7 @@ describe('GET /api/level-of-day', () => {
       throw new Error('test');
     });
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           ...DefaultReq,
         } as unknown as NextApiRequestWrapper;
@@ -214,7 +214,7 @@ describe('GET /api/level-of-day', () => {
 
     MockDate.set(day2);
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           ...DefaultReq,
           cookies: {
@@ -256,7 +256,7 @@ describe('GET /api/level-of-day', () => {
 
     MockDate.set(day3);
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           ...DefaultReq,
         } as unknown as NextApiRequestWrapper;
@@ -286,7 +286,7 @@ describe('GET /api/level-of-day', () => {
       _id: TestId.LEVEL_2,
     });
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           ...DefaultReq,
         } as unknown as NextApiRequestWrapper;

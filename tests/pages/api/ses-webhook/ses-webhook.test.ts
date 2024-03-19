@@ -58,7 +58,7 @@ describe('ses-webhook', () => {
   test('Bad secret', async () => {
     process.env.SES_WEBHOOK_SECRET = 'test';
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           method: 'POST',
           query: {
@@ -86,7 +86,7 @@ describe('ses-webhook', () => {
   test('Weird payload', async () => {
     process.env.SES_WEBHOOK_SECRET = 'test';
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           method: 'POST',
           query: {
@@ -114,7 +114,7 @@ describe('ses-webhook', () => {
   test('Should unsubscribe user if they bounce', async () => {
     process.env.SES_WEBHOOK_SECRET = 'test';
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           method: 'POST',
           query: {

@@ -61,7 +61,7 @@ describe('api/subscription', () => {
     });
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
@@ -87,7 +87,7 @@ describe('api/subscription', () => {
   });
   test('POST api/subscription for pathology', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -122,7 +122,7 @@ describe('api/subscription', () => {
       data: [mockSubscription],
     });
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -163,7 +163,7 @@ describe('api/subscription', () => {
       name: 'test product',
     });
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -206,7 +206,7 @@ describe('api/subscription', () => {
       name: 'test product',
     });
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
@@ -237,7 +237,7 @@ describe('api/subscription', () => {
     });
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {

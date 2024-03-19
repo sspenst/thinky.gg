@@ -41,7 +41,7 @@ enableFetchMocks();
 describe('Email digest', () => {
   test('send with an invalid process.env var', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           gameId: DEFAULT_GAME_ID,
           method: 'GET',
@@ -76,7 +76,7 @@ describe('Email digest', () => {
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           gameId: DEFAULT_GAME_ID,
           method: 'GET',
@@ -119,7 +119,7 @@ describe('Email digest', () => {
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           gameId: DEFAULT_GAME_ID,
           method: 'GET',
@@ -164,7 +164,7 @@ describe('Email digest', () => {
     await dbConnect();
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           gameId: DEFAULT_GAME_ID,
           method: 'GET',
@@ -206,7 +206,7 @@ describe('Email digest', () => {
     await dbConnect();
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           gameId: DEFAULT_GAME_ID,
           method: 'GET',
@@ -249,7 +249,7 @@ describe('Email digest', () => {
     await dbConnect();
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           gameId: DEFAULT_GAME_ID,
           method: 'GET',
@@ -286,7 +286,7 @@ describe('Email digest', () => {
     await dbConnect();
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           gameId: DEFAULT_GAME_ID,
           method: 'GET',
@@ -326,7 +326,7 @@ describe('Email digest', () => {
     await dbConnect();
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           gameId: DEFAULT_GAME_ID,
           method: 'GET',

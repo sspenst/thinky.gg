@@ -28,7 +28,7 @@ describe('Testing latest levels api', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -55,7 +55,7 @@ describe('Testing latest levels api', () => {
   });
   test('Calling with correct http method should be OK', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           body: {
@@ -101,7 +101,7 @@ describe('Testing latest levels api', () => {
 
     await Promise.all(promises);
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
@@ -140,7 +140,7 @@ describe('Testing latest levels api', () => {
     });
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
@@ -174,7 +174,7 @@ describe('Testing latest levels api', () => {
     });
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {

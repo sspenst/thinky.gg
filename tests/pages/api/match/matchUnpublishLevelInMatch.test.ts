@@ -58,7 +58,7 @@ describe('matchUnpublishLevelInMatch', () => {
 
     expect(levelsUpdated.modifiedCount).toBe(3);
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         await handlerCreate({
           ...defaultReq,
           method: 'POST',
@@ -92,7 +92,7 @@ describe('matchUnpublishLevelInMatch', () => {
   test('join match', async () => {
     MockDate.set(new Date().getTime() + 1000); // one second later
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         await handler({
           ...defaultReq,
           method: 'PUT',
@@ -137,7 +137,7 @@ describe('matchUnpublishLevelInMatch', () => {
   test('GET match before match starts', async () => {
     MockDate.set(new Date().getTime() + 2000); // two seconds later
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         await handler({
           ...defaultReq,
           method: 'GET',
@@ -164,7 +164,7 @@ describe('matchUnpublishLevelInMatch', () => {
   test('GET match after match starts', async () => {
     MockDate.set(new Date().getTime() + 14000); // 14 seconds later
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         await handler({
           ...defaultReq,
           method: 'GET',
@@ -203,7 +203,7 @@ describe('matchUnpublishLevelInMatch', () => {
     // ../../../../pages/api/stats/index has a function validateSolution that needs to be mocked
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -241,7 +241,7 @@ describe('matchUnpublishLevelInMatch', () => {
 
     expect(levels).toHaveLength(6); // see 3+3 comment above
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         await handler({
           ...defaultReq,
           method: 'PUT',
@@ -273,7 +273,7 @@ describe('matchUnpublishLevelInMatch', () => {
 
     expect(levels).toHaveLength(6); // see 3+3 comment above
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         await handler({
           ...defaultReq,
           method: 'PUT',
@@ -298,7 +298,7 @@ describe('matchUnpublishLevelInMatch', () => {
 
   test('GET match behalf of USER 1', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         await handler({
           ...defaultReq,
           method: 'GET',
@@ -325,7 +325,7 @@ describe('matchUnpublishLevelInMatch', () => {
   test('UNPUBLISH a level that is in the middle of a game!', async () => {
     expect(levelThatWeWillWantToTestDeletionFor.userId).toBeDefined();
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         await unpublishLevelHandler({
           ...defaultReq,
           method: 'POST',
@@ -347,7 +347,7 @@ describe('matchUnpublishLevelInMatch', () => {
   });
   test('GET match behalf of USER 1 AFTER level was unpublished', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         await handler({
           ...defaultReq,
           method: 'GET',

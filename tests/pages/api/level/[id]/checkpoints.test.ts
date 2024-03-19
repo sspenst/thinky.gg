@@ -51,7 +51,7 @@ async function query({ params, expectedError, expectedStatus, additionalAssertio
     additionalAssertions?: (response: any) => Promise<void>,
     }) {
   await testApiHandler({
-    handler: async (_, res) => {
+    pagesHandler: async (_, res) => {
       const req: NextApiRequestWithAuth = {
         cookies: {
           token: getTokenCookieValue(TestId.USER)

@@ -32,7 +32,7 @@ describe('Reviewing levels should work correctly', () => {
       },
     });
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -90,7 +90,7 @@ describe('Reviewing levels should work correctly', () => {
     });
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -132,7 +132,7 @@ describe('Reviewing levels should work correctly', () => {
   });
   test('Testing editing review on invalid level', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -180,7 +180,7 @@ describe('Reviewing levels should work correctly', () => {
   });
   test('Testing editing review score and text', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -222,7 +222,7 @@ describe('Reviewing levels should work correctly', () => {
   });
   test('Testing editing review but with score that is not 0.5 increment', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -255,7 +255,7 @@ describe('Reviewing levels should work correctly', () => {
   });
   test('Testing editing review just score', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -293,7 +293,7 @@ describe('Reviewing levels should work correctly', () => {
 
   test('Testing editing review without userId', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -324,7 +324,7 @@ describe('Reviewing levels should work correctly', () => {
   });
   test('PUT review by a different user', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -356,7 +356,7 @@ describe('Reviewing levels should work correctly', () => {
   });
   test('PUT review by a curator', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -400,7 +400,7 @@ describe('Reviewing levels should work correctly', () => {
     });
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           cookies: {
@@ -431,7 +431,7 @@ describe('Reviewing levels should work correctly', () => {
   });
   test('Testing deleting review on unknown level', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           cookies: {
@@ -459,7 +459,7 @@ describe('Reviewing levels should work correctly', () => {
   });
   test('Testing deleting review OK', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           cookies: {
@@ -494,7 +494,7 @@ describe('Reviewing levels should work correctly', () => {
   });
   test('DELETE review by a different user', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           cookies: {
@@ -522,7 +522,7 @@ describe('Reviewing levels should work correctly', () => {
   });
   test('DELETE review by a curator', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           cookies: {
@@ -561,7 +561,7 @@ describe('Reviewing levels should work correctly', () => {
   });
   test('POST own level should remove score', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -597,7 +597,7 @@ describe('Reviewing levels should work correctly', () => {
   });
   test('PUT own level should remove score', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {

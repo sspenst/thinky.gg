@@ -41,7 +41,7 @@ const defaultReq: any = {
 describe('matchCreate', () => {
   test('GET the match when not in one should return empty', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         await handler({
           ...defaultReq,
           method: 'GET',
@@ -58,7 +58,7 @@ describe('matchCreate', () => {
   });
   test('POST should create OK', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         await handler({
           ...defaultReq
         }, res);
@@ -75,7 +75,7 @@ describe('matchCreate', () => {
   });
   test('POST a second time should fail (already in match)', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         await handler({
           ...defaultReq
         }, res);
@@ -91,7 +91,7 @@ describe('matchCreate', () => {
   });
   test('GET my active matches', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         await handler({
           ...defaultReq,
           method: 'GET',
