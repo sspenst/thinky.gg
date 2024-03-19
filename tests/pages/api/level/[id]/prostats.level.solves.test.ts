@@ -22,7 +22,7 @@ enableFetchMocks();
 describe('api/user/[id]/prostats/[type]', () => {
   test('bad query', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           query: {
@@ -49,7 +49,7 @@ describe('api/user/[id]/prostats/[type]', () => {
   });
   test('valid non-pro query', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           query: {
@@ -79,7 +79,7 @@ describe('api/user/[id]/prostats/[type]', () => {
   });
   test('invalid non-pro query', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           query: {
@@ -115,7 +115,7 @@ describe('api/user/[id]/prostats/[type]', () => {
     });
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           query: {

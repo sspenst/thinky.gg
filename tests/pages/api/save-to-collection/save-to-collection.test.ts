@@ -22,7 +22,7 @@ describe('pages/api/save-to-collection/[id].ts', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           userId: TestId.USER,
@@ -45,7 +45,7 @@ describe('pages/api/save-to-collection/[id].ts', () => {
   });
   test('PUT no body', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER,
@@ -68,7 +68,7 @@ describe('pages/api/save-to-collection/[id].ts', () => {
   });
   test('PUT invalid body', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER,
@@ -94,7 +94,7 @@ describe('pages/api/save-to-collection/[id].ts', () => {
   });
   test('PUT bad level id', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER,
@@ -122,7 +122,7 @@ describe('pages/api/save-to-collection/[id].ts', () => {
   });
   test('PUT bad collection id', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER,
@@ -150,7 +150,7 @@ describe('pages/api/save-to-collection/[id].ts', () => {
   });
   test('Check initial collections', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           userId: TestId.USER,
@@ -177,7 +177,7 @@ describe('pages/api/save-to-collection/[id].ts', () => {
   });
   test('Remove level from collection 2', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER,
@@ -205,7 +205,7 @@ describe('pages/api/save-to-collection/[id].ts', () => {
   });
   test('Verify collection 2 doesn\'t contain the level', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           userId: TestId.USER,
@@ -232,7 +232,7 @@ describe('pages/api/save-to-collection/[id].ts', () => {
   });
   test('Remove level from collection 1 and add to collection 2', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER,
@@ -260,7 +260,7 @@ describe('pages/api/save-to-collection/[id].ts', () => {
   });
   test('Verify collection 1 doesn\'t contain the level, but collection 2 does', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           userId: TestId.USER,

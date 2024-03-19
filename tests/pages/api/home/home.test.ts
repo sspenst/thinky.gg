@@ -23,7 +23,7 @@ enableFetchMocks();
 describe('pages/api/home.ts', () => {
   test('GET no query', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
@@ -50,7 +50,7 @@ describe('pages/api/home.ts', () => {
   });
   test('GET partial query', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
@@ -80,7 +80,7 @@ describe('pages/api/home.ts', () => {
   test('GET all', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {

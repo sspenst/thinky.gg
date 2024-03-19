@@ -58,7 +58,7 @@ describe('Testing latest reviews api', () => {
 
     await Promise.all(promises);
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
@@ -92,7 +92,7 @@ describe('Testing latest reviews api', () => {
     });
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
@@ -124,7 +124,7 @@ describe('Testing latest reviews api', () => {
     jest.spyOn(ReviewModel, 'aggregate').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
@@ -160,7 +160,7 @@ describe('Testing latest reviews api', () => {
     });
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {

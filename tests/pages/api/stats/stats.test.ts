@@ -84,7 +84,7 @@ describe('Testing stats api', () => {
     const levelId = new Types.ObjectId();
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -194,7 +194,7 @@ describe('Testing stats api', () => {
       }
     });
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -229,7 +229,7 @@ describe('Testing stats api', () => {
   });
   test('Doing a GET should return a stats object', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
@@ -268,7 +268,7 @@ describe('Testing stats api', () => {
 
     expect(g.calcLevelsCompletedCount).toEqual(0);
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -308,7 +308,7 @@ describe('Testing stats api', () => {
   });
   test('Doing a PUT with a USER user with a level solution (that is 14 steps) should be OK', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -347,7 +347,7 @@ describe('Testing stats api', () => {
   });
   test('For the second time, doing a PUT with a USERB user with a level solution (that is 14 steps) should be OK and increment their attempts', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -390,7 +390,7 @@ describe('Testing stats api', () => {
   });
   test('Doing a PUT with a USER_B user with a level solution (that is 12 steps) should be OK', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -432,7 +432,7 @@ describe('Testing stats api', () => {
     jest.spyOn(StatModel, 'updateOne').mockRejectedValueOnce(new Error('Test DB error'));
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -482,7 +482,7 @@ describe('Testing stats api', () => {
     expect(c.calcLevelsSolvedCount).toBe(0);
     expect(c.calcRecordsCount).toBe(0);
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -543,7 +543,7 @@ describe('Testing stats api', () => {
   });
   test('REPEATING doing a PUT with TESTB user with correct minimum level solution should be OK and idempotent', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -601,7 +601,7 @@ describe('Testing stats api', () => {
 
     expect(user.calcRecordsCount).toBe(1);
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {

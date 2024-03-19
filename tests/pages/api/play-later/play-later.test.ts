@@ -25,7 +25,7 @@ enableFetchMocks();
 describe('api/play-later', () => {
   test('GET with non pro user', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
@@ -49,7 +49,7 @@ describe('api/play-later', () => {
   });
   test('GET when it doesn\'t exist', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
@@ -77,7 +77,7 @@ describe('api/play-later', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -108,7 +108,7 @@ describe('api/play-later', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -139,7 +139,7 @@ describe('api/play-later', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -174,7 +174,7 @@ describe('api/play-later', () => {
 
     newLevelId = newLevel._id.toString();
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -204,7 +204,7 @@ describe('api/play-later', () => {
     const newLevel = await initLevel(DEFAULT_GAME_ID, TestId.USER, 'name');
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -233,7 +233,7 @@ describe('api/play-later', () => {
   });
   test('GET playlist should return only ids', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
@@ -265,7 +265,7 @@ describe('api/play-later', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           cookies: {
@@ -294,7 +294,7 @@ describe('api/play-later', () => {
   });
   test('GET playlist should after removing should show correct', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {

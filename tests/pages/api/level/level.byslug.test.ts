@@ -29,7 +29,7 @@ enableFetchMocks();
 describe('Testing slugs for levels', () => {
   test('Creating a new level should create a slug', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           userId: TestId.USER,
@@ -58,7 +58,7 @@ describe('Testing slugs for levels', () => {
       },
     });
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           userId: TestId.USER,
@@ -89,7 +89,7 @@ describe('Testing slugs for levels', () => {
   });
   test('Editing the level should change the slug', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER,
@@ -119,7 +119,7 @@ describe('Testing slugs for levels', () => {
       },
     });
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           userId: TestId.USER,
@@ -152,7 +152,7 @@ describe('Testing slugs for levels', () => {
   });
   test('Adding a draft level to your collection should 404', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER_B,
@@ -183,7 +183,7 @@ describe('Testing slugs for levels', () => {
   });
   test('Adding a level to your collection should create a notification', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER,
@@ -221,7 +221,7 @@ describe('Testing slugs for levels', () => {
   });
   test('Slugs should still work with no alphanumeric characters', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER,
@@ -251,7 +251,7 @@ describe('Testing slugs for levels', () => {
       },
     });
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           userId: TestId.USER,
@@ -283,7 +283,7 @@ describe('Testing slugs for levels', () => {
   });
   test('Changing username (with capitals) shouldn\'t error', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER,
@@ -327,7 +327,7 @@ describe('Testing slugs for levels', () => {
   });
   test('Getting a level by slug when not logged in should work', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           gameId: DEFAULT_GAME_ID,
           method: 'GET',
@@ -359,7 +359,7 @@ describe('Testing slugs for levels', () => {
   });
   test('Getting an UNDRAFTED level by slug when not logged in should work', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           gameId: DEFAULT_GAME_ID,
           method: 'GET',
@@ -385,7 +385,7 @@ describe('Testing slugs for levels', () => {
   });
   test('Creating a second level with a duplicate slug should append a number at the end of the slug', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           userId: TestId.USER,
@@ -416,7 +416,7 @@ describe('Testing slugs for levels', () => {
   });
   test('Getting the slug for test-level-1 should still return the original level', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           gameId: DEFAULT_GAME_ID,
           method: 'GET',
@@ -446,7 +446,7 @@ describe('Testing slugs for levels', () => {
 
   test('Updating level_id_2 name to test-level-2 should become test-level-2-2 in the db', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER,
@@ -483,7 +483,7 @@ describe('Testing slugs for levels', () => {
   });
   test('Updating level_id_2 name to test-level-2 again should REMAIN test-level-2-2 in the db', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER,

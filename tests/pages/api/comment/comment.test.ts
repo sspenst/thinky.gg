@@ -24,7 +24,7 @@ enableFetchMocks();
 describe('Testing commenting', () => {
   test('Create a comment with an unconfirmed email', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -56,7 +56,7 @@ describe('Testing commenting', () => {
   });
   test('Create a comment too long', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -88,7 +88,7 @@ describe('Testing commenting', () => {
   });
   test('Create a comment on userB', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -127,7 +127,7 @@ describe('Testing commenting', () => {
   });
   test('Create a second comment on userB', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -169,7 +169,7 @@ describe('Testing commenting', () => {
 
   test('Get comments for a user', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
@@ -208,7 +208,7 @@ describe('Testing commenting', () => {
   });
   test('Create a comment ON another comment', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -247,7 +247,7 @@ describe('Testing commenting', () => {
   });
   test('Create another comment ON another comment', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -292,7 +292,7 @@ describe('Testing commenting', () => {
   });
   test('Get comments for a user', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
@@ -333,7 +333,7 @@ describe('Testing commenting', () => {
   });
   test('Delete a comment i did not created (user c tries to delete user A comment)', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           cookies: {
@@ -362,7 +362,7 @@ describe('Testing commenting', () => {
   });
   test('Delete a comment i created', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           cookies: {
@@ -393,7 +393,7 @@ describe('Testing commenting', () => {
   });
   test('Delete a comment i did not create but is on my profile', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           cookies: {
@@ -424,7 +424,7 @@ describe('Testing commenting', () => {
   });
   test('Delete already deleted comment', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           cookies: {

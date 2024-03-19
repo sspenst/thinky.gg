@@ -42,7 +42,7 @@ describe('Testing image generation for user', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...DefaultReq,
           method: 'PATCH',
@@ -61,7 +61,7 @@ describe('Testing image generation for user', () => {
   });
   test('Unauthenticated should 401', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
         } as unknown as NextApiRequestWithAuth;
@@ -79,7 +79,7 @@ describe('Testing image generation for user', () => {
   });
   test('Missing body and query', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...DefaultReq,
           method: 'PUT',
@@ -98,7 +98,7 @@ describe('Testing image generation for user', () => {
   });
   test('Missing query', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...DefaultReq,
           method: 'PUT',
@@ -120,7 +120,7 @@ describe('Testing image generation for user', () => {
   });
   test('Missing length field', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...DefaultReq,
           method: 'PUT',
@@ -145,7 +145,7 @@ describe('Testing image generation for user', () => {
   });
   test('Adding length field to body but this aint a buffer', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...DefaultReq,
           method: 'PUT',
@@ -172,7 +172,7 @@ describe('Testing image generation for user', () => {
     const strTooBig = 'a'.repeat(2 * 1024 * 1024 + 1);
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...DefaultReq,
           method: 'PUT',
@@ -195,7 +195,7 @@ describe('Testing image generation for user', () => {
   });
   test('Trying random string', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...DefaultReq,
           method: 'PUT',
@@ -218,7 +218,7 @@ describe('Testing image generation for user', () => {
   });
   test('Trying random buffer', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...DefaultReq,
           method: 'PUT',
@@ -244,7 +244,7 @@ describe('Testing image generation for user', () => {
     const converted = convertToBinary(samplePdf);
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...DefaultReq,
           method: 'PUT',
@@ -275,7 +275,7 @@ describe('Testing image generation for user', () => {
     //    const sampleIconBase64 = 'data:image/png;base64,2iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYII';
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...DefaultReq,
           method: 'PUT',
@@ -301,7 +301,7 @@ describe('Testing image generation for user', () => {
     const sampleIconBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYII';
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...DefaultReq,
           method: 'PUT',
@@ -328,7 +328,7 @@ describe('Testing image generation for user', () => {
     const sampleIconBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYIJ';
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...DefaultReq,
           method: 'PUT',

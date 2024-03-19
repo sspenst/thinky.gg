@@ -24,7 +24,7 @@ enableFetchMocks();
 describe('review.test.errors', () => {
   test('Testing POSTing with no score AND empty text should fail', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -56,7 +56,7 @@ describe('review.test.errors', () => {
   });
   test('Testing creating but target level is not published', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -99,7 +99,7 @@ describe('review.test.errors', () => {
     }
     );
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -131,7 +131,7 @@ describe('review.test.errors', () => {
   });
   test('Testing POSTing with a level that the user has already review should not work', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -162,7 +162,7 @@ describe('review.test.errors', () => {
   });
   test('Testing POSTing with malformed score should not work', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -193,7 +193,7 @@ describe('review.test.errors', () => {
   });
   test('Testing POSTing with a number that is not a 0.5 increment should fail', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -227,7 +227,7 @@ describe('review.test.errors', () => {
   });
   test('Testing POSTing with a number that is out of bounds should fail', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -262,7 +262,7 @@ describe('review.test.errors', () => {
   test('Testing POSTing with text that is over 1024*5 characters should NOT work', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -296,7 +296,7 @@ describe('review.test.errors', () => {
   });
   test('Testing PUT before review exists', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -331,7 +331,7 @@ describe('review.test.errors', () => {
   });
   test('Testing PUT with no score AND empty text should fail', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {

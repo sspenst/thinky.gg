@@ -20,7 +20,7 @@ enableFetchMocks();
 describe('pages/api/collection/[id].ts', () => {
   test('GET other user\'s private collection should 404', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           userId: TestId.USER,
@@ -43,7 +43,7 @@ describe('pages/api/collection/[id].ts', () => {
   });
   test('GET your collection should 200', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           userId: TestId.USER_B,
@@ -67,7 +67,7 @@ describe('pages/api/collection/[id].ts', () => {
   test('PUT other user\'s collection should 401', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER,
@@ -93,7 +93,7 @@ describe('pages/api/collection/[id].ts', () => {
   });
   test('PUT your collection should 200', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER_B,
@@ -127,7 +127,7 @@ describe('pages/api/collection/[id].ts', () => {
   });
   test('DELETE other user\'s collection should 401', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           userId: TestId.USER,

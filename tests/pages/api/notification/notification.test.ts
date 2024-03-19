@@ -48,7 +48,7 @@ describe('Notifications', () => {
 
   test('Trying to put but no body', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...DefaultReq,
           body: undefined,
@@ -67,7 +67,7 @@ describe('Notifications', () => {
   });
   test('Trying to put with invalid id', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...DefaultReq,
           body: {
@@ -114,7 +114,7 @@ describe('Notifications', () => {
     // Now get the current user and check notifications
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
@@ -161,7 +161,7 @@ describe('Notifications', () => {
   });
   test('Trying to put with correct id but no body', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...DefaultReq,
           body: {
@@ -182,7 +182,7 @@ describe('Notifications', () => {
   });
   test('Trying to put with unknown but correct objectid', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...DefaultReq,
           body: {
@@ -204,7 +204,7 @@ describe('Notifications', () => {
   });
   test('Trying to put with correct id and correct body', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...DefaultReq,
           body: {
@@ -243,7 +243,7 @@ describe('Notifications', () => {
       throw new Error('Test DB Error');
     });
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...DefaultReq,
           body: {
@@ -265,7 +265,7 @@ describe('Notifications', () => {
   });
   test('Mark all as read', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...DefaultReq,
           body: {
@@ -300,7 +300,7 @@ describe('Notifications', () => {
   });
   test('Make sure that notifications are marked as read now when returning the user', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
@@ -325,7 +325,7 @@ describe('Notifications', () => {
   });
   test('Unpublishing a level should delete associated notifications', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -348,7 +348,7 @@ describe('Notifications', () => {
       },
     });
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {

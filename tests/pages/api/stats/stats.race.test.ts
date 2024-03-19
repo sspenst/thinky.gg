@@ -25,7 +25,7 @@ const SOL_12 = [Direction.RIGHT, Direction.RIGHT, Direction.DOWN, Direction.DOWN
 
 async function sendStat(user: string, solution: Direction[]) {
   await testApiHandler({
-    handler: async (_, res) => {
+    pagesHandler: async (_, res) => {
       const req: NextApiRequestWithAuth = {
         method: 'PUT',
         cookies: {

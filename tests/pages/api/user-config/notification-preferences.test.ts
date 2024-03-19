@@ -60,7 +60,7 @@ describe('account settings notification preferences', () => {
   // enable all notifications
   test('enable all notifications except for new follower', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...defaultObj,
           body: {

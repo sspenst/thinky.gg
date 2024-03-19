@@ -96,7 +96,7 @@ async function runStripeWebhookTest({
   }
 
   await testApiHandler({
-    handler: async (_, res) => {
+    pagesHandler: async (_, res) => {
       const req: NextApiRequestWithAuth = {
         ...DefaultReq,
         headers: {
@@ -145,7 +145,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
   jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
   test('regular call should error', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...DefaultReq,
         } as unknown as NextApiRequestWithAuth;

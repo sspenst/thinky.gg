@@ -43,7 +43,7 @@ describe('pages/api/signup', () => {
     process.env.RECAPTCHA_SECRET = 'defined';
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -80,7 +80,7 @@ describe('pages/api/signup', () => {
 
     //    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -111,7 +111,7 @@ describe('pages/api/signup', () => {
   test('Creating a user without a body should fail with 400', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -137,7 +137,7 @@ describe('pages/api/signup', () => {
   test('Creating a user with missing parameters should fail', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -164,7 +164,7 @@ describe('pages/api/signup', () => {
   });
   test('Creating a user with existing email should fail', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -193,7 +193,7 @@ describe('pages/api/signup', () => {
   });
   test('Creating a user with existing username should fail', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -222,7 +222,7 @@ describe('pages/api/signup', () => {
   });
   test('Creating a user with existing email should fail but send email', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -253,7 +253,7 @@ describe('pages/api/signup', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     // Suppress logger errors for this test
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -280,7 +280,7 @@ describe('pages/api/signup', () => {
   });
   test('Creating a user with valid parameters should work', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -327,7 +327,7 @@ describe('pages/api/signup', () => {
   });
   test('We should be able to login with the newly created user', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           body: {
@@ -353,7 +353,7 @@ describe('pages/api/signup', () => {
   });
   test('We should be able to login with if spaces are around the user name', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           body: {

@@ -39,7 +39,7 @@ describe('pages/api/level/image/[id]', () => {
 
     expect(Dimensions.LevelCanvasWidth).toBe(1);
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           gameId: GameId.PATHOLOGY,
           method: 'GET',
@@ -64,7 +64,7 @@ describe('pages/api/level/image/[id]', () => {
   }, 30000);
   test('GET a second time to get the cached image', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           gameId: GameId.PATHOLOGY,
           method: 'GET',
@@ -89,7 +89,7 @@ describe('pages/api/level/image/[id]', () => {
   }, 30000);
   test('Requesting an image for a level that doesn\'t exist should 404', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           gameId: GameId.PATHOLOGY,
           method: 'GET',
@@ -116,7 +116,7 @@ describe('pages/api/level/image/[id]', () => {
     let draftLevelId: string;
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -145,7 +145,7 @@ describe('pages/api/level/image/[id]', () => {
     });
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           gameId: GameId.PATHOLOGY,
           method: 'GET',
@@ -171,7 +171,7 @@ describe('pages/api/level/image/[id]', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           gameId: GameId.PATHOLOGY,
           method: 'GET',
@@ -211,7 +211,7 @@ describe('pages/api/level/image/[id]', () => {
     // call the publish endpoint
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {

@@ -37,7 +37,7 @@ describe('Forgot a password API should function right', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
 
@@ -64,7 +64,7 @@ describe('Forgot a password API should function right', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           body: {
@@ -90,7 +90,7 @@ describe('Forgot a password API should function right', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           body: {
@@ -116,7 +116,7 @@ describe('Forgot a password API should function right', () => {
     sendMailRefMock.ref = acceptMock;
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           body: {
@@ -144,7 +144,7 @@ describe('Forgot a password API should function right', () => {
     sendMailRefMock.ref = throwMock;
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           body: {

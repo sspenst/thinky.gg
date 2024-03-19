@@ -38,7 +38,7 @@ describe('pages/api/level/index.ts', () => {
   test('Wrong http method should error', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           cookies: {
             token: getTokenCookieValue(TestId.USER),
@@ -58,7 +58,7 @@ describe('pages/api/level/index.ts', () => {
   });
   test('Sending nothing should return 401', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           cookies: {
             token: '',
@@ -77,7 +77,7 @@ describe('pages/api/level/index.ts', () => {
 
   test('Doing a POST with no level data should error', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -98,7 +98,7 @@ describe('pages/api/level/index.ts', () => {
   });
   test('Doing a POST with partial data should NOT be OK', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           userId: TestId.USER,
@@ -132,7 +132,7 @@ describe('pages/api/level/index.ts', () => {
       throw new Error('Test DB Error');
     });
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           userId: TestId.USER,
@@ -162,7 +162,7 @@ describe('pages/api/level/index.ts', () => {
   });
   test('Doing a POST with level data should be OK', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           userId: TestId.USER,
@@ -191,7 +191,7 @@ describe('pages/api/level/index.ts', () => {
       },
     });
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -220,7 +220,7 @@ describe('pages/api/level/index.ts', () => {
       },
     });
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           userId: TestId.USER,
@@ -248,7 +248,7 @@ describe('pages/api/level/index.ts', () => {
       },
     });
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -279,7 +279,7 @@ describe('pages/api/level/index.ts', () => {
   });
   test('Now we should be able to get the level', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           userId: TestId.USER,
@@ -306,7 +306,7 @@ describe('pages/api/level/index.ts', () => {
   });
   test('Should not be able to GET a published level', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           userId: TestId.USER,
@@ -331,7 +331,7 @@ describe('pages/api/level/index.ts', () => {
   });
   test('getting a different level id shouldn\'t return anything', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           userId: TestId.USER,
@@ -354,7 +354,7 @@ describe('pages/api/level/index.ts', () => {
   });
   test('querying the collection should not show draft levels in the level_ids array', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           userId: TestId.USER,
@@ -383,7 +383,7 @@ describe('pages/api/level/index.ts', () => {
   test('Doing a PATCH HTTP method for the edit level should fail', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PATCH',
           cookies: {
@@ -410,7 +410,7 @@ describe('pages/api/level/index.ts', () => {
   });
   test('Doing a PUT with no body should error', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -437,7 +437,7 @@ describe('pages/api/level/index.ts', () => {
   });
   test('Doing a PUT with partial data should error', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -468,7 +468,7 @@ describe('pages/api/level/index.ts', () => {
   });
   test('Doing a PUT with no body should error', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -495,7 +495,7 @@ describe('pages/api/level/index.ts', () => {
   });
   test('Doing a PUT with correct data should work', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -531,7 +531,7 @@ describe('pages/api/level/index.ts', () => {
   });
   test('Delete authorNote', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -565,7 +565,7 @@ describe('pages/api/level/index.ts', () => {
   });
   test('Testing deleting a level. Deleting a level that doesn\'t exist should return a 404', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           cookies: {
@@ -590,7 +590,7 @@ describe('pages/api/level/index.ts', () => {
   });
   test('Deleting a level that DOES exist that YOU do not own should not work', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           headers: {
@@ -618,7 +618,7 @@ describe('pages/api/level/index.ts', () => {
 
   test('Deleting a draft level that DOES exist that you own should work', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           userId: TestId.USER,
@@ -663,7 +663,7 @@ describe('pages/api/level/index.ts', () => {
       width: 5,
     });
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           headers: {
@@ -691,7 +691,7 @@ describe('pages/api/level/index.ts', () => {
 
   test('Unpublishing the level first', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         await unpublishLevelHandler({
           headers: {
             'content-type': 'application/json',
@@ -716,7 +716,7 @@ describe('pages/api/level/index.ts', () => {
   });
   test('Deleting a published level that DOES exist that YOU own should work', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           headers: {
@@ -743,7 +743,7 @@ describe('pages/api/level/index.ts', () => {
   });
   test('Now fetching the collections should return the level_ids array without the deleted level', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           userId: TestId.USER,
@@ -800,7 +800,7 @@ describe('pages/api/level/index.ts', () => {
 
     // set a new record by USER_B
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -831,7 +831,7 @@ describe('pages/api/level/index.ts', () => {
     });
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           headers: {
@@ -860,7 +860,7 @@ describe('pages/api/level/index.ts', () => {
       },
     });
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           headers: {
