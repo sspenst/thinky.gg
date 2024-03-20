@@ -68,11 +68,11 @@ export default function getEmailBody({
                     }}>
                       <a href={`${game.baseUrl}`}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={`${game.baseUrl}${game.logoPng}`} width='75' alt={game.displayName} />
+                        <img src={`${game.baseUrl}${game.logoPfp}`} width='64' alt={game.displayName} />
                       </a>
                       <h1>Hi {user.name},</h1>
                       <p style={{
-                        fontSize: '24px',
+                        fontSize: '20px',
                       }}>{title}</p>
                       {notificationsCount > 0 && (
                         <p>You have <a href={game.baseUrl + '/notifications?source=email-digest&filter=unread'} style={{
@@ -103,41 +103,60 @@ export default function getEmailBody({
                         <div>
                           <h2 style={{
                             margin: '20px 0',
-                          }}
-                          >{featuredLevelsLabel}</h2>
+                          }}>
+                            {featuredLevelsLabel}
+                          </h2>
                           <table role='presentation' cellPadding='0' cellSpacing='0' style={{
                             width: '100%',
                           }}>
-                            <tr>
-                              {featuredLevels.filter(level => level).map((level) => (
-                                <td key={level._id.toString()}>
+                            {featuredLevels.filter(level => level).map((level) => (
+                              <tr key={level._id.toString()}>
+                                <td>
                                   <div style={{
                                     textAlign: 'center',
                                   }}>
                                     <table role='presentation' cellPadding='0' cellSpacing='0' style={{
-                                      margin: '15 auto',
+                                      margin: '16px auto',
                                     }}>
                                       <tr>
-                                        <td>
+                                        <td style={{
+                                          lineHeight: 0,
+                                        }}>
                                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                                          <img style={{ borderRadius: 10 }} src={`${Games[level.gameId].baseUrl}${Games[level.gameId].logoPng}`} width='50' alt={Games[level.gameId].displayName} />
+                                          <img style={{ marginRight: 8 }} src={`${Games[level.gameId].baseUrl}${Games[level.gameId].logoPng}`} width='24' alt={Games[level.gameId].displayName} />
                                         </td>
-                                        <td>{Games[level.gameId].displayName}</td>
+                                        <td style={{
+                                          fontSize: 16,
+                                        }}>
+                                          <a href={getGameFromId(level.gameId).baseUrl} style={{
+                                            color: '#4890ce',
+                                            fontSize: 16,
+                                            textDecoration: 'none',
+                                          }}>
+                                            {Games[level.gameId].displayName}
+                                          </a>
+                                        </td>
                                       </tr>
                                     </table>
-                                    <a href={`${getGameFromId(level.gameId).baseUrl}/level/${level.slug}`} style={{
-                                      color: '#4890ce',
-                                      textDecoration: 'none',
-                                    }}>
-                                      {level.name}
-                                    </a>
-                                    {' by '}
-                                    <a href={`${getGameFromId(level.gameId).baseUrl}/profile/${encodeURI(level.userId.name)}`} style={{
-                                      color: '#4890ce',
-                                      textDecoration: 'none',
-                                    }} />
                                     <div style={{
-                                      padding: 20,
+                                      margin: 16,
+                                    }}>
+                                      <a href={`${getGameFromId(level.gameId).baseUrl}/level/${level.slug}`} style={{
+                                        color: '#4890ce',
+                                        textDecoration: 'none',
+                                      }}>
+                                        {level.name}
+                                      </a>
+                                      {' by '}
+                                      <a href={`${getGameFromId(level.gameId).baseUrl}/profile/${encodeURI(level.userId.name)}`} style={{
+                                        color: '#4890ce',
+                                        textDecoration: 'none',
+                                      }}>
+                                        {level.userId.name}
+                                      </a>
+                                    </div>
+                                    <div style={{
+                                      margin: 16,
                                     }}>
                                       <a href={`${getGameFromId(level.gameId).baseUrl}/level/${level.slug}`} style={{
                                         color: '#4890ce',
@@ -149,11 +168,10 @@ export default function getEmailBody({
                                     </div>
                                   </div>
                                 </td>
-                              ))}
-                            </tr>
+                              </tr>
+                            ))}
                           </table>
                         </div>
-
                       }
                       <p>
                         Thanks for playing <a href={`${game.baseUrl}`} style={{

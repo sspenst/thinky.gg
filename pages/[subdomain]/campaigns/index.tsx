@@ -20,7 +20,7 @@ const campaignInfos: CampaignInfo[] = process.env.NODE_ENV !== 'test' ? [
     author: 'k2xl',
     description: 'The original block pushing game.',
     id: '6323f3d2d37c950d4fea1d4a',
-    image: '/psychopath.ico',
+    image: '/logos/psychopath.ico',
     year: 2005,
   },
   {
@@ -28,7 +28,7 @@ const campaignInfos: CampaignInfo[] = process.env.NODE_ENV !== 'test' ? [
     author: 'k2xl',
     description: 'The sequel to Psychopath with new block types.',
     id: '6323f5d7d37c950d4fea1d53',
-    image: '/psychopath2.ico',
+    image: '/logos/psychopath2.ico',
     year: 2006,
   },
   {
@@ -37,7 +37,7 @@ const campaignInfos: CampaignInfo[] = process.env.NODE_ENV !== 'test' ? [
     // description: 'Android app inspired by the original Psychopath.',
     description: 'Released on Android - inspired by the original Psychopath.',
     id: '6323f4a9d37c950d4fea1d4e',
-    image: '/mentalBlock.webp',
+    image: '/logos/mentalBlock.webp',
     year: 2014,
   },
   {
@@ -45,7 +45,7 @@ const campaignInfos: CampaignInfo[] = process.env.NODE_ENV !== 'test' ? [
     author: 'KingOreO',
     description: 'A subset of levels from the PATHOS Steam game.',
     id: '6323f549d37c950d4fea1d52',
-    image: '/pathos.png',
+    image: '/logos/pathos.png',
     year: 2017,
   },
 ] : [{ id: TestId.CAMPAIGN_OFFICIAL } as CampaignInfo];

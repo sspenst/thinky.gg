@@ -31,6 +31,7 @@ export const Games: Record<GameId, Game> = {
     hasPro: false,
     isNotAGame: true,
     logo: '/logos/thinky/thinky.svg',
+    logoPfp: '/logos/thinky/thinky_pfp.png',
     logoPng: '/logos/thinky/thinky_small.png',
     seoDescription: 'A platform dedicated to high-quality puzzle games',
     seoTitle: 'Thinky Puzzle Games',
@@ -49,6 +50,7 @@ export const Games: Record<GameId, Game> = {
     favicon: '/logos/pathology/pathology.svg',
     hasPro: true,
     logo: '/logos/pathology/pathology.svg',
+    logoPfp: '/logos/pathology/pathology_pfp.png',
     logoPng: '/logos/pathology/pathology.png',
     newLevelData: '4000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000003',
     seoDescription: 'The goal of Pathology is simple. Get to the exit in the least number of moves. Sounds easy right? Yet, this sokoban style game is one of the most mind-bending puzzle games you will find.',
@@ -81,6 +83,7 @@ export const Games: Record<GameId, Game> = {
     favicon: '/logos/sokopath/sokopath.svg',
     hasPro: true,
     logo: '/logos/sokopath/sokopath.svg',
+    logoPfp: '/logos/sokopath/sokopath_pfp.png',
     logoPng: '/logos/sokopath/sokopath.png',
     newLevelData: '40000\n00000\n00200\n00000\n00003',
     seoDescription: 'The goal of the puzzle game Sokopath is simple. Push the boxes onto the goals. Sounds easy right? Yet, this sokoban style game is one of the most mind-bending puzzle games you will find.',
@@ -125,10 +128,11 @@ export interface Game {
   disableTour?: boolean;
   disableTutorial?: boolean;
   displayName: string;
-  favicon?: string;
+  favicon: string;
   hasPro: boolean;
   isNotAGame?: boolean;
   logo: string;
+  logoPfp: string;
   logoPng: string;
   newLevelData?: string;
   seoDescription: string;
