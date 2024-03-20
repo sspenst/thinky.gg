@@ -410,8 +410,7 @@ export default async function initializeLocalDb() {
         name: 'test collection 3',
         slug: 'bbb/test-collection',
         userId: new Types.ObjectId(TestId.USER_B),
-      }
-
+      },
     ],
     { ordered: false }
   ));
