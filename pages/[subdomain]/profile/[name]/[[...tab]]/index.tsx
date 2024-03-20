@@ -687,7 +687,7 @@ export default function ProfilePage({
           description={`${user.name}'s profile`}
           canonical={canonical}
           openGraph={{
-            title: `${user.name} - ${game.displayName}}`,
+            title: `${user.name} - ${game.displayName}`,
             description: `${user.name}'s profile`,
             type: 'profile',
             url: getProfileSlug(user),
