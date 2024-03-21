@@ -171,7 +171,7 @@ export default function PlayHistory() {
 
             prevEndTime = playAttempt.endTime;
 
-            const currentDate = dayjs.unix(playAttempt.startTime).local().format('MMMM Do, YYYY');
+            const currentDate = dayjs.unix(playAttempt.startTime).local().format('MMMM DD, YYYY');
             const showDate = currentDate !== prevDate;
 
             prevDate = currentDate;
