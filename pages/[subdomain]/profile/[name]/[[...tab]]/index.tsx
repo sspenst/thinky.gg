@@ -434,10 +434,10 @@ export default function ProfilePage({
                   levelsSolvedByDifficulty ? <PlayerRank levelsSolvedByDifficulty={levelsSolvedByDifficulty} user={user} /> : '...'
                 }
               </h2>}
-              {!game.isNotAGame && !game.disableRanked && <h2><span className='font-bold'>Ranked Solves:</span> {user.config?.calcRankedSolves} 🏅</h2>}
-              {!game.isNotAGame && <h2><span className='font-bold'>Levels Solved:</span> {user.config?.calcLevelsSolvedCount}</h2>}
-              {!game.isNotAGame && <h2><span className='font-bold'>Levels Completed:</span> {user.config?.calcLevelsCompletedCount}</h2>}
-              {!game.isNotAGame && <h2><span className='font-bold'>Levels Created:</span> {user.config?.calcLevelsCreatedCount}</h2>}
+              {!game.isNotAGame && !game.disableRanked && <h2><span className='font-bold'>Ranked Solves:</span> {user.config?.calcRankedSolves ?? 0} 🏅</h2>}
+              {!game.isNotAGame && <h2><span className='font-bold'>Levels Solved:</span> {user.config?.calcLevelsSolvedCount ?? 0}</h2>}
+              {!game.isNotAGame && <h2><span className='font-bold'>Levels Completed:</span> {user.config?.calcLevelsCompletedCount ?? 0}</h2>}
+              {!game.isNotAGame && <h2><span className='font-bold'>Levels Created:</span> {user.config?.calcLevelsCreatedCount ?? 0}</h2>}
               {!user.hideStatus && <>
                 <h2><span className='font-bold'>Last Seen:</span> <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.last_visited_at ? user.last_visited_at : user.ts} /></h2>
               </>}
