@@ -227,7 +227,7 @@ export default function apiWrapper(
     const validate = parseReq(validator, req);
 
     if (validate !== null) {
-      logger.error('API Handler Error', validate);
+      logger.error('apiWrapper validation error', validate);
 
       return Promise.resolve(res.status(validate.statusCode).json({ error: validate.error }));
     }
@@ -236,7 +236,7 @@ export default function apiWrapper(
 
     /* istanbul ignore next */
     return handler(req, res).catch((error: Error) => {
-      logger.error('API Handler Error Caught', error);
+      logger.error('apiWrapper handler error', error);
       console.trace();
 
       return res.status(500).send(error.message || error);
