@@ -143,19 +143,38 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
       return null;
     }
 
-    const onBgClick = (e: React.MouseEvent<HTMLDivElement>) => {
-      e.stopPropagation();
-      const x = Math.floor(e.nativeEvent.offsetX / tileSize);
-      const y = Math.floor(e.nativeEvent.offsetY / tileSize);
-      const rightClick = e.button === 2;
+    const handleBgClick = (offsetX: number, offsetY: number, rightClick: boolean) => {
+      const x = Math.floor(offsetX / tileSize);
+      const y = Math.floor(offsetY / tileSize);
 
       onCellClick && onCellClick(x, y, rightClick);
+    };
+
+    const onBgClick = (e: React.MouseEvent<HTMLDivElement>) => {
+      const rightClick = e.type === 'contextmenu';
+
+      handleBgClick(e.nativeEvent.offsetX, e.nativeEvent.offsetY, rightClick);
+    };
+
+    const onBgTouch = (e: React.TouchEvent<HTMLDivElement>) => {
+      if (!e.currentTarget || !e.changedTouches || e.changedTouches.length === 0) {
+        return;
+      }
+
+      const rect = e.currentTarget.getBoundingClientRect();
+      const touch = e.changedTouches[0];
+      const x = touch.pageX - rect.left;
+      const y = touch.pageY - rect.top;
+
+      handleBgClick(x, y, false);
     };
 
     return (
       <div
         className='absolute'
         onClick={onBgClick}
+        onContextMenu={onBgClick}
+        onTouchEnd={onBgTouch}
         style={{
           backgroundColor: 'var(--level-grid)',
           backgroundImage: `
