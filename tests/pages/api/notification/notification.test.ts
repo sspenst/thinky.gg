@@ -66,6 +66,7 @@ describe('Notifications', () => {
     });
   });
   test('Trying to put with invalid id', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -160,6 +161,7 @@ describe('Notifications', () => {
     });
   });
   test('Trying to put with correct id but no body', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

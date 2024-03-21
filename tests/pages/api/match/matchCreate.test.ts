@@ -1,6 +1,8 @@
 import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import { logger } from '@root/helpers/logger';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
@@ -74,6 +76,7 @@ describe('matchCreate', () => {
     });
   });
   test('POST a second time should fail (already in match)', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       pagesHandler: async (_, res) => {
         await handler({

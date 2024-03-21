@@ -161,6 +161,7 @@ describe('review.test.errors', () => {
     });
   });
   test('Testing POSTing with malformed score should not work', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -192,6 +193,7 @@ describe('review.test.errors', () => {
     });
   });
   test('Testing POSTing with a number that is not a 0.5 increment should fail', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -226,6 +228,7 @@ describe('review.test.errors', () => {
     });
   });
   test('Testing POSTing with a number that is out of bounds should fail', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

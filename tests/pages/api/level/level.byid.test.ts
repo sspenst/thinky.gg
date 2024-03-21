@@ -76,6 +76,7 @@ describe('pages/api/level/index.ts', () => {
   });
 
   test('Doing a POST with no level data should error', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -97,6 +98,7 @@ describe('pages/api/level/index.ts', () => {
     });
   });
   test('Doing a POST with partial data should NOT be OK', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

@@ -78,7 +78,6 @@ describe('pages/api/signup', () => {
     // mock fetch failing with 400
     fetchMock.mockResponseOnce(JSON.stringify({ 'mock': true }), { status: 408 });
 
-    //    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -103,7 +102,7 @@ describe('pages/api/signup', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Error validating recaptcha [Status: 408]');
+        expect(response.error).toBe('Error validating recaptcha [Status: 408], [Data: {"mock":true}]');
         expect(res.status).toBe(400);
       },
     });

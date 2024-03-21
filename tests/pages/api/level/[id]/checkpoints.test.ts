@@ -3,6 +3,7 @@ import Role from '@root/constants/role';
 import TestId from '@root/constants/testId';
 import { directionsToGameState, isValidDirections } from '@root/helpers/checkpointHelpers';
 import { areEqualGameStates } from '@root/helpers/gameStateHelpers';
+import { logger } from '@root/helpers/logger';
 import { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { getTokenCookieValue } from '@root/lib/getTokenCookie';
@@ -12,6 +13,7 @@ import handler from '@root/pages/api/level/[id]/checkpoints';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import mongoose from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { Logger } from 'winston';
 import gameStateFromDirections from './gameStateFromDirections';
 
 beforeAll(async () => {
@@ -111,6 +113,7 @@ describe('api/user/[id]/checkpoints', () => {
     });
   });
   test('try to save with invalid directions', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await UserModel.findByIdAndUpdate(TestId.USER, {
       $addToSet: {
         roles: Role.PRO
@@ -132,6 +135,7 @@ describe('api/user/[id]/checkpoints', () => {
     });
   });
   test('try to save with invalid directions (object)', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await UserModel.findByIdAndUpdate(TestId.USER, {
       $addToSet: {
         roles: Role.PRO
@@ -326,6 +330,7 @@ describe('api/user/[id]/checkpoints', () => {
     });
   });
   test('should not be able to delete BEST_CHECKPOINT_INDEX', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await UserModel.findByIdAndUpdate(TestId.USER, {
       $addToSet: {
         roles: Role.PRO
