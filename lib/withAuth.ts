@@ -131,6 +131,8 @@ export default function withAuth(
       const validate = parseReq(validator, req);
 
       if (validate !== null) {
+        logger.error('withAuth validation error', validate);
+
         return Promise.resolve(
           res.status(validate.statusCode).json({
             error: validate.error,
@@ -140,7 +142,7 @@ export default function withAuth(
 
       /* istanbul ignore next */
       return handler(req, res).catch((error: Error) => {
-        logger.error('API Handler Error Caught', error);
+        logger.error('withAuth handler error', error);
 
         return res.status(500).json({
           error: error.message || error,
