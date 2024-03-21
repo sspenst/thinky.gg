@@ -84,7 +84,7 @@ export default function FormattedReview({ hideBorder, inModal, level, onEditClic
 
   return (
     <div className='flex align-center justify-center text-left break-words'>
-      <div className={classNames('block max-w-3xl w-full', { 'py-2 px-3 rounded-lg border border-color-3': !hideBorder })}>
+      <div className={classNames('block w-full', { 'py-2 px-3 rounded-lg border border-color-3': !hideBorder })}>
         <div className='flex gap-x-2 items-center flex-wrap'>
           <div className='flex justify-between w-full items-center'>
             <div className='flex gap-x-2 items-center truncate'>

@@ -576,22 +576,22 @@ export default function ProfilePage({
       </div>
     ),
     [ProfileTab.ReviewsWritten]: [
-      reviewsWritten?.map(review => {
-        return (
-          <div
-            key={`review-${review._id}`}
-            style={{
-              margin: 20,
-            }}
-          >
-            <FormattedReview
-              level={review.levelId}
-              review={review}
-              user={user}
-            />
-          </div>
-        );
-      }),
+      <div className='flex flex-col items-center gap-4' key='reviews-written'>
+        {reviewsWritten?.map(review => {
+          return (
+            <div
+              className='max-w-3xl w-full'
+              key={`review-${review._id}`}
+            >
+              <FormattedReview
+                level={review.levelId}
+                review={review}
+                user={user}
+              />
+            </div>
+          );
+        })}
+      </div>,
       reviewsWrittenCount > 10 &&
         <div key='pagination_btns' className='flex justify-center flex-row'>
           {page > 1 && (
@@ -620,22 +620,22 @@ export default function ProfilePage({
       ,
     ],
     [ProfileTab.ReviewsReceived]: [
-      reviewsReceived?.map(review => {
-        return (
-          <div
-            key={`review-${review._id}`}
-            style={{
-              margin: 20,
-            }}
-          >
-            <FormattedReview
-              level={review.levelId}
-              review={review}
-              user={review.userId}
-            />
-          </div>
-        );
-      }),
+      <div className='flex flex-col items-center gap-4' key='reviews-received'>
+        {reviewsReceived?.map(review => {
+          return (
+            <div
+              className='max-w-3xl w-full'
+              key={`review-${review._id}`}
+            >
+              <FormattedReview
+                level={review.levelId}
+                review={review}
+                user={review.userId}
+              />
+            </div>
+          );
+        })}
+      </div>,
       reviewsReceivedCount > 10 &&
         <div key='pagination_btns' className='flex justify-center flex-row'>
           {page > 1 && (
