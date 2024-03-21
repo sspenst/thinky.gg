@@ -221,6 +221,7 @@ describe('Reviewing levels should work correctly', () => {
     });
   });
   test('Testing editing review but with score that is not 0.5 increment', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -292,6 +293,7 @@ describe('Reviewing levels should work correctly', () => {
   });
 
   test('Testing editing review without userId', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

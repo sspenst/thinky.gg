@@ -69,6 +69,7 @@ describe('pages/api/collection/index.ts', () => {
     });
   });
   test('Doing a POST with no data should error', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -209,6 +210,7 @@ describe('pages/api/collection/index.ts', () => {
   });
 
   test('Doing a POST but invalid/missing fields should fail', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

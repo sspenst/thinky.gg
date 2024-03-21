@@ -305,6 +305,7 @@ describe('Editing levels should work correctly', () => {
   });
 
   test('Testing edit level but using malformed data', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

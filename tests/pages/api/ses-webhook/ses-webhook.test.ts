@@ -1,8 +1,10 @@
 import { NextApiRequestWrapper } from '@root/helpers/apiWrapper';
+import { logger } from '@root/helpers/logger';
 import { dbDisconnect } from '@root/lib/dbConnect';
 import { NextApiRequestWithAuth } from '@root/lib/withAuth';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { Logger } from 'winston';
 import handler from '../../../../pages/api/ses-webhook/index';
 
 const sampleJSON = {
@@ -84,6 +86,7 @@ describe('ses-webhook', () => {
     });
   });
   test('Weird payload', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     process.env.SES_WEBHOOK_SECRET = 'test';
     await testApiHandler({
       pagesHandler: async (_, res) => {
