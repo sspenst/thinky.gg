@@ -2,7 +2,6 @@ import { GameId } from '@root/constants/GameId';
 import { PipelineStage, QueryOptions, Types } from 'mongoose';
 import cleanUser from '../lib/cleanUser';
 import Level from '../models/db/level';
-import Review from '../models/db/review';
 import User from '../models/db/user';
 import { LevelModel, ReviewModel, UserModel } from '../models/mongoose';
 import { getEnrichLevelsPipelineSteps, getEnrichUserConfigPipelineStage } from './enrich';
@@ -64,12 +63,6 @@ export async function getReviewsForUserId(gameId: GameId, id: string | string[] 
         },
       },
       {
-        $skip: queryOptions?.skip || 0
-      },
-      {
-        $limit: queryOptions?.limit || 10,
-      },
-      {
         $lookup: {
           from: UserModel.collection.name,
           localField: 'userId',
@@ -83,8 +76,14 @@ export async function getReviewsForUserId(gameId: GameId, id: string | string[] 
       {
         $unwind: {
           path: '$userId',
-          preserveNullAndEmptyArrays: true,
+          // important to not preserveNullAndEmptyArrays here, because we want to ignore reviews where the reviewer has been deleted
         },
+      },
+      {
+        $skip: queryOptions?.skip || 0
+      },
+      {
+        $limit: queryOptions?.limit || 10,
       },
       {
         $project: {
@@ -126,11 +125,42 @@ export async function getReviewsForUserId(gameId: GameId, id: string | string[] 
 export async function getReviewsForUserIdCount(gameId: GameId, id: string | string[] | undefined) {
   try {
     const levelsByUser = await LevelModel.find<Level>({ isDeleted: { $ne: true }, isDraft: false, userId: id, gameId: gameId }, '_id');
-    const reviews = await ReviewModel.find<Review>({
-      levelId: { $in: levelsByUser.map(level => level._id) },
-    }).countDocuments();
+    const reviewsCountAgg = await ReviewModel.aggregate([
+      {
+        $match: {
+          levelId: { $in: levelsByUser.map(level => level._id) },
+        },
+      },
+      {
+        $lookup: {
+          from: UserModel.collection.name,
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'userId',
+          pipeline: [
+            {
+              $project: {
+                _id: 1,
+              },
+            },
+          ],
+        },
+      },
+      // TODO: soft delete reviews so we can use isDeleted instead of populating users to filter out deleted users
+      {
+        $unwind: {
+          path: '$userId',
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          count: { $sum: 1 },
+        },
+      },
+    ]);
 
-    return reviews;
+    return reviewsCountAgg.length > 0 ? reviewsCountAgg[0].count : 0;
   } catch (err) {
     logger.error(err);
 

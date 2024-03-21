@@ -68,9 +68,6 @@ export async function getLatestReviews(gameId: GameId, reqUser: User | null = nu
         $unwind: '$levelId',
       },
       {
-        $limit: 7,
-      },
-      {
         $lookup: {
           from: UserModel.collection.name,
           localField: 'userId',
@@ -88,10 +85,11 @@ export async function getLatestReviews(gameId: GameId, reqUser: User | null = nu
       {
         $unwind: {
           path: '$userId',
-          preserveNullAndEmptyArrays: true,
         }
       },
-
+      {
+        $limit: 7,
+      },
     ]);
 
     return reviews.map(review => {
