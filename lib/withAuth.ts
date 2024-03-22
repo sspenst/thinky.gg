@@ -50,6 +50,7 @@ export async function getUserFromToken(
 
   if (!isLocal()) {
     newrelic?.addCustomAttribute && newrelic.addCustomAttribute('userId', userId);
+    newrelic?.addCustomAttribute && newrelic.addCustomAttribute('logBody', JSON.stringify(req?.body));
   }
 
   await dbConnect();
@@ -109,13 +110,6 @@ export default function withAuth(
     }
 
     try {
-      // dynamically import newrelic
-      const newrelic = process.env.NODE_ENV === 'test' ? undefined : await import('newrelic');
-
-      if (!isLocal()) {
-        newrelic?.addCustomAttribute && newrelic.addCustomAttribute('request.body', req.body);
-      }
-
       const reqUser = await getUserFromToken(token, req);
 
       if (reqUser === null) {
