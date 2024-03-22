@@ -50,7 +50,6 @@ export async function getUserFromToken(
 
   if (!isLocal()) {
     newrelic?.addCustomAttribute && newrelic.addCustomAttribute('userId', userId);
-    newrelic?.addCustomAttribute && newrelic.addCustomAttribute('logBody', JSON.stringify(req?.body));
   }
 
   await dbConnect();
@@ -101,6 +100,24 @@ export default function withAuth(
     req: NextApiRequestWithAuth,
     res: NextApiResponse
   ): Promise<void> => {
+    // dynamically import newrelic
+    const newrelic = process.env.NODE_ENV === 'test' ? undefined : await import('newrelic');
+    // overwrite the res.json function to log errors
+    const originalJson = res.json;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    res.json = (data: any) => {
+      if (data && data.error) {
+        if (!isLocal()) {
+          newrelic?.addCustomAttribute && newrelic.addCustomAttribute('jsonError', data.error);
+        } else {
+          console.error('Error response:', data.error);
+        }
+      }
+
+      return originalJson.call(res, data);
+    };
+
     const token = req.cookies?.token;
 
     if (!token) {
