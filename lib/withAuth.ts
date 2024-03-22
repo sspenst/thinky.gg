@@ -109,6 +109,13 @@ export default function withAuth(
     }
 
     try {
+      // dynamically import newrelic
+      const newrelic = process.env.NODE_ENV === 'test' ? undefined : await import('newrelic');
+
+      if (!isLocal()) {
+        newrelic?.addCustomAttribute && newrelic.addCustomAttribute('request.body', req.body);
+      }
+
       const reqUser = await getUserFromToken(token, req);
 
       if (reqUser === null) {
