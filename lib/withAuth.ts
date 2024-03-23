@@ -107,7 +107,7 @@ export default function withAuth(
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     res.json = (data: any) => {
-      if (data && data.error) {
+      if (data && data.error && process.env.NODE_ENV !== 'test') {
         if (!isLocal()) {
           newrelic?.addCustomAttribute && newrelic.addCustomAttribute('jsonError', data.error);
         } else {
