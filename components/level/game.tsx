@@ -487,23 +487,13 @@ export default function Game({
   }, [disableAutoUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, game.displayName, isComplete, level._id, level.data, level.leastMoves, loadCheckpoint, onComplete, onMove, onNext, onPrev, onSolve, pro, saveCheckpoint, saveSessionToSessionStorage, trackStats]);
 
   useEffect(() => {
-    if (disableCheckpoints || !pro || !checkpoints) {
+    if (disableCheckpoints || !pro || !checkpoints || !isComplete(gameState)) {
       return;
     }
 
-    const atEnd = isComplete(gameState);
-
     const bestCheckpoint = checkpoints[BEST_CHECKPOINT_INDEX];
 
-    function newBest() {
-      if (!bestCheckpoint) {
-        return true;
-      }
-
-      return gameState.moves.length < bestCheckpoint.length;
-    }
-
-    if (atEnd && newBest()) {
+    if (!bestCheckpoint || gameState.moves.length < bestCheckpoint.length) {
       saveCheckpoint(BEST_CHECKPOINT_INDEX);
     }
   }, [checkpoints, disableCheckpoints, enrichedLevel.userMoves, gameState, isComplete, pro, saveCheckpoint]);
