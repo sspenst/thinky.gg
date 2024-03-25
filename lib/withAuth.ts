@@ -12,6 +12,7 @@ import User from '../models/db/user';
 import { UserConfigModel, UserModel } from '../models/mongoose';
 import dbConnect from './dbConnect';
 import getTokenCookie from './getTokenCookie';
+import initNewrelicErrorLogging from './initNewrelicErrorLogging';
 import isLocal from './isLocal';
 
 export interface NextApiRequestWithAuth extends NextApiRequestWrapper {
@@ -100,23 +101,7 @@ export default function withAuth(
     req: NextApiRequestWithAuth,
     res: NextApiResponse
   ): Promise<void> => {
-    // dynamically import newrelic
-    const newrelic = process.env.NODE_ENV === 'test' ? undefined : await import('newrelic');
-    // overwrite the res.json function to log errors
-    const originalJson = res.json;
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    res.json = (data: any) => {
-      if (data && data.error && process.env.NODE_ENV !== 'test') {
-        if (!isLocal()) {
-          newrelic?.addCustomAttribute && newrelic.addCustomAttribute('jsonError', data.error);
-        } else {
-          console.error('Error response:', data.error);
-        }
-      }
-
-      return originalJson.call(res, data);
-    };
+    await initNewrelicErrorLogging(res);
 
     const token = req.cookies?.token;
 
