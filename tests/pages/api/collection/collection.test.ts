@@ -396,17 +396,15 @@ describe('pages/api/collection/index.ts', () => {
       },
     });
   });
-  test('Create 3 collections with same name in DB, so that we can test to make sure the server will not crash. The 19th should crash however.', async () => {
-    for (let i = 0; i < 2; i++) {
+  test('Create 20 collections with same name in DB, we should never crash because it is so unlikely', async () => {
+    const slugs = new Set<string>();
+
+    for (let i = 1; i <= 20; i++) {
       // expect no exceptions
-      const promise = initCollection(TestId.USER, 'Sample');
+      const collection = await initCollection(TestId.USER, 'Sample');
 
-      await expect(promise).resolves.toBeDefined();
+      expect(slugs.has(collection.slug)).toBe(false);
+      slugs.add(collection.slug);
     }
-
-    // Now create one more, it should throw exception
-    const promise = initCollection(TestId.USER, 'Sample');
-
-    await expect(promise).rejects.toThrow('Couldn\'t generate a unique collection slug');
-  }, 30000);
+  });
 });
