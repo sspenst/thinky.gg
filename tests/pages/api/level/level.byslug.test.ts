@@ -1,6 +1,7 @@
 import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
 import { NextApiRequestWrapper } from '@root/helpers/apiWrapper';
+import { SlugUtil } from '@root/helpers/generateSlug';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
@@ -444,7 +445,8 @@ describe('Testing slugs for levels', () => {
     });
   });
 
-  test('Updating level_id_2 name to test-level-2 should become test-level-2-2 in the db', async () => {
+  test('Updating level_id_2 name to test-level-2 should create a slug id', async () => {
+    jest.spyOn(SlugUtil, 'makeId').mockReturnValueOnce('test');
     await testApiHandler({
       pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -479,9 +481,10 @@ describe('Testing slugs for levels', () => {
 
     // testing through querying DB since this level is a draft
     expect(level).toBeDefined();
-    expect(level?.slug).toBe('newuser/test-level-2-2');
+    expect(level?.slug).toBe('newuser/test-level-2-test');
   });
-  test('Updating level_id_2 name to test-level-2 again should REMAIN test-level-2-2 in the db', async () => {
+  test('Updating level_id_2 name to test-level-2 again should update the slug id', async () => {
+    jest.spyOn(SlugUtil, 'makeId').mockReturnValueOnce('a1b2');
     await testApiHandler({
       pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -516,19 +519,17 @@ describe('Testing slugs for levels', () => {
 
     // testing through querying DB since this level is a draft
     expect(level).toBeDefined();
-    expect(level?.slug).toBe('newuser/test-level-2-2');
+    expect(level?.slug).toBe('newuser/test-level-2-a1b2');
   });
-  test('Create 18 levels with same name in DB, so that we can test to make sure the server will not crash. The 19th should crash however.', async () => {
-    for (let i = 1; i <= 18; i++) {
+  test('Create 20 levels with same name in DB, we should never crash because it is so unlikely', async () => {
+    const slugs = new Set<string>();
+
+    for (let i = 1; i <= 20; i++) {
       // expect no exceptions
-      const promise = initLevel(DEFAULT_GAME_ID, TestId.USER, `Sample${'!'.repeat(i)}`);
+      const level = await initLevel(DEFAULT_GAME_ID, TestId.USER, `Sample${'!'.repeat(i)}`);
 
-      await expect(promise).resolves.toBeDefined();
+      expect(slugs.has(level.slug)).toBe(false);
+      slugs.add(level.slug);
     }
-
-    // Now create one more, it should throw exception
-    const promise = initLevel(DEFAULT_GAME_ID, TestId.USER, 'Sample');
-
-    await expect(promise).rejects.toThrow('Couldn\'t generate a unique level slug');
-  }, 30000);
+  });
 });
