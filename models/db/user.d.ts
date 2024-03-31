@@ -10,8 +10,8 @@ interface User {
   _id: Types.ObjectId;
   avatarUpdatedAt?: number;
   bio?: string;
-  disallowedEmailNotifications: NotificationType[];
-  disallowedPushNotifications: NotificationType[];
+  disallowedEmailNotifications?: NotificationType[];
+  disallowedPushNotifications?: NotificationType[];
   email: string;
   emailConfirmationToken: string;
   emailConfirmed: boolean;
