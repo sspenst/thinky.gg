@@ -11,6 +11,7 @@ import { Game, Games } from '@root/constants/Games';
 import MusicContextProvider from '@root/contexts/musicContext';
 import getFontFromGameId from '@root/helpers/getFont';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import isPro from '@root/helpers/isPro';
 import { parseHostname } from '@root/helpers/parseUrl';
 import useDeviceCheck from '@root/hooks/useDeviceCheck';
 import Collection from '@root/models/db/collection';
@@ -89,7 +90,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
   const { matches, privateAndInvitedMatches } = multiplayerSocket;
 
   const mutatePlayLater = useCallback(() => {
-    if (!user) {
+    if (!isPro(user)) {
       return;
     }
 
