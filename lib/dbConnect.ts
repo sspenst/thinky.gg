@@ -96,6 +96,7 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
   }
 
   cached.conn = await cached.promise;
+  cached.promise = null;
 
   /* istanbul ignore next */
   if (mongoose.connection.readyState !== 1) {
@@ -149,5 +150,6 @@ export async function dbDisconnect(log: boolean = false) {
   await wsDisconnect();
 
   cached.conn = null;
+  cached.promise = null;
   cached.mongoMemoryServer = null;
 }
