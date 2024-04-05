@@ -225,6 +225,7 @@ export default withAuth({
 
         await Promise.all([
           AchievementModel.deleteMany({ userId: req.userId }, { session: session }),
+          CollectionModel.deleteMany({ userId: req.userId }, { session: session }),
           DeviceModel.deleteMany({ userId: req.userId }, { session: session }),
           GraphModel.deleteMany({ $or: [{ source: req.userId }, { target: req.userId }] }, { session: session }),
           // delete in keyvaluemodel where key contains userId
