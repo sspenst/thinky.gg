@@ -18,7 +18,7 @@ import clearTokenCookie from '../../../lib/clearTokenCookie';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
-import { AchievementModel, CollectionModel, CommentModel, GraphModel, KeyValueModel, LevelModel, MultiplayerProfileModel, NotificationModel, UserConfigModel, UserModel } from '../../../models/mongoose';
+import { AchievementModel, CollectionModel, CommentModel, DeviceModel, GraphModel, KeyValueModel, LevelModel, MultiplayerProfileModel, NotificationModel, UserConfigModel, UserModel } from '../../../models/mongoose';
 import { getSubscriptions, SubscriptionData } from '../subscription';
 import { getUserConfig } from '../user-config';
 
@@ -220,12 +220,12 @@ export default withAuth({
             archivedBy: req.userId,
             archivedTs: ts,
             slug: slug,
-
           } }, { session: session });
         }
 
         await Promise.all([
-          AchievementModel.deleteMany({ userId: req.userId }),
+          AchievementModel.deleteMany({ userId: req.userId }, { session: session }),
+          DeviceModel.deleteMany({ userId: req.userId }, { session: session }),
           GraphModel.deleteMany({ $or: [{ source: req.userId }, { target: req.userId }] }, { session: session }),
           // delete in keyvaluemodel where key contains userId
           KeyValueModel.deleteMany({ key: { $regex: `.*${req.userId}.*` } }, { session: session }),
