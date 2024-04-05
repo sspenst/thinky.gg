@@ -28,7 +28,6 @@ export default withAuth({
   }
 
   const { id: levelId } = req.query as { id: string };
-  const checkpointKey = getCheckpointKey(levelId, req.userId);
   const level = await LevelModel.findById(levelId, { gameId: 1, isDraft: 1 });
 
   if (!level) {
@@ -36,6 +35,8 @@ export default withAuth({
       error: 'Level not found',
     });
   }
+
+  const checkpointKey = getCheckpointKey(levelId, req.userId);
 
   if (req.method === 'GET') {
     const checkpoint = await KeyValueModel.findOne({ key: checkpointKey }); // don't need gameId since the key has the level id
@@ -61,7 +62,6 @@ export default withAuth({
       }
     }
 
-    /** findOneAndUpdate upsert this value... We need to be able set the specific index of the array the value of directions */
     const checkpoint = await KeyValueModel.findOneAndUpdate(
       { key: checkpointKey },
       {
