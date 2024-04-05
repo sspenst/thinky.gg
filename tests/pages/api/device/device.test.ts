@@ -17,7 +17,7 @@ afterAll(async () => {
 });
 enableFetchMocks();
 
-describe('/api/notification-push-token', () => {
+describe('/api/device', () => {
   test('PUT (create)', async () => {
     await testApiHandler({
       pagesHandler: async (_, res) => {
