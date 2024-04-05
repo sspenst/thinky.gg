@@ -16,7 +16,7 @@ import { AppContext } from '../../contexts/appContext';
 import { LevelContext } from '../../contexts/levelContext';
 import { PageContext } from '../../contexts/pageContext';
 import Control from '../../models/control';
-import Level, { EnrichedLevel } from '../../models/db/level';
+import Level from '../../models/db/level';
 import GameLayout from './gameLayout';
 
 interface SessionCheckpoint {
@@ -75,7 +75,6 @@ export default function Game({
   const shiftKeyDown = useRef(false);
 
   const { checkpoints, mutateCheckpoints } = useCheckpoints(level._id, disableCheckpoints || user === null || !isPro(user));
-  const enrichedLevel = level as EnrichedLevel;
   const pro = isPro(user);
 
   useEffect(() => {
@@ -147,6 +146,7 @@ export default function Game({
     }).then(async res => {
       if (res.status === 200) {
         mutateUser();
+        mutateCheckpoints();
 
         if (mutateCollection) {
           mutateCollection();
@@ -187,7 +187,7 @@ export default function Game({
     }).finally(() => {
       NProgress.done();
     });
-  }, [disableStats, matchId, mutateCollection, mutateLevel, mutateProStatsLevel, mutateUser, onStatsSuccess]);
+  }, [disableStats, matchId, mutateCheckpoints, mutateCollection, mutateLevel, mutateProStatsLevel, mutateUser, onStatsSuccess]);
 
   const saveCheckpoint = useCallback((index: number) => {
     if (index !== BEST_CHECKPOINT_INDEX) {
@@ -485,18 +485,6 @@ export default function Game({
       return onSuccessfulMove(newGameState);
     });
   }, [disableAutoUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, game.displayName, isComplete, level._id, level.data, level.leastMoves, loadCheckpoint, onComplete, onMove, onNext, onPrev, onSolve, pro, saveCheckpoint, saveSessionToSessionStorage, trackStats]);
-
-  useEffect(() => {
-    if (disableCheckpoints || !pro || !checkpoints || !isComplete(gameState)) {
-      return;
-    }
-
-    const bestCheckpoint = checkpoints[BEST_CHECKPOINT_INDEX];
-
-    if (!bestCheckpoint || gameState.moves.length < bestCheckpoint.length) {
-      saveCheckpoint(BEST_CHECKPOINT_INDEX);
-    }
-  }, [checkpoints, disableCheckpoints, enrichedLevel.userMoves, gameState, isComplete, pro, saveCheckpoint]);
 
   const touchXDown = useRef<number>(0);
   const touchYDown = useRef<number>(0);
