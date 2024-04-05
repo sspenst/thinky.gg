@@ -1,4 +1,4 @@
-import { directionToVector, getDirectionFromCode } from '@root/constants/direction';
+import Direction, { directionToVector } from '@root/constants/direction';
 import Position from '@root/models/position';
 import React, { useEffect, useState } from 'react';
 
@@ -20,7 +20,21 @@ export default function HeaderPlayer({ children, size }: HeaderPlayerProps) {
       return;
     }
 
-    const direction = getDirectionFromCode(event.code);
+    function getDirection(code: string) {
+      if (code === 'ArrowLeft') {
+        return Direction.LEFT;
+      } else if (code === 'ArrowUp') {
+        return Direction.UP;
+      } else if (code === 'ArrowRight') {
+        return Direction.RIGHT;
+      } else if (code === 'ArrowDown') {
+        return Direction.DOWN;
+      } else {
+        return undefined;
+      }
+    }
+
+    const direction = getDirection(event.code);
 
     if (direction) {
       setPos(prevPos => prevPos.add(directionToVector(direction)));
