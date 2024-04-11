@@ -32,6 +32,7 @@ const mockSubscription: Stripe.Subscription = {
   default_tax_rates: [],
   description: null,
   discount: null,
+  discounts: [],
   ended_at: null,
   items: {
     object: 'list',
@@ -41,6 +42,7 @@ const mockSubscription: Stripe.Subscription = {
         object: 'subscription_item',
         billing_thresholds: null,
         created: 1690174334,
+        discounts: [],
         metadata: {},
         plan: {
           id: 'price_123',
