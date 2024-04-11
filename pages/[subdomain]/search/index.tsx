@@ -241,7 +241,7 @@ function TimeRangeMenu({ onTimeRangeClick, timeRange }: TimeRangeMenuProps) {
               <Menu.Item key={`time-range-${timeRangeKey}`}>
                 {({ active }) => (
                   <button
-                    className='text-black block p-1 text-sm w-24 flex items-center gap-1 justify-center'
+                    className='text-black p-1 text-sm w-24 flex items-center gap-1 justify-center'
                     onClick={() => onTimeRangeClick(timeRangeKey)}
                     role='menuitem'
                     style= {{
@@ -304,7 +304,7 @@ function StatFilterMenu({ onStatFilterClick, query }: StatFilterMenuProps) {
               <Menu.Item key={`filter-completions-${statFilterKey}`}>
                 {({ active }) => (
                   <button
-                    className='text-black block p-1 text-sm w-28 flex items-center gap-1 justify-center'
+                    className='text-black p-1 text-sm w-28 flex items-center gap-1 justify-center'
                     onClick={() => onStatFilterClick(statFilterKey as StatFilter)}
                     role='menuitem'
                     style= {{
@@ -700,7 +700,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                 <Menu.Item>
                   {({ active }) => (
                     <button
-                      className='text-black block p-1 text-sm w-44 flex items-center gap-1 justify-center'
+                      className='text-black p-1 text-sm w-44 flex items-center gap-1 justify-center'
                       onClick={() => fetchLevels({
                         ...query,
                         difficultyFilter: 'Pending',
@@ -720,7 +720,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                   <Menu.Item key={`difficulty-item-${difficulty.value}`}>
                     {({ active }) => (
                       <button
-                        className='text-black block p-1 text-sm w-44 flex items-center gap-1 justify-center'
+                        className='text-black p-1 text-sm w-44 flex items-center gap-1 justify-center'
                         onClick={() => fetchLevels({
                           ...query,
                           difficultyFilter: difficulty.name,

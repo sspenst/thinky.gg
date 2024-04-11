@@ -72,7 +72,7 @@ const LevelSchema = new mongoose.Schema<Level>(
     data: {
       type: String,
       required: true,
-      minLength: 2, // always need start and end
+      minLength: 1,
       maxlength: 40 * 40 + 39,
     },
     gameId: {
