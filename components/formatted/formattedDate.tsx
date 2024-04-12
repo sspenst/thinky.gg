@@ -4,7 +4,29 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import React from 'react';
 import StyledTooltip from '../page/styledTooltip';
 
-dayjs.extend(relativeTime);
+// https://day.js.org/docs/en/customization/relative-time
+dayjs.extend(
+  relativeTime,
+  {
+    rounding: Math.floor,
+    thresholds: [
+      { l: 's', r: 59, d: 'second' },
+      { l: 'm', r: 1 },
+      { l: 'mm', r: 59, d: 'minute' },
+      { l: 'h', r: 1 },
+      { l: 'hh', r: 23, d: 'hour' },
+      { l: 'd', r: 1 },
+      { l: 'dd', r: 27, d: 'day' },
+      // NB: weeks are not well-supported by dayjs
+      // { l: 'w', r: 1 },
+      // { l: 'ww', r: 4, d: 'week' },
+      { l: 'M', r: 1 },
+      { l: 'MM', r: 11, d: 'month' },
+      { l: 'y', r: 1 },
+      { l: 'yy', d: 'year' },
+    ],
+  }
+);
 
 interface FormattedDateProps {
   className?: string;
@@ -25,9 +47,6 @@ export default function FormattedDate({ className, date, style, ts }: FormattedD
     // ensure dates from the db are actually dates
     date = new Date(date);
   }
-
-  //moment.relativeTimeRounding(Math.floor);
-  // dayjs equivalent to rounding down would be to use Math.floor
 
   return (<>
     <span

@@ -1,15 +1,17 @@
 /* istanbul ignore file */
 import 'react-tooltip/dist/react-tooltip.css';
 import '../styles/global.css';
-import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react';
 import { Portal } from '@headlessui/react';
-import { Confetti } from '@root/components/page/Confetti';
+import { sendGTMEvent } from '@next/third-parties/google';
+import OpenReplay from '@root/components/openReplay';
+import { Confetti } from '@root/components/page/confetti';
 import DismissToast from '@root/components/toasts/dismissToast';
 import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
 import { Game, Games } from '@root/constants/Games';
 import MusicContextProvider from '@root/contexts/musicContext';
 import getFontFromGameId from '@root/helpers/getFont';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import isPro from '@root/helpers/isPro';
 import { parseHostname } from '@root/helpers/parseUrl';
 import useDeviceCheck from '@root/hooks/useDeviceCheck';
 import Collection from '@root/models/db/collection';
@@ -25,7 +27,6 @@ import { ThemeProvider } from 'next-themes';
 import nProgress from 'nprogress';
 import React, { useCallback, useEffect, useState } from 'react';
 import CookieConsent from 'react-cookie-consent';
-import TagManager, { TagManagerArgs } from 'react-gtm-module';
 import toast, { Toaster } from 'react-hot-toast';
 import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 import { io, Socket } from 'socket.io-client';
@@ -48,27 +49,6 @@ function useForceUpdate() {
   const [value, setState] = useState(true);
 
   return () => setState(!value);
-}
-
-// Create a GrowthBook instance
-const growthbook = new GrowthBook({
-  apiHost: process.env.NEXT_PUBLIC_GROWTHBOOK_API_HOST || 'https://cdn.growthbook.io',
-  clientKey: process.env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY || 'sdk-XUcOzkOQARhQXpCL',
-  enableDevMode: true,
-  trackingCallback: (experiment, result) => {
-    console.log('Viewed Experiment', experiment, result, 'calling window.gtag (which is ', window?.gtag);
-    window?.gtag('event', 'experiment_viewed', {
-      event_category: 'experiment',
-      experiment_id: experiment.key,
-      variation_id: result.variationId,
-    });
-  },
-});
-
-const GTM_TRACKING_ID = 'GTM-WBDLFZ5T';
-
-function updateGrowthBookURL() {
-  growthbook.setURL(window.location.href);
 }
 
 MyApp.getInitialProps = async ({ ctx }: { ctx: NextPageContext }) => {
@@ -110,7 +90,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
   const { matches, privateAndInvitedMatches } = multiplayerSocket;
 
   const mutatePlayLater = useCallback(() => {
-    if (!user) {
+    if (!isPro(user)) {
       return;
     }
 
@@ -323,6 +303,11 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
   // check if redirect_type querystring parameter is set, and if it is equal to "patholoygg" console log hello
     const urlParams = new URLSearchParams(window.location.search);
     const redirectType = urlParams.get('redirect_type');
+    const utmSource = urlParams.get('utm_source');
+
+    if (utmSource) {
+      window.localStorage.setItem('utm_source', utmSource);
+    }
 
     if (redirectType === 'pathologygg') {
       setTimeout(() => {
@@ -377,35 +362,15 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
     }
   }, [matches, privateAndInvitedMatches, router, user]);
 
-  // const [GA_ClientID, setGA_ClientID] = useState<string>();
-
-  // useEffect(() => {
-  //   if (window?.gtag) {
-  //     window.gtag('get', GTM_TRACKING_ID, 'client_id', (clientId: string) => {
-  //       setGA_ClientID(clientId);
-  //     });
-  //   } else {
-  //     console.warn('no gtag... cant get GA ClientID');
-  //   }
-  // }, []);
-
   useEffect(() => {
-    const gtmId = GTM_TRACKING_ID;
-    // per https://github.com/alinemorelli/react-gtm/issues/14
-    const taskManagerArgs: TagManagerArgs = {
-      gtmId: gtmId,
-    };
-
     if (user?._id) {
-      taskManagerArgs.dataLayer = {
+      sendGTMEvent({
         'event': 'userId_set',
         'user_id': user?._id.toString()
-      };
+      }
+      );
     }
-
-    TagManager.initialize(taskManagerArgs);
-  }, [user?._id]);
-  // }, [GA_ClientID, user?._id]);
+  }, [user?._id, user?.name]);
 
   useEffect(() => {
     const handleRouteChange = (url: string) => {
@@ -416,28 +381,12 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
         setTempCollection(undefined);
       }
 
-      updateGrowthBookURL();
       nProgress.done();
     };
 
     Router.events.on('routeChangeStart', () => nProgress.start());
 
     Router.events.on('routeChangeError', () => nProgress.done());
-    growthbook.loadFeatures({ autoRefresh: true });
-
-    // if (GA_ClientID) {
-    //   growthbook.setAttributes({
-    //     id: user?._id || GA_ClientID,
-    //     userId: user?._id,
-    //     clientId: GA_ClientID,
-    //     name: user?.name,
-    //     loggedIn: user !== undefined,
-    //     browser: navigator.userAgent,
-    //     url: router.pathname,
-    //     host: window.location.host,
-    //     roles: user?.roles,
-    //   });
-    // }
 
     router.events.on('routeChangeComplete', handleRouteChange);
 
@@ -464,7 +413,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
       <Head>
         <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' />
         <meta name='apple-itunes-app' content='app-id=1668925562, app-argument=thinky.gg' />
-        <link href={selectedGame.favicon || '/logo.svg'} rel='icon' />
+        <link href={selectedGame.favicon} rel='icon' />
       </Head>
       <DefaultSeo
         defaultTitle={selectedGame.seoTitle}
@@ -497,49 +446,48 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
           </span>
         </CookieConsent>
       )}
-      <GrowthBookProvider growthbook={growthbook}>
-        <AppContext.Provider value={{
-          deviceInfo: deviceInfo,
-          forceUpdate: forceUpdate,
-          game: selectedGame,
-          host: host,
-          multiplayerSocket: multiplayerSocket,
-          mutatePlayLater: mutatePlayLater,
-          mutateUser: mutateUser,
-          notifications: notifications,
-          playLater: playLater,
-          protocol: protocol,
-          setNotifications: setNotifications,
-          setShouldAttemptAuth: setShouldAttemptAuth,
-          setShowNav: setShowNav,
-          setTempCollection: setTempCollection,
-          shouldAttemptAuth: shouldAttemptAuth,
-          showNav: showNav,
-          sounds: sounds,
-          tempCollection,
-          user: isLoading ? undefined : !user ? null : user,
-          userConfig: isLoading ? undefined : !user?.config ? null : user.config,
+      <AppContext.Provider value={{
+        deviceInfo: deviceInfo,
+        forceUpdate: forceUpdate,
+        game: selectedGame,
+        host: host,
+        multiplayerSocket: multiplayerSocket,
+        mutatePlayLater: mutatePlayLater,
+        mutateUser: mutateUser,
+        notifications: notifications,
+        playLater: playLater,
+        protocol: protocol,
+        setNotifications: setNotifications,
+        setShouldAttemptAuth: setShouldAttemptAuth,
+        setShowNav: setShowNav,
+        setTempCollection: setTempCollection,
+        shouldAttemptAuth: shouldAttemptAuth,
+        showNav: showNav,
+        sounds: sounds,
+        tempCollection,
+        user: isLoading ? undefined : !user ? null : user,
+        userConfig: isLoading ? undefined : !user?.config ? null : user.config,
+      }}>
+        <div className={getFontFromGameId(selectedGame.id)} style={{
+          backgroundColor: 'var(--bg-color)',
+          color: 'var(--color)',
         }}>
-          <div className={getFontFromGameId(selectedGame.id)} style={{
-            backgroundColor: 'var(--bg-color)',
-            color: 'var(--color)',
-          }}>
-            {/**
+          {/**
              * NB: using a portal here to mitigate issues clicking toasts with open modals
              * ideally we could have a Toaster component as a child of a modal so that clicking the
              * toast does not close the modal, but react-hot-toast currently does not support this:
              * https://github.com/timolins/react-hot-toast/issues/158
              */}
-            <Portal>
-              <Toaster toastOptions={{ duration: 1500 }} />
-              <Confetti />
-            </Portal>
-            <MusicContextProvider>
-              <Component {...pageProps} />
-            </MusicContextProvider>
-          </div>
-        </AppContext.Provider>
-      </GrowthBookProvider>
+          <Portal>
+            <Toaster toastOptions={{ duration: 1500 }} />
+            <Confetti />
+            <OpenReplay />
+          </Portal>
+          <MusicContextProvider>
+            <Component {...pageProps} />
+          </MusicContextProvider>
+        </div>
+      </AppContext.Provider>
     </ThemeProvider>
   </>);
 }

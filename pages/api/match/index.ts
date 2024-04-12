@@ -2,6 +2,7 @@ import { AchievementCategory } from '@root/constants/achievements/achievementInf
 import DiscordChannel from '@root/constants/discordChannel';
 import { GameId } from '@root/constants/GameId';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
+import { SlugUtil } from '@root/helpers/generateSlug';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import { abortMatch } from '@root/helpers/match/abortMatch';
 import { LEVEL_DEFAULT_PROJECTION } from '@root/models/constants/projections';
@@ -22,19 +23,6 @@ import { LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, UserModel }
 import { computeMatchScoreTable, enrichMultiplayerMatch, generateMatchLog } from '../../../models/schemas/multiplayerMatchSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 import { queueRefreshAchievements } from '../internal-jobs/worker';
-
-function makeId(length: number) {
-  let result = '';
-  const characters =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  const charactersLength = characters.length;
-
-  for (let i = 0; i < length; i++) {
-    result = result + characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-
-  return result;
-}
 
 export async function checkForFinishedMatches() {
   const matches = await MultiplayerMatchModel.find(
@@ -334,7 +322,7 @@ async function createMatch(req: NextApiRequestWithAuth) {
         throw new Error(errorMessage);
       }
 
-      const matchId = makeId(11);
+      const matchId = SlugUtil.makeId(11);
       const matchUrl = `${req.headers.origin}/match/${matchId}`;
 
       const matchCreate = await MultiplayerMatchModel.create([{

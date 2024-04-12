@@ -27,11 +27,14 @@ export default async function sendPasswordResetEmail(req: NextApiRequest, user: 
 
     // if it's been less than 2 minutes since the last email was sent, don't send another one
     if (timeSinceLastSent < 1000 * 60) {
-      throw new Error('Please wait a minute before requesting another password reset');
+      return {
+        message: 'Please wait a minute before requesting another password reset',
+        status: 429,
+      };
     }
   }
 
-  return await sendMail(
+  const error = await sendMail(
     gameId,
     new Types.ObjectId(),
     EmailType.EMAIL_PASSWORD_RESET,
@@ -46,4 +49,11 @@ export default async function sendPasswordResetEmail(req: NextApiRequest, user: 
       user: user,
     }),
   );
+
+  if (error) {
+    return {
+      message: error,
+      status: 500,
+    };
+  }
 }

@@ -6,9 +6,11 @@ const mockSubscription: Stripe.Subscription = {
   application: null,
   application_fee_percent: null,
   automatic_tax: {
-    enabled: false
+    enabled: false,
+    liability: null,
   },
   billing_cycle_anchor: 1690174333,
+  billing_cycle_anchor_config: null,
   billing_thresholds: null,
   cancel_at: null,
   cancel_at_period_end: false,
@@ -30,6 +32,7 @@ const mockSubscription: Stripe.Subscription = {
   default_tax_rates: [],
   description: null,
   discount: null,
+  discounts: [],
   ended_at: null,
   items: {
     object: 'list',
@@ -39,6 +42,7 @@ const mockSubscription: Stripe.Subscription = {
         object: 'subscription_item',
         billing_thresholds: null,
         created: 1690174334,
+        discounts: [],
         metadata: {},
         plan: {
           id: 'price_123',

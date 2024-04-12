@@ -104,7 +104,8 @@ export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
         // check where ts exists
         ts: { $exists: true },
       },
-    }, {
+    },
+    {
       $project: {
         _id: 1,
         email: 1,
@@ -115,7 +116,6 @@ export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
         last_visited_at: 1
       }
     },
-
     {
       $lookup: {
         from: NotificationModel.collection.name,
@@ -193,7 +193,6 @@ export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
         as: 'lastSentEmailLogs',
       },
     },
-
   ]);
 
   const levelsOfDay = await getlevelsOfDay();
@@ -267,11 +266,10 @@ export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
     //
     const todaysDatePretty = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     /* istanbul ignore next */
-    const EmailTextTable: { [key: string]: { title: string, message: string, subject: string, featuredLevelsLabel: string } } = {
+    const EmailTextTable: { [key: string]: { title: string, message?: string, subject: string, featuredLevelsLabel: string } } = {
       [EmailType.EMAIL_DIGEST]: {
-        title: 'Welcome to the Thinky.gg Levels of the Day for ' + todaysDatePretty + '.',
-        message: 'Here are the levels of the day for ' + todaysDatePretty + '.',
-        subject: 'Level of the Day',
+        title: `Welcome to your Thinky.gg daily digest for ${todaysDatePretty}.`,
+        subject: 'Levels of the Day - ' + todaysDatePretty,
         featuredLevelsLabel: 'Levels of the Day',
       },
       [EmailType.EMAIL_7D_REACTIVATE]: {

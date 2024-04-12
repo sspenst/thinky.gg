@@ -434,10 +434,10 @@ export default function ProfilePage({
                   levelsSolvedByDifficulty ? <PlayerRank levelsSolvedByDifficulty={levelsSolvedByDifficulty} user={user} /> : '...'
                 }
               </h2>}
-              {!game.isNotAGame && !game.disableRanked && <h2><span className='font-bold'>Ranked Solves:</span> {user.config?.calcRankedSolves} 🏅</h2>}
-              {!game.isNotAGame && <h2><span className='font-bold'>Levels Solved:</span> {user.config?.calcLevelsSolvedCount}</h2>}
-              {!game.isNotAGame && <h2><span className='font-bold'>Levels Completed:</span> {user.config?.calcLevelsCompletedCount}</h2>}
-              {!game.isNotAGame && <h2><span className='font-bold'>Levels Created:</span> {user.config?.calcLevelsCreatedCount}</h2>}
+              {!game.isNotAGame && !game.disableRanked && <h2><span className='font-bold'>Ranked Solves:</span> {user.config?.calcRankedSolves ?? 0} 🏅</h2>}
+              {!game.isNotAGame && <h2><span className='font-bold'>Levels Solved:</span> {user.config?.calcLevelsSolvedCount ?? 0}</h2>}
+              {!game.isNotAGame && <h2><span className='font-bold'>Levels Completed:</span> {user.config?.calcLevelsCompletedCount ?? 0}</h2>}
+              {!game.isNotAGame && <h2><span className='font-bold'>Levels Created:</span> {user.config?.calcLevelsCreatedCount ?? 0}</h2>}
               {!user.hideStatus && <>
                 <h2><span className='font-bold'>Last Seen:</span> <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.last_visited_at ? user.last_visited_at : user.ts} /></h2>
               </>}
@@ -576,22 +576,22 @@ export default function ProfilePage({
       </div>
     ),
     [ProfileTab.ReviewsWritten]: [
-      reviewsWritten?.map(review => {
-        return (
-          <div
-            key={`review-${review._id}`}
-            style={{
-              margin: 20,
-            }}
-          >
-            <FormattedReview
-              level={review.levelId}
-              review={review}
-              user={user}
-            />
-          </div>
-        );
-      }),
+      <div className='flex flex-col items-center gap-4' key='reviews-written'>
+        {reviewsWritten?.map(review => {
+          return (
+            <div
+              className='max-w-3xl w-full'
+              key={`review-${review._id}`}
+            >
+              <FormattedReview
+                level={review.levelId}
+                review={review}
+                user={user}
+              />
+            </div>
+          );
+        })}
+      </div>,
       reviewsWrittenCount > 10 &&
         <div key='pagination_btns' className='flex justify-center flex-row'>
           {page > 1 && (
@@ -620,22 +620,22 @@ export default function ProfilePage({
       ,
     ],
     [ProfileTab.ReviewsReceived]: [
-      reviewsReceived?.map(review => {
-        return (
-          <div
-            key={`review-${review._id}`}
-            style={{
-              margin: 20,
-            }}
-          >
-            <FormattedReview
-              level={review.levelId}
-              review={review}
-              user={review.userId}
-            />
-          </div>
-        );
-      }),
+      <div className='flex flex-col items-center gap-4' key='reviews-received'>
+        {reviewsReceived?.map(review => {
+          return (
+            <div
+              className='max-w-3xl w-full'
+              key={`review-${review._id}`}
+            >
+              <FormattedReview
+                level={review.levelId}
+                review={review}
+                user={review.userId}
+              />
+            </div>
+          );
+        })}
+      </div>,
       reviewsReceivedCount > 10 &&
         <div key='pagination_btns' className='flex justify-center flex-row'>
           {page > 1 && (
@@ -687,7 +687,7 @@ export default function ProfilePage({
           description={`${user.name}'s profile`}
           canonical={canonical}
           openGraph={{
-            title: `${user.name} - ${game.displayName}}`,
+            title: `${user.name} - ${game.displayName}`,
             description: `${user.name}'s profile`,
             type: 'profile',
             url: getProfileSlug(user),

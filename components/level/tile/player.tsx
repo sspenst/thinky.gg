@@ -10,10 +10,11 @@ interface PlayerProps {
   atEnd?: boolean;
   game: Game;
   moveCount: number;
+  onTopOf?: TileType;
   theme: Theme;
 }
 
-export default function Player({ atEnd, game, moveCount, theme }: PlayerProps) {
+export default function Player({ atEnd, game, moveCount, onTopOf, theme }: PlayerProps) {
   const { borderWidth, hideText, innerTileSize, leastMoves, tileSize } = useContext(GridContext);
   const text = hideText ? '' : String(moveCount);
   const fontSizeRatio = text.length <= 3 ? 2 : (1 + (text.length - 1) / 2);
@@ -41,7 +42,7 @@ export default function Player({ atEnd, game, moveCount, theme }: PlayerProps) {
         boxShadow: classic ?
           `-${2 * borderWidth}px ${2 * borderWidth}px 0 0 var(--bg-color)` :
           `0 0 0 ${borderWidth}px var(--bg-color)`,
-        color: 'var(--level-player-text)',
+        color: onTopOf === TileType.Exit ? 'var(--level-end)' : 'var(--level-player-text)',
         fontSize: fontSize,
         height: innerTileSize,
         left: classic ? 2 * borderWidth : 0,

@@ -4,11 +4,13 @@ import PlayAttempt from '@root/models/db/playAttempt';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
+import utc from 'dayjs/plugin/utc';
 import React, { useEffect, useState } from 'react';
 import LevelCard from '../cards/levelCard';
 import LoadingSpinner from '../page/loadingSpinner';
 
 dayjs.extend(duration);
+dayjs.extend(utc);
 
 export default function PlayHistory() {
   const [cursor, setCursor] = useState<string | null>();
@@ -169,7 +171,7 @@ export default function PlayHistory() {
 
             prevEndTime = playAttempt.endTime;
 
-            const currentDate = dayjs.unix(playAttempt.startTime).local().format('MMMM Do, YYYY');
+            const currentDate = dayjs.unix(playAttempt.startTime).local().format('MMMM DD, YYYY');
             const showDate = currentDate !== prevDate;
 
             prevDate = currentDate;

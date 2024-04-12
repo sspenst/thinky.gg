@@ -1,5 +1,6 @@
 import Role from '@root/constants/role';
 import TestId from '@root/constants/testId';
+import { logger } from '@root/helpers/logger';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { getTokenCookieValue } from '@root/lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '@root/lib/withAuth';
@@ -7,6 +8,7 @@ import { UserModel } from '@root/models/mongoose';
 import handler from '@root/pages/api/level/[id]/prostats/completions';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { Logger } from 'winston';
 
 beforeAll(async () => {
   await dbConnect();
@@ -20,9 +22,10 @@ afterEach(() => {
 enableFetchMocks();
 
 describe('api/user/[id]/prostats/[type]', () => {
+  jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
   test('bad query', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           query: {
@@ -49,7 +52,7 @@ describe('api/user/[id]/prostats/[type]', () => {
   });
   test('valid non-pro query', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           query: {
@@ -79,7 +82,7 @@ describe('api/user/[id]/prostats/[type]', () => {
   });
   test('invalid non-pro query', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           query: {
@@ -115,7 +118,7 @@ describe('api/user/[id]/prostats/[type]', () => {
     });
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           query: {

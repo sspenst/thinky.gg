@@ -377,7 +377,7 @@ describe('Testing search endpoint for various inputs', () => {
   jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
   test('Calling with wrong http method should fail', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -402,7 +402,7 @@ describe('Testing search endpoint for various inputs', () => {
   testRuns.forEach((testRun) => {
     it(`should return a 200 status code for ${testRun.query}`, async () => {
       await testApiHandler({
-        handler: async (_, res) => {
+        pagesHandler: async (_, res) => {
           const req: NextApiRequestWithAuth = {
             method: 'GET',
             cookies: {
@@ -429,7 +429,7 @@ describe('Testing search endpoint for various inputs', () => {
   });
   it('should handle a non Pro user filtering by a Pro query', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
@@ -456,7 +456,7 @@ describe('Testing search endpoint for various inputs', () => {
   });
   it('should handle a Pro user filtering by a Pro query', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
@@ -488,7 +488,7 @@ describe('Testing search endpoint for various inputs', () => {
     });
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {

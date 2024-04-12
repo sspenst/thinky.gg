@@ -1,4 +1,4 @@
-import { GameType, ValidateLevelResponse } from '@root/constants/Games';
+import { ValidateLevelResponse } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
 import { useRouter } from 'next/router';
@@ -176,6 +176,22 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
         clear = true;
       }
 
+      // handle all cases related to the player
+      if (prevTileType === TileType.Player || prevTileType === TileType.PlayerOnExit) {
+        // disallow all changes except for exit when it is allowed
+        if (tileType !== TileType.Exit || !game.allowMovableOnExit) {
+          return prevLevel;
+        }
+
+        const newTileType = clear ? TileType.Player : TileTypeHelper.getExitSibilingTileType(prevTileType);
+
+        level.data = level.data.substring(0, index) + newTileType + level.data.substring(index + 1);
+
+        historyPush(level);
+
+        return level;
+      }
+
       function getNewTileType() {
         if (game.allowMovableOnExit) {
           // place movable on exit or replace movable on exit
@@ -199,11 +215,17 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       const newTileType = clear ? TileType.Default : getNewTileType();
 
       // when changing start position the old position needs to be removed
-      if (newTileType === TileType.Player) {
-        const startIndex = level.data.indexOf(TileType.Player);
+      if (newTileType === TileType.Player || newTileType === TileType.PlayerOnExit) {
+        const playerIndex = level.data.indexOf(TileType.Player);
 
-        if (startIndex !== -1) {
-          level.data = level.data.substring(0, startIndex) + TileType.Default + level.data.substring(startIndex + 1);
+        if (playerIndex !== -1) {
+          level.data = level.data.substring(0, playerIndex) + TileType.Default + level.data.substring(playerIndex + 1);
+        }
+
+        const playerOnExitIndex = level.data.indexOf(TileType.PlayerOnExit);
+
+        if (playerOnExitIndex !== -1) {
+          level.data = level.data.substring(0, playerOnExitIndex) + TileType.Exit + level.data.substring(playerOnExitIndex + 1);
         }
       }
 
@@ -290,7 +312,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       <div className='flex flex-col h-24 py-1' style={{
         height: editorSelectionLevel.height * 48,
       }}>
-
         <BasicLayout
           cellClassName={(index) => {
             if (editorSelectionLevel.data[index] !== tileType) {
@@ -299,7 +320,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
               return 'editor-selected';
             }
           }}
-          hideText={game.type === GameType.COMPLETE_AND_SHORTEST}
           id='editor-selection'
           level={editorSelectionLevel}
           onClick={(index) => setTileType(editorSelectionLevel.data[index] as TileType)}
@@ -345,7 +365,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
             ),
           ]),
         ]}
-        hideText={game.type === GameType.COMPLETE_AND_SHORTEST}
         id={level._id?.toString() ?? 'new'}
         level={level}
         onClick={onClick}

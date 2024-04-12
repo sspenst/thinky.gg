@@ -13,6 +13,7 @@ import StyledTooltip from '../page/styledTooltip';
 import Directory from './directory';
 import Dropdown from './dropdown';
 import HeaderControls from './headerControls';
+import HeaderPlayer from './headerPlayer';
 
 interface HeaderProps {
   folders?: LinkInfo[];
@@ -86,9 +87,11 @@ export default function Header({
             </button>
         }
         <div>
-          <Link className='font-bold text-3xl' href='/'>
-            <Image alt='logo' src={game.logo} width='24' height='24' className='h-6 w-6' style={{ minWidth: 24, minHeight: 24 }} />
-          </Link>
+          <HeaderPlayer size={24}>
+            <Link className='font-bold text-3xl' href='/'>
+              <Image alt='logo' src={game.logo} width='24' height='24' className='h-6 w-6' style={{ minWidth: 24, minHeight: 24 }} />
+            </Link>
+          </HeaderPlayer>
         </div>
         <div className='-ml-2'>
           <Directory folders={folders} subtitle={subtitle} title={title} />

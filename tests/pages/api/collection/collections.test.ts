@@ -17,7 +17,7 @@ enableFetchMocks();
 describe('pages/api/collections.ts', () => {
   test('GET collections', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           userId: TestId.USER,
@@ -40,7 +40,7 @@ describe('pages/api/collections.ts', () => {
   });
   test('GET collections with level id', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           userId: TestId.USER,

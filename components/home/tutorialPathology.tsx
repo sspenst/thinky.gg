@@ -9,7 +9,6 @@ import { GameState } from '@root/helpers/gameStateHelpers';
 import classNames from 'classnames';
 import { Types } from 'mongoose';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { AppContext } from '../../contexts/appContext';
 import { TimerUtil } from '../../helpers/getTs';
@@ -64,11 +63,10 @@ export default function TutorialPathology() {
     } as Level;
   }
 
-  const router = useRouter();
   const globalTimeout = useRef<NodeJS.Timeout | null>(null);
   const [isNextButtonDisabled, setIsNextButtonDisabled] = useState(false);
   const [isPrevButtonDisabled, setIsPrevButtonDisabled] = useState(false);
-  const { mutateUser, user } = useContext(AppContext);
+  const { mutateUser, user, deviceInfo } = useContext(AppContext);
   const [popperInstance, setPopperInstance] = useState<Instance | null>(null);
   const popperUpdateInterval = useRef<NodeJS.Timeout | null>(null);
   const [showNiceJob, setShowNiceJob] = useState(false);
@@ -223,8 +221,8 @@ export default function TutorialPathology() {
   const nextControl = useCallback((disabled = false) => new Control(
     'control-next',
     () => setTutorialStepIndex(i => i + 1),
-    <div className='flex justify-center'>
-      <span className='pl-2 self-center text-black'>
+    <div className='flex justify-center text-black'>
+      <span className='pl-2 self-center'>
         Next
       </span>
       <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='currentColor' className='bi bi-arrow-right-short' viewBox='0 0 16 16'>
@@ -400,7 +398,7 @@ export default function TutorialPathology() {
                 />
               </svg>
             ) : (
-              <div>Swipe or tap on a neighboring square</div>
+              <div>Swipe up, down, left, or right to move your player</div>
             )}
         </div>
         },
@@ -518,29 +516,32 @@ export default function TutorialPathology() {
       {
         header: <div>
           <div className='text-3xl mb-6 fadeIn'>Congratulations on completing the tutorial!</div>
-          <div className='text-xl fadeIn' style={{
-            animationDelay: '1s',
-          }}>There is a lot more to Pathology than just this:<br />An active community, level editor, and thousands of levels to explore.</div>
           {isLoggedIn ?
             <div className='text-xl fadeIn' style={{
               pointerEvents: 'all',
-              animationDelay: '2s',
+
             }}>
-              Continue your Pathology journey with the <span className='font-bold'>Campaign</span>!
+              Continue your Pathology journey with the <Link href='/play' className='font-bold text-blue-500 hover:text-blue-400'>Campaign</Link>!
             </div>
             :
-            <div className='flex flex-col gap-3'>
+            <div className='flex flex-col gap-3 mt-10'>
               <div className='text-xl fadeIn' style={{
                 pointerEvents: 'all',
-                animationDelay: '2s'
+                animationDelay: '0.5s'
               }}>
-                Now <Link href='/signup' className='font-bold text-blue-500 hover:text-blue-400'>sign up</Link> for free to explore the world of Pathology (and other puzzle games!))
+                Ready to Play?
               </div>
               <div className='fadeIn' style={{
                 pointerEvents: 'all',
-                animationDelay: '2.5s'
+                animationDelay: '1s'
               }}>
-                (or <Link href='/play-as-guest' className='font-bold text-blue-500 hover:text-blue-400'>continue as a guest</Link>)
+                <Link href='/signup' className='text-4xl font-bold text-green-500 hover:text-blue-400'>Start Level 1</Link>
+              </div>
+              <div className='fadeIn' style={{
+                pointerEvents: 'all',
+                animationDelay: '1.3s'
+              }}>
+                <Link href='/play-as-guest' className='text-lg font-bold text-blue-500 hover:text-blue-400'>(or start without signing up)</Link>
               </div>
             </div>
           }
@@ -671,34 +672,10 @@ export default function TutorialPathology() {
       <button onClick={() => setTutorialStepIndex(0)}>Restart Tutorial</button>,
       false,
     ));
-
-    controls.push(isLoggedIn ?
-      new Control(
-        'control-campaign',
-        () => {
-          router.push('/play');
-        },
-        <>Campaign</>,
-        false,
-        true,
-      )
-      :
-      new Control(
-        'control-sign-up',
-        () => {
-          router.push('/signup');
-
-          return;
-        },
-        <>Sign up</>,
-        false,
-        true,
-      )
-    );
   }
 
   return (
-    <Page isFullScreen={!!tutorialStep.editorGrid || !!tutorialStep.gameGrid} title={'Tutorial'}>
+    <Page hideFooter={deviceInfo.isMobile} isFullScreen={!!tutorialStep.editorGrid || !!tutorialStep.gameGrid} title={'Tutorial'}>
       <div className='flex flex-col h-full' id='tutorial-container'>
         <div className='w-full bg-gray-200 h-1 mb-1'>
           <div className='bg-blue-600 h-1' style={{

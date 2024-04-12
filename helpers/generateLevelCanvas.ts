@@ -50,6 +50,7 @@ export default function generateLevelCanvas(canvas: Bitmap | HTMLCanvasElement, 
         context.fillStyle = game.type === GameType.COMPLETE_AND_SHORTEST ? 'rgb(14, 168, 117)' : 'rgb(255, 255, 255)';
         break;
       case TileType.Player:
+      case TileType.PlayerOnExit:
         context.fillStyle = 'rgb(244, 114, 182)';
         break;
       case TileType.Hole:

@@ -23,7 +23,7 @@ describe('Testing logout api', () => {
     const credsJSON = { name: 'test', password: 'test' };
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req = {
           method: 'POST',
           headers: {

@@ -44,7 +44,7 @@ describe('Editing levels should work correctly', () => {
   });
   test('Creating 3 levels where 1 is draft should only show 2 in collection', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -73,7 +73,7 @@ describe('Editing levels should work correctly', () => {
       },
     });
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -103,7 +103,7 @@ describe('Editing levels should work correctly', () => {
     });
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -131,7 +131,7 @@ describe('Editing levels should work correctly', () => {
       },
     });
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -161,7 +161,7 @@ describe('Editing levels should work correctly', () => {
     });
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -189,7 +189,7 @@ describe('Editing levels should work correctly', () => {
       },
     });
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -220,7 +220,7 @@ describe('Editing levels should work correctly', () => {
   });
   test('now we should be able to get the draft level', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
@@ -246,7 +246,7 @@ describe('Editing levels should work correctly', () => {
   });
   test('querying the collection should NOT show the levels in the level_ids array, since we have not published them yet', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
@@ -277,7 +277,7 @@ describe('Editing levels should work correctly', () => {
   });
   test('Attempt to publish a level before a move count has been set', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -305,8 +305,9 @@ describe('Editing levels should work correctly', () => {
   });
 
   test('Testing edit level but using malformed data', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -335,7 +336,7 @@ describe('Editing levels should work correctly', () => {
   });
   test('Testing edit level but level does not exist', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -364,7 +365,7 @@ describe('Editing levels should work correctly', () => {
   });
   test('Testing edit level but this user does not own the level', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -393,7 +394,7 @@ describe('Editing levels should work correctly', () => {
   });
   test('Step 1/3 steps to publish, first we have to submit a PUT request to change the level data, then publish.', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -426,7 +427,7 @@ describe('Editing levels should work correctly', () => {
   });
   test('Now submit the moves count', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -462,7 +463,7 @@ describe('Editing levels should work correctly', () => {
   });
   test('Step 2A/3 to publish. First make sure we can\'t publish a duplicate level (this level data is same as one from init db)', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -496,7 +497,7 @@ describe('Editing levels should work correctly', () => {
     for (const levelTest of invalidLevels) {
       await LevelModel.findByIdAndUpdate(level_id_1, levelTest[0] as UpdateQuery<Level>);
       await testApiHandler({
-        handler: async (_, res) => {
+        pagesHandler: async (_, res) => {
           const req: NextApiRequestWithAuth = {
             method: 'POST',
             cookies: {
@@ -525,7 +526,7 @@ describe('Editing levels should work correctly', () => {
   });
   test('Test 2B/3 to publish. Tweak level data slightly', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -559,7 +560,7 @@ describe('Editing levels should work correctly', () => {
   });
   test('Step 2C/3 of publishing level. Republish solution', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -595,7 +596,7 @@ describe('Editing levels should work correctly', () => {
   });
   test('Step 2D of publish. Make sure we can\'t publish a level with an existing name', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -627,7 +628,7 @@ describe('Editing levels should work correctly', () => {
     await LevelModel.updateOne({ _id: level_id_1 }, { name: 'A Test Level' });
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -658,7 +659,7 @@ describe('Editing levels should work correctly', () => {
   });
   test('Step 3/3 of publishing level. Now we should publish level successfully', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -709,7 +710,7 @@ describe('Editing levels should work correctly', () => {
   });
   test('Publish level that doesnt exist', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -737,7 +738,7 @@ describe('Editing levels should work correctly', () => {
   });
   test('Editing a published level should fail', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -767,7 +768,7 @@ describe('Editing levels should work correctly', () => {
 
   test('Querying the collection SHOULD show the recently published level in the level_ids array', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
@@ -797,7 +798,7 @@ describe('Editing levels should work correctly', () => {
   });
   test('Unpublishing the level', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {

@@ -22,7 +22,7 @@ import sendPasswordResetEmail from '../../../lib/sendPasswordResetEmail';
 import User from '../../../models/db/user';
 import { UserConfigModel, UserModel } from '../../../models/mongoose';
 
-async function createUser({ gameId, email, name, password, tutorialCompletedAt, roles }: {gameId: GameId, email: string, name: string, password: string, tutorialCompletedAt: number, roles: Role[]}, queryOptions: QueryOptions): Promise<[User, UserConfig]> {
+async function createUser({ gameId, email, name, password, tutorialCompletedAt, utm_source, roles }: {gameId: GameId, email: string, name: string, password: string, tutorialCompletedAt: number, utm_source: string, roles: Role[]}, queryOptions: QueryOptions): Promise<[User, UserConfig]> {
   const id = new Types.ObjectId();
   const disallowedEmailNotifications = [
     NotificationType.NEW_FOLLOWER,
@@ -46,6 +46,7 @@ async function createUser({ gameId, email, name, password, tutorialCompletedAt, 
       roles: roles,
       score: 0,
       ts: TimerUtil.getTs(),
+      utm_source: utm_source,
     }], queryOptions),
     UserConfigModel.create([{
       gameId: gameId,
@@ -73,7 +74,7 @@ export default apiWrapper({ POST: {
 } }, async (req: NextApiRequestWrapper, res: NextApiResponse) => {
   await dbConnect();
 
-  const { email, name, password, tutorialCompletedAt, recaptchaToken, guest } = req.body;
+  const { email, name, password, tutorialCompletedAt, recaptchaToken, guest, utm_source } = req.body;
 
   const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET || '';
 
@@ -91,16 +92,18 @@ export default apiWrapper({ POST: {
     const recaptchaData = await recaptchaResponse.json();
 
     if (!recaptchaResponse.ok || !recaptchaData?.success) {
-      logger.error('Error validating recaptcha', recaptchaData);
+      const errorMessage = `Error validating recaptcha [Status: ${recaptchaResponse.status}], [Data: ${JSON.stringify(recaptchaData)}]`;
 
-      return res.status(400).json({ error: 'Error validating recaptcha [Status: ' + recaptchaResponse.status + ']' });
+      logger.error(errorMessage);
+
+      return res.status(400).json({ error: errorMessage });
     }
   }
 
   let trimmedEmail: string, trimmedName: string, passwordValue: string;
 
   if (guest) {
-    trimmedName = 'Guest-' + Math.floor(Math.random() * 1000000);
+    trimmedName = 'Guest-' + Math.floor(Math.random() * 100000000);
     trimmedEmail = trimmedName + '@guest.com';
     passwordValue = generatePassword();
   } else {
@@ -117,7 +120,11 @@ export default apiWrapper({ POST: {
       const err = await sendPasswordResetEmail(req, userWithEmail);
       const game = Games[req.gameId];
 
-      return res.status(400).json({ error: !err ? 'We tried emailing you a reset password link. If you still have problems please contact ' + game.displayName + ' devs via Discord.' : 'Error trying to register. Please contact ' + game.displayName + ' devs via Discord' });
+      if (err) {
+        return res.status(err.status).json({ error: err.message });
+      } else {
+        return res.status(200).json({ error: 'We tried emailing you a reset password link. If you still have problems please contact ' + game.displayName + ' devs via Discord.' });
+      }
     } else {
       return res.status(401).json({
         error: 'Email already exists',
@@ -143,6 +150,7 @@ export default apiWrapper({ POST: {
         password: passwordValue,
         tutorialCompletedAt: tutorialCompletedAt,
         roles: guest ? [Role.GUEST] : [],
+        utm_source: utm_source,
       }, { session: session });
 
       if (!user) {

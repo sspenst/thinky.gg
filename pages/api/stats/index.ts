@@ -2,10 +2,13 @@ import { AchievementCategory } from '@root/constants/achievements/achievementInf
 import Direction from '@root/constants/direction';
 import { GameId } from '@root/constants/GameId';
 import { Games } from '@root/constants/Games';
+import { getCheckpointKey } from '@root/helpers/checkpointHelpers';
 import getDifficultyEstimate, { getDifficultyCompletionEstimate } from '@root/helpers/getDifficultyEstimate';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
+import isPro from '@root/helpers/isPro';
 import { matchMarkCompleteLevel } from '@root/helpers/match/matchMarkCompleteLevel';
 import { randomRotateLevelDataViaMatchHash } from '@root/helpers/randomRotateLevelDataViaMatchHash';
+import { BEST_CHECKPOINT_INDEX } from '@root/hooks/useCheckpoints';
 import PlayAttempt from '@root/models/db/playAttempt';
 import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
@@ -22,7 +25,7 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level, { EnrichedLevel } from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
-import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserConfigModel } from '../../../models/mongoose';
+import { KeyValueModel, LevelModel, PlayAttemptModel, RecordModel, StatModel, UserConfigModel } from '../../../models/mongoose';
 import { queueRefreshAchievements, queueRefreshIndexCalcs } from '../internal-jobs/worker';
 
 export async function putStat(user: User, directions: Direction[], levelId: string, matchId?: string) {
@@ -68,6 +71,18 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
           await LevelModel.updateOne({ _id: level._id }, {
             $set: { leastMoves: moves },
           }, { session: session });
+
+          // set a personal best checkpoint
+          if (isPro(user)) {
+            await KeyValueModel.findOneAndUpdate(
+              { key: getCheckpointKey(levelId, userId.toString()) },
+              {
+                $set: { [`value.${BEST_CHECKPOINT_INDEX}`]: directions },
+                gameId: level.gameId,
+              },
+              { upsert: true, new: true, session: session },
+            );
+          }
         }
 
         return;
@@ -92,6 +107,18 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
         await StatModel.updateOne({ _id: stat._id }, { $inc: { attempts: 1 } }, { session: session });
 
         return;
+      }
+
+      // a personal best was set, update the best checkpoint
+      if (isPro(user)) {
+        await KeyValueModel.findOneAndUpdate(
+          { key: getCheckpointKey(levelId, userId.toString()) },
+          {
+            $set: { [`value.${BEST_CHECKPOINT_INDEX}`]: directions },
+            gameId: level.gameId,
+          },
+          { upsert: true, new: true, session: session },
+        );
       }
 
       // track the first completion

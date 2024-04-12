@@ -15,17 +15,17 @@ export default apiWrapper({
   GET: {
     query: {
       id: ValidObjectId(true),
-      populateLevelCursor: ValidObjectId(false),
+      populateAroundId: ValidObjectId(false),
       populateLevelDirection: ValidEnum(['before', 'after', 'around'], false),
     }
   } }, async (req: NextApiRequest, res: NextApiResponse) => {
-  const { id, populateLevelCursor, populateLevelDirection } = req.query;
+  const { id, populateAroundId, populateLevelDirection } = req.query;
   const token = req.cookies?.token;
   const gameId = getGameIdFromReq(req);
   const reqUser = token ? await getUserFromToken(token, req) : null;
   const collection = await getCollection({
     matchQuery: { _id: new Types.ObjectId(id as string), gameId: gameId },
-    ...(populateLevelCursor ? { populateLevelCursor: new Types.ObjectId(populateLevelCursor as string) } : {}),
+    ...(populateAroundId ? { populateAroundId: new Types.ObjectId(populateAroundId as string) } : {}),
     ...(populateLevelDirection ? { populateLevelDirection: populateLevelDirection as 'before' | 'after' | 'around' } : {}),
     reqUser,
   });
@@ -43,8 +43,8 @@ interface GetCollectionProps {
   includeDraft?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   matchQuery: FilterQuery<any>;
+  populateAroundId?: Types.ObjectId; // target level
   populateAroundSlug?: string; // target level
-  populateLevelCursor?: Types.ObjectId | string; // target level
   populateLevelData?: boolean;
   populateLevelDirection?: 'before' | 'after' | 'around';
   reqUser: User | null;
@@ -72,8 +72,8 @@ export async function getCollections({
   includeDraft,
   matchQuery,
   reqUser,
+  populateAroundId,
   populateAroundSlug,
-  populateLevelCursor,
   populateLevelData = true,
   populateLevelDirection,
 }: GetCollectionProps): Promise<Collection[]> {
@@ -211,13 +211,13 @@ export async function getCollections({
         }
       }
     },
-    ...(populateLevelCursor || populateAroundSlug ? [
+    ...(populateAroundId || populateAroundSlug ? [
       {
         $addFields: {
           targetLevelIndex: {
             $cond: {
-              if: populateLevelCursor,
-              then: { $indexOfArray: ['$levels._id', populateLevelCursor] },
+              if: populateAroundId,
+              then: { $indexOfArray: ['$levels._id', populateAroundId] },
               else: { $indexOfArray: ['$levels.slug', populateAroundSlug] },
             }
           },
@@ -226,34 +226,42 @@ export async function getCollections({
       {
         $addFields: {
           levels: {
+            // if the target level is not found, return empty array
+            // this can happen if an invalid cid is passed in the URL, or if the target level is removed from the collection
             $cond: {
-              if: { $eq: [populateLevelDirection, 'before'] },
-              // populate the target level + at most 5 levels before
-              then: {
-                $slice: [
-                  '$levels',
-                  { $max: [0, { $subtract: ['$targetLevelIndex', populateLevelCount] }] },
-                  { $min: [populateLevelCount + 1, { $add: ['$targetLevelIndex', 1] }] }
-                ]
-              },
+              if: { $lt: ['$targetLevelIndex', 0] },
+              then: [],
               else: {
                 $cond: {
-                  if: { $eq: [populateLevelDirection, 'after'] },
-                  // populate the target level + at most 5 levels after
+                  if: { $eq: [populateLevelDirection, 'before'] },
+                  // populate the target level + at most 5 levels before
                   then: {
                     $slice: [
                       '$levels',
-                      '$targetLevelIndex',
-                      { $min: [populateLevelCount + 1, { $subtract: [{ $size: '$levels' }, '$targetLevelIndex'] }] }
+                      { $max: [0, { $subtract: ['$targetLevelIndex', populateLevelCount] }] },
+                      { $min: [populateLevelCount + 1, { $add: ['$targetLevelIndex', 1] }] }
                     ]
                   },
-                  else: { // 'around'
-                    // populate the target level + at most 5 levels before and 5 levels after
-                    $slice: [
-                      '$levels',
-                      { $max: [0, { $subtract: ['$targetLevelIndex', populateLevelCount] }] },
-                      { $min: [populateLevelCount * 2 + 1, { $size: '$levels' }] },
-                    ]
+                  else: {
+                    $cond: {
+                      if: { $eq: [populateLevelDirection, 'after'] },
+                      // populate the target level + at most 5 levels after
+                      then: {
+                        $slice: [
+                          '$levels',
+                          '$targetLevelIndex',
+                          { $min: [populateLevelCount + 1, { $subtract: [{ $size: '$levels' }, '$targetLevelIndex'] }] }
+                        ]
+                      },
+                      else: { // 'around'
+                        // populate the target level + at most 5 levels before and 5 levels after
+                        $slice: [
+                          '$levels',
+                          { $max: [0, { $subtract: ['$targetLevelIndex', populateLevelCount] }] },
+                          { $min: [populateLevelCount * 2 + 1, { $size: '$levels' }] },
+                        ]
+                      }
+                    }
                   }
                 }
               }

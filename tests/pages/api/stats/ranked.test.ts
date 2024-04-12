@@ -32,7 +32,7 @@ let rankedLevelId: string;
 describe('Publishing a new level, setting it to ranked, verifying ranked data is handled correctly', () => {
   test('Creating a level with USER', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -62,7 +62,7 @@ describe('Publishing a new level, setting it to ranked, verifying ranked data is
 
   test('PUT a stat for this level', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -96,7 +96,7 @@ describe('Publishing a new level, setting it to ranked, verifying ranked data is
 
   test('Publish the level', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -142,7 +142,7 @@ describe('Publishing a new level, setting it to ranked, verifying ranked data is
 
   test('Admin switches the level to ranked', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -178,7 +178,7 @@ describe('Publishing a new level, setting it to ranked, verifying ranked data is
 
   test('unpublishing a ranked level should fail', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -207,7 +207,7 @@ describe('Publishing a new level, setting it to ranked, verifying ranked data is
   // TODO: another user should beat the level and then we should see the stats update
   test('PUT another stat for this level', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -242,7 +242,7 @@ describe('Publishing a new level, setting it to ranked, verifying ranked data is
 
   test('Admin switches the level back to unranked', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -278,7 +278,7 @@ describe('Publishing a new level, setting it to ranked, verifying ranked data is
 
   test('unpublishing should now succeed', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {

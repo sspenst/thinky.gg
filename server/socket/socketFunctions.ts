@@ -123,9 +123,8 @@ export async function broadcastCountOfUsersInRoom(gameId: GameId, emitter: Serve
 
 export async function broadcastNotifications(gameId: GameId, emitter: Emitter, userId: Types.ObjectId) {
   if (emitter) {
-    // get notifications
     const notificationAgg = await NotificationModel.aggregate<Notification>([
-      { $match: { userId: userId._id, /*gameId: gameId*/ } }, // Not adding gameId on purpose so we can get all notifications for all games
+      { $match: { userId: userId._id } }, // not adding gameId on purpose so we can get all notifications for all games
       { $sort: { createdAt: -1 } },
       { $limit: 5 },
       ...getEnrichNotificationPipelineStages(userId)
@@ -140,6 +139,7 @@ export async function broadcastNotifications(gameId: GameId, emitter: Emitter, u
         cleanUser(notification.target as User);
       }
     });
+
     emitter.to(userId.toString()).emit('notifications', notificationAgg);
   }
 }

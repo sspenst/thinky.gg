@@ -4,18 +4,16 @@ import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import { useContext } from 'react';
 
 const LinksThatCarryOver = [
-  '^/profile',
-  '^/leaderboard',
-  '^/users',
-  '^/settings',
-  '^/drafts',
-  '^/search',
-  '^/notifications',
   '^/collection/.+/play-later',
+  '^/drafts',
+  '^/leaderboards',
+  '^/notifications',
   '^/play-history',
-  '^/play',
-  '^/multiplayer',
-  '^/tutorial'
+  '^/profile',
+  '^/search',
+  '^/settings',
+  '^/tutorial',
+  '^/users',
 ];
 
 export default function useUrl() {

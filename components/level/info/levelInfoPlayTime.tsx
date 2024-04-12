@@ -7,11 +7,14 @@ import { AppContext } from '@root/contexts/appContext';
 import isPro from '@root/helpers/isPro';
 import classNames from 'classnames';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import Link from 'next/link';
 import React, { Fragment, useContext } from 'react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import ProStatsLevelType from '../../../constants/proStatsLevelType';
 import { CountAndSum, DateAndSum, LevelContext } from '../../../contexts/levelContext';
+
+dayjs.extend(utc);
 
 function getTimePlayedStr(sum: number, short = false) {
   const duration = dayjs.duration(sum, 'seconds');
