@@ -1,4 +1,5 @@
 import { logger } from '@root/helpers/logger';
+import { EnrichedCollection } from '@root/models/db/collection';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
@@ -20,7 +21,7 @@ enableFetchMocks();
 describe('pages/api/collection/[id].ts', () => {
   test('GET other user\'s private collection should 404', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           userId: TestId.USER,
@@ -43,7 +44,7 @@ describe('pages/api/collection/[id].ts', () => {
   });
   test('GET your collection should 200', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           userId: TestId.USER_B,
@@ -64,10 +65,97 @@ describe('pages/api/collection/[id].ts', () => {
       },
     });
   });
+  test('GET collection populate before', async () => {
+    await testApiHandler({
+      pagesHandler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'GET',
+          userId: TestId.USER_B,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_B),
+          },
+          query: {
+            id: TestId.COLLECTION_B,
+            populateAroundId: TestId.LEVEL,
+            populateLevelDirection: 'before',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await getCollectionHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+
+        expect(res.status).toBe(200);
+        const response = await res.json() as EnrichedCollection;
+
+        expect(response.levels.length).toBe(1);
+        expect(response.levels[0]._id).toBe(TestId.LEVEL);
+      },
+    });
+  });
+  test('GET collection populate after', async () => {
+    await testApiHandler({
+      pagesHandler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'GET',
+          userId: TestId.USER_B,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_B),
+          },
+          query: {
+            id: TestId.COLLECTION_B,
+            populateAroundId: TestId.LEVEL,
+            populateLevelDirection: 'after',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await getCollectionHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+
+        expect(res.status).toBe(200);
+        const response = await res.json() as EnrichedCollection;
+
+        expect(response.levels.length).toBe(2);
+        expect(response.levels[0]._id).toBe(TestId.LEVEL);
+        expect(response.levels[1]._id).toBe(TestId.LEVEL_3);
+      },
+    });
+  });
+  test('GET collection populate not found', async () => {
+    await testApiHandler({
+      pagesHandler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'GET',
+          userId: TestId.USER_B,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_B),
+          },
+          query: {
+            id: TestId.COLLECTION_B,
+            populateAroundId: TestId.LEVEL_4,
+            populateLevelDirection: 'around',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await getCollectionHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+
+        expect(res.status).toBe(200);
+        const response = await res.json() as EnrichedCollection;
+
+        expect(response.levels.length).toBe(0);
+      },
+    });
+  });
   test('PUT other user\'s collection should 401', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER,
@@ -93,7 +181,7 @@ describe('pages/api/collection/[id].ts', () => {
   });
   test('PUT your collection should 200', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER_B,
@@ -127,7 +215,7 @@ describe('pages/api/collection/[id].ts', () => {
   });
   test('DELETE other user\'s collection should 401', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           userId: TestId.USER,

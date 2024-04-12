@@ -61,7 +61,7 @@ const defaultObj = {
 describe('api/follow', () => {
   test('follow myself', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...defaultObj,
           query: {
@@ -84,7 +84,7 @@ describe('api/follow', () => {
   });
   test('follow', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...defaultObj,
           query: {
@@ -114,7 +114,7 @@ describe('api/follow', () => {
   });
   test('follow twice', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...defaultObj,
           query: {
@@ -145,7 +145,7 @@ describe('api/follow', () => {
   });
   test('follow another person', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...defaultObj,
           query: {
@@ -177,7 +177,7 @@ describe('api/follow', () => {
   });
   test('GET', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...defaultObj,
           method: 'GET',
@@ -201,7 +201,7 @@ describe('api/follow', () => {
   });
   test('unfollow', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...defaultObj,
           method: 'DELETE',
@@ -233,7 +233,7 @@ describe('api/follow', () => {
   });
   test('unfollow twice', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...defaultObj,
           method: 'DELETE',
@@ -278,7 +278,7 @@ describe('api/follow', () => {
     ]);
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -313,7 +313,7 @@ describe('api/follow', () => {
   });
   test('Follow with multiple users (to test user deletion)', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...defaultObj,
           query: {
@@ -341,7 +341,7 @@ describe('api/follow', () => {
       },
     });
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...defaultObj,
           query: {
@@ -369,7 +369,7 @@ describe('api/follow', () => {
       },
     });
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...defaultObj,
           cookies: {
@@ -402,7 +402,7 @@ describe('api/follow', () => {
   });
   test('GET before delete', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...defaultObj,
           method: 'GET',
@@ -426,7 +426,7 @@ describe('api/follow', () => {
   });
   test('Now delete a user this user has followed', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           cookies: {
@@ -447,7 +447,7 @@ describe('api/follow', () => {
   });
   test('GET after delete', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...defaultObj,
           method: 'GET',
@@ -471,7 +471,7 @@ describe('api/follow', () => {
   });
   test('GET after delete another user to make sure we only deleted what we needed to', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...defaultObj,
           method: 'GET',

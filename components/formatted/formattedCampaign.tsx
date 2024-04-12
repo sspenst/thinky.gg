@@ -119,7 +119,7 @@ export default function FormattedCampaign({
                 {stats.getText()}
               </div>
               <div className='flex flex-wrap justify-center items-start gap-4'>
-                {levels.length > 0 ? levels : <span className='italic'>You have solved all levels for this section!</span>}
+                {levels.length > 0 ? levels : <span className='italic'>You have solved all levels in this section!</span>}
               </div>
             </>
           }

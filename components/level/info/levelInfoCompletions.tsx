@@ -30,8 +30,15 @@ export default function LevelInfoCompletions() {
     setDisabled(true);
 
     toast.dismiss();
-    toast.loading('Loading completions...');
 
+    if (!isPro(user)) {
+      toast.dismiss();
+      toast.error('You must be a Pro to see all completions for this level.');
+
+      return;
+    }
+
+    toast.loading('Loading completions...');
     fetch(`/api/level/${levelContext?.level._id}/prostats/completions?skip=${skip}&steps=${steps}`, {
       method: 'GET',
       headers: {

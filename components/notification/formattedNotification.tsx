@@ -20,7 +20,7 @@ import FormattedLevelLink from '../formatted/formattedLevelLink';
 import FormattedUser from '../formatted/formattedUser';
 import GameLogo from '../gameLogo';
 import { Stars } from '../level/reviews/formattedReview';
-import { dropConfetti } from '../page/Confetti';
+import { dropConfetti } from '../page/confetti';
 
 interface NotificationMessageProps {
   notification: Notification;
@@ -209,8 +209,8 @@ export default function FormattedNotification({ close, notification, onMarkAsRea
     >
 
       <div className='flex flex-col gap-1 truncate'>
-        <div className='flex flex-row items-center gap-1'>
-          <GameLogo gameId={notification.gameId} id={notification._id.toString()} tooltip />
+        <div className='flex flex-row items-center gap-2'>
+          <GameLogo gameId={notification.gameId} id={notification._id.toString()} size={24} tooltip />
           {notification.sourceModel === 'User' ?
             <FormattedUser
               id={`notification-${notification._id.toString()}`}

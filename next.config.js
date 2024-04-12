@@ -24,6 +24,15 @@ module.exports = {
       },
     ];
   },
+  // TODO: can remove this a few months after updating the app
+  async rewrites() {
+    return [
+      {
+        source: '/api/notification-push-token',
+        destination: '/api/device',
+      },
+    ];
+  },
   publicRuntimeConfig: {
     NEXT_PUBLIC_APP_DOMAIN: process.env.NEXT_PUBLIC_APP_DOMAIN,
     NEXT_PUBLIC_GROWTHBOOK_API_HOST:

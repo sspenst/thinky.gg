@@ -63,7 +63,7 @@ describe('pages/api/collection/index.ts', () => {
     });
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           cookies: {
@@ -124,7 +124,7 @@ describe('pages/api/collection/index.ts', () => {
 
     expect(code).toBe(200);
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           cookies: {
@@ -149,7 +149,7 @@ describe('pages/api/collection/index.ts', () => {
   });
   test('Even though we have a valid token, user should not be found if they have been deleted', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {

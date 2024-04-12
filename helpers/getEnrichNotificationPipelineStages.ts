@@ -170,8 +170,8 @@ export function getEnrichNotificationPipelineStages(reqUser?: Types.ObjectId) {
         },
         targetCollection: {
           _id: 1,
-          slug: 1,
           name: 1,
+          slug: 1,
         },
       }
     },

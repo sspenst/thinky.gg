@@ -32,6 +32,9 @@ export default function Footer() {
           <ExternalLink href='https://discord.gg/j6RxRdqq4A'>
             Discord
           </ExternalLink>
+          <ExternalLink href='https://www.facebook.com/profile.php?id=61556141295912'>
+            Facebook
+          </ExternalLink>
           <ExternalLink href='https://twitter.com/thinkygg'>
             Twitter
           </ExternalLink>

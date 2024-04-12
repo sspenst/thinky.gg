@@ -221,11 +221,11 @@ body {
   --color-gray: rgb(180, 180, 180);
   --color-incomplete: rgb(230, 200, 20);
   --level-block: rgb(0, 0, 0);
-  --level-block-border: rgba(155,91,70,255);
+  --level-block-border: rgb(155, 91, 70);
   --level-end: rgb(229, 229, 229);
-  --level-grid: rgba(21,103,117,255);
+  --level-grid: rgb(21, 103, 117);
   --level-grid-text: rgb(0, 0, 0);
-  --level-grid-used: rgba(76,147,164,255);
+  --level-grid-used: rgb(76, 147, 164);
   --level-hole: rgb(65, 65, 65);
   --level-hole-border: rgb(106, 106, 106);
   --level-player: rgb(244, 114, 182);
@@ -245,7 +245,7 @@ body {
   --color-gray: rgb(180, 180, 180);
   --color-incomplete: rgb(230, 200, 20);
   --level-block: rgb(0, 0, 0);
-  --level-block-border: rgba(155,91,70,255);
+  --level-block-border: rgb(155, 91, 70);
   --level-end: rgb(133, 226, 31);
   --level-grid: rgb(247, 95, 28);
   --level-grid-text: rgb(0, 0, 0);
@@ -573,11 +573,4 @@ body {
   .select-card:hover .select-card-button {
     display: block;
   }
-}
-
-
-.overlay-grid {
-  background-image:
-    linear-gradient(to right, black 1px, transparent 1px),
-    linear-gradient(to bottom, black 1px, transparent 1px);
 }

@@ -385,19 +385,19 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
     {
       id: 'config.calcLevelsSolvedCount',
       name: 'Solves',
-      selector: row => row.config?.calcLevelsSolvedCount,
+      selector: row => row.config?.calcLevelsSolvedCount ?? 0,
       sortable: true,
     },
     {
       id: 'config.calcLevelsCompletedCount',
       name: 'Completed',
-      selector: row => row.config?.calcLevelsCompletedCount,
+      selector: row => row.config?.calcLevelsCompletedCount ?? 0,
       sortable: true,
     },
     {
       id: 'config.calcRankedSolves',
       name: 'Ranked Solves',
-      selector: row => row.config?.calcRankedSolves,
+      selector: row => row.config?.calcRankedSolves ?? 0,
       sortable: true,
     },
     {
@@ -409,7 +409,7 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
     {
       id: 'config.calcRecordsCount',
       name: 'Records',
-      selector: row => row.config?.calcRecordsCount,
+      selector: row => row.config?.calcRecordsCount ?? 0,
       sortable: true,
     },
     {

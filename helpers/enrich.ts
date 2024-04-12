@@ -141,7 +141,7 @@ export async function enrichReqUser(gameId: GameId, reqUser: User, filters?: any
   const enrichedReqUser: ReqUser = JSON.parse(JSON.stringify(reqUser)) as ReqUser;
 
   const notificationAgg = await NotificationModel.aggregate<Notification>([
-    { $match: { userId: reqUser._id, /*gameId: gameId,*/ ...filters } }, // Not adding gameId on purpose so we can get all notifications for all games
+    { $match: { userId: reqUser._id, ...filters } }, // not adding gameId on purpose so we can get all notifications for all games
     { $sort: { createdAt: -1 } },
     { $limit: 5 },
     ...getEnrichNotificationPipelineStages(reqUser._id)

@@ -22,7 +22,7 @@ enableFetchMocks();
 describe('pages/api/user/[id]/index.ts', () => {
   test('GET a user should return data', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {

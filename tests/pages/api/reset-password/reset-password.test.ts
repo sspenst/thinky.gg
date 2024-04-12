@@ -34,7 +34,7 @@ describe('Reset a password API should function right', () => {
 
   test('Sending wrong HTTP method should fail', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
 
@@ -62,7 +62,7 @@ describe('Reset a password API should function right', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           headers: {
@@ -85,7 +85,7 @@ describe('Reset a password API should function right', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           body: {
@@ -112,7 +112,7 @@ describe('Reset a password API should function right', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           body: {
@@ -142,7 +142,7 @@ describe('Reset a password API should function right', () => {
     const userB = await UserModel.findById(TestId.USER_B);
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           body: {
@@ -172,7 +172,7 @@ describe('Reset a password API should function right', () => {
     const userB = await UserModel.findById(TestId.USER_B);
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           body: {
@@ -200,7 +200,7 @@ describe('Reset a password API should function right', () => {
     const userB = await UserModel.findById(TestId.USER_B, '_id ts password');
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           body: {
@@ -237,7 +237,7 @@ describe('Reset a password API should function right', () => {
     });
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           body: {

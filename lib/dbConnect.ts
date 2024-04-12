@@ -13,6 +13,7 @@ let cached = global.db;
 
 if (!cached) {
   cached = global.db = {
+    autoReconnect: true,
     conn: null,
     mongoMemoryServer: null,
     promise: null,
@@ -41,7 +42,7 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
       socketTimeoutMS: 20000,
     };
 
-    let uri = undefined;
+    let uri = '';
 
     /* istanbul ignore else */
     if (process.env.NODE_ENV === 'test' || !process.env.MONGODB_URI) {
@@ -73,7 +74,20 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
       uri = process.env.MONGODB_URI;
     }
 
-    cached.promise = mongoose.connect(uri as string, options).then((mongoose) => {
+    cached.promise = mongoose.connect(uri, options).then((mongoose) => {
+      mongoose.connection.on('disconnected', () => {
+        if (!cached.autoReconnect) {
+          return;
+        }
+
+        logger.warn('Mongoose connection disconnected. Attempting to reconnect...');
+        mongoose.connect(uri, options);
+      });
+
+      mongoose.connection.on('error', (err) => {
+        logger.error('Mongoose connection error:', err);
+      });
+
       return mongoose;
     }).catch((e) => {
       logger.error('Error connecting to DB', e);
@@ -82,6 +96,7 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
   }
 
   cached.conn = await cached.promise;
+  cached.promise = null;
 
   /* istanbul ignore next */
   if (mongoose.connection.readyState !== 1) {
@@ -98,7 +113,9 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
 }
 
 export async function dbDisconnect(log: boolean = false) {
-  log && console.log('in dbdisconnect');
+  log && console.log('In dbDisconnect');
+  // NB: dbDisconnect is intentional, so we don't want to automatically reconnect
+  cached.autoReconnect = false;
 
   if (process.env.NODE_ENV === 'test') {
     // drop db
@@ -106,7 +123,7 @@ export async function dbDisconnect(log: boolean = false) {
   }
 
   if (cached.conn) {
-    log && console.log('in dbdisconnect. cached.conn exists');
+    log && console.log('In dbDisconnect. cached.conn exists');
 
     try {
       await cached.conn.disconnect();
@@ -116,7 +133,7 @@ export async function dbDisconnect(log: boolean = false) {
   }
 
   if (cached.mongoMemoryServer) {
-    log && console.log('in dbdisconnect. cached.mongoMemoryServer exists');
+    log && console.log('In dbDisconnect. cached.mongoMemoryServer exists');
 
     try {
       await cached.mongoMemoryServer.stop({
@@ -128,8 +145,11 @@ export async function dbDisconnect(log: boolean = false) {
     }
   }
 
+  cached.autoReconnect = true;
+
   await wsDisconnect();
 
   cached.conn = null;
+  cached.promise = null;
   cached.mongoMemoryServer = null;
 }

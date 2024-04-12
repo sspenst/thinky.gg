@@ -20,7 +20,7 @@ describe('pages/api/login/index.ts', () => {
   jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
   test('Sending nothing should return 405', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req = {
           method: '',
           headers: {
@@ -42,7 +42,7 @@ describe('pages/api/login/index.ts', () => {
   test('Sending blank creds should return 401', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req = {
           method: 'POST',
           headers: {
@@ -65,7 +65,7 @@ describe('pages/api/login/index.ts', () => {
     const credsJSON = { name: 'awiejgpewajigo', password: 'BAD' };
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req = {
           method: 'POST',
           body: credsJSON,
@@ -91,7 +91,7 @@ describe('pages/api/login/index.ts', () => {
     const credsJSON = { name: 'test', password: 'BAD' };
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req = {
           method: 'POST',
           body: credsJSON,
@@ -116,7 +116,7 @@ describe('pages/api/login/index.ts', () => {
     const credsJSON = { name: 'test', password: 'test1234' };
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req = {
           method: 'POST',
           body: credsJSON,
@@ -142,7 +142,7 @@ describe('pages/api/login/index.ts', () => {
     const credsJSON = { name: 'test@gmail.com', password: 'test1234' };
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req = {
           method: 'POST',
           body: credsJSON,

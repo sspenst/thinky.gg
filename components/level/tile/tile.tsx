@@ -71,6 +71,7 @@ export default function Tile({
           atEnd={atEnd}
           game={game}
           moveCount={text ?? 0}
+          onTopOf={onTopOf}
           theme={theme}
         />
       );

@@ -11,6 +11,7 @@ interface UserConfig {
   calcRankedSolves: number;
   calcRecordsCount: number;
   chapterUnlocked: number;
+  customTheme: string;
   gameId: GameId;
   roles: Role[];
   showPlayStats: boolean;

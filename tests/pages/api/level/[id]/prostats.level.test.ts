@@ -27,7 +27,7 @@ async function query({ expectedError, expectedStatus, additionalAssertions }: {
   additionalAssertions?: (response: any) => Promise<void>,
 }) {
   await testApiHandler({
-    handler: async (_, res) => {
+    pagesHandler: async (_, res) => {
       const req: NextApiRequestWithAuth = {
         method: 'GET',
         query: {

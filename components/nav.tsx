@@ -362,7 +362,7 @@ export default function Nav({ isDropdown }: NavProps) {
   return (
     <nav
       className={classNames(
-        'w-60 border-color-4 bg-1 flex flex-col gap-1 overflow-y-auto',
+        'w-60 bg-1 flex flex-col gap-1 overflow-y-auto',
         isDropdown ? 'p-1' : 'fixed p-2',
       )}
       style={{

@@ -201,6 +201,17 @@ describe('helpers/*.ts', () => {
     expect(validateSokopathLevel(gridWithOneStartAndOneEnd).reasons).toMatchObject(['Must have as many boxes as goals']);
     expect(validateSokopathLevel(gridWithOneStartAndOneEndWithBlockOnTop).valid).toBe(false);
   });
+  test('validiateSokopathLevelValid', async () => {
+    const emptyGrid = '000';
+    const gridWithOnlyOneStart = '00' + TileType.Player;
+    const gridWithOneStartAndOneEnd = '00' + TileType.Player + TileType.Exit;
+    const gridWithOneStartAndOneEndWithBlockOnTop = '00' + TileType.PlayerOnExit + TileType.BlockOnExit;
+
+    expect(validateSokopathLevel(emptyGrid).reasons).toMatchObject(['Must have exactly one player', 'Must have at least one uncovered goal']);
+    expect(validateSokopathLevel(gridWithOnlyOneStart).reasons).toMatchObject(['Must have at least one uncovered goal']);
+    expect(validateSokopathLevel(gridWithOneStartAndOneEnd).reasons).toMatchObject(['Must have as many boxes as goals']);
+    expect(validateSokopathLevel(gridWithOneStartAndOneEndWithBlockOnTop).valid).toBe(false);
+  });
 });
 
 export { };

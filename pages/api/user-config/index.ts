@@ -1,6 +1,7 @@
 import { GameId } from '@root/constants/GameId';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import isGuest from '@root/helpers/isGuest';
+import isPro from '@root/helpers/isPro';
 import { logger } from '@root/helpers/logger';
 import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
@@ -30,6 +31,7 @@ export default withAuth({
   GET: {},
   PUT: {
     body: {
+      customTheme: ValidType('string', false),
       deviceToken: ValidType('string', false),
       disallowedEmailNotifications: ValidArray(false),
       disallowedPushNotifications: ValidArray(false),
@@ -47,6 +49,7 @@ export default withAuth({
     return res.status(200).json({ ...userConfig, ...{ emailDigest: req.user.emailDigest } });
   } else if (req.method === 'PUT') {
     const {
+      customTheme,
       deviceToken,
       disallowedEmailNotifications,
       disallowedPushNotifications,
@@ -76,6 +79,14 @@ export default withAuth({
 
     if (theme !== undefined) {
       setObj['theme'] = theme;
+    }
+
+    if (customTheme !== undefined) {
+      if (!isPro(req.user)) {
+        return res.status(400).json({ error: 'Custom themes are a Pro feature. Upgrade to Pro to use custom themes.' });
+      }
+
+      setObj['customTheme'] = customTheme;
     }
 
     if (tutorialCompletedAt) {

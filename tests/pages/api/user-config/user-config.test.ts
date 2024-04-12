@@ -37,7 +37,7 @@ const defaultObj = {
 describe('pages/api/user-config', () => {
   test('Unauthenticated should fail', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           headers: {
             'content-type': 'application/json',
@@ -60,7 +60,7 @@ describe('pages/api/user-config', () => {
 
   test('Valid GET request', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...defaultObj,
           headers: {
@@ -91,7 +91,7 @@ describe('pages/api/user-config', () => {
       throw new Error('Error finding User');
     });
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...defaultObj,
           method: 'PUT',
@@ -113,7 +113,7 @@ describe('pages/api/user-config', () => {
   });
   test('PUT with valid changes ', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...defaultObj,
           method: 'PUT',
@@ -151,7 +151,7 @@ describe('pages/api/user-config', () => {
   });
   test('Valid GET request after changing', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...defaultObj,
           headers: {

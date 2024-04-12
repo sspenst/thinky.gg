@@ -13,7 +13,7 @@ import { UserModel } from '../../../models/mongoose';
 const STRIPE_SECRET = process.env.STRIPE_SECRET as string;
 
 export const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET as string;
-export const stripe = new Stripe(STRIPE_SECRET, { apiVersion: '2022-11-15' });
+export const stripe = new Stripe(STRIPE_SECRET, { apiVersion: '2024-04-10' });
 
 export interface SubscriptionData {
   cancel_at: number | null;
@@ -21,7 +21,7 @@ export interface SubscriptionData {
   current_period_end: number;
   current_period_start: number;
   giftToUser?: User | null;
-  paymentMethod: Stripe.PaymentMethod;
+  paymentMethod: Stripe.PaymentMethod | null;
   plan: Stripe.Plan;
   planName: string;
   status: Stripe.Subscription.Status;
@@ -64,7 +64,11 @@ export async function getSubscriptions(req: NextApiRequestWithAuth): Promise<[nu
     const product = await stripe.products.retrieve(plan.product as string);
     const planName = product.name;
 
-    const paymentMethod = await stripe.paymentMethods.retrieve(subscription.default_payment_method as string);
+    let paymentMethod: Stripe.PaymentMethod | null = null;
+
+    if (subscription.default_payment_method) {
+      paymentMethod = await stripe.paymentMethods.retrieve(subscription.default_payment_method as string);
+    }
 
     // if subscription has metadata... it is a gift and we should query the gift id
     let giftToUser = undefined;

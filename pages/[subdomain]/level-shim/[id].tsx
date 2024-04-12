@@ -39,7 +39,14 @@ export default function LevelShim({ level }: { level: Level }) {
     <div className='flex flex-col justify-center text-center w-full' style={{
       height: '50vh',
     }}>
-      <Grid disableAnimation hideText id={level._id.toString()} leastMoves={0} gameState={gameState} />
+      <Grid
+        disableAnimation
+        gameState={gameState}
+        hideText
+        id={level._id.toString()}
+        leastMoves={0}
+        optimizeDom
+      />
     </div>
   </main>;
 }

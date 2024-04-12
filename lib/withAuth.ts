@@ -12,6 +12,7 @@ import User from '../models/db/user';
 import { UserConfigModel, UserModel } from '../models/mongoose';
 import dbConnect from './dbConnect';
 import getTokenCookie from './getTokenCookie';
+import initNewrelicErrorLogging from './initNewrelicErrorLogging';
 import isLocal from './isLocal';
 
 export interface NextApiRequestWithAuth extends NextApiRequestWrapper {
@@ -100,6 +101,8 @@ export default function withAuth(
     req: NextApiRequestWithAuth,
     res: NextApiResponse
   ): Promise<void> => {
+    await initNewrelicErrorLogging(res);
+
     const token = req.cookies?.token;
 
     if (!token) {
@@ -131,6 +134,8 @@ export default function withAuth(
       const validate = parseReq(validator, req);
 
       if (validate !== null) {
+        logger.error('withAuth validation error', validate);
+
         return Promise.resolve(
           res.status(validate.statusCode).json({
             error: validate.error,
@@ -140,7 +145,7 @@ export default function withAuth(
 
       /* istanbul ignore next */
       return handler(req, res).catch((error: Error) => {
-        logger.error('API Handler Error Caught', error);
+        logger.error('withAuth handler error', error);
 
         return res.status(500).json({
           error: error.message || error,

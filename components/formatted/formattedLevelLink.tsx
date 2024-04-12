@@ -44,7 +44,7 @@ export default function FormattedLevelLink({ id, gameId, level, onClick }: Enric
       passHref
       prefetch={false}
       style={{
-        color: getLevelCompleteColor(level),
+        color: getLevelCompleteColor(level, gameId),
         // to handle zero width level names
         minWidth: 10,
       }}
