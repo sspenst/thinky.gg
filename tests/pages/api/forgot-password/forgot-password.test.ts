@@ -162,8 +162,8 @@ describe('Forgot a password API should function right', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Could not send password reset email');
-        expect(res.status).toBe(500);
+        expect(response.error).toBe('Please wait a minute before requesting another password reset');
+        expect(res.status).toBe(429);
       },
     });
   });
