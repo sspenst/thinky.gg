@@ -137,7 +137,11 @@ export default withAuth({
         newUser.emailConfirmationToken = getEmailConfirmationToken();
         await newUser.save();
 
-        await sendEmailConfirmationEmail(req, newUser);
+        const error = await sendEmailConfirmationEmail(req, newUser);
+
+        if (error) {
+          return res.status(error.status).json({ error: error.message });
+        }
       }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {

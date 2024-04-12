@@ -243,7 +243,7 @@ describe('pages/api/signup', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(res.status).toBe(400);
+        expect(res.status).toBe(200);
         expect(response.error).toBe('We tried emailing you a reset password link. If you still have problems please contact ' + Games[DEFAULT_GAME_ID].displayName + ' devs via Discord.');
       },
     });

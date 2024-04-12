@@ -120,7 +120,11 @@ export default apiWrapper({ POST: {
       const err = await sendPasswordResetEmail(req, userWithEmail);
       const game = Games[req.gameId];
 
-      return res.status(400).json({ error: !err ? 'We tried emailing you a reset password link. If you still have problems please contact ' + game.displayName + ' devs via Discord.' : 'Error trying to register. Please contact ' + game.displayName + ' devs via Discord' });
+      if (err) {
+        return res.status(err.status).json({ error: err.message });
+      } else {
+        return res.status(200).json({ error: 'We tried emailing you a reset password link. If you still have problems please contact ' + game.displayName + ' devs via Discord.' });
+      }
     } else {
       return res.status(401).json({
         error: 'Email already exists',
