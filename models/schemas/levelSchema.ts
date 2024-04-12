@@ -68,7 +68,7 @@ const LevelSchema = new mongoose.Schema<Level>(
       required: false,
       default: 0
     },
-    // https://github.com/sspenst/pathology/wiki/Level-data-format
+    // https://github.com/sspenst/thinky.gg/wiki/Level-data-format
     data: {
       type: String,
       required: true,
