@@ -22,6 +22,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const level = await LevelModel.findOne({
     _id: id,
+    isDeleted: { $ne: true },
     isDraft: true,
     userId: reqUser._id,
   });
