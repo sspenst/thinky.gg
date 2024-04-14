@@ -90,9 +90,12 @@ export default function PlayHistory() {
           min='2020-01-01T00:00'
           max={dayjs().format('YYYY-MM-DDTHH:mm')}
           onBlur={() => {
-            setAccumulatedPlayHistory([]);
-            setCursor(null);
-            setDatetime(intermediateDate);
+            // only query for new data if the date has changed
+            if (intermediateDate !== datetime) {
+              setAccumulatedPlayHistory([]);
+              setCursor(null);
+              setDatetime(intermediateDate);
+            }
           }}
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           onChange={(e: any) => {
