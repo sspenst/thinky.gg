@@ -155,7 +155,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
         <div className='flex flex-col'>
           <div className='flex items-center gap-2 flex-wrap'>
             <span className='font-bold' style={{
-              color: stat.getColor(),
+              color: stat.getColor(undefined, game.id),
               textShadow: '1px 1px black',
             }}>
               {stat.getText()}
