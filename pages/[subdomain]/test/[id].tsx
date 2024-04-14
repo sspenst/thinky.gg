@@ -30,6 +30,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     {
       $match: {
         _id: new Types.ObjectId(id),
+        isDeleted: { $ne: true },
         isDraft: true,
         userId: reqUser._id,
         gameId: gameId
