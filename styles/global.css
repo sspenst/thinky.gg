@@ -574,3 +574,17 @@ body {
     display: block;
   }
 }
+
+/**
+ * prevent the user from selecting the entire screen on mobile (headless portal)
+ */
+#headlessui-portal-root > [data-headlessui-portal]:first-child {
+  user-select: none;
+}
+
+/**
+ * prevent the user from selecting the entire screen on mobile (headless dialog)
+ */
+#headlessui-portal-root > [data-headlessui-portal]:nth-child(2) > div > div > div:first-child {
+  user-select: none;
+}
