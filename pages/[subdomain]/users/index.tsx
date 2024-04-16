@@ -1,5 +1,6 @@
 import FormattedDate from '@root/components/formatted/formattedDate';
 import MultiplayerRating from '@root/components/multiplayer/multiplayerRating';
+import DataTable, { TableColumn } from '@root/components/tables/dataTable';
 import { GameType } from '@root/constants/Games';
 import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
@@ -10,13 +11,11 @@ import { GetServerSidePropsContext } from 'next';
 import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import DataTable, { Alignment, TableColumn } from 'react-data-table-component-sspenst';
 import FormattedUser from '../../../components/formatted/formattedUser';
 import Page from '../../../components/page/page';
 import Dimensions from '../../../constants/dimensions';
 import GraphType from '../../../constants/graphType';
 import { AppContext } from '../../../contexts/appContext';
-import { DATA_TABLE_CUSTOM_STYLES } from '../../../helpers/dataTableCustomStyles';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
@@ -26,7 +25,7 @@ import User from '../../../models/db/user';
 import { GraphModel, MultiplayerProfileModel, ReviewModel, UserModel } from '../../../models/mongoose';
 import { cleanInput } from '../../api/search';
 
-const PAGINATION_PER_PAGE = 40;
+const ITEMS_PER_PAGE = 40;
 
 interface UserWithStats extends User {
   followerCount: number;
@@ -45,7 +44,7 @@ export interface UserSearchQuery extends ParsedUrlQuery {
   showOnline: string;
   showUnregistered: string;
   sortBy: string;
-  sortDir: string;
+  sortDir: 'desc' | 'asc';
 }
 
 export const DEFAULT_QUERY = {
@@ -115,7 +114,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     sortObj.push(['name', 1]);
   }
 
-  const limit = PAGINATION_PER_PAGE;
+  const limit = ITEMS_PER_PAGE;
   let skip = 0;
 
   if (page) {
@@ -368,19 +367,23 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
     });
   }, [loading, queryDebounce]);
 
-  const columns = [
+  const columns: TableColumn<UserWithStats>[] = [
     {
       id: 'index',
       name: '#',
-      width: '60px',
       selector: row => row.index,
+      style: {
+        minWidth: 60,
+      },
     },
     {
       id: 'name',
       name: 'Name',
-      minWidth: '200px',
       selector: row => <FormattedUser id='users' size={Dimensions.AvatarSizeSmall} user={row} />,
       sortable: true,
+      style: {
+        minWidth: 200,
+      },
     },
     {
       id: 'config.calcLevelsSolvedCount',
@@ -421,18 +424,20 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
     {
       id: 'last_visited_at',
       name: 'Last Seen',
-      minWidth: '128px',
-      selector: row => row.ts,
-      format: row => row.last_visited_at ? <FormattedDate style={{ color: 'var(--color)', fontSize: 13 }} ts={row.last_visited_at} /> : '-',
+      selector: row => row.last_visited_at ? <FormattedDate style={{ color: 'var(--color)', fontSize: 13 }} ts={row.last_visited_at} /> : '-',
       sortable: true,
+      style: {
+        minWidth: 128,
+      },
     },
     {
       id: 'ts',
       name: 'Registered',
-      minWidth: '128px',
-      selector: row => row.ts,
-      format: row => row.ts ? <FormattedDate style={{ color: 'var(--color)', fontSize: 13 }} ts={row.ts} /> : 'Not registered',
+      selector: row => row.ts ? <FormattedDate style={{ color: 'var(--color)', fontSize: 13 }} ts={row.ts} /> : 'Not registered',
       sortable: true,
+      style: {
+        minWidth: 128,
+      },
     },
     {
       id: 'reviewAverage',
@@ -449,36 +454,28 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
     {
       id: 'ratingRushBullet',
       name: 'Bullet',
-      selector: row => row.ratingRushBullet || 0,
-      format: row => <MultiplayerRating hideType profile={row as unknown as MultiplayerProfile} type={MultiplayerMatchType.RushBullet} />,
+      selector: row => <MultiplayerRating hideType profile={row as unknown as MultiplayerProfile} type={MultiplayerMatchType.RushBullet} />,
       sortable: true,
-      allowOverflow: true,
     },
     {
       id: 'ratingRushBlitz',
       name: 'Blitz',
-      selector: row => row.ratingRushBlitz || 0,
-      format: row => <MultiplayerRating hideType profile={row as unknown as MultiplayerProfile} type={MultiplayerMatchType.RushBlitz} />,
+      selector: row => <MultiplayerRating hideType profile={row as unknown as MultiplayerProfile} type={MultiplayerMatchType.RushBlitz} />,
       sortable: true,
-      allowOverflow: true,
     },
     {
       id: 'ratingRushRapid',
       name: 'Rapid',
-      selector: row => row.ratingRushRapid || 0,
-      format: row => <MultiplayerRating hideType profile={row as unknown as MultiplayerProfile} type={MultiplayerMatchType.RushRapid} />,
+      selector: row => <MultiplayerRating hideType profile={row as unknown as MultiplayerProfile} type={MultiplayerMatchType.RushRapid} />,
       sortable: true,
-      allowOverflow: true,
     },
     {
       id: 'ratingRushClassical',
       name: 'Classical',
-      selector: row => row.ratingRushClassical || 0,
-      format: row => <MultiplayerRating hideType profile={row as unknown as MultiplayerProfile} type={MultiplayerMatchType.RushClassical} />,
+      selector: row => <MultiplayerRating hideType profile={row as unknown as MultiplayerProfile} type={MultiplayerMatchType.RushClassical} />,
       sortable: true,
-      allowOverflow: true,
     },
-  ] as TableColumn<UserWithStats>[];
+  ];
 
   if (!query) {
     return null;
@@ -495,19 +492,75 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
       }}
     />
     <Page title={'Users'}>
+      <div className='flex flex-col items-center m-2 gap-2'>
+        <input
+          className='form-control relative min-w-0 block w-52 px-3 py-1.5 h-10 bg-clip-padding border border-color-4 rounded-md transition ease-in-out m-0 focus:border-blue-600 focus:outline-none'
+          key='search-level-input'
+          onChange={e => {
+            setQueryHelper({
+              search: e.target.value,
+            });
+          } }
+          placeholder='Filter users...'
+          type='search'
+          value={query.search}
+        />
+        <div className='flex flex-row gap-2 justify-center text-sm'>
+          <input
+            checked={query.showOnline === 'true'}
+            id='showOnline'
+            name='collection'
+            onChange={() => {
+              fetchLevels({
+                ...query,
+                showOnline: String(query.showOnline !== 'true'),
+              });
+            }}
+            type='checkbox'
+          />
+          <label htmlFor='showOnline'>
+              Show online
+          </label>
+        </div>
+        <div className='flex flex-row gap-2 justify-center text-sm'>
+          <input
+            checked={query.showUnregistered === 'true'}
+            id='showUnregistered'
+            name='collection'
+            onChange={() => {
+              fetchLevels({
+                ...query,
+                showUnregistered: String(query.showUnregistered !== 'true'),
+              });
+            }}
+            type='checkbox'
+          />
+          <label htmlFor='showUnregistered'>
+              Show unregistered
+          </label>
+        </div>
+        <div className='flex justify-center'>
+          <button
+            className='italic underline text-sm'
+            onClick={() => {
+              setQuery({ ...DEFAULT_QUERY });
+              fetchLevels({ ...DEFAULT_QUERY });
+            }}
+          >
+              Reset search filters
+          </button>
+        </div>
+      </div>
       <DataTable
-        columns={columns}
         conditionalRowStyles={[{
-          when: row => row._id === user?._id,
           style: {
             backgroundColor: 'var(--bg-color-4)',
           },
+          when: row => row._id === user?._id,
         }]}
-        customStyles={DATA_TABLE_CUSTOM_STYLES}
-        data={data as UserWithStats[]}
-        defaultSortAsc={query.sortDir === 'asc'}
-        defaultSortFieldId={query.sortBy}
-        dense
+        columns={columns}
+        data={data}
+        itemsPerPage={ITEMS_PER_PAGE}
         noDataComponent={
           <div className='p-3'>
             No records to display...
@@ -519,13 +572,18 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
             page: String(pg),
           });
         }}
-        onSort={async (column: TableColumn<UserWithStats>, sortDirection: string) => {
+        onSort={async (columnId: string) => {
+          const sortAsc = columnId === 'userId' || columnId === 'name';
+
           const update = {
-            sortDir: sortDirection,
+            sortBy: columnId,
+            // default to most useful sort direction
+            sortDir: sortAsc ? 'asc' : 'desc',
           } as Partial<UserSearchQuery>;
 
-          if (typeof column.id === 'string') {
-            update.sortBy = column.id;
+          if (columnId === query.sortBy) {
+            // swap sortDir if the same col is clicked
+            update.sortDir = query.sortDir === 'desc' ? 'asc' : 'desc';
           }
 
           fetchLevels({
@@ -533,78 +591,10 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
             ...update,
           });
         }}
-        pagination={true}
-        paginationComponentOptions={{ noRowsPerPage: true }}
-        paginationDefaultPage={Number(query.page)}
-        paginationPerPage={PAGINATION_PER_PAGE}
-        paginationServer
-        paginationTotalRows={totalRows}
-        persistTableHead
-        progressPending={loading}
-        responsive
-        sortServer={true}
-        striped
-        subHeader
-        subHeaderAlign={Alignment.CENTER}
-        subHeaderComponent={<div className='flex flex-col m-2 gap-2'>
-          <input
-            className='form-control relative min-w-0 block w-52 px-3 py-1.5 h-10 bg-clip-padding border border-color-4 rounded-md transition ease-in-out m-0 focus:border-blue-600 focus:outline-none'
-            key='search-level-input'
-            onChange={e => {
-              setQueryHelper({
-                search: e.target.value,
-              });
-            } }
-            placeholder='Filter users...'
-            type='search'
-            value={query.search}
-          />
-          <div className='flex flex-row gap-2 justify-center text-sm'>
-            <input
-              checked={query.showOnline === 'true'}
-              id='showOnline'
-              name='collection'
-              onChange={() => {
-                fetchLevels({
-                  ...query,
-                  showOnline: String(query.showOnline !== 'true'),
-                });
-              }}
-              type='checkbox'
-            />
-            <label htmlFor='showOnline'>
-              Show online
-            </label>
-          </div>
-          <div className='flex flex-row gap-2 justify-center text-sm'>
-            <input
-              checked={query.showUnregistered === 'true'}
-              id='showUnregistered'
-              name='collection'
-              onChange={() => {
-                fetchLevels({
-                  ...query,
-                  showUnregistered: String(query.showUnregistered !== 'true'),
-                });
-              }}
-              type='checkbox'
-            />
-            <label htmlFor='showUnregistered'>
-              Show unregistered
-            </label>
-          </div>
-          <div className='flex justify-center'>
-            <button
-              className='italic underline text-sm'
-              onClick={() => {
-                setQuery({ ...DEFAULT_QUERY });
-                fetchLevels({ ...DEFAULT_QUERY });
-              }}
-            >
-              Reset search filters
-            </button>
-          </div>
-        </div>}
+        page={Number(query.page ?? '1')}
+        sortBy={query.sortBy}
+        sortDir={query.sortDir}
+        totalItems={totalRows}
       />
     </Page>
   </>);

@@ -4,9 +4,14 @@ import React from 'react';
 export interface TableColumn<T> {
   id: string;
   name?: React.ReactNode;
-  selector: (row: T) => JSX.Element;
+  selector: (row: T) => React.ReactNode;
   sortable?: boolean;
   style?: React.CSSProperties | undefined;
+}
+
+interface ConditionalStyle<T> {
+  style: React.CSSProperties;
+  when: (row: T) => boolean;
 }
 
 interface PaginationProps {
@@ -104,6 +109,7 @@ function Pagination({ itemsPerPage, onChangePage, page, totalItems }: Pagination
 }
 
 interface DataTableProps<T> {
+  conditionalRowStyles?: ConditionalStyle<T>[];
   columns: TableColumn<T>[];
   data?: T[];
   itemsPerPage: number;
@@ -117,6 +123,7 @@ interface DataTableProps<T> {
 }
 
 export default function DataTable<T>({
+  conditionalRowStyles,
   columns,
   data,
   itemsPerPage,
@@ -141,8 +148,8 @@ export default function DataTable<T>({
             key={`column-${column.id}-header`}
             style={{
               minWidth: '100px',
-              ...column.style,
               borderColor: 'var(--bg-color-4)',
+              ...column.style,
             }}
           >
             <div
@@ -156,6 +163,16 @@ export default function DataTable<T>({
         );
       })}
       {data.map((row, i) => columns.map(column => {
+        const customStyle = { ...column.style };
+
+        if (conditionalRowStyles) {
+          for (const style of conditionalRowStyles) {
+            if (style.when(row)) {
+              Object.assign(customStyle, style.style);
+            }
+          }
+        }
+
         return (
           <div
             className='truncate flex items-center px-2'
@@ -163,8 +180,8 @@ export default function DataTable<T>({
             style={{
               minHeight: '32px',
               minWidth: '50px',
-              ...column.style,
               backgroundColor: i % 2 === 0 ? 'var(--bg-color-3)' : 'var(--bg-color-2)',
+              ...customStyle,
             }}
           >
             {column.selector(row)}
