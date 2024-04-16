@@ -9,7 +9,7 @@ import { getEnrichLevelsPipelineSteps } from './enrich';
 import { logger } from './logger';
 
 export interface LevelWithRecordHistory extends Level {
-    records: Record[];
+  records: Record[];
 }
 
 export async function getRecordsByUserId(gameId: GameId, userId: Types.ObjectId, reqUser?: User): Promise<LevelWithRecordHistory[]> {
@@ -40,7 +40,6 @@ export async function getRecordsByUserId(gameId: GameId, userId: Types.ObjectId,
         newRoot: '$recordId',
       },
     },
-
     {
       $lookup: {
         from: LevelModel.collection.name,
@@ -112,7 +111,6 @@ export async function getRecordsByUserId(gameId: GameId, userId: Types.ObjectId,
         newRoot: '$levelId',
       },
     },
-
   ] as PipelineStage[]);
 
   return records;

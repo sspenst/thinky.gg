@@ -2,7 +2,7 @@ import FormattedAchievement from '@root/components/formatted/formattedAchievemen
 import FormattedDate from '@root/components/formatted/formattedDate';
 import FormattedUser from '@root/components/formatted/formattedUser';
 import Page from '@root/components/page/page';
-import DataTable from '@root/components/tables/dataTable';
+import { DataTableOffline } from '@root/components/tables/dataTable';
 import AchievementType from '@root/constants/achievements/achievementType';
 import Dimensions from '@root/constants/dimensions';
 import { AppContext } from '@root/contexts/appContext';
@@ -67,23 +67,13 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
 /* istanbul ignore next */
 export default function AchievementPage({ type, myAchievement, achievements }: {type: AchievementType, myAchievement?: Achievement, achievements: Achievement[] }) {
-  const [page, setPage] = React.useState(1);
-  const currData = achievements.slice((page - 1) * 25, page * 25);
   const { game } = useContext(AppContext);
 
   return (
     <Page title='Viewing Achievement'>
       <div className='flex flex-col items-center justify-center w-full p-3'>
         <FormattedAchievement achievementType={type} game={game} createdAt={myAchievement?.createdAt} unlocked={true} />
-        <DataTable
-          onSort={() => {}}
-          sortBy='createdAt'
-          sortDir='desc'
-          onChangePage={(page: number) => {
-            setPage(page);
-          }}
-          page={page}
-          totalItems={achievements.length}
+        <DataTableOffline
           columns={[
             {
               id: 'user',
@@ -98,8 +88,8 @@ export default function AchievementPage({ type, myAchievement, achievements }: {
               sortable: false,
             },
           ]}
+          data={achievements}
           itemsPerPage={25}
-          data={currData}
           noDataComponent={<div className='text-gray-500 dark:text-gray-400'>No users to show</div>}
         />
       </div>

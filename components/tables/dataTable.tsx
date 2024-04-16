@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import React from 'react';
+import React, { useState } from 'react';
 
 export interface TableColumn<T> {
   id: string;
@@ -109,22 +109,27 @@ function Pagination({ itemsPerPage, onChangePage, page, totalItems }: Pagination
 }
 
 interface DataTableProps<T> {
-  conditionalRowStyles?: ConditionalStyle<T>[];
   columns: TableColumn<T>[];
+  conditionalRowStyles?: ConditionalStyle<T>[];
   data?: T[];
   itemsPerPage: number;
   noDataComponent: JSX.Element;
   onChangePage: (page: number) => void;
-  onSort: (columnId: string) => void;
+  onSort?: (columnId: string) => void;
   page: number;
-  sortBy: string;
-  sortDir: 'desc' | 'asc';
+  sortBy?: string;
+  sortDir?: 'desc' | 'asc';
   totalItems: number;
 }
 
+/**
+ * Data table where on pagination, new data is fetched from the server
+ * Assumes data.length is no larger than itemsPerPage
+ * If data.length is larger than itemsPerPage, use DataTableOffline
+ */
 export default function DataTable<T>({
-  conditionalRowStyles,
   columns,
+  conditionalRowStyles,
   data,
   itemsPerPage,
   noDataComponent,
@@ -154,7 +159,7 @@ export default function DataTable<T>({
           >
             <div
               className={classNames('flex items-center font-semibold text-sm truncate', { 'cursor-pointer hover:opacity-50': column.sortable })}
-              onClick={() => column.sortable ? onSort(column.id) : undefined}
+              onClick={() => column.sortable && onSort ? onSort(column.id) : undefined}
             >
               <div>{column.name}</div>
               <span className='ml-1'>{sortBy !== column.id ? null : sortDir === 'desc' ? '▼' : '▲'}</span>
@@ -198,4 +203,39 @@ export default function DataTable<T>({
       />
     }
   </>);
+}
+
+interface DataTableOfflineProps<T> {
+  columns: TableColumn<T>[];
+  conditionalRowStyles?: ConditionalStyle<T>[];
+  data: T[];
+  itemsPerPage: number;
+  noDataComponent: JSX.Element;
+}
+
+/**
+ * Data table for when all data has already been loaded into memory
+ */
+export function DataTableOffline<T>({
+  columns,
+  conditionalRowStyles,
+  data,
+  itemsPerPage,
+  noDataComponent,
+}: DataTableOfflineProps<T>) {
+  const [page, setPage] = useState(1);
+  const visibleData = data.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+
+  return (
+    <DataTable
+      columns={columns}
+      conditionalRowStyles={conditionalRowStyles}
+      data={visibleData}
+      itemsPerPage={itemsPerPage}
+      noDataComponent={noDataComponent}
+      onChangePage={setPage}
+      page={page}
+      totalItems={data.length}
+    />
+  );
 }
