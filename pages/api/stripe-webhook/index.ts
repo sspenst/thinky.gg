@@ -5,6 +5,7 @@ import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import isPro from '@root/helpers/isPro';
 import { createNewProUserNotification } from '@root/helpers/notificationHelper';
 import dbConnect from '@root/lib/dbConnect';
+import KeyValue from '@root/models/db/keyValue';
 import { buffer } from 'micro';
 import mongoose, { Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
@@ -13,7 +14,7 @@ import Role from '../../../constants/role';
 import apiWrapper from '../../../helpers/apiWrapper';
 import { logger } from '../../../helpers/logger';
 import User from '../../../models/db/user';
-import { StripeEventModel, UserConfigModel, UserModel } from '../../../models/mongoose';
+import { KeyValueModel, StripeEventModel, UserConfigModel, UserModel } from '../../../models/mongoose';
 import { stripe, STRIPE_WEBHOOK_SECRET } from '../subscription';
 import { GiftType } from '../subscription/gift';
 
@@ -323,6 +324,18 @@ async function splitPaymentIntent(paymentIntentId: string): Promise<string | und
   // https://stripe.com/docs/connect/separate-charges-and-transfers#transfer-availability
   if (process.env.STRIPE_CONNECTED_ACCOUNT_ID === undefined) {
     return `splitPaymentIntent(${paymentIntentId}): missing STRIPE_CONNECTED_ACCOUNT_ID`;
+  }
+
+  // if all of the validation checks have passed, make sure we haven't processed this payment intent already
+  const kvKey = `split-payment-intent-${paymentIntentId}`;
+  const keyValue = await KeyValueModel.findOneAndUpdate<KeyValue>(
+    { gameId: GameId.THINKY, key: kvKey, value: true },
+    { gameId: GameId.THINKY, key: kvKey, value: true },
+    { upsert: true }
+  );
+
+  if (keyValue) {
+    return `splitPaymentIntent(${paymentIntentId}): already processed`;
   }
 
   await stripe.transfers.create({
