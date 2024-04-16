@@ -1,12 +1,17 @@
 import classNames from 'classnames';
-import React from 'react';
+import React, { useState } from 'react';
 
 export interface TableColumn<T> {
   id: string;
   name?: React.ReactNode;
-  selector: (row: T) => JSX.Element;
+  selector: (row: T) => React.ReactNode;
   sortable?: boolean;
   style?: React.CSSProperties | undefined;
+}
+
+interface ConditionalStyle<T> {
+  style: React.CSSProperties;
+  when: (row: T) => boolean;
 }
 
 interface PaginationProps {
@@ -105,19 +110,26 @@ function Pagination({ itemsPerPage, onChangePage, page, totalItems }: Pagination
 
 interface DataTableProps<T> {
   columns: TableColumn<T>[];
+  conditionalRowStyles?: ConditionalStyle<T>[];
   data?: T[];
   itemsPerPage: number;
   noDataComponent: JSX.Element;
   onChangePage: (page: number) => void;
-  onSort: (columnId: string) => void;
+  onSort?: (columnId: string) => void;
   page: number;
-  sortBy: string;
-  sortDir: 'desc' | 'asc';
+  sortBy?: string;
+  sortDir?: 'desc' | 'asc';
   totalItems: number;
 }
 
+/**
+ * Data table where on pagination, new data is fetched from the server
+ * Assumes data.length is no larger than itemsPerPage
+ * If data.length is larger than itemsPerPage, use DataTableOffline
+ */
 export default function DataTable<T>({
   columns,
+  conditionalRowStyles,
   data,
   itemsPerPage,
   noDataComponent,
@@ -141,13 +153,13 @@ export default function DataTable<T>({
             key={`column-${column.id}-header`}
             style={{
               minWidth: '100px',
-              ...column.style,
               borderColor: 'var(--bg-color-4)',
+              ...column.style,
             }}
           >
             <div
               className={classNames('flex items-center font-semibold text-sm truncate', { 'cursor-pointer hover:opacity-50': column.sortable })}
-              onClick={() => column.sortable ? onSort(column.id) : undefined}
+              onClick={() => column.sortable && onSort ? onSort(column.id) : undefined}
             >
               <div>{column.name}</div>
               <span className='ml-1'>{sortBy !== column.id ? null : sortDir === 'desc' ? '▼' : '▲'}</span>
@@ -156,6 +168,16 @@ export default function DataTable<T>({
         );
       })}
       {data.map((row, i) => columns.map(column => {
+        const customStyle = { ...column.style };
+
+        if (conditionalRowStyles) {
+          for (const style of conditionalRowStyles) {
+            if (style.when(row)) {
+              Object.assign(customStyle, style.style);
+            }
+          }
+        }
+
         return (
           <div
             className='truncate flex items-center px-2'
@@ -163,8 +185,8 @@ export default function DataTable<T>({
             style={{
               minHeight: '32px',
               minWidth: '50px',
-              ...column.style,
               backgroundColor: i % 2 === 0 ? 'var(--bg-color-3)' : 'var(--bg-color-2)',
+              ...customStyle,
             }}
           >
             {column.selector(row)}
@@ -181,4 +203,39 @@ export default function DataTable<T>({
       />
     }
   </>);
+}
+
+interface DataTableOfflineProps<T> {
+  columns: TableColumn<T>[];
+  conditionalRowStyles?: ConditionalStyle<T>[];
+  data: T[];
+  itemsPerPage: number;
+  noDataComponent: JSX.Element;
+}
+
+/**
+ * Data table for when all data has already been loaded into memory
+ */
+export function DataTableOffline<T>({
+  columns,
+  conditionalRowStyles,
+  data,
+  itemsPerPage,
+  noDataComponent,
+}: DataTableOfflineProps<T>) {
+  const [page, setPage] = useState(1);
+  const visibleData = data.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+
+  return (
+    <DataTable
+      columns={columns}
+      conditionalRowStyles={conditionalRowStyles}
+      data={visibleData}
+      itemsPerPage={itemsPerPage}
+      noDataComponent={noDataComponent}
+      onChangePage={setPage}
+      page={page}
+      totalItems={data.length}
+    />
+  );
 }

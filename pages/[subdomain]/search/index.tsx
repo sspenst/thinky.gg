@@ -401,7 +401,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
     });
   }, [loading, queryDebounce]);
 
-  const columns = [
+  const columns: TableColumn<EnrichedLevel>[] = [
     {
       id: 'userId',
       name: 'Author',
@@ -441,7 +441,6 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
     {
       id: 'name',
       name: 'Name',
-      grow: 2,
       selector: (row: EnrichedLevel) => (
         <div className='flex items-center gap-2 truncate'>
           <FormattedLevelLink onClick={() => {
@@ -522,7 +521,6 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       sortable: true,
     },
     {
-      grow: 0.45,
       id: 'leastMoves',
       name: 'Steps',
       selector: (row: EnrichedLevel) => `${row.userMoves !== undefined && row.userMoves !== row.leastMoves ? `${row.userMoves}/` : ''}${row.leastMoves}`,
@@ -572,7 +570,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       selector: (row: EnrichedLevel) => !row.userMovesTs ? '-' : <FormattedDate style={{ color: 'var(--color)', fontSize: 13 }} ts={row.userMovesTs} />,
       sortable: isPro(reqUser),
     }]),
-  ] as TableColumn<EnrichedLevel>[];
+  ];
 
   const onTimeRangeClick = useCallback((timeRangeKey: string) => {
     fetchLevels({
