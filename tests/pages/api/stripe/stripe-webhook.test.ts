@@ -543,4 +543,34 @@ describe('pages/api/stripe-webhook/index.ts', () => {
       expectedStatus: 200,
     });
   });
+
+  test('payment_intent.succeeded already processed', async () => {
+    process.env.STRIPE_CONNECTED_ACCOUNT_ID = 'blah';
+    jest.spyOn(stripeReal.paymentIntents, 'retrieve').mockImplementation(async () => {
+      return {
+        amount: 300,
+        latest_charge: {
+          balance_transaction: {
+            fee: 39,
+          },
+          id: 'ch_123',
+        }
+      } as Stripe.Response<Stripe.PaymentIntent>;
+    });
+    jest.spyOn(stripeReal.transfers, 'create').mockImplementation(async (params) => {
+      expect(params.amount).toBe(Math.round((300 - 39) / 2));
+      expect(params.source_transaction).toBe('ch_123');
+
+      return {} as Stripe.Response<Stripe.Transfer>;
+    });
+
+    await runStripeWebhookTest({
+      eventType: 'payment_intent.succeeded',
+      payloadData: {
+        id: 'pi_123',
+      },
+      expectedError: 'splitPaymentIntent(pi_123): already processed',
+      expectedStatus: 400,
+    });
+  });
 });
