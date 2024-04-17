@@ -1,5 +1,5 @@
 import Dimensions from '@root/constants/dimensions';
-import Graph from '@root/models/db/graph';
+import { IsFollowingGraph } from '@root/pages/[subdomain]/profile/[name]/[[...tab]]';
 import React from 'react';
 import User from '../../models/db/user';
 import FollowButton from '../buttons/followButton';
@@ -8,10 +8,10 @@ import FormattedUser from '../formatted/formattedUser';
 import { DataTableOffline } from '../tables/dataTable';
 
 interface FollowingListProps {
-  graphs: Graph[];
+  isFollowingGraphs: IsFollowingGraph[];
 }
 
-export default function FollowingList({ graphs }: FollowingListProps) {
+export default function FollowingList({ isFollowingGraphs }: FollowingListProps) {
   return (
     <div className='flex flex-col items-center justify-center max-w-md'>
       <DataTableOffline
@@ -25,7 +25,7 @@ export default function FollowingList({ graphs }: FollowingListProps) {
           {
             id: 'follow',
             name: '',
-            selector: (row) => <FollowButton isFollowing={true} user={row.target as User} />,
+            selector: (row) => <FollowButton isFollowing={row.isFollowing} user={row.target as User} />,
             sortable: false,
           },
           {
@@ -35,7 +35,7 @@ export default function FollowingList({ graphs }: FollowingListProps) {
             sortable: false,
           },
         ]}
-        data={graphs}
+        data={isFollowingGraphs}
         itemsPerPage={10}
         noDataComponent={<div className='text-gray-500 dark:text-gray-400'>No users to show</div>}
       />
