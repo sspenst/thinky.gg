@@ -14,6 +14,7 @@ export default function SettingsAccountRegular({ user, userConfig }: SettingsAcc
   const [password, setPassword] = useState<string>('');
   const [password2, setPassword2] = useState<string>('');
   const [showPlayStats, setShowPlayStats] = useState(userConfig?.showPlayStats ?? false);
+  const [showConfetti, setShowConfetti] = useState(!user.disableConfetti);
   const [showStatus, setShowStatus] = useState(!user.hideStatus);
   const [username, setUsername] = useState<string>(user.name);
 
@@ -118,6 +119,17 @@ export default function SettingsAccountRegular({ user, userConfig }: SettingsAcc
     setShowStatus(prevShowStatus => !prevShowStatus);
   }
 
+  function updateConfetti() {
+    updateUser(
+      JSON.stringify({
+        disableConfetti: showConfetti,
+      }),
+      'confetti',
+    );
+
+    setShowConfetti(prevDisableConfetti => !prevDisableConfetti);
+  }
+
   function updateUsername(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
@@ -190,10 +202,22 @@ export default function SettingsAccountRegular({ user, userConfig }: SettingsAcc
           </div>
           <div className='flex gap-2'>
             <input
+              checked={showConfetti}
+              id='showConfetti'
+              name='showConfetti'
+              onChange={updateConfetti}
+              type='checkbox'
+            />
+            <label className='text-sm' htmlFor='showConfetti'>
+              Confetti
+            </label>
+          </div>
+          <div className='flex gap-2'>
+            <input
               checked={showStatus}
               id='showStatus'
               name='showStatus'
-              onChange={() => updateStatus()}
+              onChange={updateStatus}
               type='checkbox'
             />
             <label className='text-sm' htmlFor='showStatus'>
