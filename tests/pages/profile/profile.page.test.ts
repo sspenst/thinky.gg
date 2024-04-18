@@ -79,8 +79,8 @@ describe('pages/profile page', () => {
     expect(ret.props?.reviewsReceivedCount).toBe(1);
     expect(ret.props?.reviewsWrittenCount).toBe(0);
     expect(ret.props?.user._id).toBe(TestId.USER);
-    expect(ret.props?.followerCountInit).toBe(0);
-    expect(ret.props?.reqUserIsFollowing).toBeNull();
+    expect(ret.props?.followers).toHaveLength(0);
+    expect(ret.props?.following).toHaveLength(0);
   });
   test('getServerSideProps collections tab', async () => {
     const context = {
@@ -210,8 +210,8 @@ describe('pages/profile page', () => {
     expect(ret.props?.reviewsReceivedCount).toBe(1);
     expect(ret.props?.reviewsWrittenCount).toBe(0);
     expect(ret.props?.user._id).toBe(TestId.USER);
-    expect(ret.props?.followerCountInit).toBe(0);
-    expect(ret.props?.reqUserFollowing).toHaveLength(2);
+    expect(ret.props?.followers).toHaveLength(0);
+    expect(ret.props?.following).toHaveLength(2);
   });
   test('getServerSideProps page 2', async () => {
     const context = {
