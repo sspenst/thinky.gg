@@ -465,25 +465,29 @@ export default function ProfilePage({
   const tabsContent = {
     [ProfileTab.Profile]: (user.ts ?
       <>
-        <div className='flex items-center justify-center mb-4'>
-          <ProfileAvatar size={Dimensions.AvatarSizeLarge} user={user} />
-        </div>
-        <div className='flex gap-2 items-center justify-center'>
-          <h2 className='text-3xl font-bold truncate'>{user.name}</h2>
-          <RoleIcons id='profile' size={24} user={user} />
-        </div>
-        {user.bio && <p className='text-center italic text-sm break-words mt-2'>{user.bio}</p>}
-        <div className='m-4 flex items-center justify-center gap-4 flex-wrap'>
-          <FollowButton
-            isFollowing={reqUserIsFollowing}
-            user={user}
-          />
-          <button onClick={() => setIsFollowerOpen(true)}>
-            <span className='font-bold'>{followers.length}</span> follower{followers.length === 1 ? '' : 's'}
-          </button>
-          <button onClick={() => setIsFollowingOpen(true)}>
-            <span className='font-bold'>{following.length}</span> following
-          </button>
+        <div className='flex flex-col sm:flex-row gap-8 justify-center items-center mb-4 max-w-full'>
+          <div className='flex items-center justify-center'>
+            <ProfileAvatar size={Dimensions.AvatarSizeLarge} user={user} />
+          </div>
+          <div className='flex flex-col items-center text-center sm:text-left sm:items-start gap-3 max-w-2xl'>
+            <div className='flex gap-2 items-center max-w-full'>
+              <h2 className='text-3xl font-bold truncate'>{user.name}</h2>
+              <RoleIcons id='profile' size={24} user={user} />
+            </div>
+            <div className='flex gap-4 flex-wrap justify-center'>
+              <FollowButton
+                isFollowing={reqUserIsFollowing}
+                user={user}
+              />
+              <button onClick={() => setIsFollowerOpen(true)}>
+                <span className='font-bold'>{followers.length}</span> follower{followers.length === 1 ? '' : 's'}
+              </button>
+              <button onClick={() => setIsFollowingOpen(true)}>
+                <span className='font-bold'>{following.length}</span> following
+              </button>
+            </div>
+            {user.bio && <p className='italic text-sm break-words'>{user.bio}</p>}
+          </div>
         </div>
         <div className='flex flex-wrap justify-center text-left gap-12 m-4'>
           <div className='flex flex-col gap-6 max-w-sm w-full'>
@@ -504,7 +508,6 @@ export default function ProfilePage({
               {!game.isNotAGame && !game.disableRanked && <h2><span className='font-bold'>Ranked Solves:</span> {user.config?.calcRankedSolves ?? 0} 🏅</h2>}
               {!game.isNotAGame && <h2><span className='font-bold'>Levels Solved:</span> {user.config?.calcLevelsSolvedCount ?? 0}</h2>}
               {!game.isNotAGame && <h2><span className='font-bold'>Levels Completed:</span> {user.config?.calcLevelsCompletedCount ?? 0}</h2>}
-              {!game.isNotAGame && <h2><span className='font-bold'>Levels Created:</span> {user.config?.calcLevelsCreatedCount ?? 0}</h2>}
               {!user.hideStatus && <>
                 <h2><span className='font-bold'>Last Seen:</span> <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.last_visited_at ? user.last_visited_at : user.ts} /></h2>
               </>}
