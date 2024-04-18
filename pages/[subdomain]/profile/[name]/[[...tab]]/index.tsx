@@ -1,6 +1,8 @@
 import LevelCard from '@root/components/cards/levelCard';
 import FormattedDate from '@root/components/formatted/formattedDate';
 import Solved from '@root/components/level/info/solved';
+import FollowerModal from '@root/components/modal/followerModal';
+import FollowingModal from '@root/components/modal/followingModal';
 import LoadingSpinner from '@root/components/page/loadingSpinner';
 import RoleIcons from '@root/components/page/roleIcons';
 import StyledTooltip from '@root/components/page/styledTooltip';
@@ -35,7 +37,6 @@ import CommentWall from '../../../../../components/level/reviews/commentWall';
 import FormattedReview from '../../../../../components/level/reviews/formattedReview';
 import AddCollectionModal from '../../../../../components/modal/addCollectionModal';
 import Page from '../../../../../components/page/page';
-import FollowingList from '../../../../../components/profile/followingList';
 import ProfileAvatar from '../../../../../components/profile/profileAvatar';
 import ProfileInsights from '../../../../../components/profile/profileInsights';
 import Dimensions from '../../../../../constants/dimensions';
@@ -117,7 +118,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     achievements,
     achievementsCount,
     collectionsCount,
-    followData,
     levelsCount,
     levelsSolvedAgg,
     multiplayerCount,
@@ -133,7 +133,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       userId: userId,
       ...(!viewingOwnProfile && { isPrivate: { $ne: true } }),
     }),
-    getFollowData(user._id.toString(), reqUser),
     !game.isNotAGame && LevelModel.countDocuments({ isDeleted: { $ne: true }, isDraft: false, userId: userId, gameId: gameId }),
     !game.isNotAGame && profileTab === ProfileTab.Levels && reqUser ? LevelModel.aggregate([
       { $match: {
@@ -169,14 +168,15 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     achievements: JSON.parse(JSON.stringify(achievements)),
     achievementsCount: achievementsCount,
     collectionsCount: collectionsCount,
-    followerCountInit: followData.followerCount,
+    followers: JSON.parse(JSON.stringify([])),
+    following: JSON.parse(JSON.stringify([])),
     levelsCount: levelsCount,
     levelsSolved: levelsSolved,
     multiplayerCount: multiplayerCount,
     pageProp: page,
     profileTab: profileTab,
     reqUser: reqUser ? JSON.parse(JSON.stringify(reqUser)) : null,
-    reqUserIsFollowing: followData.isFollowing || null,
+    reqUserIsFollowing: false,
     reviewsReceived: JSON.parse(JSON.stringify(reviewsReceived)),
     reviewsReceivedCount: reviewsReceivedCount,
     reviewsWritten: JSON.parse(JSON.stringify(reviewsWritten)),
@@ -185,7 +185,44 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   } as ProfilePageProps;
 
   if (profileTab === ProfileTab.Profile) {
-    const [followingAgg, followerAgg] = await Promise.all([
+    const [
+      followData,
+      followerAgg,
+      followingAgg,
+    ] = await Promise.all([
+      getFollowData(user._id.toString(), reqUser),
+      GraphModel.aggregate<IsFollowingGraph>([
+        { $match: { target: new Types.ObjectId(userId), type: GraphType.FOLLOW } },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'source',
+            foreignField: '_id',
+            as: 'source',
+            pipeline: [
+              { $project: { name: 1, avatarUpdatedAt: 1, last_visited_at: 1, hideStatus: 1 } },
+            ],
+          },
+        },
+        { $unwind: '$source' },
+        { $sort: { createdAt: -1 } },
+        // isFollowing field if the reqUser is following the source
+        {
+          $lookup: {
+            from: 'graphs',
+            let: { targetId: '$source._id', sourceId: new Types.ObjectId(reqUser?._id) },
+            pipeline: [
+              { $match: { $expr: { $and: [{ $eq: ['$target', '$$targetId'] }, { $eq: ['$source', '$$sourceId'] }] } } },
+            ],
+            as: 'follows',
+          },
+        },
+        {
+          $addFields: {
+            isFollowing: { $gt: [{ $size: '$follows' }, 0] },
+          },
+        },
+      ]).exec(),
       GraphModel.aggregate<IsFollowingGraph>([
         { $match: { source: new Types.ObjectId(userId), type: GraphType.FOLLOW } },
         {
@@ -218,39 +255,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
           },
         },
       ]).exec(),
-      GraphModel.aggregate<IsFollowingGraph>([
-        { $match: { target: new Types.ObjectId(userId), type: GraphType.FOLLOW } },
-        {
-          $lookup: {
-            from: 'users',
-            localField: 'source',
-            foreignField: '_id',
-            as: 'source',
-            pipeline: [
-              { $project: { name: 1, avatarUpdatedAt: 1, last_visited_at: 1, hideStatus: 1 } },
-            ],
-          },
-        },
-        { $unwind: '$source' },
-        { $sort: { createdAt: -1 } },
-        // isFollowing field if the reqUser is following the target
-        {
-          $lookup: {
-            from: 'graphs',
-            let: { targetId: '$target._id', sourceId: new Types.ObjectId(reqUser?._id) },
-            pipeline: [
-              { $match: { $expr: { $and: [{ $eq: ['$target', '$$targetId'] }, { $eq: ['$source', '$$sourceId'] }] } } },
-            ],
-            as: 'follows',
-          },
-        },
-        {
-          $addFields: {
-            isFollowing: { $gt: [{ $size: '$follows' }, 0] },
-          },
-        },
-      ]).exec(),
     ]);
+
+    profilePageProps.reqUserIsFollowing = followData.isFollowing ?? false;
 
     const followers = followerAgg.map((f) => {
       cleanUser(f.source as User);
@@ -318,14 +325,13 @@ interface ProfilePageProps {
   enrichedLevels: EnrichedLevel[] | undefined;
   followers: IsFollowingGraph[];
   following: IsFollowingGraph[];
-  followerCountInit: number;
   levelsCount: number;
   levelsSolved: number;
   multiplayerCount: number;
   pageProp: number;
   profileTab: ProfileTab;
   reqUser: User | null;
-  reqUserIsFollowing?: boolean;
+  reqUserIsFollowing: boolean;
   reviewsReceived?: Review[];
   reviewsReceivedCount: number;
   reviewsWritten?: Review[];
@@ -344,7 +350,6 @@ export default function ProfilePage({
   enrichedLevels,
   followers,
   following,
-  followerCountInit,
   levelsCount,
   levelsSolved,
   multiplayerCount,
@@ -361,18 +366,15 @@ export default function ProfilePage({
   user,
 }: ProfilePageProps) {
   const { game } = useContext(AppContext);
-  const [followerCount, setFollowerCount] = useState<number>(followerCountInit);
   const [isAddCollectionOpen, setIsAddCollectionOpen] = useState(false);
+  const [isFollowerOpen, setIsFollowerOpen] = useState(false);
+  const [isFollowingOpen, setIsFollowingOpen] = useState(false);
   const ownProfile = reqUser?._id.toString() === user?._id.toString();
   const [page, setPage] = useState(pageProp);
   const router = useRouter();
   const [searchLevelText, setSearchLevelText] = useState('');
   const [showLevelFilter, setShowLevelFilter] = useState(StatFilter.All);
   const [tab, setTab] = useState(profileTab);
-
-  useEffect(() => {
-    setFollowerCount(followerCountInit);
-  }, [followerCountInit]);
 
   useEffect(() => {
     setPage(pageProp);
@@ -472,15 +474,16 @@ export default function ProfilePage({
         </div>
         {user.bio && <p className='text-center italic text-sm break-words mt-2'>{user.bio}</p>}
         <div className='m-4 flex items-center justify-center gap-4 flex-wrap'>
-          {reqUser && reqUserIsFollowing !== undefined && reqUser._id.toString() !== user._id.toString() && (
-            <FollowButton
-              isFollowing={reqUserIsFollowing}
-              onResponse={followData => setFollowerCount(followData.followerCount)}
-              user={user}
-            />
-          )}
-          <h2><span className='font-bold'>{followers.length}</span> Follower{followers.length === 1 ? '' : 's'}</h2>
-          <h2><span className='font-bold'>{following.length}</span> Following</h2>
+          <FollowButton
+            isFollowing={reqUserIsFollowing}
+            user={user}
+          />
+          <button onClick={() => setIsFollowerOpen(true)}>
+            <span className='font-bold'>{followers.length}</span> follower{followers.length === 1 ? '' : 's'}
+          </button>
+          <button onClick={() => setIsFollowingOpen(true)}>
+            <span className='font-bold'>{following.length}</span> following
+          </button>
         </div>
         <div className='flex flex-wrap justify-center text-left gap-12 m-4'>
           <div className='flex flex-col gap-6 max-w-sm w-full'>
@@ -517,13 +520,19 @@ export default function ProfilePage({
                 }
               </div>
             }
-            <div>
-              <div className='font-bold text-xl mt-4 mb-2 justify-center flex'>{`${following.length} following:`}</div>
-              <FollowingList isFollowingGraphs={following} />
-            </div>
           </div>
           <CommentWall userId={user._id} />
         </div>
+        <FollowerModal
+          closeModal={() => setIsFollowerOpen(false)}
+          followers={followers}
+          isOpen={isFollowerOpen}
+        />
+        <FollowingModal
+          closeModal={() => setIsFollowingOpen(false)}
+          following={following}
+          isOpen={isFollowingOpen}
+        />
       </>
       :
       <div className='text-center break-words'>
@@ -773,7 +782,7 @@ export default function ProfilePage({
             interactionStatistic: {
               '@type': 'InteractionCounter',
               interactionType: 'http://schema.org/FollowAction',
-              userInteractionCount: followerCount,
+              userInteractionCount: followers.length,
             },
             description: user.bio,
             image: user.avatarUpdatedAt ? `/api/avatar/${user._id}.png` : '/avatar_default.png',
