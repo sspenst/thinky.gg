@@ -31,6 +31,11 @@ const UserSchema = new mongoose.Schema<User>({
     maxlength: 256,
     select: false
   },
+  disableConfetti: {
+    type: Boolean,
+    required: false,
+    default: false,
+  },
   disallowedEmailNotifications: {
     type: [{ type: String, enum: NotificationType }],
     required: true,

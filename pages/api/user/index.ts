@@ -27,6 +27,7 @@ export default withAuth({
   PUT: {
     body: {
       currentPassword: ValidType('string', false),
+      disableConfetti: ValidType('boolean', false),
       email: ValidType('string', false),
       hideStatus: ValidType('boolean', false),
       name: ValidType('string', false),
@@ -60,6 +61,7 @@ export default withAuth({
     const {
       bio,
       currentPassword,
+      disableConfetti,
       email,
       hideStatus,
       name,
@@ -82,6 +84,10 @@ export default withAuth({
     }
 
     const setObj: {[k: string]: string} = {};
+
+    if (disableConfetti !== undefined) {
+      setObj['disableConfetti'] = disableConfetti;
+    }
 
     if (hideStatus !== undefined) {
       setObj['hideStatus'] = hideStatus;
