@@ -1,20 +1,22 @@
 import LevelCard from '@root/components/cards/levelCard';
 import FormattedDate from '@root/components/formatted/formattedDate';
+import GameLogoAndLabel from '@root/components/gameLogoAndLabel';
 import Solved from '@root/components/level/info/solved';
 import FollowerModal from '@root/components/modal/followerModal';
 import FollowingModal from '@root/components/modal/followingModal';
 import LoadingSpinner from '@root/components/page/loadingSpinner';
 import RoleIcons from '@root/components/page/roleIcons';
-import StyledTooltip from '@root/components/page/styledTooltip';
 import LevelsSolvedByDifficultyList from '@root/components/profile/levelsSolvedByDifficultyList';
 import PlayerRank from '@root/components/profile/playerRank';
 import { ProfileAchievments } from '@root/components/profile/profileAchievements';
 import ProfileMultiplayer from '@root/components/profile/profileMultiplayer';
+import { GameId } from '@root/constants/GameId';
 import { GameType } from '@root/constants/Games';
 import StatFilter from '@root/constants/statFilter';
 import { AppContext } from '@root/contexts/appContext';
 import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { getUsersWithMultiplayerProfile } from '@root/helpers/getUsersWithMultiplayerProfile';
+import isOnline from '@root/helpers/isOnline';
 import useSWRHelper from '@root/hooks/useSWRHelper';
 import { MultiplayerMatchState } from '@root/models/constants/multiplayer';
 import { LEVEL_DEFAULT_PROJECTION } from '@root/models/constants/projections';
@@ -99,7 +101,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const profileTab = !tab ? ProfileTab.Profile : tab[0] as ProfileTab;
 
-  const users = await getUsersWithMultiplayerProfile(gameId, { name: name }, { bio: 1, ts: 1, config: 1 });
+  const users = await getUsersWithMultiplayerProfile(gameId, { name: name }, { bio: 1, ts: 1, config: 1, lastGame: 1 });
 
   if (!users || users.length !== 1) {
     return {
@@ -469,12 +471,15 @@ export default function ProfilePage({
           <div className='flex items-center justify-center'>
             <ProfileAvatar size={Dimensions.AvatarSizeLarge} user={user} />
           </div>
-          <div className='flex flex-col items-center text-center sm:text-left sm:items-start gap-3 max-w-2xl'>
+          <div className='flex flex-col items-center text-center sm:text-left sm:items-start gap-2 max-w-2xl'>
             <div className='flex gap-2 items-center max-w-full'>
               <h2 className='text-3xl font-bold truncate'>{user.name}</h2>
               <RoleIcons id='profile' size={24} user={user} />
             </div>
-            <div className='flex gap-4 flex-wrap justify-center'>
+            {!game.isNotAGame && <div className='flex gap-1'>
+              {levelsSolvedByDifficulty ? <PlayerRank levelsSolvedByDifficulty={levelsSolvedByDifficulty} tooltip='Highest unlocked skill achievement' user={user} /> : '...'}
+            </div>}
+            <div className='flex gap-4 flex-wrap justify-center py-1'>
               <FollowButton
                 isFollowing={reqUserIsFollowing}
                 user={user}
@@ -492,30 +497,22 @@ export default function ProfilePage({
         <div className='flex flex-wrap justify-center text-left gap-12 m-4'>
           <div className='flex flex-col gap-6 max-w-sm w-full'>
             <div>
-              {!game.isNotAGame && <h2 className='flex gap-2'>
-                <span
-                  className='font-bold'
-                  data-tooltip-content='Highest unlocked Skill achievement'
-                  data-tooltip-id='rank-tooltip'
-                >
-                  Rank:
-                </span>
-                <StyledTooltip id='rank-tooltip' />
-                {
-                  levelsSolvedByDifficulty ? <PlayerRank levelsSolvedByDifficulty={levelsSolvedByDifficulty} user={user} /> : '...'
-                }
-              </h2>}
-              {!game.isNotAGame && !game.disableRanked && <h2><span className='font-bold'>Ranked Solves:</span> {user.config?.calcRankedSolves ?? 0} 🏅</h2>}
-              {!game.isNotAGame && <h2><span className='font-bold'>Levels Solved:</span> {user.config?.calcLevelsSolvedCount ?? 0}</h2>}
-              {!game.isNotAGame && <h2><span className='font-bold'>Levels Completed:</span> {user.config?.calcLevelsCompletedCount ?? 0}</h2>}
-              {!user.hideStatus && <>
-                <h2><span className='font-bold'>Last Seen:</span> <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.last_visited_at ? user.last_visited_at : user.ts} /></h2>
-              </>}
-              <h2><span className='font-bold'>Registered:</span> <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.ts} /></h2>
+              {!game.isNotAGame && !game.disableRanked && <div><span className='font-bold'>Ranked Solves:</span> {user.config?.calcRankedSolves ?? 0} 🏅</div>}
+              {!game.isNotAGame && <div><span className='font-bold'>Levels Solved:</span> {user.config?.calcLevelsSolvedCount ?? 0}</div>}
+              {!game.isNotAGame && <div><span className='font-bold'>Levels Completed:</span> {user.config?.calcLevelsCompletedCount ?? 0}</div>}
+              {user.hideStatus ? null : isOnline(user) ?
+                <div className='flex gap-1 items-center'>
+                  <span className='font-bold'>Currently Playing:</span>
+                  <GameLogoAndLabel gameId={user.lastGame ?? GameId.THINKY} id={'profile'} size={20} />
+                </div>
+                :
+                <div><span className='font-bold'>Last Seen:</span> <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.last_visited_at ? user.last_visited_at : user.ts} /></div>
+              }
+              <div><span className='font-bold'>Registered:</span> <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.ts} /></div>
             </div>
             {!game.isNotAGame &&
               <div>
-                <h2><span className='font-bold'>Levels {difficultyType} by Difficulty:</span></h2>
+                <div><span className='font-bold'>Levels {difficultyType} by Difficulty:</span></div>
                 {levelsSolvedByDifficulty ?
                   <LevelsSolvedByDifficultyList levelsSolvedByDifficulty={levelsSolvedByDifficulty} linksToSearch={ownProfile} />
                   :
@@ -539,7 +536,7 @@ export default function ProfilePage({
       </>
       :
       <div className='text-center break-words'>
-        {user.name} has not yet registered on {game.displayName}.
+        {user.name} has not yet registered.
       </div>
     ),
     [ProfileTab.Insights]: <ProfileInsights reqUser={reqUser} user={user} />,
