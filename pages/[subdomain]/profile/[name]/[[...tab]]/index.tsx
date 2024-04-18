@@ -466,7 +466,7 @@ export default function ProfilePage({
   // create an array of objects with the id, trigger element (eg. button), and the content element
   const tabsContent = {
     [ProfileTab.Profile]: (user.ts ?
-      <div className='flex flex-col gap-12'>
+      <div className='flex flex-col gap-12 mt-4'>
         <div className='flex flex-col sm:flex-row gap-8 justify-center items-center max-w-full'>
           <div className='flex items-center justify-center'>
             <ProfileAvatar size={Dimensions.AvatarSizeLarge} user={user} />
