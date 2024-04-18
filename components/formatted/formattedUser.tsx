@@ -98,7 +98,6 @@ export default function FormattedUser({ className, hideAvatar, id, noLinks, noTo
         data-tooltip-html={renderToStaticMarkup(
           <div className='flex flex-col gap-0.5 p-1 items-start text-sm truncate'>
             {!userExtendedData ? <LoadingSpinner /> : <>
-              <span className='font-bold text-base'>{userExtendedData.user?.name}</span>
               {!userExtendedData.user?.ts ? <span>Unregistered for {game.displayName}</span> : <>
                 {!game.isNotAGame &&
                   <PlayerRank
