@@ -241,7 +241,7 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
       {isProUser &&
         <div className='flex justify-center text-sm gap-3'>
           <button
-            className='bg-blue-500 hover:bg-blue-700 text-white text-white rounded-md px-3 py-2 w-fit'
+            className='bg-blue-500 hover:bg-blue-700 text-white rounded-md px-3 py-2 w-fit'
             onClick={() => {
               const currentColors = {} as Record<string, string>;
 
@@ -257,7 +257,7 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
             Export
           </button>
           <button
-            className='bg-blue-500 hover:bg-blue-700 text-white text-white rounded-md px-3 py-2 w-fit'
+            className='bg-blue-500 hover:bg-blue-700 text-white rounded-md px-3 py-2 w-fit'
             onClick={() => setIsImportOpen(true)}
           >
             Import

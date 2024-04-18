@@ -1,5 +1,6 @@
+import { AppContext } from '@root/contexts/appContext';
 import classNames from 'classnames';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import GraphType from '../../constants/graphType';
 import User from '../../models/db/user';
@@ -14,6 +15,11 @@ interface FollowButtonProps {
 export default function FollowButton({ isFollowing, onResponse, user }: FollowButtonProps) {
   const [_isFollowing, setIsFollowing] = useState(isFollowing);
   const [disabled, setDisabled] = useState(false);
+  const { user: reqUser } = useContext(AppContext);
+
+  if (!reqUser || reqUser._id === user._id) {
+    return null;
+  }
 
   const onFollowButtonPress = async () => {
     setDisabled(true);
