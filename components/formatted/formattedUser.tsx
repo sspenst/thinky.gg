@@ -98,22 +98,13 @@ export default function FormattedUser({ className, hideAvatar, id, noLinks, noTo
         data-tooltip-html={renderToStaticMarkup(
           <div className='flex flex-col gap-0.5 p-1 items-start text-sm truncate'>
             {!userExtendedData ? <LoadingSpinner /> : <>
-              <span className='font-bold text-base'>{userExtendedData.user?.name}</span>
               {!userExtendedData.user?.ts ? <span>Unregistered for {game.displayName}</span> : <>
-                {isOnline(userExtendedData.user) &&
-                  <div className='flex gap-1 items-center'>
-                    <span className='font-medium'>Currently Playing:</span>
-                    <GameLogoAndLabel gameId={userExtendedData.user.lastGame ?? GameId.THINKY} id={id} size={20} />
-                  </div>
-                }
                 {!game.isNotAGame &&
-                <div className='flex gap-1'>
-                  <span className='font-medium'>Rank:</span>
                   <PlayerRank
                     levelsSolvedByDifficulty={userExtendedData?.levelsSolvedByDifficulty}
                     user={user}
                   />
-                </div>}
+                }
                 {!game.isNotAGame && !game.disableRanked &&
                 <div className='flex gap-1'>
                   <span className='font-medium'>Ranked Solves:</span>
@@ -132,7 +123,16 @@ export default function FormattedUser({ className, hideAvatar, id, noLinks, noTo
                   <span className='gray'>{userExtendedData.user.config?.calcLevelsCompletedCount}</span>
                 </div>
                 }
-                {!user.hideStatus &&
+                {user.hideStatus ? null : isOnline(userExtendedData.user) ?
+                  <div className='flex gap-1 items-center'>
+                    <span className='font-medium'>Currently Playing:</span>
+                    <div className='flex gap-1' style={{
+                      color: 'var(--color-gray)',
+                    }}>
+                      <GameLogoAndLabel gameId={userExtendedData.user.lastGame ?? GameId.THINKY} id={id} size={16} />
+                    </div>
+                  </div>
+                  :
                   <div className='flex gap-1'>
                     <span className='font-medium'>Last Seen:</span> <FormattedDate ts={user.last_visited_at ? user.last_visited_at : user.ts} />
                   </div>
