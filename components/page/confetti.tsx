@@ -1,5 +1,6 @@
+import { AppContext } from '@root/contexts/appContext';
 import confetti from 'canvas-confetti';
-import React, { useRef } from 'react';
+import React, { useContext, useRef } from 'react';
 
 let confettiInstance: () => void;
 
@@ -11,8 +12,9 @@ export const dropConfetti = () => {
 
 export function Confetti() {
   const canvasRef = useRef(null);
+  const { user } = useContext(AppContext);
 
-  confettiInstance = () => {
+  confettiInstance = user?.disableConfetti ? () => {} : () => {
     const duration = 800;
     const end = Date.now() + duration;
 
