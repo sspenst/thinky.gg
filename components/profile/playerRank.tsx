@@ -6,7 +6,7 @@ import Link from 'next/link';
 import React from 'react';
 import FormattedDifficulty, { difficultyList } from '../formatted/formattedDifficulty';
 
-function getPlayerRank(levelsSolvedByDifficulty?: { [key: string]: number }) {
+function getPlayerRank(levelsSolvedByDifficulty?: { [key: string]: number }, tooltip?: string) {
   if (!levelsSolvedByDifficulty) {
     return null;
   }
@@ -24,18 +24,19 @@ function getPlayerRank(levelsSolvedByDifficulty?: { [key: string]: number }) {
 
   const difficulty = difficultyList[req.difficultyIndex];
 
-  return <FormattedDifficulty difficulty={difficulty} id='player-rank' />;
+  return <FormattedDifficulty difficulty={difficulty} id='player-rank' tooltip={tooltip} />;
 }
 
 interface PlayerRankProps {
   levelsSolvedByDifficulty: { [key: string]: number };
+  tooltip?: string;
   user: User;
 }
 
-export default function PlayerRank({ levelsSolvedByDifficulty, user }: PlayerRankProps) {
+export default function PlayerRank({ levelsSolvedByDifficulty, tooltip, user }: PlayerRankProps) {
   return (
     <Link href={'/profile/' + user.name + '/' + ProfileTab.Achievements}>
-      {getPlayerRank(levelsSolvedByDifficulty) ?? <span>No rank</span>}
+      {getPlayerRank(levelsSolvedByDifficulty, tooltip) ?? <span>No rank</span>}
     </Link>
   );
 }

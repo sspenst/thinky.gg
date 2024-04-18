@@ -109,7 +109,7 @@ export default function LevelInfoPlayTime() {
               <div className={classNames('text-left flex items-center', { 'font-bold': total })}>{total === 0 ? 'No play time recorded' : getTimePlayedStr(total)}</div>
               {proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData] && (proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData] as CountAndSum).count >= 1 && (<>
                 <div
-                  className='w-20 w-full justify-end flex items-center font-medium underline decoration-dashed cursor-help'
+                  className='w-full justify-end flex items-center font-medium underline decoration-dashed cursor-help'
                   data-tooltip-content='Average time for others who solved this level'
                   data-tooltip-id='others-tooltip'
                 >
