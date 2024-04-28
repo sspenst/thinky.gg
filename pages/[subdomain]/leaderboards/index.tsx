@@ -294,7 +294,7 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
                     <Menu.Item key={`leaderboard-${leaderboardKey}`}>
                       {({ active }) => (
                         <button
-                          className='text-black block p-1 text-xl font-medium w-64 flex items-center gap-1 justify-center'
+                          className='text-black p-1 text-xl font-medium w-64 flex items-center gap-1 justify-center'
                           onClick={() => setLeaderboard(leaderboardKey)}
                           role='menuitem'
                           style= {{
