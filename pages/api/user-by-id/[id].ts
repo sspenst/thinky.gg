@@ -37,6 +37,7 @@ export async function getUserById(id: string | string[] | undefined, gameId: Gam
       {
         $project: {
           ...USER_DEFAULT_PROJECTION,
+          lastGame: 1,
           ts: 1,
         },
       },
