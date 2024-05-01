@@ -1,9 +1,9 @@
 import { GameId } from '@root/constants/GameId';
+import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { FilterQuery, PipelineStage, Types } from 'mongoose';
 import cleanUser from '../lib/cleanUser';
 import { UserWithMultiplayerProfile } from '../models/db/user';
 import { MultiplayerProfileModel, UserModel } from '../models/mongoose';
-import { USER_DEFAULT_PROJECTION } from '../models/schemas/userSchema';
 import { getEnrichUserConfigPipelineStage } from './enrich';
 
 export async function getUsersWithMultiplayerProfileFromIds(gameId: GameId | undefined, ids: Types.ObjectId[]) {
@@ -21,7 +21,6 @@ export async function getUsersWithMultiplayerProfile(
     {
       $match: match
     },
-
     // join with multiplayer profile
     {
       $lookup: {

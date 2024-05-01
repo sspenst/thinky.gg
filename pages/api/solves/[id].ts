@@ -1,10 +1,12 @@
+import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
+import Stat from '@root/models/db/stat';
+import { Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
 import { logger } from '../../../helpers/logger';
 import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
-import Record from '../../../models/db/record';
-import { StatModel } from '../../../models/mongoose';
+import { StatModel, UserModel } from '../../../models/mongoose';
 
 export default apiWrapper({ GET: {
   query: {
@@ -17,7 +19,23 @@ export default apiWrapper({ GET: {
   await dbConnect();
 
   try {
-    const stats = await StatModel.find<Record>({ levelId: id, complete: true }, {}, all === 'true' ? {} : { limit: 10 }).populate('userId').sort({ ts: -1 });
+    const stats = await StatModel.aggregate<Stat>([
+      { $match: { levelId: new Types.ObjectId(id as string), complete: true } },
+      ...(all === 'true' ? [] : [{ $limit: 10 }]),
+      { $sort: { ts: -1 } },
+      {
+        $lookup: {
+          from: UserModel.collection.name,
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'userId',
+          pipeline: [
+            { $project: { ...USER_DEFAULT_PROJECTION } },
+          ]
+        },
+      },
+      { $unwind: { path: '$userId', preserveNullAndEmptyArrays: true } },
+    ]);
 
     stats.forEach(stat => cleanUser(stat.userId));
 

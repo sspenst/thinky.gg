@@ -5,7 +5,7 @@ import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import { SlugUtil } from '@root/helpers/generateSlug';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import { abortMatch } from '@root/helpers/match/abortMatch';
-import { LEVEL_DEFAULT_PROJECTION } from '@root/models/constants/projections';
+import { LEVEL_DEFAULT_PROJECTION, USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import { MULTIPLAYER_INITIAL_ELO } from '@root/models/schemas/multiplayerProfileSchema';
 import mongoose, { PipelineStage, Types } from 'mongoose';
@@ -21,7 +21,6 @@ import MultiplayerMatch from '../../../models/db/multiplayerMatch';
 import User from '../../../models/db/user';
 import { LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, UserModel } from '../../../models/mongoose';
 import { computeMatchScoreTable, enrichMultiplayerMatch, generateMatchLog } from '../../../models/schemas/multiplayerMatchSchema';
-import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 import { queueRefreshAchievements } from '../internal-jobs/worker';
 
 export async function checkForFinishedMatches() {
@@ -420,7 +419,7 @@ export async function getAllMatches(gameId: GameId, reqUser?: User, matchFilters
                 preserveNullAndEmptyArrays: true,
               }
             },
-            ...getEnrichUserConfigPipelineStage(gameId) as PipelineStage.Lookup[],
+            ...getEnrichUserConfigPipelineStage(gameId),
           ],
         }
       },
@@ -434,7 +433,7 @@ export async function getAllMatches(gameId: GameId, reqUser?: User, matchFilters
             {
               $project: USER_DEFAULT_PROJECTION,
             },
-            ...getEnrichUserConfigPipelineStage(gameId) as PipelineStage.Lookup[],
+            ...getEnrichUserConfigPipelineStage(gameId),
           ],
         }
       },
@@ -448,7 +447,7 @@ export async function getAllMatches(gameId: GameId, reqUser?: User, matchFilters
             {
               $project: USER_DEFAULT_PROJECTION,
             },
-            ...getEnrichUserConfigPipelineStage(gameId) as PipelineStage.Lookup[],
+            ...getEnrichUserConfigPipelineStage(gameId),
           ],
         }
       },
@@ -479,8 +478,9 @@ export async function getAllMatches(gameId: GameId, reqUser?: User, matchFilters
                 pipeline: [
                   {
                     $project: USER_DEFAULT_PROJECTION,
-                  }
-                ]
+                  },
+                  ...getEnrichUserConfigPipelineStage(gameId),
+                ],
               }
             },
             {

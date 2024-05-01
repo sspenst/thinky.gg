@@ -1,4 +1,5 @@
 import { GameId } from '@root/constants/GameId';
+import { getEnrichedNotifications } from '@root/helpers/enrich';
 import { redirectToLogin } from '@root/helpers/redirectToLogin';
 import useRouterQuery from '@root/hooks/useRouterQuery';
 import { Types } from 'mongoose';
@@ -8,7 +9,6 @@ import React, { useCallback, useEffect, useState } from 'react';
 import FilterButton from '../../../components/buttons/filterButton';
 import NotificationList from '../../../components/notification/notificationList';
 import Page from '../../../components/page/page';
-import { enrichNotifications } from '../../../helpers/enrich';
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
 import Notification from '../../../models/db/notification';
@@ -56,14 +56,13 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   const [notifications, totalRows] = await Promise.all([
-    NotificationModel.find(searchObj, {}, { sort: { createdAt: -1 }, limit: notificationsPerPage, skip: notificationsPerPage * (Number(searchQuery.page) - 1) }).populate(['target', 'source']).lean<Notification[]>(),
+    getEnrichedNotifications(reqUser, searchObj, notificationsPerPage, notificationsPerPage * (Number(searchQuery.page) - 1)),
     NotificationModel.countDocuments(searchObj),
   ]);
-  const enrichedNotifications = await enrichNotifications(notifications, reqUser);
 
   return {
     props: {
-      notifications: JSON.parse(JSON.stringify(enrichedNotifications)),
+      notifications: JSON.parse(JSON.stringify(notifications)),
       searchQuery: JSON.parse(JSON.stringify(searchQuery)),
       totalRows: totalRows,
     } as NotificationProps,

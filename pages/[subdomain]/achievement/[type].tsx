@@ -6,14 +6,15 @@ import { DataTableOffline } from '@root/components/tables/dataTable';
 import AchievementType from '@root/constants/achievements/achievementType';
 import Dimensions from '@root/constants/dimensions';
 import { AppContext } from '@root/contexts/appContext';
+import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import cleanUser from '@root/lib/cleanUser';
 import dbConnect from '@root/lib/dbConnect';
 import { getUserFromToken } from '@root/lib/withAuth';
+import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import Achievement from '@root/models/db/achievement';
 import User from '@root/models/db/user';
 import { AchievementModel, UserModel } from '@root/models/mongoose';
-import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import React, { useContext } from 'react';
 
@@ -49,6 +50,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         },
       },
       { $unwind: { path: '$userId' } },
+      ...getEnrichUserConfigPipelineStage(gameId, { excludeCalcs: true, localField: 'userId._id', lookupAs: 'userId.config' }),
     ]),
   ]);
 

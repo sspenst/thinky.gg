@@ -1,8 +1,9 @@
 import { GameId } from '@root/constants/GameId';
 import { GameType } from '@root/constants/Games';
-import { getEnrichLevelsPipelineSteps } from '@root/helpers/enrich';
+import { getEnrichLevelsPipelineSteps, getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import { getRecordsByUserId } from '@root/helpers/getRecordsByUserId';
+import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import User from '@root/models/db/user';
 import mongoose, { PipelineStage, Types } from 'mongoose';
 import { NextApiResponse } from 'next';
@@ -14,7 +15,6 @@ import cleanUser from '../../../../../lib/cleanUser';
 import withAuth, { NextApiRequestWithAuth } from '../../../../../lib/withAuth';
 import { LevelModel, PlayAttemptModel, StatModel, UserModel } from '../../../../../models/mongoose';
 import { AttemptContext } from '../../../../../models/schemas/playAttemptSchema';
-import { USER_DEFAULT_PROJECTION } from '../../../../../models/schemas/userSchema';
 
 async function getDifficultyDataComparisons(gameId: GameId, userId: string) {
   /** TODO: Store this in a K/V store with an expiration of like 1 day... */
@@ -321,6 +321,7 @@ async function getPlayLogForUsersCreatedLevels(gameId: GameId, reqUser: User, us
         },
       },
     },
+    ...getEnrichUserConfigPipelineStage(gameId, { excludeCalcs: true, localField: 'user._id', lookupAs: 'user.config' }),
     // also get the level
     {
       $lookup: {
@@ -400,6 +401,7 @@ async function getMostSolvesForUserLevels(gameId: GameId, userId: string) {
         },
       },
     },
+    ...getEnrichUserConfigPipelineStage(gameId, { excludeCalcs: true, localField: 'user._id', lookupAs: 'user.config' }),
     {
       $sort: {
         sum: -1,

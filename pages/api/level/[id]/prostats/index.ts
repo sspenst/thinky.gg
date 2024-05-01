@@ -1,5 +1,7 @@
 import { ProStatsCommunityStepData } from '@root/contexts/levelContext';
 import apiWrapper, { ValidObjectId } from '@root/helpers/apiWrapper';
+import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
+import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import mongoose from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import ProStatsLevelType from '../../../../../constants/proStatsLevelType';
@@ -8,7 +10,6 @@ import cleanUser from '../../../../../lib/cleanUser';
 import { getUserFromToken } from '../../../../../lib/withAuth';
 import { PlayAttemptModel, StatModel, UserModel } from '../../../../../models/mongoose';
 import { AttemptContext } from '../../../../../models/schemas/playAttemptSchema';
-import { USER_DEFAULT_PROJECTION } from '../../../../../models/schemas/userSchema';
 
 async function getCommunityStepData(levelId: string, onlyLeastMoves: boolean) {
   // we want to grab the step data for the level
@@ -48,6 +49,7 @@ async function getCommunityStepData(levelId: string, onlyLeastMoves: boolean) {
         preserveNullAndEmptyArrays: true,
       },
     },
+    ...getEnrichUserConfigPipelineStage('$gameId', { excludeCalcs: true, localField: 'user._id', lookupAs: 'user.config' }),
     {
       $addFields: {
         statTs: '$ts',

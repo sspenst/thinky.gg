@@ -1,12 +1,13 @@
 import { UserAndStatTs } from '@root/contexts/levelContext';
 import { ValidNumber, ValidObjectId } from '@root/helpers/apiWrapper';
+import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
+import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import mongoose from 'mongoose';
 import { NextApiResponse } from 'next';
 import isPro from '../../../../../helpers/isPro';
 import cleanUser from '../../../../../lib/cleanUser';
 import withAuth, { NextApiRequestWithAuth } from '../../../../../lib/withAuth';
 import { StatModel, UserModel } from '../../../../../models/mongoose';
-import { USER_DEFAULT_PROJECTION } from '../../../../../models/schemas/userSchema';
 
 async function getCompletionsBySteps(isPro: boolean, levelId: string, skip: number, steps: number) {
   const agg = await StatModel.aggregate([
@@ -55,12 +56,13 @@ async function getCompletionsBySteps(isPro: boolean, levelId: string, skip: numb
         statTs: '$ts',
       }
     },
+    ...getEnrichUserConfigPipelineStage('$gameId', { excludeCalcs: true, localField: 'user._id', lookupAs: 'user.config' }),
     {
       $project: {
         statTs: 1,
         user: 1,
       }
-    }
+    },
   ]) as UserAndStatTs[];
 
   agg.forEach(userAndStatTs => cleanUser(userAndStatTs.user));

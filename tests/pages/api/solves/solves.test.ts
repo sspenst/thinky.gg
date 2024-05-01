@@ -88,7 +88,7 @@ describe('Testing records token handler', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    jest.spyOn(StatModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
+    jest.spyOn(StatModel, 'aggregate').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
 
     await testApiHandler({
       pagesHandler: async (_, res) => {

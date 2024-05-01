@@ -1,4 +1,7 @@
+import { GameId } from '@root/constants/GameId';
+import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import isFullAccount from '@root/helpers/isFullAccount';
+import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { PipelineStage, Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import NotificationType from '../../../constants/notificationType';
@@ -9,14 +12,13 @@ import { COMMENT_QUERY_LIMIT } from '../../../models/constants/comment';
 import Comment, { EnrichedComment } from '../../../models/db/comment';
 import User from '../../../models/db/user';
 import { CommentModel, UserModel } from '../../../models/mongoose';
-import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 
 export interface CommentQuery {
   comments: EnrichedComment[];
   totalRows: number;
 }
 
-export async function getLatestCommentsFromId(id: string, latest: boolean, page: number, targetModel?: string) {
+export async function getLatestCommentsFromId(gameId: GameId, id: string, latest: boolean, page: number, targetModel?: string) {
   const tm = targetModel || 'User';
 
   const lookupStage = (tm === 'User' ? [{
@@ -55,6 +57,7 @@ export async function getLatestCommentsFromId(id: string, latest: boolean, page:
         {
           $unwind: '$author'
         },
+        ...getEnrichUserConfigPipelineStage(gameId, { excludeCalcs: true, localField: 'author._id', lookupAs: 'author.config' }),
         { '$facet': {
           metadata: [ { $count: 'totalRows' } ],
           data: [ { $limit: COMMENT_QUERY_LIMIT } ]
@@ -97,6 +100,7 @@ export async function getLatestCommentsFromId(id: string, latest: boolean, page:
     {
       $unwind: '$author'
     },
+    ...getEnrichUserConfigPipelineStage(gameId, { excludeCalcs: true, localField: 'author._id', lookupAs: 'author.config' }),
     {
       $sort: {
         // NB: when getting latest comments, we want to skip 0 and sort the other way, then reverse at the end
@@ -215,7 +219,7 @@ export default withAuth({
     }
 
     // on post, we should return the last page of comments
-    const commentsAggregate = await getLatestCommentsFromId(id as string, true, 0, targetModel);
+    const commentsAggregate = await getLatestCommentsFromId(req.gameId, id as string, true, 0, targetModel);
 
     return res.status(200).json(commentsAggregate);
   } else if (req.method === 'DELETE') {
@@ -227,7 +231,7 @@ export default withAuth({
       return res.status(400).json({ error: 'There was a problem deleting this comment.' });
     }
 
-    const commentsAggregate = await getLatestCommentsFromId(deletedComment.target._id.toString() as string, true, 0, deletedComment.targetModel as string);
+    const commentsAggregate = await getLatestCommentsFromId(req.gameId, deletedComment.target._id.toString() as string, true, 0, deletedComment.targetModel as string);
 
     return res.status(200).json(commentsAggregate);
   }

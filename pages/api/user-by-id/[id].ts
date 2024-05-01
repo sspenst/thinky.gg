@@ -1,7 +1,7 @@
 import { GameId } from '@root/constants/GameId';
 import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
-import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
+import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import apiWrapper, { NextApiRequestWrapper, ValidObjectId } from '../../../helpers/apiWrapper';

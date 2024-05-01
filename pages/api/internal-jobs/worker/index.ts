@@ -2,12 +2,13 @@ import { AchievementCategory } from '@root/constants/achievements/achievementInf
 import DiscordChannel from '@root/constants/discordChannel';
 import { GameId } from '@root/constants/GameId';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
+import { getEnrichNotificationPipelineStages } from '@root/helpers/enrich';
 import genLevelImage from '@root/helpers/genLevelImage';
-import { getEnrichNotificationPipelineStages } from '@root/helpers/getEnrichNotificationPipelineStages';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import isGuest from '@root/helpers/isGuest';
 import { createNewLevelNotifications } from '@root/helpers/notificationHelper';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';
+import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import Level from '@root/models/db/level';
 import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
@@ -21,7 +22,7 @@ import QueueMessage from '../../../../models/db/queueMessage';
 import { LevelModel, NotificationModel, QueueMessageModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
 import { calcPlayAttempts, refreshIndexCalcs } from '../../../../models/schemas/levelSchema';
 import { QueueMessageState, QueueMessageType } from '../../../../models/schemas/queueMessageSchema';
-import { calcCreatorCounts, USER_DEFAULT_PROJECTION } from '../../../../models/schemas/userSchema';
+import { calcCreatorCounts } from '../../../../models/schemas/userSchema';
 import { sendEmailNotification } from './sendEmailNotification';
 import { sendPushNotification } from './sendPushNotification';
 
@@ -295,7 +296,13 @@ async function processQueueMessage(queueMessage: QueueMessage) {
     const { levelId, postToDiscord } = JSON.parse(queueMessage.message) as { levelId: string, postToDiscord: boolean };
 
     log = `genLevelImage for ${levelId}`;
-    const lvl = await LevelModel.findOne({ _id: new Types.ObjectId(levelId) }).populate('userId').lean<Level>();
+    const levelAgg = await LevelModel.aggregate<Level>([
+      { $match: { _id: new Types.ObjectId(levelId) } },
+      { $lookup: { from: UserModel.collection.name, localField: 'userId', foreignField: '_id', as: 'userId' } },
+      { $unwind: { path: '$userId', preserveNullAndEmptyArrays: true } }
+    ]).exec();
+
+    const lvl = levelAgg.length > 0 ? levelAgg[0] : null;
 
     if (!lvl) {
       log = `genLevelImage for ${levelId} failed: level not found`;
