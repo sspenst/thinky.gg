@@ -222,7 +222,7 @@ export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {
       // for each group, look up the corresponding stat model based on userId and levelId
       {
         $lookup: {
-          from: 'stats',
+          from: StatModel.collection.name,
           let: {
             userId: '$_id',
             levelId: levelId,

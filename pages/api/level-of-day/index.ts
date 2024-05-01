@@ -2,12 +2,12 @@ import { GameId } from '@root/constants/GameId';
 import { GameType } from '@root/constants/Games';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import cleanUser from '@root/lib/cleanUser';
-import { LEVEL_DEFAULT_PROJECTION } from '@root/models/constants/projections';
+import { LEVEL_DEFAULT_PROJECTION, USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import KeyValue from '@root/models/db/keyValue';
 import { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import apiWrapper, { NextApiRequestWrapper } from '../../../helpers/apiWrapper';
-import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
+import { getEnrichLevelsPipelineSteps, getEnrichUserConfigPipelineStage } from '../../../helpers/enrich';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
@@ -15,7 +15,6 @@ import { getUserFromToken } from '../../../lib/withAuth';
 import Level, { EnrichedLevel } from '../../../models/db/level';
 import User from '../../../models/db/user';
 import { KeyValueModel, LevelModel, UserModel } from '../../../models/mongoose';
-import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 
 export const KV_LEVEL_OF_DAY_KEY_PREFIX = 'level-of-day-';
 export const KV_LEVEL_OF_DAY_LIST = KV_LEVEL_OF_DAY_KEY_PREFIX + 'list';
@@ -184,6 +183,7 @@ export async function getLevelOfDay(gameId: GameId, reqUser?: User | null) {
         preserveNullAndEmptyArrays: true
       }
     },
+    ...getEnrichUserConfigPipelineStage(gameId, { excludeCalcs: true, localField: 'userId._id', lookupAs: 'userId.config' }),
     {
       $project: {
         ...LEVEL_DEFAULT_PROJECTION

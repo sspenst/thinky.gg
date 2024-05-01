@@ -14,6 +14,7 @@ import { GameId } from '@root/constants/GameId';
 import { GameType } from '@root/constants/Games';
 import StatFilter from '@root/constants/statFilter';
 import { AppContext } from '@root/contexts/appContext';
+import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { getUsersWithMultiplayerProfile } from '@root/helpers/getUsersWithMultiplayerProfile';
 import isOnline from '@root/helpers/isOnline';
@@ -55,7 +56,7 @@ import { EnrichedCollection } from '../../../../../models/db/collection';
 import { EnrichedLevel } from '../../../../../models/db/level';
 import Review from '../../../../../models/db/review';
 import User from '../../../../../models/db/user';
-import { AchievementModel, CollectionModel, GraphModel, LevelModel, MultiplayerMatchModel } from '../../../../../models/mongoose';
+import { AchievementModel, CollectionModel, GraphModel, LevelModel, MultiplayerMatchModel, StatModel, UserModel } from '../../../../../models/mongoose';
 import SelectOption from '../../../../../models/selectOption';
 import SelectOptionStats from '../../../../../models/selectOptionStats';
 import { getFollowData } from '../../../../api/follow';
@@ -145,7 +146,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       } },
       {
         $lookup: {
-          from: 'stats',
+          from: StatModel.collection.name,
           localField: '_id',
           foreignField: 'levelId',
           as: 'stats',
@@ -197,7 +198,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         { $match: { target: new Types.ObjectId(userId), type: GraphType.FOLLOW } },
         {
           $lookup: {
-            from: 'users',
+            from: UserModel.collection.name,
             localField: 'source',
             foreignField: '_id',
             as: 'source',
@@ -207,11 +208,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
           },
         },
         { $unwind: '$source' },
+        ...getEnrichUserConfigPipelineStage(gameId, { excludeCalcs: true, localField: 'source._id', lookupAs: 'source.config' }),
         { $sort: { createdAt: -1 } },
         // isFollowing field if the reqUser is following the source
         {
           $lookup: {
-            from: 'graphs',
+            from: GraphModel.collection.name,
             let: { targetId: '$source._id', sourceId: new Types.ObjectId(reqUser?._id) },
             pipeline: [
               { $match: { $expr: { $and: [{ $eq: ['$target', '$$targetId'] }, { $eq: ['$source', '$$sourceId'] }] } } },
@@ -229,7 +231,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         { $match: { source: new Types.ObjectId(userId), type: GraphType.FOLLOW } },
         {
           $lookup: {
-            from: 'users',
+            from: UserModel.collection.name,
             localField: 'target',
             foreignField: '_id',
             as: 'target',
@@ -239,11 +241,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
           },
         },
         { $unwind: '$target' },
+        ...getEnrichUserConfigPipelineStage(gameId, { excludeCalcs: true, localField: 'target._id', lookupAs: 'target.config' }),
         { $sort: { createdAt: -1 } },
         // isFollowing field if the reqUser is following the target
         {
           $lookup: {
-            from: 'graphs',
+            from: GraphModel.collection.name,
             let: { targetId: '$target._id', sourceId: new Types.ObjectId(reqUser?._id) },
             pipeline: [
               { $match: { $expr: { $and: [{ $eq: ['$target', '$$targetId'] }, { $eq: ['$source', '$$sourceId'] }] } } },

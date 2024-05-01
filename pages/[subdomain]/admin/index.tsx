@@ -7,13 +7,14 @@ import MultiSelectUser from '@root/components/page/multiSelectUser';
 import Page from '@root/components/page/page';
 import AdminCommand from '@root/constants/adminCommand';
 import Role from '@root/constants/role';
+import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import useRouterQuery from '@root/hooks/useRouterQuery';
 import dbConnect from '@root/lib/dbConnect';
 import { getUserFromToken } from '@root/lib/withAuth';
+import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import Level from '@root/models/db/level';
 import User from '@root/models/db/user';
 import { LevelModel, UserModel } from '@root/models/mongoose';
-import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Router from 'next/router';
@@ -78,6 +79,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         preserveNullAndEmptyArrays: true,
       },
     },
+    ...getEnrichUserConfigPipelineStage('$gameId', { excludeCalcs: true, localField: 'userId._id', lookupAs: 'userId.config' }),
   ]))[0] : null;
   const user = adminQuery.userId ? await UserModel.findById(new Types.ObjectId(adminQuery.userId)) : null;
 

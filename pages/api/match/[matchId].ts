@@ -8,7 +8,7 @@ import { getMatch } from '@root/helpers/match/getMatch';
 import { matchMarkSkipLevel } from '@root/helpers/match/matchMarkSkipLevel';
 import { quitMatch } from '@root/helpers/match/quitMatch';
 import { multiplayerMatchTypeToText } from '@root/helpers/multiplayerHelperFunctions';
-import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
+import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { PipelineStage } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { DIFFICULTY_INDEX } from '../../../components/formatted/formattedDifficulty';

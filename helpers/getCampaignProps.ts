@@ -1,5 +1,5 @@
 import { GameId } from '@root/constants/GameId';
-import { LEVEL_DEFAULT_PROJECTION } from '@root/models/constants/projections';
+import { LEVEL_DEFAULT_PROJECTION, USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { PipelineStage, Types } from 'mongoose';
 import cleanUser from '../lib/cleanUser';
 import Campaign from '../models/db/campaign';
@@ -7,8 +7,7 @@ import { EnrichedCollection } from '../models/db/collection';
 import Level, { EnrichedLevel } from '../models/db/level';
 import User from '../models/db/user';
 import { CampaignModel, CollectionModel, LevelModel, UserModel } from '../models/mongoose';
-import { USER_DEFAULT_PROJECTION } from '../models/schemas/userSchema';
-import { getEnrichLevelsPipelineSteps } from './enrich';
+import { getEnrichLevelsPipelineSteps, getEnrichUserConfigPipelineStage } from './enrich';
 import { getGameFromId } from './getGameIdFromReq';
 import { logger } from './logger';
 
@@ -84,7 +83,8 @@ export default async function getCampaignProps(gameId: GameId, reqUser: User, sl
                     path: '$userId',
                     preserveNullAndEmptyArrays: true
                   }
-                }
+                },
+                ...getEnrichUserConfigPipelineStage(gameId, { excludeCalcs: true, localField: 'userId._id', lookupAs: 'userId.config' }),
               ]
             },
           },

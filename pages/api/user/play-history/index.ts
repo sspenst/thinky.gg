@@ -1,13 +1,12 @@
 import { GameId } from '@root/constants/GameId';
 import { ValidDate, ValidEnum, ValidNumber, ValidObjectId } from '@root/helpers/apiWrapper';
-import { getEnrichLevelsPipelineSteps } from '@root/helpers/enrich';
+import { getEnrichLevelsPipelineSteps, getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import isPro from '@root/helpers/isPro';
 import withAuth from '@root/lib/withAuth';
-import { LEVEL_DEFAULT_PROJECTION } from '@root/models/constants/projections';
+import { LEVEL_DEFAULT_PROJECTION, USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import User from '@root/models/db/user';
-import { PlayAttemptModel, UserModel } from '@root/models/mongoose';
+import { LevelModel, PlayAttemptModel, UserModel } from '@root/models/mongoose';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
-import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import { PipelineStage, Types } from 'mongoose';
 
 interface GetPlayAttemptsParams {
@@ -55,7 +54,7 @@ export async function getPlayAttempts(gameId: GameId, reqUser: User, params: Get
     },
     {
       $lookup: {
-        from: 'levels',
+        from: LevelModel.collection.name,
         localField: 'levelId',
         foreignField: '_id',
         as: 'levelId',
@@ -88,6 +87,7 @@ export async function getPlayAttempts(gameId: GameId, reqUser: User, params: Get
     {
       $unwind: '$levelId.userId',
     },
+    ...getEnrichUserConfigPipelineStage(gameId, { excludeCalcs: true, localField: 'levelId.userId._id', lookupAs: 'levelId.userId.config' }),
   ] as PipelineStage[]);
 }
 

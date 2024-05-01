@@ -1,11 +1,10 @@
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import cleanUser from '@root/lib/cleanUser';
-import { LEVEL_DEFAULT_PROJECTION, LEVEL_SEARCH_DEFAULT_PROJECTION } from '@root/models/constants/projections';
-import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
+import { LEVEL_DEFAULT_PROJECTION, LEVEL_SEARCH_DEFAULT_PROJECTION, USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { FilterQuery, PipelineStage, Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidEnum, ValidObjectId } from '../../../helpers/apiWrapper';
-import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
+import { getEnrichLevelsPipelineSteps, getEnrichUserConfigPipelineStage } from '../../../helpers/enrich';
 import { getUserFromToken } from '../../../lib/withAuth';
 import Collection, { EnrichedCollection } from '../../../models/db/collection';
 import User from '../../../models/db/user';
@@ -112,6 +111,7 @@ export async function getCollections({
         preserveNullAndEmptyArrays: true,
       },
     },
+    ...getEnrichUserConfigPipelineStage('$gameId', { excludeCalcs: true, localField: 'userId._id', lookupAs: 'userId.config' }),
     {
       $addFields: {
         'levelsWithSort': {
@@ -195,6 +195,7 @@ export async function getCollections({
               preserveNullAndEmptyArrays: true,
             },
           },
+          ...getEnrichUserConfigPipelineStage('$gameId', { excludeCalcs: true, localField: 'userId._id', lookupAs: 'userId.config' }),
         ],
       },
     },

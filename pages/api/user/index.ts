@@ -1,3 +1,4 @@
+import { enrichReqUser } from '@root/helpers/enrich';
 import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
 import isGuest from '@root/helpers/isGuest';
 import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmationEmail';
@@ -9,7 +10,6 @@ import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import TestId from '../../../constants/testId';
 import { ValidType } from '../../../helpers/apiWrapper';
-import { enrichReqUser } from '../../../helpers/enrich';
 import { generateCollectionSlug, generateLevelSlug } from '../../../helpers/generateSlug';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';

@@ -1,10 +1,10 @@
 import { GameId } from '@root/constants/GameId';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
-import { LEVEL_DEFAULT_PROJECTION } from '@root/models/constants/projections';
+import { LEVEL_DEFAULT_PROJECTION, USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { PipelineStage } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper from '../../../helpers/apiWrapper';
-import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
+import { getEnrichLevelsPipelineSteps, getEnrichUserConfigPipelineStage } from '../../../helpers/enrich';
 import { logger } from '../../../helpers/logger';
 import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
@@ -12,7 +12,6 @@ import { getUserFromToken } from '../../../lib/withAuth';
 import Review from '../../../models/db/review';
 import User from '../../../models/db/user';
 import { LevelModel, ReviewModel, UserModel } from '../../../models/mongoose';
-import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 
 export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
   const token = req.cookies?.token;
@@ -87,6 +86,7 @@ export async function getLatestReviews(gameId: GameId, reqUser: User | null = nu
           path: '$userId',
         }
       },
+      ...getEnrichUserConfigPipelineStage(gameId, { excludeCalcs: true, localField: 'userId._id', lookupAs: 'userId.config' }),
       {
         $limit: 7,
       },

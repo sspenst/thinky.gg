@@ -140,7 +140,7 @@ async function integrityCheckRankedScore(gameId: GameId) {
     { $match: { isRanked: true, gameId: gameId } },
     {
       $lookup: {
-        from: 'stats',
+        from: StatModel.collection.name,
         localField: '_id',
         foreignField: 'levelId',
         as: 'stats',

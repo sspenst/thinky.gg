@@ -2,8 +2,8 @@ import { ValidEnum, ValidNumber, ValidObjectId, ValidType } from '@root/helpers/
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import isPro from '@root/helpers/isPro';
 import { logger } from '@root/helpers/logger';
+import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import User from '@root/models/db/user';
-import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import Stripe from 'stripe';
 import withAuth from '../../../lib/withAuth';
 import { UserModel } from '../../../models/mongoose';
