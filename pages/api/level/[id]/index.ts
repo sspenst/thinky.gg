@@ -1,5 +1,5 @@
 import { logger } from '@root/helpers/logger';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidObjectId } from '../../../../helpers/apiWrapper';
 import { enrichLevels } from '../../../../helpers/enrich';
@@ -8,7 +8,7 @@ import isCurator from '../../../../helpers/isCurator';
 import cleanUser from '../../../../lib/cleanUser';
 import withAuth, { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Level from '../../../../models/db/level';
-import { CollectionModel, LevelModel } from '../../../../models/mongoose';
+import { CollectionModel, LevelModel, UserModel } from '../../../../models/mongoose';
 
 export default withAuth({
   GET: {
@@ -32,10 +32,13 @@ export default withAuth({
   if (req.method === 'GET') {
     const { id } = req.query;
 
-    const level = await LevelModel.findOne({
-      _id: id,
-      userId: req.userId,
-    }).populate('userId');
+    const levelAgg = await LevelModel.aggregate<Level>([
+      { $match: { _id: new Types.ObjectId(id as string), userId: req.user._id } },
+      { $lookup: { from: UserModel.collection.name, localField: 'userId', foreignField: '_id', as: 'userId' } },
+      { $unwind: { path: '$userId', preserveNullAndEmptyArrays: true } }
+    ]).exec();
+
+    const level = levelAgg.length > 0 ? levelAgg[0] : null;
 
     if (!level) {
       return res.status(404).json({

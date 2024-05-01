@@ -1,6 +1,6 @@
 import { GameId } from '@root/constants/GameId';
+import { getEnrichNotificationPipelineStages } from '@root/helpers/enrich';
 import { MatchGameState } from '@root/helpers/gameStateHelpers';
-import { getEnrichNotificationPipelineStages } from '@root/helpers/getEnrichNotificationPipelineStages';
 import { getUsersWithMultiplayerProfileFromIds } from '@root/helpers/getUsersWithMultiplayerProfile';
 import { getMatch } from '@root/helpers/match/getMatch';
 import cleanUser from '@root/lib/cleanUser';

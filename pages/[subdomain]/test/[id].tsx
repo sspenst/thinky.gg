@@ -1,7 +1,9 @@
 /* istanbul ignore file */
 
+import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { redirectToLogin } from '@root/helpers/redirectToLogin';
+import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
@@ -13,7 +15,6 @@ import cleanUser from '../../../lib/cleanUser';
 import { getUserFromToken } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import { LevelModel, UserModel } from '../../../models/mongoose';
-import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
@@ -57,6 +58,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         preserveNullAndEmptyArrays: true,
       },
     },
+    ...getEnrichUserConfigPipelineStage(gameId, { excludeCalcs: true, localField: 'userId._id', lookupAs: 'userId.config' }),
   ]);
 
   if (!levelAgg || levelAgg.length !== 1) {
