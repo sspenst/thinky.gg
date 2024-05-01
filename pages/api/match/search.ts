@@ -1,11 +1,12 @@
 import { MultiplayerMatchHistoryFilters } from '@root/components/profile/profileMultiplayer';
 import { GameId } from '@root/constants/GameId';
 import { ValidCommaSeparated, ValidEnum, ValidNumber, ValidObjectId, ValidType } from '@root/helpers/apiWrapper';
+import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import withAuth, { NextApiRequestWithAuth } from '@root/lib/withAuth';
 import { MultiplayerMatchState } from '@root/models/constants/multiplayer';
+import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { MultiplayerMatchModel, MultiplayerProfileModel, UserModel } from '@root/models/mongoose';
 import { enrichMultiplayerMatch } from '@root/models/schemas/multiplayerMatchSchema';
-import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 
@@ -89,6 +90,7 @@ async function doMatchQuery(gameId: GameId, query: MatchQuery) {
               ...USER_DEFAULT_PROJECTION
             }
           },
+          ...getEnrichUserConfigPipelineStage(gameId, { excludeCalcs: true }),
           {
             $lookup: {
               from: MultiplayerProfileModel.collection.name,
@@ -118,8 +120,7 @@ async function doMatchQuery(gameId: GameId, query: MatchQuery) {
         levels: 0,
         markedReady: 0,
       }
-    }
-
+    },
   ]);
 
   // clean users

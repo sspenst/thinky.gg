@@ -8,15 +8,6 @@ import Role from '../../constants/role';
 import User from '../db/user';
 import { LevelModel, UserConfigModel } from '../mongoose';
 
-export const USER_DEFAULT_PROJECTION = {
-  _id: 1,
-  avatarUpdatedAt: 1,
-  hideStatus: 1,
-  last_visited_at: 1,
-  name: 1,
-  roles: 1,
-};
-
 const UserSchema = new mongoose.Schema<User>({
   _id: {
     type: mongoose.Schema.Types.ObjectId,

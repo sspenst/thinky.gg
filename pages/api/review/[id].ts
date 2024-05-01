@@ -3,6 +3,7 @@ import { GameId } from '@root/constants/GameId';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import isCurator from '@root/helpers/isCurator';
 import isFullAccount from '@root/helpers/isFullAccount';
+import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import DiscordChannel from '../../../constants/discordChannel';
@@ -16,7 +17,6 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import Review from '../../../models/db/review';
 import { LevelModel, ReviewModel, UserModel } from '../../../models/mongoose';
-import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 import { queueRefreshAchievements, queueRefreshIndexCalcs } from '../internal-jobs/worker';
 
 export function getScoreEmojis(score: number) {
