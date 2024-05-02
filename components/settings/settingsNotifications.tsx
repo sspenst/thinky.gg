@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 export default function SettingsNotifications() {
   const [emailDigest, setEmailDigest] = useState(EmailDigestSettingType.DAILY);
   const [isUserConfigLoading, setIsUserConfigLoading] = useState(false);
-  const { user, mutateUser, userConfig } = useContext(AppContext);
+  const { mutateUser, user, userConfig } = useContext(AppContext);
 
   useEffect(() => {
     if (user?.emailDigest) {
@@ -131,7 +131,7 @@ export default function SettingsNotifications() {
               <th className='p-2 pl-4'>
                 <div id='toggleAllPushNotifs' className='flex justify-center gap-2'>
                   <label className='text-sm' htmlFor='toggleAllPushNotifs'>
-                  Push
+                    Push
                   </label>
                   <input
                     checked={disallowedPushNotifications.length === 0}
