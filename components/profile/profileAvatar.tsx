@@ -30,11 +30,9 @@ export default function ProfileAvatar({ hideStatusCircle, size = Dimensions.Avat
           width: size,
         }}
       />
-      {!hideStatusCircle && (<>
+      {!hideStatusCircle && connectedUser && <>
         <div
-          className={classNames(
-            !connectedUser ? 'bg-neutral-500' :
-              isOnline(connectedUser) ? 'bg-green-500' : 'bg-yellow-500')}
+          className={classNames(isOnline(connectedUser) ? 'bg-green-500' : 'bg-yellow-500')}
           style={{
             borderColor: 'var(--bg-color)',
             borderRadius: size / 6,
@@ -44,7 +42,7 @@ export default function ProfileAvatar({ hideStatusCircle, size = Dimensions.Avat
             width: size / 3,
           }}
         >
-          {connectedUser && !isOnline(connectedUser) &&
+          {!isOnline(connectedUser) &&
             <div
               className='overflow-hidden'
               style={{
@@ -67,7 +65,7 @@ export default function ProfileAvatar({ hideStatusCircle, size = Dimensions.Avat
             </div>
           }
         </div>
-      </>)}
+      </>}
     </div>
   );
 }

@@ -88,9 +88,7 @@ export default function SettingsGeneral({ user }: SettingsGeneralProps) {
             <button
               className='enabled:hover:bg-neutral-500 font-medium px-3 py-2 mr-2 rounded-full text-sm disabled:opacity-50 w-fit'
               disabled={updating}
-              onClick={() => {
-                setBio(initialBio);
-              }}
+              onClick={() => setBio(initialBio)}
             >
               Cancel
             </button>

@@ -1,5 +1,6 @@
+import { AppContext } from '@root/contexts/appContext';
 import User from '@root/models/db/user';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
 
 interface SettingsAccountProps {
@@ -9,6 +10,7 @@ interface SettingsAccountProps {
 export default function SettingsAccount({ user }: SettingsAccountProps) {
   const [currentPassword, setCurrentPassword] = useState<string>('');
   const [email, setEmail] = useState<string>(user.email);
+  const { mutateUser } = useContext(AppContext);
   const [password, setPassword] = useState<string>('');
   const [password2, setPassword2] = useState<string>('');
   const [showConfetti, setShowConfetti] = useState(!user.disableConfetti);
@@ -35,6 +37,7 @@ export default function SettingsAccount({ user }: SettingsAccountProps) {
       } else {
         toast.dismiss();
         toast.success(`Updated ${property}`);
+        mutateUser();
       }
     }).catch(async err => {
       console.error(err);
@@ -168,18 +171,6 @@ export default function SettingsAccount({ user }: SettingsAccountProps) {
           </div>
           <div className='flex gap-2'>
             <input
-              checked={showConfetti}
-              id='showConfetti'
-              name='showConfetti'
-              onChange={updateConfetti}
-              type='checkbox'
-            />
-            <label className='text-sm' htmlFor='showConfetti'>
-              Confetti
-            </label>
-          </div>
-          <div className='flex gap-2'>
-            <input
               checked={showStatus}
               id='showStatus'
               name='showStatus'
@@ -188,6 +179,18 @@ export default function SettingsAccount({ user }: SettingsAccountProps) {
             />
             <label className='text-sm' htmlFor='showStatus'>
               Show online status
+            </label>
+          </div>
+          <div className='flex gap-2'>
+            <input
+              checked={showConfetti}
+              id='showConfetti'
+              name='showConfetti'
+              onChange={updateConfetti}
+              type='checkbox'
+            />
+            <label className='text-sm' htmlFor='showConfetti'>
+              Confetti
             </label>
           </div>
         </div>
