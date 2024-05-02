@@ -168,7 +168,7 @@ export default function Nav({ isDropdown }: NavProps) {
     label={
       <div className='flex flex-col'>
         <span>Multiplayer</span>
-        {!socket?.connected || connectedPlayersCount === 0 ?
+        {!socket?.connected ?
           <span className='text-xs text-yellow-500'>Connecting...</span>
           :
           <>

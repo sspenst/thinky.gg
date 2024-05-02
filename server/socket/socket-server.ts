@@ -136,6 +136,13 @@ export default async function startSocketIOServer(server: Server) {
     const reqUser = socket.data.user;
     const gameId = getGameIdFromReq(socket.request);
 
+    socket.on('refresh', async () => {
+      await Promise.all([
+        broadcastConnectedPlayers(gameId, adapted),
+        broadcastMatches(gameId, mongoEmitter),
+      ]);
+    });
+
     socket.on('matchGameState', async (data) => {
       const userId = socket.data.userId as Types.ObjectId | undefined;
       const { matchId, matchGameState } = data;
@@ -145,6 +152,7 @@ export default async function startSocketIOServer(server: Server) {
         await broadcastCountOfUsersInRoom(gameId, adapted, matchId); // TODO: probably worth finding a better place to put this
       }
     });
+
     socket.on('disconnect', async () => {
       const userId = socket.data.userId as Types.ObjectId;
 
