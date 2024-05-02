@@ -19,7 +19,7 @@ export default function DidYouKnowTip({ reqUser }: DidYouKnowTipProps) {
     <>{game.displayName} has a long history and its own lingo / terminology (pipes, locks, etc...). You learn about them in the {game.displayName} <Link className='underline' href='https://github.com/sspenst/thinky.gg/wiki/Glossary'>glossary</Link>.</>,
     <>We have an iOS and Android app! Check it out: <Link className='underline' href='https://apps.apple.com/app/pathology-block-pushing-game/id1668925562'>iOS</Link> and <Link className='underline' href='https://play.google.com/store/apps/details?id=com.pathology.gg'>Android</Link>.</>,
     <>Follow level creators by clicking their username to visit their profile.</>,
-    <>Go Pro for features like Checkpoints, Redo, and community time comparisons. <Link className='underline' href='/settings/pro'>Learn more</Link>.</>,
+    <>Go Pro for features like Checkpoints, Redo, and community time comparisons. <Link className='underline' href='/pro'>Learn more</Link>.</>,
     <>You can customize your notification preferences in your <Link className='underline' href='/settings/notifications'>notifications settings</Link>.</>,
     <>See your <Link className='underline' href={reqUser ? `/profile/${reqUser.name}/achievements` : '/login'}>earned and potential achievements</Link>.</>,
     <>Create collections of levels, like your favorites, <Link className='underline' href={reqUser ? `/profile/${reqUser.name}/collections` : '/login'}>here</Link>.</>,

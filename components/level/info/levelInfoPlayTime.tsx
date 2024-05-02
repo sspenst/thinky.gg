@@ -43,7 +43,7 @@ export default function LevelInfoPlayTime() {
       <div className='flex gap-3 items-center'>
         <RoleIcon id='level-info-play-time' role={Role.PRO} size={20} />
         <div>
-          Get <Link href='/settings/pro' className='text-blue-300'>
+          Get <Link href='/pro' className='text-blue-300'>
             {game.displayName} Pro
           </Link> to see your play time for this level.
         </div>

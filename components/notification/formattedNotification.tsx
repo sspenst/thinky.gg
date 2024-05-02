@@ -181,7 +181,7 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
 
     return (<>
       {isGift ? 'You received a gift of Pro!' : 'You just upgraded to Pro!'}
-      <Link href='/settings/pro' className='underline' onClick={onMarkAsRead}>Check it out!</Link>
+      <Link href='/pro' className='underline' onClick={onMarkAsRead}>Check it out!</Link>
     </>);
   }
 

@@ -9,6 +9,7 @@ const LinksThatCarryOver = [
   '^/leaderboards',
   '^/notifications',
   '^/play-history',
+  '^/pro',
   '^/profile',
   '^/search',
   '^/settings',

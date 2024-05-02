@@ -215,7 +215,7 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
                   </span>
                 }
                 {isProTheme && !isProUser &&
-                  <Link href='/settings/pro'>
+                  <Link href='/pro'>
                     <Image alt='pro' src='/pro.svg' width={16} height={16} style={{ minWidth: 16, minHeight: 16 }} />
                   </Link>
                 }
