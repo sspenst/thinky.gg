@@ -74,7 +74,7 @@ interface FormattedLevelInfoProps {
 }
 
 export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
-  const { user, userConfig } = useContext(AppContext);
+  const { user } = useContext(AppContext);
   const stat = new SelectOptionStats(level.leastMoves, level.userMoves);
 
   function Divider() {
@@ -154,23 +154,20 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
       {level.userMoves && level.userMovesTs && level.userAttempts && (
         <div className='flex flex-col'>
           <div className='flex items-center gap-2 flex-wrap'>
-            <span className='font-bold' style={{
-              color: stat.getColor(undefined, game.id),
-              textShadow: '1px 1px black',
-            }}>
+            <span
+              className='font-bold'
+              data-tooltip-content={`${level.userAttempts} attempt${level.userAttempts !== 1 ? 's' : ''}`}
+              data-tooltip-id='attempts'
+              style={{
+                color: stat.getColor(undefined, game.id),
+                textShadow: '1px 1px black',
+              }}
+            >
               {stat.getText()}
             </span>
+            <StyledTooltip id='attempts' />
             {stat.isSolved() && <Solved className='-mx-2' />}
-            <span className='flex'>
-              <FormattedDate ts={level.userMovesTs} />
-              {userConfig?.showPlayStats &&
-                <span className='text-sm' style={{
-                  color: 'var(--color-gray)',
-                }}>
-                  {`, ${level.userAttempts} attempt${level.userAttempts !== 1 ? 's' : ''}`}
-                </span>
-              }
-            </span>
+            <FormattedDate ts={level.userMovesTs} />
           </div>
         </div>
       )}

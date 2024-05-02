@@ -36,7 +36,6 @@ export default withAuth({
       disallowedEmailNotifications: ValidArray(false),
       disallowedPushNotifications: ValidArray(false),
       emailDigest: ValidType('string', false),
-      showPlayStats: ValidType('boolean', false),
       theme: ValidType('string', false),
       tutorialCompletedAt: ValidNumber(false),
       toursCompleted: ValidArray(false),
@@ -54,7 +53,6 @@ export default withAuth({
       disallowedEmailNotifications,
       disallowedPushNotifications,
       emailDigest,
-      showPlayStats,
       theme,
       toursCompleted,
       tutorialCompletedAt,
@@ -71,10 +69,6 @@ export default withAuth({
           error: 'Guests cannot change email digest settings. Confirm your email to convert your account.',
         });
       }
-    }
-
-    if (showPlayStats !== undefined) {
-      setObj['showPlayStats'] = showPlayStats;
     }
 
     if (theme !== undefined) {

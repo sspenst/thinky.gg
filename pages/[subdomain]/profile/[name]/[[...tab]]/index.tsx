@@ -474,7 +474,7 @@ export default function ProfilePage({
           <div className='flex items-center justify-center'>
             <ProfileAvatar size={Dimensions.AvatarSizeLarge} user={user} />
           </div>
-          <div className='flex flex-col items-center text-center sm:text-left sm:items-start gap-2 max-w-2xl w-full sm:w-fit'>
+          <div className='flex flex-col items-center text-center sm:text-left sm:items-start gap-2 max-w-sm w-full sm:w-fit'>
             <div className='flex gap-2 items-center max-w-full'>
               <h2 className='text-3xl font-bold truncate'>{user.name}</h2>
               <RoleIcons id='profile' size={24} user={user} />
@@ -494,7 +494,7 @@ export default function ProfilePage({
                 <span className='font-bold'>{following.length}</span> following
               </button>
             </div>
-            {user.bio && <p className='italic text-sm break-words'>{user.bio}</p>}
+            {user.bio && <p className='italic text-sm break-words max-w-full'>{user.bio}</p>}
           </div>
         </div>
         <div className='flex flex-wrap justify-center text-left gap-x-20 gap-y-12'>

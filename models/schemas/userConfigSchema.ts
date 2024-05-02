@@ -41,10 +41,6 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       enum: Role,
       default: [],
     },
-    showPlayStats: {
-      type: Boolean,
-      default: false,
-    },
     theme: {
       type: String,
       required: true,

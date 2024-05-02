@@ -3,7 +3,6 @@ import SettingsNotifications from '@root/components/settings/settingsNotificatio
 import { AppContext } from '@root/contexts/appContext';
 import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import User from '@root/models/db/user';
-import UserConfig from '@root/models/db/userConfig';
 import classNames from 'classnames';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Image from 'next/image';
@@ -13,7 +12,6 @@ import Page from '../../../components/page/page';
 import SettingsGeneral from '../../../components/settings/settingsGeneral';
 import SettingsPro from '../../../components/settings/settingsPro';
 import { getUserFromToken } from '../../../lib/withAuth';
-import { getUserConfig } from '../../api/user-config';
 
 enum SettingsTab {
   Account = 'account',
@@ -96,12 +94,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     user: JSON.parse(JSON.stringify(reqUser)),
   } as SettingsProps;
 
-  if (tab === SettingsTab.Account || tab === SettingsTab.Notifications) {
-    const userConfig = await getUserConfig(gameId, reqUser);
-
-    settingsProps.userConfig = JSON.parse(JSON.stringify(userConfig));
-  }
-
   if (tab === SettingsTab.Pro) {
     settingsProps.stripeCustomerPortalLink = process.env.STRIPE_CUSTOMER_PORTAL;
     settingsProps.stripePaymentLink = game.stripePaymentLinkMonthly;
@@ -118,7 +110,6 @@ interface SettingsProps {
   stripePaymentLink?: string;
   stripePaymentYearlyLink?: string;
   user: User;
-  userConfig?: UserConfig | null;
 }
 
 /* istanbul ignore next */
@@ -127,7 +118,6 @@ export default function Settings({
   stripePaymentLink,
   stripePaymentYearlyLink,
   user,
-  userConfig,
 }: SettingsProps) {
   const { game } = useContext(AppContext);
 
@@ -149,7 +139,7 @@ export default function Settings({
   function getTabContent() {
     switch (tab) {
     case SettingsTab.Account:
-      return <SettingsAccount user={user} userConfig={userConfig} />;
+      return <SettingsAccount user={user} />;
     case SettingsTab.Pro:
       return <SettingsPro stripeCustomerPortalLink={stripeCustomerPortalLink} stripePaymentLink={stripePaymentLink} stripePaymentYearlyLink={stripePaymentYearlyLink} />;
     case SettingsTab.Notifications:
