@@ -96,7 +96,7 @@ export default function SettingsNotifications() {
         <table className='table-fixed'>
           <thead>
             <tr className='border-b' style={{ borderColor: 'var(--bg-color-4)' }}>
-              <th className='p-2 text-left'>Notification</th>
+              <th className='p-2 text-left'>Notifications</th>
               <th className='p-2'>
                 <div id='toggleAllEmailNotifs' className='flex justify-center gap-2'>
                   <label className='text-sm' htmlFor='toggleAllEmailNotifs'>

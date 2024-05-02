@@ -10,7 +10,7 @@ interface SettingsAccountProps {
 export default function SettingsAccount({ user }: SettingsAccountProps) {
   const [currentPassword, setCurrentPassword] = useState<string>('');
   const [email, setEmail] = useState<string>(user.email);
-  const { mutateUser } = useContext(AppContext);
+  const { multiplayerSocket, mutateUser } = useContext(AppContext);
   const [password, setPassword] = useState<string>('');
   const [password2, setPassword2] = useState<string>('');
   const [showConfetti, setShowConfetti] = useState(!user.disableConfetti);
@@ -38,6 +38,7 @@ export default function SettingsAccount({ user }: SettingsAccountProps) {
         toast.dismiss();
         toast.success(`Updated ${property}`);
         mutateUser();
+        multiplayerSocket.socket?.emit('refresh');
       }
     }).catch(async err => {
       console.error(err);

@@ -94,7 +94,7 @@ export default function Home({
           </svg>
           <div className='flex flex-col'>
             <span className='text-lg font-bold'>Multiplayer</span>
-            {!socket?.connected || connectedPlayersCount === 0 ?
+            {!socket?.connected ?
               <span className='text-xs text-yellow-500'>Connecting...</span>
               :
               <>

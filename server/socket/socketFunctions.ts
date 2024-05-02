@@ -113,7 +113,7 @@ export async function broadcastCountOfUsersInRoom(gameId: GameId, emitter: Serve
   });
 
   // we have all the connected user ids now... so let's get all of them
-  const users = await getUsersWithMultiplayerProfileFromIds(undefined, connectedUserIds);
+  const users = await getUsersWithMultiplayerProfileFromIds(gameId, connectedUserIds);
   // remove users with hideStatus: true and inactive users
   const filteredUsers = users.filter(user => !user.hideStatus);
 
@@ -165,7 +165,7 @@ export async function broadcastConnectedPlayers(gameId: GameId, emitter: Server)
   });
 
   // we have all the connected user ids now... so let's get all of them
-  const users = await getUsersWithMultiplayerProfileFromIds(undefined, connectedUserIds);
+  const users = await getUsersWithMultiplayerProfileFromIds(gameId, connectedUserIds);
   // remove users with hideStatus: true and inactive users
   const filteredUsers = users.filter(user => !user.hideStatus);
 

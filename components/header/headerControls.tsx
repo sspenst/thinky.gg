@@ -15,7 +15,7 @@ function HeaderMultiplayer() {
     return null;
   }
 
-  const isConnected = socket?.connected && connectedPlayersCount > 0;
+  const isConnected = !!socket?.connected;
 
   function getTooltipContent() {
     if (!isConnected) {
