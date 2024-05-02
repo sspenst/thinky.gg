@@ -116,7 +116,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
             {isPro(user) ?
               <FormattedDifficulty id='formatted-level-info-other' level={level} difficultyField={otherDifficultyField} />
               :
-              <Link className='flex gap-2 italic' href={'/settings/pro'}>
+              <Link className='flex gap-2 italic' href='/pro'>
                 <span>Unlock Pro</span>
                 <Image alt='pro' src='/pro.svg' width='16' height='16' />
               </Link>

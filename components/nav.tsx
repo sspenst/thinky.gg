@@ -152,7 +152,7 @@ export default function Nav({ isDropdown }: NavProps) {
   const { connectedPlayersCount, matches, socket } = multiplayerSocket;
 
   const proNavLink = <NavLink
-    href='/settings/pro'
+    href='/pro'
     icon={<Image alt='pro' src='/pro.svg' width='20' height='20' />}
     label='Pro'
   />;

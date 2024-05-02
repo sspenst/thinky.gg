@@ -180,8 +180,8 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
   return (
     <div className='flex flex-col justify-center items-center gap-6'>
       <div className='flex gap-4'>
-        <Image alt='pro' src='/pro.svg' width='24' height='24' />
-        <h2 className='font-bold text-2xl'>{game.displayName} Pro</h2>
+        <Image alt='pro' src='/pro.svg' width='28' height='28' />
+        <h1 className='font-bold text-3xl'>{game.displayName} Pro</h1>
       </div>
       {isPro(user) &&
         <div className='flex flex-col gap-4 text-center justify-center items-center'>

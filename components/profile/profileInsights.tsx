@@ -20,7 +20,7 @@ export default function ProfileInsights({ reqUser, user }: ProfileInsightsProps)
   if (!isPro(reqUser)) {
     return (
       <div className='text-center text-lg break-words'>
-        Get <Link href='/settings/pro' className='text-blue-300'>
+        Get <Link href='/pro' className='text-blue-300'>
           {game.displayName} Pro
         </Link> to unlock additional insights for {user.name}.
       </div>

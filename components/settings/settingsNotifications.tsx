@@ -92,8 +92,7 @@ export default function SettingsNotifications() {
 
   return (
     <div className='flex flex-col items-center gap-6 mb-4'>
-      <h2 className='font-bold text-2xl text-center'>Notifications</h2>
-      <div>
+      <div className='max-w-sm'>
         <table className='table-fixed'>
           <thead>
             <tr className='border-b' style={{ borderColor: 'var(--bg-color-4)' }}>

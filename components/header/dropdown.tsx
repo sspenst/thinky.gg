@@ -1,6 +1,7 @@
 import { Menu, Transition } from '@headlessui/react';
 import { GameType } from '@root/constants/Games';
 import isGuest from '@root/helpers/isGuest';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { Fragment, useContext, useState } from 'react';
@@ -196,6 +197,23 @@ export default function Dropdown() {
                     </Link>
                   )}
                 </Menu.Item>
+                {game.hasPro &&
+                  <Menu.Item>
+                    {({ active }) => (
+                      <Link href='/pro' passHref>
+                        <div
+                          className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3'
+                          style={{
+                            backgroundColor: active ? 'var(--bg-color-3)' : undefined,
+                          }}
+                        >
+                          <Image alt='pro' src='/pro.svg' width='20' height='20' />
+                          Pro
+                        </div>
+                      </Link>
+                    )}
+                  </Menu.Item>
+                }
                 <Divider />
                 <Menu.Item>
                   {({ active }) => (

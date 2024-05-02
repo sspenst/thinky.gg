@@ -253,7 +253,7 @@ export default function LevelInfoCompletions() {
         <div className='flex gap-3 items-center'>
           <RoleIcon id='level-info-completions' role={Role.PRO} size={20} />
           <div>
-            Get <Link href='/settings/pro' className='text-blue-300'>
+            Get <Link href='/pro' className='text-blue-300'>
               {game.displayName} Pro
             </Link> to see all completions for this level.
           </div>
