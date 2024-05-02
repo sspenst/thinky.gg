@@ -417,7 +417,7 @@ export default function Game({
       if (undoKey && !shiftKeyDown.current) {
         // nothing to undo, restore the old game state if it exists
         if (newGameState.moves.length === 0) {
-          if (!oldGameState.current) {
+          if (!oldGameState.current || oldGameState.current.moves.length === 0) {
             return prevGameState;
           }
 
