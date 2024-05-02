@@ -1,19 +1,16 @@
 import User from '@root/models/db/user';
-import UserConfig from '@root/models/db/userConfig';
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 
 interface SettingsAccountProps {
   user: User;
-  userConfig?: UserConfig | null;
 }
 
-export default function SettingsAccountRegular({ user, userConfig }: SettingsAccountProps) {
+export default function SettingsAccountRegular({ user }: SettingsAccountProps) {
   const [currentPassword, setCurrentPassword] = useState<string>('');
   const [email, setEmail] = useState<string>(user.email);
   const [password, setPassword] = useState<string>('');
   const [password2, setPassword2] = useState<string>('');
-  const [showPlayStats, setShowPlayStats] = useState(userConfig?.showPlayStats ?? false);
   const [showConfetti, setShowConfetti] = useState(!user.disableConfetti);
   const [showStatus, setShowStatus] = useState(!user.hideStatus);
   const [username, setUsername] = useState<string>(user.name);
@@ -74,37 +71,6 @@ export default function SettingsAccountRegular({ user, userConfig }: SettingsAcc
       toast.error(JSON.parse(await err)?.error || 'Error sending confirmation email', {
         duration: 4000,
       });
-    });
-  }
-
-  function updateUserConfig(
-    body: string,
-    property: string,
-  ) {
-    toast.dismiss();
-    toast.loading(`Updating ${property}...`);
-
-    fetch('/api/user-config', {
-      method: 'PUT',
-      body: body,
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-    }).then(async res => {
-      const { updated } = await res.json();
-
-      if (!updated) {
-        toast.dismiss();
-        toast.error(`Error updating ${property}`);
-      } else {
-        toast.dismiss();
-        toast.success(`Updated ${property}`);
-      }
-    }).catch(err => {
-      console.error(err);
-      toast.dismiss();
-      toast.error(`Error updating ${property}`);
     });
   }
 
@@ -222,21 +188,6 @@ export default function SettingsAccountRegular({ user, userConfig }: SettingsAcc
             />
             <label className='text-sm' htmlFor='showStatus'>
               Show online status
-            </label>
-          </div>
-          <div className='flex gap-2'>
-            <input
-              checked={showPlayStats}
-              id='showPlayStats'
-              name='showPlayStats'
-              onChange={() => {
-                updateUserConfig(JSON.stringify({ showPlayStats: !showPlayStats }), 'play stats in level info');
-                setShowPlayStats(prevShowPlayStats => !prevShowPlayStats);
-              }}
-              type='checkbox'
-            />
-            <label className='text-sm' htmlFor='showPlayStats'>
-              Show play stats in level info
             </label>
           </div>
         </div>

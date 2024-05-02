@@ -1,7 +1,6 @@
 import { AppContext } from '@root/contexts/appContext';
 import isGuest from '@root/helpers/isGuest';
 import User from '@root/models/db/user';
-import UserConfig from '@root/models/db/userConfig';
 import { useRouter } from 'next/router';
 import React, { useContext } from 'react';
 import toast from 'react-hot-toast';
@@ -10,10 +9,9 @@ import SettingsAccountRegular from './settingsAccountRegular';
 
 interface SettingsAccountProps {
   user: User;
-  userConfig?: UserConfig | null;
 }
 
-export default function SettingsAccount({ user, userConfig }: SettingsAccountProps) {
+export default function SettingsAccount({ user }: SettingsAccountProps) {
   const { forceUpdate, mutateUser, setShouldAttemptAuth } = useContext(AppContext);
   const router = useRouter();
 
@@ -46,7 +44,7 @@ export default function SettingsAccount({ user, userConfig }: SettingsAccountPro
   return (
     <div className='flex flex-col gap-6'>
       <h2 className='font-bold text-2xl text-center'>Account</h2>
-      {!isGuest(user) ? <SettingsAccountRegular user={user} userConfig={userConfig} /> : <SettingsAccountGuest />}
+      {!isGuest(user) ? <SettingsAccountRegular user={user} /> : <SettingsAccountGuest />}
       <div className='flex flex-col gap-4 justify-center items-center'>
         <button onClick={deleteAccount} className='bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-fit' type='button'>
           Delete Account

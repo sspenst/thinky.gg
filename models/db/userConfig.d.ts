@@ -14,7 +14,6 @@ interface UserConfig {
   customTheme: string;
   gameId: GameId;
   roles: Role[];
-  showPlayStats: boolean;
   theme: string;
   toursCompleted: TourType[];
   tutorialCompletedAt: number; // represents the timestamp they completed the tutorial

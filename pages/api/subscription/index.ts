@@ -39,7 +39,7 @@ export async function getSubscriptions(req: NextApiRequestWithAuth): Promise<[nu
     [subscriptionsNormal, subscriptionsGifts] = await Promise.all([
       user?.stripeCustomerId ? stripe.subscriptions.list({ customer: user.stripeCustomerId }) : undefined,
       stripe.subscriptions.search({
-      // (giftFromId is req.userId OR customerId is userConfig.stripeCustomerId) AND status is active
+      // (giftFromId is req.userId OR customerId is user.stripeCustomerId) AND status is active
         query: `metadata["giftFromId"]:"${req.userId}" AND status:"active"`,
         limit: 100
       })]);

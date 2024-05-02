@@ -103,7 +103,7 @@ export default function SendAdminMessage({ runningCommand, selectedUserCommand, 
                   <Menu.Item key={`role-${role}`}>
                     {({ active }) => (
                       <button
-                        className='text-black block p-1 text-sm w-28 flex items-center gap-1 justify-center'
+                        className='text-black p-1 text-sm w-28 flex items-center gap-1 justify-center'
                         onClick={() => setAdminMessageRole(role)}
                         role='menuitem'
                         style= {{
@@ -118,7 +118,7 @@ export default function SendAdminMessage({ runningCommand, selectedUserCommand, 
                 <Menu.Item key='role-all'>
                   {({ active }) => (
                     <button
-                      className='text-black block p-1 text-sm w-28 flex items-center gap-1 justify-center'
+                      className='text-black p-1 text-sm w-28 flex items-center gap-1 justify-center'
                       onClick={() => setAdminMessageRole(null)}
                       role='menuitem'
                       style= {{
