@@ -23,7 +23,7 @@ describe('api/user/search', () => {
   jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
   test('should error if non GET', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PATCH',
           cookies: {
@@ -48,7 +48,7 @@ describe('api/user/search', () => {
   test('should error with no query', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
@@ -73,7 +73,7 @@ describe('api/user/search', () => {
   });
   test('should be OK with empty search (and return empty array)', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
@@ -101,7 +101,7 @@ describe('api/user/search', () => {
   });
   test('should be OK with valid search', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
@@ -130,7 +130,7 @@ describe('api/user/search', () => {
   });
   test('should be OK with crazy character search', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
@@ -159,7 +159,7 @@ describe('api/user/search', () => {
   });
   test('should be OK with * search', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {

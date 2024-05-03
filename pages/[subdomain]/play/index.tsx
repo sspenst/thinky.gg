@@ -1,4 +1,5 @@
 import { AppContext } from '@root/contexts/appContext';
+import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import React, { useContext } from 'react';
 import ChapterSelectCard from '../../../components/cards/chapterSelectCard';
@@ -9,8 +10,10 @@ import User from '../../../models/db/user';
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
+  const gameId = getGameIdFromReq(context.req as NextApiRequest);
+  const game = getGameFromId(gameId);
 
-  if (!reqUser) {
+  if (!reqUser || game.disableCampaign) {
     return {
       redirect: {
         destination: '/',

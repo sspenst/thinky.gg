@@ -1,11 +1,9 @@
-import StatFilter from '@root/constants/statFilter';
 import TileType from '@root/constants/tileType';
 import { generatePassword } from '@root/helpers/generatePassword';
 import { parseHostname, parseSubdomain } from '@root/helpers/parseUrl';
 import { validatePathologyLevelValid } from '@root/helpers/validators/validatePathology';
 import { validateSokopathLevel } from '@root/helpers/validators/validateSokopath';
 import TestId from '../../constants/testId';
-import statFilterOptions from '../../helpers/filterSelectOptions';
 import getDifficultyEstimate from '../../helpers/getDifficultyEstimate';
 import getProfileSlug from '../../helpers/getProfileSlug';
 import getSWRKey from '../../helpers/getSWRKey';
@@ -16,8 +14,6 @@ import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 import Level from '../../models/db/level';
 import User from '../../models/db/user';
 import { UserModel } from '../../models/mongoose';
-import SelectOption from '../../models/selectOption';
-import SelectOptionStats from '../../models/selectOptionStats';
 
 beforeAll(async () => {
   await dbConnect();
@@ -97,47 +93,6 @@ describe('helpers/*.ts', () => {
 
     expect(key).toBe('@"/api/asdf",undefined,');
   });
-  test('filterSelectOptions', () => {
-    const selectOptions = [
-      {
-        stats: new SelectOptionStats(7, 7),
-        text: 'complete',
-      },
-      {
-        stats: new SelectOptionStats(9, 1),
-        text: 'in progress',
-      },
-      {
-        stats: new SelectOptionStats(5, 0),
-      },
-      {
-        text: 'empty',
-      },
-      {
-        stats: new SelectOptionStats(10, undefined),
-        text: 'no user total',
-      },
-    ] as SelectOption[];
-
-    let options = statFilterOptions(selectOptions, StatFilter.All, '');
-
-    expect(options.length).toBe(5);
-
-    options = statFilterOptions(selectOptions, StatFilter.HideSolved, '');
-
-    expect(options.length).toBe(3);
-    expect(options[0].text).toBe('in progress');
-
-    options = statFilterOptions(selectOptions, StatFilter.Completed, '');
-
-    expect(options.length).toBe(1);
-    expect(options[0].text).toBe('in progress');
-
-    options = statFilterOptions(selectOptions, StatFilter.All, 'complete');
-
-    expect(options.length).toBe(1);
-    expect(options[0].text).toBe('complete');
-  });
   test('getDifficultyEstimate', async () => {
     const level = {
       calc_playattempts_duration_sum: 800,
@@ -195,6 +150,17 @@ describe('helpers/*.ts', () => {
     const gridWithOnlyOneStart = '00' + TileType.Player;
     const gridWithOneStartAndOneEnd = '00' + TileType.Player + TileType.Exit;
     const gridWithOneStartAndOneEndWithBlockOnTop = '00' + TileType.Player + TileType.BlockOnExit;
+
+    expect(validateSokopathLevel(emptyGrid).reasons).toMatchObject(['Must have exactly one player', 'Must have at least one uncovered goal']);
+    expect(validateSokopathLevel(gridWithOnlyOneStart).reasons).toMatchObject(['Must have at least one uncovered goal']);
+    expect(validateSokopathLevel(gridWithOneStartAndOneEnd).reasons).toMatchObject(['Must have as many boxes as goals']);
+    expect(validateSokopathLevel(gridWithOneStartAndOneEndWithBlockOnTop).valid).toBe(false);
+  });
+  test('validiateSokopathLevelValid', async () => {
+    const emptyGrid = '000';
+    const gridWithOnlyOneStart = '00' + TileType.Player;
+    const gridWithOneStartAndOneEnd = '00' + TileType.Player + TileType.Exit;
+    const gridWithOneStartAndOneEndWithBlockOnTop = '00' + TileType.PlayerOnExit + TileType.BlockOnExit;
 
     expect(validateSokopathLevel(emptyGrid).reasons).toMatchObject(['Must have exactly one player', 'Must have at least one uncovered goal']);
     expect(validateSokopathLevel(gridWithOnlyOneStart).reasons).toMatchObject(['Must have at least one uncovered goal']);

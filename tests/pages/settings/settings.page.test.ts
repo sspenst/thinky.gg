@@ -18,59 +18,7 @@ afterEach(() => {
 //enableFetchMocks()
 
 describe('pages/settings page', () => {
-  test('getServerProps with no params', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    const context = {
-    };
-
-    const ret = await getServerSideProps(context as GetServerSidePropsContext);
-
-    expect(ret).toBeDefined();
-    expect(ret.props).toBeUndefined();
-    expect(ret.notFound).toBeTruthy();
-  });
-  test('getServerProps with no params', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    const context = {
-      params: {}
-    };
-
-    const ret = await getServerSideProps(context as GetServerSidePropsContext);
-
-    expect(ret).toBeDefined();
-    expect(ret.props).toBeUndefined();
-    expect(ret.redirect).toBeDefined();
-    expect(ret.redirect?.destination).toBe('/login');
-  });
-  test('getServerProps with no params', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    const context = {
-      params: {
-        tab: ['1', '2']
-      }
-    };
-
-    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
-
-    expect(ret).toBeDefined();
-    expect(ret.props).toBeUndefined();
-    expect(ret.notFound).toBeTruthy();
-  });
-  test('getServerProps with no params', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    const context = {
-      params: {
-        tab: ['notFound']
-      }
-    };
-
-    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
-
-    expect(ret).toBeDefined();
-    expect(ret.props).toBeUndefined();
-    expect(ret.notFound).toBeTruthy();
-  });
-  test('getServerProps with params', async () => {
+  test('getServerSideProps', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     const context = {
       params: {},

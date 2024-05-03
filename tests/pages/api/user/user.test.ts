@@ -36,7 +36,7 @@ jest.mock('nodemailer', () => ({
 describe('Testing a valid user', () => {
   test('Getting a valid user all the fields except password', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
@@ -59,7 +59,7 @@ describe('Testing a valid user', () => {
 
         keys.sort();
         // Important to keep this track of keys that we may add/remove in future
-        expect(keys).toMatchObject([ '__v', '_id', 'config', 'disallowedEmailNotifications', 'disallowedPushNotifications', 'email', 'emailConfirmed', 'emailDigest', 'lastGame', 'last_visited_at', 'multiplayerProfile', 'name', 'notifications', 'roles', 'ts' ]);
+        expect(keys).toMatchObject([ '__v', '_id', 'config', 'disableConfetti', 'disallowedEmailNotifications', 'disallowedPushNotifications', 'email', 'emailConfirmed', 'emailDigest', 'lastGame', 'last_visited_at', 'multiplayerProfile', 'name', 'notifications', 'roles', 'ts' ]);
         expect(response.last_visited_at).toBeGreaterThan(TimerUtil.getTs() - 30000);
         expect(response.name).toBe('test');
         expect(response.password).toBeUndefined();
@@ -69,7 +69,7 @@ describe('Testing a valid user', () => {
   });
   test('Changing email and username shouldn\'t error', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER,
@@ -100,7 +100,7 @@ describe('Testing a valid user', () => {
   test('Changing email too quickly should error', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER,
@@ -122,8 +122,8 @@ describe('Testing a valid user', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Error: Please wait a minute before requesting another email confirmation');
-        expect(res.status).toBe(500);
+        expect(response.error).toBe('Please wait a minute before requesting another email confirmation');
+        expect(res.status).toBe(429);
       },
     });
   });
@@ -133,7 +133,7 @@ describe('Testing a valid user', () => {
 
     MockDate.set(fiveMinFromNow);
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER,
@@ -167,7 +167,7 @@ describe('Testing a valid user', () => {
 
     MockDate.set(fiveMinFromNow);
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER,
@@ -201,7 +201,7 @@ describe('Testing a valid user', () => {
 
     MockDate.set(fiveMinFromNow);
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER,
@@ -235,7 +235,7 @@ describe('Testing a valid user', () => {
 
     MockDate.set(fiveMinFromNow);
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER,
@@ -269,7 +269,7 @@ describe('Testing a valid user', () => {
 
     MockDate.set(fiveMinFromNow);
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER,
@@ -303,7 +303,7 @@ describe('Testing a valid user', () => {
 
     MockDate.set(fiveMinFromNow);
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER,
@@ -337,7 +337,7 @@ describe('Testing a valid user', () => {
 
     MockDate.set(fiveMinFromNow);
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER,
@@ -368,7 +368,7 @@ describe('Testing a valid user', () => {
   });
   test('Changing password', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER,
@@ -399,7 +399,7 @@ describe('Testing a valid user', () => {
   });
   test('Changing password again but with incorrect currentPass', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER,
@@ -429,7 +429,7 @@ describe('Testing a valid user', () => {
   });
   test('Getting a user now should show the reflected changes', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
@@ -452,14 +452,14 @@ describe('Testing a valid user', () => {
 
         keys.sort();
         // Important to keep this track of keys that we may add/remove in future
-        expect(keys).toMatchObject([ '__v', '_id', 'config', 'disallowedEmailNotifications', 'disallowedPushNotifications', 'email', 'emailConfirmed', 'emailDigest', 'lastGame', 'last_visited_at', 'multiplayerProfile', 'name', 'notifications', 'roles', 'ts' ]);
+        expect(keys).toMatchObject([ '__v', '_id', 'config', 'disableConfetti', 'disallowedEmailNotifications', 'disallowedPushNotifications', 'email', 'emailConfirmed', 'emailDigest', 'lastGame', 'last_visited_at', 'multiplayerProfile', 'name', 'notifications', 'roles', 'ts' ]);
         expect(response.name).toBe('newuser3');
         expect(response.last_visited_at).toBeGreaterThan(TimerUtil.getTs() - 30000);
         expect(response.password).toBeUndefined();
         expect(response.config.calcLevelsSolvedCount).toBe(2);
 
         // For getting our own user we should get the full config
-        expect(Object.keys(response.config).sort()).toMatchObject(['_id', 'calcRankedSolves', 'calcLevelsCreatedCount', 'calcLevelsCompletedCount', 'calcLevelsSolvedCount', 'calcRecordsCount', 'chapterUnlocked', 'gameId', 'roles', 'showPlayStats', 'theme', 'toursCompleted', 'tutorialCompletedAt', 'userId', 'createdAt', 'updatedAt'].sort());
+        expect(Object.keys(response.config).sort()).toMatchObject(['_id', 'calcRankedSolves', 'calcLevelsCreatedCount', 'calcLevelsCompletedCount', 'calcLevelsSolvedCount', 'calcRecordsCount', 'chapterUnlocked', 'gameId', 'roles', 'theme', 'toursCompleted', 'tutorialCompletedAt', 'userId', 'createdAt', 'updatedAt'].sort());
 
         expect(res.status).toBe(200);
       },
@@ -467,7 +467,7 @@ describe('Testing a valid user', () => {
   });
   test('Changing hideStatus and bio', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER,
@@ -507,7 +507,7 @@ describe('Testing a valid user', () => {
         throw new Error('test error');
       });
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER,
@@ -537,7 +537,7 @@ describe('Testing a valid user', () => {
   });
   test('Getting a user now should not have their last_visited_at', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
@@ -575,7 +575,7 @@ describe('Testing a valid user', () => {
     });
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {

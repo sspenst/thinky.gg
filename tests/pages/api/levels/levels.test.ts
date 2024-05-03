@@ -20,7 +20,7 @@ enableFetchMocks();
 describe('pages/api/levels', () => {
   test('should return levels in original order', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {

@@ -1,8 +1,8 @@
+import { AppContext } from '@root/contexts/appContext';
 import { ImageTools } from '@root/helpers/imageTools';
 import User from '@root/models/db/user';
 import Image from 'next/image';
-import { useRouter } from 'next/router';
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Dimensions from '../../constants/dimensions';
 import ProfileAvatar from '../profile/profileAvatar';
@@ -12,13 +12,23 @@ interface UploadImageProps {
 }
 
 export default function UploadImage({ user }: UploadImageProps) {
-  const router = useRouter();
+  const { mutateUser, user: userContext } = useContext(AppContext);
   const [selectedImage, setSelectedImage] = useState<File | Blob | null>(null);
+  const [updating, setUpdating] = useState(false);
+  const [userState, setUserState] = useState<User>(user);
+
+  useEffect(() => {
+    if (userContext) {
+      setUserState(userContext);
+    }
+  }, [userContext]);
 
   function saveAvatar() {
     if (!selectedImage) {
       return;
     }
+
+    setUpdating(true);
 
     const reader = new FileReader();
 
@@ -38,12 +48,16 @@ export default function UploadImage({ user }: UploadImageProps) {
         } else {
           toast.dismiss();
           toast.success('Updated avatar');
-          router.reload();
+          mutateUser().then(() => {
+            setSelectedImage(null);
+          });
         }
       }).catch(err => {
         console.error(err);
         toast.dismiss();
         toast.error('Error updating avatar');
+      }).finally(() => {
+        setUpdating(false);
       });
     };
 
@@ -77,7 +91,7 @@ export default function UploadImage({ user }: UploadImageProps) {
     <div className='flex flex-col items-center gap-4'>
       <div className='flex flex-col items-center gap-2'>
         {!selectedImage ?
-          <ProfileAvatar hideStatusCircle={true} size={Dimensions.AvatarSizeLarge} user={user} />
+          <ProfileAvatar hideStatusCircle={userState.hideStatus} size={Dimensions.AvatarSizeLarge} user={userState} />
           :
           <>
             <div className='border overflow-hidden relative' style={{
@@ -93,8 +107,22 @@ export default function UploadImage({ user }: UploadImageProps) {
                 src={URL.createObjectURL(selectedImage)}
               />
             </div>
-            <button className='italic hover:underline block' onClick={() => saveAvatar()}>Save</button>
-            <button className='italic hover:underline block' onClick={() => setSelectedImage(null)}>Remove</button>
+            <div className='flex gap-2'>
+              <button
+                className='bg-blue-500 enabled:hover:bg-blue-700 text-white font-medium px-3 py-2 rounded-full text-sm disabled:opacity-50 w-fit'
+                disabled={updating}
+                onClick={() => saveAvatar()}
+              >
+                Save
+              </button>
+              <button
+                className='enabled:hover:bg-neutral-500 font-medium px-3 py-2 rounded-full text-sm disabled:opacity-50 w-fit'
+                disabled={updating}
+                onClick={() => setSelectedImage(null)}
+              >
+                Cancel
+              </button>
+            </div>
           </>
         }
       </div>

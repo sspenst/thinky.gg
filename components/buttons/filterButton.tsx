@@ -36,7 +36,7 @@ export default function FilterButton({ element, first, last, onClick, proRequire
           toast.dismiss();
           toast.error(
             <div className='text-lg'>
-              Requires <Link href='/settings/pro' className='text-blue-500'>{game.displayName} Pro</Link>
+              Requires <Link href='/pro' className='text-blue-500'>{game.displayName} Pro</Link>
             </div>,
             {
               duration: 3000,

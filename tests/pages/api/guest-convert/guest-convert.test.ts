@@ -36,7 +36,7 @@ jest.mock('nodemailer', () => ({
 describe('pages/api/guest-convert.ts', () => {
   test('converting a guest account with a name that already exists', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -66,7 +66,7 @@ describe('pages/api/guest-convert.ts', () => {
 
   test('converting a guest account with a email that already exists', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -95,7 +95,7 @@ describe('pages/api/guest-convert.ts', () => {
   });
   test('converting a guest account', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {

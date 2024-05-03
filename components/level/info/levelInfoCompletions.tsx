@@ -30,8 +30,15 @@ export default function LevelInfoCompletions() {
     setDisabled(true);
 
     toast.dismiss();
-    toast.loading('Loading completions...');
 
+    if (!isPro(user)) {
+      toast.dismiss();
+      toast.error('You must be a Pro to see all completions for this level.');
+
+      return;
+    }
+
+    toast.loading('Loading completions...');
     fetch(`/api/level/${levelContext?.level._id}/prostats/completions?skip=${skip}&steps=${steps}`, {
       method: 'GET',
       headers: {
@@ -246,7 +253,7 @@ export default function LevelInfoCompletions() {
         <div className='flex gap-3 items-center'>
           <RoleIcon id='level-info-completions' role={Role.PRO} size={20} />
           <div>
-            Get <Link href='/settings/pro' className='text-blue-300'>
+            Get <Link href='/pro' className='text-blue-300'>
               {game.displayName} Pro
             </Link> to see all completions for this level.
           </div>

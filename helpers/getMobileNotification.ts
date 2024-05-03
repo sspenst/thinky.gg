@@ -104,7 +104,7 @@ export default function getMobileNotification(gameId: GameId, notification: Noti
   case NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION:
     mobileNotification.title = game.displayName + ' - Your level added to a collection';
     mobileNotification.body = `${notification.source?.name} was added to the collection: ${targetAsCollection.name}`;
-    mobileNotification.imageUrl = `${host}/logo.svg`;
+    mobileNotification.imageUrl = `${host}/${game.logo}}`;
     mobileNotification.url = `${host}/collection/${targetAsCollection.slug}`;
 
     return mobileNotification;

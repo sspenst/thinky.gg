@@ -23,11 +23,14 @@ export default async function sendEmailConfirmationEmail(req: NextApiRequest, us
 
     // if it's been less than 2 minutes since the last email was sent, don't send another one
     if (timeSinceLastSent < 1000 * 60) {
-      throw new Error('Please wait a minute before requesting another email confirmation');
+      return {
+        message: 'Please wait a minute before requesting another email confirmation',
+        status: 429,
+      };
     }
   }
 
-  return await sendMail(
+  const error = await sendMail(
     gameId,
     new Types.ObjectId(),
     EmailType.EMAIL_CONFIRM_EMAIL,
@@ -42,4 +45,11 @@ export default async function sendEmailConfirmationEmail(req: NextApiRequest, us
       user: user,
     }),
   );
+
+  if (error) {
+    return {
+      message: error,
+      status: 500,
+    };
+  }
 }

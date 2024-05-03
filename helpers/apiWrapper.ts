@@ -1,6 +1,7 @@
 import { GameId } from '@root/constants/GameId';
 import { isValidDirections } from '@root/helpers/checkpointHelpers';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import initNewrelicErrorLogging from '@root/lib/initNewrelicErrorLogging';
 import { Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { NextApiRequestWithAuth } from '../lib/withAuth';
@@ -224,10 +225,12 @@ export default function apiWrapper(
   handler: (req: NextApiRequestWrapper, res: NextApiResponse) => Promise<void>
 ) {
   return async (req: NextApiRequestWrapper, res: NextApiResponse): Promise<unknown> => {
+    await initNewrelicErrorLogging(res);
+
     const validate = parseReq(validator, req);
 
     if (validate !== null) {
-      logger.error('API Handler Error', validate);
+      logger.error('apiWrapper validation error', validate);
 
       return Promise.resolve(res.status(validate.statusCode).json({ error: validate.error }));
     }
@@ -236,7 +239,7 @@ export default function apiWrapper(
 
     /* istanbul ignore next */
     return handler(req, res).catch((error: Error) => {
-      logger.error('API Handler Error Caught', error);
+      logger.error('apiWrapper handler error', error);
       console.trace();
 
       return res.status(500).send(error.message || error);

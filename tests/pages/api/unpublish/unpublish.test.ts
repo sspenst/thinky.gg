@@ -52,7 +52,7 @@ describe('Testing unpublish', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -79,7 +79,7 @@ describe('Testing unpublish', () => {
   });
   test('adding 3 levels to two different collections should work okay', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -113,7 +113,7 @@ describe('Testing unpublish', () => {
     });
     // now user B
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -152,7 +152,7 @@ describe('Testing unpublish', () => {
       throw new Error('Test error');
     });
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -179,7 +179,7 @@ describe('Testing unpublish', () => {
   });
   test('Unpublishing one of the levels should keep it in the level owners collection but remove it from the other users collection', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -237,7 +237,7 @@ describe('Testing unpublish', () => {
   });
   test('Unpublishing unknown level should fail', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -264,7 +264,7 @@ describe('Testing unpublish', () => {
   });
   test('Unpublishing a level that does not belong to you should fail', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -293,7 +293,7 @@ describe('Testing unpublish', () => {
     let newLevelId = '';
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -319,7 +319,7 @@ describe('Testing unpublish', () => {
       },
     });
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           cookies: {
@@ -366,7 +366,7 @@ describe('Testing unpublish', () => {
 
     // optimal solve for user A
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -395,7 +395,7 @@ describe('Testing unpublish', () => {
 
     // suboptimal solve for user B
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -433,7 +433,7 @@ describe('Testing unpublish', () => {
     expect(userB.calcLevelsSolvedCount).toBe(initSolvedB);
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {

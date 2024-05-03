@@ -26,7 +26,7 @@ describe('pages/api/user-by-id', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PATCH',
           headers: {
@@ -48,7 +48,7 @@ describe('pages/api/user-by-id', () => {
   test('Correct http method but no query', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
 
@@ -71,7 +71,7 @@ describe('pages/api/user-by-id', () => {
   test('Correct http method with query object but no id', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           query: {
@@ -96,7 +96,7 @@ describe('pages/api/user-by-id', () => {
   test('Correct http method with query object but with malformed id', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           query: {
@@ -120,7 +120,7 @@ describe('pages/api/user-by-id', () => {
   });
   test('Correct http method with query object but with object id for user that does not exist', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           query: {
@@ -144,7 +144,7 @@ describe('pages/api/user-by-id', () => {
   });
   test('Correct http method with query object with valid id', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           query: {
@@ -176,7 +176,7 @@ describe('pages/api/user-by-id', () => {
       throw new Error('Error finding User');
     });
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           query: {

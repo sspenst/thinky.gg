@@ -1,5 +1,5 @@
 import useProStatsUser, { ProStatsUserType } from '@root/hooks/useProStatsUser';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import React, { useState } from 'react';
 import { Bar, CartesianGrid, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { DateAndSum } from '../../contexts/levelContext';
@@ -103,7 +103,7 @@ export default function ProfileInsightsScoreChart({ user }: { user: User }) {
           <CartesianGrid strokeDasharray='3 3' vertical={false} />
           <XAxis dataKey='date'
             padding={{ left: 15, right: 15 }}
-            tickFormatter={(date) => moment(new Date(date)).format('M/D')}
+            tickFormatter={(date) => dayjs(new Date(date)).format('M/D')}
             angle={-45}
             tick={{ fill: 'white', fontSize: '0.75rem' }}
             tickMargin={5}
@@ -136,7 +136,7 @@ export default function ProfileInsightsScoreChart({ user }: { user: User }) {
                   const totalSolvedCompare = payloadObj.cumulativeSumCompare;
                   const items = [];
 
-                  items.push(<div key='tooltip-scorechart-t'>{moment(new Date(payloadObj.date)).format('M/D/YY')}</div>);
+                  items.push(<div key='tooltip-scorechart-t'>{dayjs(new Date(payloadObj.date)).format('M/D/YY')}</div>);
 
                   {user && daySum && totalSolved && (
                     items.push(<div key='tooltip-scorechart-a'>{user.name} solved {daySum} levels (Total solved: {totalSolved})</div>)

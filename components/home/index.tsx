@@ -94,7 +94,7 @@ export default function Home({
           </svg>
           <div className='flex flex-col'>
             <span className='text-lg font-bold'>Multiplayer</span>
-            {!socket?.connected || connectedPlayersCount === 0 ?
+            {!socket?.connected ?
               <span className='text-xs text-yellow-500'>Connecting...</span>
               :
               <>
@@ -187,7 +187,7 @@ export default function Home({
                 <Link className='font-bold hover:underline' href='/play-history'>
                   Last Played
                 </Link>
-                <Link href='/settings/pro' passHref>
+                <Link href='/pro' passHref>
                   <Image alt='pro' src='/pro.svg' width={16} height={16} style={{ minWidth: 16, minHeight: 16 }} />
                 </Link>
               </div>

@@ -6,7 +6,7 @@ import { AppContext } from '../../contexts/appContext';
 export default function OnlineUsers() {
   const { multiplayerSocket } = useContext(AppContext);
   const { connectedPlayersCount, socket } = multiplayerSocket;
-  const isConnected = socket?.connected && connectedPlayersCount > 0;
+  const isConnected = !!socket?.connected;
 
   return (
     <Link href='/multiplayer' passHref>

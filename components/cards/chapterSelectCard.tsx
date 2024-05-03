@@ -1,5 +1,4 @@
 import Dimensions from '@root/constants/dimensions';
-import { GameId } from '@root/constants/GameId';
 import { Game } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
 import classNames from 'classnames';
@@ -12,20 +11,20 @@ interface ChapterSelectCardBaseProps {
   complete?: boolean;
   disabled?: boolean;
   disabledStr?: string;
+  game: Game;
   href: string;
-  game: Game
   id: string;
   levelData: string;
   subtitle?: string;
-  title: string | JSX.Element;
+  title: React.ReactNode;
 }
 
 export function ChapterSelectCardBase({
   complete,
   disabled,
   disabledStr,
-  href,
   game,
+  href,
   id,
   levelData,
   subtitle,
@@ -87,10 +86,10 @@ export function ChapterSelectCardBase({
 }
 
 interface ChapterSelectCardProps {
-  titleOverride?: string;
   chapter: number;
   chapterUnlocked?: number;
   href?: string;
+  titleOverride?: string;
 }
 
 export default function ChapterSelectCard({ chapter, chapterUnlocked, href, titleOverride }: ChapterSelectCardProps) {
@@ -122,10 +121,10 @@ export default function ChapterSelectCard({ chapter, chapterUnlocked, href, titl
   case 2:
     return (
       <ChapterSelectCardBase
-        game={game}
         complete={!!chapterUnlocked && chapterUnlocked > 2}
         disabled={chapterUnlocked ? chapterUnlocked < 2 : false}
         disabledStr={'Complete Chapter 1 to unlock Chapter 2!'}
+        game={game}
         href={href ?? '/chapter2'}
         id='chapter2'
         levelData={'005E0C00\n0G070005\n10005010\n005100I0'}
@@ -136,10 +135,10 @@ export default function ChapterSelectCard({ chapter, chapterUnlocked, href, titl
   case 3:
     return (
       <ChapterSelectCardBase
-        game={game}
         complete={!!chapterUnlocked && chapterUnlocked > 3}
         disabled={chapterUnlocked ? chapterUnlocked < 3 : false}
         disabledStr={'Complete Chapter 2 to unlock Chapter 3!'}
+        game={game}
         href={href ?? '/chapter3'}
         id='chapter3'
         levelData={'B519F0G0\n10JH5H52\n75F02J08\n02050B10'}
@@ -150,8 +149,8 @@ export default function ChapterSelectCard({ chapter, chapterUnlocked, href, titl
   case 4:
     return (
       <ChapterSelectCardBase
-        game={game}
         disabled={!href}
+        game={game}
         href={href ?? '/play'}
         id='chapter4'
         levelData={'65G9F0G5\nGBJ5GH5I\n50FF25DG\nJ5I5H505'}

@@ -50,7 +50,7 @@ export default function CollectionScrollList({ collection, id, isHidden, onLoadi
 
   const fetchLevels = useCallback(async (cursor: string, direction: 'before' | 'after') => {
     const params = new URLSearchParams({
-      populateLevelCursor: cursor,
+      populateAroundId: cursor,
       populateLevelDirection: direction,
     });
 

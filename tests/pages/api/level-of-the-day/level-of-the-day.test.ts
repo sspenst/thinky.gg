@@ -33,15 +33,14 @@ const DefaultReq = {
   },
 };
 
-const MOCK_DATE = new Date('2021-01-11T03:00:00.000Z'); // test a date on a sunday to handle more test cases
+const MOCK_DATE = new Date('2021-01-10T03:00:00.000Z'); // test a date on a sunday to handle more test cases
 
 describe('GET /api/level-of-day', () => {
   test('should return 200', async () => {
-    // Artifically increase calc_playattempts_duration_sum to make it more likely to be selected
     MockDate.set(MOCK_DATE);
 
     const updated = await LevelModel.updateOne({
-      _id: TestId.LEVEL_3,
+      _id: TestId.LEVEL_2,
     }, {
       $set: {
         isDraft: false,
@@ -54,7 +53,7 @@ describe('GET /api/level-of-day', () => {
       },
     });
     const updated2 = await LevelModel.updateOne({
-      _id: TestId.LEVEL_2,
+      _id: TestId.LEVEL_3,
     }, {
       $set: {
         isDraft: false,
@@ -72,7 +71,7 @@ describe('GET /api/level-of-day', () => {
     expect(updated2.modifiedCount).toBe(1);
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           ...DefaultReq,
         } as unknown as NextApiRequestWrapper;
@@ -90,21 +89,21 @@ describe('GET /api/level-of-day', () => {
 
         const curLevelOfDayKey = getLevelOfDayKVKey();
 
-        expect(curLevelOfDayKey).toBe('level-of-day-2021-01-11');
+        expect(curLevelOfDayKey).toBe('level-of-day-2021-01-10');
         const lvlOfDay = await KeyValueModel.findOne({
           key: curLevelOfDayKey,
         });
 
         expect(lvlOfDay).toBeDefined();
         expect(lvlOfDay.gameId).toBe(DEFAULT_GAME_ID);
-        expect(lvlOfDay?.value).toStrictEqual(new Types.ObjectId(TestId.LEVEL_3));
+        expect(lvlOfDay.value).toStrictEqual(new Types.ObjectId(TestId.LEVEL_3));
       },
     });
   });
   test('calling it twice should return the same level', async () => {
     MockDate.set(MOCK_DATE);
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           ...DefaultReq,
         } as unknown as NextApiRequestWrapper;
@@ -120,7 +119,7 @@ describe('GET /api/level-of-day', () => {
         expect(response._id).toBe(TestId.LEVEL_3);
         const curLevelOfDayKey = getLevelOfDayKVKey();
 
-        expect(curLevelOfDayKey).toBe('level-of-day-2021-01-11');
+        expect(curLevelOfDayKey).toBe('level-of-day-2021-01-10');
         const lvlOfDay = await KeyValueModel.findOne({
           key: curLevelOfDayKey,
         });
@@ -133,7 +132,7 @@ describe('GET /api/level-of-day', () => {
   test('calling it while authenticated should return the same level but with enriched data', async () => {
     MockDate.set(MOCK_DATE);
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           ...DefaultReq,
           cookies: {
@@ -155,7 +154,7 @@ describe('GET /api/level-of-day', () => {
         expect(asEnriched.userMoves).toBe(80);
         const curLevelOfDayKey = getLevelOfDayKVKey();
 
-        expect(curLevelOfDayKey).toBe('level-of-day-2021-01-11');
+        expect(curLevelOfDayKey).toBe('level-of-day-2021-01-10');
         const lvlOfDay = await KeyValueModel.findOne({
           key: curLevelOfDayKey,
         });
@@ -177,7 +176,7 @@ describe('GET /api/level-of-day', () => {
       throw new Error('test');
     });
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           ...DefaultReq,
         } as unknown as NextApiRequestWrapper;
@@ -194,7 +193,7 @@ describe('GET /api/level-of-day', () => {
         //
         const curLevelOfDayKey = getLevelOfDayKVKey();
 
-        expect(curLevelOfDayKey).toBe('level-of-day-2021-01-12');
+        expect(curLevelOfDayKey).toBe('level-of-day-2021-01-11');
         const lvlOfDay = await KeyValueModel.findOne({
           key: curLevelOfDayKey,
         });
@@ -209,12 +208,13 @@ describe('GET /api/level-of-day', () => {
     });
   });
   test('changing to the next day should return the a different level', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     MockDate.set(MOCK_DATE);
     const day2 = Date.now() + (1000 * 60 * 60 * 24 ); // Note... Date.now() here is being mocked each time too!
 
     MockDate.set(day2);
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           ...DefaultReq,
           cookies: {
@@ -230,22 +230,21 @@ describe('GET /api/level-of-day', () => {
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        expect(response._id).toBe(TestId.LEVEL_2);
+        expect(response._id).toBe(TestId.LEVEL_4);
 
-        //
         const curLevelOfDayKey = getLevelOfDayKVKey();
 
-        expect(curLevelOfDayKey).toBe('level-of-day-2021-01-12');
+        expect(curLevelOfDayKey).toBe('level-of-day-2021-01-11');
         const lvlOfDay = await KeyValueModel.findOne({
           key: curLevelOfDayKey,
         });
 
         expect(lvlOfDay).toBeDefined();
-        expect(lvlOfDay?.value).toStrictEqual(new Types.ObjectId(TestId.LEVEL_2));
+        expect(lvlOfDay?.value).toStrictEqual(new Types.ObjectId(TestId.LEVEL_4));
         const list = await KeyValueModel.find({ key: KV_LEVEL_OF_DAY_LIST });
 
         expect(list.length).toBe(1);
-        expect(list[0].value).toEqual([new Types.ObjectId(TestId.LEVEL_3), new Types.ObjectId(TestId.LEVEL_2)]);
+        expect(list[0].value).toEqual([new Types.ObjectId(TestId.LEVEL_3), new Types.ObjectId(TestId.LEVEL_4)]);
       },
     });
   });
@@ -256,7 +255,7 @@ describe('GET /api/level-of-day', () => {
 
     MockDate.set(day3);
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           ...DefaultReq,
         } as unknown as NextApiRequestWrapper;
@@ -267,9 +266,9 @@ describe('GET /api/level-of-day', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBeUndefined(); // we actually won't return error... We'll just select the latest level
+        expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        expect(response._id).toBe(TestId.LEVEL_4);
+        expect(response._id).toBe(TestId.LEVEL_2);
       },
     });
   });
@@ -283,10 +282,10 @@ describe('GET /api/level-of-day', () => {
     MockDate.set(day2);
 
     await LevelModel.deleteOne({
-      _id: TestId.LEVEL_2,
+      _id: TestId.LEVEL_4,
     });
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           ...DefaultReq,
         } as unknown as NextApiRequestWrapper;

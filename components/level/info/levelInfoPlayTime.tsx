@@ -6,15 +6,18 @@ import Role from '@root/constants/role';
 import { AppContext } from '@root/contexts/appContext';
 import isPro from '@root/helpers/isPro';
 import classNames from 'classnames';
-import moment from 'moment';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import Link from 'next/link';
 import React, { Fragment, useContext } from 'react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import ProStatsLevelType from '../../../constants/proStatsLevelType';
 import { CountAndSum, DateAndSum, LevelContext } from '../../../contexts/levelContext';
 
+dayjs.extend(utc);
+
 function getTimePlayedStr(sum: number, short = false) {
-  const duration = moment.duration(sum, 'seconds');
+  const duration = dayjs.duration(sum, 'seconds');
 
   if (duration.asSeconds() < 60) {
     const seconds = duration.seconds();
@@ -40,7 +43,7 @@ export default function LevelInfoPlayTime() {
       <div className='flex gap-3 items-center'>
         <RoleIcon id='level-info-play-time' role={Role.PRO} size={20} />
         <div>
-          Get <Link href='/settings/pro' className='text-blue-300'>
+          Get <Link href='/pro' className='text-blue-300'>
             {game.displayName} Pro
           </Link> to see your play time for this level.
         </div>
@@ -95,7 +98,7 @@ export default function LevelInfoPlayTime() {
               {
                 (proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime] as DateAndSum[]).map((d, i) => {
                   return [
-                    <div className='w-full justify-end flex items-center' key={`prostat-playattemptgraph-${i}-1`}>{moment(new Date(d.date)).utc().format('M/D/YY')}</div>,
+                    <div className='w-full justify-end flex items-center' key={`prostat-playattemptgraph-${i}-1`}>{dayjs(new Date(d.date)).utc().format('M/D/YY')}</div>,
                     <div className='text-left text-sm flex items-center' key={`prostat-playattemptgraph-${i}-2`} style={{
                       color: 'var(--color-gray)',
                     }}>{getTimePlayedStr(d.sum)}</div>,
@@ -106,7 +109,7 @@ export default function LevelInfoPlayTime() {
               <div className={classNames('text-left flex items-center', { 'font-bold': total })}>{total === 0 ? 'No play time recorded' : getTimePlayedStr(total)}</div>
               {proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData] && (proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData] as CountAndSum).count >= 1 && (<>
                 <div
-                  className='w-20 w-full justify-end flex items-center font-medium underline decoration-dashed cursor-help'
+                  className='w-full justify-end flex items-center font-medium underline decoration-dashed cursor-help'
                   data-tooltip-content='Average time for others who solved this level'
                   data-tooltip-id='others-tooltip'
                 >
@@ -134,7 +137,7 @@ export default function LevelInfoPlayTime() {
                   angle={-45}
                   interval={0}
                   tick={{ fill: 'var(--color)', fontSize: '0.75rem' }}
-                  tickFormatter={(date) => moment(new Date(date)).format('M/D')}
+                  tickFormatter={(date) => dayjs(new Date(date)).format('M/D')}
                   tickMargin={8}
                 />
                 <YAxis
@@ -157,7 +160,7 @@ export default function LevelInfoPlayTime() {
                           <div className='px-2 py-1 border rounded text-sm' style={{
                             backgroundColor: 'var(--bg-color)',
                           }}>
-                            {`${moment(new Date(payloadObj.date)).format('M/D/YY')} - ${display}`}
+                            {`${dayjs(new Date(payloadObj.date)).format('M/D/YY')} - ${display}`}
                           </div>
                         );
                       }

@@ -34,7 +34,7 @@ const DefaultReq = {
   },
 };
 const stripe = new Stripe('', {
-  apiVersion: '2022-11-15',
+  apiVersion: '2024-04-10',
 });
 const stripe_secret = process.env.NODE_ENV !== 'test' ? process.env.STRIPE_WEBHOOK_SECRET : 'whsec_test_secret';
 
@@ -42,7 +42,7 @@ function createMockStripeEvent(type: string, data = {}) {
   return {
     id: `evt_${Date.now()}`,
     object: 'event',
-    api_version: '2022-11-15',
+    api_version: '2024-04-10',
     created: Date.now(),
     data: {
       object: data,
@@ -96,7 +96,7 @@ async function runStripeWebhookTest({
   }
 
   await testApiHandler({
-    handler: async (_, res) => {
+    pagesHandler: async (_, res) => {
       const req: NextApiRequestWithAuth = {
         ...DefaultReq,
         headers: {
@@ -145,7 +145,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
   jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
   test('regular call should error', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...DefaultReq,
         } as unknown as NextApiRequestWithAuth;
@@ -541,6 +541,36 @@ describe('pages/api/stripe-webhook/index.ts', () => {
       },
       expectedError: undefined,
       expectedStatus: 200,
+    });
+  });
+
+  test('payment_intent.succeeded already processed', async () => {
+    process.env.STRIPE_CONNECTED_ACCOUNT_ID = 'blah';
+    jest.spyOn(stripeReal.paymentIntents, 'retrieve').mockImplementation(async () => {
+      return {
+        amount: 300,
+        latest_charge: {
+          balance_transaction: {
+            fee: 39,
+          },
+          id: 'ch_123',
+        }
+      } as Stripe.Response<Stripe.PaymentIntent>;
+    });
+    jest.spyOn(stripeReal.transfers, 'create').mockImplementation(async (params) => {
+      expect(params.amount).toBe(Math.round((300 - 39) / 2));
+      expect(params.source_transaction).toBe('ch_123');
+
+      return {} as Stripe.Response<Stripe.Transfer>;
+    });
+
+    await runStripeWebhookTest({
+      eventType: 'payment_intent.succeeded',
+      payloadData: {
+        id: 'pi_123',
+      },
+      expectedError: 'splitPaymentIntent(pi_123): already processed',
+      expectedStatus: 400,
     });
   });
 });

@@ -1,3 +1,5 @@
+import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
+import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidObjectId } from '../../../helpers/apiWrapper';
@@ -5,7 +7,6 @@ import { logger } from '../../../helpers/logger';
 import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 import { RecordModel, UserModel } from '../../../models/mongoose';
-import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 
 export default apiWrapper({ GET: {
   query: {
@@ -50,6 +51,7 @@ export default apiWrapper({ GET: {
           moves: 1,
         },
       },
+      ...getEnrichUserConfigPipelineStage('$gameId', { excludeCalcs: true, localField: 'userId._id', lookupAs: 'userId.config' }),
     ]);
 
     if (!records) {

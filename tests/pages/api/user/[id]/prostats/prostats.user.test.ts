@@ -29,7 +29,7 @@ async function query({ userId, type, expectedError, expectedStatus, additionalAs
     additionalAssertions?: (response: any) => Promise<void>,
     }) {
   await testApiHandler({
-    handler: async (_, res) => {
+    pagesHandler: async (_, res) => {
       const req: NextApiRequestWithAuth = {
         method: 'GET',
         query: {

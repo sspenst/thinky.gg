@@ -35,7 +35,7 @@ export function RoleIcon({ id, role, size = 18 }: RoleIconProps) {
     return null;
   } else {
     return (
-      <Link href='/settings/pro'>
+      <Link href='/pro'>
         <span data-tooltip-id={tooltipId} data-tooltip-content={tooltip}>
           {icon}
         </span>
@@ -52,8 +52,6 @@ interface RoleIconsProps {
 }
 
 export default function RoleIcons({ id, size, user }: RoleIconsProps) {
-  // combine user.roles and user.config.roles
-
   const roles = user.roles || [];
   const configRoles = user.config?.roles || [];
   const dedupeRoles = Array.from(new Set([...roles, ...configRoles]));

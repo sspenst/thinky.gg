@@ -1,6 +1,8 @@
 import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import { logger } from '@root/helpers/logger';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
@@ -41,7 +43,7 @@ const defaultReq: any = {
 describe('matchCreate', () => {
   test('GET the match when not in one should return empty', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         await handler({
           ...defaultReq,
           method: 'GET',
@@ -58,7 +60,7 @@ describe('matchCreate', () => {
   });
   test('POST should create OK', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         await handler({
           ...defaultReq
         }, res);
@@ -74,8 +76,9 @@ describe('matchCreate', () => {
     });
   });
   test('POST a second time should fail (already in match)', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         await handler({
           ...defaultReq
         }, res);
@@ -91,7 +94,7 @@ describe('matchCreate', () => {
   });
   test('GET my active matches', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         await handler({
           ...defaultReq,
           method: 'GET',

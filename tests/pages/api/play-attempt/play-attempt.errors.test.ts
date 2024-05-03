@@ -188,7 +188,7 @@ describe('play-attempt.errors.test.ts', () => {
   // 3. get recent unsolved
   test('GET recent_unsolved', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
@@ -226,7 +226,7 @@ describe('play-attempt.errors.test.ts', () => {
     expect(status2).toBe(200);
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {

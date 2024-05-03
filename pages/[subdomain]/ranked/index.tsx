@@ -6,8 +6,8 @@ import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq'
 import { redirectToLogin } from '@root/helpers/redirectToLogin';
 import cleanUser from '@root/lib/cleanUser';
 import { getUserFromToken } from '@root/lib/withAuth';
+import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { UserModel } from '@root/models/mongoose';
-import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import React from 'react';

@@ -1,3 +1,4 @@
+import { enrichReqUser } from '@root/helpers/enrich';
 import getEmailConfirmationToken from '@root/helpers/getEmailConfirmationToken';
 import isGuest from '@root/helpers/isGuest';
 import sendEmailConfirmationEmail from '@root/lib/sendEmailConfirmationEmail';
@@ -9,7 +10,6 @@ import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import TestId from '../../../constants/testId';
 import { ValidType } from '../../../helpers/apiWrapper';
-import { enrichReqUser } from '../../../helpers/enrich';
 import { generateCollectionSlug, generateLevelSlug } from '../../../helpers/generateSlug';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
@@ -18,7 +18,7 @@ import clearTokenCookie from '../../../lib/clearTokenCookie';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
-import { AchievementModel, CollectionModel, CommentModel, GraphModel, KeyValueModel, LevelModel, MultiplayerProfileModel, NotificationModel, UserConfigModel, UserModel } from '../../../models/mongoose';
+import { AchievementModel, CollectionModel, CommentModel, DeviceModel, GraphModel, KeyValueModel, LevelModel, MultiplayerProfileModel, NotificationModel, UserConfigModel, UserModel } from '../../../models/mongoose';
 import { getSubscriptions, SubscriptionData } from '../subscription';
 import { getUserConfig } from '../user-config';
 
@@ -27,6 +27,7 @@ export default withAuth({
   PUT: {
     body: {
       currentPassword: ValidType('string', false),
+      disableConfetti: ValidType('boolean', false),
       email: ValidType('string', false),
       hideStatus: ValidType('boolean', false),
       name: ValidType('string', false),
@@ -60,6 +61,7 @@ export default withAuth({
     const {
       bio,
       currentPassword,
+      disableConfetti,
       email,
       hideStatus,
       name,
@@ -82,6 +84,10 @@ export default withAuth({
     }
 
     const setObj: {[k: string]: string} = {};
+
+    if (disableConfetti !== undefined) {
+      setObj['disableConfetti'] = disableConfetti;
+    }
 
     if (hideStatus !== undefined) {
       setObj['hideStatus'] = hideStatus;
@@ -137,7 +143,11 @@ export default withAuth({
         newUser.emailConfirmationToken = getEmailConfirmationToken();
         await newUser.save();
 
-        await sendEmailConfirmationEmail(req, newUser);
+        const error = await sendEmailConfirmationEmail(req, newUser);
+
+        if (error) {
+          return res.status(error.status).json({ error: error.message });
+        }
       }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
@@ -220,12 +230,13 @@ export default withAuth({
             archivedBy: req.userId,
             archivedTs: ts,
             slug: slug,
-
           } }, { session: session });
         }
 
         await Promise.all([
-          AchievementModel.deleteMany({ userId: req.userId }),
+          AchievementModel.deleteMany({ userId: req.userId }, { session: session }),
+          CollectionModel.deleteMany({ userId: req.userId }, { session: session }),
+          DeviceModel.deleteMany({ userId: req.userId }, { session: session }),
           GraphModel.deleteMany({ $or: [{ source: req.userId }, { target: req.userId }] }, { session: session }),
           // delete in keyvaluemodel where key contains userId
           KeyValueModel.deleteMany({ key: { $regex: `.*${req.userId}.*` } }, { session: session }),

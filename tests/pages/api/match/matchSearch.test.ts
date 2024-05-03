@@ -62,7 +62,7 @@ describe('/api/match/search', () => {
 
   test('Trying to GET', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...DefaultReq,
         } as unknown as NextApiRequestWithAuth;
@@ -87,7 +87,7 @@ describe('/api/match/search', () => {
   });
   test('Trying to GET filter player', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...DefaultReq,
           query: {

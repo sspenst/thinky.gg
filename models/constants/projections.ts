@@ -24,3 +24,12 @@ export const LEVEL_SEARCH_DEFAULT_PROJECTION = {
   ts: 1,
   ...LEVEL_DEFAULT_PROJECTION,
 };
+
+export const USER_DEFAULT_PROJECTION = {
+  _id: 1,
+  avatarUpdatedAt: 1,
+  hideStatus: 1,
+  last_visited_at: 1,
+  name: 1,
+  roles: 1,
+};

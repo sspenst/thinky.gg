@@ -1,10 +1,28 @@
-# <img src="public/logos/thinky/thinky.svg"> [Thinky.gg](https://thinky.gg)
+<p align="center">
+  <!-- <img src="src/img/icon-48.png" alt="Simplify YouTube" /> -->
+  <img src="public/logos/thinky/thinky_pfp.png" width="48">
+</p>
 
-[![codecov](https://codecov.io/gh/sspenst/pathology/branch/main/graph/badge.svg?token=BX0RSQ9R57)](https://codecov.io/gh/sspenst/pathology)
-![Tests](https://github.com/sspenst/pathology/actions/workflows/node.js.yml/badge.svg)
-[![](https://dcbadge.vercel.app/api/server/j6RxRdqq4A?style=flat&theme=default-inverted)](https://discord.gg/j6RxRdqq4A)
+<p align="center">
+  <strong>
+    <a href="https://thinky.gg">Thinky.gg</a>
+  </strong>
+</p>
 
-Thinky is a platform dedicated to high-quality puzzle games. Solve and optimize puzzles, or create your own for everyone to play!
+<p align="center">
+  A platform dedicated to high-quality puzzle games.
+</p>
+
+<p align="center">
+  <a href="https://codecov.io/gh/sspenst/thinky.gg">
+    <img src="https://codecov.io/gh/sspenst/thinky.gg/branch/main/graph/badge.svg?token=BX0RSQ9R57" />
+  </a>
+  <img src="https://github.com/sspenst/thinky.gg/actions/workflows/node.js.yml/badge.svg" />
+  <br />
+  <a href="https://discord.gg/j6RxRdqq4A">
+    <img src="https://dcbadge.vercel.app/api/server/j6RxRdqq4A?style=flat&theme=default-inverted" />
+  </a>
+</p>
 
 ## Dev Environment
 
@@ -29,10 +47,10 @@ REVALIDATE_SECRET=whatever
 
 ## Contributing
 
-- Find an [issue](https://github.com/sspenst/pathology/issues) to work on
+- Find an [issue](https://github.com/sspenst/thinky.gg/issues) to work on
 - Fork the repo
 - Test your changes locally
-- Create a [pull request](https://github.com/sspenst/pathology/pulls)
+- Create a [pull request](https://github.com/sspenst/thinky.gg/pulls)
 
 ## Tech Stack
 

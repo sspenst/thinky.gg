@@ -36,5 +36,4 @@ const DeviceSchema = new mongoose.Schema<Device>(
 
 export default DeviceSchema;
 
-DeviceSchema.index({ deviceToken: 1 }, { unique: true });
-DeviceSchema.index({ userId: 1 });
+DeviceSchema.index({ userId: 1, deviceToken: 1 }, { unique: true });

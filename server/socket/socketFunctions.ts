@@ -1,6 +1,6 @@
 import { GameId } from '@root/constants/GameId';
+import { getEnrichNotificationPipelineStages } from '@root/helpers/enrich';
 import { MatchGameState } from '@root/helpers/gameStateHelpers';
-import { getEnrichNotificationPipelineStages } from '@root/helpers/getEnrichNotificationPipelineStages';
 import { getUsersWithMultiplayerProfileFromIds } from '@root/helpers/getUsersWithMultiplayerProfile';
 import { getMatch } from '@root/helpers/match/getMatch';
 import cleanUser from '@root/lib/cleanUser';
@@ -113,7 +113,7 @@ export async function broadcastCountOfUsersInRoom(gameId: GameId, emitter: Serve
   });
 
   // we have all the connected user ids now... so let's get all of them
-  const users = await getUsersWithMultiplayerProfileFromIds(undefined, connectedUserIds);
+  const users = await getUsersWithMultiplayerProfileFromIds(gameId, connectedUserIds);
   // remove users with hideStatus: true and inactive users
   const filteredUsers = users.filter(user => !user.hideStatus);
 
@@ -123,9 +123,8 @@ export async function broadcastCountOfUsersInRoom(gameId: GameId, emitter: Serve
 
 export async function broadcastNotifications(gameId: GameId, emitter: Emitter, userId: Types.ObjectId) {
   if (emitter) {
-    // get notifications
     const notificationAgg = await NotificationModel.aggregate<Notification>([
-      { $match: { userId: userId._id, /*gameId: gameId*/ } }, // Not adding gameId on purpose so we can get all notifications for all games
+      { $match: { userId: userId._id } }, // not adding gameId on purpose so we can get all notifications for all games
       { $sort: { createdAt: -1 } },
       { $limit: 5 },
       ...getEnrichNotificationPipelineStages(userId)
@@ -140,6 +139,7 @@ export async function broadcastNotifications(gameId: GameId, emitter: Emitter, u
         cleanUser(notification.target as User);
       }
     });
+
     emitter.to(userId.toString()).emit('notifications', notificationAgg);
   }
 }
@@ -165,7 +165,7 @@ export async function broadcastConnectedPlayers(gameId: GameId, emitter: Server)
   });
 
   // we have all the connected user ids now... so let's get all of them
-  const users = await getUsersWithMultiplayerProfileFromIds(undefined, connectedUserIds);
+  const users = await getUsersWithMultiplayerProfileFromIds(gameId, connectedUserIds);
   // remove users with hideStatus: true and inactive users
   const filteredUsers = users.filter(user => !user.hideStatus);
 

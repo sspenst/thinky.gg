@@ -9,8 +9,8 @@ import FormattedDate from './formattedDate';
 
 interface FormattedAchievementProps {
   achievementType: AchievementType;
-  game: Game;
   createdAt?: Date;
+  game: Game;
   unlocked?: boolean;
 }
 

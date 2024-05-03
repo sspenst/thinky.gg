@@ -4,7 +4,7 @@ import isPro from '@root/helpers/isPro';
 import User from '@root/models/db/user';
 import { SubscriptionGiftData } from '@root/pages/api/subscription/gift';
 import classNames from 'classnames';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useContext, useEffect, useRef, useState } from 'react';
@@ -180,8 +180,8 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
   return (
     <div className='flex flex-col justify-center items-center gap-6'>
       <div className='flex gap-4'>
-        <Image alt='pro' src='/pro.svg' width='24' height='24' />
-        <h2 className='font-bold text-2xl'>{game.displayName} Pro</h2>
+        <Image alt='pro' src='/pro.svg' width='28' height='28' />
+        <h1 className='font-bold text-3xl'>{game.displayName} Pro</h1>
       </div>
       {isPro(user) &&
         <div className='flex flex-col gap-4 text-center justify-center items-center'>
@@ -285,8 +285,8 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
               <div className='font-bold'>Received Gifted Pro:</div>
               <div className='text-sm text-left'>
                 <div className='flex gap-1 items-center'>Gifted From: <FormattedUser id={'subscription-' + subscriptionData.subscriptionId} user={subscriptionData.giftFromUser} /></div>
-                <div>Status: <span className='font-bold'>{subscriptionData.cancel_at ? 'Ends ' + moment(new Date(subscriptionData.cancel_at * 1000)).format('MMMM Do, YYYY') : 'Active'}</span></div>
-                {!subscriptionData.cancel_at && subscriptionData.current_period_end && (<div>Renews: {moment(new Date(subscriptionData.current_period_end * 1000)).format('MMMM Do, YYYY')}</div>)}
+                <div>Status: <span className='font-bold'>{subscriptionData.cancel_at ? 'Ends ' + dayjs(new Date(subscriptionData.cancel_at * 1000)).format('MMMM DD, YYYY') : 'Active'}</span></div>
+                {!subscriptionData.cancel_at && subscriptionData.current_period_end && (<div>Renews: {dayjs(new Date(subscriptionData.current_period_end * 1000)).format('MMMM DD, YYYY')}</div>)}
               </div>
             </div>
           )}
@@ -316,9 +316,9 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                   <div className='flex gap-1 items-center'>
                     Gifted to: <FormattedUser id={'subscription-' + subscriptionData.subscriptionId} user={subscriptionData.giftToUser} /></div>
                 )}
-                {!subscriptionData.cancel_at_period_end && subscriptionData.current_period_end && (<div>Renews: <span className='font-bold'>{moment(new Date(subscriptionData.current_period_end * 1000)).format('MMMM Do, YYYY')}</span></div>)}
-                <div>Status: <span className='font-bold'>{subscriptionData.cancel_at ? 'Ends ' + moment(new Date(subscriptionData.cancel_at * 1000)).format('MMMM Do, YYYY') : 'Active'}</span></div>
-                <div>Card Used: {subscriptionData.paymentMethod?.card?.brand} ending in {subscriptionData.paymentMethod?.card?.last4}</div>
+                {!subscriptionData.cancel_at_period_end && subscriptionData.current_period_end && (<div>Renews: <span className='font-bold'>{dayjs(new Date(subscriptionData.current_period_end * 1000)).format('MMMM DD, YYYY')}</span></div>)}
+                <div>Status: <span className='font-bold'>{subscriptionData.cancel_at ? 'Ends ' + dayjs(new Date(subscriptionData.cancel_at * 1000)).format('MMMM DD, YYYY') : 'Active'}</span></div>
+                <div>Card Used: {subscriptionData.paymentMethod?.card ? `${subscriptionData.paymentMethod.card.brand} ending in ${subscriptionData.paymentMethod.card.last4}` : 'Not found'}</div>
                 {subscriptionData.cancel_at_period_end &&
                   <span className='font-bold'>
                     Subscription will cancel at period end
@@ -459,7 +459,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
               </svg>}
             title='Play History'
           />
-          <span className='text-sm ml-12'><Link className='underline' href={'https://github.com/sspenst/pathology/wiki/Pro-Features'}>View full list</Link> of Pro Features</span>
+          <span className='text-sm ml-12'><Link className='underline' href={'https://github.com/sspenst/thinky.gg/wiki/Pro-Features'}>View full list</Link> of Pro Features</span>
         </div>
       </div>
     </div>

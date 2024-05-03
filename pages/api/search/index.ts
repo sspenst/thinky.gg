@@ -4,13 +4,13 @@ import StatFilter from '@root/constants/statFilter';
 import TileType from '@root/constants/tileType';
 import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import isPro from '@root/helpers/isPro';
-import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '@root/models/constants/projections';
+import { LEVEL_SEARCH_DEFAULT_PROJECTION, USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { Aggregate, FilterQuery, PipelineStage, Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getDifficultyRangeFromName } from '../../../components/formatted/formattedDifficulty';
 import TimeRange from '../../../constants/timeRange';
 import apiWrapper from '../../../helpers/apiWrapper';
-import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
+import { getEnrichLevelsPipelineSteps, getEnrichUserConfigPipelineStage } from '../../../helpers/enrich';
 import { logger } from '../../../helpers/logger';
 import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
@@ -18,7 +18,6 @@ import { getUserFromToken } from '../../../lib/withAuth';
 import { EnrichedLevel } from '../../../models/db/level';
 import User from '../../../models/db/user';
 import { LevelModel, StatModel, UserModel } from '../../../models/mongoose';
-import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 import { BlockFilterMask, SearchQuery } from '../../[subdomain]/search';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -406,6 +405,7 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
       },
     },
     { $unwind: '$userId' },
+    ...getEnrichUserConfigPipelineStage(gameId, { excludeCalcs: true, localField: 'userId._id', lookupAs: 'userId.config' }),
   ] as PipelineStage.Lookup[];
 
   try {

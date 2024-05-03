@@ -68,7 +68,7 @@ export default function SendAdminMessage({ runningCommand, selectedUserCommand, 
       <ReactTextareaAutosize
         className='bg-inherit block py-1 -mt-2 w-96 max-w-full border-b border-neutral-500 disabled:text-neutral-500 transition resize-none placeholder:text-neutral-500 focus:outline-0 rounded-none focus:border-black focus:dark:border-white'
         onChange={(e) => setAdminHref(e.currentTarget.value)}
-        placeholder='Href (eg: "/settings/pro")...'
+        placeholder='Href (eg: "/pro")...'
         value={adminHref}
       />
       <div className='flex gap-2 items-center'>
@@ -103,7 +103,7 @@ export default function SendAdminMessage({ runningCommand, selectedUserCommand, 
                   <Menu.Item key={`role-${role}`}>
                     {({ active }) => (
                       <button
-                        className='text-black block p-1 text-sm w-28 flex items-center gap-1 justify-center'
+                        className='text-black p-1 text-sm w-28 flex items-center gap-1 justify-center'
                         onClick={() => setAdminMessageRole(role)}
                         role='menuitem'
                         style= {{
@@ -118,7 +118,7 @@ export default function SendAdminMessage({ runningCommand, selectedUserCommand, 
                 <Menu.Item key='role-all'>
                   {({ active }) => (
                     <button
-                      className='text-black block p-1 text-sm w-28 flex items-center gap-1 justify-center'
+                      className='text-black p-1 text-sm w-28 flex items-center gap-1 justify-center'
                       onClick={() => setAdminMessageRole(null)}
                       role='menuitem'
                       style= {{

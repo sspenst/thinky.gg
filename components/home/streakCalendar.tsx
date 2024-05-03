@@ -1,10 +1,11 @@
 import useSWRHelper from '@root/hooks/useSWRHelper';
 import CalHeatmap from 'cal-heatmap';
 import React, { useEffect, useRef } from 'react';
+import LoadingSpinner from '../page/loadingSpinner';
 
 export function StreakCalendar() {
   // type is {currentStreak:number, calendar:[{key:string: count:number}
-  const { data } = useSWRHelper<{currentStreak: number, calendar: {date: string, value: number}[]}>('/api/streak');
+  const { data, isLoading } = useSWRHelper<{currentStreak: number, calendar: {date: string, value: number}[]}>('/api/streak');
 
   const heatmapRef = useRef(null);
 
@@ -55,6 +56,10 @@ export function StreakCalendar() {
       cal.destroy();
     };
   }, [data?.calendar]);
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
 
   return (<details className='flex flex-col gap-2 justify-center text-center bg-3 p-1 rounded-lg'>
     <summary className='p-1'>Play Streak: <span className='font-bold p-1 bg-purple-700 rounded-full text-white'>{data?.currentStreak}</span> day{data?.currentStreak === 1 ? '' : 's'}!</summary>

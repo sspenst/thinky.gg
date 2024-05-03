@@ -1,3 +1,5 @@
+import { GameId } from '@root/constants/GameId';
+
 export default class SelectOptionStats {
   total: number;
   userTotal: number | undefined;
@@ -17,9 +19,10 @@ export default class SelectOptionStats {
     );
   }
 
-  getColor(noUserTotalColor?: string) {
+  getColor(noUserTotalColor?: string, gameId?: string) {
     return !this.userTotal ? noUserTotalColor :
-      this.userTotal === this.total ? 'var(--color-complete)' : 'var(--color-incomplete)';
+      this.userTotal === this.total ? 'var(--color-complete)' :
+        gameId === GameId.SOKOPATH ? 'var(--color-complete)' : 'var(--color-incomplete)';
   }
 
   getText() {

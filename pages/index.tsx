@@ -1,7 +1,6 @@
 /* istanbul ignore file */
-import FormattedUser from '@root/components/formatted/formattedUser';
-import { ThinkyHomePageLoggedIn } from '@root/components/home/ThinkyLoggedIn';
-import ThinkyHomePageNotLoggedIn from '@root/components/home/ThinkyNotLoggedIn';
+import { ThinkyHomePageLoggedIn } from '@root/components/home/thinkyLoggedIn';
+import ThinkyHomePageNotLoggedIn from '@root/components/home/thinkyNotLoggedIn';
 import Page from '@root/components/page/page';
 import Dimensions from '@root/constants/dimensions';
 import dbConnect from '@root/lib/dbConnect';
