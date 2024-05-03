@@ -14,7 +14,7 @@ import FormattedUser from '../formatted/formattedUser';
 import Modal from '../modal';
 import LevelInfoModal from '../modal/levelInfoModal';
 import PostGameModal from '../modal/postGameModal';
-import { dropConfetti } from '../page/Confetti';
+import { dropConfetti } from '../page/confetti';
 import Game from './game';
 import FormattedLevelInfo from './info/formattedLevelInfo';
 import Solved from './info/solved';
@@ -234,7 +234,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
           // this allows updating the collection level list on level change to continue running behind the scenes
           { 'xl:flex': !isCollectionViewHidden },
         )}>
-          <div className='flex justify-between w-full gap-2 items-center px-4 py-3 border-b border-color-4'>
+          <div className='flex justify-between w-full gap-2 items-center px-4 py-3 border-b border-color-3'>
             {getCollectionTitle()}
             <button onClick={() => setIsCollectionViewHidden(true)}>
               <svg className='w-5 h-5 hover:opacity-100 opacity-50' fill='currentColor' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg' style={{ minWidth: 20, minHeight: 20 }}>
@@ -248,7 +248,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
       <div className='hidden xl:flex flex-col border-l border-color-3 break-words z-10 h-full w-100'>
         {collection && isCollectionViewHidden &&
           <button
-            className='flex items-center gap-4 w-full border-b border-color-4 hover-bg-3 transition px-4 py-3'
+            className='flex items-center gap-4 w-full border-b border-color-3 hover-bg-3 transition px-4 py-3'
             onClick={() => {
               if (setIsCollectionViewHidden) {
                 setIsCollectionViewHidden(false);

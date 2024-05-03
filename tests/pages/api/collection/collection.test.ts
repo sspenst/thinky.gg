@@ -27,7 +27,7 @@ enableFetchMocks();
 describe('pages/api/collection/index.ts', () => {
   test('Sending nothing should return 401', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           cookies: {
             token: '',
@@ -46,7 +46,7 @@ describe('pages/api/collection/index.ts', () => {
   test('querying with a non-GET HTTP method should fail', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -69,8 +69,9 @@ describe('pages/api/collection/index.ts', () => {
     });
   });
   test('Doing a POST with no data should error', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -93,7 +94,7 @@ describe('pages/api/collection/index.ts', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
@@ -121,7 +122,7 @@ describe('pages/api/collection/index.ts', () => {
   });
   test('Doing a POST but only name field should be OK', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -152,7 +153,7 @@ describe('pages/api/collection/index.ts', () => {
   test('Doing a POST but naming to a reserved slug should fail', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -180,7 +181,7 @@ describe('pages/api/collection/index.ts', () => {
 
   test('Doing a POST to update level name but invalid characters in name should strip in slug', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -209,8 +210,9 @@ describe('pages/api/collection/index.ts', () => {
   });
 
   test('Doing a POST but invalid/missing fields should fail', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -238,7 +240,7 @@ describe('pages/api/collection/index.ts', () => {
   });
   test('Doing a POST with correct collection data should be OK', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
@@ -275,7 +277,7 @@ describe('pages/api/collection/index.ts', () => {
   });
   test('now we should NOT be able to get the collection as a public user because it is private', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           query: {
@@ -296,7 +298,7 @@ describe('pages/api/collection/index.ts', () => {
   });
   test('if we are querying as the user who doesnt own it we should NOT be able to get the collection', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           userId: TestId.USER,
@@ -321,7 +323,7 @@ describe('pages/api/collection/index.ts', () => {
   });
   test('if we are querying as the user who owns it we should be able to get the collection', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           userId: TestId.USER,
@@ -347,7 +349,7 @@ describe('pages/api/collection/index.ts', () => {
   });
   test('if we are querying as the user who owns it we should be able to get the collection', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           query: {
@@ -374,7 +376,7 @@ describe('pages/api/collection/index.ts', () => {
 
   test('now querying for a different collection should NOT return this collection', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
@@ -394,17 +396,15 @@ describe('pages/api/collection/index.ts', () => {
       },
     });
   });
-  test('Create 3 collections with same name in DB, so that we can test to make sure the server will not crash. The 19th should crash however.', async () => {
-    for (let i = 0; i < 2; i++) {
+  test('Create 20 collections with same name in DB, we should never crash because it is so unlikely', async () => {
+    const slugs = new Set<string>();
+
+    for (let i = 1; i <= 20; i++) {
       // expect no exceptions
-      const promise = initCollection(TestId.USER, 'Sample');
+      const collection = await initCollection(TestId.USER, 'Sample');
 
-      await expect(promise).resolves.toBeDefined();
+      expect(slugs.has(collection.slug)).toBe(false);
+      slugs.add(collection.slug);
     }
-
-    // Now create one more, it should throw exception
-    const promise = initCollection(TestId.USER, 'Sample');
-
-    await expect(promise).rejects.toThrow('Couldn\'t generate a unique collection slug');
-  }, 30000);
+  });
 });

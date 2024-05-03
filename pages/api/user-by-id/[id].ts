@@ -1,6 +1,7 @@
 import { GameId } from '@root/constants/GameId';
 import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
+import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import apiWrapper, { NextApiRequestWrapper, ValidObjectId } from '../../../helpers/apiWrapper';
@@ -33,6 +34,13 @@ export async function getUserById(id: string | string[] | undefined, gameId: Gam
 
   try {
     const userAgg = await UserModel.aggregate<User>([
+      {
+        $project: {
+          ...USER_DEFAULT_PROJECTION,
+          lastGame: 1,
+          ts: 1,
+        },
+      },
       { $match: { _id: new Types.ObjectId(id as string) } },
       ...(game.isNotAGame ? [] : getEnrichUserConfigPipelineStage(gameId)),
     ]);

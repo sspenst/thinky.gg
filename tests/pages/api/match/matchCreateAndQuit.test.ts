@@ -43,7 +43,7 @@ describe('matchCreateAndQuit', () => {
 
   test('create match', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         await handlerCreate({
           ...defaultReq,
           method: 'POST',
@@ -74,7 +74,7 @@ describe('matchCreateAndQuit', () => {
   });
   test('quit match', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         await handler({
           ...defaultReq,
           method: 'PUT',
@@ -113,7 +113,7 @@ describe('matchCreateAndQuit', () => {
   test('quit match again (and fail)', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         await handler({
           ...defaultReq,
           method: 'PUT',

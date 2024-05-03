@@ -10,9 +10,9 @@ import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import cleanUser from '@root/lib/cleanUser';
 import { getUserFromToken } from '@root/lib/withAuth';
+import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import User from '@root/models/db/user';
 import { LevelModel, StatModel, UserModel } from '@root/models/mongoose';
-import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import classNames from 'classnames';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
@@ -90,7 +90,8 @@ async function getDifficultyLeaderboard(gameId: GameId, index: DIFFICULTY_INDEX)
             $project: {
               ...USER_DEFAULT_PROJECTION
             }
-          }
+          },
+          ...getEnrichUserConfigPipelineStage(gameId, { excludeCalcs: true }),
         ]
       }
     },
@@ -114,7 +115,6 @@ async function getDifficultyLeaderboard(gameId: GameId, index: DIFFICULTY_INDEX)
     {
       $limit: 100
     },
-    ...getEnrichUserConfigPipelineStage(gameId),
   ]) as UserAndSum[];
 
   // clean each one
@@ -207,15 +207,23 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
           const isYou = reqUser && user._id === reqUser._id;
 
           return (<>
-            <div key={`${user._id}-rank`}
-              className={classNames('font-bold text-xl', { 'border rounded-md border-color-4': isYou })}>{i + 1}.</div>
+            <div
+              className={classNames('font-bold text-xl')}
+              key={`${user._id}-rank`}
+            >
+              {i + 1}.
+            </div>
             <div
               className='flex items-center text-lg gap-3 rounded-lg truncate'
               key={`${user._id}-levels-solved`}
             >
               <FormattedUser id='ranked' size={32} user={user} />
             </div>
-            <div className='ml-2 font-medium text-lg'>
+            <div className='ml-2 font-medium text-lg rounded-md' style={{
+              boxShadow: isYou ? '0 0 10px 2px rgba(255, 100, 0, 0.6), 0 0 20px 2px rgba(255, 150, 0, 0.7), 0 0 32px 4px rgba(255, 200, 0, 0.8)' : undefined,
+              paddingLeft: isYou ? '4px' : undefined,
+              paddingRight: isYou ? '4px' : undefined,
+            }}>
               {values[i]}
             </div>
           </>);
@@ -294,7 +302,7 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
                     <Menu.Item key={`leaderboard-${leaderboardKey}`}>
                       {({ active }) => (
                         <button
-                          className='text-black block p-1 text-xl font-medium w-64 flex items-center gap-1 justify-center'
+                          className='text-black p-1 text-xl font-medium w-64 flex items-center gap-1 justify-center'
                           onClick={() => setLeaderboard(leaderboardKey)}
                           role='menuitem'
                           style= {{

@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 export default function SettingsNotifications() {
   const [emailDigest, setEmailDigest] = useState(EmailDigestSettingType.DAILY);
   const [isUserConfigLoading, setIsUserConfigLoading] = useState(false);
-  const { user, mutateUser, userConfig } = useContext(AppContext);
+  const { mutateUser, user, userConfig } = useContext(AppContext);
 
   useEffect(() => {
     if (user?.emailDigest) {
@@ -67,8 +67,8 @@ export default function SettingsNotifications() {
     return null;
   }
 
-  const disallowedEmailNotifications = user.disallowedEmailNotifications;
-  const disallowedPushNotifications = user.disallowedPushNotifications;
+  const disallowedEmailNotifications = user.disallowedEmailNotifications ?? [];
+  const disallowedPushNotifications = user.disallowedPushNotifications ?? [];
 
   // Create a formatted list of all notification types with two checkboxes... one for email and one for mobile push notifications.
   const updateNotifs = (notif: NotificationType, type: 'email' | 'push') => {
@@ -92,12 +92,11 @@ export default function SettingsNotifications() {
 
   return (
     <div className='flex flex-col items-center gap-6 mb-4'>
-      <h2 className='font-bold text-2xl text-center'>Notifications</h2>
-      <div>
+      <div className='max-w-sm'>
         <table className='table-fixed'>
           <thead>
             <tr className='border-b' style={{ borderColor: 'var(--bg-color-4)' }}>
-              <th className='p-2 text-left'>Notification</th>
+              <th className='p-2 text-left'>Notifications</th>
               <th className='p-2'>
                 <div id='toggleAllEmailNotifs' className='flex justify-center gap-2'>
                   <label className='text-sm' htmlFor='toggleAllEmailNotifs'>
@@ -132,7 +131,7 @@ export default function SettingsNotifications() {
               <th className='p-2 pl-4'>
                 <div id='toggleAllPushNotifs' className='flex justify-center gap-2'>
                   <label className='text-sm' htmlFor='toggleAllPushNotifs'>
-                  Push
+                    Push
                   </label>
                   <input
                     checked={disallowedPushNotifications.length === 0}

@@ -92,6 +92,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     search: search ? search.toString() : '',
     statFilter: statFilter ? statFilter.toString() as StatFilter : StatFilter.All,
     timeRange: TimeRange[TimeRange.All],
+    // TODO: when filtering, the original collection order is not maintained and instead we sort here
+    // maybe need a separate doCollectionQuery function
     sortBy: 'ts',
     sortDir: 'asc',
   }, reqUser);

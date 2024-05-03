@@ -4,6 +4,7 @@ import { Game } from './Games';
 import TileType from './tileType';
 
 enum Theme {
+  Custom = 'custom',
   Modern = 'theme-modern',
   Monkey = 'theme-monkey',
   Classic = 'theme-classic',

@@ -1,8 +1,8 @@
+import { enrichReqUser } from '@root/helpers/enrich';
 import { requestBroadcastNotifications } from '@root/lib/appSocketToClient';
 import { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { ValidObjectIdArray, ValidType } from '../../../helpers/apiWrapper';
-import { enrichReqUser } from '../../../helpers/enrich';
 import { logger } from '../../../helpers/logger';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { NotificationModel } from '../../../models/mongoose';

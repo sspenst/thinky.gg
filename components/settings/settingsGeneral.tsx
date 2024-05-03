@@ -61,15 +61,14 @@ export default function SettingsGeneral({ user }: SettingsGeneralProps) {
   }
 
   return (
-    <div className='flex flex-col justify-center items-center gap-6'>
-      <h2 className='font-bold text-2xl text-center'>General</h2>
+    <div className='flex flex-col justify-center items-center gap-6 w-full max-w-sm'>
       <UploadImage user={user} />
-      <form className='flex flex-col gap-3' onSubmit={updateBio}>
+      <form className='flex flex-col gap-3 w-full' onSubmit={updateBio}>
         <label className='font-bold' htmlFor='bio'>
           About me
         </label>
         <ReactTextareaAutosize
-          className='bg-inherit block py-1 -mt-2 w-80 max-w-full border-b border-neutral-500 disabled:text-neutral-500 transition resize-none placeholder:text-neutral-500 focus:outline-0 rounded-none focus:border-black focus:dark:border-white'
+          className='bg-inherit block py-1 -mt-2 w-full max-w-full border-b border-neutral-500 disabled:text-neutral-500 transition resize-none placeholder:text-neutral-500 focus:outline-0 rounded-none focus:border-black focus:dark:border-white'
           disabled={updating}
           id='bio'
           maxLength={256}
@@ -78,13 +77,22 @@ export default function SettingsGeneral({ user }: SettingsGeneralProps) {
           value={bio}
         />
         {bio !== initialBio &&
-          <button
-            className='bg-blue-500 enabled:hover:bg-blue-700 text-white font-medium px-3 py-2 rounded-full text-sm disabled:opacity-50 w-fit'
-            disabled={updating}
-            type='submit'
-          >
-            Update
-          </button>
+          <div className='flex gap-2'>
+            <button
+              className='bg-blue-500 enabled:hover:bg-blue-700 text-white font-medium px-3 py-2 rounded-full text-sm disabled:opacity-50 w-fit'
+              disabled={updating}
+              type='submit'
+            >
+              Update
+            </button>
+            <button
+              className='enabled:hover:bg-neutral-500 font-medium px-3 py-2 mr-2 rounded-full text-sm disabled:opacity-50 w-fit'
+              disabled={updating}
+              onClick={() => setBio(initialBio)}
+            >
+              Cancel
+            </button>
+          </div>
         }
       </form>
     </div>

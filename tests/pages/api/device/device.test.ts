@@ -4,7 +4,7 @@ import TestId from '../../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import handler from '../../../../pages/api/notification-push-token/index';
+import handler from '../../../../pages/api/device/index';
 
 afterEach(() => {
   jest.restoreAllMocks();
@@ -17,10 +17,10 @@ afterAll(async () => {
 });
 enableFetchMocks();
 
-describe('PUT /api/notification-push-token', () => {
-  test('should return 200', async () => {
+describe('/api/device', () => {
+  test('PUT (create)', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           cookies: {
             token: getTokenCookieValue(TestId.USER),
@@ -55,9 +55,9 @@ describe('PUT /api/notification-push-token', () => {
       },
     });
   });
-  test('should repeat 200', async () => {
+  test('PUT (update)', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           cookies: {
             token: getTokenCookieValue(TestId.USER),
@@ -92,9 +92,46 @@ describe('PUT /api/notification-push-token', () => {
       },
     });
   });
-  test('should delete 200', async () => {
+  test('PUT same device for another user', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_B),
+          },
+          method: 'PUT',
+          body: {
+            deviceToken: 'testToken',
+            deviceName: 'testName',
+            deviceBrand: 'testBrand',
+            deviceOSName: 'testOS',
+            deviceOSVersion: 'testOSVersion',
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+        expect(response.deviceToken).toBe('testToken');
+        expect(response.deviceName).toBe('testName');
+        expect(response.deviceBrand).toBe('testBrand');
+        expect(response.deviceOSName).toBe('testOS');
+        expect(response.deviceOSVersion).toBe('testOSVersion');
+      },
+    });
+  });
+  test('DELETE 200', async () => {
+    await testApiHandler({
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           cookies: {
             token: getTokenCookieValue(TestId.USER),

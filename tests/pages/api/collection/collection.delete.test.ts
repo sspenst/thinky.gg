@@ -18,7 +18,7 @@ enableFetchMocks();
 describe('pages/api/collection/index.ts', () => {
   test('Doing a DELETE for unknown collection should error', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           cookies: {
@@ -46,7 +46,7 @@ describe('pages/api/collection/index.ts', () => {
   });
   test('Doing a DELETE when we don\'t own the collection should not error', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           cookies: {
@@ -74,7 +74,7 @@ describe('pages/api/collection/index.ts', () => {
   });
   test('Doing a DELETE for valid collection that i own should not error', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           cookies: {
@@ -102,7 +102,7 @@ describe('pages/api/collection/index.ts', () => {
   });
   test('now we should NOT be able to get the collection', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           userId: TestId.USER,

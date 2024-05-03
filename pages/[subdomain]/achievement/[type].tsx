@@ -1,20 +1,20 @@
 import FormattedAchievement from '@root/components/formatted/formattedAchievement';
 import FormattedDate from '@root/components/formatted/formattedDate';
 import FormattedUser from '@root/components/formatted/formattedUser';
-import { dropConfetti } from '@root/components/page/Confetti';
 import Page from '@root/components/page/page';
-import DataTable from '@root/components/tables/dataTable';
+import { DataTableOffline } from '@root/components/tables/dataTable';
 import AchievementType from '@root/constants/achievements/achievementType';
 import Dimensions from '@root/constants/dimensions';
 import { AppContext } from '@root/contexts/appContext';
+import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import cleanUser from '@root/lib/cleanUser';
 import dbConnect from '@root/lib/dbConnect';
 import { getUserFromToken } from '@root/lib/withAuth';
+import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import Achievement from '@root/models/db/achievement';
 import User from '@root/models/db/user';
 import { AchievementModel, UserModel } from '@root/models/mongoose';
-import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import React, { useContext } from 'react';
 
@@ -50,6 +50,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         },
       },
       { $unwind: { path: '$userId' } },
+      ...getEnrichUserConfigPipelineStage(gameId, { excludeCalcs: true, localField: 'userId._id', lookupAs: 'userId.config' }),
     ]),
   ]);
 
@@ -68,23 +69,13 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
 /* istanbul ignore next */
 export default function AchievementPage({ type, myAchievement, achievements }: {type: AchievementType, myAchievement?: Achievement, achievements: Achievement[] }) {
-  const [page, setPage] = React.useState(1);
-  const currData = achievements.slice((page - 1) * 25, page * 25);
   const { game } = useContext(AppContext);
 
   return (
     <Page title='Viewing Achievement'>
       <div className='flex flex-col items-center justify-center w-full p-3'>
         <FormattedAchievement achievementType={type} game={game} createdAt={myAchievement?.createdAt} unlocked={true} />
-        <DataTable
-          onSort={() => {}}
-          sortBy='createdAt'
-          sortDir='desc'
-          onChangePage={(page: number) => {
-            setPage(page);
-          }}
-          page={page}
-          totalItems={achievements.length}
+        <DataTableOffline
           columns={[
             {
               id: 'user',
@@ -99,8 +90,8 @@ export default function AchievementPage({ type, myAchievement, achievements }: {
               sortable: false,
             },
           ]}
+          data={achievements}
           itemsPerPage={25}
-          data={currData}
           noDataComponent={<div className='text-gray-500 dark:text-gray-400'>No users to show</div>}
         />
       </div>

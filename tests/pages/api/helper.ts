@@ -8,7 +8,7 @@ export async function createAnotherGameConfig(userId: string, gameId: GameId = D
   const host = gameId + '.localhost';
 
   await testApiHandler({
-    handler: async (_, res) => {
+    pagesHandler: async (_, res) => {
       const req: NextApiRequestWithAuth = {
         method: 'GET',
         cookies: {

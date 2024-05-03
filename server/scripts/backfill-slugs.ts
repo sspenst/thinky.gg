@@ -17,7 +17,7 @@ const URL_HOST = args[0] || 'http://localhost:3000';
 async function startBackfillCollectionSlugs() {
   await dbConnect();
   // select all collections with no slugs
-  const collections = await CollectionModel.find({ slug: { $exists: false }, }, { _id: 1, name: 1, userId: 1, gameId: 1 }).populate('userId', 'name',).lean<Collection[]>();
+  const collections = await CollectionModel.find({ slug: { $exists: false }, }, { _id: 1, name: 1, userId: 1, gameId: 1 }).populate('userId').lean<Collection[]>();
 
   // loop through all the collections and generate a slug
   progressBar.start(collections.length, 0);

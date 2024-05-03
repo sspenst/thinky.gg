@@ -73,7 +73,7 @@ describe('/api/match/record', () => {
 
   test('Trying to GET', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...DefaultReq,
           query: {

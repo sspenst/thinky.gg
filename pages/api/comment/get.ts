@@ -1,3 +1,4 @@
+import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
 import cleanUser from '../../../lib/cleanUser';
@@ -20,7 +21,8 @@ export default apiWrapper({
     pageNum = Math.max(0, parseInt(page as string));
   }
 
-  const commentsAggregate = await getLatestCommentsFromId(id as string, false, pageNum, targetModel?.toString());
+  const gameId = getGameIdFromReq(req);
+  const commentsAggregate = await getLatestCommentsFromId(gameId, id as string, false, pageNum, targetModel?.toString());
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const comments = commentsAggregate?.data as (EnrichedComment & { children: any })[];

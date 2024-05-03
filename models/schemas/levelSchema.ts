@@ -68,11 +68,11 @@ const LevelSchema = new mongoose.Schema<Level>(
       required: false,
       default: 0
     },
-    // https://github.com/sspenst/pathology/wiki/Level-data-format
+    // https://github.com/sspenst/thinky.gg/wiki/Level-data-format
     data: {
       type: String,
       required: true,
-      minLength: 2, // always need start and end
+      minLength: 1,
       maxlength: 40 * 40 + 39,
     },
     gameId: {
@@ -222,7 +222,7 @@ export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {
       // for each group, look up the corresponding stat model based on userId and levelId
       {
         $lookup: {
-          from: 'stats',
+          from: StatModel.collection.name,
           let: {
             userId: '$_id',
             levelId: levelId,

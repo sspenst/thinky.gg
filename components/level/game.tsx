@@ -16,8 +16,7 @@ import { AppContext } from '../../contexts/appContext';
 import { LevelContext } from '../../contexts/levelContext';
 import { PageContext } from '../../contexts/pageContext';
 import Control from '../../models/control';
-import Level, { EnrichedLevel } from '../../models/db/level';
-import { dropConfetti } from '../page/Confetti';
+import Level from '../../models/db/level';
 import GameLayout from './gameLayout';
 
 interface SessionCheckpoint {
@@ -76,7 +75,6 @@ export default function Game({
   const shiftKeyDown = useRef(false);
 
   const { checkpoints, mutateCheckpoints } = useCheckpoints(level._id, disableCheckpoints || user === null || !isPro(user));
-  const enrichedLevel = level as EnrichedLevel;
   const pro = isPro(user);
 
   useEffect(() => {
@@ -148,6 +146,7 @@ export default function Game({
     }).then(async res => {
       if (res.status === 200) {
         mutateUser();
+        mutateCheckpoints();
 
         if (mutateCollection) {
           mutateCollection();
@@ -188,7 +187,7 @@ export default function Game({
     }).finally(() => {
       NProgress.done();
     });
-  }, [disableStats, matchId, mutateCollection, mutateLevel, mutateProStatsLevel, mutateUser, onStatsSuccess]);
+  }, [disableStats, matchId, mutateCheckpoints, mutateCollection, mutateLevel, mutateProStatsLevel, mutateUser, onStatsSuccess]);
 
   const saveCheckpoint = useCallback((index: number) => {
     if (index !== BEST_CHECKPOINT_INDEX) {
@@ -363,7 +362,7 @@ export default function Game({
       if (!pro) {
         toast.dismiss();
         toast.error(
-          <div>Upgrade to <Link href='/settings/pro' className='text-blue-500'>{game.displayName} Pro</Link> to unlock checkpoints!</div>,
+          <div>Upgrade to <Link href='/pro' className='text-blue-500'>{game.displayName} Pro</Link> to unlock checkpoints!</div>,
           {
             duration: 3000,
             icon: <Image alt='pro' src='/pro.svg' width='16' height='16' />,
@@ -418,7 +417,7 @@ export default function Game({
       if (undoKey && !shiftKeyDown.current) {
         // nothing to undo, restore the old game state if it exists
         if (newGameState.moves.length === 0) {
-          if (!oldGameState.current) {
+          if (!oldGameState.current || oldGameState.current.moves.length === 0) {
             return prevGameState;
           }
 
@@ -441,7 +440,7 @@ export default function Game({
       if (redo && !pro) {
         toast.dismiss();
         toast.error(
-          <div>Upgrade to <Link href='/settings/pro' className='text-blue-500'>{game.displayName} Pro</Link> to unlock redo!</div>,
+          <div>Upgrade to <Link href='/pro' className='text-blue-500'>{game.displayName} Pro</Link> to unlock redo!</div>,
           {
             duration: 3000,
             icon: <Image alt='pro' src='/pro.svg' width='16' height='16' />,
@@ -486,28 +485,6 @@ export default function Game({
       return onSuccessfulMove(newGameState);
     });
   }, [disableAutoUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, game.displayName, isComplete, level._id, level.data, level.leastMoves, loadCheckpoint, onComplete, onMove, onNext, onPrev, onSolve, pro, saveCheckpoint, saveSessionToSessionStorage, trackStats]);
-
-  useEffect(() => {
-    if (disableCheckpoints || !pro || !checkpoints) {
-      return;
-    }
-
-    const atEnd = isComplete(gameState);
-
-    const bestCheckpoint = checkpoints[BEST_CHECKPOINT_INDEX];
-
-    function newBest() {
-      if (!bestCheckpoint) {
-        return true;
-      }
-
-      return gameState.moves.length < bestCheckpoint.length;
-    }
-
-    if (atEnd && newBest()) {
-      saveCheckpoint(BEST_CHECKPOINT_INDEX);
-    }
-  }, [checkpoints, disableCheckpoints, enrichedLevel.userMoves, gameState, isComplete, pro, saveCheckpoint]);
 
   const touchXDown = useRef<number>(0);
   const touchYDown = useRef<number>(0);

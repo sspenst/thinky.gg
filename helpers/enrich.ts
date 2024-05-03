@@ -1,15 +1,14 @@
 import { GameId } from '@root/constants/GameId';
-import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
-import { PipelineStage } from 'mongoose';
-import cleanUser from '../lib/cleanUser';
+import cleanUser from '@root/lib/cleanUser';
+import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
+import Notification from '@root/models/db/notification';
+import { PipelineStage, Types } from 'mongoose';
 import Campaign, { EnrichedCampaign } from '../models/db/campaign';
 import Collection, { EnrichedCollection } from '../models/db/collection';
 import Level, { EnrichedLevel } from '../models/db/level';
-import Notification from '../models/db/notification';
 import Stat from '../models/db/stat';
 import User, { ReqUser } from '../models/db/user';
-import { NotificationModel, StatModel, UserConfigModel, UserModel } from '../models/mongoose';
-import { getEnrichNotificationPipelineStages } from './getEnrichNotificationPipelineStages';
+import { AchievementModel, CollectionModel, LevelModel, NotificationModel, StatModel, UserConfigModel, UserModel } from '../models/mongoose';
 
 export async function enrichCampaign(campaign: Campaign, reqUser: User | null) {
   const enrichedCampaign = JSON.parse(JSON.stringify(campaign)) as EnrichedCampaign;
@@ -54,100 +53,17 @@ export async function enrichCollection(collection: Collection, reqUser: User | n
   return enrichedCollection;
 }
 
-export async function enrichNotifications(notifications: Notification[], reqUser: User) {
-  const levelsToEnrich: EnrichedLevel[] = [];
-
-  // remove nulls
-  notifications.map(notification => {
-    if (notification.targetModel === 'Level') {
-      if (notification.target as EnrichedLevel) {
-        levelsToEnrich.push(notification.target as EnrichedLevel); // putting them in array to do one big batch...
-      }
-    }
-
-    return notification;
-  });
-
-  const enrichedLevels = await enrichLevels(levelsToEnrich, reqUser);
-
-  const NotificationModelMapping: Record<string, string[]> = {
-    ['Achievement']: ['_id', 'type', 'userId'],
-    ['Level']: ['_id', 'leastMoves', 'name', 'slug', 'ts', 'userAttempts', 'userMoves', 'userMovesTs'],
-    ['User']: ['_id', 'avatarUpdatedAt', 'hideStatus', 'name', 'last_visited_at'],
-    ['Collection']: ['_id', 'name', 'slug'],
-  };
-
-  const eNotifs: Notification[] = notifications.map((notification) => {
-    notification = JSON.parse(JSON.stringify(notification));
-
-    if (notification.targetModel === 'Level') {
-      if (notification.target as EnrichedLevel) {
-        const enrichedLevel = enrichedLevels.find(level => level._id.toString() === notification.target._id.toString());
-
-        if (enrichedLevel) {
-          notification.target = enrichedLevel;
-        }
-      }
-    }
-
-    // now strip out all the fields we don't need
-    const targetFields = NotificationModelMapping[notification.targetModel] ?? [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const target = notification.target as Record<string, any>;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const newTarget: Record<string, any> = {};
-
-    targetFields.forEach(field => {
-      if (target && target[field]) {
-        newTarget[field] = target[field];
-      }
-    });
-
-    notification.target = newTarget as Notification['target'];
-
-    // NB: no existing notification types have the user as a target
-    // should remove this ignore statment once these notification types are added
-    /* istanbul ignore next */
-    if (notification.targetModel === 'User') {
-      cleanUser(notification.target as User);
-    }
-
-    const sourceFields = NotificationModelMapping[notification.sourceModel] ?? [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const source = notification.source as Record<string, any>;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const newSource: Record<string, any> = {};
-
-    sourceFields.forEach(field => {
-      if (source && source[field]) {
-        newSource[field] = source[field];
-      }
-    });
-
-    notification.source = newSource as User;
-
-    if (notification.sourceModel === 'User') {
-      cleanUser(notification.source);
-    }
-
-    return notification as Notification;
-  });
-
-  return eNotifs;
-}
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function enrichReqUser(gameId: GameId, reqUser: User, filters?: any): Promise<ReqUser> {
-  const enrichedReqUser: ReqUser = JSON.parse(JSON.stringify(reqUser)) as ReqUser;
-
-  const notificationAgg = await NotificationModel.aggregate<Notification>([
-    { $match: { userId: reqUser._id, /*gameId: gameId,*/ ...filters } }, // Not adding gameId on purpose so we can get all notifications for all games
+export async function getEnrichedNotifications(reqUser: User, filters?: any, limit = 5, skip = 0) {
+  const notifications = await NotificationModel.aggregate<Notification>([
+    { $match: { userId: reqUser._id, ...filters } }, // not adding gameId on purpose so we can get all notifications for all games
     { $sort: { createdAt: -1 } },
-    { $limit: 5 },
+    { $skip: skip },
+    { $limit: limit },
     ...getEnrichNotificationPipelineStages(reqUser._id)
   ]);
 
-  notificationAgg.forEach(notification => {
+  notifications.forEach(notification => {
     if (notification.sourceModel === 'User' && notification.source) {
       cleanUser(notification.source as User);
     }
@@ -157,21 +73,34 @@ export async function enrichReqUser(gameId: GameId, reqUser: User, filters?: any
     }
   });
 
-  enrichedReqUser.notifications = notificationAgg;
+  return notifications;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function enrichReqUser(gameId: GameId, reqUser: User, filters?: any): Promise<ReqUser> {
+  const enrichedReqUser: ReqUser = JSON.parse(JSON.stringify(reqUser)) as ReqUser;
+
+  enrichedReqUser.notifications = await getEnrichedNotifications(reqUser, filters);
 
   return enrichedReqUser;
 }
 
 interface EnrichUserConfigOptions {
-  localField?: string;
   excludeCalcs?: boolean;
   includeChapter?: boolean;
+  localField?: string;
+  lookupAs?: string;
   project?: Record<string, unknown>;
 }
 
-export function getEnrichUserConfigPipelineStage(gameId: GameId, { localField, excludeCalcs, includeChapter, project }: EnrichUserConfigOptions = {}): PipelineStage[] {
+// use string for gameId to allow for easier use in aggregation pipelines
+export function getEnrichUserConfigPipelineStage(gameId: GameId | string, { excludeCalcs, includeChapter, localField, lookupAs, project }: EnrichUserConfigOptions = {}) {
   if (!localField) {
     localField = '_id';
+  }
+
+  if (!lookupAs) {
+    lookupAs = 'config';
   }
 
   if (!project) {
@@ -189,31 +118,39 @@ export function getEnrichUserConfigPipelineStage(gameId: GameId, { localField, e
     chapterUnlocked: 1,
   } : {};
 
-  return [{
-    $lookup: {
-      from: UserConfigModel.collection.name,
-      localField: localField,
-      foreignField: 'userId',
-      as: 'config',
-      pipeline: [
-        { $match: { gameId: gameId } },
-        { $project: {
-          gameId: 1,
-          roles: 1,
-          ...includeCalcsObject,
-          ...includeChapterObject,
-          ...project
-        } }
-      ]
+  return [
+    {
+      $lookup: {
+        from: UserConfigModel.collection.name,
+        localField: localField,
+        foreignField: 'userId',
+        as: lookupAs,
+        // using let for gameId allows looking up by GameId or by another property in the pipeline
+        let: { gameId: gameId },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $eq: ['$gameId', '$$gameId']
+              }
+            }
+          },
+          { $project: {
+            gameId: 1,
+            roles: 1,
+            ...includeCalcsObject,
+            ...includeChapterObject,
+            ...project
+          } }
+        ]
+      },
     },
-  },
-  {
-    $unwind: {
-      path: '$config',
-      preserveNullAndEmptyArrays: true,
-    }
-  },
-
+    {
+      $unwind: {
+        path: `$${lookupAs}`,
+        preserveNullAndEmptyArrays: true,
+      }
+    },
   ];
 }
 
@@ -335,4 +272,207 @@ export async function enrichLevels(levels: Level[], reqUser: User | null) {
 
     return enrichedLevel;
   });
+}
+
+export function getEnrichNotificationPipelineStages(reqUser?: Types.ObjectId) {
+  const statEnrich = reqUser ? [
+    // now enrich the target levels where userId: reqUser._id
+    // TODO: would we ever have notification where we need the source to be a level and if so would we need to enrich that too?
+    // Currently all sources are User so not wasting looking up users for target
+    {
+      $lookup: {
+        from: StatModel.collection.name,
+        let: { levelId: '$targetLevel._id', userId: reqUser._id },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$levelId', '$$levelId'] },
+                  { $eq: ['$userId', '$$userId'] },
+                ],
+              },
+            },
+          },
+        ],
+        as: 'targetLevelStats',
+      }
+    },
+    {
+      $unwind: {
+        path: '$targetLevelStats',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $set: {
+        'targetLevel.userAttempts': '$targetLevelStats.attempts',
+        'targetLevel.userMoves': '$targetLevelStats.moves',
+        'targetLevel.userMovesTs': '$targetLevelStats.ts',
+      },
+    },
+  ] : [];
+
+  return [
+    {
+      $lookup: {
+        from: AchievementModel.collection.name,
+        localField: 'source',
+        foreignField: '_id',
+        as: 'sourceAchievement',
+      },
+    },
+    {
+      $lookup: {
+        from: LevelModel.collection.name,
+        localField: 'source',
+        foreignField: '_id',
+        as: 'sourceLevel',
+      },
+    },
+    {
+      $lookup: {
+        from: UserModel.collection.name,
+        localField: 'source',
+        foreignField: '_id',
+        as: 'sourceUser',
+      },
+    },
+    {
+      $lookup: {
+        from: LevelModel.collection.name,
+        localField: 'target',
+        foreignField: '_id',
+        as: 'targetLevel',
+      },
+    },
+    {
+      $lookup: {
+        from: UserModel.collection.name,
+        localField: 'target',
+        foreignField: '_id',
+        as: 'targetUser',
+      },
+    },
+    {
+      $lookup: {
+        from: CollectionModel.collection.name,
+        localField: 'target',
+        foreignField: '_id',
+        as: 'targetCollection',
+      },
+    },
+    {
+      $unwind: {
+        path: '$sourceAchievement',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $unwind: {
+        path: '$sourceLevel',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $unwind: {
+        path: '$sourceUser',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $unwind: {
+        path: '$targetLevel',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $unwind: {
+        path: '$targetUser',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $unwind: {
+        path: '$targetCollection',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        createdAt: 1,
+        gameId: 1,
+        message: 1,
+        read: 1,
+        sourceModel: 1,
+        targetModel: 1,
+        type: 1,
+        updatedAt: 1,
+        userId: 1,
+        sourceAchievement: {
+          _id: 1,
+          type: 1,
+          userId: 1,
+        },
+        sourceLevel: {
+          _id: 1,
+          leastMoves: 1,
+          name: 1,
+          slug: 1,
+        },
+        sourceUser: {
+          ...USER_DEFAULT_PROJECTION,
+        },
+        targetCollection: {
+          _id: 1,
+          name: 1,
+          slug: 1,
+        },
+        targetLevel: {
+          _id: 1,
+          leastMoves: 1,
+          name: 1,
+          slug: 1,
+        },
+        targetUser: {
+          ...USER_DEFAULT_PROJECTION,
+        },
+      }
+    },
+    ...statEnrich,
+    ...getEnrichUserConfigPipelineStage('$gameId', { excludeCalcs: true, localField: 'sourceUser._id', lookupAs: 'sourceUser.config' }),
+    ...getEnrichUserConfigPipelineStage('$gameId', { excludeCalcs: true, localField: 'targetUser._id', lookupAs: 'targetUser.config' }),
+    {
+      // merge targetLevel and targetUser into target
+      $addFields: {
+        target: {
+          $mergeObjects: [
+            '$targetLevel',
+            '$targetUser',
+            '$targetCollection',
+          ]
+        },
+        source: {
+          $mergeObjects: [
+            '$sourceAchievement',
+            '$sourceLevel',
+            '$sourceUser',
+          ]
+        }
+      }
+    },
+    {
+      $unset: [
+        'sourceAchievement',
+        'sourceLevel',
+        'sourceUser',
+        'targetLevel',
+        'targetUser',
+        'targetCollection',
+        'targetLevelStats',
+        'target.calc_playattempts_unique_users'
+      ],
+    },
+  ] as PipelineStage[];
 }

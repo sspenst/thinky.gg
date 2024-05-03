@@ -24,7 +24,7 @@ describe('pages/api/reviews', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PATCH',
           headers: {
@@ -46,7 +46,7 @@ describe('pages/api/reviews', () => {
   test('Missing query field should return 400', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           headers: {
@@ -68,7 +68,7 @@ describe('pages/api/reviews', () => {
   test('Missing query.id field should return 400', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           query: {
@@ -93,7 +93,7 @@ describe('pages/api/reviews', () => {
   test('Malformed id', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           query: {
@@ -117,7 +117,7 @@ describe('pages/api/reviews', () => {
   });
   test('Valid object id but not associated with a level, should just return empty array', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           query: {
@@ -141,7 +141,7 @@ describe('pages/api/reviews', () => {
   });
   test('Valid object id but not associated with a level, should just return empty array', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           query: {

@@ -27,7 +27,7 @@ describe('avatar test', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           method: 'POST',
           gameId: DEFAULT_GAME_ID,
@@ -51,7 +51,7 @@ describe('avatar test', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           gameId: DEFAULT_GAME_ID,
           method: 'GET',
@@ -75,7 +75,7 @@ describe('avatar test', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           gameId: DEFAULT_GAME_ID,
           method: 'GET',
@@ -102,7 +102,7 @@ describe('avatar test', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           gameId: DEFAULT_GAME_ID,
           method: 'GET',
@@ -127,7 +127,7 @@ describe('avatar test', () => {
   });
   test('Calling with correct http method with query but valid id but not exist should fail', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           gameId: DEFAULT_GAME_ID,
           method: 'GET',
@@ -152,7 +152,7 @@ describe('avatar test', () => {
   });
   test('Calling with correct http method with query but correct id should work', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           gameId: DEFAULT_GAME_ID,
           method: 'GET',
@@ -184,7 +184,7 @@ describe('avatar test', () => {
     });
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWrapper = {
           gameId: DEFAULT_GAME_ID,
           method: 'GET',
@@ -202,7 +202,8 @@ describe('avatar test', () => {
         const res = await fetch();
 
         // should success, check the raw buffer
-        const response = await res.buffer();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const response = await (res as any).buffer();
 
         expect(response.toString()).toBe('image');
         // check content length and content type

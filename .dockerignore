@@ -1,2 +1,20 @@
 node_modules
+npm-debug.log
+Dockerfile*
+docker-compose*
+.dockerignore
+.git
+.gitignore
+README.md
+LICENSE
+.vscode
+.next
+*.swp
+
 dist
+
+# Version control
+.git/
+.gitignore
+
+thinky-react-native

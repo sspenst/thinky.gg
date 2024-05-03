@@ -44,7 +44,7 @@ describe('matchJoin', () => {
 
   test('Create a match', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         await handlerCreate({
           ...defaultReq
         }, res);
@@ -74,7 +74,7 @@ describe('matchJoin', () => {
   });
   test('GET the match with invalid matchId', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         await handler({
           ...defaultReq,
           query: {
@@ -95,7 +95,7 @@ describe('matchJoin', () => {
   });
   test('GET the match with valid matchId', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         await handler({
           ...defaultReq,
           query: {
@@ -120,7 +120,7 @@ describe('matchJoin', () => {
   });
   test('Try to join a match you are already in', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         await handler({
           ...defaultReq,
           query: {
@@ -144,7 +144,7 @@ describe('matchJoin', () => {
   });
   test('Another person tries to join', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         await handler({
           ...defaultReq,
           cookies: {

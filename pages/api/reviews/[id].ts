@@ -1,6 +1,7 @@
+import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import isPro from '@root/helpers/isPro';
 import { getUserFromToken } from '@root/lib/withAuth';
-import { USER_DEFAULT_PROJECTION } from '@root/models/schemas/userSchema';
+import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidObjectId } from '../../../helpers/apiWrapper';
@@ -55,15 +56,21 @@ export default apiWrapper({ GET: {
   const reviewsAgg = await ReviewModel.aggregate([
     { $match: { levelId: new Types.ObjectId(id as string) } },
     { $sort: { ts: -1 } },
-    { $lookup: { from: UserModel.collection.name, localField: 'userId', foreignField: '_id', as: 'userId',
-      pipeline: [
-        {
-          $project: {
-            ...USER_DEFAULT_PROJECTION
-          },
-        }
-      ]
-    } },
+    {
+      $lookup: {
+        from: UserModel.collection.name,
+        localField: 'userId',
+        foreignField: '_id',
+        as: 'userId',
+        pipeline: [
+          {
+            $project: {
+              ...USER_DEFAULT_PROJECTION
+            },
+          }
+        ]
+      }
+    },
     {
       $set: {
         userIdStr: '$userId._id',
@@ -77,6 +84,7 @@ export default apiWrapper({ GET: {
       $unset: ['userIdStr'],
     },
     { $unwind: '$userId' },
+    ...getEnrichUserConfigPipelineStage('$gameId', { excludeCalcs: true, localField: 'userId._id', lookupAs: 'userId.config' }),
   ]);
 
   reviewsAgg.forEach(review => cleanUser(review.userId));

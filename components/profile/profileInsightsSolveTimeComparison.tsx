@@ -1,7 +1,7 @@
 import { GameType } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
 import useProStatsUser, { ProStatsUserType } from '@root/hooks/useProStatsUser';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { useRouter } from 'next/router';
 import React, { useContext, useState } from 'react';
 import { Brush, ReferenceArea, ReferenceLine, ResponsiveContainer, Scatter, ScatterChart, Symbols, Tooltip, XAxis, YAxis } from 'recharts';
@@ -171,8 +171,8 @@ export default function ProfileInsightsSolveTimeComparison({ user }: { user: Use
                   const difficulty = difficultyLevelComparison.difficulty;
                   const ts = difficultyLevelComparison.ts * 1000;
                   const diff = difficultyLevelComparison.diff as number;
-                  const timeTakenForOthersToSolve = moment.duration(difficultyLevelComparison.otherPlayattemptsAverageDuration * 1000).humanize();
-                  const timeTakenToSolve = moment.duration(difficultyLevelComparison.myPlayattemptsSumDuration * 1000).humanize();
+                  const timeTakenForOthersToSolve = dayjs.duration(difficultyLevelComparison.otherPlayattemptsAverageDuration * 1000).humanize();
+                  const timeTakenToSolve = dayjs.duration(difficultyLevelComparison.myPlayattemptsSumDuration * 1000).humanize();
                   const multiplier = diff >= 1 ? diff.toFixed(1) : (1 / diff).toFixed(1);
 
                   return (
@@ -185,7 +185,7 @@ export default function ProfileInsightsSolveTimeComparison({ user }: { user: Use
                       <span className='text-xs'>
                         {`${multiplier}x ${(diff >= 1 ? 'faster' : 'slower')} than average`}
                         <br />
-                        You solved <span className='font-bold text-xs'>{moment(ts).fromNow()}</span>
+                        You solved <span className='font-bold text-xs'>{dayjs(ts).fromNow()}</span>
                       </span>
                     </div>
                   );

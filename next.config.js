@@ -1,4 +1,6 @@
 module.exports = {
+  productionBrowserSourceMaps: true,
+
   async redirects() {
     return [
       {
@@ -19,6 +21,15 @@ module.exports = {
         ],
         destination: 'https://thinky.gg/:path*',
         permanent: true,
+      },
+    ];
+  },
+  // TODO: can remove this a few months after updating the app
+  async rewrites() {
+    return [
+      {
+        source: '/api/notification-push-token',
+        destination: '/api/device',
       },
     ];
   },

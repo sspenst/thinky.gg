@@ -143,9 +143,10 @@ interface FormattedDifficultyProps {
   difficultyField?: 'calc_difficulty_completion_estimate' | 'calc_difficulty_estimate';
   id: string;
   level?: EnrichedLevel;
+  tooltip?: string;
 }
 
-export default function FormattedDifficulty({ difficulty, difficultyField, id, level }: FormattedDifficultyProps) {
+export default function FormattedDifficulty({ difficulty, difficultyField, id, level, tooltip }: FormattedDifficultyProps) {
   let difficultyEstimate = difficulty?.value;
 
   let uniqueUsers: number | undefined = undefined;
@@ -182,13 +183,13 @@ export default function FormattedDifficulty({ difficulty, difficultyField, id, l
   const difficultyFromEstimate = getDifficultyFromEstimate(difficultyEstimate);
   const pendingRemainingUsers = 10 - (uniqueUsers ?? 0);
   const showPendingUsers = difficultyFromEstimate.name === 'Pending' && uniqueUsers !== undefined;
-  const tooltip = showPendingUsers ?
+  const tooltipContent = tooltip ? tooltip : showPendingUsers ?
     `Waiting for ${pendingRemainingUsers} more player${pendingRemainingUsers === 1 ? '' : 's'}` :
     difficultyFromEstimate.description;
 
   return (
     <div className='flex justify-center difficultyText truncate'>
-      <div className='truncate' data-tooltip-id={`difficulty-${id}`} data-tooltip-content={tooltip}>
+      <div className='truncate' data-tooltip-id={`difficulty-${id}`} data-tooltip-content={tooltipContent}>
         <span className='pr-1'>{difficultyFromEstimate.emoji}</span>
         <span className='italic pr-1' style={{
           color: color,

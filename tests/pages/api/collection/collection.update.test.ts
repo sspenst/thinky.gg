@@ -55,7 +55,7 @@ describe('Testing updating collection data', () => {
   }, 30000);
   test('querying for the collection should return this collection and the single level in it', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           userId: TestId.USER,
@@ -82,7 +82,7 @@ describe('Testing updating collection data', () => {
   });
   test('Trying to set values but missing all required parameters', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER_B,
@@ -114,7 +114,7 @@ describe('Testing updating collection data', () => {
   });
   test('querying for the collection after trying to change it from a different user should STILL return this collection and the single level in it', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           userId: TestId.USER,
@@ -141,7 +141,7 @@ describe('Testing updating collection data', () => {
   });
   test('now we SET the 10 created levels to the collection', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER,
@@ -180,7 +180,7 @@ describe('Testing updating collection data', () => {
   });
   test('querying for the collection after SETTING 10 levels should return this collection and the 10 levels in it (without the one that was original there)', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           userId: TestId.USER,
@@ -212,7 +212,7 @@ describe('Testing updating collection data', () => {
   test('try to change the name to a reserved slug', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as unknown as Logger));
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER,
@@ -245,7 +245,7 @@ describe('Testing updating collection data', () => {
   });
   test('try to change to private', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           userId: TestId.USER,
@@ -281,7 +281,7 @@ describe('Testing updating collection data', () => {
     levels[levels.length - 1] = tmp;
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -316,7 +316,7 @@ describe('Testing updating collection data', () => {
   });
   test('querying for the collection after setting 10 levels (after the first and last level have been swapped) should return this collection and the 10 levels in the new order', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           userId: TestId.USER,
@@ -349,7 +349,7 @@ describe('Testing updating collection data', () => {
     toRemove = levels[5];
 
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
@@ -380,7 +380,7 @@ describe('Testing updating collection data', () => {
   });
   test('querying for the collection after removing one of the levels should return all the levels minus the level removed', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           userId: TestId.USER,

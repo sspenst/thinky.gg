@@ -44,7 +44,7 @@ describe('matchCreateJoinAndQuit', () => {
 
   test('create match', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         await handlerCreate({
           ...defaultReq,
           method: 'POST',
@@ -75,7 +75,7 @@ describe('matchCreateJoinAndQuit', () => {
   });
   test('join match', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         await handler({
           ...defaultReq,
           method: 'PUT',
@@ -131,7 +131,7 @@ describe('matchCreateJoinAndQuit', () => {
   });
   test('quit match', async () => {
     await testApiHandler({
-      handler: async (_, res) => {
+      pagesHandler: async (_, res) => {
         await handler({
           ...defaultReq,
           method: 'PUT',

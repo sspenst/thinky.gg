@@ -102,7 +102,7 @@ export default function ReviewForm({ inModal, review }: ReviewFormProps) {
   };
 
   return (
-    <div className='block w-full reviewsSection flex flex-col gap-2 mb-2' style={{
+    <div className='w-full reviewsSection flex flex-col gap-2 mb-2' style={{
       borderColor: 'var(--bg-color-4)',
     }}>
       <h2 className='font-bold'>{`${review ? 'Edit' : 'Add a'} review`}</h2>

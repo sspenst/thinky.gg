@@ -1,3 +1,4 @@
+import Device from '@root/models/db/device';
 import { ValidType } from '../../../helpers/apiWrapper';
 import withAuth from '../../../lib/withAuth';
 import { DeviceModel } from '../../../models/mongoose';
@@ -14,12 +15,12 @@ export default withAuth({
   },
   DELETE: {
     body: {
-      deviceToken: ValidType('string', false),
+      deviceToken: ValidType('string', true),
     }
   },
 }, async (req, res) => {
   if (req.method === 'PUT') {
-    const tokenEntry = await DeviceModel.findOneAndUpdate({
+    const device = await DeviceModel.findOneAndUpdate<Device>({
       userId: req.user._id,
       deviceToken: req.body.deviceToken,
     }, {
@@ -34,21 +35,17 @@ export default withAuth({
       new: true,
     });
 
-    if (!tokenEntry) {
-      return res.status(400).json({ error: 'Failed to create token entry' });
-    }
-
-    return res.status(200).json(tokenEntry);
+    return res.status(200).json(device);
   } else if (req.method === 'DELETE') {
-    const tokenEntry = await DeviceModel.findOneAndDelete({
+    const device = await DeviceModel.findOneAndDelete<Device>({
       userId: req.user._id,
       deviceToken: req.body.deviceToken,
     });
 
-    if (!tokenEntry) {
-      return res.status(400).json({ error: 'Failed to delete token entry' });
+    if (!device) {
+      return res.status(404).json({ error: 'Device not found' });
     }
 
-    return res.status(200).json(tokenEntry);
+    return res.status(200).json(device);
   }
 });

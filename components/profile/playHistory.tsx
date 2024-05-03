@@ -2,10 +2,15 @@ import useSWRHelper from '@root/hooks/useSWRHelper';
 import { EnrichedLevel } from '@root/models/db/level';
 import PlayAttempt from '@root/models/db/playAttempt';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
-import moment from 'moment';
+import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration';
+import utc from 'dayjs/plugin/utc';
 import React, { useEffect, useState } from 'react';
 import LevelCard from '../cards/levelCard';
 import LoadingSpinner from '../page/loadingSpinner';
+
+dayjs.extend(duration);
+dayjs.extend(utc);
 
 export default function PlayHistory() {
   const [cursor, setCursor] = useState<string | null>();
@@ -83,18 +88,21 @@ export default function PlayHistory() {
         <input
           className='p-2 border border-color-4 rounded'
           min='2020-01-01T00:00'
-          max={moment().format('YYYY-MM-DDTHH:mm')}
+          max={dayjs().format('YYYY-MM-DDTHH:mm')}
           onBlur={() => {
-            setAccumulatedPlayHistory([]);
-            setCursor(null);
-            setDatetime(intermediateDate);
+            // only query for new data if the date has changed
+            if (intermediateDate !== datetime) {
+              setAccumulatedPlayHistory([]);
+              setCursor(null);
+              setDatetime(intermediateDate);
+            }
           }}
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           onChange={(e: any) => {
             setIntermediateDate(e.target.value);
           }}
           type='datetime-local'
-          value={intermediateDate ? intermediateDate : moment().format('YYYY-MM-DDTHH:mm')}
+          value={intermediateDate ? intermediateDate : dayjs().format('YYYY-MM-DDTHH:mm')}
         />
         {intermediateDate && (
           <button className='text-sm hover:underline'
@@ -161,12 +169,12 @@ export default function PlayHistory() {
             let durationInbetween = null;
 
             if (prevEndTime) {
-              durationInbetween = moment.duration(playAttempt.startTime - prevEndTime, 'seconds').humanize();
+              durationInbetween = dayjs.duration(playAttempt.startTime - prevEndTime, 'seconds').humanize();
             }
 
             prevEndTime = playAttempt.endTime;
 
-            const currentDate = moment.unix(playAttempt.startTime).local().format('MMMM Do, YYYY');
+            const currentDate = dayjs.unix(playAttempt.startTime).local().format('MMMM DD, YYYY');
             const showDate = currentDate !== prevDate;
 
             prevDate = currentDate;
@@ -191,7 +199,7 @@ export default function PlayHistory() {
                   </div>
                   <div className='flex flex-col items-start gap-2'>
                     <span className='p-1 italic'>
-                      {moment.unix(playAttempt.startTime).local().format('h:mma')} - Played for {moment.duration(playAttempt.endTime - playAttempt.startTime, 'seconds').humanize()} {playAttempt.attemptContext === AttemptContext.JUST_SOLVED && 'and solved'}
+                      {dayjs.unix(playAttempt.startTime).local().format('h:mma')} - Played for {dayjs.duration(playAttempt.endTime - playAttempt.startTime, 'seconds').humanize()} {playAttempt.attemptContext === AttemptContext.JUST_SOLVED && 'and solved'}
                     </span>
                     <LevelCard id='play-history' level={level} />
                   </div>

@@ -10,8 +10,9 @@ interface User {
   _id: Types.ObjectId;
   avatarUpdatedAt?: number;
   bio?: string;
-  disallowedEmailNotifications: NotificationType[];
-  disallowedPushNotifications: NotificationType[];
+  disableConfetti?: boolean;
+  disallowedEmailNotifications?: NotificationType[];
+  disallowedPushNotifications?: NotificationType[];
   email: string;
   emailConfirmationToken: string;
   emailConfirmed: boolean;
@@ -27,6 +28,7 @@ interface User {
   stripeCustomerId: string;
   stripeGiftSubscriptions: string[]; // gift subscriptions this user has given out
   ts?: number; // created timestamp
+  utm_source?: string; // how the user found the site
   // virtual field - not stored in schema
   config?: UserConfig;
 }
