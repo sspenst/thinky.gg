@@ -1,4 +1,5 @@
 import { GameId } from '@root/constants/GameId';
+import cleanReview from '@root/lib/cleanReview';
 import { PipelineStage, QueryOptions, Types } from 'mongoose';
 import cleanUser from '../lib/cleanUser';
 import Level from '../models/db/level';
@@ -111,6 +112,8 @@ export async function getReviewsForUserId(gameId: GameId, id: string | string[] 
     ] as PipelineStage[]).concat(lookupPipelineUser));
 
     return levelsByUserAgg.map(review => {
+      // TODO: Figure out why complete 0 means complete here... Something is off since getLatestReviews uses complete 1
+      cleanReview({ canSee: review.levelId.complete === 0, reqUser: reqUser, review: review });
       cleanUser(review.userId);
 
       return review;
