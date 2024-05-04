@@ -1,5 +1,6 @@
 import { GameId } from '@root/constants/GameId';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import cleanReview from '@root/lib/cleanReview';
 import { LEVEL_DEFAULT_PROJECTION, USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { PipelineStage } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
@@ -93,6 +94,8 @@ export async function getLatestReviews(gameId: GameId, reqUser: User | null = nu
     ]);
 
     return reviews.map(review => {
+      // TODO: Figure out why complete 1 works as intended here but not in getReviewsByUserId
+      cleanReview({ canSee: review.levelId.complete === 1, reqUser: reqUser, review: review });
       cleanUser(review.userId);
 
       return review;
