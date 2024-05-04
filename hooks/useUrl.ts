@@ -11,6 +11,7 @@ const LinksThatCarryOver = [
   '^/play-history',
   '^/pro',
   '^/profile',
+  '^/multiplayer',
   '^/search',
   '^/settings',
   '^/tutorial',
