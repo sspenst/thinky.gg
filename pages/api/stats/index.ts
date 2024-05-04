@@ -1,7 +1,7 @@
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import Direction from '@root/constants/direction';
 import { GameId } from '@root/constants/GameId';
-import { Games } from '@root/constants/Games';
+import { Games, GameType } from '@root/constants/Games';
 import { getCheckpointKey } from '@root/helpers/checkpointHelpers';
 import getDifficultyEstimate, { getDifficultyCompletionEstimate } from '@root/helpers/getDifficultyEstimate';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
@@ -88,7 +88,9 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
         return;
       }
 
-      const complete = moves <= level.leastMoves;
+      const game = getGameFromId(level.gameId);
+
+      const complete = game.type === GameType.SHORTEST_PATH ? moves <= level.leastMoves : true;
 
       const promises = [];
 
