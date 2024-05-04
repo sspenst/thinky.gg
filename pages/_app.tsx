@@ -334,7 +334,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
 
       if (match.state === MultiplayerMatchState.ACTIVE && match.players.some((player: User) => player?._id?.toString() === user?._id?.toString())) {
         // match sure current url isn't this
-        if (router.pathname === '/[subdomain]/match/[matchId]' && router.query.matchId === match.matchId) {
+        if (router.pathname.indexOf('/[subdomain]/match/') >= 0 && router.query.matchId === match.matchId) {
           return;
         }
 
@@ -351,7 +351,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
       // if match is active and includes user, then redirect to match page /match/[matchId]
       if (match.state === MultiplayerMatchState.ACTIVE && match.players.some((player: User) => player?._id?.toString() === user?._id?.toString())) {
         // match sure current url isn't this
-        if (router.pathname === '/match/[matchId]' && router.query.matchId === match.matchId) {
+        if (router.pathname.indexOf('/[subdomain]/match/') >= 0 && router.query.matchId === match.matchId) {
           return;
         }
 
