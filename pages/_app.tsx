@@ -355,7 +355,10 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
           return;
         }
 
-        router.push(`/match/${match.matchId}`);
+        // if the current tab is active
+        if (document.visibilityState === 'visible') {
+          router.push(`/match/${match.matchId}`);
+        }
 
         return;
       }
