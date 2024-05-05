@@ -422,7 +422,7 @@ export default function Match() {
         </h1>
         { /* if you are in the game and the game is about to start then say Your Record */ }
         {iamplaying && !matchInProgress && !loadingHeadToHead &&
-        <h2 className='text-xl font-bold text-center p-3'>Your Record against {otherPlayer?.name} is {headToHead?.totalWins} - {headToHead?.totalLosses} - {headToHead?.totalTies}</h2>}
+        <h2 className='text-xl font-bold text-center p-3'>Your record against {otherPlayer?.name} is {headToHead?.totalWins} - {headToHead?.totalLosses} - {headToHead?.totalTies}</h2>}
         {connectedPlayersInRoom && connectedPlayersInRoom.count > 2 && (
           <div className='absolute py-1 px-1.5 text-xs text-red-500'>
             {connectedPlayersInRoom.count - 2} spectating
