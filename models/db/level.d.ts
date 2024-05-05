@@ -36,6 +36,7 @@ interface Level {
    * Number of users that have solved this level (StatModel has moves === level.leastMoves)
    */
   calc_stats_players_beaten: number;
+  collaborators: Types.ObjectId[];
   data: string;
   gameId: GameId;
   height: number;

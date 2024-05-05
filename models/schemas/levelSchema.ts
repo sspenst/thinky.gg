@@ -68,6 +68,11 @@ const LevelSchema = new mongoose.Schema<Level>(
       required: false,
       default: 0
     },
+    collaborators: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: 'User',
+      default: [],
+    },
     // https://github.com/sspenst/thinky.gg/wiki/Level-data-format
     data: {
       type: String,
