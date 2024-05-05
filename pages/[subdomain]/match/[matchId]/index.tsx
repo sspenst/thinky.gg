@@ -2,6 +2,7 @@ import LevelCard from '@root/components/cards/levelCard';
 import Grid from '@root/components/level/grid';
 import MatchResults from '@root/components/multiplayer/matchResults';
 import { MatchGameState } from '@root/helpers/gameStateHelpers';
+import useSWRHelper from '@root/hooks/useSWRHelper';
 import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import { UserWithMultiMultiplayerProfile, UserWithMultiplayerProfile } from '@root/models/db/user';
 import dayjs from 'dayjs';
@@ -283,6 +284,17 @@ export default function Match() {
       data: null
     });
   }, [match]);
+  const matchInProgress = match?.state === MultiplayerMatchState.ACTIVE && match?.timeUntilStart <= 0;
+  const iamplaying = match?.players.some(player => player._id.toString() === user?._id.toString());
+  const otherPlayer = match?.players.find(player => player._id.toString() !== user?._id.toString());
+  const { data: headToHead, isLoading: loadingHeadToHead } = useSWRHelper('/api/match/head2head?players=' + user?._id.toString() + ',' + otherPlayer?._id.toString() + '&filter=all&rated=true', {}, {}, !iamplaying) as {
+    data: {
+    totalWins: number,
+    totalLosses: number,
+    totalTies: number,
+    },
+    isLoading: boolean,
+  };
 
   if (!match) {
     return <SkeletonPage />;
@@ -408,6 +420,9 @@ export default function Match() {
             } as any)[match.state]
           }
         </h1>
+        { /* if you are in the game and the game is about to start then say Your Record */ }
+        {iamplaying && !matchInProgress && !loadingHeadToHead &&
+        <h2 className='text-xl font-bold text-center p-3'>Your Record against {otherPlayer?.name} is {headToHead?.totalWins} - {headToHead?.totalLosses} - {headToHead?.totalTies}</h2>}
         {connectedPlayersInRoom && connectedPlayersInRoom.count > 2 && (
           <div className='absolute py-1 px-1.5 text-xs text-red-500'>
             {connectedPlayersInRoom.count - 2} spectating
