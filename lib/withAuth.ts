@@ -21,7 +21,15 @@ export interface NextApiRequestWithAuth extends NextApiRequestWrapper {
   userId: string;
 }
 
-export function getUserIdFromToken(token: string): string | null {
+export async function getUserFromToken(
+  token: string | undefined,
+  req?: NextApiRequest,
+  dontUpdateLastSeen = false,
+): Promise<User | null> {
+  if (token === undefined) {
+    throw new Error('token not defined');
+  }
+
   if (!process.env.JWT_SECRET) {
     throw new Error('JWT_SECRET not defined');
   }
@@ -37,25 +45,7 @@ export function getUserIdFromToken(token: string): string | null {
   }
 
   const decoded = verifiedSignature;
-
-  return decoded.userId as string;
-}
-
-export async function getUserFromToken(
-  token: string | undefined,
-  req?: NextApiRequest,
-  dontUpdateLastSeen = false,
-): Promise<User | null> {
-  if (token === undefined) {
-    throw new Error('token not defined');
-  }
-
-  const userId = getUserIdFromToken(token);
-
-  if (userId === null) {
-    return null;
-  }
-
+  const userId = decoded.userId as string;
   // dynamically import newrelic
   const newrelic = process.env.NODE_ENV === 'test' ? undefined : await import('newrelic');
 
