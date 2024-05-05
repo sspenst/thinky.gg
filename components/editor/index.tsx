@@ -10,6 +10,7 @@ import { PageContext } from '../../contexts/pageContext';
 import Control from '../../models/control';
 import Level from '../../models/db/level';
 import BasicLayout from '../level/basicLayout';
+import CollabModal from '../modal/collabModal';
 import CreateLevelModal from '../modal/createLevelModal';
 import DataModal from '../modal/dataModal';
 import EditLevelModal from '../modal/editLevelModal';
@@ -33,6 +34,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   const [isDataOpen, setIsDataOpen] = useState(false);
   const [isEditLevelModalOpen, setIsEditLevelOpen] = useState(false);
   const [isModifyOpen, setIsModifyOpen] = useState(false);
+  const [isCollabOpen, setIsCollabOpen] = useState(false);
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
   const [isSizeOpen, setIsSizeOpen] = useState(false);
   const { preventKeyDownEvent } = useContext(PageContext);
@@ -326,6 +328,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
           new Control('btn-size', () => setIsSizeOpen(true), <>Size</>),
           new Control('btn-data', () => setIsDataOpen(true), <>Data</>),
           new Control('btn-modify', () => setIsModifyOpen(true), <>Modify</>),
+          new Control('btn-collab', () => setIsCollabOpen(true), <>👥 Collab</>),
           new Control('btn-save', () => {
             if (id) {
               save();
@@ -386,6 +389,11 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       isOpen={isModifyOpen}
       setIsDirty={() => setIsDirty(true)}
       setLevel={setLevel}
+    />
+    <CollabModal
+      closeModal={() => setIsCollabOpen(false)}
+      isOpen={isCollabOpen}
+      level={level}
     />
     <CreateLevelModal
       closeModal={() => {
