@@ -1,8 +1,83 @@
+import { GameId } from '@root/constants/GameId';
 import { ValidCommaSeparated, ValidObjectId } from '@root/helpers/apiWrapper';
 import withAuth, { NextApiRequestWithAuth } from '@root/lib/withAuth';
+import { MultiplayerMatchState } from '@root/models/constants/multiplayer';
+import { MultiplayerMatchModel } from '@root/models/mongoose';
 import { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
-import { getHeadToHeadMultiplayerRecord } from './search';
+
+export async function getHeadToHeadMultiplayerRecord( gameId: GameId, reqUserId: Types.ObjectId | undefined, userId: Types.ObjectId) {
+  const result = await MultiplayerMatchModel.aggregate([
+    {
+      $match: {
+        gameId: gameId,
+        state: MultiplayerMatchState.FINISHED,
+        rated: true,
+        players: {
+          $all: [userId, reqUserId], // Ensure both players are in the match
+        }
+      },
+    },
+    {
+      $project: {
+        wins: {
+          $cond: {
+            if: {
+              $in: [reqUserId, '$winners']
+            },
+            then: 1,
+            else: 0,
+          }
+        },
+        ties: {
+          $cond: {
+            if: {
+              $eq: ['$winners', []]
+            },
+            then: 1,
+            else: 0,
+          }
+        },
+        loses: {
+          $cond: {
+            if: {
+              $in: [userId, '$winners']
+            },
+            then: 1,
+            else: 0,
+          }
+        },
+      },
+    },
+    {
+      // Summing the results to get total wins, ties, and losses
+      $group: {
+        _id: null,
+        totalWins: { $sum: '$wins' },
+        totalTies: { $sum: '$ties' },
+        totalLosses: { $sum: '$loses' }
+      }
+    },
+    {
+      $project: {
+        _id: 0,
+        totalWins: 1,
+        totalTies: 1,
+        totalLosses: 1,
+      }
+    }
+  ]);
+
+  if (result.length === 0) {
+    return {
+      totalWins: 0,
+      totalTies: 0,
+      totalLosses: 0,
+    };
+  }
+
+  return result[0];
+}
 
 export default withAuth(
   {
