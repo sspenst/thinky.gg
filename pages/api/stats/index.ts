@@ -88,13 +88,14 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
         return;
       }
 
-      const game = getGameFromId(level.gameId);
-
-      const complete = game.type === GameType.SHORTEST_PATH ? moves <= level.leastMoves : true;
-
+      const complete = moves <= level.leastMoves;
       const promises = [];
 
-      if (complete && matchId) {
+      // check different completion criteria for multiplayer
+      const game = getGameFromId(level.gameId);
+      const mpComplete = game.type === GameType.SHORTEST_PATH ? moves <= level.leastMoves : true;
+
+      if (matchId && mpComplete) {
         // TODO: use session here
         promises.push(matchMarkCompleteLevel(userId, matchId, level._id));
       }
@@ -337,7 +338,6 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
         incPlayattemptsDurationSum += sumDuration[0]?.sumDuration ?? 0;
 
         // reset all playattempts to unsolved
-        const game = getGameFromId(level.gameId);
         const discordChannel = game.id === GameId.SOKOPATH ? DiscordChannel.SokopathLevels : DiscordChannel.PathologyLevels;
 
         await Promise.all([
@@ -346,7 +346,7 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
             { $set: { attemptContext: AttemptContext.UNSOLVED } },
             { session: session },
           ),
-          queueDiscordWebhook(discordChannel, `**${user.name}** set a new record: [${level.name}](${getGameFromId(level.gameId).baseUrl}/level/${level.slug}?ts=${ts}) - ${moves} moves`, { session: session }),
+          queueDiscordWebhook(discordChannel, `**${user.name}** set a new record: [${level.name}](${game.baseUrl}/level/${level.slug}?ts=${ts}) - ${moves} moves`, { session: session }),
         ]);
       }
 
