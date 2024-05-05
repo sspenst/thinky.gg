@@ -287,7 +287,7 @@ export default function Match() {
   const matchInProgress = match?.state === MultiplayerMatchState.ACTIVE && match?.timeUntilStart <= 0;
   const iamplaying = match?.players.some(player => player._id.toString() === user?._id.toString());
   const otherPlayer = match?.players.find(player => player._id.toString() !== user?._id.toString());
-  const { data: headToHead, isLoading: loadingHeadToHead } = useSWRHelper('/api/match/head2head?players=' + user?._id.toString() + ',' + otherPlayer?._id.toString() + '&filter=all&rated=true', {}, {}, !iamplaying) as {
+  const { data: headToHead, isLoading: loadingHeadToHead } = useSWRHelper('/api/match/head2head?players=' + user?._id.toString() + ',' + otherPlayer?._id.toString() + '&filter=all&rated=true', {}, { revalidateOnFocus: false }, !(iamplaying && !matchInProgress)) as {
     data: {
     totalWins: number,
     totalLosses: number,
