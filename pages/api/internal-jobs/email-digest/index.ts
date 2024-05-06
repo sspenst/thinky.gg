@@ -280,9 +280,19 @@ export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
         // We want to encourage them on the second day to check out the other features of the site
         // for example, you can play real time multiplayer with other players, you can also play levels created by other users
         // let's also add emoji to subject
-        subject: '🦉 Day 2 - There is a lot more to Thinky.gg than just the campaign',
+        subject: '🦉 Day 2 - ',
+        title: 'Check out our mobile apps',
+        message: 'Did you know we have an iOS and Android app? Download Thinky on the App Store and Google Play Store to play on the go!',
+        linkText: 'Thinky on iOS', // @TODO make two CTAs for iOS and Android
+        linkHref: 'https://apps.apple.com/app/pathology-block-pushing-game/id1668925562',
+      },
+      {
+        // We want to encourage them on the second day to check out the other features of the site
+        // for example, you can play real time multiplayer with other players, you can also play levels created by other users
+        // let's also add emoji to subject
+        subject: 'There is a lot more to Thinky.gg than just the campaign',
         title: 'Yesterday was just the beginning! Today, see what else Thinky.gg has to offer',
-        message: 'Have you tried reviewing a level? Or checking out other level collections? There are also dozens of achievements to earn in Thinky.gg. Can you earn them all? Check out your achievements page to see how you stack up against other players!',
+        message: 'Have you tried reviewing a level? Or checking out other level collections? There are also dozens of 🏆 achievements 🏆 to earn in Thinky.gg. Can you earn them all? Check out your achievements page to see how you stack up against other players!',
         linkText: 'Your Achievements',
         linkHref: `${game.baseUrl}/achievements`,
       },
