@@ -270,34 +270,46 @@ export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
     const game = getGameFromId(lastGamePlayed);
     const NewUserCampaign = [
       {
-        title: '🧩 Your Thinking Solving Journey Begins Today! 🧩',
-        message: 'Welcome to Thinky.gg! We\'re excited to have you join us on this journey of puzzle solving. We have a ton of levels for you to solve and we can\'t wait to see how you do! Did you know there are two different games on the Thinky website? Sokoban and Pathology.',
-        linkText: `Play ${game.displayName}`,
-        linkHref: `https://${game.baseUrl}`,
+        subject: '🧩 Your Thinking Solving Journey Begins Today! 🧩',
+        title: 'Welcome to Thinky.gg! 🦉',
+        message: 'Welcome to Thinky.gg! We\'re excited to have you join us on this journey of puzzle solving. We have a ton of levels for you to solve and we can\'t wait to see how you do!',
+        linkText: `Visit ${game.displayName}`,
+        linkHref: `${game.baseUrl}`,
       },
       {
         // We want to encourage them on the second day to check out the other features of the site
         // for example, you can play real time multiplayer with other players, you can also play levels created by other users
         // let's also add emoji to subject
-        title: 'Day 2 - There is a lot more to Thinky.gg 🦉 than just the campaign',
-        message: 'We hope you enjoyed your first day of puzzle solving. We have a ton of other features on the site that you may enjoy. Did you know you can play real time multiplayer with other players? You can also play levels created by other users. Come check them out!',
-        linkText: 'Play multiplayer',
-        linkHref: `https://${game.baseUrl}/multiplayer`,
+        subject: '🦉 Day 2 - There is a lot more to Thinky.gg than just the campaign',
+        title: 'Yesterday was just the beginning! Today, see what else Thinky.gg has to offer',
+        message: 'Have you tried reviewing a level? Or checking out other level collections? There are also dozens of achievements to earn in Thinky.gg. Can you earn them all? Check out your achievements page to see how you stack up against other players!',
+        linkText: 'Your Achievements',
+        linkHref: `${game.baseUrl}/achievements`,
       },
       {
         // On the third day, we want to encourage them to create their own levels.
-        title: 'Create your OWN levels on Thinky.gg',
-        message: 'Every single one of the thousands of levels on Thinky.gg was built by a community member. Did you know you can create your own levels and share them with the community? We can\'t wait to see what you come up with!',
+        title: 'How creative are you? 🎨',
+        subject: 'Create your OWN levels on Thinky.gg',
+        message: 'Every single level on Thinky.gg was built by a community member. Did you know you can create your own levels with our robust level editor and share them with the world?',
         linkText: 'Create a Pathology level',
-        linkHref: `https://${game.baseUrl}/create`,
-
+        linkHref: `${game.baseUrl}/create`,
       },
-    ] as EmailBodyProps[];
+      {
+        // We want to encourage them on the second day to check out the other features of the site
+        // for example, you can play real time multiplayer with other players, you can also play levels created by other users
+        // let's also add emoji to subject
+        subject: '🦉 Have you tried real time multiplayer?',
+        title: 'Challenge your friends in real time multiplayer!',
+        message: 'See how your ELO rating stacks up in the real-time multiplayer mode!',
+        linkText: 'Try Multiplayer',
+        linkHref: `${game.baseUrl}/multiplayer`,
+      },
+    ];
 
     // count how many days the user has been registered
-    const daysRegistered = Math.floor((Date.now() / 1000 - (user as any).ts) / (24 * 60 * 60));
+    const daysRegistered = 2 + Math.floor((Date.now() / 1000 - (user as any).ts) / (24 * 60 * 60));
 
-    let NewUserEmail = {};
+    let NewUserEmail = {} as { subject: string, title: string, message: string, linkText: string, linkHref: string };
 
     if (daysRegistered < NewUserCampaign.length) {
       NewUserEmail = NewUserCampaign[daysRegistered];
@@ -324,7 +336,10 @@ export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
       },
     };
 
-    const msgObj = EmailTextTable[emailTypeToSend];
+    const msgObj = {
+      ...EmailTextTable[emailTypeToSend],
+      ...NewUserEmail
+    };
 
     const title = msgObj.title;
 
@@ -336,10 +351,11 @@ export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
       title: title,
       user: user,
       message: msgObj.message,
-      ...NewUserEmail,
+      linkHref: NewUserEmail.linkHref,
+      linkText: NewUserEmail.linkText,
     });
 
-    const sentError = await sendMail(GameId.THINKY, batchId, emailTypeToSend, user, msgObj.subject, body);
+    const sentError = await sendMail(GameId.THINKY, batchId, emailTypeToSend, user, NewUserEmail?.subject || msgObj.subject, body);
 
     if (!sentError) {
       if (emailTypeToSend === EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE) {
