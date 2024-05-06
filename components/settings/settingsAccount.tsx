@@ -214,6 +214,7 @@ export default function SettingsAccount({ user }: SettingsAccountProps) {
         <form className='flex flex-col items-start' onSubmit={
           (!user.emailConfirmed && email === user.email ? resendEmailConfirmation : updateEmail)
         }>
+
           <label className='block font-bold mb-2' htmlFor='email'>
             {'Email - '}
             {user.emailConfirmed && email === user.email ?
