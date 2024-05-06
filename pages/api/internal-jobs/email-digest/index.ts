@@ -307,7 +307,7 @@ export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
     ];
 
     // count how many days the user has been registered
-    const daysRegistered = 2 + Math.floor((Date.now() / 1000 - (user as any).ts) / (24 * 60 * 60));
+    const daysRegistered = Math.floor((Date.now() / 1000 - (user as any).ts) / (24 * 60 * 60));
 
     let NewUserEmail = {} as { subject: string, title: string, message: string, linkText: string, linkHref: string };
 
