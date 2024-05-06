@@ -11,7 +11,7 @@ import { getGameFromId } from './getGameIdFromReq';
 // good place to test the output:
 // https://htmlemail.io/inline/
 
-interface EmailBodyProps {
+export interface EmailBodyProps {
   gameId: GameId
   featuredLevelsLabel?: string;
   featuredLevels?: EnrichedLevel[];

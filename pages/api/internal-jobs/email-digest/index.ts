@@ -6,6 +6,7 @@ import { Games } from '@root/constants/Games';
 import NotificationType from '@root/constants/notificationType';
 import Role from '@root/constants/role';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import EmailLog from '@root/models/db/emailLog';
 import { EnrichedLevel } from '@root/models/db/level';
 import { convert } from 'html-to-text';
@@ -16,7 +17,7 @@ import SESTransport from 'nodemailer/lib/ses-transport';
 import SMTPPool from 'nodemailer/lib/smtp-pool';
 import { EmailDigestSettingType, EmailType } from '../../../../constants/emailDigest';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
-import getEmailBody from '../../../../helpers/getEmailBody';
+import getEmailBody, { EmailBodyProps } from '../../../../helpers/getEmailBody';
 import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
 import isLocal from '../../../../lib/isLocal';
@@ -265,6 +266,43 @@ export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
 
     //
     const todaysDatePretty = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const lastGamePlayed = user.lastGame;
+    const game = getGameFromId(lastGamePlayed);
+    const NewUserCampaign = [
+      {
+        title: '🧩 Your Thinking Solving Journey Begins Today! 🧩',
+        message: 'Welcome to Thinky.gg! We\'re excited to have you join us on this journey of puzzle solving. We have a ton of levels for you to solve and we can\'t wait to see how you do! Did you know there are two different games on the Thinky website? Sokoban and Pathology.',
+        linkText: `Play ${game.displayName}`,
+        linkHref: `https://${game.baseUrl}`,
+      },
+      {
+        // We want to encourage them on the second day to check out the other features of the site
+        // for example, you can play real time multiplayer with other players, you can also play levels created by other users
+        // let's also add emoji to subject
+        title: 'Day 2 - There is a lot more to Thinky.gg 🦉 than just the campaign',
+        message: 'We hope you enjoyed your first day of puzzle solving. We have a ton of other features on the site that you may enjoy. Did you know you can play real time multiplayer with other players? You can also play levels created by other users. Come check them out!',
+        linkText: 'Play multiplayer',
+        linkHref: `https://${game.baseUrl}/multiplayer`,
+      },
+      {
+        // On the third day, we want to encourage them to create their own levels.
+        title: 'Create your OWN levels on Thinky.gg',
+        message: 'Every single one of the thousands of levels on Thinky.gg was built by a community member. Did you know you can create your own levels and share them with the community? We can\'t wait to see what you come up with!',
+        linkText: 'Create a Pathology level',
+        linkHref: `https://${game.baseUrl}/create`,
+
+      },
+    ] as EmailBodyProps[];
+
+    // count how many days the user has been registered
+    const daysRegistered = Math.floor((Date.now() / 1000 - (user as any).ts) / (24 * 60 * 60));
+
+    let NewUserEmail = {};
+
+    if (daysRegistered < NewUserCampaign.length) {
+      NewUserEmail = NewUserCampaign[daysRegistered];
+    }
+
     /* istanbul ignore next */
     const EmailTextTable: { [key: string]: { title: string, message?: string, subject: string, featuredLevelsLabel: string } } = {
       [EmailType.EMAIL_DIGEST]: {
@@ -298,6 +336,7 @@ export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
       title: title,
       user: user,
       message: msgObj.message,
+      ...NewUserEmail,
     });
 
     const sentError = await sendMail(GameId.THINKY, batchId, emailTypeToSend, user, msgObj.subject, body);
