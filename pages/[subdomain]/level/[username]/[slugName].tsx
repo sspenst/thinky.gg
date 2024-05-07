@@ -365,6 +365,9 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
             level={level}
             onNext={() => changeLevel(true)}
             onPrev={() => changeLevel(false)}
+            onStatsSuccess={() => {
+              getReviews();
+            }}
             setCollection={setCollection}
             user={reqUser}
           />
