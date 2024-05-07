@@ -97,7 +97,7 @@ export default apiWrapper({ GET: {
   ]);
 
   reviewsAgg.forEach(review => {
-    cleanReview({ canSee: userStat !== null, reqUser: reqUser, review: review });
+    cleanReview({ canSee: userStat.complete, reqUser: reqUser, review: review });
     cleanUser(review.userId);
   }
   );
