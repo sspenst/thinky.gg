@@ -45,7 +45,7 @@ export function SpoilerText({ text }: { text: string }) {
     const notAllowed = children.slice(2, -2).replace(/\*/g, '') === '';
 
     if (notAllowed) {
-      spoilerToolTipText = 'You must complete this level to view this spoiler';
+      spoilerToolTipText = 'You must solve this level to view this spoiler';
     }
 
     return (
