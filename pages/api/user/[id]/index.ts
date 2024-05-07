@@ -36,7 +36,6 @@ export default apiWrapper({
   }
 }, async (req: NextApiRequestWrapper, res: NextApiResponse) => {
   const { id: userId, type } = req.query as { id: string, type: string };
-
   const types = type.split(',') as ProfileQueryType[];
   const json = await getProfileQuery(req.gameId, userId, types);
 
