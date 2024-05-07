@@ -25,11 +25,12 @@ interface GameWrapperProps {
   level: EnrichedLevel;
   onNext: () => void;
   onPrev: () => void;
+  onStatsSuccess?: () => void;
   setCollection: Dispatch<SetStateAction<EnrichedCollection | Collection | null>>;
   user: User | null;
 }
 
-export default function GameWrapper({ chapter, collection, level, onNext, onPrev, setCollection, user }: GameWrapperProps) {
+export default function GameWrapper({ chapter, collection, level, onNext, onPrev, onStatsSuccess, setCollection, user }: GameWrapperProps) {
   const [dontShowPostGameModal, setDontShowPostGameModal] = useState(false);
   const isCollectionLoading = useRef(false);
   const [isCollectionViewHidden, setIsCollectionViewHidden] = useState(false);
@@ -196,6 +197,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
           enableSessionCheckpoint={true}
           key={`game-${level._id.toString()}`}
           level={level}
+          onStatsSuccess={() => onStatsSuccess && onStatsSuccess()}
           onNext={collection ? () => {
             if (isCollectionLoading.current) {
               return;
