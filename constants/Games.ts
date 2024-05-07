@@ -76,7 +76,6 @@ export const Games: Record<GameId, Game> = {
     defaultTheme: Theme.Winter,
     disableCampaign: true,
     disableCommunityCampaigns: true,
-    disableMultiplayer: false,
     disableRanked: true,
     disableTour: true,
     displayName: 'Sokopath',

@@ -37,7 +37,7 @@ export async function getUsersWithMultiplayerProfile(
         multiplayerProfile: 1,
       }
     },
-    ...getEnrichUserConfigPipelineStage(gameId, { excludeCalcs: true }),
+    ...getEnrichUserConfigPipelineStage(gameId),
   ]) as UserWithMultiplayerProfile[];
 
   users.forEach(user => cleanUser(user));
