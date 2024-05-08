@@ -2,8 +2,10 @@ import LevelCard from '@root/components/cards/levelCard';
 import Grid from '@root/components/level/grid';
 import MatchResults from '@root/components/multiplayer/matchResults';
 import { MatchGameState } from '@root/helpers/gameStateHelpers';
+import useSWRHelper from '@root/hooks/useSWRHelper';
 import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import { UserWithMultiMultiplayerProfile, UserWithMultiplayerProfile } from '@root/models/db/user';
+import classNames from 'classnames';
 import dayjs from 'dayjs';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
@@ -59,9 +61,27 @@ export default function Match() {
   const [usedSkip, setUsedSkip] = useState<boolean>(false);
   const { matchId } = router.query as { matchId: string };
 
-  const isSpectating = !match?.players.some(player => player._id.toString() === user?._id.toString()) && match?.state === MultiplayerMatchState.ACTIVE;
   // map of userId to game state
   const [matchGameStateMap, setMatchGameStateMap] = useState<Record<string, MatchGameState>>({});
+
+  const matchInProgress = match?.state === MultiplayerMatchState.ACTIVE && match?.timeUntilStart <= 0;
+  const iAmPlaying = match?.players.some(player => player._id.toString() === user?._id.toString());
+  const isSpectating = !iAmPlaying && match?.state === MultiplayerMatchState.ACTIVE;
+  const otherPlayer = match?.players.find(player => player._id.toString() !== user?._id.toString());
+  const { data: headToHead, isLoading: loadingHeadToHead } = useSWRHelper(
+    '/api/match/head2head?players=' + user?._id.toString() + ',' + otherPlayer?._id.toString(),
+    {},
+    { revalidateOnFocus: false },
+    // only fetch this data if you are playing and are on the ready screen before the match
+    !(iAmPlaying && !matchInProgress),
+  ) as {
+    data: {
+      totalWins: number,
+      totalLosses: number,
+      totalTies: number,
+    },
+    isLoading: boolean,
+  };
 
   function getLevelIndexByPlayerId(playerId: string): number {
     if (!match || !match.scoreTable[playerId]) {
@@ -393,11 +413,11 @@ export default function Match() {
 
   return (
     <Page
-      isFullScreen={match.state === MultiplayerMatchState.ACTIVE && match.players.some(player => player._id.toString() === user?._id.toString())}
+      isFullScreen={match.state === MultiplayerMatchState.ACTIVE && iAmPlaying}
       title='Multiplayer Match'
     >
       <>
-        <h1 className={'text-3xl font-bold text-center p-3 ' + (match.state === MultiplayerMatchState.ACTIVE && match.timeUntilStart <= 0 ? 'hidden' : '')}>
+        <h1 className={classNames('text-3xl font-bold text-center p-3', { 'hidden': matchInProgress })}>
           {
             ({
               [MultiplayerMatchState.OPEN]: 'Match Open',
@@ -408,11 +428,17 @@ export default function Match() {
             } as any)[match.state]
           }
         </h1>
-        {connectedPlayersInRoom && connectedPlayersInRoom.count > 2 && (
+        {/* if you are in the game and the game is about to start then say Your Record */}
+        {iAmPlaying && !matchInProgress && !loadingHeadToHead &&
+          <h2 className='text-xl font-bold text-center p-3'>
+            Your record against {otherPlayer?.name} is {headToHead?.totalWins} - {headToHead?.totalLosses} - {headToHead?.totalTies}
+          </h2>
+        }
+        {connectedPlayersInRoom && connectedPlayersInRoom.count > 2 &&
           <div className='absolute py-1 px-1.5 text-xs text-red-500'>
             {connectedPlayersInRoom.count - 2} spectating
           </div>
-        )}
+        }
         {match.state === MultiplayerMatchState.FINISHED || match.state === MultiplayerMatchState.ABORTED || isSpectating ? (
           <div className='flex flex-col items-center justify-center p-3 gap-6'>
             <Link
