@@ -38,7 +38,7 @@ export async function getHeadToHeadMultiplayerRecord( gameId: GameId, reqUserId:
             else: 0,
           }
         },
-        loses: {
+        losses: {
           $cond: {
             if: {
               $in: [userId, '$winners']
@@ -55,7 +55,7 @@ export async function getHeadToHeadMultiplayerRecord( gameId: GameId, reqUserId:
         _id: null,
         totalWins: { $sum: '$wins' },
         totalTies: { $sum: '$ties' },
-        totalLosses: { $sum: '$loses' }
+        totalLosses: { $sum: '$losses' }
       }
     },
     {
@@ -83,7 +83,7 @@ export default withAuth(
   {
     GET: {
       query: {
-        players: ValidCommaSeparated(false, ValidObjectId(false)),
+        players: ValidCommaSeparated(true, ValidObjectId(true)),
       },
     },
   },

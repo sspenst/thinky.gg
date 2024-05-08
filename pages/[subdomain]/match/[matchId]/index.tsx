@@ -69,7 +69,7 @@ export default function Match() {
   const isSpectating = !iAmPlaying && match?.state === MultiplayerMatchState.ACTIVE;
   const otherPlayer = match?.players.find(player => player._id.toString() !== user?._id.toString());
   const { data: headToHead, isLoading: loadingHeadToHead } = useSWRHelper(
-    '/api/match/head2head?players=' + user?._id.toString() + ',' + otherPlayer?._id.toString() + '&filter=all&rated=true',
+    '/api/match/head2head?players=' + user?._id.toString() + ',' + otherPlayer?._id.toString(),
     {},
     { revalidateOnFocus: false },
     // only fetch this data if you are playing and are on the ready screen before the match
