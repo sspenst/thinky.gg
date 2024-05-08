@@ -11,10 +11,10 @@ import { getGameFromId } from './getGameIdFromReq';
 // good place to test the output:
 // https://htmlemail.io/inline/
 
-export interface EmailBodyProps {
-  gameId: GameId
+interface EmailBodyProps {
   featuredLevelsLabel?: string;
   featuredLevels?: EnrichedLevel[];
+  gameId: GameId;
   linkHref?: string;
   linkText?: string;
   message?: string;

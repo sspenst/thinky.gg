@@ -104,7 +104,7 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
           mutateUser();
           setShouldAttemptAuth(true);
           sessionStorage.clear();
-          router.push('/confirm-email?tutorialCompleted=' + tutorialCompletedAt);
+          router.push('/confirm-email');
         }
       } else {
         throw res.text();
