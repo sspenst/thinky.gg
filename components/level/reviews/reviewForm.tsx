@@ -50,7 +50,7 @@ export default function ReviewForm({ inModal, review }: ReviewFormProps) {
         toast.dismiss();
         toast.success('Saved');
 
-        levelContext?.getReviews();
+        levelContext?.mutateReviews();
         setIsEditing(false);
       }
     }).catch(async err => {
@@ -161,8 +161,12 @@ export default function ReviewForm({ inModal, review }: ReviewFormProps) {
             Cancel
           </button>
           <span
+            className='text-neutral-500 text-xs'
             data-tooltip-id='review-spoiler-tooltip'
-            data-tooltip-content={'Only visible to players that have won the level'} className='text-neutral-500 text-xs'>Use ||text|| for spoilers</span>
+            data-tooltip-content='Only visible to players that have won the level'
+          >
+            Use ||text|| for spoilers
+          </span>
           <StyledTooltip id='review-spoiler-tooltip' />
         </div>
       }

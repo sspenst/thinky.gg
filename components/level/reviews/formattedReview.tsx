@@ -125,7 +125,7 @@ export default function FormattedReview({ hideBorder, inModal, level, onEditClic
             <StyledTooltip id={`review-stat-${user?._id?.toString() ?? 'deleted'}`} />
           </>}
         </span>
-        { review.text && <SpoilerText text={review.text} /> }
+        <SpoilerText id={review._id.toString()} text={review.text} />
       </div>
     </div>
   );
