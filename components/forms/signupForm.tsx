@@ -97,19 +97,14 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
           }
 
           toast.dismiss();
-          toast.success('Registered!');
+          toast.success('Registered! Please confirm your email.');
 
           // clear localstorage value
           window.localStorage.removeItem('tutorialCompletedAt');
           mutateUser();
           setShouldAttemptAuth(true);
           sessionStorage.clear();
-
-          if (tutorialCompletedAt !== '0') {
-            router.push('/play?signedup=true');
-          } else {
-            router.push('/tutorial?signedup=true');
-          }
+          router.push('/confirm-email');
         }
       } else {
         throw res.text();
