@@ -197,7 +197,6 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
           enableSessionCheckpoint={true}
           key={`game-${level._id.toString()}`}
           level={level}
-          onStatsSuccess={() => onStatsSuccess && onStatsSuccess()}
           onNext={collection ? () => {
             if (isCollectionLoading.current) {
               return;
@@ -227,6 +226,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
               }, 200);
             }
           }}
+          onStatsSuccess={onStatsSuccess}
         />
       </div>
       {collection &&
