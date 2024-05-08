@@ -41,7 +41,7 @@ export default function ConfirmPage() {
     }
   }, [user?.config.tutorialCompletedAt, user?.emailConfirmed]);
 
-  // mutateUser every 5 seconds
+  // mutateUser every 3 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       mutateUser();
