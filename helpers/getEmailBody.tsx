@@ -12,9 +12,9 @@ import { getGameFromId } from './getGameIdFromReq';
 // https://htmlemail.io/inline/
 
 interface EmailBodyProps {
-  gameId: GameId
   featuredLevelsLabel?: string;
   featuredLevels?: EnrichedLevel[];
+  gameId: GameId;
   linkHref?: string;
   linkText?: string;
   message?: string;

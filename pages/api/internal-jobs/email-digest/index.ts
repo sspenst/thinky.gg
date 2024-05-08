@@ -6,6 +6,7 @@ import { Games } from '@root/constants/Games';
 import NotificationType from '@root/constants/notificationType';
 import Role from '@root/constants/role';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import EmailLog from '@root/models/db/emailLog';
 import { EnrichedLevel } from '@root/models/db/level';
 import { convert } from 'html-to-text';
@@ -263,8 +264,60 @@ export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
       }
     }
 
-    //
     const todaysDatePretty = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const lastGamePlayed = user.lastGame;
+    const game = getGameFromId(lastGamePlayed);
+    const NewUserCampaign = [
+      {
+        subject: '🧩 Your Thinky Solving Journey Begins Today! 🧩',
+        title: 'Welcome to Thinky.gg! 🦉',
+        message: 'Welcome to Thinky.gg! We\'re excited to have you join us on this journey of puzzle solving. We have a ton of levels for you to solve and we can\'t wait to see how you do!',
+        linkText: `Visit ${game.displayName}`,
+        linkHref: `${game.baseUrl}`,
+      },
+      {
+        // We want to encourage them on the second day to check out the other features of the site
+        // for example, you can play real time multiplayer with other players, you can also play levels created by other users
+        subject: 'There is a lot more to Thinky.gg than just the campaign',
+        title: 'Yesterday was just the beginning! Today, see what else Thinky.gg has to offer',
+        message: 'Have you tried reviewing a level? Or checking out other level collections? There are also dozens of 🏆 achievements 🏆 to earn in Thinky.gg. Can you earn them all? Check out your achievements page to see how you stack up against other players!',
+        linkText: 'Your Achievements',
+        linkHref: `${game.baseUrl}/achievements`,
+      },
+      {
+        // On the third day, we want to encourage them to create their own levels.
+        title: 'How creative are you? 🎨',
+        subject: 'Create your OWN levels on Thinky.gg',
+        message: 'Every single level on Thinky.gg was built by a community member. Did you know you can create your own levels with our robust level editor and share them with the world?',
+        linkText: 'Create a Pathology level',
+        linkHref: `${game.baseUrl}/create`,
+      },
+      {
+        subject: '🦉 Have you tried real time multiplayer?',
+        title: 'Challenge your friends in real time multiplayer!',
+        message: 'See how your ELO rating stacks up in the real-time multiplayer mode!',
+        linkText: 'Try Multiplayer',
+        linkHref: `${game.baseUrl}/multiplayer`,
+      },
+      {
+        subject: 'Check out our mobile apps',
+        title: 'Check out our mobile apps',
+        message: 'Did you know we have an iOS and Android app? Download Thinky on the App Store and Google Play Store to play on the go!',
+        linkText: 'Thinky on iOS', // @TODO make two CTAs for iOS and Android
+        linkHref: 'https://apps.apple.com/app/pathology-block-pushing-game/id1668925562',
+      },
+    ];
+
+    // count how many days the user has been registered
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const daysRegistered = Math.floor((Date.now() / 1000 - (user as any).ts) / (24 * 60 * 60));
+
+    let NewUserEmail = {} as { subject: string, title: string, message: string, linkText: string, linkHref: string };
+
+    if (daysRegistered < NewUserCampaign.length) {
+      NewUserEmail = NewUserCampaign[daysRegistered];
+    }
+
     /* istanbul ignore next */
     const EmailTextTable: { [key: string]: { title: string, message?: string, subject: string, featuredLevelsLabel: string } } = {
       [EmailType.EMAIL_DIGEST]: {
@@ -286,18 +339,23 @@ export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
       },
     };
 
-    const msgObj = EmailTextTable[emailTypeToSend];
+    const msgObj = {
+      ...EmailTextTable[emailTypeToSend],
+      ...NewUserEmail
+    };
 
     const title = msgObj.title;
 
     const body = getEmailBody({
-      gameId: GameId.THINKY,
-      featuredLevelsLabel: msgObj.featuredLevelsLabel,
       featuredLevels: levelsOfDay as EnrichedLevel[],
+      featuredLevelsLabel: msgObj.featuredLevelsLabel,
+      gameId: GameId.THINKY,
+      linkHref: msgObj.linkHref,
+      linkText: msgObj.linkText,
+      message: msgObj.message,
       notificationsCount: notificationsCount,
       title: title,
       user: user,
-      message: msgObj.message,
     });
 
     const sentError = await sendMail(GameId.THINKY, batchId, emailTypeToSend, user, msgObj.subject, body);
