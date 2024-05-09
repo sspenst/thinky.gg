@@ -170,7 +170,7 @@ export async function getCollections({
               })
             },
           },
-          ...getEnrichLevelsPipelineSteps(reqUser, '_id', '') as PipelineStage[],
+          ...getEnrichLevelsPipelineSteps(reqUser) as PipelineStage[],
           {
             $unwind: {
               path: '$stats',

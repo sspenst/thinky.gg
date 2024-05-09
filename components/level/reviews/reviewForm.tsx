@@ -1,3 +1,4 @@
+import StyledTooltip from '@root/components/page/styledTooltip';
 import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Rating } from 'react-simple-star-rating';
@@ -49,7 +50,7 @@ export default function ReviewForm({ inModal, review }: ReviewFormProps) {
         toast.dismiss();
         toast.success('Saved');
 
-        levelContext?.getReviews();
+        levelContext?.mutateReviews();
         setIsEditing(false);
       }
     }).catch(async err => {
@@ -139,7 +140,7 @@ export default function ReviewForm({ inModal, review }: ReviewFormProps) {
         value={reviewBody}
       />
       {!(rating === 0 && reviewBody.length === 0) &&
-        <div className='flex gap-2'>
+        <div className='flex gap-2 items-center'>
           <button
             className='bg-blue-500 enabled:hover:bg-blue-700 text-white font-medium px-3 py-2 rounded-full text-sm disabled:opacity-50 w-fit'
             disabled={isUpdating || (rating === 0 && reviewBody.length === 0)}
@@ -159,6 +160,14 @@ export default function ReviewForm({ inModal, review }: ReviewFormProps) {
           >
             Cancel
           </button>
+          <span
+            className='text-neutral-500 text-xs'
+            data-tooltip-id='review-spoiler-tooltip'
+            data-tooltip-content='Only visible to players that have won the level'
+          >
+            Use ||text|| for spoilers
+          </span>
+          <StyledTooltip id='review-spoiler-tooltip' />
         </div>
       }
     </div>

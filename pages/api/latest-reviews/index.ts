@@ -1,5 +1,6 @@
 import { GameId } from '@root/constants/GameId';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
+import cleanReview from '@root/lib/cleanReview';
 import { LEVEL_DEFAULT_PROJECTION, USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { PipelineStage } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
@@ -30,7 +31,7 @@ export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiR
 
 export async function getLatestReviews(gameId: GameId, reqUser: User | null = null) {
   await dbConnect();
-  const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPipelineSteps(reqUser, '_id', '');
+  const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPipelineSteps(reqUser);
 
   try {
     const reviews = await ReviewModel.aggregate([
@@ -93,6 +94,7 @@ export async function getLatestReviews(gameId: GameId, reqUser: User | null = nu
     ]);
 
     return reviews.map(review => {
+      cleanReview(review.levelId.complete, reqUser, review);
       cleanUser(review.userId);
 
       return review;

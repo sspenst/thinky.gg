@@ -380,7 +380,7 @@ export async function getAllMatches(gameId: GameId, reqUser?: User, matchFilters
   }
 
   matchFilters.gameId = gameId;
-  const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPipelineSteps(reqUser, '_id', '');
+  const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPipelineSteps(reqUser);
 
   const [matches] = await Promise.all([
     MultiplayerMatchModel.aggregate<MultiplayerMatch>([
