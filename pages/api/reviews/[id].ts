@@ -1,5 +1,6 @@
 import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import isPro from '@root/helpers/isPro';
+import cleanReview from '@root/lib/cleanReview';
 import { getUserFromToken } from '@root/lib/withAuth';
 import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { Types } from 'mongoose';
@@ -53,41 +54,50 @@ export default apiWrapper({ GET: {
     }
   ];
 
-  const reviewsAgg = await ReviewModel.aggregate([
-    { $match: { levelId: new Types.ObjectId(id as string) } },
-    { $sort: { ts: -1 } },
-    {
-      $lookup: {
-        from: UserModel.collection.name,
-        localField: 'userId',
-        foreignField: '_id',
-        as: 'userId',
-        pipeline: [
-          {
-            $project: {
-              ...USER_DEFAULT_PROJECTION
-            },
-          }
-        ]
-      }
-    },
-    {
-      $set: {
-        userIdStr: '$userId._id',
-      }
-    },
-    {
-      $unwind: '$userIdStr',
-    },
-    ...pro ? statAggPipeline : [],
-    {
-      $unset: ['userIdStr'],
-    },
-    { $unwind: '$userId' },
-    ...getEnrichUserConfigPipelineStage('$gameId', { excludeCalcs: true, localField: 'userId._id', lookupAs: 'userId.config' }),
+  const [userStat, reviewsAgg] = await Promise.all([
+    reqUser ? StatModel.findOne({
+      levelId: new Types.ObjectId(id as string),
+      userId: reqUser?._id
+    }) : null,
+    ReviewModel.aggregate([
+      { $match: { levelId: new Types.ObjectId(id as string) } },
+      { $sort: { ts: -1 } },
+      {
+        $lookup: {
+          from: UserModel.collection.name,
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'userId',
+          pipeline: [
+            {
+              $project: {
+                ...USER_DEFAULT_PROJECTION
+              },
+            }
+          ]
+        }
+      },
+      {
+        $set: {
+          userIdStr: '$userId._id',
+        }
+      },
+      {
+        $unwind: '$userIdStr',
+      },
+      ...pro ? statAggPipeline : [],
+      {
+        $unset: ['userIdStr'],
+      },
+      { $unwind: '$userId' },
+      ...getEnrichUserConfigPipelineStage('$gameId', { excludeCalcs: true, localField: 'userId._id', lookupAs: 'userId.config' }),
+    ])
   ]);
 
-  reviewsAgg.forEach(review => cleanUser(review.userId));
+  reviewsAgg.forEach(review => {
+    cleanReview(userStat?.complete, reqUser, review);
+    cleanUser(review.userId);
+  });
 
   return res.status(200).json(reviewsAgg);
 });
