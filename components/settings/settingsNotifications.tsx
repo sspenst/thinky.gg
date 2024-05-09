@@ -1,6 +1,7 @@
 import { EmailDigestSettingType } from '@root/constants/emailDigest';
 import NotificationType from '@root/constants/notificationType';
 import { AppContext } from '@root/contexts/appContext';
+import isGuest from '@root/helpers/isGuest';
 import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
@@ -90,6 +91,8 @@ export default function SettingsNotifications() {
     );
   };
 
+  const guest = isGuest(user);
+
   return (
     <div className='flex flex-col items-center gap-6 mb-4'>
       <div className='max-w-sm'>
@@ -97,37 +100,39 @@ export default function SettingsNotifications() {
           <thead>
             <tr className='border-b' style={{ borderColor: 'var(--bg-color-4)' }}>
               <th className='p-2 text-left'>Notifications</th>
-              <th className='p-2'>
-                <div id='toggleAllEmailNotifs' className='flex justify-center gap-2'>
-                  <label className='text-sm' htmlFor='toggleAllEmailNotifs'>
-                  Email
-                  </label>
-                  <input
-                    checked={disallowedEmailNotifications.length === 0}
-                    disabled={isUserConfigLoading}
-                    id='toggleAllEmailNotifs'
-                    name='toggleAllEmailNotifs'
-                    onChange={() => {
-                      if (disallowedEmailNotifications.length !== 0) {
-                        updateUserConfig(
-                          JSON.stringify({
-                            disallowedEmailNotifications: [],
-                          }),
-                          'notification settings',
-                        );
-                      } else {
-                        updateUserConfig(
-                          JSON.stringify({
-                            disallowedEmailNotifications: allNotifs,
-                          }),
-                          'notification settings',
-                        );
-                      }
-                    }}
-                    type='checkbox'
-                  />
-                </div>
-              </th>
+              {!guest &&
+                <th className='p-2'>
+                  <div id='toggleAllEmailNotifs' className='flex justify-center gap-2'>
+                    <label className='text-sm' htmlFor='toggleAllEmailNotifs'>
+                    Email
+                    </label>
+                    <input
+                      checked={disallowedEmailNotifications.length === 0}
+                      disabled={isUserConfigLoading}
+                      id='toggleAllEmailNotifs'
+                      name='toggleAllEmailNotifs'
+                      onChange={() => {
+                        if (disallowedEmailNotifications.length !== 0) {
+                          updateUserConfig(
+                            JSON.stringify({
+                              disallowedEmailNotifications: [],
+                            }),
+                            'notification settings',
+                          );
+                        } else {
+                          updateUserConfig(
+                            JSON.stringify({
+                              disallowedEmailNotifications: allNotifs,
+                            }),
+                            'notification settings',
+                          );
+                        }
+                      }}
+                      type='checkbox'
+                    />
+                  </div>
+                </th>
+              }
               <th className='p-2 pl-4'>
                 <div id='toggleAllPushNotifs' className='flex justify-center gap-2'>
                   <label className='text-sm' htmlFor='toggleAllPushNotifs'>
@@ -172,16 +177,18 @@ export default function SettingsNotifications() {
                       {label}
                     </label>
                   </td>
-                  <td className='p-2 text-center'>
-                    <input
-                      checked={!disallowedEmailNotifications.includes(notif)}
-                      disabled={isUserConfigLoading}
-                      id={notif + '-email'}
-                      name={notif}
-                      onChange={() => updateNotifs(notif, 'email')}
-                      type='checkbox'
-                    />
-                  </td>
+                  {!guest &&
+                    <td className='p-2 text-center'>
+                      <input
+                        checked={!disallowedEmailNotifications.includes(notif)}
+                        disabled={isUserConfigLoading}
+                        id={notif + '-email'}
+                        name={notif}
+                        onChange={() => updateNotifs(notif, 'email')}
+                        type='checkbox'
+                      />
+                    </td>
+                  }
                   <td className='p-2 text-center'>
                     <input
                       checked={!disallowedPushNotifications.includes(notif)}
@@ -195,40 +202,42 @@ export default function SettingsNotifications() {
                 </tr>
               );
             })}
-            <tr key='level-of-the-day' className='border-b' style={{ borderColor: 'var(--bg-color-4)' }}>
-              <td className='p-2'>
-                <label className='text-sm' htmlFor='level-of-the-day'>
-                  Level of the day
-                </label>
-              </td>
-              <td className='px-4 py-2 text-center'>
-                <input
-                  checked={emailDigest === EmailDigestSettingType.DAILY}
-                  disabled={isUserConfigLoading}
-                  id='level-of-the-day'
-                  name='level-of-the-day'
-                  onChange={option => {
-                    if (!option) {
-                      return;
-                    }
+            {!guest &&
+              <tr key='level-of-the-day' className='border-b' style={{ borderColor: 'var(--bg-color-4)' }}>
+                <td className='p-2'>
+                  <label className='text-sm' htmlFor='level-of-the-day'>
+                    Level of the day
+                  </label>
+                </td>
+                <td className='px-4 py-2 text-center'>
+                  <input
+                    checked={emailDigest === EmailDigestSettingType.DAILY}
+                    disabled={isUserConfigLoading}
+                    id='level-of-the-day'
+                    name='level-of-the-day'
+                    onChange={option => {
+                      if (!option) {
+                        return;
+                      }
 
-                    const newEmailDigest = emailDigest === EmailDigestSettingType.DAILY ? EmailDigestSettingType.NONE : EmailDigestSettingType.DAILY;
+                      const newEmailDigest = emailDigest === EmailDigestSettingType.DAILY ? EmailDigestSettingType.NONE : EmailDigestSettingType.DAILY;
 
-                    updateUserConfig(
-                      JSON.stringify({
-                        emailDigest: newEmailDigest,
-                      }), 'notification settings',
-                    );
+                      updateUserConfig(
+                        JSON.stringify({
+                          emailDigest: newEmailDigest,
+                        }), 'notification settings',
+                      );
 
-                    setEmailDigest(newEmailDigest);
-                  }}
-                  type='checkbox'
-                />
-              </td>
-              <td className='px-4 py-2 text-center'>
-                {null}
-              </td>
-            </tr>
+                      setEmailDigest(newEmailDigest);
+                    }}
+                    type='checkbox'
+                  />
+                </td>
+                <td className='px-4 py-2 text-center'>
+                  {null}
+                </td>
+              </tr>
+            }
           </tbody>
         </table>
       </div>
