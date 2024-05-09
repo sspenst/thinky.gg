@@ -13,7 +13,7 @@ export interface LevelWithRecordHistory extends Level {
 }
 
 export async function getRecordsByUserId(gameId: GameId, userId: Types.ObjectId, reqUser?: User): Promise<LevelWithRecordHistory[]> {
-  const lookupPipelineUser = reqUser ? getEnrichLevelsPipelineSteps(reqUser, '_id', '') : [];
+  const lookupPipelineUser = reqUser ? getEnrichLevelsPipelineSteps(reqUser) : [];
 
   const records = await RecordModel.aggregate([
     {

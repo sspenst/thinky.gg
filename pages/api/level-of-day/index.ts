@@ -189,7 +189,7 @@ export async function getLevelOfDay(gameId: GameId, reqUser?: User | null) {
         ...LEVEL_DEFAULT_PROJECTION
       }
     },
-    ...getEnrichLevelsPipelineSteps(reqUser, '_id', '')
+    ...getEnrichLevelsPipelineSteps(reqUser),
   ]);
 
   if (!levelAgg || levelAgg.length === 0) {

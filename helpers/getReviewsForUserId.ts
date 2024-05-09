@@ -10,7 +10,7 @@ import { logger } from './logger';
 
 export async function getReviewsForUserId(gameId: GameId, id: string | string[] | undefined, reqUser: User | null = null, queryOptions: QueryOptions = {}) {
   try {
-    const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPipelineSteps(reqUser);
+    const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPipelineSteps(reqUser, 'levelId');
 
     const levelsByUserAgg = await LevelModel.aggregate(([
       {
@@ -112,8 +112,7 @@ export async function getReviewsForUserId(gameId: GameId, id: string | string[] 
     ] as PipelineStage[]).concat(lookupPipelineUser));
 
     return levelsByUserAgg.map(review => {
-      // TODO: Figure out why complete 0 means complete here... Something is off since getLatestReviews uses complete 1
-      cleanReview({ canSee: review.levelId.complete === 0, reqUser: reqUser, review: review });
+      cleanReview(review.levelId.complete, reqUser, review);
       cleanUser(review.userId);
 
       return review;

@@ -55,7 +55,7 @@ export function SpoilerText({ id, text }: SpoilerTextProps) {
       spoilerToolTipText = 'You must solve this level to view this spoiler';
     }
 
-    const backgroundColor = visible ? '#ff03' : '#000';
+    const backgroundColor = visible ? undefined : '#000';
 
     return (
       <>
@@ -87,7 +87,7 @@ export function SpoilerText({ id, text }: SpoilerTextProps) {
   };
 
   return (
-    <span>
+    <span className='whitespace-pre-wrap'>
       {parts.map((part, index) =>
         part.startsWith('||') && part.endsWith('||') ? (
           <Spoiler index={index} key={index}>{part}</Spoiler>

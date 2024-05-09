@@ -41,7 +41,7 @@ export default withAuth({
 
     { $project: { ...LEVEL_DEFAULT_PROJECTION, ...{ data: 1, width: 1, height: 1 } }, },
     ...getEnrichUserIdPipelineSteps('userId', 'userId'),
-    ...getEnrichLevelsPipelineSteps(req.user, '_id', '') as PipelineStage[],
+    ...getEnrichLevelsPipelineSteps(req.user) as PipelineStage[],
   ]);
 
   // now make sure levels is in the same order as ids
