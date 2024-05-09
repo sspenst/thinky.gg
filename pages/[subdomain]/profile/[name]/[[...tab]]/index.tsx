@@ -485,12 +485,25 @@ export default function ProfilePage({
             <div className='flex gap-4 flex-wrap justify-center py-1'>
               <FollowButton
                 isFollowing={reqUserIsFollowing}
+                key={user._id.toString()}
                 user={user}
               />
-              <button onClick={() => setIsFollowerOpen(true)}>
+              <button
+                onClick={() => {
+                  if (followers.length !== 0) {
+                    setIsFollowerOpen(true);
+                  }
+                }}
+              >
                 <span className='font-bold'>{followers.length}</span> follower{followers.length === 1 ? '' : 's'}
               </button>
-              <button onClick={() => setIsFollowingOpen(true)}>
+              <button
+                onClick={() => {
+                  if (following.length !== 0) {
+                    setIsFollowingOpen(true);
+                  }
+                }}
+              >
                 <span className='font-bold'>{following.length}</span> following
               </button>
             </div>
