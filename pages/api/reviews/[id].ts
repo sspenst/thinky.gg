@@ -55,12 +55,10 @@ export default apiWrapper({ GET: {
   ];
 
   const [userStat, reviewsAgg] = await Promise.all([
-
     reqUser ? StatModel.findOne({
       levelId: new Types.ObjectId(id as string),
       userId: reqUser?._id
     }) : null,
-
     ReviewModel.aggregate([
       { $match: { levelId: new Types.ObjectId(id as string) } },
       { $sort: { ts: -1 } },
@@ -97,10 +95,9 @@ export default apiWrapper({ GET: {
   ]);
 
   reviewsAgg.forEach(review => {
-    cleanReview({ canSee: userStat?.complete, reqUser: reqUser, review: review });
+    cleanReview(userStat?.complete, reqUser, review);
     cleanUser(review.userId);
-  }
-  );
+  });
 
   return res.status(200).json(reviewsAgg);
 });

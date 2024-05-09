@@ -62,7 +62,7 @@ export default async function getCampaignProps(gameId: GameId, reqUser: User, sl
                     ...LEVEL_DEFAULT_PROJECTION,
                   }
                 },
-                ...getEnrichLevelsPipelineSteps(reqUser, '_id', '') as PipelineStage.Lookup[],
+                ...getEnrichLevelsPipelineSteps(reqUser) as PipelineStage.Lookup[],
                 {
                   $lookup: {
                     from: UserModel.collection.name,

@@ -437,7 +437,7 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
               // note this last getEnrichLevelsPipeline is "technically a bit wasteful" if they select Hide Solved or In Progress
               // Because technically the above statLookupAndMatchStage will have this data already...
               // But since the results are limited by limit, this is constant time and not a big deal to do the lookup again...
-              ...getEnrichLevelsPipelineSteps(new Types.ObjectId(userId) as unknown as User, '_id', '') as PipelineStage.Lookup[],
+              ...getEnrichLevelsPipelineSteps(new Types.ObjectId(userId) as unknown as User) as PipelineStage.Lookup[],
             ],
           },
         },
@@ -512,7 +512,7 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
               // note this last getEnrichLevelsPipeline is "technically a bit wasteful" if they select Hide Solved or In Progress
               // Because technically the above statLookupAndMatchStage will have this data already...
               // But since the results are limited by limit, this is constant time and not a big deal to do the lookup again...
-              ...getEnrichLevelsPipelineSteps(new Types.ObjectId(userId) as unknown as User, '_id', '') as PipelineStage.Lookup[],
+              ...getEnrichLevelsPipelineSteps(new Types.ObjectId(userId) as unknown as User) as PipelineStage.Lookup[],
             ],
           },
         },
