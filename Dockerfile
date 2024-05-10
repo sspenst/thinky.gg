@@ -1,5 +1,5 @@
 # First Stage: Setup the base environment
-FROM node:20-alpine AS base
+FROM node:22-alpine AS base
 
 WORKDIR /thinky_app
 COPY --chown=node:node package*.json ./
