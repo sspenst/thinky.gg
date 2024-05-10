@@ -7,23 +7,55 @@ import { getSolvesByDifficultyTable } from '@root/helpers/getSolvesByDifficultyT
 import { createNewAchievement } from '@root/helpers/notificationHelper';
 import { getDifficultyRollingSum } from '@root/helpers/playerRankHelper';
 import Achievement from '@root/models/db/achievement';
+import Comment from '@root/models/db/comment';
 import Level from '@root/models/db/level';
 import MultiplayerMatch from '@root/models/db/multiplayerMatch';
 import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import Review from '@root/models/db/review';
 import User from '@root/models/db/user';
-import { AchievementModel, LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, ReviewModel, UserConfigModel, UserModel } from '@root/models/mongoose';
+import { AchievementModel, CommentModel, LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, ReviewModel, UserConfigModel, UserModel } from '@root/models/mongoose';
 import { Types } from 'mongoose';
 import queueDiscordWebhook from './discordWebhook';
 import { getRecordsByUserId } from './getRecordsByUserId';
 
 const AchievementCategoryFetch = {
+  [AchievementCategory.THINKY]: async (_gameId: GameId, userId: Types.ObjectId) => {
+    // no game ID as this is a global
+    const [commentCount, welcomedComments] = await Promise.all([
+      // deletedat should be null
+      CommentModel.countDocuments({ author: userId, deletedAt: null,
+        target: { $ne: userId }
+      }),
+      CommentModel.find({ author: userId, deletedAt: null,
+        target: { $ne: userId },
+        text: { $regex: /welcome/i } }).populate('target').lean<Comment[]>()
+    ]);
+
+    // loop through the welcomed comments and filter out where comment.createdAt - 1000*comment.user.ts > 24 hours
+    const welcomedCommentsFiltered = welcomedComments.filter((comment) => {
+      const user = comment.target as User;
+
+      if (!user) {
+        // TODO: looks like some comments should have been deleted but weren't
+        return false;
+      }
+
+      if (!user.ts) {
+        return false;
+      }
+
+      return comment.createdAt.getTime() - 1000 * user.ts < 24 * 60 * 60 * 1000;
+    });
+
+    return { welcomedComments: welcomedCommentsFiltered, commentCount: commentCount };
+  },
   [AchievementCategory.PROGRESS]: async (gameId: GameId, userId: Types.ObjectId) => {
     const userConfig = await UserConfigModel.findOne({ userId: userId, gameId: gameId }).lean<User>();
 
     return { userConfig: userConfig };
   },
   [AchievementCategory.REVIEWER]: async (gameId: GameId, userId: Types.ObjectId) => {
+    // TODO: this is probably really expensive... Do we need the text content??
     const reviewsCreated = await ReviewModel.find({ userId: userId, isDeleted: { $ne: true }, gameId: gameId }).lean<Review[]>();
 
     return { reviewsCreated: reviewsCreated };
