@@ -4,16 +4,16 @@ import { Game } from './Games';
 import TileType from './tileType';
 
 enum Theme {
-  Custom = 'custom',
   Modern = 'theme-modern',
-  Monkey = 'theme-monkey',
-  Classic = 'theme-classic',
-  Light = 'theme-light',
   Dark = 'theme-dark',
-  Accessible = 'theme-accessible',
-  BossMode = 'theme-boss',
   Winter = 'theme-winter',
+  Classic = 'theme-classic',
+  Monkey = 'theme-monkey',
+  BossMode = 'theme-boss',
+  Light = 'theme-light',
+  Accessible = 'theme-accessible',
   Halloween = 'theme-halloween',
+  Custom = 'custom',
 }
 
 export function getIconFromTheme(game: Game, theme?: Theme | string, tileType?: TileType): ((props: ThemeIconProps) => JSX.Element) | undefined {
