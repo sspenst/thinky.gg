@@ -6,7 +6,7 @@ interface Comment {
   author: Types.ObjectId & User;
   createdAt: Date;
   deletedAt: Date;
-  target: Types.ObjectId;
+  target: Types.ObjectId & User | Types.ObjectId & Comment | Types.ObjectId & string;
   targetModel: User | Comment | string;
   text: string;
   updatedAt: Date;

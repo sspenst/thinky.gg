@@ -3,6 +3,7 @@ import AchievementRulesMultiplayer from '@root/constants/achievements/Achievemen
 import AchievementRulesProgress from '@root/constants/achievements/AchievementRulesProgress';
 import AchievementRulesReviewer from '@root/constants/achievements/AchievementRulesReviewer';
 import AchievementRulesSkill from '@root/constants/achievements/AchievementRulesSkill';
+import AchievementRulesThinky from '@root/constants/achievements/AchievementRulesSocial';
 import AchievementType from '@root/constants/achievements/achievementType';
 import { AppContext } from '@root/contexts/appContext';
 import Achievement from '@root/models/db/achievement';
@@ -34,6 +35,7 @@ export function ProfileAchievments({ achievements }: { achievements: Achievement
     'Skill': getAchievementsOfCategory(AchievementRulesSkill),
     'Reviewer': getAchievementsOfCategory(AchievementRulesReviewer),
     'Multiplayer': getAchievementsOfCategory(AchievementRulesMultiplayer),
+    'Thinky': getAchievementsOfCategory(AchievementRulesThinky),
   } as { [key: string]: JSX.Element[] };
 
   return (
