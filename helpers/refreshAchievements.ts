@@ -140,7 +140,7 @@ export async function refreshAchievements(gameId: GameId, userId: Types.ObjectId
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (achievementInfo.unlocked(neededData as any)) {
-        achievementsCreatedPromises.push(createNewAchievement(gameId, achievementType as AchievementType, userId, achievementsCreatedPromises.length > 0)); // for each category, only send one push notification
+        achievementsCreatedPromises.push(createNewAchievement(category === AchievementCategory.THINKY ? GameId.THINKY : gameId, achievementType as AchievementType, userId, achievementsCreatedPromises.length > 0)); // for each category, only send one push notification
 
         if (achievementInfo.discordNotification) {
           // Should be "<User.name> just unlocked <Achievement.name> achievement!" where <User.name> is a link to the user's profile and <Achievement.name> is a link to the achievement's page
