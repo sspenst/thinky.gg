@@ -29,7 +29,7 @@ export function ProfileAchievments({ achievements }: { achievements: Achievement
     }).filter(achievement => achievement !== null);
   }
 
-  const globalAchievements = { 'Thinky.gg Global Achievements': getAchievementsOfCategory(AchievementRulesThinky) } as { [key: string]: JSX.Element[] };
+  const globalAchievements = { 'Social Achievements': getAchievementsOfCategory(AchievementRulesThinky) } as { [key: string]: JSX.Element[] };
 
   const achievementsByCategory = game.isNotAGame ? globalAchievements : {
     'Progress': getAchievementsOfCategory(AchievementRulesProgress),
@@ -40,9 +40,9 @@ export function ProfileAchievments({ achievements }: { achievements: Achievement
   } as { [key: string]: JSX.Element[] };
 
   return (
-    <div className='flex flex-wrap gap-6 justify-center p-3'>
+    <div className='flex gap-6 justify-center p-3'>
       {Object.keys(achievementsByCategory).map((achievementCategory) => (
-        <div className='flex flex-col gap-4 w-60 max-w-full' key={achievementCategory}>
+        <div className='flex flex-col gap-2 max-w-80 min-w-60 max-w-full' key={achievementCategory}>
           <h1 className='text-2xl font-medium '>{achievementCategory}</h1>
           {achievementsByCategory[achievementCategory]}
         </div>
