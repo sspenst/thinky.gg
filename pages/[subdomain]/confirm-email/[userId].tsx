@@ -50,7 +50,7 @@ export default function ConfirmEmail({ emailConfirmed }: ConfirmEmailProps) {
     const ts = setTimeout(() => {
       if (!emailConfirmed) {
         toast.error('Email confirmation failed. Please try again');
-        router.push('/settings/account');
+        router.push('/settings');
       } else {
         toast.success('Email confirmed!');
         router.push('/');

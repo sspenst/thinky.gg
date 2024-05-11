@@ -154,7 +154,7 @@ export default function Home({
     {user && !isFullAccount(user) &&
       <div className='bg-yellow-200 w-full text-black text-center text-sm p-2 shadow-lg'>
         {`${isGuest(user) ? 'Convert to a regular account' : 'Confirm your email'} in your `}
-        <Link className='font-semibold text-blue-600 hover:underline' href='/settings/account'>
+        <Link className='font-semibold text-blue-600 hover:underline' href='/settings'>
           Account Settings
         </Link>
         {' to unlock all basic features!'}
