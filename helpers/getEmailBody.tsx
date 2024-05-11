@@ -188,7 +188,7 @@ export default function getEmailBody({
                           color: '#4890ce',
                           textDecoration: 'none',
                         }}>Thinky.gg Discord</a> to chat with other players and the developers!</p>
-                        <p><a href={`${game.baseUrl}/settings/notifications`} style={{
+                        <p><a href={`${game.baseUrl}/settings#notifications`} style={{
                           color: '#4890ce',
                           textDecoration: 'none',
                         }}>Manage your email notification settings</a></p>
