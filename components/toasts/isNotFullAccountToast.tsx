@@ -9,7 +9,7 @@ export default function isNotFullAccountToast(verb: string) {
     <div className='flex'>
       <div className='flex flex-col gap-2'>
         <span>Error: {verb} requires a full account with a confirmed email</span>
-        <Link className='text-blue-500 w-fit' href='/settings/account'>Confirm here</Link>
+        <Link className='text-blue-500 w-fit' href='/settings'>Confirm here</Link>
       </div>
       <DismissToast />
     </div>,
