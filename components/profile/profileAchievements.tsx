@@ -29,13 +29,14 @@ export function ProfileAchievments({ achievements }: { achievements: Achievement
     }).filter(achievement => achievement !== null);
   }
 
-  const achievementsByCategory = {
+  const globalAchievements = { 'Thinky.gg Global Achievements': getAchievementsOfCategory(AchievementRulesThinky) } as { [key: string]: JSX.Element[] };
+
+  const achievementsByCategory = game.isNotAGame ? globalAchievements : {
     'Progress': getAchievementsOfCategory(AchievementRulesProgress),
     'Creator': getAchievementsOfCategory(AchievementRulesCreator),
     'Skill': getAchievementsOfCategory(AchievementRulesSkill),
     'Reviewer': getAchievementsOfCategory(AchievementRulesReviewer),
     'Multiplayer': getAchievementsOfCategory(AchievementRulesMultiplayer),
-    'Thinky': getAchievementsOfCategory(AchievementRulesThinky),
   } as { [key: string]: JSX.Element[] };
 
   return (

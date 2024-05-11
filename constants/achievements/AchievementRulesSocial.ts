@@ -1,4 +1,3 @@
-import { DIFFICULTY_INDEX } from '@root/components/formatted/formattedDifficulty';
 import Comment from '@root/models/db/comment';
 import { IAchievementInfo } from './achievementInfo';
 import AchievementType from './achievementType';
