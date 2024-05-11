@@ -3,6 +3,7 @@ import AchievementType from '@root/constants/achievements/achievementType';
 import DiscordChannel from '@root/constants/discordChannel';
 import { GameId } from '@root/constants/GameId';
 import { Games } from '@root/constants/Games';
+import Role from '@root/constants/role';
 import { getSolvesByDifficultyTable } from '@root/helpers/getSolvesByDifficultyTable';
 import { createNewAchievement } from '@root/helpers/notificationHelper';
 import { getDifficultyRollingSum } from '@root/helpers/playerRankHelper';
@@ -32,13 +33,21 @@ const AchievementCategoryFetch = {
     ]);
 
     // loop through the welcomed comments and filter out where comment.createdAt - 1000*comment.user.ts > 24 hours
+    const alreadyWelcomed = {} as { [key: string]: boolean };
     const welcomedCommentsFiltered = welcomedComments.filter((comment) => {
       const user = comment.target as User;
 
-      if (!user) {
+      if (!user || alreadyWelcomed[user._id.toString()]) {
         // TODO: looks like some comments should have been deleted but weren't
         return false;
       }
+      // also check if user role contains Guest
+
+      if (user.roles && user.roles.includes(Role.GUEST)) {
+        return false;
+      }
+
+      alreadyWelcomed[user._id.toString()] = true;
 
       if (!user.ts) {
         return false;

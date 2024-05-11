@@ -15,8 +15,6 @@ AchievementRulesThinky[AchievementType.THINKY_SOCIAL_WELCOMED_1_USER] = {
   discordNotification: true,
   secret: true,
   unlocked: ({ welcomedComments, commentCount }) => {
-    console.log('welc', welcomedComments);
-
     return (welcomedComments.length > 0);
   },
 };
@@ -27,8 +25,6 @@ AchievementRulesThinky[AchievementType.THINKY_SOCIAL_COMMENT_TO_1_USER] = {
   discordNotification: true,
   secret: false,
   unlocked: ({ welcomedComments, commentCount }) => {
-    console.log('commentCount', commentCount);
-
     return (commentCount > 0);
   },
 };
