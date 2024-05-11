@@ -42,7 +42,7 @@ export function ProfileAchievments({ achievements }: { achievements: Achievement
   return (
     <div className='flex gap-6 justify-center p-3'>
       {Object.keys(achievementsByCategory).map((achievementCategory) => (
-        <div className='flex flex-col gap-2 max-w-80 min-w-60 max-w-full' key={achievementCategory}>
+        <div className='flex flex-col gap-4 max-w-80 min-w-60 max-w-full' key={achievementCategory}>
           <h1 className='text-2xl font-medium '>{achievementCategory}</h1>
           {achievementsByCategory[achievementCategory]}
         </div>
