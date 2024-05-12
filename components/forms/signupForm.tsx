@@ -158,7 +158,7 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
             className='inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-400'
             href='/play-as-guest'
           >
-            Sign Up as Guest
+            Play as Guest
           </Link>
         </div>
       </form>
