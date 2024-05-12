@@ -1,6 +1,7 @@
 import DidYouKnowTip from '@root/components/page/didYouKnowTip';
 import { GameType } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
+import isGuest from '@root/helpers/isGuest';
 import useHomePageData, { HomepageDataType } from '@root/hooks/useHomePageData';
 import Collection from '@root/models/db/collection';
 import Level, { EnrichedLevel } from '@root/models/db/level';
@@ -97,39 +98,92 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
     );
   }
 
+  const upsellDiv = <div className='text-center'>
+    <Link href='/signup' className='underline font-bold'>Sign up</Link> (or use a <Link href='/play-as-guest' className='underline font-bold'>Guest Account</Link>) to save your progress and get access to more features.
+  </div>;
+
+  const guestConvertUpsell = (
+    <div className='text-center text-sm'>
+      <div className='flex flex-col gap-1'>
+        <span className='text-2xl italic'>By the way...</span><span className='text-xs'>You are playing as a <span className='font-bold italic'>guest</span> and missing out on a ton of features. <Link href='/settings' className='hover:underline font-bold text-blue-300'>
+          Convert to regular account
+        </Link> (it&apos;s free and only takes a few seconds!)</span>
+      </div>
+    </div>
+  );
+
   return (
     <Modal
       closeModal={closeModal}
       isOpen={isOpen}
-      title={
-        <div className='flex flex-col gap-1'>
-          <h3 className='text-center text-2xl p-1'>
-            Congratulations!
-          </h3>
-          <h4>
-            You completed {level.name}!
-          </h4>
-          <ShareBar url={url} quote={quote} />
-        </div>
-      }
+
     >
+
       <div className='flex flex-col gap-2 justify-center items-center'>
-        {!reqUser ?
-          <div className='text-center'>
-            <Link href='/signup' className='underline font-bold'>Sign up</Link> (or use a <Link href='/play-as-guest' className='underline font-bold'>Guest Account</Link>) to save your progress and get access to more features.
+        <div className='flex flex-col'>
+          <div className='text-center text-xl mt-3 font-bold moveUp'
+            style={{
+              animation: 'moveUp 1s ease-out 0s forwards',
+              position: 'relative' // Allows the translateY to take effect properly
+              // add animation delay of 1s
+              // animationDelay: '0.5s',
+              // add some awesome glowing text
+
+            }}
+          >
+            Congratulations!
           </div>
+          <div className='text-center text-wrap text-sm p-1 fadeIn'
+            style={{
+              // add animation delay of 1.5s
+              animationDelay: '1s',
+            }}
+
+          >
+            {reqUser && !isGuest(reqUser) &&
+                <details>
+                  <summary onClick={(e: React.MouseEvent) => {
+                  // make this element invisible
+                    (e.target as HTMLElement).style.display = 'none';
+                  }} className='text-xs cursor-pointer italic py-1'>Share your thoughts on {level.name}</summary>
+                  <FormattedLevelReviews hideReviews={true} inModal={true} />
+                </details>
+
+            }
+
+          </div>
+        </div>
+        {!reqUser ?
+          upsellDiv
           :
           <>
-            <FormattedLevelReviews hideReviews={true} inModal={true} />
-            {lastLevelInCollection && collection &&
+
+            <div className='fadeIn' style={{
+              // add animation delay of 2s
+              animationDelay: '1.5s',
+            }}>
+              {lastLevelInCollection && collection &&
               <div>
                 {level.name} is the last level in <Link className='font-bold hover:underline' href={`/collection/${collection.slug}`}>{collection.name}</Link>.
               </div>
-            }
-            {nextActionCard()}
+              }
+              {nextActionCard()}
+            </div>
           </>
         }
-        <div className='flex items-center gap-1'>
+        <div className='fadeIn'
+          style={{
+          // add animation delay of 2s
+            animationDelay: '2s',
+          }}>
+          {isGuest(reqUser) && guestConvertUpsell}
+        </div>
+        <div className='flex items-center gap-1 fadeIn'
+          style={{
+            // add animation delay of 3s
+            animationDelay: '2s',
+          }}
+        >
           <input
             type='checkbox'
             checked={dontShowPostGameModal}
@@ -146,9 +200,8 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
               }
             }}
           />
-          <label>Don&apos;t show this popup for 24h</label>
+          <label className='text-xs'>Mute this popup for 24h</label>
         </div>
-        <DidYouKnowTip reqUser={reqUser} />
       </div>
     </Modal>
   );
