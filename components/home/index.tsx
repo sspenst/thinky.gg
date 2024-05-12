@@ -23,6 +23,7 @@ import LoadingCard from '../cards/loadingCard';
 import FormattedReview from '../level/reviews/formattedReview';
 import LoadingSpinner from '../page/loadingSpinner';
 import MultiSelectUser from '../page/multiSelectUser';
+import UpsellConvertOrConfirmTopBar from './upsellConvertOrConfirm';
 
 interface HomeProps {
   lastLevelPlayed?: EnrichedLevel;
@@ -151,15 +152,7 @@ export default function Home({
 
   return (<>
     {tour}
-    {user && !isFullAccount(user) &&
-      <div className='bg-yellow-200 w-full text-black text-center text-sm p-2 shadow-lg'>
-        {`${isGuest(user) ? 'Convert to a regular account' : 'Confirm your email'} in your `}
-        <Link className='font-semibold text-blue-600 hover:underline' href='/settings'>
-          Account Settings
-        </Link>
-        {' to unlock all basic features!'}
-      </div>
-    }
+    <UpsellConvertOrConfirmTopBar user={user} />
     <div className='flex justify-center m-6 text-center'>
       <div className='flex flex-col items-center gap-8 w-full max-w-screen-2xl'>
         <div className='flex flex-wrap justify-center gap-8 items-center max-w-full'>
