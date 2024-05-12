@@ -71,7 +71,7 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
         const checkpoint = await KeyValueModel.findOne({ key: checkpointKey }, {}, { session: session });
         let checkpointMoves = -1;
 
-        if (checkpoint) {
+        if (checkpoint && checkpoint.value[BEST_CHECKPOINT_INDEX]) {
           checkpointMoves = checkpoint.value[BEST_CHECKPOINT_INDEX].length;
         }
 
