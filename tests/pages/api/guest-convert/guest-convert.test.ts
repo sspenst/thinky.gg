@@ -1,5 +1,7 @@
 import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import Role from '@root/constants/role';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
+import { UserModel } from '@root/models/mongoose';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
@@ -119,6 +121,12 @@ describe('pages/api/guest-convert.ts', () => {
 
         expect(res.status).toBe(200);
         expect(response.updated).toBe(true);
+        const user = await UserModel.findOne({ email: 'newemail@newmail.com' });
+
+        expect(user).toBeTruthy();
+        expect(user.name).toBe('newname');
+        expect(user.roles).toContain(Role.FORMER_GUEST);
+        expect(user.roles).not.toContain(Role.GUEST);
       },
     });
   });
