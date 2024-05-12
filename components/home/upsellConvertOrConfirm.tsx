@@ -6,8 +6,8 @@ import React from 'react';
 
 export default function UpsellConvertOrConfirmTopBar({ user }: {user: User | null}) {
   return user && !isFullAccount(user) && ( <div className='bg-yellow-200 w-full text-black text-center text-sm p-2 shadow-lg'>
-    {`${isGuest(user) ? 'Convert to a regular account' : 'Confirm your email'} in your `}
-    <Link className='font-semibold text-blue-600 hover:underline' href='/settings'>
+    <span className='font-bold'>{`${isGuest(user) ? 'Convert to a regular account' : 'Confirm your email'} `}</span>
+    in your <Link className='font-semibold text-blue-600 hover:underline' href='/settings'>
         Account Settings
     </Link>
     {' to unlock all basic features!'}
