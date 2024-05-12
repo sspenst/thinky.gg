@@ -1,3 +1,4 @@
+import { useRouter } from 'next/router';
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 
@@ -6,6 +7,7 @@ export default function SettingsAccountGuest() {
   const [password, setPassword] = useState('');
   const [password2, setPassword2] = useState('');
   const [username, setUsername] = useState('');
+  const router = useRouter();
 
   async function fetchSignup() {
     if (password !== password2) {
@@ -35,7 +37,7 @@ export default function SettingsAccountGuest() {
       } else {
         toast.dismiss();
         toast.success('Account created');
-        window.location.reload();
+        router.push('/confirm-email');
       }
     }).catch(async err => {
       const error = await err;
