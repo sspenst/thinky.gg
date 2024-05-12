@@ -331,6 +331,7 @@ body {
   }
 }
 
+
 .flashBackground {
   /* flash once */
   animation: flashBackground 2s ease-in-out alternate;
@@ -393,6 +394,16 @@ body {
   50% {
     transform: translateY(-25%);
     animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+}
+
+@keyframes moveUp {
+  0% {
+    transform: translateY(200px);
+    
+  }
+  100% {
+    transform: translateY(0);  /* Adjust the value based on how far you want it to move */
   }
 }
 
