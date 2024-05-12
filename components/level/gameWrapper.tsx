@@ -223,7 +223,7 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
                 setShowPostGameModalOpen(true);
                 setMutePostGameModalForThisLevel(true);
                 setPreventKeyDownEvent(true);
-              }, 200);
+              }, 500);
             }
           }}
           onStatsSuccess={onStatsSuccess}
