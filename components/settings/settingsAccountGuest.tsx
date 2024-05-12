@@ -5,18 +5,10 @@ import toast from 'react-hot-toast';
 export default function SettingsAccountGuest() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [password2, setPassword2] = useState('');
   const [username, setUsername] = useState('');
   const router = useRouter();
 
   async function fetchSignup() {
-    if (password !== password2) {
-      toast.dismiss();
-      toast.error('Password does not match');
-
-      return;
-    }
-
     toast.dismiss();
     toast.loading('Creating account...');
 
@@ -73,7 +65,6 @@ export default function SettingsAccountGuest() {
         <input className={inputClass} placeholder='Username' type='text' required onChange={(e) => { setUsername(e.target.value); }} />
         <input className={inputClass} placeholder='Email' type='email' required onChange={(e) => { setEmail(e.target.value);}} />
         <input className={inputClass} placeholder='Password' type='password' required onChange={(e) => { setPassword(e.target.value); }} />
-        <input className={inputClass} onChange={(e) => { setPassword2(e.target.value); }} placeholder='Confirm Password' type='password' required />
       </div>
       <div className='flex justify-end'>
         <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer'
