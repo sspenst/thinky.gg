@@ -27,8 +27,6 @@ export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?
   const [showRecaptcha, setShowRecaptcha] = useState(false);
 
   function onRecaptchaChange(value: string | null) {
-    console.log('sup', value);
-
     if (value) {
       recaptchaToken.current = value;
       setTimeout(fetchSignup, 50);
