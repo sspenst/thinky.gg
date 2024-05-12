@@ -113,7 +113,7 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
         <div className='flex flex-col'>
           <div className='text-center text-xl mt-3 font-bold moveUp'
             style={{
-              animation: 'moveUp 1s ease-out 0s forwards',
+              animation: 'moveUp 0.7s ease-out 0s forwards',
               position: 'relative' // Allows the translateY to take effect properly
               // add animation delay of 1s
               // animationDelay: '0.5s',
@@ -126,7 +126,7 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
           <div className='text-center text-wrap text-sm p-1 fadeIn'
             style={{
               // add animation delay of 1.5s
-              animationDelay: '1s',
+              animationDelay: '0.5s',
             }}
 
           >
@@ -145,7 +145,7 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
         </div>
         <div className='fadeIn' style={{
           // add animation delay of 2s
-          animationDelay: '1.5s',
+          animationDelay: '1s',
         }}>
           {!reqUser ?
 
@@ -165,14 +165,14 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
         <div className='fadeIn'
           style={{
           // add animation delay of 2s
-            animationDelay: '2s',
+            animationDelay: '1.5s',
           }}>
           {isGuest(reqUser) && guestConvertUpsell}
         </div>
         <div className='flex items-center gap-1 fadeIn'
           style={{
             // add animation delay of 3s
-            animationDelay: '2s',
+            animationDelay: '1.5s',
           }}
         >
           <input
