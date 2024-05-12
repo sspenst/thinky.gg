@@ -153,24 +153,25 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
 
           </div>
         </div>
-        {!reqUser ?
-          upsellDiv
-          :
-          <>
+        <div className='fadeIn' style={{
+          // add animation delay of 2s
+          animationDelay: '1.5s',
+        }}>
+          {!reqUser ?
 
-            <div className='fadeIn' style={{
-              // add animation delay of 2s
-              animationDelay: '1.5s',
-            }}>
+            upsellDiv
+            :
+            <>
+
               {lastLevelInCollection && collection &&
               <div>
                 {level.name} is the last level in <Link className='font-bold hover:underline' href={`/collection/${collection.slug}`}>{collection.name}</Link>.
               </div>
               }
               {nextActionCard()}
-            </div>
-          </>
-        }
+            </>
+          }
+        </div>
         <div className='fadeIn'
           style={{
           // add animation delay of 2s
