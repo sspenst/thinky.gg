@@ -188,16 +188,18 @@ export default function FormattedCampaign({
         </div>
       }
     </div>
-    <div className='text-center mb-6'>
-      <FilterButton
-        element={<span className='text-base'>{filter === 'HIDE_SOLVED' ? 'Show All' : 'Hide Solved'}</span>}
-        first
-        last
-        onClick={() => setFilter(filter === 'HIDE_SOLVED' ? 'SHOW_ALL' : 'HIDE_SOLVED')}
-        selected={filter === 'HIDE_SOLVED'}
-        value={filter}
-      />
-    </div>
+    { solvedLevels > 0 &&
+      <div className='flex text-center mb-6 items-center gap-2 flex-col'>
+        <FilterButton
+          element={<span className='text-base'>{filter === 'HIDE_SOLVED' ? 'Show All' : 'Hide Solved'}</span>}
+          first
+          last
+          onClick={() => setFilter(filter === 'HIDE_SOLVED' ? 'SHOW_ALL' : 'HIDE_SOLVED')}
+          selected={filter === 'HIDE_SOLVED'}
+          value={filter}
+        />
+      </div>
+    }
     <div className='flex flex-col gap-12'>
       {getOptions()}
     </div>
