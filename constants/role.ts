@@ -1,8 +1,8 @@
 enum Role {
   ADMIN = 'Admin',
   CURATOR = 'Curator',
-  GUEST = 'Guest',
   FORMER_GUEST = 'FormerGuest',
+  GUEST = 'Guest',
   PRO = 'Pro',
 }
 

@@ -335,11 +335,9 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
           bestRating: 100,
           worstRating: 0,
           ratingValue: Math.round(100 * level.calc_reviews_score_laplace),
-          ratingCount: Math.max(1, level.calc_reviews_count),
+          ratingCount: level.calc_reviews_count,
         }}
-
         datePublished={level.ts && new Date(level.ts * 1000).toISOString() || ''}
-
       />
       <LevelContext.Provider value={{
         inCampaign: !!chapter && level.userMoves !== level.leastMoves,

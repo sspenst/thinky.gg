@@ -1,4 +1,4 @@
-import UpsellConvertOrConfirmTopBar from '@root/components/home/upsellConvertOrConfirm';
+import UpsellFullAccount from '@root/components/home/upsellFullAccount';
 import { AppContext } from '@root/contexts/appContext';
 import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
@@ -41,7 +41,7 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
 
   return (
     <Page title={'Play'}>
-      <UpsellConvertOrConfirmTopBar user={reqUser} />
+      <UpsellFullAccount user={reqUser} />
       <div className='flex flex-col items-center gap-8 p-4'>
         <div className='font-bold text-3xl text-center' id='title'>
           {game.displayName} Official Campaign
