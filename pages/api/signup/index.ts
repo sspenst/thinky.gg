@@ -68,8 +68,8 @@ export default apiWrapper({ POST: {
     email: ValidType('string'),
     name: ValidType('string'),
     password: ValidType('string'),
-    tutorialCompletedAt: ValidNumber(false),
     recaptchaToken: ValidType('string', false),
+    tutorialCompletedAt: ValidNumber(false),
   },
 } }, async (req: NextApiRequestWrapper, res: NextApiResponse) => {
   await dbConnect();
