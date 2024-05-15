@@ -96,8 +96,8 @@ export async function getSubscriptions(req: NextApiRequestWithAuth): Promise<[nu
   }
 
   // query payment methods on file
-  const paymentMethods = await stripe.paymentMethods.list({
-    customer: user?.stripeCustomerId,
+  const paymentMethods = !user?.stripeCustomerId ? undefined : await stripe.paymentMethods.list({
+    customer: user.stripeCustomerId,
     type: 'card',
   });
 
