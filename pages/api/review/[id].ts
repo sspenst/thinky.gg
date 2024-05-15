@@ -1,4 +1,4 @@
-import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
+import AchievementCategory from '@root/constants/achievements/achievementCategory';
 import { GameId } from '@root/constants/GameId';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import isCurator from '@root/helpers/isCurator';

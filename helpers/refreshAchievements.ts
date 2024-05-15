@@ -1,4 +1,5 @@
-import { AchievementCategory, AchievementCategoryMapping } from '@root/constants/achievements/achievementInfo';
+import AchievementCategory from '@root/constants/achievements/achievementCategory';
+import { AchievementCategoryMapping } from '@root/constants/achievements/achievementInfo';
 import AchievementType from '@root/constants/achievements/achievementType';
 import DiscordChannel from '@root/constants/discordChannel';
 import { GameId } from '@root/constants/GameId';

@@ -1,4 +1,4 @@
-import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
+import AchievementCategory from '@root/constants/achievements/achievementCategory';
 import { GameId } from '@root/constants/GameId';
 import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import isFullAccount from '@root/helpers/isFullAccount';

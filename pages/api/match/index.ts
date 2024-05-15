@@ -1,4 +1,4 @@
-import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
+import AchievementCategory from '@root/constants/achievements/achievementCategory';
 import DiscordChannel from '@root/constants/discordChannel';
 import { GameId } from '@root/constants/GameId';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
