@@ -3,7 +3,7 @@ import AchievementRulesMultiplayer from '@root/constants/achievements/Achievemen
 import AchievementRulesProgress from '@root/constants/achievements/AchievementRulesProgress';
 import AchievementRulesReviewer from '@root/constants/achievements/AchievementRulesReviewer';
 import AchievementRulesSkill from '@root/constants/achievements/AchievementRulesSkill';
-import AchievementRulesThinky from '@root/constants/achievements/AchievementRulesSocial';
+import AchievementRulesSocial from '@root/constants/achievements/AchievementRulesSocial';
 import AchievementType from '@root/constants/achievements/achievementType';
 import { AppContext } from '@root/contexts/appContext';
 import Achievement from '@root/models/db/achievement';
@@ -29,20 +29,20 @@ export function ProfileAchievments({ achievements }: { achievements: Achievement
     }).filter(achievement => achievement !== null);
   }
 
-  const globalAchievements = { 'Social Achievements': getAchievementsOfCategory(AchievementRulesThinky) } as { [key: string]: JSX.Element[] };
-
-  const achievementsByCategory = game.isNotAGame ? globalAchievements : {
+  const achievementsByCategory: { [key: string]: JSX.Element[] } = game.isNotAGame ? {
+    'Social Achievements': getAchievementsOfCategory(AchievementRulesSocial),
+  } : {
     'Progress': getAchievementsOfCategory(AchievementRulesProgress),
     'Creator': getAchievementsOfCategory(AchievementRulesCreator),
     'Skill': getAchievementsOfCategory(AchievementRulesSkill),
     'Reviewer': getAchievementsOfCategory(AchievementRulesReviewer),
     'Multiplayer': getAchievementsOfCategory(AchievementRulesMultiplayer),
-  } as { [key: string]: JSX.Element[] };
+  };
 
   return (
-    <div className='flex gap-6 justify-center p-3'>
+    <div className='flex flex-wrap gap-6 justify-center p-3'>
       {Object.keys(achievementsByCategory).map((achievementCategory) => (
-        <div className='flex flex-col gap-4 max-w-80 min-w-60 max-w-full' key={achievementCategory}>
+        <div className='flex flex-col gap-4 min-w-60 max-w-full' key={achievementCategory}>
           <h1 className='text-2xl font-medium '>{achievementCategory}</h1>
           {achievementsByCategory[achievementCategory]}
         </div>

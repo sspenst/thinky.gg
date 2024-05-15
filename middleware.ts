@@ -38,7 +38,6 @@ const noSubdomainPages = new Set([
   'notifications',
   'play-as-guest',
   'profile',
-  'achievement',
   'reset-password',
   'settings',
   'signup',

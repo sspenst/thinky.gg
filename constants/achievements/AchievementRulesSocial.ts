@@ -6,9 +6,9 @@ interface IAchievementInfoSocial extends IAchievementInfo {
   unlocked: ({ welcomedComments, commentCount }: { welcomedComments: Comment[]; commentCount: number }) => boolean;
 }
 
-const AchievementRulesThinky: { [achievementType: string]: IAchievementInfoSocial } = {};
+const AchievementRulesSocial: { [achievementType: string]: IAchievementInfoSocial } = {};
 
-AchievementRulesThinky[AchievementType.THINKY_SOCIAL_COMMENT_TO_1_USER] = {
+AchievementRulesSocial[AchievementType.THINKY_SOCIAL_COMMENT_TO_1_USER] = {
   getDescription: () => 'Wrote a comment to a user',
   name: 'Social Butterfly',
   emoji: '🦋',
@@ -18,7 +18,7 @@ AchievementRulesThinky[AchievementType.THINKY_SOCIAL_COMMENT_TO_1_USER] = {
     return (commentCount > 0);
   },
 };
-AchievementRulesThinky[AchievementType.THINKY_SOCIAL_WELCOMED_1_USER] = {
+AchievementRulesSocial[AchievementType.THINKY_SOCIAL_WELCOMED_1_USER] = {
   getDescription: () => 'Welcomed a new user to the community!',
   name: 'Newbie Nod',
   emoji: '👋',
@@ -28,35 +28,35 @@ AchievementRulesThinky[AchievementType.THINKY_SOCIAL_WELCOMED_1_USER] = {
     return (welcomedComments.length > 0);
   },
 };
-AchievementRulesThinky[AchievementType.THINKY_SOCIAL_WEBLCOMED_5_USERS] = {
+AchievementRulesSocial[AchievementType.THINKY_SOCIAL_WELCOMED_5_USERS] = {
   getDescription: () => 'Welcomed 5 new user to the community!',
   name: 'Thinky-Mart Greeter',
   emoji: '🛒',
   discordNotification: true,
   secret: true,
   unlocked: ({ welcomedComments }) => {
-    return (welcomedComments.length > 0);
+    return (welcomedComments.length >= 5);
   },
 };
-AchievementRulesThinky[AchievementType.THINKY_SOCIAL_WEBLCOMED_10_USERS] = {
+AchievementRulesSocial[AchievementType.THINKY_SOCIAL_WELCOMED_10_USERS] = {
   getDescription: () => 'Welcomed 10 new users to the community!',
   name: 'Welcoming Committee',
   emoji: '🎈',
   discordNotification: true,
   secret: true,
   unlocked: ({ welcomedComments }) => {
-    return (welcomedComments.length >= 5);
+    return (welcomedComments.length >= 10);
   },
 };
-AchievementRulesThinky[AchievementType.THINKY_SOCIAL_WEBLCOMED_25_USERS] = {
+AchievementRulesSocial[AchievementType.THINKY_SOCIAL_WELCOMED_25_USERS] = {
   getDescription: () => 'Welcomed 25 new users to the community!',
   name: 'Thinky Ambassador',
   emoji: '🤝',
   discordNotification: true,
   secret: true,
   unlocked: ({ welcomedComments }) => {
-    return (welcomedComments.length >= 10);
+    return (welcomedComments.length >= 25);
   },
 };
 
-export default AchievementRulesThinky;
+export default AchievementRulesSocial;

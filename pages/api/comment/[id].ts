@@ -175,7 +175,7 @@ export default withAuth({
       if (target.toString() !== req.user._id.toString()) {
         await Promise.all([
           createNewWallPostNotification(req.gameId, NotificationType.NEW_WALL_POST, target, comment.author, target, JSON.stringify(comment)),
-          queueRefreshAchievements(req.gameId, req.user._id, [AchievementCategory.THINKY]),
+          queueRefreshAchievements(req.gameId, req.user._id, [AchievementCategory.SOCIAL]),
         ]);
       }
     } else if (targetModel === 'Comment') {
