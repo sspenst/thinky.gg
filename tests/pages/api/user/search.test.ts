@@ -180,10 +180,11 @@ describe('api/user/search', () => {
         const response = await res.json();
 
         expect(response.error).toBeUndefined();
-        expect(response).toHaveLength(3);
+        expect(response).toHaveLength(4);
         expect(response[0].name).toBe('test');
         expect(response[1].name).toBe('AncientUser');
         expect(response[2].name).toBe('Curator');
+        expect(response[3].name).toBe('guest');
 
         expect(res.status).toBe(200);
       },
