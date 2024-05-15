@@ -12,7 +12,6 @@ import Comment from '@root/models/db/comment';
 import Level from '@root/models/db/level';
 import MultiplayerMatch from '@root/models/db/multiplayerMatch';
 import MultiplayerProfile from '@root/models/db/multiplayerProfile';
-import Review from '@root/models/db/review';
 import User from '@root/models/db/user';
 import { AchievementModel, CommentModel, LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, ReviewModel, UserConfigModel, UserModel } from '@root/models/mongoose';
 import { Types } from 'mongoose';
@@ -68,10 +67,9 @@ const AchievementCategoryFetch = {
     return { userConfig: userConfig };
   },
   [AchievementCategory.REVIEWER]: async (gameId: GameId, userId: Types.ObjectId) => {
-    // TODO: this is probably really expensive... Do we need the text content??
-    const reviewsCreated = await ReviewModel.find({ userId: userId, isDeleted: { $ne: true }, gameId: gameId }).lean<Review[]>();
+    const reviewsCreatedCount = await ReviewModel.countDocuments({ userId: userId, isDeleted: { $ne: true }, gameId: gameId });
 
-    return { reviewsCreated: reviewsCreated };
+    return { reviewsCreatedCount: reviewsCreatedCount };
   },
   [AchievementCategory.MULTIPLAYER]: async (gameId: GameId, userId: Types.ObjectId) => {
     const [userMatches, multiplayerProfile] = await Promise.all(
