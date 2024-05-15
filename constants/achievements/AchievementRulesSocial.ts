@@ -8,7 +8,7 @@ interface IAchievementInfoSocial extends IAchievementInfo {
 
 const AchievementRulesSocial: { [achievementType: string]: IAchievementInfoSocial } = {};
 
-AchievementRulesSocial[AchievementType.THINKY_SOCIAL_COMMENT_TO_1_USER] = {
+AchievementRulesSocial[AchievementType.SOCIAL_COMMENT_1_USER] = {
   getDescription: () => 'Wrote a comment to a user',
   name: 'Social Butterfly',
   emoji: '🦋',
@@ -18,7 +18,7 @@ AchievementRulesSocial[AchievementType.THINKY_SOCIAL_COMMENT_TO_1_USER] = {
     return (commentCount > 0);
   },
 };
-AchievementRulesSocial[AchievementType.THINKY_SOCIAL_WELCOMED_1_USER] = {
+AchievementRulesSocial[AchievementType.SOCIAL_WELCOMED_1_USER] = {
   getDescription: () => 'Welcomed a new user to the community!',
   name: 'Newbie Nod',
   emoji: '👋',
@@ -28,7 +28,7 @@ AchievementRulesSocial[AchievementType.THINKY_SOCIAL_WELCOMED_1_USER] = {
     return (welcomedComments.length > 0);
   },
 };
-AchievementRulesSocial[AchievementType.THINKY_SOCIAL_WELCOMED_5_USERS] = {
+AchievementRulesSocial[AchievementType.SOCIAL_WELCOMED_5_USERS] = {
   getDescription: () => 'Welcomed 5 new user to the community!',
   name: 'Thinky-Mart Greeter',
   emoji: '🛒',
@@ -38,7 +38,7 @@ AchievementRulesSocial[AchievementType.THINKY_SOCIAL_WELCOMED_5_USERS] = {
     return (welcomedComments.length >= 5);
   },
 };
-AchievementRulesSocial[AchievementType.THINKY_SOCIAL_WELCOMED_10_USERS] = {
+AchievementRulesSocial[AchievementType.SOCIAL_WELCOMED_10_USERS] = {
   getDescription: () => 'Welcomed 10 new users to the community!',
   name: 'Welcoming Committee',
   emoji: '🎈',
@@ -48,7 +48,7 @@ AchievementRulesSocial[AchievementType.THINKY_SOCIAL_WELCOMED_10_USERS] = {
     return (welcomedComments.length >= 10);
   },
 };
-AchievementRulesSocial[AchievementType.THINKY_SOCIAL_WELCOMED_25_USERS] = {
+AchievementRulesSocial[AchievementType.SOCIAL_WELCOMED_25_USERS] = {
   getDescription: () => 'Welcomed 25 new users to the community!',
   name: 'Thinky Ambassador',
   emoji: '🤝',
