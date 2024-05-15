@@ -16,7 +16,6 @@ import { AchievementModel, CommentModel, LevelModel, MultiplayerMatchModel, Mult
 import { Types } from 'mongoose';
 import queueDiscordWebhook from './discordWebhook';
 import { getRecordsByUserId } from './getRecordsByUserId';
-import isGuest from './isGuest';
 
 const AchievementCategoryFetch = {
   // no game ID as this is a global
@@ -38,7 +37,7 @@ const AchievementCategoryFetch = {
     const hasWelcomed = welcomeComments.some((comment) => {
       const user = comment.target as unknown as User;
 
-      if (!user || isGuest(user) || !user.ts) {
+      if (!user?.ts) {
         return false;
       }
 
