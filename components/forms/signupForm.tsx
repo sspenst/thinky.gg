@@ -1,32 +1,18 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { useContext, useRef, useState } from 'react';
-import ReCAPTCHA from 'react-google-recaptcha';
+import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useSWRConfig } from 'swr';
 import { AppContext } from '../../contexts/appContext';
 import FormTemplate from './formTemplate';
 
-interface SignupFormProps {
-  recaptchaPublicKey?: string;
-}
-
-export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
+export default function SignupForm() {
   const { cache } = useSWRConfig();
   const [email, setEmail] = useState<string>('');
   const { mutateUser, setShouldAttemptAuth } = useContext(AppContext);
   const [password, setPassword] = useState<string>('');
-  const recaptchaRef = useRef<ReCAPTCHA>(null);
-  const [recaptchaToken, setRecaptchaToken] = useState<string>('');
   const router = useRouter();
-  const [showRecaptcha, setShowRecaptcha] = useState<boolean>(false);
   const [username, setUsername] = useState<string>('');
-
-  function onRecaptchaChange(value: string | null) {
-    if (value) {
-      setRecaptchaToken(value);
-    }
-  }
 
   function onSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -52,12 +38,6 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
       return;
     }
 
-    if (!showRecaptcha && recaptchaPublicKey) {
-      setShowRecaptcha(true);
-
-      return;
-    }
-
     toast.dismiss();
     toast.loading('Registering...');
 
@@ -71,7 +51,6 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
         name: username,
         password: password,
         tutorialCompletedAt: parseInt(tutorialCompletedAt),
-        recaptchaToken: recaptchaToken,
         utm_source: utm_source
       }),
       credentials: 'include',
@@ -79,10 +58,6 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
         'Content-Type': 'application/json'
       }
     }).then(async res => {
-      if (recaptchaRef.current) {
-        recaptchaRef.current.reset();
-      }
-
       if (res.status === 200) {
         const resObj = await res.json();
 
@@ -136,16 +111,6 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
           </label>
           <input onChange={e => setPassword(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline' id='password' type='password' placeholder='******************' />
         </div>
-        {recaptchaPublicKey && showRecaptcha && (
-          <div className='w-full pt-2'>
-            <ReCAPTCHA
-              size='normal'
-              onChange={onRecaptchaChange}
-              ref={recaptchaRef}
-              sitekey={recaptchaPublicKey ?? ''}
-            />
-          </div>
-        )}
         <div className='flex items-center justify-between gap-1'>
           <input type='checkbox' id='terms_agree_checkbox' required />
           <label htmlFor='terms_agree_checkbox' className='text-xs p-1'>

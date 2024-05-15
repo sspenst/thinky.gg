@@ -8,21 +8,11 @@ import Page from '../../../components/page/page';
 import redirectToHome from '../../../helpers/redirectToHome';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const redirect = await redirectToHome(context);
-
-  if (redirect.redirect) {
-    return redirect;
-  }
-
-  return {
-    props: {
-      recaptchaPublicKey: process.env.RECAPTCHA_PUBLIC_KEY || '',
-    },
-  };
+  return await redirectToHome(context);
 }
 
 /* istanbul ignore next */
-export default function SignUp({ recaptchaPublicKey }: {recaptchaPublicKey?: string}) {
+export default function SignUp() {
   return (
     <Page title={'Sign Up'}>
       <>
@@ -34,7 +24,7 @@ export default function SignUp({ recaptchaPublicKey }: {recaptchaPublicKey?: str
             <div>Create a Thinky.gg account and start playing!</div><div>Your Thinky.gg account works across all games on the site.</div>
           </div>
         </div>
-        <SignupForm recaptchaPublicKey={recaptchaPublicKey} />
+        <SignupForm />
         <div className='text-center mb-4'>
           {'Already have an account? '}
           <Link href='/login' passHref className='underline'>
