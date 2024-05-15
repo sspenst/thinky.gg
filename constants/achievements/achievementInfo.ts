@@ -4,6 +4,7 @@ import AchievementRulesMultiplayer from './AchievementRulesMultiplayer';
 import AchievementRulesProgress from './AchievementRulesProgress';
 import AchievementRulesReviewer from './AchievementRulesReviewer';
 import AchievementRulesSkill from './AchievementRulesSkill';
+import AchievementRulesSocial from './AchievementRulesSocial';
 
 export interface IAchievementInfo {
   discordNotification?: boolean;
@@ -15,6 +16,7 @@ export interface IAchievementInfo {
 }
 
 export enum AchievementCategory {
+  SOCIAL = 'SOCIAL',
   PROGRESS = 'USER',
   CREATOR = 'CREATOR',
   SKILL = 'LEVEL_COMPLETION',
@@ -23,6 +25,7 @@ export enum AchievementCategory {
 }
 
 export const AchievementCategoryMapping = {
+  [AchievementCategory.SOCIAL]: AchievementRulesSocial,
   [AchievementCategory.PROGRESS]: AchievementRulesProgress,
   [AchievementCategory.CREATOR]: AchievementRulesCreator,
   [AchievementCategory.SKILL]: AchievementRulesSkill,

@@ -23,7 +23,7 @@ export default function FormattedAchievement({ achievementType, createdAt, game,
   }
 
   const glowingBorderCSS = {
-    boxShadow: '0 0 10px 2px rgba(255, 100, 0, 0.6), 0 0 20px 2px rgba(255, 150, 0, 0.7), 0 0 32px 4px rgba(255, 200, 0, 0.8)',
+    boxShadow: '0 0 10px 2px rgba(255, 100, 0, 0.6), 0 0 20px 2px rgba(255, 150, 0, 0.7), 0 0 8px 4px rgba(255, 200, 0, 0.8)',
     padding: '4px',
   };
 

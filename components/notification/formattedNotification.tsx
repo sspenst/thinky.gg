@@ -148,9 +148,10 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
       const achievement = notification.source as Achievement;
 
       const meta = AchievementRulesCombined[achievement.type];
+      const baseUrl = getGameFromId(notification.gameId as GameId).baseUrl;
 
       return (<div>
-        Achievement unlocked! <Link onClick={dropConfetti} className='underline font-bold' href={getProfileSlug(notification.target as User) + '/achievements/'}>{meta?.getDescription(game)}</Link>
+        Achievement unlocked! <Link onClick={dropConfetti} className='underline font-bold' href={baseUrl + getProfileSlug(notification.target as User) + '/achievements/'}>{meta?.getDescription(game)}</Link>
       </div>);
     }
 
