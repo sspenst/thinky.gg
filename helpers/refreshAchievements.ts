@@ -100,8 +100,9 @@ export async function refreshAchievements(gameId: GameId, userId: Types.ObjectId
   // it is more efficient to just grab all their achievements then to loop through and query each one if they have it
   const game = Games[gameId];
   const fetchPromises = [];
+  const adjustedCategories = categories.filter((category) => game.achievementCategories.includes(category));
 
-  for (const category of categories) {
+  for (const category of adjustedCategories) {
     fetchPromises.push(AchievementCategoryFetch[category](gameId, userId));
   }
 
@@ -114,7 +115,7 @@ export async function refreshAchievements(gameId: GameId, userId: Types.ObjectId
   const neededData = neededDataArray.reduce((acc, cur) => ({ ...acc, ...cur }), {});
   let achievementsCreated = 0;
 
-  for (const category of categories) {
+  for (const category of adjustedCategories) {
     const achievementsCreatedPromises = [];
     const categoryRulesTable = AchievementCategoryMapping[category];
 

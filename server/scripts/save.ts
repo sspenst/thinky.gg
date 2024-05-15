@@ -6,13 +6,14 @@
 
 import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
 import { GameId } from '@root/constants/GameId';
+import { Games } from '@root/constants/Games';
+import { refreshAchievements } from '@root/helpers/refreshAchievements';
 import Level from '@root/models/db/level';
 import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import PlayAttempt from '@root/models/db/playAttempt';
 import Record from '@root/models/db/record';
 import UserConfig from '@root/models/db/userConfig';
 import { AttemptContext } from '@root/models/schemas/playAttemptSchema';
-import { queueRefreshAchievements } from '@root/pages/api/internal-jobs/worker';
 import cliProgress from 'cli-progress';
 import dotenv from 'dotenv';
 import dbConnect from '../../lib/dbConnect';
@@ -306,8 +307,7 @@ async function integrityCheckAcheivements() {
   progressBar.start(users.length, 0);
 
   for (const user of users) {
-    // TODO - loop through all games and refresh achievements for each game
-    await queueRefreshAchievements(GameId.PATHOLOGY, user._id, allAchievementCategories as AchievementCategory[], { session: null });
+    await Promise.all(Object.values(Games).map((game) => refreshAchievements(game.id, user._id, allAchievementCategories)));
     progressBar.increment();
   }
 
