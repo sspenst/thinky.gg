@@ -3,7 +3,6 @@ import AchievementType from '@root/constants/achievements/achievementType';
 import DiscordChannel from '@root/constants/discordChannel';
 import { GameId } from '@root/constants/GameId';
 import { Games } from '@root/constants/Games';
-import Role from '@root/constants/role';
 import { getSolvesByDifficultyTable } from '@root/helpers/getSolvesByDifficultyTable';
 import { createNewAchievement } from '@root/helpers/notificationHelper';
 import { getDifficultyRollingSum } from '@root/helpers/playerRankHelper';
@@ -17,11 +16,12 @@ import { AchievementModel, CommentModel, LevelModel, MultiplayerMatchModel, Mult
 import { Types } from 'mongoose';
 import queueDiscordWebhook from './discordWebhook';
 import { getRecordsByUserId } from './getRecordsByUserId';
+import isGuest from './isGuest';
 
 const AchievementCategoryFetch = {
+  // no game ID as this is a global
   [AchievementCategory.SOCIAL]: async (_gameId: GameId, userId: Types.ObjectId) => {
-    // no game ID as this is a global
-    const [commentCount, welcomedComments] = await Promise.all([
+    const [commentCount, welcomeComments] = await Promise.all([
       CommentModel.countDocuments({
         author: userId,
         deletedAt: null,
@@ -35,31 +35,18 @@ const AchievementCategoryFetch = {
       }).populate('target').lean<Comment[]>()
     ]);
 
-    // loop through the welcomed comments and filter out where comment.createdAt - 1000*comment.user.ts > 24 hours
-    const alreadyWelcomed = {} as { [key: string]: boolean };
-    const welcomedCommentsFiltered = welcomedComments.filter((comment) => {
-      const user = comment.target as User;
+    const hasWelcomed = welcomeComments.some((comment) => {
+      const user = comment.target as unknown as User;
 
-      if (!user || alreadyWelcomed[user._id.toString()]) {
-        // TODO: looks like some comments should have been deleted but weren't
-        return false;
-      }
-      // also check if user role contains Guest
-
-      if (user.roles && user.roles.includes(Role.GUEST)) {
+      if (!user || isGuest(user) || !user.ts) {
         return false;
       }
 
-      alreadyWelcomed[user._id.toString()] = true;
-
-      if (!user.ts) {
-        return false;
-      }
-
+      // if the comment was made in the first 24 hrs since account creation
       return comment.createdAt.getTime() - 1000 * user.ts < 24 * 60 * 60 * 1000;
     });
 
-    return { welcomedComments: welcomedCommentsFiltered, commentCount: commentCount };
+    return { commentCount: commentCount, hasWelcomed: hasWelcomed };
   },
   [AchievementCategory.PROGRESS]: async (gameId: GameId, userId: Types.ObjectId) => {
     const userConfig = await UserConfigModel.findOne({ userId: userId, gameId: gameId }).lean<User>();
