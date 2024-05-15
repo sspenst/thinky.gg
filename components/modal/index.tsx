@@ -31,7 +31,7 @@ interface ModalProps {
   isOpen: boolean;
   onConfirm?: () => void;
   onSubmit?: () => void;
-  title?: React.ReactNode;
+  title: React.ReactNode;
 }
 
 export default function Modal({
@@ -88,9 +88,9 @@ export default function Modal({
               }}
             >
               <Dialog.Panel className={classNames('py-3 px-4 my-8 text-left align-middle transition-all transform shadow-xl rounded-xl flex flex-col gap-4 border bg-1 border-color-3 overflow-hidden', getFontFromGameId(game.id))}>
-                {title && <Dialog.Title as='div' className='flex gap-4 text-center'>
+                <Dialog.Title as='div' className='flex gap-4 text-center'>
                   <span className='w-6' />
-                  <span className='grow text-xl truncate'>{title}</span>
+                  <span className='grow text-xl font-bold truncate'>{title}</span>
                   <button className='hover:opacity-100 opacity-50 closeBtn' onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
                     e.preventDefault();
                     closeModal();
@@ -99,7 +99,7 @@ export default function Modal({
                       <path strokeLinecap='round' strokeLinejoin='round' d='M6 18L18 6M6 6l12 12' />
                     </svg>
                   </button>
-                </Dialog.Title>}
+                </Dialog.Title>
                 {children}
                 <div className='flex justify-center gap-2 flex-wrap'>
                   {onConfirm ?

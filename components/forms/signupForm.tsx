@@ -16,11 +16,11 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
   const [email, setEmail] = useState<string>('');
   const { mutateUser, setShouldAttemptAuth } = useContext(AppContext);
   const [password, setPassword] = useState<string>('');
-  const router = useRouter();
-  const [username, setUsername] = useState<string>('');
-  const [recaptchaToken, setRecaptchaToken] = useState<string>('');
   const recaptchaRef = useRef<ReCAPTCHA>(null);
+  const [recaptchaToken, setRecaptchaToken] = useState<string>('');
+  const router = useRouter();
   const [showRecaptcha, setShowRecaptcha] = useState<boolean>(false);
+  const [username, setUsername] = useState<string>('');
 
   function onRecaptchaChange(value: string | null) {
     if (value) {

@@ -43,7 +43,6 @@ export default withAuth({
   user.name = trimmedName;
   user.password = password;
   user.roles = user.roles.filter((role: Role) => role !== Role.GUEST);
-  // add the former guest role
   user.roles.push(Role.FORMER_GUEST);
 
   // check if name already exists

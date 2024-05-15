@@ -446,7 +446,7 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let statMatchQuery: FilterQuery<any> = {};
 
-      if (query.statFilter === StatFilter.HideSolved) {
+      if (query.statFilter === StatFilter.HideSolved || query.statFilter === StatFilter.Unoptimized) {
         statMatchQuery = { complete: false };
       } else if (query.statFilter === StatFilter.Solved) {
         statMatchQuery = { complete: true };

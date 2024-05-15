@@ -5,8 +5,8 @@ import toast from 'react-hot-toast';
 export default function SettingsAccountGuest() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [username, setUsername] = useState('');
   const router = useRouter();
+  const [username, setUsername] = useState('');
 
   async function fetchSignup() {
     toast.dismiss();
