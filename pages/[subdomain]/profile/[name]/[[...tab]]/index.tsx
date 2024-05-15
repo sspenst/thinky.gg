@@ -818,7 +818,6 @@ export default function ProfilePage({
 
         />
         <div className='flex flex-wrap text-sm text-center gap-2 mt-2 justify-center items-center'>
-
           <Link
             className={getTabClassNames(ProfileTab.Profile)}
             href={`/profile/${user.name}`}
@@ -829,17 +828,17 @@ export default function ProfilePage({
             </div>
           </Link>
           {!game.isNotAGame &&
-              <>
-                <Link
-                  className={getTabClassNames(ProfileTab.Insights)}
-                  href={`/profile/${user.name}/${ProfileTab.Insights}`}
-                >
-                  <div className='flex flex-row items-center gap-2'>
-                    <Image alt='pro' src='/pro.svg' width='16' height='16' />
-                    <span>Insights</span>
-                  </div>
-                </Link>
-              </>
+            <>
+              <Link
+                className={getTabClassNames(ProfileTab.Insights)}
+                href={`/profile/${user.name}/${ProfileTab.Insights}`}
+              >
+                <div className='flex flex-row items-center gap-2'>
+                  <Image alt='pro' src='/pro.svg' width='16' height='16' />
+                  <span>Insights</span>
+                </div>
+              </Link>
+            </>
           }
           <Link
             className={getTabClassNames(ProfileTab.Achievements)}

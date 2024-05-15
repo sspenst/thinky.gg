@@ -20,16 +20,20 @@ import queueDiscordWebhook from './discordWebhook';
 import { getRecordsByUserId } from './getRecordsByUserId';
 
 const AchievementCategoryFetch = {
-  [AchievementCategory.THINKY]: async (_gameId: GameId, userId: Types.ObjectId) => {
+  [AchievementCategory.SOCIAL]: async (_gameId: GameId, userId: Types.ObjectId) => {
     // no game ID as this is a global
     const [commentCount, welcomedComments] = await Promise.all([
-      // deletedat should be null
-      CommentModel.countDocuments({ author: userId, deletedAt: null,
+      CommentModel.countDocuments({
+        author: userId,
+        deletedAt: null,
         target: { $ne: userId }
       }),
-      CommentModel.find({ author: userId, deletedAt: null,
+      CommentModel.find({
+        author: userId,
+        deletedAt: null,
         target: { $ne: userId },
-        text: { $regex: /welcome/i } }).populate('target').lean<Comment[]>()
+        text: { $regex: /welcome/i },
+      }).populate('target').lean<Comment[]>()
     ]);
 
     // loop through the welcomed comments and filter out where comment.createdAt - 1000*comment.user.ts > 24 hours
@@ -140,7 +144,7 @@ export async function refreshAchievements(gameId: GameId, userId: Types.ObjectId
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (achievementInfo.unlocked(neededData as any)) {
-        achievementsCreatedPromises.push(createNewAchievement(category === AchievementCategory.THINKY ? GameId.THINKY : gameId, achievementType as AchievementType, userId, achievementsCreatedPromises.length > 0)); // for each category, only send one push notification
+        achievementsCreatedPromises.push(createNewAchievement(category === AchievementCategory.SOCIAL ? GameId.THINKY : gameId, achievementType as AchievementType, userId, achievementsCreatedPromises.length > 0)); // for each category, only send one push notification
 
         if (achievementInfo.discordNotification) {
           // Should be "<User.name> just unlocked <Achievement.name> achievement!" where <User.name> is a link to the user's profile and <Achievement.name> is a link to the achievement's page
