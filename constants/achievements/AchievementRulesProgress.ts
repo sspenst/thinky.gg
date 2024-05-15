@@ -5,10 +5,14 @@ import { IAchievementInfo } from './achievementInfo';
 import AchievementType from './achievementType';
 
 interface IAchievementInfoUser extends IAchievementInfo {
-  unlocked: ({ userConfig }: { userConfig: UserConfig; }) => boolean;
+  unlocked: ({ userConfig }: { userConfig: UserConfig | null; }) => boolean;
 }
 
-function getProgressCount(userConfig: UserConfig) {
+function getProgressCount(userConfig: UserConfig | null) {
+  if (!userConfig) {
+    return 0;
+  }
+
   const game = getGameFromId(userConfig.gameId);
 
   if (game.type === GameType.COMPLETE_AND_SHORTEST) {
