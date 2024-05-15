@@ -297,9 +297,6 @@ function App() {
           'https://thinky.gg*',
           'https://*.thinky.gg*',
           'https://discord.com*',
-          'https://www.google.com/recaptcha*',
-          'https://www.google.com/recaptcha/api2*',
-          'https://www.gstatic.com/recaptcha*',
           'https://*.google.com*', // note, https://*.google.com/* is not enough
           'https://*.cdn.growthbook.io*',
         ]}

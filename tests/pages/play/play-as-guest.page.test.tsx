@@ -34,7 +34,6 @@ describe('pages/play page', () => {
 
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
-    expect(ret.props).toHaveProperty('recaptchaPublicKey');
   });
   test('getServerSideProps logged in', async () => {
     // Created from initialize db file
