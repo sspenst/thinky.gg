@@ -88,94 +88,59 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
     );
   }
 
-  const upsellDiv = <div className='text-center'>
-    <Link href='/signup' className='underline font-bold'>Sign up</Link> (or use a <Link href='/play-as-guest' className='underline font-bold'>Guest Account</Link>) to save your progress and get access to more features.
-  </div>;
-
-  const guestConvertUpsell = (
-    <div className='text-center text-sm'>
-      <div className='flex flex-col gap-1'>
-        <span className='text-2xl italic'>By the way...</span><span className='text-xs'>You are playing as a <span className='font-bold italic'>guest</span> and missing out on a ton of features. <Link href='/settings' className='hover:underline font-bold text-blue-300'>
-          Convert to regular account
-        </Link> (it&apos;s free and only takes a few seconds!)</span>
-      </div>
-    </div>
-  );
-
   return (
     <Modal
       closeModal={closeModal}
       isOpen={isOpen}
-
-    >
-
-      <div className='flex flex-col gap-2 justify-center items-center'>
-        <div className='flex flex-col'>
-          <div className='text-center text-xl mt-3 font-bold moveUp'
-            style={{
-              animation: 'moveUp 0.7s ease-out 0s forwards',
-              position: 'relative' // Allows the translateY to take effect properly
-              // add animation delay of 1s
-              // animationDelay: '0.5s',
-              // add some awesome glowing text
-
-            }}
-          >
-            Congratulations!
-          </div>
-          <div className='text-center text-wrap text-sm p-1 fadeIn'
-            style={{
-              // add animation delay of 1.5s
-              animationDelay: '0.5s',
-            }}
-
-          >
-            {reqUser && !isGuest(reqUser) &&
-                <details>
-                  <summary onClick={(e: React.MouseEvent) => {
-                  // make this element invisible
-                    (e.target as HTMLElement).style.display = 'none';
-                  }} className='text-xs cursor-pointer italic py-1'>Share your thoughts on {level.name}</summary>
-                  <FormattedLevelReviews hideReviews={true} inModal={true} />
-                </details>
-
-            }
-
-          </div>
+      title={
+        <div
+          className='fadeIn'
+          style={{
+            animationDelay: '0.2s',
+          }}
+        >
+          Congratulations!
         </div>
-        <div className='fadeIn' style={{
-          // add animation delay of 2s
-          animationDelay: '1s',
-        }}>
-          {!reqUser ?
-
-            upsellDiv
-            :
-            <>
-
-              {lastLevelInCollection && collection &&
+      }
+    >
+      <div
+        className='flex flex-col gap-4 justify-center items-center fadeIn'
+        style={{
+          animationDelay: '0.6s',
+        }}
+      >
+        {!reqUser ?
+          <div className='text-center'>
+            <Link href='/signup' className='underline font-bold'>Sign up</Link> (or use a <Link href='/play-as-guest' className='underline font-bold'>Guest Account</Link>) to save your progress and get access to more features.
+          </div>
+          :
+          <>
+            {lastLevelInCollection && collection &&
               <div>
                 {level.name} is the last level in <Link className='font-bold hover:underline' href={`/collection/${collection.slug}`}>{collection.name}</Link>.
               </div>
-              }
-              {nextActionCard()}
-            </>
-          }
-        </div>
-        <div className='fadeIn'
-          style={{
-          // add animation delay of 2s
-            animationDelay: '1.5s',
-          }}>
-          {isGuest(reqUser) && guestConvertUpsell}
-        </div>
-        <div className='flex items-center gap-1 fadeIn'
-          style={{
-            // add animation delay of 3s
-            animationDelay: '1.5s',
-          }}
-        >
+            }
+            {nextActionCard()}
+            {isGuest(reqUser) ?
+              <div className='text-center text-sm'>
+                <div className='flex flex-col gap-2'>
+                  <span className='text-2xl italic font-semibold'>By the way...</span><span className='text-xs'>You are playing as a <span className='font-bold italic'>guest</span> and missing out on a ton of features. <Link href='/settings' className='hover:underline font-bold text-blue-300'>Convert to a regular account</Link> (it&apos;s free and only takes a few seconds!)</span>
+                </div>
+              </div>
+              :
+              <details>
+                <summary onClick={(e: React.MouseEvent) => {
+                  // make this element invisible
+                  (e.target as HTMLElement).style.display = 'none';
+                }} className='text-xs cursor-pointer italic py-1'>Share your thoughts on {level.name}</summary>
+                <FormattedLevelReviews hideReviews={true} inModal={true} />
+              </details>
+            }
+          </>
+        }
+        <div className='flex gap-2'>
           <input
+            id='dont-show-post-game-modal'
             type='checkbox'
             checked={dontShowPostGameModal}
             onChange={(e) => {
@@ -191,7 +156,7 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
               }
             }}
           />
-          <label className='text-xs'>Mute this popup for 24h</label>
+          <label className='text-xs' htmlFor='dont-show-post-game-modal'>Mute this popup for 24h</label>
         </div>
       </div>
     </Modal>

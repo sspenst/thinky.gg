@@ -1,4 +1,4 @@
-import UpsellConvertOrConfirmTopBar from '@root/components/home/upsellConvertOrConfirm';
+import UpsellFullAccount from '@root/components/home/upsellFullAccount';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
@@ -30,7 +30,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 export default function Chapter1Page({ enrichedCollections, reqUser, solvedLevels, totalLevels }: CampaignProps) {
   return (
     <Page folders={[new LinkInfo('Play', '/play')]} title={'Chapter 1'}>
-      <UpsellConvertOrConfirmTopBar user={reqUser} />
+      <UpsellFullAccount user={reqUser} />
       <FormattedCampaign
         enrichedCollections={enrichedCollections}
         levelHrefQuery={'chapter=1'}
