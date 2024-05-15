@@ -1,6 +1,6 @@
 // ts-node -r tsconfig-paths/register --files server/scripts/delete-user.ts
 
-import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
+import AchievementCategory from '@root/constants/achievements/achievementCategory';
 import { GameId } from '@root/constants/GameId';
 import { clearNotifications } from '@root/helpers/notificationHelper';
 import { requestBroadcastMatch } from '@root/lib/appSocketToClient';

@@ -1,4 +1,4 @@
-import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
+import AchievementCategory from '@root/constants/achievements/achievementCategory';
 import Direction from '@root/constants/direction';
 import { GameId } from '@root/constants/GameId';
 import { Games, GameType } from '@root/constants/Games';

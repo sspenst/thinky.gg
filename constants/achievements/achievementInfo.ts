@@ -1,4 +1,5 @@
 import { Game } from '../Games';
+import AchievementCategory from './achievementCategory';
 import AchievementRulesCreator from './AchievementRulesCreator';
 import AchievementRulesMultiplayer from './AchievementRulesMultiplayer';
 import AchievementRulesProgress from './AchievementRulesProgress';
@@ -13,15 +14,6 @@ export interface IAchievementInfo {
   name: string;
   secret?: boolean;
   tooltip?: string;
-}
-
-export enum AchievementCategory {
-  SOCIAL = 'SOCIAL',
-  PROGRESS = 'USER',
-  CREATOR = 'CREATOR',
-  SKILL = 'LEVEL_COMPLETION',
-  REVIEWER = 'REVIEWER',
-  MULTIPLAYER = 'MULTIPLAYER',
 }
 
 export const AchievementCategoryMapping = {

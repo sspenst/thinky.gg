@@ -4,7 +4,7 @@
 // import dotenv
 // import tsconfig-paths
 
-import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
+import AchievementCategory from '@root/constants/achievements/achievementCategory';
 import { GameId } from '@root/constants/GameId';
 import { Games } from '@root/constants/Games';
 import { refreshAchievements } from '@root/helpers/refreshAchievements';

@@ -3,7 +3,7 @@ import { isCompletePathology, isCompleteSokopath } from '@root/helpers/validator
 import validatePathologySolution, { validatePathologyLevelValid as validatePathologyLevel } from '@root/helpers/validators/validatePathology';
 import validateSokopathSolution, { validateSokopathLevel } from '@root/helpers/validators/validateSokopath';
 import Level from '@root/models/db/level';
-import { AchievementCategory } from './achievements/achievementInfo';
+import AchievementCategory from './achievements/achievementCategory';
 import Direction from './direction';
 import { GameId } from './GameId';
 import Theme from './theme';
