@@ -11,7 +11,7 @@ AchievementRulesSocial[AchievementType.COMMENT_1] = {
   getDescription: () => 'Wrote a comment',
   name: 'Chatty',
   emoji: '💬',
-  discordNotification: true,
+  discordNotification: false,
   secret: false,
   unlocked: ({ commentCount }) => {
     return (commentCount >= 1);
@@ -21,7 +21,7 @@ AchievementRulesSocial[AchievementType.COMMENT_5] = {
   getDescription: () => 'Wrote 5 comments',
   name: 'Conversationalist',
   emoji: '🗣️',
-  discordNotification: true,
+  discordNotification: false,
   secret: false,
   unlocked: ({ commentCount }) => {
     return (commentCount >= 5);
