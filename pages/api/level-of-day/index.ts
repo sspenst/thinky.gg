@@ -30,7 +30,7 @@ async function getNewLevelOfDay(key: string, gameId: GameId) {
 
   const MIN_STEPS = 12;
   const MAX_STEPS = 100;
-  const MIN_REVIEWS = 2;
+  const MIN_REVIEWS = 3;
   const MIN_LAPLACE = 0.66;
 
   const levels = await LevelModel.find<Level>({
