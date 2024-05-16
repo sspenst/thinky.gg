@@ -286,6 +286,8 @@ export default withAuth({
           GraphModel.deleteMany({ $or: [{ source: req.user._id }, { target: req.user._id }] }, { session: session }),
           // delete in keyvaluemodel where key contains userId
           KeyValueModel.deleteMany({ key: { $regex: `.*${req.user._id}.*` } }, { session: session }),
+          // delete draft levels
+          LevelModel.updateMany({ userId: req.user._id, isDraft: true }, { $set: { isDeleted: true } }, { session: session }),
           NotificationModel.deleteMany({ $or: [
             { source: req.user._id },
             { target: req.user._id },
