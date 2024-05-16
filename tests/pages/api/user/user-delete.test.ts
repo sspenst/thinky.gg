@@ -2,10 +2,10 @@ import TestId from '@root/constants/testId';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { getTokenCookieValue } from '@root/lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '@root/lib/withAuth';
-import { UserModel } from '@root/models/mongoose';
+import { CommentModel, UserModel } from '@root/models/mongoose';
 import { cancelSubscription, stripe } from '@root/pages/api/subscription';
 import { enableFetchMocks } from 'jest-fetch-mock';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import modifyUserHandler from '../../../../pages/api/user/index';
 import mockSubscription from '../subscription/mockSubscription';
@@ -31,10 +31,10 @@ jest.mock('stripe', () => {
     };
   });
 });
-beforeAll(async () => {
+beforeEach(async () => {
   await dbConnect();
 });
-afterAll(async() => {
+afterEach(async() => {
   await dbDisconnect();
 });
 enableFetchMocks();
@@ -146,8 +146,7 @@ describe('pages/api/collection/index.ts', () => {
         expect(res.status).toBe(200);
       },
     });
-  });
-  test('Even though we have a valid token, user should not be found if they have been deleted', async () => {
+
     await testApiHandler({
       pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -170,6 +169,74 @@ describe('pages/api/collection/index.ts', () => {
         expect(response.error).toBeDefined();
         expect(response.error).toBe('Unauthorized: User not found');
         expect(res.status).toBe(401);
+      },
+    });
+  });
+  test('Deleting comments and replies', async () => {
+    const comment1 = await CommentModel.create({
+      author: new Types.ObjectId(TestId.USER),
+      text: '1',
+      target: new Types.ObjectId(TestId.USER_B),
+      targetModel: 'User',
+    });
+
+    await CommentModel.create({
+      author: new Types.ObjectId(TestId.USER_B),
+      text: '1reply',
+      target: comment1._id,
+      targetModel: 'Comment',
+    });
+
+    await CommentModel.create({
+      author: new Types.ObjectId(TestId.USER),
+      text: '1replyb',
+      target: comment1._id,
+      targetModel: 'Comment',
+    });
+
+    const comment2 = await CommentModel.create({
+      author: new Types.ObjectId(TestId.USER_B),
+      text: '2',
+      target: new Types.ObjectId(TestId.USER),
+      targetModel: 'User',
+    });
+
+    await CommentModel.create({
+      author: new Types.ObjectId(TestId.USER),
+      text: '2reply',
+      target: comment2._id,
+      targetModel: 'Comment',
+    });
+
+    const commentCount = await CommentModel.countDocuments({ deletedAt: null });
+
+    expect(commentCount).toBe(5);
+
+    await testApiHandler({
+      pagesHandler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'DELETE',
+          cookies: {
+            token: cookie,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await modifyUserHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(response.updated).toBe(true);
+        expect(res.status).toBe(200);
+
+        const commentCount = await CommentModel.countDocuments({ deletedAt: null });
+
+        expect(commentCount).toBe(0);
       },
     });
   });
