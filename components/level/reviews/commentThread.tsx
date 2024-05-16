@@ -191,7 +191,7 @@ export default function CommentThread({ className, comment, mutateComments, onSe
         </div>
         {(comment.author._id.toString() === user?._id.toString() || (user?._id === comment.target)) && (
           <button
-            className='text-xs text-white font-bold p-1 rounded-lg text-sm disabled:opacity-25 '
+            className='text-white font-bold p-1 rounded-lg text-sm disabled:opacity-25 '
             disabled={isUpdating}
             onClick={onDeleteComment}
           >
