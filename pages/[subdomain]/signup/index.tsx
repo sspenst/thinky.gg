@@ -1,9 +1,9 @@
+import SignupFormWizard from '@root/components/forms/signupFormWizard';
 import GameLogoAndLabel from '@root/components/gameLogoAndLabel';
 import { GameId } from '@root/constants/GameId';
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
 import React from 'react';
-import SignupForm from '../../../components/forms/signupForm';
 import Page from '../../../components/page/page';
 import redirectToHome from '../../../helpers/redirectToHome';
 
@@ -34,7 +34,7 @@ export default function SignUp({ recaptchaPublicKey }: {recaptchaPublicKey?: str
             <div>Create a Thinky.gg account and start playing!</div><div>Your Thinky.gg account works across all games on the site.</div>
           </div>
         </div>
-        <SignupForm recaptchaPublicKey={recaptchaPublicKey} />
+        <SignupFormWizard />
         <div className='text-center mb-4'>
           {'Already have an account? '}
           <Link href='/login' passHref className='underline'>
