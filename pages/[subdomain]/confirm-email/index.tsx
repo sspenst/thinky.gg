@@ -61,7 +61,7 @@ export default function ConfirmPage() {
             Haven&apos;t received the email? <br />Check your spam folder or <Link href={'/settings'} className='underline font-bold'>click here to resend</Link> (or update your email).
         </p>
         <p className='text-lg mt-8'>
-            Once you have confirmed your email, you will be redirected
+            Once you have confirmed your email, you will be redirected automatically.
         </p>
       </div>
     </Page>
