@@ -1,6 +1,3 @@
-import 'animate.css';
-import user from '@root/pages/api/user';
-import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
