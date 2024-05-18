@@ -433,7 +433,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
           cardType: 'summary_large_image'
         }}
       />
-      {!isEU && (
+      {isEU && (
         <CookieConsent
           buttonStyle={{ borderRadius: '6px', color: 'white', background: '#4CAF50' }}
           buttonText='I understand'
