@@ -1,22 +1,27 @@
 import SignupFormWizard from '@root/components/forms/signupFormWizard';
 import GameLogoAndLabel from '@root/components/gameLogoAndLabel';
 import { GameId } from '@root/constants/GameId';
-import { GetServerSidePropsContext } from 'next';
+import { getUserFromToken } from '@root/lib/withAuth';
+import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import React from 'react';
 import Page from '../../../components/page/page';
-import redirectToHome from '../../../helpers/redirectToHome';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const redirect = await redirectToHome(context);
+  const token = context.req?.cookies?.token;
+  const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
 
-  if (redirect.redirect) {
-    return redirect;
+  if (reqUser) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
   }
 
   return {
     props: {
-      recaptchaPublicKey: process.env.RECAPTCHA_PUBLIC_KEY || '',
     },
   };
 }
