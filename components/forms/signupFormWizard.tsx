@@ -181,7 +181,7 @@ export default function SignupFormWizard() {
               <label className='block text-sm font-bold ' htmlFor='password'>
             Password
               </label>
-              <input onChange={e => setPassword(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline' id='password' type='password' placeholder='******************' />
+              <input required onChange={e => setPassword(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline' id='password' type='password' placeholder='******************' />
               <div className='flex items-center justify-between gap-1'>
                 <button type='button' onClick={() => (wizard as any)?.previousStep()} className='bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer'>Prev</button>
                 <button type='submit' className='bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer'>Let&apos;s play!</button>
