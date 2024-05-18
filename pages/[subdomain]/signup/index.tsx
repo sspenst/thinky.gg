@@ -35,11 +35,23 @@ export default function SignUp({ recaptchaPublicKey }: {recaptchaPublicKey?: str
           </div>
         </div>
         <SignupFormWizard />
-        <div className='text-center mb-4'>
-          {'Already have an account? '}
-          <Link href='/login' passHref className='underline'>
+        <div className='flex flex-col gap-4 items-center'>
+          <div className='flex flex-wrap items-center justify-between'>
+            <Link
+              className='inline-block align-baseline font-bold text-sm hover:text-blue-400'
+              href='/play-as-guest'
+            >
+            Play as Guest
+            </Link>
+          </div>
+          <div className='text-center mb-4'>
+            {'Already have an account? '}
+            <Link href='/login' passHref className='underline'>
             Log In
-          </Link>
+            </Link>
+
+          </div>
+
         </div>
       </>
     </Page>

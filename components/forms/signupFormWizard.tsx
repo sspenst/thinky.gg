@@ -2,13 +2,14 @@ import 'animate.css';
 import user from '@root/pages/api/user';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { useContext, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
 import toast from 'react-hot-toast';
 import StepWizard, { StepWizardProps } from 'react-step-wizard';
 import { useSWRConfig } from 'swr';
 import { debounce } from 'throttle-debounce';
 import { AppContext } from '../../contexts/appContext';
+import LoadingSpinner from '../page/loadingSpinner';
 import FormTemplate from './formTemplate';
 
 export default function SignupFormWizard() {
@@ -26,13 +27,6 @@ export default function SignupFormWizard() {
     if (password.length < 8 || password.length > 50) {
       toast.dismiss();
       toast.error('Password must be between 8 and 50 characters');
-
-      return;
-    }
-
-    if (username.length < 3 || username.length > 50) {
-      toast.dismiss();
-      toast.error('Username must be between 3 and 50 characters');
 
       return;
     }
@@ -102,7 +96,7 @@ export default function SignupFormWizard() {
 
   const [isValidUsername, setIsValidUsername] = useState<boolean>(true);
   const [wizard, setWizard] = useState<StepWizardProps>();
-
+  const isLoadingExistsCheck = useRef<boolean>(false);
   // let's check if username exists already when user types
   const checkUsername = async (username: string) => {
     if (username.length < 3 || username.length > 50) {
@@ -111,14 +105,9 @@ export default function SignupFormWizard() {
       return;
     }
 
-    if (username.match(/[^-a-zA-Z0-9_]/)) {
-      setIsValidUsername(false);
-
-      return;
-    }
-
     const res = await fetch(`/api/user/exists?name=${username}`);
 
+    isLoadingExistsCheck.current = false;
     setIsValidUsername(res.status === 404);
   };
 
@@ -130,8 +119,23 @@ export default function SignupFormWizard() {
   // check if username is valid
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUsername(e.target.value);
+    isLoadingExistsCheck.current = true;
     debouncedCheckUsername(e.target.value);
   };
+
+  useEffect(() => {
+    if (username.length < 3 || username.length > 50) {
+      setIsValidUsername(false);
+
+      return;
+    }
+
+    if (username.match(/[^-a-zA-Z0-9_]/)) {
+      setIsValidUsername(false);
+
+      return;
+    }
+  }, [username]);
 
   return (
 
@@ -147,19 +151,20 @@ export default function SignupFormWizard() {
             <input required onChange={e => handleUsernameChange(e)} className='shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline' id='username' type='text' placeholder='Username' />
             <button type='button' disabled={username.length === 0 || !isValidUsername} onClick={() => (wizard as any)?.nextStep()}
               className='bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer disabled:opacity-50'>Next</button>
-            { username.length > 3 && (
+            { username.length >= 3 && (
               <div className='flex items-center gap-2'>
-                {username.length > 0 && (
+                {username.length > 0 && !isLoadingExistsCheck.current && (
                   <span className={`text-sm ${isValidUsername ? 'text-green-600' : 'text-red-600'}`}>
                     {isValidUsername ? '✅' : '❌'}
                   </span>
                 )}
                 <span className='text-sm'>
-                  {isValidUsername ? 'Username is available' : 'Username is not available'}
+                  { isLoadingExistsCheck.current ? <LoadingSpinner size='small' /> : (
+                    isValidUsername ? 'Username is available' : 'Username is not available'
+                  )}
                 </span>
               </div>
             )}
-
           </div>
           <div className='flex flex-col gap-2'>
             <p className='text-center text-lg'>
@@ -188,15 +193,6 @@ export default function SignupFormWizard() {
             I agree to the <a className='underline' href='https://docs.google.com/document/d/e/2PACX-1vR4E-RcuIpXSrRtR3T3y9begevVF_yq7idcWWx1A-I9w_VRcHhPTkW1A7DeUx2pGOcyuKifEad3Qokn/pub' rel='noreferrer' target='_blank'>terms of service</a> and reviewed the <a className='underline' href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub' rel='noreferrer' target='_blank'>privacy policy</a>.
               </label>
             </div>
-          </div>
-          <div className='flex flex-wrap gap-y-4 items-center justify-between'>
-            <input className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer' type='submit' value='Sign Up' />
-            <Link
-              className='inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-400'
-              href='/play-as-guest'
-            >
-            Play as Guest
-            </Link>
           </div>
         </StepWizard>
       </form>
