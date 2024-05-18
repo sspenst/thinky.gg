@@ -1,4 +1,4 @@
-import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
+import AchievementCategory from '@root/constants/achievements/achievementCategory';
 import Direction from '@root/constants/direction';
 import { GameId } from '@root/constants/GameId';
 import { Games, GameType } from '@root/constants/Games';
@@ -65,24 +65,34 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
 
       const moves = directions.length;
 
+      // update personal best checkpoint
+      if (isPro(user)) {
+        const checkpointKey = getCheckpointKey(levelId, userId.toString());
+        const checkpoint = await KeyValueModel.findOne({ key: checkpointKey }, {}, { session: session });
+        let checkpointMoves = -1;
+
+        if (checkpoint && checkpoint.value[BEST_CHECKPOINT_INDEX]) {
+          checkpointMoves = checkpoint.value[BEST_CHECKPOINT_INDEX].length;
+        }
+
+        if (checkpointMoves === -1 || moves < checkpointMoves) {
+          await KeyValueModel.findOneAndUpdate(
+            { key: checkpointKey },
+            {
+              $set: { [`value.${BEST_CHECKPOINT_INDEX}`]: directions },
+              gameId: level.gameId,
+            },
+            { upsert: true, session: session },
+          );
+        }
+      }
+
       // ensure no stats are saved for draft levels
       if (level.isDraft || level.leastMoves === 0) {
         if (moves < level.leastMoves || level.leastMoves === 0) {
           await LevelModel.updateOne({ _id: level._id }, {
             $set: { leastMoves: moves },
           }, { session: session });
-
-          // set a personal best checkpoint
-          if (isPro(user)) {
-            await KeyValueModel.findOneAndUpdate(
-              { key: getCheckpointKey(levelId, userId.toString()) },
-              {
-                $set: { [`value.${BEST_CHECKPOINT_INDEX}`]: directions },
-                gameId: level.gameId,
-              },
-              { upsert: true, new: true, session: session },
-            );
-          }
         }
 
         return;
@@ -110,18 +120,6 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
         await StatModel.updateOne({ _id: stat._id }, { $inc: { attempts: 1 } }, { session: session });
 
         return;
-      }
-
-      // a personal best was set, update the best checkpoint
-      if (isPro(user)) {
-        await KeyValueModel.findOneAndUpdate(
-          { key: getCheckpointKey(levelId, userId.toString()) },
-          {
-            $set: { [`value.${BEST_CHECKPOINT_INDEX}`]: directions },
-            gameId: level.gameId,
-          },
-          { upsert: true, new: true, session: session },
-        );
       }
 
       // track the first completion

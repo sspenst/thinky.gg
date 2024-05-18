@@ -330,7 +330,7 @@ async function getPlayLogForUsersCreatedLevels(gameId: GameId, reqUser: User, us
         foreignField: '_id',
         as: 'levelId',
         pipeline: [
-          ...getEnrichLevelsPipelineSteps(reqUser, '_id', '') as PipelineStage.Lookup[],
+          ...getEnrichLevelsPipelineSteps(reqUser) as PipelineStage.Lookup[],
         ]
       },
     },

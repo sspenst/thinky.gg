@@ -30,6 +30,7 @@ const PUBLIC_FILE = /\.(.*)$/;
 
 // pages that are allowed to be accessed without a subdomain (GameId.THINKY)
 const noSubdomainPages = new Set([
+  'achievement',
   'admin',
   'api',
   'confirm-email',

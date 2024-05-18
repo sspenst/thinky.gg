@@ -206,7 +206,7 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
 
   const [records, setRecords] = useState<Record[]>();
 
-  const getRecords = useCallback(() => {
+  const mutateRecords = useCallback(() => {
     fetch(`/api/records/${level._id}`, {
       method: 'GET',
     }).then(async res => {
@@ -224,12 +224,12 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
   }, [level._id, level.leastMoves]);
 
   useEffect(() => {
-    getRecords();
-  }, [getRecords]);
+    mutateRecords();
+  }, [mutateRecords]);
 
   const [reviews, setReviews] = useState<Review[]>();
 
-  const getReviews = useCallback(() => {
+  const mutateReviews = useCallback(() => {
     fetch(`/api/reviews/${level._id}`, {
       method: 'GET',
     }).then(async res => {
@@ -247,8 +247,8 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
   }, [level._id, level.calc_reviews_count]);
 
   useEffect(() => {
-    getReviews();
-  }, [getReviews]);
+    mutateReviews();
+  }, [mutateReviews]);
 
   const folders: LinkInfo[] = [];
 
@@ -337,17 +337,15 @@ export default function LevelPage({ _collection, _level, reqUser }: LevelProps) 
           ratingValue: Math.round(100 * level.calc_reviews_score_laplace),
           ratingCount: level.calc_reviews_count,
         }}
-
         datePublished={level.ts && new Date(level.ts * 1000).toISOString() || ''}
-
       />
       <LevelContext.Provider value={{
-        getReviews: getReviews,
         inCampaign: !!chapter && level.userMoves !== level.leastMoves,
         level: level,
         mutateCollection: mutateCollection,
         mutateLevel: mutateLevel,
         mutateProStatsLevel: mutateProStatsLevel,
+        mutateReviews: mutateReviews,
         proStatsLevel: proStatsLevel,
         records: records,
         reviews: reviews,

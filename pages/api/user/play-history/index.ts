@@ -62,7 +62,7 @@ export async function getPlayAttempts(gameId: GameId, reqUser: User, params: Get
           {
             $project: LEVEL_DEFAULT_PROJECTION,
           },
-          ...getEnrichLevelsPipelineSteps(reqUser, '_id', ''),
+          ...getEnrichLevelsPipelineSteps(reqUser),
         ],
       },
     },

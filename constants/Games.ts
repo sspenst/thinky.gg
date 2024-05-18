@@ -3,6 +3,7 @@ import { isCompletePathology, isCompleteSokopath } from '@root/helpers/validator
 import validatePathologySolution, { validatePathologyLevelValid as validatePathologyLevel } from '@root/helpers/validators/validatePathology';
 import validateSokopathSolution, { validateSokopathLevel } from '@root/helpers/validators/validateSokopath';
 import Level from '@root/models/db/level';
+import AchievementCategory from './achievements/achievementCategory';
 import Direction from './direction';
 import { GameId } from './GameId';
 import Theme from './theme';
@@ -17,6 +18,7 @@ export const APP_DOMAIN = process.env.NEXT_PUBLIC_APP_DOMAIN || 'thinky.gg';
 export const Games: Record<GameId, Game> = {
   [GameId.THINKY]: {
     id: GameId.THINKY,
+    achievementCategories: [AchievementCategory.SOCIAL],
     allowMovableOnExit: false,
     baseUrl: process.env.NODE_ENV !== 'development' ? `https://${APP_DOMAIN}` : 'http://localhost:3000',
     defaultTheme: Theme.Dark,
@@ -42,6 +44,13 @@ export const Games: Record<GameId, Game> = {
   },
   [GameId.PATHOLOGY]: {
     id: GameId.PATHOLOGY,
+    achievementCategories: [
+      AchievementCategory.PROGRESS,
+      AchievementCategory.CREATOR,
+      AchievementCategory.SKILL,
+      AchievementCategory.REVIEWER,
+      AchievementCategory.MULTIPLAYER,
+    ],
     allowMovableOnExit: false,
     baseUrl: process.env.NODE_ENV !== 'development' ? `https://pathology.${APP_DOMAIN}` : 'http://pathology.localhost:3000',
     chapterCount: 4,
@@ -71,6 +80,13 @@ export const Games: Record<GameId, Game> = {
   },
   [GameId.SOKOPATH]: {
     id: GameId.SOKOPATH,
+    achievementCategories: [
+      AchievementCategory.PROGRESS,
+      AchievementCategory.CREATOR,
+      AchievementCategory.SKILL,
+      AchievementCategory.REVIEWER,
+      AchievementCategory.MULTIPLAYER,
+    ],
     allowMovableOnExit: true,
     baseUrl: process.env.NODE_ENV !== 'development' ? `https://sokopath.${APP_DOMAIN}` : 'http://sokopath.localhost:3000',
     defaultTheme: Theme.Winter,
@@ -110,6 +126,7 @@ export interface ValidateLevelResponse {
 
 export interface Game {
   id: GameId;
+  achievementCategories: AchievementCategory[];
   /**
    * If movables can start on exits
    */

@@ -181,24 +181,20 @@ export function getEnrichUserIdPipelineSteps(userIdField = 'userId', outputToFie
 /**
  *
  * @param reqUser
- * @param levelIdField
- * @param outputToField Leave blank to output to root of object
+ * @param levelField the field that contains the level object
  * @returns
  */
-export function getEnrichLevelsPipelineSteps(reqUser?: User | null, levelIdField = 'levelId._id', outputToField = 'levelId'): PipelineStage[] {
+export function getEnrichLevelsPipelineSteps(reqUser?: User | null, levelField = ''): PipelineStage[] {
   if (!reqUser) {
     return [{ $unset: 'stat' }] as PipelineStage[];
   }
 
-  if (outputToField === '') {
-    outputToField = 'gotoroot';
-  }
-
+  const levelIdField = levelField ? `$${levelField}._id` : '$_id';
   const pipeline: PipelineStage[] = [
     {
       $lookup: {
         from: StatModel.collection.name,
-        let: { levelId: '$' + levelIdField, userId: reqUser?._id },
+        let: { levelId: levelIdField, userId: reqUser?._id },
         pipeline: [
           {
             $match: {
@@ -222,28 +218,23 @@ export function getEnrichLevelsPipelineSteps(reqUser?: User | null, levelIdField
     },
   ];
 
-  if (outputToField === 'gotoroot') {
+  if (levelField === '') {
     pipeline.push({
       $set: {
+        'complete': { $cond: [{ $eq: ['$stat.moves', '$leastMoves'] }, true, false] },
         'userAttempts': '$stat.attempts',
         'userMoves': '$stat.moves',
         'userMovesTs': '$stat.ts',
-        // complete should be 1 if true, 0 if false
-        'complete': { $cond: [{ $eq: ['$stat.moves', '$leastMoves'] }, 1, 0] }
       }
-    }
-    );
-    pipeline.push({
-      $unset: '' + outputToField
     });
   } else {
     pipeline.push({
       $set: {
-        [outputToField]: {
+        [levelField]: {
+          'complete': { $cond: [{ $eq: ['$stat.moves', `$${levelField}.leastMoves`] }, true, false] },
           'userAttempts': '$stat.attempts',
           'userMoves': '$stat.moves',
           'userMovesTs': '$stat.ts',
-          'complete': { $cond: [{ $eq: ['$stat.moves', '$leastMoves'] }, 1, 0] }
         }
       }
     });

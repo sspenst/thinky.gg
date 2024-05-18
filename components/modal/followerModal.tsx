@@ -22,7 +22,7 @@ export default function FollowerModal({ closeModal, followers, isOpen }: Followe
       <div className='flex flex-col gap-2'>
         {followers.map((follower) => (
           <div className='flex justify-between gap-x-4' key={`follower-${follower.source._id}`}>
-            <FormattedUser id='following' size={Dimensions.AvatarSizeSmall} user={follower.source as User} />
+            <FormattedUser id='following' onClick={closeModal} size={Dimensions.AvatarSizeSmall} user={follower.source as User} />
             <FollowButton isFollowing={follower.isFollowing} user={follower.source as User} />
           </div>
         ))}

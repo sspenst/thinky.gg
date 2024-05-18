@@ -16,11 +16,11 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
   const [email, setEmail] = useState<string>('');
   const { mutateUser, setShouldAttemptAuth } = useContext(AppContext);
   const [password, setPassword] = useState<string>('');
-  const [password2, setPassword2] = useState<string>('');
-  const router = useRouter();
-  const [username, setUsername] = useState<string>('');
-  const [recaptchaToken, setRecaptchaToken] = useState<string>('');
   const recaptchaRef = useRef<ReCAPTCHA>(null);
+  const [recaptchaToken, setRecaptchaToken] = useState<string>('');
+  const router = useRouter();
+  const [showRecaptcha, setShowRecaptcha] = useState<boolean>(false);
+  const [username, setUsername] = useState<string>('');
 
   function onRecaptchaChange(value: string | null) {
     if (value) {
@@ -30,13 +30,6 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
 
   function onSubmit(event: React.FormEvent) {
     event.preventDefault();
-
-    if (password !== password2) {
-      toast.dismiss();
-      toast.error('Passwords do not match');
-
-      return;
-    }
 
     if (password.length < 8 || password.length > 50) {
       toast.dismiss();
@@ -55,6 +48,12 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
     if (username.match(/[^-a-zA-Z0-9_]/)) {
       toast.dismiss();
       toast.error('Username can only contain letters, numbers, underscores, and hyphens');
+
+      return;
+    }
+
+    if (!showRecaptcha && recaptchaPublicKey) {
+      setShowRecaptcha(true);
 
       return;
     }
@@ -97,19 +96,14 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
           }
 
           toast.dismiss();
-          toast.success('Registered!');
+          toast.success('Registered! Please confirm your email.');
 
           // clear localstorage value
           window.localStorage.removeItem('tutorialCompletedAt');
           mutateUser();
           setShouldAttemptAuth(true);
           sessionStorage.clear();
-
-          if (tutorialCompletedAt !== '0') {
-            router.push('/play?signedup=true');
-          } else {
-            router.push('/tutorial?signedup=true');
-          }
+          router.push('/confirm-email');
         }
       } else {
         throw res.text();
@@ -142,22 +136,16 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
           </label>
           <input onChange={e => setPassword(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline' id='password' type='password' placeholder='******************' />
         </div>
-        <div>
-          <label className='block text-sm font-bold mb-2' htmlFor='password2'>
-            Re-enter password
-          </label>
-          <input onChange={e => setPassword2(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline' id='password2' type='password' placeholder='******************' />
-        </div>
-        <div className='w-full pt-2'>
-          {recaptchaPublicKey && (
+        {recaptchaPublicKey && showRecaptcha && (
+          <div className='w-full pt-2'>
             <ReCAPTCHA
               size='normal'
               onChange={onRecaptchaChange}
               ref={recaptchaRef}
               sitekey={recaptchaPublicKey ?? ''}
             />
-          )}
-        </div>
+          </div>
+        )}
         <div className='flex items-center justify-between gap-1'>
           <input type='checkbox' id='terms_agree_checkbox' required />
           <label htmlFor='terms_agree_checkbox' className='text-xs p-1'>
@@ -170,7 +158,7 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
             className='inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-400'
             href='/play-as-guest'
           >
-            Sign Up as Guest
+            Play as Guest
           </Link>
         </div>
       </form>

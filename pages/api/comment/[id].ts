@@ -1,3 +1,4 @@
+import AchievementCategory from '@root/constants/achievements/achievementCategory';
 import { GameId } from '@root/constants/GameId';
 import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import isFullAccount from '@root/helpers/isFullAccount';
@@ -12,6 +13,7 @@ import { COMMENT_QUERY_LIMIT } from '../../../models/constants/comment';
 import Comment, { EnrichedComment } from '../../../models/db/comment';
 import User from '../../../models/db/user';
 import { CommentModel, UserModel } from '../../../models/mongoose';
+import { queueRefreshAchievements } from '../internal-jobs/worker';
 
 export interface CommentQuery {
   comments: EnrichedComment[];
@@ -171,7 +173,10 @@ export default withAuth({
     if (targetModel === 'User') {
       // if you aren't commenting on your own profile, notify the target user
       if (target.toString() !== req.user._id.toString()) {
-        await createNewWallPostNotification(req.gameId, NotificationType.NEW_WALL_POST, target, comment.author, target, JSON.stringify(comment));
+        await Promise.all([
+          createNewWallPostNotification(req.gameId, NotificationType.NEW_WALL_POST, target, comment.author, target, JSON.stringify(comment)),
+          queueRefreshAchievements(GameId.THINKY, req.user._id, [AchievementCategory.SOCIAL]),
+        ]);
       }
     } else if (targetModel === 'Comment') {
       const [parentComment, everyoneInThread] = await Promise.all([

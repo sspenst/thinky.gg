@@ -1,4 +1,5 @@
 import { GameId } from '@root/constants/GameId';
+import cleanReview from '@root/lib/cleanReview';
 import cleanUser from '@root/lib/cleanUser';
 import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { PipelineStage, QueryOptions, Types } from 'mongoose';
@@ -10,7 +11,7 @@ import { logger } from './logger';
 
 export async function getReviewsByUserId(gameId: GameId, id: string | string[] | undefined, reqUser: User | null = null, queryOptions: QueryOptions = {}) {
   try {
-    const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPipelineSteps(reqUser);
+    const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPipelineSteps(reqUser, 'levelId');
 
     const levelsByUserAgg = await ReviewModel.aggregate(([
       {
@@ -39,19 +40,20 @@ export async function getReviewsByUserId(gameId: GameId, id: string | string[] |
           localField: 'levelId', //
           foreignField: '_id',
           as: 'levelId',
-          pipeline: [{
-            $project: LEVEL_SEARCH_DEFAULT_PROJECTION,
-          },
+          pipeline: [
+            {
+              $project: LEVEL_SEARCH_DEFAULT_PROJECTION,
+            },
           ],
         },
       },
       {
         $unwind: '$levelId',
       },
-
     ] as PipelineStage[]).concat(lookupPipelineUser));
 
     return levelsByUserAgg.map(review => {
+      cleanReview(review.levelId.complete, reqUser, review);
       cleanUser(review.userId);
 
       return review;

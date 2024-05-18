@@ -70,11 +70,11 @@ export async function getCollection(props: GetCollectionProps): Promise<Collecti
 export async function getCollections({
   includeDraft,
   matchQuery,
-  reqUser,
   populateAroundId,
   populateAroundSlug,
   populateLevelData = true,
   populateLevelDirection,
+  reqUser,
 }: GetCollectionProps): Promise<Collection[]> {
   const populateLevelCount = 5;
   const collectionAgg = await CollectionModel.aggregate<EnrichedCollection>(([
@@ -170,7 +170,7 @@ export async function getCollections({
               })
             },
           },
-          ...getEnrichLevelsPipelineSteps(reqUser, '_id', '') as PipelineStage[],
+          ...getEnrichLevelsPipelineSteps(reqUser) as PipelineStage[],
           {
             $unwind: {
               path: '$stats',
@@ -208,7 +208,13 @@ export async function getCollections({
           $size: '$levels'
         },
         userSolvedCount: {
-          $sum: '$levels.complete'
+          $size: {
+            $filter: {
+              input: '$levels',
+              as: 'level',
+              cond: { $eq: ['$$level.complete', true] }
+            }
+          }
         }
       }
     },

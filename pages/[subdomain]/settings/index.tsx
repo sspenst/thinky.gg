@@ -40,8 +40,14 @@ export default function Settings({ user }: SettingsProps) {
     <Page title='Settings'>
       <div className='mx-4 my-8 gap-8 flex flex-col items-center'>
         <h1 className='font-bold text-3xl text-center'>Settings</h1>
-        <SettingsGeneral user={user} />
-        {!isGuest(user) ? <SettingsAccount user={user} /> : <SettingsAccountGuest />}
+        {isGuest(user) ?
+          <SettingsAccountGuest />
+          :
+          <>
+            <SettingsGeneral user={user} />
+            <SettingsAccount user={user} />
+          </>
+        }
         <SettingsNotifications />
         <SettingsDelete />
       </div>

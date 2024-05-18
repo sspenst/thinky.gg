@@ -1,8 +1,9 @@
-import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
+import AchievementCategory from '@root/constants/achievements/achievementCategory';
 import { GameId } from '@root/constants/GameId';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import isCurator from '@root/helpers/isCurator';
 import isFullAccount from '@root/helpers/isFullAccount';
+import cleanReview from '@root/lib/cleanReview';
 import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
@@ -43,8 +44,11 @@ function generateDiscordWebhook(
     slicedText = slicedText.concat('...');
   }
 
+  // remove spoilers
+  const cleanedText = cleanReview(false, null, { text: slicedText, userId: req.user } as Review);
   // Remove any links from the text. So anything starting with anything:// we should just remove the anything://
-  const contentCleaned = slicedText.replace(/\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*/g, '[link]');
+  const contentCleaned = cleanedText?.replace(/\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*/g, '[link]');
+
   const game = getGameFromId(level.gameId);
   const discordChannel = game.id === GameId.SOKOPATH ? DiscordChannel.SokopathNotifs : DiscordChannel.PathologyNotifs;
   const discordTxt = `${score ? getScoreEmojis(score) + ' - ' : ''}**${req.user?.name}** wrote a review for ${level.userId.name}'s [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}):\n${contentCleaned}`;

@@ -34,7 +34,7 @@ export async function getLevelByUrlPath(gameId: GameId, username: string, slugNa
   await dbConnect();
 
   try {
-    const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPipelineSteps(reqUser, '_id', '');
+    const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPipelineSteps(reqUser);
 
     const levelAgg = await LevelModel.aggregate<Level>(
       [

@@ -65,6 +65,7 @@ export default function Game({
   const mutateCollection = levelContext?.mutateCollection;
   const mutateLevel = levelContext?.mutateLevel;
   const mutateProStatsLevel = levelContext?.mutateProStatsLevel;
+  const mutateReviews = levelContext?.mutateReviews;
 
   const [gameState, setGameState] = useState<GameState>(initGameState(level.data));
 
@@ -160,6 +161,10 @@ export default function Game({
           mutateProStatsLevel();
         }
 
+        if (mutateReviews) {
+          mutateReviews();
+        }
+
         if (onStatsSuccess) {
           onStatsSuccess();
         }
@@ -187,7 +192,7 @@ export default function Game({
     }).finally(() => {
       NProgress.done();
     });
-  }, [disableStats, matchId, mutateCheckpoints, mutateCollection, mutateLevel, mutateProStatsLevel, mutateUser, onStatsSuccess]);
+  }, [disableStats, matchId, mutateCheckpoints, mutateCollection, mutateLevel, mutateProStatsLevel, mutateReviews, mutateUser, onStatsSuccess]);
 
   const saveCheckpoint = useCallback((index: number) => {
     if (index !== BEST_CHECKPOINT_INDEX) {

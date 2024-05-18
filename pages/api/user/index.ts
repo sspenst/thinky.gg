@@ -69,7 +69,7 @@ export default withAuth({
     } = req.body;
 
     if (password) {
-      const user = await UserModel.findById(req.userId, '+password');
+      const user = await UserModel.findById(req.user._id, '+password');
 
       if (!(await bcrypt.compare(currentPassword, user.password))) {
         return res.status(401).json({
@@ -137,7 +137,7 @@ export default withAuth({
     }
 
     try {
-      const newUser = await UserModel.findOneAndUpdate({ _id: req.userId }, { $set: setObj }, { runValidators: true, new: true, projection: { _id: 1, email: 1, name: 1, emailConfirmationToken: 1 } });
+      const newUser = await UserModel.findOneAndUpdate({ _id: req.user._id }, { $set: setObj }, { runValidators: true, new: true, projection: { _id: 1, email: 1, name: 1, emailConfirmationToken: 1 } });
 
       if (setObj['email']) {
         newUser.emailConfirmationToken = getEmailConfirmationToken();
@@ -162,7 +162,7 @@ export default withAuth({
       try {
         await session.withTransaction(async () => {
           const levels = await LevelModel.find({
-            userId: req.userId,
+            userId: req.user._id,
             isDeleted: { $ne: true },
             gameId: req.gameId,
           }, '_id name', { session: session }).lean<Level[]>();
@@ -175,7 +175,7 @@ export default withAuth({
 
           // Do the same for collections
           const collections = await CollectionModel.find({
-            userId: req.userId,
+            userId: req.user._id,
             gameId: req.gameId,
           }, '_id name', { session: session }).lean<Collection[]>();
 
@@ -215,7 +215,7 @@ export default withAuth({
     try {
       await session.withTransaction(async () => {
         const levels = await LevelModel.find<Level>({
-          userId: req.userId,
+          userId: req.user._id,
           isDeleted: { $ne: true },
           isDraft: false,
           gameId: req.gameId,
@@ -227,39 +227,22 @@ export default withAuth({
           // TODO: promise.all this?
           await LevelModel.updateOne({ _id: level._id }, { $set: {
             userId: new Types.ObjectId(TestId.ARCHIVE),
-            archivedBy: req.userId,
+            archivedBy: req.user._id,
             archivedTs: ts,
             slug: slug,
           } }, { session: session });
         }
 
-        await Promise.all([
-          AchievementModel.deleteMany({ userId: req.userId }, { session: session }),
-          CollectionModel.deleteMany({ userId: req.userId }, { session: session }),
-          DeviceModel.deleteMany({ userId: req.userId }, { session: session }),
-          GraphModel.deleteMany({ $or: [{ source: req.userId }, { target: req.userId }] }, { session: session }),
-          // delete in keyvaluemodel where key contains userId
-          KeyValueModel.deleteMany({ key: { $regex: `.*${req.userId}.*` } }, { session: session }),
-          NotificationModel.deleteMany({ $or: [
-            { source: req.userId },
-            { target: req.userId },
-            { userId: req.userId },
-          ] }, { session: session }),
-          UserConfigModel.deleteMany({ userId: req.userId }, { session: session }),
-          UserModel.deleteOne({ _id: req.userId }, { session: session }), // TODO, should make this soft delete...
-        ]);
-
         // delete all comments posted on this user's profile, and all their replies
-        await CommentModel.aggregate([
+        const commentAgg = await CommentModel.aggregate([
           {
-            $match: { $or: [
-              { author: req.userId, deletedAt: null },
-              { target: req.userId, deletedAt: null },
-            ] },
-          },
-          {
-            $set: {
-              deletedAt: deletedAt,
+            $match: {
+              deletedAt: null,
+              targetModel: 'User',
+              $or: [
+                { author: req.user._id },
+                { target: req.user._id },
+              ],
             },
           },
           {
@@ -270,19 +253,49 @@ export default withAuth({
               as: 'children',
               pipeline: [
                 {
-                  $match: {
-                    deletedAt: null,
-                  },
-                },
-                {
-                  $set: {
-                    deletedAt: deletedAt,
+                  $project: {
+                    _id: 1,
                   },
                 },
               ],
             },
           },
+          {
+            $project: {
+              _id: 1,
+              children: 1,
+            },
+          },
         ], { session: session });
+
+        const commentIdsToDelete = [];
+
+        for (const comment of commentAgg) {
+          commentIdsToDelete.push(comment._id);
+
+          for (const child of comment.children) {
+            commentIdsToDelete.push(child._id);
+          }
+        }
+
+        await Promise.all([
+          AchievementModel.deleteMany({ userId: req.user._id }, { session: session }),
+          CollectionModel.deleteMany({ userId: req.user._id }, { session: session }),
+          CommentModel.updateMany({ _id: { $in: commentIdsToDelete } }, { $set: { deletedAt: deletedAt } }, { session: session }),
+          DeviceModel.deleteMany({ userId: req.user._id }, { session: session }),
+          GraphModel.deleteMany({ $or: [{ source: req.user._id }, { target: req.user._id }] }, { session: session }),
+          // delete in keyvaluemodel where key contains userId
+          KeyValueModel.deleteMany({ key: { $regex: `.*${req.user._id}.*` } }, { session: session }),
+          // delete draft levels
+          LevelModel.updateMany({ userId: req.user._id, isDraft: true }, { $set: { isDeleted: true } }, { session: session }),
+          NotificationModel.deleteMany({ $or: [
+            { source: req.user._id },
+            { target: req.user._id },
+            { userId: req.user._id },
+          ] }, { session: session }),
+          UserConfigModel.deleteMany({ userId: req.user._id }, { session: session }),
+          UserModel.deleteOne({ _id: req.user._id }, { session: session }), // TODO, should make this soft delete...
+        ]);
       });
       session.endSession();
     } catch (err) {

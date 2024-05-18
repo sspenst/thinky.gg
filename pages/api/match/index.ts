@@ -1,4 +1,4 @@
-import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
+import AchievementCategory from '@root/constants/achievements/achievementCategory';
 import DiscordChannel from '@root/constants/discordChannel';
 import { GameId } from '@root/constants/GameId';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
@@ -380,7 +380,7 @@ export async function getAllMatches(gameId: GameId, reqUser?: User, matchFilters
   }
 
   matchFilters.gameId = gameId;
-  const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPipelineSteps(reqUser, '_id', '');
+  const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPipelineSteps(reqUser);
 
   const [matches] = await Promise.all([
     MultiplayerMatchModel.aggregate<MultiplayerMatch>([

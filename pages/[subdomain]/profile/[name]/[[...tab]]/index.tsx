@@ -129,8 +129,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     reviewsReceivedCount,
     reviewsWrittenCount,
   ] = await Promise.all([
-    !game.isNotAGame && profileTab === ProfileTab.Achievements ? AchievementModel.find<Achievement>({ userId: userId, gameId: gameId }) : [] as Achievement[],
-    !game.isNotAGame && AchievementModel.countDocuments({ userId: userId, gameId: gameId }),
+    profileTab === ProfileTab.Achievements ? AchievementModel.find<Achievement>({ userId: userId, gameId: gameId }) : [] as Achievement[],
+    AchievementModel.countDocuments({ userId: userId, gameId: gameId }),
     !game.isNotAGame && CollectionModel.countDocuments({
       gameId: gameId,
       userId: userId,
@@ -485,12 +485,25 @@ export default function ProfilePage({
             <div className='flex gap-4 flex-wrap justify-center py-1'>
               <FollowButton
                 isFollowing={reqUserIsFollowing}
+                key={user._id.toString()}
                 user={user}
               />
-              <button onClick={() => setIsFollowerOpen(true)}>
+              <button
+                onClick={() => {
+                  if (followers.length !== 0) {
+                    setIsFollowerOpen(true);
+                  }
+                }}
+              >
                 <span className='font-bold'>{followers.length}</span> follower{followers.length === 1 ? '' : 's'}
               </button>
-              <button onClick={() => setIsFollowingOpen(true)}>
+              <button
+                onClick={() => {
+                  if (following.length !== 0) {
+                    setIsFollowingOpen(true);
+                  }
+                }}
+              >
                 <span className='font-bold'>{following.length}</span> following
               </button>
             </div>
@@ -804,82 +817,88 @@ export default function ProfilePage({
           ]}
 
         />
-        {!game.isNotAGame &&
-          <div className='flex flex-wrap text-sm text-center gap-2 mt-2 justify-center items-center'>
-            <Link
-              className={getTabClassNames(ProfileTab.Profile)}
-              href={`/profile/${user.name}`}
-            >
-              <div className='flex flex-row items-center gap-2'>
-                <ProfileAvatar size={24} user={user} />
-                <span>Profile</span>
-              </div>
-            </Link>
-            <Link
-              className={getTabClassNames(ProfileTab.Insights)}
-              href={`/profile/${user.name}/${ProfileTab.Insights}`}
-            >
-              <div className='flex flex-row items-center gap-2'>
-                <Image alt='pro' src='/pro.svg' width='16' height='16' />
-                <span>Insights</span>
-              </div>
-            </Link>
-            <Link
-              className={getTabClassNames(ProfileTab.Achievements)}
-              href={`/profile/${user.name}/${ProfileTab.Achievements}`}
-            >
-              <div className='flex flex-row items-center gap-2'>
-                <span>🏆</span>
-                <span>Achievements ({achievementsCount})</span>
-              </div>
-            </Link>
-            <Link
-              className={getTabClassNames(ProfileTab.Levels)}
-              href={`/profile/${user.name}/${ProfileTab.Levels}`}
-            >
-              <div className='flex flex-row items-center gap-2'>
-                <span>🏗</span>
-                <span>Levels ({levelsCount})</span>
-              </div>
-            </Link>
-            <Link
-              className={getTabClassNames(ProfileTab.Collections)}
-              href={`/profile/${user.name}/${ProfileTab.Collections}`}
-            >
-              <div className='flex flex-row items-center gap-2'>
-                <span>📚</span>
-                <span>Collections ({collectionsCount})</span>
-              </div>
-            </Link>
-            <Link
-              className={getTabClassNames(ProfileTab.Multiplayer)}
-              href={`/profile/${user.name}/${ProfileTab.Multiplayer}`}
-            >
-              <div className='flex flex-row items-center gap-2'>
-                <span>🎮</span>
-                <span>Multiplayer ({multiplayerCount})</span>
-              </div>
-            </Link>
-            <Link
-              className={getTabClassNames(ProfileTab.ReviewsWritten)}
-              href={`/profile/${user.name}/${ProfileTab.ReviewsWritten}`}
-            >
-              <div className='flex flex-row items-center gap-2'>
-                <span>✍</span>
-                <span>Reviews Written ({reviewsWrittenCount})</span>
-              </div>
-            </Link>
-            <Link
-              className={getTabClassNames(ProfileTab.ReviewsReceived)}
-              href={`/profile/${user.name}/${ProfileTab.ReviewsReceived}`}
-            >
-              <div className='flex flex-row items-center gap-2'>
-                <span>📝</span>
-                <span>Reviews Received ({reviewsReceivedCount})</span>
-              </div>
-            </Link>
-          </div>
-        }
+        <div className='flex flex-wrap text-sm text-center gap-2 mt-2 justify-center items-center'>
+          <Link
+            className={getTabClassNames(ProfileTab.Profile)}
+            href={`/profile/${user.name}`}
+          >
+            <div className='flex flex-row items-center gap-2'>
+              <ProfileAvatar size={24} user={user} />
+              <span>Profile</span>
+            </div>
+          </Link>
+          {!game.isNotAGame &&
+            <>
+              <Link
+                className={getTabClassNames(ProfileTab.Insights)}
+                href={`/profile/${user.name}/${ProfileTab.Insights}`}
+              >
+                <div className='flex flex-row items-center gap-2'>
+                  <Image alt='pro' src='/pro.svg' width='16' height='16' />
+                  <span>Insights</span>
+                </div>
+              </Link>
+            </>
+          }
+          <Link
+            className={getTabClassNames(ProfileTab.Achievements)}
+            href={`/profile/${user.name}/${ProfileTab.Achievements}`}
+          >
+            <div className='flex flex-row items-center gap-2'>
+              <span>🏆</span>
+              <span>Achievements ({achievementsCount})</span>
+            </div>
+          </Link>
+          {!game.isNotAGame &&
+            <>
+              <Link
+                className={getTabClassNames(ProfileTab.Levels)}
+                href={`/profile/${user.name}/${ProfileTab.Levels}`}
+              >
+                <div className='flex flex-row items-center gap-2'>
+                  <span>🏗</span>
+                  <span>Levels ({levelsCount})</span>
+                </div>
+              </Link>
+              <Link
+                className={getTabClassNames(ProfileTab.Collections)}
+                href={`/profile/${user.name}/${ProfileTab.Collections}`}
+              >
+                <div className='flex flex-row items-center gap-2'>
+                  <span>📚</span>
+                  <span>Collections ({collectionsCount})</span>
+                </div>
+              </Link>
+              <Link
+                className={getTabClassNames(ProfileTab.Multiplayer)}
+                href={`/profile/${user.name}/${ProfileTab.Multiplayer}`}
+              >
+                <div className='flex flex-row items-center gap-2'>
+                  <span>🎮</span>
+                  <span>Multiplayer ({multiplayerCount})</span>
+                </div>
+              </Link>
+              <Link
+                className={getTabClassNames(ProfileTab.ReviewsWritten)}
+                href={`/profile/${user.name}/${ProfileTab.ReviewsWritten}`}
+              >
+                <div className='flex flex-row items-center gap-2'>
+                  <span>✍</span>
+                  <span>Reviews Written ({reviewsWrittenCount})</span>
+                </div>
+              </Link>
+              <Link
+                className={getTabClassNames(ProfileTab.ReviewsReceived)}
+                href={`/profile/${user.name}/${ProfileTab.ReviewsReceived}`}
+              >
+                <div className='flex flex-row items-center gap-2'>
+                  <span>📝</span>
+                  <span>Reviews Received ({reviewsReceivedCount})</span>
+                </div>
+              </Link>
+            </>
+          }
+        </div>
         <div className='tab-content'>
           <div className='p-4' id='content' role='tabpanel' aria-labelledby='tabs-home-tabFill'>
             {tabsContent[tab]}

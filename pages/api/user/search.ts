@@ -1,4 +1,3 @@
-import Role from '@root/constants/role';
 import User from '@root/models/db/user';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidType } from '../../../helpers/apiWrapper';
@@ -22,9 +21,6 @@ export default apiWrapper({ GET: {
       $regex: '^' + cleanedSearch,
       $options: 'i'
     },
-    roles: {
-      $ne: Role.GUEST
-    }
   }, 'id name hideStatus last_visited_at avatarUpdatedAt', { limit: 5, sort: { last_visited_at: -1, name: 1 } }).lean<User[]>();
 
   users.map((user) => cleanUser(user));

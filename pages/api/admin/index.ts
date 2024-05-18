@@ -1,4 +1,4 @@
-import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
+import AchievementCategory from '@root/constants/achievements/achievementCategory';
 import AdminCommand from '@root/constants/adminCommand';
 import NotificationType from '@root/constants/notificationType';
 import Role from '@root/constants/role';

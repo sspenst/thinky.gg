@@ -1,6 +1,6 @@
 // ts-node -r tsconfig-paths/register --files server/scripts/delete-user.ts
 
-import { AchievementCategory } from '@root/constants/achievements/achievementInfo';
+import AchievementCategory from '@root/constants/achievements/achievementCategory';
 import { GameId } from '@root/constants/GameId';
 import { clearNotifications } from '@root/helpers/notificationHelper';
 import { requestBroadcastMatch } from '@root/lib/appSocketToClient';
@@ -153,43 +153,55 @@ async function deleteUser(userName: string) {
 
   await deleteReviews(user);
 
+  // delete all comments posted on this user's profile, and all their replies
+  const commentAgg = await CommentModel.aggregate([
+    {
+      $match: {
+        deletedAt: null,
+        targetModel: 'User',
+        $or: [
+          { author: user._id },
+          { target: user._id },
+        ],
+      },
+    },
+    {
+      $lookup: {
+        from: CommentModel.collection.name,
+        localField: '_id',
+        foreignField: 'target',
+        as: 'children',
+        pipeline: [
+          {
+            $project: {
+              _id: 1,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        children: 1,
+      },
+    },
+  ]);
+
+  const commentIdsToDelete = [];
+
+  for (const comment of commentAgg) {
+    commentIdsToDelete.push(comment._id);
+
+    for (const child of comment.children) {
+      commentIdsToDelete.push(child._id);
+    }
+  }
+
   await Promise.all([
     AchievementModel.deleteMany({ userId: user._id }),
     CollectionModel.deleteMany({ userId: user._id }),
-    // delete all comments posted on this user's profile, and all their replies
-    CommentModel.aggregate([
-      {
-        $match: { $or: [
-          { author: user._id, deletedAt: null },
-          { target: user._id, deletedAt: null },
-        ] },
-      },
-      {
-        $set: {
-          deletedAt: deletedAt,
-        },
-      },
-      {
-        $lookup: {
-          from: CommentModel.collection.name,
-          localField: '_id',
-          foreignField: 'target',
-          as: 'children',
-          pipeline: [
-            {
-              $match: {
-                deletedAt: null,
-              },
-            },
-            {
-              $set: {
-                deletedAt: deletedAt,
-              },
-            },
-          ],
-        },
-      },
-    ]),
+    CommentModel.updateMany({ _id: { $in: commentIdsToDelete } }, { $set: { deletedAt: deletedAt } }),
     GraphModel.deleteMany({ $or: [{ source: user._id }, { target: user._id }] }),
     // delete in keyvaluemodel where key contains userId
     KeyValueModel.deleteMany({ key: { $regex: `.*${user._id}.*` } }),

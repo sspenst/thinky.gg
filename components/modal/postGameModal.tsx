@@ -1,18 +1,14 @@
-import DidYouKnowTip from '@root/components/page/didYouKnowTip';
-import { GameType } from '@root/constants/Games';
-import { AppContext } from '@root/contexts/appContext';
+import isGuest from '@root/helpers/isGuest';
 import useHomePageData, { HomepageDataType } from '@root/hooks/useHomePageData';
 import Collection from '@root/models/db/collection';
 import Level, { EnrichedLevel } from '@root/models/db/level';
 import User from '@root/models/db/user';
 import Link from 'next/link';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Card from '../cards/card';
 import ChapterSelectCard from '../cards/chapterSelectCard';
 import LevelCardWithTitle from '../cards/levelCardWithTitle';
-import { getDifficultyFromEstimate } from '../formatted/formattedDifficulty';
 import FormattedLevelReviews from '../level/reviews/formattedLevelReviews';
-import ShareBar from '../social/shareBar';
 import Modal from '.';
 
 interface PostGameModalProps {
@@ -41,7 +37,6 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
   }
 
   const { data } = useHomePageData([HomepageDataType.RecommendedLevel], !isOpen || nextLevel !== undefined);
-  const { game } = useContext(AppContext);
 
   const [queryParams, setQueryParams] = useState<URLSearchParams>();
   const [recommendedLevel, setRecommendedLevel] = useState<EnrichedLevel>();
@@ -61,10 +56,6 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
   useEffect(() => {
     setQueryParams(new URLSearchParams(window.location.search));
   }, []);
-
-  const url = `${game.baseUrl}/level/${level.slug}`;
-  const difficultyEstimate = game.type === GameType.COMPLETE_AND_SHORTEST ? level.calc_difficulty_completion_estimate : level.calc_difficulty_estimate;
-  const quote = 'Just completed ' + game.displayName + ' puzzle "' + level.name + '" (Difficulty: ' + getDifficultyFromEstimate(difficultyEstimate).name + ')';
 
   function nextActionCard() {
     if (nextLevel) {
@@ -102,35 +93,54 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
       closeModal={closeModal}
       isOpen={isOpen}
       title={
-        <div className='flex flex-col gap-1'>
-          <h3 className='text-center text-2xl p-1'>
-            Congratulations!
-          </h3>
-          <h4>
-            You completed {level.name}!
-          </h4>
-          <ShareBar url={url} quote={quote} />
+        <div
+          className='fadeIn'
+          style={{
+            animationDelay: '0.2s',
+          }}
+        >
+          Congratulations!
         </div>
       }
     >
-      <div className='flex flex-col gap-2 justify-center items-center'>
+      <div
+        className='flex flex-col gap-4 justify-center items-center fadeIn'
+        style={{
+          animationDelay: '0.6s',
+        }}
+      >
         {!reqUser ?
           <div className='text-center'>
             <Link href='/signup' className='underline font-bold'>Sign up</Link> (or use a <Link href='/play-as-guest' className='underline font-bold'>Guest Account</Link>) to save your progress and get access to more features.
           </div>
           :
           <>
-            <FormattedLevelReviews hideReviews={true} inModal={true} />
             {lastLevelInCollection && collection &&
               <div>
                 {level.name} is the last level in <Link className='font-bold hover:underline' href={`/collection/${collection.slug}`}>{collection.name}</Link>.
               </div>
             }
             {nextActionCard()}
+            {isGuest(reqUser) ?
+              <div className='text-center text-sm'>
+                <div className='flex flex-col gap-2'>
+                  <span className='text-2xl italic font-semibold'>By the way...</span><span className='text-xs'>You are playing as a <span className='font-bold italic'>guest</span> and missing out on a ton of features. <Link href='/settings' className='hover:underline font-bold text-blue-300'>Convert to a regular account</Link> (it&apos;s free and only takes a few seconds!)</span>
+                </div>
+              </div>
+              :
+              <details>
+                <summary onClick={(e: React.MouseEvent) => {
+                  // make this element invisible
+                  (e.target as HTMLElement).style.display = 'none';
+                }} className='text-xs cursor-pointer italic py-1'>Share your thoughts on {level.name}</summary>
+                <FormattedLevelReviews hideReviews={true} inModal={true} />
+              </details>
+            }
           </>
         }
-        <div className='flex items-center gap-1'>
+        <div className='flex gap-2'>
           <input
+            id='dont-show-post-game-modal'
             type='checkbox'
             checked={dontShowPostGameModal}
             onChange={(e) => {
@@ -146,9 +156,8 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
               }
             }}
           />
-          <label>Don&apos;t show this popup for 24h</label>
+          <label className='text-xs' htmlFor='dont-show-post-game-modal'>Mute this popup for 24h</label>
         </div>
-        <DidYouKnowTip reqUser={reqUser} />
       </div>
     </Modal>
   );

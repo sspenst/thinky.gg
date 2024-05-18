@@ -54,6 +54,7 @@ interface Level {
 export interface EnrichedLevel extends Level {
   calc_playattempts_unique_users_count?: number;
   calc_playattempts_unique_users_count_excluding_author?: number;
+  complete?: number;
   userAttempts?: number;
   userMoves?: number;
   userMovesTs?: number;

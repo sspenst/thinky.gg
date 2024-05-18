@@ -89,7 +89,7 @@ export default function ReviewDropdown({ inModal, onEditClick, userId }: ReviewD
     <DeleteReviewModal
       closeModal={() => {
         setIsDeleteReviewOpen(false);
-        levelContext?.getReviews();
+        levelContext?.mutateReviews();
 
         if (!inModal) {
           setPreventKeyDownEvent(false);

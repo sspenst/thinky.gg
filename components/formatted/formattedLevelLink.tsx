@@ -12,14 +12,14 @@ import Solved from '../level/info/solved';
 import StyledTooltip from '../page/styledTooltip';
 
 interface EnrichedLevelLinkProps {
+  gameId?: GameId;
   // NB: this id should not contain the level id
   id: string;
-  gameId?: GameId;
   level: EnrichedLevel;
   onClick?: () => void;
 }
 
-export default function FormattedLevelLink({ id, gameId, level, onClick }: EnrichedLevelLinkProps) {
+export default function FormattedLevelLink({ gameId, id, level, onClick }: EnrichedLevelLinkProps) {
   const { game } = useContext(AppContext);
   const getUrl = useUrl();
   const href = getUrl(gameId || game.id, `/level/${level.slug}`);
@@ -44,7 +44,7 @@ export default function FormattedLevelLink({ id, gameId, level, onClick }: Enric
       passHref
       prefetch={false}
       style={{
-        color: getLevelCompleteColor(level, gameId),
+        color: getLevelCompleteColor(level, game.id),
         // to handle zero width level names
         minWidth: 10,
       }}

@@ -435,18 +435,25 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
       />
       {isEU && (
         <CookieConsent
-          buttonStyle={{ color: '#000000', backgroundColor: '#FFFFFF', fontSize: '13px', borderRadius: '2px' }}
-          buttonText='Got it'
+          buttonStyle={{ borderRadius: '6px', color: 'white', background: '#4CAF50' }}
+          buttonText='I understand'
+          buttonClasses='px-2 py-2 rounded-md shadow-md font-semibold bg-green-700'
           cookieName='cookie_consent'
+          contentStyle={{ margin: '0px', flex: '1', padding: '8px' }}
+
           location='bottom'
-          style={{ background: '#2B373B', alignItems: 'center' }}
-          expires={360}
+          style={{ background: '#2B373B',
+            height: '60px',
+            display: 'flex',
+            alignItems: 'center',
+          }}
         >
-          Our website uses cookies to improve your browsing experience. By continuing to use this site, you consent to our use of cookies.
-          <br />
-          <span style={{ fontSize: '10px' }}>
-            Learn more in our <a className='hover:underline text-blue-300' href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub' rel='noreferrer' target='_blank'>privacy policy</a>.
-          </span>
+          <div className='flex items-center gap-2'>
+            <div className='text-xs'>
+          We use cookies to improve your browsing experience.
+            View our <a className='hover:underline text-blue-300' href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub' rel='noreferrer' target='_blank'>privacy policy</a>.
+            </div>
+          </div>
         </CookieConsent>
       )}
       <AppContext.Provider value={{

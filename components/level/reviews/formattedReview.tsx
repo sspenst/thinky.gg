@@ -14,6 +14,7 @@ import { FolderDivider } from '../../header/directory';
 import StyledTooltip from '../../page/styledTooltip';
 import Solved from '../info/solved';
 import ReviewDropdown from './reviewDropdown';
+import { SpoilerText } from './spoilerText';
 
 dayjs.extend(relativeTime);
 
@@ -124,7 +125,7 @@ export default function FormattedReview({ hideBorder, inModal, level, onEditClic
             <StyledTooltip id={`review-stat-${user?._id?.toString() ?? 'deleted'}`} />
           </>}
         </span>
-        <span className='whitespace-pre-wrap'>{review.text}</span>
+        <SpoilerText id={review._id.toString()} text={review.text} />
       </div>
     </div>
   );

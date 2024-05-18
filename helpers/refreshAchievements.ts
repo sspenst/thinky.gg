@@ -1,4 +1,5 @@
-import { AchievementCategory, AchievementCategoryMapping } from '@root/constants/achievements/achievementInfo';
+import AchievementCategory from '@root/constants/achievements/achievementCategory';
+import { AchievementCategoryMapping } from '@root/constants/achievements/achievementInfo';
 import AchievementType from '@root/constants/achievements/achievementType';
 import DiscordChannel from '@root/constants/discordChannel';
 import { GameId } from '@root/constants/GameId';
@@ -7,26 +8,55 @@ import { getSolvesByDifficultyTable } from '@root/helpers/getSolvesByDifficultyT
 import { createNewAchievement } from '@root/helpers/notificationHelper';
 import { getDifficultyRollingSum } from '@root/helpers/playerRankHelper';
 import Achievement from '@root/models/db/achievement';
+import Comment from '@root/models/db/comment';
 import Level from '@root/models/db/level';
 import MultiplayerMatch from '@root/models/db/multiplayerMatch';
 import MultiplayerProfile from '@root/models/db/multiplayerProfile';
-import Review from '@root/models/db/review';
 import User from '@root/models/db/user';
-import { AchievementModel, LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, ReviewModel, UserConfigModel, UserModel } from '@root/models/mongoose';
+import { AchievementModel, CommentModel, LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, ReviewModel, UserConfigModel, UserModel } from '@root/models/mongoose';
 import { Types } from 'mongoose';
 import queueDiscordWebhook from './discordWebhook';
 import { getRecordsByUserId } from './getRecordsByUserId';
 
 const AchievementCategoryFetch = {
+  // no game ID as this is a global
+  [AchievementCategory.SOCIAL]: async (_gameId: GameId, userId: Types.ObjectId) => {
+    const [commentCount, welcomeComments] = await Promise.all([
+      CommentModel.countDocuments({
+        author: userId,
+        deletedAt: null,
+        target: { $ne: userId }
+      }),
+      CommentModel.find({
+        author: userId,
+        deletedAt: null,
+        target: { $ne: userId },
+        text: { $regex: /welcome/i },
+      }).populate('target').lean<Comment[]>()
+    ]);
+
+    const hasWelcomed = welcomeComments.some((comment) => {
+      const user = comment.target as unknown as User;
+
+      if (!user?.ts) {
+        return false;
+      }
+
+      // if the comment was made in the first 24 hrs since account creation
+      return comment.createdAt.getTime() - 1000 * user.ts < 24 * 60 * 60 * 1000;
+    });
+
+    return { commentCount: commentCount, hasWelcomed: hasWelcomed };
+  },
   [AchievementCategory.PROGRESS]: async (gameId: GameId, userId: Types.ObjectId) => {
     const userConfig = await UserConfigModel.findOne({ userId: userId, gameId: gameId }).lean<User>();
 
     return { userConfig: userConfig };
   },
   [AchievementCategory.REVIEWER]: async (gameId: GameId, userId: Types.ObjectId) => {
-    const reviewsCreated = await ReviewModel.find({ userId: userId, isDeleted: { $ne: true }, gameId: gameId }).lean<Review[]>();
+    const reviewsCreatedCount = await ReviewModel.countDocuments({ userId: userId, isDeleted: { $ne: true }, gameId: gameId });
 
-    return { reviewsCreated: reviewsCreated };
+    return { reviewsCreatedCount: reviewsCreatedCount };
   },
   [AchievementCategory.MULTIPLAYER]: async (gameId: GameId, userId: Types.ObjectId) => {
     const [userMatches, multiplayerProfile] = await Promise.all(
@@ -71,8 +101,9 @@ export async function refreshAchievements(gameId: GameId, userId: Types.ObjectId
   // it is more efficient to just grab all their achievements then to loop through and query each one if they have it
   const game = Games[gameId];
   const fetchPromises = [];
+  const adjustedCategories = categories.filter((category) => game.achievementCategories.includes(category));
 
-  for (const category of categories) {
+  for (const category of adjustedCategories) {
     fetchPromises.push(AchievementCategoryFetch[category](gameId, userId));
   }
 
@@ -85,7 +116,7 @@ export async function refreshAchievements(gameId: GameId, userId: Types.ObjectId
   const neededData = neededDataArray.reduce((acc, cur) => ({ ...acc, ...cur }), {});
   let achievementsCreated = 0;
 
-  for (const category of categories) {
+  for (const category of adjustedCategories) {
     const achievementsCreatedPromises = [];
     const categoryRulesTable = AchievementCategoryMapping[category];
 

@@ -31,7 +31,7 @@ export default function Dropdown() {
         <div className='flex flex-col gap-3 justify-center items-center'>
           <span className='text-lg font-bold text-center'>Are you sure you want to log out?</span>
           <span className='text-sm text-center'>Unless you saved the generated password for your Guest account, <span className='font-bold'>you will lose your progress!</span></span>
-          <Link className='text-white font-medium rounded-lg text-sm py-2.5 px-3.5 text-center transition bg-green-600 hover:bg-green-700' href='/settings/account' onClick={() => toast.dismiss()}>Convert to a (free) regular account</Link>
+          <Link className='text-white font-medium rounded-lg text-sm py-2.5 px-3.5 text-center transition bg-green-600 hover:bg-green-700' href='/settings' onClick={() => toast.dismiss()}>Convert to a (free) regular account</Link>
           <button className='text-white font-medium rounded-lg text-sm py-2.5 px-3.5 text-center transition bg-red-600 hover:bg-red-700' onClick={logOut}>Proceed with logging out</button>
         </div>
         <DismissToast />
