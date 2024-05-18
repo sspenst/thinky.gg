@@ -22,7 +22,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 /* istanbul ignore next */
-export default function SignUp({ recaptchaPublicKey }: {recaptchaPublicKey?: string}) {
+export default function SignUp() {
   return (
     <Page title={'Sign Up'}>
       <>
