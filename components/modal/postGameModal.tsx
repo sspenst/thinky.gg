@@ -4,6 +4,7 @@ import Collection from '@root/models/db/collection';
 import Level, { EnrichedLevel } from '@root/models/db/level';
 import User from '@root/models/db/user';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import Card from '../cards/card';
 import ChapterSelectCard from '../cards/chapterSelectCard';
@@ -56,12 +57,13 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
   useEffect(() => {
     setQueryParams(new URLSearchParams(window.location.search));
   }, []);
+  const nextLevelUrl = nextLevel ? `/level/${nextLevel.slug}${queryParams?.toString().length ?? 0 !== 0 ? `?${queryParams}` : ''}` : '';
 
   function nextActionCard() {
     if (nextLevel) {
       return (
         <LevelCardWithTitle
-          href={`/level/${nextLevel.slug}${queryParams?.toString().length ?? 0 !== 0 ? `?${queryParams}` : ''}`}
+          href={nextLevelUrl}
           id='next-level'
           level={nextLevel}
           onClick={closeModal}
@@ -88,8 +90,19 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
     );
   }
 
+  const router = useRouter();
+  const onNextLevelClick = () => {
+    router.push(nextLevelUrl);
+
+    closeModal();
+  };
+
   return (
     <Modal
+
+      onSubmit={nextLevel && onNextLevelClick}
+      submitLabel='Next Level'
+      submitBtnClass={'bg-blue-500'}
       closeModal={closeModal}
       isOpen={isOpen}
       title={
@@ -132,7 +145,7 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
                 <summary onClick={(e: React.MouseEvent) => {
                   // make this element invisible
                   (e.target as HTMLElement).style.display = 'none';
-                }} className='text-xs cursor-pointer italic py-1'>Share your thoughts on {level.name}</summary>
+                }} className='text-xs cursor-pointer italic py-1 hover:text-blue-300'>Share your thoughts on {level.name}</summary>
                 <FormattedLevelReviews hideReviews={true} inModal={true} />
               </details>
             }
