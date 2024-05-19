@@ -67,7 +67,7 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
           id='next-level'
           level={nextLevel}
           onClick={closeModal}
-          title='Next Level'
+          title={'The next level is \'' + nextLevel.name + '\'...'}
         />
       );
     }
@@ -107,7 +107,7 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
       isOpen={isOpen}
       title={
         <div
-          className='fadeIn'
+          className='fadeIn text-yellow-300 text-3xl font-bold italic'
           style={{
             animationDelay: '0.2s',
           }}
@@ -145,7 +145,7 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
                 <summary onClick={(e: React.MouseEvent) => {
                   // make this element invisible
                   (e.target as HTMLElement).style.display = 'none';
-                }} className='text-xs cursor-pointer italic py-1 hover:text-blue-300'>Share thoughts on the level you just beat</summary>
+                }} className='text-xs cursor-pointer italic py-1 hover:text-blue-300'>Share thoughts on the level you just won.</summary>
                 <FormattedLevelReviews hideReviews={true} inModal={true} />
               </details>
             }
