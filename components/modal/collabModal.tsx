@@ -25,66 +25,6 @@ export default function CollabModal({ closeModal, isOpen, level }: CollabModalPr
     setName(level.name);
   }, [level]);
 
-  function onSubmit() {
-    if (!name || name.length === 0) {
-      toast.dismiss();
-      toast.error('Error: Name is required', {
-        duration: 3000
-      });
-
-      return;
-    }
-
-    if (name.length > 50) {
-      toast.dismiss();
-      toast.error('Error: Name cannot be longer than 50 characters', {
-        duration: 3000,
-      });
-
-      return;
-    }
-
-    setIsSubmitting(true);
-    toast.dismiss();
-    toast.loading('Updating level...');
-
-    fetch(`/api/level/${level._id}`, {
-      method: 'PUT',
-      body: JSON.stringify({
-        authorNote: authorNote,
-        name: name,
-      }),
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    }).then(async res => {
-      if (res.status === 200) {
-        toast.dismiss();
-        toast.success('Updated');
-        closeModal();
-
-        const newLevel = await res.json();
-
-        if (newLevel) {
-          if (!newLevel.isDraft) {
-            router.replace(`/level/${newLevel.slug}`);
-          } else {
-            router.reload();
-          }
-        }
-      } else {
-        throw res.text();
-      }
-    }).catch(async err => {
-      console.error(err);
-      toast.dismiss();
-      toast.error(JSON.parse(await err)?.error);
-    }).finally(() => {
-      setIsSubmitting(false);
-    });
-  }
-
   return (
     <Modal
       closeModal={closeModal}
