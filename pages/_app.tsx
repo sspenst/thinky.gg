@@ -472,7 +472,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
           </Portal>
           <MusicContextProvider>
             <Component {...pageProps} />
-            {!isEU && (
+            {isEU && (
               <CookieConsent
                 buttonStyle={{ borderRadius: '6px', color: 'white', background: '#4CAF50' }}
                 buttonText='I understand'
