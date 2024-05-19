@@ -265,7 +265,7 @@ export default function TutorialPathology() {
       {
         gameGrid: true,
         header: <div className='flex flex-row gap-2 items-center fadeIn'>
-          <div><DemoSwipe /></div>
+          { deviceInfo.isMobile && <div><DemoSwipe /></div> }
           <div key='tutorial-player-intro-header' className='text-2xl'>Try moving around using the arrow keys (or swipe with mobile).</div>
         </div>,
 
