@@ -5,16 +5,21 @@ import classNames from 'classnames';
 import React, { Fragment, useContext } from 'react';
 
 interface ModalButtonProps {
+  className?: string;
   disabled?: boolean;
   onClick: (event?: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
   text: string;
   type?: 'submit' | 'button';
 }
 
-function ModalButton({ disabled, onClick, text, type }: ModalButtonProps) {
+function ModalButton({ className, disabled, onClick, text, type }: ModalButtonProps) {
+  if (!className) {
+    className = 'bg-button';
+  }
+
   return (
     <button
-      className={classNames('inline-flex justify-center px-4 py-2 text-sm font-medium border border-transparent rounded-md bg-button')}
+      className={classNames('inline-flex justify-center px-4 py-2 text-sm font-medium border border-transparent rounded-md', className)}
       disabled={disabled}
       onClick={onClick}
       type={type || 'button'}
@@ -31,6 +36,8 @@ interface ModalProps {
   isOpen: boolean;
   onConfirm?: () => void;
   onSubmit?: () => void;
+  submitBtnClass?: string;
+  submitLabel?: string;
   title: React.ReactNode;
 }
 
@@ -41,6 +48,8 @@ export default function Modal({
   isOpen,
   onConfirm,
   onSubmit,
+  submitBtnClass,
+  submitLabel,
   title,
 }: ModalProps) {
   const { game } = useContext(AppContext);
@@ -109,7 +118,7 @@ export default function Modal({
                     </>
                     : onSubmit ?
                       <>
-                        <ModalButton disabled={disabled} onClick={() => {}} text='Submit' type='submit' />
+                        <ModalButton className={submitBtnClass} disabled={disabled} onClick={() => {}} text={submitLabel || 'Submit'} type='submit' />
                         <ModalButton disabled={disabled} onClick={(e) => {
                           e?.preventDefault();
                           closeModal();
