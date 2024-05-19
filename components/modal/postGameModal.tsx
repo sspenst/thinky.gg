@@ -102,7 +102,7 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
 
       onSubmit={nextLevel && onNextLevelClick}
       submitLabel='Next Level'
-      submitBtnClass={'bg-blue-500'}
+      submitBtnClass={'bg-blue-500 hover:bg-blue-700'}
       closeModal={closeModal}
       isOpen={isOpen}
       title={
@@ -112,7 +112,7 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
             animationDelay: '0.2s',
           }}
         >
-          Congratulations!
+          You win!
         </div>
       }
     >
@@ -145,7 +145,7 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
                 <summary onClick={(e: React.MouseEvent) => {
                   // make this element invisible
                   (e.target as HTMLElement).style.display = 'none';
-                }} className='text-xs cursor-pointer italic py-1 hover:text-blue-300'>Share your thoughts on {level.name}</summary>
+                }} className='text-xs cursor-pointer italic py-1 hover:text-blue-300'>Share thoughts on the level you just beat</summary>
                 <FormattedLevelReviews hideReviews={true} inModal={true} />
               </details>
             }
