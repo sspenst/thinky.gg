@@ -21,6 +21,7 @@ import Controls from '../level/controls';
 import Game from '../level/game';
 import Page from '../page/page';
 import DismissToast from '../toasts/dismissToast';
+import DemoSwipe from './demoSwipe';
 
 interface Tooltip {
   canClose?: boolean;
@@ -263,11 +264,26 @@ export default function TutorialPathology() {
       },
       {
         gameGrid: true,
-        header: <div key='tutorial-player-intro-header' className='text-2xl'>Try moving around using the arrow keys (or swipe with mobile).</div>,
+        header: <div className='flex flex-row gap-2 items-center fadeIn'>
+          <div><DemoSwipe /></div>
+          <div key='tutorial-player-intro-header' className='text-2xl'>Try moving around using the arrow keys (or swipe with mobile).</div>
+        </div>,
+
         isNextButtonDisabled: true,
         key: 'tutorial-player-intro',
         level: getLevel(GRID_WITH_PLAYER),
-        onMove: () => setIsNextButtonDisabled(false),
+        onMove: () => {
+          // set tooltip text to Good!
+          const tooltipEl = document.getElementById('tooltip');
+
+          if (tooltipEl) {
+            tooltipEl.innerHTML = 'Good!';
+            // add fade out class
+            tooltipEl.classList.add('fadeOut');
+          }
+
+          setIsNextButtonDisabled(false);
+        },
         tooltip: { canClose: true, target: '#player', title: <div className='flex'>
           {
             /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(typeof window !== 'undefined' ? navigator.userAgent : '') === false ? (
@@ -398,7 +414,9 @@ export default function TutorialPathology() {
                 />
               </svg>
             ) : (
-              <div>Swipe up, down, left, or right to move your player</div>
+              <div className='flex flex-col gap-2'>
+                <div className='text-center'>Swipe up, down, left, or right to move your player</div>
+              </div>
             )}
         </div>
         },
