@@ -68,8 +68,8 @@ export default function Chapter2Page({ enrichedCollections, reqUser, solvedLevel
         nextHref={'/chapter3'}
         nextTitle={(reqUser.config?.chapterUnlocked ?? 1) < 3 ? 'Unlock Chapter 3' : undefined}
         solvedElement={
-          <div className='flex flex-col items-center justify-center text-center mt-2'>
-            <div>Congratulations! You&apos;ve solved every level in Chapter 2. Try out <Link className='font-bold underline' href='/chapter3' passHref>Chapter 3</Link> next!</div>
+          <div className='flex flex-col items-center justify-center text-center mt-2 bg-gray-700 p-3 m-3 rounded-lg'>
+            <div className='text-xl'>Congratulations!<br /><br />You&apos;ve solved every level in Chapter 2.<br /><br />Try out <Link className='font-bold underline text-green-500' href='/chapter3' passHref>Chapter 3</Link> next!</div>
           </div>
         }
         solvedLevels={solvedLevels}

@@ -97,8 +97,8 @@ export default function Chapter3Page({ enrichedCollections, reqUser, solvedLevel
         hideUnlockRequirements={true}
         levelHrefQuery={'chapter=3'}
         solvedElement={
-          <div className='flex flex-col items-center justify-center text-center mt-2'>
-            <div>Congratulations! You&apos;ve solved every level in Chapter 3.</div>
+          <div className='flex flex-col items-center justify-center text-center mt-2 bg-gray-700 p-3 m-3 rounded-lg'>
+            <div className='text-xl'>Congratulations!<br /><br />You&apos;ve solved every level in Chapter 3.<br /><br /></div>
             <div>If you&apos;re looking for more levels, try {game.disableRanked ?
               <>browsing the <Link className='font-bold text-blue-500 hover:text-blue-400 transition' href='/search' passHref>Search</Link> page</> :
               <>playing <Link className='font-bold text-blue-500 hover:text-blue-400 transition' href='/ranked' passHref>Ranked 🏅</Link> levels</>

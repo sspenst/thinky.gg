@@ -97,11 +97,24 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
     closeModal();
   };
 
+  let nextCTA = nextLevel && onNextLevelClick;
+  let nextLabel = 'Next Level';
+
+  if (!nextCTA && chapter && !isNaN(Number(chapter))) {
+    nextCTA = () => {
+      router.push(`/chapter${chapter}`);
+
+      closeModal();
+    };
+
+    nextLabel = 'Back to Chapter ' + chapter;
+  }
+
   return (
     <Modal
 
-      onSubmit={nextLevel && onNextLevelClick}
-      submitLabel='Next Level'
+      onSubmit={nextCTA}
+      submitLabel={nextLabel}
       submitBtnClass={'bg-blue-500 hover:bg-blue-700'}
       closeModal={closeModal}
       closeLabel='Close'
@@ -130,8 +143,8 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
           :
           <>
             {lastLevelInCollection && collection &&
-              <div>
-                {level.name} is the last level in <Link className='font-bold hover:underline' href={`/collection/${collection.slug}`}>{collection.name}</Link>.
+              <div className='text-center'>
+                {level.name} is the last level in the collection <Link className='font-bold hover:underline' href={`/collection/${collection.slug}`}>{collection.name}</Link>.
               </div>
             }
             {nextActionCard()}
