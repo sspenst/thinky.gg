@@ -660,17 +660,21 @@ export default function TutorialPathology() {
 
       if (nextId) {
         nextId.classList.add('bg-orange-300');
-        nextId.classList.add('bounce');
+        nextId.classList.add('animate-bounce');
         setTimeout(() => {
+          const nextId = document.getElementById('control-next') as HTMLButtonElement;
+
           if (!isNextButtonDisabled && !nextId.classList.contains('pointer-events-none')) {
             nextId.classList.remove('invisible');
+            nextId.classList.add('bg-orange-300');
+            nextId.classList.add('animate-bounce');
             // have nextId delay animation by 1s
             nextId.style.animationDelay = '2s';
           } else {
             // remove
             nextId.classList.add('invisible');
           }
-        }, 1);
+        }, 30);
       }
     }, 30);
   }, [isNextButtonDisabled, tutorialStep.gameGrid, tutorialStep.isNextButtonDisabled, tutorialStepIndex, tutorialStepIndexMax]);
