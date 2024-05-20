@@ -104,6 +104,7 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
       submitLabel='Next Level'
       submitBtnClass={'bg-blue-500 hover:bg-blue-700'}
       closeModal={closeModal}
+      closeLabel='Close'
       isOpen={isOpen}
       title={
         <div
