@@ -112,7 +112,7 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
             animationDelay: '0.2s',
           }}
         >
-          You win!
+          Success!
         </div>
       }
     >
