@@ -31,6 +31,7 @@ function ModalButton({ className, disabled, onClick, text, type }: ModalButtonPr
 
 interface ModalProps {
   children: React.ReactNode;
+  closeLabel?: string;
   closeModal: () => void;
   disabled?: boolean;
   isOpen: boolean;
@@ -44,6 +45,7 @@ interface ModalProps {
 export default function Modal({
   children,
   closeModal,
+  closeLabel,
   disabled,
   isOpen,
   onConfirm,
@@ -114,7 +116,7 @@ export default function Modal({
                   {onConfirm ?
                     <>
                       <ModalButton disabled={disabled} onClick={() => {}} text='OK' type='submit' />
-                      <ModalButton disabled={disabled} onClick={closeModal} text='Cancel' />
+                      <ModalButton disabled={disabled} onClick={closeModal} text={closeLabel || 'Cancel'} />
                     </>
                     : onSubmit ?
                       <>
@@ -122,13 +124,13 @@ export default function Modal({
                         <ModalButton disabled={disabled} onClick={(e) => {
                           e?.preventDefault();
                           closeModal();
-                        }} text={'Cancel'} />
+                        }} text={closeLabel || 'Cancel'} />
                       </>
                       :
                       <ModalButton disabled={disabled} onClick={(e) => {
                         e?.preventDefault();
                         closeModal();
-                      }} text={'Close'} />
+                      }} text={closeLabel || 'Close'} />
                   }
                 </div>
               </Dialog.Panel>
