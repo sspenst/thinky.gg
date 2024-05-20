@@ -574,7 +574,7 @@ export default function TutorialPathology() {
         </div>,
       },
     ] as TutorialStep[];
-  }, [isLoggedIn, niceJob]);
+  }, [deviceInfo.isMobile, isLoggedIn, niceJob]);
 
   const skipControl = useCallback(() => new Control(
     'control-skip',
@@ -668,13 +668,11 @@ export default function TutorialPathology() {
             nextId.style.animationDelay = '3s';
           } else {
             // remove
-            nextId.classList.remove('bg-orange-300');
-            nextId.classList.remove('bounce');
             nextId.classList.add('invisible');
           }
-        }, 1);
+        }, 3);
       }
-    }, 1);
+    }, 3);
   }, [isNextButtonDisabled, tutorialStep.gameGrid, tutorialStep.isNextButtonDisabled, tutorialStepIndex, tutorialStepIndexMax]);
 
   const controls: Control[] = [];
