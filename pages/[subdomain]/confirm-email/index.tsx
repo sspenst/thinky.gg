@@ -58,10 +58,10 @@ export default function ConfirmPage() {
           We have sent you an email to <span className='font-bold'>confirm your email address</span>.<br />Check your inbox <span className='font-bold'>{user?.email}</span> and click the link to confirm and you will be all set!
         </p>
         <p className='text-lg mt-8'>
-            Haven&apos;t received the email? <br />Check your spam folder or <Link href={'/settings'} className='underline font-bold'>click here to resend</Link> (or update your email).
+          Haven&apos;t received the email? <br />Check your spam folder or <Link href={'/settings'} className='underline font-bold'>click here to resend</Link> (or update your email).
         </p>
         <p className='text-lg mt-8'>
-            Once you have confirmed your email, you will be redirected automatically.
+          Once you have confirmed your email, you will be redirected automatically.
         </p>
       </div>
     </Page>

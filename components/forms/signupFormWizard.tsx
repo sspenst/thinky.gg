@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useRef, useState } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
 import toast from 'react-hot-toast';
 import StepWizard, { StepWizardProps } from 'react-step-wizard';
@@ -24,13 +24,6 @@ export default function SignupFormWizard() {
     if (password.length < 8 || password.length > 50) {
       toast.dismiss();
       toast.error('Password must be between 8 and 50 characters');
-
-      return;
-    }
-
-    if (username.match(/[^-a-zA-Z0-9_]/)) {
-      toast.dismiss();
-      toast.error('Username can only contain letters, numbers, underscores, and hyphens');
 
       return;
     }
@@ -93,19 +86,15 @@ export default function SignupFormWizard() {
 
   const [isValidUsername, setIsValidUsername] = useState<boolean>(true);
   const [wizard, setWizard] = useState<StepWizardProps>();
-  const isLoadingExistsCheck = useRef<boolean>(false);
-  // let's check if username exists already when user types
+  const [usernameExists, setUsernameExists] = useState<boolean>(false);
+  const [isExistsLoading, setIsExistsLoading] = useState<boolean>(false);
+
   const checkUsername = async (username: string) => {
-    if (username.length < 3 || username.length > 50) {
-      setIsValidUsername(false);
-
-      return;
-    }
-
     const res = await fetch(`/api/user/exists?name=${username}`);
+    const resObj = await res.json();
 
-    isLoadingExistsCheck.current = false;
-    setIsValidUsername(res.status === 404);
+    setIsExistsLoading(false);
+    setUsernameExists(!resObj.exists);
   };
 
   // debounce the checkUsername function
@@ -115,68 +104,72 @@ export default function SignupFormWizard() {
 
   // check if username is valid
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUsername(e.target.value);
-    isLoadingExistsCheck.current = true;
-    debouncedCheckUsername(e.target.value);
+    const newUserName = e.target.value;
+
+    setUsername(newUserName);
+
+    let valid = true;
+
+    if (newUserName.length < 3 || newUserName.length > 50 || newUserName.match(/[^-a-zA-Z0-9_]/)) {
+      valid = false;
+    }
+
+    setIsValidUsername(valid);
+
+    if (!valid) {
+      setIsExistsLoading(false);
+
+      return;
+    }
+
+    setIsExistsLoading(true);
+    debouncedCheckUsername(newUserName);
   };
 
-  useEffect(() => {
-    if (username.length < 3 || username.length > 50) {
-      setIsValidUsername(false);
-
-      return;
-    }
-
-    if (username.match(/[^-a-zA-Z0-9_]/)) {
-      setIsValidUsername(false);
-
-      return;
-    }
-  }, [username]);
-
   return (
-
     <FormTemplate>
       <form className='flex flex-col gap-4' onSubmit={onSubmit}>
-        <StepWizard instance={setWizard}
-
-        >
+        <StepWizard instance={setWizard}>
           <div className='flex flex-col gap-4'>
             <label className='block text-sm font-bold  ' htmlFor='username'>
-            What should we call you?
+              What should we call you?
             </label>
             <input required onChange={e => handleUsernameChange(e)} className='shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline' id='username' type='text' placeholder='Username' />
-            <button type='button' disabled={username.length === 0 || !isValidUsername} onClick={() => (wizard as any)?.nextStep()}
-              className='bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer disabled:opacity-50'>Next</button>
-            { username.length >= 3 && (
+            <button
+              className='bg-blue-600 enabled:hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50'
+              disabled={!isValidUsername || !usernameExists}
+              onClick={() => (wizard as any)?.nextStep()}
+            >
+              Next
+            </button>
+            {username.length >= 3 &&
               <div className='flex items-center gap-2'>
-                {username.length > 0 && !isLoadingExistsCheck.current && (
+                {isExistsLoading ? <LoadingSpinner size='small' /> : <>
                   <span className={`text-sm ${isValidUsername ? 'text-green-600' : 'text-red-600'}`}>
-                    {isValidUsername ? '✅' : '❌'}
+                    {isValidUsername && usernameExists ? '✅' : '❌'}
                   </span>
-                )}
-                <span className='text-sm'>
-                  { isLoadingExistsCheck.current ? <LoadingSpinner size='small' /> : (
-                    isValidUsername ? 'Username is available' : 'Username is not available'
-                  )}
-                </span>
+                  <span>
+                    {!isValidUsername ? 'Username is not valid' : usernameExists ? 'Username is available' : 'Username is not available'}
+                  </span>
+                </>
+                }
               </div>
-            )}
+            }
           </div>
           <div className='flex flex-col gap-2'>
             <p className='text-center text-lg'>
-            Nice to meet you, <span className='font-bold'>{username}</span>!
+              Nice to meet you, <span className='font-bold'>{username}</span>!
             </p>
             <p className='text-center text-md'>
-            Your Thinky.gg journey is about to launch! 🚀
+              Your Thinky.gg journey is about to launch! 🚀
             </p>
             <label className='block text-sm font-bold ' htmlFor='email'>
-            Email
+              Email
             </label>
             <input required onChange={e => setEmail(e.target.value)} value={email} className='shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline' id='email' type='email' placeholder='Email' />
             <div className='flex flex-col gap-4'>
               <label className='block text-sm font-bold ' htmlFor='password'>
-            Password
+                Password
               </label>
               <input required onChange={e => setPassword(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline' id='password' type='password' placeholder='******************' />
               <div className='flex items-center justify-between gap-1'>
@@ -187,7 +180,7 @@ export default function SignupFormWizard() {
             <div className='flex items-center justify-between gap-1'>
               <input type='checkbox' id='terms_agree_checkbox' required />
               <label htmlFor='terms_agree_checkbox' className='text-xs p-1'>
-            I agree to the <a className='underline' href='https://docs.google.com/document/d/e/2PACX-1vR4E-RcuIpXSrRtR3T3y9begevVF_yq7idcWWx1A-I9w_VRcHhPTkW1A7DeUx2pGOcyuKifEad3Qokn/pub' rel='noreferrer' target='_blank'>terms of service</a> and reviewed the <a className='underline' href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub' rel='noreferrer' target='_blank'>privacy policy</a>.
+                I agree to the <a className='underline' href='https://docs.google.com/document/d/e/2PACX-1vR4E-RcuIpXSrRtR3T3y9begevVF_yq7idcWWx1A-I9w_VRcHhPTkW1A7DeUx2pGOcyuKifEad3Qokn/pub' rel='noreferrer' target='_blank'>terms of service</a> and reviewed the <a className='underline' href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub' rel='noreferrer' target='_blank'>privacy policy</a>.
               </label>
             </div>
           </div>
