@@ -134,7 +134,7 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
           <label className='block text-sm font-bold mb-2' htmlFor='password'>
             Password
           </label>
-          <input onChange={e => setPassword(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline' id='password' type='password' placeholder='******************' />
+          <input onChange={e => setPassword(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline' id='password' type='password' placeholder='Password' />
         </div>
         {recaptchaPublicKey && showRecaptcha && (
           <div className='w-full pt-2'>

@@ -4,8 +4,8 @@ import toast from 'react-hot-toast';
 import FormTemplate from './formTemplate';
 
 interface ResetPasswordFormProps {
-  token: string;
-  userId: string;
+  token: string | null;
+  userId: string | null;
 }
 
 export default function ResetPasswordForm({ token, userId }: ResetPasswordFormProps) {
@@ -56,28 +56,37 @@ export default function ResetPasswordForm({ token, userId }: ResetPasswordFormPr
     });
   }
 
+  if (!token || !userId) {
+    return (
+      <div className='flex flex-col items-center gap-4 py-24 px-4'>
+        <h2 className='text-2xl font-medium'>
+          Invalid reset link
+        </h2>
+      </div>
+    );
+  }
+
   return (
-    <FormTemplate>
-      <h1 className='text-xl font-bold text-center'>Reset Password</h1>
-      <form onSubmit={onSubmit}>
-        <div className='mb-4'>
-          <label className='block text-sm font-bold mb-2' htmlFor='password'>
+    <FormTemplate title='Reset your password'>
+      <form className='flex flex-col gap-6' onSubmit={onSubmit}>
+        <div>
+          <label className='block mb-2' htmlFor='password'>
             Password
           </label>
-          <input onChange={e => setPassword(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline' id='password' type='password' placeholder='******************' />
+          <input onChange={e => setPassword(e.target.value)} className='w-full' id='password' type='password' placeholder='Password' />
         </div>
         <div>
-          <label className='block text-sm font-bold mb-2' htmlFor='password2'>
+          <label className='block mb-2' htmlFor='password2'>
             Re-enter password
           </label>
-          <input onChange={e => setPassword2(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 mb-3 leading-tight focus:outline-none focus:shadow-outline' id='password2' type='password' placeholder='******************' />
+          <input onChange={e => setPassword2(e.target.value)} className='w-full' id='password2' type='password' placeholder='Password' />
         </div>
-        <div className='text-red-500 text-xs italic mb-4'>
-          {errorMessage}
-        </div>
-        <div className='flex items-center justify-between'>
-          <input className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer' type='submit' value='Reset' />
-        </div>
+        <button className='bg-blue-500 hover:bg-blue-600 text-white w-full font-medium py-2 px-3 rounded mt-2' type='submit'>Continue</button>
+        {errorMessage &&
+          <div className='text-red-500 text-sm text-center'>
+            {errorMessage}
+          </div>
+        }
       </form>
     </FormTemplate>
   );
