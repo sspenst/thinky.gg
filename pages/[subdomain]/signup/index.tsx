@@ -21,15 +21,14 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   return {
-    props: {
-    },
+    props: {},
   };
 }
 
 /* istanbul ignore next */
 export default function SignUp() {
   return (
-    <Page title={'Sign Up'}>
+    <Page title='Sign Up'>
       <>
         <div className='w-full max-w-md mx-auto mt-3 justify-center text-center'>
           <div className='flex flex-col gap-2 items-center'>
@@ -46,17 +45,15 @@ export default function SignUp() {
               className='inline-block align-baseline font-bold text-sm hover:text-blue-400'
               href='/play-as-guest'
             >
-            Play as Guest
+              Play as Guest
             </Link>
           </div>
           <div className='text-center mb-4'>
             {'Already have an account? '}
             <Link href='/login' passHref className='underline'>
-            Log In
+              Log In
             </Link>
-
           </div>
-
         </div>
       </>
     </Page>

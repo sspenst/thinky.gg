@@ -64,8 +64,8 @@ async function createUser({ gameId, email, name, password, tutorialCompletedAt, 
 
 export default apiWrapper({ POST: {
   body: {
-    guest: ValidType('boolean', false),
     email: ValidType('string'),
+    guest: ValidType('boolean', false),
     name: ValidType('string'),
     password: ValidType('string'),
     tutorialCompletedAt: ValidNumber(false),
@@ -73,7 +73,7 @@ export default apiWrapper({ POST: {
 } }, async (req: NextApiRequestWrapper, res: NextApiResponse) => {
   await dbConnect();
 
-  const { email, name, password, tutorialCompletedAt, guest, utm_source } = req.body;
+  const { email, guest, name, password, tutorialCompletedAt, utm_source } = req.body;
 
   let trimmedEmail: string, trimmedName: string, passwordValue: string;
 
