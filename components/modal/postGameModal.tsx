@@ -116,12 +116,13 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
       submitLabel={nextLabel}
       title={
         <div
-          className='fadeIn text-yellow-300 text-3xl font-bold italic'
+          className='fadeIn text-3xl font-bold italic'
           style={{
             animationDelay: '0.2s',
+            color: 'var(--color-complete)',
           }}
         >
-          Congrats!
+          Solved!
         </div>
       }
     >
