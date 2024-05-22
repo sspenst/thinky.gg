@@ -474,26 +474,22 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
             <Component {...pageProps} />
             {isEU && (
               <CookieConsent
+                buttonClasses='font-semibold'
                 buttonStyle={{ borderRadius: '6px', color: 'white', background: '#4CAF50' }}
                 buttonText='I understand'
-                buttonClasses='px-2 py-2 rounded-md shadow-md font-semibold bg-green-700'
+                contentStyle={{ flex: '1' }}
                 cookieName='cookie_consent'
-                contentStyle={{ margin: '0px', flex: '1', padding: '8px' }}
-
                 location='top'
-                style={{ background: '#2B373B',
-                  height: '60px',
+                style={{
+                  background: '#2B373B',
                   display: 'flex',
                   alignItems: 'center',
-                  marginTop: '50px',
+                  marginTop: 48,
                   opacity: '0.9',
                 }}
               >
-                <div className='flex items-center gap-2'>
-                  <div className='text-xs'>
-          We use cookies to improve your browsing experience.
-            View our <a className='hover:underline text-blue-300' href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub' rel='noreferrer' target='_blank'>privacy policy</a>.
-                  </div>
+                <div className='text-xs'>
+                  We use cookies to improve your browsing experience. View our&nbsp;<a className='hover:underline text-blue-300' href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub' rel='noreferrer' target='_blank'>privacy policy</a>.
                 </div>
               </CookieConsent>
             )}

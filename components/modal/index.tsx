@@ -13,13 +13,9 @@ interface ModalButtonProps {
 }
 
 function ModalButton({ className, disabled, onClick, text, type }: ModalButtonProps) {
-  if (!className) {
-    className = 'bg-button';
-  }
-
   return (
     <button
-      className={classNames('inline-flex justify-center px-4 py-2 text-sm font-medium border border-transparent rounded-md', className)}
+      className={classNames('inline-flex justify-center px-4 py-2 text-sm font-medium border border-transparent rounded-md', className ?? 'bg-button')}
       disabled={disabled}
       onClick={onClick}
       type={type || 'button'}
@@ -37,20 +33,18 @@ interface ModalProps {
   isOpen: boolean;
   onConfirm?: () => void;
   onSubmit?: () => void;
-  submitBtnClass?: string;
   submitLabel?: string;
   title: React.ReactNode;
 }
 
 export default function Modal({
   children,
-  closeModal,
   closeLabel,
+  closeModal,
   disabled,
   isOpen,
   onConfirm,
   onSubmit,
-  submitBtnClass,
   submitLabel,
   title,
 }: ModalProps) {
@@ -115,12 +109,12 @@ export default function Modal({
                 <div className='flex justify-center gap-2 flex-wrap'>
                   {onConfirm ?
                     <>
-                      <ModalButton disabled={disabled} onClick={() => {}} text='OK' type='submit' />
+                      <ModalButton className='bg-blue-500 hover:bg-blue-700' disabled={disabled} onClick={() => {}} text={submitLabel || 'OK'} type='submit' />
                       <ModalButton disabled={disabled} onClick={closeModal} text={closeLabel || 'Cancel'} />
                     </>
                     : onSubmit ?
                       <>
-                        <ModalButton className={submitBtnClass} disabled={disabled} onClick={() => {}} text={submitLabel || 'Submit'} type='submit' />
+                        <ModalButton className='bg-blue-500 hover:bg-blue-700' disabled={disabled} onClick={() => {}} text={submitLabel || 'Submit'} type='submit' />
                         <ModalButton disabled={disabled} onClick={(e) => {
                           e?.preventDefault();
                           closeModal();

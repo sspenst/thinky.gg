@@ -420,7 +420,6 @@ export default function TutorialSokopath() {
       },
       {
         gameGrid: true,
-        isNextButtonDisabled: true,
         header: <><div key='tutorial-level-1-header' className='text-3xl fadeIn'>Try to complete your first level!</div><div className='text-xl'>Push the box onto the goal.</div></>,
         key: 'tutorial-level-1',
         level: getLevel(LEVEL_1),
@@ -429,7 +428,6 @@ export default function TutorialSokopath() {
       {
         gameClasses: 'fadeIn',
         gameGrid: true,
-        isNextButtonDisabled: true,
         header: <div key='tutorial-wall-header' className='text-3xl fadeIn'>Try completing another level.</div>,
         key: 'tutorial-wall',
         level: getLevel(WALL_INTRO),
@@ -439,7 +437,6 @@ export default function TutorialSokopath() {
       {
         gameClasses: 'fadeIn',
         gameGrid: true,
-        isNextButtonDisabled: true,
         header: <div key='tutorial-movable-explain-header' className='text-3xl fadeIn'>You can only push one box at a time.</div>,
         key: 'tutorial-movable-explain',
         level: getLevel(MOVABLE_EXPLAIN),
@@ -448,7 +445,6 @@ export default function TutorialSokopath() {
       {
         gameClasses: 'fadeIn',
         gameGrid: true,
-        isNextButtonDisabled: true,
         header: <><div key='tutorial-level-1-coverexit' className='text-3xl fadeIn'>Complete the final level of the tutorial!</div></>,
         key: 'tutorial-movable-explain-end-cover',
         level: getLevel(MOVABLE_EXPLAIN_END_COVER),
@@ -600,10 +596,7 @@ export default function TutorialSokopath() {
     const atIncompleteLevel = !tutorialStep.isNextButtonDisabled && tutorialStep.gameGrid && tutorialStepIndex === tutorialStepIndexMax;
 
     controls.push(skipControl());
-
-    if (!isNextButtonDisabled) {
-      controls.push(nextControl(isNextButtonDisabled || atIncompleteLevel));
-    }
+    controls.push(nextControl(isNextButtonDisabled || atIncompleteLevel));
   } else {
     controls.push(new Control(
       'restart',

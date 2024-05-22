@@ -55,12 +55,12 @@ export function SpoilerText({ id, text }: SpoilerTextProps) {
       spoilerToolTipText = 'You must solve this level to view this spoiler';
     }
 
-    const backgroundColor = visible ? '' : 'bg-black text-black dark:bg-gray-600 dark:text-gray-600';
+    const backgroundColor = visible ? undefined : 'var(--bg-color-2)';
 
     return (
       <>
         <span
-          className={'select-none ' + backgroundColor}
+          className='select-none'
           data-tooltip-id={tooltipId}
           data-tooltip-content={spoilerToolTipText}
           style={{

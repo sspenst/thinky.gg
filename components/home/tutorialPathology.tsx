@@ -21,7 +21,6 @@ import Controls from '../level/controls';
 import Game from '../level/game';
 import Page from '../page/page';
 import DismissToast from '../toasts/dismissToast';
-import DemoSwipe from './demoSwipe';
 
 interface Tooltip {
   canClose?: boolean;
@@ -230,7 +229,7 @@ export default function TutorialPathology() {
         <path fillRule='evenodd' d='M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z' />
       </svg>
     </div>,
-    false,
+    disabled,
     !disabled,
   ), []);
 
@@ -264,11 +263,10 @@ export default function TutorialPathology() {
       },
       {
         gameGrid: true,
-        header: <div className='flex flex-row gap-2 items-center fadeIn'>
-          { deviceInfo.isMobile && <div><DemoSwipe /></div> }
-          <div key='tutorial-player-intro-header' className='text-2xl'>Try moving around using the arrow keys (or swipe with mobile).</div>
+        header: <div className='flex gap-2 items-center' key='tutorial-player-intro-header-2'>
+          {deviceInfo.isMobile && <video autoPlay loop muted playsInline className='w-80 h-40' src='https://i.imgur.com/7sYpgCt.mp4' />}
+          <span className='text-2xl'>Try moving around using the arrow keys (or swipe with mobile).</span>
         </div>,
-
         isNextButtonDisabled: true,
         key: 'tutorial-player-intro',
         level: getLevel(GRID_WITH_PLAYER),
@@ -286,7 +284,7 @@ export default function TutorialPathology() {
         },
         tooltip: { canClose: true, target: '#player', title: <div className='flex'>
           {
-            /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(typeof window !== 'undefined' ? navigator.userAgent : '') === false ? (
+            !deviceInfo.isMobile ? (
               <svg
                 xmlns='http://www.w3.org/2000/svg'
                 xmlnsXlink='http://www.w3.org/1999/xlink'
@@ -414,9 +412,7 @@ export default function TutorialPathology() {
                 />
               </svg>
             ) : (
-              <div className='flex flex-col gap-2'>
-                <div className='text-center'>Swipe up, down, left, or right to move your player</div>
-              </div>
+              <div>Swipe up, down, left, or right to move your player</div>
             )}
         </div>
         },
@@ -437,7 +433,6 @@ export default function TutorialPathology() {
         header: <div key='tutorial-level-1-header' className='text-3xl fadeIn'>Try solving your first level!</div>,
         key: 'tutorial-level-1',
         level: getLevel(LEVEL_1, { leastMoves: 5 }),
-        isNextButtonDisabled: true,
         onMove: (gameState: GameState) => {
           const undoButton = document.getElementById('btn-undo') as HTMLButtonElement;
 
@@ -459,7 +454,6 @@ export default function TutorialPathology() {
       },
       {
         gameClasses: 'fadeIn',
-        isNextButtonDisabled: true,
         gameGrid: true,
         header: <div key='tutorial-wall-header' className='text-3xl fadeIn'>Try getting to the exit now.</div>,
         key: 'tutorial-wall',
@@ -470,7 +464,6 @@ export default function TutorialPathology() {
       {
         gameClasses: 'fadeIn',
         gameGrid: true,
-        isNextButtonDisabled: true,
         header: <div key='tutorial-ends-header' className='text-3xl fadeIn'>There can be multiple exits.</div>,
         key: 'tutorial-ends',
         level: getLevel(MULTIPLE_ENDS, { leastMoves: 6 }),
@@ -479,7 +472,6 @@ export default function TutorialPathology() {
       {
         gameClasses: 'fadeIn',
         gameGrid: true,
-        isNextButtonDisabled: true,
         header: <div key='tutorial-movable-header' className='text-3xl fadeIn'>Blocks with borders can be pushed by the player.</div>,
         key: 'tutorial-movable',
         level: getLevel(MOVABLE_INTRO, { leastMoves: 6 }),
@@ -488,7 +480,6 @@ export default function TutorialPathology() {
       {
         gameClasses: 'fadeIn',
         gameGrid: true,
-        isNextButtonDisabled: true,
         header: <div key='tutorial-movable-explain-header' className='text-3xl fadeIn'>You can only push one block at a time.</div>,
         key: 'tutorial-movable-explain',
         level: getLevel(MOVABLE_EXPLAIN, { leastMoves: 11 }),
@@ -497,7 +488,6 @@ export default function TutorialPathology() {
       {
         gameClasses: 'fadeIn',
         gameGrid: true,
-        isNextButtonDisabled: true,
         header: <div className='text-3xl'>Blocks can cover exits.</div>,
         key: 'tutorial-movable-explain-end-cover',
         level: getLevel(MOVABLE_EXPLAIN_END_COVER, { leastMoves: 8 }),
@@ -514,7 +504,6 @@ export default function TutorialPathology() {
       {
         gameClasses: 'fadeIn',
         gameGrid: true,
-        isNextButtonDisabled: true,
         header: <div key='tutorial-restricted-movables-explain-header' className='text-3xl fadeIn'>Find the path through these restricted blocks!</div>,
         key: 'tutorial-restricted-movables-explain',
         level: getLevel(RESTRICTED_MOVABLES_EXPLAIN, { leastMoves: 12 }),
@@ -533,7 +522,6 @@ export default function TutorialPathology() {
       },
       {
         gameGrid: true,
-        isNextButtonDisabled: true,
         header: <div key='tutorial-holes-intro' className='text-3xl fadeIn'>Use this block to cross over the hole!</div>,
         key: 'tutorial-holes-intro',
         level: getLevel(HOLES_INTRO, { leastMoves: 9 }),
@@ -657,26 +645,21 @@ export default function TutorialPathology() {
       const nextId = document.getElementById('control-next') as HTMLButtonElement;
 
       // if nextId doesn't have class pointer-events-none
-
       if (nextId) {
-        nextId.classList.add('bg-orange-300');
-        nextId.classList.add('animate-bounce');
-        setTimeout(() => {
-          const nextId = document.getElementById('control-next') as HTMLButtonElement;
-
-          if (!isNextButtonDisabled && !nextId.classList.contains('pointer-events-none')) {
-            nextId.classList.remove('invisible');
+        if (!nextId.classList.contains('pointer-events-none')) {
+          setTimeout(() => {
             nextId.classList.add('bg-orange-300');
-            nextId.classList.add('animate-bounce');
+            nextId.classList.add('bounce');
             // have nextId delay animation by 1s
-            nextId.style.animationDelay = '2s';
-          } else {
-            // remove
-            nextId.classList.add('invisible');
-          }
-        }, 30);
+            nextId.style.animationDelay = '3s';
+          }, 1);
+        } else {
+          // remove
+          nextId.classList.remove('bg-orange-300');
+          nextId.classList.remove('bounce');
+        }
       }
-    }, 30);
+    }, 1);
   }, [isNextButtonDisabled, tutorialStep.gameGrid, tutorialStep.isNextButtonDisabled, tutorialStepIndex, tutorialStepIndexMax]);
 
   const controls: Control[] = [];
@@ -691,10 +674,7 @@ export default function TutorialPathology() {
     const atIncompleteLevel = !tutorialStep.isNextButtonDisabled && tutorialStep.gameGrid && tutorialStepIndex === tutorialStepIndexMax;
 
     controls.push(skipControl());
-
-    if (!isNextButtonDisabled) {
-      controls.push(nextControl(isNextButtonDisabled || atIncompleteLevel));
-    }
+    controls.push(nextControl(isNextButtonDisabled || atIncompleteLevel));
   } else {
     controls.push(new Control(
       'restart',
