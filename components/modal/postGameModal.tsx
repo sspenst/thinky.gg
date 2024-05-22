@@ -24,6 +24,7 @@ interface PostGameModalProps {
 }
 
 export default function PostGameModal({ chapter, closeModal, collection, dontShowPostGameModal, isOpen, level, reqUser, setDontShowPostGameModal }: PostGameModalProps) {
+  const router = useRouter();
   let nextLevel: EnrichedLevel | undefined = undefined;
   let lastLevelInCollection = false;
 
@@ -38,9 +39,9 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
   }
 
   const { data } = useHomePageData([HomepageDataType.RecommendedLevel], !isOpen || nextLevel !== undefined);
-
   const [queryParams, setQueryParams] = useState<URLSearchParams>();
   const [recommendedLevel, setRecommendedLevel] = useState<EnrichedLevel>();
+  const nextLevelUrl = nextLevel ? `/level/${nextLevel.slug}${queryParams?.toString().length ?? 0 !== 0 ? `?${queryParams}` : ''}` : '';
 
   useEffect(() => {
     const newRecommendedLevel = data && data[HomepageDataType.RecommendedLevel];
@@ -57,7 +58,6 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
   useEffect(() => {
     setQueryParams(new URLSearchParams(window.location.search));
   }, []);
-  const nextLevelUrl = nextLevel ? `/level/${nextLevel.slug}${queryParams?.toString().length ?? 0 !== 0 ? `?${queryParams}` : ''}` : '';
 
   function nextActionCard() {
     if (nextLevel) {
@@ -90,14 +90,11 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
     );
   }
 
-  const router = useRouter();
-  const onNextLevelClick = () => {
+  let nextCTA = nextLevel ? () => {
     router.push(nextLevelUrl);
-
     closeModal();
-  };
+  } : undefined;
 
-  let nextCTA = nextLevel && onNextLevelClick;
   let nextLabel = 'Next Level';
 
   if (!nextCTA && chapter && !isNaN(Number(chapter))) {
@@ -112,13 +109,11 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
 
   return (
     <Modal
-
+      closeLabel='Close'
+      closeModal={closeModal}
+      isOpen={isOpen}
       onSubmit={nextCTA}
       submitLabel={nextLabel}
-      submitBtnClass={'bg-blue-500 hover:bg-blue-700'}
-      closeModal={closeModal}
-      closeLabel='Close'
-      isOpen={isOpen}
       title={
         <div
           className='fadeIn text-yellow-300 text-3xl font-bold italic'
@@ -126,7 +121,7 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
             animationDelay: '0.2s',
           }}
         >
-          Success!
+          Congrats!
         </div>
       }
     >
@@ -159,7 +154,7 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
                 <summary onClick={(e: React.MouseEvent) => {
                   // make this element invisible
                   (e.target as HTMLElement).style.display = 'none';
-                }} className='text-xs cursor-pointer italic py-1 hover:text-blue-300'>Share thoughts on the level you just won.</summary>
+                }} className='text-xs cursor-pointer italic py-1 hover:text-blue-300'>Share your thoughts on this level</summary>
                 <FormattedLevelReviews hideReviews={true} inModal={true} />
               </details>
             }

@@ -5,7 +5,6 @@ import { AppContext } from '@root/contexts/appContext';
 import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import useSWRHelper from '@root/hooks/useSWRHelper';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
-import Link from 'next/link';
 import React, { useContext } from 'react';
 import ChapterSelectCard from '../../../components/cards/chapterSelectCard';
 import Page from '../../../components/page/page';
@@ -43,31 +42,31 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
   const { game } = useContext(AppContext);
   const chapterUnlocked = reqUser.config?.chapterUnlocked ?? 1;
   const { data: profileDataFetched } = useSWRHelper<{levelsSolvedByDifficulty: {[key: string]: number}}>('/api/user/' + reqUser?._id + '?type=levelsSolvedByDifficulty', {}, {});
-
   const levelsSolvedByDifficulty = profileDataFetched?.levelsSolvedByDifficulty;
 
   return (
     <Page title={'Play'}>
       <UpsellFullAccount user={reqUser} />
-      <div className='flex flex-col items-center gap-2 px-2 mt-6'>
+      <div className='flex flex-col items-center gap-6 px-4 py-6'>
         <div className='font-bold text-3xl text-center' id='title'>
           {game.displayName} Official Campaign
         </div>
-        <div className='text-center flex flex-row gap-3 bg-gray-600 rounded-lg p-2'>
+        <div className='flex items-center bg-2 rounded-lg p-2 gap-2'>
+          <span>Rank:</span>
           {
             levelsSolvedByDifficulty ?
-              <><div className=''>Rank:</div>
+              <>
                 <PlayerRank levelsSolvedByDifficulty={levelsSolvedByDifficulty} user={reqUser} />
               </>
-              : <LoadingSpinner />
+              : <LoadingSpinner size='small' />
           }
         </div>
-      </div>
-      <div className='flex flex-col items-center gap-6 p-4'>
-        <ChapterSelectCard chapter={1} chapterUnlocked={chapterUnlocked} />
-        <ChapterSelectCard chapter={2} chapterUnlocked={chapterUnlocked} />
-        <ChapterSelectCard chapter={3} chapterUnlocked={chapterUnlocked} />
-        {chapterUnlocked >= 3 && <ChapterSelectCard chapter={4} chapterUnlocked={chapterUnlocked} />}
+        <div className='flex flex-col items-center gap-6'>
+          <ChapterSelectCard chapter={1} chapterUnlocked={chapterUnlocked} />
+          <ChapterSelectCard chapter={2} chapterUnlocked={chapterUnlocked} />
+          <ChapterSelectCard chapter={3} chapterUnlocked={chapterUnlocked} />
+          {chapterUnlocked >= 3 && <ChapterSelectCard chapter={4} chapterUnlocked={chapterUnlocked} />}
+        </div>
       </div>
     </Page>
   );
