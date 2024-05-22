@@ -65,30 +65,39 @@ export default function LoginForm() {
   }
 
   return (
-    <FormTemplate>
-      <form onSubmit={onSubmit}>
-        <div className='mb-4'>
-          <label className='block text-sm font-bold mb-2 ' htmlFor='username'>
-            Username or Email
-          </label>
-          <input onChange={e => setName(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline' id='username' type='text' placeholder='Username or Email' />
+    <FormTemplate title='Log in with your Thinky.gg account'>
+      <form className='flex flex-col gap-6' onSubmit={onSubmit}>
+        <div>
+          <label className='block mb-2' htmlFor='username'>Username or Email</label>
+          <input onChange={e => setName(e.target.value)} className='w-full' id='username' type='text' placeholder='Username or Email' />
         </div>
         <div>
-          <label className='block text-sm font-bold mb-2' htmlFor='password'>
-            Password
-          </label>
-          <input onChange={e => setPassword(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 mb-3 leading-tight focus:outline-none focus:shadow-outline' id='password' type='password' placeholder='******************' />
+          <div className='flex justify-between gap-2 flex-wrap mb-2'>
+            <label htmlFor='password'>Password</label>
+            <Link
+              className='font-medium text-sm text-blue-500 hover:text-blue-400'
+              href='/forgot-password'
+            >
+              Forgot your password?
+            </Link>
+          </div>
+          <input onChange={e => setPassword(e.target.value)} className='w-full' id='password' type='password' placeholder='Password' />
         </div>
-        <div className='text-red-500 text-xs italic mb-6'>
-          {errorMessage}
-        </div>
-        <div className='flex flex-wrap gap-y-4 items-center justify-between'>
-          <input className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer' type='submit' value='Sign In' />
+        <button className='bg-blue-500 hover:bg-blue-600 text-white w-full font-medium py-2 px-3 rounded mt-2' type='submit'>Log in</button>
+        {errorMessage &&
+          <div className='text-red-500 text-sm text-center'>
+            {errorMessage}
+          </div>
+        }
+        <div className='text-center text-sm mt-2'>
+          <span>
+            {'New to Thinky.gg? '}
+          </span>
           <Link
-            className='inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-400'
-            href='/forgot-password'
+            className='font-medium text-sm text-blue-500 hover:text-blue-400'
+            href='/signup'
           >
-            Forgot Password?
+            Sign Up
           </Link>
         </div>
       </form>

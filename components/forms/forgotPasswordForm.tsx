@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import FormTemplate from './formTemplate';
@@ -42,19 +43,25 @@ export default function ForgotPasswordForm() {
   }
 
   return (
-    <FormTemplate>
-      <form onSubmit={onSubmit}>
+    <FormTemplate title='Reset your password'>
+      <form className='flex flex-col gap-6' onSubmit={onSubmit}>
         <div>
-          <label className='block text-sm font-bold mb-2' htmlFor='email'>
-            Send a password reset email
-          </label>
-          <input required onChange={e => setEmail(e.target.value)} value={email} className='shadow appearance-none border rounded w-full py-2 px-3 mb-3 leading-tight focus:outline-none focus:shadow-outline' id='email' type='email' placeholder='Email' />
+          <label className='block mb-2' htmlFor='email'>Email</label>
+          <input required onChange={e => setEmail(e.target.value)} value={email} className='w-full' id='email' type='email' placeholder='Email' />
         </div>
-        <div className='text-red-500 text-xs italic mb-4'>
-          {errorMessage}
-        </div>
-        <div className='flex items-center justify-between'>
-          <input disabled={isSent} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer' type='submit' value='Send' />
+        <button className='bg-blue-500 hover:bg-blue-600 text-white w-full font-medium py-2 px-3 rounded mt-2' disabled={isSent} type='submit'>Continue</button>
+        {errorMessage &&
+          <div className='text-red-500 text-sm text-center'>
+            {errorMessage}
+          </div>
+        }
+        <div className='text-center text-sm mt-2'>
+          <Link
+            className='font-medium text-sm text-blue-500 hover:text-blue-400'
+            href='/login'
+          >
+            Return to log in
+          </Link>
         </div>
       </form>
     </FormTemplate>

@@ -74,7 +74,7 @@ export default function MultiSelectUser({ className, controlStyles, defaultValue
     styles={{
       control: (provided: any, state: any) => ({
         ...provided,
-        backgroundColor: 'var(--bg-color-2)',
+        backgroundColor: 'var(--bg-color)',
         borderColor: state.isFocused ? 'rgb(37 99 235)' : 'var(--bg-color-4)',
         borderRadius: '0.375rem',
         borderWidth: '1px',

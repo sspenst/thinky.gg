@@ -588,3 +588,22 @@ body {
 #headlessui-portal-root > [data-headlessui-portal]:nth-child(2) > div > div > div:first-child {
   user-select: none;
 }
+
+input {
+  background-color: var(--bg-color);
+  border: 1px solid var(--bg-color-3);
+  border-radius: 0.25rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+
+input::placeholder {
+  color: var(--color-gray);
+}
+
+label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
