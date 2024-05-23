@@ -70,13 +70,13 @@ export default function ResetPasswordForm({ token, userId }: ResetPasswordFormPr
     <FormTemplate title='Reset your password'>
       <form className='flex flex-col gap-6' onSubmit={onSubmit}>
         <div>
-          <label className='block mb-2' htmlFor='password'>
+          <label className='block text-sm font-medium mb-2' htmlFor='password'>
             Password
           </label>
           <input onChange={e => setPassword(e.target.value)} className='w-full' id='password' type='password' placeholder='Password' />
         </div>
         <div>
-          <label className='block mb-2' htmlFor='password2'>
+          <label className='block text-sm font-medium mb-2' htmlFor='password2'>
             Re-enter password
           </label>
           <input onChange={e => setPassword2(e.target.value)} className='w-full' id='password2' type='password' placeholder='Password' />

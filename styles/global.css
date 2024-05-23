@@ -602,8 +602,3 @@ input {
 input::placeholder {
   color: var(--color-gray);
 }
-
-label {
-  font-size: 0.875rem;
-  font-weight: 500;
-}
