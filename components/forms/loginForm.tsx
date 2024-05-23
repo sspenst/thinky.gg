@@ -68,12 +68,12 @@ export default function LoginForm() {
     <FormTemplate title='Log in with your Thinky.gg account'>
       <form className='flex flex-col gap-6' onSubmit={onSubmit}>
         <div>
-          <label className='block mb-2' htmlFor='username'>Username or Email</label>
+          <label className='block text-sm font-medium mb-2' htmlFor='username'>Username or Email</label>
           <input onChange={e => setName(e.target.value)} className='w-full' id='username' type='text' placeholder='Username or Email' />
         </div>
         <div>
           <div className='flex justify-between gap-2 flex-wrap mb-2'>
-            <label htmlFor='password'>Password</label>
+            <label className='text-sm font-medium' htmlFor='password'>Password</label>
             <Link
               className='font-medium text-sm text-blue-500 hover:text-blue-400'
               href='/forgot-password'

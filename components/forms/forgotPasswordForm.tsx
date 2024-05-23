@@ -46,7 +46,7 @@ export default function ForgotPasswordForm() {
     <FormTemplate title='Reset your password'>
       <form className='flex flex-col gap-6' onSubmit={onSubmit}>
         <div>
-          <label className='block mb-2' htmlFor='email'>Email</label>
+          <label className='block text-sm font-medium mb-2' htmlFor='email'>Email</label>
           <input required onChange={e => setEmail(e.target.value)} value={email} className='w-full' id='email' type='email' placeholder='Email' />
         </div>
         <button className='bg-blue-500 hover:bg-blue-600 text-white w-full font-medium py-2 px-3 rounded' disabled={isSent} type='submit'>Continue</button>

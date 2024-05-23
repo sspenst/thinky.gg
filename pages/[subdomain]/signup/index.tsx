@@ -1,4 +1,4 @@
-import SignupFormWizard from '@root/components/forms/signupFormWizard';
+import SignupForm from '@root/components/forms/signupForm';
 import { getUserFromToken } from '@root/lib/withAuth';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import React from 'react';
@@ -26,7 +26,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 export default function SignUp() {
   return (
     <Page title='Sign Up'>
-      <SignupFormWizard />
+      <SignupForm />
     </Page>
   );
 }
