@@ -95,7 +95,7 @@ export default function SignupFormWizard() {
     const resObj = await res.json();
 
     setIsExistsLoading(false);
-    setUsernameExists(!resObj.exists);
+    setUsernameExists(resObj.exists);
   };
 
   // debounce the checkUsername function
@@ -129,33 +129,38 @@ export default function SignupFormWizard() {
 
   return (
     <FormTemplate title='Create your Thinky.gg account'>
-      <form className='flex flex-col items-center gap-4' onSubmit={onSubmit}>
+      <form className='flex flex-col gap-6' onSubmit={onSubmit}>
         <StepWizard className='w-full' instance={setWizard}>
-          <div className='flex flex-col gap-4'>
+          <div className='flex flex-col gap-6'>
             <div>
-              <label className='block mb-2' htmlFor='username'>Username</label>
+              <div className='flex justify-between gap-2 flex-wrap mb-2'>
+                <label htmlFor='username'>Username</label>
+                {username.length >= 3 &&
+                  <div className='flex items-center text-sm gap-2'>
+                    {isExistsLoading ? <LoadingSpinner size={20} /> :
+                      isValidUsername && !usernameExists ?
+                        <div className='text-sm' style={{
+                          color: 'var(--color-complete)',
+                        }}>
+                          Username is available
+                        </div>
+                        :
+                        <div className='text-red-500 text-sm'>
+                          {!isValidUsername ? 'Username is not valid' : 'Username is not available'}
+                        </div>
+                    }
+                  </div>
+                }
+              </div>
               <input required onChange={e => handleUsernameChange(e)} className='w-full' id='username' type='text' placeholder='Username' />
             </div>
             <button
               className='bg-blue-600 enabled:hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50'
-              disabled={!isValidUsername || !usernameExists}
+              disabled={isExistsLoading || !isValidUsername || usernameExists}
               onClick={() => (wizard as any)?.nextStep()}
             >
               Continue
             </button>
-            {username.length >= 3 &&
-              <div className='flex items-center gap-2'>
-                {isExistsLoading ? <LoadingSpinner size='small' /> : <>
-                  <span className={`text-sm ${isValidUsername ? 'text-green-600' : 'text-red-600'}`}>
-                    {isValidUsername && usernameExists ? '✅' : '❌'}
-                  </span>
-                  <span>
-                    {!isValidUsername ? 'Username is not valid' : usernameExists ? 'Username is available' : 'Username is not available'}
-                  </span>
-                </>
-                }
-              </div>
-            }
           </div>
           <div className='flex flex-col gap-2'>
             <p className='text-center text-lg'>
@@ -186,22 +191,24 @@ export default function SignupFormWizard() {
             </div>
           </div>
         </StepWizard>
-        <Link
-          className='font-medium mt-2 text-sm text-blue-500 hover:text-blue-400'
-          href='/play-as-guest'
-        >
-          Play as guest
-        </Link>
-        <div className='text-center text-sm'>
-          <span>
-            {'Already have an account? '}
-          </span>
+        <div className='flex flex-col gap-4 items-center'>
           <Link
             className='font-medium text-sm text-blue-500 hover:text-blue-400'
-            href='/login'
+            href='/play-as-guest'
           >
-            Log in
+            Play as guest
           </Link>
+          <div className='text-center text-sm'>
+            <span>
+              {'Already have an account? '}
+            </span>
+            <Link
+              className='font-medium text-sm text-blue-500 hover:text-blue-400'
+              href='/login'
+            >
+              Log in
+            </Link>
+          </div>
         </div>
       </form>
     </FormTemplate>

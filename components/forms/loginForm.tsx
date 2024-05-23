@@ -89,7 +89,7 @@ export default function LoginForm() {
             {errorMessage}
           </div>
         }
-        <div className='text-center text-sm mt-2'>
+        <div className='text-center text-sm'>
           <span>
             {'New to Thinky.gg? '}
           </span>

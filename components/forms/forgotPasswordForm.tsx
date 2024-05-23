@@ -55,7 +55,7 @@ export default function ForgotPasswordForm() {
             {errorMessage}
           </div>
         }
-        <div className='text-center text-sm mt-2'>
+        <div className='text-center text-sm'>
           <Link
             className='font-medium text-sm text-blue-500 hover:text-blue-400'
             href='/login'

@@ -58,7 +58,7 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
               <>
                 <PlayerRank levelsSolvedByDifficulty={levelsSolvedByDifficulty} user={reqUser} />
               </>
-              : <LoadingSpinner size='small' />
+              : <LoadingSpinner size={24} />
           }
         </div>
         <div className='flex flex-col items-center gap-6'>
