@@ -81,7 +81,7 @@ export default function ResetPasswordForm({ token, userId }: ResetPasswordFormPr
           </label>
           <input onChange={e => setPassword2(e.target.value)} className='w-full' id='password2' type='password' placeholder='Password' />
         </div>
-        <button className='bg-blue-500 hover:bg-blue-600 text-white w-full font-medium py-2 px-3 rounded mt-2' type='submit'>Continue</button>
+        <button className='bg-blue-500 hover:bg-blue-600 text-white w-full font-medium py-2 px-3 rounded' type='submit'>Continue</button>
         {errorMessage &&
           <div className='text-red-500 text-sm text-center'>
             {errorMessage}
