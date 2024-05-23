@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useContext, useRef, useState } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
@@ -127,20 +128,20 @@ export default function SignupFormWizard() {
   };
 
   return (
-    <FormTemplate>
-      <form className='flex flex-col gap-4' onSubmit={onSubmit}>
-        <StepWizard instance={setWizard}>
+    <FormTemplate title='Create your Thinky.gg account'>
+      <form className='flex flex-col items-center gap-4' onSubmit={onSubmit}>
+        <StepWizard className='w-full' instance={setWizard}>
           <div className='flex flex-col gap-4'>
-            <label className='block text-sm font-bold  ' htmlFor='username'>
-              What should we call you?
-            </label>
-            <input required onChange={e => handleUsernameChange(e)} className='shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline' id='username' type='text' placeholder='Username' />
+            <div>
+              <label className='block mb-2' htmlFor='username'>Username</label>
+              <input required onChange={e => handleUsernameChange(e)} className='w-full' id='username' type='text' placeholder='Username' />
+            </div>
             <button
               className='bg-blue-600 enabled:hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50'
               disabled={!isValidUsername || !usernameExists}
               onClick={() => (wizard as any)?.nextStep()}
             >
-              Next
+              Continue
             </button>
             {username.length >= 3 &&
               <div className='flex items-center gap-2'>
@@ -163,15 +164,15 @@ export default function SignupFormWizard() {
             <p className='text-center text-md'>
               Your Thinky.gg journey is about to launch! 🚀
             </p>
-            <label className='block text-sm font-bold ' htmlFor='email'>
-              Email
-            </label>
-            <input required onChange={e => setEmail(e.target.value)} value={email} className='shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline' id='email' type='email' placeholder='Email' />
+            <div>
+              <label className='block mb-2' htmlFor='email'>Email</label>
+              <input required onChange={e => setEmail(e.target.value)} value={email} className='w-full' id='email' type='email' placeholder='Email' />
+            </div>
+            <div>
+              <label className='block mb-2' htmlFor='password'>Password</label>
+              <input required onChange={e => setPassword(e.target.value)} className='w-full' id='password' type='password' placeholder='Password' />
+            </div>
             <div className='flex flex-col gap-4'>
-              <label className='block text-sm font-bold ' htmlFor='password'>
-                Password
-              </label>
-              <input required onChange={e => setPassword(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline' id='password' type='password' placeholder='Password' />
               <div className='flex items-center justify-between gap-1'>
                 <button type='button' onClick={() => (wizard as any)?.previousStep()} className='bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer'>Prev</button>
                 <button type='submit' className='bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer'>Let&apos;s play!</button>
@@ -185,6 +186,23 @@ export default function SignupFormWizard() {
             </div>
           </div>
         </StepWizard>
+        <Link
+          className='font-medium mt-2 text-sm text-blue-500 hover:text-blue-400'
+          href='/play-as-guest'
+        >
+          Play as guest
+        </Link>
+        <div className='text-center text-sm'>
+          <span>
+            {'Already have an account? '}
+          </span>
+          <Link
+            className='font-medium text-sm text-blue-500 hover:text-blue-400'
+            href='/login'
+          >
+            Log in
+          </Link>
+        </div>
       </form>
     </FormTemplate>
   );

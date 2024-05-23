@@ -83,7 +83,7 @@ export default function LoginForm() {
           </div>
           <input onChange={e => setPassword(e.target.value)} className='w-full' id='password' type='password' placeholder='Password' />
         </div>
-        <button className='bg-blue-500 hover:bg-blue-600 text-white w-full font-medium py-2 px-3 rounded mt-2' type='submit'>Log in</button>
+        <button className='bg-blue-500 hover:bg-blue-600 text-white w-full font-medium py-2 px-3 rounded' type='submit'>Log in</button>
         {errorMessage &&
           <div className='text-red-500 text-sm text-center'>
             {errorMessage}
@@ -97,7 +97,7 @@ export default function LoginForm() {
             className='font-medium text-sm text-blue-500 hover:text-blue-400'
             href='/signup'
           >
-            Sign Up
+            Sign up
           </Link>
         </div>
       </form>
