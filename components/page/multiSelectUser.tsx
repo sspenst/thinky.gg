@@ -75,7 +75,7 @@ export default function MultiSelectUser({ className, controlStyles, defaultValue
       control: (provided: any, state: any) => ({
         ...provided,
         backgroundColor: 'var(--bg-color)',
-        borderColor: state.isFocused ? 'rgb(37 99 235)' : 'var(--bg-color-4)',
+        borderColor: state.isFocused ? 'rgb(59 130 246)' : 'var(--bg-color-3)',
         borderRadius: '0.375rem',
         borderWidth: '1px',
         boxShadow: 'none',
@@ -83,6 +83,9 @@ export default function MultiSelectUser({ className, controlStyles, defaultValue
         height: '2.5rem',
         maxWidth: '100%',
         minWidth: '13rem',
+        '&:hover': {
+          borderColor: undefined,
+        },
         ...controlStyles,
       }),
       container: (provided: any) => ({
