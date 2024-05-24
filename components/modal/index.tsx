@@ -95,7 +95,7 @@ export default function Modal({
               <Dialog.Panel className={classNames('py-3 px-4 my-8 text-left align-middle transition-all transform shadow-xl rounded-xl flex flex-col gap-4 border bg-1 border-color-3 overflow-hidden', getFontFromGameId(game.id))}>
                 <Dialog.Title as='div' className='flex gap-4 text-center'>
                   <span className='w-6' />
-                  <span className='grow text-xl font-bold truncate'>{title}</span>
+                  <span className='grow text-xl font-semibold truncate'>{title}</span>
                   <button className='hover:opacity-100 opacity-50 closeBtn' onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
                     e.preventDefault();
                     closeModal();
@@ -105,7 +105,9 @@ export default function Modal({
                     </svg>
                   </button>
                 </Dialog.Title>
-                {children}
+                <div className='px-2'>
+                  {children}
+                </div>
                 <div className='flex justify-center gap-2 flex-wrap'>
                   {onConfirm ?
                     <>

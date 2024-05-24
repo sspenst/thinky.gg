@@ -192,13 +192,13 @@ export default function Home({
             <div className='flex items-center'>
               <form action='/search'>
                 <input type='hidden' name='timeRange' value='All' />
-                <input onChange={e => setSearch(e.target.value)} id='search' type='search' name='search' className='form-control relative flex-auto min-w-0 block w-52 px-2.5 py-1.5 h-10 text-base font-normal border border-solid border-color-4 rounded-md rounded-r-none rounded-b-none transition ease-in-out m-0 focus:border-blue-600 focus:outline-none' placeholder='Search levels...' aria-label='Search' aria-describedby='button-addon2' />
+                <input onChange={e => setSearch(e.target.value)} id='search' type='search' name='search' className='rounded-r-none rounded-b-none' placeholder='Search levels...' aria-label='Search' />
               </form>
             </div>
             <div>
               <MultiSelectUser
                 controlStyles={{
-                  borderBottomLeftRadius: '0.375rem',
+                  borderBottomLeftRadius: '0.25rem',
                   borderBottomRightRadius: '0rem',
                   borderTopLeftRadius: '0rem',
                   borderTopRightRadius: '0rem',
@@ -214,7 +214,7 @@ export default function Home({
             </div>
           </div>
           <Link
-            className={classNames(buttonClassNames, 'py-1.5 h-20 mr-0 rounded-l-none cursor-pointer')}
+            className={classNames(buttonClassNames, 'py-1.5 h-full mr-0 rounded-l-none cursor-pointer')}
             href={{
               pathname: '/search',
               query: {

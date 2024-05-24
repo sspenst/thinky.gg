@@ -95,42 +95,43 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
       onSubmit={onSubmit}
       title={`${collection ? 'Edit' : 'New'} Collection`}
     >
-      <div className='flex flex-col gap-2 w-112 max-w-full'>
-        <label className='font-semibold' htmlFor='name'>Name:</label>
-        <input
-          className='p-1 rounded-md border border-color-4'
-          name='name'
-          onChange={e => setName(e.target.value)}
-          placeholder={`${collection ? 'Edit' : 'Add'} name...`}
-          required
-          type='text'
-          value={name}
-        />
+      <div className='flex flex-col gap-6 w-112 max-w-full'>
+        <div>
+          <label className='block text-sm font-medium mb-2' htmlFor='name'>Name</label>
+          <input
+            className='w-full'
+            name='name'
+            onChange={e => setName(e.target.value)}
+            placeholder='Name'
+            required
+            type='text'
+            value={name}
+          />
+        </div>
+        <div className='flex flex-col'>
+          <label className='block text-sm font-medium mb-2' htmlFor='authorNote'>Author note</label>
+          <textarea
+            name='authorNote'
+            onChange={e => setAuthorNote(e.target.value)}
+            placeholder='Optional author note'
+            rows={4}
+            value={authorNote}
+          />
+        </div>
         <div className='flex items-center gap-2'>
           {!isPro(user) &&
             <Link href='/pro'>
               <Image alt='pro' src='/pro.svg' width={16} height={16} style={{ minWidth: 16, minHeight: 16 }} />
             </Link>
           }
-          <label htmlFor='privateCollection' className='font-semibold'>
-            Private:
-          </label>
           <input
             checked={isPrivate}
             id='privateCollection'
             onChange={() => setIsPrivate(p => !p)}
             type='checkbox'
           />
+          <label htmlFor='privateCollection' className='text-sm font-medium'>Private</label>
         </div>
-        <label className='font-semibold' htmlFor='authorNote'>Author Note:</label>
-        <textarea
-          className='p-1 rounded-md border border-color-4'
-          name='authorNote'
-          onChange={e => setAuthorNote(e.target.value)}
-          placeholder={`${collection ? 'Edit' : 'Add'} author note...`}
-          rows={4}
-          value={authorNote}
-        />
       </div>
     </Modal>
   );

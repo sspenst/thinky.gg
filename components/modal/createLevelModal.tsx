@@ -77,28 +77,32 @@ export default function CreateLevelModal({ closeModal, isOpen, level }: CreateLe
       disabled={isSubmitting}
       isOpen={isOpen}
       onSubmit={onSubmit}
-      title={'Save Draft Level'}
+      title='Save Draft Level'
     >
-      <div className='flex flex-col gap-2 w-112 max-w-full'>
-        <label className='font-semibold' htmlFor='name'>Name:</label>
-        <input
-          className='p-1 rounded-md border border-color-4'
-          name='name'
-          onChange={e => setName(e.target.value)}
-          placeholder={'Add name...'}
-          required
-          type='text'
-          value={name}
-        />
-        <label className='font-semibold' htmlFor='authorNote'>Author Note:</label>
-        <textarea
-          className='p-1 rounded-md border border-color-4'
-          name='authorNote'
-          onChange={e => setAuthorNote(e.target.value)}
-          placeholder={'Add optional author note...'}
-          rows={4}
-          value={authorNote}
-        />
+      <div className='flex flex-col gap-6 w-112 max-w-full'>
+        <div>
+          <label className='block text-sm font-medium mb-2' htmlFor='name'>Name</label>
+          <input
+            className='w-full'
+            name='name'
+            onChange={e => setName(e.target.value)}
+            placeholder='Name'
+            required
+            type='text'
+            value={name}
+          />
+        </div>
+        <div>
+          <label className='block text-sm font-medium mb-2' htmlFor='authorNote'>Author note</label>
+          <textarea
+            className='w-full'
+            name='authorNote'
+            onChange={e => setAuthorNote(e.target.value)}
+            placeholder={'Add optional author note...'}
+            rows={4}
+            value={authorNote}
+          />
+        </div>
       </div>
     </Modal>
   );
