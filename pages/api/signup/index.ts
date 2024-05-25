@@ -68,12 +68,37 @@ export default apiWrapper({ POST: {
     guest: ValidType('boolean', false),
     name: ValidType('string'),
     password: ValidType('string'),
+    recaptchaToken: ValidType('string', false),
     tutorialCompletedAt: ValidNumber(false),
   },
 } }, async (req: NextApiRequestWrapper, res: NextApiResponse) => {
   await dbConnect();
 
-  const { email, guest, name, password, tutorialCompletedAt, utm_source } = req.body;
+  const { email, guest, name, password, recaptchaToken, tutorialCompletedAt, utm_source } = req.body;
+
+  const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET || '';
+
+  if (RECAPTCHA_SECRET && RECAPTCHA_SECRET.length > 0) {
+    if (!recaptchaToken) {
+      return res.status(400).json({ error: 'Please fill out recaptcha' });
+    }
+
+    const recaptchaResponse = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `secret=${RECAPTCHA_SECRET}&response=${recaptchaToken}`,
+    });
+
+    const recaptchaData = await recaptchaResponse.json();
+
+    if (!recaptchaResponse.ok || !recaptchaData?.success) {
+      const errorMessage = `Error validating recaptcha [Status: ${recaptchaResponse.status}], [Data: ${JSON.stringify(recaptchaData)}]`;
+
+      logger.error(errorMessage);
+
+      return res.status(400).json({ error: errorMessage });
+    }
+  }
 
   let trimmedEmail: string, trimmedName: string, passwordValue: string;
 

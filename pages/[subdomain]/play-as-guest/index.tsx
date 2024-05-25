@@ -26,27 +26,25 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   return {
-    props: { recaptchaPublicKey: process.env.RECAPTCHA_PUBLIC_KEY || '' },
+    props: {
+      recaptchaPublicKey: process.env.RECAPTCHA_PUBLIC_KEY ?? null,
+    },
   };
 }
 
+interface PlayAsGuestProps {
+  recaptchaPublicKey: string | null;
+}
+
 /* istanbul ignore next */
-export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?: string}) {
+export default function PlayAsGuest({ recaptchaPublicKey }: PlayAsGuestProps) {
   const { cache } = useSWRConfig();
   const { mutateUser, setShouldAttemptAuth, userConfig } = useContext(AppContext);
   const [name, setName] = useState<string>('');
   const recaptchaRef = useRef<ReCAPTCHA>(null);
-  const recaptchaToken = useRef('');
   const [registrationState, setRegistrationState] = useState('registering');
   const [showRecaptcha, setShowRecaptcha] = useState(false);
   const [temporaryPassword, setTemporaryPassword] = useState<string>('');
-
-  function onRecaptchaChange(value: string | null) {
-    if (value) {
-      recaptchaToken.current = value;
-      setTimeout(fetchSignup, 50);
-    }
-  }
 
   const CopyToClipboardButton = ({ text }: { text: string }) => {
     const [isCopied, setIsCopied] = useState(false);
@@ -77,7 +75,7 @@ export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?
     );
   };
 
-  async function fetchSignup() {
+  async function fetchSignup(recaptchaToken: string | null) {
     if (recaptchaPublicKey) {
       if (!showRecaptcha) {
         setShowRecaptcha(true);
@@ -85,10 +83,14 @@ export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?
         return;
       }
 
-      if (!recaptchaToken.current) {
+      if (!recaptchaToken) {
         toast.error('Please complete the recaptcha');
 
         return;
+      }
+
+      if (recaptchaRef.current) {
+        recaptchaRef.current.reset();
       }
     }
 
@@ -97,27 +99,29 @@ export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?
 
     toast.dismiss();
     toast.loading('Creating guest account...');
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const body: any = {
+      email: 'guest@guest.com',
+      guest: true,
+      name: 'Guest',
+      password: 'guest-account',
+      tutorialCompletedAt: tutorialCompletedAt,
+      utm_source: utm_source,
+    };
+
+    if (recaptchaToken) {
+      body.recaptchaToken = recaptchaToken;
+    }
+
     const res = await fetch('/api/signup', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       credentials: 'include',
-
-      body: JSON.stringify({
-        name: 'Guest',
-        email: 'guest@guest.com',
-        password: 'guest-account',
-        recaptchaToken: recaptchaToken.current,
-        guest: true,
-        tutorialCompletedAt: tutorialCompletedAt,
-        utm_source: utm_source
-      })
+      body: JSON.stringify(body)
     });
-
-    if (recaptchaRef.current) {
-      recaptchaRef.current.reset();
-    }
 
     if (!res.ok) {
       toast.dismiss();
@@ -208,13 +212,12 @@ export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?
               </ul>
               {recaptchaPublicKey && showRecaptcha ?
                 <ReCAPTCHA
-                  size='normal'
-                  onChange={onRecaptchaChange}
+                  onChange={(token) => fetchSignup(token)}
                   ref={recaptchaRef}
-                  sitekey={recaptchaPublicKey ?? ''}
+                  sitekey={recaptchaPublicKey}
                 />
                 :
-                <button className={classNames(blueButton, 'w-full')} onClick={fetchSignup}>
+                <button className={classNames(blueButton, 'w-full')} onClick={() => fetchSignup(null)}>
                   Play as guest
                 </button>
               }

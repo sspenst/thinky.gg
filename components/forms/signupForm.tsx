@@ -12,23 +12,44 @@ import { AppContext } from '../../contexts/appContext';
 import LoadingSpinner from '../page/loadingSpinner';
 import FormTemplate from './formTemplate';
 
-export default function SignupForm() {
+interface SignupFormProps {
+  recaptchaPublicKey: string | null;
+}
+
+export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
   const { cache } = useSWRConfig();
   const [email, setEmail] = useState<string>('');
   const { mutateUser, setShouldAttemptAuth } = useContext(AppContext);
   const [password, setPassword] = useState<string>('');
   const recaptchaRef = useRef<ReCAPTCHA>(null);
   const router = useRouter();
+  const [showRecaptcha, setShowRecaptcha] = useState<boolean>(false);
   const [username, setUsername] = useState<string>('');
 
-  function onSubmit(event: React.FormEvent) {
-    event.preventDefault();
-
+  function onSubmit(recaptchaToken: string | null) {
     if (password.length < 8 || password.length > 50) {
       toast.dismiss();
       toast.error('Password must be between 8 and 50 characters');
 
       return;
+    }
+
+    if (recaptchaPublicKey) {
+      if (!showRecaptcha) {
+        setShowRecaptcha(true);
+
+        return;
+      }
+
+      if (!recaptchaToken) {
+        toast.error('Please complete the recaptcha');
+
+        return;
+      }
+
+      if (recaptchaRef.current) {
+        recaptchaRef.current.reset();
+      }
     }
 
     toast.dismiss();
@@ -37,15 +58,22 @@ export default function SignupForm() {
     const tutorialCompletedAt = window.localStorage.getItem('tutorialCompletedAt') || '0';
     const utm_source = window.localStorage.getItem('utm_source') || '';
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const body: any = {
+      email: email,
+      name: username,
+      password: password,
+      tutorialCompletedAt: parseInt(tutorialCompletedAt),
+      utm_source: utm_source
+    };
+
+    if (recaptchaToken) {
+      body.recaptchaToken = recaptchaToken;
+    }
+
     fetch('/api/signup', {
       method: 'POST',
-      body: JSON.stringify({
-        email: email,
-        name: username,
-        password: password,
-        tutorialCompletedAt: parseInt(tutorialCompletedAt),
-        utm_source: utm_source
-      }),
+      body: JSON.stringify(body),
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json'
@@ -131,7 +159,7 @@ export default function SignupForm() {
 
   return (
     <FormTemplate title='Create your Thinky.gg account'>
-      <form className='flex flex-col gap-6' onSubmit={onSubmit}>
+      <div className='flex flex-col gap-6'>
         <StepWizard className='w-full' instance={setWizard}>
           <div className='flex flex-col gap-6'>
             <div>
@@ -191,7 +219,17 @@ export default function SignupForm() {
                 I agree to the <a className='underline' href='https://docs.google.com/document/d/e/2PACX-1vR4E-RcuIpXSrRtR3T3y9begevVF_yq7idcWWx1A-I9w_VRcHhPTkW1A7DeUx2pGOcyuKifEad3Qokn/pub' rel='noreferrer' target='_blank'>terms of service</a> and reviewed the <a className='underline' href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub' rel='noreferrer' target='_blank'>privacy policy</a>.
               </label>
             </div>
-            <button className={classNames(blueButton, 'w-full')} type='submit'>Sign up</button>
+            <div className='flex justify-center'>
+              {recaptchaPublicKey && showRecaptcha ?
+                <ReCAPTCHA
+                  onChange={(token) => onSubmit(token)}
+                  ref={recaptchaRef}
+                  sitekey={recaptchaPublicKey}
+                />
+                :
+                <button className={classNames(blueButton, 'w-full')} onClick={() => onSubmit(null)}>Sign up</button>
+              }
+            </div>
           </div>
         </StepWizard>
         <div className='flex flex-col gap-4 items-center'>
@@ -213,7 +251,7 @@ export default function SignupForm() {
             </Link>
           </div>
         </div>
-      </form>
+      </div>
     </FormTemplate>
   );
 }
