@@ -18,15 +18,21 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   return {
-    props: {},
+    props: {
+      recaptchaPublicKey: process.env.RECAPTCHA_PUBLIC_KEY ?? null,
+    },
   };
 }
 
+interface SignUpProps {
+  recaptchaPublicKey: string | null;
+}
+
 /* istanbul ignore next */
-export default function SignUp() {
+export default function SignUp({ recaptchaPublicKey }: SignUpProps) {
   return (
     <Page title='Sign Up'>
-      <SignupForm />
+      <SignupForm recaptchaPublicKey={recaptchaPublicKey} />
     </Page>
   );
 }
