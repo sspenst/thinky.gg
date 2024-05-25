@@ -190,9 +190,9 @@ export default function Home({
         <div className='flex items-center justify-center'>
           <div className='flex flex-col'>
             <div className='flex items-center'>
-              <form action='/search'>
+              <form className='w-full' action='/search'>
                 <input type='hidden' name='timeRange' value='All' />
-                <input onChange={e => setSearch(e.target.value)} id='search' type='search' name='search' className='rounded-r-none rounded-b-none' placeholder='Search levels...' aria-label='Search' />
+                <input onChange={e => setSearch(e.target.value)} id='search' type='search' name='search' className='rounded-r-none rounded-b-none w-full' placeholder='Search levels...' aria-label='Search' />
               </form>
             </div>
             <div>
