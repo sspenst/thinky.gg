@@ -1,3 +1,5 @@
+import { blueButton } from '@root/helpers/className';
+import classNames from 'classnames';
 import { useRouter } from 'next/router';
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
@@ -51,8 +53,6 @@ export default function SettingsAccountGuest() {
     });
   }
 
-  const inputClass = 'shadow appearance-none border border-color-4 mb-2 rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline';
-
   return (
     <div className='flex flex-col gap-4 items-center max-w-sm text-center'>
       <span>
@@ -61,18 +61,12 @@ export default function SettingsAccountGuest() {
       <span>
         Convert to a regular account by filling out the following:
       </span>
-      <div className='flex flex-col w-full max-w-full'>
-        <input className={inputClass} placeholder='Username' type='text' required onChange={(e) => { setUsername(e.target.value); }} />
-        <input className={inputClass} placeholder='Email' type='email' required onChange={(e) => { setEmail(e.target.value);}} />
-        <input className={inputClass} placeholder='Password' type='password' required onChange={(e) => { setPassword(e.target.value); }} />
+      <div className='flex flex-col w-full max-w-full gap-2'>
+        <input className='w-full' placeholder='Username' type='text' required onChange={(e) => { setUsername(e.target.value); }} />
+        <input className='w-full' placeholder='Email' type='email' required onChange={(e) => { setEmail(e.target.value);}} />
+        <input className='w-full' placeholder='Password' type='password' required onChange={(e) => { setPassword(e.target.value); }} />
       </div>
-      <div className='flex justify-end'>
-        <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer'
-          onClick={fetchSignup}
-        >
-          Convert
-        </button>
-      </div>
+      <button className={classNames(blueButton, 'w-full')} onClick={fetchSignup}>Convert</button>
     </div>
   );
 }

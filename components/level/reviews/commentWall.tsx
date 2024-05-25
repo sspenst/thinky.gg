@@ -100,7 +100,6 @@ export default function CommentWall({ userId }: CommentWallProps) {
       {user &&
         <div className='flex flex-col gap-2'>
           <ReactTextareaAutosize
-            className='bg-inherit block py-1 w-96 max-w-full border-b border-neutral-500 disabled:text-neutral-500 transition resize-none placeholder:text-neutral-500 focus:outline-0 rounded-none focus:border-black focus:dark:border-white'
             onChange={(e) => setText(e.currentTarget.value)}
             placeholder='Add a comment...'
             value={text}

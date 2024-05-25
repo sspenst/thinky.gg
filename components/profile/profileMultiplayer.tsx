@@ -137,11 +137,11 @@ export default function ProfileMultiplayer({ user }: ProfileMultiplayerProps) {
           />
         </div>
         <div className='flex flex-row gap-2 text-center justify-center items-center'>
-          <input type='checkbox' checked={rated} onChange={() => {
+          <input type='checkbox' id='rated' checked={rated} onChange={() => {
             setPage(0);
             setRated(!rated);
           }} />
-          <span className='text-sm'>Rated</span>
+          <label className='text-sm' htmlFor='rated'>Rated</label>
           <div className='flex flex-row text-center justify-center items-center'>
             <FilterButton selected={filter === MultiplayerMatchHistoryFilters.Wins} value='Wins' first onClick={() => {
               if (filter === MultiplayerMatchHistoryFilters.Wins) setFilter(MultiplayerMatchHistoryFilters.All);

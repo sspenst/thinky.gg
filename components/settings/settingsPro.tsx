@@ -209,7 +209,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                     <option value={'year'}>Years</option>
                   </select>
                   <input
-                    className='text-center justify-center items-center h-6 w-10 border border-color-4 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent'
+                    className='text-center justify-center items-center h-6 p-0 w-10 border border-color-4 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent'
                     id='quantity'
                     max={24}
                     min={1}

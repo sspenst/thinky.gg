@@ -1,7 +1,9 @@
 import LevelCard from '@root/components/cards/levelCard';
 import TimeRange from '@root/constants/timeRange';
+import { blueButton } from '@root/helpers/className';
 import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { redirectToLogin } from '@root/helpers/redirectToLogin';
+import classNames from 'classnames';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import React from 'react';
@@ -66,13 +68,13 @@ export default function Create({ levels, user }: CreatePageProps) {
         </ul>
         <div className='flex items-center flex-wrap justify-center gap-4'>
           <Link
-            className='flex items-center gap-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer block'
+            className={classNames('flex items-center gap-2', blueButton)}
             href='/create'
           >
             <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='2 2 20 20' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
               <path strokeLinecap='round' strokeLinejoin='round' d='M12 4.5v15m7.5-7.5h-15' />
             </svg>
-            <span className='text-lg font-bold'>Create Level</span>
+            <span>Create Level</span>
           </Link>
           <Link
             className='py-2 px-4 rounded-lg hover:bg-neutral-500'

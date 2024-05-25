@@ -624,7 +624,6 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
     <div className='flex flex-col items-center gap-1 p-1' id='level_search_box'>
       <div className='flex flex-wrap items-center justify-center z-10 gap-1'>
         <input
-          className='form-control relative min-w-0 block w-52 px-3 py-1.5 h-10 bg-clip-padding border border-color-4 rounded-md transition ease-in-out m-0 focus:border-blue-600 focus:outline-none'
           id='default-search'
           key='search-level-input'
           onChange={e => {
@@ -763,7 +762,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       <div className='flex items-center justify-center py-0.5'>
         <label htmlFor='min-step' className='text-xs font-medium pr-1'>Min steps</label>
         <input
-          className='form-range pl-2 w-16 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white mr-2'
+          className='w-20 text-sm px-2 py-1 mr-2'
           id='min-step'
           max='2500'
           min='1'
@@ -779,7 +778,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
         />
         <label htmlFor='max-step' className='text-xs font-medium pr-1'>Max steps</label>
         <input
-          className='form-range pl-2 w-16 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
+          className='w-20 text-sm px-2 py-1'
           id='max-step'
           max='2500'
           min='1'
@@ -803,7 +802,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
             <span className='text-xs font-medium pr-1'>Min dimensions:</span>
             <div>
               <input
-                className='form-range pl-2 w-10 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
+                className='text-sm px-2 py-1'
                 disabled={!isPro(reqUser)}
                 max='40'
                 min='1'
@@ -819,7 +818,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
               />
               <span className='text-xs font-medium px-1'>x</span>
               <input
-                className='form-range pl-2 w-10 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
+                className='text-sm px-2 py-1'
                 disabled={!isPro(reqUser)}
                 max='40'
                 min='1'
@@ -839,7 +838,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
             <span className='text-xs font-medium pr-1'>Max dimensions:</span>
             <div>
               <input
-                className='form-range pl-2 w-10 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
+                className='text-sm px-2 py-1'
                 disabled={!isPro(reqUser)}
                 max='40'
                 min='1'
@@ -855,7 +854,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
               />
               <span className='text-xs font-medium px-1'>x</span>
               <input
-                className='form-range pl-2 w-10 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
+                className='text-sm px-2 py-1'
                 disabled={!isPro(reqUser)}
                 max='40'
                 min='1'

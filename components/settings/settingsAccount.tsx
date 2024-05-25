@@ -161,8 +161,6 @@ export default function SettingsAccount({ user }: SettingsAccountProps) {
     );
   }
 
-  const inputClass = 'shadow appearance-none border border-color-4 mb-2 rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline';
-
   return (
     <div className='flex justify-center w-full max-w-sm'>
       <div className='flex flex-col gap-6 w-full'>
@@ -195,12 +193,12 @@ export default function SettingsAccount({ user }: SettingsAccountProps) {
             </label>
           </div>
         </div>
-        <form className='flex flex-col items-start' onSubmit={updateUsername}>
-          <label className='block font-bold mb-2' htmlFor='username'>
+        <form className='flex flex-col items-start gap-2' onSubmit={updateUsername}>
+          <label className='block font-bold' htmlFor='username'>
             Username
           </label>
           <input
-            className={inputClass}
+            className='w-full'
             id='username'
             name='username'
             onChange={e => setUsername(e.target.value)}
@@ -211,10 +209,10 @@ export default function SettingsAccount({ user }: SettingsAccountProps) {
           />
           <button className='italic underline' type='submit'>Update</button>
         </form>
-        <form className='flex flex-col items-start' onSubmit={
+        <form className='flex flex-col items-start gap-2' onSubmit={
           (!user.emailConfirmed && email === user.email ? resendEmailConfirmation : updateEmail)
         }>
-          <label className='block font-bold mb-2' htmlFor='email'>
+          <label className='block font-bold' htmlFor='email'>
             {'Email - '}
             {user.emailConfirmed && email === user.email ?
               <span className='text-green-500'>Confirmed</span>
@@ -223,7 +221,7 @@ export default function SettingsAccount({ user }: SettingsAccountProps) {
             }
           </label>
           <input
-            className={inputClass}
+            className='w-full'
             id='email'
             name='email'
             onChange={e => setEmail(e.target.value)}
@@ -236,13 +234,13 @@ export default function SettingsAccount({ user }: SettingsAccountProps) {
             {!user.emailConfirmed && email === user.email ? 'Resend confirmation' : 'Update'}
           </button>
         </form>
-        <form className='flex flex-col items-start' onSubmit={updatePassword}>
-          <label className='block font-bold mb-2' htmlFor='password'>
+        <form className='flex flex-col items-start gap-2' onSubmit={updatePassword}>
+          <label className='block font-bold' htmlFor='password'>
             Password
           </label>
-          <input onChange={e => setCurrentPassword(e.target.value)} className={inputClass} id='password' value={currentPassword} type='password' placeholder='Enter current password' required />
-          <input onChange={e => setPassword(e.target.value)} className={inputClass} type='password' placeholder='Enter new password' required />
-          <input onChange={e => setPassword2(e.target.value)} className={inputClass} type='password' placeholder='Re-enter new password' required />
+          <input onChange={e => setCurrentPassword(e.target.value)} className='w-full' id='password' value={currentPassword} type='password' placeholder='Enter current password' required />
+          <input onChange={e => setPassword(e.target.value)} className='w-full' type='password' placeholder='Enter new password' required />
+          <input onChange={e => setPassword2(e.target.value)} className='w-full' type='password' placeholder='Re-enter new password' required />
           <button className='italic underline' type='submit'>Update</button>
         </form>
       </div>

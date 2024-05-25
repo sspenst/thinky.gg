@@ -2,7 +2,9 @@ import FormTemplate from '@root/components/forms/formTemplate';
 import Page from '@root/components/page/page';
 import StyledTooltip from '@root/components/page/styledTooltip';
 import { AppContext } from '@root/contexts/appContext';
+import { blueButton } from '@root/helpers/className';
 import { getUserFromToken } from '@root/lib/withAuth';
+import classNames from 'classnames';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import React, { useContext, useRef, useState } from 'react';
@@ -212,7 +214,7 @@ export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?
                   sitekey={recaptchaPublicKey ?? ''}
                 />
                 :
-                <button className='bg-blue-500 hover:bg-blue-600 text-white w-full font-medium py-2 px-3 rounded' onClick={fetchSignup}>
+                <button className={classNames(blueButton, 'w-full')} onClick={fetchSignup}>
                   Play as guest
                 </button>
               }

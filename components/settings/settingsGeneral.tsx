@@ -68,7 +68,6 @@ export default function SettingsGeneral({ user }: SettingsGeneralProps) {
           About me
         </label>
         <ReactTextareaAutosize
-          className='bg-inherit block py-1 -mt-2 w-full max-w-full border-b border-neutral-500 disabled:text-neutral-500 transition resize-none placeholder:text-neutral-500 focus:outline-0 rounded-none focus:border-black focus:dark:border-white'
           disabled={updating}
           id='bio'
           maxLength={256}
