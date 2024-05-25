@@ -1,4 +1,5 @@
 import { AppContext } from '@root/contexts/appContext';
+import { blueButton } from '@root/helpers/className';
 import { ImageTools } from '@root/helpers/imageTools';
 import User from '@root/models/db/user';
 import Image from 'next/image';
@@ -126,7 +127,7 @@ export default function UploadImage({ user }: UploadImageProps) {
           </>
         }
       </div>
-      <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline cursor-pointer' onClick={() => document.getElementById('avatarFile')?.click()}>
+      <button className={blueButton} onClick={() => document.getElementById('avatarFile')?.click()}>
         Upload
       </button>
     </div>

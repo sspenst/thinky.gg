@@ -122,7 +122,6 @@ export default function ReviewForm({ inModal, review }: ReviewFormProps) {
         }
       </div>
       <ReactTextareaAutosize
-        className='bg-inherit block py-1 -mt-2 w-full border-b border-neutral-500 disabled:text-neutral-500 transition resize-none placeholder:text-neutral-500 focus:outline-0 rounded-none focus:border-black focus:dark:border-white'
         disabled={isUpdating}
         onBlur={() => {
           // only prevent keydown when entering review from the sidebar

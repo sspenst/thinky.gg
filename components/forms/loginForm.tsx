@@ -1,3 +1,5 @@
+import { blueButton } from '@root/helpers/className';
+import classNames from 'classnames';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useContext, useState } from 'react';
@@ -83,7 +85,7 @@ export default function LoginForm() {
           </div>
           <input onChange={e => setPassword(e.target.value)} className='w-full' id='password' type='password' placeholder='Password' />
         </div>
-        <button className='bg-blue-500 hover:bg-blue-600 text-white w-full font-medium py-2 px-3 rounded' type='submit'>Log in</button>
+        <button className={classNames(blueButton, 'w-full')} type='submit'>Log in</button>
         {errorMessage &&
           <div className='text-red-500 text-sm text-center'>
             {errorMessage}

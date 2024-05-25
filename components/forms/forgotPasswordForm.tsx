@@ -1,3 +1,5 @@
+import { blueButton } from '@root/helpers/className';
+import classNames from 'classnames';
 import Link from 'next/link';
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
@@ -49,7 +51,7 @@ export default function ForgotPasswordForm() {
           <label className='block text-sm font-medium mb-2' htmlFor='email'>Email</label>
           <input required onChange={e => setEmail(e.target.value)} value={email} className='w-full' id='email' type='email' placeholder='Email' />
         </div>
-        <button className='bg-blue-500 hover:bg-blue-600 text-white w-full font-medium py-2 px-3 rounded' disabled={isSent} type='submit'>Continue</button>
+        <button className={classNames(blueButton, 'w-full')} disabled={isSent} type='submit'>Continue</button>
         {errorMessage &&
           <div className='text-red-500 text-sm text-center'>
             {errorMessage}

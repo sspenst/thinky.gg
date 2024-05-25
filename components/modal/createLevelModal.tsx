@@ -98,7 +98,7 @@ export default function CreateLevelModal({ closeModal, isOpen, level }: CreateLe
             className='w-full'
             name='authorNote'
             onChange={e => setAuthorNote(e.target.value)}
-            placeholder={'Add optional author note...'}
+            placeholder='Optional author note'
             rows={4}
             value={authorNote}
           />

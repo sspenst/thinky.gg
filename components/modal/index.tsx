@@ -105,7 +105,7 @@ export default function Modal({
                     </svg>
                   </button>
                 </Dialog.Title>
-                <div className='px-2'>
+                <div className='px-2 py-1'>
                   {children}
                 </div>
                 <div className='flex justify-center gap-2 flex-wrap'>
