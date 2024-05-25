@@ -70,15 +70,18 @@ export default function MultiSelectLevel({ controlStyles, defaultValue, onSelect
     styles={{
       control: (provided: any, state: any) => ({
         ...provided,
-        backgroundColor: 'var(--bg-color-2)',
-        borderColor: state.isFocused ? 'rgb(37 99 235)' : 'var(--bg-color-4)',
-        borderRadius: '0.375rem',
+        backgroundColor: 'var(--bg-color)',
+        borderColor: state.isFocused ? 'rgb(59 130 246)' : 'var(--bg-color-3)',
+        borderRadius: '0.25rem',
         borderWidth: '1px',
         boxShadow: 'none',
         cursor: 'text',
-        height: '2.5rem',
+        height: 42,
         maxWidth: '100%',
-        width: '13rem',
+        minWidth: '13rem',
+        '&:hover': {
+          borderColor: undefined,
+        },
         ...controlStyles,
       }),
       container: (provided: any) => ({
@@ -101,7 +104,7 @@ export default function MultiSelectLevel({ controlStyles, defaultValue, onSelect
         ...provided,
         backgroundColor: 'var(--bg-color-2)',
         borderColor: 'var(--bg-color-4)',
-        borderRadius: '0.375rem',
+        borderRadius: '0.25rem',
         borderWidth: '1px',
         marginTop: '2px',
       }),

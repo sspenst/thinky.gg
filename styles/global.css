@@ -588,3 +588,22 @@ body {
 #headlessui-portal-root > [data-headlessui-portal]:nth-child(2) > div > div > div:first-child {
   user-select: none;
 }
+
+input, textarea {
+  background-color: var(--bg-color);
+  border: 1px solid var(--bg-color-3);
+  border-radius: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  transition-duration: 150ms;
+  transition-property: border-color;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--color-gray);
+}
+
+input:focus, textarea:focus {
+  border-color: rgb(59 130 246);
+  outline: none;
+}

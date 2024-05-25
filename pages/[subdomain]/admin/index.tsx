@@ -267,7 +267,7 @@ export default function AdminPage({ adminQuery, level, user }: AdminPageProps) {
                   </div>
                   <div className='flex-grow'>
                     <input
-                      className='p-1 rounded-md w-full'
+                      className='w-full'
                       onClick={(e) => {
                         (e.target as HTMLInputElement).select();
                         navigator.clipboard.writeText(str);

@@ -494,7 +494,6 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
     <Page title={'Users'}>
       <div className='flex flex-col items-center m-2 gap-2'>
         <input
-          className='form-control relative min-w-0 block w-52 px-3 py-1.5 h-10 bg-clip-padding border border-color-4 rounded-md transition ease-in-out m-0 focus:border-blue-600 focus:outline-none'
           key='search-level-input'
           onChange={e => {
             setQueryHelper({

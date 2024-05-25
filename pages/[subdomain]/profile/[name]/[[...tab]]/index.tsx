@@ -14,6 +14,7 @@ import { GameId } from '@root/constants/GameId';
 import { GameType } from '@root/constants/Games';
 import StatFilter from '@root/constants/statFilter';
 import { AppContext } from '@root/contexts/appContext';
+import { blueButton } from '@root/helpers/className';
 import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { getUsersWithMultiplayerProfile } from '@root/helpers/getUsersWithMultiplayerProfile';
@@ -562,7 +563,7 @@ export default function ProfilePage({
         {reqUser?._id === user._id &&
           <div className='text-center'>
             <button
-              className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer'
+              className={blueButton}
               onClick={() => {
                 setIsAddCollectionOpen(true);
               }}
@@ -612,13 +613,13 @@ export default function ProfilePage({
         />
         {reqUser?._id === user._id &&
           <Link
-            className='flex items-center gap-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer w-fit'
+            className={classNames('flex items-center gap-2', blueButton)}
             href='/create'
           >
             <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='2 2 20 20' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
               <path strokeLinecap='round' strokeLinejoin='round' d='M12 4.5v15m7.5-7.5h-15' />
             </svg>
-            <span className='text-lg font-bold'>Create Level</span>
+            <span>Create Level</span>
           </Link>
         }
         <Link
