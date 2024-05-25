@@ -1,28 +1,43 @@
+import FormTemplate from '@root/components/forms/formTemplate';
 import Page from '@root/components/page/page';
 import StyledTooltip from '@root/components/page/styledTooltip';
 import { AppContext } from '@root/contexts/appContext';
-import redirectToHome from '@root/helpers/redirectToHome';
-import { GetServerSidePropsContext } from 'next';
+import { blueButton } from '@root/helpers/className';
+import { getUserFromToken } from '@root/lib/withAuth';
+import classNames from 'classnames';
+import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 import React, { useContext, useRef, useState } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { toast } from 'react-hot-toast';
 import { useSWRConfig } from 'swr';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
-  return await redirectToHome(context, { recaptchaPublicKey: process.env.RECAPTCHA_PUBLIC_KEY || '' });
+  const token = context.req?.cookies?.token;
+  const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
+
+  if (reqUser) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: { recaptchaPublicKey: process.env.RECAPTCHA_PUBLIC_KEY || '' },
+  };
 }
 
 /* istanbul ignore next */
 export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?: string}) {
   const { cache } = useSWRConfig();
-  const { userConfig, mutateUser, setShouldAttemptAuth } = useContext(AppContext);
+  const { mutateUser, setShouldAttemptAuth, userConfig } = useContext(AppContext);
   const [name, setName] = useState<string>('');
   const recaptchaRef = useRef<ReCAPTCHA>(null);
   const recaptchaToken = useRef('');
   const [registrationState, setRegistrationState] = useState('registering');
-  const router = useRouter();
   const [showRecaptcha, setShowRecaptcha] = useState(false);
   const [temporaryPassword, setTemporaryPassword] = useState<string>('');
 
@@ -48,7 +63,7 @@ export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?
       <button
         data-tooltip-content='Copy to clipboard'
         data-tooltip-id={'copy-to-clipboard-' + text}
-        className='bg-gray-500 hover:bg-gray-700 text-white font-bold py-1 px-1 rounded focus:outline-none focus:shadow-outline cursor-pointer'
+        className='bg-neutral-500 hover:bg-neutral-600 text-white font-bold py-1 px-1 rounded focus:outline-none focus:shadow-outline cursor-pointer'
         onClick={handleCopy}
       > <StyledTooltip id={'copy-to-clipboard-' + text} />
         {isCopied ? <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-clipboard-check-fill' viewBox='0 0 16 16'>
@@ -61,86 +76,6 @@ export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?
       </button>
     );
   };
-
-  const text = registrationState === 'registered' ?
-    <div className='flex flex-col items-center gap-4'>
-      <div>Guest account created!</div>
-      <div className='flex flex-row align-center self-center gap-3'>
-        <label htmlFor='username' className='block text-lg font-bold self-center align-center'>
-          Username:
-        </label>
-        <div className='relative'>
-          <input
-            id='username'
-            type='text'
-            readOnly
-            value={name}
-            onClick={(e) => (e.target as HTMLInputElement).select()}
-            className='shadow appearance-none border rounded-lg py-2 px-1 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-white'
-          />
-          <div className='absolute inset-y-0 right-0 flex items-center px-1'>
-            <CopyToClipboardButton text={name} />
-          </div>
-        </div>
-      </div>
-      <div className='flex flex-row align-center self-center gap-3'>
-        <label htmlFor='password' className='block text-lg font-bold  self-center align-center'>
-          Password:
-        </label>
-        <div className='relative'>
-          <input
-            id='password'
-            type='text'
-            readOnly
-            value={temporaryPassword}
-            onClick={(e) => (e.target as HTMLInputElement).select()}
-            className='shadow appearance-none border rounded-lg w-full py-2 px-1 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-white'
-          />
-          <div className='absolute inset-y-0 right-0 flex items-center px-1'>
-            <CopyToClipboardButton text={temporaryPassword} />
-          </div>
-        </div>
-      </div>
-      <div>
-        Please save your password as you <span className='font-bold underline'>will not be able to recover it</span> unless you convert to a regular (free) account.
-      </div>
-      <button
-        className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer'
-        onClick={() => {
-          if (userConfig?.tutorialCompletedAt) {
-            router.push('/play');
-          } else {
-            router.push('/tutorial');
-          }
-        }}
-      >
-        Continue
-      </button>
-    </div>
-    :
-    <div className='flex flex-col gap-4 items-center'>
-      <ul className='text-left list-disc px-6 text-sm gap-1 flex flex-col'>
-        <li>Your progress is saved and you can convert to a regular account via account settings</li>
-        <li>You cannot review or create levels with a guest account</li>
-        <li>Your guest account may be deleted after 7 days of no activity</li>
-        <li>By creating a guest account you agree to our <a className='underline' href='https://docs.google.com/document/d/e/2PACX-1vR4E-RcuIpXSrRtR3T3y9begevVF_yq7idcWWx1A-I9w_VRcHhPTkW1A7DeUx2pGOcyuKifEad3Qokn/pub' rel='noreferrer' target='_blank'>terms of service</a> and reviewed the <a className='underline' href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub' rel='noreferrer' target='_blank'>privacy policy</a></li>
-      </ul>
-      {recaptchaPublicKey && showRecaptcha ?
-        <ReCAPTCHA
-          size='normal'
-          onChange={onRecaptchaChange}
-          ref={recaptchaRef}
-          sitekey={recaptchaPublicKey ?? ''}
-        />
-        :
-        <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer' onClick={fetchSignup}>
-          Play
-        </button>
-      }
-      <Link className='font-bold text-sm text-blue-500 hover:text-blue-400' href='/signup'>
-        Sign up with a regular account instead
-      </Link>
-    </div>;
 
   async function fetchSignup() {
     if (recaptchaPublicKey) {
@@ -217,12 +152,79 @@ export default function PlayAsGuest({ recaptchaPublicKey }: {recaptchaPublicKey?
 
   return (
     <Page title='Play as Guest'>
-      <div className='flex flex-col items-center justify-center p-3 gap-4'>
-        <h1 className='text-2xl font-bold'>
-          Play as Guest
-        </h1>
-        {text}
-      </div>
+      <FormTemplate title={registrationState === 'registered' ? 'Guest account created!' : 'Play as guest'}>
+        <div className='flex flex-col items-center justify-center gap-4'>
+          {registrationState === 'registered' ?
+            <div className='flex flex-col gap-6'>
+              <div>
+                <label className='block text-sm font-medium mb-2' htmlFor='username'>Username</label>
+                <div className='relative'>
+                  <input
+                    className='w-full'
+                    id='username'
+                    onClick={(e) => (e.target as HTMLInputElement).select()}
+                    readOnly
+                    type='text'
+                    value={name}
+                  />
+                  <div className='absolute inset-y-0 right-1.5 flex items-center px-1'>
+                    <CopyToClipboardButton text={name} />
+                  </div>
+                </div>
+              </div>
+              <div>
+                <label className='block text-sm font-medium mb-2' htmlFor='password'>Password</label>
+                <div className='relative'>
+                  <input
+                    className='w-full'
+                    id='password'
+                    onClick={(e) => (e.target as HTMLInputElement).select()}
+                    readOnly
+                    type='password'
+                    value={temporaryPassword}
+                  />
+                  <div className='absolute inset-y-0 right-1.5 flex items-center px-1'>
+                    <CopyToClipboardButton text={temporaryPassword} />
+                  </div>
+                </div>
+              </div>
+              <span className='text-sm'>
+                Please save your password as you <span className='font-bold underline'>will not be able to recover it</span> unless you convert to a regular account.
+              </span>
+              <Link
+                className='bg-blue-500 hover:bg-blue-600 text-white text-center w-full font-medium py-2 px-3 rounded'
+                href={userConfig?.tutorialCompletedAt ? '/play' : '/tutorial'}
+              >
+                Continue
+              </Link>
+            </div>
+            :
+            <div className='flex flex-col gap-6 items-center'>
+              <ul className='text-left text-sm gap-4 flex flex-col'>
+                <li>Your progress is saved and you can convert to a regular account later</li>
+                <li>You cannot review or create levels with a guest account</li>
+                <li>Your guest account may be deleted after 7 days of no activity</li>
+                <li>By creating a guest account you agree to our <a className='underline' href='https://docs.google.com/document/d/e/2PACX-1vR4E-RcuIpXSrRtR3T3y9begevVF_yq7idcWWx1A-I9w_VRcHhPTkW1A7DeUx2pGOcyuKifEad3Qokn/pub' rel='noreferrer' target='_blank'>terms of service</a> and reviewed the <a className='underline' href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub' rel='noreferrer' target='_blank'>privacy policy</a></li>
+              </ul>
+              {recaptchaPublicKey && showRecaptcha ?
+                <ReCAPTCHA
+                  size='normal'
+                  onChange={onRecaptchaChange}
+                  ref={recaptchaRef}
+                  sitekey={recaptchaPublicKey ?? ''}
+                />
+                :
+                <button className={classNames(blueButton, 'w-full')} onClick={fetchSignup}>
+                  Play as guest
+                </button>
+              }
+              <Link className='font-medium text-sm text-blue-500 hover:text-blue-400' href='/signup'>
+                Sign up with a regular account
+              </Link>
+            </div>
+          }
+        </div>
+      </FormTemplate>
     </Page>
   );
 }

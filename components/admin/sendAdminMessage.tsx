@@ -60,13 +60,11 @@ export default function SendAdminMessage({ runningCommand, selectedUserCommand, 
         Send Admin Message
       </h2>
       <ReactTextareaAutosize
-        className='bg-inherit block py-1 -mt-2 w-96 max-w-full border-b border-neutral-500 disabled:text-neutral-500 transition resize-none placeholder:text-neutral-500 focus:outline-0 rounded-none focus:border-black focus:dark:border-white'
         onChange={(e) => setAdminMessage(e.currentTarget.value)}
         placeholder='Admin message...'
         value={adminMessage}
       />
       <ReactTextareaAutosize
-        className='bg-inherit block py-1 -mt-2 w-96 max-w-full border-b border-neutral-500 disabled:text-neutral-500 transition resize-none placeholder:text-neutral-500 focus:outline-0 rounded-none focus:border-black focus:dark:border-white'
         onChange={(e) => setAdminHref(e.currentTarget.value)}
         placeholder='Href (eg: "/pro")...'
         value={adminHref}

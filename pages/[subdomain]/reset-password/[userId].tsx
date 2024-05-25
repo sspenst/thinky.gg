@@ -14,13 +14,11 @@ export default function ResetPassword() {
   const router = useRouter();
   const { token, userId } = router.query;
 
-  const decodedToken = typeof token === 'string' ? decodeURIComponent(token) : null;
-
-  return (!decodedToken || typeof userId !== 'string' ? null :
+  return (
     <Page title={'Reset Password'}>
       <ResetPasswordForm
-        token={decodedToken}
-        userId={userId}
+        token={typeof token === 'string' ? decodeURIComponent(token) : null}
+        userId={typeof userId === 'string' ? userId : null}
       />
     </Page>
   );
