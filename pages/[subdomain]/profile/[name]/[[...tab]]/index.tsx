@@ -469,7 +469,7 @@ export default function ProfilePage({
   const difficultyType = game.type === GameType.COMPLETE_AND_SHORTEST ? 'Completed' : 'Solved';
   // create an array of objects with the id, trigger element (eg. button), and the content element
   const tabsContent = {
-    [ProfileTab.Profile]: (user.ts ?
+    [ProfileTab.Profile]:
       <div className='flex flex-col gap-12 mt-4'>
         <div className='flex flex-col sm:flex-row gap-8 justify-center items-center max-w-full'>
           <div className='flex items-center justify-center'>
@@ -481,7 +481,7 @@ export default function ProfilePage({
               <RoleIcons id='profile' size={24} user={user} />
             </div>
             {!game.isNotAGame && <div className='flex gap-1'>
-              {levelsSolvedByDifficulty ? <PlayerRank levelsSolvedByDifficulty={levelsSolvedByDifficulty} tooltip='Highest unlocked skill achievement' user={user} /> : '...'}
+              {levelsSolvedByDifficulty ? <PlayerRank levelsSolvedByDifficulty={levelsSolvedByDifficulty} tooltip='Highest unlocked skill achievement' user={user} /> : <LoadingSpinner size={24} />}
             </div>}
             <div className='flex gap-4 flex-wrap justify-center py-1'>
               <FollowButton
@@ -517,7 +517,7 @@ export default function ProfilePage({
               {!game.isNotAGame && !game.disableRanked && <div><span className='font-bold'>Ranked Solves:</span> {user.config?.calcRankedSolves ?? 0} 🏅</div>}
               {!game.isNotAGame && <div><span className='font-bold'>Levels Solved:</span> {user.config?.calcLevelsSolvedCount ?? 0}</div>}
               {!game.isNotAGame && <div><span className='font-bold'>Levels Completed:</span> {user.config?.calcLevelsCompletedCount ?? 0}</div>}
-              {user.hideStatus ? null : isOnline(user) ?
+              {user.hideStatus || !user.ts ? null : isOnline(user) ?
                 <div className='flex flex-wrap gap-1 items-center'>
                   <span className='font-bold'>Currently Playing:</span>
                   <GameLogoAndLabel gameId={user.lastGame ?? GameId.THINKY} id={'profile'} size={20} />
@@ -525,7 +525,7 @@ export default function ProfilePage({
                 :
                 <div><span className='font-bold'>Last Seen:</span> <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.last_visited_at ? user.last_visited_at : user.ts} /></div>
               }
-              <div><span className='font-bold'>Registered:</span> <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.ts} /></div>
+              <div><span className='font-bold'>Registered:</span> {user.ts ? <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.ts} /> : 'Not registered'}</div>
             </div>
             {!game.isNotAGame &&
               <div>
@@ -550,12 +550,7 @@ export default function ProfilePage({
           following={following}
           isOpen={isFollowingOpen}
         />
-      </div>
-      :
-      <div className='text-center break-words'>
-        {user.name} has not yet registered.
-      </div>
-    ),
+      </div>,
     [ProfileTab.Insights]: <ProfileInsights reqUser={reqUser} user={user} />,
     [ProfileTab.Multiplayer]: <ProfileMultiplayer user={user} />,
     [ProfileTab.Collections]: (

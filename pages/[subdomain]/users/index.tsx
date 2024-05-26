@@ -16,7 +16,6 @@ import Page from '../../../components/page/page';
 import Dimensions from '../../../constants/dimensions';
 import GraphType from '../../../constants/graphType';
 import { AppContext } from '../../../contexts/appContext';
-import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import { MultiplayerMatchType } from '../../../models/constants/multiplayer';
@@ -41,8 +40,7 @@ interface UserWithStats extends User {
 export interface UserSearchQuery extends ParsedUrlQuery {
   page: string;
   search: string;
-  showOnline: string;
-  showUnregistered: string;
+  showNotRegistered: string;
   sortBy: string;
   sortDir: 'desc' | 'asc';
 }
@@ -50,8 +48,7 @@ export interface UserSearchQuery extends ParsedUrlQuery {
 export const DEFAULT_QUERY = {
   page: '1',
   search: '',
-  showOnline: 'false',
-  showUnregistered: 'false',
+  showNotRegistered: 'false',
   sortBy: 'config.calcLevelsSolvedCount',
   sortDir: 'desc',
 } as UserSearchQuery;
@@ -71,7 +68,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }
   }
 
-  const { page, search, showOnline, showUnregistered, sortBy, sortDir } = searchQuery;
+  const { page, search, showNotRegistered, sortBy, sortDir } = searchQuery;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const searchObj = {} as { [key: string]: any };
@@ -83,13 +80,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  if (showUnregistered !== 'true') {
+  if (showNotRegistered !== 'true') {
     searchObj['ts'] = { $exists: true };
-  }
-
-  if (showOnline === 'true') {
-    searchObj['hideStatus'] = { $ne: true };
-    searchObj['last_visited_at'] = { $gt: TimerUtil.getTs() - 5 * 60 };
   }
 
   const sortObj = [[sortBy, sortDir === 'asc' ? 1 : -1]];
@@ -506,48 +498,20 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
         />
         <div className='flex flex-row gap-2 justify-center text-sm'>
           <input
-            checked={query.showOnline === 'true'}
-            id='showOnline'
+            checked={query.showNotRegistered === 'true'}
+            id='showNotRegistered'
             name='collection'
             onChange={() => {
               fetchLevels({
                 ...query,
-                showOnline: String(query.showOnline !== 'true'),
+                showNotRegistered: String(query.showNotRegistered !== 'true'),
               });
             }}
             type='checkbox'
           />
-          <label htmlFor='showOnline'>
-              Show online
+          <label htmlFor='showNotRegistered'>
+              Show not registered
           </label>
-        </div>
-        <div className='flex flex-row gap-2 justify-center text-sm'>
-          <input
-            checked={query.showUnregistered === 'true'}
-            id='showUnregistered'
-            name='collection'
-            onChange={() => {
-              fetchLevels({
-                ...query,
-                showUnregistered: String(query.showUnregistered !== 'true'),
-              });
-            }}
-            type='checkbox'
-          />
-          <label htmlFor='showUnregistered'>
-              Show unregistered
-          </label>
-        </div>
-        <div className='flex justify-center'>
-          <button
-            className='italic underline text-sm'
-            onClick={() => {
-              setQuery({ ...DEFAULT_QUERY });
-              fetchLevels({ ...DEFAULT_QUERY });
-            }}
-          >
-              Reset search filters
-          </button>
         </div>
       </div>
       <DataTable
