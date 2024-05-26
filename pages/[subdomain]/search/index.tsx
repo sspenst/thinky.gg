@@ -740,58 +740,62 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
         </Menu>
         <TimeRangeMenu onTimeRangeClick={onTimeRangeClick} timeRange={query.timeRange} />
       </div>
-      {!game.disableRanked &&
-        <div className='flex items-center gap-1 border border-color-4 rounded-md px-2 py-1'>
+      <div className='flex flex-wrap items-center justify-center py-0.5 gap-2'>
+        {!game.disableRanked &&
+          <div className='flex items-center gap-1 border border-color-3 rounded-md px-2 py-1'>
+            <input
+              checked={query.isRanked === 'true'}
+              id='ranked_checkbox'
+              onChange={() => {
+                fetchLevels({
+                  ...query,
+                  isRanked: query.isRanked === 'true' ? 'false' : 'true',
+                  page: '1',
+                });
+              }}
+              type='checkbox'
+            />
+            <label className='text-sm font-medium' htmlFor='ranked_checkbox'>
+              🏅 Ranked
+            </label>
+          </div>
+        }
+        <div>
+          <label htmlFor='min-step' className='text-xs font-medium pr-1'>Min steps</label>
           <input
-            checked={query.isRanked === 'true'}
-            id='ranked_checkbox'
-            onChange={() => {
-              fetchLevels({
-                ...query,
-                isRanked: query.isRanked === 'true' ? 'false' : 'true',
+            className='w-20 text-sm px-2 py-1'
+            id='min-step'
+            max='2500'
+            min='1'
+            onChange={(e: React.FormEvent<HTMLInputElement>) => {
+              queryDebounceHelper({
+                minSteps: (e.target as HTMLInputElement).value,
                 page: '1',
               });
             }}
-            type='checkbox'
+            step='1'
+            type='number'
+            value={query.minSteps}
           />
-          <label className='text-sm font-medium' htmlFor='ranked_checkbox'>
-            🏅 Ranked
-          </label>
         </div>
-      }
-      <div className='flex items-center justify-center py-0.5'>
-        <label htmlFor='min-step' className='text-xs font-medium pr-1'>Min steps</label>
-        <input
-          className='w-20 text-sm px-2 py-1 mr-2'
-          id='min-step'
-          max='2500'
-          min='1'
-          onChange={(e: React.FormEvent<HTMLInputElement>) => {
-            queryDebounceHelper({
-              minSteps: (e.target as HTMLInputElement).value,
-              page: '1',
-            });
-          }}
-          step='1'
-          type='number'
-          value={query.minSteps}
-        />
-        <label htmlFor='max-step' className='text-xs font-medium pr-1'>Max steps</label>
-        <input
-          className='w-20 text-sm px-2 py-1'
-          id='max-step'
-          max='2500'
-          min='1'
-          onChange={(e: React.FormEvent<HTMLInputElement>) => {
-            queryDebounceHelper({
-              maxSteps: (e.target as HTMLInputElement).value,
-              page: '1',
-            });
-          }}
-          step='1'
-          type='number'
-          value={query.maxSteps}
-        />
+        <div>
+          <label htmlFor='max-step' className='text-xs font-medium pr-1'>Max steps</label>
+          <input
+            className='w-20 text-sm px-2 py-1'
+            id='max-step'
+            max='2500'
+            min='1'
+            onChange={(e: React.FormEvent<HTMLInputElement>) => {
+              queryDebounceHelper({
+                maxSteps: (e.target as HTMLInputElement).value,
+                page: '1',
+              });
+            }}
+            step='1'
+            type='number'
+            value={query.maxSteps}
+          />
+        </div>
       </div>
       <div className='flex justify-center items-center gap-2'>
         <Link href='/pro' passHref>

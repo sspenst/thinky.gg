@@ -96,54 +96,51 @@ export default function FormattedUser({ className, hideAvatar, id, noLinks, noTo
       <div
         className='flex items-center gap-2 truncate w-fit'
         data-tooltip-html={renderToStaticMarkup(
-          <div className='flex flex-col gap-0.5 p-1 items-start text-sm truncate'>
-            {!userExtendedData ? <LoadingSpinner /> : <>
-              {!userExtendedData.user?.ts ? <span>Unregistered for {game.displayName}</span> : <>
-                {!game.isNotAGame &&
-                  <PlayerRank
-                    levelsSolvedByDifficulty={userExtendedData?.levelsSolvedByDifficulty}
-                    user={user}
-                  />
-                }
-                {!game.isNotAGame && !game.disableRanked &&
-                <div className='flex gap-1'>
-                  <span className='font-medium'>Ranked Solves:</span>
-                  <span className='gray'>{userExtendedData.user.config?.calcRankedSolves} 🏅</span>
-                </div>
-                }
-                {!game.isNotAGame &&
-                <div className='flex gap-1'>
-                  <span className='font-medium'>Levels Solved:</span>
-                  <span className='gray'>{userExtendedData.user.config?.calcLevelsSolvedCount}</span>
-                </div>
-                }
-                {!game.isNotAGame &&
-                <div className='flex gap-1'>
-                  <span className='font-medium'>Levels Completed:</span>
-                  <span className='gray'>{userExtendedData.user.config?.calcLevelsCompletedCount}</span>
-                </div>
-                }
-                {user.hideStatus ? null : isOnline(userExtendedData.user) ?
-                  <div className='flex gap-1 items-center'>
-                    <span className='font-medium'>Currently Playing:</span>
-                    <div className='flex gap-1' style={{
-                      color: 'var(--color-gray)',
-                    }}>
-                      <GameLogoAndLabel gameId={userExtendedData.user.lastGame ?? GameId.THINKY} id={id} size={16} />
-                    </div>
+          !userExtendedData ? <LoadingSpinner /> :
+            <div className='flex flex-col gap-0.5 p-1 items-start text-sm truncate'>
+              {!game.isNotAGame &&
+                <PlayerRank
+                  levelsSolvedByDifficulty={userExtendedData?.levelsSolvedByDifficulty}
+                  user={user}
+                />
+              }
+              {!game.isNotAGame && !game.disableRanked &&
+              <div className='flex gap-1'>
+                <span className='font-medium'>Ranked Solves:</span>
+                <span className='gray'>{userExtendedData.user.config?.calcRankedSolves ?? 0} 🏅</span>
+              </div>
+              }
+              {!game.isNotAGame &&
+              <div className='flex gap-1'>
+                <span className='font-medium'>Levels Solved:</span>
+                <span className='gray'>{userExtendedData.user.config?.calcLevelsSolvedCount ?? 0}</span>
+              </div>
+              }
+              {!game.isNotAGame &&
+              <div className='flex gap-1'>
+                <span className='font-medium'>Levels Completed:</span>
+                <span className='gray'>{userExtendedData.user.config?.calcLevelsCompletedCount ?? 0}</span>
+              </div>
+              }
+              {user.hideStatus || !userExtendedData.user.ts ? null : isOnline(userExtendedData.user) ?
+                <div className='flex gap-1 items-center'>
+                  <span className='font-medium'>Currently Playing:</span>
+                  <div className='flex gap-1' style={{
+                    color: 'var(--color-gray)',
+                  }}>
+                    <GameLogoAndLabel gameId={userExtendedData.user.lastGame ?? GameId.THINKY} id={id} size={16} />
                   </div>
-                  :
-                  <div className='flex gap-1'>
-                    <span className='font-medium'>Last Seen:</span> <FormattedDate ts={user.last_visited_at ? user.last_visited_at : user.ts} />
-                  </div>
-                }
-                <div className='flex gap-1'>
-                  <span className='font-medium'>Registered:</span>
-                  <FormattedDate ts={userExtendedData.user?.ts} />
                 </div>
-              </>}
-            </>}
-          </div>
+                :
+                <div className='flex gap-1'>
+                  <span className='font-medium'>Last Seen:</span> <FormattedDate ts={user.last_visited_at ? user.last_visited_at : user.ts} />
+                </div>
+              }
+              <div className='flex gap-1'>
+                <span className='font-medium'>Registered:</span>
+                {userExtendedData.user?.ts ? <FormattedDate ts={userExtendedData.user.ts} /> : <span className='gray'>Not registered</span>}
+              </div>
+            </div>
         )}
         data-tooltip-id={tooltipId}
       >
