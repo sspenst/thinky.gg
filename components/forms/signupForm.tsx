@@ -159,7 +159,10 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
 
   return (
     <FormTemplate title='Create your Thinky.gg account'>
-      <div className='flex flex-col gap-6'>
+      <form className='flex flex-col gap-6' onSubmit={(e) => {
+        e.preventDefault();
+        onSubmit(null);
+      }}>
         <StepWizard className='w-full' instance={setWizard}>
           <div className='flex flex-col gap-6'>
             <div>
@@ -227,7 +230,7 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
                   sitekey={recaptchaPublicKey}
                 />
                 :
-                <button className={classNames(blueButton, 'w-full')} onClick={() => onSubmit(null)}>Sign up</button>
+                <button className={classNames(blueButton, 'w-full')} type='submit'>Sign up</button>
               }
             </div>
           </div>
@@ -251,7 +254,7 @@ export default function SignupForm({ recaptchaPublicKey }: SignupFormProps) {
             </Link>
           </div>
         </div>
-      </div>
+      </form>
     </FormTemplate>
   );
 }

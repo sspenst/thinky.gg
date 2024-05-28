@@ -71,7 +71,7 @@ export default function LoginForm() {
       <form className='flex flex-col gap-6' onSubmit={onSubmit}>
         <div>
           <label className='block text-sm font-medium mb-2' htmlFor='username'>Username or Email</label>
-          <input onChange={e => setName(e.target.value)} className='w-full' id='username' type='text' placeholder='Username or Email' />
+          <input required onChange={e => setName(e.target.value)} className='w-full' id='username' type='text' placeholder='Username or Email' />
         </div>
         <div>
           <div className='flex justify-between gap-2 flex-wrap mb-2'>
@@ -83,7 +83,7 @@ export default function LoginForm() {
               Forgot your password?
             </Link>
           </div>
-          <input onChange={e => setPassword(e.target.value)} className='w-full' id='password' type='password' placeholder='Password' />
+          <input required onChange={e => setPassword(e.target.value)} className='w-full' id='password' type='password' placeholder='Password' />
         </div>
         <button className={classNames(blueButton, 'w-full')} type='submit'>Log in</button>
         {errorMessage &&
