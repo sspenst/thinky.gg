@@ -528,8 +528,8 @@ export default function TutorialPathology() {
         onSolve: niceJob,
       },
       {
-        header: <div>
-          <div className='text-3xl mb-6 fadeIn'>Congratulations on completing the tutorial!</div>
+        header: <div className='flex flex-col gap-6'>
+          <div className='text-3xl fadeIn'>Congratulations on completing the tutorial!</div>
           {isLoggedIn ?
             <div className='text-xl fadeIn' style={{
               pointerEvents: 'all',
@@ -538,26 +538,20 @@ export default function TutorialPathology() {
               Continue your Pathology journey with the <Link href='/play' className='font-bold text-blue-500 hover:text-blue-400'>Campaign</Link>!
             </div>
             :
-            <div className='flex flex-col gap-3 mt-10'>
+            <>
               <div className='text-xl fadeIn' style={{
                 pointerEvents: 'all',
                 animationDelay: '0.5s'
               }}>
-                Ready to Play?
+                <Link href='/signup' className='font-bold text-blue-500 hover:text-blue-400'>Sign up</Link> to play the campaign and save your progress!
               </div>
-              <div className='fadeIn' style={{
+              <div className='text-md fadeIn' style={{
                 pointerEvents: 'all',
                 animationDelay: '1s'
               }}>
-                <Link href='/signup' className='text-4xl font-bold text-green-500 hover:text-blue-400'>Start Level 1</Link>
+                Or head back to the <Link href='/' className='font-bold text-blue-500 hover:text-blue-400'>Home page</Link> to keep exploring.
               </div>
-              <div className='fadeIn' style={{
-                pointerEvents: 'all',
-                animationDelay: '1.3s'
-              }}>
-                <Link href='/play-as-guest' className='text-lg font-bold text-blue-500 hover:text-blue-400'>(or start without signing up)</Link>
-              </div>
-            </div>
+            </>
           }
         </div>,
       },
