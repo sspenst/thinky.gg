@@ -90,7 +90,7 @@ export default function ReviewForm({ inModal, review }: ReviewFormProps) {
     );
   }
 
-  const authorId = levelContext?.level.archivedBy?.toString() ?? levelContext?.level.userId._id.toString();
+  const authorId = levelContext?.level.archivedBy?._id?.toString() ?? levelContext?.level.userId._id.toString();
   const isOwnLevel = authorId === user._id.toString();
 
   return (
