@@ -67,13 +67,11 @@ export default function Match() {
   const matchInProgress = match?.state === MultiplayerMatchState.ACTIVE && match?.timeUntilStart <= 0;
   const iAmPlaying = match?.players.some(player => player._id.toString() === user?._id.toString());
   const isSpectating = !iAmPlaying && match?.state === MultiplayerMatchState.ACTIVE;
-  const otherPlayer = match?.players.find(player => player._id.toString() !== user?._id.toString());
   const { data: headToHead, isLoading: loadingHeadToHead } = useSWRHelper(
-    '/api/match/head2head?players=' + user?._id.toString() + ',' + otherPlayer?._id.toString(),
+    '/api/match/head2head?players=' + match?.players.map(player => player._id.toString()).join(','),
     {},
     { revalidateOnFocus: false },
     // only fetch this data if you are playing and are on the ready screen before the match
-    !(iAmPlaying && !matchInProgress),
   ) as {
     data: {
       totalWins: number,
@@ -432,9 +430,9 @@ export default function Match() {
           }
         </h1>
         {/* if you are in the game and the game is about to start then say Your Record */}
-        {iAmPlaying && !matchInProgress && !loadingHeadToHead &&
+        {!matchInProgress && !loadingHeadToHead &&
           <h2 className='text-xl font-bold text-center p-3'>
-            Your record against {otherPlayer?.name} is {headToHead?.totalWins} - {headToHead?.totalLosses} - {headToHead?.totalTies}
+            {match.players[0].name} record against {match.players[1]?.name} is {headToHead?.totalWins} - {headToHead?.totalLosses} - {headToHead?.totalTies}
           </h2>
         }
         { match.state === MultiplayerMatchState.ABORTED &&
