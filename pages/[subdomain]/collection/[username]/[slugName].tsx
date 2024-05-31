@@ -88,26 +88,25 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const levelIds = collection.levels as Level[];
   const levelIdsAsStrings = levelIds.map(level => level._id.toString()).join(',');
+
   const queryResult = await doQuery(gameId, {
     includeLevelIds: levelIdsAsStrings,
     page: page ? '' + ( 1 + parseInt(page.toString())) : '1',
     search: search ? search.toString() : '',
     statFilter: statFilter ? statFilter.toString() as StatFilter : StatFilter.All,
     timeRange: TimeRange[TimeRange.All],
+    sortBy: 'sortField',
+    sortDir: 'asc',
     // TODO: when filtering, the original collection order is not maintained and instead we sort here
     // maybe need a separate doCollectionQuery function
-    // Or better is to allow getCollection to take a query object
-    sortBy: 'ts',
-    sortDir: 'asc',
   }, reqUser);
 
-  collection.levels = queryResult?.levels ?? [];
-  // sort levels back to original order
-  collection.levels.sort((a, b) => {
-    return levelIds.findIndex(level => level._id.toString() === a._id.toString()) - levelIds.findIndex(level => level._id.toString() === b._id.toString());
-  });
-
-  if (queryResult) {rows = queryResult.totalRows;}
+  if (queryResult) {
+    collection.levels = queryResult.levels;
+    rows = queryResult.totalRows;
+  } else {
+    collection.levels = [];
+  }
 
   return {
     props: {

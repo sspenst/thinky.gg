@@ -226,6 +226,8 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
       lookupUserBeforeSort = true;
     } else if (query.sortBy === 'name') {
       sortObj.push(['name', sortDirection]);
+    } else if (query.sortBy === 'sortField') {
+      sortObj.push(['sortField', sortDirection]);
     } else if (query.sortBy === 'leastMoves') {
       sortObj.push(['leastMoves', sortDirection]);
     } else if (query.sortBy === 'ts') {
@@ -429,6 +431,13 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
               // NB: projection is typically supposed to be the last stage of the pipeline, but we need it here because of potential sorting by calc_playattempts_unique_users_count
               // TODO: instead can have an optional $addFields here, then do the projection after
               { $project: { ...projection } },
+              {
+                $addFields: {
+                  sortField: {
+                    $indexOfArray: [query.includeLevelIds?.split(','), { $toString: '$_id' }],
+                  }
+                }
+              },
               { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
               ...statLookupAndMatchStage,
               { $skip: skip },
