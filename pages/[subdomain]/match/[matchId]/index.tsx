@@ -430,7 +430,7 @@ export default function Match() {
           }
         </h1>
         {/* if you are in the game and the game is about to start then say Your Record */}
-        {!matchInProgress && !loadingHeadToHead &&
+        {!matchInProgress && !loadingHeadToHead && match.players.length === 2 &&
           <h2 className='text-xl font-bold text-center p-3'>
             {match.players[0].name} record against {match.players[1]?.name} is {headToHead?.totalWins} - {headToHead?.totalLosses} - {headToHead?.totalTies}
           </h2>
