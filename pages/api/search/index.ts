@@ -226,8 +226,8 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
       lookupUserBeforeSort = true;
     } else if (query.sortBy === 'name') {
       sortObj.push(['name', sortDirection]);
-    } else if (query.sortBy === 'sortField') {
-      sortObj.push(['sortField', sortDirection]);
+    } else if (query.sortBy === 'collectionOrder') {
+      sortObj.push(['collectionOrder', sortDirection]);
     } else if (query.sortBy === 'leastMoves') {
       sortObj.push(['leastMoves', sortDirection]);
     } else if (query.sortBy === 'ts') {
@@ -433,7 +433,7 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
               { $project: { ...projection } },
               {
                 $addFields: {
-                  sortField: {
+                  collectionOrder: {
                     $indexOfArray: [query.includeLevelIds?.split(','), { $toString: '$_id' }],
                   }
                 }
