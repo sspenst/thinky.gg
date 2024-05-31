@@ -1,6 +1,4 @@
 import LevelCard from '@root/components/cards/levelCard';
-import SelectCard from '@root/components/cards/selectCard';
-import FormattedLevelLink from '@root/components/formatted/formattedLevelLink';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { redirectToLogin } from '@root/helpers/redirectToLogin';
 import { getCollection } from '@root/pages/api/collection-by-id/[id]';
@@ -88,7 +86,8 @@ export default function CollectionEdit({ collection, reqUser }: CollectionEditPr
     })
       .then(async (res) => {
         if (res.status !== 200) {
-          throw res.text();
+          toast.dismiss();
+          toast.error('Error updating collection');
         }
       })
       .catch((err) => {
