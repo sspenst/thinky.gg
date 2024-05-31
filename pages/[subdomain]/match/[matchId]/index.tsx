@@ -411,6 +411,15 @@ export default function Match() {
     return <span>Loading...</span>;
   }
 
+  const playersNotMarkedReady = match.players.filter(player => !(match.markedReady as string[]).includes(player._id.toString()));
+  const prettyMatchState = ({
+    [MultiplayerMatchState.OPEN]: 'Match Open',
+    [MultiplayerMatchState.FINISHED]: 'Match Finished',
+    [MultiplayerMatchState.ACTIVE]: 'Match about to begin',
+    [MultiplayerMatchState.ABORTED]: 'Match Aborted',
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any)[match.state];
+
   return (
     <Page
       isFullScreen={match.state === MultiplayerMatchState.ACTIVE && iAmPlaying}
@@ -419,19 +428,22 @@ export default function Match() {
       <>
         <h1 className={classNames('text-3xl font-bold text-center p-3', { 'hidden': matchInProgress })}>
           {
-            ({
-              [MultiplayerMatchState.OPEN]: 'Match Open',
-              [MultiplayerMatchState.FINISHED]: 'Match Finished',
-              [MultiplayerMatchState.ACTIVE]: 'Match about to begin',
-              [MultiplayerMatchState.ABORTED]: 'Match Aborted',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } as any)[match.state]
+            prettyMatchState
           }
         </h1>
         {/* if you are in the game and the game is about to start then say Your Record */}
         {iAmPlaying && !matchInProgress && !loadingHeadToHead &&
           <h2 className='text-xl font-bold text-center p-3'>
             Your record against {otherPlayer?.name} is {headToHead?.totalWins} - {headToHead?.totalLosses} - {headToHead?.totalTies}
+          </h2>
+        }
+        { match.state === MultiplayerMatchState.ABORTED &&
+          <h2>
+            {playersNotMarkedReady.map(player => (
+              <div key={player._id.toString()} className='text-center text-xs italic'>
+                {player.name} did not mark ready
+              </div>
+            ))}
           </h2>
         }
         {connectedPlayersInRoom && connectedPlayersInRoom.count > 2 &&
