@@ -82,23 +82,22 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  const queryParams = context.query || { search: '', page: 0, statFilter: StatFilter.All };
+  const queryParams = context.query || { search: '', page: 1, statFilter: StatFilter.All };
   const { page, search, statFilter } = queryParams;
   let rows = collection.levels.length;
 
   const levelIds = collection.levels as Level[];
   const levelIdsAsStrings = levelIds.map(level => level._id.toString()).join(',');
+  const pageStr = page?.toString() ?? '1';
 
   const queryResult = await doQuery(gameId, {
     includeLevelIds: levelIdsAsStrings,
-    page: page ? '' + ( 1 + parseInt(page.toString())) : '1',
+    page: pageStr,
     search: search ? search.toString() : '',
-    statFilter: statFilter ? statFilter.toString() as StatFilter : StatFilter.All,
-    timeRange: TimeRange[TimeRange.All],
     sortBy: 'collectionOrder',
     sortDir: 'asc',
-    // TODO: when filtering, the original collection order is not maintained and instead we sort here
-    // maybe need a separate doCollectionQuery function
+    statFilter: statFilter ? statFilter.toString() as StatFilter : StatFilter.All,
+    timeRange: TimeRange[TimeRange.All],
   }, reqUser);
 
   if (queryResult) {
@@ -111,7 +110,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   return {
     props: {
       collection: JSON.parse(JSON.stringify(collection)),
-      numLevels: rows ?? 0,
+      numLevels: rows,
+      pageStr: pageStr,
     } as CollectionProps
   };
 }
@@ -119,10 +119,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 interface CollectionProps {
   collection: EnrichedCollection;
   numLevels: number;
+  pageStr: string;
 }
 
 /* istanbul ignore next */
-export default function CollectionPage({ collection, numLevels }: CollectionProps) {
+export default function CollectionPage({ collection, numLevels, pageStr }: CollectionProps) {
   const [filterText, setFilterText] = useState('');
   const [isAddCollectionOpen, setIsAddCollectionOpen] = useState(false);
   const [isDeleteCollectionOpen, setIsDeleteCollectionOpen] = useState(false);
@@ -156,10 +157,10 @@ export default function CollectionPage({ collection, numLevels }: CollectionProp
     setStatFilter(statFilter === value ? StatFilter.All : value);
   };
 
-  const [page, setPage] = useState<number>(0);
+  const [page, setPage] = useState<number>(parseInt(pageStr));
   const levels = getOptions();
   const itemsPerPage = 20;
-  const onLastPage = (page + 1) >= Math.ceil(numLevels / itemsPerPage);
+  const onLastPage = page >= Math.ceil(numLevels / itemsPerPage);
   const router = useRouter();
   const firstLoad = useRef(true);
 
@@ -193,7 +194,7 @@ export default function CollectionPage({ collection, numLevels }: CollectionProp
       url.searchParams.set('statFilter', statFilter.toString());
     }
 
-    if (page === 0) {
+    if (page === 1) {
       url.searchParams.delete('page');
     }
 
@@ -299,7 +300,7 @@ export default function CollectionPage({ collection, numLevels }: CollectionProp
           filter={statFilter}
           onFilterClick={onFilterClick}
           onChange={() => {
-            setPage(0);
+            setPage(1);
           }}
           placeholder={`Search ${numLevels} level${numLevels !== 1 ? 's' : ''}...`}
           searchText={filterText}
@@ -338,7 +339,7 @@ export default function CollectionPage({ collection, numLevels }: CollectionProp
           id='prevPage'
           onClick={() => setPage(page - 1)}
           style={{
-            visibility: page === 0 ? 'hidden' : 'visible',
+            visibility: page === 1 ? 'hidden' : 'visible',
           }}
         >
           Prev
