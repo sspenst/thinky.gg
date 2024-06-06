@@ -539,17 +539,17 @@ export default function TutorialPathology() {
             </div>
             :
             <>
-              <div className='text-xl fadeIn' style={{
+              <div className='text-4xl fadeIn' style={{
                 pointerEvents: 'all',
                 animationDelay: '0.5s'
               }}>
-                <Link href='/signup' className='font-bold text-blue-500 hover:text-blue-400'>Sign up</Link> to play the campaign and save your progress!
+                <Link href='/signup' className='font-bold text-green-500 hover:text-green-400'>Start Level 1</Link>
               </div>
-              <div className='text-md fadeIn' style={{
+              <div className='text-lg fadeIn' style={{
                 pointerEvents: 'all',
                 animationDelay: '1s'
               }}>
-                Or head back to the <Link href='/' className='font-bold text-blue-500 hover:text-blue-400'>Home page</Link> to keep exploring.
+                <Link href='/play-as-guest' className='font-bold text-blue-500 hover:text-blue-400'>(or start without signing up)</Link>
               </div>
             </>
           }
