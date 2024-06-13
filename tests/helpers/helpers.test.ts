@@ -1,7 +1,7 @@
 import TileType from '@root/constants/tileType';
 import { generatePassword } from '@root/helpers/generatePassword';
 import { parseHostname, parseSubdomain } from '@root/helpers/parseUrl';
-import { validatePathologyLevelValid } from '@root/helpers/validators/validatePathology';
+import { validatePathologyLevel } from '@root/helpers/validators/validatePathology';
 import { validateSokopathLevel } from '@root/helpers/validators/validateSokopath';
 import TestId from '../../constants/testId';
 import getDifficultyEstimate from '../../helpers/getDifficultyEstimate';
@@ -136,14 +136,16 @@ describe('helpers/*.ts', () => {
     expect(parseHostname('localhost')).toBe('localhost');
     expect(parseHostname('')).toBe(null);
   });
-  test('validatePathologyLevelValid', async () => {
+  test('validatePathologyLevel', async () => {
     const emptyGrid = '000';
     const gridWithOnlyOneStart = '00' + TileType.Player;
     const gridWithOneStartAndOneEnd = '00' + TileType.Player + TileType.Exit;
+    const gridWithInvalidTile = '0' + TileType.PlayerOnExit + TileType.Player + TileType.Exit;
 
-    expect(validatePathologyLevelValid(emptyGrid).reasons).toMatchObject(['Must have exactly one player', 'Must have at least one exit']);
-    expect(validatePathologyLevelValid(gridWithOnlyOneStart).reasons).toMatchObject(['Must have at least one exit']);
-    expect(validatePathologyLevelValid(gridWithOneStartAndOneEnd).valid).toBe(true);
+    expect(validatePathologyLevel(emptyGrid).reasons).toMatchObject(['Must have exactly one player', 'Must have at least one exit']);
+    expect(validatePathologyLevel(gridWithOnlyOneStart).reasons).toMatchObject(['Must have at least one exit']);
+    expect(validatePathologyLevel(gridWithOneStartAndOneEnd).valid).toBe(true);
+    expect(validatePathologyLevel(gridWithInvalidTile).reasons).toMatchObject([`Invalid tile type: ${TileType.PlayerOnExit}`]);
   });
   test('validiateSokopathLevelValid', async () => {
     const emptyGrid = '000';

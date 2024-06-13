@@ -75,7 +75,7 @@ export default function validatePathologySolution(directions: Direction[], level
   return endIndices.includes(pos.y * level.width + pos.x);
 }
 
-export function validatePathologyLevelValid(data: string): { valid: boolean, reasons: string[] } {
+export function validatePathologyLevel(data: string): { valid: boolean, reasons: string[] } {
   // data must have at least ONE start and ONE end
   const reasons = [];
   const dataSplit = data.split('\n');
@@ -94,6 +94,10 @@ export function validatePathologyLevelValid(data: string): { valid: boolean, rea
         if (tileType === TileType.Exit) {
           endCount++;
         }
+      }
+
+      if (TileTypeHelper.isOnExit(tileType)) {
+        reasons.push(`Invalid tile type: ${tileType}`);
       }
     }
   }

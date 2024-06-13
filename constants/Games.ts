@@ -1,6 +1,6 @@
 import { GameState } from '@root/helpers/gameStateHelpers';
 import { isCompletePathology, isCompleteSokopath } from '@root/helpers/validators/isComplete';
-import validatePathologySolution, { validatePathologyLevelValid as validatePathologyLevel } from '@root/helpers/validators/validatePathology';
+import validatePathologySolution, { validatePathologyLevel } from '@root/helpers/validators/validatePathology';
 import validateSokopathSolution, { validateSokopathLevel } from '@root/helpers/validators/validateSokopath';
 import Level from '@root/models/db/level';
 import AchievementCategory from './achievements/achievementCategory';
