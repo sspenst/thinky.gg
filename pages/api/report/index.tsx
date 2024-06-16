@@ -5,7 +5,7 @@ import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import Comment from '@root/models/db/comment';
 import Level from '@root/models/db/level';
 import Review from '@root/models/db/review';
-import { CommentModel, LevelModel, ReportModel, ReviewModel, UserModel } from '@root/models/mongoose';
+import { CommentModel, LevelModel, ReportModel, ReviewModel } from '@root/models/mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidEnum, ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
@@ -83,20 +83,20 @@ export default withAuth({
     return res.status(404).json({ error: 'Could not find user to report. They may be been deleted.' });
   }
 
-  await ReportModel.create({
-    reporter: userReporting._id,
-    reportedUser: userBeingReported,
-    reportedEntity: targetId,
-  }, {
-    reporter: userReporting._id,
-    reported: userBeingReported,
-    reportedEntity: targetId,
-    reportedEntityModel: reportType,
-    reasonType: reportReason,
-    message,
-  }, {
-    upsert: true,
-  });
+  try {
+    await ReportModel.create({
+      reporter: userReporting._id,
+      reportedUser: userBeingReported,
+      reportedEntity: targetId,
+      reported: userBeingReported,
+      reportedEntityModel: reportType,
+      reasonType: reportReason,
+      status: ReportStatus.OPEN,
+      message,
+    }, );
+  } catch (err) {
+    return res.status(400).json({ error: 'You have already reported this. Please wait for it to be reviewed.' });
+  }
 
   const content = `User ${userReporting.name} reported a ${reportType} by user ${userBeingReported.name} for reason ${reportReason} with message: ${message}. [Link](${url})`;
 
