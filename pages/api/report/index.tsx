@@ -1,5 +1,7 @@
 import DiscordChannel from '@root/constants/discordChannel';
+import { GameId } from '@root/constants/GameId';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import Comment from '@root/models/db/comment';
 import Level from '@root/models/db/level';
 import Review from '@root/models/db/review';
@@ -37,22 +39,35 @@ export default withAuth({
   let userBeingReported, reportEntityObj = null;
 
   switch (reportType) {
-  case ReportType.LEVEL:
-    url = `/levels/${targetId}`;
+  case ReportType.LEVEL: {
     reportEntityObj = await LevelModel.findById(targetId) as Level;
+    const game = getGameFromId(reportEntityObj.gameId);
+
+    url = game.baseUrl + `/level/${reportEntityObj.slug}`;
     userBeingReported = reportEntityObj.userId;
     break;
-  case ReportType.COMMENT:
+  }
+
+  case ReportType.COMMENT: {
     // report comment
     url = `/comments/${targetId}`;
-    reportEntityObj = await CommentModel.findById(targetId) as Comment;
+    reportEntityObj = (await CommentModel.findById(targetId).populate('target')) as Comment;
+    const game = getGameFromId(GameId.THINKY);
+
+    url = game.baseUrl + `/profile/${reportEntityObj.target}`;
     userBeingReported = reportEntityObj.author;
     break;
-  case ReportType.REVIEW:
+  }
+
+  case ReportType.REVIEW: {
     // report review
-    reportEntityObj = await ReviewModel.findById(targetId) as Review;
+    reportEntityObj = (await ReviewModel.findById(targetId).populate('levelId userId')) as Review;
+    const game = getGameFromId(reportEntityObj.gameId);
+
+    url = game.baseUrl + `/level/${reportEntityObj.levelId.slug}`;
     userBeingReported = reportEntityObj.userId;
     break;
+  }
   }
 
   if (!reportEntityObj) {
@@ -65,7 +80,7 @@ export default withAuth({
 
   await ReportModel.updateOne({
     reporter: userReporting._id,
-    reported: userBeingReported,
+    reportedUser: userBeingReported,
     reportedEntity: targetId,
   }, {
     reporter: userReporting._id,
