@@ -10,6 +10,11 @@ import type { NextApiResponse } from 'next';
 import { ValidEnum, ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 
+export enum ReportStatus {
+    OPEN = 'OPEN',
+    REVIEWING = 'REVIEWING',
+    CLOSED = 'CLOSED',
+}
 export enum ReportType {
     LEVEL = 'LevelModel',
     COMMENT = 'CommentModel',
@@ -78,7 +83,7 @@ export default withAuth({
     return res.status(404).json({ error: 'Could not find user to report. They may be been deleted.' });
   }
 
-  await ReportModel.updateOne({
+  await ReportModel.create({
     reporter: userReporting._id,
     reportedUser: userBeingReported,
     reportedEntity: targetId,

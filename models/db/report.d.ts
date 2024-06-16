@@ -10,4 +10,6 @@ interface Report {
     entityType: ReportEntityType;
     reasonType: ReportReason;
     message: string;
+    status: ReportStatus;
+    statusReason: string;
 }
