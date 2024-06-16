@@ -2,30 +2,18 @@ import DiscordChannel from '@root/constants/discordChannel';
 import { GameId } from '@root/constants/GameId';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
+import { logger } from '@root/helpers/logger';
 import Comment from '@root/models/db/comment';
 import Level from '@root/models/db/level';
 import Review from '@root/models/db/review';
 import { CommentModel, LevelModel, ReportModel, ReviewModel } from '@root/models/mongoose';
 import type { NextApiResponse } from 'next';
+import { ReportReason } from '../../../constants/ReportReason';
+import { ReportStatus } from '../../../constants/ReportStatus';
+import { ReportType } from '../../../constants/ReportType';
 import { ValidEnum, ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 
-export enum ReportStatus {
-    OPEN = 'OPEN',
-    REVIEWING = 'REVIEWING',
-    CLOSED = 'CLOSED',
-}
-export enum ReportType {
-    LEVEL = 'LevelModel',
-    COMMENT = 'CommentModel',
-    REVIEW = 'ReviewModel',
-}
-export enum ReportReason {
-    HARASSMENT = 'HARASSMENT',
-    SPAM = 'SPAM',
-    REVIEW_BOMBING = 'REVIEW_BOMBING',
-    OTHER = 'OTHER',
-}
 export default withAuth({
   POST: {
     body: {
@@ -67,6 +55,7 @@ export default withAuth({
   case ReportType.REVIEW: {
     // report review
     reportEntityObj = (await ReviewModel.findById(targetId).populate('levelId userId')) as Review;
+
     const game = getGameFromId(reportEntityObj.gameId);
 
     url = game.baseUrl + `/level/${reportEntityObj.levelId.slug}`;
@@ -92,9 +81,11 @@ export default withAuth({
       reportedEntityModel: reportType,
       reasonType: reportReason,
       status: ReportStatus.OPEN,
-      message,
+      message: message,
     }, );
   } catch (err) {
+    logger.error(err);
+
     return res.status(400).json({ error: 'You have already reported this. Please wait for it to be reviewed.' });
   }
 

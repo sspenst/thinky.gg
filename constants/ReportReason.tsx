@@ -1,0 +1,6 @@
+export enum ReportReason {
+  HARASSMENT = 'HARASSMENT',
+  SPAM = 'SPAM',
+  REVIEW_BOMBING = 'REVIEW_BOMBING',
+  OTHER = 'OTHER'
+}

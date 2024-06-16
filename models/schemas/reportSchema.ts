@@ -27,7 +27,8 @@ const ReportSchema = new mongoose.Schema<Report>({
 
   message: {
     type: String,
-    required: true,
+    required: false,
+    default: '',
   },
 });
 

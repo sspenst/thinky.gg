@@ -37,7 +37,7 @@ export default function Page({
   const [preventKeyDownEvent, setPreventKeyDownEvent] = useState(false);
   const router = useRouter();
   const [showHeader, setShowHeader] = useState(true);
-
+  const [modal, setModal] = useState<React.JSX.Element | null>(null);
   const isNavDropdown = deviceInfo.screenSize < ScreenSize.XL || isFullScreen;
   const isNavOnPage = !isNavDropdown && showNav && (!game.isNotAGame || router.pathname !== '/');
 
@@ -59,11 +59,14 @@ export default function Page({
       setPreventKeyDownEvent: setPreventKeyDownEvent,
       setShowHeader: setShowHeader,
       showHeader: showHeader,
+      setModal: setModal,
+      modal: modal,
     }}>
       <div
         className={classNames('flex flex-col', { 'fixed inset-0 overflow-hidden': isFullScreen })}
         style={style}
       >
+        {modal !== null && modal}
         {showHeader &&
           <Header
             folders={folders}

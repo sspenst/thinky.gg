@@ -1,4 +1,5 @@
-import { ReportReason, ReportType } from '@root/pages/api/report';
+import { ReportReason } from '@root/pages/api/report/ReportReason';
+import { ReportType } from '@root/constants/ReportType';
 
 interface Report {
     createdAt: Date;
