@@ -5,6 +5,7 @@ import { AppContext } from '@root/contexts/appContext';
 import { LevelContext } from '@root/contexts/levelContext';
 import { PageContext } from '@root/contexts/pageContext';
 import isCurator from '@root/helpers/isCurator';
+import isGuest from '@root/helpers/isGuest';
 import Review from '@root/models/db/review';
 import classNames from 'classnames';
 import React, { Fragment, useContext, useState } from 'react';
@@ -28,9 +29,10 @@ export default function ReviewDropdown({ inModal, onEditClick, userId, review }:
   const canEdit = userId === user?._id.toString() || isCurator(user);
   const isNotAuthor = user?._id.toString() !== userId;
 
-  //  if (!canEdit) {
-  //  return null;
-  //}
+  if (!user || isGuest(user)) {
+    return null;
+  }
+
   const modal = <ReportModal targetId={review._id.toString()} reportType={ReportType.REVIEW} />;
   const reportReview = async () => {
     setModal(modal);
