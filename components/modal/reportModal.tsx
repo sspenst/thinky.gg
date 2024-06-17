@@ -14,7 +14,8 @@ interface ReportModalProps {
 
 export default function ReportModal({ targetId, reportType }: ReportModalProps) {
   const { setModal, setPreventKeyDownEvent } = useContext(PageContext);
-  const [reason, setReason] = useState('');
+  const [reason, setReason] = useState<ReportReason | ''>('');
+  const [message, setMessage] = useState('');
   const fileReport = async () => {
     const confirm = window.confirm('Are you sure you want to report this review?');
 
@@ -67,6 +68,28 @@ export default function ReportModal({ targetId, reportType }: ReportModalProps) 
     [ReportReason.SPAM]: 'Spam',
   };
 
+  const resasonTypeTipsBullets = {
+    [ReportReason.HARASSMENT]: [
+      'The vibe of our community is meant to be positive and welcoming. Please report any behavior that goes against this.',
+      'Harrassment is words or behavior that are intended to offend, threaten, or demeans a person.',
+      'DO NOT respond to harrassment with more harrassment. That is also against the rules. Just report it.',
+      'Remember, disagreement is not harrassment. Please only report if the review is clearly intended to offend or threaten.',
+    ],
+    [ReportReason.REVIEW_BOMBING]: [
+      'Review bombing is when an individual leaves reviews with the intent to manipulate the rating of a level.',
+      'Please only report review bombing if you have evidence that the reviews are not genuine.',
+      'Simply disagreeing with a review does not make it review bombing.',
+    ],
+    [ReportReason.SPAM]: [
+      'Spam is any content that is irrelevant or unsolicited.',
+      'Please report any content that is not relevant to the site or is intended to promote something.',
+    ],
+    [ReportReason.OTHER]: [
+      'If you are reporting for a reason not listed here, please provide a detailed explanation in the message box.',
+    ],
+
+  };
+
   return (
     <Modal
       title='Report'
@@ -82,7 +105,7 @@ export default function ReportModal({ targetId, reportType }: ReportModalProps) 
           id='reason'
           className='border border-color-3 rounded-md p-2'
           value={reason}
-          onChange={(e) => setReason(e.target.value)}
+          onChange={(e) => setReason(e.target.value as ReportReason)}
         >
           <option value='' disabled>
             Select a reason
@@ -93,12 +116,19 @@ export default function ReportModal({ targetId, reportType }: ReportModalProps) 
             </option>
           ))}
         </select>
+        {reason && (
+          <ul className='text-sm list-disc pl-4'>
+            {resasonTypeTipsBullets[reason].map((bullet: string) => (
+              <li key={bullet}>{bullet}</li>
+            ))}
+          </ul>
+        )}
         <textarea
-          id='reason'
+          id='message'
           className='border border-color-3 rounded-md p-2'
-          value={reason}
+          value={message}
           placeholder='Please provide a reason for reporting this review.'
-          onChange={e => setReason(e.target.value)}
+          onChange={e => setMessage(e.target.value)}
         />
         <button
           className='bg-blue-500 enabled:hover:bg-blue-600 text-white w-full font-medium py-2 px-3 rounded disabled:opacity-50'
@@ -106,6 +136,9 @@ export default function ReportModal({ targetId, reportType }: ReportModalProps) 
         >
             File report
         </button>
+        <span className='text-xs text-center text-gray-500'>
+            By reporting this review, you agree to our <Link className='underline' href={TERMS_OF_SERVICE_URL}>terms of service</Link>. Abusing filing a report is also against the rules.
+        </span>
       </div>
     </Modal>
   );
