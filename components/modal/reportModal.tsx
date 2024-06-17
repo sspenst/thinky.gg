@@ -10,6 +10,7 @@ import Modal from '.';
 interface ReportModalProps {
     targetId: string;
     reportType: ReportType;
+
     }
 
 export default function ReportModal({ targetId, reportType }: ReportModalProps) {
@@ -46,6 +47,7 @@ export default function ReportModal({ targetId, reportType }: ReportModalProps) 
     }
 
     toast.success('Review reported. Please allow some time for moderation!');
+    setModal(null);
   };
 
   useEffect(() => {
