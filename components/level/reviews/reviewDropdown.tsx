@@ -57,7 +57,7 @@ export default function ReviewDropdown({ inModal, onEditClick, userId, review }:
             <Menu.Item>
               {({ active }) => (
                 <div
-                  className={classNames('flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3', { 'text-yellow-500': isNotAuthor })}
+                  className={classNames('flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3 text-yellow-500')}
                   onClick={() => {
                     reportReview();
                   }}

@@ -18,7 +18,7 @@ export default function ReportModal({ targetId, reportType }: ReportModalProps) 
   const [reason, setReason] = useState<ReportReason | ''>('');
   const [message, setMessage] = useState('');
   const fileReport = async () => {
-    const confirm = window.confirm('Are you sure you want to report this review?');
+    const confirm = window.confirm('Are you sure you want to report this ' + reportType.toLocaleLowerCase() + '?');
 
     if (!confirm) {
       return;
@@ -41,12 +41,12 @@ export default function ReportModal({ targetId, reportType }: ReportModalProps) 
     toast.dismiss();
 
     if (res.status !== 200) {
-      toast.error(resp.error || 'Error reporting review');
+      toast.error(resp.error || 'Error reporting this ' + reportType.toLocaleLowerCase() + '. Please try again later.');
 
       return;
     }
 
-    toast.success('Review reported. Please allow some time for moderation!');
+    toast.success('Report filed successfully. Please allow some time for review!');
     setModal(null);
   };
 
@@ -129,11 +129,12 @@ export default function ReportModal({ targetId, reportType }: ReportModalProps) 
           id='message'
           className='border border-color-3 rounded-md p-2'
           value={message}
-          placeholder='Please provide a reason for reporting this review.'
+          placeholder={'Please provide a reason for reporting this ' + reportType.toLocaleLowerCase() + '.'}
           onChange={e => setMessage(e.target.value)}
         />
         <button
           className='bg-blue-500 enabled:hover:bg-blue-600 text-white w-full font-medium py-2 px-3 rounded disabled:opacity-50'
+          disabled={!reason}
           onClick={fileReport}
         >
             File report
