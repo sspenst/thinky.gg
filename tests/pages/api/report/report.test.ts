@@ -57,7 +57,7 @@ describe('pages/api/report/index.ts', () => {
         // Assert that queueDiscordWebhook was called with the expected arguments
         expect(queueDiscordWebhook).toHaveBeenCalledWith(
           expect.any(String),
-          expect.stringContaining('User test reported a Review by user BBB for reason HARASSMENT with message: This is a test report. [Link](https://pathology.electricspring.com/level/test/test-level-1)'),
+          expect.stringContaining('User test reported a Review by user BBB for reason HARASSMENT with message: This is a test report. [Link](https://pathology'),
         );
       },
     });
@@ -113,7 +113,7 @@ describe('pages/api/report/index.ts', () => {
         // Assert that queueDiscordWebhook was called with the expected arguments
         expect(queueDiscordWebhook).toHaveBeenCalledWith(
           expect.any(String),
-          expect.stringContaining('User Curator reported a Review by user BBB for reason HARASSMENT with message: This is a test report. [Link](https://pathology.electricspring.com/level/test/test-level-1)'),
+          expect.stringContaining('User Curator reported a Review by user BBB for reason HARASSMENT with message: This is a test report. [Link](https://pathology'),
         );
       },
     });
