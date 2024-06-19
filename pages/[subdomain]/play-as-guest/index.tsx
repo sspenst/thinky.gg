@@ -1,6 +1,7 @@
 import FormTemplate from '@root/components/forms/formTemplate';
 import Page from '@root/components/page/page';
 import StyledTooltip from '@root/components/page/styledTooltip';
+import { TERMS_OF_SERVICE_URL } from '@root/constants/externalLinks';
 import { AppContext } from '@root/contexts/appContext';
 import { blueButton } from '@root/helpers/className';
 import { getUserFromToken } from '@root/lib/withAuth';
@@ -208,7 +209,7 @@ export default function PlayAsGuest({ recaptchaPublicKey }: PlayAsGuestProps) {
                 <li>Your progress is saved and you can convert to a regular account later</li>
                 <li>You cannot review or create levels with a guest account</li>
                 <li>Your guest account may be deleted after 7 days of no activity</li>
-                <li>By creating a guest account you agree to our <a className='underline' href='https://docs.google.com/document/d/e/2PACX-1vR4E-RcuIpXSrRtR3T3y9begevVF_yq7idcWWx1A-I9w_VRcHhPTkW1A7DeUx2pGOcyuKifEad3Qokn/pub' rel='noreferrer' target='_blank'>terms of service</a> and reviewed the <a className='underline' href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub' rel='noreferrer' target='_blank'>privacy policy</a></li>
+                <li>By creating a guest account you agree to our <a className='underline' href={TERMS_OF_SERVICE_URL} rel='noreferrer' target='_blank'>terms of service</a> and reviewed the <a className='underline' href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub' rel='noreferrer' target='_blank'>privacy policy</a></li>
               </ul>
               {recaptchaPublicKey && showRecaptcha ?
                 <ReCAPTCHA

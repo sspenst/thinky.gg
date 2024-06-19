@@ -94,6 +94,7 @@ export default function FormattedReview({ hideBorder, inModal, level, onEditClic
             </div>
             {onEditClick && user && (
               <ReviewDropdown
+                review={review}
                 inModal={inModal}
                 onEditClick={onEditClick}
                 userId={user._id.toString()}
