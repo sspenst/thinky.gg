@@ -1,6 +1,10 @@
+import { Menu, Transition } from '@headlessui/react';
+import ReportModal from '@root/components/modal/reportModal';
+import { ReportType } from '@root/constants/ReportType';
+import { PageContext } from '@root/contexts/pageContext';
 import classNames from 'classnames';
 import { Types } from 'mongoose';
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { Fragment, useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import ReactTextareaAutosize from 'react-textarea-autosize';
 import { KeyedMutator } from 'swr';
@@ -30,6 +34,11 @@ export default function CommentThread({ className, comment, mutateComments, onSe
   const [totalRows, setTotalRows] = useState(comment.totalReplies || 0);
   const [page, setPage] = useState(0);
   const { user } = useContext(AppContext);
+  const { setModal } = useContext(PageContext);
+  const modal = <ReportModal targetId={comment._id.toString()} reportType={ReportType.COMMENT} />;
+  const reportComment = async () => {
+    setModal(modal);
+  };
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -189,6 +198,45 @@ export default function CommentThread({ className, comment, mutateComments, onSe
           }
           <FormattedDate date={comment.createdAt} />
         </div>
+        { user && comment.author._id !== user._id && <Menu as='div' className='relative'>
+          <Menu.Button className='flex items-center' id='dropdownMenuBtn' aria-label='dropdown menu'>
+            <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6 hover:opacity-100 opacity-50'>
+              <path strokeLinecap='round' strokeLinejoin='round' d='M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z' />
+            </svg>
+          </Menu.Button>
+          <Transition
+            as={Fragment}
+            enter='transition ease-out duration-100'
+            enterFrom='transform opacity-0 scale-95'
+            enterTo='transform opacity-100 scale-100'
+            leave='transition ease-in duration-75'
+            leaveFrom='transform opacity-100 scale-100'
+            leaveTo='transform opacity-0 scale-95'
+          >
+            <Menu.Items className='absolute right-0 m-1 w-fit origin-top-right rounded-[10px] shadow-lg border z-20 bg-1 border-color-3'>
+              <Menu.Item>
+                {({ active }) => (
+                  <div
+                    className={classNames('flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3 text-yellow-500')}
+                    onClick={() => {
+                      reportComment();
+                    }}
+                    style={{
+                      backgroundColor: active ? 'var(--bg-color-3)' : undefined,
+                    }}
+                  >
+                    <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-exclamation-triangle' viewBox='0 0 16 16'>
+                      <path d='M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.15.15 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.2.2 0 0 1-.054.06.1.1 0 0 1-.066.017H1.146a.1.1 0 0 1-.066-.017.2.2 0 0 1-.054-.06.18.18 0 0 1 .002-.183L7.884 2.073a.15.15 0 0 1 .054-.057m1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767z' />
+                      <path d='M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z' />
+                    </svg>
+                  Report
+                  </div>
+                )}
+              </Menu.Item>
+            </Menu.Items>
+          </Transition>
+        </Menu>
+        }
         {(comment.author._id.toString() === user?._id.toString() || (user?._id === comment.target)) && (
           <button
             className='text-white font-bold p-1 rounded-lg text-sm disabled:opacity-25 '
