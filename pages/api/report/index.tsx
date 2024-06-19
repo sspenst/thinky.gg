@@ -2,6 +2,7 @@ import DiscordChannel from '@root/constants/discordChannel';
 import { GameId } from '@root/constants/GameId';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
+import isGuest from '@root/helpers/isGuest';
 import { logger } from '@root/helpers/logger';
 import Comment from '@root/models/db/comment';
 import Level from '@root/models/db/level';
@@ -24,6 +25,10 @@ export default withAuth({
     },
   },
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+  if (isGuest(req.user)) {
+    return res.status(401).json({ error: 'Guest users are not able to report content.' });
+  }
+
   const { targetId, reportReason, reportType, message } = req.body;
 
   let url = '';
