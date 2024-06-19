@@ -1,4 +1,6 @@
+import { ReportReason } from '@root/constants/ReportReason';
 import { ReportType } from '@root/constants/ReportType';
+import handler from '@root/pages/api/report/index';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
@@ -6,8 +8,6 @@ import queueDiscordWebhook from '../../../../helpers/discordWebhook';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import handler from '../../../../pages/api/report/index';
-import { ReportReason } from '@root/pages/api/report/ReportReason';
 
 // Mock queueDiscordWebhook
 jest.mock('../../../../helpers/discordWebhook', () => jest.fn());
@@ -57,7 +57,7 @@ describe('pages/api/report/index.ts', () => {
         // Assert that queueDiscordWebhook was called with the expected arguments
         expect(queueDiscordWebhook).toHaveBeenCalledWith(
           expect.any(String),
-          expect.stringContaining('User test reported a ReviewModel by user BBB for reason HARASSMENT with message: This is a test report. [Link](https://pathology.electricspring.com/level/test/test-level-1)'),
+          expect.stringContaining('User test reported a Review by user BBB for reason HARASSMENT with message: This is a test report. [Link](https://pathology.electricspring.com/level/test/test-level-1)'),
         );
       },
     });
@@ -113,7 +113,7 @@ describe('pages/api/report/index.ts', () => {
         // Assert that queueDiscordWebhook was called with the expected arguments
         expect(queueDiscordWebhook).toHaveBeenCalledWith(
           expect.any(String),
-          expect.stringContaining('User Curator reported a ReviewModel by user BBB for reason HARASSMENT with message: This is a test report. [Link](https://pathology.electricspring.com/level/test/test-level-1)'),
+          expect.stringContaining('User Curator reported a Review by user BBB for reason HARASSMENT with message: This is a test report. [Link](https://pathology.electricspring.com/level/test/test-level-1)'),
         );
       },
     });
