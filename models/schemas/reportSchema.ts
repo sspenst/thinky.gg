@@ -29,6 +29,8 @@ const ReportSchema = new mongoose.Schema<Report>({
     type: String,
     required: false,
     default: '',
+    // limit to 500 characters
+    maxlength: 500,
   },
 });
 

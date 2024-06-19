@@ -31,9 +31,9 @@ export default function ReportModal({ targetId, reportType }: ReportModalProps) 
       },
       body: JSON.stringify({
         targetId: targetId,
-        reportReason: 'OTHER',
+        reportReason: reason,
         reportType: reportType,
-        message: reason,
+        message: message,
       }),
     });
     const resp = await res.json();
@@ -131,6 +131,8 @@ export default function ReportModal({ targetId, reportType }: ReportModalProps) 
           value={message}
           placeholder={'Please provide a reason for reporting this ' + reportType.toLocaleLowerCase() + '.'}
           onChange={e => setMessage(e.target.value)}
+          // limit to 500
+          maxLength={500}
         />
         <button
           className='bg-blue-500 enabled:hover:bg-blue-600 text-white w-full font-medium py-2 px-3 rounded disabled:opacity-50'
