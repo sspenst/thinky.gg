@@ -10,6 +10,7 @@ import { ReportType } from '@root/constants/ReportType';
 import { AppContext } from '@root/contexts/appContext';
 import { PageContext } from '@root/contexts/pageContext';
 import isCurator from '@root/helpers/isCurator';
+import isGuest from '@root/helpers/isGuest';
 import Level from '@root/models/db/level';
 import classNames from 'classnames';
 import Link from 'next/link';
@@ -330,6 +331,7 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
                 </>
               }
             </>}
+            { user && !isGuest(user) &&
             <Menu.Item>
               {({ active }) => (
                 <div
@@ -349,6 +351,7 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
                 </div>
               )}
             </Menu.Item>
+            }
 
           </div>
 
