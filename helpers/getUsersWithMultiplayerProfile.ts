@@ -28,8 +28,25 @@ export async function getUsersWithMultiplayerProfile(
         localField: '_id',
         foreignField: 'userId',
         as: 'multiplayerProfile',
+        // match gameId
+        pipeline: [
+          {
+            $match: {
+              gameId: gameId,
+            },
+          },
+        ],
       },
     },
+    // unwind multiplayer profile
+    {
+      $unwind: {
+        path: '$multiplayerProfile',
+        preserveNullAndEmptyArrays: true,
+      }
+
+    },
+
     {
       $project: {
         ...USER_DEFAULT_PROJECTION,
