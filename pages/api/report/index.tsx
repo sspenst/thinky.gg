@@ -94,7 +94,7 @@ export default withAuth({
     return res.status(400).json({ error: 'You have already reported this. Please wait for it to be reviewed.' });
   }
 
-  const content = `User ${userReporting.name} reported a ${reportType} by user ${userBeingReported.name} for reason ${reportReason} with message: ${message}. [Link](${url})`;
+  const content = `User ${userReporting.name} reported a [${reportType}](${url}) by user ${userBeingReported.name} for reason ${reportReason} with message:\n\`${message}\`.`;
 
   await queueDiscordWebhook( DiscordChannel.DevPriv, content);
 
