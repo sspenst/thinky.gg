@@ -1,8 +1,10 @@
 import { ReportReason } from '@root/constants/ReportReason';
 import { ReportType } from '@root/constants/ReportType';
+import { logger } from '@root/helpers/logger';
 import handler from '@root/pages/api/report/index';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import queueDiscordWebhook from '../../../../helpers/discordWebhook';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
@@ -63,6 +65,7 @@ describe('pages/api/report/index.ts', () => {
     });
   });
   test('POST report the same comment by the same user should ERROR', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       pagesHandler: async (req, res) => {
         req.method = 'POST';
