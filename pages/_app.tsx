@@ -240,8 +240,6 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
         if (player.multiplayerProfile === undefined) {
           return;
         }
-
-        player.multiplayerProfile = (player.multiplayerProfile as MultiplayerProfile[]).filter(profile => profile.gameId?.toString() === selectedGame.id)[0];
       });
       setMultiplayerSocket(prevMultiplayerSocket => {
         return {
