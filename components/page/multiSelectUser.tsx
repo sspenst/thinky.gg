@@ -82,7 +82,7 @@ export default function MultiSelectUser({ className, controlStyles, defaultValue
         cursor: 'text',
         height: 42,
         maxWidth: '100%',
-        minWidth: '13rem',
+        minWidth: '160px',
         '&:hover': {
           borderColor: undefined,
         },
