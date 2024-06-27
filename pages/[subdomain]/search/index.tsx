@@ -623,7 +623,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
 
   const subHeaderComponent = (
     <div className='flex flex-col items-center gap-1 p-1' id='level_search_box'>
-      <form className='flex flex-wrap items-center justify-center z-10 gap-1' onSubmit={(e) => {
+      <form className='flex flex-col items-center justify-center z-10 gap-1' onSubmit={(e) => {
         e.preventDefault();
         const searchInput = document.getElementById('default-search') as HTMLInputElement;
 
@@ -631,18 +631,23 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
           search: searchInput.value,
         });
       }}>
-        <input
-          id='default-search'
-          key='search-level-input'
-          placeholder='Search level name...'
-          type='search'
-          defaultValue={query.search}
-        />
-        <MultiSelectUser key={'search-author-input-' + searchAuthor?._id.toString()} placeholder='Search authors...' defaultValue={searchAuthor} onSelect={(user) => {
-          queryHelper({
-            searchAuthor: user?.name || '',
-          });
-        }} />
+        <div className='flex flex-row gap-1 justify-center'>
+          <input
+            id='default-search'
+            key='search-level-input'
+            placeholder='Search level...'
+            type='search'
+            defaultValue={query.search}
+            style={{
+              width: '160px',
+            }}
+          />
+          <MultiSelectUser key={'search-author-input-' + searchAuthor?._id.toString()} placeholder='Search author...' defaultValue={searchAuthor} onSelect={(user) => {
+            queryHelper({
+              searchAuthor: user?.name || '',
+            });
+          }} />
+        </div>
         <button type='submit' disabled={loading}
           className={blueButton}>Search</button>
       </form>
