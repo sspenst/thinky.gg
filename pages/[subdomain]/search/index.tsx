@@ -8,6 +8,7 @@ import Dimensions from '@root/constants/dimensions';
 import { Game, GameType } from '@root/constants/Games';
 import StatFilter from '@root/constants/statFilter';
 import { AppContext } from '@root/contexts/appContext';
+import { blueButton } from '@root/helpers/className';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import isPro from '@root/helpers/isPro';
 import useRouterQuery from '@root/hooks/useRouterQuery';
@@ -384,7 +385,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
     }
   }
 
-  const queryDebounceHelper = useCallback((update: Partial<SearchQuery>) => {
+  const queryHelper = useCallback((update: Partial<SearchQuery>) => {
     setQuery(q => {
       if (loading) {
         return q;
@@ -395,11 +396,11 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
         ...update,
       } as SearchQuery;
 
-      queryDebounce(newQ);
+      fetchLevels(newQ);
 
       return newQ;
     });
-  }, [loading, queryDebounce]);
+  }, [fetchLevels, loading]);
 
   const columns: TableColumn<EnrichedLevel>[] = [
     {
@@ -622,25 +623,29 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
 
   const subHeaderComponent = (
     <div className='flex flex-col items-center gap-1 p-1' id='level_search_box'>
-      <div className='flex flex-wrap items-center justify-center z-10 gap-1'>
+      <form className='flex flex-wrap items-center justify-center z-10 gap-1' onSubmit={(e) => {
+        e.preventDefault();
+        const searchInput = document.getElementById('default-search') as HTMLInputElement;
+
+        queryHelper({
+          search: searchInput.value,
+        });
+      }}>
         <input
           id='default-search'
           key='search-level-input'
-          onChange={e => {
-            queryDebounceHelper({
-              search: e.target.value,
-            });
-          } }
           placeholder='Search level name...'
           type='search'
-          value={query.search}
+          defaultValue={query.search}
         />
         <MultiSelectUser key={'search-author-input-' + searchAuthor?._id.toString()} placeholder='Search authors...' defaultValue={searchAuthor} onSelect={(user) => {
-          queryDebounceHelper({
+          queryHelper({
             searchAuthor: user?.name || '',
           });
         }} />
-      </div>
+        <button type='submit' disabled={loading}
+          className={blueButton}>Search</button>
+      </form>
       <div className='flex items-center flex-wrap gap-1 justify-center'>
         {reqUser && <StatFilterMenu onStatFilterClick={onStatFilterClick} query={query} />}
         <Menu as='div' className='relative inline-block text-left'>
@@ -768,7 +773,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
             max='2500'
             min='1'
             onChange={(e: React.FormEvent<HTMLInputElement>) => {
-              queryDebounceHelper({
+              queryHelper({
                 minSteps: (e.target as HTMLInputElement).value,
                 page: '1',
               });
@@ -786,7 +791,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
             max='2500'
             min='1'
             onChange={(e: React.FormEvent<HTMLInputElement>) => {
-              queryDebounceHelper({
+              queryHelper({
                 maxSteps: (e.target as HTMLInputElement).value,
                 page: '1',
               });
@@ -811,7 +816,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                 max='40'
                 min='1'
                 onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                  queryDebounceHelper({
+                  queryHelper({
                     minDimension1: (e.target as HTMLInputElement).value,
                     page: '1',
                   });
@@ -827,7 +832,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                 max='40'
                 min='1'
                 onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                  queryDebounceHelper({
+                  queryHelper({
                     minDimension2: (e.target as HTMLInputElement).value,
                     page: '1',
                   });
@@ -847,7 +852,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                 max='40'
                 min='1'
                 onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                  queryDebounceHelper({
+                  queryHelper({
                     maxDimension1: (e.target as HTMLInputElement).value,
                     page: '1',
                   });
@@ -863,7 +868,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                 max='40'
                 min='1'
                 onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                  queryDebounceHelper({
+                  queryHelper({
                     maxDimension2: (e.target as HTMLInputElement).value,
                     page: '1',
                   });
