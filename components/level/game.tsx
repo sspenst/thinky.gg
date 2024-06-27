@@ -745,6 +745,11 @@ export default function Game({
     const dist = Math.abs(x - playerPosition.x + y - playerPosition.y);
     let breaker = 0;
 
+    // if you are not on the same row and column as the player, don't move
+    if (x !== playerPosition.x && y !== playerPosition.y) {
+      return;
+    }
+
     while (breaker < dist) {
       moveByDXDY(x - playerPosition.x, y - playerPosition.y);
       validTouchStart.current = false;
