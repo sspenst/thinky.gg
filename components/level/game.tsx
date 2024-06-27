@@ -741,10 +741,14 @@ export default function Game({
 
     const playerPosition = gameState.pos;
 
-    // if the position is one away from x,y then move the player
-    if (Math.abs(playerPosition.x - x) + Math.abs(playerPosition.y - y) === 1) {
+    // let's move the player to the cell clicked
+    const dist = Math.abs(x - playerPosition.x + y - playerPosition.y);
+    let breaker = 0;
+
+    while (breaker < dist) {
       moveByDXDY(x - playerPosition.x, y - playerPosition.y);
       validTouchStart.current = false;
+      breaker++;
     }
   }
 
