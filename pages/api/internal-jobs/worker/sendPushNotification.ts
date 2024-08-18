@@ -38,7 +38,7 @@ export async function sendPushNotification(gameId: GameId, notification: Notific
       });
     }
 
-    const res = await global.firebaseApp.messaging().sendMulticast({
+    const res = await global.firebaseApp.messaging().sendEachForMulticast({
       tokens: tokens,
       data: {
         notificationId: notification._id.toString(),
