@@ -98,6 +98,12 @@ export default async function startSocketIOServer(server: Server) {
   GlobalSocketIO = server;
   const db = mongooseConnection.connection.db;
 
+  if (!db) {
+    logger.error('startSocketIOServer - Could not get db from mongoose connection');
+
+    return;
+  }
+
   try {
     await db.createCollection('socket.io-adapter-events', {
       capped: true,

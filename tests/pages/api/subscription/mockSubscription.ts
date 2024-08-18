@@ -34,6 +34,12 @@ const mockSubscription: Stripe.Subscription = {
   discount: null,
   discounts: [],
   ended_at: null,
+  invoice_settings: {
+    account_tax_ids: null,
+    issuer: {
+      type: 'self',
+    },
+  },
   items: {
     object: 'list',
     data: [
@@ -58,6 +64,7 @@ const mockSubscription: Stripe.Subscription = {
           interval_count: 1,
           livemode: false,
           metadata: {},
+          meter: null,
           nickname: null,
           product: 'prod_123',
           tiers_mode: null,
@@ -82,6 +89,7 @@ const mockSubscription: Stripe.Subscription = {
             aggregate_usage: null,
             interval: 'month',
             interval_count: 1,
+            meter: null,
             trial_period_days: null,
             usage_type: 'licensed'
           },
