@@ -16,6 +16,13 @@ export function GenMongoWSEmitter(mongooseConnection: Mongoose) {
   }
 
   const db = mongooseConnection.connection.db;
+
+  if (!db) {
+    logger.error('GenMongoWSEmitter - Could not get db from mongoose connection');
+
+    return null;
+  }
+
   const collection = db.collection('socket.io-adapter-events');
 
   logger.warn('Created MongoEmitter');

@@ -375,6 +375,11 @@ export async function processQueueMessages() {
       console.log('disconnected. connecting');
       await dbConnect();
       console.log('connected. validating');
+
+      if (!db) {
+        throw new Error('processQueueMessages - Could not get db from mongoose connection');
+      }
+
       const whatever = await db.command({ validate: QueueMessageModel.collection.name });
 
       console.log('] VALIDATE DONE. PRINTING [');

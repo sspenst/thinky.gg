@@ -34,7 +34,7 @@ const DefaultReq = {
   },
 };
 const stripe = new Stripe('', {
-  apiVersion: '2024-04-10',
+  apiVersion: '2024-06-20',
 });
 const stripe_secret = process.env.NODE_ENV !== 'test' ? process.env.STRIPE_WEBHOOK_SECRET : 'whsec_test_secret';
 
@@ -42,7 +42,7 @@ function createMockStripeEvent(type: string, data = {}) {
   return {
     id: `evt_${Date.now()}`,
     object: 'event',
-    api_version: '2024-04-10',
+    api_version: '2024-06-20',
     created: Date.now(),
     data: {
       object: data,
