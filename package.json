@@ -6,8 +6,8 @@
     "@root": "dist"
   },
   "dependencies": {
-    "@aws-sdk/client-ses": "^3.632.0",
-    "@aws-sdk/credential-provider-node": "^3.632.0",
+    "@aws-sdk/client-ses": "^3.635.0",
+    "@aws-sdk/credential-provider-node": "^3.635.0",
     "@headlessui/react": "^2.1.2",
     "@headlessui/tailwindcss": "^0.2.1",
     "@next/third-parties": "^14.2.5",
@@ -19,7 +19,7 @@
     "cal-heatmap": "^4.2.4",
     "canvas-confetti": "^1.9.3",
     "cookie": "^0.6.0",
-    "dayjs": "^1.11.12",
+    "dayjs": "^1.11.13",
     "debounce": "^2.1.0",
     "dotenv": "^16.4.5",
     "firebase-admin": "^12.3.1",
@@ -28,7 +28,7 @@
     "module-alias": "^2.2.3",
     "mongodb-memory-server": "^9.4.1",
     "mongoose": "^8.5.3",
-    "newrelic": "^12.1.1",
+    "newrelic": "^12.2.0",
     "next": "^14.2.5",
     "next-seo": "^6.5.0",
     "next-themes": "^0.3.0",
