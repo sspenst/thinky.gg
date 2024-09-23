@@ -1,5 +1,6 @@
 import AchievementCategory from '@root/constants/achievements/achievementCategory';
 import AdminCommand from '@root/constants/adminCommand';
+import { GameId } from '@root/constants/GameId';
 import NotificationType from '@root/constants/notificationType';
 import Role from '@root/constants/role';
 import { ValidEnum, ValidObjectId, ValidType } from '@root/helpers/apiWrapper';
@@ -16,6 +17,38 @@ import mongoose, { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { runEmailDigest } from '../internal-jobs/email-digest';
 import { bulkQueueCalcPlayAttempts, processQueueMessages } from '../internal-jobs/worker';
+
+export async function switchIsRanked(levelId: Types.ObjectId, gameId: GameId, isRanked?: boolean): Promise<boolean> {
+  const session = await mongoose.startSession();
+
+  try {
+    await session.withTransaction(async () => {
+      const level = await LevelModel.findById<Level>(levelId, { isRanked: 1 }, { session: session });
+
+      if (!level) {
+        throw new Error('Level not found');
+      }
+
+      const newIsRanked = isRanked !== undefined ? isRanked : !level.isRanked;
+
+      await LevelModel.updateOne({ _id: levelId }, { isRanked: newIsRanked }, { session: session });
+
+      const stats = await StatModel.find({ levelId: levelId, complete: true }, 'userId', { session: session });
+      const userIds = stats.map(stat => stat.userId);
+
+      await UserConfigModel.updateMany({ userId: { $in: userIds }, gameId: gameId }, { $inc: { calcRankedSolves: newIsRanked ? 1 : -1 } }, { session: session });
+    });
+
+    session.endSession();
+  } catch (err) {
+    logger.error(err);
+    session.endSession();
+
+    return false;
+  }
+
+  return true;
+}
 
 interface AdminBodyProps {
   targetId: string;
@@ -97,32 +130,9 @@ export default withAuth({ POST: {
     }
 
     case AdminCommand.SwitchIsRanked: {
-      const levelId = new Types.ObjectId(targetId as string);
-      const session = await mongoose.startSession();
+      const success = await switchIsRanked(new Types.ObjectId(targetId as string), req.gameId);
 
-      try {
-        await session.withTransaction(async () => {
-          const level = await LevelModel.findById<Level>(levelId, { isRanked: 1 }, { session: session });
-
-          if (!level) {
-            throw new Error('Level not found');
-          }
-
-          const newIsRanked = !level.isRanked;
-
-          await LevelModel.updateOne({ _id: levelId }, { isRanked: newIsRanked }, { session: session });
-
-          const stats = await StatModel.find({ levelId: levelId, complete: true }, 'userId', { session: session });
-          const userIds = stats.map(stat => stat.userId);
-
-          await UserConfigModel.updateMany({ userId: { $in: userIds }, gameId: req.gameId }, { $inc: { calcRankedSolves: newIsRanked ? 1 : -1 } }, { session: session });
-        });
-
-        session.endSession();
-      } catch (err) {
-        logger.error(err);
-        session.endSession();
-
+      if (!success) {
         return res.status(500).json({ error: 'Error switching isRanked' });
       }
 

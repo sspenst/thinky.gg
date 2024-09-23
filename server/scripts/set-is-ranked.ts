@@ -1,10 +1,11 @@
 // ts-node -r tsconfig-paths/register --files server/scripts/set-is-ranked.ts
 
-import Level from '@root/models/db/level';
-import { LevelModel } from '@root/models/mongoose';
+import { GameId } from '@root/constants/GameId';
+import { switchIsRanked } from '@root/pages/api/admin';
 import cliProgress from 'cli-progress';
 import dotenv from 'dotenv';
 import * as fs from 'fs';
+import { Types } from 'mongoose';
 import dbConnect from '../../lib/dbConnect';
 
 'use strict';
@@ -14,7 +15,7 @@ console.log('loaded env vars');
 const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
 
 async function setIsRanked() {
-  const filePath = './server/scripts/ranked_level_ids';
+  const filePath = './server/scripts/ranked-level-ids';
 
   fs.readFile(filePath, 'utf8', async (err: NodeJS.ErrnoException | null, data: string) => {
     if (err) {
@@ -23,16 +24,12 @@ async function setIsRanked() {
       process.exit(0);
     }
 
-    const rankedLevelIds = new Set(data.split('\n'));
+    const levelIds = data.split('\n');
 
-    const totalLevels = await LevelModel.countDocuments();
+    progressBar.start(levelIds.length, 0);
 
-    progressBar.start(totalLevels, 0);
-
-    for await (const level of LevelModel.find<Level>()) {
-      const isRanked = rankedLevelIds.has(level._id.toString());
-
-      await LevelModel.updateOne({ _id: level._id }, { $set: { isRanked } });
+    for (const levelId of levelIds) {
+      await switchIsRanked(new Types.ObjectId(levelId as string), GameId.PATHOLOGY, true);
       progressBar.increment();
     }
 
