@@ -8,7 +8,7 @@
   "dependencies": {
     "@aws-sdk/client-ses": "^3.632.0",
     "@aws-sdk/credential-provider-node": "^3.632.0",
-    "@headlessui/react": "^2.1.2",
+    "@headlessui/react": "^2.1.5",
     "@headlessui/tailwindcss": "^0.2.1",
     "@next/third-parties": "^14.2.5",
     "@openreplay/tracker": "^14.0.4",
