@@ -9,7 +9,6 @@ import isGuest from '@root/helpers/isGuest';
 import Review from '@root/models/db/review';
 import classNames from 'classnames';
 import React, { Fragment, useContext, useState } from 'react';
-import toast from 'react-hot-toast';
 import DeleteReviewModal from '../../modal/deleteReviewModal';
 
 interface ReviewDropdownProps {

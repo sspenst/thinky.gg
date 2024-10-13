@@ -15,7 +15,6 @@ import isPro from '@root/helpers/isPro';
 import { parseHostname } from '@root/helpers/parseUrl';
 import useDeviceCheck from '@root/hooks/useDeviceCheck';
 import Collection from '@root/models/db/collection';
-import MultiplayerProfile from '@root/models/db/multiplayerProfile';
 import Notification from '@root/models/db/notification';
 import { NextPageContext } from 'next';
 import type { AppProps } from 'next/app';
