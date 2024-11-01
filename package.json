@@ -18,7 +18,7 @@
     "bcryptjs": "^2.4.3",
     "cal-heatmap": "^4.2.4",
     "canvas-confetti": "^1.9.3",
-    "cookie": "^0.6.0",
+    "cookie": "^0.7.2",
     "dayjs": "^1.11.13",
     "debounce": "^2.1.1",
     "dotenv": "^16.4.5",
