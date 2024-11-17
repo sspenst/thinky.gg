@@ -9,7 +9,7 @@ import { GameId } from '@root/constants/GameId';
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
-
+console.log("HERRR")
   if (!reqUser) {
     return {
       redirect: {

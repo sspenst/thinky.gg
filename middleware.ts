@@ -62,9 +62,10 @@ export async function middleware(req: NextRequest) {
   }
 
   const host = req.headers.get('host');
-  const subdomain = getValidSubdomain(host);
+  const validSubdomain = getValidSubdomain(host);
+  const subdomain = validSubdomain ? validSubdomain :'thinky';
+  
   const folder = url.pathname.split('/')[1];
-
 
   // don't redirect api calls or invalid subdomains
   if (folder === 'api' || (subdomain !== null && !validSubdomains.has(subdomain))) {
@@ -83,9 +84,10 @@ export async function middleware(req: NextRequest) {
     // NB: this actually updates thinky.gg/pathname pages to thinky.gg/null/pathname, so they are able to access the [subdomain] route
     url.pathname = `/${subdomain}${url.pathname}`;
   }
-  
-if (folder.length === 0 && subdomain === 'thinky') {
-  return;
-}
+  if (folder.length === 0 && subdomain === 'thinky') {
+    console.log("not redirecting ", folder, subdomain)
+    return;
+  }
+  console.log("redirecting ", folder, subdomain)
   return NextResponse.rewrite(url);
 }
