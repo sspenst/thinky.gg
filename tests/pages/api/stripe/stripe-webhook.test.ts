@@ -1,4 +1,4 @@
-import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
 import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
 import { enableFetchMocks } from 'jest-fetch-mock';
@@ -12,8 +12,9 @@ import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { UserConfigModel, UserModel } from '../../../../models/mongoose';
-import handler, { StripeWebhookHelper } from '../../../../pages/api/stripe-webhook/index';
+import handler, { downgradeAccessToAllGames, giveAccessToAllGames, StripeWebhookHelper } from '../../../../pages/api/stripe-webhook/index';
 import { stripe as stripeReal } from '../../../../pages/api/subscription';
+import { skip } from 'node:test';
 
 beforeAll(async () => {
   await dbConnect();
@@ -224,6 +225,123 @@ describe('pages/api/stripe-webhook/index.ts', () => {
       expectedStatus: 200,
       additionalAssertions: async () => {
         await expectUserStatus(TestId.USER, Role.PRO, 'customer_id_123');
+      },
+    });
+  });
+
+  test('giveAccessToAllGames should give Pro access to all games', async () => {
+    await giveAccessToAllGames(new Types.ObjectId(TestId.USER));
+
+    const userConfigs = await UserConfigModel.find<UserConfig>({ userId: TestId.USER });
+    
+    // Check that user has Pro role for all games except Thinky
+    userConfigs.forEach(config => {
+      expect(config.roles).toContain(Role.PRO);
+      expect(config.userId.toString()).toBe(TestId.USER);
+    });
+
+    // Should have configs for all games except Thinky
+    const expectedCount = Object.values(GameId).filter(id => id !== GameId.THINKY && typeof id === 'string').length;
+    expect(userConfigs.length).toBe(expectedCount);
+  });
+  test('downgradeAccessToAllGames should remove Pro access from all games', async () => {
+    // First give access to all games
+    await giveAccessToAllGames(new Types.ObjectId(TestId.USER));
+
+    // Then downgrade access
+    await downgradeAccessToAllGames(new Types.ObjectId(TestId.USER));
+
+    const userConfigs = await UserConfigModel.find<UserConfig>({ userId: TestId.USER });
+    
+    // Check that user no longer has Pro role for any games
+    userConfigs.forEach(config => {
+      expect(config.roles).not.toContain(Role.PRO);
+      expect(config.userId.toString()).toBe(TestId.USER);
+    });
+
+    // Should still have configs for all games except Thinky
+    const expectedCount = Object.values(GameId).filter(id => id !== GameId.THINKY && typeof id === 'string').length;
+    expect(userConfigs.length).toBe(expectedCount);
+  });
+
+  test('user subscribes to Thinky should get Pro on all games', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(stripeReal.subscriptions, 'search').mockResolvedValue({ data: [], } as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(stripeReal.checkout.sessions, 'listLineItems').mockResolvedValue({ data: [{ price: { product: 'test' } }], } as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(stripeReal.products, 'retrieve').mockResolvedValue({ name: 'Thinky Yearly' } as any);
+    await runStripeWebhookTest({
+      eventType: 'checkout.session.completed',
+      payloadData: {
+        id: 'cs_test_123',
+        client_reference_id: TestId.USER,
+        customer: 'customer_id_123',
+      },
+      expectedError: undefined,
+      expectedStatus: 200,
+      additionalAssertions: async () => {
+        const userConfigs = await UserConfigModel.find<UserConfig>({ userId: TestId.USER });
+        userConfigs.forEach(config => {
+          expect(config.roles).toContain(Role.PRO);
+        });
+        expect(userConfigs.length).toBeGreaterThan(1); // Ensure we're checking multiple games
+      },
+    });
+  });
+  skip('gifting Thinky Pro should give recipient Pro access to all games', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(stripeReal.products, 'retrieve').mockResolvedValue({ name: 'Thinky Yearly' } as any);
+    await runStripeWebhookTest({
+      eventType: 'customer.subscription.created',
+      payloadData: {
+        id: 'cs_test_123',
+        metadata: {
+          giftFromId: TestId.USER,
+          giftToId: TestId.USER_B,
+          gameId: GameId.THINKY
+        }
+      },
+      expectedError: undefined,
+      expectedStatus: 200,
+      additionalAssertions: async () => {
+        // Check that gift recipient has Pro role for all games
+        const userConfigs = await UserConfigModel.find<UserConfig>({ userId: TestId.USER_B });
+        userConfigs.forEach(config => {
+          expect(config.roles).toContain(Role.PRO);
+        });
+        expect(userConfigs.length).toBeGreaterThan(1); // Ensure we're checking multiple games
+      },
+    });
+  });
+  test('unsubscribing from Thinky Pro should remove Pro access from all games', async () => {
+    // Set up initial state with Pro access
+    await giveAccessToAllGames(new Types.ObjectId(TestId.USER));
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(stripeReal.products, 'retrieve').mockResolvedValue({ name: 'Thinky Yearly' } as any);
+    await runStripeWebhookTest({
+      eventType: 'customer.subscription.deleted',
+      payloadData: {
+        id: 'cs_test_123',
+        customer: 'customer_id_123',
+        items: {
+          data: [{
+            price: {
+              product: 'thinky product',
+            },
+          }],
+        }
+      },
+      expectedError: undefined,
+      expectedStatus: 200,
+      additionalAssertions: async () => {
+        // Check that user no longer has Pro role for any games
+        const userConfigs = await UserConfigModel.find<UserConfig>({ userId: TestId.USER });
+        userConfigs.forEach(config => {
+          expect(config.roles).not.toContain(Role.PRO);
+        });
+        expect(userConfigs.length).toBeGreaterThan(1); // Ensure we're checking multiple games
       },
     });
   });
