@@ -342,7 +342,7 @@ export async function downgradeAccessToAllGames(userId: Types.ObjectId, session?
   }
 
   await Promise.all(Object.values(GameId)
-    .filter(id => id !== GameId.THINKY && typeof id === 'string') // Ensure valid game IDs
+  //  .filter(id => id !== GameId.THINKY && typeof id === 'string') // Ensure valid game IDs
     .map(id => UserConfigModel.findOneAndUpdate(
       { userId: userId, gameId: id },
       { $pull: { roles: Role.PRO } },
