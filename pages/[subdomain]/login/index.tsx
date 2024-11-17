@@ -5,6 +5,7 @@ import Page from '../../../components/page/page';
 import redirectToHome from '../../../helpers/redirectToHome';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
+
   return await redirectToHome(context);
 }
 

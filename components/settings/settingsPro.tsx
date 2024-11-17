@@ -120,6 +120,8 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
       setPaymentMethod(paymentMethods[0].id);
     }
   }, [paymentMethods]);
+
+  
   const subscribeButtonComponent = hasAPaymentMethod ?
 
     <div className='flex flex-col gap-2'>
@@ -173,9 +175,10 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
         rel='noreferrer'
         target='_blank'
       >
-              Subscribe
+              Start Free Trial
       </Link>
     );
+    
 
   return (
     <div className='flex flex-col justify-center items-center gap-6'>
@@ -266,9 +269,9 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                 <div className='flex flex-col'>
                   <span className='text-lg'>Gift Pro</span>
                   {giftInterval === 'month' ?
-                    <span className='text-sm'>$5.00 USD / month</span>
+                    <span className='text-sm'>$4.99 USD / month</span>
                     :
-                    <span className='text-sm'>$48.00 USD / year</span>
+                    <span className='text-sm'>$47.88 USD / year</span>
                   }
                 </div>
               </button>
@@ -316,7 +319,15 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                   <div className='flex gap-1 items-center'>
                     Gifted to: <FormattedUser id={'subscription-' + subscriptionData.subscriptionId} user={subscriptionData.giftToUser} /></div>
                 )}
-                {!subscriptionData.cancel_at_period_end && subscriptionData.current_period_end && (<div>Renews: <span className='font-bold'>{dayjs(new Date(subscriptionData.current_period_end * 1000)).format('MMMM DD, YYYY')}</span></div>)}
+                {!subscriptionData.cancel_at_period_end && subscriptionData.current_period_end && (
+                  <div>
+                    {subscriptionData.status === 'trialing' ? (
+                      <span className='text-lg'>Trial Ends: <span className='font-bold'>{dayjs(new Date(subscriptionData.current_period_end * 1000)).format('MMMM DD, YYYY')}</span></span>
+                    ) : (
+                      <span className='text-lg'>Renews: <span className='font-bold'>{dayjs(new Date(subscriptionData.current_period_end * 1000)).format('MMMM DD, YYYY')}</span></span>
+                    )}
+                  </div>
+                )}
                 <div>Status: <span className='font-bold'>{subscriptionData.cancel_at ? 'Ends ' + dayjs(new Date(subscriptionData.cancel_at * 1000)).format('MMMM DD, YYYY') : 'Active'}</span></div>
                 <div>Card Used: {subscriptionData.paymentMethod?.card ? `${subscriptionData.paymentMethod.card.brand} ending in ${subscriptionData.paymentMethod.card.last4}` : 'Not found'}</div>
                 {subscriptionData.cancel_at_period_end &&
@@ -350,8 +361,9 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                         color: 'rgb(134 239 172)',
                       }}>SAVE 20%</span>
                     </div>
-                    <span className='font-bold text-lg' style={{ color: 'var(--color)' }}>$4.00 USD / month</span>
-                    <span className='text-xs'>$48 per year billed annually</span>
+                    <span className='font-bold text-lg' style={{ color: 'var(--color)' }}>$3.99 USD / month</span>
+                    <span className='text-xs'>$47.88 per year billed annually</span>
+                    <span className='text-lg text-center font-bold'>7-day Free Trial</span>
                   </div>
                 )}
               </RadioGroup.Option>
@@ -365,8 +377,9 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                     color: 'var(--color-gray)',
                   }}>
                     <span>Monthly Plan</span>
-                    <span className='font-bold text-lg' style={{ color: 'var(--color)' }}>$5.00 USD / month</span>
-                    <span className='text-xs'>$60 per year billed monthly</span>
+                    <span className='font-bold text-lg' style={{ color: 'var(--color)' }}>$4.99 USD / month</span>
+                    <span className='text-xs'>Billed monthly</span>
+                    <span className='text-lg text-center font-bold'>7-day Free Trial</span>
                   </div>
                 )}
               </RadioGroup.Option>
