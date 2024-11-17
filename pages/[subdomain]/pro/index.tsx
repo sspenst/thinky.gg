@@ -4,6 +4,7 @@ import React from 'react';
 import Page from '../../../components/page/page';
 import SettingsPro from '../../../components/settings/settingsPro';
 import { getUserFromToken } from '../../../lib/withAuth';
+import { GameId } from '@root/constants/GameId';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
@@ -21,10 +22,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const gameId = getGameIdFromReq(context.req);
   const game = getGameFromId(gameId);
 
-  if (!game.hasPro) {
+  if (game.id !== GameId.THINKY) {
     return {
       redirect: {
-        destination: '/',
+        // redirect to thinky's pro page
+        destination: getGameFromId(GameId.THINKY).baseUrl + '/pro',
         permanent: false,
       },
     };

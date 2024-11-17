@@ -7,7 +7,7 @@ import { createNewProUserNotification } from '@root/helpers/notificationHelper';
 import dbConnect from '@root/lib/dbConnect';
 import KeyValue from '@root/models/db/keyValue';
 import { buffer } from 'micro';
-import mongoose, { Types } from 'mongoose';
+import mongoose, { ClientSession, Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
 import Role from '../../../constants/role';
@@ -51,6 +51,11 @@ async function subscriptionDeleted(userToDowngrade: User, subscription: Stripe.S
         queueDiscordWebhook(DiscordChannel.DevPriv, `🥹 UNSUBSCRIBED. [${userToDowngrade.name}](https://thinky.gg/profile/${userToDowngrade.name}) was just unsubscribed from ` + productName),
       ];
 
+      // if the game is thinky, then we should findOneAndUpdate the other game configs too
+      if (gameId === GameId.THINKY) {
+        await downgradeAccessToAllGames(userToDowngrade._id, session);
+      }
+
       // NB: metadata should normally be defined but it isn't mocked in the tests
       const giftFromId = subscription.metadata?.giftFromId;
 
@@ -92,6 +97,8 @@ function getGameIdFromProductName(productName: string): GameId {
     gameId = GameId.PATHOLOGY;
   } else if (productName.match(/soko/i)) {
     gameId = GameId.SOKOPATH;
+  } else if (productName.match(/thinky/i)) {
+    gameId = GameId.THINKY;
   }
 
   return gameId;
@@ -105,7 +112,6 @@ async function getGameFromSubscription(subscription: Stripe.Subscription): Promi
     if (subscription.items.data.length > 0) {
       // Assuming the first item represents the main product
       const productId = subscription.items.data[0].price?.product;
-
       if (productId) {
         // Retrieve the product details
 
@@ -129,16 +135,17 @@ async function getGameFromSubscription(subscription: Stripe.Subscription): Promi
 async function getGameFromSession(session: Stripe.Checkout.Session): Promise<{ gameId: GameId, productName: string }> {
   // Extract product name from properties, if available
   let productName = 'unknown';
-
+  
   // Fetch line items for the session
   try {
     const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
-
+    
     if (lineItems.data.length > 0) {
       // Assuming the first line item represents the product purchased
       const productId = lineItems.data[0].price?.product;
 
       if (productId) {
+
         const product = await stripe.products.retrieve(productId as string);
 
         productName = product.name;
@@ -214,6 +221,11 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
           createNewProUserNotification(gameId, giftToUser._id, giftFromUser._id),
           queueDiscordWebhook(DiscordChannel.DevPriv, `💸 [${giftFromUser.name}](https://thinky.gg/profile/${giftFromUser.name}) just gifted ${quantity} ${type === GiftType.Yearly ? 'year' : 'month'}${quantity === 1 ? '' : 's'} of Pro to [${giftToUser.name}](https://thinky.gg/profile/${giftToUser.name})`)
         ]);
+
+        // if the game is thinky, then we should findOneAndUpdate the userconfigmodel for all the other games too
+        if (gameId === GameId.THINKY) {
+          await giveAccessToAllGames(giftToUser._id, session);
+        }
       });
       session.endSession();
 
@@ -230,6 +242,7 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
 
 async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.Checkout.Session): Promise<string | undefined> {
   logger.info(`checkoutSessionComplete - ${userToUpgrade.name} (${userToUpgrade._id.toString()})`);
+  
   const { gameId, productName } = await getGameFromSession(properties);
 
   const customerId = properties.customer;
@@ -248,7 +261,6 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
   if (!error) {
     // we want to upgrade the user
     const session = await mongoose.startSession();
-
     try {
       await session.withTransaction(async () => {
         await Promise.all([
@@ -282,6 +294,11 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
           createNewProUserNotification(gameId, userToUpgrade._id),
           queueDiscordWebhook(DiscordChannel.DevPriv, `💸 NEW SUBSCRIBER! [${userToUpgrade.name}](https://thinky.gg/profile/${userToUpgrade.name}) just subscribed to ${productName}!`),
         ]);
+
+        // Move giveAccessToAllGames inside the transaction to ensure atomicity
+        if (gameId === GameId.THINKY) {
+          await giveAccessToAllGames(userToUpgrade._id, session);
+        }
       });
 
       session.endSession();
@@ -294,6 +311,46 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
   }
 
   return error;
+}
+export async function giveAccessToAllGames(userId: Types.ObjectId, session?: ClientSession) {
+  // Validate userId
+  if (!userId || !Types.ObjectId.isValid(userId)) {
+    throw new Error('Invalid userId provided to giveAccessToAllGames');
+  }
+
+  await Promise.all(Object.values(GameId)
+    .filter(id => id !== GameId.THINKY && typeof id === 'string') // Ensure valid game IDs
+    .map(id => UserConfigModel.findOneAndUpdate(
+      { userId: userId, gameId: id },
+      {
+        userId: userId,
+        gameId: id,
+        $addToSet: { roles: Role.PRO }
+      },
+      { 
+        session: session,
+        upsert: true,
+        runValidators: true // Ensure schema validation runs
+      }
+    )));
+}
+
+export async function downgradeAccessToAllGames(userId: Types.ObjectId, session?: ClientSession) {
+  // Validate userId
+  if (!userId || !Types.ObjectId.isValid(userId)) {
+    throw new Error('Invalid userId provided to downgradeAccessToAllGames');
+  }
+
+  await Promise.all(Object.values(GameId)
+    .filter(id => id !== GameId.THINKY && typeof id === 'string') // Ensure valid game IDs
+    .map(id => UserConfigModel.findOneAndUpdate(
+      { userId: userId, gameId: id },
+      { $pull: { roles: Role.PRO } },
+      { 
+        session: session,
+        runValidators: true // Ensure schema validation runs
+      }
+    )));
 }
 
 async function splitPaymentIntent(paymentIntentId: string): Promise<string | undefined> {
@@ -458,7 +515,6 @@ export default apiWrapper({
     // get metadata for the subscription
     const subscription = dataObject as Stripe.Subscription;
     const metadata = subscription.metadata;
-
     if (metadata.giftToId) {
       // this is a gift subscription
       const [giftFromUser, giftToUser] = await Promise.all([
@@ -491,12 +547,32 @@ export default apiWrapper({
           error = `User with id ${userId} does not exist`;
         } else {
           const game = getGameFromId(gameId as GameId);
+          const session = await mongoose.startSession();
 
-          await Promise.all([
-            UserConfigModel.updateOne({ userId: userTarget._id, gameId: gameId }, { userId: userId, gameId: gameId, $addToSet: { roles: Role.PRO } }, { upsert: true }),
-            createNewProUserNotification(gameId as GameId, userTarget._id),
-            queueDiscordWebhook(DiscordChannel.DevPriv, `💸 NEW SUBSCRIBER! [${userTarget.name}](https://thinky.gg/profile/${userTarget.name}) just subscribed to ${game.displayName} ${metadata?.type}!`)
-          ]);
+          try {
+            await session.withTransaction(async () => {
+              await Promise.all([
+                UserConfigModel.findOneAndUpdate(
+                  { userId: userTarget._id, gameId: gameId },
+                  { userId: userId, gameId: gameId, $addToSet: { roles: Role.PRO } },
+                  { upsert: true, session }
+                ),
+                createNewProUserNotification(gameId as GameId, userTarget._id),
+                queueDiscordWebhook(DiscordChannel.DevPriv, `💸 NEW SUBSCRIBER! [${userTarget.name}](https://thinky.gg/profile/${userTarget.name}) just subscribed to ${game.displayName} ${metadata?.type}!`)
+              ]);
+
+              // if the game is thinky, then we should upsert the userconfigmodel for all the other games too
+              if (gameId === GameId.THINKY) {
+                await giveAccessToAllGames(userTarget._id, session);
+              }
+            });
+
+            session.endSession();
+          } catch (err: any) {
+            logger.error(err);
+            session.endSession();
+            error = err?.message;
+          }
         }
       }
     }
