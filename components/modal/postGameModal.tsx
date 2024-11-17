@@ -147,7 +147,7 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
             {isGuest(reqUser) ?
               <div className='text-center text-sm'>
                 <div className='flex flex-col gap-2'>
-                  <span className='text-2xl italic font-semibold'>By the way...</span><span className='text-xs'>You are playing as a <span className='font-bold italic'>guest</span> and missing out on a ton of features. <Link href='/settings' className='hover:underline font-bold text-blue-300'>Convert to a regular account</Link> (it&apos;s free and only takes a few seconds!)</span>
+                  <span className='text-2xl italic font-semibold'>By the way...</span><span className='text-lg'>You are playing as a <span className='font-bold italic'>guest</span> and missing out on a ton of features. <Link href='/settings' className='hover:underline font-bold text-blue-300'>Convert to a regular account</Link> (it&apos;s free and only takes a few seconds!)</span>
                 </div>
               </div>
               :
