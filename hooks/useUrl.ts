@@ -26,7 +26,7 @@ export default function useUrl() {
       // can't use game.baseUrl because this function is client side and we NEXT_PUBLIC isn't working at the moment
       const game = getGameFromId(gameId);
 
-      if (!game.subdomain) {
+      if (!game.subdomain || game.subdomain === 'thinky') {
         return '';
       }
 
