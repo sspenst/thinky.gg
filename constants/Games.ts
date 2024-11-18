@@ -37,7 +37,7 @@ export const Games: Record<GameId, Game> = {
     logoPng: '/logos/thinky/thinky_small.png',
     seoDescription: 'A platform dedicated to high-quality puzzle games',
     seoTitle: 'Thinky Puzzle Games',
-    subdomain: '',
+    subdomain: 'thinky',
     subtitle: 'Thinky Games',
     type: GameType.NONE,
     stripePaymentLinkMonthly: process.env.STRIPE_THINKY_PAYMENT_LINK_MONTHLY,
