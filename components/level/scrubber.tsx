@@ -5,7 +5,7 @@ import Link from 'next/link';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import Modal from '../modal';
 import { ScreenSize } from '@root/hooks/useDeviceCheck';
-import { ChevronDown, ChevronsLeftRightEllipsis, ChevronUp, RotateCcwSquare } from 'lucide-react';
+import { ChevronDown, ChevronsLeftRightEllipsis, ChevronUp, RotateCcwSquare, Spline } from 'lucide-react';
 
 
 interface ScrubberProps {
@@ -111,7 +111,7 @@ export default function Scrubber({ gameState, onScrub, isPro }: ScrubberProps) {
         [ScreenSize.LG]: 150,
         [ScreenSize.XL]: 250,
     } as Record<ScreenSize, number>;
-    console.log(deviceInfo.screenSize);
+
     const dotDisplayThreshold = dotDisplayThresholdMap[deviceInfo.screenSize] || 100;
     return (
         <>
@@ -120,7 +120,7 @@ export default function Scrubber({ gameState, onScrub, isPro }: ScrubberProps) {
                     onClick={() => setIsExpanded(!isExpanded)} 
                     className="self-center p-2 hover:bg-color-2 rounded-full transition-colors duration-200"
                 >
-                    {!isExpanded ? <div className='flex flex-col text-xs items-center'><span><ChevronsLeftRightEllipsis /></span><ChevronUp /></div> : <ChevronDown />}
+                    {!isExpanded ? <div className='flex flex-row text-xs items-center'><span><Spline /></span><ChevronUp /></div> : <ChevronDown />}
                 </button>
                 
                 <div className={classNames(
