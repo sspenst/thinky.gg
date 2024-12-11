@@ -24,6 +24,7 @@
     "dotenv": "^16.4.5",
     "firebase-admin": "^12.6.0",
     "jsonwebtoken": "^9.0.2",
+    "lucide-react": "^0.468.0",
     "micro": "^10.0.1",
     "module-alias": "^2.2.3",
     "mongodb-memory-server": "^9.4.1",

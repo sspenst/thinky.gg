@@ -16,10 +16,12 @@ import { SubscriptionData } from '../../pages/api/subscription';
 import FormattedUser from '../formatted/formattedUser';
 import LoadingSpinner from '../page/loadingSpinner';
 import MultiSelectUser from '../page/multiSelectUser';
+import { RefreshCcwDot } from 'lucide-react';
+
 
 interface ProFeatureProps {
   description: string;
-  icon: JSX.Element;
+  icon: JSX.Element | React.ReactNode;
   title: string;
 }
 
@@ -403,10 +405,12 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
           </video>
         </div>
         <div className='flex flex-col items-left gap-4'>
-          <ProFeature
-            description='Displayed next to your username across the site'
-            icon={<Image alt='pro' src='/pro.svg' width='24' height='24' />}
-            title='Pro Badge'
+        <ProFeature
+            description='Easily navigate through your moves with a timeline scrubber'
+            icon={
+              <RefreshCcwDot className='w-6 h-6' />
+            }
+            title='Timeline Scrubber'
           />
           <ProFeature
             description='Redo your moves in the game'
@@ -471,6 +475,12 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                 <path d='M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5z' />
               </svg>}
             title='Play History'
+          />
+   
+          <ProFeature
+            description='Displayed next to your username across the site'
+            icon={<Image alt='pro' src='/pro.svg' width='24' height='24' />}
+            title='Pro Badge'
           />
           <span className='text-sm ml-12'><Link className='underline' href={'https://github.com/sspenst/thinky.gg/wiki/Pro-Features'}>View full list</Link> of Pro Features</span>
         </div>
