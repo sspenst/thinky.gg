@@ -16,7 +16,7 @@ import { SubscriptionData } from '../../pages/api/subscription';
 import FormattedUser from '../formatted/formattedUser';
 import LoadingSpinner from '../page/loadingSpinner';
 import MultiSelectUser from '../page/multiSelectUser';
-import { RefreshCcwDot } from 'lucide-react';
+import { RefreshCcwDot, Spline } from 'lucide-react';
 
 
 interface ProFeatureProps {
@@ -408,7 +408,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
         <ProFeature
             description='Easily navigate through your moves with a timeline scrubber'
             icon={
-              <RefreshCcwDot className='w-6 h-6' />
+              <Spline className='w-6 h-6' />
             }
             title='Timeline Scrubber'
           />
