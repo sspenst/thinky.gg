@@ -7,6 +7,7 @@ import Level from '../../models/db/level';
 import MultiplayerMatch from '../../models/db/multiplayerMatch';
 import { UserWithMultiplayerProfile } from '../../models/db/user';
 import { Bar, BarChart, ComposedChart } from 'recharts';
+import { NameType, Payload } from 'recharts/types/component/DefaultTooltipContent';
 
 interface MatchChartProps {
   match: MultiplayerMatch;
@@ -49,6 +50,22 @@ enum ChartView {
 interface LevelTimeData {
   level: string;
   [key: string]: string | number | boolean; // for player names, times, and skipped flags
+}
+
+interface BarShapeProps {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  fill?: string;
+  stroke?: string;
+  strokeWidth?: number;
+  opacity?: number;
+  dataKey: string;
+  payload: any;
+  background?: boolean;
+  index?: number;
+  className?: string;
 }
 
 export default function MatchChart({ match }: MatchChartProps) {
@@ -96,11 +113,13 @@ export default function MatchChart({ match }: MatchChartProps) {
     }
 
     // Track the last level for this player
-    lastLevelMap[completedBy] = levelName;
+    if (completedBy && levelName) {
+      lastLevelMap[completedBy] = levelName;
+    }
 
     const timestamp = new Date(log.createdAt).getTime() - new Date(match.startTime).getTime();
 
-    if (timestamp < 0) {
+    if (timestamp < 0 || !levelName) {
       continue;
     }
 
@@ -116,6 +135,7 @@ export default function MatchChart({ match }: MatchChartProps) {
       }
       
       const levelData = timePerLevelMap.get(levelName);
+      if (!levelData) continue;
       levelData[playerMap[completedBy].name] = timeSpent;
       levelData[`${playerMap[completedBy].name}_skipped`] = log.type === MatchAction.SKIP_LEVEL;
     }
@@ -263,10 +283,10 @@ export default function MatchChart({ match }: MatchChartProps) {
                         backgroundColor: 'var(--bg-color)',
                       }}>
                         <div className="font-medium">{payload[0].payload.level}</div>
-                        {payload.map((entry, index) => {
-                          const playerName = entry.dataKey as string;
-                          const isSkipped = payload[0].payload[`${playerName}_skipped`];
-                          const isIncomplete = payload[0].payload[`${playerName}_incomplete`];
+                        {payload.map((entry: Payload<number, NameType>, index) => {
+                          const playerName = entry.dataKey;
+                          const isSkipped = entry.payload[`${playerName}_skipped`];
+                          const isIncomplete = entry.payload[`${playerName}_incomplete`];
                           
                           return (
                             <div key={index} className="flex items-center gap-2">
@@ -275,8 +295,8 @@ export default function MatchChart({ match }: MatchChartProps) {
                                 (isSkipped || isIncomplete) ? "border-2 bg-transparent" : ""
                               )} 
                               style={{ 
-                                backgroundColor: (isSkipped || isIncomplete) ? 'transparent' : entry.fill,
-                                borderColor: entry.fill
+                                backgroundColor: (isSkipped || isIncomplete) ? 'transparent' : entry.stroke,
+                                borderColor: entry.stroke
                               }}/>
                               {entry.name}: {dayjs(entry.value).format('m:ss')}
                               {isSkipped && <span className="text-sm text-gray-400">(skipped)</span>}
@@ -292,6 +312,8 @@ export default function MatchChart({ match }: MatchChartProps) {
               />
               {match.players.map((player, index) => {
                 const playerName = playerMap[player._id.toString()]?.name;
+                if (!playerName) return null;
+                
                 const color = index === 0 ? "rgb(234 179 8)" : "rgb(168 85 247)";
                 
                 return (
@@ -300,32 +322,33 @@ export default function MatchChart({ match }: MatchChartProps) {
                     dataKey={playerName}
                     fill={color}
                     opacity={0.8}
-                    shape={(props) => {
+                    shape={(props: any) => {
                       const playerName = props.dataKey as string;
                       const isSkipped = props.payload[`${playerName}_skipped`];
                       const isIncomplete = props.payload[`${playerName}_incomplete`];
                       
+                      const pathData = `M ${props.x},${props.y + props.height} 
+                                        L ${props.x},${props.y} 
+                                        L ${props.x + props.width},${props.y} 
+                                        L ${props.x + props.width},${props.y + props.height} Z`;
+                      
                       if (isSkipped || isIncomplete) {
                         return (
                           <path
-                            d={`M ${props.x},${props.y + props.height} 
-                               L ${props.x},${props.y} 
-                               L ${props.x + props.width},${props.y} 
-                               L ${props.x + props.width},${props.y + props.height} Z`}
+                            d={pathData}
                             stroke={color}
                             strokeWidth={2}
                             fill="none"
                           />
                         );
                       }
-                      return <path
-                        d={`M ${props.x},${props.y + props.height} 
-                           L ${props.x},${props.y} 
-                           L ${props.x + props.width},${props.y} 
-                           L ${props.x + props.width},${props.y + props.height} Z`}
-                        fill={color}
-                        opacity={0.8}
-                      />;
+                      return (
+                        <path
+                          d={pathData}
+                          fill={color}
+                          opacity={0.8}
+                        />
+                      );
                     }}
                   />
                 );
