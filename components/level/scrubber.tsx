@@ -113,6 +113,7 @@ export default function Scrubber({ gameState, onScrub, isPro }: ScrubberProps) {
     } as Record<ScreenSize, number>;
 
     const dotDisplayThreshold = dotDisplayThresholdMap[deviceInfo.screenSize] || 100;
+    const interval = Math.max(1, Math.floor(totalMoves / 100) * 10 + (totalMoves < 10 ? 1 : 10));
     return (
         <>
             <div className="w-full flex flex-col">
@@ -174,7 +175,7 @@ export default function Scrubber({ gameState, onScrub, isPro }: ScrubberProps) {
                                 </div>
                                 {Array.from({ length: totalMoves + 1 }).map((_, i) => (
                                     <div key={i} className="absolute top-1/2 -translate-y-1/2" style={{ left: `${(i / totalMoves) * 100}%` }}>
-                                        {i % 10 === 0 ? (
+                                        {i % interval === 0 ? (
                                             <div className="z-100 absolute text-xs text-white" style={{ transform: 'translate(-50%, -50%)' }}>
                                                 {i}
                                             </div>
