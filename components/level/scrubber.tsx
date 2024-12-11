@@ -120,7 +120,7 @@ export default function Scrubber({ gameState, onScrub, isPro }: ScrubberProps) {
                     onClick={() => setIsExpanded(!isExpanded)} 
                     className="self-center p-2 hover:bg-color-2 rounded-full transition-colors duration-200"
                 >
-                    {!isExpanded ? <div className='flex flex-row text-xs items-center'><span><Spline /></span><ChevronUp /></div> : <ChevronDown />}
+                    {!isExpanded ? <div className='flex flex-row text-xs items-center'><span><Spline /></span></div> : <ChevronDown />}
                 </button>
                 
                 <div className={classNames(
