@@ -5,6 +5,8 @@ import Link from 'next/link';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import Modal from '../modal';
 import { ScreenSize } from '@root/hooks/useDeviceCheck';
+import { ChevronDown, ChevronsLeftRightEllipsis, ChevronUp, RotateCcwSquare } from 'lucide-react';
+
 
 interface ScrubberProps {
     gameState: GameState;
@@ -14,6 +16,7 @@ interface ScrubberProps {
 
 export default function Scrubber({ gameState, onScrub, isPro }: ScrubberProps) {
     const [showProModal, setShowProModal] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(false);
     const { game } = useContext(AppContext);
     const [isDragging, setIsDragging] = useState(false);
     const scrubberRef = useRef<HTMLDivElement>(null);
@@ -112,58 +115,76 @@ export default function Scrubber({ gameState, onScrub, isPro }: ScrubberProps) {
     const dotDisplayThreshold = dotDisplayThresholdMap[deviceInfo.screenSize] || 100;
     return (
         <>
-            <div
-                className={classNames(
-                    "w-full bg-color-2 rounded-lg p-2",
-                    { "cursor-not-allowed opacity-50": !isPro }
-                )}
-                ref={scrubberRef}
-            >
-                <div className="flex flex-col gap-2">
-                    <div className="flex justify-between text-sm">
-                        <span>Move {currentMove}</span>
-                        <span>Total {totalMoves}</span>
-                    </div>
+            <div className="w-full flex flex-col">
+                <button 
+                    onClick={() => setIsExpanded(!isExpanded)} 
+                    className="self-center p-2 hover:bg-color-2 rounded-full transition-colors duration-200"
+                >
+                    {!isExpanded ? <div className='flex flex-col text-xs items-center'><span><ChevronsLeftRightEllipsis /></span><ChevronUp /></div> : <ChevronDown />}
+                </button>
+                
+                <div className={classNames(
+                    "transition-all duration-300 ease-in-out overflow-hidden",
+                    isExpanded ? "max-h-32 opacity-100" : "max-h-0 opacity-0"
+                )}>
                     <div
-                        className="h-4 bg-color-3 rounded-full cursor-pointer relative"
-                        onMouseDown={handleMouseDown}
-                        onTouchStart={handleTouchStart}
-                    >
-                        {/* Faded circles for all possible positions */}
-
-                        {gameState.redoStack.length > 0 && (
-                            <div
-                                className="absolute h-full bg-blue-500/30 rounded-full"
-                                style={{
-                                    width: `${((currentMove + gameState.redoStack.length) / totalMoves) * 100}%`,
-                                }}
-                            />
+                        className={classNames(
+                            "w-full bg-color-2 rounded-lg p-2",
+                            { "cursor-not-allowed opacity-50": !isPro }
                         )}
-                        <div
-                            className={classNames(
-                                "h-full rounded-full relative",
-                                { "transition-all duration-100": !isDragging }
-                            )}
-                            style={{
-                                backgroundColor: 'var(--bg-color-3)',
-                                width: `${progress}%`
-                            }}
-                        >
-                            <div
-                                className="absolute right-0 top-1/2 -translate-y-1/2 w-6 h-6 bg-blue-600 rounded-full transform translate-x-1/2"
-                            />
-                        </div>
-                        {Array.from({ length: totalMoves + 1 }).map((_, i) => (
-                            <div key={i} className="absolute top-1/2 -translate-y-1/2" style={{ left: `${(i / totalMoves) * 100}%` }}>
-                                {i % 10 === 0 ? (
-                                    <div className="z-100 absolute text-xs text-white" style={{ transform: 'translate(-50%, -50%)' }}>
-                                        {i}
-                                    </div>
-                                ) : (
-                                    totalMoves < dotDisplayThreshold && <div className="z-0 absolute w-2 h-2 bg-gray-800 rounded-full" style={{ transform: 'translate(-50%, -50%)' }} />
-                                )}
+                        ref={scrubberRef}
+                    >
+                        <div className="flex flex-col gap-2">
+                            <div className="flex justify-between text-sm">
+                                <span>Move {currentMove}</span>
+                                <span>Total {totalMoves}</span>
                             </div>
-                        ))}
+                            <div
+                                className="h-4 bg-color-3 rounded-full cursor-pointer relative"
+                                onMouseDown={handleMouseDown}
+                                onTouchStart={handleTouchStart}
+                            >
+                                {/* Faded circles for all possible positions */}
+
+                                {gameState.redoStack.length > 0 && (
+                                    <div
+                                        className="absolute h-full bg-blue-500/30 rounded-full"
+                                        style={{
+                                            width: `${((currentMove + gameState.redoStack.length) / totalMoves) * 100}%`,
+                                        }}
+                                    />
+                                )}
+                                <div
+                                    className={classNames(
+                                        "h-full rounded-full relative transition-all duration-300 ease-in-out",
+                                        { "transition-none": isDragging }
+                                    )}
+                                    style={{
+                                        backgroundColor: 'var(--bg-color-3)',
+                                        width: `${progress}%`
+                                    }}
+                                >
+                                    <div
+                                        className={classNames(
+                                            "absolute right-0 top-1/2 -translate-y-1/2 w-6 h-6 bg-blue-600 rounded-full transform translate-x-1/2",
+                                            "transition-all duration-300 ease-in-out",
+                                            { "transition-none": isDragging }
+                                        )}
+                                    />
+                                </div>
+                                {Array.from({ length: totalMoves + 1 }).map((_, i) => (
+                                    <div key={i} className="absolute top-1/2 -translate-y-1/2" style={{ left: `${(i / totalMoves) * 100}%` }}>
+                                        {i % 10 === 0 ? (
+                                            <div className="z-100 absolute text-xs text-white" style={{ transform: 'translate(-50%, -50%)' }}>
+                                                {i}
+                                            </div>
+                                        ) : (
+                                            totalMoves < dotDisplayThreshold && <div className="z-0 absolute w-2 h-2 bg-gray-800 rounded-full" style={{ transform: 'translate(-50%, -50%)' }} />
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
