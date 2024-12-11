@@ -16,11 +16,10 @@ export const config = {
   },
 };
 
-export function getMimeType(arrayBuffer: ArrayBuffer): string {
-  const uint8Array = new Uint8Array(arrayBuffer);
+export function getMimeType(buffer: Buffer | ArrayBuffer): string {
+  const uint8Array = buffer instanceof Buffer ? buffer : new Uint8Array(buffer);
   let mime = '';
 
-  // Check the first 4 bytes of the ArrayBuffer to determine the MIME type
   if (uint8Array[0] === 0x89 && uint8Array[1] === 0x50 && uint8Array[2] === 0x4E && uint8Array[3] === 0x47) {
     mime = 'image/png';
   } else if (uint8Array[0] === 0xFF && uint8Array[1] === 0xD8) {
@@ -61,7 +60,7 @@ export default withAuth({ PUT: {} }, async (req: NextApiRequestWithAuth, res: Ne
   await dbConnect();
 
   const imageBuffer = Buffer.from(image, 'binary');
-  const fileType = getMimeType(imageBuffer);
+  const fileType = getMimeType(imageBuffer.buffer);
 
   if (!fileType) {
     return res.status(400).json({
