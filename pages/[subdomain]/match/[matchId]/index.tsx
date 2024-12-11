@@ -121,12 +121,20 @@ export default function Match() {
 
     socketConn.on('connectedPlayersInRoom', (players: {count: number, users: UserWithMultiMultiplayerProfile[]}) => {
       // loop through players and remove the multiplayerProfiles that aren't matching the current selected game
-      players.users.forEach(player => {
-        if (player.multiplayerProfile === undefined) {
-          return;
+      players.users = players.users.map(player => {
+        if (!player.multiplayerProfile) {
+          return player;
         }
-
-        player.multiplayerProfile = (player.multiplayerProfile as MultiplayerProfile[]).filter(profile => profile.gameId?.toString() === game.toString());
+        
+        const mp = player.multiplayerProfile as MultiplayerProfile;
+        if (mp.gameId?.toString() !== game.toString()) {
+          return {
+            ...player,
+            multiplayerProfile: undefined
+          };
+        }
+        
+        return player;
       });
       setConnectedPlayersInRoom(players as {count: number, users: UserWithMultiplayerProfile[]});
     });
