@@ -60,7 +60,7 @@ export default withAuth({ PUT: {} }, async (req: NextApiRequestWithAuth, res: Ne
   await dbConnect();
 
   const imageBuffer = Buffer.from(image, 'binary');
-  const fileType = getMimeType(imageBuffer.buffer);
+  const fileType = getMimeType(imageBuffer);
 
   if (!fileType) {
     return res.status(400).json({
