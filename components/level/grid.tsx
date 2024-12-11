@@ -27,9 +27,9 @@ interface GridProps {
 
 export default function Grid({ cellClassName, cellStyle, disableAnimation, gameOverride, gameState, hideText, id, leastMoves, onCellClick, optimizeDom, themeOverride }: GridProps) {
   const { game: appGame } = useContext(AppContext);
-  const { theme: appTheme } = useTheme();
+  const { theme: appTheme, resolvedTheme } = useTheme();
   const game = (gameOverride || appGame);
-  const theme = (themeOverride || appTheme);
+  const theme = (themeOverride || appTheme || resolvedTheme);
   const classic = theme === Theme.Classic;
   const height = gameState.board.length;
   const width = gameState.board[0].length;
@@ -190,8 +190,18 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
     );
   }, [borderWidth, height, onCellClick, optimizeDom, tileSize, width]);
 
+  // Prevent hydration mismatch by not rendering theme class until mounted
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
-    <div className={classNames('grow flex items-center justify-center overflow-hidden ' + theme, { [teko.className]: classic })} id={gridId}>
+    <div className={classNames(
+      'grow flex items-center justify-center overflow-hidden',
+      mounted ? theme : undefined,
+      { [teko.className]: classic }
+    )} id={gridId}>
       {tileSize !== 0 &&
         <GridContext.Provider value={{
           borderWidth: borderWidth,
