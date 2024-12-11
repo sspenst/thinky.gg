@@ -712,6 +712,7 @@ export default function TutorialPathology() {
               disableCheckpoints={true}
               disablePlayAttempts={true}
               disableStats={true}
+              disableScrubber
               extraControls={controls}
               key={tutorialStep.key}
               level={tutorialStep.level}

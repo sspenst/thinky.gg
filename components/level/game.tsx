@@ -18,6 +18,7 @@ import { PageContext } from '../../contexts/pageContext';
 import Control from '../../models/control';
 import Level from '../../models/db/level';
 import GameLayout from './gameLayout';
+import Scrubber from './scrubber';
 
 interface SessionCheckpoint {
   _id: Types.ObjectId;
@@ -39,6 +40,7 @@ export interface GameProps {
   onPrev?: () => void;
   onSolve?: () => void;
   onStatsSuccess?: () => void;
+  disableScrubber?: boolean;
 }
 
 export default function Game({
@@ -56,6 +58,7 @@ export default function Game({
   onPrev,
   onSolve,
   onStatsSuccess,
+  disableScrubber,
 }: GameProps) {
   const levelContext = useContext(LevelContext);
   const { game, deviceInfo, mutateUser, shouldAttemptAuth, user } = useContext(AppContext);
@@ -647,7 +650,6 @@ export default function Game({
     window.addEventListener('blur', handleBlurEvent);
     document.addEventListener('keydown', handleKeyDownEvent);
     document.addEventListener('keyup', handleKeyUpEvent);
-    // NB: even though the default value for passive is false, you have to specifically set it to false here in order to prevent swipe navigation in the browser
     document.addEventListener('touchstart', handleTouchStartEvent, { passive: false });
     document.addEventListener('touchmove', handleTouchMoveEvent, { passive: false });
     document.addEventListener('touchend', handleTouchEndEvent, { passive: false });
@@ -757,6 +759,27 @@ export default function Game({
     }
   }
 
+  const handleScrub = useCallback((moveIndex: number) => {
+    setGameState(prevGameState => {
+      const newGameState = cloneGameState(prevGameState);
+      
+      // Reset to initial state
+      while (newGameState.moves.length > 0) {
+        undo(newGameState);
+      }
+      
+      // Apply moves up to moveIndex
+      for (let i = 0; i < moveIndex; i++) {
+        if (newGameState.redoStack.length > 0) {
+          const direction = newGameState.redoStack[newGameState.redoStack.length - 1];
+          makeMove(newGameState, direction, false);
+        }
+      }
+      
+      return newGameState;
+    });
+  }, []);
+
   return (
     <GameContext.Provider value={{
       checkpoints: checkpoints,
@@ -771,6 +794,8 @@ export default function Game({
         gameState={gameState}
         level={level}
         onCellClick={(x, y) => onCellClick(x, y)}
+        onScrub={handleScrub}
+        isPro={pro}
       />
     </GameContext.Provider>
   );
