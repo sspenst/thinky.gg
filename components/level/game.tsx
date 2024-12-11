@@ -343,7 +343,7 @@ export default function Game({
         onNext();
       }
 
-      return;
+      return false;
     }
 
     if (code === 'KeyP') {
@@ -351,20 +351,20 @@ export default function Game({
         onPrev();
       }
 
-      return;
+      return false;
     }
 
     // check if code is the shift key
     if (code.startsWith('Shift')) {
       shiftKeyDown.current = true;
 
-      return;
+      return false;
     }
 
     // check if code starts with the words Digit
     if (code.startsWith('Digit') || code === 'KeyB') {
       if (disableCheckpoints) {
-        return;
+        return false;
       }
 
       if (!pro) {
@@ -377,7 +377,7 @@ export default function Game({
           }
         );
 
-        return;
+        return false;
       }
 
       if (code.startsWith('Digit')) {
@@ -470,7 +470,9 @@ export default function Game({
         return prevGameState;
       }
 
-      if (!makeMove(newGameState, direction, !disableAutoUndo)) {
+      const move = makeMove(newGameState, direction, !disableAutoUndo);
+
+      if (!move) {
         return prevGameState;
       }
 
@@ -492,6 +494,8 @@ export default function Game({
 
       return onSuccessfulMove(newGameState);
     });
+
+    return true;
   }, [disableAutoUndo, disableCheckpoints, disablePlayAttempts, enableSessionCheckpoint, fetchPlayAttempt, game.displayName, isComplete, level._id, level.data, level.leastMoves, loadCheckpoint, onComplete, onMove, onNext, onPrev, onSolve, pro, saveCheckpoint, saveSessionToSessionStorage, trackStats]);
 
   const touchXDown = useRef<number>(0);
@@ -512,7 +516,19 @@ export default function Game({
       event.preventDefault();
     }
 
-    handleKeyDown(code);
+    let timesToMove = 1;
+
+    // if code starts with arrow
+    if (shiftKeyDown.current && code.startsWith('Arrow')) {
+      // @TODO: this 39 is based on the max width of grid being 40...
+      // ideally we just keep moving until handleKeyDown fails but based on how the code is written,
+      // it isn't straightforward how to have it return false if it fails
+      timesToMove = 39;
+    }
+
+    for (let i = 0; i < timesToMove; i ++) {
+      handleKeyDown(code);
+    }
   }, [handleKeyDown, preventKeyDownEvent]);
 
   const handleKeyUpEvent = useCallback((event: KeyboardEvent) => {
