@@ -1,3 +1,15 @@
+/**
+ * playattempt is a schema for a play attempt...
+ * gameId is the game id of the game that the play attempt is for
+ * levelId is the level id of the level that the play attempt is for
+ * userId is the user id of the user that the play attempt is for
+ * startTime is the start time of the play attempt
+ * endTime is the end time of the play attempt
+ * attemptContext is the context of the play attempt
+ * isDeleted is a boolean that indicates if the play attempt is deleted
+ * updateCount is the number of times the play attempt has been updated
+ * userId is the user id of the user that the play attempt is for
+ */
 import { GameId } from '@root/constants/GameId';
 import mongoose from 'mongoose';
 import PlayAttempt from '../db/playAttempt';
