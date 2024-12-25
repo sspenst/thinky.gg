@@ -113,7 +113,7 @@ export const AnimateCounterOne: React.FC<AnimateCounterOneProps> = ({ value }) =
                                 />
                             </div>
                             <div className="text-xs text-gray-500 text-center">
-                                Next {nextRank.min - value === 1 ? 'tomorrow' : `in ${nextRank.min - value} days`}
+                                Next rank {nextRank.min - value === 1 ? 'tomorrow' : `in ${nextRank.min - value} days`}
                             </div>
                         </div>
                     )}</div>

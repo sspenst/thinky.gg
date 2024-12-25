@@ -47,8 +47,10 @@ export default withAuth({
     const resTrack = await postPlayAttempt(req.user._id, levelId);
 
     const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
     if (!req.user.config?.lastPlayedAt || new Date(req.user.config.lastPlayedAt).getTime() < new Date().getTime() - ONE_DAY_MS) {
       // should only run if the user has not played in the last day... so we can update the streak
+      
       const { currentStreak, calendar } = await getStreaks(req.user._id, req.gameId);
       if (calendar.length > 0) {
         await Promise.all([
