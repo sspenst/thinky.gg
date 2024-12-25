@@ -1,7 +1,11 @@
+import { GameId } from '@root/constants/GameId';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import React, { useEffect, useState } from 'react';
+import GameLogo from '../gameLogo';
 import { Counter } from './Counter';
 
 interface AnimateCounterOneProps {
+    gameId: GameId;
     value: number;
 }
 
@@ -35,11 +39,11 @@ function getRankIndex(value: number): number {
     return idx !== -1 ? idx : RANK_GROUPS.length - 1;
 }
 
-export const AnimateCounterOne: React.FC<AnimateCounterOneProps> = ({ value }) => {
+export const AnimateCounterOne: React.FC<AnimateCounterOneProps> = ({ gameId, value }) => {
     const [currentValue, setCurrentValue] = useState(value - 1);
     const [isAnimating, setIsAnimating] = useState(false);
     const [showRankUp, setShowRankUp] = useState(false);
-
+    
     // Find current rank info
     const currentRankIndex = getRankIndex(value);
     const currentRank = RANK_GROUPS[currentRankIndex];
@@ -79,15 +83,20 @@ export const AnimateCounterOne: React.FC<AnimateCounterOneProps> = ({ value }) =
     ) : 100;
 
     return (
-        <div className="flex flex-col gap-2 max-w-sm mx-auto p-2 bg-white shadow-sm rounded-lg">
+        <div className="flex flex-col gap-2 max-w-sm mx-auto bg-white pt-3 rounded-lg">
             {/* Main Row: Counter + Title + Emoji */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1">
                 {/* Counter on the left */}
+                <div className="font-bold flex text-gray-400 flex-row gap-1 text-xs items-center absolute top-2 left-1/2 -translate-x-1/2">
+                    <GameLogo gameId={gameId} id={gameId + 'animate-counter-one'} size={10} />
+                    {getGameFromId(gameId).displayName}
+                </div>
                 <div className={`transition-all duration-700 ${showRankUp ? 'text-green-600' : ''}`}>
                     <Counter value={currentValue} />
                 </div>
 
                 <div className='flex flex-col'>
+                    
                     {/* Title and Emoji */}
                     <div
                         className={`flex items-center gap-2 text-sm font-medium text-gray-700 transition-all duration-700
@@ -117,7 +126,9 @@ export const AnimateCounterOne: React.FC<AnimateCounterOneProps> = ({ value }) =
                             </div>
                         </div>
                     )}</div>
+                    
             </div>
+            
         </div>
     );
 };

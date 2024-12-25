@@ -68,12 +68,12 @@ export default withAuth({
               { userId: new Types.ObjectId(req.user._id), gameId: req.gameId },
               {
                 $set: {
-                  calcCurrentStreak: currentStreak + 1,
+                  calcCurrentStreak: currentStreak,
                   lastPlayedAt: now.getTime(), // Store the actual timestamp, not midnight
                 },
               }
             ),
-            requestBroadcastAlert(new Types.ObjectId(req.user._id), AlertType.STREAK, { streak: currentStreak }),
+            requestBroadcastAlert(new Types.ObjectId(req.user._id), AlertType.STREAK, { gameId: req.gameId, streak: currentStreak }),
           ]);
         }
       }

@@ -219,9 +219,10 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
     socketConn.on('alert', (message) => {
       switch (message.type) {
         case AlertType.STREAK:
-          const { streak } = message.data;
+          
+          const { streak, gameId } = message.data;
           toast.success(
-            <AnimateCounterOne value={streak} />, 
+            <AnimateCounterOne gameId={gameId} value={streak} />, 
             {
               duration: 3500,
               icon: null,
