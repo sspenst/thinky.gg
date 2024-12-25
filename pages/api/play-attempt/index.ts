@@ -50,7 +50,7 @@ export default withAuth({
       return res.status(resTrack.status).json(resTrack.json);
     }
 
-    if (resTrack.json.message === 'updated') {
+    if (resTrack.json?.message === 'updated') {
       // only update streak if the play attempt is a real play attempt
       today.setHours(0, 0, 0, 0);
 
