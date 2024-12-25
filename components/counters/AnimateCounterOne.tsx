@@ -34,7 +34,7 @@ export const RANK_GROUPS = [
 ] as const;
 
 /** Helper to find the rank index based on the current streak. */
-function getRankIndex(value: number): number {
+export function getRankIndex(value: number): number {
     const idx = RANK_GROUPS.findIndex(rank => value >= rank.min && value <= rank.max);
     return idx !== -1 ? idx : RANK_GROUPS.length - 1;
 }
