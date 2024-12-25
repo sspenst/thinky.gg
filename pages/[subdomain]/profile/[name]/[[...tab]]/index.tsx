@@ -63,7 +63,7 @@ import SelectOptionStats from '../../../../../models/selectOptionStats';
 import { getFollowData } from '../../../../api/follow';
 import { doQuery } from '../../../../api/search';
 import { SearchQuery } from '../../../search';
-import { getRankIndex, RANK_GROUPS } from '@root/components/counters/AnimateCounterOne';
+import { getStreakRankIndex, STREAK_RANK_GROUPS } from '@root/components/counters/AnimateCounterOne';
 import StyledTooltip from '@root/components/page/styledTooltip';
 
 export const enum ProfileTab {
@@ -469,7 +469,7 @@ export default function ProfilePage({
 
   const levelsSolvedByDifficulty = profileDataFetched?.levelsSolvedByDifficulty;
   const difficultyType = game.type === GameType.COMPLETE_AND_SHORTEST ? 'Completed' : 'Solved';
-  const streakRank = RANK_GROUPS[getRankIndex(user.config?.calcCurrentStreak ?? 0)];
+  const streakRank = STREAK_RANK_GROUPS[getStreakRankIndex(user.config?.calcCurrentStreak ?? 0)];
   // create an array of objects with the id, trigger element (eg. button), and the content element
   const tabsContent = {
     [ProfileTab.Profile]:

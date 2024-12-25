@@ -9,7 +9,7 @@ interface AnimateCounterOneProps {
     value: number;
 }
 
-export const RANK_GROUPS = [
+export const STREAK_RANK_GROUPS = [
     { min: 0, max: 1, title: "It Begins", emoji: "🌱" },
     { min: 2, max: 4, title: "Getting Comfortable", emoji: "👀" },
     { min: 5, max: 8, title: "Forming Habit", emoji: "🕐" },
@@ -34,9 +34,9 @@ export const RANK_GROUPS = [
 ] as const;
 
 /** Helper to find the rank index based on the current streak. */
-export function getRankIndex(value: number): number {
-    const idx = RANK_GROUPS.findIndex(rank => value >= rank.min && value <= rank.max);
-    return idx !== -1 ? idx : RANK_GROUPS.length - 1;
+export function getStreakRankIndex(value: number): number {
+    const idx = STREAK_RANK_GROUPS.findIndex(rank => value >= rank.min && value <= rank.max);
+    return idx !== -1 ? idx : STREAK_RANK_GROUPS.length - 1;
 }
 
 export const AnimateCounterOne: React.FC<AnimateCounterOneProps> = ({ gameId, value }) => {
@@ -45,9 +45,9 @@ export const AnimateCounterOne: React.FC<AnimateCounterOneProps> = ({ gameId, va
     const [showRankUp, setShowRankUp] = useState(false);
     
     // Find current rank info
-    const currentRankIndex = getRankIndex(value);
-    const currentRank = RANK_GROUPS[currentRankIndex];
-    const nextRank = RANK_GROUPS[currentRankIndex + 1];
+    const currentRankIndex = getStreakRankIndex(value);
+    const currentRank = STREAK_RANK_GROUPS[currentRankIndex];
+    const nextRank = STREAK_RANK_GROUPS[currentRankIndex + 1];
 
     // Check if we're exactly at a rank threshold
     const isExactRank = currentRank.min === value;
