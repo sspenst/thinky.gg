@@ -41,27 +41,41 @@ export default withAuth({
 
     return res.status(200).json(lastPlayed);
   } else if (req.method === 'POST') {
-    
+
     const { levelId } = req.body;
-
+    const now = new Date();
+    const today = new Date(now);
     const resTrack = await postPlayAttempt(req.user._id, levelId);
+    if (resTrack.status !== 200) {
+      return res.status(resTrack.status).json(resTrack.json);
+    }
 
-    const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+    if (resTrack.json.message === 'updated') {
+      // only update streak if the play attempt is a real play attempt
+      today.setHours(0, 0, 0, 0);
 
-    if (!req.user.config?.lastPlayedAt || new Date(req.user.config.lastPlayedAt).getTime() < new Date().getTime() - ONE_DAY_MS) {
-      // should only run if the user has not played in the last day... so we can update the streak
-      
-      const { currentStreak, calendar } = await getStreaks(req.user._id, req.gameId);
-      if (calendar.length > 0) {
-        await Promise.all([
-          UserConfigModel.updateOne({ userId: new Types.ObjectId(req.user._id), gameId: req.gameId }, {
-            $set: {
-            calcCurrentStreak: currentStreak,
-            lastPlayedAt: new Date(calendar[0].date).getTime(),
-          },
-        }),
-          requestBroadcastAlert(new Types.ObjectId(req.user._id), AlertType.STREAK, { streak: currentStreak }),
-        ]);
+      // If user hasn't played today yet
+      const lastPlayedDate = req.user.config?.lastPlayedAt ? new Date(req.user.config.lastPlayedAt) : null;
+      const lastPlayedDay = lastPlayedDate ? new Date(lastPlayedDate.setHours(0, 0, 0, 0)) : null;
+
+      if (!lastPlayedDay || lastPlayedDay.getTime() < today.getTime()) {
+        // Update streak since this is first play of the day
+        const { currentStreak, calendar } = await getStreaks(req.user._id, req.gameId);
+
+        if (calendar.length > 0 && currentStreak !== req.user.config?.calcCurrentStreak) {
+          await Promise.all([
+            UserConfigModel.updateOne(
+              { userId: new Types.ObjectId(req.user._id), gameId: req.gameId },
+              {
+                $set: {
+                  calcCurrentStreak: currentStreak + 1,
+                  lastPlayedAt: now.getTime(), // Store the actual timestamp, not midnight
+                },
+              }
+            ),
+            requestBroadcastAlert(new Types.ObjectId(req.user._id), AlertType.STREAK, { streak: currentStreak }),
+          ]);
+        }
       }
     }
 
