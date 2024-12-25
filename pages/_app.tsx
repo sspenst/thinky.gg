@@ -35,6 +35,8 @@ import useUser from '../hooks/useUser';
 import { MultiplayerMatchState } from '../models/constants/multiplayer';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
 import User, { UserWithMultiMultiplayerProfile, UserWithMultiplayerProfile } from '../models/db/user';
+import AlertType from '@root/constants/alertType';
+import { AnimateCounterOne } from '@root/components/counters/AnimateCounterOne';
 
 export interface MultiplayerSocket {
   connectedPlayers: UserWithMultiplayerProfile[];
@@ -192,7 +194,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
           socketConn.off('reloadPage');
           socketConn.off('killSocket');
           socketConn.disconnect();
-        }
+      }
 
         return {
           connectedPlayers: [],
@@ -214,7 +216,23 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
       path: '/api/socket/',
       withCredentials: true,
     });
-
+    socketConn.on('alert', (message) => {
+      switch (message.type) {
+        case AlertType.STREAK:
+          const { streak } = message.data;
+          toast.success(
+            <AnimateCounterOne value={streak} />, 
+            {
+              duration: 3500,
+              icon: null,
+              style: {
+                minWidth: '200px',
+              }
+            }
+          );
+          break;
+      }
+    });
     socketConn.on('notifications', (notifications: Notification[]) => {
       setNotifications(notifications);
     });

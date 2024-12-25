@@ -110,6 +110,10 @@ export default function FormattedUser({ className, hideAvatar, id, noLinks, noTo
                 <span className='gray'>{userExtendedData.user.config?.calcRankedSolves ?? 0} 🏅</span>
               </div>
               }
+              <div className='flex gap-1'>
+                <span className='font-medium'>Thinky Streak</span>
+                <span className='gray'>{userExtendedData.user.calc_currentStreak ?? 0} Days</span>
+              </div>
               {!game.isNotAGame &&
               <div className='flex gap-1'>
                 <span className='font-medium'>Levels Solved:</span>

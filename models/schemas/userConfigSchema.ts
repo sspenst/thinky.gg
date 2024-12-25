@@ -27,9 +27,17 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       type: Number,
       default: 0,
     },
+    calcCurrentStreak: {
+      type: Number,
+      default: 0,
+    },
     chapterUnlocked: {
       type: Number,
       default: 1,
+    },
+    lastPlayedAt: {
+      type: Number,
+      default: 0,
     },
     gameId: {
       type: String,

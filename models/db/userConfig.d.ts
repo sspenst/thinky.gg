@@ -10,6 +10,8 @@ interface UserConfig {
   calcLevelsSolvedCount: number;
   calcRankedSolves: number;
   calcRecordsCount: number;
+  calcCurrentStreak: number;
+  lastPlayedAt: number; // represents the timestamp they last played a level
   chapterUnlocked: number;
   customTheme: string;
   gameId: GameId;
