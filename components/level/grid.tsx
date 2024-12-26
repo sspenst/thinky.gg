@@ -192,6 +192,7 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
 
   // Prevent hydration mismatch by not rendering theme class until mounted
   const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
     setMounted(true);
   }, []);

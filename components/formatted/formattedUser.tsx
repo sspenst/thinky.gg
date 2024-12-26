@@ -113,8 +113,8 @@ export default function FormattedUser({ className, hideAvatar, id, noLinks, noTo
               { userExtendedData.user.config?.calcCurrentStreak && userExtendedData.user.config?.calcCurrentStreak > 0 &&
               <div className='flex gap-1'>
                 <span className='font-medium'>{game.displayName} Streak</span>
-                  <span className='gray'>{userExtendedData.user.config?.calcCurrentStreak ?? 0} days</span>
-                </div>
+                <span className='gray'>{userExtendedData.user.config?.calcCurrentStreak ?? 0} days</span>
+              </div>
               }
               {!game.isNotAGame &&
               <div className='flex gap-1'>

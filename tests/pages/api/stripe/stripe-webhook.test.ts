@@ -4,6 +4,7 @@ import UserConfig from '@root/models/db/userConfig';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { skip } from 'node:test';
 import Stripe from 'stripe';
 import { Logger } from 'winston';
 import Role from '../../../../constants/role';
@@ -14,7 +15,6 @@ import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { UserConfigModel, UserModel } from '../../../../models/mongoose';
 import handler, { downgradeAccessToAllGames, giveAccessToAllGames, StripeWebhookHelper } from '../../../../pages/api/stripe-webhook/index';
 import { stripe as stripeReal } from '../../../../pages/api/subscription';
-import { skip } from 'node:test';
 
 beforeAll(async () => {
   await dbConnect();
@@ -233,7 +233,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
     await giveAccessToAllGames(new Types.ObjectId(TestId.USER));
 
     const userConfigs = await UserConfigModel.find<UserConfig>({ userId: TestId.USER });
-    
+
     // Check that user has Pro role for all games except Thinky
     userConfigs.forEach(config => {
       expect(config.roles).toContain(Role.PRO);
@@ -242,6 +242,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
 
     // Should have configs for all games except Thinky
     const expectedCount = Object.values(GameId).filter(id => id !== GameId.THINKY && typeof id === 'string').length;
+
     expect(userConfigs.length).toBe(expectedCount);
   });
   test('downgradeAccessToAllGames should remove Pro access from all games', async () => {
@@ -252,7 +253,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
     await downgradeAccessToAllGames(new Types.ObjectId(TestId.USER));
 
     const userConfigs = await UserConfigModel.find<UserConfig>({ userId: TestId.USER });
-    
+
     // Check that user no longer has Pro role for any games
     userConfigs.forEach(config => {
       expect(config.roles).not.toContain(Role.PRO);
@@ -261,6 +262,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
 
     // Should still have configs for all games except Thinky
     const expectedCount = Object.values(GameId).filter(id => id !== GameId.THINKY && typeof id === 'string').length;
+
     expect(userConfigs.length).toBe(expectedCount);
   });
 
@@ -282,6 +284,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
       expectedStatus: 200,
       additionalAssertions: async () => {
         const userConfigs = await UserConfigModel.find<UserConfig>({ userId: TestId.USER });
+
         userConfigs.forEach(config => {
           expect(config.roles).toContain(Role.PRO);
         });
@@ -307,6 +310,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
       additionalAssertions: async () => {
         // Check that gift recipient has Pro role for all games
         const userConfigs = await UserConfigModel.find<UserConfig>({ userId: TestId.USER_B });
+
         userConfigs.forEach(config => {
           expect(config.roles).toContain(Role.PRO);
         });
@@ -338,6 +342,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
       additionalAssertions: async () => {
         // Check that user no longer has Pro role for any games
         const userConfigs = await UserConfigModel.find<UserConfig>({ userId: TestId.USER });
+
         userConfigs.forEach(config => {
           expect(config.roles).not.toContain(Role.PRO);
         });
