@@ -200,7 +200,7 @@ async function calcStats(level: Level, options?: QueryOptions) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {}) {
-  const level = await LevelModel.findById(levelId, 'leastMoves userId', options) as Level;
+  const level = await LevelModel.findById(levelId, 'leastMoves userId', options).lean<Level>() as Level;
 
   const [stats, playAttemptCompletionAgg, playAttemptAgg] = await Promise.all([
     calcStats(level, options),
