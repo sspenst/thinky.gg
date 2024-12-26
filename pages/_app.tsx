@@ -247,7 +247,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
       setTimeout(() => {
         window.location.reload();
       }, 15000);
-    });
+    } );
     socketConn.on('killSocket', () => {
       console.log('killSocket');
       socketConn.disconnect();
@@ -318,7 +318,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
   }, [selectedGame.id, user?._id]);
 
   useEffect(() => {
-    // check if redirect_type querystring parameter is set, and if it is equal to "patholoygg" console log hello
+  // check if redirect_type querystring parameter is set, and if it is equal to "patholoygg" console log hello
     const urlParams = new URLSearchParams(window.location.search);
     const redirectType = urlParams.get('redirect_type');
     const utmSource = urlParams.get('utm_source');
