@@ -1,13 +1,15 @@
+import { GameId } from '@root/constants/GameId';
 import withAuth, { NextApiRequestWithAuth } from '@root/lib/withAuth';
 import { PlayAttemptModel } from '@root/models/mongoose';
 import { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 
-export async function getStreaks(userId: Types.ObjectId) {
+export async function getStreaks(userId: Types.ObjectId, gameId?: GameId) {
   const playAttemptAgg = await PlayAttemptModel.aggregate([
     {
       $match: {
-        userId: userId
+        userId: userId,
+        ...(gameId ? { gameId: gameId } : {}),
       }
     },
     {
@@ -75,7 +77,7 @@ export async function getStreaks(userId: Types.ObjectId) {
   if (daysSinceLastPlay > 1) {
     return {
       currentStreak: 0, 
-      calendar: playAttemptAgg
+      calendar: playAttemptAgg as { date: Date, value: number }[]
     };
   }
 
@@ -100,7 +102,7 @@ export async function getStreaks(userId: Types.ObjectId) {
 
   return {
     currentStreak: streak,
-    calendar: playAttemptAgg
+    calendar: playAttemptAgg as { date: Date, value: number }[]
   };
 }
 

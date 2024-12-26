@@ -63,6 +63,8 @@ import SelectOptionStats from '../../../../../models/selectOptionStats';
 import { getFollowData } from '../../../../api/follow';
 import { doQuery } from '../../../../api/search';
 import { SearchQuery } from '../../../search';
+import { getStreakRankIndex, STREAK_RANK_GROUPS } from '@root/components/counters/AnimateCounterOne';
+import StyledTooltip from '@root/components/page/styledTooltip';
 
 export const enum ProfileTab {
   Achievements = 'achievements',
@@ -467,6 +469,7 @@ export default function ProfilePage({
 
   const levelsSolvedByDifficulty = profileDataFetched?.levelsSolvedByDifficulty;
   const difficultyType = game.type === GameType.COMPLETE_AND_SHORTEST ? 'Completed' : 'Solved';
+  const streakRank = STREAK_RANK_GROUPS[getStreakRankIndex(user.config?.calcCurrentStreak ?? 0)];
   // create an array of objects with the id, trigger element (eg. button), and the content element
   const tabsContent = {
     [ProfileTab.Profile]:
@@ -515,6 +518,8 @@ export default function ProfilePage({
           <div className='flex flex-col gap-6 max-w-sm w-fit'>
             <div>
               {!game.isNotAGame && !game.disableRanked && <div><span className='font-bold'>Ranked Solves:</span> {user.config?.calcRankedSolves ?? 0} 🏅</div>}
+              {!game.isNotAGame && user.config?.calcCurrentStreak && <div><span className='font-bold'>Current Streak:</span> {user.config?.calcCurrentStreak ?? 0} - <span data-tooltip-content={streakRank.title} data-tooltip-id='streak-tooltip'>{streakRank.emoji}</span><StyledTooltip id='streak-tooltip' /></div>}
+              
               {!game.isNotAGame && <div><span className='font-bold'>Levels Solved:</span> {user.config?.calcLevelsSolvedCount ?? 0}</div>}
               {!game.isNotAGame && <div><span className='font-bold'>Levels Completed:</span> {user.config?.calcLevelsCompletedCount ?? 0}</div>}
               {user.hideStatus || !user.ts ? null : isOnline(user) ?

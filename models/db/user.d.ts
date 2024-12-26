@@ -10,6 +10,7 @@ interface User {
   _id: Types.ObjectId;
   avatarUpdatedAt?: number;
   bio?: string;
+  calc_currentStreak?: number;
   disableConfetti?: boolean;
   disallowedEmailNotifications?: NotificationType[];
   disallowedPushNotifications?: NotificationType[];
