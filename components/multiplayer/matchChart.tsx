@@ -51,22 +51,6 @@ interface LevelTimeData {
   [key: string]: string | number | boolean; // for player names, times, and skipped flags
 }
 
-interface BarShapeProps {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  fill?: string;
-  stroke?: string;
-  strokeWidth?: number;
-  opacity?: number;
-  dataKey: string;
-  payload: any;
-  background?: boolean;
-  index?: number;
-  className?: string;
-}
-
 export default function MatchChart({ match }: MatchChartProps) {
   const [activeView, setActiveView] = useState<ChartView>(ChartView.PROGRESS);
 
@@ -323,6 +307,7 @@ export default function MatchChart({ match }: MatchChartProps) {
                     dataKey={playerName}
                     fill={color}
                     opacity={0.8}
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     shape={(props: any) => {
                       const playerName = props.dataKey as string;
                       const isSkipped = props.payload[`${playerName}_skipped`];
