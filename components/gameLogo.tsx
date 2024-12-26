@@ -16,7 +16,6 @@ export default function GameLogo({ gameId, id, size = 28, tooltip = false }: Gam
   if (!gameId) {
     return null;
   }
-
   const game = getGameFromId(gameId);
   const tooltipId = `${game.id}-tooltip-${id}`;
   const src = game.logo;

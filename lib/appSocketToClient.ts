@@ -2,7 +2,8 @@ import { GameId } from '@root/constants/GameId';
 import { Emitter } from '@socket.io/mongo-emitter';
 import { Mongoose, Types } from 'mongoose';
 import { logger } from '../helpers/logger';
-import { broadcastKillSocket, broadcastMatch, broadcastMatches, broadcastNotifications, broadcastPrivateAndInvitedMatches, broadcastReloadPage, clearBroadcastMatchSchedule, scheduleBroadcastMatch } from '../server/socket/socketFunctions';
+import { broadcastAlert, broadcastKillSocket, broadcastMatch, broadcastMatches, broadcastNotifications, broadcastPrivateAndInvitedMatches, broadcastReloadPage, clearBroadcastMatchSchedule, scheduleBroadcastMatch } from '../server/socket/socketFunctions';
+import AlertType from '@root/constants/alertType';
 
 export function GenMongoWSEmitter(mongooseConnection: Mongoose) {
   if (global.MongoEmitter) {
@@ -85,6 +86,16 @@ export async function requestBroadcastNotifications(gameId: GameId, userId: Type
   }
 
   await broadcastNotifications(gameId, global.MongoEmitter, userId);
+}
+
+export async function requestBroadcastAlert(userId: Types.ObjectId, type: AlertType, data: any) {
+  if (!global.MongoEmitter || process.env.NODE_ENV === 'test') {
+    process.env.NODE_ENV !== 'test' && logger.warn('App Server asked itself to broadcast alert but MongoEmitter is not created');
+
+    return;
+  }
+
+  await broadcastAlert(global.MongoEmitter, userId, type, data);
 }
 
 export async function requestKillSocket(userId: Types.ObjectId) {
