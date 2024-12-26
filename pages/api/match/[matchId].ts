@@ -8,7 +8,9 @@ import { getMatch } from '@root/helpers/match/getMatch';
 import { matchMarkSkipLevel } from '@root/helpers/match/matchMarkSkipLevel';
 import { quitMatch } from '@root/helpers/match/quitMatch';
 import { multiplayerMatchTypeToText } from '@root/helpers/multiplayerHelperFunctions';
+import cleanUser from '@root/lib/cleanUser';
 import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
+import User from '@root/models/db/user';
 import { PipelineStage } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { DIFFICULTY_INDEX } from '../../../components/formatted/formattedDifficulty';
@@ -264,6 +266,10 @@ export default withAuth(
           ]);
         }
 
+        // cleanUser for players, winners
+        populatedMatch.players.map(player => cleanUser(player as User));
+        populatedMatch.winners.map(winner => cleanUser(winner as User));
+        console.log('DNE');
         enrichMultiplayerMatch(populatedMatch, req.userId);
 
         await Promise.all([

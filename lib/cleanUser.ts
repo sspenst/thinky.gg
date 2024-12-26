@@ -10,7 +10,7 @@ export default function cleanUser(user?: User | null) {
 
   today.setHours(0, 0, 0, 0);
 
-  if (user?.config?.lastPlayedAt) {
+  if (user?.config?.lastPlayedAt !== undefined) {
     const lastPlayedAt = new Date(user?.config?.lastPlayedAt);
     const lastPlayedAtDay = new Date(lastPlayedAt.setHours(0, 0, 0, 0));
 
