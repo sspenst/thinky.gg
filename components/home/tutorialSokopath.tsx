@@ -596,7 +596,7 @@ export default function TutorialSokopath() {
     const atIncompleteLevel = !tutorialStep.isNextButtonDisabled && tutorialStep.gameGrid && tutorialStepIndex === tutorialStepIndexMax;
 
     controls.push(skipControl());
-    controls.push(nextControl(isNextButtonDisabled || atIncompleteLevel));
+    !tutorialStep.onSolve && controls.push(nextControl(isNextButtonDisabled || atIncompleteLevel));
   } else {
     controls.push(new Control(
       'restart',
