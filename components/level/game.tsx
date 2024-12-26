@@ -18,7 +18,6 @@ import { PageContext } from '../../contexts/pageContext';
 import Control from '../../models/control';
 import Level from '../../models/db/level';
 import GameLayout from './gameLayout';
-import Scrubber from './scrubber';
 
 interface SessionCheckpoint {
   _id: Types.ObjectId;
@@ -762,20 +761,21 @@ export default function Game({
   const handleScrub = useCallback((moveIndex: number) => {
     setGameState(prevGameState => {
       const newGameState = cloneGameState(prevGameState);
-      
+
       // Reset to initial state
       while (newGameState.moves.length > 0) {
         undo(newGameState);
       }
-      
+
       // Apply moves up to moveIndex
       for (let i = 0; i < moveIndex; i++) {
         if (newGameState.redoStack.length > 0) {
           const direction = newGameState.redoStack[newGameState.redoStack.length - 1];
+
           makeMove(newGameState, direction, false);
         }
       }
-      
+
       return newGameState;
     });
   }, []);
@@ -794,7 +794,7 @@ export default function Game({
         gameState={gameState}
         level={level}
         onCellClick={(x, y) => onCellClick(x, y)}
-        onScrub={handleScrub}
+        onScrub={disableScrubber ? undefined : handleScrub}
         isPro={pro}
       />
     </GameContext.Provider>

@@ -1,13 +1,12 @@
 import classNames from 'classnames';
 import dayjs from 'dayjs';
 import React, { useState } from 'react';
-import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Bar, CartesianGrid, ComposedChart, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { NameType, Payload } from 'recharts/types/component/DefaultTooltipContent';
 import { MatchAction, MatchLogDataLevelComplete, MatchLogDataUserLeveId, MultiplayerMatchTypeDurationMap } from '../../models/constants/multiplayer';
 import Level from '../../models/db/level';
 import MultiplayerMatch from '../../models/db/multiplayerMatch';
 import { UserWithMultiplayerProfile } from '../../models/db/user';
-import { Bar, BarChart, ComposedChart } from 'recharts';
-import { NameType, Payload } from 'recharts/types/component/DefaultTooltipContent';
 
 interface MatchChartProps {
   match: MultiplayerMatch;
@@ -126,15 +125,16 @@ export default function MatchChart({ match }: MatchChartProps) {
     // Calculate time spent on level
     if (lastActionTime[completedBy] !== undefined) {
       const timeSpent = timestamp - lastActionTime[completedBy];
-      
+
       if (!timePerLevelMap.has(levelName)) {
-        timePerLevelMap.set(levelName, { 
+        timePerLevelMap.set(levelName, {
           level: levelName,
           [`${playerMap[completedBy].name}_skipped`]: false,
         });
       }
-      
+
       const levelData = timePerLevelMap.get(levelName);
+
       if (!levelData) continue;
       levelData[playerMap[completedBy].name] = timeSpent;
       levelData[`${playerMap[completedBy].name}_skipped`] = log.type === MatchAction.SKIP_LEVEL;
@@ -173,19 +173,19 @@ export default function MatchChart({ match }: MatchChartProps) {
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex justify-center mb-4">
-        <div className="inline-flex rounded-md shadow-sm" role="group">
+    <div className='flex flex-col h-full'>
+      <div className='flex justify-center mb-4'>
+        <div className='inline-flex rounded-md shadow-sm' role='group'>
           {Object.values(ChartView).map((view) => (
             <button
               key={view}
-              type="button"
+              type='button'
               onClick={() => setActiveView(view)}
               className={classNames(
                 'px-4 py-2 text-sm font-medium border',
                 'focus:z-10 focus:ring-2 focus:ring-blue-500 focus:outline-none',
-                activeView === view 
-                  ? 'bg-blue-500 text-white border-blue-500' 
+                activeView === view
+                  ? 'bg-blue-500 text-white border-blue-500'
                   : 'bg-transparent hover:bg-blue-500/10 border-gray-500',
                 'first:rounded-l-lg last:rounded-r-lg'
               )}
@@ -195,8 +195,7 @@ export default function MatchChart({ match }: MatchChartProps) {
           ))}
         </div>
       </div>
-
-      <div className="flex-1">
+      <div className='flex-1'>
         <ResponsiveContainer width='100%' height='100%'>
           {activeView === ChartView.PROGRESS ? (
             <LineChart width={400} height={400} data={chartData} margin={{ top: 10, right: 20, bottom: 0, left: -20 }}>
@@ -266,9 +265,9 @@ export default function MatchChart({ match }: MatchChartProps) {
                 vertical={false}
               />
               <XAxis
-                dataKey="level"
+                dataKey='level'
                 angle={-45}
-                textAnchor="end"
+                textAnchor='end'
                 height={60}
               />
               <YAxis
@@ -279,43 +278,45 @@ export default function MatchChart({ match }: MatchChartProps) {
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
                     return (
-                      <div className="px-2 py-1 border rounded border-gray-500" style={{
+                      <div className='px-2 py-1 border rounded border-gray-500' style={{
                         backgroundColor: 'var(--bg-color)',
                       }}>
-                        <div className="font-medium">{payload[0].payload.level}</div>
+                        <div className='font-medium'>{payload[0].payload.level}</div>
                         {payload.map((entry: Payload<number, NameType>, index) => {
                           const playerName = entry.dataKey;
                           const isSkipped = entry.payload[`${playerName}_skipped`];
                           const isIncomplete = entry.payload[`${playerName}_incomplete`];
-                          
+
                           return (
-                            <div key={index} className="flex items-center gap-2">
+                            <div key={index} className='flex items-center gap-2'>
                               <div className={classNames(
-                                "w-3 h-3 rounded-full",
-                                (isSkipped || isIncomplete) ? "border-2 bg-transparent" : ""
-                              )} 
-                              style={{ 
+                                'w-3 h-3 rounded-full',
+                                (isSkipped || isIncomplete) ? 'border-2 bg-transparent' : ''
+                              )}
+                              style={{
                                 backgroundColor: (isSkipped || isIncomplete) ? 'transparent' : entry.stroke,
                                 borderColor: entry.stroke
-                              }}/>
+                              }} />
                               {entry.name}: {dayjs(entry.value).format('m:ss')}
-                              {isSkipped && <span className="text-sm text-gray-400">(skipped)</span>}
-                              {isIncomplete && <span className="text-sm text-gray-400">(incomplete)</span>}
+                              {isSkipped && <span className='text-sm text-gray-400'>(skipped)</span>}
+                              {isIncomplete && <span className='text-sm text-gray-400'>(incomplete)</span>}
                             </div>
                           );
                         })}
                       </div>
                     );
                   }
+
                   return null;
                 }}
               />
               {match.players.map((player, index) => {
                 const playerName = playerMap[player._id.toString()]?.name;
+
                 if (!playerName) return null;
-                
-                const color = index === 0 ? "rgb(234 179 8)" : "rgb(168 85 247)";
-                
+
+                const color = index === 0 ? 'rgb(234 179 8)' : 'rgb(168 85 247)';
+
                 return (
                   <Bar
                     key={playerName}
@@ -326,22 +327,23 @@ export default function MatchChart({ match }: MatchChartProps) {
                       const playerName = props.dataKey as string;
                       const isSkipped = props.payload[`${playerName}_skipped`];
                       const isIncomplete = props.payload[`${playerName}_incomplete`];
-                      
+
                       const pathData = `M ${props.x},${props.y + props.height} 
                                         L ${props.x},${props.y} 
                                         L ${props.x + props.width},${props.y} 
                                         L ${props.x + props.width},${props.y + props.height} Z`;
-                      
+
                       if (isSkipped || isIncomplete) {
                         return (
                           <path
                             d={pathData}
                             stroke={color}
                             strokeWidth={2}
-                            fill="none"
+                            fill='none'
                           />
                         );
                       }
+
                       return (
                         <path
                           d={pathData}

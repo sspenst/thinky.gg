@@ -3,9 +3,11 @@ import 'react-tooltip/dist/react-tooltip.css';
 import '../styles/global.css';
 import { Portal } from '@headlessui/react';
 import { sendGTMEvent } from '@next/third-parties/google';
+import { AnimateCounterOne } from '@root/components/counters/AnimateCounterOne';
 import OpenReplay from '@root/components/openReplay';
 import { Confetti } from '@root/components/page/confetti';
 import DismissToast from '@root/components/toasts/dismissToast';
+import AlertType from '@root/constants/alertType';
 import { DEFAULT_GAME_ID, GameId } from '@root/constants/GameId';
 import { Game, Games } from '@root/constants/Games';
 import MusicContextProvider from '@root/contexts/musicContext';
@@ -35,8 +37,6 @@ import useUser from '../hooks/useUser';
 import { MultiplayerMatchState } from '../models/constants/multiplayer';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
 import User, { UserWithMultiMultiplayerProfile, UserWithMultiplayerProfile } from '../models/db/user';
-import AlertType from '@root/constants/alertType';
-import { AnimateCounterOne } from '@root/components/counters/AnimateCounterOne';
 
 export interface MultiplayerSocket {
   connectedPlayers: UserWithMultiplayerProfile[];
@@ -194,7 +194,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
           socketConn.off('reloadPage');
           socketConn.off('killSocket');
           socketConn.disconnect();
-      }
+        }
 
         return {
           connectedPlayers: [],
@@ -216,22 +216,24 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
       path: '/api/socket/',
       withCredentials: true,
     });
+
     socketConn.on('alert', (message) => {
       switch (message.type) {
-        case AlertType.STREAK:
-          
-          const { streak, gameId } = message.data;
-          toast.success(
-            <AnimateCounterOne gameId={gameId} value={streak} />, 
-            {
-              duration: 3500,
-              icon: null,
-              style: {
-                minWidth: '200px',
-              }
+      case AlertType.STREAK: {
+        const { streak, gameId } = message.data;
+
+        toast.success(
+          <AnimateCounterOne gameId={gameId} value={streak} />,
+          {
+            duration: 3500,
+            icon: null,
+            style: {
+              minWidth: '200px',
             }
-          );
-          break;
+          }
+        );
+        break;
+      }
       }
     });
     socketConn.on('notifications', (notifications: Notification[]) => {
@@ -245,7 +247,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
       setTimeout(() => {
         window.location.reload();
       }, 15000);
-    } );
+    });
     socketConn.on('killSocket', () => {
       console.log('killSocket');
       socketConn.disconnect();
@@ -316,7 +318,7 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
   }, [selectedGame.id, user?._id]);
 
   useEffect(() => {
-  // check if redirect_type querystring parameter is set, and if it is equal to "patholoygg" console log hello
+    // check if redirect_type querystring parameter is set, and if it is equal to "patholoygg" console log hello
     const urlParams = new URLSearchParams(window.location.search);
     const redirectType = urlParams.get('redirect_type');
     const utmSource = urlParams.get('utm_source');

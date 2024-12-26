@@ -125,15 +125,16 @@ export default function Match() {
         if (!player.multiplayerProfile) {
           return player;
         }
-        
+
         const mp = player.multiplayerProfile as MultiplayerProfile;
+
         if (mp.gameId?.toString() !== game.toString()) {
           return {
             ...player,
             multiplayerProfile: undefined
           };
         }
-        
+
         return player;
       });
       setConnectedPlayersInRoom(players as {count: number, users: UserWithMultiplayerProfile[]});

@@ -1,4 +1,5 @@
 import LevelCard from '@root/components/cards/levelCard';
+import { getStreakRankIndex, STREAK_RANK_GROUPS } from '@root/components/counters/AnimateCounterOne';
 import FormattedDate from '@root/components/formatted/formattedDate';
 import GameLogoAndLabel from '@root/components/gameLogoAndLabel';
 import Solved from '@root/components/level/info/solved';
@@ -6,6 +7,7 @@ import FollowerModal from '@root/components/modal/followerModal';
 import FollowingModal from '@root/components/modal/followingModal';
 import LoadingSpinner from '@root/components/page/loadingSpinner';
 import RoleIcons from '@root/components/page/roleIcons';
+import StyledTooltip from '@root/components/page/styledTooltip';
 import LevelsSolvedByDifficultyList from '@root/components/profile/levelsSolvedByDifficultyList';
 import PlayerRank from '@root/components/profile/playerRank';
 import { ProfileAchievments } from '@root/components/profile/profileAchievements';
@@ -63,8 +65,6 @@ import SelectOptionStats from '../../../../../models/selectOptionStats';
 import { getFollowData } from '../../../../api/follow';
 import { doQuery } from '../../../../api/search';
 import { SearchQuery } from '../../../search';
-import { getStreakRankIndex, STREAK_RANK_GROUPS } from '@root/components/counters/AnimateCounterOne';
-import StyledTooltip from '@root/components/page/styledTooltip';
 
 export const enum ProfileTab {
   Achievements = 'achievements',
@@ -519,7 +519,6 @@ export default function ProfilePage({
             <div>
               {!game.isNotAGame && !game.disableRanked && <div><span className='font-bold'>Ranked Solves:</span> {user.config?.calcRankedSolves ?? 0} 🏅</div>}
               {!game.isNotAGame && user.config?.calcCurrentStreak && <div><span className='font-bold'>Current Streak:</span> {user.config?.calcCurrentStreak ?? 0} - <span data-tooltip-content={streakRank.title} data-tooltip-id='streak-tooltip'>{streakRank.emoji}</span><StyledTooltip id='streak-tooltip' /></div>}
-              
               {!game.isNotAGame && <div><span className='font-bold'>Levels Solved:</span> {user.config?.calcLevelsSolvedCount ?? 0}</div>}
               {!game.isNotAGame && <div><span className='font-bold'>Levels Completed:</span> {user.config?.calcLevelsCompletedCount ?? 0}</div>}
               {user.hideStatus || !user.ts ? null : isOnline(user) ?

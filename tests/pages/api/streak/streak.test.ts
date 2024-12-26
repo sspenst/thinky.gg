@@ -1,9 +1,9 @@
-import { Types } from 'mongoose';
+import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import TestId from '@root/constants/testId';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { PlayAttemptModel } from '@root/models/mongoose';
 import { getStreaks } from '@root/pages/api/streak';
-import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import { Types } from 'mongoose';
 
 beforeAll(async () => {
   await dbConnect();
@@ -31,11 +31,13 @@ describe('getStreaks', () => {
   beforeEach(() => {
     // Mock to January 1, 2024 12:00:00 UTC
     const fixedDate = new Date('2024-01-01T12:00:00Z').getTime();
+
     jest.spyOn(Date, 'now').mockImplementation(() => fixedDate);
   });
 
   test('should return 0 streak when no play attempts exist', async () => {
     const result = await getStreaks(new Types.ObjectId(TestId.USER));
+
     expect(result.currentStreak).toBe(0);
     expect(result.calendar).toEqual([]);
   });
@@ -51,6 +53,7 @@ describe('getStreaks', () => {
     await PlayAttemptModel.create(timestamps.map(createPlayAttempt));
 
     const result = await getStreaks(new Types.ObjectId(TestId.USER));
+
     expect(result.currentStreak).toBe(3);
     expect(result.calendar).toHaveLength(3);
   });
@@ -69,6 +72,7 @@ describe('getStreaks', () => {
     await PlayAttemptModel.create(timestamps.map(createPlayAttempt));
 
     const result = await getStreaks(new Types.ObjectId(TestId.USER));
+
     expect(result.currentStreak).toBe(3);
     expect(result.calendar).toHaveLength(3);
   });
@@ -83,6 +87,7 @@ describe('getStreaks', () => {
     await PlayAttemptModel.create(timestamps.map(createPlayAttempt));
 
     const result = await getStreaks(new Types.ObjectId(TestId.USER));
+
     expect(result.currentStreak).toBe(2);
     expect(result.calendar).toHaveLength(2);
   });
@@ -100,6 +105,7 @@ describe('getStreaks', () => {
     await PlayAttemptModel.create(timestamps.map(createPlayAttempt));
 
     const result = await getStreaks(new Types.ObjectId(TestId.USER));
+
     expect(result.currentStreak).toBe(1); // Only Dec 31 counts
     expect(result.calendar).toHaveLength(2);
   });
@@ -114,6 +120,7 @@ describe('getStreaks', () => {
     await PlayAttemptModel.create(timestamps.map(createPlayAttempt));
 
     const result = await getStreaks(new Types.ObjectId(TestId.USER));
+
     expect(result.currentStreak).toBe(1);
     expect(result.calendar).toHaveLength(1);
   });
