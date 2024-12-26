@@ -112,6 +112,7 @@ async function getGameFromSubscription(subscription: Stripe.Subscription): Promi
     if (subscription.items.data.length > 0) {
       // Assuming the first item represents the main product
       const productId = subscription.items.data[0].price?.product;
+
       if (productId) {
         // Retrieve the product details
 
@@ -135,17 +136,16 @@ async function getGameFromSubscription(subscription: Stripe.Subscription): Promi
 async function getGameFromSession(session: Stripe.Checkout.Session): Promise<{ gameId: GameId, productName: string }> {
   // Extract product name from properties, if available
   let productName = 'unknown';
-  
+
   // Fetch line items for the session
   try {
     const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
-    
+
     if (lineItems.data.length > 0) {
       // Assuming the first line item represents the product purchased
       const productId = lineItems.data[0].price?.product;
 
       if (productId) {
-
         const product = await stripe.products.retrieve(productId as string);
 
         productName = product.name;
@@ -242,7 +242,7 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
 
 async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.Checkout.Session): Promise<string | undefined> {
   logger.info(`checkoutSessionComplete - ${userToUpgrade.name} (${userToUpgrade._id.toString()})`);
-  
+
   const { gameId, productName } = await getGameFromSession(properties);
 
   const customerId = properties.customer;
@@ -261,6 +261,7 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
   if (!error) {
     // we want to upgrade the user
     const session = await mongoose.startSession();
+
     try {
       await session.withTransaction(async () => {
         await Promise.all([
@@ -312,6 +313,7 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
 
   return error;
 }
+
 export async function giveAccessToAllGames(userId: Types.ObjectId, session?: ClientSession) {
   // Validate userId
   if (!userId || !Types.ObjectId.isValid(userId)) {
@@ -327,7 +329,7 @@ export async function giveAccessToAllGames(userId: Types.ObjectId, session?: Cli
         gameId: id,
         $addToSet: { roles: Role.PRO }
       },
-      { 
+      {
         session: session,
         upsert: true,
         runValidators: true // Ensure schema validation runs
@@ -346,7 +348,7 @@ export async function downgradeAccessToAllGames(userId: Types.ObjectId, session?
     .map(id => UserConfigModel.findOneAndUpdate(
       { userId: userId, gameId: id },
       { $pull: { roles: Role.PRO } },
-      { 
+      {
         session: session,
         runValidators: true // Ensure schema validation runs
       }
@@ -515,6 +517,7 @@ export default apiWrapper({
     // get metadata for the subscription
     const subscription = dataObject as Stripe.Subscription;
     const metadata = subscription.metadata;
+
     if (metadata.giftToId) {
       // this is a gift subscription
       const [giftFromUser, giftToUser] = await Promise.all([

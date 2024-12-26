@@ -16,7 +16,7 @@ interface GameLayoutProps {
   gameState: GameState;
   level: EnrichedLevel;
   onCellClick: (x: number, y: number) => void;
-  onScrub: (moveIndex: number) => void;
+  onScrub?: (moveIndex: number) => void;
   isPro: boolean;
 }
 
@@ -58,11 +58,12 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
         optimizeDom
       />
       <div className='gap-2 mx-3 transition-opacity flex flex-col'>
-        <Scrubber
+        {onScrub && <Scrubber
           gameState={gameState}
           onScrub={onScrub}
           isPro={isPro}
         />
+        }
         <div className='gap-2 flex'>
           {!disableCheckpoints && !fullScreen &&
             <>

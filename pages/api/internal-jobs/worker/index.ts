@@ -25,10 +25,6 @@ import { QueueMessageState, QueueMessageType } from '../../../../models/schemas/
 import { calcCreatorCounts } from '../../../../models/schemas/userSchema';
 import { sendEmailNotification } from './sendEmailNotification';
 import { sendPushNotification } from './sendPushNotification';
-import { getStreaks } from '../../streak';
-import AlertType from '@root/constants/alertType';
-import { broadcastAlert } from '@root/server/socket/socketFunctions';
-import { requestBroadcastAlert } from '@root/lib/appSocketToClient';
 
 const MAX_PROCESSING_ATTEMPTS = 3;
 

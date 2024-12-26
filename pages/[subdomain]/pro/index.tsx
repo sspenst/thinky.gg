@@ -1,15 +1,17 @@
+import { GameId } from '@root/constants/GameId';
 import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import React from 'react';
 import Page from '../../../components/page/page';
 import SettingsPro from '../../../components/settings/settingsPro';
 import { getUserFromToken } from '../../../lib/withAuth';
-import { GameId } from '@root/constants/GameId';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
-console.log("HERRR")
+
+  console.log('HERRR');
+
   if (!reqUser) {
     return {
       redirect: {

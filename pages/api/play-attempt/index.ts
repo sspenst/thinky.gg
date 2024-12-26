@@ -1,16 +1,16 @@
+import AlertType from '@root/constants/alertType';
 import { GameId } from '@root/constants/GameId';
 import { postPlayAttempt } from '@root/helpers/play-attempts/postPlayAttempt';
+import { requestBroadcastAlert } from '@root/lib/appSocketToClient';
+import { UserConfigModel } from '@root/models/mongoose';
+import { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { ValidEnum, ValidObjectId } from '../../../helpers/apiWrapper';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { EnrichedLevel } from '../../../models/db/level';
 import User from '../../../models/db/user';
-import { getPlayAttempts } from '../user/play-history';
-import AlertType from '@root/constants/alertType';
-import { requestBroadcastAlert } from '@root/lib/appSocketToClient';
-import { Types } from 'mongoose';
-import { UserConfigModel } from '@root/models/mongoose';
 import { getStreaks } from '../streak';
+import { getPlayAttempts } from '../user/play-history';
 
 export async function getLastLevelPlayed(gameId: GameId, user: User) {
   const playAttempts = await getPlayAttempts(gameId, user, {}, 1);
@@ -41,11 +41,11 @@ export default withAuth({
 
     return res.status(200).json(lastPlayed);
   } else if (req.method === 'POST') {
-
     const { levelId } = req.body;
     const now = new Date();
     const today = new Date(now);
     const resTrack = await postPlayAttempt(req.user._id, levelId);
+
     if (resTrack.status !== 200) {
       return res.status(resTrack.status).json(resTrack.json);
     }

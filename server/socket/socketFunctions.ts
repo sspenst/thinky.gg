@@ -1,3 +1,4 @@
+import AlertType from '@root/constants/alertType';
 import { GameId } from '@root/constants/GameId';
 import { getEnrichNotificationPipelineStages } from '@root/helpers/enrich';
 import { MatchGameState } from '@root/helpers/gameStateHelpers';
@@ -15,7 +16,6 @@ import User from '../../models/db/user';
 import { MultiplayerMatchModel, NotificationModel } from '../../models/mongoose';
 import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
 import { checkForFinishedMatch, checkForUnreadyAboutToStartMatch, getAllMatches } from '../../pages/api/match';
-import AlertType from '@root/constants/alertType';
 
 const GlobalMatchTimers = {} as { [matchId: string]: {
   start: NodeJS.Timeout;
@@ -121,6 +121,7 @@ export async function broadcastCountOfUsersInRoom(gameId: GameId, emitter: Serve
   // limit to 20 users
   emitter?.in(matchId).emit('connectedPlayersInRoom', { users: filteredUsers.sort((a, b) => sortByRating(a, b, MultiplayerMatchType.RushBullet)).slice(0, 20), count: filteredUsers.length });
 }
+
 export async function broadcastAlert(emitter: Emitter, userId: Types.ObjectId, type: AlertType, data: any) {
   emitter?.to(userId.toString()).emit('alert', { type, data });
 }

@@ -5,6 +5,7 @@ import User from '@root/models/db/user';
 import { SubscriptionGiftData } from '@root/pages/api/subscription/gift';
 import classNames from 'classnames';
 import dayjs from 'dayjs';
+import { Spline } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useContext, useEffect, useRef, useState } from 'react';
@@ -16,8 +17,6 @@ import { SubscriptionData } from '../../pages/api/subscription';
 import FormattedUser from '../formatted/formattedUser';
 import LoadingSpinner from '../page/loadingSpinner';
 import MultiSelectUser from '../page/multiSelectUser';
-import { RefreshCcwDot, Spline } from 'lucide-react';
-
 
 interface ProFeatureProps {
   description: string;
@@ -123,7 +122,6 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
     }
   }, [paymentMethods]);
 
-  
   const subscribeButtonComponent = hasAPaymentMethod ?
 
     <div className='flex flex-col gap-2'>
@@ -180,7 +178,6 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
               Start Free Trial
       </Link>
     );
-    
 
   return (
     <div className='flex flex-col justify-center items-center gap-6'>
@@ -405,7 +402,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
           </video>
         </div>
         <div className='flex flex-col items-left gap-4'>
-        <ProFeature
+          <ProFeature
             description='Easily navigate through your moves with a timeline scrubber'
             icon={
               <Spline className='w-6 h-6' />

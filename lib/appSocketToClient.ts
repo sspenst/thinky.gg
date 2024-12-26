@@ -1,9 +1,9 @@
+import AlertType from '@root/constants/alertType';
 import { GameId } from '@root/constants/GameId';
 import { Emitter } from '@socket.io/mongo-emitter';
 import { Mongoose, Types } from 'mongoose';
 import { logger } from '../helpers/logger';
 import { broadcastAlert, broadcastKillSocket, broadcastMatch, broadcastMatches, broadcastNotifications, broadcastPrivateAndInvitedMatches, broadcastReloadPage, clearBroadcastMatchSchedule, scheduleBroadcastMatch } from '../server/socket/socketFunctions';
-import AlertType from '@root/constants/alertType';
 
 export function GenMongoWSEmitter(mongooseConnection: Mongoose) {
   if (global.MongoEmitter) {
