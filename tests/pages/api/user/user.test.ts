@@ -459,7 +459,7 @@ describe('Testing a valid user', () => {
         expect(response.config.calcLevelsSolvedCount).toBe(2);
 
         // For getting our own user we should get the full config
-        expect(Object.keys(response.config).sort()).toMatchObject(['_id', 'calcCurrentStreak', 'calcRankedSolves', 'calcLevelsCreatedCount', 'calcLevelsCompletedCount', 'calcLevelsSolvedCount', 'calcRecordsCount', 'chapterUnlocked', 'lastPlayedAt', 'gameId', 'roles', 'theme', 'toursCompleted', 'tutorialCompletedAt', 'userId', 'createdAt', 'updatedAt'].sort());
+        expect(Object.keys(response.config).sort()).toMatchObject(['_id', 'calcCurrentStreak', 'calcRankedSolves', 'calcLevelsCreatedCount', 'calcLevelsCompletedCount', 'calcLevelsSolvedCount', 'calcRecordsCount', 'chapterUnlocked', 'gameId', 'roles', 'theme', 'toursCompleted', 'tutorialCompletedAt', 'userId', 'createdAt', 'updatedAt'].sort());
 
         expect(res.status).toBe(200);
       },

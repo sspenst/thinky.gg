@@ -37,7 +37,6 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
     },
     lastPlayedAt: {
       type: Number,
-      default: 0,
     },
     gameId: {
       type: String,

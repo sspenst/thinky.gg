@@ -108,6 +108,7 @@ describe('matchCreateJoinAndPlay', () => {
       },
       test: async ({ fetch }) => {
         const res = await fetch();
+
         const response = await res.json() as MultiplayerMatch;
 
         expect(response.matchId).toBeDefined();

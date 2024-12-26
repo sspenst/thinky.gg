@@ -114,6 +114,7 @@ export function getEnrichUserConfigPipelineStage(gameId: GameId | string, { excl
     calcRankedSolves: 1,
     calcRecordsCount: 1,
     calcCurrentStreak: 1,
+    lastPlayedAt: 1,
   } : {};
   const includeChapterObject = includeChapter ? {
     chapterUnlocked: 1,
