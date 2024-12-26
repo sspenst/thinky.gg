@@ -20,7 +20,7 @@
     "canvas-confetti": "^1.9.3",
     "cookie": "^0.7.2",
     "dayjs": "^1.11.13",
-    "debounce": "^2.1.1",
+    "debounce": "^2.2.0",
     "dotenv": "^16.4.5",
     "firebase-admin": "^12.6.0",
     "jsonwebtoken": "^9.0.2",
