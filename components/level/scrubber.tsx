@@ -137,7 +137,7 @@ export default function Scrubber({ gameState, onScrub, isPro }: ScrubberProps) {
         )}>
           <div
             className={classNames(
-              'w-full bg-color-2 rounded-lg p-2',
+              'w-full px-6 bg-color-2 rounded-lg p-2',
               { 'cursor-not-allowed opacity-50': !isPro }
             )}
             ref={scrubberRef}
