@@ -28,7 +28,7 @@
     "micro": "^10.0.1",
     "module-alias": "^2.2.3",
     "mongodb-memory-server": "^9.4.1",
-    "mongoose": "^8.5.3",
+    "mongoose": "^8.8.3",
     "motion": "^11.15.0",
     "newrelic": "^12.5.1",
     "next": "^14.2.19",
