@@ -58,12 +58,11 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
         optimizeDom
       />
       <div className='gap-2 mx-3 transition-opacity flex flex-col'>
-        {onScrub && <Scrubber
+        {onScrub && <div className='mb-4 md:mb-0'><Scrubber
           gameState={gameState}
           onScrub={onScrub}
           isPro={isPro}
-        />
-        }
+        /></div>}
         <div className='gap-2 flex'>
           {!disableCheckpoints && !fullScreen &&
             <>
