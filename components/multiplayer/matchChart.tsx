@@ -79,6 +79,11 @@ export default function MatchChart({ match }: MatchChartProps) {
   const lastActionTime = {} as { [id: string]: number };
   const playerScore = {} as { [id: string]: number };
 
+  // Initialize lastActionTime with match start time for all players
+  for (const player of match.players) {
+    lastActionTime[player._id.toString()] = 0; // Initialize with 0 (match start time)
+  }
+
   for (let i = 0; i < match.matchLog.length; i++) {
     const log = match.matchLog[i];
 
@@ -107,7 +112,7 @@ export default function MatchChart({ match }: MatchChartProps) {
     }
 
     // Calculate time spent on level
-    if (lastActionTime[completedBy] !== undefined) {
+    if (completedBy) { // Removed the lastActionTime check since we initialize it for all players
       const timeSpent = timestamp - lastActionTime[completedBy];
 
       if (!timePerLevelMap.has(levelName)) {

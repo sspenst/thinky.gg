@@ -269,7 +269,6 @@ export default withAuth(
         // cleanUser for players, winners
         populatedMatch.players.map(player => cleanUser(player as User));
         populatedMatch.winners.map(winner => cleanUser(winner as User));
-        console.log('DNE');
         enrichMultiplayerMatch(populatedMatch, req.userId);
 
         await Promise.all([
