@@ -543,7 +543,7 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
       id: 'name',
       name: 'Name',
       selector: row => <FormattedUser id='users' size={Dimensions.AvatarSizeSmall} user={row} />,
-      sortable: true,
+      sortable: false,
       style: {
         minWidth: 200,
       },
