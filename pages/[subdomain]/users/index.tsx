@@ -549,7 +549,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       user.index = index + 1 + skip;
       // remve lastPlayedAt and last_visited_at
       delete user.lastPlayedAt;
-      delete user.last_visited_at;
+
       cleanUser(user);
     });
 
