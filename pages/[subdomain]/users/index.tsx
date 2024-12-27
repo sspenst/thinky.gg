@@ -547,6 +547,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
     usersAgg.forEach((user, index) => {
       user.index = index + 1 + skip;
+      // remve lastPlayedAt and last_visited_at
+      delete user.lastPlayedAt;
+      delete user.last_visited_at;
       cleanUser(user);
     });
 
