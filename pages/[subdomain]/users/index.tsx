@@ -114,101 +114,287 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   try {
-    const usersAgg = await UserModel.aggregate([
+    // Base pipeline that always runs
+    const basePipeline = [
       { $match: searchObj },
       ...getEnrichUserConfigPipelineStage(gameId),
-      // mulitplayer ratings
-      {
-        $lookup: {
-          from: MultiplayerProfileModel.collection.name,
-          localField: '_id',
-          foreignField: 'userId',
-          as: 'multiplayerProfile',
-          pipeline: [
-            {
-              $match: {
-                gameId: gameId,
-              },
-            },
-          ],
+    ];
+
+    // Optional lookups based on sort field
+    const optionalLookups = [];
+
+    // Only add multiplayer lookups if sorting by rating
+    if (sortBy.startsWith('ratingRush')) {
+      const ratingType = sortBy.replace('rating', 'calc');
+
+      optionalLookups.push(
+        {
+          $lookup: {
+            from: MultiplayerProfileModel.collection.name,
+            localField: '_id',
+            foreignField: 'userId',
+            as: 'multiplayerProfile',
+            pipeline: [{ $match: { gameId: gameId } }],
+          }
         },
-      },
-      {
-        $unwind: {
-          path: '$multiplayerProfile',
-          preserveNullAndEmptyArrays: true,
+        {
+          $unwind: {
+            path: '$multiplayerProfile',
+            preserveNullAndEmptyArrays: true,
+          }
+        },
+        {
+          $match: {
+            [`multiplayerProfile.${ratingType}Count`]: { $gte: 5 }
+          }
         }
-      },
-      // follower count
-      {
-        $lookup: {
-          from: GraphModel.collection.name,
-          localField: '_id',
-          foreignField: 'target',
-          as: 'followers',
-          pipeline: [
-            {
-              $match: {
-                type: GraphType.FOLLOW,
+      );
+    }
+
+    // Only add follower lookup if sorting by followers
+    if (sortBy === 'followerCount') {
+      optionalLookups.push(
+        {
+          $lookup: {
+            from: GraphModel.collection.name,
+            localField: '_id',
+            foreignField: 'target',
+            as: 'followers',
+            pipeline: [
+              { $match: { type: GraphType.FOLLOW } },
+              { $group: { _id: null, count: { $sum: 1 } } }
+            ],
+          }
+        },
+        {
+          $unwind: {
+            path: '$followers',
+            preserveNullAndEmptyArrays: true,
+          }
+        }
+      );
+    }
+
+    // Only add review lookups if sorting by review fields
+    if (sortBy === 'reviewAverage' || sortBy === 'reviewCount') {
+      optionalLookups.push(
+        {
+          $lookup: {
+            from: ReviewModel.collection.name,
+            localField: '_id',
+            foreignField: 'userId',
+            as: 'reviews',
+            pipeline: [
+              { $match: { gameId: gameId, isDeleted: { $ne: true } } },
+              {
+                $group: {
+                  _id: null,
+                  count: { $sum: 1 },
+                  scoreCount: { $sum: { $cond: [{ $gt: ['$score', 0] }, 1, 0] } },
+                  scoreTotal: { $sum: '$score' },
+                }
               }
-            },
-            {
-              $group: {
-                _id: null,
-                count: { $sum: 1 },
+            ],
+          }
+        },
+        {
+          $unwind: {
+            path: '$reviews',
+            preserveNullAndEmptyArrays: true,
+          }
+        }
+      );
+    }
+
+    const sortPipeline = [
+      // Add computed fields needed for sorting before the actual sort
+      {
+        $addFields: {
+          // Fix review average sorting
+          sortReviewAverage: {
+            $cond: {
+              if: { $ne: [ '$reviews.scoreCount', 0 ] },
+              then: { $divide: [ '$reviews.scoreTotal', '$reviews.scoreCount' ] },
+              else: -1 // Put null reviews at the bottom when sorting
+            }
+          },
+          // Fix last seen sorting - respect hideStatus
+          sortLastSeen: {
+            $cond: {
+              if: { $eq: [ '$hideStatus', true ] },
+              then: -1, // Put hidden status at bottom when sorting
+              else: '$last_visited_at'
+            }
+          },
+          // Fix follower count sorting
+          sortFollowerCount: { $ifNull: ['$followers.count', 0] },
+          // Fix rating sorting
+          sortRatingRushBullet: {
+            $cond: {
+              if: { $gte: [ '$multiplayerProfile.calcRushBulletCount', 5 ] },
+              then: '$multiplayerProfile.ratingRushBullet',
+              else: -1
+            }
+          },
+          sortRatingRushBlitz: {
+            $cond: {
+              if: { $gte: [ '$multiplayerProfile.calcRushBlitzCount', 5 ] },
+              then: '$multiplayerProfile.ratingRushBlitz',
+              else: -1
+            }
+          },
+          sortRatingRushRapid: {
+            $cond: {
+              if: { $gte: [ '$multiplayerProfile.calcRushRapidCount', 5 ] },
+              then: '$multiplayerProfile.ratingRushRapid',
+              else: -1
+            }
+          },
+          sortRatingRushClassical: {
+            $cond: {
+              if: { $gte: [ '$multiplayerProfile.calcRushClassicalCount', 5 ] },
+              then: '$multiplayerProfile.ratingRushClassical',
+              else: -1
+            }
+          },
+          // Fix review count sorting
+          sortReviewCount: { $ifNull: ['$reviews.count', 0] }
+        }
+      },
+      // Modify sort object to use computed fields
+      {
+        $sort: {
+          ...sortObj.reduce((acc, cur) => {
+            const field = cur[0];
+            const direction = cur[1];
+
+            // Map original sort fields to computed sort fields
+            const sortFieldMap: { [key: string]: string } = {
+              'reviewAverage': 'sortReviewAverage',
+              'last_visited_at': 'sortLastSeen',
+              'followerCount': 'sortFollowerCount',
+              'ratingRushBullet': 'sortRatingRushBullet',
+              'ratingRushBlitz': 'sortRatingRushBlitz',
+              'ratingRushRapid': 'sortRatingRushRapid',
+              'ratingRushClassical': 'sortRatingRushClassical',
+              'reviewCount': 'sortReviewCount'
+            };
+
+            return {
+              ...acc,
+              [sortFieldMap[field] || field]: direction
+            };
+          }, {})
+        }
+      },
+      { $skip: skip },
+      { $limit: limit },
+      // Remove the temporary sort fields
+      {
+        $project: {
+          sortReviewAverage: 0,
+          sortLastSeen: 0,
+          sortFollowerCount: 0,
+          sortRatingRushBullet: 0,
+          sortRatingRushBlitz: 0,
+          sortRatingRushRapid: 0,
+          sortRatingRushClassical: 0,
+          sortReviewCount: 0
+        }
+      }
+    ];
+
+    // Add remaining lookups after limiting results
+    const postLimitLookups: any[] = [];
+
+    // Add any lookups that weren't already added but are needed for display
+    if (!sortBy.startsWith('ratingRush')) {
+      postLimitLookups.push(
+        {
+          $lookup: {
+            from: MultiplayerProfileModel.collection.name,
+            localField: '_id',
+            foreignField: 'userId',
+            as: 'multiplayerProfile',
+            pipeline: [{ $match: { gameId: gameId } }],
+          }
+        },
+        {
+          $unwind: {
+            path: '$multiplayerProfile',
+            preserveNullAndEmptyArrays: true,
+          }
+        }
+      );
+    }
+
+    if (sortBy !== 'followerCount') {
+      postLimitLookups.push(
+        {
+          $lookup: {
+            from: GraphModel.collection.name,
+            localField: '_id',
+            foreignField: 'target',
+            as: 'followers',
+            pipeline: [
+              { $match: { type: GraphType.FOLLOW } },
+              { $group: { _id: null, count: { $sum: 1 } } }
+            ],
+          }
+        },
+        {
+          $unwind: {
+            path: '$followers',
+            preserveNullAndEmptyArrays: true,
+          }
+        }
+      );
+    }
+
+    if (sortBy !== 'reviewAverage' && sortBy !== 'reviewCount') {
+      postLimitLookups.push(
+        {
+          $lookup: {
+            from: ReviewModel.collection.name,
+            localField: '_id',
+            foreignField: 'userId',
+            as: 'reviews',
+            pipeline: [
+              { $match: { gameId: gameId, isDeleted: { $ne: true } } },
+              {
+                $group: {
+                  _id: null,
+                  count: { $sum: 1 },
+                  scoreCount: { $sum: { $cond: [{ $gt: ['$score', 0] }, 1, 0] } },
+                  scoreTotal: { $sum: '$score' },
+                }
               }
-            },
-          ],
+            ],
+          }
+        },
+        {
+          $unwind: {
+            path: '$reviews',
+            preserveNullAndEmptyArrays: true,
+          }
         }
-      },
+      );
+    }
+
+    const users = await UserModel.aggregate([
+      ...basePipeline,
       {
-        $unwind: {
-          path: '$followers',
-          preserveNullAndEmptyArrays: true,
-        }
-      },
-      // review counts
-      {
-        $lookup: {
-          from: ReviewModel.collection.name,
-          localField: '_id',
-          foreignField: 'userId',
-          as: 'reviews',
-          pipeline: [
-            {
-              $match: {
-                gameId: gameId,
-              }
-            },
-            {
-              $project: {
-                hasScore: {
-                  $cond: [{ $gt: ['$score', 0] }, 1, 0]
-                },
-                isDeleted: 1,
-                score: 1,
-                userId: 1,
-              },
-            },
-            { $match: { isDeleted: { $ne: true } } },
-            {
-              $group: {
-                _id: null,
-                count: { $sum: 1 },
-                scoreCount: { $sum: '$hasScore' },
-                scoreTotal: { $sum: '$score' },
-              },
-            },
-          ],
-        }
-      },
-      {
-        $unwind: {
-          path: '$reviews',
-          preserveNullAndEmptyArrays: true,
-        }
-      },
-      // only keep the fields we need
+        $count: 'totalRows'
+      }
+    ]);
+
+    const totalRows = users[0]?.totalRows || 0;
+
+    const usersAgg = await UserModel.aggregate([
+      ...basePipeline,
+      ...optionalLookups,
+      ...sortPipeline,
+      ...postLimitLookups,
       {
         $project: {
           _id: 1,
@@ -265,26 +451,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
           },
           reviewCount: '$reviews.count',
           ts: 1,
+          config: 1,
         }
-      },
-      ...getEnrichUserConfigPipelineStage(gameId), // TODO: Figure out wtf we need to do this twice?
-      { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
-      { '$facet': {
-        metadata: [ { $count: 'totalRows' } ],
-        data: [ { $skip: skip }, { $limit: limit } ]
-      } },
-      {
-        $unwind: {
-          path: '$metadata',
-          preserveNullAndEmptyArrays: true,
-        }
-      },
+      }
     ]);
 
-    const totalRows = usersAgg[0]?.metadata?.totalRows || 0;
-    const users = usersAgg[0]?.data as UserWithStats[];
-
-    users.forEach((user, index) => {
+    usersAgg.forEach((user, index) => {
       user.index = index + 1 + skip;
       cleanUser(user);
     });
@@ -293,12 +465,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       props: {
         searchQuery: searchQuery,
         totalRows: totalRows,
-        users: JSON.parse(JSON.stringify(users)),
+        users: JSON.parse(JSON.stringify(usersAgg)),
       } as PlayersProps,
     };
   } catch (e) {
     logger.error(e);
-
     throw new Error('Error querying users');
   }
 }
@@ -379,7 +550,7 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
     },
     {
       id: 'config.calcLevelsSolvedCount',
-      name: 'Solves',
+      name: 'Solved',
       selector: row => row.config?.calcLevelsSolvedCount ?? 0,
       sortable: true,
     },
@@ -391,13 +562,13 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
     },
     {
       id: 'config.calcRankedSolves',
-      name: 'Ranked Solves',
+      name: 'Rank Solves',
       selector: row => row.config?.calcRankedSolves ?? 0,
       sortable: true,
     },
     {
       id: 'config.calcLevelsCreatedCount',
-      name: 'Levels',
+      name: 'Levels Made',
       selector: row => row.config?.calcLevelsCreatedCount ?? 0,
       sortable: true,
     },
@@ -435,7 +606,7 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
       id: 'reviewAverage',
       name: 'Avg Review',
       selector: row => row.reviewAverage ? Math.round(row.reviewAverage * 100) / 100 : '-',
-      sortable: true,
+      sortable: false,
     },
     {
       id: 'followerCount',
