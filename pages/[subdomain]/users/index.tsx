@@ -536,7 +536,7 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
       name: '#',
       selector: row => row.index,
       style: {
-        minWidth: 60,
+        minWidth: 40,
       },
     },
     {
