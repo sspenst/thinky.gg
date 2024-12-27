@@ -667,7 +667,7 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
           type='search'
           value={query.search}
         />
-        <div className='flex flex-row gap-2 justify-center text-sm'>
+        <div className='flex flex-row gap-2 justify-center text-center text-xs'>
           <input
             checked={query.showNotRegistered === 'true'}
             id='showNotRegistered'
@@ -681,7 +681,7 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
             type='checkbox'
           />
           <label htmlFor='showNotRegistered'>
-              Show not registered
+              Include Unregistered<br />(Legacy Users From 2007)
           </label>
         </div>
       </div>
