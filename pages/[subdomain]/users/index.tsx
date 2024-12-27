@@ -644,15 +644,9 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
   const getColumnsForTab = (tab: UserTableTab): TableColumn<UserWithStats>[] => {
     const baseColumns = [
       {
-        id: 'index',
-        name: '#',
-        selector: (row: UserWithStats) => row.index,
-
-      },
-      {
         id: 'name',
         name: 'Name',
-        selector: (row: UserWithStats) => <FormattedUser id='users' size={Dimensions.AvatarSizeSmall} user={row} />,
+        selector: (row: UserWithStats) => <div className='flex flex-row items-center gap-4'><span>{row.index}.</span><FormattedUser id='users' size={Dimensions.AvatarSizeSmall} user={row} /></div>,
         sortable: false,
         style: { minWidth: '120px' },
       },
