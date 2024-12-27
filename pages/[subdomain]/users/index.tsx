@@ -7,6 +7,7 @@ import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq'
 import useRouterQuery from '@root/hooks/useRouterQuery';
 import cleanUser from '@root/lib/cleanUser';
 import debounce from 'debounce';
+import { Loader } from 'lucide-react';
 import { GetServerSidePropsContext } from 'next';
 import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
@@ -29,6 +30,12 @@ const ITEMS_PER_PAGE = 40;
 interface UserWithStats extends User {
   followerCount: number;
   index: number;
+  calcLevelsSolvedCount: number;
+  calcLevelsCompletedCount: number;
+  calcRankedSolves: number;
+  calcLevelsCreatedCount: number;
+  calcCurrentStreak: number;
+  lastPlayedAt: number;
   ratingRushBullet: number;
   ratingRushBlitz: number;
   ratingRushRapid: number;
@@ -43,15 +50,68 @@ export interface UserSearchQuery extends ParsedUrlQuery {
   showNotRegistered: string;
   sortBy: string;
   sortDir: 'desc' | 'asc';
+  tab: UserTableTab;
 }
 
+enum UserTableTab {
+  GENERAL = 'general',
+  FOLLOWERS = 'followers',
+  MULTIPLAYER = 'multiplayer',
+  STREAKS = 'streaks'
+}
 export const DEFAULT_QUERY = {
   page: '1',
   search: '',
   showNotRegistered: 'false',
-  sortBy: 'config.calcLevelsSolvedCount',
+  sortBy: 'calcLevelsSolvedCount',
   sortDir: 'desc',
-} as UserSearchQuery;
+  tab: UserTableTab.GENERAL,
+} as UserSearchQuery & { tab: UserTableTab };
+
+const USER_TABLE_TABS = [
+  UserTableTab.GENERAL,
+  UserTableTab.FOLLOWERS,
+  UserTableTab.MULTIPLAYER,
+  UserTableTab.STREAKS,
+];
+
+// First, let's create a constant for default sort settings per tab
+const TAB_DEFAULT_SORTS = {
+  [UserTableTab.GENERAL]: {
+    sortBy: 'calcLevelsSolvedCount',
+    sortDir: 'desc' as const,
+  },
+  [UserTableTab.FOLLOWERS]: {
+    sortBy: 'followerCount',
+    sortDir: 'desc' as const,
+  },
+  [UserTableTab.MULTIPLAYER]: {
+    sortBy: 'ratingRushBullet',
+    sortDir: 'desc' as const,
+  },
+  [UserTableTab.STREAKS]: {
+    sortBy: 'calcCurrentStreak',
+    sortDir: 'desc' as const,
+  },
+};
+
+// Add this before the sortPipeline definition
+const sortFieldMap: { [key: string]: string } = {
+  'reviewAverage': 'sortReviewAverage',
+  'last_visited_at': 'sortLastSeen',
+  'followerCount': 'sortFollowerCount',
+  'ratingRushBullet': 'sortRatingRushBullet',
+  'ratingRushBlitz': 'sortRatingRushBlitz',
+  'ratingRushRapid': 'sortRatingRushRapid',
+  'ratingRushClassical': 'sortRatingRushClassical',
+  'reviewCount': 'sortReviewCount',
+  // Add mappings for the flattened fields
+  'calcLevelsSolvedCount': 'calcLevelsSolvedCount',
+  'calcLevelsCompletedCount': 'calcLevelsCompletedCount',
+  'calcRankedSolves': 'calcRankedSolves',
+  'calcLevelsCreatedCount': 'calcLevelsCreatedCount',
+  'calcCurrentStreak': 'calcCurrentStreak'
+};
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
@@ -59,7 +119,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const gameId = getGameIdFromReq(context.req);
   const game = getGameFromId(gameId);
 
-  DEFAULT_QUERY.sortBy = game.type === GameType.COMPLETE_AND_SHORTEST ? 'config.calcLevelsCompletedCount' : 'config.calcLevelsSolvedCount';
+  DEFAULT_QUERY.sortBy = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calcLevelsCompletedCount' : 'calcLevelsSolvedCount';
   const searchQuery = { ...DEFAULT_QUERY };
 
   if (context.query && (Object.keys(context.query).length > 0)) {
@@ -68,11 +128,18 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }
   }
 
-  const { page, search, showNotRegistered, sortBy, sortDir } = searchQuery;
+  const { page, search, showNotRegistered, sortBy, sortDir, tab } = searchQuery;
 
+  // Ensure valid sort parameters
+  const defaultSort = TAB_DEFAULT_SORTS[tab as UserTableTab] || TAB_DEFAULT_SORTS[UserTableTab.GENERAL];
+  const validatedSortBy = sortBy || defaultSort.sortBy;
+  const validatedSortDir = (sortDir === 'asc' || sortDir === 'desc') ? sortDir : defaultSort.sortDir;
+
+  // Initialize search conditions
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const searchObj = {} as { [key: string]: any };
 
+  // Add name search condition
   if (search && search.length > 0) {
     searchObj['name'] = {
       $regex: cleanInput(search),
@@ -80,29 +147,27 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
+  // Add registered users condition
   if (showNotRegistered !== 'true') {
     searchObj['ts'] = { $exists: true };
   }
 
-  const sortObj = [[sortBy, sortDir === 'asc' ? 1 : -1]];
+  const sortObj = [[validatedSortBy, validatedSortDir === 'asc' ? 1 : -1]];
 
-  // if we are sortting by completion then make the second order sort by solves
-  if (sortBy === 'config.calcLevelsCompletedCount') {
-    // if we are sortting by solves then make the second order sort by completion
-    sortObj.push(['config.calcLevelsSolvedCount', -1]);
-  } else if (sortBy === 'config.calcLevelsSolvedCount') {
-    // if we are sortting by rating then make the second order sort by total games
-    sortObj.push(['config.calcLevelsCompletedCount', -1]);
-  } else if (sortBy === 'ratingRushBullet' || sortBy === 'ratingRushBlitz' || sortBy === 'ratingRushRapid' || sortBy === 'ratingRushClassical') {
+  // if we are sorting by completion then make the second order sort by solves
+  if (validatedSortBy === 'calcLevelsCompletedCount') {
+    sortObj.push(['calcLevelsSolvedCount', -1]);
+  } else if (validatedSortBy === 'calcLevelsSolvedCount') {
+    sortObj.push(['calcLevelsCompletedCount', -1]);
+  } else if (validatedSortBy === 'ratingRushBullet' || validatedSortBy === 'ratingRushBlitz' || validatedSortBy === 'ratingRushRapid' || validatedSortBy === 'ratingRushClassical') {
     // sort by total games
-    // replace rating with calc
-    const countField = sortBy.replace('rating', 'calc');
+    const countField = validatedSortBy.replace('rating', 'calc');
 
     sortObj.push([countField + 'Count', -1]);
   }
 
   // default sort in case of ties
-  if (sortBy !== 'name') {
+  if (validatedSortBy !== 'name') {
     sortObj.push(['name', 1]);
   }
 
@@ -117,16 +182,45 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     // Base pipeline that always runs
     const basePipeline = [
       { $match: searchObj },
-      ...getEnrichUserConfigPipelineStage(gameId),
+      ...getEnrichUserConfigPipelineStage(gameId, {
+        project: {
+          calcLevelsSolvedCount: 1,
+          calcLevelsCompletedCount: 1,
+          calcRankedSolves: 1,
+          calcLevelsCreatedCount: 1,
+          calcCurrentStreak: 1,
+          lastPlayedAt: 1,
+        }
+      }),
+      // Add streak filtering here, after we have the config data
+      ...(tab === UserTableTab.STREAKS ? [{
+        $match: {
+          $expr: {
+            $and: [
+              { $gt: ['$config.calcCurrentStreak', 0] },
+              {
+                $gte: [
+                  '$config.lastPlayedAt',
+                  (() => {
+                    const ONE_DAY = 24 * 60 * 60 * 1000;
+                    const today = new Date();
+
+                    today.setHours(0, 0, 0, 0);
+
+                    return today.getTime() - ONE_DAY;
+                  })()
+                ]
+              }
+            ]
+          }
+        }
+      }] : []),
     ];
 
     // Optional lookups based on sort field
     const optionalLookups = [];
 
-    // Only add multiplayer lookups if sorting by rating
-    if (sortBy.startsWith('ratingRush')) {
-      const ratingType = sortBy.replace('rating', 'calc');
-
+    if (tab === UserTableTab.MULTIPLAYER || (tab === UserTableTab.GENERAL && validatedSortBy.startsWith('ratingRush'))) {
       optionalLookups.push(
         {
           $lookup: {
@@ -143,16 +237,17 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
             preserveNullAndEmptyArrays: true,
           }
         },
-        {
+        ...(validatedSortBy.startsWith('ratingRush') ? [{
           $match: {
-            [`multiplayerProfile.${ratingType}Count`]: { $gte: 5 }
+            [`multiplayerProfile.${validatedSortBy.replace('rating', 'calc')}Count`]: {
+              $gte: 5
+            }
           }
-        }
+        }] : [])
       );
     }
 
-    // Only add follower lookup if sorting by followers
-    if (sortBy === 'followerCount') {
+    if (tab === UserTableTab.FOLLOWERS || (tab === UserTableTab.GENERAL && validatedSortBy === 'followerCount')) {
       optionalLookups.push(
         {
           $lookup: {
@@ -175,8 +270,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       );
     }
 
-    // Only add review lookups if sorting by review fields
-    if (sortBy === 'reviewAverage' || sortBy === 'reviewCount') {
+    if (tab === UserTableTab.GENERAL && (validatedSortBy === 'reviewAverage' || validatedSortBy === 'reviewCount')) {
       optionalLookups.push(
         {
           $lookup: {
@@ -258,7 +352,13 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
             }
           },
           // Fix review count sorting
-          sortReviewCount: { $ifNull: ['$reviews.count', 0] }
+          sortReviewCount: { $ifNull: ['$reviews.count', 0] },
+          // Add the flattened config fields
+          calcLevelsSolvedCount: '$config.calcLevelsSolvedCount',
+          calcLevelsCompletedCount: '$config.calcLevelsCompletedCount',
+          calcRankedSolves: '$config.calcRankedSolves',
+          calcLevelsCreatedCount: '$config.calcLevelsCreatedCount',
+          calcCurrentStreak: '$config.calcCurrentStreak'
         }
       },
       // Modify sort object to use computed fields
@@ -268,21 +368,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
             const field = cur[0];
             const direction = cur[1];
 
-            // Map original sort fields to computed sort fields
-            const sortFieldMap: { [key: string]: string } = {
-              'reviewAverage': 'sortReviewAverage',
-              'last_visited_at': 'sortLastSeen',
-              'followerCount': 'sortFollowerCount',
-              'ratingRushBullet': 'sortRatingRushBullet',
-              'ratingRushBlitz': 'sortRatingRushBlitz',
-              'ratingRushRapid': 'sortRatingRushRapid',
-              'ratingRushClassical': 'sortRatingRushClassical',
-              'reviewCount': 'sortReviewCount'
-            };
+            // Use the field directly if it's not in the map
+            const sortField = sortFieldMap[field] || field;
 
             return {
               ...acc,
-              [sortFieldMap[field] || field]: direction
+              [sortField]: direction
             };
           }, {})
         }
@@ -307,8 +398,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     // Add remaining lookups after limiting results
     const postLimitLookups: any[] = [];
 
-    // Add any lookups that weren't already added but are needed for display
-    if (!sortBy.startsWith('ratingRush')) {
+    if (tab === UserTableTab.MULTIPLAYER || (tab === UserTableTab.GENERAL && validatedSortBy.startsWith('ratingRush'))) {
       postLimitLookups.push(
         {
           $lookup: {
@@ -328,7 +418,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       );
     }
 
-    if (sortBy !== 'followerCount') {
+    if (tab === UserTableTab.FOLLOWERS || (tab === UserTableTab.GENERAL && validatedSortBy === 'followerCount')) {
       postLimitLookups.push(
         {
           $lookup: {
@@ -351,7 +441,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       );
     }
 
-    if (sortBy !== 'reviewAverage' && sortBy !== 'reviewCount') {
+    if (tab === UserTableTab.GENERAL && (validatedSortBy === 'reviewAverage' || validatedSortBy === 'reviewCount')) {
       postLimitLookups.push(
         {
           $lookup: {
@@ -400,58 +490,57 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
           _id: 1,
           avatarUpdatedAt: 1,
           hideStatus: 1,
-          followerCount: '$followers.count',
+          name: 1,
+          roles: 1,
+          ts: 1,
+          // Reference the fields directly instead of through config
+          calcLevelsSolvedCount: '$config.calcLevelsSolvedCount',
+          calcLevelsCompletedCount: '$config.calcLevelsCompletedCount',
+          calcRankedSolves: '$config.calcRankedSolves',
+          calcLevelsCreatedCount: '$config.calcLevelsCreatedCount',
+          calcCurrentStreak: '$config.calcCurrentStreak',
+          lastPlayedAt: '$config.lastPlayedAt',
+          // Rest of the fields
           last_visited_at: {
             $cond: {
-              if: { $eq: [ '$hideStatus', true ] },
+              if: { $eq: ['$hideStatus', true] },
               then: null,
-              else: '$last_visited_at',
+              else: '$last_visited_at'
             }
           },
-          name: 1,
-          calcRushBulletCount: '$multiplayerProfile.calcRushBulletCount',
-          calcRushBlitzCount: '$multiplayerProfile.calcRushBlitzCount',
-          calcRushRapidCount: '$multiplayerProfile.calcRushRapidCount',
-          calcRushClassicalCount: '$multiplayerProfile.calcRushClassicalCount',
+          followerCount: { $ifNull: ['$followers.count', 0] },
           ratingRushBullet: {
             $cond: {
-              if: { $gte: [ '$multiplayerProfile.calcRushBulletCount', 5 ] },
+              if: { $gte: ['$multiplayerProfile.calcRushBulletCount', 5] },
               then: '$multiplayerProfile.ratingRushBullet',
               else: null
             }
           },
           ratingRushBlitz: {
             $cond: {
-              if: { $gte: [ '$multiplayerProfile.calcRushBlitzCount', 5 ] },
+              if: { $gte: ['$multiplayerProfile.calcRushBlitzCount', 5] },
               then: '$multiplayerProfile.ratingRushBlitz',
               else: null
             }
           },
           ratingRushRapid: {
             $cond: {
-              if: { $gte: [ '$multiplayerProfile.calcRushRapidCount', 5 ] },
+              if: { $gte: ['$multiplayerProfile.calcRushRapidCount', 5] },
               then: '$multiplayerProfile.ratingRushRapid',
               else: null
             }
           },
           ratingRushClassical: {
             $cond: {
-              if: { $gte: [ '$multiplayerProfile.calcRushClassicalCount', 5 ] },
+              if: { $gte: ['$multiplayerProfile.calcRushClassicalCount', 5] },
               then: '$multiplayerProfile.ratingRushClassical',
               else: null
             }
           },
-          roles: 1,
-          reviewAverage: {
-            $cond: {
-              if: { $ne: [ '$reviews.scoreCount', 0 ] },
-              then: { $divide: [ '$reviews.scoreTotal', '$reviews.scoreCount' ] },
-              else: null
-            }
-          },
-          reviewCount: '$reviews.count',
-          ts: 1,
-          config: 1,
+          calcRushBulletCount: '$multiplayerProfile.calcRushBulletCount',
+          calcRushBlitzCount: '$multiplayerProfile.calcRushBlitzCount',
+          calcRushRapidCount: '$multiplayerProfile.calcRushRapidCount',
+          calcRushClassicalCount: '$multiplayerProfile.calcRushClassicalCount',
         }
       }
     ]);
@@ -475,7 +564,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 interface PlayersProps {
-  searchQuery: UserSearchQuery;
+  searchQuery: UserSearchQuery & { tab: UserTableTab };
   totalRows: number;
   users: UserWithStats[];
 }
@@ -487,12 +576,14 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState(searchQuery);
   const routerQuery = useRouterQuery();
+  const [tabChanging, setTabChanging] = useState(false);
 
-  DEFAULT_QUERY.sortBy = game.type === GameType.COMPLETE_AND_SHORTEST ? 'config.calcLevelsCompletedCount' : 'config.calcLevelsSolvedCount';
+  DEFAULT_QUERY.sortBy = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calcLevelsCompletedCount' : 'calcLevelsSolvedCount';
 
   useEffect(() => {
     setData(users);
     setLoading(false);
+    setTabChanging(false);
   }, [setLoading, users]);
 
   useEffect(() => {
@@ -500,10 +591,27 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
   }, [searchQuery]);
 
   const fetchLevels = useCallback((query: UserSearchQuery) => {
-    setQuery(query);
-    setLoading(true);
-    routerQuery(query, DEFAULT_QUERY);
-  }, [routerQuery, setLoading]);
+    const updatedQuery = { ...query };
+    const isTabChange = query.tab !== searchQuery.tab;
+
+    // Always ensure we have a valid sort
+    if (isTabChange || !updatedQuery.sortBy) {
+      const defaultSort = TAB_DEFAULT_SORTS[query.tab as UserTableTab] || TAB_DEFAULT_SORTS[UserTableTab.GENERAL];
+
+      updatedQuery.sortBy = defaultSort.sortBy;
+      updatedQuery.sortDir = defaultSort.sortDir;
+    }
+
+    setQuery(updatedQuery);
+
+    if (isTabChange) {
+      setTabChanging(true);
+    } else {
+      setLoading(true);
+    }
+
+    routerQuery(updatedQuery, DEFAULT_QUERY);
+  }, [routerQuery, setLoading, searchQuery.tab]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const queryDebounce = useCallback(
@@ -530,115 +638,132 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
     });
   }, [loading, queryDebounce]);
 
-  const columns: TableColumn<UserWithStats>[] = [
-    {
-      id: 'index',
-      name: '#',
-      selector: row => row.index,
-      style: {
-        minWidth: 40,
+  const getColumnsForTab = (tab: UserTableTab): TableColumn<UserWithStats>[] => {
+    const baseColumns = [
+      {
+        id: 'index',
+        name: '#',
+        selector: (row: UserWithStats) => row.index,
+
       },
-    },
-    {
-      id: 'name',
-      name: 'Name',
-      selector: row => <FormattedUser id='users' size={Dimensions.AvatarSizeSmall} user={row} />,
-      sortable: false,
-      style: {
-        minWidth: 200,
+      {
+        id: 'name',
+        name: 'Name',
+        selector: (row: UserWithStats) => <FormattedUser id='users' size={Dimensions.AvatarSizeSmall} user={row} />,
+        sortable: false,
+        style: { minWidth: '120px' },
       },
-    },
-    {
-      id: 'config.calcLevelsSolvedCount',
-      name: 'Solved',
-      selector: row => row.config?.calcLevelsSolvedCount ?? 0,
-      sortable: true,
-    },
-    {
-      id: 'config.calcLevelsCompletedCount',
-      name: 'Completed',
-      selector: row => row.config?.calcLevelsCompletedCount ?? 0,
-      sortable: true,
-    },
-    {
-      id: 'config.calcRankedSolves',
-      name: 'Rank Solves',
-      selector: row => row.config?.calcRankedSolves ?? 0,
-      sortable: true,
-    },
-    {
-      id: 'config.calcLevelsCreatedCount',
-      name: 'Levels Made',
-      selector: row => row.config?.calcLevelsCreatedCount ?? 0,
-      sortable: true,
-    },
-    {
-      id: 'config.calcRecordsCount',
-      name: 'Records',
-      selector: row => row.config?.calcRecordsCount ?? 0,
-      sortable: true,
-    },
-    {
-      id: 'reviewCount',
-      name: 'Reviews',
-      selector: row => row.reviewCount ?? 0,
-      sortable: true,
-    },
-    {
-      id: 'last_visited_at',
-      name: 'Last Seen',
-      selector: row => row.last_visited_at ? <FormattedDate style={{ color: 'var(--color)', fontSize: 13 }} ts={row.last_visited_at} /> : '-',
-      sortable: true,
-      style: {
-        minWidth: 128,
-      },
-    },
-    {
-      id: 'ts',
-      name: 'Registered',
-      selector: row => row.ts ? <FormattedDate style={{ color: 'var(--color)', fontSize: 13 }} ts={row.ts} /> : 'Not registered',
-      sortable: true,
-      style: {
-        minWidth: 128,
-      },
-    },
-    {
-      id: 'reviewAverage',
-      name: 'Avg Review',
-      selector: row => row.reviewAverage ? Math.round(row.reviewAverage * 100) / 100 : '-',
-      sortable: false,
-    },
-    {
-      id: 'followerCount',
-      name: 'Followers',
-      selector: row => row.followerCount ?? 0,
-      sortable: true,
-    },
-    {
-      id: 'ratingRushBullet',
-      name: 'Bullet',
-      selector: row => <MultiplayerRating hideType profile={row as unknown as MultiplayerProfile} type={MultiplayerMatchType.RushBullet} />,
-      sortable: true,
-    },
-    {
-      id: 'ratingRushBlitz',
-      name: 'Blitz',
-      selector: row => <MultiplayerRating hideType profile={row as unknown as MultiplayerProfile} type={MultiplayerMatchType.RushBlitz} />,
-      sortable: true,
-    },
-    {
-      id: 'ratingRushRapid',
-      name: 'Rapid',
-      selector: row => <MultiplayerRating hideType profile={row as unknown as MultiplayerProfile} type={MultiplayerMatchType.RushRapid} />,
-      sortable: true,
-    },
-    {
-      id: 'ratingRushClassical',
-      name: 'Classical',
-      selector: row => <MultiplayerRating hideType profile={row as unknown as MultiplayerProfile} type={MultiplayerMatchType.RushClassical} />,
-      sortable: true,
-    },
-  ];
+    ];
+
+    switch (tab) {
+    case UserTableTab.GENERAL:
+      return [
+        ...baseColumns,
+        {
+          id: 'calcLevelsSolvedCount',
+          name: 'Solved',
+          selector: row => row.calcLevelsSolvedCount ?? 0,
+          sortable: true,
+        },
+        {
+          id: 'calcLevelsCompletedCount',
+          name: 'Completed',
+          selector: row => row.calcLevelsCompletedCount ?? 0,
+          sortable: true,
+        },
+        {
+          id: 'calcRankedSolves',
+          name: 'Rank Solves',
+          selector: row => row.calcRankedSolves ?? 0,
+          sortable: true,
+        },
+        {
+          id: 'calcLevelsCreatedCount',
+          name: 'Levels Made',
+          selector: row => row.calcLevelsCreatedCount ?? 0,
+          sortable: true,
+        },
+        {
+          id: 'last_visited_at',
+          name: 'Last Seen',
+          selector: (row: UserWithStats) => row.last_visited_at ? <FormattedDate style={{ color: 'var(--color)', fontSize: 13 }} ts={row.last_visited_at} /> : '-',
+          sortable: true,
+          style: { minWidth: 128 },
+        },
+        {
+          id: 'ts',
+          name: 'Registered',
+          selector: (row: UserWithStats) => row.ts ? <FormattedDate style={{ color: 'var(--color)', fontSize: 13 }} ts={row.ts} /> : 'Not registered',
+          sortable: true,
+          style: { minWidth: 128 },
+        },
+      ];
+    case UserTableTab.FOLLOWERS:
+      return [
+        ...baseColumns,
+        {
+          id: 'followerCount',
+          name: 'Followers',
+          selector: (row: UserWithStats) => row.followerCount ?? 0,
+          sortable: false,
+        },
+      ];
+    case UserTableTab.MULTIPLAYER:
+      return [
+        ...baseColumns,
+        {
+          id: 'ratingRushBullet',
+          name: 'Bullet',
+          selector: (row: any) => (
+            <div className='flex flex-col items-center'>
+              <MultiplayerRating hideType profile={row as unknown as MultiplayerProfile} type={MultiplayerMatchType.RushBullet} />
+            </div>
+          ),
+          sortable: true,
+        },
+        {
+          id: 'ratingRushBlitz',
+          name: 'Blitz',
+          selector: (row: any) => (
+            <div className='flex flex-col items-center'>
+              <MultiplayerRating hideType profile={row as unknown as MultiplayerProfile} type={MultiplayerMatchType.RushBlitz} />
+            </div>
+          ),
+          sortable: true,
+        },
+        {
+          id: 'ratingRushRapid',
+          name: 'Rapid',
+          selector: row => (
+            <div className='flex flex-col items-center'>
+              <MultiplayerRating hideType profile={row as unknown as MultiplayerProfile} type={MultiplayerMatchType.RushRapid} />
+            </div>
+          ),
+          sortable: true,
+        },
+        {
+          id: 'ratingRushClassical',
+          name: 'Classical',
+          selector: (row: any) => (
+            <div className='flex flex-col items-center'>
+              <MultiplayerRating hideType profile={row as unknown as MultiplayerProfile} type={MultiplayerMatchType.RushClassical} />
+            </div>
+          ),
+          sortable: true,
+        },
+      ];
+    case UserTableTab.STREAKS:
+      return [
+        ...baseColumns,
+        {
+          id: 'calcCurrentStreak',
+          name: 'Current Streak',
+          selector: row => row.calcCurrentStreak ?? 0,
+          sortable: true,
+        },
+      ];
+    }
+  };
 
   if (!query) {
     return null;
@@ -662,74 +787,105 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
             setQueryHelper({
               search: e.target.value,
             });
-          } }
+          }}
           placeholder='Filter users...'
           type='search'
           value={query.search}
         />
-        <div className='flex flex-row gap-2 justify-center text-center text-xs'>
-          <input
-            checked={query.showNotRegistered === 'true'}
-            id='showNotRegistered'
-            name='collection'
-            onChange={() => {
-              fetchLevels({
-                ...query,
-                showNotRegistered: String(query.showNotRegistered !== 'true'),
-              });
-            }}
-            type='checkbox'
-          />
-          <label htmlFor='showNotRegistered'>
+        <details className='text-center text-xs'>
+          <summary className='cursor-pointer hover:text-blue-500'>
+            Advanced Options
+          </summary>
+          <div className='flex flex-row gap-2 justify-center mt-2'>
+            <input
+              checked={query.showNotRegistered === 'true'}
+              id='showNotRegistered'
+              name='collection'
+              onChange={() => {
+                fetchLevels({
+                  ...query,
+                  showNotRegistered: String(query.showNotRegistered !== 'true'),
+                });
+              }}
+              type='checkbox'
+            />
+            <label htmlFor='showNotRegistered'>
               Include Unregistered<br />(Legacy Users From 2007)
-          </label>
+            </label>
+          </div>
+        </details>
+        
+        <div className='flex flex-row gap-2 justify-center'>
+          {USER_TABLE_TABS.map(tab => (
+            <button
+              key={tab}
+              className={`px-4 py-2 rounded ${
+                query.tab === tab
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+              }`}
+              onClick={() => {
+                fetchLevels({
+                  ...query,
+                  tab,
+                  page: '1', // Reset to first page when changing tabs
+                });
+              }}
+            >
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            </button>
+          ))}
         </div>
       </div>
-      <DataTable
-        conditionalRowStyles={[{
-          style: {
-            backgroundColor: 'var(--bg-color-4)',
-          },
-          when: row => row._id === user?._id,
-        }]}
-        columns={columns}
-        data={data}
-        itemsPerPage={ITEMS_PER_PAGE}
-        noDataComponent={
-          <div className='p-3'>
-            No records to display...
-          </div>
-        }
-        onChangePage={(pg: number) => {
-          fetchLevels({
-            ...query,
-            page: String(pg),
-          });
-        }}
-        onSort={async (columnId: string) => {
-          const sortAsc = columnId === 'userId' || columnId === 'name';
-
-          const update = {
-            sortBy: columnId,
-            // default to most useful sort direction
-            sortDir: sortAsc ? 'asc' : 'desc',
-          } as Partial<UserSearchQuery>;
-
-          if (columnId === query.sortBy) {
-            // swap sortDir if the same col is clicked
-            update.sortDir = query.sortDir === 'desc' ? 'asc' : 'desc';
+      {tabChanging ? (
+        <div className='flex justify-center items-center p-8'>
+          <Loader className='animate-spin' />
+        </div>
+      ) : (
+        <DataTable
+          conditionalRowStyles={[{
+            style: {
+              backgroundColor: 'var(--bg-color-4)',
+            },
+            when: row => row._id === user?._id,
+          }]}
+          columns={getColumnsForTab(query.tab as UserTableTab)}
+          data={data}
+          itemsPerPage={ITEMS_PER_PAGE}
+          noDataComponent={
+            <div className='p-3'>
+              No records to display...
+            </div>
           }
+          onChangePage={(pg: number) => {
+            fetchLevels({
+              ...query,
+              page: String(pg),
+            });
+          }}
+          onSort={async (columnId: string) => {
+            const sortAsc = columnId === 'userId' || columnId === 'name';
 
-          fetchLevels({
-            ...query,
-            ...update,
-          });
-        }}
-        page={Number(query.page ?? '1')}
-        sortBy={query.sortBy}
-        sortDir={query.sortDir}
-        totalItems={totalRows}
-      />
+            const update = {
+              sortBy: columnId,
+              sortDir: sortAsc ? 'asc' : 'desc',
+            } as Partial<UserSearchQuery>;
+
+            if (columnId === query.sortBy) {
+              update.sortDir = query.sortDir === 'desc' ? 'asc' : 'desc';
+            }
+
+            fetchLevels({
+              ...query,
+              ...update,
+            });
+          }}
+          page={Number(query.page ?? '1')}
+          sortBy={query.sortBy}
+          sortDir={query.sortDir}
+          totalItems={totalRows}
+        />
+      )}
     </Page>
   </>);
 }
