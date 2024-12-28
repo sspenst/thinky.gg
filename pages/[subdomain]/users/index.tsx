@@ -811,12 +811,11 @@ export default function PlayersPage({ searchQuery, totalRows, users }: PlayersPr
             </label>
           </div>
         </details>
-        
         <div className='flex flex-row gap-2 justify-center'>
           {USER_TABLE_TABS.map(tab => (
             <button
               key={tab}
-              className={`px-4 py-2 rounded ${
+              className={`px-2 py-2 rounded ${
                 query.tab === tab
                   ? 'bg-blue-500 text-white'
                   : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
