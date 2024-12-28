@@ -2,17 +2,88 @@
 import 'cal-heatmap/cal-heatmap.css';
 import { GameId } from '@root/constants/GameId';
 import { Game, Games } from '@root/constants/Games';
+import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import useSWRHelper from '@root/hooks/useSWRHelper';
 import useUrl from '@root/hooks/useUrl';
+import { getStreak, ONE_DAY } from '@root/lib/cleanUser';
 import Level from '@root/models/db/level';
 import User from '@root/models/db/user';
 import UserConfig from '@root/models/db/userConfig';
 import React from 'react';
 import ChapterSelectCard, { ChapterSelectCardBase } from '../cards/chapterSelectCard';
+import { getStreakRankIndex, STREAK_RANK_GROUPS } from '../counters/AnimateCounterOne';
 import FormattedUser from '../formatted/formattedUser';
 import GameLogo from '../gameLogo';
 import LoadingSpinner from '../page/loadingSpinner';
 import { StreakCalendar } from './streakCalendar';
+
+interface StreakDisplayProps {
+  streak: number;
+  gameId: GameId;
+  userConfig?: UserConfig;
+}
+
+function StreakDisplay({ streak, gameId, userConfig }: StreakDisplayProps) {
+  const streakRank = STREAK_RANK_GROUPS[getStreakRankIndex(streak)];
+  const nextRank = STREAK_RANK_GROUPS[getStreakRankIndex(streak) + 1];
+  const game = getGameFromId(gameId);
+
+  // Calculate hasPlayedToday using same logic as getStreak
+  const hasPlayedToday = (() => {
+    if (!userConfig?.lastPlayedAt) return false;
+
+    const today = new Date();
+
+    today.setHours(0, 0, 0, 0);
+
+    const lastPlayedAt = new Date(userConfig.lastPlayedAt);
+
+    return lastPlayedAt.getTime() >= today.getTime() - ONE_DAY;
+  })();
+
+  // Calculate progress to next rank if there is one
+  const progressPercent = nextRank ? Math.min(
+    ((streak - streakRank.min) / (nextRank.min - streakRank.min)) * 100,
+    100
+  ) : 100;
+
+  return (
+    <div className={`flex flex-col gap-2 max-w-sm w-full bg-dark border-white border-2 pt-3 pb-2 px-4 rounded-lg shadow-sm
+      ${!hasPlayedToday && streak > 0 ? ' ring-2 ring-yellow-400 shadow-lg shadow-yellow-200/50' : ''}`}>
+      <div className='font-bold flex text-gray-400 flex-row gap-1 text-xs items-center'>
+        <GameLogo gameId={gameId} id={gameId + '-streak'} size={10} />
+        {game.displayName} Streak
+      </div>
+      <div className='flex items-center gap-2'>
+        <div className='text-2xl font-bold'>{streak}</div>
+        <div className='flex flex-col flex-1'>
+          <div className='flex items-center gap-2 text-sm font-medium text-gray-700'>
+            {streakRank.title}
+            <span className='text-2xl'>{streakRank.emoji}</span>
+          </div>
+          {nextRank && (
+            <div className='w-full space-y-0.5'>
+              <div className='h-1 bg-gray-100 rounded-full overflow-hidden'>
+                <div
+                  className='h-full bg-green-500'
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+              <div className='text-xs text-gray-500'>
+                Next rank {nextRank.min - streak === 1 ? 'tomorrow' : `in ${nextRank.min - streak} days`}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+      {!hasPlayedToday && streak > 0 && (
+        <div className='text-sm text-yellow-600 font-medium mt-1'>
+          Play today to keep your {streak} day streak going! 🔥
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function ThinkyHomePageLoggedIn({ user }: {user: User}) {
   const getUrl = useUrl();
@@ -70,9 +141,11 @@ export function ThinkyHomePageLoggedIn({ user }: {user: User}) {
           const continuePlaying = getSuggestedAction({ userConfig, game });
           const levelOfDay = levelOfDays && levelOfDays[game.id];
           const todayDateClean = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+          const streak = userConfig ? getStreak(userConfig, game.id) : 0;
 
           return (
             <section className='flex flex-col items-center gap-6 max-w-full' key={`game-${game.id}`}>
+              {userConfig && <StreakDisplay streak={streak} gameId={game.id} userConfig={userConfig} />}
               <a
                 className='flex gap-3 items-center justify-center py-4 px-5 border border-color-3 rounded-xl hover:scale-105 transition bg-1'
                 href={getUrl(game.id)}

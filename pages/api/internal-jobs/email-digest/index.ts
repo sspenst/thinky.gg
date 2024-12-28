@@ -6,6 +6,7 @@ import { Games } from '@root/constants/Games';
 import NotificationType from '@root/constants/notificationType';
 import Role from '@root/constants/role';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
+import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import EmailLog from '@root/models/db/emailLog';
 import { EnrichedLevel } from '@root/models/db/level';
@@ -22,7 +23,7 @@ import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
 import isLocal from '../../../../lib/isLocal';
 import User from '../../../../models/db/user';
-import { EmailLogModel, NotificationModel, UserModel } from '../../../../models/mongoose';
+import { EmailLogModel, NotificationModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
 import { EmailState } from '../../../../models/schemas/emailLogSchema';
 import { getLevelOfDay } from '../../level-of-day';
 
@@ -161,6 +162,15 @@ export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
           $ifNull: ['$notificationsCount.notificationCount', 0],
         },
       }
+    },
+    {
+      // lookup userConfig
+      $lookup: {
+        from: UserConfigModel.collection.name,
+        localField: '_id',
+        foreignField: 'userId',
+        as: 'userConfig',
+      },
     },
     // join email logs and get the last one
     {
