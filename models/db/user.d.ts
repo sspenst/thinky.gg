@@ -32,6 +32,7 @@ interface User {
   utm_source?: string; // how the user found the site
   // virtual field - not stored in schema
   config?: UserConfig;
+  configs?: UserConfig[];
 }
 
 export interface ReqUser extends User {

@@ -1,5 +1,6 @@
 import * as aws from '@aws-sdk/client-ses';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
+import { getStreakRankIndex, STREAK_RANK_GROUPS } from '@root/components/counters/AnimateCounterOne';
 import DiscordChannel from '@root/constants/discordChannel';
 import { GameId } from '@root/constants/GameId';
 import { Games } from '@root/constants/Games';
@@ -10,6 +11,7 @@ import { getEnrichUserConfigPipelineStage } from '@root/helpers/enrich';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
 import EmailLog from '@root/models/db/emailLog';
 import { EnrichedLevel } from '@root/models/db/level';
+import UserConfig from '@root/models/db/userConfig';
 import { convert } from 'html-to-text';
 import { Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
@@ -169,7 +171,7 @@ export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
         from: UserConfigModel.collection.name,
         localField: '_id',
         foreignField: 'userId',
-        as: 'userConfig',
+        as: 'configs',
       },
     },
     // join email logs and get the last one
@@ -328,11 +330,22 @@ export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
       NewUserEmail = NewUserCampaign[daysRegistered];
     }
 
+    let dailySubject = 'Levels of the Day - ' + todaysDatePretty;
+
+    // get max config.calcCurrentStreak for all configs
+    const maxStreak = user.configs?.reduce((max, config) => Math.max(max, config.calcCurrentStreak || 0), 0);
+
+    if (maxStreak && maxStreak > 0) {
+      const streakRank = STREAK_RANK_GROUPS[getStreakRankIndex(maxStreak)];
+
+      dailySubject = `Keep your streak of ${maxStreak} day${maxStreak === 1 ? '' : 's'} going! ${streakRank.emoji}`;
+    }
+
     /* istanbul ignore next */
     const EmailTextTable: { [key: string]: { title: string, message?: string, subject: string, featuredLevelsLabel: string } } = {
       [EmailType.EMAIL_DIGEST]: {
         title: `Welcome to your Thinky.gg daily digest for ${todaysDatePretty}.`,
-        subject: 'Levels of the Day - ' + todaysDatePretty,
+        subject: dailySubject,
         featuredLevelsLabel: 'Levels of the Day',
       },
       [EmailType.EMAIL_7D_REACTIVATE]: {
