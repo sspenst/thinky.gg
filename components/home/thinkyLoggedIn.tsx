@@ -21,11 +21,12 @@ import { StreakCalendar } from './streakCalendar';
 
 interface StreakDisplayProps {
   streak: number;
+  timeToKeepStreak: number;
   gameId: GameId;
   userConfig?: UserConfig;
 }
 
-function StreakDisplay({ streak, gameId, userConfig }: StreakDisplayProps) {
+function StreakDisplay({ streak, timeToKeepStreak, gameId, userConfig }: StreakDisplayProps) {
   const streakRank = STREAK_RANK_GROUPS[getStreakRankIndex(streak)];
   const nextRank = STREAK_RANK_GROUPS[getStreakRankIndex(streak) + 1];
   const game = getGameFromId(gameId);
@@ -35,12 +36,13 @@ function StreakDisplay({ streak, gameId, userConfig }: StreakDisplayProps) {
   const hasPlayedToday = (() => {
     if (!userConfig?.lastPlayedAt) return false;
 
+    // Use UTC to avoid timezone issues
     const today = new Date();
 
-    today.setHours(0, 0, 0, 0);
+    today.setUTCHours(0, 0, 0, 0);
     const lastPlayedAt = new Date(userConfig.lastPlayedAt);
 
-    return lastPlayedAt.getTime() >= today.getTime() - ONE_DAY;
+    return lastPlayedAt.getTime() >= today.getTime();
   })();
 
   // Calculate progress to next rank if there is one
@@ -96,22 +98,22 @@ function StreakDisplay({ streak, gameId, userConfig }: StreakDisplayProps) {
           </div>
         </div>
       )}
-      {!hasPlayedToday && streak > 0 && (
+      {!hasPlayedToday && streak > 0 && timeToKeepStreak > 0 && (
         <div className='text-sm text-yellow-600 font-medium mt-1'>
-          Play today to keep your {streak} day streak going! 🔥
+          Play within {Math.ceil(timeToKeepStreak / (1000 * 60 * 60))} hours to keep your {streak} day streak going! 🔥
         </div>
       )}
     </div>
   );
 }
 
-export function ThinkyHomePageLoggedIn({ user }: {user: User}) {
+export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
   const getUrl = useUrl();
 
-  const { data: userConfigs, isLoading: configsLoading } = useSWRHelper<{[key: string]: UserConfig}>('/api/user-configs/');
-  const { data: levelOfDays, isLoading: levelOfDaysLoading } = useSWRHelper<{[key: string]: Level}>('/api/level-of-day/');
+  const { data: userConfigs, isLoading: configsLoading } = useSWRHelper<{ [key: string]: UserConfig }>('/api/user-configs/');
+  const { data: levelOfDays, isLoading: levelOfDaysLoading } = useSWRHelper<{ [key: string]: Level }>('/api/level-of-day/');
 
-  function getSuggestedAction({ userConfig, game }: {userConfig?: UserConfig, game: Game}) {
+  function getSuggestedAction({ userConfig, game }: { userConfig?: UserConfig, game: Game }) {
     // suggest the tutorial if it hasn't been completed
     if (!userConfig?.tutorialCompletedAt) {
       if (game.disableTutorial) {
@@ -161,7 +163,7 @@ export function ThinkyHomePageLoggedIn({ user }: {user: User}) {
           const continuePlaying = getSuggestedAction({ userConfig, game });
           const levelOfDay = levelOfDays && levelOfDays[game.id];
           const todayDateClean = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-          const streak = userConfig ? getStreak(userConfig, game.id) : 0;
+          const { streak, timeToKeepStreak } = userConfig ? getStreak(userConfig) : { streak: 0, timeToKeepStreak: 0 };
 
           return (
             <section className='flex flex-col items-center gap-6 max-w-full' key={`game-${game.id}`}>
@@ -172,7 +174,7 @@ export function ThinkyHomePageLoggedIn({ user }: {user: User}) {
                 <GameLogo gameId={game.id} id={game.id} size={36} />
                 <h2 className='font-semibold text-4xl'>{game.displayName}</h2>
               </a>
-              {userConfig && <StreakDisplay streak={streak} gameId={game.id} userConfig={userConfig} />}
+              {userConfig && <StreakDisplay streak={streak} timeToKeepStreak={timeToKeepStreak} gameId={game.id} userConfig={userConfig} />}
               {configsLoading ? <LoadingSpinner /> : continuePlaying}
               {levelOfDaysLoading ? <LoadingSpinner /> : levelOfDay && <ChapterSelectCardBase
                 game={game}

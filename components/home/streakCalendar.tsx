@@ -5,12 +5,23 @@ import LoadingSpinner from '../page/loadingSpinner';
 
 export function StreakCalendar() {
   // type is {currentStreak:number, calendar:[{key:string: count:number}
-  const { data, isLoading } = useSWRHelper<{currentStreak: number, calendar: {date: string, value: number}[]}>('/api/streak');
+  const { data, isLoading } = useSWRHelper<{ currentStreak: number, calendar: { date: string, value: number }[] }>('/api/streak');
 
   const heatmapRef = useRef(null);
 
   useEffect(() => {
     const cal = new CalHeatmap();
+
+    // Get UTC midnight for start date
+    const startDate = new Date();
+
+    startDate.setMonth(startDate.getMonth() - 1);
+    startDate.setUTCHours(0, 0, 0, 0);
+
+    // Get UTC midnight for today
+    const today = new Date();
+
+    today.setUTCHours(0, 0, 0, 0);
 
     cal.paint(
       {
@@ -21,9 +32,8 @@ export function StreakCalendar() {
 
         },
         date: {
-          // start 1 month ago
-          start: new Date(new Date().setMonth(new Date().getMonth() - 1)),
-          highlight: [new Date()],
+          start: startDate,
+          highlight: [today],
         },
 
         range: 2,
