@@ -1,0 +1,52 @@
+.board {
+    display: inline-block;
+    border: 2px solid #333;
+}
+
+.board-row {
+    display: flex;
+}
+
+.tile {
+    width: 40px;
+    height: 40px;
+    box-sizing: border-box;
+    border: 1px solid #999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+}
+
+.tile.empty {
+    background-color: #eee;
+}
+
+.tile.wall {
+    background-color: #444;
+}
+
+.tile.player {
+    background-color: #a0e;
+    color: #fff;
+}
+
+.tile.crate {
+    background-color: #ca2;
+    color: #000;
+}
+
+.tile.ice {
+    background-color: #0cf;
+    color: #003;
+}
+
+.tile.portal-orange {
+    background-color: orange;
+    color: #fff;
+}
+
+.tile.portal-blue {
+    background-color: blue;
+    color: #fff;
+}
