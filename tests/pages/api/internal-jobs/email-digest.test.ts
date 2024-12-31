@@ -1,6 +1,7 @@
 import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import { NextApiRequestWrapper } from '@root/helpers/apiWrapper';
 import { enableFetchMocks } from 'jest-fetch-mock';
+import MockDate from 'mockdate';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import { EmailDigestSettingType, EmailType } from '../../../../constants/emailDigest';
@@ -313,6 +314,84 @@ describe('Email digest', () => {
         expect(response.sent[EmailType.EMAIL_7D_REACTIVATE]).toHaveLength(0);
       },
     });
+  }, 10000);
+
+  test('Run it with a user who has a streak', async () => {
+    // setup
+    await dbConnect();
+    sendMailRefMock.ref = acceptMock;
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
+    jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
+
+    const tomorrow = Date.now() + (1000 * 60 * 60 * 24 ); // Note... Date.now() here is being mocked each time too!
+
+    MockDate.set(tomorrow);
+
+    await Promise.all([
+      UserModel.findByIdAndUpdate(TestId.USER, {
+        ts: Math.floor(Date.now() / 1000) - (30 * 24 * 60 * 60) // Set registration date to 30 days ago so get by all the intro emails
+      }),
+      EmailLogModel.deleteMany({ type: EmailType.EMAIL_DIGEST, userId: TestId.USER }),
+      UserConfigModel.findOneAndUpdate(
+        { userId: TestId.USER },
+        {
+          calcCurrentStreak: 7,
+          lastPlayedAt: new Date(),
+          emailDigest: EmailDigestSettingType.DAILY
+        },
+        { upsert: true }
+      )
+    ]);
+
+    // Update user config to have a streak
+
+    await testApiHandler({
+      pagesHandler: async (_, res) => {
+        const req: NextApiRequestWrapper = {
+          gameId: DEFAULT_GAME_ID,
+          method: 'GET',
+          query: {
+            secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST
+          },
+          body: {},
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWrapper;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        console.log('done');
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+
+        // Check the email logs to verify the subject line includes the streak
+        const emailLogs = await EmailLogModel.find({ userId: TestId.USER }, {}, { sort: { createdAt: -1 } });
+        const latestEmail = emailLogs[0];
+
+        expect(latestEmail).toBeDefined();
+        expect(latestEmail.subject).toContain('Keep your streak of 7 days going!');
+        expect(latestEmail.state).toBe(EmailState.SENT);
+
+        expect(response.sent[EmailType.EMAIL_DIGEST]).toHaveLength(4);
+
+        expect(response.failed[EmailType.EMAIL_DIGEST]).toHaveLength(0);
+      },
+    });
+
+    // Clean up - reset the streak
+    await UserConfigModel.findOneAndUpdate(
+      { userId: TestId.USER },
+      {
+        calcCurrentStreak: 0,
+        lastPlayedAt: null
+      }
+    );
   }, 10000);
   test('Running with a user with no userconfig', async () => {
     // delete user config
