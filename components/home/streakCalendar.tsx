@@ -75,6 +75,7 @@ export function StreakCalendar() {
     <summary className='p-1'>Play Streak: <span className='font-bold p-1 bg-purple-700 rounded-full text-white'>{data?.currentStreak}</span> day{data?.currentStreak === 1 ? '' : 's'}!</summary>
     { /* put cal-heatmap within a horizontal scrollable div */}
     <div id='cal-heatmap' ref={heatmapRef} className='overflow-x-scroll justify-center flex' />
+    <span className='text-xs'>Current UTC Time: {new Date().toLocaleString('en-US', { timeZone: 'UTC', dateStyle: 'medium', timeStyle: 'short' })}</span>
   </details>
   );
 }
