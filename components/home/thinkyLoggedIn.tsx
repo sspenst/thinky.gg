@@ -99,8 +99,8 @@ function StreakDisplay({ streak, timeToKeepStreak, gameId, userConfig }: StreakD
         </div>
       )}
       {!hasPlayedToday && streak > 0 && timeToKeepStreak > 0 && (
-        <div className='text-sm text-yellow-600 font-medium mt-1'>
-          Play within {Math.ceil(timeToKeepStreak / (1000 * 60 * 60))} hours to keep your {streak} day streak going! 🔥
+        <div className='text-sm text-yellow-600 font-medium mt-1 flex'>
+          Play within {Math.ceil(timeToKeepStreak / (1000 * 60 * 60))} hours to keep your streak going! 🔥
         </div>
       )}
     </div>
