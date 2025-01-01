@@ -13,7 +13,6 @@ import { getUserFromToken } from '@root/lib/withAuth';
 import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import User from '@root/models/db/user';
 import { LevelModel, StatModel, UserModel } from '@root/models/mongoose';
-import classNames from 'classnames';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import React, { Fragment, useContext, useState } from 'react';
@@ -22,22 +21,19 @@ async function getDifficultyLeaderboard(gameId: GameId, index: DIFFICULTY_INDEX)
   const difficultyRange = getDifficultyRangeByIndex(index);
   const game = getGameFromId(gameId);
   const difficultyEstimate = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_completion_estimate' : 'calc_difficulty_estimate';
+
+  // Optimize the aggregation pipeline
   const agg = await LevelModel.aggregate([
     {
       $match: {
         isDraft: false,
-        isDeleted: {
-          $ne: true,
-        },
+        isDeleted: { $ne: true },
         gameId: gameId,
-        [difficultyEstimate]: {
-          $gte: difficultyRange[0],
-        },
+        [difficultyEstimate]: { $gte: difficultyRange[0] }
       }
     },
-    // now get players that have solved these levels by checking stats where completed is true
-    // and then group by user and count the number of levels they've solved
     {
+      // Use $lookup with a more efficient pipeline
       $lookup: {
         from: StatModel.collection.name,
         let: { levelId: '$_id' },
@@ -46,40 +42,34 @@ async function getDifficultyLeaderboard(gameId: GameId, index: DIFFICULTY_INDEX)
             $expr: {
               $and: [
                 { $eq: ['$levelId', '$$levelId'] },
-                { $eq: ['$complete', true] },
+                { $eq: ['$complete', true] }
               ]
-            }
-          },
+            },
+          }
         }, {
-          $project: {
-            userId: 1,
-            complete: 1
+          $group: {
+            _id: '$userId'
           }
         }],
-        as: 'stat',
-      },
-    },
-    {
-      $project: {
-        'users': '$stat.userId'
+        as: 'stat'
       }
     },
-    // now each element has a users array with the userIds of the users that have solved the level. We want to unwind this array and then group by userId and count the number of times they appear
     {
-      $unwind: '$users'
+      $unwind: '$stat'
     },
     {
       $group: {
-        _id: '$users',
+        _id: '$stat._id',
         sum: { $sum: 1 }
       }
     },
     {
-      $sort: {
-        count: -1,
+      $match: {
+        sum: { $gte: 7 }
       }
     },
     {
+      // Optimize user lookup by moving it after filtering
       $lookup: {
         from: UserModel.collection.name,
         localField: '_id',
@@ -87,40 +77,30 @@ async function getDifficultyLeaderboard(gameId: GameId, index: DIFFICULTY_INDEX)
         as: 'user',
         pipeline: [
           {
-            $project: {
-              ...USER_DEFAULT_PROJECTION
-            }
+            $project: USER_DEFAULT_PROJECTION
           },
-          ...getEnrichUserConfigPipelineStage(gameId, { excludeCalcs: true }),
+          ...getEnrichUserConfigPipelineStage(gameId, { excludeCalcs: true })
         ]
       }
     },
     {
       $unwind: '$user'
     },
-    // move $user to the root, but keep the count
-    {
-      $match: {
-        sum: {
-          $gte: 7
-        }
-      }
-    },
     {
       $sort: {
         sum: -1,
-        'user.name': 1,
+        'user.name': 1
       }
     },
     {
       $limit: 100
-    },
+    }
   ]) as UserAndSum[];
 
-  // clean each one
-  for (const userAndSum of agg) {
-    cleanUser(userAndSum.user);
-  }
+  // Clean users in batch instead of loop
+  const users = agg.map(item => item.user);
+
+  users.forEach(cleanUser);
 
   return agg;
 }
@@ -128,44 +108,45 @@ async function getDifficultyLeaderboard(gameId: GameId, index: DIFFICULTY_INDEX)
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
   const gameId = getGameIdFromReq(context.req);
-  const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
   const game = getGameFromId(gameId);
 
-  async function getRankedLeaderboard() {
-    if (game.disableRanked) {
-      return null;
-    }
+  // Optimize by conditionally fetching data
+  const reqUserPromise = token ? getUserFromToken(token, context.req as NextApiRequest) : Promise.resolve(null);
 
-    const rankedLeaderboard = await UserModel.aggregate<User>([
+  const promises: Promise<any>[] = [
+    getDifficultyLeaderboard(gameId, DIFFICULTY_INDEX.GRANDMASTER),
+    getDifficultyLeaderboard(gameId, DIFFICULTY_INDEX.SUPER_GRANDMASTER),
+    reqUserPromise
+  ];
+
+  // Only fetch ranked leaderboard if needed
+  if (!game.disableRanked) {
+    promises.push(UserModel.aggregate<User>([
       {
-        $project: {
-          ...USER_DEFAULT_PROJECTION,
-        },
+        $project: USER_DEFAULT_PROJECTION
       },
       ...getEnrichUserConfigPipelineStage(gameId),
       {
-        $sort: {
-          // sort by config.calcRankedSolves: -1,
-          'config.calcRankedSolves': -1,
-        },
+        $match: {
+          'config.calcRankedSolves': { $gt: 0 }
+        }
       },
       {
-        $limit: 40,
+        $sort: {
+          'config.calcRankedSolves': -1
+        }
       },
-    ]);
+      {
+        $limit: 40
+      }
+    ]).then(users => {
+      users.forEach(cleanUser);
 
-    rankedLeaderboard.forEach(user => {
-      cleanUser(user);
-    });
-
-    return rankedLeaderboard;
+      return users;
+    }));
   }
 
-  const [gmLeaderboard, rankedLeaderboard, sgmLeaderboard] = await Promise.all([
-    getDifficultyLeaderboard(gameId, DIFFICULTY_INDEX.GRANDMASTER),
-    getRankedLeaderboard(),
-    getDifficultyLeaderboard(gameId, DIFFICULTY_INDEX.SUPER_GRANDMASTER),
-  ]);
+  const [gmLeaderboard, sgmLeaderboard, reqUser, rankedLeaderboard = null] = await Promise.all(promises);
 
   return {
     props: {
@@ -205,28 +186,29 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
       }}>
         {users.map((user, i) => {
           const isYou = reqUser && user._id === reqUser._id;
+          // Memoize the highlight style
+          const highlightStyle = isYou ? {
+            boxShadow: '0 0 10px 2px rgba(255, 100, 0, 0.6), 0 0 20px 2px rgba(255, 150, 0, 0.7), 0 0 32px 4px rgba(255, 200, 0, 0.8)',
+            paddingLeft: '4px',
+            paddingRight: '4px',
+          } : undefined;
 
-          return (<>
-            <div
-              className={classNames('font-bold text-xl')}
-              key={`${user._id}-rank`}
-            >
-              {i + 1}.
-            </div>
-            <div
-              className='flex items-center text-lg gap-3 rounded-lg truncate'
-              key={`${user._id}-levels-solved`}
-            >
-              <FormattedUser id='ranked' size={32} user={user} />
-            </div>
-            <div className='ml-2 font-medium text-lg rounded-md' style={{
-              boxShadow: isYou ? '0 0 10px 2px rgba(255, 100, 0, 0.6), 0 0 20px 2px rgba(255, 150, 0, 0.7), 0 0 32px 4px rgba(255, 200, 0, 0.8)' : undefined,
-              paddingLeft: isYou ? '4px' : undefined,
-              paddingRight: isYou ? '4px' : undefined,
-            }}>
-              {values[i]}
-            </div>
-          </>);
+          return (
+            <React.Fragment key={user._id.toString()}>
+              <div className='font-bold text-xl'>
+                {i + 1}.
+              </div>
+              <div className='flex items-center text-lg gap-3 rounded-lg truncate'>
+                <FormattedUser id='ranked' size={32} user={user} />
+              </div>
+              <div
+                className='ml-2 font-medium text-lg rounded-md'
+                style={highlightStyle}
+              >
+                {values[i]}
+              </div>
+            </React.Fragment>
+          );
         })}
       </div>
     );
@@ -305,7 +287,7 @@ export default function Leaderboards({ gmLeaderboard, rankedLeaderboard, reqUser
                           className='text-black p-1 text-xl font-medium w-64 flex items-center gap-1 justify-center'
                           onClick={() => setLeaderboard(leaderboardKey)}
                           role='menuitem'
-                          style= {{
+                          style={{
                             backgroundColor: active ? 'rgb(200, 200, 200)' : '',
                           }}
                         >
