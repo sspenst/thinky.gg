@@ -63,75 +63,121 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
 
   const handleKeyDown = useCallback((code: string) => {
     switch (code) {
-    case 'Digit0':
+    case 'Digit0': {
       setTileType(TileType.Default);
       break;
-    case 'Digit1':
+    }
+
+    case 'Digit1': {
       setTileType(TileType.Wall);
       break;
-    case 'Digit2':
+    }
+
+    case 'Digit2': {
       setTileType(TileType.Block);
       break;
-    case 'Digit3':
+    }
+
+    case 'Digit3': {
       setTileType(TileType.Exit);
       break;
-    case 'Digit4':
+    }
+
+    case 'Digit4': {
       setTileType(TileType.Player);
       break;
-    case 'Digit5':
+    }
+
+    case 'Digit5': {
       setTileType(TileType.Hole);
       break;
-    case 'Digit6':
+    }
+
+    case 'Digit6': {
       setTileType(TileType.Left);
       break;
-    case 'Digit7':
+    }
+
+    case 'Digit7': {
       setTileType(TileType.Up);
       break;
-    case 'Digit8':
+    }
+
+    case 'Digit8': {
       setTileType(TileType.Right);
       break;
-    case 'Digit9':
+    }
+
+    case 'Digit9': {
       setTileType(TileType.Down);
       break;
-    case 'KeyA':
+    }
+
+    case 'KeyA': {
       setTileType(TileType.UpLeft);
       break;
-    case 'KeyB':
+    }
+
+    case 'KeyB': {
       setTileType(TileType.UpRight);
       break;
-    case 'KeyC':
+    }
+
+    case 'KeyC': {
       setTileType(TileType.DownRight);
       break;
-    case 'KeyD':
+    }
+
+    case 'KeyD': {
       setTileType(TileType.DownLeft);
       break;
-    case 'KeyE':
+    }
+
+    case 'KeyE': {
       setTileType(TileType.NotLeft);
       break;
-    case 'KeyF':
+    }
+
+    case 'KeyF': {
       setTileType(TileType.NotUp);
       break;
-    case 'KeyG':
+    }
+
+    case 'KeyG': {
       setTileType(TileType.NotRight);
       break;
-    case 'KeyH':
+    }
+
+    case 'KeyH': {
       setTileType(TileType.NotDown);
       break;
-    case 'KeyI':
+    }
+
+    case 'KeyI': {
       setTileType(TileType.LeftRight);
       break;
-    case 'KeyJ':
+    }
+
+    case 'KeyJ': {
       setTileType(TileType.UpDown);
       break;
-    case 'KeyZ':
-    case 'KeyU':
-    case 'Backspace':
+    }
+
+    case 'KeyZ': {
       undo();
       break;
-    case 'KeyY':
-    case 'KeyR':
+    }
+
+    case 'KeyY': {
       redo();
       break;
+    }
+
+    case 'KeyR': {
+      redo();
+      break;
+    }
+
     default:
       break;
     }
@@ -203,7 +249,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
             } else {
               return exitSiblingTileType;
             }
-          // place exit on movable or remove exit from movable
+            // place exit on movable or remove exit from movable
           } else if (TileTypeHelper.getExitSibilingTileType(prevTileType) !== undefined && tileType === TileType.Exit) {
             return TileTypeHelper.getExitSibilingTileType(prevTileType);
           }
