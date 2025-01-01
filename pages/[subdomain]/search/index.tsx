@@ -245,7 +245,7 @@ function TimeRangeMenu({ onTimeRangeClick, timeRange }: TimeRangeMenuProps) {
                     className='text-black p-1 text-sm w-24 flex items-center gap-1 justify-center'
                     onClick={() => onTimeRangeClick(timeRangeKey)}
                     role='menuitem'
-                    style= {{
+                    style={{
                       backgroundColor: active ? 'rgb(200, 200, 200)' : '',
                     }}
                   >
@@ -308,7 +308,7 @@ function StatFilterMenu({ onStatFilterClick, query }: StatFilterMenuProps) {
                     className='text-black p-1 text-sm w-28 flex items-center gap-1 justify-center'
                     onClick={() => onStatFilterClick(statFilterKey as StatFilter)}
                     role='menuitem'
-                    style= {{
+                    style={{
                       backgroundColor: active ? 'rgb(200, 200, 200)' : '',
                     }}
                   >
@@ -346,7 +346,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
   const otherDifficultyField = game.type === GameType.COMPLETE_AND_SHORTEST ? 'calc_difficulty_estimate' : 'calc_difficulty_completion_estimate';
 
   useEffect(() => {
-  // focus default-search
+    // focus default-search
     document.getElementById('default-search')?.focus();
   }, []);
   useEffect(() => {
@@ -378,7 +378,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
   const filtersSelected = [];
 
   for (const key in query) {
-    if (key === 'subdomain') { continue;}
+    if (key === 'subdomain') { continue; }
 
     if (query[key] && query[key] !== DefaultQuery[key]) {
       filtersSelected.push(key);
@@ -452,7 +452,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
               if (key === 'subdomain') { return; }
 
               return `${key}=${router.query[key]}`;
-            } ).filter(Boolean).join('&');
+            }).filter(Boolean).join('&');
 
             // TODO: temp collection is a hack (doesn't represent a real collection so there are other UX problems)
             // should make a new collection class to be used on the level page (with an href property, isInMemory, etc.)
@@ -629,6 +629,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
 
         queryHelper({
           search: searchInput.value,
+          page: '1',
         });
       }}>
         <div className='flex flex-row gap-1 justify-center'>
@@ -696,7 +697,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                         page: '1',
                       })}
                       role='menuitem'
-                      style= {{
+                      style={{
                         backgroundColor: active ? 'rgb(200, 200, 200)' : '',
                       }}
                     >
@@ -714,7 +715,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                         page: '1',
                       })}
                       role='menuitem'
-                      style= {{
+                      style={{
                         backgroundColor: active ? 'rgb(200, 200, 200)' : '',
                       }}
                     >
@@ -734,7 +735,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                           page: '1',
                         })}
                         role='menuitem'
-                        style= {{
+                        style={{
                           backgroundColor: getDifficultyColor(difficulty.value * 1.5 + 30, active ? 50 : 70)
                         }}
                       >
@@ -946,32 +947,32 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
         <span className='w-5' />
       </div>
       <div className='flex justify-center'>
-        { filtersSelected.length > 0 &&
-        filtersSelected.map((filter, i) => (
-          <div className='flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-md bg-3 text-white mr-1' key={`filter-${i}`}>
-            <button
-              className=''
+        {filtersSelected.length > 0 &&
+          filtersSelected.map((filter, i) => (
+            <div className='flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-md bg-3 text-white mr-1' key={`filter-${i}`}>
+              <button
+                className=''
 
-              onClick={() => {
-                const update = {
-                  [filter]: DefaultQuery[filter],
-                } as Partial<SearchQuery>;
+                onClick={() => {
+                  const update = {
+                    [filter]: DefaultQuery[filter],
+                  } as Partial<SearchQuery>;
 
-                if (filter === 'statFilter') {
-                  update.statFilter = StatFilter.All;
-                }
+                  if (filter === 'statFilter') {
+                    update.statFilter = StatFilter.All;
+                  }
 
-                fetchLevels({
-                  ...query,
-                  ...update,
-                });
-              }}
-            >
-            x
-            </button>
-            <span className='ml-1'>{getFilterDisplay(game, filter, query)}</span>
-          </div>
-        ))}
+                  fetchLevels({
+                    ...query,
+                    ...update,
+                  });
+                }}
+              >
+                x
+              </button>
+              <span className='ml-1'>{getFilterDisplay(game, filter, query)}</span>
+            </div>
+          ))}
 
       </div>
     </div>
@@ -999,7 +1000,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
               <span>No levels found...</span>
               {query.timeRange !== TimeRange[TimeRange.All] &&
                 <span>
-                  Try <button className='underline' onClick={() => {onTimeRangeClick(TimeRange[TimeRange.All]);}}>expanding</button> the time range.
+                  Try <button className='underline' onClick={() => { onTimeRangeClick(TimeRange[TimeRange.All]); }}>expanding</button> the time range.
                 </span>
               }
             </div>
