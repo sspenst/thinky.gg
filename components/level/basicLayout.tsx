@@ -28,7 +28,20 @@ export default function BasicLayout({ cellClassName, cellStyle, controls, hideTe
         hideText={hideText}
         id={id}
         leastMoves={level.leastMoves}
-        onCellClick={(x, y, rightClick, isDragging) => onClick ? onClick(y * (level.width + 1) + x, rightClick, isDragging) : undefined}
+        onCellDrag={(x, y, isDragging) => {
+          if (onClick) {
+            const index = y * (level.width + 1) + x;
+
+            onClick(index, false, isDragging);
+          }
+        }}
+        onCellMouseDown={(x, y, rightClick) => {
+          if (onClick) {
+            const index = y * (level.width + 1) + x;
+
+            onClick(index, rightClick);
+          }
+        }}
       />
       {!controls ? null : <Controls controls={controls} />}
     </>

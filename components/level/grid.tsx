@@ -21,11 +21,13 @@ interface GridProps {
   id: string;
   leastMoves: number;
   onCellClick?: (x: number, y: number, rightClick: boolean, isDragging?: boolean) => void;
+  onCellDrag?: (x: number, y: number, isDragging?: boolean) => void;
+  onCellMouseDown?: (x: number, y: number, rightClick: boolean) => void;
   optimizeDom?: boolean;
   themeOverride?: Theme;
 }
 
-export default function Grid({ cellClassName, cellStyle, disableAnimation, gameOverride, gameState, hideText, id, leastMoves, onCellClick, optimizeDom, themeOverride }: GridProps) {
+export default function Grid({ cellClassName, cellStyle, disableAnimation, gameOverride, gameState, hideText, id, leastMoves, onCellClick, onCellDrag, onCellMouseDown, optimizeDom, themeOverride }: GridProps) {
   const { game: appGame } = useContext(AppContext);
   const { theme: appTheme, resolvedTheme } = useTheme();
   const game = (gameOverride || appGame);
@@ -88,6 +90,10 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
             className={cellClassName ? cellClassName(x, y) : undefined}
             disableAnimation={disableAnimation}
             game={game}
+            handleMouseDown={onCellMouseDown ? (rightClick: boolean) => {
+              lastTileDragged.current = new Position(x, y);
+              onCellMouseDown(x, y, rightClick);
+            } : undefined}
             handleClick={onCellClick ? (rightClick: boolean) => onCellClick(x, y, rightClick, isDragging) : undefined}
             key={`tile-${y}-${x}`}
             pos={new Position(x, y)}
@@ -108,6 +114,10 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
             className={cellClassName ? cellClassName(x, y) : undefined}
             disableAnimation={disableAnimation}
             game={game}
+            handleMouseDown={onCellMouseDown ? (rightClick: boolean) => {
+              lastTileDragged.current = new Position(x, y);
+              onCellMouseDown(x, y, rightClick);
+            } : undefined}
             handleClick={onCellClick ? (rightClick: boolean) => onCellClick(x, y, rightClick, isDragging) : undefined}
             key={`block-${tileState.block.id}`}
             onTopOf={tileAtPosition.tileType}
@@ -125,6 +135,10 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
             className={cellClassName ? cellClassName(x, y) : undefined}
             disableAnimation={disableAnimation}
             game={game}
+            handleMouseDown={onCellMouseDown ? (rightClick: boolean) => {
+              lastTileDragged.current = new Position(x, y);
+              onCellMouseDown(x, y, rightClick);
+            } : undefined}
             handleClick={onCellClick ? (rightClick: boolean, isDragging?: boolean) => onCellClick(x, y, rightClick, isDragging) : undefined}
             inHole={true}
             key={`block-${tileState.blockInHole.id}`}
@@ -139,7 +153,7 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
   }
 
   const [isDragging, setIsDragging] = useState(false);
-
+  const [isMouseDown, setIsMouseDown] = useState(false);
   const getBackground = useCallback(() => {
     if (!optimizeDom) {
       return null;
@@ -201,7 +215,8 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
 
   const lastTileDragged = useRef<Position | undefined>(undefined);
   const onMouseMove = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
-    if (isDragging) {
+    if (isMouseDown) {
+      setIsDragging(true);
       const rect = e.currentTarget.getBoundingClientRect();
       const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
       const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
@@ -213,7 +228,7 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
       }
 
       lastTileDragged.current = new Position(tileX, tileY);
-      onCellClick && onCellClick(tileX, tileY, false, isDragging);
+      onCellDrag && onCellDrag(tileX, tileY, isDragging);
     }
   };
 
@@ -239,10 +254,20 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
               width: tileSize * width,
             }}
 
-            onMouseDown={() => setIsDragging(true)}
-            onMouseUp={() => setIsDragging(false)}
-            onTouchStart={() => setIsDragging(true)}
-            onTouchEnd={() => setIsDragging(false)}
+            onMouseDown={() => {
+              setIsMouseDown(true);
+            }}
+            onMouseUp={() => {
+              setIsMouseDown(false);
+              setIsDragging(false);
+            }}
+            onTouchStart={() => {
+              setIsMouseDown(true);
+            }}
+            onTouchEnd={() => {
+              setIsMouseDown(false);
+              setIsDragging(false);
+            }}
             onTouchMove={onMouseMove}
             onMouseMove={(e) => {
               onMouseMove(e);
@@ -257,7 +282,11 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
                 className={cellClassName ? cellClassName(gameState.pos.x, gameState.pos.y) : undefined}
                 disableAnimation={disableAnimation}
                 game={game}
-                handleClick={onCellClick ? (rightClick: boolean) => onCellClick(gameState.pos.x, gameState.pos.y, rightClick) : undefined}
+                handleMouseDown={onCellMouseDown ? (rightClick: boolean) => {
+                  lastTileDragged.current = gameState.pos;
+                  onCellMouseDown(gameState.pos.x, gameState.pos.y, rightClick);
+                } : undefined}
+                handleClick={onCellClick ? (rightClick: boolean) => onCellClick(gameState.pos.x, gameState.pos.y, rightClick, isDragging) : undefined}
                 onTopOf={gameState.board[gameState.pos.y][gameState.pos.x].tileType}
                 pos={gameState.pos}
                 style={cellStyle ? cellStyle(gameState.pos.x, gameState.pos.y) : undefined}

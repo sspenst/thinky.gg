@@ -15,6 +15,7 @@ interface TileProps {
   disableAnimation?: boolean;
   game: Game;
   handleClick?: (rightClick: boolean) => void;
+  handleMouseDown?: (rightClick: boolean) => void;
   hideText?: boolean;
   inHole?: boolean;
   onTopOf?: TileType;
@@ -32,6 +33,7 @@ export default function Tile({
   disableAnimation,
   game,
   handleClick,
+  handleMouseDown,
   inHole,
   onTopOf,
   pos,
@@ -48,6 +50,18 @@ export default function Tile({
 
   const classic = theme === Theme.Classic;
 
+  function onMouseDown(e: React.MouseEvent<HTMLDivElement>) {
+    if (handleMouseDown) {
+      handleMouseDown(e.type === 'contextmenu');
+    }
+  }
+
+  function onTouchStart(e: React.TouchEvent<HTMLDivElement>) {
+    if (handleMouseDown) {
+      handleMouseDown(false);
+    }
+  }
+
   function onClick(e: React.MouseEvent<HTMLDivElement>) {
     if (handleClick) {
       handleClick(e.type === 'contextmenu');
@@ -56,7 +70,7 @@ export default function Tile({
     e.preventDefault();
   }
 
-  function onTouch(e: React.TouchEvent<HTMLDivElement>) {
+  function onTouchEnd(e: React.TouchEvent<HTMLDivElement>) {
     if (handleClick) {
       handleClick(false);
     }
@@ -109,7 +123,9 @@ export default function Tile({
       className={classNames(`absolute tile-${game.id} tile-type-${tileType}`, className)}
       onClick={onClick}
       onContextMenu={onClick}
-      onTouchEnd={onTouch}
+      onMouseDown={onMouseDown}
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
       style={{
         backgroundColor: tileType === TileType.Player ? 'var(--bg-color)' : undefined,
         height: classic ? tileSize : innerTileSize,
