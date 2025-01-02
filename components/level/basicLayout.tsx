@@ -12,7 +12,7 @@ interface BasicLayoutProps {
   hideText?: boolean;
   id: string;
   level: Level;
-  onClick?: (index: number, rightClick: boolean) => void;
+  onClick?: (index: number, rightClick: boolean, isDragging?: boolean) => void;
 }
 
 export default function BasicLayout({ cellClassName, cellStyle, controls, hideText, id, level, onClick }: BasicLayoutProps) {
@@ -28,7 +28,7 @@ export default function BasicLayout({ cellClassName, cellStyle, controls, hideTe
         hideText={hideText}
         id={id}
         leastMoves={level.leastMoves}
-        onCellClick={(x, y, rightClick) => onClick ? onClick(y * (level.width + 1) + x, rightClick) : undefined}
+        onCellClick={(x, y, rightClick, isDragging) => onClick ? onClick(y * (level.width + 1) + x, rightClick, isDragging) : undefined}
       />
       {!controls ? null : <Controls controls={controls} />}
     </>

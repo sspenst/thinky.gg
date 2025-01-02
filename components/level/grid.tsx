@@ -7,7 +7,7 @@ import { teko } from '@root/helpers/getFont';
 import Position from '@root/models/position';
 import classNames from 'classnames';
 import { useTheme } from 'next-themes';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import Theme from '../../constants/theme';
 import Tile from './tile/tile';
 
@@ -20,7 +20,7 @@ interface GridProps {
   hideText?: boolean;
   id: string;
   leastMoves: number;
-  onCellClick?: (x: number, y: number, rightClick: boolean) => void;
+  onCellClick?: (x: number, y: number, rightClick: boolean, isDragging?: boolean) => void;
   optimizeDom?: boolean;
   themeOverride?: Theme;
 }
@@ -88,7 +88,7 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
             className={cellClassName ? cellClassName(x, y) : undefined}
             disableAnimation={disableAnimation}
             game={game}
-            handleClick={onCellClick ? (rightClick: boolean) => onCellClick(x, y, rightClick) : undefined}
+            handleClick={onCellClick ? (rightClick: boolean) => onCellClick(x, y, rightClick, isDragging) : undefined}
             key={`tile-${y}-${x}`}
             pos={new Position(x, y)}
             style={cellStyle ? cellStyle(x, y) : undefined}
@@ -108,7 +108,7 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
             className={cellClassName ? cellClassName(x, y) : undefined}
             disableAnimation={disableAnimation}
             game={game}
-            handleClick={onCellClick ? (rightClick: boolean) => onCellClick(x, y, rightClick) : undefined}
+            handleClick={onCellClick ? (rightClick: boolean) => onCellClick(x, y, rightClick, isDragging) : undefined}
             key={`block-${tileState.block.id}`}
             onTopOf={tileAtPosition.tileType}
             pos={new Position(x, y)}
@@ -125,7 +125,7 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
             className={cellClassName ? cellClassName(x, y) : undefined}
             disableAnimation={disableAnimation}
             game={game}
-            handleClick={onCellClick ? (rightClick: boolean) => onCellClick(x, y, rightClick) : undefined}
+            handleClick={onCellClick ? (rightClick: boolean, isDragging?: boolean) => onCellClick(x, y, rightClick, isDragging) : undefined}
             inHole={true}
             key={`block-${tileState.blockInHole.id}`}
             pos={new Position(x, y)}
@@ -138,6 +138,8 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
     }
   }
 
+  const [isDragging, setIsDragging] = useState(false);
+
   const getBackground = useCallback(() => {
     if (!optimizeDom) {
       return null;
@@ -147,7 +149,7 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
       const x = Math.floor(offsetX / tileSize);
       const y = Math.floor(offsetY / tileSize);
 
-      onCellClick && onCellClick(x, y, rightClick);
+      onCellClick && onCellClick(x, y, rightClick, isDragging);
     };
 
     const onBgClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -188,7 +190,7 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
         }}
       />
     );
-  }, [borderWidth, height, onCellClick, optimizeDom, tileSize, width]);
+  }, [borderWidth, height, isDragging, onCellClick, optimizeDom, tileSize, width]);
 
   // Prevent hydration mismatch by not rendering theme class until mounted
   const [mounted, setMounted] = useState(false);
@@ -197,12 +199,31 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
     setMounted(true);
   }, []);
 
+  const lastTileDragged = useRef<Position | undefined>(undefined);
+  const onMouseMove = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+    if (isDragging) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+      const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+      const tileX = Math.floor((clientX - rect.left) / tileSize);
+      const tileY = Math.floor((clientY - rect.top) / tileSize);
+
+      if (tileX === lastTileDragged.current?.x && tileY === lastTileDragged.current?.y) {
+        return;
+      }
+
+      lastTileDragged.current = new Position(tileX, tileY);
+      onCellClick && onCellClick(tileX, tileY, false, isDragging);
+    }
+  };
+
   return (
-    <div className={classNames(
-      'grow flex items-center justify-center overflow-hidden',
-      mounted ? theme : undefined,
-      { [teko.className]: classic }
-    )} id={gridId}>
+    <div
+      className={classNames(
+        'grow flex items-center justify-center overflow-hidden',
+        mounted ? theme : undefined,
+        { [teko.className]: classic }
+      )} id={gridId}>
       {tileSize !== 0 &&
         <GridContext.Provider value={{
           borderWidth: borderWidth,
@@ -216,6 +237,15 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
             style={{
               height: tileSize * height,
               width: tileSize * width,
+            }}
+
+            onMouseDown={() => setIsDragging(true)}
+            onMouseUp={() => setIsDragging(false)}
+            onTouchStart={() => setIsDragging(true)}
+            onTouchEnd={() => setIsDragging(false)}
+            onTouchMove={onMouseMove}
+            onMouseMove={(e) => {
+              onMouseMove(e);
             }}
           >
             {getBackground()}
