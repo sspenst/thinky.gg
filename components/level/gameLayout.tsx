@@ -50,8 +50,8 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
         gameState={gameState}
         id={level._id.toString()}
         leastMoves={level.leastMoves}
-        onCellClick={(x, y, rightClick) => {
-          if (!rightClick) {
+        onCellClick={(x, y, rightClick, isDragging) => {
+          if (!rightClick && !isDragging) {
             onCellClick(x, y);
           }
         }}
