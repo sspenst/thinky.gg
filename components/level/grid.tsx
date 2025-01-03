@@ -139,7 +139,9 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
               lastTileDragged.current = new Position(x, y);
               onCellMouseDown(x, y, rightClick);
             } : undefined}
-            handleClick={onCellClick ? (rightClick: boolean, isDragging?: boolean) => onCellClick(x, y, rightClick, isDragging) : undefined}
+            handleClick={onCellClick ? (rightClick: boolean, isDragging?: boolean) => {
+              onCellClick(x, y, rightClick, isDragging);
+            } : undefined}
             inHole={true}
             key={`block-${tileState.blockInHole.id}`}
             pos={new Position(x, y)}
@@ -228,6 +230,11 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
       }
 
       lastTileDragged.current = new Position(tileX, tileY);
+
+      if (tileX < 0 || tileX >= width || tileY < 0 || tileY >= height) {
+        return;
+      }
+
       onCellDrag && onCellDrag(tileX, tileY, isDragging);
     }
   };
