@@ -275,7 +275,9 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
         }
       }
 
-      level.data = level.data.substring(0, index) + newTileType + level.data.substring(index + 1);
+      const newData = level.data.substring(0, index) + newTileType + level.data.substring(index + 1);
+
+      level.data = newData;
 
       historyPush(level);
 
