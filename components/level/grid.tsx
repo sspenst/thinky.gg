@@ -261,24 +261,26 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
               width: tileSize * width,
             }}
 
-            onMouseDown={() => {
-              setIsMouseDown(true);
-            }}
-            onMouseUp={() => {
-              setIsMouseDown(false);
-              setIsDragging(false);
-            }}
-            onTouchStart={() => {
-              setIsMouseDown(true);
-            }}
-            onTouchEnd={() => {
-              setIsMouseDown(false);
-              setIsDragging(false);
-            }}
-            onTouchMove={onMouseMove}
-            onMouseMove={(e) => {
-              onMouseMove(e);
-            }}
+            {...(onCellDrag && {
+              onMouseDown: () => {
+                setIsMouseDown(true);
+              },
+              onMouseUp: () => {
+                setIsMouseDown(false);
+                setIsDragging(false);
+              },
+              onTouchStart: () => {
+                setIsMouseDown(true);
+              },
+              onTouchEnd: () => {
+                setIsMouseDown(false);
+                setIsDragging(false);
+              },
+              onTouchMove: onMouseMove,
+              onMouseMove: (e) => {
+                onMouseMove(e);
+              }
+            })}
           >
             {getBackground()}
             {tiles}
