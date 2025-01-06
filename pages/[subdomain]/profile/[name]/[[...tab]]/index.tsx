@@ -26,6 +26,7 @@ import { MultiplayerMatchState } from '@root/models/constants/multiplayer';
 import { LEVEL_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import Graph from '@root/models/db/graph';
 import { getCollections } from '@root/pages/api/collection-by-id/[id]';
+import userConfig from '@root/pages/api/user-config';
 import classNames from 'classnames';
 import debounce from 'debounce';
 import { Types } from 'mongoose';
@@ -518,7 +519,12 @@ export default function ProfilePage({
           <div className='flex flex-col gap-6 max-w-sm w-fit'>
             <div>
               {!game.isNotAGame && !game.disableRanked && <div><span className='font-bold'>Ranked Solves:</span> {user.config?.calcRankedSolves ?? 0} 🏅</div>}
-              {!game.isNotAGame && user.config?.calcCurrentStreak && <div><span className='font-bold'>Current Streak:</span> {user.config?.calcCurrentStreak ?? 0} - <span data-tooltip-content={streakRank.title} data-tooltip-id='streak-tooltip'>{streakRank.emoji}</span><StyledTooltip id='streak-tooltip' /></div>}
+              {!game.isNotAGame && (user.config?.calcCurrentStreak || 0) > 0 && (
+                <div>
+                  <span className='font-bold'>Current Streak:</span> {user.config?.calcCurrentStreak ?? 0} - <span data-tooltip-content={streakRank.title} data-tooltip-id='streak-tooltip'>{streakRank.emoji}</span>
+                  <StyledTooltip id='streak-tooltip' />
+                </div>
+              )}
               {!game.isNotAGame && <div><span className='font-bold'>Levels Solved:</span> {user.config?.calcLevelsSolvedCount ?? 0}</div>}
               {!game.isNotAGame && <div><span className='font-bold'>Levels Completed:</span> {user.config?.calcLevelsCompletedCount ?? 0}</div>}
               {user.hideStatus || !user.ts ? null : isOnline(user) ?
