@@ -269,7 +269,7 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
                 setIsMouseDown(false);
                 setIsDragging(false);
               },
-              onTouchStart: () => {
+              onTouchStart: (e) => {
                 setIsMouseDown(true);
               },
               onTouchEnd: () => {
