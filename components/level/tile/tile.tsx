@@ -1,5 +1,6 @@
 import { Game, GameType } from '@root/constants/Games';
 import Theme from '@root/constants/theme';
+import { AppContext } from '@root/contexts/appContext';
 import { GridContext } from '@root/contexts/gridContext';
 import Position from '@root/models/position';
 import classNames from 'classnames';
@@ -68,6 +69,7 @@ export default function Tile({
     }
 
     e.preventDefault();
+    e.stopPropagation();
   }
 
   function onTouchEnd(e: React.TouchEvent<HTMLDivElement>) {
@@ -117,13 +119,14 @@ export default function Tile({
       />
     );
   }, [atEnd, game, hideText, inHole, onTopOf, text, theme, tileType, visited]);
+  const { deviceInfo } = useContext(AppContext);
 
   return (
     <div
       className={classNames(`absolute tile-${game.id} tile-type-${tileType}`, className)}
       onClick={onClick}
       onContextMenu={onClick}
-      onMouseDown={onMouseDown}
+      onMouseDown={!deviceInfo.isMobile ? onMouseDown : undefined}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
       style={{

@@ -1,5 +1,6 @@
+import { AppContext } from '@root/contexts/appContext';
 import { initGameState } from '@root/helpers/gameStateHelpers';
-import React from 'react';
+import React, { useContext } from 'react';
 import Control from '../../models/control';
 import Level from '../../models/db/level';
 import Controls from './controls';
@@ -17,6 +18,7 @@ interface BasicLayoutProps {
 
 export default function BasicLayout({ cellClassName, cellStyle, controls, hideText, id, level, onClick }: BasicLayoutProps) {
   const gameState = initGameState(level.data);
+  const { deviceInfo } = useContext(AppContext);
 
   return (
     <>
@@ -42,6 +44,14 @@ export default function BasicLayout({ cellClassName, cellStyle, controls, hideTe
             onClick(index, rightClick);
           }
         }}
+        onCellClick={!deviceInfo.isMobile ? (x, y, rightClick) => {
+          if (onClick) {
+            const index = y * (level.width + 1) + x;
+
+            onClick(index, rightClick);
+          }
+        } : undefined}
+
       />
       {!controls ? null : <Controls controls={controls} />}
     </>
