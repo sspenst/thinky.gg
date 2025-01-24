@@ -181,6 +181,18 @@ export default function FormattedDifficulty({ difficulty, difficultyField, id, l
 
   const color = getDifficultyColor(difficultyEstimate);
   const difficultyFromEstimate = getDifficultyFromEstimate(difficultyEstimate);
+  let overjoy = 0;
+  let tempDifficultyEstimate = difficultyEstimate;
+  while (tempDifficultyEstimate > (maxDiff*2) && overjoy < 9)
+  {
+    overjoy += 1;
+    tempDifficultyEstimate /= 2;
+  }
+  let adjustedName = difficultyFromEstimate.name;
+  if (overjoy > 0)
+  {
+    adjustedName += "+" + overjoy;
+  }
   const pendingRemainingUsers = 10 - (uniqueUsers ?? 0);
   const showPendingUsers = difficultyFromEstimate.name === 'Pending' && uniqueUsers !== undefined;
   const tooltipContent = tooltip ? tooltip : showPendingUsers ?
@@ -195,7 +207,7 @@ export default function FormattedDifficulty({ difficulty, difficultyField, id, l
           color: color,
           textShadow: '1px 1px black',
         }}>
-          {difficultyFromEstimate.name}
+          {adjustedName}
           {showPendingUsers && ` (${pendingRemainingUsers})`}
         </span>
       </div>
