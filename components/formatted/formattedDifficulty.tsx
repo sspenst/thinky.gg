@@ -181,15 +181,11 @@ export default function FormattedDifficulty({ difficulty, difficultyField, id, l
 
   const color = getDifficultyColor(difficultyEstimate);
   const difficultyFromEstimate = getDifficultyFromEstimate(difficultyEstimate);
-  let overjoy = 0;
-  if (difficultyEstimate >= maxDiff)
-  {
-    overjoy = Math.floor(Math.log(difficultyEstimate/maxDiff)/Math.log(2));
-  }
   let adjustedName = difficultyFromEstimate.name;
-  if (overjoy > 0)
+  //SGM+1 for 60k-120k, SGM+2 for 120k-240k, etc
+  if (difficultyEstimate >= 2*maxDiff)
   {
-    adjustedName += "+" + overjoy;
+     adjustedName += "+" + Math.floor(Math.log(difficultyEstimate/maxDiff)/Math.log(2));
   }
   const pendingRemainingUsers = 10 - (uniqueUsers ?? 0);
   const showPendingUsers = difficultyFromEstimate.name === 'Pending' && uniqueUsers !== undefined;
