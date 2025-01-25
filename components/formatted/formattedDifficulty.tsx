@@ -182,11 +182,9 @@ export default function FormattedDifficulty({ difficulty, difficultyField, id, l
   const color = getDifficultyColor(difficultyEstimate);
   const difficultyFromEstimate = getDifficultyFromEstimate(difficultyEstimate);
   let overjoy = 0;
-  let tempDifficultyEstimate = difficultyEstimate;
-  while (tempDifficultyEstimate > (maxDiff*2) && overjoy < 9)
+  if (difficultyEstimate >= maxDiff)
   {
-    overjoy += 1;
-    tempDifficultyEstimate /= 2;
+    overjoy = Math.floor(Math.log(difficultyEstimate/maxDiff)/Math.log(2));
   }
   let adjustedName = difficultyFromEstimate.name;
   if (overjoy > 0)
