@@ -366,7 +366,6 @@ describe('Email digest', () => {
         const res = await fetch();
         const response = await res.json();
 
-        console.log('done');
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
 
