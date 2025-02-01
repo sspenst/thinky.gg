@@ -42,6 +42,7 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
   const borderWidth = Math.round(tileSize / 40) || 1;
   const innerTileSize = tileSize - 2 * borderWidth;
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     const el = document.getElementById(gridId);
 

@@ -46,7 +46,11 @@ const eslintConfig = [...compat.extends(
     '@stylistic/ts/type-annotation-spacing': 'warn',
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-unused-expressions': 'off',
-    '@typescript-eslint/no-unused-vars': 'warn',
+    '@typescript-eslint/no-unused-vars': ['warn', {
+      'argsIgnorePattern': '^_',
+      'caughtErrorsIgnorePattern': '^_',
+      'varsIgnorePattern': '^_',
+    }],
     'arrow-spacing': 'warn',
     'brace-style': ['warn', '1tbs', { 'allowSingleLine': true }],
     'comma-spacing': 'warn',

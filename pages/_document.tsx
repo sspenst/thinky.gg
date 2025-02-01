@@ -11,12 +11,10 @@ import isLocal from '../lib/isLocal';
 import { UserModel } from '../models/mongoose';
 
 // TODO: maybe someday try this again https://newrelic.com/blog/how-to-relic/nextjs-monitor-application-data
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 
 if (process.env.NO_LOGS !== 'true') {
   if (!isLocal()) {
     logger.warn('RUNNING IN NON LOCAL MODE.');
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
   } else {
     logger.warn('RUNNING IN LOCAL MODE');
   }
@@ -45,7 +43,7 @@ if (process.env.NO_LOGS !== 'true') {
           logger.error(`Warning: ${key} is not set`);
         }
       }
-    } catch (e) {
+    } catch {
       logger.warn(`Warning: ${key} is not set`);
     }
   }
