@@ -186,7 +186,7 @@ async function checkoutSessionGift(giftFromUser: User, giftToUser: User, subscri
 
     try {
       await session.withTransaction(async () => {
-        const quantity = Number(subscription.metadata?.quantity) ?? 0;
+        const quantity = Number(subscription.metadata?.quantity ?? 0);
         const type = subscription.metadata?.type as GiftType;
 
         await Promise.all([
@@ -571,6 +571,7 @@ export default apiWrapper({
             });
 
             session.endSession();
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           } catch (err: any) {
             logger.error(err);
             session.endSession();

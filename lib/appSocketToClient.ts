@@ -88,6 +88,7 @@ export async function requestBroadcastNotifications(gameId: GameId, userId: Type
   await broadcastNotifications(gameId, global.MongoEmitter, userId);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function requestBroadcastAlert(userId: Types.ObjectId, type: AlertType, data: any) {
   if (!global.MongoEmitter || process.env.NODE_ENV === 'test') {
     process.env.NODE_ENV !== 'test' && logger.warn('App Server asked itself to broadcast alert but MongoEmitter is not created');

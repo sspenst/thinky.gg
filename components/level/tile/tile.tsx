@@ -57,7 +57,7 @@ export default function Tile({
     }
   }
 
-  function onTouchStart(e: React.TouchEvent<HTMLDivElement>) {
+  function onTouchStart(_: React.TouchEvent<HTMLDivElement>) {
     if (handleMouseDown) {
       handleMouseDown(false);
     }

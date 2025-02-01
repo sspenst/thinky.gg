@@ -473,7 +473,6 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
               </svg>}
             title='Play History'
           />
-   
           <ProFeature
             description='Displayed next to your username across the site'
             icon={<Image alt='pro' src='/pro.svg' width='24' height='24' />}

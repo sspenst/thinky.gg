@@ -4,7 +4,7 @@
 const hasBlobConstructor = typeof (Blob) !== 'undefined' && (function () {
   try {
     return Boolean(new Blob());
-  } catch (e) {
+  } catch {
     return false;
   }
 }());
@@ -12,7 +12,7 @@ const hasBlobConstructor = typeof (Blob) !== 'undefined' && (function () {
 const hasArrayBufferViewSupport = hasBlobConstructor && typeof (Uint8Array) !== 'undefined' && (function () {
   try {
     return new Blob([new Uint8Array(100)]).size === 100;
-  } catch (e) {
+  } catch {
     return false;
   }
 }());

@@ -26,7 +26,6 @@ import { MultiplayerMatchState } from '@root/models/constants/multiplayer';
 import { LEVEL_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import Graph from '@root/models/db/graph';
 import { getCollections } from '@root/pages/api/collection-by-id/[id]';
-import userConfig from '@root/pages/api/user-config';
 import classNames from 'classnames';
 import debounce from 'debounce';
 import { Types } from 'mongoose';
