@@ -36,37 +36,6 @@ export async function getLevelByUrlPath(gameId: GameId, username: string, slugNa
   try {
     const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPipelineSteps(reqUser);
 
-    const levelAgg2 = await LevelModel.aggregate<Level>(
-      [
-        {
-          $match: {
-            slug: username + '/' + slugName,
-            isDeleted: { $ne: true },
-            isDraft: false,
-            gameId: gameId
-          },
-        }, {
-          $lookup: {
-            from: UserModel.collection.name,
-            localField: 'userId',
-            foreignField: '_id',
-            as: 'userId',
-            pipeline: [
-              {
-                $project: {
-                  ...USER_DEFAULT_PROJECTION
-                }
-              }
-            ]
-          },
-        },
-        // {
-        //   $unwind: '$userId',
-        // },
-      ]);
-
-    console.log(levelAgg2);
-
     const levelAgg = await LevelModel.aggregate<Level>(
       [
         {
