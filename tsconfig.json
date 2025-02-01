@@ -105,7 +105,7 @@
   },
   "include": [
     "global.d.ts",
-    "next-env.d.ts",
+    "**.config.*js",
     "**/*.ts",
     "**/*.tsx"
   ],
