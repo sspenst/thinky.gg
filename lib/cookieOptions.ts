@@ -1,9 +1,9 @@
 import { parseHostname } from '@root/helpers/parseUrl';
-import { CookieSerializeOptions } from 'cookie';
+import { SerializeOptions } from 'cookie';
 import isLocal from './isLocal';
 
 // https://github.com/jshttp/cookie#options-1
-export default function cookieOptions(host: string | undefined, clear = false): CookieSerializeOptions {
+export default function cookieOptions(host: string | undefined, clear = false): SerializeOptions {
   const topLevelDomain = parseHostname(host || '');
 
   const domain = topLevelDomain ? `.${topLevelDomain}` : '.thinky.gg';

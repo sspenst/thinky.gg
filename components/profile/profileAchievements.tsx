@@ -7,7 +7,7 @@ import AchievementRulesSocial from '@root/constants/achievements/AchievementRule
 import AchievementType from '@root/constants/achievements/achievementType';
 import { AppContext } from '@root/contexts/appContext';
 import Achievement from '@root/models/db/achievement';
-import React, { useContext } from 'react';
+import React, { JSX, useContext } from 'react';
 import FormattedAchievement from '../formatted/formattedAchievement';
 
 export function ProfileAchievments({ achievements }: { achievements: Achievement[] }) {

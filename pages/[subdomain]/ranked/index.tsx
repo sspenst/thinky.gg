@@ -10,7 +10,7 @@ import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
 import { UserModel } from '@root/models/mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
-import React from 'react';
+import React, { JSX } from 'react';
 import { getProfileQuery } from '../../api/user/[id]';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {

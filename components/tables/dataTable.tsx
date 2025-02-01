@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import React, { useState } from 'react';
+import React, { JSX, useState } from 'react';
 
 export interface TableColumn<T> {
   id: string;

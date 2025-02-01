@@ -1,6 +1,7 @@
 import Direction, { getDirectionFromCode } from '@root/constants/direction';
 import TileType from '@root/constants/tileType';
 import { BlockState, cloneBlockState, cloneMove, cloneTileState, Move, TileState } from '@root/helpers/gameStateHelpers';
+import { JSX } from 'react';
 import TestId from '../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 import Control from '../../models/control';

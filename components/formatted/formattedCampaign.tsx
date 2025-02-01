@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import React, { useCallback } from 'react';
+import React, { JSX, useCallback } from 'react';
 import { EnrichedCollection } from '../../models/db/collection';
 import { EnrichedLevel } from '../../models/db/level';
 import SelectOptionStats from '../../models/selectOptionStats';

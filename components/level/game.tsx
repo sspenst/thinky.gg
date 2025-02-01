@@ -73,7 +73,7 @@ export default function Game({
 
   const lastDirections = useRef<Direction[]>([]);
   // keeping track of the game state before restarting or loading a checkpoint
-  const oldGameState = useRef<GameState>();
+  const oldGameState = useRef<GameState>(undefined);
   const sessionCheckpointRestored = useRef(false);
   const shiftKeyDown = useRef(false);
 

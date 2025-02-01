@@ -8,7 +8,7 @@ import dayjs from 'dayjs';
 import { Spline } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { JSX, useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import Stripe from 'stripe';
 import { AppContext } from '../../contexts/appContext';

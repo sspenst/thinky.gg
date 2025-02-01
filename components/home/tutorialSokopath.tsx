@@ -7,7 +7,7 @@ import classNames from 'classnames';
 import { Types } from 'mongoose';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { JSX, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { AppContext } from '../../contexts/appContext';
 import { TimerUtil } from '../../helpers/getTs';
 import Control from '../../models/control';
