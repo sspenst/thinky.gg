@@ -1,5 +1,5 @@
 import TileType from '@root/constants/tileType';
-import React from 'react';
+import React, { JSX } from 'react';
 
 export interface ThemeIconProps {
   fontSize: number;

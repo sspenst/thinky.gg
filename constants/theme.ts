@@ -1,4 +1,5 @@
 import { MONKEY_THEME_ICONS, ThemeIconProps } from '@root/components/theme/monkey';
+import { JSX } from 'react';
 import { GameId } from './GameId';
 import { Game } from './Games';
 import TileType from './tileType';

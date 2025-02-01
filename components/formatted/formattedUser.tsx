@@ -35,7 +35,7 @@ export default function FormattedUser({ className, hideAvatar, id, noLinks, noTo
   const { game } = useContext(AppContext);
   const [showTooltip, setShowTooltip] = useState(false);
   const [userExtendedData, setUserExtendedData] = useState<UserExtendedData>();
-  const setTimer = useRef<NodeJS.Timeout>();
+  const setTimer = useRef<NodeJS.Timeout>(null);
 
   useEffect(() => {
     if (!showTooltip || !user || userExtendedData) {

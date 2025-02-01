@@ -7,7 +7,7 @@ import { teko } from '@root/helpers/getFont';
 import Position from '@root/models/position';
 import classNames from 'classnames';
 import { useTheme } from 'next-themes';
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { JSX, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import Theme from '../../constants/theme';
 import Tile from './tile/tile';
 
