@@ -288,7 +288,7 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
                   setActiveTab('Custom');
 
                   toast.success('Imported theme successfully');
-                } catch (e) {
+                } catch {
                   toast.error('Invalid theme');
                 }
               }}

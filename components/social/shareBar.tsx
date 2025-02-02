@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React, { FC, JSX } from 'react';
 import toast from 'react-hot-toast';
 import {
   FacebookIcon,

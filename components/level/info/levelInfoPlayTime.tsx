@@ -1,4 +1,4 @@
-import { Tab } from '@headlessui/react';
+import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
 import LoadingSpinner from '@root/components/page/loadingSpinner';
 import { RoleIcon } from '@root/components/page/roleIcons';
 import StyledTooltip from '@root/components/page/styledTooltip';
@@ -62,117 +62,115 @@ export default function LevelInfoPlayTime() {
   const total = (proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime] as DateAndSum[]).reduce((a, b) => a + b.sum, 0);
 
   return (
-    <div className='flex flex-col gap-2'>
-      <Tab.Group>
-        <Tab.List className='flex flex-wrap gap-x-1 items-start rounded text-sm' >
-          <Tab as={Fragment}>
-            {({ selected }) => (
-              <button className={classNames(
-                'border-blue-500 focus:outline-none',
-                { 'border-b-2 ': selected }
-              )}>
-                <div className='mb-1 py-1 px-2 tab rounded'>
-                  Table
-                </div>
-              </button>
-            )}
-          </Tab>
-          <Tab as={Fragment}>
-            {({ selected }) => (
-              <button className={classNames(
-                'border-blue-500 focus:outline-none',
-                { 'border-b-2 ': selected }
-              )}>
-                <div className='mb-1 py-1 px-2 tab rounded'>
-                  Graph
-                </div>
-              </button>
-            )}
-          </Tab>
-        </Tab.List>
-        <Tab.Panels>
-          <Tab.Panel tabIndex={-1}>
-            <div className='grid gap-x-4 gap-y-1 pl-1' style={{
-              gridTemplateColumns: 'min-content 1fr',
-            }}>
-              {
-                (proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime] as DateAndSum[]).map((d, i) => {
-                  return [
-                    <div className='w-full justify-end flex items-center' key={`prostat-playattemptgraph-${i}-1`}>{dayjs(new Date(d.date)).utc().format('M/D/YY')}</div>,
-                    <div className='text-left text-sm flex items-center' key={`prostat-playattemptgraph-${i}-2`} style={{
-                      color: 'var(--color-gray)',
-                    }}>{getTimePlayedStr(d.sum)}</div>,
-                  ];
-                })
-              }
-              <div className='w-full justify-end flex items-center font-bold'>Total</div>
-              <div className={classNames('text-left flex items-center', { 'font-bold': total })}>{total === 0 ? 'No play time recorded' : getTimePlayedStr(total)}</div>
-              {proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData] && (proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData] as CountAndSum).count >= 1 && (<>
-                <div
-                  className='w-full justify-end flex items-center font-medium underline decoration-dashed cursor-help'
-                  data-tooltip-content='Average time for others who solved this level'
-                  data-tooltip-id='others-tooltip'
-                >
-                  Others
-                </div>
-                <div className='text-left flex items-center font-medium'>{getTimePlayedStr(((proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData] as CountAndSum)?.sum / (proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData] as CountAndSum)?.count) || 0)}</div>
-                <StyledTooltip id='others-tooltip' />
-              </>)}
-            </div>
-          </Tab.Panel>
-          <Tab.Panel tabIndex={-1}>
-            <ResponsiveContainer width='100%' height={300}>
-              <BarChart
-                data={proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime]}
-                margin={{ top: 8, right: 8, left: -16 }}
-                maxBarSize={30}
+    <TabGroup className='flex flex-col gap-2'>
+      <TabList className='flex flex-wrap gap-x-1 items-start rounded text-sm' >
+        <Tab as={Fragment}>
+          {({ selected }) => (
+            <button className={classNames(
+              'border-blue-500 focus:outline-none',
+              { 'border-b-2 ': selected }
+            )}>
+              <div className='mb-1 py-1 px-2 tab rounded'>
+                Table
+              </div>
+            </button>
+          )}
+        </Tab>
+        <Tab as={Fragment}>
+          {({ selected }) => (
+            <button className={classNames(
+              'border-blue-500 focus:outline-none',
+              { 'border-b-2 ': selected }
+            )}>
+              <div className='mb-1 py-1 px-2 tab rounded'>
+                Graph
+              </div>
+            </button>
+          )}
+        </Tab>
+      </TabList>
+      <TabPanels>
+        <TabPanel tabIndex={-1}>
+          <div className='grid gap-x-4 gap-y-1 pl-1' style={{
+            gridTemplateColumns: 'min-content 1fr',
+          }}>
+            {
+              (proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime] as DateAndSum[]).map((d, i) => {
+                return [
+                  <div className='w-full justify-end flex items-center' key={`prostat-playattemptgraph-${i}-1`}>{dayjs(new Date(d.date)).utc().format('M/D/YY')}</div>,
+                  <div className='text-left text-sm flex items-center' key={`prostat-playattemptgraph-${i}-2`} style={{
+                    color: 'var(--color-gray)',
+                  }}>{getTimePlayedStr(d.sum)}</div>,
+                ];
+              })
+            }
+            <div className='w-full justify-end flex items-center font-bold'>Total</div>
+            <div className={classNames('text-left flex items-center', { 'font-bold': total })}>{total === 0 ? 'No play time recorded' : getTimePlayedStr(total)}</div>
+            {proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData] && (proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData] as CountAndSum).count >= 1 && (<>
+              <div
+                className='w-full justify-end flex items-center font-medium underline decoration-dashed cursor-help'
+                data-tooltip-content='Average time for others who solved this level'
+                data-tooltip-id='others-tooltip'
               >
-                <Bar dataKey='sum' fill='var(--bg-color-4)' />
-                <CartesianGrid
-                  stroke='var(--bg-color-4)'
-                  strokeDasharray='1 4'
-                  vertical={false}
-                />
-                <XAxis dataKey='date'
-                  angle={-45}
-                  interval={0}
-                  tick={{ fill: 'var(--color)', fontSize: '0.75rem' }}
-                  tickFormatter={(date) => dayjs(new Date(date)).format('M/D')}
-                  tickMargin={8}
-                />
-                <YAxis
-                  tick={{ fill: 'var(--color)', fontSize: '0.75rem',
-                    style: { textAnchor: 'middle', }
-                  }}
-                  tickMargin={15}
-                  tickFormatter={(sum) => getTimePlayedStr(sum, true)}
-                  type='number'
-                />
-                <Tooltip
-                  cursor={false}
-                  content={
-                    ({ active, payload }) => {
-                      if (active && payload && payload.length) {
-                        const payloadObj = payload[0].payload;
-                        const display = getTimePlayedStr(payloadObj.sum);
+                Others
+              </div>
+              <div className='text-left flex items-center font-medium'>{getTimePlayedStr(((proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData] as CountAndSum)?.sum / (proStatsLevel[ProStatsLevelType.CommunityPlayAttemptsData] as CountAndSum)?.count) || 0)}</div>
+              <StyledTooltip id='others-tooltip' />
+            </>)}
+          </div>
+        </TabPanel>
+        <TabPanel tabIndex={-1}>
+          <ResponsiveContainer width='100%' height={300}>
+            <BarChart
+              data={proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime]}
+              margin={{ top: 8, right: 8, left: -16 }}
+              maxBarSize={30}
+            >
+              <Bar dataKey='sum' fill='var(--bg-color-4)' />
+              <CartesianGrid
+                stroke='var(--bg-color-4)'
+                strokeDasharray='1 4'
+                vertical={false}
+              />
+              <XAxis dataKey='date'
+                angle={-45}
+                interval={0}
+                tick={{ fill: 'var(--color)', fontSize: '0.75rem' }}
+                tickFormatter={(date) => dayjs(new Date(date)).format('M/D')}
+                tickMargin={8}
+              />
+              <YAxis
+                tick={{ fill: 'var(--color)', fontSize: '0.75rem',
+                  style: { textAnchor: 'middle', }
+                }}
+                tickMargin={15}
+                tickFormatter={(sum) => getTimePlayedStr(sum, true)}
+                type='number'
+              />
+              <Tooltip
+                cursor={false}
+                content={
+                  ({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const payloadObj = payload[0].payload;
+                      const display = getTimePlayedStr(payloadObj.sum);
 
-                        return (
-                          <div className='px-2 py-1 border rounded text-sm' style={{
-                            backgroundColor: 'var(--bg-color)',
-                          }}>
-                            {`${dayjs(new Date(payloadObj.date)).format('M/D/YY')} - ${display}`}
-                          </div>
-                        );
-                      }
+                      return (
+                        <div className='px-2 py-1 border rounded text-sm' style={{
+                          backgroundColor: 'var(--bg-color)',
+                        }}>
+                          {`${dayjs(new Date(payloadObj.date)).format('M/D/YY')} - ${display}`}
+                        </div>
+                      );
                     }
                   }
-                  wrapperStyle={{ outline: 'none' }}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </Tab.Panel>
-        </Tab.Panels>
-      </Tab.Group>
-    </div>
+                }
+                wrapperStyle={{ outline: 'none' }}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </TabPanel>
+      </TabPanels>
+    </TabGroup>
   );
 }

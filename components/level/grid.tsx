@@ -7,7 +7,7 @@ import { teko } from '@root/helpers/getFont';
 import Position from '@root/models/position';
 import classNames from 'classnames';
 import { useTheme } from 'next-themes';
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { JSX, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import Theme from '../../constants/theme';
 import Tile from './tile/tile';
 
@@ -42,6 +42,7 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
   const borderWidth = Math.round(tileSize / 40) || 1;
   const innerTileSize = tileSize - 2 * borderWidth;
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     const el = document.getElementById(gridId);
 
@@ -269,7 +270,7 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
                 setIsMouseDown(false);
                 setIsDragging(false);
               },
-              onTouchStart: (e) => {
+              onTouchStart: () => {
                 setIsMouseDown(true);
               },
               onTouchEnd: () => {

@@ -1,4 +1,4 @@
-import { Menu, Transition } from '@headlessui/react';
+import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react';
 import AdminCommand from '@root/constants/adminCommand';
 import Role from '@root/constants/role';
 import { IAdminCommand } from '@root/pages/[subdomain]/admin';
@@ -72,7 +72,7 @@ export default function SendAdminMessage({ runningCommand, selectedUserCommand, 
       <div className='flex gap-2 items-center'>
         <span>To:</span>
         <Menu as='div' className='relative inline-block text-left'>
-          <Menu.Button
+          <MenuButton
             aria-expanded='true'
             aria-haspopup='true'
             className='flex items-center w-full justify-center rounded-md bg-white pl-2 p-1 text-sm font-medium text-black gap-1 h-8 shadow-md border hover:opacity-70'
@@ -85,7 +85,7 @@ export default function SendAdminMessage({ runningCommand, selectedUserCommand, 
             <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
               <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
             </svg>
-          </Menu.Button>
+          </MenuButton>
           <Transition
             as={Fragment}
             enter='transition ease-out duration-100'
@@ -95,40 +95,30 @@ export default function SendAdminMessage({ runningCommand, selectedUserCommand, 
             leaveFrom='transform opacity-100 scale-100'
             leaveTo='transform opacity-0 scale-95'
           >
-            <Menu.Items className='absolute right-0 z-10 mt-1 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none border-color-1'>
+            <MenuItems className='absolute right-0 z-10 mt-1 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none border-color-1'>
               <div>
                 {Object.values(Role).map(role => (
-                  <Menu.Item key={`role-${role}`}>
-                    {({ active }) => (
-                      <button
-                        className='text-black p-1 text-sm w-28 flex items-center gap-1 justify-center'
-                        onClick={() => setAdminMessageRole(role)}
-                        role='menuitem'
-                        style= {{
-                          backgroundColor: active ? 'rgb(200, 200, 200)' : '',
-                        }}
-                      >
-                        {role}
-                      </button>
-                    )}
-                  </Menu.Item>
-                ))}
-                <Menu.Item key='role-all'>
-                  {({ active }) => (
+                  <MenuItem key={`role-${role}`}>
                     <button
-                      className='text-black p-1 text-sm w-28 flex items-center gap-1 justify-center'
-                      onClick={() => setAdminMessageRole(null)}
+                      className='text-black p-1 text-sm w-28 flex items-center gap-1 justify-center data-[active]:bg-neutral-300'
+                      onClick={() => setAdminMessageRole(role)}
                       role='menuitem'
-                      style= {{
-                        backgroundColor: active ? 'rgb(200, 200, 200)' : '',
-                      }}
                     >
-                      All
+                      {role}
                     </button>
-                  )}
-                </Menu.Item>
+                  </MenuItem>
+                ))}
+                <MenuItem key='role-all'>
+                  <button
+                    className='text-black p-1 text-sm w-28 flex items-center gap-1 justify-center data-[active]:bg-neutral-300'
+                    onClick={() => setAdminMessageRole(null)}
+                    role='menuitem'
+                  >
+                      All
+                  </button>
+                </MenuItem>
               </div>
-            </Menu.Items>
+            </MenuItems>
           </Transition>
         </Menu>
       </div>
