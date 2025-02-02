@@ -309,14 +309,12 @@ export default function AdminPage({ adminQuery, level, user }: AdminPageProps) {
             <MenuItems className='origin-top-right absolute right-0 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10'>
               {commandsUser.map((cmd) => (
                 <MenuItem key={cmd.command}>
-                  {({ active }) => (
-                    <button
-                      className={`${active ? 'bg-blue-600 text-white rounded-md' : 'text-gray-900'} block px-4 py-2 text-sm w-full`}
-                      onClick={() => setSelectedUserCommand(cmd)}
-                    >
-                      {cmd.label}
-                    </button>
-                  )}
+                  <button
+                    className='block px-4 py-2 text-sm w-full text-gray-900 data-[active]:bg-blue-600 data-[active]:text-white data-[active]:rounded-md'
+                    onClick={() => setSelectedUserCommand(cmd)}
+                  >
+                    {cmd.label}
+                  </button>
                 </MenuItem>
               ))}
             </MenuItems>
@@ -356,14 +354,12 @@ export default function AdminPage({ adminQuery, level, user }: AdminPageProps) {
             <MenuItems className='origin-top-right absolute right-0 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10'>
               {commandsLevel.map((cmd) => (
                 <MenuItem key={cmd.command}>
-                  {({ active }) => (
-                    <button
-                      className={`${active ? 'bg-blue-600 text-white rounded-md' : 'text-gray-900'} block px-4 py-2 text-sm w-full`}
-                      onClick={() => setSelectedLevelCommand(cmd)}
-                    >
-                      {cmd.label}
-                    </button>
-                  )}
+                  <button
+                    className='block px-4 py-2 text-sm w-full text-gray-900 data-[active]:bg-blue-600 data-[active]:text-white data-[active]:rounded-md'
+                    onClick={() => setSelectedLevelCommand(cmd)}
+                  >
+                    {cmd.label}
+                  </button>
                 </MenuItem>
               ))}
             </MenuItems>
@@ -399,14 +395,12 @@ export default function AdminPage({ adminQuery, level, user }: AdminPageProps) {
             <MenuItems className='origin-top-right absolute right-0 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10'>
               {commandsGeneral.map((cmd) => (
                 <MenuItem key={cmd.command}>
-                  {({ active }) => (
-                    <button
-                      className={`${active ? 'bg-blue-600 text-white rounded-md' : 'text-gray-900'} block px-4 py-2 text-sm w-full`}
-                      onClick={() => setSelectedGenericCommand(cmd)}
-                    >
-                      {cmd.label}
-                    </button>
-                  )}
+                  <button
+                    className='block px-4 py-2 text-sm w-full text-gray-900 data-[active]:bg-blue-600 data-[active]:text-white data-[active]:rounded-md'
+                    onClick={() => setSelectedGenericCommand(cmd)}
+                  >
+                    {cmd.label}
+                  </button>
                 </MenuItem>
               ))}
             </MenuItems>

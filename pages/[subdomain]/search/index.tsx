@@ -706,7 +706,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                 </MenuItem>
                 {difficultyList.filter(difficulty => difficulty.name !== 'Pending').map((difficulty) => (
                   <MenuItem key={`difficulty-item-${difficulty.value}`}>
-                    {({ active }) => (
+                    {({ focus }) => (
                       <button
                         className='text-black p-1 text-sm w-44 flex items-center gap-1 justify-center'
                         onClick={() => fetchLevels({
@@ -716,7 +716,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                         })}
                         role='menuitem'
                         style={{
-                          backgroundColor: getDifficultyColor(difficulty.value * 1.5 + 30, active ? 50 : 70)
+                          backgroundColor: getDifficultyColor(difficulty.value * 1.5 + 30, focus ? 50 : 70)
                         }}
                       >
                         <span>{difficulty.emoji}</span>

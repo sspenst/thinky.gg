@@ -198,7 +198,7 @@ export default function CommentThread({ className, comment, mutateComments, onSe
           }
           <FormattedDate date={comment.createdAt} />
         </div>
-        { user && comment.author._id !== user._id && <Menu as='div' className='relative'>
+        {user && comment.author._id !== user._id && <Menu as='div' className='relative'>
           <MenuButton className='flex items-center' id='dropdownMenuBtn' aria-label='dropdown menu'>
             <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6 hover:opacity-100 opacity-50'>
               <path strokeLinecap='round' strokeLinejoin='round' d='M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z' />
@@ -215,23 +215,17 @@ export default function CommentThread({ className, comment, mutateComments, onSe
           >
             <MenuItems className='absolute right-0 m-1 w-fit origin-top-right rounded-[10px] shadow-lg border z-20 bg-1 border-color-3'>
               <MenuItem>
-                {({ active }) => (
-                  <div
-                    className={classNames('flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3 text-yellow-500')}
-                    onClick={() => {
-                      reportComment();
-                    }}
-                    style={{
-                      backgroundColor: active ? 'var(--bg-color-3)' : undefined,
-                    }}
-                  >
-                    <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-exclamation-triangle' viewBox='0 0 16 16'>
-                      <path d='M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.15.15 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.2.2 0 0 1-.054.06.1.1 0 0 1-.066.017H1.146a.1.1 0 0 1-.066-.017.2.2 0 0 1-.054-.06.18.18 0 0 1 .002-.183L7.884 2.073a.15.15 0 0 1 .054-.057m1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767z' />
-                      <path d='M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z' />
-                    </svg>
+                <div
+                  className={classNames('flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3 hover-bg-3 text-yellow-500')}
+                  onClick={() => {
+                    reportComment();
+                  }}
+                >
+                  <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
+                    <path strokeLinecap='round' strokeLinejoin='round' d='M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z' />
+                  </svg>
                   Report
-                  </div>
-                )}
+                </div>
               </MenuItem>
             </MenuItems>
           </Transition>
