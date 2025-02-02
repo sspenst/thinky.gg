@@ -48,15 +48,16 @@ export default async function dbConnect({ ignoreInitializeLocalDb }: DBConnectPr
     if (process.env.NODE_ENV === 'test' || !process.env.MONGODB_URI) {
       // create with replica
       if (!process.env.MONGODB_TEST_URI_COUNT) {
-        const replSetOptions = {
+        const s = Date.now();
+
+        cached.mongoMemoryServer = await MongoMemoryReplSet.create({
+          binary: {
+            version: '6.0.14',
+          },
           replSet: {
             count: 1,
           },
-
-        };
-        const s = Date.now();
-
-        cached.mongoMemoryServer = await MongoMemoryReplSet.create(replSetOptions);
+        });
         console.log('MongoMemoryReplSet.create took ' + (Date.now() - s) + 'ms');
         uri = cached.mongoMemoryServer.getUri();
       } else {
