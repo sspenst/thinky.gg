@@ -6,6 +6,7 @@ const mockSubscription: Stripe.Subscription = {
   application: null,
   application_fee_percent: null,
   automatic_tax: {
+    disabled_reason: null,
     enabled: false,
     liability: null,
   },
