@@ -44,6 +44,7 @@ const eslintConfig = [...compat.extends(
   },
   rules: {
     '@stylistic/ts/type-annotation-spacing': 'warn',
+    // TODO: '@typescript-eslint/no-deprecated': 'warn',
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-unused-expressions': 'off',
     '@typescript-eslint/no-unused-vars': ['warn', {
@@ -92,6 +93,7 @@ const eslintConfig = [...compat.extends(
       prev: ['const', 'let'],
     }],
     quotes: ['warn', 'single'],
+    // TODO: 'react/jsx-indent': ['warn', 2, { checkAttributes: true, indentLogicalExpressions: true }],
     'react/jsx-newline': ['warn', { 'prevent': true }],
     'react/jsx-tag-spacing': ['warn', {
       beforeSelfClosing: 'always',
