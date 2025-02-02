@@ -1,4 +1,4 @@
-import { Tab } from '@headlessui/react';
+import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
 import FormattedDate from '@root/components/formatted/formattedDate';
 import Solved from '@root/components/level/info/solved';
 import FormattedLevelReviews from '@root/components/level/reviews/formattedLevelReviews';
@@ -171,51 +171,49 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
           </div>
         </div>
       )}
-      <div className='flex flex-col gap-2'>
-        <Tab.Group>
-          <Tab.List className='flex flex-wrap gap-x-1 items-start rounded text-sm'>
-            <Tab id='leastStepsTab' className='ui-selected:border-b-2 border-blue-500 focus:outline-none' onKeyDown={(e: React.KeyboardEvent) => {
-              if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                e.preventDefault();
-              }
-            }}>
-              <div className='mb-1 py-1 px-2 tab rounded'>
-                Least Steps
-              </div>
-            </Tab>
-            <Tab id='completionsTab' className='ui-selected:border-b-2 border-blue-500 focus:outline-none' onKeyDown={(e: React.KeyboardEvent) => {
-              if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                e.preventDefault();
-              }
-            }}>
-              <div className='mb-1 py-1 px-2 tab rounded'>
-                Completions
-              </div>
-            </Tab>
-            <Tab id='timePlayedTab' className='ui-selected:border-b-2 border-blue-500 focus:outline-none' onKeyDown={(e: React.KeyboardEvent) => {
-              if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                e.preventDefault();
-              }
-            }}>
-              <div className='mb-1 py-1 px-2 tab rounded flex flex-row items-center gap-2'>
-                <Image alt='pro' src='/pro.svg' width='16' height='16' />
-                <span>Time Played</span>
-              </div>
-            </Tab>
-          </Tab.List>
-          <Tab.Panels>
-            <Tab.Panel tabIndex={-1}>
-              <LevelInfoRecords />
-            </Tab.Panel>
-            <Tab.Panel tabIndex={-1}>
-              <LevelInfoCompletions />
-            </Tab.Panel>
-            <Tab.Panel tabIndex={-1}>
-              <LevelInfoPlayTime />
-            </Tab.Panel>
-          </Tab.Panels>
-        </Tab.Group>
-      </div>
+      <TabGroup className='flex flex-col gap-2'>
+        <TabList className='flex flex-wrap gap-x-1 items-start rounded text-sm'>
+          <Tab id='leastStepsTab' className='ui-selected:border-b-2 border-blue-500 focus:outline-none' onKeyDown={(e: React.KeyboardEvent) => {
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+              e.preventDefault();
+            }
+          }}>
+            <div className='mb-1 py-1 px-2 tab rounded'>
+              Least Steps
+            </div>
+          </Tab>
+          <Tab id='completionsTab' className='ui-selected:border-b-2 border-blue-500 focus:outline-none' onKeyDown={(e: React.KeyboardEvent) => {
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+              e.preventDefault();
+            }
+          }}>
+            <div className='mb-1 py-1 px-2 tab rounded'>
+              Completions
+            </div>
+          </Tab>
+          <Tab id='timePlayedTab' className='ui-selected:border-b-2 border-blue-500 focus:outline-none' onKeyDown={(e: React.KeyboardEvent) => {
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+              e.preventDefault();
+            }
+          }}>
+            <div className='mb-1 py-1 px-2 tab rounded flex flex-row items-center gap-2'>
+              <Image alt='pro' src='/pro.svg' width='16' height='16' />
+              <span>Time Played</span>
+            </div>
+          </Tab>
+        </TabList>
+        <TabPanels>
+          <TabPanel tabIndex={-1}>
+            <LevelInfoRecords />
+          </TabPanel>
+          <TabPanel tabIndex={-1}>
+            <LevelInfoCompletions />
+          </TabPanel>
+          <TabPanel tabIndex={-1}>
+            <LevelInfoPlayTime />
+          </TabPanel>
+        </TabPanels>
+      </TabGroup>
     </div>
     <Divider />
     <FormattedLevelReviews />

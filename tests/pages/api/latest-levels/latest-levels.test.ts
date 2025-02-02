@@ -168,7 +168,6 @@ describe('Testing latest levels api', () => {
   test('If mongo query throw exception we should fail gracefully', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(LevelModel, 'aggregate').mockImplementation(() => {
       throw new Error('Error finding Levels');
     });

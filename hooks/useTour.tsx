@@ -2,7 +2,7 @@ import TourPath from '@root/constants/tourPath';
 import TourType from '@root/constants/tourType';
 import { AppContext } from '@root/contexts/appContext';
 import { useRouter } from 'next/router';
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { JSX, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import ReactJoyride, { CallBackProps, Step, Styles, StylesOptions } from 'react-joyride';
 import TOUR_STEPS_HOME_PAGE from '../constants/tourSteps/TOUR_STEPS_HOME_PAGE';

@@ -1,4 +1,4 @@
-import { RadioGroup } from '@headlessui/react';
+import { Radio, RadioGroup } from '@headlessui/react';
 import { ProSubscriptionType } from '@root/constants/ProSubscriptionType';
 import isPro from '@root/helpers/isPro';
 import User from '@root/models/db/user';
@@ -8,7 +8,7 @@ import dayjs from 'dayjs';
 import { Spline } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { JSX, useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import Stripe from 'stripe';
 import { AppContext } from '../../contexts/appContext';
@@ -344,7 +344,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
         <div className='flex flex-col items-center justify-center gap-4'>
           <div className='flex flex-col gap-3 w-fit items-center mt-3'>
             <RadioGroup value={plan} onChange={setPlan} className='flex flex-wrap justify-center gap-3'>
-              <RadioGroup.Option value='year'>
+              <Radio value='year'>
                 {({ checked }) => (
                   <div className={classNames(
                     'flex flex-col border-2 text-sm py-2 px-4 rounded-xl cursor-pointer gap-0.5 subscription-plan-button transition',
@@ -365,8 +365,8 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                     <span className='text-lg text-center font-bold'>7-day Free Trial</span>
                   </div>
                 )}
-              </RadioGroup.Option>
-              <RadioGroup.Option value='month'>
+              </Radio>
+              <Radio value='month'>
                 {({ checked }) => (
                   <div className={classNames(
                     'flex flex-col border-2 text-sm py-2 px-4 rounded-xl cursor-pointer gap-0.5 subscription-plan-button transition',
@@ -381,7 +381,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                     <span className='text-lg text-center font-bold'>7-day Free Trial</span>
                   </div>
                 )}
-              </RadioGroup.Option>
+              </Radio>
             </RadioGroup>
             { subscribeButtonComponent}
           </div>
@@ -473,7 +473,6 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
               </svg>}
             title='Play History'
           />
-   
           <ProFeature
             description='Displayed next to your username across the site'
             icon={<Image alt='pro' src='/pro.svg' width='24' height='24' />}

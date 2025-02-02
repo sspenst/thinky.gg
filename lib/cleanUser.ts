@@ -1,4 +1,3 @@
-import { GameId } from '@root/constants/GameId';
 import UserConfig from '@root/models/db/userConfig';
 import User from '../models/db/user';
 

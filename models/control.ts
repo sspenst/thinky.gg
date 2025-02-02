@@ -1,3 +1,5 @@
+import { JSX } from 'react';
+
 export default class Control {
   action: () => void;
   blue: boolean;

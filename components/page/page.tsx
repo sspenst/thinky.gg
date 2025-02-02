@@ -3,7 +3,7 @@ import { AppContext } from '@root/contexts/appContext';
 import { ScreenSize } from '@root/hooks/useDeviceCheck';
 import classNames from 'classnames';
 import { useRouter } from 'next/router';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { JSX, useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { PageContext } from '../../contexts/pageContext';
 import LinkInfo from '../formatted/linkInfo';
@@ -37,7 +37,7 @@ export default function Page({
   const [preventKeyDownEvent, setPreventKeyDownEvent] = useState(false);
   const router = useRouter();
   const [showHeader, setShowHeader] = useState(true);
-  const [modal, setModal] = useState<React.JSX.Element | null>(null);
+  const [modal, setModal] = useState<JSX.Element | null>(null);
   const isNavDropdown = deviceInfo.screenSize < ScreenSize.XL || isFullScreen;
   const isNavOnPage = !isNavDropdown && showNav && (!game.isNotAGame || router.pathname !== '/');
 

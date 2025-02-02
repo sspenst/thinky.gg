@@ -1,4 +1,4 @@
-import { Tab } from '@headlessui/react';
+import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
 import FormattedDate from '@root/components/formatted/formattedDate';
 import FormattedUser from '@root/components/formatted/formattedUser';
 import LoadingSpinner from '@root/components/page/loadingSpinner';
@@ -155,100 +155,98 @@ export default function LevelInfoCompletions() {
   }
 
   return (
-    <div className='flex flex-col gap-2'>
-      <Tab.Group>
-        {isPro(user) && <>
-          <Tab.List className='flex flex-wrap gap-x-1 items-start rounded text-sm'>
-            <Tab as={Fragment}>
-              {({ selected }) => (
-                <button className={classNames(
-                  'border-blue-500 focus:outline-none',
-                  { 'border-b-2 ': selected }
-                )}>
-                  <div className='mb-1 py-1 px-2 tab rounded'>
-                    Table
-                  </div>
-                </button>
-              )}
-            </Tab>
-            <Tab as={Fragment}>
-              {({ selected }) => (
-                <button className={classNames(
-                  'border-blue-500 focus:outline-none',
-                  { 'border-b-2 ': selected }
-                )}>
-                  <div className='mb-1 py-1 px-2 tab rounded'>
-                    Graph
-                  </div>
-                </button>
-              )}
-            </Tab>
-          </Tab.List>
-        </>}
-        <Tab.Panels>
-          <Tab.Panel tabIndex={-1}>
-            <div className='grid gap-x-2 pl-1' style={{
-              gridTemplateColumns: 'min-content 1fr',
-            }}>
-              {completionDivs}
+    <TabGroup className='flex flex-col gap-2'>
+      {isPro(user) && <>
+        <TabList className='flex flex-wrap gap-x-1 items-start rounded text-sm'>
+          <Tab as={Fragment}>
+            {({ selected }) => (
+              <button className={classNames(
+                'border-blue-500 focus:outline-none',
+                { 'border-b-2 ': selected }
+              )}>
+                <div className='mb-1 py-1 px-2 tab rounded'>
+                  Table
+                </div>
+              </button>
+            )}
+          </Tab>
+          <Tab as={Fragment}>
+            {({ selected }) => (
+              <button className={classNames(
+                'border-blue-500 focus:outline-none',
+                { 'border-b-2 ': selected }
+              )}>
+                <div className='mb-1 py-1 px-2 tab rounded'>
+                  Graph
+                </div>
+              </button>
+            )}
+          </Tab>
+        </TabList>
+      </>}
+      <TabPanels>
+        <TabPanel tabIndex={-1}>
+          <div className='grid gap-x-2 pl-1' style={{
+            gridTemplateColumns: 'min-content 1fr',
+          }}>
+            {completionDivs}
+          </div>
+          {isPro(user) &&
+            <div className='flex flex-col text-sm mt-3 italic'>
+              <span>{solves} solve{solves === 1 ? '' : 's'}</span>
+              <span>{completions} completion{completions === 1 ? '' : 's'}</span>
             </div>
-            {isPro(user) &&
-              <div className='flex flex-col text-sm mt-3 italic'>
-                <span>{solves} solve{solves === 1 ? '' : 's'}</span>
-                <span>{completions} completion{completions === 1 ? '' : 's'}</span>
-              </div>
-            }
-          </Tab.Panel>
-          <Tab.Panel tabIndex={-1}>
-            <ResponsiveContainer width='100%' height={300}>
-              <BarChart
-                data={proStatsLevel[ProStatsLevelType.CommunityStepData]}
-                margin={{ top: 8, right: 8, left: -16 }}
-                maxBarSize={30}
-              >
-                <Bar dataKey='count' fill='var(--bg-color-4)' />
-                <CartesianGrid
-                  stroke='var(--bg-color-4)'
-                  strokeDasharray='1 4'
-                  vertical={false}
-                />
-                <XAxis
-                  angle={-45}
-                  dataKey='moves'
-                  interval={0}
-                  tick={{ fill: 'var(--color)', fontSize: '0.75rem' }}
-                  tickMargin={8}
-                />
-                <YAxis
-                  allowDecimals={false}
-                  tick={{ fill: 'var(--color)', fontSize: '0.75rem' }}
-                  type='number'
-                />
-                <Tooltip
-                  cursor={false}
-                  content={
-                    ({ active, payload }) => {
-                      if (active && payload && payload.length) {
-                        const payloadObj = payload[0].payload;
-                        const display = payloadObj.count;
+          }
+        </TabPanel>
+        <TabPanel tabIndex={-1}>
+          <ResponsiveContainer width='100%' height={300}>
+            <BarChart
+              data={proStatsLevel[ProStatsLevelType.CommunityStepData]}
+              margin={{ top: 8, right: 8, left: -16 }}
+              maxBarSize={30}
+            >
+              <Bar dataKey='count' fill='var(--bg-color-4)' />
+              <CartesianGrid
+                stroke='var(--bg-color-4)'
+                strokeDasharray='1 4'
+                vertical={false}
+              />
+              <XAxis
+                angle={-45}
+                dataKey='moves'
+                interval={0}
+                tick={{ fill: 'var(--color)', fontSize: '0.75rem' }}
+                tickMargin={8}
+              />
+              <YAxis
+                allowDecimals={false}
+                tick={{ fill: 'var(--color)', fontSize: '0.75rem' }}
+                type='number'
+              />
+              <Tooltip
+                cursor={false}
+                content={
+                  ({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const payloadObj = payload[0].payload;
+                      const display = payloadObj.count;
 
-                        return (
-                          <div className='px-2 py-1 border rounded text-sm' style={{
-                            backgroundColor: 'var(--bg-color)',
-                          }}>
-                            {`${display} user${display === 1 ? '' : 's'} at ${payloadObj.moves} step${payloadObj.moves === 1 ? '' : 's'}`}
-                          </div>
-                        );
-                      }
+                      return (
+                        <div className='px-2 py-1 border rounded text-sm' style={{
+                          backgroundColor: 'var(--bg-color)',
+                        }}>
+                          {`${display} user${display === 1 ? '' : 's'} at ${payloadObj.moves} step${payloadObj.moves === 1 ? '' : 's'}`}
+                        </div>
+                      );
                     }
                   }
-                  wrapperStyle={{ outline: 'none' }}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </Tab.Panel>
-        </Tab.Panels>
-      </Tab.Group>
+                }
+                wrapperStyle={{ outline: 'none' }}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </TabPanel>
+      </TabPanels>
       {!isPro(user) &&
         <div className='flex gap-3 items-center'>
           <RoleIcon id='level-info-completions' role={Role.PRO} size={20} />
@@ -259,6 +257,6 @@ export default function LevelInfoCompletions() {
           </div>
         </div>
       }
-    </div>
+    </TabGroup>
   );
 }
