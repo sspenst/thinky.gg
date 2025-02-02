@@ -1,4 +1,4 @@
-import { Menu, Transition } from '@headlessui/react';
+import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react';
 import { GameType } from '@root/constants/Games';
 import isGuest from '@root/helpers/isGuest';
 import Image from 'next/image';
@@ -65,7 +65,7 @@ export default function Dropdown() {
 
   return (<>
     <Menu>
-      <Menu.Button id='dropdownMenuBtn' aria-label='dropdown menu'>
+      <MenuButton id='dropdownMenuBtn' aria-label='dropdown menu'>
         {user ?
           <ProfileAvatar user={user} />
           :
@@ -73,7 +73,7 @@ export default function Dropdown() {
             <path strokeLinecap='round' strokeLinejoin='round' d='M4 6h16M4 12h16M4 18h16' />
           </svg>
         }
-      </Menu.Button>
+      </MenuButton>
       <Transition
         as={Fragment}
         enter='transition ease-out duration-100'
@@ -83,7 +83,7 @@ export default function Dropdown() {
         leaveFrom='transform opacity-100 scale-100'
         leaveTo='transform opacity-0 scale-95'
       >
-        <Menu.Items className='fixed right-0 m-1 w-fit origin-top-right rounded-[10px] shadow-lg border overflow-y-auto bg-1 border-color-3' style={{
+        <MenuItems className='fixed right-0 m-1 w-fit origin-top-right rounded-[10px] shadow-lg border overflow-y-auto bg-1 border-color-3' style={{
           // NB: hardcoded value accounting for header + menu margin
           maxHeight: 'calc(100% - 56px)',
           top: Dimensions.MenuHeight,
@@ -120,7 +120,7 @@ export default function Dropdown() {
                   <Divider />
                 </div>
               </>}
-              <Menu.Item>
+              <MenuItem>
                 {({ active }) => (
                   <Link href={getProfileSlug(user)} passHref>
                     <div
@@ -136,10 +136,10 @@ export default function Dropdown() {
                     </div>
                   </Link>
                 )}
-              </Menu.Item>
+              </MenuItem>
               <Divider />
             </>}
-            <Menu.Item>
+            <MenuItem>
               {({ active }) => (
                 <div
                   className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3'
@@ -157,9 +157,9 @@ export default function Dropdown() {
                   Theme
                 </div>
               )}
-            </Menu.Item>
+            </MenuItem>
             <div className='block sm:hidden'>
-              <Menu.Item>
+              <MenuItem>
                 {({ active }) => (
                   <div
                     className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3'
@@ -175,11 +175,11 @@ export default function Dropdown() {
                     Music
                   </div>
                 )}
-              </Menu.Item>
+              </MenuItem>
             </div>
             {user ?
               <>
-                <Menu.Item>
+                <MenuItem>
                   {({ active }) => (
                     <Link href='/settings' passHref>
                       <div
@@ -196,9 +196,9 @@ export default function Dropdown() {
                       </div>
                     </Link>
                   )}
-                </Menu.Item>
+                </MenuItem>
                 {game.hasPro &&
-                  <Menu.Item>
+                  <MenuItem>
                     {({ active }) => (
                       <Link href='/pro' passHref>
                         <div
@@ -212,10 +212,10 @@ export default function Dropdown() {
                         </div>
                       </Link>
                     )}
-                  </Menu.Item>
+                  </MenuItem>
                 }
                 <Divider />
-                <Menu.Item>
+                <MenuItem>
                   {({ active }) => (
                     <div
                       className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3'
@@ -231,12 +231,12 @@ export default function Dropdown() {
                       Log Out
                     </div>
                   )}
-                </Menu.Item>
+                </MenuItem>
               </>
               :
               <div className='block sm:hidden'>
                 <Divider />
-                <Menu.Item>
+                <MenuItem>
                   {({ active }) => (
                     <Link href='/login' onClick={() => sessionStorage.clear()}>
                       <div
@@ -253,8 +253,8 @@ export default function Dropdown() {
                       </div>
                     </Link>
                   )}
-                </Menu.Item>
-                <Menu.Item>
+                </MenuItem>
+                <MenuItem>
                   {({ active }) => (
                     <Link href='/signup'>
                       <div
@@ -270,11 +270,11 @@ export default function Dropdown() {
                       </div>
                     </Link>
                   )}
-                </Menu.Item>
+                </MenuItem>
               </div>
             }
           </div>
-        </Menu.Items>
+        </MenuItems>
       </Transition>
     </Menu>
     <ThemeModal

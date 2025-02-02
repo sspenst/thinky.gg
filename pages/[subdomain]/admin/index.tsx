@@ -1,4 +1,4 @@
-import { Menu } from '@headlessui/react';
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import SendAdminMessage from '@root/components/admin/sendAdminMessage';
 import LevelCard from '@root/components/cards/levelCard';
 import FormattedUser from '@root/components/formatted/formattedUser';
@@ -302,13 +302,13 @@ export default function AdminPage({ adminQuery, level, user }: AdminPageProps) {
           }} />
           <Menu as='div' className='relative inline-block text-left'>
             <div>
-              <Menu.Button className='border border-gray-300 bg-gray rounded-md shadow-sm px-4 py-2 text-sm flex flex-row items-center justify-center gap-2'>
+              <MenuButton className='border border-gray-300 bg-gray rounded-md shadow-sm px-4 py-2 text-sm flex flex-row items-center justify-center gap-2'>
                 {selectedUserCommand?.label || 'Select Command'}
-              </Menu.Button>
+              </MenuButton>
             </div>
-            <Menu.Items className='origin-top-right absolute right-0 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10'>
+            <MenuItems className='origin-top-right absolute right-0 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10'>
               {commandsUser.map((cmd) => (
-                <Menu.Item key={cmd.command}>
+                <MenuItem key={cmd.command}>
                   {({ active }) => (
                     <button
                       className={`${active ? 'bg-blue-600 text-white rounded-md' : 'text-gray-900'} block px-4 py-2 text-sm w-full`}
@@ -317,9 +317,9 @@ export default function AdminPage({ adminQuery, level, user }: AdminPageProps) {
                       {cmd.label}
                     </button>
                   )}
-                </Menu.Item>
+                </MenuItem>
               ))}
-            </Menu.Items>
+            </MenuItems>
           </Menu>
           <button
             className={`bg-blue-500 hover:enabled:bg-blue-700 text-white font-bold py-2 px-4 rounded ${runningCommand ? 'bg-gray-500 cursor-not-allowed' : ''}`}
@@ -349,13 +349,13 @@ export default function AdminPage({ adminQuery, level, user }: AdminPageProps) {
           }} />
           <Menu as='div' className='relative inline-block text-left'>
             <div>
-              <Menu.Button className='border border-gray-300 bg-gray rounded-md shadow-sm px-4 py-2 text-sm flex flex-row items-center justify-center gap-2'>
+              <MenuButton className='border border-gray-300 bg-gray rounded-md shadow-sm px-4 py-2 text-sm flex flex-row items-center justify-center gap-2'>
                 {selectedLevelCommand?.label || 'Select Command'}
-              </Menu.Button>
+              </MenuButton>
             </div>
-            <Menu.Items className='origin-top-right absolute right-0 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10'>
+            <MenuItems className='origin-top-right absolute right-0 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10'>
               {commandsLevel.map((cmd) => (
-                <Menu.Item key={cmd.command}>
+                <MenuItem key={cmd.command}>
                   {({ active }) => (
                     <button
                       className={`${active ? 'bg-blue-600 text-white rounded-md' : 'text-gray-900'} block px-4 py-2 text-sm w-full`}
@@ -364,9 +364,9 @@ export default function AdminPage({ adminQuery, level, user }: AdminPageProps) {
                       {cmd.label}
                     </button>
                   )}
-                </Menu.Item>
+                </MenuItem>
               ))}
-            </Menu.Items>
+            </MenuItems>
           </Menu>
           <button
             className={`bg-blue-500 hover:enabled:bg-blue-700 text-white font-bold py-2 px-4 rounded ${runningCommand ? 'bg-gray-500 cursor-not-allowed' : ''}`}
@@ -392,13 +392,13 @@ export default function AdminPage({ adminQuery, level, user }: AdminPageProps) {
         <div className='flex flex-row items-center justify-center p-2 gap-2'>
           <Menu as='div' className='relative inline-block text-left'>
             <div>
-              <Menu.Button className='border border-gray-300 bg-gray rounded-md shadow-sm px-4 py-2 text-sm flex flex-row items-center justify-center gap-2'>
+              <MenuButton className='border border-gray-300 bg-gray rounded-md shadow-sm px-4 py-2 text-sm flex flex-row items-center justify-center gap-2'>
                 {selectedGenericCommand?.label || 'Select Command'}
-              </Menu.Button>
+              </MenuButton>
             </div>
-            <Menu.Items className='origin-top-right absolute right-0 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10'>
+            <MenuItems className='origin-top-right absolute right-0 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10'>
               {commandsGeneral.map((cmd) => (
-                <Menu.Item key={cmd.command}>
+                <MenuItem key={cmd.command}>
                   {({ active }) => (
                     <button
                       className={`${active ? 'bg-blue-600 text-white rounded-md' : 'text-gray-900'} block px-4 py-2 text-sm w-full`}
@@ -407,9 +407,9 @@ export default function AdminPage({ adminQuery, level, user }: AdminPageProps) {
                       {cmd.label}
                     </button>
                   )}
-                </Menu.Item>
+                </MenuItem>
               ))}
-            </Menu.Items>
+            </MenuItems>
           </Menu>
           <button
             className={`bg-blue-500 hover:enabled:bg-blue-700 text-white font-bold py-2 px-4 rounded ${runningCommand ? 'bg-gray-500 cursor-not-allowed' : ''}`}
