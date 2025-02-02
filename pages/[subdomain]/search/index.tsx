@@ -1,4 +1,4 @@
-import { Menu, Transition } from '@headlessui/react';
+import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react';
 import { PlayLaterToggleButton } from '@root/components/cards/playLaterToggleButton';
 import FormattedDate from '@root/components/formatted/formattedDate';
 import FormattedUser from '@root/components/formatted/formattedUser';
@@ -213,7 +213,7 @@ function getFilterDisplay(game: Game, filter: string, query: SearchQuery) {
 function TimeRangeMenu({ onTimeRangeClick, timeRange }: TimeRangeMenuProps) {
   return (
     <Menu as='div' className='relative inline-block text-left'>
-      <Menu.Button
+      <MenuButton
         aria-expanded='true'
         aria-haspopup='true'
         className='flex items-center w-full justify-center rounded-md bg-white pl-2 pr-1 text-sm font-medium text-black gap-1 h-8 shadow-md border'
@@ -226,7 +226,7 @@ function TimeRangeMenu({ onTimeRangeClick, timeRange }: TimeRangeMenuProps) {
         <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
           <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
         </svg>
-      </Menu.Button>
+      </MenuButton>
       <Transition
         as={Fragment}
         enter='transition ease-out duration-100'
@@ -236,26 +236,21 @@ function TimeRangeMenu({ onTimeRangeClick, timeRange }: TimeRangeMenuProps) {
         leaveFrom='transform opacity-100 scale-100'
         leaveTo='transform opacity-0 scale-95'
       >
-        <Menu.Items className='absolute right-0 z-10 mt-1 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none border-color-1'>
+        <MenuItems className='absolute right-0 z-10 mt-1 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none border-color-1'>
           <div>
             {Object.keys(timeRangeStrings).map(timeRangeKey => (
-              <Menu.Item key={`time-range-${timeRangeKey}`}>
-                {({ active }) => (
-                  <button
-                    className='text-black p-1 text-sm w-24 flex items-center gap-1 justify-center'
-                    onClick={() => onTimeRangeClick(timeRangeKey)}
-                    role='menuitem'
-                    style={{
-                      backgroundColor: active ? 'rgb(200, 200, 200)' : '',
-                    }}
-                  >
-                    {timeRangeStrings[timeRangeKey]}
-                  </button>
-                )}
-              </Menu.Item>
+              <MenuItem key={`time-range-${timeRangeKey}`}>
+                <button
+                  className='text-black p-1 text-sm w-24 flex items-center gap-1 justify-center data-[active]:bg-neutral-300'
+                  onClick={() => onTimeRangeClick(timeRangeKey)}
+                  role='menuitem'
+                >
+                  {timeRangeStrings[timeRangeKey]}
+                </button>
+              </MenuItem>
             ))}
           </div>
-        </Menu.Items>
+        </MenuItems>
       </Transition>
     </Menu>
   );
@@ -276,7 +271,7 @@ function StatFilterMenu({ onStatFilterClick, query }: StatFilterMenuProps) {
 
   return (
     <Menu as='div' className='relative inline-block text-left'>
-      <Menu.Button
+      <MenuButton
         aria-expanded='true'
         aria-haspopup='true'
         className='flex items-center w-full justify-center rounded-md bg-white pl-2 pr-1 text-sm font-medium text-black gap-1 h-8 shadow-md border'
@@ -289,7 +284,7 @@ function StatFilterMenu({ onStatFilterClick, query }: StatFilterMenuProps) {
         <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
           <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
         </svg>
-      </Menu.Button>
+      </MenuButton>
       <Transition
         as={Fragment}
         enter='transition ease-out duration-100'
@@ -299,26 +294,21 @@ function StatFilterMenu({ onStatFilterClick, query }: StatFilterMenuProps) {
         leaveFrom='transform opacity-100 scale-100'
         leaveTo='transform opacity-0 scale-95'
       >
-        <Menu.Items className='absolute right-0 z-10 mt-1 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none border-color-1'>
+        <MenuItems className='absolute right-0 z-10 mt-1 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none border-color-1'>
           <div>
             {Object.keys(statFilterStrings).map(statFilterKey => (
-              <Menu.Item key={`filter-completions-${statFilterKey}`}>
-                {({ active }) => (
-                  <button
-                    className='text-black p-1 text-sm w-28 flex items-center gap-1 justify-center'
-                    onClick={() => onStatFilterClick(statFilterKey as StatFilter)}
-                    role='menuitem'
-                    style={{
-                      backgroundColor: active ? 'rgb(200, 200, 200)' : '',
-                    }}
-                  >
-                    {statFilterStrings[statFilterKey]}
-                  </button>
-                )}
-              </Menu.Item>
+              <MenuItem key={`filter-completions-${statFilterKey}`}>
+                <button
+                  className='text-black p-1 text-sm w-28 flex items-center gap-1 justify-center data-[active]:bg-neutral-300'
+                  onClick={() => onStatFilterClick(statFilterKey as StatFilter)}
+                  role='menuitem'
+                >
+                  {statFilterStrings[statFilterKey]}
+                </button>
+              </MenuItem>
             ))}
           </div>
-        </Menu.Items>
+        </MenuItems>
       </Transition>
     </Menu>
   );
@@ -655,7 +645,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
       <div className='flex items-center flex-wrap gap-1 justify-center'>
         {reqUser && <StatFilterMenu onStatFilterClick={onStatFilterClick} query={query} />}
         <Menu as='div' className='relative inline-block text-left'>
-          <Menu.Button
+          <MenuButton
             aria-expanded='true'
             aria-haspopup='true'
             className='flex items-center w-full justify-center rounded-md bg-white pl-2 pr-1 text-sm font-medium text-black gap-1 h-8 shadow-md border'
@@ -675,7 +665,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
             <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
               <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
             </svg>
-          </Menu.Button>
+          </MenuButton>
           <Transition
             as={Fragment}
             enter='transition ease-out duration-100'
@@ -685,47 +675,37 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
             leaveFrom='transform opacity-100 scale-100'
             leaveTo='transform opacity-0 scale-95'
           >
-            <Menu.Items className='absolute right-0 z-10 mt-1 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none border-color-1'>
+            <MenuItems className='absolute right-0 z-10 mt-1 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none border-color-1'>
               <div>
-                <Menu.Item>
-                  {({ active }) => (
-                    <button
-                      className='text-black block p-1 text-sm w-44'
-                      onClick={() => fetchLevels({
-                        ...query,
-                        difficultyFilter: '',
-                        page: '1',
-                      })}
-                      role='menuitem'
-                      style={{
-                        backgroundColor: active ? 'rgb(200, 200, 200)' : '',
-                      }}
-                    >
-                      All {difficultyType} Difficulties
-                    </button>
-                  )}
-                </Menu.Item>
-                <Menu.Item>
-                  {({ active }) => (
-                    <button
-                      className='text-black p-1 text-sm w-44 flex items-center gap-1 justify-center'
-                      onClick={() => fetchLevels({
-                        ...query,
-                        difficultyFilter: 'Pending',
-                        page: '1',
-                      })}
-                      role='menuitem'
-                      style={{
-                        backgroundColor: active ? 'rgb(200, 200, 200)' : '',
-                      }}
-                    >
-                      <span>⏳</span>
-                      <span>Pending</span>
-                    </button>
-                  )}
-                </Menu.Item>
+                <MenuItem>
+                  <button
+                    className='text-black block p-1 text-sm w-44 data-[active]:bg-neutral-300'
+                    onClick={() => fetchLevels({
+                      ...query,
+                      difficultyFilter: '',
+                      page: '1',
+                    })}
+                    role='menuitem'
+                  >
+                    All {difficultyType} Difficulties
+                  </button>
+                </MenuItem>
+                <MenuItem>
+                  <button
+                    className='text-black p-1 text-sm w-44 flex items-center gap-1 justify-center data-[active]:bg-neutral-300'
+                    onClick={() => fetchLevels({
+                      ...query,
+                      difficultyFilter: 'Pending',
+                      page: '1',
+                    })}
+                    role='menuitem'
+                  >
+                    <span>⏳</span>
+                    <span>Pending</span>
+                  </button>
+                </MenuItem>
                 {difficultyList.filter(difficulty => difficulty.name !== 'Pending').map((difficulty) => (
-                  <Menu.Item key={`difficulty-item-${difficulty.value}`}>
+                  <MenuItem key={`difficulty-item-${difficulty.value}`}>
                     {({ active }) => (
                       <button
                         className='text-black p-1 text-sm w-44 flex items-center gap-1 justify-center'
@@ -743,10 +723,10 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                         <span>{difficulty.name}</span>
                       </button>
                     )}
-                  </Menu.Item>
+                  </MenuItem>
                 ))}
               </div>
-            </Menu.Items>
+            </MenuItems>
           </Transition>
         </Menu>
         <TimeRangeMenu onTimeRangeClick={onTimeRangeClick} timeRange={query.timeRange} />

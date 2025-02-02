@@ -1,4 +1,4 @@
-import { Menu, Transition } from '@headlessui/react';
+import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react';
 import GameLogo from '@root/components/gameLogo';
 import { Game, Games } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
@@ -31,7 +31,7 @@ function NavGameMenuItem({ game }: NavGameMenuItemProps) {
   const path = isCurrentGame ? '/' : undefined;
 
   return (
-    <Menu.Item>
+    <MenuItem>
       <a href={getUrl(game.id, path)} suppressHydrationWarning>
         <div className={classNames(
           'flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-5',
@@ -41,7 +41,7 @@ function NavGameMenuItem({ game }: NavGameMenuItemProps) {
           <span>{game.displayName}</span>
         </div>
       </a>
-    </Menu.Item>
+    </MenuItem>
   );
 }
 
@@ -52,7 +52,7 @@ function NavGameMenu() {
     // NB: need this relative outer div for the absolute menu to have the right width
     <div className='w-full relative'>
       <Menu>
-        <Menu.Button className='w-full'>
+        <MenuButton className='w-full'>
           <div className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 justify-between hover-bg-3'>
             <div className='flex items-center gap-5'>
               <GameLogoAndLabel gameId={currentGame.id} id={currentGame.id} size={20} />
@@ -61,7 +61,7 @@ function NavGameMenu() {
               <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
             </svg>
           </div>
-        </Menu.Button>
+        </MenuButton>
         <Transition
           as={Fragment}
           enter='transition ease-out duration-100'
@@ -71,11 +71,11 @@ function NavGameMenu() {
           leaveFrom='transform opacity-100 scale-100'
           leaveTo='transform opacity-0 scale-95'
         >
-          <Menu.Items className='absolute w-full origin-top mt-1 p-1 rounded-[10px] shadow-lg border overflow-y-auto flex flex-col gap-1 bg-1 border-color-3'>
+          <MenuItems className='absolute w-full origin-top mt-1 p-1 rounded-[10px] shadow-lg border overflow-y-auto flex flex-col gap-1 bg-1 border-color-3'>
             {Object.values(Games).filter(game => game.id !== currentGame.id).map((game) => (
               <NavGameMenuItem game={game} key={game.id} />
             ))}
-          </Menu.Items>
+          </MenuItems>
         </Transition>
       </Menu>
     </div>

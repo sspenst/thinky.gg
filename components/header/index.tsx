@@ -1,4 +1,4 @@
-import { Menu, Transition } from '@headlessui/react';
+import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react';
 import { GameType } from '@root/constants/Games';
 import { ScreenSize } from '@root/hooks/useDeviceCheck';
 import Image from 'next/image';
@@ -50,11 +50,11 @@ export default function Header({
         {game.isNotAGame ? null :
           isNavDropdown ?
             <Menu>
-              <Menu.Button className='w-full'>
+              <MenuButton className='w-full'>
                 <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5 hover:opacity-70' fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={2}>
                   <path strokeLinecap='round' strokeLinejoin='round' d='M4 6h16M4 12h16M4 18h16' />
                 </svg>
-              </Menu.Button>
+              </MenuButton>
               <Transition
                 as={Fragment}
                 enter='transition ease-out duration-100'
@@ -64,7 +64,7 @@ export default function Header({
                 leaveFrom='transform opacity-100 scale-100'
                 leaveTo='transform opacity-0 scale-95'
               >
-                <Menu.Items
+                <MenuItems
                   className='fixed left-0 m-1 z-10 origin-top rounded-[10px] shadow-lg border overflow-y-auto border-color-3'
                   style={{
                   // NB: hardcoded value accounting for header + menu margin
@@ -72,10 +72,10 @@ export default function Header({
                     top: Dimensions.MenuHeight,
                   }}
                 >
-                  <Menu.Item>
+                  <MenuItem>
                     <Nav isDropdown />
-                  </Menu.Item>
-                </Menu.Items>
+                  </MenuItem>
+                </MenuItems>
               </Transition>
             </Menu>
             :

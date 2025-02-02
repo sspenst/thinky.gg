@@ -1,4 +1,4 @@
-import { Menu, Transition } from '@headlessui/react';
+import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react';
 import ArchiveLevelModal from '@root/components/modal/archiveLevelModal';
 import DeleteLevelModal from '@root/components/modal/deleteLevelModal';
 import EditLevelModal from '@root/components/modal/editLevelModal';
@@ -98,11 +98,11 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
 
   return (<>
     <Menu as='div' className='relative'>
-      <Menu.Button className='flex items-center' id='dropdownMenuBtn' aria-label='dropdown menu'>
+      <MenuButton className='flex items-center' id='dropdownMenuBtn' aria-label='dropdown menu'>
         <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6 hover:opacity-100 opacity-50' style={{ minWidth: 24, minHeight: 24 }}>
           <path strokeLinecap='round' strokeLinejoin='round' d='M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z' />
         </svg>
-      </Menu.Button>
+      </MenuButton>
       <Transition
         as={Fragment}
         enter='transition ease-out duration-100'
@@ -112,10 +112,10 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
         leaveFrom='transform opacity-100 scale-100'
         leaveTo='transform opacity-0 scale-95'
       >
-        <Menu.Items className='absolute right-0 m-1 w-fit origin-top-right rounded-[10px] shadow-lg border z-20 bg-1 border-color-3'>
+        <MenuItems className='absolute right-0 m-1 w-fit origin-top-right rounded-[10px] shadow-lg border z-20 bg-1 border-color-3'>
           <div className='px-1 py-1'>
             {user && <>
-              <Menu.Item>
+              <MenuItem>
                 {({ active }) => (
                   <button
                     className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3 whitespace-nowrap'
@@ -144,8 +144,8 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
                     }
                   </button>
                 )}
-              </Menu.Item>
-              <Menu.Item>
+              </MenuItem>
+              <MenuItem>
                 {({ active }) => (
                   <div
                     className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3 whitespace-nowrap'
@@ -163,9 +163,9 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
                     <span>Save to collection</span>
                   </div>
                 )}
-              </Menu.Item>
+              </MenuItem>
             </>}
-            <Menu.Item>
+            <MenuItem>
               {({ active }) => (
                 <div
                   className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3 whitespace-nowrap'
@@ -184,9 +184,9 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
                   <span>Copy level data</span>
                 </div>
               )}
-            </Menu.Item>
+            </MenuItem>
             {!level.isDraft &&
-              <Menu.Item>
+              <MenuItem>
                 {({ active }) => (
                   <div
                     className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3 whitespace-nowrap'
@@ -205,10 +205,10 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
                     <span>Share link</span>
                   </div>
                 )}
-              </Menu.Item>
+              </MenuItem>
             }
             {canEdit && <>
-              <Menu.Item>
+              <MenuItem>
                 {({ active }) => (
                   <div
                     className={classNames('flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3', { 'text-red-500': !isAuthor })}
@@ -228,10 +228,10 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
                     <span>Edit</span>
                   </div>
                 )}
-              </Menu.Item>
+              </MenuItem>
               {level.isDraft ?
                 <>
-                  <Menu.Item>
+                  <MenuItem>
                     {({ active }) => (
                       <Link
                         className={classNames('flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3', { 'text-red-500': !isAuthor })}
@@ -246,9 +246,9 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
                         <span>Test</span>
                       </Link>
                     )}
-                  </Menu.Item>
+                  </MenuItem>
                   {level.leastMoves !== 0 &&
-                    <Menu.Item>
+                    <MenuItem>
                       {({ active }) => (
                         <div
                           className={classNames('flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3', { 'text-red-500': !isAuthor })}
@@ -266,9 +266,9 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
                           <span>Publish</span>
                         </div>
                       )}
-                    </Menu.Item>
+                    </MenuItem>
                   }
-                  <Menu.Item>
+                  <MenuItem>
                     {({ active }) => (
                       <div
                         className={classNames('flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3', { 'text-red-500': !isAuthor })}
@@ -286,11 +286,11 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
                         <span>Delete</span>
                       </div>
                     )}
-                  </Menu.Item>
+                  </MenuItem>
                 </>
                 :
                 <>
-                  <Menu.Item>
+                  <MenuItem>
                     {({ active }) => (
                       <div
                         className={classNames('flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3', { 'text-red-500': !isAuthor })}
@@ -308,8 +308,8 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
                         <span>Archive</span>
                       </div>
                     )}
-                  </Menu.Item>
-                  <Menu.Item>
+                  </MenuItem>
+                  <MenuItem>
                     {({ active }) => (
                       <div
                         className={classNames('flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3', { 'text-red-500': !isAuthor })}
@@ -327,12 +327,12 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
                         <span>Unpublish</span>
                       </div>
                     )}
-                  </Menu.Item>
+                  </MenuItem>
                 </>
               }
             </>}
             { user && !isGuest(user) &&
-            <Menu.Item>
+            <MenuItem>
               {({ active }) => (
                 <div
                   className={classNames('flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3 text-yellow-500')}
@@ -350,12 +350,12 @@ export default function LevelDropdown({ level }: LevelDropdownProps) {
                   Report
                 </div>
               )}
-            </Menu.Item>
+            </MenuItem>
             }
 
           </div>
 
-        </Menu.Items>
+        </MenuItems>
       </Transition>
     </Menu>
     {user &&

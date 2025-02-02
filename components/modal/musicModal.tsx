@@ -1,4 +1,4 @@
-import { Menu, Transition } from '@headlessui/react';
+import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react';
 import { AppContext } from '@root/contexts/appContext';
 import { MusicContext, songs } from '@root/contexts/musicContext';
 import classNames from 'classnames';
@@ -102,7 +102,7 @@ export default function MusicModal({ closeModal, isOpen }: MusicModalProps) {
           </a>
         }
         <Menu as='div' className='relative inline-block text-left z-30'>
-          <Menu.Button id='dropdownMenuBtn' aria-label='dropdown menu'>
+          <MenuButton id='dropdownMenuBtn' aria-label='dropdown menu'>
             <div className='flex items-center gap-2 hover-bg-3 px-3 py-1 rounded-md'>
               <div className={classNames(
                 'font-bold',
@@ -115,7 +115,7 @@ export default function MusicModal({ closeModal, isOpen }: MusicModalProps) {
                 <path strokeLinecap='round' strokeLinejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5' />
               </svg>
             </div>
-          </Menu.Button>
+          </MenuButton>
           <Transition
             as={Fragment}
             enter='transition ease-out duration-100'
@@ -125,13 +125,13 @@ export default function MusicModal({ closeModal, isOpen }: MusicModalProps) {
             leaveFrom='transform opacity-100 scale-100'
             leaveTo='transform opacity-0 scale-95'
           >
-            <Menu.Items className='absolute m-1 origin-top-right rounded-[10px] shadow-lg border overflow-y-auto overflow-x-hidden bg-1 border-color-3'>
+            <MenuItems className='absolute m-1 origin-top-right rounded-[10px] shadow-lg border overflow-y-auto overflow-x-hidden bg-1 border-color-3'>
               <div className='px-1 py-1'>
                 {songs.map((song, index) => {
                   const isSongPlaying = song.title === songMetadata?.title && isPlaying;
 
                   return (
-                    <Menu.Item key={`song-select-menu-${song.title}`}>
+                    <MenuItem key={`song-select-menu-${song.title}`}>
                       {() => (
                         <button
                           className={classNames(
@@ -145,11 +145,11 @@ export default function MusicModal({ closeModal, isOpen }: MusicModalProps) {
                           {song.title}
                         </button>
                       )}
-                    </Menu.Item>
+                    </MenuItem>
                   );
                 })}
               </div>
-            </Menu.Items>
+            </MenuItems>
           </Transition>
         </Menu>
         <div

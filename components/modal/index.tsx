@@ -1,4 +1,4 @@
-import { Dialog, Transition } from '@headlessui/react';
+import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
 import { AppContext } from '@root/contexts/appContext';
 import getFontFromGameId from '@root/helpers/getFont';
 import classNames from 'classnames';
@@ -57,7 +57,7 @@ export default function Modal({
         className='fixed inset-0 z-20 overflow-y-auto backdrop-blur-sm'
         onClose={closeModal}
       >
-        <Transition.Child
+        <TransitionChild
           as={Fragment}
           enter='ease-out duration-200'
           enterFrom='opacity-0'
@@ -67,9 +67,9 @@ export default function Modal({
           leaveTo='opacity-0'
         >
           <div className='fixed inset-0' />
-        </Transition.Child>
+        </TransitionChild>
         <div className='flex min-h-full px-4 text-center items-center justify-center'>
-          <Transition.Child
+          <TransitionChild
             as={Fragment}
             enter='ease-out duration-200'
             enterFrom='opacity-0 scale-95'
@@ -92,8 +92,8 @@ export default function Modal({
                 }
               }}
             >
-              <Dialog.Panel className={classNames('py-3 px-4 my-8 text-left align-middle transition-all transform shadow-xl rounded-xl flex flex-col gap-4 border bg-1 border-color-3 overflow-hidden', getFontFromGameId(game.id))}>
-                <Dialog.Title as='div' className='flex gap-4 text-center'>
+              <DialogPanel className={classNames('py-3 px-4 my-8 text-left align-middle transition-all transform shadow-xl rounded-xl flex flex-col gap-4 border bg-1 border-color-3 overflow-hidden', getFontFromGameId(game.id))}>
+                <DialogTitle as='div' className='flex gap-4 text-center'>
                   <span className='w-6' />
                   <span className='grow text-xl font-semibold truncate'>{title}</span>
                   <button className='hover:opacity-100 opacity-50 closeBtn' onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -104,7 +104,7 @@ export default function Modal({
                       <path strokeLinecap='round' strokeLinejoin='round' d='M6 18L18 6M6 6l12 12' />
                     </svg>
                   </button>
-                </Dialog.Title>
+                </DialogTitle>
                 <div className='px-2 py-1'>
                   {children}
                 </div>
@@ -129,9 +129,9 @@ export default function Modal({
                       }} text={closeLabel || 'Close'} />
                   }
                 </div>
-              </Dialog.Panel>
+              </DialogPanel>
             </form>
-          </Transition.Child>
+          </TransitionChild>
         </div>
       </Dialog>
     </Transition>
