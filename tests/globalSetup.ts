@@ -11,7 +11,12 @@ module.exports = async () => {
 
   for (let i = 0; i < num; i++) {
     mongoServerPool.push(await MongoMemoryReplSet.create({
-      replSet: { count: 1 },
+      binary: {
+        version: '6.0.14',
+      },
+      replSet: {
+        count: 1,
+      },
     }));
     mongoServerUris.push(mongoServerPool[i].getUri());
     process.env[`MONGODB_TEST_URI_${i}`] = mongoServerUris[i];
