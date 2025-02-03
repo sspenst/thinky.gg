@@ -8,6 +8,7 @@ import NotificationType from '@root/constants/notificationType';
 import Role from '@root/constants/role';
 import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
+import { getStreak } from '@root/lib/cleanUser';
 import EmailLog from '@root/models/db/emailLog';
 import { EnrichedLevel } from '@root/models/db/level';
 import { convert } from 'html-to-text';
@@ -331,7 +332,7 @@ export async function sendEmailDigests(batchId: Types.ObjectId, limit: number) {
     let dailySubject = 'Levels of the Day - ' + todaysDatePretty;
 
     // get max config.calcCurrentStreak for all configs
-    const maxStreak = user.configs?.reduce((max, config) => Math.max(max, config.calcCurrentStreak || 0), 0);
+    const maxStreak = user.configs?.reduce((max, config) => Math.max(max, getStreak(config)?.streak || 0), 0);
 
     if (maxStreak && maxStreak > 0) {
       const streakRank = STREAK_RANK_GROUPS[getStreakRankIndex(maxStreak)];
