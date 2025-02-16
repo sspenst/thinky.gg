@@ -10,7 +10,7 @@ import Stripe from 'stripe';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { UserModel } from '../../../models/mongoose';
 
-const STRIPE_SECRET = process.env.STRIPE_SECRET as string;
+const STRIPE_SECRET = (process.env.STRIPE_SECRET as string) ?? 'sk_test_...';
 
 export const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET as string;
 export const stripe = new Stripe(STRIPE_SECRET, { apiVersion: '2025-01-27.acacia' });

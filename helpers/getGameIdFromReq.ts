@@ -12,6 +12,8 @@ export function getGameIdFromReq(req?: NextApiRequest | IncomingMessage): GameId
     subdomain = 'sokoban';
   }
 
+  console.log('getGameIdFromReq', field, subdomain);
+
   const gameId = Games[subdomain as GameId]?.id || DEFAULT_GAME_ID;
 
   return gameId;
