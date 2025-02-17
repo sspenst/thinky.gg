@@ -32,8 +32,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     return redirectToLogin(context);
   }
 
-  console.log('drafts', reqUser, gameId, game);
-
   const levels = await LevelModel.find<Level>({
     isDeleted: { $ne: true },
     isDraft: true,
