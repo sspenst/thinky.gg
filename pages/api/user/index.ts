@@ -38,23 +38,14 @@ export default withAuth({
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   await dbConnect();
 
-  console.log('1. Entering /api/user endpoint');
-
   if (req.method === 'GET') {
-    console.log('2. Before user fetch');
-    console.log('2. req.gameId', req.gameId);
-    console.log('2. req.user', JSON.stringify(req.user));
     const [enrichedUser, multiplayerProfile, userConfig] = await Promise.all([
       enrichReqUser(req.gameId, req.user),
       MultiplayerProfileModel.findOne({ 'userId': req.user._id, gameId: req.gameId }).lean<MultiplayerProfile>(),
       getUserConfig(req.gameId, req.user),
     ]);
 
-    console.log('3. After user fetch');
-
     cleanUser(enrichedUser);
-
-    console.log('4. Before sending response');
 
     return res.status(200).json({ ...enrichedUser, ...{
       config: userConfig,
