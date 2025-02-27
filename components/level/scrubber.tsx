@@ -4,7 +4,7 @@ import { ScreenSize } from '@root/hooks/useDeviceCheck';
 import classNames from 'classnames';
 import { ChevronDown, Spline } from 'lucide-react';
 import Link from 'next/link';
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import Modal from '../modal';
 
 interface ScrubberProps {
@@ -23,6 +23,7 @@ export default function Scrubber({ gameState, onScrub, isPro }: ScrubberProps) {
   const { deviceInfo } = useContext(AppContext);
   // Calculate progress percentage
   const progress = totalMoves === 0 ? 0 : (currentMove / totalMoves) * 100;
+
   const calculateMoveFromPosition = useCallback((clientX: number) => {
     if (!scrubberRef.current) return;
 
@@ -111,6 +112,7 @@ export default function Scrubber({ gameState, onScrub, isPro }: ScrubberProps) {
       window.removeEventListener('touchend', handleDragEnd);
     };
   }, [isDragging, handleMouseMove, handleTouchMove, handleDragEnd]);
+
   const dotDisplayThresholdMap = {
     [ScreenSize.XS]: 30,
     [ScreenSize.SM]: 50,
@@ -120,7 +122,55 @@ export default function Scrubber({ gameState, onScrub, isPro }: ScrubberProps) {
   } as Record<ScreenSize, number>;
 
   const dotDisplayThreshold = dotDisplayThresholdMap[deviceInfo.screenSize] || 100;
-  const interval = Math.max(1, Math.floor(totalMoves / 100) * 10 + (totalMoves < 10 ? 1 : 10));
+
+  // Memoize the interval calculation
+  const interval = useMemo(() => {
+    return Math.max(1, Math.floor(totalMoves / 100) * 10 + (totalMoves < 10 ? 1 : 10));
+  }, [totalMoves]);
+
+  // Memoize the markers generation to prevent recalculation on every render
+  const markers = useMemo(() => {
+    // Don't render individual dots for large move counts - they're not visually useful and cause performance issues
+    if (totalMoves > dotDisplayThreshold) {
+      // For large move counts, only render major interval markers
+      const majorMarkers = [];
+
+      for (let i = 0; i <= totalMoves; i += interval) {
+        majorMarkers.push(
+          <div key={i} className='absolute top-1/2 -translate-y-1/2' style={{ left: `${(i / totalMoves) * 100}%` }}>
+            <div className='z-100 absolute text-xs text-white' style={{ transform: 'translate(-50%, -50%)' }}>
+              {i}
+            </div>
+          </div>
+        );
+      }
+
+      return majorMarkers;
+    } else {
+      // For smaller move counts, render both interval markers and dots
+      const allMarkers = [];
+
+      for (let i = 0; i <= totalMoves; i++) {
+        if (i % interval === 0) {
+          allMarkers.push(
+            <div key={i} className='absolute top-1/2 -translate-y-1/2' style={{ left: `${(i / totalMoves) * 100}%` }}>
+              <div className='z-100 absolute text-xs text-white' style={{ transform: 'translate(-50%, -50%)' }}>
+                {i}
+              </div>
+            </div>
+          );
+        } else {
+          allMarkers.push(
+            <div key={i} className='absolute top-1/2 -translate-y-1/2' style={{ left: `${(i / totalMoves) * 100}%` }}>
+              <div className='z-0 absolute w-2 h-2 bg-gray-800 rounded-full' style={{ transform: 'translate(-50%, -50%)' }} />
+            </div>
+          );
+        }
+      }
+
+      return allMarkers;
+    }
+  }, [totalMoves, interval, dotDisplayThreshold]);
 
   return (
     <>
@@ -180,17 +230,7 @@ export default function Scrubber({ gameState, onScrub, isPro }: ScrubberProps) {
                     )}
                   />
                 </div>
-                {Array.from({ length: totalMoves + 1 }).map((_, i) => (
-                  <div key={i} className='absolute top-1/2 -translate-y-1/2' style={{ left: `${(i / totalMoves) * 100}%` }}>
-                    {i % interval === 0 ? (
-                      <div className='z-100 absolute text-xs text-white' style={{ transform: 'translate(-50%, -50%)' }}>
-                        {i}
-                      </div>
-                    ) : (
-                      totalMoves < dotDisplayThreshold && <div className='z-0 absolute w-2 h-2 bg-gray-800 rounded-full' style={{ transform: 'translate(-50%, -50%)' }} />
-                    )}
-                  </div>
-                ))}
+                {markers}
               </div>
             </div>
           </div>
