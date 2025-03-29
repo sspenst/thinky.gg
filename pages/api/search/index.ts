@@ -415,12 +415,13 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
     let agg: Aggregate<any[]> | undefined = undefined;
 
     if (!byStat) {
-      // Create base pipeline stages
-      const baseDataPipeline = [
-        { $match: searchObj },
+      // Parse maxNumberPerAuthor if it exists
+      const maxNumberPerAuthor = query.maxNumberPerAuthor ? parseInt(query.maxNumberPerAuthor) : undefined;
+
+      // Prepare the facet pipeline with potential author limiting
+      const facetPipeline = [
         ...(lookupUserBeforeSort ? lookupUserStage : []),
         // NB: projection is typically supposed to be the last stage of the pipeline, but we need it here because of potential sorting by calc_playattempts_unique_users_count
-        // TODO: instead can have an optional $addFields here, then do the projection after
         { $project: { ...projection } },
         {
           $addFields: {
@@ -433,58 +434,42 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
         ...statLookupAndMatchStage,
       ];
 
-      // Add maxNumberPerAuthor limitation if provided
-      const maxPerAuthor = parseInt(query.maxNumberPerAuthor as string);
-      let dataPipeline = baseDataPipeline;
-
-      if (!isNaN(maxPerAuthor) && maxPerAuthor > 0) {
-        // More efficient approach using a separate aggregation for author limits
-        const authorLimits = await LevelModel.aggregate([
-          { $match: searchObj },
-          // Group by author
+      // Add author limiting steps if maxNumberPerAuthor is specified
+      if (maxNumberPerAuthor !== undefined && maxNumberPerAuthor > 0) {
+        facetPipeline.push(
+          // Group by userId and collect levels
           {
             $group: {
               _id: '$userId',
-              levelIds: { $push: '$_id' }
+              levels: { $push: '$$ROOT' },
+              count: { $sum: 1 }
             }
           },
-          // Keep only the first N levels per author
+          // Slice to keep only the top N levels per author
           {
             $project: {
-              levelIds: { $slice: ['$levelIds', maxPerAuthor] }
+              levels: { $slice: ['$levels', maxNumberPerAuthor] }
             }
           },
-          // Unwind to get individual level IDs
-          { $unwind: '$levelIds' },
-          // Group all IDs into a single array
-          {
-            $group: {
-              _id: null,
-              allowedIds: { $push: '$levelIds' }
-            }
-          }
-        ]);
-
-        // If we got results from the author limit query
-        if (authorLimits.length > 0 && authorLimits[0].allowedIds.length > 0) {
-          // Add a filter to only include these IDs
-          searchObj._id = { $in: authorLimits[0].allowedIds };
-        }
+          // Unwind to flatten back to individual documents
+          { $unwind: '$levels' },
+          // Replace the root with the original document
+          { $replaceRoot: { newRoot: '$levels' } },
+          // Re-sort to maintain original sort order
+          { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) }
+        );
       }
 
-      // Now continue with the regular pipeline, which will include the author limit in searchObj
-      dataPipeline = baseDataPipeline;
-
-      // Add pagination and other stages
-      const finalDataPipeline = [
-        ...dataPipeline,
+      // Add pagination after author limiting
+      facetPipeline.push(
         { $skip: skip },
         { $limit: limit },
         ...(lookupUserBeforeSort ? [] : lookupUserStage),
-        ...getEnrichLevelsPipelineSteps(new Types.ObjectId(userId) as unknown as User) as PipelineStage.Lookup[],
-      ];
+        ...getEnrichLevelsPipelineSteps(new Types.ObjectId(userId) as unknown as User) as PipelineStage.Lookup[]
+      );
 
       agg = LevelModel.aggregate([
+        { $match: searchObj },
         {
           '$facet': {
             ...(query.disableCount === 'true' ? {} : {
@@ -494,7 +479,7 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
                 { $count: 'totalRows' },
               ]
             }),
-            data: finalDataPipeline,
+            data: facetPipeline,
           },
         },
       ]);

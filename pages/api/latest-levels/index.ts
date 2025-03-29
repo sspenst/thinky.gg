@@ -26,46 +26,17 @@ export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiR
 
 export async function getLatestLevels(gameId: GameId, reqUser: User | null = null) {
   await dbConnect();
-
-  // First get all recent levels
   const query = await doQuery(gameId, {
     disableCount: 'true',
     minRating: '0.5',
     maxRating: '1.0',
-    numResults: '50', // Get more results to handle author limiting
+    numResults: '15',
     sortBy: 'ts',
     sortDir: 'desc',
     statFilter: StatFilter.HideSolved,
     timeRange: TimeRange[TimeRange.All],
+    maxNumberPerAuthor: '3',
   }, reqUser);
 
-  const levels = query?.levels || [];
-
-  // Apply author limit manually as a post-processing step
-  if (levels.length > 0) {
-    const authorCounts = new Map<string, number>();
-    const maxPerAuthor = 3;
-    const limitedLevels = [];
-
-    // Process levels in their current sorted order
-    for (const level of levels) {
-      const authorId = level.userId._id.toString();
-      const currentCount = authorCounts.get(authorId) || 0;
-
-      // Only include levels if author is under limit
-      if (currentCount < maxPerAuthor) {
-        limitedLevels.push(level);
-        authorCounts.set(authorId, currentCount + 1);
-      }
-
-      // Stop once we have 15 levels
-      if (limitedLevels.length >= 15) {
-        break;
-      }
-    }
-
-    return limitedLevels;
-  }
-
-  return levels.slice(0, 15); // Fallback to just returning first 15
+  return query?.levels;
 }
