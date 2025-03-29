@@ -125,43 +125,47 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
           Solved!
         </div>
       }
+
     >
       <div
-        className='flex flex-col gap-4 justify-center items-center fadeIn'
+        className='flex flex-col gap-6 justify-center items-center fadeIn'
         style={{
           animationDelay: '0.6s',
         }}
       >
         {!reqUser ?
-          <div className='text-center'>
+          <div className='text-center text-lg'>
             <Link href='/signup' className='underline font-bold'>Sign up</Link> (or use a <Link href='/play-as-guest' className='underline font-bold'>Guest Account</Link>) to save your progress and get access to more features.
           </div>
           :
           <>
             {lastLevelInCollection && collection &&
-              <div className='text-center'>
-                {level.name} is the last level in the collection <Link className='font-bold hover:underline' href={`/collection/${collection.slug}`}>{collection.name}</Link>.
+              <div className='text-center text-lg py-2 px-4 bg-opacity-20 bg-blue-500 rounded-lg'>
+                <span className='font-bold'>{level.name}</span> is the last level in the collection <Link className='font-bold hover:underline text-blue-300' href={`/collection/${collection.slug}`}>{collection.name}</Link>.
               </div>
             }
-            {nextActionCard()}
-            {isGuest(reqUser) ?
-              <div className='text-center text-sm'>
-                <div className='flex flex-col gap-2'>
-                  <span className='text-2xl italic font-semibold'>By the way...</span><span className='text-lg'>You are playing as a <span className='font-bold italic'>guest</span> and missing out on a ton of features. <Link href='/settings' className='hover:underline font-bold text-blue-300'>Convert to a regular account</Link> (it&apos;s free and only takes a few seconds!)</span>
+            {!isGuest(reqUser) &&
+              <div className='w-full'>
+                <div className='text-xl font-semibold mb-2'>Share your thoughts on this level</div>
+                <div className='bg-opacity-10 bg-blue-500 p-4 rounded-lg'>
+                  <FormattedLevelReviews hideReviews={true} inModal={true} />
                 </div>
               </div>
-              :
-              <details>
-                <summary onClick={(e: React.MouseEvent) => {
-                  // make this element invisible
-                  (e.target as HTMLElement).style.display = 'none';
-                }} className='text-xs cursor-pointer italic py-1 hover:text-blue-300'>Share your thoughts on this level</summary>
-                <FormattedLevelReviews hideReviews={true} inModal={true} />
-              </details>
+            }
+            <div className='w-full max-w-2xl'>
+              {nextActionCard()}
+            </div>
+            {isGuest(reqUser) &&
+              <div className='text-center p-4 bg-opacity-10 bg-blue-500 rounded-lg'>
+                <div className='flex flex-col gap-2'>
+                  <span className='text-2xl italic font-semibold'>By the way...</span>
+                  <span className='text-lg'>You are playing as a <span className='font-bold italic'>guest</span> and missing out on a ton of features. <Link href='/settings' className='hover:underline font-bold text-blue-300'>Convert to a regular account</Link> (it&apos;s free and only takes a few seconds!)</span>
+                </div>
+              </div>
             }
           </>
         }
-        <div className='flex gap-2'>
+        <div className='flex gap-2 '>
           <input
             id='dont-show-post-game-modal'
             type='checkbox'
@@ -179,7 +183,7 @@ export default function PostGameModal({ chapter, closeModal, collection, dontSho
               }
             }}
           />
-          <label className='text-xs' htmlFor='dont-show-post-game-modal'>Mute this popup for 24h</label>
+          <label className='text-sm' htmlFor='dont-show-post-game-modal'>Mute this popup for 24h</label>
         </div>
       </div>
     </Modal>

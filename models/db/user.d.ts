@@ -12,6 +12,8 @@ interface User {
   bio?: string;
   calc_currentStreak?: number;
   disableConfetti?: boolean;
+  disableAfterLevelPopup?: boolean,
+  disableStreakPopup?: boolean,
   disallowedEmailNotifications?: NotificationType[];
   disallowedPushNotifications?: NotificationType[];
   email: string;
