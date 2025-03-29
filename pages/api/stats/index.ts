@@ -334,8 +334,13 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
         ], { session: session });
 
         incPlayattemptsDurationSum += sumDuration[0]?.sumDuration ?? 0;
+        const noPreview = prevRecord?.ts && (ts - prevRecord.ts < 3 * 60 * 60);
+        const linkText = noPreview
+          ? `<${game.baseUrl}/level/${level.slug}?ts=${ts}>`
+          : `[${level.name}](${game.baseUrl}/level/${level.slug}?ts=${ts})`;
 
-        // reset all playattempts to unsolved
+        // Build your message
+        const messageContent = `**${user.name}** set a new record: ${linkText} - ${moves} moves`;
         const discordChannel = game.id === GameId.SOKOPATH ? DiscordChannel.SokopathLevels : DiscordChannel.PathologyLevels;
 
         await Promise.all([
@@ -344,7 +349,8 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
             { $set: { attemptContext: AttemptContext.UNSOLVED } },
             { session: session },
           ),
-          queueDiscordWebhook(discordChannel, `**${user.name}** set a new record: [${level.name}](${game.baseUrl}/level/${level.slug}?ts=${ts}) - ${moves} moves`, { session: session }),
+          // Call your webhook with the final message
+          queueDiscordWebhook(discordChannel, messageContent, { session: session }),
         ]);
       }
 

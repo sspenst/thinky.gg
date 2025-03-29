@@ -415,6 +415,59 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
     let agg: Aggregate<any[]> | undefined = undefined;
 
     if (!byStat) {
+      // Parse maxNumberPerAuthor if it exists
+      const maxNumberPerAuthor = query.maxNumberPerAuthor ? parseInt(query.maxNumberPerAuthor) : undefined;
+
+      // Prepare the facet pipeline with potential author limiting
+      const facetPipeline = [
+        ...(lookupUserBeforeSort ? lookupUserStage : []),
+        // NB: projection is typically supposed to be the last stage of the pipeline, but we need it here because of potential sorting by calc_playattempts_unique_users_count
+        { $project: { ...projection } },
+        {
+          $addFields: {
+            collectionOrder: {
+              $indexOfArray: [query.includeLevelIds?.split(','), { $toString: '$_id' }],
+            }
+          }
+        },
+        { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
+        ...statLookupAndMatchStage,
+      ];
+
+      // Add author limiting steps if maxNumberPerAuthor is specified
+      if (maxNumberPerAuthor !== undefined && maxNumberPerAuthor > 0) {
+        facetPipeline.push(
+          // Group by userId and collect levels
+          {
+            $group: {
+              _id: '$userId',
+              levels: { $push: '$$ROOT' },
+              count: { $sum: 1 }
+            }
+          },
+          // Slice to keep only the top N levels per author
+          {
+            $project: {
+              levels: { $slice: ['$levels', maxNumberPerAuthor] }
+            }
+          },
+          // Unwind to flatten back to individual documents
+          { $unwind: '$levels' },
+          // Replace the root with the original document
+          { $replaceRoot: { newRoot: '$levels' } },
+          // Re-sort to maintain original sort order
+          { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) }
+        );
+      }
+
+      // Add pagination after author limiting
+      facetPipeline.push(
+        { $skip: skip },
+        { $limit: limit },
+        ...(lookupUserBeforeSort ? [] : lookupUserStage),
+        ...getEnrichLevelsPipelineSteps(new Types.ObjectId(userId) as unknown as User) as PipelineStage.Lookup[]
+      );
+
       agg = LevelModel.aggregate([
         { $match: searchObj },
         {
@@ -426,28 +479,7 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
                 { $count: 'totalRows' },
               ]
             }),
-            data: [
-              ...(lookupUserBeforeSort ? lookupUserStage : []),
-              // NB: projection is typically supposed to be the last stage of the pipeline, but we need it here because of potential sorting by calc_playattempts_unique_users_count
-              // TODO: instead can have an optional $addFields here, then do the projection after
-              { $project: { ...projection } },
-              {
-                $addFields: {
-                  collectionOrder: {
-                    $indexOfArray: [query.includeLevelIds?.split(','), { $toString: '$_id' }],
-                  }
-                }
-              },
-              { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
-              ...statLookupAndMatchStage,
-              { $skip: skip },
-              { $limit: limit },
-              ...(lookupUserBeforeSort ? [] : lookupUserStage),
-              // note this last getEnrichLevelsPipeline is "technically a bit wasteful" if they select Hide Solved or In Progress
-              // Because technically the above statLookupAndMatchStage will have this data already...
-              // But since the results are limited by limit, this is constant time and not a big deal to do the lookup again...
-              ...getEnrichLevelsPipelineSteps(new Types.ObjectId(userId) as unknown as User) as PipelineStage.Lookup[],
-            ],
+            data: facetPipeline,
           },
         },
       ]);
