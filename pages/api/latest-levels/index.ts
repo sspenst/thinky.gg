@@ -35,6 +35,7 @@ export async function getLatestLevels(gameId: GameId, reqUser: User | null = nul
     sortDir: 'desc',
     statFilter: StatFilter.HideSolved,
     timeRange: TimeRange[TimeRange.All],
+    maxNumberPerAuthor: '3',
   }, reqUser);
 
   return query?.levels;

@@ -81,6 +81,8 @@ describe('Testing latest levels api', () => {
   test('Should always be limited to 15 levels and should only return non-drafts', async () => {
     const promises = [];
 
+    const usersToCycleThrough = [TestId.USER, TestId.USER_B, TestId.USER_C, TestId.USER_D, TestId.USER_PRO];
+
     for (let i = 0; i < 30; i++) {
       promises.push(LevelModel.create({
         _id: new Types.ObjectId(),
@@ -94,7 +96,7 @@ describe('Testing latest levels api', () => {
         name: 'level ' + i,
         slug: 'test/level-' + i,
         ts: TimerUtil.getTs() + i,
-        userId: TestId.USER,
+        userId: usersToCycleThrough[i % usersToCycleThrough.length],
         width: 5,
       }));
     }
