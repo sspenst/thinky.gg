@@ -27,6 +27,17 @@ const UserSchema = new mongoose.Schema<User>({
     required: false,
     default: false,
   },
+  // @TODO Okay, probably should have put all these in some type of customSettings KV but i'm too lazy at this point to refactor and backfill
+  disableAfterLevelPopup: {
+    type: Boolean,
+    required: false,
+    default: false,
+  },
+  disableStreakPopup: {
+    type: Boolean,
+    required: false,
+    default: false
+  },
   disallowedEmailNotifications: {
     type: [{ type: String, enum: NotificationType }],
     required: true,

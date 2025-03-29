@@ -220,6 +220,10 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
     socketConn.on('alert', (message) => {
       switch (message.type) {
       case AlertType.STREAK: {
+        if (user.disableStreakPopup) {
+          return;
+        }
+
         const { streak, gameId } = message.data;
 
         toast.success(

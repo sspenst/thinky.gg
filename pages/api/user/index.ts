@@ -62,6 +62,8 @@ export default withAuth({
       bio,
       currentPassword,
       disableConfetti,
+      disableAfterLevelPopup,
+      disableStreakPopup,
       email,
       hideStatus,
       name,
@@ -87,6 +89,15 @@ export default withAuth({
 
     if (disableConfetti !== undefined) {
       setObj['disableConfetti'] = disableConfetti;
+    }
+
+    if (disableAfterLevelPopup !== undefined) {
+      setObj['disableAfterLevelPopup'] = disableAfterLevelPopup;
+    }
+
+    if (disableStreakPopup !== undefined) {
+      // shouldn't have to parse as boolean since mongoose should be doin that for us... i think
+      setObj['disableStreakPopup'] = disableStreakPopup;
     }
 
     if (hideStatus !== undefined) {

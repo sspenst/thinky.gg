@@ -65,13 +65,13 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
       return;
     }
 
-    if (storedPref === 'true') {
+    if (storedPref === 'true' || user?.disableAfterLevelPopup) {
       setDontShowPostGameModal(true);
     }
 
     setMutePostGameModalForThisLevel(false);
     setShowCollectionViewModal(false);
-  }, [level._id]);
+  }, [level._id, user?.disableAfterLevelPopup]);
 
   function scrollModalToCollectionLevel() {
     setTimeout(() => {

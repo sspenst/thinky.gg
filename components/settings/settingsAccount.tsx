@@ -14,6 +14,8 @@ export default function SettingsAccount({ user }: SettingsAccountProps) {
   const [password, setPassword] = useState<string>('');
   const [password2, setPassword2] = useState<string>('');
   const [showConfetti, setShowConfetti] = useState(!user.disableConfetti);
+  const [hideAfterLevelPopup, setHideAfterLevelPopup] = useState(user.disableAfterLevelPopup);
+  const [hideStreakPopup, setHideStreakPopup] = useState(user.disableStreakPopup);
   const [showStatus, setShowStatus] = useState(!user.hideStatus);
   const [username, setUsername] = useState<string>(user.name);
 
@@ -22,7 +24,7 @@ export default function SettingsAccount({ user }: SettingsAccountProps) {
     property: string,
   ) {
     toast.dismiss();
-    toast.loading(`Updating ${property}...`);
+    const toastId = toast.loading(`Updating ${property}...`);
 
     fetch('/api/user', {
       method: 'PUT',
@@ -35,15 +37,13 @@ export default function SettingsAccount({ user }: SettingsAccountProps) {
       if (res.status !== 200) {
         throw res.text();
       } else {
-        toast.dismiss();
-        toast.success(`Updated ${property}`);
+        toast.success(`Updated ${property}`, { id: toastId });
         mutateUser();
         multiplayerSocket.socket?.emit('refresh');
       }
     }).catch(async err => {
       console.error(err);
-      toast.dismiss();
-      toast.error(JSON.parse(await err)?.error || `Error updating ${property}`);
+      toast.error(JSON.parse(await err)?.error || `Error updating ${property}`, { id: toastId });
     });
   }
 
@@ -190,6 +190,46 @@ export default function SettingsAccount({ user }: SettingsAccountProps) {
             />
             <label className='text-sm' htmlFor='showConfetti'>
               Confetti
+            </label>
+          </div>
+          <div className='flex gap-2'>
+            <input
+              checked={hideAfterLevelPopup}
+              id='hideAfterLevelPopup'
+              name='hideAfterLevelPopup'
+              onChange={e => {
+                setHideAfterLevelPopup(e.target.checked);
+                updateUser(
+                  JSON.stringify({
+                    disableAfterLevelPopup: e.target.checked
+                  }),
+                  'after level popup settings'
+                );
+              }}
+              type='checkbox'
+            />
+            <label className='text-sm' htmlFor='hideAfterLevelPopup'>
+              Hide after level popup
+            </label>
+          </div>
+          <div className='flex gap-2'>
+            <input
+              checked={hideStreakPopup}
+              id='hideStreakPopup'
+              name='hideStreakPopup'
+              onChange={e => {
+                setHideStreakPopup(e.target.checked);
+                updateUser(
+                  JSON.stringify({
+                    disableStreakPopup: e.target.checked
+                  }),
+                  'streak popup settings'
+                );
+              }}
+              type='checkbox'
+            />
+            <label className='text-sm' htmlFor='hideStreakPopup'>
+              Hide streak popup
             </label>
           </div>
         </div>
