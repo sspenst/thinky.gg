@@ -334,9 +334,10 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
         ], { session: session });
 
         incPlayattemptsDurationSum += sumDuration[0]?.sumDuration ?? 0;
+
         const noPreview = prevRecord?.ts && (ts - prevRecord.ts < 3 * 60 * 60);
         const linkText = noPreview
-          ? `<${game.baseUrl}/level/${level.slug}?ts=${ts}>`
+          ? `[${level.name}](<${game.baseUrl}/level/${level.slug}?ts=${ts}>)`
           : `[${level.name}](${game.baseUrl}/level/${level.slug}?ts=${ts})`;
 
         // Build your message
