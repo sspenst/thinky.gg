@@ -415,8 +415,76 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
     let agg: Aggregate<any[]> | undefined = undefined;
 
     if (!byStat) {
-      agg = LevelModel.aggregate([
+      // Create base pipeline stages
+      const baseDataPipeline = [
         { $match: searchObj },
+        ...(lookupUserBeforeSort ? lookupUserStage : []),
+        // NB: projection is typically supposed to be the last stage of the pipeline, but we need it here because of potential sorting by calc_playattempts_unique_users_count
+        // TODO: instead can have an optional $addFields here, then do the projection after
+        { $project: { ...projection } },
+        {
+          $addFields: {
+            collectionOrder: {
+              $indexOfArray: [query.includeLevelIds?.split(','), { $toString: '$_id' }],
+            }
+          }
+        },
+        { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
+        ...statLookupAndMatchStage,
+      ];
+
+      // Add maxNumberPerAuthor limitation if provided
+      const maxPerAuthor = parseInt(query.maxNumberPerAuthor as string);
+      let dataPipeline = baseDataPipeline;
+
+      if (!isNaN(maxPerAuthor) && maxPerAuthor > 0) {
+        // More efficient approach using a separate aggregation for author limits
+        const authorLimits = await LevelModel.aggregate([
+          { $match: searchObj },
+          // Group by author
+          {
+            $group: {
+              _id: '$userId',
+              levelIds: { $push: '$_id' }
+            }
+          },
+          // Keep only the first N levels per author
+          {
+            $project: {
+              levelIds: { $slice: ['$levelIds', maxPerAuthor] }
+            }
+          },
+          // Unwind to get individual level IDs
+          { $unwind: '$levelIds' },
+          // Group all IDs into a single array
+          {
+            $group: {
+              _id: null,
+              allowedIds: { $push: '$levelIds' }
+            }
+          }
+        ]);
+
+        // If we got results from the author limit query
+        if (authorLimits.length > 0 && authorLimits[0].allowedIds.length > 0) {
+          // Add a filter to only include these IDs
+          searchObj._id = { $in: authorLimits[0].allowedIds };
+        }
+      }
+
+      // Now continue with the regular pipeline, which will include the author limit in searchObj
+      dataPipeline = baseDataPipeline;
+
+      // Add pagination and other stages
+      const finalDataPipeline = [
+        ...dataPipeline,
+        { $skip: skip },
+        { $limit: limit },
+        ...(lookupUserBeforeSort ? [] : lookupUserStage),
+        ...getEnrichLevelsPipelineSteps(new Types.ObjectId(userId) as unknown as User) as PipelineStage.Lookup[],
+      ];
+
+      agg = LevelModel.aggregate([
         {
           '$facet': {
             ...(query.disableCount === 'true' ? {} : {
@@ -426,28 +494,7 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
                 { $count: 'totalRows' },
               ]
             }),
-            data: [
-              ...(lookupUserBeforeSort ? lookupUserStage : []),
-              // NB: projection is typically supposed to be the last stage of the pipeline, but we need it here because of potential sorting by calc_playattempts_unique_users_count
-              // TODO: instead can have an optional $addFields here, then do the projection after
-              { $project: { ...projection } },
-              {
-                $addFields: {
-                  collectionOrder: {
-                    $indexOfArray: [query.includeLevelIds?.split(','), { $toString: '$_id' }],
-                  }
-                }
-              },
-              { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
-              ...statLookupAndMatchStage,
-              { $skip: skip },
-              { $limit: limit },
-              ...(lookupUserBeforeSort ? [] : lookupUserStage),
-              // note this last getEnrichLevelsPipeline is "technically a bit wasteful" if they select Hide Solved or In Progress
-              // Because technically the above statLookupAndMatchStage will have this data already...
-              // But since the results are limited by limit, this is constant time and not a big deal to do the lookup again...
-              ...getEnrichLevelsPipelineSteps(new Types.ObjectId(userId) as unknown as User) as PipelineStage.Lookup[],
-            ],
+            data: finalDataPipeline,
           },
         },
       ]);

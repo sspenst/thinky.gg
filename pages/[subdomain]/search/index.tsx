@@ -54,6 +54,7 @@ export interface SearchQuery extends ParsedUrlQuery {
   maxDifficulty?: string;
   maxDimension1?: string;
   maxDimension2?: string;
+  maxNumberPerAuthor?: string;
   maxRating?: string;
   maxSteps?: string;
   minDifficulty?: string;
