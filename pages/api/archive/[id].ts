@@ -57,7 +57,7 @@ export default withAuth({ POST: {
       await Promise.all([
         queueCalcCreatorCounts(level.gameId, new Types.ObjectId(TestId.ARCHIVE), { session: session }),
         queueCalcCreatorCounts(level.gameId, level.userId, { session: session }),
-        queueDiscordWebhook(discordChannel, `**${req.user.name}** archived a level: [${level.name}](${req.headers.origin}/level/${slug}?ts=${ts})`, { session: session }),
+        queueDiscordWebhook(discordChannel, `**${req.user.name}** archived a level: [${level.name}](<${req.headers.origin}/level/${slug}?ts=${ts}>)`, { session: session }),
       ]);
     });
 
