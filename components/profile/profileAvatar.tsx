@@ -1,3 +1,5 @@
+import { GameId } from '@root/constants/GameId';
+import useUrl from '@root/hooks/useUrl';
 import classNames from 'classnames';
 import React, { useContext } from 'react';
 import Dimensions from '../../constants/dimensions';
@@ -12,16 +14,17 @@ interface ProfileAvatarProps {
 }
 
 export default function ProfileAvatar({ hideStatusCircle, size = Dimensions.AvatarSize, user }: ProfileAvatarProps) {
+  const borderWidth = Math.round(size / 40) || 1;
+  const getUrl = useUrl();
   const { multiplayerSocket } = useContext(AppContext);
   const connectedUser = multiplayerSocket.connectedPlayers.find(u => u._id === user._id);
-  const borderWidth = Math.round(size / 40) || 1;
 
   return (
     <div className='flex items-end'>
       <span
         className='border'
         style={{
-          backgroundImage: user.avatarUpdatedAt ? `url("/api/avatar/${user._id}.png?ts=${user.avatarUpdatedAt}")` : 'url("/avatar_default.png")',
+          backgroundImage: `url(${getUrl(GameId.THINKY, user.avatarUpdatedAt ? `/api/avatar/${user._id}.png?ts=${user.avatarUpdatedAt}` : '/avatar_default.png')})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           borderColor: 'var(--bg-color-3)',
