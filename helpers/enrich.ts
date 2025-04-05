@@ -1,14 +1,15 @@
 import { GameId } from '@root/constants/GameId';
 import cleanUser from '@root/lib/cleanUser';
 import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
-import Notification from '@root/models/db/notification';
 import { PipelineStage, Types } from 'mongoose';
 import Campaign, { EnrichedCampaign } from '../models/db/campaign';
 import Collection, { EnrichedCollection } from '../models/db/collection';
 import Level, { EnrichedLevel } from '../models/db/level';
+import Notification from '../models/db/notification';
 import Stat from '../models/db/stat';
 import User, { ReqUser } from '../models/db/user';
 import { AchievementModel, CollectionModel, LevelModel, NotificationModel, StatModel, UserConfigModel, UserModel } from '../models/mongoose';
+import { getBlockedUserIds } from './getBlockedUserIds';
 
 export async function enrichCampaign(campaign: Campaign, reqUser: User | null) {
   const enrichedCampaign = JSON.parse(JSON.stringify(campaign)) as EnrichedCampaign;
@@ -55,13 +56,39 @@ export async function enrichCollection(collection: Collection, reqUser: User | n
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function getEnrichedNotifications(reqUser: User, filters?: any, limit = 5, skip = 0) {
-  const notifications = await NotificationModel.aggregate<Notification>([
-    { $match: { userId: reqUser._id, ...filters } }, // not adding gameId on purpose so we can get all notifications for all games
+  // Start the blocked user IDs query right away to run in parallel
+  const blockedUserIdsPromise = getBlockedUserIds(reqUser._id);
+
+  // Prepare the base match stage
+  const baseMatch: Record<string, any> = {
+    userId: reqUser._id,
+    ...(filters || {})
+  };
+
+  // Get blocked user IDs while preparing the pipeline
+  const blockedUserIds = await blockedUserIdsPromise;
+
+  // If there are blocked users, modify the match criteria
+  if (blockedUserIds.length > 0) {
+    baseMatch.$or = [
+      // Filter out notifications where source is a blocked user
+      { source: { $nin: blockedUserIds.map(id => new Types.ObjectId(id.toString())) } },
+      // Allow notifications that don't have a source
+      { source: { $exists: false } }
+    ];
+  }
+
+  // Build the full pipeline with proper typing
+  const pipeline: PipelineStage[] = [
+    { $match: baseMatch },
     { $sort: { createdAt: -1 } },
     { $skip: skip },
     { $limit: limit },
     ...getEnrichNotificationPipelineStages(reqUser._id)
-  ]);
+  ];
+
+  // Execute the aggregation pipeline
+  const notifications = await NotificationModel.aggregate<Notification>(pipeline);
 
   notifications.forEach(notification => {
     if (notification.sourceModel === 'User' && notification.source) {
