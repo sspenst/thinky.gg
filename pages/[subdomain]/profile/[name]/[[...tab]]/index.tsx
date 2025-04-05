@@ -183,6 +183,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     profileTab: profileTab,
     reqUser: reqUser ? JSON.parse(JSON.stringify(reqUser)) : null,
     reqUserIsFollowing: false,
+    reqUserHasBlocked: false,
     reviewsReceived: JSON.parse(JSON.stringify(reviewsReceived)),
     reviewsReceivedCount: reviewsReceivedCount,
     reviewsWritten: JSON.parse(JSON.stringify(reviewsWritten)),
@@ -267,6 +268,21 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
     profilePageProps.reqUserIsFollowing = followData.isFollowing ?? false;
 
+    // Check if the current user has blocked this profile user
+    if (reqUser) {
+      const isBlocked = await GraphModel.countDocuments({
+        source: reqUser._id,
+        sourceModel: 'User',
+        target: user._id,
+        targetModel: 'User',
+        type: GraphType.BLOCK,
+      });
+
+      profilePageProps.reqUserHasBlocked = isBlocked > 0;
+    } else {
+      profilePageProps.reqUserHasBlocked = false;
+    }
+
     const followers = followerAgg.map((f) => {
       cleanUser(f.source as User);
 
@@ -340,6 +356,7 @@ interface ProfilePageProps {
   profileTab: ProfileTab;
   reqUser: User | null;
   reqUserIsFollowing: boolean;
+  reqUserHasBlocked: boolean;
   reviewsReceived?: Review[];
   reviewsReceivedCount: number;
   reviewsWritten?: Review[];
@@ -365,6 +382,7 @@ export default function ProfilePage({
   profileTab,
   reqUser,
   reqUserIsFollowing,
+  reqUserHasBlocked,
   reviewsReceived,
   reviewsReceivedCount,
   reviewsWritten,
@@ -470,6 +488,28 @@ export default function ProfilePage({
   const levelsSolvedByDifficulty = profileDataFetched?.levelsSolvedByDifficulty;
   const difficultyType = game.type === GameType.COMPLETE_AND_SHORTEST ? 'Completed' : 'Solved';
   const streakRank = STREAK_RANK_GROUPS[getStreakRankIndex(user.config?.calcCurrentStreak ?? 0)];
+
+  // Block/unblock user function
+  const toggleBlockUser = async () => {
+    const method = reqUserHasBlocked ? 'DELETE' : 'PUT';
+
+    try {
+      const response = await fetch(`/api/follow?action=${GraphType.BLOCK}&id=${user._id}&targetModel=User`, {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        // Refresh the page to update the UI
+        router.reload();
+      }
+    } catch (error) {
+      console.error('Error toggling block status:', error);
+    }
+  };
+
   // create an array of objects with the id, trigger element (eg. button), and the content element
   const tabsContent = {
     [ProfileTab.Profile]:
@@ -487,11 +527,21 @@ export default function ProfilePage({
               {levelsSolvedByDifficulty ? <PlayerRank levelsSolvedByDifficulty={levelsSolvedByDifficulty} tooltip='Highest unlocked skill achievement' user={user} /> : <LoadingSpinner size={24} />}
             </div>}
             <div className='flex gap-4 flex-wrap justify-center py-1'>
-              <FollowButton
-                isFollowing={reqUserIsFollowing}
-                key={user._id.toString()}
-                user={user}
-              />
+              {reqUser && reqUser._id.toString() !== user._id.toString() && (
+                <>
+                  <FollowButton
+                    isFollowing={reqUserIsFollowing}
+                    key={user._id.toString()}
+                    user={user}
+                  />
+                  <button
+                    className={classNames('px-3 py-1 rounded-md', reqUserHasBlocked ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600')}
+                    onClick={toggleBlockUser}
+                  >
+                    {reqUserHasBlocked ? 'Unblock' : 'Block'}
+                  </button>
+                </>
+              )}
               <button
                 onClick={() => {
                   if (followers.length !== 0) {
@@ -511,54 +561,70 @@ export default function ProfilePage({
                 <span className='font-bold'>{following.length}</span> following
               </button>
             </div>
-            {user.bio && <p className='italic text-sm break-words max-w-full'>{user.bio}</p>}
+            {user.bio && !reqUserHasBlocked && <p className='italic text-sm break-words max-w-full'>{user.bio}</p>}
           </div>
         </div>
-        <div className='flex flex-wrap justify-center text-left gap-x-20 gap-y-12'>
-          <div className='flex flex-col gap-6 max-w-sm w-fit'>
-            <div>
-              {!game.isNotAGame && !game.disableRanked && <div><span className='font-bold'>Ranked Solves:</span> {user.config?.calcRankedSolves ?? 0} 🏅</div>}
-              {!game.isNotAGame && (user.config?.calcCurrentStreak || 0) > 0 && (
+        
+        {reqUserHasBlocked ? (
+          <div className='text-center p-4 bg-red-100 dark:bg-red-900 rounded-lg'>
+            <p className='font-bold mb-2'>You have blocked this user</p>
+            <p className='mb-4'>Their profile content is hidden.</p>
+            <button
+              className='px-3 py-1 rounded-md bg-green-500 hover:bg-green-600'
+              onClick={toggleBlockUser}
+            >
+              Unblock User
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className='flex flex-wrap justify-center text-left gap-x-20 gap-y-12'>
+              <div className='flex flex-col gap-6 max-w-sm w-fit'>
                 <div>
-                  <span className='font-bold'>Current Streak:</span> {user.config?.calcCurrentStreak ?? 0} - <span data-tooltip-content={streakRank.title} data-tooltip-id='streak-tooltip'>{streakRank.emoji}</span>
-                  <StyledTooltip id='streak-tooltip' />
+                  {!game.isNotAGame && !game.disableRanked && <div><span className='font-bold'>Ranked Solves:</span> {user.config?.calcRankedSolves ?? 0} 🏅</div>}
+                  {!game.isNotAGame && (user.config?.calcCurrentStreak || 0) > 0 && (
+                    <div>
+                      <span className='font-bold'>Current Streak:</span> {user.config?.calcCurrentStreak ?? 0} - <span data-tooltip-content={streakRank.title} data-tooltip-id='streak-tooltip'>{streakRank.emoji}</span>
+                      <StyledTooltip id='streak-tooltip' />
+                    </div>
+                  )}
+                  {!game.isNotAGame && <div><span className='font-bold'>Levels Solved:</span> {user.config?.calcLevelsSolvedCount ?? 0}</div>}
+                  {!game.isNotAGame && <div><span className='font-bold'>Levels Completed:</span> {user.config?.calcLevelsCompletedCount ?? 0}</div>}
+                  {user.hideStatus || !user.ts ? null : isOnline(user) ?
+                    <div className='flex flex-wrap gap-1 items-center'>
+                      <span className='font-bold'>Currently Playing:</span>
+                      <GameLogoAndLabel gameId={user.lastGame ?? GameId.THINKY} id={'profile'} size={20} />
+                    </div>
+                    :
+                    <div><span className='font-bold'>Last Seen:</span> <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.last_visited_at ? user.last_visited_at : user.ts} /></div>
+                  }
+                  <div><span className='font-bold'>Registered:</span> {user.ts ? <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.ts} /> : 'Not registered'}</div>
                 </div>
-              )}
-              {!game.isNotAGame && <div><span className='font-bold'>Levels Solved:</span> {user.config?.calcLevelsSolvedCount ?? 0}</div>}
-              {!game.isNotAGame && <div><span className='font-bold'>Levels Completed:</span> {user.config?.calcLevelsCompletedCount ?? 0}</div>}
-              {user.hideStatus || !user.ts ? null : isOnline(user) ?
-                <div className='flex flex-wrap gap-1 items-center'>
-                  <span className='font-bold'>Currently Playing:</span>
-                  <GameLogoAndLabel gameId={user.lastGame ?? GameId.THINKY} id={'profile'} size={20} />
-                </div>
-                :
-                <div><span className='font-bold'>Last Seen:</span> <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.last_visited_at ? user.last_visited_at : user.ts} /></div>
-              }
-              <div><span className='font-bold'>Registered:</span> {user.ts ? <FormattedDate style={{ color: 'var(--color)', fontSize: '1rem' }} ts={user.ts} /> : 'Not registered'}</div>
-            </div>
-            {!game.isNotAGame &&
-              <div>
-                <div><span className='font-bold'>Levels {difficultyType} by Difficulty:</span></div>
-                {levelsSolvedByDifficulty ?
-                  <LevelsSolvedByDifficultyList levelsSolvedByDifficulty={levelsSolvedByDifficulty} />
-                  :
-                  <div className='p-2'><LoadingSpinner /></div>
+                {!game.isNotAGame &&
+                  <div>
+                    <div><span className='font-bold'>Levels {difficultyType} by Difficulty:</span></div>
+                    {levelsSolvedByDifficulty ?
+                      <LevelsSolvedByDifficultyList levelsSolvedByDifficulty={levelsSolvedByDifficulty} />
+                      :
+                      <div className='p-2'><LoadingSpinner /></div>
+                    }
+                  </div>
                 }
               </div>
-            }
-          </div>
-          <CommentWall userId={user._id} />
-        </div>
-        <FollowerModal
-          closeModal={() => setIsFollowerOpen(false)}
-          followers={followers}
-          isOpen={isFollowerOpen}
-        />
-        <FollowingModal
-          closeModal={() => setIsFollowingOpen(false)}
-          following={following}
-          isOpen={isFollowingOpen}
-        />
+              <CommentWall userId={user._id} />
+            </div>
+            <FollowerModal
+              closeModal={() => setIsFollowerOpen(false)}
+              followers={followers}
+              isOpen={isFollowerOpen}
+            />
+            <FollowingModal
+              closeModal={() => setIsFollowingOpen(false)}
+              following={following}
+              isOpen={isFollowingOpen}
+            />
+          </>
+        )}
       </div>,
     [ProfileTab.Insights]: <ProfileInsights reqUser={reqUser} user={user} />,
     [ProfileTab.Multiplayer]: <ProfileMultiplayer user={user} />,
@@ -832,7 +898,7 @@ export default function ProfilePage({
               <span>Profile</span>
             </div>
           </Link>
-          {!game.isNotAGame &&
+          {!game.isNotAGame && !reqUserHasBlocked &&
             <>
               <Link
                 className={getTabClassNames(ProfileTab.Insights)}
@@ -854,7 +920,7 @@ export default function ProfilePage({
               <span>Achievements ({achievementsCount})</span>
             </div>
           </Link>
-          {!game.isNotAGame &&
+          {!game.isNotAGame && !reqUserHasBlocked &&
             <>
               <Link
                 className={getTabClassNames(ProfileTab.Levels)}
@@ -906,7 +972,20 @@ export default function ProfilePage({
         </div>
         <div className='tab-content'>
           <div className='p-4' id='content' role='tabpanel' aria-labelledby='tabs-home-tabFill'>
-            {tabsContent[tab]}
+            {reqUserHasBlocked && tab !== ProfileTab.Profile ? (
+              <div className='text-center p-4 bg-red-100 dark:bg-red-900 rounded-lg'>
+                <p className='font-bold mb-2'>You have blocked this user</p>
+                <p className='mb-4'>Their profile content is hidden.</p>
+                <button
+                  className='px-3 py-1 rounded-md bg-green-500 hover:bg-green-600'
+                  onClick={toggleBlockUser}
+                >
+                  Unblock User
+                </button>
+              </div>
+            ) : (
+              tabsContent[tab]
+            )}
           </div>
         </div>
       </>

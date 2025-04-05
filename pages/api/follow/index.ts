@@ -49,7 +49,7 @@ export default withAuth({
   if (req.method === 'PUT') {
     if (req.userId === id) {
       return res.status(400).json({
-        error: 'Cannot follow yourself',
+        error: `Cannot ${action?.toString().toLowerCase()} yourself`,
       });
     }
 
@@ -65,7 +65,7 @@ export default withAuth({
 
     if (deleteResult.deletedCount === 0) {
       return res.status(400).json({
-        error: 'Not following',
+        error: `Not ${action?.toString().toLowerCase()}ing`,
       });
     } else {
       await clearNotifications(undefined, req.user._id, id as string, NotificationType.NEW_FOLLOWER);
@@ -83,25 +83,23 @@ export interface FollowData {
 }
 
 export async function getFollowData(targetUser: string, reqUser?: User | null) {
-  const retObj: FollowData = { followerCount: 0 };
-
-  retObj.followerCount = await GraphModel.countDocuments({
-    target: targetUser,
-    targetModel: 'User',
-    type: GraphType.FOLLOW,
-  });
-
-  if (reqUser) {
-    const isFollowing = await GraphModel.countDocuments({
+  const [followerCount, isFollowing] = await Promise.all([
+    GraphModel.countDocuments({
+      target: targetUser,
+      targetModel: 'User',
+      type: GraphType.FOLLOW,
+    }),
+    reqUser ? GraphModel.countDocuments({
       source: reqUser._id,
       sourceModel: 'User',
       target: targetUser,
       targetModel: 'User',
       type: GraphType.FOLLOW,
-    });
+    }) : Promise.resolve(0)
+  ]);
 
-    retObj.isFollowing = isFollowing > 0;
-  }
-
-  return retObj;
+  return {
+    followerCount,
+    ...(reqUser && { isFollowing: isFollowing > 0 })
+  } as FollowData;
 }
