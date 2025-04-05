@@ -8,8 +8,10 @@ import { LEVEL_SEARCH_DEFAULT_PROJECTION, USER_DEFAULT_PROJECTION } from '@root/
 import { Aggregate, FilterQuery, PipelineStage, Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getDifficultyRangeFromName } from '../../../components/formatted/formattedDifficulty';
+import GraphType from '../../../constants/graphType';
 import TimeRange from '../../../constants/timeRange';
 import apiWrapper from '../../../helpers/apiWrapper';
+import { getContentFilterForBlockedUsers } from '../../../helpers/contentFilterHelpers';
 import { getEnrichLevelsPipelineSteps, getEnrichUserConfigPipelineStage } from '../../../helpers/enrich';
 import { logger } from '../../../helpers/logger';
 import cleanUser from '../../../lib/cleanUser';
@@ -17,7 +19,7 @@ import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
 import { EnrichedLevel } from '../../../models/db/level';
 import User from '../../../models/db/user';
-import { LevelModel, StatModel, UserModel } from '../../../models/mongoose';
+import { GraphModel, LevelModel, StatModel, UserModel } from '../../../models/mongoose';
 import { BlockFilterMask, SearchQuery } from '../../[subdomain]/search';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -410,6 +412,84 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
     ...getEnrichUserConfigPipelineStage(gameId, { excludeCalcs: true, localField: 'userId._id', lookupAs: 'userId.config' }),
   ] as PipelineStage.Lookup[];
 
+  // Add a stage to filter out levels from blocked users
+  const blockFilterStage: PipelineStage[] = reqUser ? [
+    // Lookup to check if the level author is blocked by the user
+    {
+      $lookup: {
+        from: GraphModel.collection.name,
+        let: { authorId: '$userId' },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$source', reqUser._id] },
+                  { $eq: ['$target', '$$authorId'] },
+                  { $eq: ['$type', GraphType.BLOCK] },
+                  { $eq: ['$sourceModel', 'User'] },
+                  { $eq: ['$targetModel', 'User'] }
+                ]
+              }
+            }
+          }
+        ],
+        as: 'blockStatus'
+      }
+    },
+    // Only include levels where the author is not blocked
+    {
+      $match: {
+        'blockStatus': { $size: 0 }
+      }
+    },
+    // Remove the blockStatus field
+    {
+      $project: {
+        blockStatus: 0
+      }
+    }
+  ] : [];
+
+  // Add a separate filter stage for after userId is unwound
+  const blockFilterAfterUnwindStage: PipelineStage[] = reqUser ? [
+    // Lookup to check if the level author is blocked by the user
+    {
+      $lookup: {
+        from: GraphModel.collection.name,
+        let: { authorId: '$userId._id' },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$source', reqUser._id] },
+                  { $eq: ['$target', '$$authorId'] },
+                  { $eq: ['$type', GraphType.BLOCK] },
+                  { $eq: ['$sourceModel', 'User'] },
+                  { $eq: ['$targetModel', 'User'] }
+                ]
+              }
+            }
+          }
+        ],
+        as: 'blockStatus'
+      }
+    },
+    // Only include levels where the author is not blocked
+    {
+      $match: {
+        'blockStatus': { $size: 0 }
+      }
+    },
+    // Remove the blockStatus field
+    {
+      $project: {
+        blockStatus: 0
+      }
+    }
+  ] : [];
+
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let agg: Aggregate<any[]> | undefined = undefined;
@@ -421,6 +501,8 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
       // Prepare the facet pipeline with potential author limiting
       const facetPipeline = [
         ...(lookupUserBeforeSort ? lookupUserStage : []),
+        // Apply block filter after looking up users but before further processing
+        ...(lookupUserBeforeSort ? blockFilterAfterUnwindStage : []),
         // NB: projection is typically supposed to be the last stage of the pipeline, but we need it here because of potential sorting by calc_playattempts_unique_users_count
         { $project: { ...projection } },
         {
@@ -465,6 +547,8 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
         { $skip: skip },
         { $limit: limit },
         ...(lookupUserBeforeSort ? [] : lookupUserStage),
+        // If user lookup happens after pagination, apply block filter here
+        ...(lookupUserBeforeSort ? [] : blockFilterAfterUnwindStage),
         ...getEnrichLevelsPipelineSteps(new Types.ObjectId(userId) as unknown as User) as PipelineStage.Lookup[]
       );
 
@@ -476,13 +560,14 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
               metadata: [
                 // NB: need this stage here because it alters the count
                 ...statLookupAndMatchStage,
+                ...(reqUser ? blockFilterStage as any[] : []), // Add block filter for accurate count
                 { $count: 'totalRows' },
               ]
             }),
             data: facetPipeline,
           },
         },
-      ]);
+      ] as any);
     } else {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let statMatchQuery: FilterQuery<any> = {};
@@ -492,6 +577,26 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
       } else if (query.statFilter === StatFilter.Solved) {
         statMatchQuery = { complete: true };
       }
+
+      // Create the byStat aggregation with block filtering
+      const byStatPipeline: PipelineStage[] = [
+        ...(lookupUserBeforeSort ? lookupUserStage : []),
+        // Apply block filter after looking up users
+        ...(lookupUserBeforeSort ? blockFilterAfterUnwindStage : []),
+        // NB: projection is typically supposed to be the last stage of the pipeline, but we need it here because of potential sorting by calc_playattempts_unique_users_count
+        // TODO: instead can have an optional $addFields here, then do the projection after
+        { $project: { ...projection, userMovesTs: 1 } },
+        { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
+        { $skip: skip },
+        { $limit: limit },
+        ...(lookupUserBeforeSort ? [] : lookupUserStage),
+        // If user lookup happens after pagination, apply block filter here
+        ...(lookupUserBeforeSort ? [] : blockFilterAfterUnwindStage),
+        // note this last getEnrichLevelsPipeline is "technically a bit wasteful" if they select Hide Solved or In Progress
+        // Because technically the above statLookupAndMatchStage will have this data already...
+        // But since the results are limited by limit, this is constant time and not a big deal to do the lookup again...
+        ...getEnrichLevelsPipelineSteps(new Types.ObjectId(userId) as unknown as User) as PipelineStage.Lookup[],
+      ];
 
       agg = StatModel.aggregate([
         {
@@ -538,26 +643,14 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
           '$facet': {
             ...(query.disableCount === 'true' ? {} : {
               metadata: [
+                ...(reqUser ? blockFilterStage as any[] : []), // Add block filter for accurate count
                 { $count: 'totalRows' },
               ]
             }),
-            data: [
-              ...(lookupUserBeforeSort ? lookupUserStage : []),
-              // NB: projection is typically supposed to be the last stage of the pipeline, but we need it here because of potential sorting by calc_playattempts_unique_users_count
-              // TODO: instead can have an optional $addFields here, then do the projection after
-              { $project: { ...projection, userMovesTs: 1 } },
-              { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
-              { $skip: skip },
-              { $limit: limit },
-              ...(lookupUserBeforeSort ? [] : lookupUserStage),
-              // note this last getEnrichLevelsPipeline is "technically a bit wasteful" if they select Hide Solved or In Progress
-              // Because technically the above statLookupAndMatchStage will have this data already...
-              // But since the results are limited by limit, this is constant time and not a big deal to do the lookup again...
-              ...getEnrichLevelsPipelineSteps(new Types.ObjectId(userId) as unknown as User) as PipelineStage.Lookup[],
-            ],
+            data: byStatPipeline,
           },
         },
-      ]);
+      ] as any);
     }
 
     const res = (await agg)[0];
