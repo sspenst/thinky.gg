@@ -4,14 +4,16 @@ import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
+import GraphType from '../../../../constants/graphType';
 import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { AchievementModel, LevelModel, ReviewModel } from '../../../../models/mongoose';
+import { AchievementModel, GraphModel, LevelModel, ReviewModel } from '../../../../models/mongoose';
 import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
 import reviewLevelHandler, { getScoreEmojis } from '../../../../pages/api/review/[id]';
+import reviewsApiHandler from '../../../../pages/api/reviews/[id]';
 
 beforeAll(async () => {
   await dbConnect(); // see if that erroneous index error goes away when commenting this out...
@@ -631,6 +633,58 @@ describe('Reviewing levels should work correctly', () => {
         expect(response.text).toBe('hi\nEDIT: bye');
         expect(response.levelId).toBe(TestId.LEVEL_2);
         expect(res.status).toBe(200);
+      },
+    });
+  });
+
+  // Test for blocked user reviews filtering
+  test('Reviews API should filter out reviews from blocked users', async () => {
+    // First create a block relationship
+    await GraphModel.create({
+      source: TestId.USER,
+      sourceModel: 'User',
+      type: GraphType.BLOCK,
+      target: TestId.USER_B,
+      targetModel: 'User',
+    });
+
+    // Then request reviews for a level as the user who has blocked USER_B
+    await testApiHandler({
+      pagesHandler: async (_, res) => {
+        const req = {
+          method: 'GET',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: TestId.LEVEL_2,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as any; // Use any type to bypass TypeScript checks for this test
+
+        await reviewsApiHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(res.status).toBe(200);
+
+        // Verify no reviews from blocked users are present
+        const hasBlockedUserReviews = response.some((review: any) =>
+          review.userId._id.toString() === TestId.USER_B
+        );
+
+        expect(hasBlockedUserReviews).toBe(false);
+
+        // Clean up the block for other tests
+        await GraphModel.deleteOne({
+          source: TestId.USER,
+          target: TestId.USER_B,
+          type: GraphType.BLOCK,
+        });
       },
     });
   });

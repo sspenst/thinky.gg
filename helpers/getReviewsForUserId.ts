@@ -185,11 +185,23 @@ export async function getReviewsForUserId(gameId: GameId, id: string | string[] 
 
 export async function getReviewsForUserIdCount(gameId: GameId, id: string | string[] | undefined, reqUser: User | null = null) {
   try {
+    // Create a userId ObjectId, handling potential invalid ids
+    let userObjectId: Types.ObjectId;
+
+    try {
+      userObjectId = new Types.ObjectId(id?.toString());
+    } catch (err) {
+      // If the ID is invalid, return 0 as there can't be any levels by this user
+      logger.error(`Invalid ObjectId in getReviewsForUserIdCount: ${id}`);
+
+      return 0;
+    }
+
     // Get levels created by the user
     const levelsByUser = await LevelModel.find<Level>({
       isDeleted: { $ne: true },
       isDraft: false,
-      userId: id,
+      userId: userObjectId,
       gameId: gameId
     }, '_id');
 

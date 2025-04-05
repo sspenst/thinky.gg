@@ -116,10 +116,20 @@ export async function getReviewsByUserIdCount(gameId: GameId, id: string | strin
   try {
     // Base query for counting reviews
     const baseQuery: Record<string, any> = {
-      userId: id,
-      isDeleted: { $ne: true },
       gameId: gameId
     };
+
+    // Handle potential invalid ObjectId by using a try-catch
+    try {
+      baseQuery.userId = new Types.ObjectId(id?.toString());
+    } catch (err) {
+      // Invalid ObjectId, return 0 as there can't be any matches
+      logger.error(`Invalid ObjectId in getReviewsByUserIdCount: ${id}`);
+
+      return 0;
+    }
+
+    baseQuery.isDeleted = { $ne: true };
 
     // If no requesting user, do a simple count
     if (!reqUser) {
