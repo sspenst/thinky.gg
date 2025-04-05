@@ -4,6 +4,7 @@ import { GetServerSidePropsContext } from 'next';
 import { Logger } from 'winston';
 import GraphType from '../../../constants/graphType';
 import TestId from '../../../constants/testId';
+import TimeRange from '../../../constants/timeRange';
 import { getReviewsByUserId, getReviewsByUserIdCount } from '../../../helpers/getReviewsByUserId';
 import { getReviewsForUserId, getReviewsForUserIdCount } from '../../../helpers/getReviewsForUserId';
 import { logger } from '../../../helpers/logger';
@@ -12,6 +13,7 @@ import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
 import { GraphModel, UserModel } from '../../../models/mongoose';
 import { getServerSideProps, ProfileTab } from '../../../pages/[subdomain]/profile/[name]/[[...tab]]/index';
+import { doQuery } from '../../../pages/api/search';
 
 beforeAll(async () => {
   await dbConnect();
@@ -359,6 +361,48 @@ describe('pages/profile page', () => {
     );
 
     expect(hasBlockedUserReviews).toBe(false);
+
+    // Clean up the block for other tests
+    await GraphModel.deleteOne({
+      source: TestId.USER,
+      target: TestId.USER_B,
+      type: GraphType.BLOCK,
+    });
+  });
+
+  // Test for the search filtering out blocked users
+  test('doQuery should filter out levels from blocked users', async () => {
+    // Create a block relationship
+    await GraphModel.create({
+      source: TestId.USER,
+      sourceModel: 'User',
+      type: GraphType.BLOCK,
+      target: TestId.USER_B,
+      targetModel: 'User',
+    });
+
+    // Get the requesting user
+    const reqUser = await UserModel.findById(TestId.USER);
+
+    // Create a simple search query
+    const searchQuery = {
+      sortBy: 'name',
+      sortDir: 'asc' as 'asc' | 'desc',
+      timeRange: TimeRange[TimeRange.All]
+    };
+
+    // Execute the search query
+    const results = await doQuery(gameId, searchQuery, reqUser);
+
+    // Verify results exist
+    expect(results).not.toBeNull();
+
+    // Check if any levels in the results are from the blocked user
+    const hasBlockedUserLevels = results?.levels.some(
+      (level) => level.userId._id.toString() === TestId.USER_B
+    );
+
+    expect(hasBlockedUserLevels).toBe(false);
 
     // Clean up the block for other tests
     await GraphModel.deleteOne({
