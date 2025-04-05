@@ -2,6 +2,7 @@ import { NextApiResponse } from 'next';
 import GraphType from '../../../constants/graphType';
 import NotificationType from '../../../constants/notificationType';
 import { ValidEnum, ValidObjectId } from '../../../helpers/apiWrapper';
+import { getBlockedUserIds } from '../../../helpers/getBlockedUserIds';
 import { clearNotifications, createNewFollowerNotification } from '../../../helpers/notificationHelper';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import User from '../../../models/db/user';
@@ -37,7 +38,7 @@ export default withAuth({
 
   const { action, id, targetModel } = req.query;
 
-  // @TODO: Check if user has blocked (future feature) to disallow following
+  // Create the query for graph operations
   const query = {
     source: req.userId,
     sourceModel: 'User',
@@ -50,6 +51,29 @@ export default withAuth({
     if (req.userId === id) {
       return res.status(400).json({
         error: `Cannot ${action?.toString().toLowerCase()} yourself`,
+      });
+    }
+
+    // For FOLLOW action, check if the target user is blocked
+    if (action === GraphType.FOLLOW && targetModel === 'User') {
+      const blockedUserIds = await getBlockedUserIds(req.userId);
+
+      if (blockedUserIds.includes(id as string)) {
+        return res.status(400).json({
+          error: 'Cannot follow a blocked user',
+        });
+      }
+    }
+
+    // For BLOCK action, automatically unfollow the user
+    if (action === GraphType.BLOCK && targetModel === 'User') {
+      // Remove any follow connection from current user to the blocked user
+      await GraphModel.deleteOne({
+        source: req.userId,
+        sourceModel: 'User',
+        type: GraphType.FOLLOW,
+        target: id,
+        targetModel: 'User',
       });
     }
 

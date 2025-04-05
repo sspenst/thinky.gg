@@ -1,10 +1,11 @@
 import { GameId } from '@root/constants/GameId';
+import GraphType from '@root/constants/graphType';
 import Record from '@root/models/db/record';
 import User from '@root/models/db/user';
 import { PipelineStage, Types } from 'mongoose';
 import Level from '../models/db/level';
 import Review from '../models/db/review';
-import { LevelModel, RecordModel, ReviewModel } from '../models/mongoose';
+import { GraphModel, LevelModel, RecordModel, ReviewModel, UserModel } from '../models/mongoose';
 import { getEnrichLevelsPipelineSteps } from './enrich';
 import { logger } from './logger';
 
@@ -114,19 +115,4 @@ export async function getRecordsByUserId(gameId: GameId, userId: Types.ObjectId,
   ] as PipelineStage[]);
 
   return records;
-}
-
-export async function getReviewsForUserIdCount(gameId: GameId, id: string | string[] | undefined) {
-  try {
-    const levelsByUser = await LevelModel.find<Level>({ isDeleted: { $ne: true }, isDraft: false, userId: id, gameId: gameId }, '_id');
-    const reviews = await ReviewModel.find<Review>({
-      levelId: { $in: levelsByUser.map(level => level._id) },
-    }).countDocuments();
-
-    return reviews;
-  } catch (err) {
-    logger.error(err);
-
-    return null;
-  }
 }

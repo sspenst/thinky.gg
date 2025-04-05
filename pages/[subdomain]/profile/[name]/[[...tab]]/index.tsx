@@ -131,6 +131,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     reviewsWritten,
     reviewsReceivedCount,
     reviewsWrittenCount,
+    blockData,
   ] = await Promise.all([
     profileTab === ProfileTab.Achievements ? AchievementModel.find<Achievement>({ userId: userId, gameId: gameId }) : [] as Achievement[],
     AchievementModel.countDocuments({ userId: userId, gameId: gameId }),
@@ -166,6 +167,14 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     !game.isNotAGame && profileTab === ProfileTab.ReviewsWritten ? getReviewsByUserId(gameId, userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
     !game.isNotAGame && getReviewsForUserIdCount(gameId, userId),
     !game.isNotAGame && getReviewsByUserIdCount(gameId, userId),
+    // Check if the current user has blocked this profile user
+    reqUser ? GraphModel.countDocuments({
+      source: reqUser._id,
+      sourceModel: 'User',
+      target: user._id,
+      targetModel: 'User',
+      type: GraphType.BLOCK,
+    }) : Promise.resolve(0),
   ]);
 
   const levelsSolved = levelsSolvedAgg?.at(0)?.count ?? 0;
@@ -183,13 +192,28 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     profileTab: profileTab,
     reqUser: reqUser ? JSON.parse(JSON.stringify(reqUser)) : null,
     reqUserIsFollowing: false,
-    reqUserHasBlocked: false,
+    reqUserHasBlocked: blockData > 0,
     reviewsReceived: JSON.parse(JSON.stringify(reviewsReceived)),
     reviewsReceivedCount: reviewsReceivedCount,
     reviewsWritten: JSON.parse(JSON.stringify(reviewsWritten)),
     reviewsWrittenCount: reviewsWrittenCount,
     user: JSON.parse(JSON.stringify(user)),
   } as ProfilePageProps;
+
+  // Filter out reviews if the user is blocked
+  if (blockData > 0) {
+    // If the user is viewing reviews-written by a blocked user, return empty arrays
+    if (profileTab === ProfileTab.ReviewsWritten) {
+      profilePageProps.reviewsWritten = [];
+      profilePageProps.reviewsWrittenCount = 0;
+    }
+
+    // If the user is viewing reviews-received by a blocked user, return empty arrays
+    if (profileTab === ProfileTab.ReviewsReceived) {
+      profilePageProps.reviewsReceived = [];
+      profilePageProps.reviewsReceivedCount = 0;
+    }
+  }
 
   if (profileTab === ProfileTab.Profile) {
     const [
@@ -267,21 +291,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     ]);
 
     profilePageProps.reqUserIsFollowing = followData.isFollowing ?? false;
-
-    // Check if the current user has blocked this profile user
-    if (reqUser) {
-      const isBlocked = await GraphModel.countDocuments({
-        source: reqUser._id,
-        sourceModel: 'User',
-        target: user._id,
-        targetModel: 'User',
-        type: GraphType.BLOCK,
-      });
-
-      profilePageProps.reqUserHasBlocked = isBlocked > 0;
-    } else {
-      profilePageProps.reqUserHasBlocked = false;
-    }
 
     const followers = followerAgg.map((f) => {
       cleanUser(f.source as User);
@@ -529,17 +538,21 @@ export default function ProfilePage({
             <div className='flex gap-4 flex-wrap justify-center py-1'>
               {reqUser && reqUser._id.toString() !== user._id.toString() && (
                 <>
-                  <FollowButton
-                    isFollowing={reqUserIsFollowing}
-                    key={user._id.toString()}
-                    user={user}
-                  />
-                  <button
-                    className={classNames('px-3 py-1 rounded-md', reqUserHasBlocked ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600')}
-                    onClick={toggleBlockUser}
-                  >
-                    {reqUserHasBlocked ? 'Unblock' : 'Block'}
-                  </button>
+                  {!reqUserHasBlocked && (
+                    <>
+                      <FollowButton
+                        isFollowing={reqUserIsFollowing}
+                        key={user._id.toString()}
+                        user={user}
+                      />
+                      <button
+                        className={classNames('px-3 py-1 rounded-md bg-red-500 hover:bg-red-600')}
+                        onClick={toggleBlockUser}
+                      >
+                        Block
+                      </button>
+                    </>
+                  )}
                 </>
               )}
               <button
@@ -564,11 +577,14 @@ export default function ProfilePage({
             {user.bio && !reqUserHasBlocked && <p className='italic text-sm break-words max-w-full'>{user.bio}</p>}
           </div>
         </div>
-        
         {reqUserHasBlocked ? (
           <div className='text-center p-4 bg-red-100 dark:bg-red-900 rounded-lg'>
-            <p className='font-bold mb-2'>You have blocked this user</p>
-            <p className='mb-4'>Their profile content is hidden.</p>
+            <p className='font-bold mb-2'>You have blocked {user.name}</p>
+            <p className='mb-4'>
+              Their user generated content is hidden and they cannot view your content.
+              <br />
+              If you believe this person is violating our terms of service, please report them.
+            </p>
             <button
               className='px-3 py-1 rounded-md bg-green-500 hover:bg-green-600'
               onClick={toggleBlockUser}
@@ -734,7 +750,12 @@ export default function ProfilePage({
     ),
     [ProfileTab.ReviewsWritten]: [
       <div className='flex flex-col items-center gap-4' key='reviews-written'>
-        {reviewsWritten?.map(review => {
+        {reqUserHasBlocked ? (
+          <div className='text-center p-4 bg-red-100 dark:bg-red-900 rounded-lg'>
+            <p className='font-bold'>Reviews hidden</p>
+            <p>You have blocked this user, so their reviews are hidden.</p>
+          </div>
+        ) : reviewsWritten?.map(review => {
           return (
             <div
               className='max-w-3xl w-full'
@@ -749,7 +770,7 @@ export default function ProfilePage({
           );
         })}
       </div>,
-      reviewsWrittenCount > 10 &&
+      reviewsWrittenCount > 10 && !reqUserHasBlocked &&
         <div key='pagination_btns' className='flex justify-center flex-row'>
           {page > 1 && (
             <Link
@@ -770,7 +791,7 @@ export default function ProfilePage({
           )}
         </div>
       ,
-      reviewsWrittenCount === 0 &&
+      reviewsWrittenCount === 0 && !reqUserHasBlocked &&
         <div className='text-center'>
           No reviews written!
         </div>
@@ -778,7 +799,12 @@ export default function ProfilePage({
     ],
     [ProfileTab.ReviewsReceived]: [
       <div className='flex flex-col items-center gap-4' key='reviews-received'>
-        {reviewsReceived?.map(review => {
+        {reqUserHasBlocked ? (
+          <div className='text-center p-4 bg-red-100 dark:bg-red-900 rounded-lg'>
+            <p className='font-bold'>Reviews hidden</p>
+            <p>You have blocked this user, so their reviews are hidden.</p>
+          </div>
+        ) : reviewsReceived?.map(review => {
           return (
             <div
               className='max-w-3xl w-full'
@@ -793,7 +819,7 @@ export default function ProfilePage({
           );
         })}
       </div>,
-      reviewsReceivedCount > 10 &&
+      reviewsReceivedCount > 10 && !reqUserHasBlocked &&
         <div key='pagination_btns' className='flex justify-center flex-row'>
           {page > 1 && (
             <Link
@@ -814,7 +840,7 @@ export default function ProfilePage({
           )}
         </div>
       ,
-      reviewsReceivedCount === 0 &&
+      reviewsReceivedCount === 0 && !reqUserHasBlocked &&
         <div>
           No reviews received!
         </div>
@@ -974,8 +1000,12 @@ export default function ProfilePage({
           <div className='p-4' id='content' role='tabpanel' aria-labelledby='tabs-home-tabFill'>
             {reqUserHasBlocked && tab !== ProfileTab.Profile ? (
               <div className='text-center p-4 bg-red-100 dark:bg-red-900 rounded-lg'>
-                <p className='font-bold mb-2'>You have blocked this user</p>
-                <p className='mb-4'>Their profile content is hidden.</p>
+                <p className='font-bold mb-2'>You have blocked {user.name}</p>
+                <p className='mb-4'>
+              Their user generated content is hidden and they cannot view your content.
+                  <br />
+              If you believe this person is violating our terms of service, please report them.
+                </p>
                 <button
                   className='px-3 py-1 rounded-md bg-green-500 hover:bg-green-600'
                   onClick={toggleBlockUser}
