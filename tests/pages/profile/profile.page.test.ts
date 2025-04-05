@@ -233,14 +233,14 @@ describe('pages/profile page', () => {
 
     const reviews = await getReviewsByUserId(gameId, 'invalid');
 
-    expect(reviews).toBeNull();
+    expect(reviews).toEqual([]);
   });
   test('getReviewsByUserIdCount with invalid userId', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     const reviews = await getReviewsByUserIdCount(gameId, 'invalid');
 
-    expect(reviews).toBeNull();
+    expect(reviews).toBe(0);
   });
   test('getReviewsForUserId with valid userId', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
@@ -254,13 +254,117 @@ describe('pages/profile page', () => {
 
     const reviews = await getReviewsForUserId(gameId, 'invalid');
 
-    expect(reviews).toBeNull();
+    expect(reviews).toEqual([]);
   });
   test('getReviewsForUserIdCount with invalid userId', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     const reviews = await getReviewsForUserIdCount(gameId, 'invalid');
 
-    expect(reviews).toBeNull();
+    expect(reviews).toBe(0);
+  });
+
+  // Block functionality tests
+  test('getReviewsByUserId should filter out reviews from blocked users', async () => {
+    // Create a block relationship
+    await GraphModel.create({
+      source: TestId.USER,
+      sourceModel: 'User',
+      type: GraphType.BLOCK,
+      target: TestId.USER_B,
+      targetModel: 'User',
+    });
+
+    // Get reviews with the user who has blocked USER_B
+    const reqUser = await UserModel.findById(TestId.USER);
+    const reviews = await getReviewsByUserId(gameId, TestId.USER_C, reqUser);
+
+    // Verify no reviews from blocked users are present
+    const hasBlockedUserReviews = reviews.some(review =>
+      review.userId._id.toString() === TestId.USER_B
+    );
+
+    expect(hasBlockedUserReviews).toBe(false);
+
+    // Clean up the block for other tests
+    await GraphModel.deleteOne({
+      source: TestId.USER,
+      target: TestId.USER_B,
+      type: GraphType.BLOCK,
+    });
+  });
+
+  test('getReviewsForUserId should filter out reviews from blocked users', async () => {
+    // Create a block relationship
+    await GraphModel.create({
+      source: TestId.USER,
+      sourceModel: 'User',
+      type: GraphType.BLOCK,
+      target: TestId.USER_B,
+      targetModel: 'User',
+    });
+
+    // Get reviews with the user who has blocked USER_B
+    const reqUser = await UserModel.findById(TestId.USER);
+    const reviews = await getReviewsForUserId(gameId, TestId.USER, reqUser);
+
+    // Verify no reviews from blocked users are present
+    const hasBlockedUserReviews = reviews.some(review =>
+      review.userId._id.toString() === TestId.USER_B
+    );
+
+    expect(hasBlockedUserReviews).toBe(false);
+
+    // Clean up the block for other tests
+    await GraphModel.deleteOne({
+      source: TestId.USER,
+      target: TestId.USER_B,
+      type: GraphType.BLOCK,
+    });
+  });
+
+  // Test to verify that profile page SSR correctly filters blocked user reviews
+  test('getServerSideProps should filter out reviews from blocked users', async () => {
+    // Create a block relationship
+    await GraphModel.create({
+      source: TestId.USER,
+      sourceModel: 'User',
+      type: GraphType.BLOCK,
+      target: TestId.USER_B,
+      targetModel: 'User',
+    });
+
+    const context = {
+      params: {
+        name: 'test',
+        tab: [ProfileTab.ReviewsReceived],
+      },
+      req: {
+        cookies: {
+          token: getTokenCookieValue(TestId.USER),
+        },
+      },
+    };
+
+    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
+
+    // Test that props are defined
+    expect(ret.props).toBeDefined();
+    expect(ret.props?.reviewsReceived).toBeDefined();
+
+    // Check if any reviews in the response are from the blocked user
+    const reviewsReceived = ret.props?.reviewsReceived || [];
+    const hasBlockedUserReviews = reviewsReceived.some(
+      (review: any) => review.userId._id.toString() === TestId.USER_B
+    );
+
+    expect(hasBlockedUserReviews).toBe(false);
+
+    // Clean up the block for other tests
+    await GraphModel.deleteOne({
+      source: TestId.USER,
+      target: TestId.USER_B,
+      type: GraphType.BLOCK,
+    });
   });
 });

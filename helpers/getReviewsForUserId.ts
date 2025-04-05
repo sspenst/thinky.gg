@@ -1,10 +1,11 @@
 import { GameId } from '@root/constants/GameId';
 import cleanReview from '@root/lib/cleanReview';
 import { PipelineStage, QueryOptions, Types } from 'mongoose';
+import GraphType from '../constants/graphType';
 import cleanUser from '../lib/cleanUser';
 import Level from '../models/db/level';
 import User from '../models/db/user';
-import { LevelModel, ReviewModel, UserModel } from '../models/mongoose';
+import { GraphModel, LevelModel, ReviewModel, UserModel } from '../models/mongoose';
 import { getEnrichLevelsPipelineSteps, getEnrichUserConfigPipelineStage } from './enrich';
 import { logger } from './logger';
 
@@ -12,56 +13,117 @@ export async function getReviewsForUserId(gameId: GameId, id: string | string[] 
   try {
     const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPipelineSteps(reqUser, 'levelId');
 
-    const levelsByUserAgg = await LevelModel.aggregate(([
+    // Get the levels created by the target user
+    const levelsCreatedByUser = await LevelModel.find({
+      isDeleted: { $ne: true },
+      isDraft: false,
+      userId: new Types.ObjectId(id?.toString()),
+      gameId: gameId
+    }, '_id');
+
+    // Only proceed if the user has created levels
+    if (!levelsCreatedByUser.length) {
+      return [];
+    }
+
+    // Create the initial pipeline
+    const pipeline: PipelineStage[] = [
       {
-        $match:
-        {
-          isDeleted: { $ne: true },
-          isDraft: false,
-          userId: new Types.ObjectId(id?.toString()),
-          gameId: gameId
+        $match: {
+          levelId: { $in: levelsCreatedByUser.map(level => level._id) }
         }
       },
-      {
-        $project: {
-          _id: 1,
-          name: 1,
-          slug: 1,
-          leastMoves: 1,
-        }
-      },
-      // now get all the reviwes for these levels
       {
         $lookup: {
-          from: ReviewModel.collection.name,
-          localField: '_id', //
-          foreignField: 'levelId',
-          as: 'reviews',
-        },
+          from: LevelModel.collection.name,
+          localField: 'levelId',
+          foreignField: '_id',
+          as: 'levelInfo',
+          pipeline: [
+            {
+              $project: {
+                _id: 1,
+                name: 1,
+                slug: 1,
+                leastMoves: 1,
+              }
+            }
+          ]
+        }
       },
-      // unwind the reviews array to get each review as a separate document
       {
-        $unwind: '$reviews',
+        $unwind: '$levelInfo'
       },
       {
         $project: {
           levelId: {
-            _id: '$_id',
-            name: '$name',
-            slug: '$slug',
-            leastMoves: '$leastMoves',
+            _id: '$levelInfo._id',
+            name: '$levelInfo.name',
+            slug: '$levelInfo.slug',
+            leastMoves: '$levelInfo.leastMoves',
           },
-          _id: '$reviews._id',
-          userId: '$reviews.userId',
-          ts: '$reviews.ts',
-          score: '$reviews.score',
-          text: '$reviews.text',
+          _id: 1,
+          userId: 1,
+          ts: 1,
+          score: 1,
+          text: 1,
         }
-      },
+      }
+    ];
+
+    // If we have a requesting user, add a lookup to filter out reviewers who are blocked
+    if (reqUser) {
+      pipeline.push(
+        // Lookup to check if the reviewer is blocked
+        {
+          $lookup: {
+            from: GraphModel.collection.name,
+            let: { reviewerId: '$userId' },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ['$source', reqUser._id] },
+                      { $eq: ['$target', '$$reviewerId'] },
+                      { $eq: ['$type', GraphType.BLOCK] },
+                      { $eq: ['$sourceModel', 'User'] },
+                      { $eq: ['$targetModel', 'User'] }
+                    ]
+                  }
+                }
+              }
+            ],
+            as: 'blockStatus'
+          }
+        },
+        // Only include reviews where the reviewer is not blocked
+        {
+          $match: {
+            'blockStatus': { $size: 0 }
+          }
+        },
+        // Remove the blockStatus field
+        {
+          $project: {
+            blockStatus: 0
+          }
+        }
+      );
+    }
+
+    // Complete the pipeline
+    pipeline.push(
       {
         $sort: {
           ts: -1,
         },
+      },
+      {
+        $skip: queryOptions?.skip || 0
+      },
+      {
+        $limit: queryOptions?.limit || 10,
       },
       {
         $lookup: {
@@ -79,12 +141,6 @@ export async function getReviewsForUserId(gameId: GameId, id: string | string[] 
           path: '$userId',
           // important to not preserveNullAndEmptyArrays here, because we want to ignore reviews where the reviewer has been deleted
         },
-      },
-      {
-        $skip: queryOptions?.skip || 0
-      },
-      {
-        $limit: queryOptions?.limit || 10,
       },
       {
         $project: {
@@ -109,9 +165,12 @@ export async function getReviewsForUserId(gameId: GameId, id: string | string[] 
           text: 1
         }
       },
-    ] as PipelineStage[]).concat(lookupPipelineUser));
+      ...lookupPipelineUser
+    );
 
-    return levelsByUserAgg.map(review => {
+    const reviews = await ReviewModel.aggregate(pipeline);
+
+    return reviews.map(review => {
       cleanReview(review.levelId.complete, reqUser, review);
       cleanUser(review.userId);
 
@@ -120,19 +179,81 @@ export async function getReviewsForUserId(gameId: GameId, id: string | string[] 
   } catch (err) {
     logger.error(err);
 
-    return null;
+    return [];
   }
 }
 
-export async function getReviewsForUserIdCount(gameId: GameId, id: string | string[] | undefined) {
+export async function getReviewsForUserIdCount(gameId: GameId, id: string | string[] | undefined, reqUser: User | null = null) {
   try {
-    const levelsByUser = await LevelModel.find<Level>({ isDeleted: { $ne: true }, isDraft: false, userId: id, gameId: gameId }, '_id');
-    const reviewsCountAgg = await ReviewModel.aggregate([
+    // Create a userId ObjectId, handling potential invalid ids
+    let userObjectId: Types.ObjectId;
+
+    try {
+      userObjectId = new Types.ObjectId(id?.toString());
+    } catch (err) {
+      // If the ID is invalid, return 0 as there can't be any levels by this user
+      logger.error(`Invalid ObjectId in getReviewsForUserIdCount: ${id}`);
+
+      return 0;
+    }
+
+    // Get levels created by the user
+    const levelsByUser = await LevelModel.find<Level>({
+      isDeleted: { $ne: true },
+      isDraft: false,
+      userId: userObjectId,
+      gameId: gameId
+    }, '_id');
+
+    // If no levels, return 0
+    if (!levelsByUser.length) {
+      return 0;
+    }
+
+    // If no requesting user, do a simple count
+    if (!reqUser) {
+      return ReviewModel.countDocuments({
+        levelId: { $in: levelsByUser.map(level => level._id) }
+      });
+    }
+
+    // Use aggregation with a lookup to filter out reviews by blocked users
+    const pipeline: PipelineStage[] = [
       {
         $match: {
-          levelId: { $in: levelsByUser.map(level => level._id) },
-        },
+          levelId: { $in: levelsByUser.map(level => level._id) }
+        }
       },
+      // Lookup to check if the reviewer is blocked
+      {
+        $lookup: {
+          from: GraphModel.collection.name,
+          let: { reviewerId: '$userId' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$source', reqUser._id] },
+                    { $eq: ['$target', '$$reviewerId'] },
+                    { $eq: ['$type', GraphType.BLOCK] },
+                    { $eq: ['$sourceModel', 'User'] },
+                    { $eq: ['$targetModel', 'User'] }
+                  ]
+                }
+              }
+            }
+          ],
+          as: 'blockStatus'
+        }
+      },
+      // Only include reviews where the reviewer is not blocked
+      {
+        $match: {
+          'blockStatus': { $size: 0 }
+        }
+      },
+      // Lookup the users to filter out deleted users
       {
         $lookup: {
           from: UserModel.collection.name,
@@ -148,24 +269,24 @@ export async function getReviewsForUserIdCount(gameId: GameId, id: string | stri
           ],
         },
       },
-      // TODO: soft delete reviews so we can use isDeleted instead of populating users to filter out deleted users
+      // Filter out deleted users
       {
         $unwind: {
           path: '$userId',
         },
       },
+      // Count the resulting documents
       {
-        $group: {
-          _id: null,
-          count: { $sum: 1 },
-        },
-      },
-    ]);
+        $count: 'total'
+      }
+    ];
 
-    return reviewsCountAgg.length > 0 ? reviewsCountAgg[0].count : 0;
+    const result = await ReviewModel.aggregate(pipeline);
+
+    return result.length > 0 ? result[0].total : 0;
   } catch (err) {
     logger.error(err);
 
-    return null;
+    return 0;
   }
 }

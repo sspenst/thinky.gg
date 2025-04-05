@@ -3,11 +3,12 @@ import isPro from '@root/helpers/isPro';
 import cleanReview from '@root/lib/cleanReview';
 import { getUserFromToken } from '@root/lib/withAuth';
 import { USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
-import { Types } from 'mongoose';
+import { PipelineStage, Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import GraphType from '../../../constants/graphType';
 import apiWrapper, { ValidObjectId } from '../../../helpers/apiWrapper';
 import cleanUser from '../../../lib/cleanUser';
-import { ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
+import { GraphModel, ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
 
 export default apiWrapper({ GET: {
   query: {
@@ -18,20 +19,17 @@ export default apiWrapper({ GET: {
   const token = req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, req) : null;
   const pro = isPro(reqUser);
-  const statAggPipeline = [
+
+  const statAggPipeline: PipelineStage[] = [
     {
       $lookup: {
         from: StatModel.collection.name,
-        // Search through stats for where the levelId matches the levelId of the review and the userId matches the userId of the review
-        // note that userId._id is an ObjectId, not a string
         let: { levelId: '$levelId', userId: '$userIdStr' },
         pipeline: [{
           $match: {
             $expr: {
               $and: [
                 { $eq: ['$levelId', '$$levelId'] },
-                // $eq: ['$userId', '$$userId'] is not valid because $userId is an ObjectId and $$userId is a string
-                // so we need to do this instead, refer to the _id field of the user
                 { $eq: ['$userId', '$$userId'] },
               ],
             }
@@ -54,45 +52,94 @@ export default apiWrapper({ GET: {
     }
   ];
 
-  const [userStat, reviewsAgg] = await Promise.all([
-    reqUser ? StatModel.findOne({
-      levelId: new Types.ObjectId(id as string),
-      userId: reqUser?._id
-    }) : null,
-    ReviewModel.aggregate([
-      { $match: { levelId: new Types.ObjectId(id as string) } },
-      { $sort: { ts: -1 } },
+  // Find user's associated stat for the level
+  const userStat = reqUser ? await StatModel.findOne({
+    levelId: new Types.ObjectId(id as string),
+    userId: reqUser?._id
+  }) : null;
+
+  // Create the aggregation pipeline
+  const pipeline: PipelineStage[] = [
+    { $match: { levelId: new Types.ObjectId(id as string) } },
+    { $sort: { ts: -1 } },
+    {
+      $lookup: {
+        from: UserModel.collection.name,
+        localField: 'userId',
+        foreignField: '_id',
+        as: 'userId',
+        pipeline: [
+          {
+            $project: {
+              ...USER_DEFAULT_PROJECTION
+            },
+          }
+        ]
+      }
+    },
+    {
+      $set: {
+        userIdStr: '$userId._id',
+      }
+    },
+    {
+      $unwind: '$userIdStr',
+    }
+  ];
+
+  // Add filtering for blocked users if the requesting user exists
+  if (reqUser) {
+    // Add a lookup to find if the reviewer is blocked by the current user
+    pipeline.push(
       {
         $lookup: {
-          from: UserModel.collection.name,
-          localField: 'userId',
-          foreignField: '_id',
-          as: 'userId',
+          from: GraphModel.collection.name,
+          let: { reviewerId: '$userIdStr' },
           pipeline: [
             {
-              $project: {
-                ...USER_DEFAULT_PROJECTION
-              },
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$source', reqUser._id] },
+                    { $eq: ['$target', '$$reviewerId'] },
+                    { $eq: ['$type', GraphType.BLOCK] },
+                    { $eq: ['$sourceModel', 'User'] },
+                    { $eq: ['$targetModel', 'User'] }
+                  ]
+                }
+              }
             }
-          ]
+          ],
+          as: 'blockStatus'
         }
       },
+      // Filter out reviews where the reviewer is blocked
       {
-        $set: {
-          userIdStr: '$userId._id',
+        $match: {
+          'blockStatus': { $size: 0 }
         }
       },
+      // Remove the blockStatus field
       {
-        $unwind: '$userIdStr',
-      },
-      ...pro ? statAggPipeline : [],
-      {
-        $unset: ['userIdStr'],
-      },
-      { $unwind: '$userId' },
-      ...getEnrichUserConfigPipelineStage('$gameId', { excludeCalcs: true, localField: 'userId._id', lookupAs: 'userId.config' }),
-    ])
-  ]);
+        $project: {
+          blockStatus: 0
+        }
+      }
+    );
+  }
+
+  // Complete the pipeline with remaining stages
+  pipeline.push(
+    ...(pro ? statAggPipeline : []),
+    {
+      $unset: ['userIdStr'],
+    },
+    { $unwind: '$userId' },
+    ...getEnrichUserConfigPipelineStage('$gameId', { excludeCalcs: true, localField: 'userId._id', lookupAs: 'userId.config' })
+  );
+
+  // Execute the pipeline
+  const reviewsAgg = await ReviewModel.aggregate(pipeline);
 
   reviewsAgg.forEach(review => {
     cleanReview(userStat?.complete, reqUser, review);
