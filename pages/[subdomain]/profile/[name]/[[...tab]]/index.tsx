@@ -583,7 +583,7 @@ export default function ProfilePage({
             <p className='mb-4'>
               Their user generated content is hidden and they cannot view your content.
               <br />
-              If you believe this person is violating our terms of service, please report them.
+              If you believe this person is violating our terms of service, or for more help, visit our <a href='https://discord.gg/j6RxRdqq4A' target='_blank' rel='noopener noreferrer'>Discord server</a>.
             </p>
             <button
               className='px-3 py-1 rounded-md bg-green-500 hover:bg-green-600'
@@ -1004,7 +1004,7 @@ export default function ProfilePage({
                 <p className='mb-4'>
               Their user generated content is hidden and they cannot view your content.
                   <br />
-              If you believe this person is violating our terms of service, please report them.
+                  If you believe this person is violating our terms of service, or for more help, visit our <a href='https://discord.gg/j6RxRdqq4A' target='_blank' rel='noopener noreferrer'>Discord server</a>.
                 </p>
                 <button
                   className='px-3 py-1 rounded-md bg-green-500 hover:bg-green-600'
