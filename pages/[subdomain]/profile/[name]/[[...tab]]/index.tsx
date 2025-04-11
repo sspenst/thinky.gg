@@ -546,7 +546,7 @@ export default function ProfilePage({
                         user={user}
                       />
                       <button
-                        className={classNames('px-3 py-1 rounded-md bg-red-500 hover:bg-red-600')}
+                        className={classNames('px-3 py-1 rounded-md bg-button')}
                         onClick={toggleBlockUser}
                       >
                         Block
@@ -555,24 +555,26 @@ export default function ProfilePage({
                   )}
                 </>
               )}
-              <button
-                onClick={() => {
-                  if (followers.length !== 0) {
-                    setIsFollowerOpen(true);
-                  }
-                }}
-              >
-                <span className='font-bold'>{followers.length}</span> follower{followers.length === 1 ? '' : 's'}
-              </button>
-              <button
-                onClick={() => {
-                  if (following.length !== 0) {
-                    setIsFollowingOpen(true);
-                  }
-                }}
-              >
-                <span className='font-bold'>{following.length}</span> following
-              </button>
+              <div className='flex gap-4 whitespace-nowrap'>
+                <button
+                  onClick={() => {
+                    if (followers.length !== 0) {
+                      setIsFollowerOpen(true);
+                    }
+                  }}
+                >
+                  <span className='font-bold'>{followers.length}</span> follower{followers.length === 1 ? '' : 's'}
+                </button>
+                <button
+                  onClick={() => {
+                    if (following.length !== 0) {
+                      setIsFollowingOpen(true);
+                    }
+                  }}
+                >
+                  <span className='font-bold'>{following.length}</span> following
+                </button>
+              </div>
             </div>
             {user.bio && !reqUserHasBlocked && <p className='italic text-sm break-words max-w-full'>{user.bio}</p>}
           </div>
