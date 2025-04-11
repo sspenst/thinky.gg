@@ -172,9 +172,9 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
   }
 
   return (
-    <div className='flex flex-col gap-8 items-center max-w-7xl mx-auto px-4 py-6'>
+    <div className='flex flex-col gap-8 items-center max-w-7xl mx-auto '>
       {/* User Profile Section */}
-      <div className='w-full bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-6 shadow-lg text-white'>
+      <div className='w-full bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-3 shadow-lg text-white'>
         <div className='flex flex-col md:flex-row justify-between items-center gap-4'>
           <div className='flex items-center gap-4'>
             <div className='bg-white/20 p-3 rounded-full'>
@@ -190,7 +190,6 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
           </div>
         </div>
       </div>
-      
       {/* Games Section */}
       <div className='w-full'>
         <h2 className='text-2xl font-bold mb-4 text-center'>Thinky Games</h2>
