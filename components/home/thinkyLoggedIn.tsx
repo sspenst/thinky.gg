@@ -213,7 +213,14 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
                 <div className='bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 p-4 flex items-center'>
                   <div className='flex items-center gap-3'>
                     <GameLogo gameId={game.id} id={game.id} size={36} />
-                    <h3 className='font-semibold text-2xl'>{game.displayName}</h3>
+                    <h3
+                      className='font-semibold text-2xl cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors'
+                      onClick={() => {
+                        router.push(getUrl(game.id));
+                      }}
+                    >
+                      {game.displayName}
+                    </h3>
                   </div>
                 </div>
                 
