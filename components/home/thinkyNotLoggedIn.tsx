@@ -51,7 +51,14 @@ function GameCard({ game, levelData, instructions, leastMoves, theme }: GameCard
     <div className='bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-300'>
       <div className='bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 p-6 flex flex-col items-center text-center'>
         <GameLogo gameId={game.id} id={game.id} size={64} />
-        <h3 className='font-semibold text-3xl mt-4'>{game.displayName}</h3>
+        <h3
+          className='font-semibold text-3xl mt-4 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors'
+          onClick={() => {
+            router.push(getUrl(game.id));
+          }}
+        >
+          {game.displayName}
+        </h3>
         <p className='text-gray-600 dark:text-gray-300 mt-2 max-w-md'>{game.shortDescription}</p>
       </div>
       
