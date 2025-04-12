@@ -172,7 +172,7 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
   }
 
   return (
-    <div className='flex flex-col gap-8 items-center max-w-4xl mx-auto '>
+    <div className='flex flex-col gap-8 items-center max-w-7xl mx-auto '>
       {/* User Profile Section */}
       <div className='w-full bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-3 shadow-lg text-white'>
         <div className='flex flex-col md:flex-row justify-between items-center gap-4'>
@@ -181,7 +181,7 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
               <FormattedUser id={user._id.toString()} user={user} />
             </div>
             <div className='flex flex-col'>
-              <h1 className='text-2xl font-bold'>Welcome back, {user.name}!</h1>
+              <h1 className='text-2xl font-bold'>Welcome back!</h1>
               <p className='text-white/80'>Continue your puzzle journey</p>
             </div>
           </div>
