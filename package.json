@@ -10,7 +10,7 @@
     "@aws-sdk/credential-provider-node": "^3.738.0",
     "@headlessui/react": "^2.2.0",
     "@headlessui/tailwindcss": "^0.2.1",
-    "@next/third-parties": "^15.1.6",
+    "@next/third-parties": "^15.2.4",
     "@openreplay/tracker": "^15.0.3",
     "@popperjs/core": "^2.11.8",
     "@socket.io/mongo-adapter": "^0.3.2",
