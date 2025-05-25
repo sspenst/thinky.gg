@@ -542,7 +542,7 @@ export default function Game({
       touchYDown.current = event.touches[0].clientY;
       isSwiping.current = false;
       lastTouchTimestamp.current = Date.now();
-      event.preventDefault();
+      // Don't prevent default here to allow natural touch behavior
     }
   }, [level._id, preventKeyDownEvent]);
 
@@ -572,7 +572,7 @@ export default function Game({
       isSwiping.current = false;
     }
 
-    if (!isSwiping.current && touchXDown !== undefined && touchYDown !== undefined ) {
+    if (!isSwiping.current && touchXDown !== undefined && touchYDown !== undefined) {
       const { clientX, clientY } = event.changedTouches[0];
       const dx: number = clientX - touchXDown.current;
       const dy: number = clientY - touchYDown.current;
@@ -606,10 +606,6 @@ export default function Game({
         touchYDown.current = clientY;
         moveByDXDY(dx, dy);
       }
-
-      // reset x and y position
-      // setTouchXDown(undefined);
-      // setTouchYDown(undefined);
     }
   }, [level._id, level.height, level.width, moveByDXDY, preventKeyDownEvent]);
 
@@ -628,13 +624,8 @@ export default function Game({
       const dy: number = clientY - touchYDown.current;
 
       if (Math.abs(dx) <= 0.5 && Math.abs(dy) <= 0.5) {
-        // disable tap
-        // get player
-        const player = document.getElementById('player');
-
-        if (!player) {
-          return;
-        }
+        // Reset touch state on tap
+        validTouchStart.current = false;
 
         return;
       }
@@ -643,7 +634,11 @@ export default function Game({
       touchXDown.current = clientX;
       touchYDown.current = clientY;
     }
-  }, [moveByDXDY, preventKeyDownEvent, touchXDown, touchYDown]);
+
+    // Reset touch state
+    validTouchStart.current = false;
+    isSwiping.current = false;
+  }, [moveByDXDY, preventKeyDownEvent]);
 
   useEffect(() => {
     window.addEventListener('blur', handleBlurEvent);
@@ -662,6 +657,16 @@ export default function Game({
       document.removeEventListener('touchend', handleTouchEndEvent);
     };
   }, [handleBlurEvent, handleKeyDownEvent, handleKeyUpEvent, handleTouchMoveEvent, handleTouchStartEvent, handleTouchEndEvent]);
+
+  useEffect(() => {
+    return () => {
+      // Reset all touch states on unmount
+      validTouchStart.current = false;
+      isSwiping.current = false;
+      touchXDown.current = 0;
+      touchYDown.current = 0;
+    };
+  }, []);
 
   const [controls, setControls] = useState<Control[]>([]);
   const screenSize = deviceInfo.screenSize;
