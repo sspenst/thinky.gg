@@ -1,5 +1,6 @@
 import Direction from '@root/constants/direction';
 import { DEFAULT_GAME_ID } from '@root/constants/GameId';
+import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import UserConfig from '@root/models/db/userConfig';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { Types } from 'mongoose';
@@ -19,6 +20,8 @@ import createLevelHandler from '../../../../pages/api/level/index';
 import saveToCollectionHandler from '../../../../pages/api/save-to-collection/[id]';
 import statsHandler from '../../../../pages/api/stats/index';
 import unpublishLevelHandler from '../../../../pages/api/unpublish/[id]';
+
+jest.mock('@root/helpers/discordWebhook');
 
 let level_id_1: string;
 let level_id_2: string;
@@ -801,6 +804,9 @@ describe('pages/api/level/index.ts', () => {
     ]);
 
     // set a new record by USER_B
+
+    const queueDiscordWebhookMock = jest.mocked(queueDiscordWebhook);
+
     await testApiHandler({
       pagesHandler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -829,6 +835,12 @@ describe('pages/api/level/index.ts', () => {
         const userB = await UserConfigModel.findOne({ userId: TestId.USER_B });
 
         expect(userB.calcRecordsCount).toBe(1);
+        // Verify the specific arguments passed to queueDiscordWebhook
+        expect(queueDiscordWebhookMock).toHaveBeenCalledWith(
+          expect.any(String), // discordChannel
+          expect.stringContaining('~~20~~ 8 moves'), // messageContent
+          expect.objectContaining({ session: expect.any(Object) }) // options
+        );
       },
     });
 

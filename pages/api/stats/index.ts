@@ -341,7 +341,8 @@ export async function putStat(user: User, directions: Direction[], levelId: stri
           : `[${level.name}](${game.baseUrl}/level/${level.slug}?ts=${ts})`;
 
         // Build your message
-        const messageContent = `**${user.name}** set a new record: ${linkText} - ${moves} moves`;
+        const prevMovesText = prevRecord?.moves ? ` ~~${prevRecord.moves}~~` : '';
+        const messageContent = `**${user.name}** set a new record: ${linkText} - ${prevMovesText} ${moves} moves`;
         const discordChannel = game.id === GameId.SOKOPATH ? DiscordChannel.SokopathLevels : DiscordChannel.PathologyLevels;
 
         await Promise.all([
