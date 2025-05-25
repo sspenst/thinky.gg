@@ -126,6 +126,10 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
     );
   }, [collection, isCollectionViewHidden, level, setCollection]);
 
+  // Determine if there are next/prev levels
+  const hasNextLevel = collection ? collection.levels.findIndex(l => l._id === level._id) < collection.levels.length - 1 : false;
+  const hasPrevLevel = collection ? collection.levels.findIndex(l => l._id === level._id) > 0 : false;
+
   return (
     <div className='flex h-full'>
       <div className='flex flex-col grow max-w-full'>
@@ -227,6 +231,8 @@ export default function GameWrapper({ chapter, collection, level, onNext, onPrev
             }
           }}
           onStatsSuccess={onStatsSuccess}
+          hasNextLevel={hasNextLevel}
+          hasPrevLevel={hasPrevLevel}
         />
       </div>
       {collection &&

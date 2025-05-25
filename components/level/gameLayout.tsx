@@ -18,9 +18,11 @@ interface GameLayoutProps {
   onCellClick: (x: number, y: number) => void;
   onScrub?: (moveIndex: number) => void;
   isPro: boolean;
+  hasNextLevel?: boolean;
+  hasPrevLevel?: boolean;
 }
 
-export default function GameLayout({ controls, disableCheckpoints, gameState, level, onCellClick, onScrub, isPro }: GameLayoutProps) {
+export default function GameLayout({ controls, disableCheckpoints, gameState, level, onCellClick, onScrub, isPro, hasNextLevel, hasPrevLevel }: GameLayoutProps) {
   const [fullScreen, setFullScreen] = useState(false);
   const [isCheckpointOpen, setIsCheckpointOpen] = useState(false);
   const { setPreventKeyDownEvent, setShowHeader } = useContext(PageContext);
@@ -46,18 +48,68 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
     <div className='grow flex flex-col max-w-full select-none h-full' id='game-layout' style={{
       backgroundColor: 'var(--bg-color)',
     }}>
-      <Grid
-        gameState={gameState}
-        id={level._id.toString()}
-        leastMoves={level.leastMoves}
-        onCellClick={(x, y, rightClick, isDragging) => {
-          if (!rightClick && !isDragging) {
-            onCellClick(x, y);
-          }
-        }}
-        optimizeDom
-      />
+      <div className='flex grow relative'>
+        {/* Desktop navigation buttons */}
+        {!deviceInfo.isMobile && hasPrevLevel && controls.find(c => c.id === 'btn-prev') && (
+          <button
+            className='absolute left-2 top-1/2 -translate-y-1/2 z-10 p-2 hover:bg-color-2 rounded-full transition-colors duration-200'
+            onClick={() => controls.find(c => c.id === 'btn-prev')?.action()}
+          >
+            <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+              <path strokeLinecap='round' strokeLinejoin='round' d='M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18' />
+            </svg>
+          </button>
+        )}
+        {!deviceInfo.isMobile && hasNextLevel && controls.find(c => c.id === 'btn-next') && (
+          <button
+            className='absolute right-2 top-1/2 -translate-y-1/2 z-10 p-2 hover:bg-color-2 rounded-full transition-colors duration-200'
+            onClick={() => controls.find(c => c.id === 'btn-next')?.action()}
+          >
+            <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+              <path strokeLinecap='round' strokeLinejoin='round' d='M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3' />
+            </svg>
+          </button>
+        )}
+        <Grid
+          gameState={gameState}
+          id={level._id.toString()}
+          leastMoves={level.leastMoves}
+          onCellClick={(x, y, rightClick, isDragging) => {
+            if (!rightClick && !isDragging) {
+              onCellClick(x, y);
+            }
+          }}
+          optimizeDom
+        />
+      </div>
       <div className='gap-2 mx-3 transition-opacity flex flex-col'>
+        {/* Mobile navigation buttons */}
+        {deviceInfo.isMobile && (
+          <div className='flex justify-between items-center mb-4'>
+            {controls.find(c => c.id === 'btn-prev') && (
+              <button
+                className='flex items-center gap-2 p-2 hover:bg-color-2 rounded-lg transition-colors duration-200'
+                onClick={() => controls.find(c => c.id === 'btn-prev')?.action()}
+              >
+                <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+                  <path strokeLinecap='round' strokeLinejoin='round' d='M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18' />
+                </svg>
+                <span>{hasPrevLevel ? 'Prev Level' : 'Back'}</span>
+              </button>
+            )}
+            {hasNextLevel && controls.find(c => c.id === 'btn-next') && (
+              <button
+                className='flex items-center gap-2 p-2 hover:bg-color-2 rounded-lg transition-colors duration-200'
+                onClick={() => controls.find(c => c.id === 'btn-next')?.action()}
+              >
+                <span>Next Level</span>
+                <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+                  <path strokeLinecap='round' strokeLinejoin='round' d='M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3' />
+                </svg>
+              </button>
+            )}
+          </div>
+        )}
         {onScrub && <div className='mb-4 md:mb-0'><Scrubber
           gameState={gameState}
           onScrub={onScrub}
@@ -90,7 +142,7 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
             </>
           }
           <div className='grow'>
-            <Controls controls={controls} />
+            <Controls controls={controls.filter(c => c.id !== 'btn-prev' && c.id !== 'btn-next')} />
           </div>
           {!deviceInfo.isMobile &&
             <>

@@ -40,6 +40,8 @@ export interface GameProps {
   onSolve?: () => void;
   onStatsSuccess?: () => void;
   disableScrubber?: boolean;
+  hasNextLevel?: boolean;
+  hasPrevLevel?: boolean;
 }
 
 export default function Game({
@@ -58,6 +60,8 @@ export default function Game({
   onSolve,
   onStatsSuccess,
   disableScrubber,
+  hasNextLevel,
+  hasPrevLevel,
 }: GameProps) {
   const levelContext = useContext(LevelContext);
   const { game, deviceInfo, mutateUser, shouldAttemptAuth, user } = useContext(AppContext);
@@ -801,6 +805,8 @@ export default function Game({
         onCellClick={(x, y) => onCellClick(x, y)}
         onScrub={disableScrubber ? undefined : handleScrub}
         isPro={pro}
+        hasNextLevel={hasNextLevel}
+        hasPrevLevel={hasPrevLevel}
       />
     </GameContext.Provider>
   );
