@@ -2,8 +2,11 @@ import { AppContext } from '@root/contexts/appContext';
 import { PageContext } from '@root/contexts/pageContext';
 import { GameState } from '@root/helpers/gameStateHelpers';
 import React, { useContext, useEffect, useState } from 'react';
+import Dimensions from '../../constants/dimensions';
 import Control from '../../models/control';
 import { EnrichedLevel } from '../../models/db/level';
+import FormattedLevelLink from '../formatted/formattedLevelLink';
+import FormattedUser from '../formatted/formattedUser';
 import CheckpointsModal from '../modal/checkpointsModal';
 import StyledTooltip from '../page/styledTooltip';
 import Controls from './controls';
@@ -18,9 +21,11 @@ interface GameLayoutProps {
   onCellClick: (x: number, y: number) => void;
   onScrub?: (moveIndex: number) => void;
   isPro: boolean;
+  nextLevel?: EnrichedLevel;
+  prevLevel?: EnrichedLevel;
 }
 
-export default function GameLayout({ controls, disableCheckpoints, gameState, level, onCellClick, onScrub, isPro }: GameLayoutProps) {
+export default function GameLayout({ controls, disableCheckpoints, gameState, level, onCellClick, onScrub, isPro, nextLevel, prevLevel }: GameLayoutProps) {
   const [fullScreen, setFullScreen] = useState(false);
   const [isCheckpointOpen, setIsCheckpointOpen] = useState(false);
   const { setPreventKeyDownEvent, setShowHeader } = useContext(PageContext);
@@ -46,18 +51,65 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
     <div className='grow flex flex-col max-w-full select-none h-full' id='game-layout' style={{
       backgroundColor: 'var(--bg-color)',
     }}>
-      <Grid
-        gameState={gameState}
-        id={level._id.toString()}
-        leastMoves={level.leastMoves}
-        onCellClick={(x, y, rightClick, isDragging) => {
-          if (!rightClick && !isDragging) {
-            onCellClick(x, y);
-          }
-        }}
-        optimizeDom
-      />
+      <div className='flex grow relative'>
+        <Grid
+          gameState={gameState}
+          id={level._id.toString()}
+          leastMoves={level.leastMoves}
+          onCellClick={(x, y, rightClick, isDragging) => {
+            if (!rightClick && !isDragging) {
+              onCellClick(x, y);
+            }
+          }}
+          optimizeDom
+        />
+      </div>
       <div className='gap-2 mx-3 transition-opacity flex flex-col'>
+        {/* Navigation buttons */}
+        <div className='flex justify-between items-center'>
+          {controls.find(c => c.id === 'btn-prev') && (
+            <button
+              className='flex items-center gap-2 p-2 hover:bg-color-2 rounded-lg transition-colors duration-200'
+              onClick={() => controls.find(c => c.id === 'btn-prev')?.action()}
+            >
+              <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+                <path strokeLinecap='round' strokeLinejoin='round' d='M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18' />
+              </svg>
+              <span className='text-left max-w-32 md:max-w-60'>
+                {prevLevel ? (
+                  <>
+                    Prev Level
+                    <span className='hidden md:inline'>
+                      {' '}
+                      <FormattedLevelLink id='prev' level={prevLevel} />
+                    </span>
+                  </>
+                ) : 'Back'}
+              </span>
+            </button>
+          )}
+          {nextLevel && controls.find(c => c.id === 'btn-next') && (
+            <button
+              className='flex items-center gap-2 p-2 hover:bg-color-2 rounded-lg transition-colors duration-200'
+              onClick={() => controls.find(c => c.id === 'btn-next')?.action()}
+            >
+              <span className='text-right max-w-32 md:max-w-60'>
+                {nextLevel ? (
+                  <>
+                    Next Level
+                    <span className='hidden md:inline'>
+                      {' '}
+                      <FormattedLevelLink id='next' level={nextLevel} />
+                    </span>
+                  </>
+                ) : 'Next Level'}
+              </span>
+              <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+                <path strokeLinecap='round' strokeLinejoin='round' d='M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3' />
+              </svg>
+            </button>
+          )}
+        </div>
         {onScrub && <div className='mb-4 md:mb-0'><Scrubber
           gameState={gameState}
           onScrub={onScrub}
@@ -90,7 +142,7 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
             </>
           }
           <div className='grow'>
-            <Controls controls={controls} />
+            <Controls controls={controls.filter(c => c.id !== 'btn-prev' && c.id !== 'btn-next')} />
           </div>
           {!deviceInfo.isMobile &&
             <>
