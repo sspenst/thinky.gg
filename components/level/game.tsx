@@ -16,7 +16,7 @@ import { AppContext } from '../../contexts/appContext';
 import { LevelContext } from '../../contexts/levelContext';
 import { PageContext } from '../../contexts/pageContext';
 import Control from '../../models/control';
-import Level from '../../models/db/level';
+import Level, { EnrichedLevel } from '../../models/db/level';
 import GameLayout from './gameLayout';
 
 interface SessionCheckpoint {
@@ -40,8 +40,8 @@ export interface GameProps {
   onSolve?: () => void;
   onStatsSuccess?: () => void;
   disableScrubber?: boolean;
-  hasNextLevel?: boolean;
-  hasPrevLevel?: boolean;
+  nextLevel?: EnrichedLevel;
+  prevLevel?: EnrichedLevel;
 }
 
 export default function Game({
@@ -60,8 +60,8 @@ export default function Game({
   onSolve,
   onStatsSuccess,
   disableScrubber,
-  hasNextLevel,
-  hasPrevLevel,
+  nextLevel,
+  prevLevel,
 }: GameProps) {
   const levelContext = useContext(LevelContext);
   const { game, deviceInfo, mutateUser, shouldAttemptAuth, user } = useContext(AppContext);
@@ -805,8 +805,8 @@ export default function Game({
         onCellClick={(x, y) => onCellClick(x, y)}
         onScrub={disableScrubber ? undefined : handleScrub}
         isPro={pro}
-        hasNextLevel={hasNextLevel}
-        hasPrevLevel={hasPrevLevel}
+        nextLevel={nextLevel}
+        prevLevel={prevLevel}
       />
     </GameContext.Provider>
   );
