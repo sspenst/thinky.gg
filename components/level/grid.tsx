@@ -209,13 +209,6 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
     );
   }, [borderWidth, height, isDragging, onCellClick, optimizeDom, tileSize, width]);
 
-  // Prevent hydration mismatch by not rendering theme class until mounted
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   const lastTileDragged = useRef<Position | undefined>(undefined);
   const onMouseMove = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
     if (isMouseDown) {
@@ -240,11 +233,13 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
     }
   };
 
+  const themeClass = theme || 'theme-modern'; // Default to modern theme if no theme is set
+
   return (
     <div
       className={classNames(
         'grow flex items-center justify-center overflow-hidden',
-        mounted ? theme : undefined,
+        themeClass,
         { [teko.className]: classic }
       )} id={gridId}>
       {tileSize !== 0 &&

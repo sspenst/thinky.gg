@@ -274,8 +274,8 @@ export default function Home({
           </div>
         </div>
         <div className='flex flex-col lg:flex-row items-center lg:items-start gap-8 w-full'>
-          <div className='lg:w-7/12 h-min flex flex-col gap-4 max-w-full' id='latestLevelsSection'>
-            <div id='latest-levels' className='flex justify-center'>
+          <div className='lg:w-7/12 h-min flex flex-col gap-4 max-w-full'>
+            <div id='latest-levels' className='flex justify-center' >
               <Link
                 className='font-bold text-xl text-center hover:underline'
                 href={{

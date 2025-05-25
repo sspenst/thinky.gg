@@ -54,8 +54,6 @@ export default function Scrubber({ gameState, onScrub, isPro }: ScrubberProps) {
   }, [isPro, calculateMoveFromPosition, onScrub]);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    e.preventDefault();
-
     if (!isPro) {
       setShowProModal(true);
 
@@ -89,9 +87,13 @@ export default function Scrubber({ gameState, onScrub, isPro }: ScrubberProps) {
   }, [handleMove]);
 
   const handleTouchMove = useCallback((e: TouchEvent) => {
-    if (e.touches.length === 0) return;
+    if (!isDragging || e.touches.length === 0) return;
+
+    // Prevent scrolling while dragging
+    e.preventDefault();
+
     handleMove(e.touches[0].clientX);
-  }, [handleMove]);
+  }, [isDragging, handleMove]);
 
   const handleDragEnd = useCallback(() => {
     setIsDragging(false);
@@ -101,7 +103,7 @@ export default function Scrubber({ gameState, onScrub, isPro }: ScrubberProps) {
     if (isDragging) {
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleDragEnd);
-      window.addEventListener('touchmove', handleTouchMove);
+      window.addEventListener('touchmove', handleTouchMove, { passive: false });
       window.addEventListener('touchend', handleDragEnd);
     }
 
