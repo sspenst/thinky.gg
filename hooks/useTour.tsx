@@ -53,6 +53,17 @@ export default function useTour(path: TourPath, cb?: (data: CallBackProps) => vo
     }
   }, [mutateUser, userConfig]);
 
+  const scrollToTarget = useCallback((target: string | HTMLElement) => {
+    const element = typeof target === 'string' ? document.querySelector(target) : target;
+
+    if (element) {
+      element.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }
+  }, []);
+
   useEffect(() => {
     if (!userConfig || game.disableTour) {
       return;
@@ -85,6 +96,11 @@ export default function useTour(path: TourPath, cb?: (data: CallBackProps) => vo
             putFinishedTour(tourType);
           }
 
+          // Handle scrolling when step changes
+          if (data.type === 'step:after' && data.step?.target) {
+            scrollToTarget(data.step.target);
+          }
+
           if (cb) {
             cb(data);
           }
@@ -93,7 +109,7 @@ export default function useTour(path: TourPath, cb?: (data: CallBackProps) => vo
         steps={stepsRef.current}
         continuous
         hideCloseButton
-        disableScrolling={disableScrolling}
+        disableScrolling={true} // Disable react-joyride's built-in scrolling
         showProgress
         showSkipButton
         locale={{
@@ -150,7 +166,7 @@ export default function useTour(path: TourPath, cb?: (data: CallBackProps) => vo
         } as Styles}
       />
     );
-  }, [cb, disableScrolling, game.disableTour, path, putFinishedTour, run, userConfig]);
+  }, [cb, game.disableTour, path, putFinishedTour, run, scrollToTarget, userConfig]);
 
   return tour;
 }
