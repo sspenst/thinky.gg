@@ -88,11 +88,13 @@ export default function useTour(path: TourPath, cb?: (data: CallBackProps) => vo
     setTour(
       <ReactJoyride
         callback={(data: CallBackProps) => {
+          console.log('FINISHING TOUR?', data.type);
+
           if (!tourType) {
             return;
           }
 
-          if ((data.type === 'tour:end' && data.action === 'next') || data.status === 'skipped') {
+          if ((data.type === 'tour:end' || data.status === 'skipped')) {
             putFinishedTour(tourType);
           }
 
