@@ -1,6 +1,7 @@
 import { AppContext } from '@root/contexts/appContext';
 import { PageContext } from '@root/contexts/pageContext';
 import { GameState } from '@root/helpers/gameStateHelpers';
+import { LucideMoveLeft, LucideMoveRight } from 'lucide-react';
 import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import Control from '../../models/control';
@@ -69,44 +70,34 @@ export default function GameLayout({ controls, disableCheckpoints, gameState, le
         <div className='flex justify-between items-center'>
           {controls.find(c => c.id === 'btn-prev') && (
             <button
-              className='flex items-center gap-2 p-2 hover:bg-color-2 rounded-lg transition-colors duration-200'
+              className='flex items-center hover:bg-color-2 rounded-lg transition-colors duration-200 '
               onClick={() => controls.find(c => c.id === 'btn-prev')?.action()}
             >
-              <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
-                <path strokeLinecap='round' strokeLinejoin='round' d='M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18' />
-              </svg>
-              <span className='text-left max-w-32 md:max-w-60'>
-                {prevLevel ? (
-                  <>
-                    Prev Level
-                    <span className='hidden md:inline'>
-                      {' '}
-                      <FormattedLevelLink id='prev' level={prevLevel} />
-                    </span>
-                  </>
-                ) : 'Back'}
+              <LucideMoveLeft className='mr-2' />
+              <span className='max-w-32 md:max-w-60 flex flex-col items-start'>
+                <span>{prevLevel ? 'Prev Level' : 'Back'}</span>
+                {prevLevel && (
+                  <span className='hidden md:inline'>
+                    <FormattedLevelLink id='prev' level={prevLevel} />
+                  </span>
+                )}
               </span>
             </button>
           )}
-          {nextLevel && controls.find(c => c.id === 'btn-next') && (
+          {controls.find(c => c.id === 'btn-next') && (
             <button
-              className='flex items-center gap-2 p-2 hover:bg-color-2 rounded-lg transition-colors duration-200'
+              className='flex items-center  hover:bg-color-2 rounded-lg transition-colors duration-200'
               onClick={() => controls.find(c => c.id === 'btn-next')?.action()}
             >
-              <span className='text-right max-w-32 md:max-w-60'>
-                {nextLevel ? (
-                  <>
-                    Next Level
-                    <span className='hidden md:inline'>
-                      {' '}
-                      <FormattedLevelLink id='next' level={nextLevel} />
-                    </span>
-                  </>
-                ) : 'Next Level'}
+              <span className='max-w-32 md:max-w-60 flex flex-col items-end'>
+                <span>Next Level</span>
+                {nextLevel && (
+                  <span className='hidden md:inline'>
+                    <FormattedLevelLink id='next' level={nextLevel} />
+                  </span>
+                )}
               </span>
-              <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
-                <path strokeLinecap='round' strokeLinejoin='round' d='M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3' />
-              </svg>
+              <LucideMoveRight className='ml-2' />
             </button>
           )}
         </div>
