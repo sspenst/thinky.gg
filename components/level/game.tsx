@@ -17,6 +17,7 @@ import { LevelContext } from '../../contexts/levelContext';
 import { PageContext } from '../../contexts/pageContext';
 import Control from '../../models/control';
 import Level, { EnrichedLevel } from '../../models/db/level';
+import { ICON_PRO_16, ICON_REDO, ICON_UNDO } from '../icons/gameIcons';
 import GameLayout from './gameLayout';
 
 interface SessionCheckpoint {
@@ -454,7 +455,7 @@ export default function Game({
           <div>Upgrade to <Link href='/pro' className='text-blue-500'>{game.displayName} Pro</Link> to unlock redo!</div>,
           {
             duration: 3000,
-            icon: <Image alt='pro' src='/pro.svg' width='16' height='16' />,
+            icon: ICON_PRO_16,
           }
         );
 
@@ -673,8 +674,7 @@ export default function Game({
   }, []);
 
   const [controls, setControls] = useState<Control[]>([]);
-  const screenSize = deviceInfo.screenSize;
-  const isMobile = screenSize < ScreenSize.XL;
+  const isMobile = deviceInfo.isMobile;
 
   useEffect(() => {
     const _controls: Control[] = [];
@@ -693,16 +693,9 @@ export default function Game({
     </svg>);
     const restartTxt = isMobile ? restartIcon : <div><span className='underline'>R</span>estart</div>;
 
-    const undoIcon = (<svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
-      <path strokeLinecap='round' strokeLinejoin='round' d='M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3' />
-    </svg>);
-    const undoTxt = isMobile ? undoIcon : <div><span className='underline'>U</span>ndo</div>;
+    const undoTxt = isMobile ? ICON_UNDO : <div><span className='underline'>U</span>ndo</div>;
 
-    const redoIcon = (<svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
-      <path strokeLinecap='round' strokeLinejoin='round' d='M15 15l6-6m0 0l-6-6m6 6H9a6 6 0 000 12h3' />
-    </svg>);
-
-    const redoTxt = isMobile ? redoIcon : <div>Redo (<span className='underline'>Y</span>)</div>;
+    const redoTxt = isMobile ? ICON_REDO : <div>Redo (<span className='underline'>Y</span>)</div>;
 
     _controls.push(
       new Control('btn-restart', () => handleKeyDown('KeyR'), restartTxt),

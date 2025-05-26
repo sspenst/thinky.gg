@@ -1,6 +1,8 @@
 import { ValidateLevelResponse } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
+import { ScreenSize } from '@root/hooks/useDeviceCheck';
+import { FileUp, LucideCode, LucidePencil, LucideSave, LucideScissors, LucideTestTube } from 'lucide-react';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -9,6 +11,7 @@ import TileType from '../../constants/tileType';
 import { PageContext } from '../../contexts/pageContext';
 import Control from '../../models/control';
 import Level from '../../models/db/level';
+import { ICON_REDO, ICON_RESIZE, ICON_UNDO } from '../icons/gameIcons';
 import BasicLayout from '../level/basicLayout';
 import CreateLevelModal from '../modal/createLevelModal';
 import DataModal from '../modal/dataModal';
@@ -26,7 +29,7 @@ interface EditorProps {
 }
 
 export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorProps) {
-  const { game } = useContext(AppContext);
+  const { game, deviceInfo } = useContext(AppContext);
   const history = useRef<Level[]>([level]);
   const historyIndex = useRef<number>(0);
   const [isCreateLevelOpen, setIsCreateLevelOpen] = useState(false);
@@ -349,6 +352,14 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       </div>
     ) : isDirty ? 'Save before testing' : null;
 
+  const isMobile = deviceInfo.isMobile;
+
+  const undoTxt = isMobile ? ICON_UNDO : <div>Undo</div>;
+
+  const redoTxt = isMobile ? ICON_REDO : <div>Redo</div>;
+
+  const resizeTxt = isMobile ? ICON_RESIZE : <div>Resize</div>;
+
   return (<>
     <div className='flex flex-col h-full'>
       <div className='flex flex-col h-24 py-1' style={{
@@ -369,29 +380,30 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       </div>
       <BasicLayout
         controls={[
-          new Control('btn-undo', () => undo(), <>Undo</>, historyIndex.current === 0),
-          new Control('btn-redo', () => redo(), <>Redo</>, historyIndex.current === history.current.length - 1),
-          new Control('btn-size', () => setIsSizeOpen(true), <>Size</>),
-          new Control('btn-data', () => setIsDataOpen(true), <>Data</>),
-          new Control('btn-modify', () => setIsModifyOpen(true), <>Modify</>),
+          new Control('btn-undo', () => undo(), undoTxt, historyIndex.current === 0),
+          new Control('btn-redo', () => redo(), redoTxt, historyIndex.current === history.current.length - 1),
+          new Control('btn-size', () => setIsSizeOpen(true), resizeTxt),
+          new Control('btn-data', () => setIsDataOpen(true), <LucideCode />),
+          new Control('btn-modify', () => setIsModifyOpen(true), <LucideScissors />),
           new Control('btn-save', () => {
             if (id) {
               save();
             } else {
               setIsCreateLevelOpen(true);
             }
-          }, <>Save</>),
+          }, <LucideSave />),
           ...(!id ? [] : [
-            new Control('btn-edit', () => setIsEditLevelOpen(true), <>Edit</>, isDirty),
+            new Control('btn-edit', () => setIsEditLevelOpen(true), <LucidePencil />, isDirty),
             new Control(
               'btn-test',
               () => router.push(`/test/${id}`),
-              <>
+              <div className='flex flex-row'>
                 <div data-tooltip-id='btn-test-tooltip' data-tooltip-html={btnTestTooltip}>
-                  {!isValid && '⚠️ '}Test
+                  {!isValid && '⚠️ '}
                 </div>
+                <LucideTestTube />
                 <StyledTooltip id='btn-test-tooltip' />
-              </>,
+              </div>,
               isDirty || !isValid,
             ),
             new Control(
@@ -399,7 +411,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
               () => setIsPublishLevelOpen(true),
               <>
                 <div data-tooltip-id='btn-publish-tooltip' data-tooltip-html={isDirty ? 'Save and test before publishing' : level.leastMoves === 0 ? 'Test before publishing' : null}>
-                  Publish
+                  <FileUp />
                 </div>
                 <StyledTooltip id='btn-publish-tooltip' />
               </>,
