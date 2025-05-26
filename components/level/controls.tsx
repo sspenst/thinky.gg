@@ -63,7 +63,7 @@ export default function Controls({ controls }: ControlsProps) {
       {controls.map((control) => (
         <button
           className={classNames(
-            'border md:p-1 p-1 pt-2 py-2 flex w-full justify-center items-center rounded-lg duration-300 hover:duration-100 ease select-none touch-none m-0.5 max-w-64',
+            'border border-gray-500 md:p-1 p-1 pt-2 py-2 flex w-full justify-center items-center rounded-lg duration-300 hover:duration-100 ease select-none touch-none m-0.5 max-w-64',
             { 'cursor-default': control.disabled },
             control.blue ? 'bg-blue-500 text-gray-300 hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition' : control.disabled ? null : styles.control,
           )}
