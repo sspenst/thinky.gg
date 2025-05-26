@@ -1,8 +1,7 @@
 import { ValidateLevelResponse } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
-import { ScreenSize } from '@root/hooks/useDeviceCheck';
-import { FileUp, LucideCode, LucidePencil, LucideSave, LucideScissors, LucideTestTube } from 'lucide-react';
+import { FileUp, LucideCode, LucidePencil, LucidePlay, LucideSave, LucideScissors } from 'lucide-react';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -401,7 +400,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
                 <div data-tooltip-id='btn-test-tooltip' data-tooltip-html={btnTestTooltip}>
                   {!isValid && '⚠️ '}
                 </div>
-                <LucideTestTube />
+                <LucidePlay />
                 <StyledTooltip id='btn-test-tooltip' />
               </div>,
               isDirty || !isValid,
