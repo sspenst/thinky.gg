@@ -1,7 +1,7 @@
 import { ValidateLevelResponse } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
-import { FileUp, LucideCode, LucidePencil, LucidePlay, LucideRepeat2, LucideSave } from 'lucide-react';
+import { LucideCode, LucideFlipHorizontal2, LucidePencil, LucidePlay, LucideRepeat2, LucideSave, LucideShare } from 'lucide-react';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -359,9 +359,14 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
 
   const resizeTxt = isMobile ? ICON_RESIZE : <div className='flex gap-1'>{ICON_RESIZE}<span>Resize</span> </div>;
 
-  const modifyTxt = isMobile ? <LucideRepeat2 /> : <div className='flex gap-1'><LucideRepeat2 /><span>Modify</span></div>;
+  const modifyTxt = isMobile ? <LucideFlipHorizontal2 /> : <div className='flex gap-1'><LucideFlipHorizontal2 /><span>Modify</span></div>;
 
   const modifyCode = isMobile ? <LucideCode /> : <div className='flex gap-1'><LucideRepeat2 /><span>Data</span></div>;
+
+  const modifySave = isMobile ? <LucideSave /> : <div className='flex gap-1'><LucideSave /><span>Save</span></div>;
+
+  const modifyEdit = isMobile ? <LucidePencil /> : <div className='flex gap-1'><LucidePencil /><span>Edit</span></div>;
+  const modifyPlay = isMobile ? <LucidePlay /> : <div className='flex gap-1'><LucidePlay /><span>Play</span></div>;
 
   return (<>
     <div className='flex flex-col h-full'>
@@ -394,9 +399,9 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
             } else {
               setIsCreateLevelOpen(true);
             }
-          }, <LucideSave />),
+          }, modifySave),
           ...(!id ? [] : [
-            new Control('btn-edit', () => setIsEditLevelOpen(true), <LucidePencil />, isDirty),
+            new Control('btn-edit', () => setIsEditLevelOpen(true), modifyEdit, isDirty),
             new Control(
               'btn-test',
               () => router.push(`/test/${id}`),
@@ -404,7 +409,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
                 <div data-tooltip-id='btn-test-tooltip' data-tooltip-html={btnTestTooltip}>
                   {!isValid && '⚠️ '}
                 </div>
-                <LucidePlay />
+                {modifyPlay}
                 <StyledTooltip id='btn-test-tooltip' />
               </div>,
               isDirty || !isValid,
@@ -414,7 +419,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
               () => setIsPublishLevelOpen(true),
               <>
                 <div data-tooltip-id='btn-publish-tooltip' data-tooltip-html={isDirty ? 'Save and test before publishing' : level.leastMoves === 0 ? 'Test before publishing' : null}>
-                  <FileUp stroke={isDirty ? 'white' : 'lightgreen'} />
+                  <span className='flex gap-1'><LucideShare stroke={isDirty ? 'white' : 'lightgreen'} /> { !isMobile && <div>Publish</div>}</span>
                 </div>
                 <StyledTooltip id='btn-publish-tooltip' />
               </>,
