@@ -1,7 +1,7 @@
 import { ValidateLevelResponse } from '@root/constants/Games';
 import { AppContext } from '@root/contexts/appContext';
 import TileTypeHelper from '@root/helpers/tileTypeHelper';
-import { FileUp, LucideCode, LucidePencil, LucidePlay, LucideSave, LucideScissors } from 'lucide-react';
+import { FileUp, LucideCode, LucidePencil, LucidePlay, LucideRepeat2, LucideSave } from 'lucide-react';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -383,7 +383,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
           new Control('btn-redo', () => redo(), redoTxt, historyIndex.current === history.current.length - 1),
           new Control('btn-size', () => setIsSizeOpen(true), resizeTxt),
           new Control('btn-data', () => setIsDataOpen(true), <LucideCode />),
-          new Control('btn-modify', () => setIsModifyOpen(true), <LucideScissors />),
+          new Control('btn-modify', () => setIsModifyOpen(true), <LucideRepeat2 />),
           new Control('btn-save', () => {
             if (id) {
               save();
@@ -410,7 +410,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
               () => setIsPublishLevelOpen(true),
               <>
                 <div data-tooltip-id='btn-publish-tooltip' data-tooltip-html={isDirty ? 'Save and test before publishing' : level.leastMoves === 0 ? 'Test before publishing' : null}>
-                  <FileUp />
+                  <FileUp stroke={isDirty ? 'white' : 'lightgreen'} />
                 </div>
                 <StyledTooltip id='btn-publish-tooltip' />
               </>,

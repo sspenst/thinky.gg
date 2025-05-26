@@ -86,10 +86,10 @@ export default function ModifyModal({ closeModal, historyPush, isOpen, setIsDirt
             type='checkbox'
           />
         </div>
-        <div className='flex flex-row gap-2 items-center w-full'>
+        <div className='flex flex-col gap-2 items-center'>
           <label className='font-semibold' htmlFor='rotateOrFlip'>Transform:</label>
           <Select
-            className='text-black'
+            className='text-black '
             defaultValue={{ label: 'Choose Transform', value: 'identity' }}
             formatOptionLabel={({ label }: {label: string, value: string}) => {
               const [type, time] = label.split('|');
