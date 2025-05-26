@@ -208,6 +208,11 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
       />
     );
   }, [borderWidth, height, isDragging, onCellClick, optimizeDom, tileSize, width]);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const lastTileDragged = useRef<Position | undefined>(undefined);
   const onMouseMove = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
@@ -233,7 +238,7 @@ export default function Grid({ cellClassName, cellStyle, disableAnimation, gameO
     }
   };
 
-  const themeClass = theme || 'theme-modern'; // Default to modern theme if no theme is set
+  const themeClass = mounted ? theme : undefined;
 
   return (
     <div
