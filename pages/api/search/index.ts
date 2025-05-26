@@ -11,7 +11,6 @@ import { getDifficultyRangeFromName } from '../../../components/formatted/format
 import GraphType from '../../../constants/graphType';
 import TimeRange from '../../../constants/timeRange';
 import apiWrapper from '../../../helpers/apiWrapper';
-import { getContentFilterForBlockedUsers } from '../../../helpers/contentFilterHelpers';
 import { getEnrichLevelsPipelineSteps, getEnrichUserConfigPipelineStage } from '../../../helpers/enrich';
 import { logger } from '../../../helpers/logger';
 import cleanUser from '../../../lib/cleanUser';
