@@ -353,11 +353,15 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
 
   const isMobile = deviceInfo.isMobile;
 
-  const undoTxt = isMobile ? ICON_UNDO : <div>Undo</div>;
+  const undoTxt = isMobile ? ICON_UNDO : <div className='flex gap-1'>{ICON_UNDO}<span>Undo</span> </div>;
 
-  const redoTxt = isMobile ? ICON_REDO : <div>Redo</div>;
+  const redoTxt = isMobile ? ICON_REDO : <div className='flex gap-1'>{ICON_REDO}<span>Redo</span> </div>;
 
-  const resizeTxt = isMobile ? ICON_RESIZE : <div>Resize</div>;
+  const resizeTxt = isMobile ? ICON_RESIZE : <div className='flex gap-1'>{ICON_RESIZE}<span>Resize</span> </div>;
+
+  const modifyTxt = isMobile ? <LucideRepeat2 /> : <div className='flex gap-1'><LucideRepeat2 /><span>Modify</span></div>;
+
+  const modifyCode = isMobile ? <LucideCode /> : <div className='flex gap-1'><LucideRepeat2 /><span>Data</span></div>;
 
   return (<>
     <div className='flex flex-col h-full'>
@@ -382,8 +386,8 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
           new Control('btn-undo', () => undo(), undoTxt, historyIndex.current === 0),
           new Control('btn-redo', () => redo(), redoTxt, historyIndex.current === history.current.length - 1),
           new Control('btn-size', () => setIsSizeOpen(true), resizeTxt),
-          new Control('btn-data', () => setIsDataOpen(true), <LucideCode />),
-          new Control('btn-modify', () => setIsModifyOpen(true), <LucideRepeat2 />),
+          new Control('btn-data', () => setIsDataOpen(true), modifyCode),
+          new Control('btn-modify', () => setIsModifyOpen(true), modifyTxt),
           new Control('btn-save', () => {
             if (id) {
               save();
