@@ -9,7 +9,7 @@ import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { LevelModel } from '../../../../models/mongoose';
+import { CacheModel, LevelModel } from '../../../../models/mongoose';
 import latestLevelsHandler from '../../../../pages/api/latest-levels/index';
 
 beforeAll(async () => {
@@ -101,6 +101,9 @@ describe('Testing latest levels api', () => {
       }));
     }
 
+    // bust the cache since these would hypothetically be in the cache
+    await CacheModel.deleteMany({});
+
     await Promise.all(promises);
     await testApiHandler({
       pagesHandler: async (_, res) => {
@@ -137,7 +140,7 @@ describe('Testing latest levels api', () => {
   }, 30000);
   test('If mongo query returns null we should fail gracefully', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    jest.spyOn(LevelModel, 'aggregate').mockImplementation(() => {
+    jest.spyOn(CacheModel, 'findOne').mockImplementation(() => {
       return [] as never;
     });
 
