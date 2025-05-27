@@ -547,7 +547,7 @@ export default function Game({
       touchYDown.current = event.touches[0].clientY;
       isSwiping.current = false;
       lastTouchTimestamp.current = Date.now();
-      // Don't prevent default here to allow natural touch behavior
+      event.preventDefault();
     }
   }, [level._id, preventKeyDownEvent]);
 
