@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import Achievement from './db/achievement';
+import Cache from './db/cache';
 import Campaign from './db/campaign';
 import Collection from './db/collection';
 import Comment from './db/comment';
@@ -22,6 +23,7 @@ import { StripeEvent } from './db/stripeEvent';
 import User from './db/user';
 import UserConfig from './db/userConfig';
 import AchievementSchema from './schemas/achievementSchema';
+import CacheSchema from './schemas/cacheSchema';
 import CampaignSchema from './schemas/campaignSchema';
 import CollectionSchema from './schemas/collectionSchema';
 import CommentSchema from './schemas/commentSchema';
@@ -68,3 +70,4 @@ export const EmailLogModel = mongoose.models.EmailLog || mongoose.model<EmailLog
 export const AchievementModel = mongoose.models.Achievement || mongoose.model<Achievement>('Achievement', AchievementSchema);
 export const StripeEventModel = mongoose.models.StripeEvent || mongoose.model<StripeEvent>('StripeEvent', StripeEventSchema);
 export const ReportModel = mongoose.models.Report || mongoose.model<Report>('Report', ReportSchema);
+export const CacheModel = mongoose.models.Cache || mongoose.model<Cache>('Cache', CacheSchema);
