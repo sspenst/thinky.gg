@@ -126,8 +126,18 @@ function generateCacheKey(gameId: GameId, query: SearchQuery): string {
   return JSON.stringify(cacheParams);
 }
 
+/**
+ * Executes a search query for levels with optional caching.
+ *
+ * @param gameId - The game ID to search within
+ * @param query - The search query parameters
+ * @param reqUser - The requesting user (optional)
+ * @param _projection - MongoDB projection object (optional)
+ * @param skipCache - If true, bypasses cache entirely. If false/undefined, uses automatic cache detection based on user-specific filters
+ * @returns SearchResult containing levels, searchAuthor, and totalRows
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User | null, _projection: any = LEVEL_SEARCH_DEFAULT_PROJECTION) {
+export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User | null, _projection: any = LEVEL_SEARCH_DEFAULT_PROJECTION, skipCache?: boolean) {
   await dbConnect();
 
   // NB: need to clone projection because we modify it below
@@ -508,11 +518,14 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
   ] : [];
 
   try {
+    // Determine if we should skip cache for user-specific queries or if explicitly requested
+    const shouldSkipCache = skipCache || (query.statFilter && query.statFilter !== StatFilter.All);
+
     // Create a cache key based on the search parameters
     const cacheKey = generateCacheKey(gameId, query);
 
-    // Try to get from cache first
-    const cachedResult = await CacheModel.findOne({ key: cacheKey });
+    // Try to get from cache first (unless we should skip cache)
+    const cachedResult = !shouldSkipCache ? await CacheModel.findOne({ key: cacheKey, gameId: gameId }) : null;
     let res;
 
     if (cachedResult) {
@@ -677,21 +690,23 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
 
       res = (await agg)[0];
 
-      // Cache the result with 5 second expiration
-      const now = new Date();
+      // Cache the result with 5 second expiration (unless we should skip cache)
+      if (!shouldSkipCache) {
+        const now = new Date();
 
-      await CacheModel.findOneAndUpdate(
-        { key: cacheKey },
-        {
-          key: cacheKey,
-          value: res,
-          tag: CacheTag.SEARCH_API,
-          gameId: gameId,
-          createdAt: now,
-          expireAt: new Date(now.getTime() + 5 * 60 * 1000), // 5 minutes
-        },
-        { upsert: true }
-      );
+        await CacheModel.findOneAndUpdate(
+          { key: cacheKey },
+          {
+            key: cacheKey,
+            value: res,
+            tag: CacheTag.SEARCH_API,
+            gameId: gameId,
+            createdAt: now,
+            expireAt: new Date(now.getTime() + 5 * 60 * 1000), // 5 minutes
+          },
+          { upsert: true }
+        );
+      }
     }
 
     const levels: EnrichedLevel[] = res?.data ?? [];

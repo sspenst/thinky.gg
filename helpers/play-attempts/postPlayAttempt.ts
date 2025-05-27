@@ -65,7 +65,7 @@ export async function postPlayAttempt(userId: Types.ObjectId, levelId: string) {
         }
 
         // create the user's first playattempt for this level and return
-        const resp = await PlayAttemptModel.create([{
+        const resp = await PlayAttemptModel.insertMany([{
           _id: new Types.ObjectId(),
           attemptContext: level.userId.toString() === userId.toString() ? AttemptContext.SOLVED : AttemptContext.UNSOLVED,
           endTime: now,

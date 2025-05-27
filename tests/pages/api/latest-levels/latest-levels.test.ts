@@ -140,8 +140,8 @@ describe('Testing latest levels api', () => {
   }, 30000);
   test('If mongo query returns null we should fail gracefully', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    jest.spyOn(CacheModel, 'findOne').mockImplementation(() => {
-      return [] as never;
+    jest.spyOn(LevelModel, 'aggregate').mockImplementation(() => {
+      return [{ data: [], metadata: [] }] as never;
     });
 
     await testApiHandler({

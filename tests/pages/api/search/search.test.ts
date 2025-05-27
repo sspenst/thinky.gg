@@ -511,4 +511,87 @@ describe('Testing search endpoint for various inputs', () => {
       },
     });
   });
+
+  it('should handle hideSolved filter for USER_B (no solved levels)', async () => {
+    await testApiHandler({
+      pagesHandler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'GET',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_B),
+          },
+          query: {
+            statFilter: StatFilter.HideSolved,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+        // USER_B sees 27 levels (one less than USER_C because they solved a level (see initializeLocalDb.ts))
+        expect(response.totalRows).toBe(27);
+        expect(response.levels.length).toBe(20);
+      },
+    });
+  });
+
+  it('should handle hideSolved filter for USER_C (no solved levels)', async () => {
+    await testApiHandler({
+      pagesHandler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'GET',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_C),
+          },
+          query: {
+            statFilter: StatFilter.HideSolved,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+        // USER_C should see all 28 levels since they haven't solved any
+        expect(response.totalRows).toBe(28);
+        expect(response.levels.length).toBe(20);
+      },
+    });
+  });
+
+  it('should allow explicit cache bypass with skipCache parameter', async () => {
+    // This test demonstrates that the skipCache parameter can be used by other functions
+    // calling doQuery to explicitly bypass cache when needed
+    const { doQuery } = await import('../../../../pages/api/search');
+    const { getUserFromToken } = await import('../../../../lib/withAuth');
+
+    const token = getTokenCookieValue(TestId.USER_C);
+    const reqUser = await getUserFromToken(token, {} as any);
+
+    // Call doQuery directly with skipCache=true
+    const result = await doQuery(DEFAULT_GAME_ID, {
+      sortBy: 'name',
+      sortDir: 'asc',
+      timeRange: TimeRange[TimeRange.All]
+    }, reqUser, undefined, true); // skipCache=true
+
+    expect(result).not.toBeNull();
+    expect(result?.levels).toBeDefined();
+    expect(result?.totalRows).toBeGreaterThan(0);
+  });
 });
