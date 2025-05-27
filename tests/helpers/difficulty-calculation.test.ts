@@ -1,3 +1,32 @@
+/**
+ * Difficulty Calculation Accuracy Tests for PostPlayAttempt Aggregation Pipeline Optimization
+ *
+ * This test suite verifies that the MongoDB aggregation pipeline in postPlayAttempt produces
+ * identical results to the JavaScript difficulty calculation functions.
+ *
+ * Key Optimization:
+ * - Before: Two separate database operations (findByIdAndUpdate + updateOne)
+ * - After: Single aggregation pipeline that updates all fields and calculates difficulty estimates atomically
+ * - Performance Gain: ~50% reduction in database operations for the critical path
+ *
+ * Critical Logic Verified:
+ * 1. Aggregation pipeline only triggers when:
+ *    - Existing play attempt exists within 3-minute window
+ *    - Attempt context is UNSOLVED
+ * 2. Difficulty calculations only occur when:
+ *    - calc_playattempts_unique_users_count >= 10 for difficulty_estimate
+ *    - calc_playattempts_unique_users_count_excluding_author >= 10 for completion_estimate
+ * 3. Conditional duration_before_stat_sum updates:
+ *    - Only incremented when user has no existing stat
+ *
+ * Test Coverage:
+ * - Mathematical accuracy (aggregation pipeline matches JavaScript functions)
+ * - Solve count factor calculation (logistic function implementation)
+ * - Edge cases (insufficient users, zero values, null handling)
+ * - Conditional logic (stat existence checks, author exclusion)
+ * - Real-world scenarios (proper setup to trigger aggregation pipeline)
+ */
+
 import { DEFAULT_GAME_ID } from '@root/constants/GameId';
 import getDifficultyEstimate, { getDifficultyCompletionEstimate, getSolveCountFactor } from '@root/helpers/getDifficultyEstimate';
 import { TimerUtil } from '@root/helpers/getTs';
