@@ -525,7 +525,7 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
     const cacheKey = generateCacheKey(gameId, query);
 
     // Try to get from cache first (unless we should skip cache)
-    const cachedResult = !shouldSkipCache ? await CacheModel.findOne({ key: cacheKey }) : null;
+    const cachedResult = !shouldSkipCache ? await CacheModel.findOne({ key: cacheKey, gameId: gameId }) : null;
     let res;
 
     if (cachedResult) {
