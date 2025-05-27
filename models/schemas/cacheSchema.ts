@@ -1,3 +1,4 @@
+import { GameId } from '@root/constants/GameId';
 import mongoose from 'mongoose';
 import Cache from '../db/cache';
 
@@ -9,6 +10,15 @@ const CacheSchema = new mongoose.Schema<Cache>({
   },
   value: {
     type: mongoose.Schema.Types.Mixed,
+    required: true,
+  },
+  tag: {
+    type: String,
+    required: true,
+  },
+  gameId: {
+    type: String,
+    enum: GameId,
     required: true,
   },
   createdAt: {

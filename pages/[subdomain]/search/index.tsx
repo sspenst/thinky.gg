@@ -1021,6 +1021,10 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
           sortDir={query.sortDir}
           totalItems={totalRows}
         />
+        <div className='text-sm text-gray-500 text-center'>
+          <p>Note: This page updates every few minutes, so you might see slightly different results if you refresh.</p>
+          <p>This helps us keep the site running smoothly for everyone!</p>
+        </div>
       </>
     </Page>
   </>);

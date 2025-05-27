@@ -5,6 +5,7 @@ import TileType from '@root/constants/tileType';
 import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import isPro from '@root/helpers/isPro';
 import { LEVEL_SEARCH_DEFAULT_PROJECTION, USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
+import { CacheTag } from '@root/models/db/cache';
 import { Aggregate, FilterQuery, PipelineStage, Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getDifficultyRangeFromName } from '../../../components/formatted/formattedDifficulty';
@@ -684,6 +685,8 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
         {
           key: cacheKey,
           value: res,
+          tag: CacheTag.SEARCH_API,
+          gameId: gameId,
           createdAt: now,
           expireAt: new Date(now.getTime() + 5 * 60 * 1000), // 5 minutes
         },
