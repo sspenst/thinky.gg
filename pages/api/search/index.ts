@@ -126,6 +126,16 @@ function generateCacheKey(gameId: GameId, query: SearchQuery): string {
   return JSON.stringify(cacheParams);
 }
 
+/**
+ * Executes a search query for levels with optional caching.
+ *
+ * @param gameId - The game ID to search within
+ * @param query - The search query parameters
+ * @param reqUser - The requesting user (optional)
+ * @param _projection - MongoDB projection object (optional)
+ * @param skipCache - If true, bypasses cache entirely. If false/undefined, uses automatic cache detection based on user-specific filters
+ * @returns SearchResult containing levels, searchAuthor, and totalRows
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User | null, _projection: any = LEVEL_SEARCH_DEFAULT_PROJECTION, skipCache?: boolean) {
   await dbConnect();
