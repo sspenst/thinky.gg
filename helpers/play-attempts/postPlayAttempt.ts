@@ -111,38 +111,141 @@ export async function postPlayAttempt(userId: Types.ObjectId, levelId: string) {
             levelInc.calc_playattempts_duration_before_stat_sum = newPlayDuration;
           }
 
-          const updatedLevel = await LevelModel.findByIdAndUpdate(levelObjectId, {
-            $inc: levelInc,
-            $addToSet: {
-              calc_playattempts_unique_users: userId,
+          // Helper function to calculate solve count factor (from getDifficultyEstimate.ts)
+          const getSolveCountFactorExpression = (solveCount: any) => ({
+            $add: [
+              {
+                $divide: [
+                  { $subtract: [1.5, 1] }, // k - 1
+                  {
+                    $add: [
+                      1,
+                      {
+                        $exp: {
+                          $multiply: [
+                            0.2, // t
+                            { $subtract: [solveCount, 20] } // solveCount - m
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              1
+            ]
+          });
+
+          // Use aggregation pipeline to update everything in one operation
+          const pipeline = [
+            {
+              $set: {
+                // First increment the duration sums and add user to unique users
+                calc_playattempts_duration_sum: { $add: ['$calc_playattempts_duration_sum', newPlayDuration] },
+                ...(levelInc.calc_playattempts_duration_before_stat_sum && {
+                  calc_playattempts_duration_before_stat_sum: { $add: ['$calc_playattempts_duration_before_stat_sum', newPlayDuration] }
+                }),
+                calc_playattempts_unique_users: { $setUnion: ['$calc_playattempts_unique_users', [userId]] },
+              }
             },
-          }, {
-            new: true,
-            projection: {
-              calc_playattempts_duration_before_stat_sum: 1,
-              calc_playattempts_duration_sum: 1,
-              calc_playattempts_just_beaten_count: 1,
-              calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' },
-              calc_playattempts_unique_users_count_excluding_author: { $size: { $setDifference: ['$calc_playattempts_unique_users', ['$userId']] } },
-              calc_stats_completed_count: 1,
+            {
+              $set: {
+                // Calculate the user counts after adding the user
+                calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' },
+                calc_playattempts_unique_users_count_excluding_author: { $size: { $setDifference: ['$calc_playattempts_unique_users', ['$userId']] } },
+              }
             },
-            session: session,
-          }).lean<EnrichedLevel>();
+            {
+              $set: {
+                // Calculate difficulty estimates inline
+                calc_difficulty_estimate: {
+                  $cond: {
+                    if: {
+                      $and: [
+                        { $gte: ['$calc_playattempts_unique_users_count', 10] },
+                        { $ne: ['$calc_playattempts_duration_sum', null] }
+                      ]
+                    },
+                    then: {
+                      $let: {
+                        vars: {
+                          solveCount: {
+                            $cond: {
+                              if: { $gt: ['$calc_playattempts_just_beaten_count', 0] },
+                              then: '$calc_playattempts_just_beaten_count',
+                              else: 1
+                            }
+                          }
+                        },
+                        in: {
+                          $multiply: [
+                            { $divide: ['$calc_playattempts_duration_sum', '$$solveCount'] },
+                            getSolveCountFactorExpression('$$solveCount')
+                          ]
+                        }
+                      }
+                    },
+                    else: -1
+                  }
+                },
+                calc_difficulty_completion_estimate: {
+                  $cond: {
+                    if: {
+                      $and: [
+                        { $gte: ['$calc_playattempts_unique_users_count_excluding_author', 10] },
+                        { $ne: ['$calc_playattempts_duration_before_stat_sum', null] }
+                      ]
+                    },
+                    then: {
+                      $let: {
+                        vars: {
+                          completedCount: {
+                            $cond: {
+                              if: { $gt: [{ $subtract: [{ $ifNull: ['$calc_stats_completed_count', 0] }, 1] }, 0] },
+                              then: { $subtract: [{ $ifNull: ['$calc_stats_completed_count', 0] }, 1] },
+                              else: 1
+                            }
+                          }
+                        },
+                        in: {
+                          $multiply: [
+                            { $divide: ['$calc_playattempts_duration_before_stat_sum', '$$completedCount'] },
+                            getSolveCountFactorExpression('$$completedCount')
+                          ]
+                        }
+                      }
+                    },
+                    else: -1
+                  }
+                }
+              }
+            }
+          ];
+
+          const updatedLevel = await LevelModel.findByIdAndUpdate(
+            levelObjectId,
+            pipeline,
+            {
+              new: true,
+              projection: {
+                calc_playattempts_duration_before_stat_sum: 1,
+                calc_playattempts_duration_sum: 1,
+                calc_playattempts_just_beaten_count: 1,
+                calc_playattempts_unique_users_count: 1,
+                calc_playattempts_unique_users_count_excluding_author: 1,
+                calc_stats_completed_count: 1,
+                calc_difficulty_estimate: 1,
+                calc_difficulty_completion_estimate: 1,
+              },
+              session: session,
+            }
+          ).lean<EnrichedLevel>();
 
           if (!updatedLevel) {
             resTrack.status = 404;
             resTrack.json.error = `Level ${levelId} not found`;
             throw new Error(resTrack.json.error);
           }
-
-          await LevelModel.updateOne({ _id: levelObjectId }, {
-            $set: {
-              calc_difficulty_completion_estimate: getDifficultyCompletionEstimate(updatedLevel, updatedLevel.calc_playattempts_unique_users_count_excluding_author ?? 0),
-              calc_difficulty_estimate: getDifficultyEstimate(updatedLevel, updatedLevel.calc_playattempts_unique_users_count ?? 0),
-            },
-          }, {
-            session: session,
-          }).lean();
         }
 
         resTrack.status = 200;
