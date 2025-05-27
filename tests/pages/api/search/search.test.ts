@@ -536,8 +536,7 @@ describe('Testing search endpoint for various inputs', () => {
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        // USER_B sees 27 levels (one less than USER_C due to some test data setup difference)
-        // The important thing is that caching is bypassed and different users get different results
+        // USER_B sees 27 levels (one less than USER_C because they solved a level (see initializeLocalDb.ts))
         expect(response.totalRows).toBe(27);
         expect(response.levels.length).toBe(20);
       },
@@ -573,5 +572,26 @@ describe('Testing search endpoint for various inputs', () => {
         expect(response.levels.length).toBe(20);
       },
     });
+  });
+
+  it('should allow explicit cache bypass with skipCache parameter', async () => {
+    // This test demonstrates that the skipCache parameter can be used by other functions
+    // calling doQuery to explicitly bypass cache when needed
+    const { doQuery } = await import('../../../../pages/api/search');
+    const { getUserFromToken } = await import('../../../../lib/withAuth');
+
+    const token = getTokenCookieValue(TestId.USER_C);
+    const reqUser = await getUserFromToken(token, {} as any);
+
+    // Call doQuery directly with skipCache=true
+    const result = await doQuery(DEFAULT_GAME_ID, {
+      sortBy: 'name',
+      sortDir: 'asc',
+      timeRange: TimeRange[TimeRange.All]
+    }, reqUser, undefined, true); // skipCache=true
+
+    expect(result).not.toBeNull();
+    expect(result?.levels).toBeDefined();
+    expect(result?.totalRows).toBeGreaterThan(0);
   });
 });
