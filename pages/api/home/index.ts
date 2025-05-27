@@ -84,7 +84,7 @@ async function getRecommendedLevel(gameId: GameId, reqUser: User) {
     timeRange: TimeRange[TimeRange.All],
   } as SearchQuery;
 
-  const result = await doQuery(gameId, query, reqUser);
+  const result = await doQuery(gameId, query, reqUser, undefined, true);
   let levels = result?.levels;
 
   if (!levels || levels.length === 0) {
@@ -103,7 +103,7 @@ async function getRecommendedLevel(gameId: GameId, reqUser: User) {
       timeRange: TimeRange[TimeRange.All],
     } as SearchQuery;
 
-    const result = await doQuery(gameId, query, reqUser);
+    const result = await doQuery(gameId, query, reqUser, undefined, true);
 
     levels = result?.levels;
   }
