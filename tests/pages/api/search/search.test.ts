@@ -511,4 +511,66 @@ describe('Testing search endpoint for various inputs', () => {
       },
     });
   });
+
+  it('should handle hideSolved filter for USER_B (no solved levels)', async () => {
+    await testApiHandler({
+      pagesHandler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'GET',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_B),
+          },
+          query: {
+            statFilter: StatFilter.HideSolved,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+        // USER_B should see all 28 levels since they haven't solved any
+        expect(response.totalRows).toBe(28);
+        expect(response.levels.length).toBe(20);
+      },
+    });
+  });
+
+  it('should handle hideSolved filter for USER_C (no solved levels)', async () => {
+    await testApiHandler({
+      pagesHandler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'GET',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_C),
+          },
+          query: {
+            statFilter: StatFilter.HideSolved,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+        // USER_C should see all 28 levels since they haven't solved any
+        expect(response.totalRows).toBe(28);
+        expect(response.levels.length).toBe(20);
+      },
+    });
+  });
 });
