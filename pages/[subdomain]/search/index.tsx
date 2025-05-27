@@ -235,7 +235,7 @@ function TimeRangeMenu({ onTimeRangeClick, timeRange }: TimeRangeMenuProps) {
             {Object.keys(timeRangeStrings).map(timeRangeKey => (
               <MenuItem key={`time-range-${timeRangeKey}`}>
                 <button
-                  className='p-3 text-sm w-32 hover:bg-gray-100 text-left'
+                  className='p-3 text-sm w-32 hover:bg-gray-700 text-left'
                   onClick={() => onTimeRangeClick(timeRangeKey)}
                 >
                   {timeRangeStrings[timeRangeKey]}
@@ -265,7 +265,7 @@ function StatFilterMenu({ onStatFilterClick, query }: StatFilterMenuProps) {
   return (
     <Menu as='div' className='relative inline-block text-left'>
       <MenuButton
-        className='flex items-center justify-center rounded px-3 py-2 text-sm font-medium gap-2 border border-gray-300 hover:bg-gray-50 transition-colors'
+        className='flex items-center justify-center rounded px-3 py-2 text-sm font-medium gap-2 border border-gray-300 hover:bg-gray-700 transition-colors'
       >
         <span>{query.statFilter && query.statFilter in statFilterStrings ? statFilterStrings[query.statFilter] : statFilterStrings[StatFilter.All]}</span>
         <svg className='h-4 w-4' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'>
@@ -286,7 +286,7 @@ function StatFilterMenu({ onStatFilterClick, query }: StatFilterMenuProps) {
             {Object.keys(statFilterStrings).map(statFilterKey => (
               <MenuItem key={`filter-completions-${statFilterKey}`}>
                 <button
-                  className='p-3 text-sm w-36 hover:bg-gray-100 text-left'
+                  className='p-3 text-sm w-36 hover:bg-gray-700 text-left'
                   onClick={() => onStatFilterClick(statFilterKey as StatFilter)}
                 >
                   {statFilterStrings[statFilterKey]}
@@ -694,7 +694,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                 <div>
                   <MenuItem>
                     <button
-                      className='block p-3 text-sm w-48 hover:bg-gray-100 text-left'
+                      className='block p-3 text-sm w-48 hover:bg-gray-700 text-left'
                       onClick={() => fetchLevels({
                         ...query,
                         difficultyFilter: '',
@@ -706,7 +706,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
                   </MenuItem>
                   <MenuItem>
                     <button
-                      className='p-3 text-sm w-48 flex items-center gap-2 hover:bg-gray-100'
+                      className='p-3 text-sm w-48 flex items-center gap-2 hover:bg-gray-700'
                       onClick={() => fetchLevels({
                         ...query,
                         difficultyFilter: 'Pending',
@@ -1006,7 +1006,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
               </div>
             ))}
             <button
-              className='text-sm text-gray-500 hover:text-gray-700 underline'
+              className='text-sm text-gray-300 hover:text-gray-500 underline'
               onClick={() => fetchLevels(DefaultQuery)}
             >
               Clear all
