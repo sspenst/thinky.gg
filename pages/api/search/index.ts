@@ -5,6 +5,7 @@ import TileType from '@root/constants/tileType';
 import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import isPro from '@root/helpers/isPro';
 import { LEVEL_SEARCH_DEFAULT_PROJECTION, USER_DEFAULT_PROJECTION } from '@root/models/constants/projections';
+import { CacheTag } from '@root/models/db/cache';
 import { Aggregate, FilterQuery, PipelineStage, Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getDifficultyRangeFromName } from '../../../components/formatted/formattedDifficulty';
@@ -18,7 +19,7 @@ import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
 import { EnrichedLevel } from '../../../models/db/level';
 import User from '../../../models/db/user';
-import { GraphModel, LevelModel, StatModel, UserModel } from '../../../models/mongoose';
+import { CacheModel, GraphModel, LevelModel, StatModel, UserModel } from '../../../models/mongoose';
 import { BlockFilterMask, SearchQuery } from '../../[subdomain]/search';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -107,6 +108,23 @@ export type SearchResult = {
   searchAuthor: User | null;
   totalRows: number;
 };
+
+function generateCacheKey(gameId: GameId, query: SearchQuery): string {
+  // Clone query and remove fields that shouldn't affect caching
+  const queryForCache = { ...query };
+
+  delete queryForCache.userId; // Remove userId since we pass it separately
+  delete queryForCache.subdomain; // Remove token since it's used to derive userId
+
+  const cacheParams = {
+    gameId,
+    ...queryForCache,
+    // userId is NOT included because user-specific enrichment happens in a separate query
+    // searchObj, sortObj, skip, limit, byStat are all derived from gameId and query
+  };
+
+  return JSON.stringify(cacheParams);
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User | null, _projection: any = LEVEL_SEARCH_DEFAULT_PROJECTION) {
@@ -490,171 +508,233 @@ export async function doQuery(gameId: GameId, query: SearchQuery, reqUser?: User
   ] : [];
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let agg: Aggregate<any[]> | undefined = undefined;
+    // Create a cache key based on the search parameters
+    const cacheKey = generateCacheKey(gameId, query);
 
-    if (!byStat) {
-      // Parse maxNumberPerAuthor if it exists
-      const maxNumberPerAuthor = query.maxNumberPerAuthor ? parseInt(query.maxNumberPerAuthor) : undefined;
+    // Try to get from cache first
+    const cachedResult = await CacheModel.findOne({ key: cacheKey });
+    let res;
 
-      // Prepare the facet pipeline with potential author limiting
-      const facetPipeline = [
-        ...(lookupUserBeforeSort ? lookupUserStage : []),
-        // Apply block filter after looking up users but before further processing
-        ...(lookupUserBeforeSort ? blockFilterAfterUnwindStage : []),
-        // NB: projection is typically supposed to be the last stage of the pipeline, but we need it here because of potential sorting by calc_playattempts_unique_users_count
-        { $project: { ...projection } },
-        {
-          $addFields: {
-            collectionOrder: {
-              $indexOfArray: [query.includeLevelIds?.split(','), { $toString: '$_id' }],
-            }
-          }
-        },
-        { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
-        ...statLookupAndMatchStage,
-      ];
-
-      // Add author limiting steps if maxNumberPerAuthor is specified
-      if (maxNumberPerAuthor !== undefined && maxNumberPerAuthor > 0) {
-        facetPipeline.push(
-          // Group by userId and collect levels
-          {
-            $group: {
-              _id: '$userId',
-              levels: { $push: '$$ROOT' },
-              count: { $sum: 1 }
-            }
-          },
-          // Slice to keep only the top N levels per author
-          {
-            $project: {
-              levels: { $slice: ['$levels', maxNumberPerAuthor] }
-            }
-          },
-          // Unwind to flatten back to individual documents
-          { $unwind: '$levels' },
-          // Replace the root with the original document
-          { $replaceRoot: { newRoot: '$levels' } },
-          // Re-sort to maintain original sort order
-          { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) }
-        );
-      }
-
-      // Add pagination after author limiting
-      facetPipeline.push(
-        { $skip: skip },
-        { $limit: limit },
-        ...(lookupUserBeforeSort ? [] : lookupUserStage),
-        // If user lookup happens after pagination, apply block filter here
-        ...(lookupUserBeforeSort ? [] : blockFilterAfterUnwindStage),
-        ...getEnrichLevelsPipelineSteps(new Types.ObjectId(userId) as unknown as User) as PipelineStage.Lookup[]
-      );
-
-      agg = LevelModel.aggregate([
-        { $match: searchObj },
-        {
-          '$facet': {
-            ...(query.disableCount === 'true' ? {} : {
-              metadata: [
-                // NB: need this stage here because it alters the count
-                ...statLookupAndMatchStage,
-                ...(reqUser ? blockFilterStage as any[] : []), // Add block filter for accurate count
-                { $count: 'totalRows' },
-              ]
-            }),
-            data: facetPipeline,
-          },
-        },
-      ] as any);
+    if (cachedResult) {
+      res = cachedResult.value;
     } else {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let statMatchQuery: FilterQuery<any> = {};
+      let agg: Aggregate<any[]> | undefined = undefined;
 
-      if (query.statFilter === StatFilter.HideSolved || query.statFilter === StatFilter.Unoptimized) {
-        statMatchQuery = { complete: false };
-      } else if (query.statFilter === StatFilter.Solved) {
-        statMatchQuery = { complete: true };
+      if (!byStat) {
+        // Parse maxNumberPerAuthor if it exists
+        const maxNumberPerAuthor = query.maxNumberPerAuthor ? parseInt(query.maxNumberPerAuthor) : undefined;
+
+        // Prepare the facet pipeline with potential author limiting
+        const facetPipeline = [
+          ...(lookupUserBeforeSort ? lookupUserStage : []),
+          // Apply block filter after looking up users but before further processing
+          ...(lookupUserBeforeSort ? blockFilterAfterUnwindStage : []),
+          // NB: projection is typically supposed to be the last stage of the pipeline, but we need it here because of potential sorting by calc_playattempts_unique_users_count
+          { $project: { ...projection } },
+          {
+            $addFields: {
+              collectionOrder: {
+                $indexOfArray: [query.includeLevelIds?.split(','), { $toString: '$_id' }],
+              }
+            }
+          },
+          { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
+          ...statLookupAndMatchStage,
+        ];
+
+        // Add author limiting steps if maxNumberPerAuthor is specified
+        if (maxNumberPerAuthor !== undefined && maxNumberPerAuthor > 0) {
+          facetPipeline.push(
+            // Group by userId and collect levels
+            {
+              $group: {
+                _id: '$userId',
+                levels: { $push: '$$ROOT' },
+                count: { $sum: 1 }
+              }
+            },
+            // Slice to keep only the top N levels per author
+            {
+              $project: {
+                levels: { $slice: ['$levels', maxNumberPerAuthor] }
+              }
+            },
+            // Unwind to flatten back to individual documents
+            { $unwind: '$levels' },
+            // Replace the root with the original document
+            { $replaceRoot: { newRoot: '$levels' } },
+            // Re-sort to maintain original sort order
+            { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) }
+          );
+        }
+
+        // Add pagination after author limiting
+        facetPipeline.push(
+          { $skip: skip },
+          { $limit: limit },
+          ...(lookupUserBeforeSort ? [] : lookupUserStage),
+          // If user lookup happens after pagination, apply block filter here
+          ...(lookupUserBeforeSort ? [] : blockFilterAfterUnwindStage),
+        );
+
+        agg = LevelModel.aggregate([
+          { $match: searchObj },
+          {
+            '$facet': {
+              ...(query.disableCount === 'true' ? {} : {
+                metadata: [
+                  // NB: need this stage here because it alters the count
+                  ...statLookupAndMatchStage,
+                  ...(reqUser ? blockFilterStage as any[] : []), // Add block filter for accurate count
+                  { $count: 'totalRows' },
+                ]
+              }),
+              data: facetPipeline,
+            },
+          },
+        ] as any);
+      } else {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let statMatchQuery: FilterQuery<any> = {};
+
+        if (query.statFilter === StatFilter.HideSolved || query.statFilter === StatFilter.Unoptimized) {
+          statMatchQuery = { complete: false };
+        } else if (query.statFilter === StatFilter.Solved) {
+          statMatchQuery = { complete: true };
+        }
+
+        // Create the byStat aggregation with block filtering
+        const byStatPipeline: PipelineStage[] = [
+          ...(lookupUserBeforeSort ? lookupUserStage : []),
+          // Apply block filter after looking up users
+          ...(lookupUserBeforeSort ? blockFilterAfterUnwindStage : []),
+          // NB: projection is typically supposed to be the last stage of the pipeline, but we need it here because of potential sorting by calc_playattempts_unique_users_count
+          // TODO: instead can have an optional $addFields here, then do the projection after
+          { $project: { ...projection, userMovesTs: 1 } },
+          { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
+          { $skip: skip },
+          { $limit: limit },
+          ...(lookupUserBeforeSort ? [] : lookupUserStage),
+          // If user lookup happens after pagination, apply block filter here
+          ...(lookupUserBeforeSort ? [] : blockFilterAfterUnwindStage),
+        ];
+
+        agg = StatModel.aggregate([
+          {
+            $match: {
+              userId: new Types.ObjectId(userId),
+              gameId: gameId,
+              ...statMatchQuery,
+            }
+          },
+          {
+            $lookup: {
+              from: LevelModel.collection.name,
+              localField: 'levelId',
+              foreignField: '_id',
+              as: 'level',
+              pipeline: [
+                { $match: searchObj },
+              ],
+            },
+          },
+          {
+            $unwind: '$level',
+          },
+          {
+            $addFields: {
+              'level.userMovesTs': '$ts',
+            },
+          },
+          {
+            $group: {
+              _id: null,
+              allLevels: { $push: '$level' }
+            }
+          },
+          {
+            $unwind: '$allLevels'
+          },
+          {
+            $replaceRoot: {
+              newRoot: '$allLevels'
+            }
+          },
+          {
+            '$facet': {
+              ...(query.disableCount === 'true' ? {} : {
+                metadata: [
+                  ...(reqUser ? blockFilterStage as any[] : []), // Add block filter for accurate count
+                  { $count: 'totalRows' },
+                ]
+              }),
+              data: byStatPipeline,
+            },
+          },
+        ] as any);
       }
 
-      // Create the byStat aggregation with block filtering
-      const byStatPipeline: PipelineStage[] = [
-        ...(lookupUserBeforeSort ? lookupUserStage : []),
-        // Apply block filter after looking up users
-        ...(lookupUserBeforeSort ? blockFilterAfterUnwindStage : []),
-        // NB: projection is typically supposed to be the last stage of the pipeline, but we need it here because of potential sorting by calc_playattempts_unique_users_count
-        // TODO: instead can have an optional $addFields here, then do the projection after
-        { $project: { ...projection, userMovesTs: 1 } },
-        { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
-        { $skip: skip },
-        { $limit: limit },
-        ...(lookupUserBeforeSort ? [] : lookupUserStage),
-        // If user lookup happens after pagination, apply block filter here
-        ...(lookupUserBeforeSort ? [] : blockFilterAfterUnwindStage),
-        // note this last getEnrichLevelsPipeline is "technically a bit wasteful" if they select Hide Solved or In Progress
-        // Because technically the above statLookupAndMatchStage will have this data already...
-        // But since the results are limited by limit, this is constant time and not a big deal to do the lookup again...
-        ...getEnrichLevelsPipelineSteps(new Types.ObjectId(userId) as unknown as User) as PipelineStage.Lookup[],
-      ];
+      res = (await agg)[0];
 
-      agg = StatModel.aggregate([
+      // Cache the result with 5 second expiration
+      const now = new Date();
+
+      await CacheModel.findOneAndUpdate(
+        { key: cacheKey },
         {
-          $match: {
-            userId: new Types.ObjectId(userId),
-            gameId: gameId,
-            ...statMatchQuery,
-          }
+          key: cacheKey,
+          value: res,
+          tag: CacheTag.SEARCH_API,
+          gameId: gameId,
+          createdAt: now,
+          expireAt: new Date(now.getTime() + 5 * 60 * 1000), // 5 minutes
         },
-        {
-          $lookup: {
-            from: LevelModel.collection.name,
-            localField: 'levelId',
-            foreignField: '_id',
-            as: 'level',
-            pipeline: [
-              { $match: searchObj },
-            ],
-          },
-        },
-        {
-          $unwind: '$level',
-        },
-        {
-          $addFields: {
-            'level.userMovesTs': '$ts',
-          },
-        },
-        {
-          $group: {
-            _id: null,
-            allLevels: { $push: '$level' }
-          }
-        },
-        {
-          $unwind: '$allLevels'
-        },
-        {
-          $replaceRoot: {
-            newRoot: '$allLevels'
-          }
-        },
-        {
-          '$facet': {
-            ...(query.disableCount === 'true' ? {} : {
-              metadata: [
-                ...(reqUser ? blockFilterStage as any[] : []), // Add block filter for accurate count
-                { $count: 'totalRows' },
-              ]
-            }),
-            data: byStatPipeline,
-          },
-        },
-      ] as any);
+        { upsert: true }
+      );
     }
 
-    const res = (await agg)[0];
     const levels: EnrichedLevel[] = res?.data ?? [];
     const totalRows = res?.metadata ? (res.metadata[0]?.totalRows ?? 0) : 0;
+
+    // Enrich the levels with a secondary query
+    if (levels.length > 0 && userId) {
+      const enrichedLevels = await LevelModel.aggregate([
+        {
+          $match: {
+            _id: { $in: levels.map(level => level._id) }
+          }
+        },
+        ...getEnrichLevelsPipelineSteps(new Types.ObjectId(userId) as unknown as User) as PipelineStage.Lookup[]
+      ]);
+
+      // Merge the enriched data back into the original levels
+      const enrichedMap = new Map(enrichedLevels.map(level => [level._id.toString(), level]));
+
+      levels.forEach(level => {
+        const enriched = enrichedMap.get(level._id.toString());
+
+        if (enriched) {
+          // Preserve the original level data and merge in the enriched data
+          Object.assign(level, {
+            ...level,
+            ...enriched,
+            // Ensure we don't lose any fields from the original level
+            userId: level.userId || enriched.userId,
+            _id: level._id,
+            name: level.name,
+            gameId: level.gameId,
+            leastMoves: level.leastMoves,
+            ts: level.ts,
+            calc_difficulty_estimate: level.calc_difficulty_estimate,
+            calc_difficulty_completion_estimate: level.calc_difficulty_completion_estimate,
+            calc_playattempts_unique_users: level.calc_playattempts_unique_users,
+            calc_playattempts_duration_sum: level.calc_playattempts_duration_sum,
+            calc_playattempts_just_beaten_count: level.calc_playattempts_just_beaten_count,
+          });
+        }
+      });
+    }
 
     levels.forEach((level) => {
       cleanUser(level.userId);

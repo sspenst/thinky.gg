@@ -8,14 +8,13 @@ import Dimensions from '@root/constants/dimensions';
 import { Game, GameType } from '@root/constants/Games';
 import StatFilter from '@root/constants/statFilter';
 import { AppContext } from '@root/contexts/appContext';
-import { blueButton } from '@root/helpers/className';
 import { getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import isPro from '@root/helpers/isPro';
 import useRouterQuery from '@root/hooks/useRouterQuery';
 import { CollectionType } from '@root/models/constants/collection';
 import { EnrichedCollection } from '@root/models/db/collection';
 import classNames from 'classnames';
-import debounce from 'debounce';
+import { Search as SearchIcon } from 'lucide-react';
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Image from 'next/image';
@@ -215,16 +214,10 @@ function TimeRangeMenu({ onTimeRangeClick, timeRange }: TimeRangeMenuProps) {
   return (
     <Menu as='div' className='relative inline-block text-left'>
       <MenuButton
-        aria-expanded='true'
-        aria-haspopup='true'
-        className='flex items-center w-full justify-center rounded-md bg-white pl-2 pr-1 text-sm font-medium text-black gap-1 h-8 shadow-md border'
-        id='menu-button'
-        style={{
-          borderColor: 'var(--bg-color-3)',
-        }}
+        className='flex items-center justify-center rounded px-3 py-2 text-sm font-medium gap-2 border border-gray-300  transition-colors'
       >
         <span>{timeRangeStrings[timeRange]}</span>
-        <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
+        <svg className='h-4 w-4' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'>
           <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
         </svg>
       </MenuButton>
@@ -237,14 +230,13 @@ function TimeRangeMenu({ onTimeRangeClick, timeRange }: TimeRangeMenuProps) {
         leaveFrom='transform opacity-100 scale-100'
         leaveTo='transform opacity-0 scale-95'
       >
-        <MenuItems className='absolute right-0 z-10 mt-1 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none border-color-1'>
+        <MenuItems className='absolute right-0 z-10 mt-1 rounded overflow-hidden border shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none border-color-1' style={{ backgroundColor: 'var(--bg-color)' }}>
           <div>
             {Object.keys(timeRangeStrings).map(timeRangeKey => (
               <MenuItem key={`time-range-${timeRangeKey}`}>
                 <button
-                  className='text-black p-1 text-sm w-24 flex items-center gap-1 justify-center data-[active]:bg-neutral-300'
+                  className='p-3 text-sm w-32 hover:bg-gray-100 text-left'
                   onClick={() => onTimeRangeClick(timeRangeKey)}
-                  role='menuitem'
                 >
                   {timeRangeStrings[timeRangeKey]}
                 </button>
@@ -273,16 +265,10 @@ function StatFilterMenu({ onStatFilterClick, query }: StatFilterMenuProps) {
   return (
     <Menu as='div' className='relative inline-block text-left'>
       <MenuButton
-        aria-expanded='true'
-        aria-haspopup='true'
-        className='flex items-center w-full justify-center rounded-md bg-white pl-2 pr-1 text-sm font-medium text-black gap-1 h-8 shadow-md border'
-        id='menu-button'
-        style={{
-          borderColor: 'var(--bg-color-3)',
-        }}
+        className='flex items-center justify-center rounded px-3 py-2 text-sm font-medium gap-2 border border-gray-300 hover:bg-gray-50 transition-colors'
       >
         <span>{query.statFilter && query.statFilter in statFilterStrings ? statFilterStrings[query.statFilter] : statFilterStrings[StatFilter.All]}</span>
-        <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
+        <svg className='h-4 w-4' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'>
           <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
         </svg>
       </MenuButton>
@@ -295,14 +281,13 @@ function StatFilterMenu({ onStatFilterClick, query }: StatFilterMenuProps) {
         leaveFrom='transform opacity-100 scale-100'
         leaveTo='transform opacity-0 scale-95'
       >
-        <MenuItems className='absolute right-0 z-10 mt-1 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none border-color-1'>
+        <MenuItems className='absolute right-0 z-10 mt-1 rounded overflow-hidden border shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none border-color-1' style={{ backgroundColor: 'var(--bg-color)' }}>
           <div>
             {Object.keys(statFilterStrings).map(statFilterKey => (
               <MenuItem key={`filter-completions-${statFilterKey}`}>
                 <button
-                  className='text-black p-1 text-sm w-28 flex items-center gap-1 justify-center data-[active]:bg-neutral-300'
+                  className='p-3 text-sm w-36 hover:bg-gray-100 text-left'
                   onClick={() => onStatFilterClick(statFilterKey as StatFilter)}
-                  role='menuitem'
                 >
                   {statFilterStrings[statFilterKey]}
                 </button>
@@ -329,6 +314,7 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
   const { game, setTempCollection } = useContext(AppContext);
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState(searchQuery);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const router = useRouter();
   const routerQuery = useRouterQuery();
   const difficultyType = game.type === GameType.SHORTEST_PATH ? 'Solve' : 'Completion';
@@ -349,6 +335,18 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
     setQuery(searchQuery);
   }, [searchQuery]);
 
+  // Auto-show advanced filters if any are active (only on initial load)
+  useEffect(() => {
+    const hasAdvancedFilters = query.minDimension1 || query.maxDimension1 || query.minDimension2 || query.maxDimension2 ||
+      query.blockFilter !== DefaultQuery.blockFilter || query.minSteps !== DefaultQuery.minSteps ||
+      query.maxSteps !== DefaultQuery.maxSteps;
+
+    // Only auto-show on initial load, don't force it to stay open
+    if (hasAdvancedFilters && !showAdvancedFilters && query === searchQuery) {
+      setShowAdvancedFilters(true);
+    }
+  }, [searchQuery]); // Only depend on searchQuery (initial load)
+
   const fetchLevels = useCallback((query: SearchQuery) => {
     // TODO: check if query is identical, in which case do nothing
 
@@ -357,14 +355,6 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
     setLoading(true);
     routerQuery(query, DefaultQuery);
   }, [routerQuery]);
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const queryDebounce = useCallback(
-    debounce((q: SearchQuery) => {
-      fetchLevels(q);
-    }, 500),
-    []
-  );
 
   const filtersSelected = [];
 
@@ -612,350 +602,418 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
 
   const difficulty = difficultyList.find(d => d.name === query.difficultyFilter);
 
+  // Check if any advanced filters are active
+  const hasAdvancedFilters = query.minDimension1 || query.maxDimension1 || query.minDimension2 || query.maxDimension2 ||
+    query.blockFilter !== DefaultQuery.blockFilter || query.minSteps !== DefaultQuery.minSteps ||
+    query.maxSteps !== DefaultQuery.maxSteps;
+
   const subHeaderComponent = (
-    <div className='flex flex-col items-center gap-1 p-1' id='level_search_box'>
-      <form className='flex flex-col items-center justify-center z-10 gap-1' onSubmit={(e) => {
-        e.preventDefault();
-        const searchInput = document.getElementById('default-search') as HTMLInputElement;
+    <div className='p-2 sm:p-4 space-y-2 sm:space-y-3' id='level_search_box'>
+      {/* Main Search Bar */}
+      <div className='p-2 sm:p-3 w-full'>
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          const formData = new FormData(e.currentTarget);
 
-        queryHelper({
-          search: searchInput.value,
-          page: '1',
-        });
-      }}>
-        <div className='flex flex-row gap-1 justify-center'>
-          <input
-            id='default-search'
-            key='search-level-input'
-            placeholder='Search level...'
-            type='search'
-            defaultValue={query.search}
-            style={{
-              width: '160px',
-            }}
-          />
-          <MultiSelectUser key={'search-author-input-' + searchAuthor?._id.toString()} placeholder='Search author...' defaultValue={searchAuthor} onSelect={(user) => {
-            queryHelper({
-              searchAuthor: user?.name || '',
-            });
-          }} />
-        </div>
-        <button type='submit' disabled={loading}
-          className={blueButton}>Search</button>
-      </form>
-      <div className='flex items-center flex-wrap gap-1 justify-center'>
-        {reqUser && <StatFilterMenu onStatFilterClick={onStatFilterClick} query={query} />}
-        <Menu as='div' className='relative inline-block text-left'>
-          <MenuButton
-            aria-expanded='true'
-            aria-haspopup='true'
-            className='flex items-center w-full justify-center rounded-md bg-white pl-2 pr-1 text-sm font-medium text-black gap-1 h-8 shadow-md border'
-            id='menu-button'
-            style={{
-              backgroundColor: difficulty ? getDifficultyColor(difficulty.name === 'Pending' ? -1 : difficulty.value * 1.5 + 30, 70) : undefined,
-              borderColor: 'var(--bg-color-3)',
-            }}
-          >
-            {!difficulty ?
-              <span>All {difficultyType} Difficulties</span> :
-              <>
-                <span>{difficulty.emoji}</span>
-                <span>{difficulty.name}</span>
-              </>
-            }
-            <svg className='h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
-              <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
-            </svg>
-          </MenuButton>
-          <Transition
-            as={Fragment}
-            enter='transition ease-out duration-100'
-            enterFrom='transform opacity-0 scale-95'
-            enterTo='transform opacity-100 scale-100'
-            leave='transition ease-in duration-75'
-            leaveFrom='transform opacity-100 scale-100'
-            leaveTo='transform opacity-0 scale-95'
-          >
-            <MenuItems className='absolute right-0 z-10 mt-1 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none border-color-1'>
-              <div>
-                <MenuItem>
-                  <button
-                    className='text-black block p-1 text-sm w-44 data-[active]:bg-neutral-300'
-                    onClick={() => fetchLevels({
-                      ...query,
-                      difficultyFilter: '',
-                      page: '1',
-                    })}
-                    role='menuitem'
-                  >
-                    All {difficultyType} Difficulties
-                  </button>
-                </MenuItem>
-                <MenuItem>
-                  <button
-                    className='text-black p-1 text-sm w-44 flex items-center gap-1 justify-center data-[active]:bg-neutral-300'
-                    onClick={() => fetchLevels({
-                      ...query,
-                      difficultyFilter: 'Pending',
-                      page: '1',
-                    })}
-                    role='menuitem'
-                  >
-                    <span>⏳</span>
-                    <span>Pending</span>
-                  </button>
-                </MenuItem>
-                {difficultyList.filter(difficulty => difficulty.name !== 'Pending').map((difficulty) => (
-                  <MenuItem key={`difficulty-item-${difficulty.value}`}>
-                    {({ focus }) => (
-                      <button
-                        className='text-black p-1 text-sm w-44 flex items-center gap-1 justify-center'
-                        onClick={() => fetchLevels({
-                          ...query,
-                          difficultyFilter: difficulty.name,
-                          page: '1',
-                        })}
-                        role='menuitem'
-                        style={{
-                          backgroundColor: getDifficultyColor(difficulty.value * 1.5 + 30, focus ? 50 : 70)
-                        }}
-                      >
-                        <span>{difficulty.emoji}</span>
-                        <span>{difficulty.name}</span>
-                      </button>
-                    )}
-                  </MenuItem>
-                ))}
+          queryHelper({
+            search: formData.get('search') as string || '',
+            page: '1',
+          });
+        }}>
+          <div className='flex flex-col sm:flex-row gap-2 items-stretch sm:items-center'>
+            <div className='flex-1 relative'>
+              <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'>
+                <SearchIcon className='h-4 w-4 text-gray-400' />
               </div>
-            </MenuItems>
-          </Transition>
-        </Menu>
-        <TimeRangeMenu onTimeRangeClick={onTimeRangeClick} timeRange={query.timeRange} />
+              <input
+                id='default-search'
+                name='search'
+                key='search-level-input'
+                placeholder='Level name...'
+                type='search'
+                defaultValue={query.search}
+                className='w-full pl-10 pr-3 py-2 text-base border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+              />
+            </div>
+            <div className='w-full sm:w-48 flex-shrink-0'>
+              <MultiSelectUser
+                key={'search-author-input-' + searchAuthor?._id.toString()}
+                placeholder='Author...'
+                defaultValue={searchAuthor}
+                onSelect={(user) => {
+                  queryHelper({
+                    searchAuthor: user?.name || '',
+                  });
+                }}
+              />
+            </div>
+            <button
+              type='submit'
+              className='flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors whitespace-nowrap mt-3 md:mt-0 sm:pt-2'
+            >
+              <SearchIcon className='h-4 w-4' />
+              Search
+            </button>
+          </div>
+        </form>
       </div>
-      <div className='flex flex-wrap items-center justify-center py-0.5 gap-2'>
-        {!game.disableRanked &&
-          <div className='flex items-center gap-1 border border-color-3 rounded-md px-2 py-1'>
-            <input
-              checked={query.isRanked === 'true'}
-              id='ranked_checkbox'
-              onChange={() => {
-                fetchLevels({
-                  ...query,
-                  isRanked: query.isRanked === 'true' ? 'false' : 'true',
-                  page: '1',
-                });
+      {/* Quick Filters */}
+      <div className='p-2'>
+        <div className='flex flex-wrap gap-2 items-center justify-center text-sm'>
+          {reqUser && <StatFilterMenu onStatFilterClick={onStatFilterClick} query={query} />}
+          <Menu as='div' className='relative inline-block text-left'>
+            <MenuButton
+              className='flex items-center justify-center rounded px-3 py-2 text-sm font-medium gap-2 border border-gray-300 transition-colors'
+              style={{
+                backgroundColor: difficulty ? getDifficultyColor(difficulty.name === 'Pending' ? -1 : difficulty.value * 1.5 + 30, 70) : undefined,
+                color: 'black',
               }}
-              type='checkbox'
-            />
-            <label className='text-sm font-medium' htmlFor='ranked_checkbox'>
-              🏅 Ranked
-            </label>
-          </div>
-        }
-        <div>
-          <label htmlFor='min-step' className='text-xs font-medium pr-1'>Min steps</label>
-          <input
-            className='w-20 text-sm px-2 py-1'
-            id='min-step'
-            max='2500'
-            min='1'
-            onChange={(e: React.FormEvent<HTMLInputElement>) => {
-              queryHelper({
-                minSteps: (e.target as HTMLInputElement).value,
-                page: '1',
-              });
-            }}
-            step='1'
-            type='number'
-            value={query.minSteps}
-          />
-        </div>
-        <div>
-          <label htmlFor='max-step' className='text-xs font-medium pr-1'>Max steps</label>
-          <input
-            className='w-20 text-sm px-2 py-1'
-            id='max-step'
-            max='2500'
-            min='1'
-            onChange={(e: React.FormEvent<HTMLInputElement>) => {
-              queryHelper({
-                maxSteps: (e.target as HTMLInputElement).value,
-                page: '1',
-              });
-            }}
-            step='1'
-            type='number'
-            value={query.maxSteps}
-          />
-        </div>
-      </div>
-      <div className='flex justify-center items-center gap-2'>
-        <Link href='/pro' passHref>
-          <Image alt='pro' src='/pro.svg' width='20' height='20' />
-        </Link>
-        <div className='flex flex-col md:flex-row items-center justify-center w-fit border p-2 rounded-md gap-2 border-cyan-200'>
-          <div className='flex md:flex-col items-center justify-center'>
-            <span className='text-xs font-medium pr-1'>Min dimensions:</span>
-            <div>
+            >
+              {!difficulty ? (
+                <span className='text-white'>All {difficultyType} Difficulties</span>
+              ) : (
+                <>
+                  <span>{difficulty.emoji}</span>
+                  <span >{difficulty.name}</span>
+                </>
+              )}
+              <svg className='h-4 w-4' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'>
+                <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
+              </svg>
+            </MenuButton>
+            <Transition
+              as={Fragment}
+              enter='transition ease-out duration-100'
+              enterFrom='transform opacity-0 scale-95'
+              enterTo='transform opacity-100 scale-100'
+              leave='transition ease-in duration-75'
+              leaveFrom='transform opacity-100 scale-100'
+              leaveTo='transform opacity-0 scale-95'
+            >
+              <MenuItems className='absolute right-0 z-10 mt-1 rounded overflow-hidden border shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none border-color-1' style={{ backgroundColor: 'var(--bg-color)' }}>
+                <div>
+                  <MenuItem>
+                    <button
+                      className='block p-3 text-sm w-48 hover:bg-gray-100 text-left'
+                      onClick={() => fetchLevels({
+                        ...query,
+                        difficultyFilter: '',
+                        page: '1',
+                      })}
+                    >
+                      All {difficultyType} Difficulties
+                    </button>
+                  </MenuItem>
+                  <MenuItem>
+                    <button
+                      className='p-3 text-sm w-48 flex items-center gap-2 hover:bg-gray-100'
+                      onClick={() => fetchLevels({
+                        ...query,
+                        difficultyFilter: 'Pending',
+                        page: '1',
+                      })}
+                    >
+                      <span>⏳</span>
+                      <span>Pending</span>
+                    </button>
+                  </MenuItem>
+                  {difficultyList.filter(difficulty => difficulty.name !== 'Pending').map((difficulty) => (
+                    <MenuItem key={`difficulty-item-${difficulty.value}`}>
+                      {({ focus }) => (
+                        <button
+                          className='p-3 text-sm w-48 flex items-center gap-2'
+                          onClick={() => fetchLevels({
+                            ...query,
+                            difficultyFilter: difficulty.name,
+                            page: '1',
+                          })}
+                          style={{
+                            backgroundColor: getDifficultyColor(difficulty.value * 1.5 + 30, focus ? 50 : 70),
+                            color: 'black',
+                          }}
+                        >
+                          <span>{difficulty.emoji}</span>
+                          <span>{difficulty.name}</span>
+                        </button>
+                      )}
+                    </MenuItem>
+                  ))}
+                </div>
+              </MenuItems>
+            </Transition>
+          </Menu>
+          <TimeRangeMenu onTimeRangeClick={onTimeRangeClick} timeRange={query.timeRange} />
+          {/* Ranked Toggle */}
+          {!game.disableRanked && (
+            <label className='flex items-center gap-2 cursor-pointer px-3 py-2 border border-gray-300 rounded transition-colors'>
               <input
-                className='text-sm px-2 py-1'
-                disabled={!isPro(reqUser)}
-                max='40'
-                min='1'
-                onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                  queryHelper({
-                    minDimension1: (e.target as HTMLInputElement).value,
-                    page: '1',
-                  });
-                }}
-                step='1'
-                type='number'
-                value={query.minDimension1}
-              />
-              <span className='text-xs font-medium px-1'>x</span>
-              <input
-                className='text-sm px-2 py-1'
-                disabled={!isPro(reqUser)}
-                max='40'
-                min='1'
-                onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                  queryHelper({
-                    minDimension2: (e.target as HTMLInputElement).value,
-                    page: '1',
-                  });
-                }}
-                step='1'
-                type='number'
-                value={query.minDimension2}
-              />
-            </div>
-          </div>
-          <div className='flex md:flex-col items-center justify-center'>
-            <span className='text-xs font-medium pr-1'>Max dimensions:</span>
-            <div>
-              <input
-                className='text-sm px-2 py-1'
-                disabled={!isPro(reqUser)}
-                max='40'
-                min='1'
-                onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                  queryHelper({
-                    maxDimension1: (e.target as HTMLInputElement).value,
-                    page: '1',
-                  });
-                }}
-                step='1'
-                type='number'
-                value={query.maxDimension1}
-              />
-              <span className='text-xs font-medium px-1'>x</span>
-              <input
-                className='text-sm px-2 py-1'
-                disabled={!isPro(reqUser)}
-                max='40'
-                min='1'
-                onChange={(e: React.FormEvent<HTMLInputElement>) => {
-                  queryHelper({
-                    maxDimension2: (e.target as HTMLInputElement).value,
-                    page: '1',
-                  });
-                }}
-                step='1'
-                type='number'
-                value={query.maxDimension2}
-              />
-            </div>
-          </div>
-          <div className='flex items-center justify-center' role='group'>
-            <FilterButton
-              element={
-                <span style={{
-                  backgroundColor: 'var(--level-block)',
-                  borderColor: 'var(--level-block-border)',
-                  borderWidth: 5,
-                  boxShadow: '0 0 0 1px var(--bg-color)',
-                  display: 'block',
-                  height: 24,
-                  width: 24,
-                }} />
-              }
-              first={true}
-              onClick={onBlockFilterClick}
-              proRequired={true}
-              selected={(Number(query.blockFilter) & BlockFilterMask.BLOCK) !== BlockFilterMask.NONE}
-              transparent={true}
-              value={BlockFilterMask.BLOCK.toString()}
-            />
-            <FilterButton
-              element={
-                <span style={{
-                  backgroundColor: 'var(--level-block)',
-                  borderColor: 'var(--level-block-border)',
-                  borderWidth: '5px 0',
-                  boxShadow: '0 0 0 1px var(--bg-color)',
-                  display: 'block',
-                  height: 24,
-                  width: 24,
-                }} />
-              }
-              onClick={onBlockFilterClick}
-              proRequired={true}
-              selected={(Number(query.blockFilter) & BlockFilterMask.RESTRICTED) !== BlockFilterMask.NONE}
-              transparent={true}
-              value={BlockFilterMask.RESTRICTED.toString()}
-            />
-            <FilterButton
-              element={
-                <span style={{
-                  backgroundColor: 'var(--level-hole)',
-                  borderColor: 'var(--level-hole-border)',
-                  borderWidth: 5,
-                  boxShadow: '0 0 0 1px var(--bg-color)',
-                  display: 'block',
-                  height: 24,
-                  width: 24,
-                }} />
-              }
-              last={true}
-              onClick={onBlockFilterClick}
-              proRequired={true}
-              selected={(Number(query.blockFilter) & BlockFilterMask.HOLE) !== BlockFilterMask.NONE}
-              transparent={true}
-              value={BlockFilterMask.HOLE.toString()}
-            />
-          </div>
-        </div>
-        <span className='w-5' />
-      </div>
-      <div className='flex justify-center'>
-        {filtersSelected.length > 0 &&
-          filtersSelected.map((filter, i) => (
-            <div className='flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-md bg-3 text-white mr-1' key={`filter-${i}`}>
-              <button
-                className=''
-
-                onClick={() => {
-                  const update = {
-                    [filter]: DefaultQuery[filter],
-                  } as Partial<SearchQuery>;
-
-                  if (filter === 'statFilter') {
-                    update.statFilter = StatFilter.All;
-                  }
-
+                checked={query.isRanked === 'true'}
+                onChange={() => {
                   fetchLevels({
                     ...query,
-                    ...update,
+                    isRanked: query.isRanked === 'true' ? 'false' : 'true',
+                    page: '1',
                   });
                 }}
-              >
-                x
-              </button>
-              <span className='ml-1'>{getFilterDisplay(game, filter, query)}</span>
-            </div>
-          ))}
-
+                type='checkbox'
+                className='rounded border-gray-300 text-blue-600 focus:ring-0 focus:ring-offset-0'
+              />
+              <span className='text-sm font-medium whitespace-nowrap'>🏅 Ranked</span>
+            </label>
+          )}
+          {/* Advanced Filters Toggle */}
+          <button
+            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded border transition-colors ${
+              showAdvancedFilters || hasAdvancedFilters
+                ? 'border-blue-300 text-blue-300'
+                : 'border-gray-300 '
+            }`}
+          >
+            <svg className={`h-4 w-4 transition-transform ${showAdvancedFilters ? 'rotate-180' : ''}`} fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 9l-7 7-7-7' />
+            </svg>
+            Advanced
+            {hasAdvancedFilters && !showAdvancedFilters && (
+              <span className='bg-blue-300 text-black text-xs rounded-full px-2 py-0.5'>
+                Active
+              </span>
+            )}
+          </button>
+        </div>
       </div>
+      {/* Advanced Filters Panel */}
+      {showAdvancedFilters && (
+        <div className='p-3 border-t border-gray-200'>
+          <h3 className='text-lg font-semibold mb-3'>Advanced Filters</h3>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            {/* Steps Range */}
+            <div className='space-y-2'>
+              <label className='block text-sm font-medium'>Steps Range</label>
+              <div className='flex items-center gap-2'>
+                <input
+                  className='w-20 text-sm px-2 py-1 border border-gray-300 rounded'
+                  placeholder='Min'
+                  max='2500'
+                  min='1'
+                  onChange={(e: React.FormEvent<HTMLInputElement>) => {
+                    queryHelper({
+                      minSteps: (e.target as HTMLInputElement).value,
+                      page: '1',
+                    });
+                  }}
+                  step='1'
+                  type='number'
+                  value={query.minSteps}
+                />
+                <span className='text-gray-500'>to</span>
+                <input
+                  className='w-20 text-sm px-2 py-1 border border-gray-300 rounded'
+                  placeholder='Max'
+                  max='2500'
+                  min='1'
+                  onChange={(e: React.FormEvent<HTMLInputElement>) => {
+                    queryHelper({
+                      maxSteps: (e.target as HTMLInputElement).value,
+                      page: '1',
+                    });
+                  }}
+                  step='1'
+                  type='number'
+                  value={query.maxSteps}
+                />
+              </div>
+            </div>
+            {/* Pro Features */}
+            {isPro(reqUser) ? (
+              <>
+                {/* Dimensions */}
+                <div className='space-y-2'>
+                  <label className='block text-sm font-medium flex items-center gap-2'>
+                    Dimensions
+                    <Image alt='pro' src='/pro.svg' width='16' height='16' />
+                  </label>
+                  <div className='flex items-center gap-2 text-sm'>
+                    <input
+                      className='w-12 px-2 py-1 border border-gray-300 rounded text-center'
+                      placeholder='Min W'
+                      max='40'
+                      min='1'
+                      onChange={(e: React.FormEvent<HTMLInputElement>) => {
+                        queryHelper({
+                          minDimension1: (e.target as HTMLInputElement).value,
+                          page: '1',
+                        });
+                      }}
+                      step='1'
+                      type='number'
+                      value={query.minDimension1}
+                    />
+                    <span>×</span>
+                    <input
+                      className='w-12 px-2 py-1 border border-gray-300 rounded text-center'
+                      placeholder='Min H'
+                      max='40'
+                      min='1'
+                      onChange={(e: React.FormEvent<HTMLInputElement>) => {
+                        queryHelper({
+                          minDimension2: (e.target as HTMLInputElement).value,
+                          page: '1',
+                        });
+                      }}
+                      step='1'
+                      type='number'
+                      value={query.minDimension2}
+                    />
+                    <span className='text-gray-500'>to</span>
+                    <input
+                      className='w-12 px-2 py-1 border border-gray-300 rounded text-center'
+                      placeholder='Max W'
+                      max='40'
+                      min='1'
+                      onChange={(e: React.FormEvent<HTMLInputElement>) => {
+                        queryHelper({
+                          maxDimension1: (e.target as HTMLInputElement).value,
+                          page: '1',
+                        });
+                      }}
+                      step='1'
+                      type='number'
+                      value={query.maxDimension1}
+                    />
+                    <span>×</span>
+                    <input
+                      className='w-12 px-2 py-1 border border-gray-300 rounded text-center'
+                      placeholder='Max H'
+                      max='40'
+                      min='1'
+                      onChange={(e: React.FormEvent<HTMLInputElement>) => {
+                        queryHelper({
+                          maxDimension2: (e.target as HTMLInputElement).value,
+                          page: '1',
+                        });
+                      }}
+                      step='1'
+                      type='number'
+                      value={query.maxDimension2}
+                    />
+                  </div>
+                </div>
+                {/* Block Types */}
+                <div className='space-y-2'>
+                  <label className='block text-sm font-medium flex items-center gap-2'>
+                    Block Types
+                    <Image alt='pro' src='/pro.svg' width='16' height='16' />
+                  </label>
+                  <div className='flex items-center gap-2'>
+                    <FilterButton
+                      element={
+                        <span style={{
+                          backgroundColor: 'var(--level-block)',
+                          borderColor: 'var(--level-block-border)',
+                          borderWidth: 2,
+                          display: 'block',
+                          height: 16,
+                          width: 16,
+                        }} />
+                      }
+                      first={true}
+                      onClick={onBlockFilterClick}
+                      proRequired={false}
+                      selected={(Number(query.blockFilter) & BlockFilterMask.BLOCK) !== BlockFilterMask.NONE}
+                      transparent={true}
+                      value={BlockFilterMask.BLOCK.toString()}
+                    />
+                    <FilterButton
+                      element={
+                        <span style={{
+                          backgroundColor: 'var(--level-block)',
+                          borderColor: 'var(--level-block-border)',
+                          borderWidth: '2px 0',
+                          display: 'block',
+                          height: 16,
+                          width: 16,
+                        }} />
+                      }
+                      onClick={onBlockFilterClick}
+                      proRequired={false}
+                      selected={(Number(query.blockFilter) & BlockFilterMask.RESTRICTED) !== BlockFilterMask.NONE}
+                      transparent={true}
+                      value={BlockFilterMask.RESTRICTED.toString()}
+                    />
+                    <FilterButton
+                      element={
+                        <span style={{
+                          backgroundColor: 'var(--level-hole)',
+                          borderColor: 'var(--level-hole-border)',
+                          borderWidth: 2,
+                          display: 'block',
+                          height: 16,
+                          width: 16,
+                        }} />
+                      }
+                      last={true}
+                      onClick={onBlockFilterClick}
+                      proRequired={false}
+                      selected={(Number(query.blockFilter) & BlockFilterMask.HOLE) !== BlockFilterMask.NONE}
+                      transparent={true}
+                      value={BlockFilterMask.HOLE.toString()}
+                    />
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className='text-center py-4'>
+                <div className='flex items-center justify-center gap-2 text-gray-500 mb-2'>
+                  <Image alt='pro' src='/pro.svg' width='20' height='20' />
+                  <span className='text-sm'>More filters available with Pro</span>
+                </div>
+                <Link href='/pro' className='text-blue-600 hover:text-blue-800 underline text-sm'>
+                  Upgrade to Pro
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      {/* Active Filters */}
+      {filtersSelected.length > 0 && (
+        <div className='p-2 border-t border-gray-200'>
+          <div className='flex flex-wrap items-center gap-2'>
+            <span className='text-sm font-medium'>Active filters:</span>
+            {filtersSelected.map((filter, i) => (
+              <div className='flex items-center gap-1 text-xs font-medium px-2 py-1 rounded bg-blue-100 text-blue-800' key={`filter-${i}`}>
+                <span>{getFilterDisplay(game, filter, query)}</span>
+                <button
+                  className='ml-1 text-blue-600 hover:text-blue-800 font-bold'
+                  onClick={() => {
+                    const update = {
+                      [filter]: DefaultQuery[filter],
+                    } as Partial<SearchQuery>;
+
+                    if (filter === 'statFilter') {
+                      update.statFilter = StatFilter.All;
+                    }
+
+                    fetchLevels({
+                      ...query,
+                      ...update,
+                    });
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+            <button
+              className='text-sm text-gray-500 hover:text-gray-700 underline'
+              onClick={() => fetchLevels(DefaultQuery)}
+            >
+              Clear all
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 
@@ -1021,6 +1079,10 @@ export default function Search({ enrichedLevels, reqUser, searchAuthor, searchQu
           sortDir={query.sortDir}
           totalItems={totalRows}
         />
+        <div className='text-sm text-gray-500 text-center p-4'>
+          <p>Note: This page updates every few minutes, so you might see slightly different results if you refresh.</p>
+          <p>This helps us keep the site running smoothly for everyone!</p>
+        </div>
       </>
     </Page>
   </>);
