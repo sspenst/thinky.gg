@@ -181,6 +181,12 @@ export default function FormattedDifficulty({ difficulty, difficultyField, id, l
 
   const color = getDifficultyColor(difficultyEstimate);
   const difficultyFromEstimate = getDifficultyFromEstimate(difficultyEstimate);
+  let adjustedName = difficultyFromEstimate.name;
+  //SGM+1 for 60k-120k, SGM+2 for 120k-240k, etc
+  if (difficultyEstimate >= 2*maxDiff)
+  {
+     adjustedName += "+" + Math.floor(Math.log(difficultyEstimate/maxDiff)/Math.log(2));
+  }
   const pendingRemainingUsers = 10 - (uniqueUsers ?? 0);
   const showPendingUsers = difficultyFromEstimate.name === 'Pending' && uniqueUsers !== undefined;
   const tooltipContent = tooltip ? tooltip : showPendingUsers ?
@@ -195,7 +201,7 @@ export default function FormattedDifficulty({ difficulty, difficultyField, id, l
           color: color,
           textShadow: '1px 1px black',
         }}>
-          {difficultyFromEstimate.name}
+          {adjustedName}
           {showPendingUsers && ` (${pendingRemainingUsers})`}
         </span>
       </div>
