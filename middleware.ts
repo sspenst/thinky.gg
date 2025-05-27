@@ -85,12 +85,8 @@ export async function middleware(req: NextRequest) {
   }
 
   if (folder.length === 0 && subdomain === 'thinky') {
-    console.log('not redirecting ', folder, subdomain);
-
     return;
   }
-
-  console.log('redirecting ', folder, subdomain);
 
   return NextResponse.rewrite(url);
 }

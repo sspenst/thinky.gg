@@ -2,6 +2,7 @@ import AchievementCategory from '@root/constants/achievements/achievementCategor
 import { GameId } from '@root/constants/GameId';
 import { getGameFromId, getGameIdFromReq } from '@root/helpers/getGameIdFromReq';
 import isFullAccount from '@root/helpers/isFullAccount';
+import { CacheTag } from '@root/models/db/cache';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidObjectId } from '../../../helpers/apiWrapper';
@@ -11,7 +12,7 @@ import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import User from '../../../models/db/user';
-import { LevelModel, RecordModel, StatModel, UserConfigModel } from '../../../models/mongoose';
+import { CacheModel, LevelModel, RecordModel, StatModel, UserConfigModel } from '../../../models/mongoose';
 import { queueCalcCreatorCounts, queueCalcPlayAttempts, queueGenLevelImage, queueRefreshAchievements, queueRefreshIndexCalcs } from '../internal-jobs/worker';
 
 export async function checkPublishRestrictions(gameId: GameId, userId: Types.ObjectId) {
@@ -164,7 +165,11 @@ export default withAuth({ POST: {
           ts: ts,
           userId: new Types.ObjectId(req.userId),
         }], { session: session }),
-
+        // invalidate cache
+        CacheModel.deleteMany({
+          tag: CacheTag.SEARCH_API,
+          gameId: level.gameId,
+        }, { session: session }),
       ]);
 
       if (!updatedLevel) {

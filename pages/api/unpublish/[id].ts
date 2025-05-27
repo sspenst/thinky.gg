@@ -1,5 +1,6 @@
 import { GameId } from '@root/constants/GameId';
 import { getGameFromId } from '@root/helpers/getGameIdFromReq';
+import { CacheTag } from '@root/models/db/cache';
 import mongoose from 'mongoose';
 import type { NextApiResponse } from 'next';
 import DiscordChannel from '../../../constants/discordChannel';
@@ -15,7 +16,7 @@ import Level from '../../../models/db/level';
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
 import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
-import { CollectionModel, ImageModel, LevelModel, MultiplayerMatchModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserConfigModel } from '../../../models/mongoose';
+import { CacheModel, CollectionModel, ImageModel, LevelModel, MultiplayerMatchModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserConfigModel } from '../../../models/mongoose';
 import { generateMatchLog } from '../../../models/schemas/multiplayerMatchSchema';
 import { queueCalcCreatorCounts, queueCalcPlayAttempts, queueRefreshIndexCalcs } from '../internal-jobs/worker';
 
@@ -143,6 +144,11 @@ export default withAuth({ POST: {
         queueCalcCreatorCounts(level.gameId, level.userId, { session: session }),
         queueDiscordWebhook(discordChannel, `**${req.user.name}** unpublished a level: ${level.name}`, { session: session }),
         ...matchesToRebroadcast.map(match => requestBroadcastMatch(level.gameId, match.matchId)),
+        // invalidate cache
+        CacheModel.deleteMany({
+          tag: CacheTag.SEARCH_API,
+          gameId: level.gameId,
+        }, { session: session }),
       ]);
     });
 

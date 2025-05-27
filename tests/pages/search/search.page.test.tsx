@@ -4,7 +4,7 @@ import TestId from '../../../constants/testId';
 import { logger } from '../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
-import { LevelModel } from '../../../models/mongoose';
+import { CacheModel, LevelModel } from '../../../models/mongoose';
 import { getServerSideProps } from '../../../pages/[subdomain]/search/index';
 
 beforeAll(async () => {
@@ -69,7 +69,7 @@ describe('pages/search page', () => {
   });
   test('getServerSideProps with a db error should fail', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    jest.spyOn(LevelModel, 'aggregate').mockImplementation(() => {
+    jest.spyOn(CacheModel, 'findOne').mockImplementation(() => {
       throw new Error('Test DB error');
     });
     // expect this to error

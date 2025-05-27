@@ -33,6 +33,12 @@ async function getDifficultyLeaderboard(gameId: GameId, index: DIFFICULTY_INDEX)
       }
     },
     {
+      // Project only the _id field early to reduce data transfer
+      $project: {
+        _id: 1
+      }
+    },
+    {
       // Use $lookup with a more efficient pipeline
       $lookup: {
         from: StatModel.collection.name,
@@ -69,6 +75,15 @@ async function getDifficultyLeaderboard(gameId: GameId, index: DIFFICULTY_INDEX)
       }
     },
     {
+      $sort: {
+        sum: -1
+      }
+    },
+    {
+      // Limit early to reduce user lookups
+      $limit: 100
+    },
+    {
       // Optimize user lookup by moving it after filtering
       $lookup: {
         from: UserModel.collection.name,
@@ -91,9 +106,6 @@ async function getDifficultyLeaderboard(gameId: GameId, index: DIFFICULTY_INDEX)
         sum: -1,
         'user.name': 1
       }
-    },
-    {
-      $limit: 100
     }
   ]) as UserAndSum[];
 
@@ -113,7 +125,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   // Optimize by conditionally fetching data
   const reqUserPromise = token ? getUserFromToken(token, context.req as NextApiRequest) : Promise.resolve(null);
 
-  const promises: Promise<any>[] = [
+  const promises: Promise<UserAndSum[] | User[] | User | null>[] = [
     getDifficultyLeaderboard(gameId, DIFFICULTY_INDEX.GRANDMASTER),
     getDifficultyLeaderboard(gameId, DIFFICULTY_INDEX.SUPER_GRANDMASTER),
     reqUserPromise
