@@ -38,6 +38,8 @@ const OpenReplayWrapper = () => {
       const shouldReplaySession = window.localStorage.getItem('utm_source') !== null;
 
       if (shouldReplaySession && !globalTracker && !isInitialized) {
+        let isMounted = true; // Prevent race conditions
+
         try {
           // Get existing session hash for cross-subdomain tracking
           const existingSessionHash = getSessionHashFromStorage();
@@ -69,22 +71,33 @@ const OpenReplayWrapper = () => {
           const startOptions = existingSessionHash ? { sessionHash: existingSessionHash } : undefined;
 
           globalTracker.start(startOptions)
-            .then((sessionInfo: any) => {
-              // Save the session hash for cross-subdomain tracking
-              if (sessionInfo?.sessionHash) {
-                saveSessionHashToStorage(sessionInfo.sessionHash);
-              }
+            .then((sessionInfo: { sessionHash?: string; [key: string]: any }) => {
+              // Only update state if component is still mounted
+              if (isMounted) {
+                // Save the session hash for cross-subdomain tracking
+                if (sessionInfo?.sessionHash) {
+                  saveSessionHashToStorage(sessionInfo.sessionHash);
+                }
 
-              setIsInitialized(true);
+                setIsInitialized(true);
+              }
             })
-            .catch((error: any) => {
-              console.error('Failed to start OpenReplay:', error);
-              globalTracker = null;
+            .catch((error: unknown) => {
+              if (isMounted) {
+                console.error('Failed to start OpenReplay:', error);
+                globalTracker = null;
+              }
             });
-        } catch (error: any) {
-          console.error('Failed to initialize OpenReplay:', error);
-          globalTracker = null;
+        } catch (error: unknown) {
+          if (isMounted) {
+            console.error('Failed to initialize OpenReplay:', error);
+            globalTracker = null;
+          }
         }
+
+        return () => {
+          isMounted = false;
+        };
       } else if (globalTracker && !isInitialized) {
         // Tracker already exists, just mark as initialized
         setIsInitialized(true);
@@ -98,11 +111,13 @@ const OpenReplayWrapper = () => {
       return;
     }
 
+    let listenersAttached = false;
+
     const handleRouteChangeStart = (url: string) => {
       try {
         // Send a custom event to mark page navigation
         globalTracker?.event('page_navigation_start', { url });
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Failed to track route change start:', error);
       }
     };
@@ -121,37 +136,48 @@ const OpenReplayWrapper = () => {
           const startOptions = currentSessionHash ? { sessionHash: currentSessionHash } : undefined;
 
           globalTracker.start(startOptions)
-            .then((sessionInfo: any) => {
+            .then((sessionInfo: { sessionHash?: string; [key: string]: any }) => {
               // Update session hash if it changed
               if (sessionInfo?.sessionHash) {
                 saveSessionHashToStorage(sessionInfo.sessionHash);
               }
             })
-            .catch((error: any) => {
+            .catch((error: unknown) => {
               console.error('Failed to restart OpenReplay after navigation:', error);
             });
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Failed to track route change completion:', error);
       }
     };
 
     const handleRouteChangeError = (err: any, url: string) => {
       try {
-        globalTracker?.event('page_navigation_error', { url, error: err.message });
-      } catch (error: any) {
+        const errorMessage = err?.message || err?.toString() || 'Unknown navigation error';
+
+        globalTracker?.event('page_navigation_error', {
+          url,
+          error: errorMessage,
+          timestamp: new Date().toISOString()
+        });
+      } catch (error: unknown) {
         console.error('Failed to track route change error:', error);
       }
     };
 
-    router.events.on('routeChangeStart', handleRouteChangeStart);
-    router.events.on('routeChangeComplete', handleRouteChangeComplete);
-    router.events.on('routeChangeError', handleRouteChangeError);
+    if (!listenersAttached) {
+      router.events.on('routeChangeStart', handleRouteChangeStart);
+      router.events.on('routeChangeComplete', handleRouteChangeComplete);
+      router.events.on('routeChangeError', handleRouteChangeError);
+      listenersAttached = true;
+    }
 
     return () => {
-      router.events.off('routeChangeStart', handleRouteChangeStart);
-      router.events.off('routeChangeComplete', handleRouteChangeComplete);
-      router.events.off('routeChangeError', handleRouteChangeError);
+      if (listenersAttached) {
+        router.events.off('routeChangeStart', handleRouteChangeStart);
+        router.events.off('routeChangeComplete', handleRouteChangeComplete);
+        router.events.off('routeChangeError', handleRouteChangeError);
+      }
     };
   }, [router.events, isInitialized]);
 
@@ -163,7 +189,7 @@ const OpenReplayWrapper = () => {
         globalTracker.setMetadata('_id', user._id.toString());
         globalTracker.setMetadata('email', user.email || '');
         // Add any other relevant user metadata
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Failed to set user data in OpenReplay:', error);
       }
     }
@@ -189,11 +215,11 @@ const OpenReplayWrapper = () => {
                 saveSessionHashToStorage(sessionInfo.sessionHash);
               }
             })
-            .catch((error: any) => {
+            .catch((error: unknown) => {
               console.error('Failed to restart OpenReplay:', error);
             });
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Error checking tracker status:', error);
       }
     };
@@ -217,7 +243,7 @@ const OpenReplayWrapper = () => {
             saveSessionHashToStorage(sessionHash);
           }
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Failed to save session hash on page unload:', error);
       }
     };
@@ -234,7 +260,7 @@ const OpenReplayWrapper = () => {
               saveSessionHashToStorage(sessionInfo.sessionHash);
             }
           })
-          .catch((error: any) => {
+          .catch((error: unknown) => {
             console.error('Failed to restart OpenReplay on visibility change:', error);
           });
       }
