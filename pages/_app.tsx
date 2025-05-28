@@ -328,7 +328,12 @@ export default function MyApp({ Component, pageProps, userAgent, initGame }: App
     const utmSource = urlParams.get('utm_source');
 
     if (utmSource) {
-      window.localStorage.setItem('utm_source', utmSource);
+      if (!window.localStorage.getItem('utm_source')) {
+        console.log('Storing utm_source', utmSource);
+        window.localStorage.setItem('utm_source', utmSource);
+      } else {
+        console.log('utm_source already set', window.localStorage.getItem('utm_source'));
+      }
     }
 
     if (redirectType === 'pathologygg') {
