@@ -20,6 +20,11 @@ body {
   color: var(--color);
 }
 
+/* Make background transparent when mathematical background is active */
+body.mathematical-background-active {
+  background-color: transparent !important;
+}
+
 .theme-accessible div {
   -webkit-transition: none !important;
   -moz-transition: none !important;

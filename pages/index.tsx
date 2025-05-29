@@ -1,4 +1,5 @@
 /* istanbul ignore file */
+import MathematicalBackground from '@root/components/backgrounds/MathematicalBackground';
 import { ThinkyHomePageLoggedIn } from '@root/components/home/thinkyLoggedIn';
 import ThinkyHomePageNotLoggedIn from '@root/components/home/thinkyNotLoggedIn';
 import Page from '@root/components/page/page';
@@ -8,7 +9,7 @@ import { getUserFromToken } from '@root/lib/withAuth';
 import { ReqUser } from '@root/models/db/user';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { NextSeo, SoftwareAppJsonLd } from 'next-seo';
-import React from 'react';
+import React, { useEffect } from 'react';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
@@ -28,6 +29,16 @@ interface ThinkyHomeRouterProps {
 }
 
 export default function ThinkyHomeRouter({ user }: ThinkyHomeRouterProps) {
+  useEffect(() => {
+    if (!user) {
+      document.body.classList.add('mathematical-background-active');
+    }
+
+    return () => {
+      document.body.classList.remove('mathematical-background-active');
+    };
+  }, [user]);
+
   return (
     <>
       <NextSeo
@@ -47,18 +58,15 @@ export default function ThinkyHomeRouter({ user }: ThinkyHomeRouterProps) {
         priceCurrency='USD'
         applicationCategory='Game'
       />
+      {!user && <MathematicalBackground />}
       <Page
         style={user ? {} : {
-          backgroundImage: 'url(https://i.imgur.com/iYIoTCx.png)',
-          backgroundPosition: 'center',
-          backgroundPositionY: 'calc(50% + ' + Dimensions.MenuHeight + 'px)',
-          backgroundSize: 'cover',
-          backgroundAttachment: 'fixed',
-          backgroundRepeat: 'no-repeat',
+          position: 'relative',
+          backgroundColor: 'transparent',
         }}
         title='Thinky Puzzle Games'
       >
-        <div className='flex flex-col justify-center items-center my-10 mx-6 gap-8'>
+        <div className='flex flex-col justify-center items-center my-10 mx-6 gap-6 md:gap-0'>
           <span
             className='text-6xl sm:text-8xl text-white rounded-lg text-center'
             style={{
