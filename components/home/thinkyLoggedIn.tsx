@@ -16,7 +16,6 @@ import ChapterSelectCard, { ChapterSelectCardBase } from '../cards/chapterSelect
 import { getStreakRankIndex, STREAK_RANK_GROUPS } from '../counters/AnimateCounterOne';
 import FormattedUser from '../formatted/formattedUser';
 import GameLogo from '../gameLogo';
-import LoadingSpinner from '../page/loadingSpinner';
 import MultiSelectUser from '../page/multiSelectUser';
 import { StreakCalendar } from './streakCalendar';
 
@@ -76,7 +75,6 @@ function StreakDisplay({ streak, timeToKeepStreak, gameId, userConfig }: StreakD
           </div>
         </div>
       </div>
-      
       <div className='bg-white dark:bg-gray-800 p-4'>
         {streak === 0 ? (
           <div className='flex flex-col items-center text-center py-2'>
@@ -101,7 +99,6 @@ function StreakDisplay({ streak, timeToKeepStreak, gameId, userConfig }: StreakD
                 )}
               </div>
             </div>
-            
             {nextRank && (
               <div className='space-y-1'>
                 <div className='h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden'>
@@ -116,7 +113,6 @@ function StreakDisplay({ streak, timeToKeepStreak, gameId, userConfig }: StreakD
                 </div>
               </div>
             )}
-            
             <div className={`text-sm font-medium mt-1 ${!hasPlayedToday && streak > 0 && timeToKeepStreak > 0 ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-600 dark:text-green-400'}`}>
               {!hasPlayedToday && streak > 0 && timeToKeepStreak > 0
                 ? `Play within ${Math.ceil(timeToKeepStreak / (1000 * 60 * 60))} hours to keep your streak! 🔥`
@@ -263,7 +259,6 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
                           <span className='text-sm font-medium'>Coming Soon</span>
                         </div>
                       )}
-                      
                       {levelOfDay && (
                         <Link
                           href={getUrl(game.id, '/level-of-the-day')}
@@ -276,7 +271,6 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
                           </span>
                         </Link>
                       )}
-                      
                       {!game.disableMultiplayer && (
                         <Link
                           href={getUrl(game.id, '/multiplayer')}
@@ -288,7 +282,6 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
                       )}
                     </div>
                   </div>
-                  
                   {/* Streak Display */}
                   {userConfig && (
                     <div className='mt-4'>
@@ -301,7 +294,6 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
           })}
         </div>
       </div>
-      
       {/* Global Quick Actions Section */}
       <div className='w-full'>
         <div className='grid grid-cols-2 md:grid-cols-3 gap-4'>
@@ -316,7 +308,6 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
               }}
             />
           </div>
-          
           <Link
             href='/pro'
             className='flex flex-col items-center justify-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition'
@@ -324,7 +315,6 @@ export function ThinkyHomePageLoggedIn({ user }: { user: User }) {
             <span className='text-2xl mb-2'>⭐</span>
             <span className='font-medium'>Pro Features</span>
           </Link>
-          
           <Link
             href='/settings'
             className='flex flex-col items-center justify-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition'
